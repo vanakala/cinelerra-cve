@@ -1113,20 +1113,20 @@ void MotionMain::draw_pixel(VFrame *frame, int x, int y)
 
 #define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
 { \
-	type **rows = (type**)frame->get_rows(); \
-	rows[y][x * components] = max - rows[y][x * components]; \
+	type *row = (type*)frame->get_row_ptr(y); \
+	row[x * components] = max - row[x * components]; \
 	if(!do_yuv) \
 	{ \
-		rows[y][x * components + 1] = max - rows[y][x * components + 1]; \
-		rows[y][x * components + 2] = max - rows[y][x * components + 2]; \
+		row[x * components + 1] = max - row[x * components + 1]; \
+		row[x * components + 2] = max - row[x * components + 2]; \
 	} \
 	else \
 	{ \
-		rows[y][x * components + 1] = (max / 2 + 1) - rows[y][x * components + 1]; \
-		rows[y][x * components + 2] = (max / 2 + 1) - rows[y][x * components + 2]; \
+		row[x * components + 1] = (max / 2 + 1) - row[x * components + 1]; \
+		row[x * components + 2] = (max / 2 + 1) - row[x * components + 2]; \
 	} \
 	if(components == 4) \
-		rows[y][x * components + 3] = max; \
+		row[x * components + 3] = max; \
 }
 
 	switch(frame->get_color_model())
@@ -1590,11 +1590,9 @@ void MotionScanUnit::process_package(LoadPackage *package)
 		if(pkg->difference1 < 0)
 		{
 // Pointers to first pixel in each block
-			unsigned char *prev_ptr = server->previous_frame->get_rows()[
-				search_y] +
+			unsigned char *prev_ptr = server->previous_frame->get_row_ptr(search_y) +
 				search_x * pixel_size;
-			unsigned char *current_ptr = server->current_frame->get_rows()[
-				pkg->block_y1] +
+			unsigned char *current_ptr = server->current_frame->get_row_ptr(pkg->block_y1) +
 				pkg->block_x1 * pixel_size;
 // Scan block
 			pkg->difference1 = plugin->abs_diff(prev_ptr,
@@ -1627,11 +1625,9 @@ void MotionScanUnit::process_package(LoadPackage *package)
 		sub_x %= OVERSAMPLE;
 		sub_y %= OVERSAMPLE;
 
-		unsigned char *prev_ptr = server->previous_frame->get_rows()[
-			search_y] +
+		unsigned char *prev_ptr = server->previous_frame->get_row_ptr(search_y) +
 			search_x * pixel_size;
-		unsigned char *current_ptr = server->current_frame->get_rows()[
-			pkg->block_y1] +
+		unsigned char *current_ptr = server->current_frame->get_row_ptr(pkg->block_y1) +
 			pkg->block_x1 * pixel_size;
 
 // With subpixel, there are two ways to compare each position, one by shifting
@@ -2113,8 +2109,8 @@ void RotateScanUnit::process_package(LoadPackage *package)
 		{
 // Scan reduced block size
 			pkg->difference = plugin->abs_diff(
-				temp->get_rows()[y1] + x1 * pixel_size,
-				server->current_frame->get_rows()[y1] + x1 * pixel_size,
+				temp->get_row_ptr(y1) + x1 * pixel_size,
+				server->current_frame->get_row_ptr(y1) + x1 * pixel_size,
 				row_bytes,
 				x2 - x1,
 				y2 - y1,
