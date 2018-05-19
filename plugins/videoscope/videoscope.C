@@ -719,7 +719,7 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 void VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	send_render_gui(input);
-	if(input->get_rows()[0] != output->get_rows()[0])
+	if(input != output)
 		output->copy_from(input);
 }
 
