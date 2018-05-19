@@ -388,12 +388,12 @@ void WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 	if(EQUIV(config.angle, 0) || 
 		(EQUIV(config.radius, 0) && EQUIV(config.pinch, 0)))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
+		if(input != output)
 			output->copy_from(input);
 	}
 	else
 	{
-		if(input->get_rows()[0] == output->get_rows()[0])
+		if(input == output)
 		{
 			if(!temp_frame) temp_frame = new VFrame(0,
 				input->get_w(),
@@ -486,8 +486,8 @@ static int calc_undistorted_coords(double cen_x,
 }
 
 
-#define GET_PIXEL(components, x, y, input_rows) \
-	input_rows[CLIP(y, 0, (h - 1))] + components * CLIP(x, 0, (w - 1))
+#define GET_PIXEL(components, x, y, type) \
+	(type*)plugin->input->get_row_ptr(CLIP(y, 0, (h - 1))) + components * CLIP(x, 0, (w - 1))
 
 
 static float bilinear(double x, double y, double *values)
@@ -507,7 +507,6 @@ static float bilinear(double x, double y, double *values)
 
 #define WHIRL_MACRO(type, max, components) \
 { \
-	type **input_rows = (type**)plugin->input->get_rows(); \
 	double values[components]; \
 	for(int row = pkg->row1; row <= (pkg->row2 + pkg->row1) / 2; row++) \
 	{ \
@@ -544,10 +543,10 @@ static float bilinear(double x, double y, double *values)
 				else \
 					iy = -((int)-cy + 1); \
  \
-				type *pixel1 = GET_PIXEL(components, ix,     iy,     input_rows); \
-				type *pixel2 = GET_PIXEL(components, ix + 1, iy,     input_rows); \
-				type *pixel3 = GET_PIXEL(components, ix,     iy + 1, input_rows); \
-				type *pixel4 = GET_PIXEL(components, ix + 1, iy + 1, input_rows); \
+				type *pixel1 = GET_PIXEL(components, ix,     iy,     type); \
+				type *pixel2 = GET_PIXEL(components, ix + 1, iy,     type); \
+				type *pixel3 = GET_PIXEL(components, ix,     iy + 1, type); \
+				type *pixel4 = GET_PIXEL(components, ix + 1, iy + 1, type); \
  \
 				values[0] = pixel1[0]; \
 				values[1] = pixel2[0]; \
@@ -592,10 +591,10 @@ static float bilinear(double x, double y, double *values)
 				else \
 					iy = -((int)-cy + 1); \
  \
-				pixel1 = GET_PIXEL(components, ix,     iy,     input_rows); \
-				pixel2 = GET_PIXEL(components, ix + 1, iy,     input_rows); \
-				pixel3 = GET_PIXEL(components, ix,     iy + 1, input_rows); \
-				pixel4 = GET_PIXEL(components, ix + 1, iy + 1, input_rows); \
+				pixel1 = GET_PIXEL(components, ix,     iy,     type); \
+				pixel2 = GET_PIXEL(components, ix + 1, iy,     type); \
+				pixel3 = GET_PIXEL(components, ix,     iy + 1, type); \
+				pixel4 = GET_PIXEL(components, ix + 1, iy + 1, type); \
  \
 				values[0] = pixel1[0]; \
 				values[1] = pixel2[0]; \
@@ -631,20 +630,19 @@ static float bilinear(double x, double y, double *values)
 			{ \
 /* Outside distortion area */ \
 /* Do top */ \
-				top_p[0] = input_rows[row][components * col + 0]; \
-				top_p[1] = input_rows[row][components * col + 1]; \
-				top_p[2] = input_rows[row][components * col + 2]; \
-				if(components == 4) top_p[3] = input_rows[row][components * col + 3]; \
+				top_p[0] = top_row[components * col + 0]; \
+				top_p[1] = top_row[components * col + 1]; \
+				top_p[2] = top_row[components * col + 2]; \
+				if(components == 4) top_p[3] = top_row[components * col + 3]; \
  \
 				top_p += components; \
  \
 /* Do bottom */ \
 				int bot_offset = w * components - col * components - components; \
-				int bot_row = h - 1 - row; \
-				bot_p[0] = input_rows[bot_row][bot_offset + 0]; \
-				bot_p[1] = input_rows[bot_row][bot_offset + 1]; \
-				bot_p[2] = input_rows[bot_row][bot_offset + 2]; \
-				if(components == 4) bot_p[3] = input_rows[bot_row][bot_offset + 3]; \
+				bot_p[0] = bot_row[bot_offset + 0]; \
+				bot_p[1] = bot_row[bot_offset + 1]; \
+				bot_p[2] = bot_row[bot_offset + 2]; \
+				if(components == 4) bot_p[3] = bot_row[bot_offset + 3]; \
 				bot_p -= components; \
 			} \
 		} \
