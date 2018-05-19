@@ -295,21 +295,19 @@ void HoloClient::process_package(LoadPackage *package)
 	int x, y;
 	int sx, sy;
 	HoloPackage *local_package = (HoloPackage*)package;
-	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
-	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
+	unsigned char *input_row = plugin->input_ptr->get_row_ptr(local_package->row1);
+	unsigned char *output_row = plugin->output_ptr->get_row_ptr(local_package->row1);
 	int width = plugin->input_ptr->get_w();
 	int height = local_package->row2 - local_package->row1;
+	int bytes_per_line = plugin->input_ptr->get_bytes_per_line();
 	unsigned char *diff;
 	uint32_t s, t;
 	int r, g, b;
 
-	diff = plugin->effecttv->image_diff_filter(plugin->effecttv->image_bgsubtract_y(input_rows, 
-		plugin->input_ptr->get_color_model()));
+	diff = plugin->effecttv->image_diff_filter(plugin->effecttv->image_bgsubtract_y(input_row,
+		plugin->input_ptr->get_color_model(), bytes_per_line));
 
 	diff += width;
-	output_rows++;
-	input_rows++;
-
 
 // Convert discrete channels to a single 24 bit number
 #define STORE_PIXEL(type, components, dest, src, is_yuv) \
@@ -362,9 +360,9 @@ else \
 #define HOLO_CORE(type, components, is_yuv) \
 	for(y = 1; y < height - 1; y++) \
 	{ \
-		type *src = (type*)input_rows[y]; \
+		type *src = (type*)plugin->input_ptr->get_row_ptr(y + local_package->row1); \
 		type *bg = (type*)plugin->bgimage->get_row_ptr(y); \
-		type *dest = (type*)output_rows[y]; \
+		type *dest = (type*)plugin->output_ptr->get_row_ptr(y + local_package->row1); \
  \
 		if(((y + phase) & 0x7f) < 0x58)  \
 		{ \
@@ -539,9 +537,9 @@ else \
 	case BC_AYUV16161616:
 		for(y = 1; y < height - 1; y++)
 		{
-			uint16_t *src = (uint16_t*)input_rows[y];
+			uint16_t *src = (uint16_t*)plugin->input_ptr->get_row_ptr(y + local_package->row1);
 			uint16_t *bg = (uint16_t*)plugin->bgimage->get_row_ptr(y);
-			uint16_t *dest = (uint16_t*)output_rows[y];
+			uint16_t *dest = (uint16_t*)plugin->output_ptr->get_row_ptr(y + local_package->row1);
 
 			if(((y + phase) & 0x7f) < 0x58)
 			{
