@@ -344,8 +344,8 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 	float v_offset = ((float)plugin->config.value - MINVALUE) / MAXVALUE; \
 	for(int i = pkg->row1; i < pkg->row2; i++) \
 	{ \
-		type* in_row = (type*)plugin->input->get_rows()[i]; \
-		type* out_row = (type*)plugin->output->get_rows()[i]; \
+		type* in_row = (type*)plugin->input->get_row_ptr(i); \
+		type* out_row = (type*)plugin->output->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
