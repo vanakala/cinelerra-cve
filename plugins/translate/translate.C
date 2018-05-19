@@ -189,7 +189,7 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	load_configuration();
 
-	if(input->get_rows()[0] == output->get_rows()[0])
+	if(input == output)
 	{
 		if(!temp_frame) 
 			temp_frame = new VFrame(0, 
