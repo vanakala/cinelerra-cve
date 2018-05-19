@@ -391,7 +391,7 @@ static void put_column(float *src, VFrame *dst, int column)
 	int components = ColorModels::components(dst->get_color_model());
 	for(int i = 0; i < dst->get_h(); i++)
 	{
-		float *output_pixel = (float*)dst->get_rows()[i] + column * components;
+		float *output_pixel = (float*)dst->get_row_ptr(i) + column * components;
 		memcpy(output_pixel, src, sizeof(float) * components);
 		src += components;
 	}
@@ -453,7 +453,7 @@ void UnsharpUnit::process_package(LoadPackage *package)
 			temp_out,
 			temp->get_w(),
 			components);
-		memcpy(temp->get_rows()[i - padded_y1],
+		memcpy(temp->get_row_ptr(i - padded_y1),
 		 	temp_out,
 			temp->get_bytes_per_line());
 	}
