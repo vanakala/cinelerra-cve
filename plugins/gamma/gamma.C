@@ -200,7 +200,7 @@ void GammaUnit::process_package(LoadPackage *package)
 #define GAMMA_HEAD(type) \
 		for(int i = pkg->start; i < pkg->end; i++) \
 		{ \
-			type *row = (type*)data->get_rows()[i]; \
+			type *row = (type*)data->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{
 
