@@ -317,12 +317,12 @@ void OilEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(EQUIV(config.radius, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
+		if(input != output)
 			output->copy_from(input);
 	}
 	else
 	{
-		if(input->get_rows()[0] == output->get_rows()[0])
+		if(input == output)
 		{
 			if(!temp_frame) temp_frame = new VFrame(0,
 				input->get_w(),
@@ -366,7 +366,6 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 	int count[components], count2; \
 	int *hist[components]; \
 	int *hist2; \
-	type **src_rows = (type**)plugin->input->get_rows(); \
  \
 	for(int i = 0; i < components; i++) \
 		hist[i] = new int[hist_size + 1]; \
@@ -374,7 +373,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
  \
 	for(int y1 = pkg->row1; y1 < pkg->row2; y1++) \
 	{ \
-		dest = (type*)plugin->output->get_rows()[y1]; \
+		dest = (type*)plugin->output->get_row_ptr(y1); \
  \
 		if(!plugin->config.use_intensity) \
 		{ \
@@ -394,7 +393,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
  \
 				for(int y2 = y3; y2 < y4; y2++) \
 				{ \
-					src = src_rows[y2]; \
+					src = (type*)plugin->input->get_row_ptr(y2); \
 					for(int x2 = x3; x2 < x4; x2++) \
 					{ \
 						int c; \
@@ -487,7 +486,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
  \
 				for(int y2 = y3; y2 < y4; y2++) \
 				{ \
-					src = src_rows[y2]; \
+					src = (type*)plugin->input->get_row_ptr(y2); \
 					for(int x2 = x3; x2 < x4; x2++) \
 					{ \
 						int c; \
