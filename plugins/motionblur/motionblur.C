@@ -310,7 +310,7 @@ void MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->input = input_ptr;
 	this->output = output_ptr;
 
-	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
+	if(input_ptr == output_ptr)
 	{
 		if(!temp) temp = new VFrame(0,
 			input_ptr->get_w(),
