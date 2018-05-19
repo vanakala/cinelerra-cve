@@ -529,12 +529,11 @@ void AffineUnit::process_package(LoadPackage *package)
 
 #define TRANSFORM(components, type, temp_type, chroma_offset, max) \
 { \
-	type **in_rows = (type**)server->input->get_rows(); \
 	float round_factor = 0.0; \
 	if(sizeof(type) < 4) round_factor = 0.5; \
 	for(int y = ty1; y < ty2; y++) \
 	{ \
-		type *out_row = (type*)server->output->get_rows()[y]; \
+		type *out_row = (type*)server->output->get_row_ptr(y); \
  \
 		if(!interpolate) \
 		{ \
@@ -587,7 +586,7 @@ void AffineUnit::process_package(LoadPackage *package)
 				if(itx >= server->x && itx < server->x + server->w && \
 					ity >= server->y && ity < server->y + server->h) \
 				{ \
-					type *src = in_rows[ity] + itx * components; \
+					type *src = (type*)server->input->get_row_ptr(ity) + itx * components; \
 					*out_row++ = *src++; \
 					*out_row++ = *src++; \
 					*out_row++ = *src++; \
@@ -638,10 +637,10 @@ void AffineUnit::process_package(LoadPackage *package)
 					int col2_offset = col2 * components; \
 					int col3_offset = col3 * components; \
 					int col4_offset = col4 * components; \
-					type *row1_ptr = in_rows[row1]; \
-					type *row2_ptr = in_rows[row2]; \
-					type *row3_ptr = in_rows[row3]; \
-					type *row4_ptr = in_rows[row4]; \
+					type *row1_ptr = (type*)server->input->get_row_ptr(row1); \
+					type *row2_ptr = (type*)server->input->get_row_ptr(row2); \
+					type *row3_ptr = (type*)server->input->get_row_ptr(row3); \
+					type *row4_ptr = (type*)server->input->get_row_ptr(row4); \
 					temp_type r, g, b, a; \
  \
 					if(!alpha_pos) \
@@ -834,13 +833,10 @@ void AffineUnit::process_package(LoadPackage *package)
 // Projection
 #define DO_STRETCH(type, components) \
 { \
-	type **in_rows = (type**)server->input->get_rows(); \
-	type **out_rows = (type**)server->temp->get_rows(); \
- \
 	for(float in_y = pkg->y1; in_y < pkg->y2; in_y += step) \
 	{ \
 		int i = (int)in_y; \
-		type *in_row = in_rows[i]; \
+		type *in_row = (type*)server->input->get_row_ptr(i); \
 		for(float in_x = x_f; in_x < w_f; in_x += step) \
 		{ \
 			int j = (int)in_x; \
@@ -856,7 +852,7 @@ void AffineUnit::process_package(LoadPackage *package)
 				AFFINE_OVERSAMPLE); \
 			CLAMP(out_x, min_x, max_x); \
 			CLAMP(out_y, min_y, max_y); \
-			type *dst = out_rows[out_y] + out_x * components; \
+			type *dst = (type*)server->temp->get_row_ptr(out_y) + out_x * components; \
 			type *src = in_row + j * components; \
 			dst[0] = src[0]; \
 			dst[1] = src[1]; \
