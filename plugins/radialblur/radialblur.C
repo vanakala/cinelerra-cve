@@ -535,8 +535,6 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 #define BLEND_LAYER(COMPONENTS, TYPE, TEMP_TYPE, MAX, DO_YUV) \
 { \
 	int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
-	TYPE **in_rows = (TYPE**)plugin->input->get_rows(); \
-	TYPE **out_rows = (TYPE**)plugin->output->get_rows(); \
 	int steps = plugin->config.steps; \
 	double step = (double)plugin->config.angle / 360 * 2 * M_PI / steps; \
  \
@@ -544,8 +542,8 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 		i < pkg->y2; \
 		i++, out_y++) \
 	{ \
-		TYPE *out_row = out_rows[i]; \
-		TYPE *in_row = in_rows[i]; \
+		TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(i); \
+		TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(i); \
 		int y_square = out_y * out_y; \
  \
 		for(int j = 0, out_x = -center_x; j < w; j++, out_x++) \
@@ -577,23 +575,24 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 /* Polar to input coordinate */ \
 				int in_x = (int)(magnitude * sin(angle)) + center_x; \
 				int in_y = (int)(magnitude * cos(angle)) + center_y; \
+				TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
  \
 /* Accumulate input coordinate */ \
 				if(in_x >= 0 && in_x < w && in_y >= 0 && in_y < h) \
 				{ \
-					accum_r += in_rows[in_y][in_x * COMPONENTS]; \
+					accum_r += in_row[in_x * COMPONENTS]; \
 					if(DO_YUV) \
 					{ \
-						accum_g += (int)in_rows[in_y][in_x * COMPONENTS + 1]; \
-						accum_b += (int)in_rows[in_y][in_x * COMPONENTS + 2]; \
+						accum_g += (int)in_row[in_x * COMPONENTS + 1]; \
+						accum_b += (int)in_row[in_x * COMPONENTS + 2]; \
 					} \
 					else \
 					{ \
-						accum_g += in_rows[in_y][in_x * COMPONENTS + 1]; \
-						accum_b += in_rows[in_y][in_x * COMPONENTS + 2]; \
+						accum_g += in_row[in_x * COMPONENTS + 1]; \
+						accum_b += in_row[in_x * COMPONENTS + 2]; \
 					} \
 					if(COMPONENTS == 4) \
-						accum_a += in_rows[in_y][in_x * COMPONENTS + 3]; \
+						accum_a += in_row[in_x * COMPONENTS + 3]; \
 				} \
 				else \
 				{ \
