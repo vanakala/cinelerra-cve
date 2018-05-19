@@ -314,9 +314,6 @@ void FrameField::process_frame(VFrame *frame)
 		frame->get_w();
 	int start_row;
 
-	unsigned char **src_rows = src_frame->get_rows();
-	unsigned char **output_rows = frame->get_rows();
-
 // Even field
 	if(field_number == 0)
 	{
@@ -325,8 +322,8 @@ void FrameField::process_frame(VFrame *frame)
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy even lines of src to both lines of output
-				memcpy(output_rows[i], 
-					src_rows[i], 
+				memcpy(frame->get_row_ptr(i),
+					src_frame->get_row_ptr(i),
 					row_size);
 			}
 
@@ -338,8 +335,8 @@ void FrameField::process_frame(VFrame *frame)
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy odd lines of current to both lines of output with shift up.
-				memcpy(output_rows[i + 1], 
-					src_rows[i + 1], 
+				memcpy(frame->get_row_ptr(i + 1),
+					src_frame->get_row_ptr(i + 1),
 					row_size);
 			}
 
@@ -355,8 +352,8 @@ void FrameField::process_frame(VFrame *frame)
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy odd lines of src to both lines of output
-				memcpy(output_rows[i + 1], 
-					src_rows[i + 1], 
+				memcpy(frame->get_row_ptr(i + 1),
+					src_frame->get_row_ptr(i + 1),
 					row_size);
 			}
 
@@ -368,8 +365,8 @@ void FrameField::process_frame(VFrame *frame)
 			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy even lines of src to both lines of output.
-				memcpy(output_rows[i], 
-					src_rows[i], 
+				memcpy(frame->get_row_ptr(i),
+					src_frame->get_row_ptr(i),
 					row_size);
 			}
 
@@ -382,15 +379,14 @@ void FrameField::process_frame(VFrame *frame)
 // Averaging 2 pixels
 #define AVERAGE(type, temp_type, components, offset) \
 { \
-	type **rows = (type**)frame->get_rows(); \
 	int w = frame->get_w(); \
 	int h = frame->get_h(); \
 	int row_size = components * w; \
 	for(int i = offset; i < h - 3; i += 2) \
 	{ \
-		type *row1 = rows[i]; \
-		type *row2 = rows[i + 1]; \
-		type *row3 = rows[i + 2]; \
+		type *row1 = (type*)frame->get_row_ptr(i); \
+		type *row2 = (type*)frame->get_row_ptr(i + 1); \
+		type *row3 = (type*)frame->get_row_ptr(i + 2); \
 		for(int j = 0; j < row_size; j++) \
 		{ \
 			temp_type sum = (temp_type)*row1++ + (temp_type)*row3++; \
@@ -402,15 +398,14 @@ void FrameField::process_frame(VFrame *frame)
 // Averaging 6 pixels
 #define AVERAGE_BAK(type, components, offset) \
 { \
-	type **rows = (type**)frame->get_rows(); \
 	int w = frame->get_w(); \
 	int h = frame->get_h(); \
 	int row_size = w; \
 	for(int i = offset; i < h - 3; i += 2) \
 	{ \
-		type *row1 = rows[i]; \
-		type *row2 = rows[i + 1]; \
-		type *row3 = rows[i + 2]; \
+		type *row1 = (type*)frame->get_row_ptr(i); \
+		type *row2 = (type*)frame->get_row_ptr(i + 1); \
+		type *row3 = (type*)frame->get_row_ptr(i + 2); \
 		int64_t sum; \
 		int64_t pixel1[4], pixel2[4], pixel3[4]; \
 		int64_t pixel4[4], pixel5[4], pixel6[4]; \
