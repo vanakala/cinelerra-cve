@@ -134,7 +134,7 @@ void SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		}
 	}
 	else
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+	if(input_ptr != output_ptr)
 	{
 		output_ptr->copy_from(input_ptr);
 	}
@@ -494,16 +494,11 @@ void SharpenEngine::filter(int components,
 { \
 	int count, row; \
 	int wordsize = sizeof(type); \
-	unsigned char **input_rows, **output_rows; \
 	int w = plugin->input->get_w(); \
 	int h = plugin->input->get_h(); \
  \
-	input_rows = input->get_rows(); \
-	output_rows = output->get_rows(); \
-	src_rows[0] = input_rows[field]; \
-	src_rows[1] = input_rows[field]; \
-	src_rows[2] = input_rows[field]; \
-	src_rows[3] = input_rows[field]; \
+	src_rows[0] = src_rows[1] = src_rows[2] = \
+		src_rows[3] = input->get_row_ptr(field); \
  \
 	for(int j = 0; j < w; j++) \
 	{ \
@@ -533,7 +528,7 @@ void SharpenEngine::filter(int components,
 		{ \
 			if(count >= 3) count--; \
 /* Arm next row */ \
-			src_rows[row] = input_rows[i + plugin->row_step]; \
+			src_rows[row] = input->get_row_ptr(i + plugin->row_step); \
 /* Calculate neg rows */ \
 			type *src = (type*)src_rows[row]; \
 			temp_type *neg = (temp_type*)neg_rows[row]; \
@@ -562,7 +557,7 @@ void SharpenEngine::filter(int components,
 			count--; \
 		} \
  \
-		dst_row = output_rows[i]; \
+		dst_row = output->get_row_ptr(i); \
 		if(count == 3) \
 		{ \
 /* Do the filter */ \
