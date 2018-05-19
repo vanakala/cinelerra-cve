@@ -990,8 +990,8 @@ static float calculate_opacity(float mag,
  \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
-		type *gradient_row = (type*)plugin->gradient->get_rows()[i]; \
-		type *out_row = (type*)plugin->get_output()->get_rows()[i]; \
+		type *gradient_row = (type*)plugin->gradient->get_row_ptr(i); \
+		type *out_row = (type*)plugin->get_output()->get_row_ptr(i); \
  \
 		switch(plugin->config.shape) \
 		{ \
