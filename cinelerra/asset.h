@@ -243,8 +243,6 @@ public:
 // for jpeg compression
 	int jpeg_quality;
 
-	int vmpeg_cmodel;
-
 // PNG video compression
 	int png_use_alpha;
 #ifdef HAVE_OPENEXR

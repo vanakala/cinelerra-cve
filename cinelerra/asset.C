@@ -122,8 +122,6 @@ void Asset::init_values()
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
-	vmpeg_cmodel = 0;
-
 	png_use_alpha = 0;
 #ifdef HAVE_OPENEXR
 	exr_use_alpha = 0;
@@ -299,7 +297,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	memcpy(this->programs, asset->programs, sizeof(streams));
 	jpeg_quality = asset->jpeg_quality;
 
-	vmpeg_cmodel = asset->vmpeg_cmodel;
 	png_use_alpha = asset->png_use_alpha;
 #ifdef HAVE_OPENEXR
 	exr_use_alpha = asset->exr_use_alpha;
@@ -974,8 +971,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
 
-	vmpeg_cmodel = GET_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
-
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 #ifdef HAVE_OPENEXR
 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
@@ -1184,7 +1179,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		remove_prefixed_default(defaults, "VMPEG_PRESET", string);
 		remove_prefixed_default(defaults, "VMPEG_FIELD_ORDER", string);
 
-		UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
+		remove_prefixed_default(defaults, "VMPEG_CMODEL", string);
 
 		remove_prefixed_default(defaults, "H264_BITRATE", string);
 		remove_prefixed_default(defaults, "H264_QUANTIZER", string);
