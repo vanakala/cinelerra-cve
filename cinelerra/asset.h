@@ -43,6 +43,8 @@
 #define MAX_LEN_CODECNAME  64
 // Maximum nummber of encoder paramlists
 #define MAX_ENC_PARAMLISTS 16
+// Maximum number of decoder paramlists
+#define MAX_DEC_PARAMLISTS 8
 // Library & Format option lists
 #define ASSET_FMT_IX (MAX_ENC_PARAMLISTS - 1)
 
@@ -96,7 +98,7 @@ public:
 
 	void init_values();
 	void dump(int indent = 0, int options = 0);
-	void dump_parameters(int indent = 0);
+	void dump_parameters(int indent = 0, int decoder = 0);
 
 	void set_audio_stream(int stream);
 	void set_video_stream(int stream);
@@ -262,6 +264,8 @@ public:
 	Paramlist *render_parameters;
 // Universal encoding parameters
 	Paramlist *encoder_parameters[MAX_ENC_PARAMLISTS];
+// Decoding parameters
+	Paramlist *decoder_parameters[MAX_DEC_PARAMLISTS];
 
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain

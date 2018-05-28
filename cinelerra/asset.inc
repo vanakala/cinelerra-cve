@@ -38,4 +38,6 @@ class Asset;
 // bits of dump options
 #define ASSETDUMP_RENDERPTRS    1
 #define ASSETDUMP_RENDERPARAMS  2
+#define ASSETDUMP_DECODERPTRS   4
+#define ASSETDUMP_DECODERPARAMS 8
 #endif

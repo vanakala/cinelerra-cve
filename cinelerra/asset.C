@@ -73,6 +73,8 @@ Asset::~Asset()
 {
 	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 		delete encoder_parameters[i];
+	for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+		delete decoder_parameters[i];
 	delete render_parameters;
 }
 
@@ -131,6 +133,8 @@ void Asset::init_values()
 	tiff_compression = 0;
 
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
+	memset(decoder_parameters, 0, MAX_DEC_PARAMLISTS * sizeof(Paramlist *));
+
 	render_parameters = 0;
 	renderprofile_path[0] = 0;
 
@@ -314,6 +318,14 @@ void Asset::copy_format(Asset *asset, int do_index)
 		{
 			encoder_parameters[i] = new Paramlist(asset->encoder_parameters[i]->name);
 			encoder_parameters[i]->copy_from(asset->encoder_parameters[i]);
+		}
+	}
+	for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+	{
+		if(asset->decoder_parameters[i])
+		{
+			decoder_parameters[i] = new Paramlist(asset->decoder_parameters[i]->name);
+			decoder_parameters[i]->copy_from(asset->decoder_parameters[i]);
 		}
 	}
 	if(asset->render_parameters)
@@ -1388,20 +1400,45 @@ void Asset::dump(int indent, int options)
 		putchar('\n');
 	}
 	if(options & ASSETDUMP_RENDERPARAMS)
-		dump_parameters(indent + 1);
+		dump_parameters(indent + 1, 0);
+
+	if(options & ASSETDUMP_DECODERPTRS)
+	{
+		printf("%*sdecoder parameters:", indent, "");
+		for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+			printf(" %p", decoder_parameters[i]);
+		putchar('\n');
+	}
+	if(options & ASSETDUMP_DECODERPARAMS)
+	{
+		dump_parameters(indent + 1, 1);
+	}
 }
 
-void Asset::dump_parameters(int indent)
+void Asset::dump_parameters(int indent, int decoder)
 {
-	printf("%*sAsset %p parameters dump:\n", indent, "", this);
-	indent++;
+	Paramlist **list;
+	int listmax;
 
-	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
+	printf("%*sAsset %p %s parameters dump:\n", indent, "", this, decoder ? "decoder" : "encoder");
+	indent++;
+	if(decoder)
 	{
-		if(encoder_parameters[i])
+		list = decoder_parameters;
+		listmax = MAX_DEC_PARAMLISTS;
+	}
+	else
+	{
+		list = encoder_parameters;
+		listmax = MAX_ENC_PARAMLISTS;
+	}
+
+	for(int i = 0; i < listmax; i++)
+	{
+		if(list[i])
 		{
 			printf("%*sList %d:\n", indent, "", i);
-			encoder_parameters[i]->dump(indent + 2);
+			list[i]->dump(indent + 2);
 		}
 	}
 	printf("%*sEnd of Asset parameters dump\n", indent -1 , "");
