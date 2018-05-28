@@ -40,6 +40,9 @@
 #define FILEAVLIBS_VPRIVT_IX 5
 #define FILEAVLIBS_METADT_IX 6
 
+// Indexes of encoding parameters in asset
+#define FILEAVLIBS_DFORMAT_IX 0
+
 // Current codecs list in asset
 #define AVL_PARAM_CODEC_AUDIO "audio"
 #define AVL_PARAM_CODEC_VIDEO "video"

@@ -90,6 +90,7 @@ public:
 	static void get_render_defaults(Asset *asset);
 	static void get_format_params(Asset *asset, int options);
 	static void set_format_params(Asset *asset);
+	static void set_decoder_params(Asset *asset, AVFormatContext *ctx);
 	static void save_render_options(Asset *asset);
 	static int update_codeclist(Asset *asset, Paramlist *codecs, int options);
 	static const char *encoder_formatname(int fileformat);

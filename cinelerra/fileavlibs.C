@@ -262,6 +262,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			return 0;
 		}
 		asset->format = streamformat(ctx);
+		set_decoder_params(asset, ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
 			stream = ctx->streams[i];
@@ -2795,6 +2796,25 @@ void FileAVlibs::set_format_params(Asset *asset)
 		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = 0;
 	}
 	asset->encoder_parameters[ASSET_FMT_IX] = 0;
+}
+
+void FileAVlibs::set_decoder_params(Asset *asset, AVFormatContext *ctx)
+{
+	Paramlist *glob, *fmt;
+
+	glob = scan_options(ctx->av_class,
+		SUPPORTS_DECODER, ContainerSelection::container_extension(asset->format));
+
+	if(ctx->iformat)
+	{
+		fmt = scan_options(ctx->iformat->priv_class, SUPPORTS_DECODER,
+			ContainerSelection::container_extension(asset->format));
+		fmt->join_list(glob);
+	}
+	else
+		fmt = glob;
+
+	asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = fmt;
 }
 
 void FileAVlibs::save_render_options(Asset *asset)
