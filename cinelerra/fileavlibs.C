@@ -261,7 +261,6 @@ int FileAVlibs::probe_input(Asset *asset)
 			avlibs_lock->unlock();
 			return 0;
 		}
-
 		asset->format = streamformat(ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
@@ -2958,6 +2957,12 @@ Param *FileAVlibs::opt2param(Paramlist *list, const AVOption *opt)
 	case AV_OPT_TYPE_SAMPLE_FMT:
 		param = list->append_param(opt->name, (int64_t)opt->default_val.i64);
 		break;
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(55, 17, 103)
+	case AV_OPT_TYPE_BOOL:
+		param = list->append_param(opt->name, (int64_t)opt->default_val.i64);
+		param->type |= PARAMTYPE_BOOL;
+		break;
+#endif
 	case AV_OPT_TYPE_DOUBLE:
 	case AV_OPT_TYPE_FLOAT:
 		param = list->append_param(opt->name, opt->default_val.dbl);
@@ -3370,6 +3375,9 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 		break;
 	case AV_OPT_TYPE_INT:
 	case AV_OPT_TYPE_INT64:
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(55, 17, 103)
+	case AV_OPT_TYPE_BOOL:
+#endif
 		printf("%*sdefault %" PRId64 "\n", indent, "", opt->default_val.i64);
 		break;
 	case AV_OPT_TYPE_DOUBLE:
@@ -3443,8 +3451,12 @@ const char *FileAVlibs::dump_AVOptionType(enum AVOptionType type)
 		return "duration";
 	case AV_OPT_TYPE_COLOR:
 		return "color";
-	case  AV_OPT_TYPE_CHANNEL_LAYOUT:
+	case AV_OPT_TYPE_CHANNEL_LAYOUT:
 		return "chnl_layout";
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(55, 17, 103)
+	case AV_OPT_TYPE_BOOL:
+		return "bool";
+#endif
 	}
 	return "Unknown";
 }
