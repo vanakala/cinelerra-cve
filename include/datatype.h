@@ -34,6 +34,8 @@
 #define SUPPORTS_LIBPARA 0x1000
 // Default parameters
 #define SUPPORTS_DEFAULT 0x8000
+// Decoder parameters
+#define SUPPORTS_DECODER 0x10000
 
 // integer media positions
 // number of frame

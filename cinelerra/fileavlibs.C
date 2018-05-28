@@ -2887,12 +2887,17 @@ Paramlist *FileAVlibs::scan_format_options(int format, int options)
 
 Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const char *listname)
 {
-	int typefl = AV_OPT_FLAG_ENCODING_PARAM;
+	int typefl;
 	const AVOption *opt = 0;
 	Param *param;
 	Paramlist *list;
 
 	list = new Paramlist(listname);
+
+	if(options & SUPPORTS_DECODER)
+		typefl = AV_OPT_FLAG_DECODING_PARAM;
+	else
+		typefl = AV_OPT_FLAG_ENCODING_PARAM;
 
 	if(options & SUPPORTS_AUDIO)
 		typefl |= AV_OPT_FLAG_AUDIO_PARAM;
