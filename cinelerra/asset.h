@@ -146,9 +146,6 @@ public:
 	void read_index(FileXML *xml);
 	void reset_index();  // When the index file is wrong, reset the asset values
 
-	void set_timecode(char *tc, int format, int end);
-	void reset_timecode();
-
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if; complete names should be used.
 	void write(FileXML *file, 
@@ -214,14 +211,6 @@ public:
 	int video_streamno; // number of active video stream 1..n
 	int layers;
 	double frame_rate;
-
-// Timecode information. User setable, in case of errors in source
-	char reel_name[BCTEXTLEN];
-	int reel_number;
-	int64_t tcstart;
-	int64_t tcend;
-	int tcformat;
-
 	int width, height;
 // String or FourCC describing compression
 	char vcodec[MAX_LEN_CODECNAME];

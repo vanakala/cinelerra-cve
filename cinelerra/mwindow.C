@@ -834,10 +834,7 @@ void MWindow::set_brender_start()
 
 void MWindow::load_filenames(ArrayList<char*> *filenames, 
 	int load_mode,
-	int update_filename,
-	const char *reel_name,
-	int reel_number,
-	int overwrite_reel)
+	int update_filename)
 {
 SET_TRACE
 	ArrayList<EDL*> new_edls;
@@ -865,22 +862,6 @@ SET_TRACE
 // Set reel name and number for the asset
 // If the user wants to overwrite the last used reel number for the clip,
 // we have to rebuild the index for the file
-
-		if(overwrite_reel)
-		{
-			char source_filename[BCTEXTLEN];
-			char index_filename[BCTEXTLEN];
-
-			strcpy(new_asset->reel_name, reel_name);
-			new_asset->reel_number = reel_number;
-
-			IndexFile::get_index_filename(source_filename,
-				preferences->index_directory,
-				index_filename,
-				new_asset->path, new_asset->audio_streamno - 1);
-			remove(index_filename);
-			new_asset->index_status = INDEX_NOTTESTED;
-		}
 
 		gui->show_message("Loading %s", new_asset->path);
 		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
@@ -1070,10 +1051,6 @@ SET_TRACE
 				new_edl->copy_session(edl);
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
 				test_plugins(new_edl, filenames->values[i]);
-
-// We don't want a valid reel name/number for projects
-				new_asset->reel_name[0] = 0;
-				reel_number = -1;
 
 				if(load_mode == LOADMODE_REPLACE || 
 					load_mode == LOADMODE_REPLACE_CONCATENATE)

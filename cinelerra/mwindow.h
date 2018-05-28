@@ -169,10 +169,7 @@ public:
 		int load_mode = LOADMODE_REPLACE,
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
-		int update_filename = 1,
-		const char *reel_name = "cin0000",
-		int reel_number = 0,
-		int overwrite_reel = 0);
+		int update_filename = 1);
 
 // Print out plugins which are referenced in the EDL but not loaded.
 	void test_plugins(EDL *new_edl, const char *path);

@@ -206,9 +206,7 @@ void VWindow::update_position(int change_type,
 		gui->timebar->update();
 		playback_engine->send_command(CURRENT_FRAME, edl, change_type);
 
-		gui->clock->update(edl->local_session->get_selectionstart(1) +
-			asset->tcstart / 
-			(asset->video_data ? asset->frame_rate : asset->sample_rate));
+		gui->clock->update(edl->local_session->get_selectionstart(1));
 	}
 }
 

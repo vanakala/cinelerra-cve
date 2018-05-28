@@ -61,9 +61,7 @@ void VTracking::update_tracker(ptstime position)
 		edl->local_session->set_selectionend(position);
 		vwindow->gui->slider->update(position);
 
-		vwindow->gui->clock->update(position +
-			asset->tcstart / (asset->video_data ?
-			asset->frame_rate : asset->sample_rate));
+		vwindow->gui->clock->update(position);
 	}
 	vwindow->gui->timebar->update();
 

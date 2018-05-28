@@ -31,9 +31,6 @@
 #include "mwindow.h"
 #include "thread.h"
 
-class AssetEditTCStartTextBox;
-class AssetEditReelNumber;
-class AssetEditReelName;
 class AssetEditByteOrderHILO;
 class AssetEditByteOrderLOHI;
 class AssetEditPath;
@@ -184,42 +181,6 @@ public:
 };
 
 
-class AssetEditReelName : public BC_TextBox
-{
-public:
-	AssetEditReelName(AssetEditWindow *fwindow, int x, int y);
-
-	int handle_event();
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditReelNumber : public BC_TextBox
-{
-public:
-	AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditTCStartTextBox : public BC_TextBox
-{
-public:
-	AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-// Multiplier is the # of frames for whatever unit of time this is.
-// fps dependent, and unit dependent
-	int multiplier;
-	int previous;
-};
-
-
 class AsseteditSelect : public BC_PopupMenu
 {
 public:
@@ -229,4 +190,5 @@ public:
 
 	int *output;
 };
+
 #endif

@@ -404,19 +404,11 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.height = edl->session->output_h;
 		asset.frame_rate = edl->session->frame_rate;
 		asset.interlace_mode = edl->session->interlace_mode;
-		asset.tcstart = round((edl->session->get_frame_offset() +
-			edl->local_session->get_selectionstart()) *
-				edl->session->frame_rate);
-		asset.tcend = round((edl->session->get_frame_offset() +
-			edl->local_session->get_selectionend()) *
-				edl->session->frame_rate);
 	}
 	else
 	{
 		asset.video_data = 0;
 		asset.layers = 0;
-		asset.tcstart = 0;
-		asset.tcend = 0;
 	}
 
 	if(asset.audio_data && 
@@ -427,19 +419,11 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.channels = edl->session->audio_channels;
 		asset.sample_rate = edl->session->sample_rate;
 		if(asset.format == FILE_MOV) asset.byte_order = 0;
-		asset.tcstart = round((edl->session->get_frame_offset() +
-			edl->local_session->get_selectionstart()) *
-				edl->session->sample_rate);
-		asset.tcend = round((edl->session->get_frame_offset() +
-			edl->local_session->get_selectionend()) *
-				edl->session->sample_rate);
 	}
 	else
 	{
 		asset.audio_data = 0;
 		asset.channels = 0;
-		asset.tcstart = 0;
-		asset.tcend = 0;
 	}
 
 	if(!asset.audio_data &&

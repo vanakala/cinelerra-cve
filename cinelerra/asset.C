@@ -145,8 +145,6 @@ void Asset::init_values()
 
 	pipe[0] = 0;
 	use_pipe = 0;
-
-	reset_timecode();
 }
 
 void Asset::reset_index()
@@ -158,15 +156,6 @@ void Asset::reset_index()
 	index_zoom = 0;
 	index_bytes = 0;
 	index_buffer = 0;
-}
-
-void Asset::reset_timecode()
-{
-	strcpy(reel_name, "cin0000");
-	reel_number = 0;
-	tcstart = 0;
-	tcend = 0;
-	tcformat = 0;
 }
 
 void Asset::set_audio_stream(int stream)
@@ -334,11 +323,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 		render_parameters->copy_from(asset->render_parameters);
 	}
 	strcpy(renderprofile_path, asset->renderprofile_path);
-	strcpy(reel_name, asset->reel_name);
-	reel_number = asset->reel_number;
-	tcstart = asset->tcstart;
-	tcend = asset->tcend;
-	tcformat = asset->tcformat;
 }
 
 off_t Asset::get_index_offset(int channel)
@@ -394,12 +378,7 @@ int Asset::equivalent(Asset &asset,
 			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
-			!strcmp(vcodec, asset.vcodec) &&
-			strcmp(reel_name, asset.reel_name) == 0 &&
-			reel_number == asset.reel_number &&
-			tcstart == asset.tcstart &&
-			tcend == asset.tcend &&
-			tcformat == asset.tcformat);
+			!strcmp(vcodec, asset.vcodec));
 	}
 	return result;
 }
@@ -545,13 +524,6 @@ void Asset::read_audio(FileXML *file)
 	current_astream = file->tag.get_property("ASTREAM", 0);
 
 	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
-
-	if(!video_data)
-	{
-		tcstart = 0;
-		tcend = audio_length;
-		tcformat = 0;
-	}
 }
 
 void Asset::read_video(FileXML *file)
@@ -578,12 +550,6 @@ void Asset::read_video(FileXML *file)
 	interlace_fixmethod = InterlaceFixSelection::xml_value(
 		file->tag.get_property("INTERLACE_FIXMETHOD",
 				string));
-
-	file->tag.get_property("REEL_NAME", reel_name);
-	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
-	tcstart = file->tag.get_property("TCSTART", tcstart);
-	tcend = file->tag.get_property("TCEND", tcend);
-	tcformat = file->tag.get_property("TCFORMAT", tcformat);
 }
 
 void Asset::read_index(FileXML *file)
@@ -848,17 +814,6 @@ void Asset::write_video(FileXML *file)
 	file->tag.set_property("INTERLACE_FIXMETHOD",
 		InterlaceFixSelection::xml_text(interlace_fixmethod));
 
-	file->tag.set_property("REEL_NAME", reel_name);
-
-	if(reel_number)
-		file->tag.set_property("REEL_NUMBER", reel_number);
-	if(tcstart)
-		file->tag.set_property("TCSTART", tcstart);
-	if(tcend)
-		file->tag.set_property("TCEND", tcend);
-	if(tcformat)
-		file->tag.set_property("TCFORMAT", tcformat);
-
 	file->append_tag();
 	if(video_data)
 		file->tag.set_title("/VIDEO");
@@ -994,12 +949,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 // this extra 'FORMAT_' prefix is just here for legacy reasons
 	use_pipe = GET_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
 	GET_DEFAULT("FORMAT_YUV_PIPE", pipe);
-
-	GET_DEFAULT("REEL_NAME", reel_name);
-	reel_number = GET_DEFAULT("REEL_NUMBER", reel_number);
-	tcstart = GET_DEFAULT("TCSTART", tcstart);
-	tcend = GET_DEFAULT("TCEND", tcend);
-	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
 }
 
 void Asset::format_changed()
@@ -1061,12 +1010,6 @@ void Asset::load_defaults(Paramlist *list, int options)
 
 	if(options & ASSET_HEADER)
 		use_header = list->get("useheader", use_header);
-
-	list->get("reel_name", reel_name);
-	reel_number = list->get("reel_number", reel_number);
-	tcstart = list->get("tcstart", tcstart);
-	tcend = list->get("tcend", tcend);
-	tcformat = list->get("tcformat", tcformat);
 }
 
 void Asset::save_defaults(Paramlist *list, int options)
@@ -1101,12 +1044,6 @@ void Asset::save_defaults(Paramlist *list, int options)
 
 	if(options & ASSET_HEADER)
 		list->set("useheader", use_header);
-
-	list->set("reel_name", reel_name);
-	list->set("reel_number", reel_number);
-	list->set("tcstart", tcstart);
-	list->set("tcend", tcend);
-	list->set("tcformat", tcformat);
 }
 
 char *Asset::profile_config_path(const char *filename, char *outpath)
@@ -1244,12 +1181,11 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("SIGNED", signed_);
 		UPDATE_DEFAULT("BYTE_ORDER", byte_order);
 	}
-
-	UPDATE_DEFAULT("REEL_NAME", reel_name);
-	UPDATE_DEFAULT("REEL_NUMBER", reel_number);
-	UPDATE_DEFAULT("TCSTART", tcstart);
-	UPDATE_DEFAULT("TCEND", tcend);
-	UPDATE_DEFAULT("TCFORMAT", tcformat);
+	remove_prefixed_default(defaults, "REEL_NAME", string);
+	remove_prefixed_default(defaults, "REEL_NUMBER", string);
+	remove_prefixed_default(defaults, "TCSTART", string);
+	remove_prefixed_default(defaults, "TCEND", string);
+	remove_prefixed_default(defaults, "TCFORMAT", string);
 }
 
 void Asset::update_path(const char *new_path)
@@ -1300,24 +1236,6 @@ void Asset::update_index(Asset *asset)
 	index_buffer = asset->index_buffer;    // pointer
 }
 
-void Asset::set_timecode(char *tc, int format, int end)
-{
-	int hr, min, sec;
-
-	hr = ((int) tc[0] - 48) * 10 + (int) tc[1] - 48;
-	min = ((int) tc[3] - 48) * 10 + (int) tc[4] - 48;
-	sec = ((int) tc[6] - 48) * 10 + (int) tc[7] - 48;
-
-// This needs to be modified to handle drop-frame
-
-	if(end)
-		tcend = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
-	else
-		tcstart = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
-
-	tcformat = format;
-}
-
 void Asset::dump(int indent, int options)
 {
 	int i;
@@ -1348,8 +1266,7 @@ void Asset::dump(int indent, int options)
 		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
 		video_duration, video_length, single_image, use_pipe);
-	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
-		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
+
 	if(nb_streams)
 	{
 		printf("%*s%d streams:\n", indent + 2, "", nb_streams);

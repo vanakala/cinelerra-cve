@@ -88,19 +88,13 @@ void ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *so
 	{
 		// reelname should be 8 chars long
 
-		strncpy(reel_name, asset->reel_name, 9);
-		if (strlen(asset->reel_name) > 8)
-		{
-			errormsg(_("Warning: chopping the reel name to eight characters!"));
-		};
+		strncpy(reel_name, "cin001", 9);
 		reel_name[8] = 0;
 		for (int i = strlen(reel_name); i<8; i++)
 			reel_name[i] = ' ';
 
-		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
-			+ edit->get_source_pts();
-		edit_sourceend = (double)asset->tcstart / asset->frame_rate
-			+ edit->end_pts();
+		edit_sourcestart = edit->get_source_pts();
+		edit_sourceend = edit->end_pts();
 	}
 	else
 	{
