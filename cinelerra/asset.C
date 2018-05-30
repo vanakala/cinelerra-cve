@@ -287,7 +287,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->nb_programs = asset->nb_programs;
 	this->program_id = asset->program_id;
 	memcpy(this->streams, asset->streams, sizeof(streams));
-	memcpy(this->programs, asset->programs, sizeof(streams));
+	memcpy(this->programs, asset->programs, sizeof(programs));
 	jpeg_quality = asset->jpeg_quality;
 
 	png_use_alpha = asset->png_use_alpha;
