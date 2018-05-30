@@ -151,9 +151,9 @@ void Param::set_string(const char *txt)
 {
 	int l;
 
+	type |= PARAMTYPE_STR;
 	if(txt && (l = strlen(txt)))
 	{
-		type |= PARAMTYPE_STR;
 		if(string_allocated && l > string_allocated - 1)
 			delete [] stringvalue;
 		l++;
@@ -163,7 +163,6 @@ void Param::set_string(const char *txt)
 	}
 	else
 	{
-		type &= ~PARAMTYPE_STR;
 		delete [] stringvalue;
 		stringvalue = 0;
 		string_allocated = 0;
