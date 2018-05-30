@@ -262,7 +262,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			return 0;
 		}
 		asset->format = streamformat(ctx);
-		set_decoder_params(asset, ctx);
+		set_decoder_format_params(asset, ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
 			stream = ctx->streams[i];
@@ -299,6 +299,7 @@ int FileAVlibs::probe_input(Asset *asset)
 				asset->streams[asset->nb_streams].bits = av_get_bytes_per_sample(decoder_ctx->sample_fmt) * 8;
 #endif
 				asset->streams[asset->nb_streams].options = STRDSC_AUDIO;
+				asset->streams[asset->nb_streams].decoding_params = get_decoder_params(codec);
 				asset->nb_streams++;
 				break;
 
@@ -330,6 +331,7 @@ int FileAVlibs::probe_input(Asset *asset)
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
+				asset->streams[asset->nb_streams].decoding_params = get_decoder_params(codec);
 				asset->nb_streams++;
 
 				// correct type of image
@@ -2798,7 +2800,7 @@ void FileAVlibs::set_format_params(Asset *asset)
 	asset->encoder_parameters[ASSET_FMT_IX] = 0;
 }
 
-void FileAVlibs::set_decoder_params(Asset *asset, AVFormatContext *ctx)
+void FileAVlibs::set_decoder_format_params(Asset *asset, AVFormatContext *ctx)
 {
 	Paramlist *glob, *fmt;
 
@@ -2815,6 +2817,13 @@ void FileAVlibs::set_decoder_params(Asset *asset, AVFormatContext *ctx)
 		fmt = glob;
 
 	asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = fmt;
+}
+
+Paramlist *FileAVlibs::get_decoder_params(AVCodec *codec)
+{
+	if(codec->priv_class)
+		return scan_options(codec->priv_class, SUPPORTS_DECODER, codec->name);
+	return 0;
 }
 
 void FileAVlibs::save_render_options(Asset *asset)
