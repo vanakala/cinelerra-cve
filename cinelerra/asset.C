@@ -76,6 +76,8 @@ Asset::~Asset()
 	for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
 		delete decoder_parameters[i];
 	delete render_parameters;
+	for(int i = 0; i < MAXCHANNELS; i++)
+		delete streams[i].decoding_params;
 }
 
 void Asset::init_values()
@@ -287,6 +289,14 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->nb_programs = asset->nb_programs;
 	this->program_id = asset->program_id;
 	memcpy(this->streams, asset->streams, sizeof(streams));
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		if(asset->streams[i].decoding_params)
+		{
+			this->streams[i].decoding_params = new Paramlist(asset->streams[i].decoding_params->name);
+			this->streams[i].decoding_params->copy_from(asset->streams[i].decoding_params);
+		}
+	}
 	memcpy(this->programs, asset->programs, sizeof(programs));
 	jpeg_quality = asset->jpeg_quality;
 
@@ -1274,7 +1284,7 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls: %d rate: %d  bits: %d samples %" PRId64 " codec '%s'\n",
+				printf("%*s%d. Audio %.2f..%.2f chnls: %d rate: %d  bits: %d samples %" PRId64 " codec '%s'",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
@@ -1282,13 +1292,20 @@ void Asset::dump(int indent, int options)
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  SAR: %.2f frames: %" PRId64 " codec '%s'\n",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  SAR: %.2f frames: %" PRId64 " codec '%s'",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
 					streams[i].frame_rate, streams[i].sample_aspect_ratio,
 					streams[i].length, streams[i].codec);
 			}
+			if(streams[i].decoding_params)
+			{
+				printf(" decoding_params: %p\n", streams[i].decoding_params);
+				if(options & ASSETDUMP_DECODERPARAMS)
+					streams[i].decoding_params->dump(indent + 5);
+			}
+			putchar('\n');
 		}
 	}
 	if(nb_programs)

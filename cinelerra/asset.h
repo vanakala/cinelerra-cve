@@ -62,6 +62,7 @@ struct streamdesc
 	double frame_rate;
 	double sample_aspect_ratio;
 	int options;
+	Paramlist *decoding_params;
 	char codec[MAX_LEN_CODECNAME];
 };
 
