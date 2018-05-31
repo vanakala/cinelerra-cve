@@ -63,7 +63,9 @@ struct streamdesc
 	double sample_aspect_ratio;
 	int options;
 	Paramlist *decoding_params;
-	char codec[MAX_LEN_CODECNAME];
+	char codec[MAX_LEN_CODECNAME]; // codecname
+	char samplefmt[MAX_LEN_CODECNAME]; // audio or video sample format
+	char layout[MAX_LEN_CODECNAME]; // audio layout
 };
 
 struct progdesc

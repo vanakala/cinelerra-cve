@@ -1284,20 +1284,22 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls: %d rate: %d  bits: %d samples %" PRId64 " codec '%s'",
+				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d samples:%" PRId64 " codec:'%s' '%s' '%s'",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
-					streams[i].bits, streams[i].length, streams[i].codec);
+					streams[i].bits, streams[i].length, streams[i].codec,
+					streams[i].samplefmt, streams[i].layout);
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  SAR: %.2f frames: %" PRId64 " codec '%s'",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " codec:'%s' '%s'",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
 					streams[i].frame_rate, streams[i].sample_aspect_ratio,
-					streams[i].length, streams[i].codec);
+					streams[i].length, streams[i].codec,
+					streams[i].samplefmt);
 			}
 			if(streams[i].decoding_params)
 			{
