@@ -297,9 +297,21 @@ int FileAVlibs::probe_input(Asset *asset)
 				asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				asset->streams[asset->nb_streams].bits = av_get_bytes_per_sample(decoder_ctx->sample_fmt) * 8;
+				strncpy(asset->streams[asset->nb_streams].samplefmt,
+					av_get_sample_fmt_name(decoder_ctx->sample_fmt), MAX_LEN_CODECNAME - 1);
+				av_get_channel_layout_string(asset->streams[asset->nb_streams].layout, MAX_LEN_CODECNAME,
+					decoder_ctx->channels, decoder_ctx->channel_layout);
+#else
+				asset->streams[asset->nb_streams].bits = av_get_bytes_per_sample((AVSampleFormat)stream->codecpar->format) * 8;
+				strncpy(asset->streams[asset->nb_streams].samplefmt,
+					av_get_sample_fmt_name((AVSampleFormat)stream->codecpar->format), MAX_LEN_CODECNAME - 1);
+				av_get_channel_layout_string(asset->streams[asset->nb_streams].layout, MAX_LEN_CODECNAME,
+					stream->codecpar->channels, stream->codecpar->channel_layout);
 #endif
 				asset->streams[asset->nb_streams].options = STRDSC_AUDIO;
 				asset->streams[asset->nb_streams].decoding_params = get_decoder_params(codec);
+				asset->streams[asset->nb_streams].samplefmt[MAX_LEN_CODECNAME - 1] = 0;
+				asset->streams[asset->nb_streams].layout[MAX_LEN_CODECNAME - 1] = 0;
 				asset->nb_streams++;
 				break;
 
@@ -311,13 +323,18 @@ int FileAVlibs::probe_input(Asset *asset)
 				if(decoder_ctx->sample_aspect_ratio.den)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(decoder_ctx->sample_aspect_ratio);
+				strncpy(asset->streams[asset->nb_streams].samplefmt,
+					av_get_pix_fmt_name(decoder_ctx->pix_fmt), MAX_LEN_CODECNAME);
 #else
 				asset->streams[asset->nb_streams].width = stream->codecpar->width;
 				asset->streams[asset->nb_streams].height = stream->codecpar->height;
 				if(stream->codecpar->sample_aspect_ratio.den)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(stream->codecpar->sample_aspect_ratio);
+				strncpy(asset->streams[asset->nb_streams].samplefmt,
+					av_get_pix_fmt_name((AVPixelFormat)stream->codecpar->format), MAX_LEN_CODECNAME);
 #endif
+				asset->streams[asset->nb_streams].samplefmt[MAX_LEN_CODECNAME -1] = 0;
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
 				if(stream->avg_frame_rate.den && stream->avg_frame_rate.num)
 					usable_fr = stream->avg_frame_rate;
