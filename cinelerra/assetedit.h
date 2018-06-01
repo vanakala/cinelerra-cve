@@ -31,8 +31,6 @@
 #include "mwindow.h"
 #include "thread.h"
 
-class AssetEditByteOrderHILO;
-class AssetEditByteOrderLOHI;
 class AssetEditPath;
 class AssetEditPathText;
 class AssetEditWindow;
@@ -63,11 +61,7 @@ public:
 	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit);
 
 	Asset *asset;
-	AssetEditPathText *path_text;
 	AssetEditPath *path_button;
-	AssetEditByteOrderHILO *hilo;
-	AssetEditByteOrderLOHI *lohi;
-	int allow_edits;
 	MWindow *mwindow;
 	AssetEdit *asset_edit;
 	AssetInterlaceMode *ilacemode_selection;
@@ -81,10 +75,11 @@ public:
 	AssetEditPath(MWindow *mwindow, 
 		AssetEditWindow *fwindow, 
 		BC_TextBox *textbox, 
+		int x,
 		int y, 
 		const char *text, 
-		const char *window_title = _(PROGRAM_NAME " Path"), 
-		const char *window_caption = _("Select a file"));
+		const char *window_title,
+		const char *window_caption);
 
 	AssetEditWindow *fwindow;
 };
@@ -93,18 +88,7 @@ public:
 class AssetEditPathText : public BC_TextBox
 {
 public:
-	AssetEditPathText(AssetEditWindow *fwindow, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditChannels : public BC_TumbleTextBox
-{
-public:
-	AssetEditChannels(AssetEditWindow *fwindow, char *text, int x, int y);
+	AssetEditPathText(AssetEditWindow *fwindow, int x, int y, int w);
 
 	int handle_event();
 
@@ -134,61 +118,6 @@ public:
 	int handle_event();
 
 	Interlaceautofix *autofix;
-};
-
-
-class AssetEditHeader : public BC_TextBox
-{
-public:
-	AssetEditHeader(AssetEditWindow *fwindow, char *text, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditByteOrderLOHI : public BC_Radial
-{
-public:
-	AssetEditByteOrderLOHI(AssetEditWindow *fwindow, int value, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditByteOrderHILO : public BC_Radial
-{
-public:
-	AssetEditByteOrderHILO(AssetEditWindow *fwindow, int value, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditSigned : public BC_CheckBox
-{
-public:
-	AssetEditSigned(AssetEditWindow *fwindow, int value, int x, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AsseteditSelect : public BC_PopupMenu
-{
-public:
-	AsseteditSelect(int x, int y, const char *text, int *output);
-
-	int handle_event();
-
-	int *output;
 };
 
 #endif

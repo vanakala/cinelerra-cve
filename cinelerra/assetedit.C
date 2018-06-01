@@ -139,261 +139,255 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
 	400, 
-	680,
+	720,
 	400,
 	560,
 	0,
 	0,
 	1)
 {
-	int y = 10, x = 10, x1 = 10, x2 = 160;
+	int y;
+	int x0 = 10, x1 = 20, x2 = 170;
 	char string[BCTEXTLEN];
-	int vmargin;
-	int hmargin1 = 180, hmargin2 = 290;
-	BC_Title *title;
-	BC_TextBox  *textboxw;
-	BC_CheckBox *chkboxw;
-	BC_ListBox  *listboxw;
 	Interlaceautofix *ilacefixoption_chkboxw;
+	AssetEditPathText *path_text;
+	BC_WindowBase *win;
+	int numaudio, numvideo;
+	int strnum;
+	int have_bar = 0;
 
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
 	this->asset = asset_edit->new_asset;
 
-	if(asset->format == FILE_PCM)
-	{
-		allow_edits = 1;
-		vmargin = 30;
-	}
-	else
-	{
-		allow_edits = 0;
-		vmargin = 20;
-	}
-
 	set_icon(mwindow->theme->get_image("awindow_icon"));
-	add_subwindow(path_text = new AssetEditPathText(this, y));
-	add_subwindow(path_button = new AssetEditPath(mwindow, 
+	add_subwindow(path_text = new AssetEditPathText(this, x0, y, 300));
+	win = add_subwindow(new AssetEditPath(mwindow,
 		this, 
-		path_text, 
-		y, 
+		path_text,
+		x0 + path_text->get_w() + 5, y,
 		asset->path, 
 		MWindow::create_title(N_("Asset path")), _("Select a file for this asset:")));
-	y += 30;
+	y += win->get_h() + 5;
 
-	add_subwindow(new BC_Title(x, y, _("File format:")));
-	x = x2;
-	add_subwindow(new BC_Title(x, y, _(ContainerSelection::container_to_text(asset->format)),
+	add_subwindow(new BC_Title(x1, y, _("File format:")));
+	win = add_subwindow(new BC_Title(x2, y, _(ContainerSelection::container_to_text(asset->format)),
 		MEDIUMFONT, mwindow->theme->edit_font_color));
-	x = x1;
-	y += 20;
+	y += win->get_h() + 5;
 
-	add_subwindow(new BC_Title(x, y, _("Bytes:")));
+	add_subwindow(new BC_Title(x1, y, _("Bytes:")));
 	sprintf(string, "%" PRId64, asset->file_length);
 	Units::punctuate(string);
 
-	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-	y += 20;
-	x = x1;
+	win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+	y += win->get_h() + 5;
 
-	ptstime length;
-	if(asset->audio_length > 0)
-		length = (ptstime)asset->audio_length / asset->sample_rate;
-	if(asset->video_length > 0)
-		length = MAX(length, (ptstime)asset->video_length / asset->frame_rate);
-	uintmax_t bitrate;
-	if(!EQUIV(length, 0))
-		bitrate = asset->file_length / length * 8;
-	else
-		bitrate = asset->file_length;
-	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
-	sprintf(string, "%jd", bitrate);
-
-	Units::punctuate(string);
-	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-
-	y += 30;
-	x = x1;
-
-	if(asset->audio_data)
+	numaudio = numvideo = 0;
+	if(!asset->single_image)
 	{
-		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
-		y += 5;
+		ptstime l, length = 0;
+		uintmax_t bitrate;
 
-		add_subwindow(new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
-
-		y += 30;
-
-		if(asset->acodec[0])
+		for(int i = 0; i < asset->nb_streams; i++)
 		{
-			add_subwindow(new BC_Title(x, y, _("Codec:")));
-			x = x2;
-			add_subwindow(new BC_Title(x, 
-				y, 
-				asset->acodec,
-				MEDIUMFONT, 
-				mwindow->theme->edit_font_color));
-			y += vmargin;
-			x = x1;
+			if(asset->streams[i].options & STRDSC_AUDIO)
+				numaudio++;
+			if(asset->streams[i].options & STRDSC_VIDEO)
+				numvideo++;
+			l = asset->streams[i].end - asset->streams[i].start;
+			if(length < l)
+				length = l;
 		}
-
-		add_subwindow(new BC_Title(x, y, _("Channels:")));
-		sprintf(string, "%d", asset->channels);
-
-		x = x2;
-		if(allow_edits)
+		if(length > 0)
 		{
-			BC_TumbleTextBox *textbox = new AssetEditChannels(this, string, x, y);
-			y += vmargin;
+			bitrate = asset->file_length / length * 8;
+			add_subwindow(new BC_Title(x1, y, _("Bitrate (bits/sec):")));
+			sprintf(string, "%jd", bitrate);
+			Units::punctuate(string);
+			win = add_subwindow(new BC_Title(x2, y, string,
+				MEDIUMFONT, mwindow->theme->edit_font_color));
+			y += win->get_h() + 5;
 		}
-		else
+	}
+	y += 2;
+
+	have_bar = 0;
+	strnum = 0;
+	for(int i = 0; i < asset->nb_streams; i++)
+	{
+		ptstime l;
+
+		if(asset->streams[i].options & STRDSC_AUDIO)
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-			y += 20;
-		}
-
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Sample rate:")));
-		sprintf(string, "%d", asset->sample_rate);
-
-		x = x2;
-
-		BC_TextBox *textbox;
-		add_subwindow(textbox = new SampleRateSelection(x, y, this,
-			&asset->sample_rate));
-		textbox->update(asset->sample_rate);
-		y += 30;
-		x = x1;
-		if(asset->astreams)
-		{
-			add_subwindow(new BC_Title(x, y, _("Audio stream:")));
-			sprintf(string, "%3d (%d)",
-				asset->current_astream, 
-				asset->astream_channels[asset->current_astream]);
-			if(asset->astreams > 1)
+			if(!have_bar)
 			{
-				int i;
-				AsseteditSelect *sel;
-				add_subwindow(sel = new AsseteditSelect(x2, y, string, &asset->current_astream));
-				for(i = 0; i < asset->astreams; i++){
-					sprintf(string, "%3d (%d)", i, asset->astream_channels[i]);
-					sel->add_item(new BC_MenuItem(string));
-				}
-				y += 30;
+				add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
+				y += 7;
+				win = add_subwindow(new BC_Title(x0, y, _("Audio:"),
+					LARGEFONT, RED));
+				y += win->get_h() + 5;
+				have_bar = 1;
 			}
-			else
+
+			if(numaudio > 1)
 			{
-				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-				y += 20;
+				sprintf(string, _("%d. stream:"), ++strnum);
+				win = add_subwindow(new BC_Title(x0, y, string));
+				y += win->get_h() + 5;
+			}
+
+			if(asset->streams[i].codec[0])
+			{
+				add_subwindow(new BC_Title(x1, y, _("Codec:")));
+				win = add_subwindow(new BC_Title(x2, y,
+					asset->streams[i].codec,
+					MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+
+			if(asset->streams[i].channels)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Channels:")));
+				sprintf(string, "%d", asset->channels);
+				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+
+			if(asset->streams[i].layout[0])
+			{
+				add_subwindow(new BC_Title(x1, y, _("Layout:")));
+				win = add_subwindow(new BC_Title(x2, y,
+					asset->streams[i].layout,
+					MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+
+			if(asset->streams[i].sample_rate)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Sample rate:")));
+				sprintf(string, "%d", asset->streams[i].sample_rate);
+				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+
+			if(asset->streams[i].samplefmt[0])
+			{
+				add_subwindow(new BC_Title(x1, y, _("Sample format:")));
+				win = add_subwindow(new BC_Title(x2, y,
+					asset->streams[i].samplefmt,
+					MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+
+			if(l = asset->streams[i].end - asset->streams[i].start)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Length (sec):")));
+				sprintf(string, "%.2f", l);
+				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
 			}
 		}
+	}
+	y += 2;
 
-		x = x1;
-		if(allow_edits)  // pcm-file
+	strnum = 0;
+	have_bar = 0;
+	for(int i = 0; i < asset->nb_streams; i++)
+	{
+		ptstime l;
+
+		if(asset->streams[i].options & STRDSC_VIDEO)
 		{
-			add_subwindow(new BC_Title(x, y, _("Bits:")));
-			x = x2;
+			if(!have_bar)
+			{
+				add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
+				y += 7;
+				win = add_subwindow(new BC_Title(x0, y, _("Video:"),
+					LARGEFONT, RED));
+				y += win->get_h() + 5;
+				have_bar = 1;
+			}
 
-			SampleBitsSelection *bitspopup;
-			add_subwindow(bitspopup = new SampleBitsSelection(x, y, this,
-				&asset->bits,
-				SBITS_LINEAR| SBITS_ULAW | SBITS_ADPCM | SBITS_IMA4));
-			bitspopup->update_size(asset->bits);
+			if(numvideo > 1)
+			{
+				sprintf(string, _("%d. stream:"), ++strnum);
+				win = add_subwindow(new BC_Title(x0, y, string));
+				y += win->get_h() + 5;
+			}
 
-			x = x1;
-			y += vmargin;
-			add_subwindow(new BC_Title(x, y, _("Header length:")));
-			sprintf(string, "%d", asset->header);
+			if(asset->streams[i].codec[0])
+			{
+				add_subwindow(new BC_Title(x1, y, _("Codec:")));
+				win = add_subwindow(new BC_Title(x2, y,
+					asset->streams[i].codec,
+					MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
+			if(asset->streams[i].frame_rate)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Frame rate:")));
+				sprintf(string, "%.2f", asset->streams[i].frame_rate);
+				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
 
-			x = x2;
+			if(asset->streams[i].width && asset->streams[i].height)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Size:")));
+				sprintf(string, "%d x %d", asset->width, asset->height);
+				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
 
-			add_subwindow(new AssetEditHeader(this, string, x, y));
+			if(asset->streams[i].samplefmt[0])
+			{
+				add_subwindow(new BC_Title(x1, y, _("Sample format:")));
+				win = add_subwindow(new BC_Title(x2, y,
+					asset->streams[i].samplefmt,
+					MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
 
-			y += vmargin;
-			x = x1;
+			if(asset->streams[i].sample_aspect_ratio > 0)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
+				sprintf(string, "%2.3f", asset->streams[i].sample_aspect_ratio *
+					asset->streams[i].width / asset->streams[i].height);
+				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
 
-			add_subwindow(new BC_Title(x, y, _("Byte order:")));
-
-			x = x2;
-
-			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
-				asset->byte_order, 
-				x, 
-				y));
-			x += 70;
-			add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
-				!asset->byte_order, 
-				x, 
-				y));
-			y += vmargin;
-
-			x = x1;
-			add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
-			y += 30;
+			if(l = asset->streams[i].end - asset->streams[i].start)
+			{
+				add_subwindow(new BC_Title(x1, y, _("Length (sec):")));
+				sprintf(string, "%.2f", l);
+				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+					mwindow->theme->edit_font_color));
+				y += win->get_h() + 5;
+			}
 		}
 	}
 
-	x = x1;
-	if(asset->video_data)
-	{
-		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
-		y += 5;
-
-		add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
-
-
-		y += 30;
-		x = x1;
-		if(asset->vcodec[0])
-		{
-			add_subwindow(new BC_Title(x, y, _("Codec:")));
-			x = x2;
-			add_subwindow(new BC_Title(x, 
-				y, 
-				asset->vcodec,
-				MEDIUMFONT, 
-				mwindow->theme->edit_font_color));
-			y += vmargin;
-			x = x1;
-		}
-
-		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
-		x = x2;
-
-		sprintf(string, "%.2f", asset->frame_rate);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-
-		y += 30;
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Size:")));
-		x = x2;
-		sprintf(string, "%d x %d", asset->width, asset->height);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-
-		y += vmargin;
-		if(asset->sample_aspect_ratio > 0)
-		{
-			x = x1;
-			add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
-			x = x2;
-			sprintf(string, "%2.3f", asset->sample_aspect_ratio * asset->width / asset->height);
-			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-			y += title->get_h() + 5;
-		}
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Length:")));
-		x = x2;
-		sprintf(string, "%d", asset->video_length);
-		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-		y += title->get_h() + 5;
-
 // --------------------
-		add_subwindow(title = new BC_Title(x1, y, _("Fix interlacing:")));
-		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow,this, x2, y));
+	if(numvideo)
+	{
+		add_subwindow(new BC_Title(x1, y, _("Fix interlacing:")));
+		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow, this, x2, y));
 		y += ilacefixoption_chkboxw->get_h() + 5;
 
 // --------------------
-		add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
+		add_subwindow(new BC_Title(x1, y, _("Asset's interlacing:")));
 		add_subwindow(ilacemode_selection = new AssetInterlaceMode(x2, y,
 			this, &asset->interlace_mode));
 		ilacemode_selection->update(asset->interlace_mode);
@@ -401,7 +395,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		y += ilacemode_selection->get_h() + 5;
 
 // --------------------
-		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
+		add_subwindow(new BC_Title(x1, y, _("Interlace correction:")));
 		add_subwindow(ilacefix_selection = new InterlaceFixSelection(x2, y,
 			this, &asset->interlace_fixmethod));
 		ilacefixoption_chkboxw->showhideotherwidgets();
@@ -415,30 +409,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 }
 
 
-AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow, 
-	char *text, 
-	int x,
-	int y)
- : BC_TumbleTextBox(fwindow, 
-		(int)atol(text),
-		(int)1,
-		(int)MAXCHANNELS,
-		x, 
-		y, 
-		50)
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditChannels::handle_event()
-{
-	fwindow->asset->channels = atol(get_text());
-	return 1;
-}
-
-
 Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
- : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically Fix Interlacing"))
+ : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically"))
 {
 	this->fwindow = fwindow;
 	this->mwindow = mwindow;
@@ -485,74 +457,8 @@ int AssetInterlaceMode::handle_event()
 	return result;
 }
 
-
-AssetEditHeader::AssetEditHeader(AssetEditWindow *fwindow, char *text, int x, int y)
- : BC_TextBox(x, y, 100, 1, text)
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditHeader::handle_event()
-{
-	fwindow->asset->header = atol(get_text());
-	return 1;
-}
-
-
-AssetEditByteOrderLOHI::AssetEditByteOrderLOHI(AssetEditWindow *fwindow, 
-	int value, 
-	int x,
-	int y)
- : BC_Radial(x, y, value, _("Lo-Hi"))
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditByteOrderLOHI::handle_event()
-{
-	fwindow->asset->byte_order = 1;
-	fwindow->hilo->update(0);
-	update(1);
-	return 1;
-}
-
-
-AssetEditByteOrderHILO::AssetEditByteOrderHILO(AssetEditWindow *fwindow, 
-	int value, 
-	int x, 
-	int y)
- : BC_Radial(x, y, value, _("Hi-Lo"))
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditByteOrderHILO::handle_event()
-{
-	fwindow->asset->byte_order = 0;
-	fwindow->lohi->update(0);
-	update(1);
-	return 1;
-}
-
-
-AssetEditSigned::AssetEditSigned(AssetEditWindow *fwindow, 
-	int value, 
-	int x, 
-	int y)
- : BC_CheckBox(x, y, value, _("Values are signed"))
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditSigned::handle_event()
-{
-	fwindow->asset->signed_ = get_value();
-	return 1;
-}
-
-
-AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int y)
- : BC_TextBox(5, y, 300, 1, fwindow->asset->path) 
+AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, fwindow->asset->path)
 {
 	this->fwindow = fwindow; 
 }
@@ -564,27 +470,9 @@ int AssetEditPathText::handle_event()
 }
 
 AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
-	BC_TextBox *textbox, int y, const char *text,
+	BC_TextBox *textbox, int x, int y, const char *text,
 	const char *window_title, const char *window_caption)
- : BrowseButton(mwindow, fwindow, textbox, 310, y, text, window_title, window_caption, 0) 
+ : BrowseButton(mwindow, fwindow, textbox, x, y, text, window_title, window_caption, 0)
 { 
 	this->fwindow = fwindow; 
-}
-
-
-AsseteditSelect::AsseteditSelect(int x, int y, 
-	const char *text, int *output)
- : BC_PopupMenu(x, y, 100, text)
-{
-	this->output = output;
-}
-
-int AsseteditSelect::handle_event()
-{
-	char *text = get_text();
-	if(*text == '-')
-		*output = -1;
-	else
-		*output = atol(get_text());
-	return 1;
 }
