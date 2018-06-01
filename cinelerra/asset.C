@@ -88,9 +88,6 @@ void Asset::init_values()
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
 	channels = 0;
-	astreams = 0;
-	current_astream = 0;
-	memset(astream_channels, 0, sizeof(astream_channels));
 	memset(streams, 0, sizeof(streams));
 	memset(programs, 0, sizeof(programs));
 	nb_streams = 0;
@@ -256,9 +253,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	audio_streamno = asset->audio_streamno;
 	format = asset->format;
 	channels = asset->channels;
-	astreams = asset->astreams;
-	current_astream = asset->current_astream;
-	memcpy(astream_channels, asset->astream_channels, sizeof(astream_channels));
 	sample_rate = asset->sample_rate;
 	bits = asset->bits;
 	byte_order = asset->byte_order;
@@ -375,7 +369,6 @@ int Asset::equivalent(Asset &asset,
 			signed_ == asset.signed_ && 
 			header == asset.header && 
 			dither == asset.dither &&
-			current_astream == asset.current_astream &&
 			!strcmp(acodec, asset.acodec));
 	}
 
@@ -531,7 +524,6 @@ void Asset::read_audio(FileXML *file)
 	signed_ = file->tag.get_property("SIGNED", 1);
 	header = file->tag.get_property("HEADER", 0);
 	dither = file->tag.get_property("DITHER", 0);
-	current_astream = file->tag.get_property("ASTREAM", 0);
 
 	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
 }
@@ -792,8 +784,6 @@ void Asset::write_audio(FileXML *file)
 	if(dither)
 		file->tag.set_property("DITHER", dither);
 	file->tag.set_property("AUDIO_LENGTH", audio_length);
-	if(current_astream)
-		file->tag.set_property("ASTREAM", current_astream);
 
 	file->append_tag();
 	if(audio_data)
@@ -1258,14 +1248,6 @@ void Asset::dump(int indent, int options)
 		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, audio_streamno, channels, sample_rate, bits, byte_order);
-	printf("%*s  no of streams: %d, current %d", indent, "", astreams, current_astream);
-	if(astreams)
-	{
-		fputs(", channels", stdout);
-		for(i = 0; i < astreams; i++)
-			printf(" %d", astream_channels[i]);
-	}
-	putchar('\n');
 	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",
 		signed_, header, dither, acodec, audio_duration, audio_length);
 

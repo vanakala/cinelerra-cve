@@ -200,9 +200,6 @@ public:
 	int signed_;
 	int header;
 	int dither;
-	int current_astream;
-	int astreams;
-	int astream_channels[MAX_ASTREAMS];
 // String or FourCC describing compression
 	char acodec[MAX_LEN_CODECNAME];
 
