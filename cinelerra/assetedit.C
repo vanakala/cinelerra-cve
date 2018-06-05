@@ -25,6 +25,7 @@
 #include "awindowgui.h"
 #include "bcbar.h"
 #include "bcprogressbox.h"
+#include "bcresources.h"
 #include "bctitle.h"
 #include "cache.h"
 #include "cinelerra.h"
@@ -137,24 +138,30 @@ void AssetEdit::run()
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(MWindow::create_title(N_("Asset Info")),
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
-	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
-	400, 
-	720,
+	mwindow->gui->get_abs_cursor_y(1) - 400 / 2,
 	400,
-	560,
-	0,
+	400,
+	400,
+	400,
+	1,
 	0,
 	1)
 {
-	int y;
+	int y = 10;
 	int x0 = 10, x1 = 20, x2 = 170;
 	char string[BCTEXTLEN];
 	Interlaceautofix *ilacefixoption_chkboxw;
 	AssetEditPathText *path_text;
 	BC_WindowBase *win;
 	int numaudio, numvideo;
-	int strnum;
-	int have_bar = 0;
+	AssetInfoWindow *aiwin[MAXCHANNELS];
+	AssetInfoWindow *viwin[MAXCHANNELS];
+	BC_WindowBase *audiobar, *videobar;
+	int winw = get_w();
+	int win_x = get_x();
+	int win_y = get_y();
+	ptstime l, length = 0;
+	uintmax_t bitrate;
 
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
@@ -183,200 +190,85 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	y += win->get_h() + 5;
 
 	numaudio = numvideo = 0;
-	if(!asset->single_image)
-	{
-		ptstime l, length = 0;
-		uintmax_t bitrate;
 
-		for(int i = 0; i < asset->nb_streams; i++)
+	for(int i = 0; i < asset->last_active; i++)
+	{
+		if(asset->active_streams[i]->options & STRDSC_AUDIO)
 		{
-			if(asset->streams[i].options & STRDSC_AUDIO)
-				numaudio++;
-			if(asset->streams[i].options & STRDSC_VIDEO)
-				numvideo++;
-			l = asset->streams[i].end - asset->streams[i].start;
-			if(length < l)
-				length = l;
+			add_subwindow(aiwin[numaudio] =
+				new AudioInfoWindow(asset->active_streams[i],
+				mwindow->theme->edit_font_color));
+			numaudio++;
 		}
-		if(length > 0)
+		if(asset->active_streams[i]->options & STRDSC_VIDEO)
 		{
-			bitrate = asset->file_length / length * 8;
-			add_subwindow(new BC_Title(x1, y, _("Bitrate (bits/sec):")));
-			sprintf(string, "%jd", bitrate);
-			Units::punctuate(string);
-			win = add_subwindow(new BC_Title(x2, y, string,
-				MEDIUMFONT, mwindow->theme->edit_font_color));
+			add_subwindow(viwin[numvideo] =
+				new VideoInfoWindow(asset->active_streams[i],
+				mwindow->theme->edit_font_color));
+			numvideo++;
+		}
+		l = asset->active_streams[i]->end - asset->active_streams[i]->start;
+		if(length < l)
+			length = l;
+	}
+	if(!asset->single_image && length > 0)
+	{
+		bitrate = asset->file_length / length * 8;
+		add_subwindow(new BC_Title(x1, y, _("Bitrate (bits/sec):")));
+		sprintf(string, "%jd", bitrate);
+		Units::punctuate(string);
+		win = add_subwindow(new BC_Title(x2, y, string,
+			MEDIUMFONT, mwindow->theme->edit_font_color));
+		y += win->get_h() + 5;
+	}
+	y += 2;
+
+	audiobar = videobar = 0;
+
+	if(numaudio)
+	{
+		audiobar = add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
+		y += 7;
+		win = add_subwindow(new BC_Title(x0, y, _("Audio:"),
+			LARGEFONT, RED));
 			y += win->get_h() + 5;
-		}
-	}
-	y += 2;
-
-	have_bar = 0;
-	strnum = 0;
-	for(int i = 0; i < asset->nb_streams; i++)
-	{
-		ptstime l;
-
-		if(asset->streams[i].options & STRDSC_AUDIO)
+		int swx = x1;
+		int swh = 0;
+		for(int i = 0; i < numaudio; i++)
 		{
-			if(!have_bar)
-			{
-				add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
-				y += 7;
-				win = add_subwindow(new BC_Title(x0, y, _("Audio:"),
-					LARGEFONT, RED));
-				y += win->get_h() + 5;
-				have_bar = 1;
-			}
-
-			if(numaudio > 1)
-			{
-				sprintf(string, _("%d. stream:"), ++strnum);
-				win = add_subwindow(new BC_Title(x0, y, string));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].codec[0])
-			{
-				add_subwindow(new BC_Title(x1, y, _("Codec:")));
-				win = add_subwindow(new BC_Title(x2, y,
-					asset->streams[i].codec,
-					MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].channels)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Channels:")));
-				sprintf(string, "%d", asset->channels);
-				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].layout[0])
-			{
-				add_subwindow(new BC_Title(x1, y, _("Layout:")));
-				win = add_subwindow(new BC_Title(x2, y,
-					asset->streams[i].layout,
-					MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].sample_rate)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Sample rate:")));
-				sprintf(string, "%d", asset->streams[i].sample_rate);
-				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].samplefmt[0])
-			{
-				add_subwindow(new BC_Title(x1, y, _("Sample format:")));
-				win = add_subwindow(new BC_Title(x2, y,
-					asset->streams[i].samplefmt,
-					MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(l = asset->streams[i].end - asset->streams[i].start)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Length (sec):")));
-				sprintf(string, "%.2f", l);
-				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
+			aiwin[i]->draw_window();
+			aiwin[i]->reposition_window(swx, y,
+				aiwin[i]->width, aiwin[i]->height);
+			if(aiwin[i]->height > swh)
+				swh = aiwin[i]->height;
+			swx += aiwin[i]->width + 10;
 		}
+		if(winw < swx)
+			winw = swx;
+		y += swh + 5;
 	}
-	y += 2;
 
-	strnum = 0;
-	have_bar = 0;
-	for(int i = 0; i < asset->nb_streams; i++)
+	if(numvideo)
 	{
-		ptstime l;
-
-		if(asset->streams[i].options & STRDSC_VIDEO)
+		videobar = add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
+		y += 7;
+		win = add_subwindow(new BC_Title(x0, y, _("Video:"),
+			LARGEFONT, RED));
+			y += win->get_h() + 5;
+		int swx = x1;
+		int swh = 0;
+		for(int i = 0; i < numvideo; i++)
 		{
-			if(!have_bar)
-			{
-				add_subwindow(new BC_Bar(x0, y, get_w() - x0 * 2));
-				y += 7;
-				win = add_subwindow(new BC_Title(x0, y, _("Video:"),
-					LARGEFONT, RED));
-				y += win->get_h() + 5;
-				have_bar = 1;
-			}
-
-			if(numvideo > 1)
-			{
-				sprintf(string, _("%d. stream:"), ++strnum);
-				win = add_subwindow(new BC_Title(x0, y, string));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].codec[0])
-			{
-				add_subwindow(new BC_Title(x1, y, _("Codec:")));
-				win = add_subwindow(new BC_Title(x2, y,
-					asset->streams[i].codec,
-					MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-			if(asset->streams[i].frame_rate)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Frame rate:")));
-				sprintf(string, "%.2f", asset->streams[i].frame_rate);
-				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].width && asset->streams[i].height)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Size:")));
-				sprintf(string, "%d x %d", asset->width, asset->height);
-				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].samplefmt[0])
-			{
-				add_subwindow(new BC_Title(x1, y, _("Sample format:")));
-				win = add_subwindow(new BC_Title(x2, y,
-					asset->streams[i].samplefmt,
-					MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(asset->streams[i].sample_aspect_ratio > 0)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
-				sprintf(string, "%2.3f", asset->streams[i].sample_aspect_ratio *
-					asset->streams[i].width / asset->streams[i].height);
-				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
-
-			if(l = asset->streams[i].end - asset->streams[i].start)
-			{
-				add_subwindow(new BC_Title(x1, y, _("Length (sec):")));
-				sprintf(string, "%.2f", l);
-				win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
-					mwindow->theme->edit_font_color));
-				y += win->get_h() + 5;
-			}
+			viwin[i]->draw_window();
+			viwin[i]->reposition_window(swx, y,
+				viwin[i]->width, viwin[i]->height);
+			if(viwin[i]->height > swh)
+				swh = viwin[i]->height;
+			swx += viwin[i]->width;
 		}
+		if(winw < swx)
+			winw = swx;
+		y += swh + 5;
 	}
 
 // --------------------
@@ -401,13 +293,154 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		ilacefixoption_chkboxw->showhideotherwidgets();
 		y += ilacefix_selection->get_h() + 5;
 	}
+	winw += x0;
 
+	if(audiobar)
+		audiobar->reposition_window(x0, audiobar->get_y(),
+			winw - x0 * 2, 0);
+	if(videobar)
+		videobar->reposition_window(x0, videobar->get_y(),
+			winw - x0 * 2, 0);
+	y += BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
+	reposition_window(win_x, win_y, winw, y);
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	flush();
 }
 
+AssetInfoWindow::AssetInfoWindow(struct streamdesc *dsc,
+	int edit_font_color)
+ : BC_SubWindow(0, 0, 200, 100)
+{
+	stnum = 0;
+	font_color = edit_font_color;
+	desc = dsc;
+	height = 0;
+	width = 0;
+	p_prompt = 10;
+	p_value = 160;
+}
+
+void AssetInfoWindow::show_line(const char *prompt, const char *value)
+{
+	BC_WindowBase *win;
+	int w;
+
+	add_subwindow(new BC_Title(p_prompt, height, prompt));
+	win = add_subwindow(new BC_Title(p_value, height, value,
+		MEDIUMFONT, font_color));
+	w = win->get_w() + p_value;
+	if(width < w)
+		width = w;
+	height += win->get_h() + 5;
+}
+
+void AssetInfoWindow::show_line(const char *prompt, int value)
+{
+	char string[64];
+
+	sprintf(string, "%d", value);
+	show_line(prompt, string);
+}
+
+void AssetInfoWindow::show_line(const char *prompt, double value)
+{
+	char string[64];
+
+	sprintf(string, "%.2f", value);
+	show_line(prompt, string);
+}
+
+void AssetInfoWindow::show_line(const char *prompt, ptstime start, ptstime end)
+{
+	char string[64];
+	ptstime l;
+
+	if((l = end - start) > EPSILON)
+	{
+		sprintf(string, "%.2f", l);
+		show_line(prompt, string);
+	}
+}
+
+void AssetInfoWindow::show_streamnum()
+{
+	BC_WindowBase *win;
+	char string[64];
+
+	if(stnum > 0)
+	{
+		sprintf(string, _("%d. stream:"), stnum);
+		win = add_subwindow(new BC_Title(0, height, string));
+		height += win->get_h() + 5;
+	}
+}
+
+AudioInfoWindow::AudioInfoWindow(struct streamdesc *desc,
+	int edit_font_color)
+ : AssetInfoWindow(desc, edit_font_color)
+{
+}
+
+void AudioInfoWindow::draw_window()
+{
+	show_streamnum();
+
+	if(desc->codec[0])
+		show_line(_("Codec:"), desc->codec);
+
+	if(desc->channels)
+		show_line(_("Channels:"), desc->channels);
+
+	if(desc->layout[0])
+		show_line(_("Layout:"), desc->layout);
+
+	if(desc->sample_rate)
+		show_line(_("Sample rate:"), desc->sample_rate);
+
+	if(desc->samplefmt[0])
+		show_line(_("Sample format:"), desc->samplefmt);
+
+	show_line(_("Length (sec):"), desc->start, desc->end);
+}
+
+VideoInfoWindow::VideoInfoWindow(struct streamdesc *desc,
+	int edit_font_color)
+ : AssetInfoWindow(desc, edit_font_color)
+{
+}
+
+void VideoInfoWindow::draw_window()
+{
+	char string[64];
+
+	show_streamnum();
+
+	if(desc->codec[0])
+		show_line(_("Codec:"), desc->codec);
+
+	if(desc->frame_rate)
+		show_line(_("Frame rate:"), desc->frame_rate);
+
+	if(desc->width && desc->height)
+	{
+		sprintf(string, "%d x %d", desc->width, desc->height);
+		show_line(_("Size:"), string);
+	}
+
+	if(desc->samplefmt[0])
+		show_line(_("Sample format:"), desc->samplefmt);
+
+	if(desc->sample_aspect_ratio > 0)
+	{
+		sprintf(string, "%2.3f", desc->sample_aspect_ratio *
+			desc->width / desc->height);
+		show_line(_("Aspect ratio:"), string);
+	}
+
+	show_line(_("Length (sec):"), desc->start, desc->end);
+}
 
 Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
  : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically"))

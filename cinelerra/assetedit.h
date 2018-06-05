@@ -68,6 +68,48 @@ public:
 	InterlaceFixSelection *ilacefix_selection;
 };
 
+class AssetInfoWindow : public BC_SubWindow
+{
+public:
+	AssetInfoWindow(struct streamdesc *dsc,
+		int edit_font_color);
+
+	virtual void draw_window() {};
+
+	int width;
+	int height;
+
+protected:
+	void show_line(const char *prompt, const char *value);
+	void show_line(const char *prompt, int value);
+	void show_line(const char *prompt, double value);
+	void show_line(const char *prompt, ptstime start, ptstime end);
+	void show_streamnum();
+
+	int stnum;
+	int font_color;
+	int p_prompt;
+	int p_value;
+	struct streamdesc *desc;
+};
+
+class AudioInfoWindow : public AssetInfoWindow
+{
+public:
+	AudioInfoWindow(struct streamdesc *dsc,
+		int edit_font_color);
+
+	void draw_window();
+};
+
+class VideoInfoWindow : public AssetInfoWindow
+{
+public:
+	VideoInfoWindow(struct streamdesc *dsc,
+		int edit_font_color);
+
+	void draw_window();
+};
 
 class AssetEditPath : public BrowseButton
 {
