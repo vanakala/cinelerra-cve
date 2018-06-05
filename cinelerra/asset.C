@@ -133,6 +133,8 @@ void Asset::init_values()
 
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
 	memset(decoder_parameters, 0, MAX_DEC_PARAMLISTS * sizeof(Paramlist *));
+	memset(active_streams, 0, MAXCHANNELS * sizeof(struct streamdesc *));
+	last_active = 0;
 
 	render_parameters = 0;
 	renderprofile_path[0] = 0;
@@ -174,6 +176,7 @@ void Asset::set_audio_stream(int stream)
 	audio_length = desc->length;
 	audio_duration = desc->end - desc->start;
 	strcpy(acodec, desc->codec);
+	active_streams[last_active++] = desc;
 }
 
 void Asset::set_video_stream(int stream)
@@ -195,6 +198,17 @@ void Asset::set_video_stream(int stream)
 	video_length = desc->length;
 	video_duration = desc->end - desc->start;
 	strcpy(vcodec, desc->codec);
+	active_streams[last_active++] = desc;
+}
+
+int Asset::set_program_id(int program_id)
+{
+	for(int i = 0; i < nb_programs; i++)
+	{
+		if(programs[i].program_id == program_id)
+			return set_program(i);
+	}
+	return -1;
 }
 
 int Asset::set_program(int pgm)
@@ -206,6 +220,7 @@ int Asset::set_program(int pgm)
 	if(pgm < 0 || pgm >= nb_programs)
 		return -1;
 
+	last_active = 0;
 	pdesc = &programs[pgm];
 	program_id = pdesc->program_id;
 
@@ -293,6 +308,16 @@ void Asset::copy_format(Asset *asset, int do_index)
 	}
 	memcpy(this->programs, asset->programs, sizeof(programs));
 	jpeg_quality = asset->jpeg_quality;
+
+	// Set active streams
+	last_active = 0;
+	if(nb_programs)
+		set_program_id(program_id);
+	else
+	{
+		set_audio_stream(audio_streamno - 1);
+		set_video_stream(video_streamno - 1);
+	}
 
 	png_use_alpha = asset->png_use_alpha;
 #ifdef HAVE_OPENEXR
@@ -1289,6 +1314,14 @@ void Asset::dump(int indent, int options)
 				if(options & ASSETDUMP_DECODERPARAMS)
 					streams[i].decoding_params->dump(indent + 5);
 			}
+			putchar('\n');
+		}
+		if(last_active)
+		{
+			printf("%*s%d active streams:\n", indent + 2, "", last_active);
+			printf("%*s", indent + 4, "");
+			for(int i = 0; i < last_active; i++)
+				printf(" %p(%d)", active_streams[i], active_streams[i] - streams);
 			putchar('\n');
 		}
 	}

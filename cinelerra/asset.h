@@ -106,6 +106,7 @@ public:
 	void set_audio_stream(int stream);
 	void set_video_stream(int stream);
 	int set_program(int pgm);
+	int set_program_id(int program_id);
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
@@ -189,6 +190,9 @@ public:
 	struct progdesc programs[MAXCHANNELS];
 	int nb_streams;
 	struct streamdesc streams[MAXCHANNELS];
+// Pointers to active streams
+	int last_active;
+	struct streamdesc *active_streams[MAXCHANNELS];
 
 // contains audio data
 	int audio_data;
