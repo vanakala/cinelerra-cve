@@ -2838,8 +2838,15 @@ void FileAVlibs::set_decoder_format_params(Asset *asset, AVFormatContext *ctx)
 
 Paramlist *FileAVlibs::get_decoder_params(AVCodec *codec)
 {
+	Paramlist *pl;
+
 	if(codec->priv_class)
-		return scan_options(codec->priv_class, SUPPORTS_DECODER, codec->name);
+	{
+		pl = scan_options(codec->priv_class, SUPPORTS_DECODER, codec->name);
+		if(pl->total())
+			return pl;
+		delete pl;
+	}
 	return 0;
 }
 
