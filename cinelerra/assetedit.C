@@ -44,6 +44,7 @@
 #include "selection.h"
 #include "theme.h"
 #include "new.h"
+#include "paramlistwindow.h"
 #include "preferences.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -316,7 +317,7 @@ AssetInfoWindow::AssetInfoWindow(struct streamdesc *dsc,
 	stnum = 0;
 	font_color = edit_font_color;
 	desc = dsc;
-	height = 0;
+	height = 5;
 	width = 0;
 	p_prompt = 10;
 	p_value = 160;
@@ -330,6 +331,7 @@ void AssetInfoWindow::show_line(const char *prompt, const char *value)
 	add_subwindow(new BC_Title(p_prompt, height, prompt));
 	win = add_subwindow(new BC_Title(p_value, height, value,
 		MEDIUMFONT, font_color));
+	last_line_pos = height;
 	w = win->get_w() + p_value;
 	if(width < w)
 		width = w;
@@ -377,6 +379,14 @@ void AssetInfoWindow::show_streamnum()
 	}
 }
 
+void AssetInfoWindow::show_button(Paramlist *params)
+{
+	BC_WindowBase *win;
+
+	win = add_subwindow(new AssetEditConfigButton(width + 10, last_line_pos - 5, params));
+	width = width + 10 + win->get_w();
+}
+
 AudioInfoWindow::AudioInfoWindow(struct streamdesc *desc,
 	int edit_font_color)
  : AssetInfoWindow(desc, edit_font_color)
@@ -389,6 +399,9 @@ void AudioInfoWindow::draw_window()
 
 	if(desc->codec[0])
 		show_line(_("Codec:"), desc->codec);
+
+	if(desc->decoding_params)
+		show_button(desc->decoding_params);
 
 	if(desc->channels)
 		show_line(_("Channels:"), desc->channels);
@@ -419,6 +432,9 @@ void VideoInfoWindow::draw_window()
 
 	if(desc->codec[0])
 		show_line(_("Codec:"), desc->codec);
+
+	if(desc->decoding_params)
+		show_button(desc->decoding_params);
 
 	if(desc->frame_rate)
 		show_line(_("Frame rate:"), desc->frame_rate);
@@ -508,4 +524,22 @@ AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
  : BrowseButton(mwindow, fwindow, textbox, x, y, text, window_title, window_caption, 0)
 { 
 	this->fwindow = fwindow; 
+}
+
+AssetEditConfigButton::AssetEditConfigButton(int x, int y, Paramlist *params)
+ : BC_Button(x, y, theme_global->get_image_set("wrench"))
+{
+	list = params;
+	thread = new ParamlistThread(&list, _("Decoder options"));
+}
+
+AssetEditConfigButton::~AssetEditConfigButton()
+{
+	delete thread;
+}
+
+int AssetEditConfigButton::handle_event()
+{
+	thread->show_window();
+	return 1;
 }

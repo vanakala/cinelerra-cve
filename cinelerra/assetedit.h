@@ -24,11 +24,14 @@
 
 #include "asset.inc"
 #include "awindow.inc"
+#include "bcbutton.h"
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "formatpresets.h"
 #include "language.h"
 #include "mwindow.h"
+#include "paramlist.h"
+#include "paramlistwindow.inc"
 #include "thread.h"
 
 class AssetEditPath;
@@ -85,11 +88,13 @@ protected:
 	void show_line(const char *prompt, double value);
 	void show_line(const char *prompt, ptstime start, ptstime end);
 	void show_streamnum();
+	void show_button(Paramlist *params);
 
 	int stnum;
 	int font_color;
 	int p_prompt;
 	int p_value;
+	int last_line_pos;
 	struct streamdesc *desc;
 };
 
@@ -160,6 +165,19 @@ public:
 	int handle_event();
 
 	Interlaceautofix *autofix;
+};
+
+class AssetEditConfigButton : public BC_Button
+{
+public:
+	AssetEditConfigButton(int x, int y, Paramlist *params);
+	~AssetEditConfigButton();
+
+	int handle_event();
+
+private:
+	Paramlist *list;
+	ParamlistThread *thread;
 };
 
 #endif
