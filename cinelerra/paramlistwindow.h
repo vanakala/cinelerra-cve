@@ -106,6 +106,20 @@ private:
 	double *valptr;
 };
 
+
+class ParamChkBox : public BC_CheckBox
+{
+public:
+	ParamChkBox(int x, int y, Param *param, int64_t *val);
+
+	int handle_event();
+
+private:
+	Param *param;
+	int64_t *valptr;
+};
+
+
 class ParamlistWindow : public BC_Window
 {
 public:

@@ -83,6 +83,14 @@ void ParamlistSubWindow::draw_list()
 				w1 = win->get_w();
 			}
 			else
+			if(current->type & PARAMTYPE_BOOL)
+			{
+				add_subwindow(new BC_Title(left, top, current->name));
+				add_subwindow(win = new ParamChkBox(left + name_width,
+				top, current, &current->longvalue));
+				w1 = name_width + win->get_w();
+			}
+			else
 			{
 				add_subwindow(new BC_Title(left, top, current->name));
 				add_subwindow(win = new Parami64Txtbx(left + name_width,
@@ -214,6 +222,25 @@ int ParamDblTxtbx::handle_event()
 	return 1;
 }
 
+ParamChkBox::ParamChkBox(int x, int y, Param *param, int64_t *val)
+ : BC_CheckBox(x, y, (int)(*val & 0xff))
+{
+	this->param = param;
+	if(param->helptext)
+		set_tooltip(param->helptext);
+	valptr = val;
+}
+
+int ParamChkBox::handle_event()
+{
+	int val = get_value();
+
+	if(val)
+		*valptr = (int64_t)1;
+	else
+		*valptr = 0;
+	return 1;
+}
 
 ParamWindowScroll::ParamWindowScroll(ParamlistSubWindow *listwin,
 	int x, int y, int pixels, int length)
