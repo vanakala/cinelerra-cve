@@ -100,6 +100,7 @@ Param::~Param()
 {
 	delete [] stringvalue;
 	delete [] helptext;
+	delete [] defaultstring;
 	if(subparams)
 	{
 		delete subparams;
@@ -123,6 +124,26 @@ void Param::copy_from(Param *that)
 	{
 		add_subparams(that->subparams->name);
 		subparams->copy_from(that->subparams);
+	}
+	if(that->defaulttype)
+	{
+		defaulttype = that->defaulttype;
+
+		if(defaulttype & PARAMTYPE_INT)
+			defaultint = that->defaultint;
+		if(defaulttype & PARAMTYPE_LNG)
+			defaultlong = that->defaultlong;
+		if(defaulttype & PARAMTYPE_DBL)
+			defaultfloat = that->defaultfloat;
+		delete [] defaultstring;
+		defaultstring = 0;
+		defaultstr_allocated = 0;
+
+		if(defaulttype & PARAMTYPE_STR && that->defaultstring)
+		{
+			defaultstring = new char[that->defaultstr_allocated];
+			strcpy(defaultstring, that->defaultstring);
+		}
 	}
 }
 
@@ -338,9 +359,13 @@ void Param::store_defaults()
 	if(type & PARAMTYPE_DBL)
 		defaultfloat = floatvalue;
 	delete [] defaultstring;
-	if(type & PARAMTYPE_STR)
+	defaultstring = 0;
+	defaultstr_allocated = 0;
+
+	if(type & PARAMTYPE_STR && stringvalue)
 	{
 		defaultstring = new char[string_allocated];
+		defaultstr_allocated = string_allocated;
 		strcpy(defaultstring, stringvalue);
 	}
 }

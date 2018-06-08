@@ -71,6 +71,7 @@ private:
 	// Saved defaults
 	int defaulttype;
 	int defaultint;
+	int defaultstr_allocated;
 	char *defaultstring;
 	int64_t defaultlong;
 	double defaultfloat;
