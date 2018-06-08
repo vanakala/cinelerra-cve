@@ -1321,7 +1321,7 @@ void Asset::dump(int indent, int options)
 			printf("%*s%d active streams:\n", indent + 2, "", last_active);
 			printf("%*s", indent + 4, "");
 			for(int i = 0; i < last_active; i++)
-				printf(" %p(%d)", active_streams[i], active_streams[i] - streams);
+				printf(" %p(%d)", active_streams[i], (int)(active_streams[i] - streams));
 			putchar('\n');
 		}
 	}
