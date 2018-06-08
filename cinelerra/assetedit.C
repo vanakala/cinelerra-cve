@@ -181,6 +181,12 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	add_subwindow(new BC_Title(x1, y, _("File format:")));
 	win = add_subwindow(new BC_Title(x2, y, _(ContainerSelection::container_to_text(asset->format)),
 		MEDIUMFONT, mwindow->theme->edit_font_color));
+	if(asset->decoder_parameters[ASSET_DFORMAT_IX])
+	{
+		int hpos = x2 + win->get_w() + 10;
+		add_subwindow(new AssetEditConfigButton(hpos, y - 5,
+			asset->decoder_parameters[ASSET_DFORMAT_IX]));
+	}
 	y += win->get_h() + 5;
 
 	add_subwindow(new BC_Title(x1, y, _("Bytes:")));

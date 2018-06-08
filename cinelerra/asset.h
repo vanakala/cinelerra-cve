@@ -47,6 +47,8 @@
 #define MAX_DEC_PARAMLISTS 8
 // Library & Format option lists
 #define ASSET_FMT_IX (MAX_ENC_PARAMLISTS - 1)
+// Positon of decoding parameters
+#define ASSET_DFORMAT_IX 0
 
 struct streamdesc
 {
