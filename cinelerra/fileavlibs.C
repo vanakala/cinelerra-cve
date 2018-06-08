@@ -2833,6 +2833,7 @@ void FileAVlibs::set_decoder_format_params(Asset *asset, AVFormatContext *ctx)
 	else
 		fmt = glob;
 
+	fmt->store_defaults();
 	asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = fmt;
 }
 
@@ -2844,7 +2845,10 @@ Paramlist *FileAVlibs::get_decoder_params(AVCodec *codec)
 	{
 		pl = scan_options(codec->priv_class, SUPPORTS_DECODER, codec->name);
 		if(pl->total())
+		{
+			pl->store_defaults();
 			return pl;
+		}
 		delete pl;
 	}
 	return 0;
