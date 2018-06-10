@@ -549,9 +549,7 @@ void Edits::clear_handle(ptstime start,
 			current_edit->next->asset)
 		{
 
-			if(current_edit->asset->equivalent(*current_edit->next->asset,
-				0,
-				0))
+			if(current_edit->asset->equivalent(*current_edit->next->asset, 0))
 			{
 
 // Got two consecutive edits in same source

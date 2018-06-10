@@ -202,7 +202,7 @@ void Edit::equivalent_output(Edit *edit, ptstime *result)
 // Asset changed
 		(asset && 
 			edit->asset &&
-			!asset->equivalent(*edit->asset, 1, 1))
+			!asset->equivalent(*edit->asset, STRDSC_ALLTYP))
 		)
 	{
 		if(*result < 0 || project_pts < *result)

@@ -377,15 +377,13 @@ Asset& Asset::operator=(Asset &asset)
 	return *this;
 }
 
-int Asset::equivalent(Asset &asset, 
-	int test_audio, 
-	int test_video)
+int Asset::equivalent(Asset &asset, int test_dsc)
 {
 	int result = (!strcmp(asset.path, path) &&
 		format == asset.format && nb_programs == asset.nb_programs
 		&& nb_streams == asset.nb_streams && program_id == asset.program_id);
 
-	if(test_audio && result)
+	if(test_dsc & STRDSC_AUDIO && result)
 	{
 		result = (channels == asset.channels && 
 			sample_rate == asset.sample_rate && 
@@ -397,7 +395,7 @@ int Asset::equivalent(Asset &asset,
 			!strcmp(acodec, asset.acodec));
 	}
 
-	if(test_video && result)
+	if(test_dsc & STRDSC_VIDEO && result)
 	{
 		result = (layers == asset.layers && 
 			frame_rate == asset.frame_rate &&
@@ -413,7 +411,7 @@ int Asset::equivalent(Asset &asset,
 
 int Asset::operator==(Asset &asset)
 {
-	return equivalent(asset, 1, 1);
+	return equivalent(asset, STRDSC_ALLTYP);
 }
 
 int Asset::operator!=(Asset &asset)

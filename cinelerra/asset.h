@@ -84,6 +84,8 @@ struct progdesc
 // Stream type
 #define STRDSC_AUDIO   1
 #define STRDSC_VIDEO   2
+// All stream types
+#define STRDSC_ALLTYP  3
 // Format allows byte seek
 #define STRDSC_SEEKBYTES 0x8000
 
@@ -138,9 +140,9 @@ public:
 		const char *param, char *string);
 // Executed during index building only
 	void update_index(Asset *asset);
-	int equivalent(Asset &asset, 
-		int test_audio, 
-		int test_video);
+// Return nz if assets are eqivalent
+// test_dsc - stream types to test
+	int equivalent(Asset &asset, int test_dsc);
 	Asset& operator=(Asset &asset);
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);

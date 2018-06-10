@@ -184,7 +184,8 @@ void PreferencesThread::apply_settings()
 		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
-		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
+		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset,
+			STRDSC_VIDEO);
 
 	// Check index directory
 	if(strcmp(mwindow->preferences->index_directory, preferences->index_directory))
