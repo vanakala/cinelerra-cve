@@ -383,6 +383,23 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 		format == asset.format && nb_programs == asset.nb_programs
 		&& nb_streams == asset.nb_streams && program_id == asset.program_id);
 
+	if(result)
+	{
+		for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+		{
+			if(decoder_parameters[i])
+			{
+				if(!(result = decoder_parameters[i]->equiv(asset.decoder_parameters[i])))
+					break;
+			}
+			else if(asset.decoder_parameters[i])
+			{
+				result = 0;
+				break;
+			}
+		}
+	}
+
 	if(test_dsc & STRDSC_AUDIO && result)
 	{
 		result = (channels == asset.channels && 
@@ -405,6 +422,85 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec));
+	}
+	if(result)
+		result = equivalent_streams(asset, test_dsc);
+	return result;
+}
+
+int Asset::equivalent_streams(Asset &asset, int test_dsc)
+{
+	int ct, co, j;
+	int result;
+
+	ct = co = 0;
+	// Check the number of active streams
+	for(int i = 0; i < last_active; i++)
+		if(active_streams[i]->options & test_dsc)
+			ct++;
+
+	for(int i = 0; i < asset.last_active; i++)
+		if(asset.active_streams[i]->options & test_dsc)
+			co++;
+
+	result = ct == co;
+
+	if(result)
+	{
+		for(int i = 0; i < last_active; i++)
+		{
+			if(!(active_streams[i]->options & test_dsc))
+				continue;
+			for(j = 0; j < asset.last_active; j++)
+			{
+				if(!(asset.active_streams[j]->options & test_dsc))
+					continue;
+				if(active_streams[i]->stream_index == asset.active_streams[j]->stream_index)
+				{
+					result = stream_equivalent(active_streams[i], asset.active_streams[j]);
+					break;
+				}
+			}
+			if(!result || j == asset.last_active)
+			{
+				result = 0;
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+int Asset::stream_equivalent(struct streamdesc *st1, struct streamdesc *st2)
+{
+	int result;
+
+	result = st1->stream_index == st2->stream_index &&
+		st1->length == st2->length &&
+		st1->options == st2->options &&
+		PTSEQU(st1->start, st2->start) &&
+		PTSEQU(st1->end, st2->end) &&
+		!strcmp(st1->codec, st2->codec) &&
+		!strcmp(st1->samplefmt, st2->samplefmt);
+
+	if(result && st1->options & STRDSC_AUDIO)
+		result = st1->channels == st2->channels &&
+			st1->bits == st2->bits &&
+			st1->sample_rate == st2->sample_rate &&
+			!strcmp(st1->layout, st2->layout);
+
+	if(result && st1->options & STRDSC_VIDEO)
+		result = st1->width == st2->width &&
+			st1->height == st2->height &&
+			EQUIV(st1->frame_rate, st2->frame_rate) &&
+			EQUIV(st1->sample_aspect_ratio, st2->sample_aspect_ratio);
+
+	if(result)
+	{
+		if(st1->decoding_params)
+			result = st1->decoding_params->equiv(st2->decoding_params);
+		else if(st2->decoding_params)
+			result = 0;
 	}
 	return result;
 }

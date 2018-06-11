@@ -143,6 +143,8 @@ public:
 // Return nz if assets are eqivalent
 // test_dsc - stream types to test
 	int equivalent(Asset &asset, int test_dsc);
+	int equivalent_streams(Asset &asset, int test_dsc);
+	int stream_equivalent(struct streamdesc *st1, struct streamdesc *st2);
 	Asset& operator=(Asset &asset);
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
