@@ -27,6 +27,7 @@
 #include "bcbutton.h"
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
+#include "cinelerra.h"
 #include "formatpresets.h"
 #include "language.h"
 #include "mwindow.h"
@@ -38,6 +39,8 @@ class AssetEditPath;
 class AssetEditPathText;
 class AssetEditWindow;
 class AssetInterlaceMode;
+class AssetInfoWindow;
+class AssetEditConfigButton;
 
 
 class AssetEdit : public Thread
@@ -62,6 +65,7 @@ class AssetEditWindow : public BC_Window
 {
 public:
 	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit);
+	~AssetEditWindow();
 
 	Asset *asset;
 	AssetEditPath *path_button;
@@ -69,6 +73,12 @@ public:
 	AssetEdit *asset_edit;
 	AssetInterlaceMode *ilacemode_selection;
 	InterlaceFixSelection *ilacefix_selection;
+private:
+	AssetInfoWindow *aiwin[MAXCHANNELS];
+	AssetInfoWindow *viwin[MAXCHANNELS];
+	int numaudio;
+	int numvideo;
+	AssetEditConfigButton *fmt_button;
 };
 
 class AssetInfoWindow : public BC_SubWindow
@@ -78,6 +88,7 @@ public:
 		int edit_font_color);
 
 	virtual void draw_window() {};
+	void cancel_window();
 
 	int width;
 	int height;
@@ -96,6 +107,7 @@ protected:
 	int p_value;
 	int last_line_pos;
 	struct streamdesc *desc;
+	AssetEditConfigButton *button;
 };
 
 class AudioInfoWindow : public AssetInfoWindow
@@ -174,6 +186,7 @@ public:
 	~AssetEditConfigButton();
 
 	int handle_event();
+	void cancel_window();
 
 private:
 	Paramlist *list;

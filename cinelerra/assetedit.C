@@ -154,9 +154,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	Interlaceautofix *ilacefixoption_chkboxw;
 	AssetEditPathText *path_text;
 	BC_WindowBase *win;
-	int numaudio, numvideo;
-	AssetInfoWindow *aiwin[MAXCHANNELS];
-	AssetInfoWindow *viwin[MAXCHANNELS];
 	BC_WindowBase *audiobar, *videobar;
 	int winw = get_w();
 	int win_x = get_x();
@@ -181,12 +178,15 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	add_subwindow(new BC_Title(x1, y, _("File format:")));
 	win = add_subwindow(new BC_Title(x2, y, _(ContainerSelection::container_to_text(asset->format)),
 		MEDIUMFONT, mwindow->theme->edit_font_color));
+
 	if(asset->decoder_parameters[ASSET_DFORMAT_IX])
 	{
 		int hpos = x2 + win->get_w() + 10;
-		add_subwindow(new AssetEditConfigButton(hpos, y - 5,
+		add_subwindow(fmt_button = new AssetEditConfigButton(hpos, y - 5,
 			asset->decoder_parameters[ASSET_DFORMAT_IX]));
 	}
+	else
+		fmt_button = 0;
 	y += win->get_h() + 5;
 
 	add_subwindow(new BC_Title(x1, y, _("Bytes:")));
@@ -316,6 +316,17 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	flush();
 }
 
+AssetEditWindow::~AssetEditWindow()
+{
+// Close all button windows
+	if(fmt_button)
+		fmt_button->cancel_window();
+	for(int i = 0; i < numaudio; i++)
+		aiwin[i]->cancel_window();
+	for(int i = 0; i < numvideo; i++)
+		viwin[i]->cancel_window();
+}
+
 AssetInfoWindow::AssetInfoWindow(struct streamdesc *dsc,
 	int edit_font_color)
  : BC_SubWindow(0, 0, 200, 100)
@@ -327,6 +338,13 @@ AssetInfoWindow::AssetInfoWindow(struct streamdesc *dsc,
 	width = 0;
 	p_prompt = 10;
 	p_value = 160;
+	button = 0;
+}
+
+void AssetInfoWindow::cancel_window()
+{
+	if(button)
+		button->cancel_window();
 }
 
 void AssetInfoWindow::show_line(const char *prompt, const char *value)
@@ -387,10 +405,8 @@ void AssetInfoWindow::show_streamnum()
 
 void AssetInfoWindow::show_button(Paramlist *params)
 {
-	BC_WindowBase *win;
-
-	win = add_subwindow(new AssetEditConfigButton(width + 10, last_line_pos - 5, params));
-	width = width + 10 + win->get_w();
+	add_subwindow(button = new AssetEditConfigButton(width + 10, last_line_pos - 5, params));
+	width = width + 10 + button->get_w();
 }
 
 AudioInfoWindow::AudioInfoWindow(struct streamdesc *desc,
@@ -542,6 +558,12 @@ AssetEditConfigButton::AssetEditConfigButton(int x, int y, Paramlist *params)
 AssetEditConfigButton::~AssetEditConfigButton()
 {
 	delete thread;
+}
+
+void AssetEditConfigButton::cancel_window()
+{
+	delete thread;
+	thread = 0;
 }
 
 int AssetEditConfigButton::handle_event()
