@@ -98,6 +98,9 @@ const char *FileAVlibs::ignored[] =
 	"ac",
 	"debug",
 	"ticks_per_frame",
+	"seek2any",
+	"use_wallclock_as_timestamps",
+	"correct_ts_overflow",
 	NULL
 };
 
