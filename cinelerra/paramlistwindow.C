@@ -294,7 +294,7 @@ ParamlistThread::ParamlistThread(Paramlist **paramp, const char *name)
 	this->paramp = paramp;
 	window = 0;
 	win_result = 1;
-	window_lock = new Mutex("AVlibsParamThread::window_lock");
+	window_lock = new Mutex("ParamlistThread::window_lock");
 }
 
 void ParamlistThread::set_window_title(const char *name)
@@ -329,7 +329,7 @@ void ParamlistThread::wait_window()
 ParamlistThread::~ParamlistThread()
 {
 	cancel_window();
-	window_lock->lock("ParamlistThread::~AVlibsParamThread");
+	window_lock->lock("ParamlistThread::~ParamlistThread");
 	delete window_lock;
 }
 
