@@ -186,9 +186,6 @@ public:
 	char pipe[BCTEXTLEN];
 	int use_pipe;
 
-// Folder in resource manager
-	int awindow_folder;
-
 // Format of file.  An enumeration from file.inc.
 	int format;
 	int nb_programs;

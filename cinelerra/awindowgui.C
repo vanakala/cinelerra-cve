@@ -686,7 +686,7 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 	{
 		AssetPicon *picon = (AssetPicon*)src->values[i];
 		if(folder < 0 ||
-			(picon->asset && picon->asset->awindow_folder == folder) ||
+			(picon->asset && AW_MEDIA_FOLDER == folder) ||
 			(picon->edl && picon->edl->local_session->awindow_folder == folder))
 		{
 			BC_ListBoxItem *item2, *item1;

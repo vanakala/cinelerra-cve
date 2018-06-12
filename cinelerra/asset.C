@@ -83,7 +83,6 @@ Asset::~Asset()
 void Asset::init_values()
 {
 	path[0] = 0;
-	awindow_folder = AW_MEDIA_FOLDER;
 
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
@@ -255,7 +254,6 @@ void Asset::copy_from(Asset *asset, int do_index)
 void Asset::copy_location(Asset *asset)
 {
 	strcpy(this->path, asset->path);
-	awindow_folder = asset->awindow_folder;
 	file_length = asset->file_length;
 	file_mtime = asset->file_mtime;
 }
@@ -596,15 +594,6 @@ void Asset::read(FileXML *file,
 					file->tag.get_property("USE_HEADER", use_header);
 			}
 			else
-			if(file->tag.title_is("FOLDER"))
-			{
-				char *string = file->tag.get_property("NUMBER");
-				if(string)
-					awindow_folder = atoi(string);
-				else
-					awindow_folder = AWindowGUI::folder_number(file->read_text());
-			}
-			else
 			if(file->tag.title_is("VIDEO"))
 			{
 				read_video(file);
@@ -789,14 +778,6 @@ void Asset::write(FileXML *file,
 
 	file->tag.set_title("ASSET");
 	file->tag.set_property("SRC", new_path);
-	file->append_tag();
-	file->append_newline();
-
-	file->tag.set_title("FOLDER");
-	file->tag.set_property("NUMBER", awindow_folder);
-	file->append_tag();
-
-	file->tag.set_title("/FOLDER");
 	file->append_tag();
 	file->append_newline();
 
