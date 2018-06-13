@@ -21,15 +21,9 @@
 
 #include "asset.h"
 #include "assets.h"
-#include "awindowgui.inc"
-#include "cache.h"
-#include "bchash.h"
 #include "edl.h"
-#include "file.h"
 #include "filexml.h"
 #include "filesystem.h"
-#include "indexfile.h"
-#include "mainsession.h"
 #include <string.h>
 
 Assets::Assets(EDL *edl) : List<Asset>()
@@ -42,9 +36,7 @@ Assets::~Assets()
 	delete_all();
 }
 
-int Assets::load(ArrayList<PluginServer*> *plugindb, 
-	FileXML *file, 
-	uint32_t load_flags)
+void Assets::load(FileXML *file, uint32_t load_flags)
 {
 	int result = 0;
 
@@ -68,27 +60,6 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 			}
 		}
 	}
-	return 0;
-}
-
-int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
-{
-	file->tag.set_title("ASSETS");
-	file->append_tag();
-	file->append_newline();
-
-	for(Asset* current = first; current; current = NEXT)
-	{
-		current->write(file, 
-			0, 
-			path);
-	}
-
-	file->tag.set_title("/ASSETS");
-	file->append_tag();
-	file->append_newline();	
-	file->append_newline();	
-	return 0;
 }
 
 void Assets::copy_from(Assets *assets)
@@ -109,15 +80,12 @@ Assets& Assets::operator=(Assets &assets)
 	return *this;
 }
 
-
 void Assets::update_index(Asset *asset)
 {
 	for(Asset* current = first; current; current = NEXT)
 	{
 		if(current->test_path(asset))
-		{
 			current->update_index(asset);
-		}
 	}
 }
 
@@ -129,9 +97,7 @@ Asset* Assets::update(Asset *asset)
 	{
 // Asset already exists.
 		if(current->test_path(asset))
-		{
 			return current;
-		}
 	}
 // Asset doesn't exist.
 	Asset *asset_copy = new Asset(*asset);
@@ -139,13 +105,10 @@ Asset* Assets::update(Asset *asset)
 	return asset_copy;
 }
 
-int Assets::delete_all()
+void Assets::delete_all()
 {
 	while(first) 
-	{
 		remove_asset(first);
-	}
-	return 0;
 }
 
 Asset* Assets::get_asset(const char *filename, int stream)
@@ -171,7 +134,6 @@ Asset* Assets::remove_asset(Asset *asset)
 	remove_pointer(asset);
 	Garbage::delete_object(asset);
 }
-
 
 int Assets::number_of(Asset *asset)
 {

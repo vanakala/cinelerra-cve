@@ -219,7 +219,7 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("ASSETS"))
 				{
 					if(load_flags & LOAD_ASSETS)
-						assets->load(plugindb, file, load_flags);
+						assets->load(file, load_flags);
 				}
 				else
 				if(file->tag.title_is(labels->xml_tag))

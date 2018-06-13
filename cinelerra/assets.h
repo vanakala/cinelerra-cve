@@ -25,15 +25,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "arraylist.h"
 #include "asset.inc"
 #include "assets.inc"
-#include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
 #include "linklist.h"
-#include "pluginserver.inc"
-#include "sharedlocation.h"
 
 class Assets : public List<Asset>
 {
@@ -41,12 +37,7 @@ public:
 	Assets(EDL *edl);
 	virtual ~Assets();
 
-	int load(ArrayList<PluginServer*> *plugindb, 
-		FileXML *xml, 
-		uint32_t load_flags);
-	int save(ArrayList<PluginServer*> *plugindb, 
-		FileXML *xml, 
-		char *output_path);
+	void load(FileXML *xml, uint32_t load_flags);
 	Assets& operator=(Assets &assets);
 	void copy_from(Assets *assets);
 
@@ -57,11 +48,10 @@ public:
 // Update the index information for assets with the same path
 	void update_index(Asset *asset);
 
-
 // Parent EDL
 	EDL *edl;
 
-	int delete_all();
+	void delete_all();
 	void dump(int indent = 0);
 
 // Insert the asset into the list if it doesn't exist already but
