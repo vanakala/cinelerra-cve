@@ -264,7 +264,6 @@ void VWindow::copy()
 			0,
 			0,
 			&file,
-			mwindow->plugindb,
 			"",
 			1);
 		mwindow->gui->get_clipboard()->to_clipboard(file.string,

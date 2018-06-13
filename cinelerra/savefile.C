@@ -74,8 +74,7 @@ int Save::handle_event()
 // save it
 // TODO: Move this into mwindow.
 		FileXML file;
-		mwindow->edl->save_xml(mwindow->plugindb, 
-			&file, 
+		mwindow->edl->save_xml(&file,
 			mwindow->session->filename,
 			0,
 			0);
@@ -155,11 +154,7 @@ void SaveAs::run()
 // save it
 	FileXML file;
 	mwindow->set_filename(filename);      // update the project name
-	mwindow->edl->save_xml(mwindow->plugindb, 
-		&file, 
-		filename,
-		0,
-		0);
+	mwindow->edl->save_xml(&file, filename, 0, 0);
 	file.terminate_string();
 
 	if(file.write_to_file(filename))

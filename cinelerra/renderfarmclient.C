@@ -432,7 +432,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	file.read_from_string((char*)string);
 	delete [] string;
 
-	edl->load_xml(client->plugindb, &file, LOAD_ALL);
+	edl->load_xml(&file, LOAD_ALL);
 
 // Open assets - fill asset info
 	if(edl->assets)

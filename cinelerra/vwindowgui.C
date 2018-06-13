@@ -468,12 +468,11 @@ void VWindowEditing::to_clip()
 			0,
 			0,
 			&file,
-			mwindow->plugindb,
 			"",
 			1);
 
 		EDL *new_edl = new EDL(mwindow->edl);
-		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
+		new_edl->load_xml(&file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
 		char string[BCTEXTLEN];
 		Units::totext(string, 

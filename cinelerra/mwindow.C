@@ -1049,7 +1049,7 @@ SET_TRACE
 				result = 0;
 				new_edl = new EDL;
 				new_edl->copy_session(edl);
-				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
+				new_edl->load_xml(&xml_file, LOAD_ALL);
 				test_plugins(new_edl, filenames->values[i]);
 
 				if(load_mode == LOADMODE_REPLACE || 
@@ -1697,11 +1697,7 @@ void MWindow::save_backup()
 {
 	FileXML file;
 	edl->set_project_path(session->filename);
-	edl->save_xml(plugindb, 
-		&file, 
-		BACKUP_PATH,
-		0,
-		0);
+	edl->save_xml(&file, BACKUP_PATH, 0, 0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
 	FileSystem fs;

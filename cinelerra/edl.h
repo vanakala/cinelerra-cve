@@ -67,14 +67,9 @@ public:
 	void boundaries();
 // Create tracks using existing configuration
 	void create_default_tracks();
-	void load_xml(ArrayList<PluginServer*> *plugindb, 
-		FileXML *file, 
-		uint32_t load_flags);
-	void save_xml(ArrayList<PluginServer*> *plugindb,
-		FileXML *xml, 
-		const char *output_path,
-		int is_clip,
-		int is_vwindow);
+	void load_xml(FileXML *file, uint32_t load_flags);
+	void save_xml(FileXML *xml, const char *output_path,
+		int is_clip, int is_vwindow);
 	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
@@ -147,7 +142,6 @@ public:
 		ptstime end,
 		FileXML *file, 
 		int all, 
-		ArrayList<PluginServer*> *plugindb,
 		const char *output_path);
 	void copy(ptstime start,
 		ptstime end,
@@ -155,7 +149,6 @@ public:
 		int is_clip,
 		int is_vwindow,
 		FileXML *file, 
-		ArrayList<PluginServer*> *plugindb,
 		const char *output_path,
 		int rewind_it);     // Rewind EDL for easy pasting
 	void paste_silence(ptstime start,

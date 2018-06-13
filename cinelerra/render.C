@@ -340,7 +340,7 @@ void Render::run()
 				file->read_from_file(job->edl_path);
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
-				edl->load_xml(plugindb, file, LOAD_ALL);
+				edl->load_xml(file, LOAD_ALL);
 
 				File assetfile;
 				for(Asset *ap = edl->assets->first; ap; ap = ap->next)

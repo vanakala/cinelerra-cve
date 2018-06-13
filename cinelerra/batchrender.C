@@ -445,8 +445,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 
 // Use command to calculate range.
 			command->command = NORMAL_FWD;
-			command->get_edl()->load_xml(plugindb, 
-				file, 
+			command->get_edl()->load_xml(file,
 				LOAD_ALL);
 			command->change_type = CHANGE_ALL;
 			command->set_playback_range();

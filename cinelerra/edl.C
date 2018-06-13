@@ -135,9 +135,7 @@ void EDL::create_default_tracks()
 		tracks->add_audio_track(0, 0);
 }
 
-void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
-	FileXML *file, 
-	uint32_t load_flags)
+void EDL::load_xml(FileXML *file, uint32_t load_flags)
 {
 	int result = 0;
 // Track numbering offset for replacing undo data.
@@ -252,7 +250,7 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("CLIP_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(plugindb, file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 						clips.append(new_edl);
@@ -263,7 +261,7 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(plugindb, file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
@@ -287,21 +285,11 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // It is a "" if complete names should be used.
 // Called recursively by copy for clips, thus the string can't be terminated.
 // The string is not terminated in this call.
-void EDL::save_xml(ArrayList<PluginServer*> *plugindb,
-	FileXML *file, 
-	const char *output_path,
-	int is_clip,
-	int is_vwindow)
+void EDL::save_xml(FileXML *file, const char *output_path,
+	int is_clip, int is_vwindow)
 {
-	copy(0, 
-		tracks->total_length(), 
-		1, 
-		is_clip,
-		is_vwindow,
-		file, 
-		plugindb, 
-		output_path,
-		0);
+	copy(0, tracks->total_length(), 1, is_clip,
+		is_vwindow, file, output_path, 0);
 }
 
 void EDL::copy_all(EDL *edl)
@@ -358,7 +346,6 @@ void EDL::copy_assets(ptstime start,
 	ptstime end, 
 	FileXML *file, 
 	int all, 
-	ArrayList<PluginServer*> *plugindb,
 	const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
@@ -414,7 +401,6 @@ void EDL::copy(ptstime start,
 	int is_clip,
 	int is_vwindow,
 	FileXML *file, 
-	ArrayList<PluginServer*> *plugindb, 
 	const char *output_path,
 	int rewind_it)
 {
@@ -462,12 +448,7 @@ void EDL::copy(ptstime start,
 // Don't replicate all assets for every clip.
 // The assets for the clips are probably in the mane EDL.
 	if(!is_clip)
-		copy_assets(start, 
-			end, 
-			file, 
-			all, 
-			plugindb,
-			output_path);
+		copy_assets(start, end, file, all, output_path);
 
 // Clips
 // Don't want this if using clipboard
@@ -475,16 +456,14 @@ void EDL::copy(ptstime start,
 	{
 		if(vwindow_edl)
 		{
-			vwindow_edl->save_xml(plugindb, 
-				file, 
+			vwindow_edl->save_xml(file,
 				output_path,
 				0,
 				1);
 		}
 
 		for(int i = 0; i < clips.total; i++)
-			clips.values[i]->save_xml(plugindb, 
-				file, 
+			clips.values[i]->save_xml(file,
 				output_path,
 				1,
 				0);

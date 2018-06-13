@@ -282,7 +282,6 @@ void MWindow::copy(ptstime start, ptstime end)
 		0,
 		0,
 		&file, 
-		plugindb,
 		"",
 		1);
 
@@ -460,7 +459,7 @@ void MWindow::insert(ptstime position,
 	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
 	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
 
-	edl.load_xml(plugindb, file, load_flags);
+	edl.load_xml(file, load_flags);
 
 	paste_edls(&new_edls, 
 		LOADMODE_PASTE, 
@@ -770,7 +769,6 @@ void MWindow::overwrite(EDL *source)
 		0,
 		0,
 		&file,
-		plugindb,
 		"",
 		1);
 
@@ -1447,7 +1445,6 @@ void MWindow::splice(EDL *source)
 		0,
 		0,
 		&file,
-		plugindb,
 		"",
 		1);
 
@@ -1494,13 +1491,12 @@ void MWindow::to_clip()
 		0,
 		0,
 		&file,
-		plugindb,
 		"",
 		1);
 
 	EDL *new_edl = new EDL(edl);
 
-	new_edl->load_xml(plugindb, &file, LOAD_ALL);
+	new_edl->load_xml(&file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
 	char string[BCTEXTLEN];
 	Units::totext(string, 

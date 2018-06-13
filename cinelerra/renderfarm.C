@@ -474,11 +474,7 @@ void RenderFarmServerThread::send_edl()
 	FileXML file;
 
 // Save the XML
-	server->edl->save_xml(plugindb,
-		&file, 
-		0,
-		0,
-		0);
+	server->edl->save_xml(&file, 0, 0, 0);
 	file.terminate_string();
 
 	write_string(file.string);
