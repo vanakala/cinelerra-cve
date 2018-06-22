@@ -526,10 +526,15 @@ int FileAVlibs::open_file(int rd, int wr)
 
 	if(rd)
 	{
-		if(avformat_open_input(&context, asset->path, 0, NULL) == 0)
+		AVDictionary *dict = 0;
+
+		list2dictionary(&dict, asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX]);
+
+		if(avformat_open_input(&context, asset->path, 0, &dict) == 0)
 			result = avformat_find_stream_info(context, NULL);
 		else
 		{
+			av_dict_free(&dict);
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -590,6 +595,7 @@ int FileAVlibs::open_file(int rd, int wr)
 					asset->streams[asset->audio_streamno - 1].stream_index == streamno)
 				{
 					audio_index = streamno;
+					list2dictionary(&dict, asset->streams[asset->audio_streamno - 1].decoding_params[FILEAVLIBS_DFORMAT_IX]);
 					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 					{
 						liberror(rv, _("Failed to open audio decoder"));
@@ -606,12 +612,14 @@ int FileAVlibs::open_file(int rd, int wr)
 							asset->streams[asset->audio_streamno - 1].options |= STRDSC_SEEKBYTES;
 #endif
 					}
+					av_dict_free(&dict);
 				}
 				if(asset->video_streamno > 0 &&
 					asset->streams[asset->video_streamno - 1].stream_index == streamno)
 				{
 					video_index = streamno;
-					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
+					list2dictionary(&dict, asset->streams[asset->video_streamno - 1].decoding_params[FILEAVLIBS_DFORMAT_IX]);
+					if((rv = avcodec_open2(decoder_context, codec, &dict)) < 0)
 					{
 						liberror(rv, _("Failed to open video decoder"));
 						asset->video_data = 0;
@@ -625,6 +633,7 @@ int FileAVlibs::open_file(int rd, int wr)
 							asset->streams[asset_video_data - 1].options |= STRDSC_SEEKBYTES;
 					}
 #endif
+					av_dict_free(&dict);
 				}
 			}
 			tocfile = new FileTOC(this, file->preferences->index_directory,
