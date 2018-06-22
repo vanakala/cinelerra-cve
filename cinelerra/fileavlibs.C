@@ -771,7 +771,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodec *codec;
 			AVCodecContext *video_ctx;
 			AVStream *stream;
-			AVDictionary *dict = create_dictionary(SUPPORTS_VIDEO);
+			AVDictionary *dict = create_encoder_dictionary(SUPPORTS_VIDEO);
 
 			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
 				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO)))
@@ -861,7 +861,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodec *codec;
 			AVCodecContext *audio_ctx;
 			AVStream *stream;
-			AVDictionary *dict = create_dictionary(SUPPORTS_AUDIO);
+			AVDictionary *dict = create_encoder_dictionary(SUPPORTS_AUDIO);
 
 			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
 				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO)))
@@ -1231,7 +1231,7 @@ void FileAVlibs::close_file()
 	avlibs_lock->unlock();
 }
 
-AVDictionary *FileAVlibs::create_dictionary(int options)
+AVDictionary *FileAVlibs::create_encoder_dictionary(int options)
 {
 	AVDictionary *dict = 0;
 
