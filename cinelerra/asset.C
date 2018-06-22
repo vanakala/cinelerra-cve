@@ -42,6 +42,11 @@
 #include <inttypes.h>
 #include <string.h>
 
+const char encparamtag[] = "EncParam";
+const char decfmt_tag[] = "Decoding";
+const char stream_tag[] = "Stream";
+const char type_audio[] = "audio";
+const char type_video[] = "video";
 
 Asset::Asset()
  : ListItem<Asset>(), GarbageObject("Asset")
@@ -77,7 +82,10 @@ Asset::~Asset()
 		delete decoder_parameters[i];
 	delete render_parameters;
 	for(int i = 0; i < MAXCHANNELS; i++)
-		delete streams[i].decoding_params;
+	{
+		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
+			delete streams[i].decoding_params[j];
+	}
 }
 
 void Asset::init_values()
@@ -298,10 +306,15 @@ void Asset::copy_format(Asset *asset, int do_index)
 	memcpy(this->streams, asset->streams, sizeof(streams));
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
-		if(asset->streams[i].decoding_params)
+		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
 		{
-			this->streams[i].decoding_params = new Paramlist(asset->streams[i].decoding_params->name);
-			this->streams[i].decoding_params->copy_from(asset->streams[i].decoding_params);
+			if(asset->streams[i].decoding_params[j])
+			{
+				this->streams[i].decoding_params[j] = new Paramlist(
+					asset->streams[i].decoding_params[j]->name);
+				this->streams[i].decoding_params[j]->copy_from(
+					asset->streams[i].decoding_params[j]);
+			}
 		}
 	}
 	memcpy(this->programs, asset->programs, sizeof(programs));
@@ -495,10 +508,15 @@ int Asset::stream_equivalent(struct streamdesc *st1, struct streamdesc *st2)
 
 	if(result)
 	{
-		if(st1->decoding_params)
-			result = st1->decoding_params->equiv(st2->decoding_params);
-		else if(st2->decoding_params)
-			result = 0;
+		for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+		{
+			if(st1->decoding_params[i])
+				result = st1->decoding_params[i]->equiv(st2->decoding_params[i]);
+			else if(st2->decoding_params[i])
+				result = 0;
+			if(!result)
+				break;
+		}
 	}
 	return result;
 }
@@ -608,8 +626,19 @@ void Asset::read(FileXML *file,
 			{
 				read_index(file);
 			}
+			else
+			if(strncmp(file->tag.get_title(), decfmt_tag, sizeof(decfmt_tag) - 1) == 0)
+			{
+				read_decoder_params(file);
+			}
+			else
+			if(strncmp(file->tag.get_title(), stream_tag, sizeof(stream_tag) - 1) == 0)
+			{
+				read_stream_params(file);
+			}
 		}
 	}
+	FileAVlibs::change_decoder_format_parameters(this);
 }
 
 void Asset::read_audio(FileXML *file)
@@ -799,15 +828,100 @@ void Asset::write(FileXML *file,
 // So change the block name if the asset doesn't have the data.
 	write_audio(file);
 	write_video(file);
+	write_decoder_params(file);
 	if(index_status == 0 && include_index) 
 		write_index(file);  // index goes after source
-
 	file->tag.set_title("/ASSET");
 	file->append_tag();
 	file->append_newline();
 }
 
-const char paramtag[] = "EncParam";
+
+void Asset::write_decoder_params(FileXML *file)
+{
+	char strname[64];
+
+	// Last list is format menu, before it is scratch list
+	for(int i = 0; i < MAX_DEC_PARAMLISTS - 2; i++)
+	{
+		if(decoder_parameters[i])
+		{
+			sprintf(strname, "/%s%02d", decfmt_tag, i);
+			file->tag.set_title(strname + 1);
+			file->append_tag();
+			file->append_newline();
+			decoder_parameters[i]->save_list(file);
+			file->position--;
+			file->tag.set_title(strname);
+			file->append_tag();
+			file->append_newline();
+		}
+	}
+
+	if(!nb_streams)
+		return;
+
+	for(int i = 0; i < nb_streams; i++)
+	{
+		for(int j = 0; j < MAX_DEC_PARAMLISTS - 2; j++)
+		{
+			if(streams[i].decoding_params[j])
+			{
+				const char *ts = 0;
+				sprintf(strname, "/%s%02d%02d", stream_tag, i, j);
+				file->tag.set_title(strname + 1);
+				file->tag.set_property("index", streams[i].stream_index);
+				if(streams[i].options & STRDSC_AUDIO)
+					ts = type_audio;
+				else if(streams[i].options & STRDSC_VIDEO)
+					ts = type_video;
+				if(ts)
+					file->tag.set_property("type", ts);
+				file->append_tag();
+				file->append_newline();
+				streams[i].decoding_params[j]->save_list(file);
+				file->position--;
+				file->tag.set_title(strname);
+				file->append_tag();
+				file->append_newline();
+			}
+		}
+	}
+}
+
+void Asset::read_decoder_params(FileXML *file)
+{
+	Paramlist *par;
+	int num;
+
+	num = atoi(file->tag.get_title() + sizeof(decfmt_tag) - 1);
+
+	if(num >= 0 && num < MAX_DEC_PARAMLISTS)
+	{
+		delete decoder_parameters[num];
+		par = new Paramlist();
+		par->load_list(file);
+		decoder_parameters[num] = par;
+	}
+}
+
+void Asset::read_stream_params(FileXML *file)
+{
+	Paramlist *par;
+	int num, ix;
+
+	num = atoi(file->tag.get_title() + sizeof(stream_tag) - 1);
+	ix = num % 100;
+	num /= 100;
+
+	if(num >= 0 && num < MAX_DEC_PARAMLISTS && ix >= 0 && ix < MAX_DEC_PARAMLISTS)
+	{
+		delete streams[num].decoding_params[ix];
+		par = new Paramlist();
+		par->load_list(file);
+		streams[num].decoding_params[ix] = par;
+	}
+}
 
 void Asset::write_params(FileXML *file)
 {
@@ -822,7 +936,7 @@ void Asset::write_params(FileXML *file)
 	{
 		if(encoder_parameters[i])
 		{
-			sprintf(bufr, "/%s%02d", paramtag, i);
+			sprintf(bufr, "/%s%02d", encparamtag, i);
 			file->tag.set_title(bufr + 1);
 			file->append_tag();
 			file->append_newline();
@@ -845,9 +959,9 @@ void Asset::read_params(FileXML *file)
 	parm.load_list(file);
 
 	while(!file->read_tag() &&
-		!strncmp(paramtag, file->tag.get_title(), sizeof(paramtag) - 1))
+		!strncmp(encparamtag, file->tag.get_title(), sizeof(encparamtag) - 1))
 	{
-		num = atoi(file->tag.get_title() + sizeof(paramtag) - 1);
+		num = atoi(file->tag.get_title() + sizeof(encparamtag) - 1);
 
 		if(num >= 0 && num < MAX_ENC_PARAMLISTS)
 		{
@@ -1073,6 +1187,13 @@ void Asset::save_render_options()
 {
 	if(renderprofile_path[0])
 		FileAVlibs::save_render_options(this);
+}
+
+void Asset::set_decoder_parameters()
+{
+	FileAVlibs::set_decoder_format_parameters(this);
+	for(int i = 0; i < nb_streams; i++)
+		FileAVlibs::set_stream_decoder_parameters(&streams[i]);
 }
 
 void Asset::load_defaults(Paramlist *list, int options)
@@ -1359,6 +1480,18 @@ void Asset::dump(int indent, int options)
 	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
 		video_duration, video_length, single_image, use_pipe);
 
+	if(options & ASSETDUMP_DECODERPTRS)
+	{
+		printf("%*sdecoder parameters:", indent, "");
+		for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+			printf(" %p", decoder_parameters[i]);
+		putchar('\n');
+	}
+	if(options & ASSETDUMP_DECODERPARAMS)
+	{
+		dump_parameters(indent + 1, 1);
+	}
+
 	if(nb_streams)
 	{
 		printf("%*s%d streams:\n", indent + 2, "", nb_streams);
@@ -1366,7 +1499,7 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d samples:%" PRId64 " codec:'%s' '%s' '%s'",
+				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d samples:%" PRId64 " codec:'%s' '%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
@@ -1375,7 +1508,7 @@ void Asset::dump(int indent, int options)
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " codec:'%s' '%s'",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " codec:'%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
@@ -1383,13 +1516,16 @@ void Asset::dump(int indent, int options)
 					streams[i].length, streams[i].codec,
 					streams[i].samplefmt);
 			}
-			if(streams[i].decoding_params)
+			for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
 			{
-				printf(" decoding_params: %p\n", streams[i].decoding_params);
-				if(options & ASSETDUMP_DECODERPARAMS)
-					streams[i].decoding_params->dump(indent + 5);
+				if(streams[i].decoding_params[j])
+				{
+					printf("%*sstream decoding params %d: %p\n", indent + 5, "",
+						j, streams[i].decoding_params[j]);
+					if(options & ASSETDUMP_DECODERPARAMS)
+						streams[i].decoding_params[j]->dump(indent + 6);
+				}
 			}
-			putchar('\n');
 		}
 		if(last_active)
 		{
@@ -1427,18 +1563,6 @@ void Asset::dump(int indent, int options)
 	}
 	if(options & ASSETDUMP_RENDERPARAMS)
 		dump_parameters(indent + 1, 0);
-
-	if(options & ASSETDUMP_DECODERPTRS)
-	{
-		printf("%*sdecoder parameters:", indent, "");
-		for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
-			printf(" %p", decoder_parameters[i]);
-		putchar('\n');
-	}
-	if(options & ASSETDUMP_DECODERPARAMS)
-	{
-		dump_parameters(indent + 1, 1);
-	}
 }
 
 void Asset::dump_parameters(int indent, int decoder)

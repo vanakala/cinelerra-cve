@@ -230,6 +230,7 @@ int FileAVlibs::probe_input(Asset *asset)
 	AVCodecContext *decoder_ctx;
 #endif
 	AVRational usable_fr;
+	int stact;
 
 	if(!asset->file_mtime.tv_sec || !asset->file_length)
 	{
@@ -265,9 +266,10 @@ int FileAVlibs::probe_input(Asset *asset)
 			return 0;
 		}
 		asset->format = streamformat(ctx);
-		set_decoder_format_params(asset, ctx);
+		get_decoder_format_defaults(asset, ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
+			stact = -1;
 			stream = ctx->streams[i];
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 			decoder_ctx = stream->codec;
@@ -312,7 +314,11 @@ int FileAVlibs::probe_input(Asset *asset)
 					stream->codecpar->channels, stream->codecpar->channel_layout);
 #endif
 				asset->streams[asset->nb_streams].options = STRDSC_AUDIO;
-				asset->streams[asset->nb_streams].decoding_params = get_decoder_params(codec);
+				if(!asset->streams[asset->nb_streams].decoding_params[ASSET_DFDEFLT_IX])
+				{
+					asset->streams[asset->nb_streams].decoding_params[ASSET_DFDEFLT_IX] = get_decoder_params(codec);
+					stact = asset->nb_streams;
+				}
 				asset->streams[asset->nb_streams].samplefmt[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].layout[MAX_LEN_CODECNAME - 1] = 0;
 				asset->nb_streams++;
@@ -351,7 +357,11 @@ int FileAVlibs::probe_input(Asset *asset)
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
-				asset->streams[asset->nb_streams].decoding_params = get_decoder_params(codec);
+				if(!asset->streams[asset->nb_streams].decoding_params[ASSET_DFDEFLT_IX])
+				{
+					asset->streams[asset->nb_streams].decoding_params[ASSET_DFDEFLT_IX] = get_decoder_params(codec);
+					stact = asset->nb_streams;
+				}
 				asset->nb_streams++;
 
 				// correct type of image
@@ -366,6 +376,13 @@ int FileAVlibs::probe_input(Asset *asset)
 						asset->format = FILE_UNKNOWN;
 				}
 				break;
+			}
+			if(stact >= 0 && asset->streams[stact].decoding_params[ASSET_DFDEFLT_IX] &&
+				!asset->streams[stact].decoding_params[ASSET_DFORMAT_IX])
+			{
+				Paramlist *pl = new Paramlist(asset->streams[stact].decoding_params[ASSET_DFDEFLT_IX]->name);
+				pl->copy_from(asset->streams[stact].decoding_params[ASSET_DFDEFLT_IX]);
+				asset->streams[stact].decoding_params[ASSET_DFORMAT_IX] = pl;
 			}
 		}
 		asset->nb_programs = ctx->nb_programs;
@@ -2820,7 +2837,7 @@ void FileAVlibs::set_format_params(Asset *asset)
 	asset->encoder_parameters[ASSET_FMT_IX] = 0;
 }
 
-void FileAVlibs::set_decoder_format_params(Asset *asset, AVFormatContext *ctx)
+void FileAVlibs::get_decoder_format_defaults(Asset *asset, AVFormatContext *ctx)
 {
 	Paramlist *glob, *fmt;
 
@@ -2837,7 +2854,84 @@ void FileAVlibs::set_decoder_format_params(Asset *asset, AVFormatContext *ctx)
 		fmt = glob;
 
 	fmt->store_defaults();
-	asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = fmt;
+	asset->decoder_parameters[ASSET_DFORMAT_IX] = fmt;
+	// Make a clean copy of parameters
+	if(fmt)
+	{
+		glob = new Paramlist(fmt->name);
+		glob->copy_from(fmt);
+		delete asset->decoder_parameters[ASSET_DFDEFLT_IX];
+		asset->decoder_parameters[ASSET_DFDEFLT_IX] = glob;
+	}
+}
+
+void FileAVlibs::change_decoder_format_parameters(Asset *asset)
+{
+	if(asset->decoder_parameters[ASSET_DFORMAT_IX] &&
+			asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX])
+		asset->decoder_parameters[ASSET_DFORMAT_IX]->copy_values(
+			asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX]);
+
+	for(int i = 0; i < asset->nb_streams; i++)
+	{
+		if(asset->streams[i].decoding_params[ASSET_DFORMAT_IX] &&
+				asset->streams[i].decoding_params[FILEAVLIBS_DFORMAT_IX])
+			asset->streams[i].decoding_params[ASSET_DFORMAT_IX]->copy_values(
+				asset->streams[i].decoding_params[FILEAVLIBS_DFORMAT_IX]);
+	}
+}
+
+void FileAVlibs::set_decoder_format_parameters(Asset *asset)
+{
+	Paramlist *list;
+
+	if(!asset->decoder_parameters[ASSET_DFORMAT_IX] ||
+			!asset->decoder_parameters[ASSET_DFDEFLT_IX])
+		return;
+
+	delete asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX];
+
+	list = new Paramlist(asset->decoder_parameters[ASSET_DFORMAT_IX]->name);
+	list->copy_from(asset->decoder_parameters[ASSET_DFORMAT_IX]);
+
+	list->remove_equiv(asset->decoder_parameters[ASSET_DFDEFLT_IX]);
+
+	if(list->total() > 0)
+	{
+		list->clean_list();
+		asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = list;
+	}
+	else
+	{
+		delete list;
+		asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX] = 0;
+	}
+}
+
+void FileAVlibs::set_stream_decoder_parameters(struct streamdesc *stream)
+{
+	Paramlist *list;
+
+	if(!stream->decoding_params[ASSET_DFORMAT_IX] ||
+		!stream->decoding_params[ASSET_DFDEFLT_IX])
+		return;
+
+	delete stream->decoding_params[FILEAVLIBS_DFORMAT_IX];
+
+	list = new Paramlist(stream->decoding_params[ASSET_DFDEFLT_IX]->name);
+	list->copy_from(stream->decoding_params[ASSET_DFORMAT_IX]);
+	list->remove_equiv(stream->decoding_params[ASSET_DFDEFLT_IX]);
+
+	if(list->total() > 0)
+	{
+		list->clean_list();
+		stream->decoding_params[FILEAVLIBS_DFORMAT_IX] = list;
+	}
+	else
+	{
+		delete list;
+		stream->decoding_params[FILEAVLIBS_DFORMAT_IX] = 0;
+	}
 }
 
 Paramlist *FileAVlibs::get_decoder_params(AVCodec *codec)

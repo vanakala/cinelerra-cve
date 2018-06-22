@@ -102,6 +102,7 @@ void AssetEdit::run()
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);
+				asset->set_decoder_parameters();
 
 				mwindow->gui->update(WUPD_CANVREDRAW);
 
@@ -422,8 +423,8 @@ void AudioInfoWindow::draw_window()
 	if(desc->codec[0])
 		show_line(_("Codec:"), desc->codec);
 
-	if(desc->decoding_params)
-		show_button(desc->decoding_params);
+	if(desc->decoding_params[ASSET_DFORMAT_IX])
+		show_button(desc->decoding_params[ASSET_DFORMAT_IX]);
 
 	if(desc->channels)
 		show_line(_("Channels:"), desc->channels);
@@ -455,8 +456,8 @@ void VideoInfoWindow::draw_window()
 	if(desc->codec[0])
 		show_line(_("Codec:"), desc->codec);
 
-	if(desc->decoding_params)
-		show_button(desc->decoding_params);
+	if(desc->decoding_params[ASSET_DFORMAT_IX])
+		show_button(desc->decoding_params[ASSET_DFORMAT_IX]);
 
 	if(desc->frame_rate)
 		show_line(_("Frame rate:"), desc->frame_rate);

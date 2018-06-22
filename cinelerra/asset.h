@@ -47,8 +47,9 @@
 #define MAX_DEC_PARAMLISTS 8
 // Library & Format option lists
 #define ASSET_FMT_IX (MAX_ENC_PARAMLISTS - 1)
-// Positon of decoding parameters
-#define ASSET_DFORMAT_IX 0
+// Positon of decoding library, format and codec options
+#define ASSET_DFORMAT_IX (MAX_DEC_PARAMLISTS - 1)
+#define ASSET_DFDEFLT_IX (MAX_DEC_PARAMLISTS - 2)
 
 struct streamdesc
 {
@@ -64,7 +65,7 @@ struct streamdesc
 	double frame_rate;
 	double sample_aspect_ratio;
 	int options;
-	Paramlist *decoding_params;
+	Paramlist *decoding_params[MAX_DEC_PARAMLISTS];
 	char codec[MAX_LEN_CODECNAME]; // codecname
 	char samplefmt[MAX_LEN_CODECNAME]; // audio or video sample format
 	char layout[MAX_LEN_CODECNAME]; // audio layout
@@ -126,6 +127,7 @@ public:
 	void get_format_params(int options);
 	void set_format_params();
 	void save_render_options();
+	void set_decoder_parameters();
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix,
 		int options);
@@ -163,6 +165,13 @@ public:
 		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
 	void write_index(const char *path, int data_bytes);
+
+// Write decoding parameters to xml
+	void write_decoder_params(FileXML *file);
+// Read decoding parameters from xml
+	void read_decoder_params(FileXML *file);
+// Read stream decoding paramters from xml
+	void read_stream_params(FileXML *file);
 
 // Write/read rendering parameters to xml
 	void write_params(FileXML *file);
