@@ -407,7 +407,7 @@ int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 		strncpy(strbuf, asset->path, BCTEXTLEN);
 		p = dirname(strbuf);
 		if(result = access(p, R_OK|W_OK|X_OK))
-			errorbox("Backgrond rendering: can't write to '%s'", p);
+			errorbox("Background rendering: can't write to '%s'", p);
 	}
 	else
 		result = 1;
