@@ -312,7 +312,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 			{
 				this->streams[i].decoding_params[j] = new Paramlist(
 					asset->streams[i].decoding_params[j]->name);
-				this->streams[i].decoding_params[j]->copy_from(
+				this->streams[i].decoding_params[j]->copy_all(
 					asset->streams[i].decoding_params[j]);
 			}
 		}
@@ -354,7 +354,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 		if(asset->decoder_parameters[i])
 		{
 			decoder_parameters[i] = new Paramlist(asset->decoder_parameters[i]->name);
-			decoder_parameters[i]->copy_from(asset->decoder_parameters[i]);
+			decoder_parameters[i]->copy_all(asset->decoder_parameters[i]);
 		}
 	}
 	if(asset->render_parameters)
