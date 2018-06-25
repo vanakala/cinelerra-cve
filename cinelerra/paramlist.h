@@ -42,7 +42,12 @@ public:
 	void set(int64_t value);
 	void set(double value);
 
+	// Copy data
 	void copy_from(Param *that);
+	// Copy data and help text
+	void copy_all(Param *that);
+	// Copy data without subparams and help text
+	void copy_top_level(Param *that);
 	void set_help(const char *txt);
 	void set_string(const char *txt);
 	Paramlist *add_subparams(const char *name);
@@ -86,7 +91,10 @@ public:
 	void delete_params();
 	// Removes subparams and helptexts
 	void clean_list();
+	// Copy all data
 	void copy_from(Paramlist *that);
+	void copy_all(Paramlist *that);
+	void copy_top_level(Paramlist *that);
 	void copy_values(Paramlist *src);
 	Param *append_param(const char *name, const char *value);
 	Param *append_param(const char *name, int value);

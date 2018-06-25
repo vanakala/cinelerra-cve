@@ -110,6 +110,23 @@ Param::~Param()
 
 void Param::copy_from(Param *that)
 {
+	copy_top_level(that);
+
+	if(that->subparams)
+	{
+		add_subparams(that->subparams->name);
+		subparams->copy_from(that->subparams);
+	}
+}
+
+void Param::copy_all(Param *that)
+{
+	copy_from(that);
+	set_help(that->helptext);
+}
+
+void Param::copy_top_level(Param *that)
+{
 	type |= that->type;
 
 	if(that->type & PARAMTYPE_INT)
@@ -120,11 +137,7 @@ void Param::copy_from(Param *that)
 		floatvalue = that->floatvalue;
 	if(that->type & PARAMTYPE_STR)
 		set_string(that->stringvalue);
-	if(that->subparams)
-	{
-		add_subparams(that->subparams->name);
-		subparams->copy_from(that->subparams);
-	}
+
 	if(that->defaulttype)
 	{
 		defaulttype = that->defaulttype;
@@ -440,6 +453,28 @@ void Paramlist::copy_from(Paramlist *that)
 	{
 		newparam = append_param(cur->name);
 		newparam->copy_from(cur);
+	}
+}
+
+void Paramlist::copy_all(Paramlist *that)
+{
+	Param *cur, *newparam;
+
+	for(cur = that->first; cur; cur = cur->next)
+	{
+		newparam = append_param(cur->name);
+		newparam->copy_all(cur);
+	}
+}
+
+void Paramlist::copy_top_level(Paramlist *that)
+{
+	Param *cur, *newparam;
+
+	for(cur = that->first; cur; cur = cur->next)
+	{
+		newparam = append_param(cur->name);
+		newparam->copy_top_level(cur);
 	}
 }
 
