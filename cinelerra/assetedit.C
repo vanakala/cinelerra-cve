@@ -90,14 +90,19 @@ void AssetEdit::run()
 		{
 			if(!asset->equivalent(*new_asset, STRDSC_ALLTYP))
 			{
-				if(new_asset->audio_data && SampleRateSelection::limits(&new_asset->sample_rate) < 0)
-					errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
-						MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
-				if(new_asset->video_data && FrameRateSelection::limits(&new_asset->frame_rate) < 0)
-					errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
-						MIN_FRAME_RATE, MAX_FRAME_RATE);
-				int newidx = asset->audio_data
-					&& !asset->equivalent(*new_asset, STRDSC_AUDIO);
+				int newidx = 0;
+
+				if(!asset->single_image)
+				{
+					if(new_asset->audio_data && SampleRateSelection::limits(&new_asset->sample_rate) < 0)
+						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
+					if(new_asset->video_data && FrameRateSelection::limits(&new_asset->frame_rate) < 0)
+						errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
+							MIN_FRAME_RATE, MAX_FRAME_RATE);
+					newidx = asset->audio_data
+						&& !asset->equivalent(*new_asset, STRDSC_AUDIO);
+				}
 				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.

@@ -76,6 +76,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
+	{ FILE_SVG, "svg_pipe", 0, SUPPORTS_VIDEO },
 	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 // Needed for proper initalization of streams
 	{ FILE_JPEG, "mjpeg", 0, SUPPORTS_VIDEO },
@@ -430,6 +431,8 @@ int FileAVlibs::probe_input(Asset *asset)
 			asset->set_audio_stream(asset->audio_streamno - 1);
 			asset->set_video_stream(asset->video_streamno - 1);
 		}
+		if(asset->format == FILE_SVG)
+			asset->set_single_image();
 		if(asset->video_data || asset->audio_data)
 			return 1;
 	}
@@ -637,6 +640,12 @@ int FileAVlibs::open_file(int rd, int wr)
 					av_dict_free(&dict);
 				}
 			}
+			if(asset->single_image)
+			{
+				fresh_open = 1;
+				avlibs_lock->unlock();
+				return 0;
+			}
 			tocfile = new FileTOC(this, file->preferences->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
@@ -675,6 +684,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				pts_base = asset->streams[asset->audio_streamno - 1].start;
 			}
 			// Set video duration and length from active stream
+			// Single image has length already set in probe
 			if(asset->video_data && asset->video_streamno)
 			{
 				asset->video_duration =
@@ -1307,7 +1317,10 @@ int FileAVlibs::read_frame(VFrame *frame)
 	if(!avvframe)
 		avvframe = av_frame_alloc();
 
-	rqpos = round((frame->get_source_pts() + pts_base) / av_q2d(stream->time_base));
+	if(!asset->single_image)
+		rqpos = round((frame->get_source_pts() + pts_base) / av_q2d(stream->time_base));
+	else
+		rqpos = 0;
 
 // video_pos..vpkt_pos is in decoder
 	sres = 0;
@@ -2295,9 +2308,23 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64_t pktpos)
 {
 	int res, num;
-	int toc_ix = tocfile->id_to_index(stream_index);
+	int toc_ix;
 	stream_item *itm, *nxtitm;
 
+	if(asset->single_image)
+	{
+		if((res = avformat_seek_file(context, stream_index,
+			INT64_MIN, (int64_t)0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
+		{
+			liberror(res, _("Media seeking failed"));
+			return -1;
+		}
+		avcodec_flush_buffers(codec_contexts[stream_index]);
+		video_eof = 0;
+		return 0;
+	}
+
+	toc_ix = tocfile->id_to_index(stream_index);
 	itm = tocfile->get_item(toc_ix, rqpos, &nxtitm);
 
 	if(itm)

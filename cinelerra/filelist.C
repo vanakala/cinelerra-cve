@@ -115,29 +115,7 @@ int FileList::open_file(int rd, int wr)
 				{
 					asset->format = frame_type;
 					result = read_frame_header(asset->path);
-					asset->layers = 1;
-
-					if(mwindow_global)
-					{
-						if(mwindow_global->edl->session->si_useduration)
-						{
-							asset->frame_rate = 1. /
-								mwindow_global->edl->session->si_duration;
-							asset->video_duration = mwindow_global->edl->session->si_duration;
-						}
-						else
-						{
-							asset->frame_rate = mwindow_global->edl->session->frame_rate;
-							asset->video_duration = 1. / mwindow_global->edl->session->frame_rate;
-						}
-					}
-					asset->video_length = 1;
-					asset->single_image = 1;
-					// Fill stream info
-					int ix = asset->video_streamno - 1;
-					asset->streams[ix].end = asset->video_duration;
-					asset->streams[ix].frame_rate = asset->frame_rate;
-					asset->streams[ix].length = asset->video_length;
+					asset->set_single_image();
 				}
 			}
 		}

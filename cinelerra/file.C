@@ -344,6 +344,7 @@ int File::open_file(Preferences *preferences,
 		file = new FileTIFF(this->asset, this);
 		break;
 
+	case FILE_SVG:
 	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:

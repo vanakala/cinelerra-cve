@@ -307,6 +307,13 @@ else
 	fi
 ############## End of theora
 
+############## librsvg
+	PKG_CHECK_MODULES(librsvg,librsvg-2.0,[librsvg=yes],:)
+	if test "x$librsvg" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-librsvg"
+	fi
+############## End of librsvg
+
 ############# Configure internal AVlibs
 	ff_conf_args="--disable-programs --disable-doc \
 		--disable-postproc --disable-avfilter --disable-network \
@@ -556,6 +563,7 @@ RPT(libx264,H.264/MPEG-4 AVC)
 RPT(libx265,H.265 Video)
 RPT(libvorbis,Ogg Vorbis)
 RPT(libtheora,Theora)
+RPT(librsvg,Scalable Vector Graphics)
 
 if test "x$mandatory" = "xno"; then
 	echo
