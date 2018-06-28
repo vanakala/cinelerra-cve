@@ -27,6 +27,7 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
 #include "fileavlibs.h"
@@ -34,6 +35,7 @@
 #include "formatpresets.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mwindow.h"
 #include "interlacemodes.h"
 #include "paramlist.h"
 #include "renderprofiles.inc"
@@ -41,6 +43,8 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
+
+extern MWindow *mwindow_global;
 
 const char encparamtag[] = "EncParam";
 const char decfmt_tag[] = "Decoding";
@@ -836,6 +840,32 @@ void Asset::write(FileXML *file,
 	file->append_newline();
 }
 
+void Asset::set_single_image()
+{
+	layers = 1;
+
+	if(mwindow_global)
+	{
+		if(mwindow_global->edl->session->si_useduration)
+		{
+			frame_rate = 1. /
+				mwindow_global->edl->session->si_duration;
+			video_duration = mwindow_global->edl->session->si_duration;
+		}
+		else
+		{
+			frame_rate = mwindow_global->edl->session->frame_rate;
+			video_duration = 1. / mwindow_global->edl->session->frame_rate;
+		}
+	}
+	video_length = 1;
+	single_image = 1;
+	// Fill stream info
+	int ix = video_streamno - 1;
+	streams[ix].end = video_duration;
+	streams[ix].frame_rate = frame_rate;
+	streams[ix].length = video_length;
+}
 
 void Asset::write_decoder_params(FileXML *file)
 {
