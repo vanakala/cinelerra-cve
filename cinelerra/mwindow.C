@@ -871,7 +871,7 @@ SET_TRACE
 // Convert media file to EDL
 			case FILE_OK:
 // Warn about odd image dimensions
-				if(new_asset->video_data &&
+				if(!new_asset->single_image && new_asset->video_data &&
 					((new_asset->width % 2) ||
 					(new_asset->height % 2)))
 				{
