@@ -267,7 +267,8 @@ int FileAVlibs::probe_input(Asset *asset)
 			return 0;
 		}
 		asset->format = streamformat(ctx);
-		get_decoder_format_defaults(asset, ctx);
+		if(asset->format != FILE_SVG)
+			get_decoder_format_defaults(asset, ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
 			stact = -1;
@@ -358,7 +359,8 @@ int FileAVlibs::probe_input(Asset *asset)
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
-				if(!asset->streams[asset->nb_streams].decoding_params[ASSET_DFORMAT_IX])
+				if(!asset->streams[asset->nb_streams].decoding_params[ASSET_DFORMAT_IX] &&
+					asset->format != FILE_SVG)
 				{
 					asset->streams[asset->nb_streams].decoding_params[ASSET_DFORMAT_IX] = get_decoder_params(codec);
 					stact = asset->nb_streams;
