@@ -653,15 +653,26 @@ int File::get_samples(AFrame *aframe)
 
 int File::get_frame(VFrame *frame, int is_thread)
 {
+	ptstime rqpts;
+
 	if(video_thread && !is_thread)
 		return video_thread->read_frame(frame);
 
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
+		if(asset->single_image)
+		{
+			frame->set_source_pts(0);
+			use_cache = 1;
+		}
+		rqpts = frame->get_pts();
 // Test cache
 		if(use_cache && frame_cache->get_frame(frame))
+		{
+			frame->set_pts(rqpts);
 			return 0;
+		}
 // Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			!file->converts_frame() &&
@@ -692,6 +703,13 @@ int File::get_frame(VFrame *frame, int is_thread)
 		}
 		else
 			file->read_frame(frame);
+
+		if(asset->single_image)
+		{
+			frame->set_source_pts(0);
+			frame->set_duration(asset->video_duration);
+			frame->set_frame_number(0);
+		}
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);
