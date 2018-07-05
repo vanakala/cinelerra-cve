@@ -120,7 +120,9 @@ void VRender::process_buffer(ptstime input_postime)
 	if(renderengine->command->realtime)
 		video_out = renderengine->video->new_output_buffer(
 			renderengine->edl->session->color_model);
-
+	input_postime = round(input_postime *
+		renderengine->edl->session->frame_rate) /
+		renderengine->edl->session->frame_rate;
 	if(renderengine->brender_available(current_postime))
 	{
 		Asset *asset = renderengine->preferences->brender_asset;
@@ -256,8 +258,11 @@ void VRender::run()
 // advance position in project
 		if(!last_playback)
 		{
-			get_boundaries(current_input_duration, video_out->get_duration());
-			first_frame = advance_position(video_out->get_pts(), current_input_duration);
+			ptstime project_len_pts = renderengine->edl->session->frame_duration();
+
+			get_boundaries(current_input_duration, project_len_pts / 2.0);
+			first_frame = advance_position(video_out->get_pts(),
+				project_len_pts);
 		}
 
 		if(renderengine->command->realtime &&

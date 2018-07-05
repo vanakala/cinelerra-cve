@@ -228,10 +228,6 @@ VFrame *VModule::import_frame(VFrame *output,
 				source->get_frame(output);
 				if(use_cache) source->set_cache_frames(0);
 			}
-// Set pts
-			output->set_pts(output->get_source_pts() -
-				current_edit->get_source_pts() +
-				current_edit->get_pts());
 
 			get_cache()->check_in(current_edit->asset);
 		}
@@ -251,7 +247,6 @@ VFrame *VModule::import_frame(VFrame *output,
 VFrame *VModule::render(VFrame *output)
 {
 	update_transition(output->get_pts());
-
 	VEdit* current_edit = (VEdit*)track->edits->editof(output->get_pts(), 0);
 	VEdit* previous_edit = 0;
 

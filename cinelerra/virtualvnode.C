@@ -195,7 +195,8 @@ void VirtualVNode::render_as_module()
 		mute_fragment,
 		(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE]);
 
-	vrender->video_out->copy_pts(((VirtualVConsole*)vconsole)->output_temp);
+	vrender->video_out->set_duration(renderengine->edl->session->frame_duration());
+
 	if(!mute_constant)
 	{
 // Frame is playable

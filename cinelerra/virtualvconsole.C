@@ -63,6 +63,7 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 
 // clear device buffer
 	vrender->video_out->clear_frame();
+	vrender->video_out->set_pts(input_postime);
 
 // Reset plugin rendering status
 	reset_attachments();
@@ -83,9 +84,5 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 
 		BC_Resources::tmpframes.release_frame(output_temp);
 	}
-
-	if(!exit_nodes.total)
-		vrender->video_out->set_pts(input_postime);
-
 	return;
 }
