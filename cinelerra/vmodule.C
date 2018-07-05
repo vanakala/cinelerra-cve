@@ -248,10 +248,8 @@ VFrame *VModule::import_frame(VFrame *output,
 	return output;
 }
 
-VFrame *VModule::render(VFrame *output,
-	int use_nudge)
+VFrame *VModule::render(VFrame *output)
 {
-	if(use_nudge) output->set_pts(output->get_pts() + track->nudge);
 	update_transition(output->get_pts());
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(output->get_pts(), 0);

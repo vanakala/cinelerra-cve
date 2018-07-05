@@ -665,7 +665,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 	else
 	if(modules->total > channel)
 	{
-		((VModule*)modules->values[channel])->render(buffer, 0);
+		((VModule*)modules->values[channel])->render(buffer);
 	}
 	else
 	{

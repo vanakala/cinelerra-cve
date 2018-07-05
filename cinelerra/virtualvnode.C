@@ -136,7 +136,7 @@ VFrame *VirtualVNode::read_data()
 	if(real_module)
 	{
 // This is the first node in the tree
-		((VModule*)real_module)->render(output_temp, 0);
+		((VModule*)real_module)->render(output_temp);
 	}
 	return output_temp;
 }

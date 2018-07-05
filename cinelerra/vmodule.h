@@ -43,8 +43,7 @@ public:
 	AttachmentPoint* new_attachment(Plugin *plugin);
 
 	CICache* get_cache();
-	VFrame *render(VFrame *output,
-		int use_nudge);
+	VFrame *render(VFrame *output);
 
 private:
 // Read frame from file and perform camera transformation
