@@ -1173,7 +1173,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	int options)
 {
 	char string[BCTEXTLEN];
-	double aspect_ratio;
 
 // Can't save codec here because it's specific to render, record, and effect.
 // The codec has to be UNKNOWN for file probing to work.
@@ -1210,13 +1209,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	}
 
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
-	aspect_ratio = -1.0;
-	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
-	if(aspect_ratio > 0 && !EQUIV(aspect_ratio, 1.0))
-		sample_aspect_ratio = aspect_ratio * height / width;
-	else
-		sample_aspect_ratio = 1.0;
-	sample_aspect_ratio = GET_DEFAULT("SAMPLEASPECT", sample_aspect_ratio);
 
 	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
@@ -1286,7 +1278,6 @@ void Asset::load_defaults(Paramlist *list, int options)
 		list->get("video_codec", vcodec);
 		format_changed();
 		jpeg_quality = list->get("jpeg_quality", jpeg_quality);
-		sample_aspect_ratio = list->get("sample_aspect_ratio", sample_aspect_ratio);
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
 	}
@@ -1321,7 +1312,6 @@ void Asset::save_defaults(Paramlist *list, int options)
 		list->set("audio_codec", acodec);
 		list->set("video_codec", vcodec);
 		list->set("jpeg_quality", jpeg_quality);
-		list->set("sample_aspect_ratio", sample_aspect_ratio);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
 	}
@@ -1402,9 +1392,8 @@ void Asset::save_defaults(BC_Hash *defaults,
 		remove_prefixed_default(defaults, "MP4A_QUANTQUAL", string);
 
 		remove_prefixed_default(defaults, "ASPECT_RATIO", string);
+		remove_prefixed_default(defaults, "SAMPLEASPECT", string);
 		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
-		UPDATE_DEFAULT("SAMPLEASPECT", sample_aspect_ratio);
-
 
 // MPEG format information
 		remove_prefixed_default(defaults, "VMPEG_IFRAME_DISTANCE", string);
