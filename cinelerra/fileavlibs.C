@@ -944,6 +944,9 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			audio_ctx->channels = asset->channels;
 			audio_ctx->channel_layout = av_get_default_channel_layout(asset->channels);
+			if(codec->sample_fmts)
+				audio_ctx->sample_fmt = codec->sample_fmts[0];
+
 			if(aparam->subparams)
 			{
 				if(bparam = aparam->subparams->find(encoder_params[ENC_LAYOUTS].name))
