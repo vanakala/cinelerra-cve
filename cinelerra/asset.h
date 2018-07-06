@@ -110,6 +110,8 @@ public:
 
 	void set_audio_stream(int stream);
 	void set_video_stream(int stream);
+	// Initilalize streams from data
+	void init_streams();
 	int set_program(int pgm);
 	int set_program_id(int program_id);
 	void copy_from(Asset *asset, int do_index);

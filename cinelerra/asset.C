@@ -212,6 +212,46 @@ void Asset::set_video_stream(int stream)
 	active_streams[last_active++] = desc;
 }
 
+void Asset::init_streams()
+{
+	struct streamdesc *desc;
+
+	if(!nb_streams)
+	{
+		if(audio_data)
+		{
+			desc = &streams[nb_streams];
+			desc->stream_index = nb_streams;
+			desc->channels = channels;
+			desc->sample_rate = sample_rate;
+			desc->bits = bits;
+			desc->length = audio_length;
+			desc->start = 0;
+			desc->end = audio_duration;
+			strcpy(desc->codec, acodec);
+			desc->options = STRDSC_AUDIO;
+			active_streams[last_active++] = desc;
+			audio_streamno = ++nb_streams;
+		}
+		if(video_data)
+		{
+			desc = &streams[nb_streams];
+			desc->stream_index = nb_streams;
+			desc->frame_rate = frame_rate;
+			desc->sample_aspect_ratio = sample_aspect_ratio;
+			desc->width = width;
+			desc->height = height;
+			desc->length = video_length;
+			desc->start = 0;
+			desc->end = video_duration;
+			strcpy(desc->codec, vcodec);
+			desc->options = STRDSC_VIDEO;
+			active_streams[last_active++] = desc;
+			video_streamno = ++nb_streams;
+		}
+	}
+}
+
 int Asset::set_program_id(int program_id)
 {
 	for(int i = 0; i < nb_programs; i++)
