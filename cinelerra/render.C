@@ -405,6 +405,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.height = edl->session->output_h;
 		asset.frame_rate = edl->session->frame_rate;
 		asset.interlace_mode = edl->session->interlace_mode;
+		asset.sample_aspect_ratio = edl->session->sample_aspect_ratio;
 	}
 	else
 	{
