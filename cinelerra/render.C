@@ -301,6 +301,7 @@ void Render::run()
 		}
 		// deleting window updates the asset
 		delete window;
+		asset->init_streams();
 		save_defaults(asset);
 		mwindow->save_defaults();
 
