@@ -62,7 +62,7 @@ Asset::Asset(Asset &asset)
  : ListItem<Asset>(), GarbageObject("Asset")
 {
 	init_values();
-	*this = asset;
+	copy_from(&asset, 1);
 }
 
 Asset::Asset(const char *path)
