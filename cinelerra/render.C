@@ -206,7 +206,7 @@ Render::Render(MWindow *mwindow)
 	progress_timer = new Timer;
 	range_type = RANGE_PROJECT;
 	load_mode = LOADMODE_NEW_TRACKS;
-	strategy = RENDER_SINGLE_PASS;
+	strategy = 0;
 }
 
 Render::~Render()
@@ -356,7 +356,10 @@ void Render::run()
 					}
 				}
 				if(!result && !check_asset(edl, *job->asset))
+				{
+					job->asset->init_streams();
 					render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
+				}
 				delete edl;
 				delete file;
 
@@ -628,7 +631,7 @@ int Render::render(int test_overwrite,
 // Get unfinished job
 				RenderPackage *package;
 
-				if((strategy & RENDER_SINGLE_PASS))
+				if(!(strategy & RENDER_FILE_PER_LABEL))
 					package = packages->get_package(frames_per_second, -1, 1);
 				else
 					package = packages->get_package(0, -1, 1);
@@ -788,7 +791,7 @@ void Render::load_defaults(Asset *asset)
 	char string[BCTEXTLEN];
 	char *p;
 
-	strategy = mwindow->defaults->get("RENDER_STRATEGY", RENDER_SINGLE_PASS);
+	strategy = mwindow->defaults->get("RENDER_STRATEGY", 0);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
@@ -802,9 +805,6 @@ void Render::load_defaults(Asset *asset)
 	asset->load_defaults(mwindow->defaults,
 		"RENDER_",
 		ASSET_ALL);
-	// Backward compatibility
-	if(!strategy)
-		strategy = RENDER_SINGLE_PASS;
 	load_profile(asset);
 }
 

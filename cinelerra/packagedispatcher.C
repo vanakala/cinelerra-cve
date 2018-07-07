@@ -41,6 +41,19 @@ PackageDispatcher::PackageDispatcher()
 	packages = 0;
 	package_lock = new Mutex("PackageDispatcher::package_lock");
 	packaging_engine = 0;
+	total_packages = 0;
+	total_allocated = 0;
+	current_package = 0;
+	audio_pts = audio_end_pts = 0;
+	video_pts = video_end_pts = 0;
+	total_start = total_end = total_len = 0;
+	strategy = 0;
+	default_asset = 0;
+	preferences = 0;
+	current_number = number_start = 0;
+	total_digits = 0;
+	package_len = min_package_len = 0;
+	nodes = 0;
 }
 
 PackageDispatcher::~PackageDispatcher()
@@ -66,7 +79,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	int test_overwrite)
 {
 	int result = 0;
-
 	this->mwindow = mwindow;
 	this->edl = edl;
 	this->preferences = preferences;
@@ -81,7 +93,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	audio_end_pts = total_end;
 	video_end_pts = total_end;
 	current_package = 0;
-	if(strategy & RENDER_SINGLE_PASS)
+	if(!(strategy & RENDER_FILE_PER_LABEL))
 	{
 		if(!(strategy & RENDER_FARM))
 		{
@@ -220,15 +232,15 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 
 void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 {
-		if ((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) ==
-				(RENDER_SINGLE_PASS | RENDER_FARM))
-			packaging_engine->get_package_paths(path_list);
-		else
-		{
-			for(int i = 0; i < total_allocated; i++)
-				path_list->append(strdup(packages[i]->path));
-			path_list->set_free();
-		}
+	if ((strategy & (RENDER_FARM | RENDER_FILE_PER_LABEL)) ==
+			RENDER_FARM)
+		packaging_engine->get_package_paths(path_list);
+	else
+	{
+		for(int i = 0; i < total_allocated; i++)
+			path_list->append(strdup(packages[i]->path));
+		path_list->set_free();
+	}
 }
 
 RenderPackage* PackageDispatcher::get_package(double frames_per_second, 
@@ -236,27 +248,21 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int use_local_rate)
 {
 	package_lock->lock("PackageDispatcher::get_package");
-
 	preferences->set_rate(frames_per_second, client_number);
 	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
-	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == RENDER_SINGLE_PASS ||
-		strategy & RENDER_FILE_PER_LABEL)
+	if(!(strategy & RENDER_FARM) && current_package < total_packages)
 	{
-		if(current_package < total_packages)
-		{
-			result = packages[current_package];
-			current_package++;
-		}
+		result = packages[current_package];
+		current_package++;
 	}
 	else
-	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == (RENDER_SINGLE_PASS | RENDER_FARM))
+	if((strategy & (RENDER_FILE_PER_LABEL | RENDER_FARM)) == (RENDER_FARM))
 	{
 		result = packaging_engine->get_package_single_farm(frames_per_second, 
-						client_number,
-						use_local_rate);
+			client_number, use_local_rate);
 	}
 	else
 	if(strategy & RENDER_BRENDER)
@@ -351,7 +357,7 @@ ArrayList<Asset*>* PackageDispatcher::get_asset_list()
 
 ptstime PackageDispatcher::get_progress_max()
 {
-	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == (RENDER_SINGLE_PASS | RENDER_FARM))
+	if((strategy & (RENDER_FILE_PER_LABEL | RENDER_FARM)) == RENDER_FARM)
 		return packaging_engine->get_progress_max();
 	else
 	{

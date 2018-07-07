@@ -29,7 +29,6 @@ class RenderJob;
 class RenderWindow;
 
 // Internal rendering strategies (bits)
-#define RENDER_SINGLE_PASS      1
 #define RENDER_FILE_PER_LABEL   2
 #define RENDER_BRENDER          4
 #define RENDER_FARM             0x80

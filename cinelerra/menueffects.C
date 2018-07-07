@@ -104,7 +104,7 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	asset->load_defaults(defaults, def_prefix,
 		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
-	strategy = defaults->get("RENDER_EFFECT_STRATEGY", RENDER_SINGLE_PASS);
+	strategy = defaults->get("RENDER_EFFECT_STRATEGY", 0);
 
 	delete asset->render_parameters;
 	asset->render_parameters = 0;

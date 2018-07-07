@@ -639,7 +639,7 @@ int FormatMultiple::handle_event()
 	if(get_value())
 		*output = RENDER_FILE_PER_LABEL;
 	else
-		*output = RENDER_SINGLE_PASS;
+		*output = 0;
 	return 1;
 }
 
