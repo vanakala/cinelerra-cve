@@ -679,7 +679,7 @@ char *Paramlist::get(const char *name, char *dflt)
 {
 	Param *pp;
 
-	if((pp = find(name)) && (pp->type & PARAMTYPE_STR))
+	if((pp = find(name)) && (pp->type & PARAMTYPE_STR) && pp->stringvalue)
 		strcpy(dflt, pp->stringvalue);
 	return dflt;
 }
