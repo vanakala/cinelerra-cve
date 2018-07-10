@@ -93,7 +93,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	audio_end_pts = total_end;
 	video_end_pts = total_end;
 	current_package = 0;
-	if(!(strategy & RENDER_FILE_PER_LABEL))
+	if(!(strategy & (RENDER_FILE_PER_LABEL | RENDER_BRENDER)))
 	{
 		if(!(strategy & RENDER_FARM))
 		{
@@ -195,7 +195,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		total_packages = 0;
 		total_allocated = 0;
 		packages = 0;
-
 		Render::get_starting_number(default_asset->path, 
 			current_number,
 			number_start, 
@@ -253,7 +252,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
-	if(!(strategy & RENDER_FARM) && current_package < total_packages)
+
+	if((!(strategy & RENDER_FARM) || strategy & RENDER_FILE_PER_LABEL) &&
+		current_package < total_packages)
 	{
 		result = packages[current_package];
 		current_package++;

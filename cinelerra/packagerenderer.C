@@ -132,6 +132,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	default_asset->sample_aspect_ratio =
 		command->get_edl()->session->sample_aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
+	default_asset->init_streams();
 
 	audio_cache = new CICache(preferences);
 	video_cache = new CICache(preferences);

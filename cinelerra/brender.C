@@ -423,6 +423,9 @@ void BRenderThread::start()
 		preferences->brender_asset->width = command->edl->session->output_w;
 		preferences->brender_asset->height = command->edl->session->output_h;
 		preferences->brender_asset->interlace_mode = command->edl->session->interlace_mode;
+		preferences->brender_asset->sample_aspect_ratio = command->edl->session->sample_aspect_ratio;
+		preferences->brender_asset->video_data = 1;
+		preferences->brender_asset->init_streams();
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
