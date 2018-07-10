@@ -53,6 +53,7 @@ int Quit::handle_event()
 	else 
 	{        // quit
 		mwindow->interrupt_indexes();
+		mwindow->delete_brender();
 		mwindow->glthread->quit();
 	}
 	return 1;
@@ -81,6 +82,7 @@ void Quit::run()
 		if(mwindow->gui)
 		{
 			mwindow->interrupt_indexes();
+			mwindow->delete_brender();
 			mwindow->glthread->quit();
 		}
 		break;

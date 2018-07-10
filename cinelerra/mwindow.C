@@ -181,10 +181,7 @@ MWindow::MWindow(const char *config_path)
 
 MWindow::~MWindow()
 {
-	brender_lock->lock("MWindow::~MWindow");
-	if(brender) delete brender;
-	brender = 0;
-	brender_lock->unlock();
+	delete_brender();
 	delete brender_lock;
 
 	delete mainindexes;
@@ -777,22 +774,28 @@ void MWindow::init_brender()
 {
 	if(preferences->use_brender && !brender)
 	{
-		brender_lock->lock("MWindow::init_brender 1");
+		brender_lock->lock("MWindow::init_brender");
 		brender = new BRender(this);
 		brender->initialize();
 		session->brender_end = 0;
 		brender_lock->unlock();
+		brender->restart(edl);
 	}
 	else
 	if(!preferences->use_brender && brender)
+		delete_brender();
+}
+
+void MWindow::delete_brender()
+{
+	brender_lock->lock("MWindow::delete_brender");
+	if(brender)
 	{
-		brender_lock->lock("MWindow::init_brender 2");
 		delete brender;
 		brender = 0;
 		session->brender_end = 0;
-		brender_lock->unlock();
 	}
-	if(brender) brender->restart(edl);
+	brender_lock->unlock();
 }
 
 void MWindow::restart_brender()

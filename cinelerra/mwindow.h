@@ -452,6 +452,8 @@ public:
 // These three happen synchronously with each other
 // Make sure this is called after synchronizing EDL's.
 	void init_brender();
+// Delete brender
+	void delete_brender();
 // Restart brender after testing its existence
 	void restart_brender();
 // Stops brender after testing its existence
