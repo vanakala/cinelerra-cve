@@ -46,7 +46,7 @@ PackagingEngineDefault::~PackagingEngineDefault()
 }
 
 
-int PackagingEngineDefault::create_packages_single_farm(
+void PackagingEngineDefault::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
@@ -94,7 +94,6 @@ int PackagingEngineDefault::create_packages_single_farm(
 			number_start);
 		current_number++;
 	}
-
 }
 
 RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per_second, 
