@@ -114,7 +114,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		}
 		else
 		{
-			packaging_engine = (PackagingEngine*) new PackagingEngineDefault();
+			packaging_engine = new PackagingEngine();
 			packaging_engine->create_packages_single_farm(
 					edl,
 					preferences,
@@ -372,11 +372,4 @@ ptstime PackageDispatcher::get_progress_max()
 int PackageDispatcher::get_total_packages()
 {
 	return total_allocated;
-}
-
-int PackageDispatcher::packages_are_done()
-{
-	if (packaging_engine)
-		return packaging_engine->packages_are_done();
-	return 0;
 }

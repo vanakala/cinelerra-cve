@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "packagingengine.h"
 #include "preferences.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "asset.h"
 #include "render.h"
@@ -30,12 +31,12 @@
 
 // Default packaging engine implementation, simply split the range up, and consider client's speed
 
-PackagingEngineDefault::PackagingEngineDefault()
+PackagingEngine::PackagingEngine()
 {
 	packages = 0;
 }
 
-PackagingEngineDefault::~PackagingEngineDefault()
+PackagingEngine::~PackagingEngine()
 {
 	if(packages)
 	{
@@ -46,7 +47,7 @@ PackagingEngineDefault::~PackagingEngineDefault()
 }
 
 
-void PackagingEngineDefault::create_packages_single_farm(
+void PackagingEngine::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
@@ -96,7 +97,7 @@ void PackagingEngineDefault::create_packages_single_farm(
 	}
 }
 
-RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per_second, 
+RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second,
 		int client_number,
 		int use_local_rate)
 {
@@ -179,7 +180,7 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 
 }
 
-void PackagingEngineDefault::get_package_paths(ArrayList<char*> *path_list)
+void PackagingEngine::get_package_paths(ArrayList<char*> *path_list)
 {
 	for(int i = 0; i < total_allocated; i++)
 	{
@@ -188,7 +189,7 @@ void PackagingEngineDefault::get_package_paths(ArrayList<char*> *path_list)
 	path_list->set_free();
 }
 
-ptstime PackagingEngineDefault::get_progress_max()
+ptstime PackagingEngine::get_progress_max()
 {
 	return (total_end - total_start) + preferences->render_preroll * total_packages +
 		(preferences->render_preroll >= total_start ? total_start - preferences->render_preroll : 0);

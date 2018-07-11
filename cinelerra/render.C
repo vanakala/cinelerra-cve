@@ -654,10 +654,7 @@ int Render::render(int test_overwrite,
 			} // file_number
 		}
 		else
-		{
 			farm_server->wait_clients();
-			result |= packages->packages_are_done();
-		}
 
 // Notify of error
 		if(result && (!progress || !progress->is_cancelled()) &&

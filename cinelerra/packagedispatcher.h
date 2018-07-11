@@ -61,7 +61,6 @@ public:
 
 	int get_total_packages();
 	ptstime get_progress_max();
-	int packages_are_done();
 
 private:
 	EDL *edl;

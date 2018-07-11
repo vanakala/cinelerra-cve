@@ -22,36 +22,20 @@
 #ifndef PACKAGINGENGINE_H
 #define PACKAGINGENGINE_H
 
-#include "edl.h"
-#include "packagerenderer.h"
+#include "asset.inc"
+#include "datatype.h"
+#include "edl.inc"
+#include "preferences.inc"
+#include "packagerenderer.inc"
 
 // Classes used for different packaging strategies, which allow for customary splitting of packages
 // Used for renderfarm jobs
+
 class PackagingEngine
 {
 public:
-	virtual void create_packages_single_farm(
-		EDL *edl,
-		Preferences *preferences,
-		Asset *default_asset, 
-		ptstime total_start, 
-		ptstime total_end) = 0;
-	virtual RenderPackage* get_package_single_farm(double frames_per_second, 
-		int client_number,
-		int use_local_rate) = 0;
-	virtual ptstime get_progress_max() = 0;
-	virtual void get_package_paths(ArrayList<char*> *path_list) = 0;
-	virtual int packages_are_done() { return 0; };
-};
-
-// Classes used for different packaging strategies, which allow for customary splitting of packages
-// Used for renderfarm jobs
-
-class PackagingEngineDefault : public PackagingEngine
-{
-public:
-	PackagingEngineDefault();
-	~PackagingEngineDefault();
+	PackagingEngine();
+	~PackagingEngine();
 	void create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,

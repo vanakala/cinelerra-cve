@@ -24,6 +24,7 @@
 
 #include "asset.inc"
 #include "bchash.inc"
+#include "bcwindowbase.inc"
 #include "cinelerra.h"
 #include "mutex.inc"
 #include "preferences.inc"
