@@ -93,7 +93,35 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	audio_end_pts = total_end;
 	video_end_pts = total_end;
 	current_package = 0;
-	if(!(strategy & (RENDER_FILE_PER_LABEL | RENDER_BRENDER)))
+
+	if(strategy & RENDER_BRENDER)
+	{
+		total_len = this->total_end - this->total_start;
+// Create packages as they're requested.
+		total_packages = 0;
+		total_allocated = 0;
+		packages = 0;
+		Render::get_starting_number(default_asset->path,
+			current_number,
+			number_start,
+			total_digits,
+			6);
+
+// Master node only
+		if(preferences->renderfarm_nodes.total == 1)
+		{
+			package_len = total_len;
+			min_package_len = total_len;
+		}
+		else
+		{
+			package_len = preferences->brender_fragment /
+				edl->session->frame_rate;
+			min_package_len = 1.0 / edl->session->frame_rate;
+		}
+	}
+	else
+	if(!(strategy & RENDER_FILE_PER_LABEL))
 	{
 		if(!(strategy & RENDER_FARM))
 		{
@@ -186,33 +214,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 			total_packages++;
 		}
 		total_allocated = total_packages;
-	}
-	else
-	if(strategy & RENDER_BRENDER)
-	{
-		total_len = this->total_end - this->total_start;
-// Create packages as they're requested.
-		total_packages = 0;
-		total_allocated = 0;
-		packages = 0;
-		Render::get_starting_number(default_asset->path, 
-			current_number,
-			number_start, 
-			total_digits,
-			6);
-
-// Master node only
-		if(preferences->renderfarm_nodes.total == 1)
-		{
-			package_len = total_len;
-			min_package_len = total_len;
-		}
-		else
-		{
-			package_len = preferences->brender_fragment / 
-				edl->session->frame_rate;
-			min_package_len = 1.0 / edl->session->frame_rate;
-		}
 	}
 
 // Test existence of every output file.
