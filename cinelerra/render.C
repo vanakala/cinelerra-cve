@@ -322,6 +322,7 @@ void Render::run()
 		for(int i = 0; i < jobs->total && !result; i++)
 		{
 			BatchRenderJob *job = jobs->values[i];
+
 			if(job->enabled)
 			{
 				if(mwindow)
@@ -358,7 +359,7 @@ void Render::run()
 				if(!result && !check_asset(edl, *job->asset))
 				{
 					job->asset->init_streams();
-					render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
+					render(0, job->asset, edl, job->strategy, RANGE_PROJECT);
 				}
 				delete edl;
 				delete file;
@@ -505,13 +506,6 @@ int Render::render(int test_overwrite,
 
 	switch(range_type)
 	{
-	case RANGE_BACKCOMPAT:
-// Get highlighted playback range
-		command->set_playback_range();
-// Adjust playback range with in/out points
-		command->playback_range_adjust_inout();
-		break;
-
 	case RANGE_PROJECT:
 		command->playback_range_project();
 		break;

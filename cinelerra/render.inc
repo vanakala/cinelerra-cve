@@ -33,7 +33,6 @@ class RenderWindow;
 #define RENDER_BRENDER          4
 #define RENDER_FARM             0x80
 
-#define RANGE_BACKCOMPAT        0
 #define RANGE_PROJECT           1
 #define RANGE_SELECTION         2
 #define RANGE_INOUT             3
