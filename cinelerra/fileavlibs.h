@@ -117,7 +117,7 @@ private:
 	AVDictionary *create_encoder_dictionary(int options);
 	void list2dictionary(AVDictionary **dict, Paramlist *params);
 	static int streamformat(AVFormatContext *context);
-	static void liberror(int code, const char *prefix);
+	static void liberror(int code, const char *fmt, ...);
 	static Paramlist *scan_global_options(int options);
 	static AVOutputFormat *output_format(int format);
 	static Paramlist *scan_format_options(int format, int options);

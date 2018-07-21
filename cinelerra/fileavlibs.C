@@ -53,6 +53,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 
 extern const char *version_name;
@@ -1035,8 +1036,8 @@ int FileAVlibs::open_file(int rd, int wr)
 		{
 			if((rv = avio_open(&context->pb, context->filename, AVIO_FLAG_WRITE)) < 0)
 			{
-				errormsg(_("Could not open output file '%s': %d"),
-					context->filename, rv);
+				liberror(rv, _("Could not open output file '%s'"),
+					context->filename);
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -2001,14 +2002,17 @@ const char *FileAVlibs::encoder_formatname(int fileformat)
 	return 0;
 }
 
-void FileAVlibs::liberror(int code, const char *prefix)
+void FileAVlibs::liberror(int code, const char *fmt, ...)
 {
 	int len;
+	va_list ap;
 	char string[BCTEXTLEN];
 
-	strcpy(string, prefix);
-	strcat(string, ": ");
-	len = strlen(string);
+	va_start(ap, fmt);
+	len = vsnprintf(string, BCTEXTLEN, fmt, ap);
+	va_end(ap);
+	string[len++] = ':';
+	string[len++] = ' ';
 	av_strerror(code, &string[len], BCTEXTLEN - 1 - len);
 	errormsg("%s", string);
 }
