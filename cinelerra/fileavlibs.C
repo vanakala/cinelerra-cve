@@ -1682,6 +1682,9 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			if(!res)
 				got_it = 1;
 			else
+			if(res == AVERROR_EOF)
+				audio_eof = 1;
+			else
 			if(res != AVERROR(EAGAIN))
 #endif
 			{
