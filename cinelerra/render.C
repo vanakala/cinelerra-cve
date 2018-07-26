@@ -596,14 +596,8 @@ int Render::render(int test_overwrite,
 			if(result)
 			{
 				if(mwindow)
-				{
-					errorbox(_("Failed to start render farm"));
 					mwindow->gui->stop_hourglass();
-				}
-				else
-				{
-					printf("Render::render: Failed to start render farm\n");
-				}
+				errormsg(_("Failed to start render farm"));
 			}
 		}
 	}
