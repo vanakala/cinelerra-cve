@@ -94,10 +94,10 @@ public:
 	virtual void set_video_map(ptstime start, ptstime end) {};
 	virtual int progress_cancelled() { return 0; };
 
-	void create_output();
+	int create_output();
 	void create_engine();
-	void do_audio();
-	void do_video();
+	int do_audio();
+	int do_video();
 	void stop_engine();
 	void stop_output();
 	void close_output();
@@ -114,8 +114,6 @@ public:
 	ptstime audio_preroll;
 	int audio_read_length;
 	File *file;
-// This is 1 if an error is encountered.
-	int result;
 	VFrame ***video_output;
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
@@ -136,6 +134,7 @@ public:
 	ptstime brender_base;
 	int video_write_length;
 	int video_write_position;
+	char pkg_error[BCTEXTLEN];
 };
 
 #endif

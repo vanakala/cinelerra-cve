@@ -93,6 +93,7 @@ PackageRenderer::PackageRenderer()
 	video_cache = 0;
 	aconfig = 0;
 	vconfig = 0;
+	pkg_error[0] = 0;
 }
 
 PackageRenderer::~PackageRenderer()
@@ -145,8 +146,10 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	return result;
 }
 
-void PackageRenderer::create_output()
+int PackageRenderer::create_output()
 {
+	int result;
+
 	asset = new Asset(*default_asset);
 	strcpy(asset->path, package->path);
 
@@ -168,6 +171,7 @@ void PackageRenderer::create_output()
 		mwindow->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
+	return result;
 }
 
 void PackageRenderer::create_engine()
@@ -244,12 +248,14 @@ void PackageRenderer::create_engine()
 		1);
 }
 
-void PackageRenderer::do_audio()
+int PackageRenderer::do_audio()
 {
 	AFrame *audio_output_ptr[MAX_CHANNELS];
 	AFrame **audio_output;
 	AFrame *af;
 	ptstime buffer_duration;
+	int result;
+
 // Do audio data
 	if(asset->audio_data)
 	{
@@ -272,7 +278,8 @@ void PackageRenderer::do_audio()
 			audio_output_ptr[i] = af;
 		}
 // Call render engine
-		result = render_engine->arender->process_buffer(audio_output_ptr);
+		if(result = render_engine->arender->process_buffer(audio_output_ptr))
+			return result;
 
 // Fix buffers for preroll
 		int output_length = audio_read_length;
@@ -301,11 +308,14 @@ void PackageRenderer::do_audio()
 		result |= file->write_audio_buffer(output_length);
 	}
 	audio_pts += (ptstime)audio_read_length / default_asset->sample_rate;
+	return 0;
 }
 
-void PackageRenderer::do_video()
+int PackageRenderer::do_video()
 {
 // Do video data
+	int result;
+
 	if(asset->video_data)
 	{
 		ptstime video_end = video_pts + video_read_length;
@@ -314,7 +324,7 @@ void PackageRenderer::do_video()
 		if(video_end > package->video_end_pts)
 			video_end = package->video_end_pts;
 
-		while(video_pts < video_end && !result)
+		while(video_pts < video_end)
 		{
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
@@ -324,16 +334,13 @@ void PackageRenderer::do_video()
 // Construct layered output buffer
 			video_output_ptr = video_output[0][video_write_position];
 			video_output_ptr->set_pts(video_pts);
-			if(!result)
-				video_output[0][video_write_position] = video_output_ptr =
-					render_engine->vrender->process_buffer(video_output_ptr);
+			video_output[0][video_write_position] = video_output_ptr =
+				render_engine->vrender->process_buffer(video_output_ptr);
 			duration = 1.0 / asset->frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);
 
-			if(!result &&
-				mwindow &&
-				video_device->output_visible())
+			if(mwindow && video_device->output_visible())
 			{
 // Vector for video device
 				VFrame *preview_output = video_device->new_output_buffer(
@@ -345,15 +352,15 @@ void PackageRenderer::do_video()
 			}
 
 // Don't write to file
-			if(video_preroll > 0 && !result)
+			if(video_preroll > 0)
 			{
 				video_preroll -= duration;
 // Keep the write position at 0 until ready to write real frames
-				result = file->write_video_buffer(0);
+				if(result = file->write_video_buffer(0))
+					return result;
 				video_write_position = 0;
 			}
 			else
-			if(!result)
 			{
 // Set background rendering parameters
 // Allow us to skip sections of the output file by setting the frame number.
@@ -365,6 +372,9 @@ void PackageRenderer::do_video()
 				if(video_write_position >= video_write_length)
 				{
 					result = file->write_video_buffer(video_write_position);
+
+					if(result)
+						return result;
 // Update the brender map after writing the files.
 					if(package->use_brender)
 						set_video_map(brender_base, video_pts + duration);
@@ -374,12 +384,13 @@ void PackageRenderer::do_video()
 			}
 			package->count++;
 			video_pts += duration;
-			if(!result && get_result()) result = 1;
-			if(!result && progress_cancelled()) result = 1;
+			if(get_result() || progress_cancelled())
+				return 1;
 		}
 	}
 	else
 		video_pts += video_read_length;
+	return 0;
 }
 
 void PackageRenderer::stop_engine()
@@ -429,8 +440,8 @@ int PackageRenderer::render_package(RenderPackage *package)
 	int audio_done = 0;
 	int video_done = 0;
 	ptstime duration_rendered = 0;
+	int result = 0;
 
-	result = 0;
 	this->package = package;
 	brender_base = -1;
 
@@ -439,7 +450,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 	default_asset->audio_data = package->audio_do;
 	Render::check_asset(edl, *default_asset);
 
-	create_output();
+	if(create_output())
+	{
+		sprintf(pkg_error, _("Failed to create %s\n"), package->path);
+		result = 1;
+	}
 
 	if(!asset->video_data) video_done = 1;
 	if(!asset->audio_data) audio_done = 1;
@@ -449,7 +464,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 	{
 		create_engine();
 // Main loop
-		while((!audio_done || !video_done) && !result)
+		while(!audio_done || !video_done && !result)
 		{
 			int need_audio = 0, need_video = 0;
 
@@ -499,18 +514,38 @@ int PackageRenderer::render_package(RenderPackage *package)
 				need_video = 1;
 			}
 
-			if(need_video && !result) do_video();
+			if(need_video)
+			{
+				if(do_video())
+				{
+					sprintf(pkg_error, _("Failed to render video to %s\n"),
+						package->path);
+					result = 1;
+					break;
+				}
+			}
 
-			if(need_audio && !result) do_audio();
+			if(need_audio)
+			{
+				if(do_audio())
+				{
+					sprintf(pkg_error, _("Failed to render audio to %s\n"),
+						package->path);
+					result = 1;
+					break;
+				}
+			}
 
-			if(!result) set_progress(duration_rendered);
+			set_progress(duration_rendered);
 
-			if(!result && progress_cancelled()) result = 1;
+			if(progress_cancelled())
+			{
+				sprintf(pkg_error, _("Rendering canelled"));
+				result = 1;
+				break;
+			}
 
-			if(result) 
-				set_result(result);
-			else
-				result = get_result();
+			result = get_result();
 		}
 
 		stop_engine();
