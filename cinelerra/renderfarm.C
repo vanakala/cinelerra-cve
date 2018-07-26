@@ -392,7 +392,7 @@ void RenderFarmServerThread::run()
 			break;
 
 		case RENDERFARM_SET_RESULT:
-			set_result((const char *)buffer);
+			set_result(buffer[0] & 0xff, (const char *)buffer + 1);
 			break;
 
 		case RENDERFARM_SET_VMAP:
@@ -545,10 +545,12 @@ void RenderFarmServerThread::set_video_map(const char *buffer)
 }
 
 
-void RenderFarmServerThread::set_result(const char *buffer)
+void RenderFarmServerThread::set_result(int val, const char *msg)
 {
 	if(!*server->result_return)
-		*server->result_return = buffer[0];
+		*server->result_return = val;
+	if(val && msg[0])
+		errormsg("%s",   msg);
 }
 
 
@@ -610,9 +612,7 @@ void RenderFarmWatchdog::run()
 			if(server)
 			{
 				server->cancel();
-				unsigned char buffer[4];
-				buffer[0] = 1;
-				server->set_result((const char *)buffer);
+				server->set_result(1);
 			}
 
 			done = 1;

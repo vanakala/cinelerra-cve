@@ -233,7 +233,7 @@ public:
 	void send_package(const unsigned char *buffer);
 	void set_progress(const char *buffer);
 	void set_video_map(const char *buffer);
-	void set_result(const char *buffer);
+	void set_result(int val, const char *msg = 0);
 	void get_result();
 	void reallocate_buffer(int size);
 	void run();
