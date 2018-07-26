@@ -178,7 +178,7 @@ public:
 // Open connections to clients.
 	int start_clients();
 // The render farm must wait for all the clients to finish.
-	int wait_clients();
+	void wait_clients();
 
 // Likewise the render farm must check the internal render loop before 
 // dispatching the next job and whenever a client queries for errors.

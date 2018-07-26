@@ -105,10 +105,9 @@ int RenderFarmServer::start_clients()
 }
 
 // The render farm must wait for all the clients to finish.
-int RenderFarmServer::wait_clients()
+void RenderFarmServer::wait_clients()
 {
 	clients.remove_all_objects();
-	return 0;
 }
 
 
@@ -148,7 +147,7 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 	{
 		if((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
 		{
-			perror(_("RenderFarmServerThread::start_loop: socket\n"));
+			errormsg(_("Failed to create unix socket: %m"));
 			result = 1;
 		}
 		else
@@ -172,9 +171,8 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 					attempt++;
 					if(attempt > 30000000 / ATTEMPT_DELAY)
 					{
-						fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"), 
-							hostname, 
-							strerror(errno));
+						errormsg(_("Failed to connect to %s: %m"),
+							hostname);
 						result = 1;
 					}
 					else
@@ -190,7 +188,7 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 	{
 		if((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 		{
-			perror(_("RenderFarmServerThread::start_loop: socket"));
+			errormsg(_("Failed to create inet server socket: %m"));
 			result = 1;
 		}
 		else
@@ -203,19 +201,18 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 			hostinfo = gethostbyname(hostname);
 			if(hostinfo == NULL)
 			{
-				fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"), 
+				errormsg(_("Renderfarm host %s is unknown"),
 					hostname);
 				result = 1;
 			}
 			else
 			{
-				addr.sin_addr = *(struct in_addr *) hostinfo->h_addr;	
+				addr.sin_addr = *(struct in_addr *) hostinfo->h_addr;
 
 				if(connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 				{
-					fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"), 
-						hostname, 
-						strerror(errno));
+					errormsg(_("Failed to connect to %s: %m"),
+						hostname);
 					result = 1;
 				}
 			}
@@ -223,28 +220,23 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 	}
 
 	if(result) socket_fd = -1;
-
 	return socket_fd;
 }
 
 int RenderFarmServerThread::start_loop()
 {
-	int result = 0;
-
 	socket_fd = open_client(server->preferences->get_node_hostname(number), 
 		server->preferences->get_node_port(number));
 
-	if(socket_fd < 0) result = 1;
+	if(socket_fd < 0)
+		return 1;
 
-	if(!result)
-	{
-		watchdog = new RenderFarmWatchdog(this, 0);
-		watchdog->start();
-	}
+	watchdog = new RenderFarmWatchdog(this, 0);
+	watchdog->start();
 
-	if(!result) Thread::start();
+	Thread::start();
 
-	return result;
+	return 0;
 }
 
 
@@ -456,7 +448,6 @@ void RenderFarmServerThread::send_preferences()
 	server->preferences->save_defaults(&defaults);
 	defaults.save_string(string);
 	write_string(string);
-
 	delete [] string;
 }
 
@@ -483,14 +474,14 @@ void RenderFarmServerThread::send_edl()
 
 void RenderFarmServerThread::send_package(const unsigned char *buffer)
 {
+	char datagram[BCTEXTLEN];
+
 	this->frames_per_second = str2pts((const char *)buffer, 0);
 
 	RenderPackage *package = 
 		server->packages->get_package(frames_per_second, 
 			number, 
 			server->use_local_rate);
-
-	datagram = new char[BCTEXTLEN];
 
 // No more packages
 	if(!package)
@@ -521,8 +512,6 @@ void RenderFarmServerThread::send_package(const unsigned char *buffer)
 
 		write_socket(datagram, len);
 	}
-	delete [] datagram;
-	datagram = 0;
 }
 
 
