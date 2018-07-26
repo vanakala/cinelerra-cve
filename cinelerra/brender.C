@@ -175,6 +175,20 @@ void BRender::stop()
 	completion_lock->lock("BRender::stop");
 }
 
+void BRender::render_done()
+{
+	if(thread->farm_result)
+	{
+		// brender failed
+		videomap.set_map(0.0, videomap.last->pts, 0);
+		mwindow->edl->session->brender_start = 0;
+		mwindow->session->brender_end = 0;
+		errormsg(_("Background rendering failed"));
+	}
+	mwindow->gui->timebar->update();
+	mwindow->gui->timebar->flush();
+}
+
 void BRender::allocate_map(ptstime brender_start, ptstime start, ptstime end)
 {
 	map_lock->lock("BRender::allocate_map");
@@ -461,7 +475,6 @@ void BRenderThread::start()
 			brender);
 
 		result = farm_server->start_clients();
-
 // No local rendering because of codec problems.
 
 // Abort

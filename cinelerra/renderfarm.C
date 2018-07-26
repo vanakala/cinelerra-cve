@@ -404,6 +404,8 @@ void RenderFarmServerThread::run()
 			break;
 
 		case RENDERFARM_DONE:
+			if(server->brender)
+				server->brender->render_done();
 			done = 1;
 			break;
 

@@ -92,6 +92,8 @@ public:
 	void allocate_map(ptstime brender_start, ptstime start, ptstime end);
 // Mark a frame as finished
 	void set_video_map(ptstime start, ptstime end);
+// Called when rendering ends
+	void render_done();
 
 	void initialize();
 	void run();
