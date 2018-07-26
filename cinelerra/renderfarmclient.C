@@ -95,7 +95,6 @@ void RenderFarmClient::main_loop()
 	int socket_fd;
 
 // Open listening port
-
 	if(!deamon_path)
 	{
 		struct sockaddr_in addr;
@@ -662,14 +661,20 @@ int FarmPackageRenderer::get_result()
 	return data[0];
 }
 
-void FarmPackageRenderer::set_result(int value)
+void FarmPackageRenderer::set_result(int value, const char *msg)
 {
 	unsigned char data[1];
+	int len = 0;
 
 	thread->lock("FarmPackageRenderer::set_result");
-	thread->send_request_header(RENDERFARM_SET_RESULT, 1);
+	if(msg && msg[0])
+		len = strlen(msg) + 1;
+
+	thread->send_request_header(RENDERFARM_SET_RESULT, len + 1);
 	data[0] = value;
 	thread->write_socket((char*)data, 1);
+	if(len)
+		thread->write_socket(msg, len);
 	thread->unlock();
 }
 

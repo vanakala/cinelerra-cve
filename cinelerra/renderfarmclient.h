@@ -120,7 +120,7 @@ public:
 		int socket_fd);
 
 	int get_result();
-	void set_result(int value);
+	void set_result(int value, const char *msg = 0);
 	void set_progress(ptstime value);
 	void set_video_map(ptstime start, ptstime end);
 

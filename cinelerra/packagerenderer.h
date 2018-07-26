@@ -86,7 +86,7 @@ public:
 	virtual int get_master() { return 0; };
 // Get result status from server
 	virtual int get_result() { return 0; };
-	virtual void set_result(int value) {};
+	virtual void set_result(int value, const char *msg = 0) {};
 	virtual void set_progress(ptstime duration) {};
 // Used by background rendering to mark a frame as finished.
 // If the GUI is locked for a long time this may abort, 

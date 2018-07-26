@@ -553,6 +553,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	}
 
 	close_output();
-	set_result(result);
+	set_result(result, pkg_error);
 	return result;
 }
