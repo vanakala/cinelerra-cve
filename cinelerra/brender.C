@@ -473,7 +473,6 @@ void BRenderThread::start()
 			preferences->brender_asset,
 			command->edl,
 			brender);
-
 		result = farm_server->start_clients();
 // No local rendering because of codec problems.
 

@@ -88,19 +88,32 @@ RenderFarmServer::~RenderFarmServer()
 int RenderFarmServer::start_clients()
 {
 	int result = 0;
+	int brendernode = preferences->get_brender_node();
 
-	for(int i = 0; i < preferences->get_enabled_nodes() && !result; i++)
+	if(brender)
 	{
-		client_lock->lock("RenderFarmServer::start_clients");
-		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb, 
-			this, 
-			i);
+		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb,
+			this, brendernode);
 		clients.append(client);
-
 		result = client->start_loop();
-		client_lock->unlock();
 	}
+	else
+	{
+		int enabled = preferences->get_enabled_nodes();
 
+		for(int i = 0; i < enabled && !result; i++)
+		{
+			if(brendernode < 0 || i != brendernode)
+			{
+				client_lock->lock("RenderFarmServer::start_clients");
+				RenderFarmServerThread *client = new RenderFarmServerThread(
+					plugindb, this, i);
+				clients.append(client);
+				result = client->start_loop();
+				client_lock->unlock();
+			}
+		}
+	}
 	return result;
 }
 

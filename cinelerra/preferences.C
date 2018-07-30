@@ -534,6 +534,24 @@ int Preferences::get_enabled_nodes()
 	return result;
 }
 
+int Preferences::get_brender_node()
+{
+	int number = 0;
+
+	for(int i = 0; i < renderfarm_nodes.total; i++)
+	{
+		if(renderfarm_enabled.values[i])
+		{
+			if(renderfarm_enabled.values[i] &&
+					renderfarm_nodes.values[i][0] == '/')
+				return number;
+			else
+				number++;
+		}
+	}
+	return -1;
+}
+
 const char* Preferences::get_node_hostname(int number)
 {
 	int total = 0;

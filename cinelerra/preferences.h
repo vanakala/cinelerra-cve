@@ -58,6 +58,7 @@ public:
 	void sort_nodes();
 	void edit_node(int number, char *new_text, int port, int enabled);
 	int get_enabled_nodes();
+	int get_brender_node();
 	const char* get_node_hostname(int number);
 	int get_node_port(int number);
 
