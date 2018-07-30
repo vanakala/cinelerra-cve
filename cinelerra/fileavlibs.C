@@ -2729,13 +2729,23 @@ void FileAVlibs::restore_codec_options(Paramlist *codecs)
 							p->set(atof(p->stringvalue));
 							break;
 						}
+						// Delete converted string
 						p->set_string(0);
+						p->type &= ~PARAMTYPE_STR;
 						break;
 					}
 				}
 			}
 		}
 	}
+}
+
+void FileAVlibs::deserialize_params(Asset *asset)
+{
+	if(!(FileAVlibs::encoder_formatname(asset->format)))
+		return;
+
+	restore_codec_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX]);
 }
 
 void FileAVlibs::get_render_defaults(Asset *asset)

@@ -1042,6 +1042,7 @@ void Asset::read_params(FileXML *file)
 		}
 	}
 	load_defaults(&parm, ASSET_ALL | ASSET_HEADER);
+	FileAVlibs::deserialize_params(this);
 }
 
 void Asset::write_audio(FileXML *file)
