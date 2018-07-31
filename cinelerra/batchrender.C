@@ -506,7 +506,6 @@ void BatchRenderThread::start_rendering(char *config_path)
 	if(result) return;
 	render = new Render(0);
 	render->start_batches(&jobs, 
-		boot_defaults,
 		preferences,
 		plugindb);
 }

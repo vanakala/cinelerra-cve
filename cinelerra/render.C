@@ -19,10 +19,8 @@
  * 
  */
 
-#include "arender.h"
 #include "asset.h"
 #include "assets.h"
-#include "auto.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -32,11 +30,7 @@
 #include "cinelerra.h"
 #include "clip.h"
 #include "condition.h"
-#include "confirmsave.h"
-#include "cwindowgui.h"
-#include "cwindow.h"
 #include "bchash.h"
-#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mainerror.h"
@@ -51,14 +45,12 @@
 #include "mainprogress.h"
 #include "mainsession.h"
 #include "mainundo.h"
-#include "module.h"
 #include "mutex.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "paramlist.h"
-#include "patchbay.h"
 #include "playabletracks.h"
 #include "preferences.h"
 #include "renderfarm.h"
@@ -68,9 +60,8 @@
 #include "timebar.h"
 #include "tracks.h"
 #include "transportcommand.h"
-#include "vedit.h"
+#include "units.h"
 #include "vframe.h"
-#include "vrender.h"
 #include "renderprofiles.h"
 
 #include <ctype.h>
@@ -254,7 +245,6 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	BC_Hash *boot_defaults,
 	Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
 {

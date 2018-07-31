@@ -29,9 +29,6 @@
 #include "browsebutton.h"
 #include "cache.inc"
 #include "condition.inc"
-#include "bchash.inc"
-#include "edit.inc"
-#include "file.inc"
 #include "formattools.inc"
 #include "loadmode.inc"
 #include "mainprogress.inc"
@@ -41,7 +38,6 @@
 #include "packagerenderer.h"
 #include "playabletracks.inc"
 #include "preferences.inc"
-#include "bcprogressbox.inc"
 #include "render.inc"
 #include "track.inc"
 #include "transportcommand.inc"
@@ -103,7 +99,6 @@ public:
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // The batches are processed in the foreground in non interactive mode.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs,
-		BC_Hash *boot_defaults,
 		Preferences *preferences,
 		ArrayList<PluginServer*> *plugindb);
 // Called by BatchRender to stop the operation.
