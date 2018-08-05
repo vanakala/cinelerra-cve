@@ -743,8 +743,6 @@ void TrackCanvas::draw_indexes(Asset *asset)
 void TrackCanvas::draw_resources(int mode, 
 	Asset *index_asset)
 {
-	if(!mwindow->edl->session->show_assets) return;
-
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
 	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
 		resource_thread->stop_draw(!(mode & WUPD_INDEXES));
@@ -1491,8 +1489,6 @@ void TrackCanvas::draw_plugins()
 	char string[BCTEXTLEN];
 	int current_toggle = 0;
 
-	if(!mwindow->edl->session->show_assets) goto done;
-
 	for(int i = 0; i < plugin_on_toggles.total; i++)
 		plugin_on_toggles.values[i]->in_use = 0;
 	for(int i = 0; i < plugin_show_toggles.total; i++)
@@ -1634,8 +1630,6 @@ void TrackCanvas::draw_drag_handle()
 void TrackCanvas::draw_transitions()
 {
 	int x, y, w, h;
-
-	if(!mwindow->edl->session->show_assets) return;
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track;
@@ -1917,8 +1911,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 		if(!result && 
-			session->auto_conf->plugins &&
-			mwindow->edl->session->show_assets)
+			session->auto_conf->plugins)
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
@@ -4052,8 +4045,6 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 	int handle_result = 0;
 	int result = 0;
 
-	if(!mwindow->edl->session->show_assets) return 0;
-
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next)
@@ -4136,8 +4127,6 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	int handle_result = 0;
 	int result = 0;
 
-	if(!mwindow->edl->session->show_assets) return 0;
-
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next)
@@ -4214,8 +4203,6 @@ int TrackCanvas::do_tracks(int cursor_x,
 {
 	int result = 0;
 
-	if(!mwindow->edl->session->show_assets) return 0;
-
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
 		track = track->next)
@@ -4247,8 +4234,6 @@ int TrackCanvas::do_edits(int cursor_x,
 {
 	int result = 0;
 	int over_edit_handle = 0;
-
-	if(!mwindow->edl->session->show_assets) return 0;
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
@@ -4334,8 +4319,6 @@ int TrackCanvas::do_plugins(int cursor_x,
 	int done = 0;
 	int x, y, w, h;
 	Track *track = 0;
-
-	if(!mwindow->edl->session->show_assets) return 0;
 
 	for(track = mwindow->edl->tracks->first;
 		track && !done;
@@ -4448,8 +4431,8 @@ int TrackCanvas::do_transitions(int cursor_x,
 	int result = 0;
 	int x, y, w, h;
 
-	if(!mwindow->edl->session->show_assets ||
-		!mwindow->edl->session->auto_conf->transitions) return 0;
+	if(!mwindow->edl->session->auto_conf->transitions)
+		return 0;
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;

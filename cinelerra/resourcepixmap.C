@@ -345,7 +345,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 			mwindow->edl->local_session->zoom_track + y);
 
 // Draw media
-	if(track->draw)
+	if(track->draw && mwindow->edl->session->show_assets)
 	{
 		switch(track->data_type)
 		{
