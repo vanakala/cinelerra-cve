@@ -58,6 +58,7 @@
 #define FILE_MPEGTS        34
 #define FILE_SVG           35
 #define FILE_MXF           36
+#define FILE_MKV           37
 #define FILE_IMAGE         64    // unspecified image file
 
 class File;

@@ -75,6 +75,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_YUV, "yuv4mpegpipe", "yuv4mpegpipe",  SUPPORTS_VIDEO },
 	{ FILE_RAWDV, "dv", "dv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MXF, "mxf", "mxf", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_MKV, "matroska,webm", "matroska", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },

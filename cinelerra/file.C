@@ -137,6 +137,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_RAWDV:
 		case FILE_YUV:
 		case FILE_MXF:
+		case FILE_MKV:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -358,6 +359,7 @@ int File::open_file(Preferences *preferences,
 	case FILE_RAWDV:
 	case FILE_YUV:
 	case FILE_MXF:
+	case FILE_MKV:
 		file = new FileAVlibs(this->asset, this);
 		break;
 

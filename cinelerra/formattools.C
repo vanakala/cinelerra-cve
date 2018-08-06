@@ -67,6 +67,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("Image2"), FILE_IMAGE, "IMG2", "img" },
 	{ N_("Unknown sound"), FILE_SND, "SND", "snd"},
 	{ N_("Material Exchange Format"), FILE_MXF, "MXF", "mxf" },
+	{ N_("Matroska"), FILE_MKV, "MKV", "mkv" },
 	{ 0, 0 }
 };
 
