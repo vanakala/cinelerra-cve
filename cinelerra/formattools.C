@@ -66,6 +66,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("Raw Flac"), FILE_FLAC, "FLAC", "flac" },
 	{ N_("Image2"), FILE_IMAGE, "IMG2", "img" },
 	{ N_("Unknown sound"), FILE_SND, "SND", "snd"},
+	{ N_("Material Exchange Format"), FILE_MXF, "MXF", "mxf" },
 	{ 0, 0 }
 };
 

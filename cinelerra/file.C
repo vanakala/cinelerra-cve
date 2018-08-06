@@ -356,6 +356,7 @@ int File::open_file(Preferences *preferences,
 	case FILE_MPEG:
 	case FILE_RAWDV:
 	case FILE_YUV:
+	case FILE_MXF:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
