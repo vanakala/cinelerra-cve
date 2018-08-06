@@ -136,6 +136,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
 		case FILE_YUV:
+		case FILE_MXF:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -759,6 +760,7 @@ int File::supports(int format)
 	case FILE_MPEG:
 	case FILE_MPEGTS:
 	case FILE_RAWDV:
+	case FILE_MXF:
 		return FileAVlibs::supports(format, 0);
 		break;
 	}

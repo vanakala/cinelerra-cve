@@ -727,6 +727,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_MPEG:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
+		case FILE_MXF:
 			break;
 		case FILE_YUV:
 			if(asset->use_pipe && asset->pipe[0])
