@@ -758,6 +758,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
 		case FILE_MXF:
+		case FILE_MKV:
 			break;
 		case FILE_YUV:
 			if(asset->use_pipe && asset->pipe[0])
@@ -871,6 +872,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			video_ctx->height = asset->height;
 			video_ctx->time_base = av_d2q(1. / asset->frame_rate, 10000);
 			stream->time_base = video_ctx->time_base;
+			stream->avg_frame_rate = av_d2q(asset->frame_rate, 10000);
 			if(aparam->subparams &&
 					(bparam = aparam->subparams->find(encoder_params[ENC_PIX_FMTS].name)))
 				video_ctx->pix_fmt = (AVPixelFormat)bparam->intvalue;

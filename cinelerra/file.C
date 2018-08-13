@@ -763,6 +763,7 @@ int File::supports(int format)
 	case FILE_MPEGTS:
 	case FILE_RAWDV:
 	case FILE_MXF:
+	case FILE_MKV:
 		return FileAVlibs::supports(format, 0);
 		break;
 	}
