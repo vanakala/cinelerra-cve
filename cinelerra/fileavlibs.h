@@ -70,6 +70,7 @@ public:
 	static int check_sig(Asset *asset);
 	// Probe file and fill asset
 	static int probe_input(Asset *asset);
+	static double convert_framerate(AVRational frate, double dflt = -1);
 	// Supported streams of format
 	static int supports(int format, int deoding = 0);
 

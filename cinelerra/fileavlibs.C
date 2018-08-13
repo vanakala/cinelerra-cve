@@ -233,7 +233,7 @@ int FileAVlibs::probe_input(Asset *asset)
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 	AVCodecContext *decoder_ctx;
 #endif
-	AVRational usable_fr;
+	double testfr;
 	int stact;
 
 	if(!asset->file_mtime.tv_sec || !asset->file_length)
@@ -350,15 +350,14 @@ int FileAVlibs::probe_input(Asset *asset)
 #endif
 				asset->streams[asset->nb_streams].samplefmt[MAX_LEN_CODECNAME -1] = 0;
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
-				if(stream->avg_frame_rate.den && stream->avg_frame_rate.num)
-					usable_fr = stream->avg_frame_rate;
+
+				// Guess usable framerate
+				testfr = convert_framerate(stream->avg_frame_rate);
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				else if(decoder_ctx->framerate.num && decoder_ctx->framerate.den)
-					usable_fr = decoder_ctx->framerate;
+				trestfr = convert_framerate(decoder_ctx->framerate, testfr);
 #endif
-				else
-					usable_fr = av_stream_get_r_frame_rate(stream);
-				asset->streams[asset->nb_streams].frame_rate = av_q2d(usable_fr);
+				testfr = convert_framerate(av_stream_get_r_frame_rate(stream), testfr);
+				asset->streams[asset->nb_streams].frame_rate = testfr;
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
@@ -438,10 +437,27 @@ int FileAVlibs::probe_input(Asset *asset)
 		}
 		if(asset->format == FILE_SVG)
 			asset->set_single_image();
+
 		if(asset->video_data || asset->audio_data)
 			return 1;
 	}
 	return 0;
+}
+
+double FileAVlibs::convert_framerate(AVRational frate, double dflt)
+{
+	double rate;
+
+	if(frate.num > 0 && frate.den > 0)
+	{
+		rate = av_q2d(frate);
+		if(rate > 1)
+		{
+			if(dflt < 1 || rate < dflt)
+				return rate;
+		}
+	}
+	return dflt;
 }
 
 int FileAVlibs::encoder_exists(AVOutputFormat *oformat, const char *encstr, int support)
@@ -664,10 +680,23 @@ int FileAVlibs::open_file(int rd, int wr)
 					av_q2d(context->streams[fileix]->time_base);
 				if(asset->streams[i].options & STRDSC_VIDEO)
 				{
-					asset->streams[i].length = av_rescale_q(tocfile->toc_streams[i].max_index -
-						tocfile->toc_streams[i].min_index,
-						context->streams[fileix]->time_base,
-						av_inv_q(context->streams[fileix]->r_frame_rate));
+					if(tocfile->toc_streams[i].data2)
+					{
+						// Use number of frames from TOC
+						asset->streams[i].length = tocfile->toc_streams[i].data2;
+						// Average frame rate
+						asset->streams[i].frame_rate =
+							(double)asset->streams[i].length /
+							(asset->streams[i].end -
+								asset->streams[i].start);
+					}
+					else
+					{
+						asset->streams[i].length = av_rescale_q(tocfile->toc_streams[i].max_index -
+							tocfile->toc_streams[i].min_index,
+							context->streams[fileix]->time_base,
+							av_inv_q(context->streams[fileix]->r_frame_rate));
+					}
 				}
 				else
 				if(asset->streams[i].options & STRDSC_AUDIO)
@@ -1386,7 +1415,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 			if((res = avcodec_decode_video2(decoder_context,
 				avvframe, &got_it, &pkt)) < 0)
 #else
-			if((res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+			if(!video_eof && (res = avcodec_send_packet(decoder_context, &pkt)) < 0)
 			{
 				liberror(res, _("Failed to send packet to video decoder"));
 				av_packet_unref(&pkt);
@@ -2338,7 +2367,6 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 		video_eof = 0;
 		return 0;
 	}
-
 	toc_ix = tocfile->id_to_index(stream_index);
 	itm = tocfile->get_item(toc_ix, rqpos, &nxtitm);
 
@@ -2379,6 +2407,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 				i--;
 				continue;
 			}
+
 			if(pkt->pts == AV_NOPTS_VALUE)
 				return 1;
 			if(pkt->pts >= itm->index)
@@ -2415,6 +2444,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	int res, err, trid;
 	int posbytes;
 	int pktnum;
+	framenum nb_frames;
 
 	trid = -1;
 	if(asset->streams[trx].options & (STRDSC_AUDIO | STRDSC_VIDEO))
@@ -2454,21 +2484,34 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 	pkt.buf = 0;
 	pkt.size = 0;
-	pktpos = -1;
-	medpos = AV_NOPTS_VALUE;
 	pktnum = 0;
+	nb_frames = 0;
 
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
 		if(pkt.stream_index == trid)
 		{
+			pktpos = -1;
+			medpos = AV_NOPTS_VALUE;
 			if(posbytes)
 			{
 				if(pkt.pos != -1)
 					pktpos = pkt.pos;
 			}
-			else if(pkt.dts != AV_NOPTS_VALUE)
-				pktpos = pkt.dts;
+			else
+			{
+				switch(asset->format)
+				{
+				case FILE_MKV:
+					if(pkt.pts != AV_NOPTS_VALUE)
+						pktpos = pkt.pts;
+					break;
+				default:
+					if(pkt.dts != AV_NOPTS_VALUE)
+						pktpos = pkt.dts;
+					break;
+				}
+			}
 
 			if(pkt.pts != AV_NOPTS_VALUE)
 				medpos = pkt.pts;
@@ -2479,7 +2522,10 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			{
 			case AVMEDIA_TYPE_VIDEO:
 				if(medpos != AV_NOPTS_VALUE)
+				{
 					video_pos = medpos;
+					nb_frames++;
+				}
 
 				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
 				{
@@ -2543,6 +2589,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	if(err != AVERROR_EOF)
 		return 0;
 
+	track_data.data2 = nb_frames;
 	track_data.max_offset = maxoffs;
 	track_data.max_index = (is_audio ? audio_pos : video_pos) + track_data.index_correction;
 
