@@ -470,7 +470,7 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 	if(test_dsc & STRDSC_VIDEO && result)
 	{
 		result = (layers == asset.layers && 
-			frame_rate == asset.frame_rate &&
+			EQUIV(frame_rate, asset.frame_rate) &&
 			asset.interlace_autofixoption == interlace_autofixoption &&
 			asset.interlace_mode    == interlace_mode &&
 			interlace_fixmethod     == asset.interlace_fixmethod &&
@@ -695,10 +695,6 @@ void Asset::read_audio(FileXML *file)
 	streamno = file->tag.get_property("STREAMNO", 0);
 	if(streamno > 0)
 		audio_streamno = streamno;
-// This is loaded from the index file after the EDL but this 
-// should be overridable in the EDL.
-	if(!sample_rate) 
-		sample_rate = file->tag.get_property("RATE", 44100);
 
 	bits = file->tag.get_property("BITS", 16);
 	byte_order = file->tag.get_property("BYTE_ORDER", 1);
@@ -719,10 +715,6 @@ void Asset::read_video(FileXML *file)
 	streamno = file->tag.get_property("STREAMNO", 0);
 	if(streamno > 0)
 		video_streamno = streamno;
-// This is loaded from the index file after the EDL but this 
-// should be overridable in the EDL.
-	if(!frame_rate) 
-		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
 	strcpy(string, AInterlaceModeSelection::xml_text(BC_ILACE_MODE_NOTINTERLACED));
@@ -1057,7 +1049,7 @@ void Asset::write_audio(FileXML *file)
 		file->tag.set_title("AUDIO_OMIT");
 // Necessary for PCM audio
 	file->tag.set_property("CHANNELS", channels);
-	file->tag.set_property("RATE", sample_rate);
+
 	if(bits)
 		file->tag.set_property("BITS", bits);
 	if(byte_order)
@@ -1088,8 +1080,6 @@ void Asset::write_video(FileXML *file)
 	}
 	else
 		file->tag.set_title("VIDEO_OMIT");
-
-	file->tag.set_property("FRAMERATE", frame_rate);
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
