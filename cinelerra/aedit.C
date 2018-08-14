@@ -30,9 +30,10 @@ AEdit::AEdit(EDL *edl, Edits *edits)
 {
 }
 
-ptstime AEdit::get_source_end(ptstime default_value)
+ptstime AEdit::get_source_end()
 {
-	if(!asset) return default_value;   // Infinity
+	if(!asset)
+		return 0;
 
-	return ((ptstime)asset->audio_length / asset->sample_rate);
+	return asset->audio_duration;
 }

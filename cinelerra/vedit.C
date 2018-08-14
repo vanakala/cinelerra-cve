@@ -65,9 +65,10 @@ int VEdit::read_frame(VFrame *video_out,
 	return 1;
 }
 
-ptstime VEdit::get_source_end(ptstime default_value)
+ptstime VEdit::get_source_end()
 {
-	if(!asset) return default_value;   // Infinity
+	if(!asset)
+		return 0;
 
-	return ((ptstime)asset->video_length / asset->frame_rate);
+	return asset->video_duration;
 }

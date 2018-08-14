@@ -103,7 +103,7 @@ public:
 	ptstime load_properties(FileXML *xml, ptstime project_pts);
 
 // ============================= editing
-	virtual ptstime get_source_end(ptstime default_value);
+	virtual ptstime get_source_end();
 	void dump(int indent = 0);
 private:
 // Start of edit in source file in seconds

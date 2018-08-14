@@ -629,8 +629,8 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 					&& current_edit->asset)
 			{
 // Limit shift with the length of asset
-				apts = current_edit->get_pts() - (current_edit->get_source_end(0)
-					- current_edit->get_source_pts() - current_edit->length());
+				apts = current_edit->get_pts() - (current_edit->get_source_end() -
+					current_edit->get_source_pts() - current_edit->length());
 				if(apts > newposition)
 					newposition = apts;
 			}
@@ -664,7 +664,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 			{
 				if((ed = current_edit->previous) && ed->asset)
 				{
-					apts = ed->get_source_end(0) - ed->get_source_pts() + ed->get_pts();
+					apts = ed->get_source_end() - ed->get_source_pts() + ed->get_pts();
 
 					if(apts < newposition)
 						newposition = apts;

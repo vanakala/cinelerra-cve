@@ -124,10 +124,9 @@ void Edit::copy(FileXML *file, const char *output_path, int track_type)
 	}
 }
 
-
-ptstime Edit::get_source_end(ptstime default_value)
+ptstime Edit::get_source_end()
 {
-	return default_value;
+	return 0;
 }
 
 void Edit::insert_transition(const char *title, KeyFrame *default_keyframe)

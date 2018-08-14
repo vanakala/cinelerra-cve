@@ -39,7 +39,7 @@ public:
 			int use_cache,
 			int use_asynchronous);
 
-	ptstime get_source_end(ptstime default_value);
+	ptstime get_source_end();
 
 private:
 	VEdits *vedits;

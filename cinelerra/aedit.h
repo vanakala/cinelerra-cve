@@ -31,7 +31,7 @@ class AEdit : public Edit
 public:
 	AEdit(EDL *edl, Edits *edits);
 
-	ptstime get_source_end(ptstime default_value);
+	ptstime get_source_end();
 
 private:
 	AEdits *aedits;
