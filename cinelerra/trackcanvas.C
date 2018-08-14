@@ -466,23 +466,13 @@ int TrackCanvas::drag_stop()
 				Asset *asset = mwindow->session->drag_assets->values[0];
 				// we use video if we are over video and audio if we are over audio
 				if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-				{
-					ptstime video_length = asset->video_length;
-					if(asset->single_image)
-					{
-						if(mwindow->edl->session->si_useduration)
-							video_length = mwindow->edl->session->si_duration;
-						else
-							video_length = 1.0 / mwindow->edl->session->frame_rate ; 
-					}
-					asset_length_float = video_length / asset->frame_rate;
-				}
+					asset_length_float = asset->video_duration;
 				else if (asset->audio_data && mwindow->session->track_highlighted->data_type == TRACK_AUDIO)
-					asset_length_float = asset->audio_length / asset->sample_rate;
+					asset_length_float = asset->audio_duration;
 				else
 				{
 					result = 1;
-					break;	// Do not do anything
+					break; // Do not do anything
 				}
 			} else
 			if(mwindow->session->current_operation == DRAG_ASSET &&
@@ -985,16 +975,8 @@ void TrackCanvas::draw_paste_destination()
 			} 
 			else 
 			{
-				paste_audio_length = (ptstime)asset->audio_length / asset->sample_rate;
-				paste_video_length = (ptstime)asset->video_length / asset->frame_rate;
-			}
-
-			if(asset->single_image)
-			{
-				if(mwindow->edl->session->si_useduration)
-					paste_video_length = mwindow->edl->session->si_duration / asset->frame_rate;
-				else
-					paste_video_length = 1.0 / asset->frame_rate;  // bit confused!! (this is 1 frame)
+				paste_audio_length = asset->audio_duration;
+				paste_video_length = asset->video_duration;
 			}
 
 			ptstime asset_length = 0;
