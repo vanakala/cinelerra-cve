@@ -108,6 +108,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 
 	resource_timer = new Timer;
 	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
+	canvas_lock = new Mutex("TrackCanvas::canvas_lock");
 	resource_thread = new ResourceThread(mwindow);
 }
 
@@ -116,6 +117,7 @@ TrackCanvas::~TrackCanvas()
 	for(int i = 0; i < resource_pixmaps.total; i++)
 		delete resource_pixmaps.values[i];
 	delete pixmaps_lock;
+	delete canvas_lock;
 	delete keyframe_pixmap;
 	delete modekeyframe_pixmap;
 	delete pankeyframe_pixmap;
@@ -952,6 +954,7 @@ void TrackCanvas::draw_paste_destination()
 		EDL *clip = 0;
 		int draw_box = 0;
 
+		canvas_lock->lock("TrackCanvas::draw_paste_destination");
 		if(mwindow->session->current_operation == DRAG_ASSET &&
 			mwindow->session->drag_assets->total)
 			asset = mwindow->session->drag_assets->values[0];
@@ -1132,6 +1135,7 @@ void TrackCanvas::draw_paste_destination()
 				}
 			}
 		}
+		canvas_lock->unlock();
 	}
 }
 
