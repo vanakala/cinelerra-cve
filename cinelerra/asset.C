@@ -1468,16 +1468,17 @@ ptstime Asset::total_length_framealigned(double fps)
 {
 	if(video_data && audio_data)
 	{
-		ptstime aud = floor(( (ptstime)audio_length / sample_rate) * fps) / fps;
-		ptstime vid = floor(( (ptstime)video_length / frame_rate) * fps) / fps;
+		ptstime aud = floor(audio_duration * fps) / fps;
+		ptstime vid = floor(video_duration * fps) / fps;
 		return MIN(aud, vid);
 	}
 
-	if (audio_data)
-		return (ptstime)audio_length / sample_rate;
+	if(audio_data)
+		return audio_duration;
 
-	if (video_data)
-		return (ptstime)video_length / frame_rate;
+	if(video_data)
+		return video_duration;
+	return 0;
 }
 
 ptstime Asset::align_to_frame(ptstime pts, int type)
