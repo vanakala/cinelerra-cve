@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "autoconf.h"
 #include "automation.h"
 #include "bcdragwindow.h"
 #include "bcresources.h"
@@ -59,8 +58,6 @@
 #include "tracking.h"
 #include "panautos.h"
 #include "resourcethread.h"
-#include "playbackengine.h"
-#include "playtransport.h"
 #include "plugin.h"
 #include "pluginpopup.h"
 #include "pluginset.h"
@@ -77,8 +74,6 @@
 #include "tracks.h"
 #include "transition.h"
 #include "vframe.h"
-#include "apatchgui.inc"
-#include "vpatchgui.inc"
 
 #include <string.h>
 
