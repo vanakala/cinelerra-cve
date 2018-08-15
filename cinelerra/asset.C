@@ -1481,15 +1481,6 @@ ptstime Asset::total_length_framealigned(double fps)
 	return 0;
 }
 
-ptstime Asset::align_to_frame(ptstime pts, int type)
-{
-	if(type == TRACK_AUDIO && audio_data)
-		pts = round(pts * sample_rate) / sample_rate;
-	else if(type == TRACK_VIDEO && video_data)
-		pts = round(pts * frame_rate) / frame_rate;
-	return pts;
-}
-
 void Asset::update_index(Asset *asset)
 {
 	index_status = asset->index_status;
