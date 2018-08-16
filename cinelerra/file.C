@@ -493,20 +493,6 @@ samplenum File::get_audio_length(int base_samplerate)
 		return -1;
 }
 
-framenum File::get_video_length(float base_framerate)
-{ 
-	framenum result = asset->video_length;
-	if(result > 0)
-	{
-		if(base_framerate > 0)
-			return (framenum)((double)result / asset->frame_rate * base_framerate + 0.5); 
-		else
-			return result;
-	}
-	else
-		return -1;  // infinity
-}
-
 ptstime File::get_video_ptslen(void)
 {
 	return (ptstime)asset->video_length / asset->frame_rate;
