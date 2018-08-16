@@ -966,10 +966,10 @@ void TrackCanvas::draw_paste_destination()
 
 		if (asset)
 		{
-			ptstime asset_length_ac = asset->total_length_framealigned(mwindow->edl->session->frame_rate);
 			if (mwindow->edl->session->cursor_on_frames)
 			{
-				paste_video_length = paste_audio_length = asset_length_ac;
+				paste_video_length = paste_audio_length =
+					asset->total_length_framealigned(mwindow->edl->session->frame_rate);
 			} 
 			else 
 			{
