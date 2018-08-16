@@ -112,7 +112,7 @@ VFrame *VModule::import_frame(VFrame *output,
 				current_edit->get_source_pts();
 
 			// if we hit the end of stream, freeze at last frame
-			ptstime max_pts = source->get_video_ptslen();
+			ptstime max_pts = current_edit->asset->video_duration;
 			if (src_pts > max_pts) 
 				src_pts = max_pts;
 			int use_cache = renderengine && 

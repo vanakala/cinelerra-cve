@@ -493,11 +493,6 @@ samplenum File::get_audio_length(int base_samplerate)
 		return -1;
 }
 
-ptstime File::get_video_ptslen(void)
-{
-	return (ptstime)asset->video_length / asset->frame_rate;
-}
-
 // No resampling here.
 int File::write_aframes(AFrame **frames)
 {

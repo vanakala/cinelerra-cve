@@ -112,8 +112,6 @@ public:
 
 // get length of file normalized to base samplerate
 	samplenum get_audio_length(int base_samplerate = -1);
-// get length of file in seconds
-	ptstime get_video_ptslen(void);
 
 // write audio frames
 // written to disk and file pointer updated after
