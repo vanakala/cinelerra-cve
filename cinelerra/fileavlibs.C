@@ -1159,7 +1159,7 @@ void FileAVlibs::close_file()
 					}
 					av_packet_unref(&pkt);
 				}
-				if(rv != AVERROR_EOF)
+				if(rv < 0 && rv != AVERROR_EOF)
 					liberror(rv, _("Failed to encode last audio packet"));
 #else
 				for(got_output = 1; got_output;)
@@ -1208,26 +1208,31 @@ void FileAVlibs::close_file()
 				// Get out samples kept in encoder
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
 				avcodec_send_frame(video_ctx, NULL);
-#endif
+				while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
+				{
+					pkt.stream_index = video_index;
+					av_packet_rescale_ts(&pkt,
+						video_ctx->time_base,
+						context->streams[video_index]->time_base);
+
+					if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+					{
+						liberror(rv, _("Failed to write last video packet"));
+						rv = 0;
+						break;
+					}
+				}
+				av_packet_unref(&pkt);
+				if(rv < 0 && rv != AVERROR_EOF)
+					liberror(rv, _("Failed to encode last video packet"));
+#else
 				for(got_output = 1; got_output;)
 				{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 					if(avcodec_encode_video2(video_ctx, &pkt, 0, &got_output))
 					{
 						errormsg(_("Failed to encode last video packet"));
 						break;
 					}
-#else
-					got_output = 0;
-					if(rv = avcodec_receive_packet(video_ctx, &pkt))
-					{
-						if(rv == AVERROR_EOF)
-							break;
-						liberror(rv, _("Failed to encode last video packet"));
-					}
-					else
-						got_output = 1;
-#endif
 					if(got_output)
 					{
 						pkt.stream_index = video_index;
@@ -1240,13 +1245,10 @@ void FileAVlibs::close_file()
 							liberror(rv, _("Failed to write last video packet"));
 							break;
 						}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 						av_free_packet(&pkt);
-#else
-						av_packet_unref(&pkt);
-#endif
 					}
 				}
+#endif
 			}
 			if(headers_written)
 			{
@@ -2116,40 +2118,13 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			got_it = 1;
 		}
 		else
-#endif
 		{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
 			{
 				liberror(rv, _("Failed to encode video frame"));
 				avlibs_lock->unlock();
 				return 1;
 			}
-#else
-			got_it = 0;
-
-			if(rv = avcodec_send_frame(video_ctx, avvframe))
-			{
-				liberror(rv, _("Failed to send video frame to encoder"));
-				avlibs_lock->unlock();
-				return 1;
-			}
-			else
-			if(rv = avcodec_receive_packet(video_ctx, &pkt))
-			{
-				if(rv != AVERROR(EAGAIN))
-				{
-					liberror(rv, _("Failed to encode video packet"));
-					avlibs_lock->unlock();
-					return 1;
-				}
-			}
-			else
-				got_it = 1;
-
-			if((rv = av_frame_make_writable(avvframe)) < 0)
-				liberror(rv, _("Can't make video frame writable"));
-#endif
 		}
 		if(got_it)
 		{
@@ -2164,6 +2139,37 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			}
 			av_packet_unref(&pkt);
 		}
+#else
+		if(rv = avcodec_send_frame(video_ctx, avvframe))
+		{
+			liberror(rv, _("Failed to send video frame to encoder"));
+			avlibs_lock->unlock();
+			return 1;
+		}
+		while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
+		{
+			pkt.stream_index = stream->index;
+			av_packet_rescale_ts(&pkt, video_ctx->time_base, stream->time_base);
+
+			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			{
+				liberror(rv, _("Failed to write video packet"));
+				avlibs_lock->unlock();
+				return 1;
+			}
+		}
+		av_packet_unref(&pkt);
+
+		if(rv != AVERROR(EAGAIN))
+		{
+			liberror(rv, _("Failed to encode video packet"));
+			avlibs_lock->unlock();
+			return 1;
+		}
+
+		if((rv = av_frame_make_writable(avvframe)) < 0)
+			liberror(rv, _("Can't make video frame writable"));
+#endif
 	}
 	avlibs_lock->unlock();
 	return 0;
