@@ -1141,16 +1141,29 @@ void FileAVlibs::close_file()
 						avaframe->data[0] = resampled_data[0];
 				}
 
+				// Get out samples kept in encoder
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
 				if(resample_fill)
 					avcodec_send_frame(audio_ctx, avaframe);
 				// Send eof to encoder
 				avcodec_send_frame(audio_ctx, NULL);
-#endif
-				// Get out samples kept in encoder
+				while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
+				{
+					pkt.stream_index = audio_index;
+					av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+						context->streams[audio_index]->time_base);
+					if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+					{
+						liberror(rv, _("Failed to write last audio packet"));
+						break;
+					}
+					av_packet_unref(&pkt);
+				}
+				if(rv != AVERROR_EOF)
+					liberror(rv, _("Failed to encode last audio packet"));
+#else
 				for(got_output = 1; got_output;)
 				{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 					if(avcodec_encode_audio2(audio_ctx, &pkt, resample_fill ? avaframe : 0, &got_output))
 					{
 						errormsg(_("Failed to encode last audio packet"));
@@ -1161,17 +1174,6 @@ void FileAVlibs::close_file()
 						resample_fill = 0;
 						continue;
 					}
-#else
-					got_output = 0;
-					if(rv = avcodec_receive_packet(audio_ctx, &pkt))
-					{
-						if(rv == AVERROR_EOF)
-							break;
-						liberror(rv, _("Failed to encode last audio packet"));
-					}
-					else
-						got_output = 1;
-#endif
 					if(got_output && pkt.size)
 					{
 						pkt.stream_index = audio_index;
@@ -1182,13 +1184,10 @@ void FileAVlibs::close_file()
 							liberror(rv, _("Failed to write last audio packet"));
 							break;
 						}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 						av_free_packet(&pkt);
-#else
-						av_packet_unref(&pkt);
-#endif
 					}
 				}
+#endif
 			}
 
 			if(avvframe && headers_written
@@ -1589,6 +1588,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
+
 		if((sres = media_seek(audio_index, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
 			return -1;
 
@@ -2246,7 +2246,7 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 {
 	AVPacket pkt;
 	AVStream *stream;
-	int got_output, chan, rv, samples_written;
+	int chan, rv, samples_written;
 	int frame_size = audio_ctx->frame_size;
 	int linesize, frames;
 
@@ -2284,30 +2284,13 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 		avaframe->linesize[0] = linesize;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
+		int got_output;
+
 		if((rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output)) < 0)
 		{
 			liberror(rv, _("Failed to encode audio frame"));
 			return 1;
 		}
-#else
-		got_output = 0;
-		if(rv = avcodec_send_frame(audio_ctx, avaframe))
-		{
-			liberror(rv, _("Failed to send audio frame"));
-			return 1;
-		}
-		else
-		if(rv = avcodec_receive_packet(audio_ctx, &pkt))
-		{
-			if(rv != AVERROR(EAGAIN))
-			{
-				liberror(rv, _("Failed to encode audio packet"));
-				return 1;
-			}
-		}
-		else
-			got_output = 1;
-#endif
 		audio_pos += frame_size;
 		samples_written += frame_size;
 
@@ -2323,6 +2306,36 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 				return 1;
 			}
 		}
+#else
+		if(rv = avcodec_send_frame(audio_ctx, avaframe))
+		{
+			liberror(rv, _("Failed to send audio frame"));
+			return 1;
+		}
+
+		while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
+		{
+			pkt.stream_index = audio_index;
+			av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+				stream->time_base);
+
+			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			{
+				liberror(rv, _("Failed to write audio packet"));
+				return 1;
+			}
+		}
+
+		if(rv != AVERROR(EAGAIN))
+		{
+			liberror(rv, _("Failed to encode audio packet"));
+			return 1;
+		}
+
+		audio_pos += frame_size;
+		samples_written += frame_size;
+#endif
+
 	}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 	av_free_packet(&pkt);
