@@ -314,6 +314,8 @@ toc_eof:
 
 int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
 {
+	int itmx;
+
 	if(items_allocated == 0)
 	{
 		items = new stream_item[ITEM_BLOCK];
@@ -329,9 +331,20 @@ int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
 		items = new_itms;
 		items_allocated = new_alloc;
 	}
-	items[max_items].index = index;
-	items[max_items].offset = offset;
-
+	// keep indexes in order
+	for(itmx = max_items - 1; itmx >= 0 && items[itmx].index > index; itmx--);
+	if(itmx < max_items - 1)
+	{
+		for(int i = max_items; i > itmx; i--)
+			items[i] = items[i - 1];
+		items[itmx].index = index;
+		items[itmx].offset = offset;
+	}
+	else
+	{
+		items[max_items].index = index;
+		items[max_items].offset = offset;
+	}
 	if(progress && mdoffs > 0)
 		canceled = progress->update(mdoffs + streamnum * length);
 
