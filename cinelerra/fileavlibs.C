@@ -1417,6 +1417,14 @@ int FileAVlibs::read_frame(VFrame *frame)
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((res = avcodec_decode_video2(decoder_context,
 				avvframe, &got_it, &pkt)) < 0)
+
+			if(got_it)
+			{
+				video_pos = av_frame_get_best_effort_timestamp(avvframe) +
+					av_frame_get_pkt_duration(avvframe);
+				if(video_pos > rqpos)
+					break;
+			}
 #else
 			if(!video_eof && (res = avcodec_send_packet(decoder_context, &pkt)) < 0)
 			{
@@ -1428,28 +1436,22 @@ int FileAVlibs::read_frame(VFrame *frame)
 			got_it = 0;
 			res = avcodec_receive_frame(decoder_context, avvframe);
 			if(!res)
+			{
 				got_it = 1;
-			else
-			if(res != AVERROR(EAGAIN))
-#endif
-			{
-				liberror(res, _("Failed to decode video frame"));
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-				av_free_packet(&pkt);
-#else
-				av_packet_unref(&pkt);
-#endif
-				avlibs_lock->unlock();
-				return 1;
-			}
-
-			if(got_it)
-			{
 				video_pos = av_frame_get_best_effort_timestamp(avvframe) +
 					av_frame_get_pkt_duration(avvframe);
 				if(video_pos > rqpos)
 					break;
 			}
+			else
+			if(res != AVERROR(EAGAIN))
+			{
+				liberror(res, _("Failed to decode video frame"));
+				av_packet_unref(&pkt);
+				avlibs_lock->unlock();
+				return 1;
+			}
+#endif
 			if(video_eof)
 				break;
 		}
