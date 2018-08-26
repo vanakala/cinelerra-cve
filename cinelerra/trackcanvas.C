@@ -1468,7 +1468,8 @@ void TrackCanvas::draw_highlighting()
 void TrackCanvas::draw_plugins()
 {
 	char string[BCTEXTLEN];
-	int current_toggle = 0;
+	int onoff_toggle = 0;
+	int show_toggle = 0;
 
 	for(int i = 0; i < plugin_on_toggles.total; i++)
 		plugin_on_toggles.values[i]->in_use = 0;
@@ -1540,7 +1541,8 @@ void TrackCanvas::draw_plugins()
 						toggle_x = MIN(get_w() - right_margin, toggle_x);
 						toggle_x -= PluginOn::calculate_w(mwindow) + 10;
 						int toggle_y = y;
-						if(current_toggle >= plugin_on_toggles.total)
+
+						if(onoff_toggle >= plugin_on_toggles.total)
 						{
 							PluginOn *plugin_on = new PluginOn(mwindow, toggle_x, toggle_y, plugin);
 							add_subwindow(plugin_on);
@@ -1548,35 +1550,37 @@ void TrackCanvas::draw_plugins()
 						}
 						else
 						{
-							plugin_on_toggles.values[current_toggle]->update(toggle_x, toggle_y, plugin);
+							plugin_on_toggles.values[onoff_toggle]->update(toggle_x, toggle_y, plugin);
 						}
+						onoff_toggle++;
 
-						toggle_x -= PluginShow::calculate_w(mwindow) + 10;
-						if(current_toggle >= plugin_show_toggles.total)
+						if(plugin->plugin_type == PLUGIN_STANDALONE)
 						{
-							PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
-							add_subwindow(plugin_off);
-							plugin_show_toggles.append(plugin_off);
+							toggle_x -= PluginShow::calculate_w(mwindow) + 10;
+							if(show_toggle >= plugin_show_toggles.total)
+							{
+								PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
+								add_subwindow(plugin_off);
+								plugin_show_toggles.append(plugin_off);
+							}
+							else
+							{
+								plugin_show_toggles.values[show_toggle]->update(toggle_x, toggle_y, plugin);
+							}
+							show_toggle++;
 						}
-						else
-						{
-							plugin_show_toggles.values[current_toggle]->update(toggle_x, toggle_y, plugin);
-						}
-						current_toggle++;
 					}
 				}
 			}
 			pixmaps_lock->unlock();
 		}
 	}
-done:
-	int i = current_toggle;
-	while(i < plugin_on_toggles.total &&
-		i < plugin_show_toggles.total)
-	{
-		plugin_on_toggles.remove_object_number(current_toggle);
-		plugin_show_toggles.remove_object_number(current_toggle);
-	}
+
+	while(onoff_toggle < plugin_on_toggles.total)
+		plugin_on_toggles.remove_object_number(onoff_toggle);
+
+	while(show_toggle < plugin_show_toggles.total)
+		plugin_show_toggles.remove_object_number(show_toggle);
 }
 
 void TrackCanvas::refresh_plugintoggles()
