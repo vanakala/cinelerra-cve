@@ -1492,9 +1492,9 @@ void TrackCanvas::draw_plugins()
 					int total_x, y, total_w, h;
 					plugin_dimensions(plugin, total_x, y, total_w, h);
 
-					if(MWindowGUI::visible(total_x, total_x + total_w, 0, get_w()) &&
-						MWindowGUI::visible(y, y + h, 0, get_h()) &&
-						plugin->plugin_type != PLUGIN_NONE)
+					if(plugin->plugin_type != PLUGIN_NONE &&
+						MWindowGUI::visible(total_x, total_x + total_w, 0, get_w()) &&
+						MWindowGUI::visible(y, y + h, 0, get_h()))
 					{
 						int x = total_x, w = total_w, left_margin = 5;
 						int right_margin = 5;
@@ -1511,8 +1511,6 @@ void TrackCanvas::draw_plugins()
 							total_w,
 							mwindow->theme->get_image("plugin_bg_data"),
 							0);
-						set_color(get_resources()->default_text_color);
-						set_font(MEDIUMFONT_3D);
 						plugin->calculate_title(string, 0);
 
 // Truncate string to int64_test visible in background
@@ -1531,6 +1529,8 @@ void TrackCanvas::draw_plugins()
 // Otherwise justify it on the left side of the screen.
 						int text_x = total_x + left_margin;
 						text_x = MAX(left_margin, text_x);
+						set_color(get_resources()->default_text_color);
+						set_font(MEDIUMFONT_3D);
 						draw_text(text_x, 
 							y + get_text_ascent(MEDIUMFONT_3D) + 2, 
 							string,
