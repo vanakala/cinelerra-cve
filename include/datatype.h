@@ -47,6 +47,8 @@ typedef int64_t posnum;
 // timestamp (pts)
 typedef double ptstime;
 
+#define MAX_PTSTIME 86400
+
 #define pts2str(buf, pts) sprintf((buf), " %16.10e", (pts))
 #define str2pts(buf, ptr) strtod((buf), (ptr))
 
