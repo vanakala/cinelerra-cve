@@ -239,7 +239,7 @@ public:
 		int draw);
 	void draw_refresh();
 	void draw_overlays();
-	void draw_safe_regions();
+	void update_guidelines();
 // Cursor may have to be drawn
 	int cursor_leave_event();
 	int cursor_enter_event();
@@ -272,6 +272,7 @@ public:
 
 	MWindow *mwindow;
 	CWindowGUI *gui;
+	GuideFrame *safe_regions;
 };
 
 #endif

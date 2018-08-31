@@ -29,6 +29,7 @@
 #include "bcscrollbar.h"
 #include "cwindowgui.inc"
 #include "edl.inc"
+#include "guidelines.h"
 #include "mwindow.inc"
 #include "vwindowgui.inc"
 
@@ -210,6 +211,7 @@ public:
 	MWindow *mwindow;
 	CWindowGUI *cwindowgui;
 	VWindowGUI *vwindowgui;
+	GuideLines guidelines;
 
 private:
 	void get_scrollbars(EDL *edl, 

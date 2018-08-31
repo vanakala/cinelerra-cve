@@ -191,10 +191,11 @@ void CWindow::update(int options)
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
 	}
 
-// Updated by video device.
-	if(options & (WUPD_OVERLAYS | WUPD_POSITION) == WUPD_OVERLAYS)
+	if(options & WUPD_OVERLAYS)
 	{
-		gui->canvas->draw_refresh();
+		gui->canvas->update_guidelines();
+		if(!(options & WUPD_POSITION))
+			gui->canvas->draw_refresh();
 	}
 
 // Update tool parameters

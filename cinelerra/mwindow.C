@@ -1659,7 +1659,7 @@ void MWindow::update_project(int load_mode)
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 
-	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR);
+	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR | WUPD_OVERLAYS);
 
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -1668,7 +1668,6 @@ void MWindow::update_project(int load_mode)
 	}
 
 	cwindow->gui->slider->set_position();
-	cwindow->gui->timebar->update();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 
 	awindow->gui->async_update_assets();

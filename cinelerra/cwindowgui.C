@@ -40,6 +40,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "guidelines.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -210,7 +211,7 @@ void CWindowGUI::resize_event(int w, int h)
 		mwindow->theme->ccanvas_y,
 		mwindow->theme->ccanvas_w,
 		mwindow->theme->ccanvas_h);
-
+	canvas->update_guidelines();
 	timebar->resize_event();
 
 	slider->reposition_window(mwindow->theme->cslider_x,
@@ -720,6 +721,8 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	safe_regions = guidelines.append_frame(0, MAX_PTSTIME);
+	update_guidelines();
 }
 
 void CWindowCanvas::status_event()
@@ -1739,10 +1742,9 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 void CWindowCanvas::draw_overlays()
 {
-	if(mwindow->edl->session->safe_regions)
-	{
-		draw_safe_regions();
-	}
+	safe_regions->set_enabled(mwindow->edl->session->safe_regions);
+	guidelines.draw(this, mwindow->edl,
+		mwindow->edl->local_session->get_selectionstart(1));
 
 	if(mwindow->edl->session->cwindow_scrollbars)
 	{
@@ -1800,42 +1802,17 @@ void CWindowCanvas::draw_overlays()
 	}
 }
 
-void CWindowCanvas::draw_safe_regions()
+void CWindowCanvas::update_guidelines()
 {
-	double action_x1, action_x2, action_y1, action_y2;
-	double title_x1, title_x2, title_y1, title_y2;
-
-	action_x1 = mwindow->edl->session->output_w / 2 - mwindow->edl->session->output_w / 2 * 0.9;
-	action_x2 = mwindow->edl->session->output_w / 2 + mwindow->edl->session->output_w / 2 * 0.9;
-	action_y1 = mwindow->edl->session->output_h / 2 - mwindow->edl->session->output_h / 2 * 0.9;
-	action_y2 = mwindow->edl->session->output_h / 2 + mwindow->edl->session->output_h / 2 * 0.9;
-	title_x1 = mwindow->edl->session->output_w / 2 - mwindow->edl->session->output_w / 2 * 0.8;
-	title_x2 = mwindow->edl->session->output_w / 2 + mwindow->edl->session->output_w / 2 * 0.8;
-	title_y1 = mwindow->edl->session->output_h / 2 - mwindow->edl->session->output_h / 2 * 0.8;
-	title_y2 = mwindow->edl->session->output_h / 2 + mwindow->edl->session->output_h / 2 * 0.8;
-
-	output_to_canvas(mwindow->edl, action_x1, action_y1);
-	output_to_canvas(mwindow->edl, action_x2, action_y2);
-	output_to_canvas(mwindow->edl, title_x1, title_y1);
-	output_to_canvas(mwindow->edl, title_x2, title_y2);
-
-	get_canvas()->set_inverse();
-	get_canvas()->set_color(WHITE);
-
-	int ix1 = round(action_x1);
-	int iy1 = round(action_y1);
-	int ix2 = round(action_x2);
-	int iy2 = round(action_y2);
-	get_canvas()->draw_rectangle(ix1, iy1,
-		ix2 - ix1, iy2 - iy1);
-	ix1 = round(title_x1);
-	iy1 = round(title_y1);
-	ix2 = round(title_x2);
-	iy2 = round(title_y2);
-	get_canvas()->draw_rectangle(ix1, iy1,
-		ix2 - ix1, iy2 - iy1);
-
-	get_canvas()->set_opaque();
+	safe_regions->clear();
+	safe_regions->add_rectangle(round(0.05 * mwindow->edl->session->output_w),
+		round(0.05 * mwindow->edl->session->output_h),
+		round(0.9 * mwindow->edl->session->output_w),
+		round(0.9 * mwindow->edl->session->output_h));
+	safe_regions->add_rectangle(round(0.1 * mwindow->edl->session->output_w),
+			round(0.1 * mwindow->edl->session->output_h),
+		round(0.8 * mwindow->edl->session->output_w),
+		round(0.8 * mwindow->edl->session->output_h));
 }
 
 void CWindowCanvas::reset_keyframe(int do_camera)
