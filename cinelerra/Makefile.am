@@ -121,6 +121,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    formattools.C \
 		    framecache.C \
 		    garbage.C \
+		    guidelines.C \
 		    gwindow.C \
 		    gwindowgui.C \
 		    indexfile.C \
@@ -360,6 +361,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formattools.h \
 		 framecache.h \
 		 garbage.h \
+		 guidelines.h \
 		 gwindow.h \
 		 gwindowgui.h \
 		 headers.h \
