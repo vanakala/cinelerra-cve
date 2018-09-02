@@ -241,23 +241,15 @@ void Canvas::get_zooms(EDL *edl,
 
 	if(use_scrollbars)
 	{
-		zoom_x = get_zoom() * 
-			conformed_w / 
-			edl->session->output_w;
-		zoom_y = get_zoom() * 
-			conformed_h / 
-			edl->session->output_h;
+		zoom_x = get_zoom() * edl->get_sample_aspect_ratio();
+		zoom_y = get_zoom();
 	}
 	else
 	{
-		int out_w, out_h;
-		int canvas_w = get_canvas()->get_w();
-		int canvas_h = get_canvas()->get_h();
+		double out_w = get_canvas()->get_w();
+		double out_h = get_canvas()->get_h();
 
-		out_w = canvas_w;
-		out_h = canvas_h;
-
-		if((double)out_w / out_h > conformed_w / conformed_h)
+		if(out_w / out_h > conformed_w / conformed_h)
 		{
 			out_w = round(out_h * conformed_w / conformed_h);
 		}
@@ -265,9 +257,8 @@ void Canvas::get_zooms(EDL *edl,
 		{
 			out_h = round(out_w / (conformed_w / conformed_h));
 		}
-
-		zoom_x = (double)out_w / edl->session->output_w;
-		zoom_y = (double)out_h / edl->session->output_h;
+		zoom_x = out_w / edl->session->output_w;
+		zoom_y = out_h / edl->session->output_h;
 	}
 }
 
