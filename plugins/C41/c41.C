@@ -1023,6 +1023,17 @@ void C41Effect::process_frame(VFrame *frame)
 				break;
 		shave_max_col++;
 
+		int mrg = C41_SHAVE_BLUR * frame_w;
+		if(shave_min_col < mrg)
+			shave_min_col = mrg;
+		if(shave_max_col > frame_w - mrg)
+			shave_max_col = frame_w - mrg;
+		mrg = C41_SHAVE_BLUR * frame_w;
+		if(shave_min_row < mrg)
+			shave_min_row = mrg;
+		if(shave_max_row > frame_h - mrg)
+			shave_max_row = frame_h - mrg;
+
 		// Compute magic negfix values
 		float minima_r = 50., minima_g = 50., minima_b = 50.;
 		float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
@@ -1046,17 +1057,6 @@ void C41Effect::process_frame(VFrame *frame)
 			min_row = shave_min_row;
 			max_row = shave_max_row;
 		}
-
-		int mrg = C41_SHAVE_BLUR * frame_w;
-		if(min_col < mrg)
-			min_col = mrg;
-		if(max_col > frame_w - mrg)
-			max_col = frame_w - mrg;
-		mrg = C41_SHAVE_BLUR * frame_w;
-		if(min_row < mrg)
-			min_row = mrg;
-		if(max_row > frame_h - mrg)
-			max_row = frame_h - mrg;
 
 		for(int i = min_row; i < max_row; i++)
 		{
