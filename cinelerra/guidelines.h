@@ -43,6 +43,8 @@ public:
 	void add_pixel(int x, int y);
 	void clear();
 	int set_enabled(int value);
+	void shift(ptstime difference);
+	void set_position(ptstime new_start, ptstime new_end);
 	void draw(Canvas *canvas, EDL *edl, ptstime pts);
 	void dump(int indent = 0);
 

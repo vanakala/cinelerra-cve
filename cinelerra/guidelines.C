@@ -142,6 +142,18 @@ int GuideFrame::set_enabled(int value)
 	return rv;
 }
 
+void GuideFrame::shift(ptstime difference)
+{
+	start += difference;
+	end += difference;
+}
+
+void GuideFrame::set_position(ptstime new_start, ptstime new_end)
+{
+	start = new_start;
+	end = new_end;
+}
+
 void GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 {
 	uint16_t *dp;
