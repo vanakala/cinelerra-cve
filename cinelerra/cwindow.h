@@ -27,7 +27,9 @@
 #include "cplayback.inc"
 #include "ctracking.inc"
 #include "cwindowgui.inc"
+#include "datatype.h"
 #include "floatauto.inc"
+#include "guidelines.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "track.inc"
@@ -60,6 +62,7 @@ public:
 		int create_z);
 	void show_window();
 	void hide_window();
+	GuideFrame *new_guideframe(ptstime start, ptstime end);
 
 	int destination;
 	MWindow *mwindow;

@@ -224,3 +224,8 @@ void CWindow::update(int options)
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
 }
+
+GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end)
+{
+	return gui->canvas->guidelines.append_frame(start, end);
+}
