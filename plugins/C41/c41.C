@@ -38,6 +38,7 @@
 #include "bctitle.h"
 #include "colormodels.h"
 #include "filexml.h"
+#include "guidelines.h"
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
@@ -1239,113 +1240,26 @@ void C41Effect::process_frame(VFrame *frame)
 			send_render_gui(&values);
 		}
 
-		if(config.compute_magic && config.show_box)
+		GuideFrame *gf = get_guides();
+
+		if(gf)
 		{
-			if(min_row < max_row - 1)
+			if(config.compute_magic && config.show_box)
 			{
-				switch(frame->get_color_model())
+				gf->clear();
+				if(min_row < max_row - 1)
 				{
-				case BC_RGB_FLOAT:
-				case BC_RGBA_FLOAT:
-					{
-						float *row1 = (float *)frame->get_row_ptr(min_row);
-						float *row2 = (float *)frame->get_row_ptr(max_row - 1);
-
-						for(int i = 0; i < frame_w; i++)
-						{
-							for(int j = 0; j < 3; j++)
-							{
-								row1[j] = 1 - row1[j];
-								row2[j] = 1 - row2[j];
-							}
-							row1 += pixlen;
-							row2 += pixlen;
-						}
-					}
-					break;
-				case BC_RGBA16161616:
-					{
-						uint16_t *row1 = (uint16_t*)frame->get_row_ptr(min_row);
-						uint16_t *row2 = (uint16_t*)frame->get_row_ptr(max_row - 1);
-
-						for(int i = 0; i < frame_w; i++)
-						{
-							for(int j = 0; j < 3; j++)
-							{
-								row1[j] ^= 0xffff;
-								row2[j] ^= 0xffff;
-							}
-							row1 += pixlen;
-							row2 += pixlen;
-						}
-					}
-					break;
-				case BC_AYUV16161616:
-					{
-						uint16_t *row1 = (uint16_t*)frame->get_row_ptr(min_row);
-						uint16_t *row2 = (uint16_t*)frame->get_row_ptr(max_row - 1);
-
-						for(int i = 0; i < frame_w; i++)
-						{
-							row1[1] ^= 0xffff;
-							row2[1] ^= 0xffff;
-							row1 += pixlen;
-							row2 += pixlen;
-						}
-					}
-					break;
+					gf->add_line(0, min_row, frame_w - 1, min_row);
+					gf->add_line(0, max_row - 1, frame_w - 1, max_row - 1);
+				}
+				if(min_col < max_col - 1)
+				{
+					gf->add_line(min_col, 0, min_col, frame_h - 1);
+					gf->add_line(max_col - 1, 0, max_col - 1, frame_h - 1);
 				}
 			}
-
-			if(min_col < max_col - 1)
-			{
-				int pix1 = pixlen * min_col;
-				int pix2 = pixlen * (max_col - 1);
-
-				switch(frame->get_color_model())
-				{
-				case BC_RGB_FLOAT:
-				case BC_RGBA_FLOAT:
-					for(int i = 0; i < frame_h; i++)
-					{
-						float *row = (float *)frame->get_row_ptr(i);
-						float *row2 = row + pix2;
-						float *row1 = row + pix1;
-
-						for(int j = 0; j < 3; j++)
-						{
-							row1[j] = 1 - row1[j];
-							row2[j] = 1 - row2[j];
-						}
-					}
-					break;
-				case BC_RGBA16161616:
-					for(int i = 0; i < frame_h; i++)
-					{
-						uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-						uint16_t *row2 = row + pix2;
-						uint16_t *row1 = row + pix1;
-
-						for(int j = 0; j < 3; j++)
-						{
-							row1[j] ^= 0xffff;
-							row2[j] ^= 0xffff;
-						}
-					}
-					break;
-				case BC_AYUV16161616:
-					for(int i = 0; i < frame_h; i++)
-					{
-						uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-						uint16_t *row2 = row + pix2;
-						uint16_t *row1 = row + pix1;
-
-						row1[1] ^= 0xffff;
-						row2[1] ^= 0xffff;
-					}
-					break;
-				}
-			}
+			else
+				gf->set_enabled(0);
 		}
 	}
 }
