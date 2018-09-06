@@ -24,6 +24,7 @@
 
 #include "bcfontentry.h"
 #include "cinelerra.h"
+#include "guidelines.inc"
 #include "pluginclient.h"
 #include "vframe.inc"
 
@@ -100,6 +101,8 @@ public:
 		int mask, int preferred_style);
 // Find font path where glyph for the character_code exists
 	int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
+// Get guideframe of the plugin
+	GuideFrame *get_guides();
 
 // ======================== Realtime buffer pointers ===========================
 // These are provided by the plugin server for the opengl handler.

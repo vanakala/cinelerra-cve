@@ -64,6 +64,8 @@
 #include <sys/wait.h>
 #include <dlfcn.h>
 
+extern MWindow *mwindow_global;
+
 
 PluginServer::PluginServer()
 {
@@ -907,6 +909,17 @@ const char *PluginServer::plugin_conf_dir()
 	if(edl)
 		return edl->session->plugin_configuration_directory;
 	return BCASTDIR;
+}
+
+GuideFrame *PluginServer::get_plugin_guides()
+{
+	if(!plugin->guideframe && mwindow_global)
+	{
+		ptstime start = plugin->get_pts();
+		ptstime end = start + plugin->length();
+		plugin->guideframe = mwindow_global->cwindow->new_guideframe(start, end);
+	}
+	return plugin->guideframe;
 }
 
 void PluginServer::dump(int indent)

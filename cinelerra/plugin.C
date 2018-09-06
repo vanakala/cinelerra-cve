@@ -50,6 +50,7 @@ Plugin::Plugin(EDL *edl,
 	out = 1;
 	show = 0;
 	on = 1;
+	guideframe = 0;
 	keyframes = new KeyFrames(edl, track, this);
 }
 
@@ -64,6 +65,7 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	out = 1;
 	show = 0;
 	on = 1;
+	guideframe = 0;
 	keyframes = new KeyFrames(edl, track, this);
 }
 
@@ -71,6 +73,7 @@ Plugin::~Plugin()
 {
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
+	delete guideframe;
 }
 
 Edit& Plugin::operator=(Edit& edit)
@@ -268,6 +271,8 @@ void Plugin::change_plugin(const char *title,
 	strcpy(this->title, title);
 	this->shared_location = *shared_location;
 	this->plugin_type = plugin_type;
+	if(guideframe)
+		guideframe->clear();
 }
 
 KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
@@ -543,6 +548,8 @@ void Plugin::shift(ptstime difference)
 {
 	Edit::shift(difference);
 	shift_keyframes(difference);
+	if(guideframe)
+		guideframe->shift(difference);
 }
 
 void Plugin::dump(int indent)

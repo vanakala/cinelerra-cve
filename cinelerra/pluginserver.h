@@ -29,6 +29,7 @@
 #include "attachmentpoint.inc"
 #include "datatype.h"
 #include "edl.inc"
+#include "guidelines.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "menueffects.inc"
@@ -225,6 +226,9 @@ public:
 
 // Plugin configuration directory
 	const char *plugin_conf_dir();
+
+// Create new GuideFrame
+	GuideFrame *get_plugin_guides();
 
 	samplenum get_written_samples();   // after samples are written, get the number written
 	framenum get_written_frames();   // after frames are written, get the number written

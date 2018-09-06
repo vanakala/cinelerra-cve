@@ -188,3 +188,8 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 {
 	return BC_Resources::find_font_by_char(char_code, path_new, oldface);
 }
+
+GuideFrame *PluginVClient::get_guides()
+{
+	return server->get_plugin_guides();
+}

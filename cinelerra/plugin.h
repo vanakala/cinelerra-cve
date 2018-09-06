@@ -25,6 +25,7 @@
 #include "edit.h"
 #include "edl.inc"
 #include "filexml.inc"
+#include "guidelines.h"
 #include "keyframe.inc"
 #include "keyframes.inc"
 #include "module.inc"
@@ -137,6 +138,8 @@ public:
 
 // location of plugin if shared
 	SharedLocation shared_location;
+// Guidelines of plugin
+	GuideFrame *guideframe;
 };
 
 #endif
