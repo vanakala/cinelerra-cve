@@ -1,4 +1,3 @@
-
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
@@ -210,6 +209,10 @@ void CWindow::update(int options)
 		gui->timebar->update();
 	}
 
+	if(options & WUPD_ACHANNELS)
+		gui->meters->set_meters(mwindow->edl->session->audio_channels,
+			mwindow->edl->session->cwindow_meter);
+
 	if(!mwindow->edl->session->cwindow_scrollbars)
 		gui->zoom_panel->update(_("Auto"));
 	else
@@ -218,7 +221,12 @@ void CWindow::update(int options)
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll, 
 			mwindow->edl->session->cwindow_zoom);
-	gui->canvas->reposition_window(mwindow->edl, 
+
+	if(options & WUPD_ACHANNELS)
+		gui->resize_event(mwindow->session->cwindow_w,
+			mwindow->session->cwindow_h);
+	else
+		gui->canvas->reposition_window(mwindow->edl,
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,

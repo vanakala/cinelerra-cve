@@ -22,7 +22,6 @@
 #include "clip.h"
 #include "cinelerra.h"
 #include "cwindow.h"
-#include "cwindowgui.h"
 #include "datatype.h"
 #include "bchash.h"
 #include "bcpixmap.h"
@@ -155,11 +154,7 @@ void SetFormatThread::apply_changes()
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 
-	mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
-		mwindow->cwindow->gui->get_h());
-	mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
-	mwindow->cwindow->gui->slider->set_position();
-	mwindow->cwindow->gui->flush();
+	mwindow->cwindow->update(WUPD_TIMEBAR | WUPD_OVERLAYS | WUPD_ACHANNELS);
 
 	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
 		mwindow->vwindow->gui->get_h());

@@ -37,6 +37,7 @@
 #define WUPD_CANVINCR      0x0800
 #define WUPD_CANVREDRAW    0x1000
 #define WUPD_CANVPICIGN    0x2000
+#define WUPD_ACHANNELS     0x4000
 #define WUPD_CANVAS        (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
 
 // Maximum audio buffer size
