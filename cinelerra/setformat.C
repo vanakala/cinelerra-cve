@@ -35,6 +35,7 @@
 #include "levelwindowgui.h"
 #include "mainerror.h"
 #include "mainundo.h"
+#include "meterpanel.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -46,7 +47,6 @@
 #include "theme.h"
 #include "vframe.h"
 #include "vwindow.h"
-#include "vwindowgui.h"
 
 
 SetFormat::SetFormat(MWindow *mwindow)
@@ -155,12 +155,7 @@ void SetFormatThread::apply_changes()
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 
 	mwindow->cwindow->update(WUPD_TIMEBAR | WUPD_OVERLAYS | WUPD_ACHANNELS);
-
-	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
-		mwindow->vwindow->gui->get_h());
-	mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
-	mwindow->vwindow->gui->flush();
-
+	mwindow->vwindow->update(WUPD_ACHANNELS);
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
 	mwindow->lwindow->gui->flush();
 

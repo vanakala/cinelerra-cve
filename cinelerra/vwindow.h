@@ -65,6 +65,7 @@ public:
 	void delete_edl();
 	void goto_start();
 	void goto_end();
+	void update(int options);
 
 	VTracking *playback_cursor;
 
