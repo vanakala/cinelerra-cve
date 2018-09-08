@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bcsignals.h"
+#include "clip.h"
 #include "condition.h"
 #include "rotateframe.h"
 #include "vframe.h"
@@ -49,11 +51,8 @@ RotateFrame::RotateFrame(int cpus, int width, int height)
 	}
 
 	float_matrix = 0;
-	int_matrix = 0;
-	int_rows = 0;
 	float_rows = 0;
 	last_angle = 0;
-	last_interpolate = 0;
 }
 
 RotateFrame::~RotateFrame()
@@ -62,33 +61,28 @@ RotateFrame::~RotateFrame()
 		delete engine[i];
 	delete [] engine;
 	if(float_matrix) delete [] float_matrix;
-	if(int_matrix) delete [] int_matrix;
 	if(float_rows) delete [] float_rows;
-	if(int_rows) delete [] int_rows;
 }
 
 void RotateFrame::rotate(VFrame *output, 
 	VFrame *input, 
-	double angle, 
-	int interpolate)
+	double angle)
 {
 	this->angle = angle;
 	this->output = output;
 	this->input = input;
-	this->interpolate = interpolate;
 
 	if(angle != 0)
 	{
-		if(angle == 90 || angle == 180 || angle == 270)
+		if(EQUIV(angle, 90) || EQUIV(angle, 180) || EQUIV(angle, 270))
 			rotate_rightangle(input,
 				output, 
-				(int)angle);
+				round(angle));
 		else
 		{
 			rotate_obliqueangle(input, 
 				output, 
-				angle,
-				interpolate);
+				angle);
 		}
 	}
 	else
@@ -285,8 +279,7 @@ void RotateFrame::rotate_rightangle(VFrame *input,
 
 void RotateFrame::rotate_obliqueangle(VFrame *input,
 	VFrame *output, 
-	double angle,
-	int interpolate)
+	double angle)
 {
 	int i;
 	int center_x, center_y;
@@ -295,42 +288,28 @@ void RotateFrame::rotate_obliqueangle(VFrame *input,
 	center_x = input->get_w() / 2;
 	center_y = input->get_h() / 2;
 
-	if(last_angle != angle || 
-		(interpolate && !float_matrix) || 
-		(!interpolate && !int_matrix))
+	if(last_angle != angle || !float_matrix)
 	{
-		if(interpolate && !float_matrix)
+		if(!float_matrix)
 		{
 			float_matrix = new SourceCoord[input->get_w() * input->get_h()];
 			float_rows = new SourceCoord*[input->get_h()];
-			for(i = 0; i < input->get_h(); i++)
-			{
-				float_rows[i] = &float_matrix[i * input->get_w()];
-			}
-		}
-		else
-		if(!interpolate && !int_matrix)
-		{
-			int_matrix = new int[input->get_w() * input->get_h()];
-			int_rows = new int*[input->get_h()];
-			for(i = 0; i < input->get_h(); i++)
-			{
-				int_rows[i] = &int_matrix[i * input->get_w()];
-			}
-		}
 
+			for(i = 0; i < input->get_h(); i++)
+				float_rows[i] = &float_matrix[i * input->get_w()];
+		}
 		need_matrix = 1;
 	}
 
-	if(last_angle != angle) need_matrix = 1;
-	if(last_interpolate != interpolate) need_matrix = 1;
+	if(last_angle != angle)
+		need_matrix = 1;
 
 	if(need_matrix)
 	{
 // Last angle != angle implied by first buffer needing to be allocated
 		for(i = 0; i < cpus; i++)
 		{
-			engine[i]->generate_matrix(interpolate);
+			engine[i]->generate_matrix();
 		}
 
 		for(i = 0; i < cpus; i++)
@@ -340,12 +319,11 @@ void RotateFrame::rotate_obliqueangle(VFrame *input,
 	}
 
 	last_angle = angle;
-	last_interpolate = interpolate;
 
 // Perform the rotation
 	for(i = 0; i < cpus; i++)
 	{
-		engine[i]->perform_rotation(input, output, interpolate);
+		engine[i]->perform_rotation(input, output);
 	}
 
 	for(i = 0; i < cpus; i++)
@@ -395,7 +373,8 @@ void RotateFrame::rotate_obliqueangle(VFrame *input,
 }
 
 
-RotateEngine::RotateEngine(RotateFrame *plugin, int row1, int row2) : Thread()
+RotateEngine::RotateEngine(RotateFrame *plugin, int row1, int row2)
+ : Thread()
 {
 	this->plugin = plugin;
 	Thread::set_synchronous(1);
@@ -419,40 +398,24 @@ RotateEngine::~RotateEngine()
 	delete output_lock;
 }
 
-void RotateEngine::generate_matrix(int interpolate)
+void RotateEngine::generate_matrix()
 {
 	this->do_matrix = 1;
-	this->interpolate = interpolate;
 	input_lock->unlock();
 }
 
 void RotateEngine::perform_rotation(VFrame *input,
-	VFrame *output, 
-	int interpolate)
+	VFrame *output)
 {
 	this->input = input;
 	this->output = output;
 	this->do_rotation = 1;
-	this->interpolate = interpolate;
 	input_lock->unlock();
 }
 
 void RotateEngine::wait_completion()
 {
 	output_lock->lock("RotateEngine::wait_completion");
-}
-
-int RotateEngine::coords_to_pixel(int &input_y, int &input_x)
-{
-	if(input_y < 0) return -1;
-	else
-	if(input_y >= plugin->input->get_h()) return -1;
-	else
-	if(input_x < 0) return -1;
-	else
-	if(input_x >= plugin->input->get_w()) return -1;
-	else
-	return input_y * plugin->input->get_pixels_per_line() + input_x;
 }
 
 void RotateEngine::coords_to_pixel(SourceCoord &float_pixel, float &input_y, float &input_x)
@@ -479,7 +442,6 @@ void RotateEngine::create_matrix()
 	register int i, j;
 	int *int_row;
 	SourceCoord *float_row;
-	int input_x_i, input_y_i;
 	float input_x_f, input_y_f;
 
 // The following is the result of pure trial and error.
@@ -495,10 +457,8 @@ void RotateEngine::create_matrix()
 	for(i = row1, l = row1 - plugin->input->get_h() / 2; i < row2; i++, l++)
 	{
 		int l_suare = (int)(l * l);
-		if(!interpolate)
-			int_row = plugin->int_rows[i];
-		else
-			float_row = plugin->float_rows[i];
+
+		float_row = plugin->float_rows[i];
 
 		for(j = 0, k = -plugin->input->get_w() / 2; 
 			j < plugin->input->get_w(); 
@@ -519,46 +479,11 @@ void RotateEngine::create_matrix()
 			angle += (l < 0) ? offset_angle2 : offset_angle;
 
 // Convert back to cartesian coords
-			if(!interpolate)
-			{
-				input_y_i = (int)(y_offset + magnitude * sin(angle));
-				input_x_i = (int)(x_offset + magnitude * cos(angle));
-				int_row[j] = coords_to_pixel(input_y_i, input_x_i);
-			}
-			else
-			{
-				input_y_f = y_offset + magnitude * sin(angle);
-				input_x_f = x_offset + magnitude * cos(angle);
-				coords_to_pixel(float_row[j], input_y_f, input_x_f);
-			}
+			input_y_f = y_offset + magnitude * sin(angle);
+			input_x_f = x_offset + magnitude * cos(angle);
+			coords_to_pixel(float_row[j], input_y_f, input_x_f);
 		}
 	}
-}
-
-#define ROTATE_NEAREST(type, components, black_chroma) \
-{ \
-	type *input0 = (type*)input->get_row_ptr(0); \
- \
-	for(int i = row1; i < row2; i++) \
-	{ \
-		int *int_row = plugin->int_rows[i]; \
-		type *input_row = (type*)input->get_row_ptr(i); \
-		type *output_row = (type*)input->get_row_ptr(i); \
- \
-		for(int j = 0; j < width; j++) \
-		{ \
-			if(int_row[j] < 0) \
-			{  \
-				for(int k = 0; k < components; k++) \
-					output_row[j * components + k] = 0; \
-			} \
-			else \
-			{ \
-				for(int k = 0; k < components; k++) \
-					output_row[j * components + k] = *(input0 + int_row[j] * components + k); \
-			} \
-		} \
-	} \
 }
 
 #define ROTATE_INTERPOLATE(type, components, black_chroma) \
@@ -627,77 +552,38 @@ void RotateEngine::perform_rotation()
 	int width = input->get_w();
 	int height = input->get_h();
 
-	if(!interpolate)
+	switch(input->get_color_model())
 	{
-		switch(input->get_color_model())
-		{
-		case BC_RGB888:
-			ROTATE_NEAREST(unsigned char, 3, 0x0);
-			break;
-		case BC_RGB_FLOAT:
-			ROTATE_NEAREST(float, 3, 0x0);
-			break;
-		case BC_YUV888:
-			ROTATE_NEAREST(unsigned char, 3, 0x80);
-			break;
-		case BC_RGBA8888:
-			ROTATE_NEAREST(unsigned char, 4, 0x0);
-			break;
-		case BC_RGBA_FLOAT:
-			ROTATE_NEAREST(float, 4, 0x0);
-			break;
-		case BC_YUVA8888:
-			ROTATE_NEAREST(unsigned char, 4, 0x80);
-			break;
-		case BC_RGB161616:
-			ROTATE_NEAREST(uint16_t, 3, 0x0);
-			break;
-		case BC_YUV161616:
-			ROTATE_NEAREST(uint16_t, 3, 0x8000);
-			break;
-		case BC_RGBA16161616:
-			ROTATE_NEAREST(uint16_t, 4, 0x0);
-			break;
-		case BC_YUVA16161616:
-			ROTATE_NEAREST(uint16_t, 4, 0x8000);
-			break;
-		}
-	}
-	else
-	{
-		switch(input->get_color_model())
-		{
-		case BC_RGB888:
-			ROTATE_INTERPOLATE(unsigned char, 3, 0x0);
-			break;
-		case BC_RGB_FLOAT:
-			ROTATE_INTERPOLATE(float, 3, 0x0);
-			break;
-		case BC_YUV888:
-			ROTATE_INTERPOLATE(unsigned char, 3, 0x80);
-			break;
-		case BC_RGBA8888:
-			ROTATE_INTERPOLATE(unsigned char, 4, 0x0);
-			break;
-		case BC_RGBA_FLOAT:
-			ROTATE_INTERPOLATE(float, 4, 0x0);
-			break;
-		case BC_YUVA8888:
-			ROTATE_INTERPOLATE(unsigned char, 4, 0x80);
-			break;
-		case BC_RGB161616:
-			ROTATE_INTERPOLATE(uint16_t, 3, 0x0);
-			break;
-		case BC_YUV161616:
-			ROTATE_INTERPOLATE(uint16_t, 3, 0x8000);
-			break;
-		case BC_RGBA16161616:
-			ROTATE_INTERPOLATE(uint16_t, 4, 0x0);
-			break;
-		case BC_YUVA16161616:
-			ROTATE_INTERPOLATE(uint16_t, 4, 0x8000);
-			break;
-		}
+	case BC_RGB888:
+		ROTATE_INTERPOLATE(unsigned char, 3, 0x0);
+		break;
+	case BC_RGB_FLOAT:
+		ROTATE_INTERPOLATE(float, 3, 0x0);
+		break;
+	case BC_YUV888:
+		ROTATE_INTERPOLATE(unsigned char, 3, 0x80);
+		break;
+	case BC_RGBA8888:
+		ROTATE_INTERPOLATE(unsigned char, 4, 0x0);
+		break;
+	case BC_RGBA_FLOAT:
+		ROTATE_INTERPOLATE(float, 4, 0x0);
+		break;
+	case BC_YUVA8888:
+		ROTATE_INTERPOLATE(unsigned char, 4, 0x80);
+		break;
+	case BC_RGB161616:
+		ROTATE_INTERPOLATE(uint16_t, 3, 0x0);
+		break;
+	case BC_YUV161616:
+		ROTATE_INTERPOLATE(uint16_t, 3, 0x8000);
+		break;
+	case BC_RGBA16161616:
+		ROTATE_INTERPOLATE(uint16_t, 4, 0x0);
+		break;
+	case BC_YUVA16161616:
+		ROTATE_INTERPOLATE(uint16_t, 4, 0x8000);
+		break;
 	}
 }
 

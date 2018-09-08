@@ -297,8 +297,7 @@ void BC_Pan::draw_popup()
 		while(rotate_angle < 0) rotate_angle += 360;
 		rotater->rotate(temp_channel, 
 			get_resources()->pan_data[PAN_CHANNEL], 
-			rotate_angle, 
-			0);
+			rotate_angle);
 		BC_Pixmap *temp_pixmap = new BC_Pixmap(popup, 
 			temp_channel, 
 			PIXMAP_ALPHA);

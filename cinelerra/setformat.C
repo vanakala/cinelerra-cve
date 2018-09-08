@@ -478,8 +478,7 @@ void SetChannelsCanvas::draw(int angle)
 		while(rotate_angle < 0) rotate_angle += 360;
 		rotater->rotate(temp_picon, 
 			mwindow->theme->channel_position_data, 
-			rotate_angle, 
-			0);
+			rotate_angle);
 
 		BC_Pixmap temp_pixmap(this, 
 			temp_picon, 

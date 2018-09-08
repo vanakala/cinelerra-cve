@@ -42,15 +42,13 @@ public:
 // angle is 0 - 360
 	void rotate(VFrame *output, 
 		VFrame *input, 
-		double angle, 
-		int interpolate);
+		double angle);
 	void rotate_rightangle(VFrame *input,
 		VFrame *output, 
 		int angle);
 	void rotate_obliqueangle(VFrame *input,
 		VFrame *output, 
-		double angle,
-		int interpolate);
+		double angle);
 	void get_rightdimensions(VFrame *frame,
 		int &diameter, 
 		int &in_x1, 
@@ -64,13 +62,9 @@ public:
 
 	int cpus;
 	RotateEngine **engine;
-// Matrix of source pixel offsets
-	int *int_matrix, **int_rows;
 // Interpolation uses input coordinates for each output coordinate.
 	SourceCoord *float_matrix, **float_rows;
 	VFrame *output, *input;
-	int interpolate;
-	int last_interpolate;
 // Compare new angle with old angle
 	double last_angle;
 	double angle;
@@ -83,19 +77,15 @@ public:
 	RotateEngine(RotateFrame *plugin, int row1, int row2);
 	~RotateEngine();
 
-	void generate_matrix(int interpolate);
-	void perform_rotation(VFrame *input,
-		VFrame *output, 
-		int interpolate);
+	void generate_matrix();
+	void perform_rotation(VFrame *input, VFrame *output);
 	void wait_completion();
 	void create_matrix();
-	int coords_to_pixel(int &input_y, int &input_x);
 	void coords_to_pixel(SourceCoord &float_pixel, float &input_y, float &input_x);
 	void perform_rotation();
 	void run();
 
 	int row1, row2;
-	int interpolate;
 	int do_matrix, do_rotation;
 	int done;
 	RotateFrame *plugin;
