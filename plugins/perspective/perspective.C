@@ -150,7 +150,6 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 		y, 
 		AffineEngine::STRETCH,
 		_("Stretch")));
-	update_canvas();
 	y += 30;
 	x = 10;
 	add_subwindow(new BC_Title(x, y, _("Perspective direction:")));
@@ -168,6 +167,7 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 		_("Reverse")));
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
+	update_canvas();
 }
 
 PerspectiveWindow::~PerspectiveWindow()
