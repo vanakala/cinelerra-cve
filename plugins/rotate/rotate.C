@@ -29,7 +29,7 @@
 
 #include "pluginmacros.h"
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "bcpot.h"
 #include "bctextbox.h"
 #include "bctitle.h"

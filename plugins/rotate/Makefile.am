@@ -1,6 +1,6 @@
 plugin_LTLIBRARIES = rotate.la
 rotate_la_LDFLAGS = -avoid-version -module -shared 
-rotate_la_LIBADD = $(top_builddir)/plugins/motion/libaffine.la
+rotate_la_LIBADD =
 rotate_la_SOURCES = rotate.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 

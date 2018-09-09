@@ -19,7 +19,7 @@
  * 
  */
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "bctitle.h"
 #include "cursors.h"
 #include "language.h"

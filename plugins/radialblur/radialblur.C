@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"

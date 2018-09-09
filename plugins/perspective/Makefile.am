@@ -1,6 +1,6 @@
 plugin_LTLIBRARIES = perspective.la
 perspective_la_LDFLAGS = -avoid-version -module -shared 
-perspective_la_LIBADD = $(top_builddir)/plugins/motion/libaffine.la
+perspective_la_LIBADD =
 perspective_la_SOURCES = perspective.C 
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 

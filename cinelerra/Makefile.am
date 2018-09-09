@@ -52,6 +52,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    aedit.C \
 		    aedits.C \
 		    aframe.C \
+		    affine.C \
 		    amodule.C \
 		    apatchgui.C \
 		    apluginarray.C \
@@ -290,6 +291,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 aedit.h \
 		 aedits.h \
 		 aframe.h \
+		 affine.h \
 		 amodule.h \
 		 apatchgui.h \
 		 apluginarray.h \
