@@ -35,11 +35,11 @@
 #include "bchash.h"
 #include "bctoggle.h"
 #include "clip.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "fonts.h"
@@ -233,7 +233,6 @@ public:
 	VideoScopeUnit(VideoScopeEffect *plugin, VideoScopeEngine *server);
 	void process_package(LoadPackage *package);
 	VideoScopeEffect *plugin;
-	YUV yuv;
 private:
 	template<typename TYPE, typename TEMP_TYPE,
 		 int MAX, int COMPONENTS, bool USE_YUV>
@@ -858,7 +857,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 			{
 				if(sizeof(TYPE) == 2)
 				{
-					yuv.yuv_to_rgb_16(r,
+					ColorSpaces::yuv_to_rgb_16(r,
 						g,
 						b,
 						in_pixel[0],
@@ -867,7 +866,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 				}
 				else
 				{
-					yuv.yuv_to_rgb_8(r,
+					ColorSpaces::yuv_to_rgb_8(r,
 						g,
 						b,
 						in_pixel[0],
@@ -882,7 +881,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 				b = in_pixel[2];
 			}
 
-			HSV::rgb_to_hsv((float)r / MAX,
+			ColorSpaces::rgb_to_hsv((float)r / MAX,
 					(float)g / MAX,
 					(float)b / MAX,
 					h,
@@ -1016,12 +1015,12 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 					float h, s, v;
 					int r, g, b;
 
-					yuv.yuv_to_rgb_16(r, g, b,
+					ColorSpaces::yuv_to_rgb_16(r, g, b,
 						in_pixel[1],
 						in_pixel[2],
 						in_pixel[3]);
 
-					HSV::rgb_to_hsv((float)r / 0xffff,
+					ColorSpaces::rgb_to_hsv((float)r / 0xffff,
 						(float)g / 0xffff,
 						(float)b / 0xffff,
 						h, s, v);
