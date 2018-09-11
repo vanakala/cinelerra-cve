@@ -23,6 +23,7 @@
 
 #include "bcsignals.h"
 #include "chromakey.h"
+#include "colorspaces.h"
 #include "clip.h"
 #include "bchash.h"
 #include "bctitle.h"
@@ -30,7 +31,6 @@
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -329,7 +329,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	int w = plugin->input->get_w();
 
 	float h, s, v;
-	HSV::rgb_to_hsv(plugin->config.red, 
+	ColorSpaces::rgb_to_hsv(plugin->config.red,
 		plugin->config.green,
 		plugin->config.blue,
 		h,
@@ -345,7 +345,6 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 #define SQR(x) ((x) * (x))
 
 #define OUTER_VARIABLES(plugin) \
-	YUV yuv; \
 	float value = RGB_TO_VALUE(plugin->config.red, \
 		plugin->config.green, \
 		plugin->config.blue); \
@@ -356,7 +355,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	float g_key = plugin->config.green; \
 	float b_key = plugin->config.blue; \
 	int y_key, u_key, v_key; \
-	yuv.rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
+	ColorSpaces::rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
 	float run = plugin->config.slope / 100; \
 	float threshold_run = threshold + run;
 
