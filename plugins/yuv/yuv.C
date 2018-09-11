@@ -34,10 +34,10 @@
 #include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
@@ -251,8 +251,6 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-static YUV yuv_static;
-
 #define YUV_MACRO(type, temp_type, max, components, use_yuv) \
 { \
 	for(int i = 0; i < input->get_h(); i++) \
@@ -277,16 +275,16 @@ static YUV yuv_static;
 				temp_type y, u, v, r, g, b; \
 				if(sizeof(type) == 4) \
 				{ \
-					yuv_static.rgb_to_yuv_f(in_row[0], in_row[1], in_row[2], y, u, v); \
+					ColorSpaces::rgb_to_yuv_f(in_row[0], in_row[1], in_row[2], y, u, v); \
 				} \
 				else \
 				if(sizeof(type) == 2) \
 				{ \
-					yuv_static.rgb_to_yuv_16(in_row[0], in_row[1], in_row[2], y, u, v); \
+					ColorSpaces::rgb_to_yuv_16(in_row[0], in_row[1], in_row[2], y, u, v); \
 				} \
 				else \
 				{ \
-					yuv_static.rgb_to_yuv_8(in_row[0], in_row[1], in_row[2], y, u, v); \
+					ColorSpaces::rgb_to_yuv_8(in_row[0], in_row[1], in_row[2], y, u, v); \
 				} \
  \
 				if(sizeof(type) < 4) \
@@ -307,12 +305,12 @@ static YUV yuv_static;
 				} \
  \
 				if(sizeof(type) == 4) \
-					yuv_static.yuv_to_rgb_f(r, g, b, y, u, v); \
+					ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v); \
 				else \
 				if(sizeof(type) == 2) \
-					yuv_static.yuv_to_rgb_16(r, g, b, y, u, v); \
+					ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v); \
 				else \
-					yuv_static.yuv_to_rgb_8(r, g, b, y, u, v); \
+					ColorSpaces::yuv_to_rgb_8(r, g, b, y, u, v); \
  \
 				out_row[0] = r; \
 				out_row[1] = g; \
