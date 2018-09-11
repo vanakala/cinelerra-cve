@@ -26,6 +26,7 @@
 
 #include "clip.h"
 #include "colormodels.inc"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "filesystem.h"
 #include "ft2build.h"
@@ -37,7 +38,6 @@
 #include "mwindow.inc"
 #include "mainerror.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "title.h"
 
 #include <errno.h>
@@ -763,8 +763,6 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 	} \
 }
 
-static YUV yuv;
-
 void TitleTranslateUnit::process_package(LoadPackage *package)
 {
 	TitleTranslatePackage *pkg = (TitleTranslatePackage*)package;
@@ -792,7 +790,7 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	case BC_YUV888:
 	{
 		unsigned char y, u, v;
-		yuv.rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
+		ColorSpaces::rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
 		TRANSLATE(unsigned char, 0xff, 3, y, u, v);
 		break;
 	}
@@ -808,7 +806,7 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	case BC_YUV161616:
 	{
 		uint16_t y, u, v;
-		yuv.rgb_to_yuv_16(
+		ColorSpaces::rgb_to_yuv_16(
 			(r_in << 8) | r_in, 
 			(g_in << 8) | g_in, 
 			(b_in << 8) | b_in, 
@@ -835,7 +833,7 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	case BC_YUVA8888:
 	{
 		unsigned char y, u, v;
-		yuv.rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
+		ColorSpaces::rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
 		TRANSLATE(unsigned char, 0xff, 4, y, u, v);
 		break;
 	}
@@ -851,7 +849,7 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 	{
 		uint16_t y, u, v;
-		yuv.rgb_to_yuv_16(
+		ColorSpaces::rgb_to_yuv_16(
 			(r_in << 8) | r_in, 
 			(g_in << 8) | g_in, 
 			(b_in << 8) | b_in, 
@@ -865,7 +863,7 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 		{
 			uint16_t y, u, v;
 
-			yuv.rgb_to_yuv_16(
+			ColorSpaces::rgb_to_yuv_16(
 				(r_in << 8) | r_in,
 				(g_in << 8) | g_in,
 				(b_in << 8) | b_in,
