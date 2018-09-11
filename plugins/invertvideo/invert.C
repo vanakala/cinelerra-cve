@@ -40,7 +40,6 @@
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
@@ -316,10 +315,6 @@ void InvertVideoEffect::process_frame(VFrame *frame)
 			INVERT_MACRO(uint16_t, 4, 0xffff)
 			break;
 		case BC_AYUV16161616:
-/* Pole
-			INVERT_MACRO(uint16_t, 4, 0xffff)
-		#define INVERT_MACRO(type, components, max) \
-	*/
 			for(int i = 0; i < frame->get_h(); i++)
 			{
 				uint16_t *in_row = (uint16_t*)frame->get_row_ptr(i);
