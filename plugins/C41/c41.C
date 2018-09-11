@@ -37,11 +37,11 @@
 #include "bctoggle.h"
 #include "bctitle.h"
 #include "colormodels.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "guidelines.h"
 #include "language.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
@@ -237,7 +237,6 @@ public:
 	float myPow2(float i) __attribute__ ((optimize(0)));
 	float myPow(float a, float b);
 #endif
-	YUV yuv;
 	VFrame* tmp_frame;
 	VFrame* blurry_frame;
 	struct magic values;
@@ -918,7 +917,7 @@ void C41Effect::process_frame(VFrame *frame)
 				blurry_row = (float*)blurry_frame->get_row_ptr(i);
 				for(j = k = 0; j < frame_w; j++)
 				{
-					yuv.yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
+					ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
 					blurry_row[k++] = (float)r / 0xffff;
 					blurry_row[k++] = (float)g / 0xffff;
 					blurry_row[k++] = (float)b / 0xffff;
@@ -1133,11 +1132,11 @@ void C41Effect::process_frame(VFrame *frame)
 				int r, g, b;
 				for(int j = 0; j < frame_w; j++, row += pixlen)
 				{
-					yuv.yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
+					ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
 					r = pixtouint((config.fix_min_r / ((float)r / 0xffff)) - config.fix_light);
 					g = pixtouint(C41_POW_FUNC((config.fix_min_g / ((float)g / 0xffff)), config.fix_gamma_g) - config.fix_light);
 					b = pixtouint(C41_POW_FUNC((config.fix_min_b / ((float)b / 0xffff)), config.fix_gamma_b) - config.fix_light);
-					yuv.rgb_to_yuv_16(r, g, b, row[1], row[2], row[3]);
+					ColorSpaces::rgb_to_yuv_16(r, g, b, row[1], row[2], row[3]);
 				}
 			}
 			break;
@@ -1197,7 +1196,7 @@ void C41Effect::process_frame(VFrame *frame)
 
 					for(int j = min_col; j < max_col; j++, row += pixlen)
 					{
-						yuv.yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
+						ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
 
 						if(r < min_r) min_r = r;
 						if(r > max_r) max_r = r;
