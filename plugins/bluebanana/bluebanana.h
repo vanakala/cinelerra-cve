@@ -38,8 +38,8 @@ class BluebananaThread;
 #include "language.h"
 #include "bluebananaconfig.h"
 #include "bluebananawindow.h"
+#include "clip.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 
 #define SELECT_LOOKUP_SIZE 1024
@@ -103,7 +103,6 @@ public:
 	float sat_select_alpha(float sat);
 	float val_select_alpha(float val);
 
-	YUV yuv;
 	VFrame *frame;
 	BluebananaEngine *engine;
 	int ants_counter;

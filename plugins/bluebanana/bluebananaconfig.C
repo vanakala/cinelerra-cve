@@ -19,7 +19,6 @@
  *
  */
 
-#include "clip.h"
 #include "bluebanana.h"
 #include "units.h"
 

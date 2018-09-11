@@ -25,7 +25,6 @@
 
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
-#include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "bluebanana.h"
@@ -35,7 +34,6 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "vframe.h"
 #include "workarounds.h"
 

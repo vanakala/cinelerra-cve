@@ -18,6 +18,8 @@
  *
  */
 
+#include "colorspaces.h"
+
 static void rgb8_to_RGB(unsigned char *row, float *R, float *G, float *B, int w)
 {
 	while(w--)

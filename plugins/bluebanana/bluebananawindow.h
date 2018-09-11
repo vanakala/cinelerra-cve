@@ -21,7 +21,6 @@
 #ifndef BLUEBANANAWINDOW_H
 #define BLUEBANANAWINDOW_H
 
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginserver.h"
 #include "pluginwindow.h"
