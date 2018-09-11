@@ -23,6 +23,7 @@
 #include "bcsignals.h"
 #include "bcpixmap.h"
 #include "bctitle.h"
+#include "clip.h"
 #include "cursors.h"
 #include "histogram.h"
 #include "histogramconfig.h"

@@ -37,7 +37,6 @@
 #include "histogramconfig.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 
 class HistogramMain : public PluginVClient
@@ -70,7 +69,6 @@ public:
 // Calculate the linear, smoothed, lookup curves
 	void tabulate_curve(int subscript, int use_value);
 
-	YUV yuv;
 	VFrame *input, *output;
 	HistogramEngine *engine;
 	int *lookup[HISTOGRAM_MODES];
