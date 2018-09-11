@@ -23,11 +23,11 @@
 #include "bcresources.h"
 #include "bctitle.h"
 #include "colorpicker.h"
+#include "colorspaces.h"
 #include "condition.h"
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.inc"
-#include "plugincolors.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -216,7 +216,7 @@ void ColorWindow::change_values()
 	r = (float)((thread->output & 0xff0000) >> 16) / 255;
 	g = (float)((thread->output & 0xff00) >> 8) / 255;
 	b = (float)((thread->output & 0xff)) / 255;
-	HSV::rgb_to_hsv(r, g, b, h, s, v);
+	ColorSpaces::rgb_to_hsv(r, g, b, h, s, v);
 	a = (float)thread->alpha / 255;
 }
 
@@ -229,7 +229,7 @@ void ColorWindow::close_event()
 
 void ColorWindow::update_rgb()
 {
-	HSV::rgb_to_hsv(red->get_value(), 
+	ColorSpaces::rgb_to_hsv(red->get_value(),
 				green->get_value(), 
 				blue->get_value(), 
 				h, 
@@ -264,7 +264,7 @@ void ColorWindow::update_display()
 	saturation->update(s);
 	value->update(v);
 
-	HSV::hsv_to_rgb(r, g, b, h, s, v);
+	ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
 	red->update(r);
 	green->update(g);
 	blue->update(b);
@@ -277,7 +277,7 @@ void ColorWindow::update_display()
 int ColorWindow::handle_event()
 {
 	float r, g, b;
-	HSV::hsv_to_rgb(r, g, b, h, s, v);
+	ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
 	int result = (((int)(r * 255)) << 16) | (((int)(g * 255)) << 8) | ((int)(b * 255));
 	thread->handle_new_color(result, (int)(a * 255));
 	return 1;
@@ -376,7 +376,7 @@ int PaletteWheel::create_objects()
 			{
 				h = get_angle(x1, y1, x2, y2);
 				s = distance / x1;
-				HSV::hsv_to_rgb(r, g, b, h, s, v);
+				ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
 				row[(int)x2 * 4] = (int)(r * 255);
 				row[(int)x2 * 4 + 1] = (int)(g * 255);
 				row[(int)x2 * 4 + 2] = (int)(b * 255);
@@ -541,7 +541,7 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	{
 		unsigned char *row = frame->get_row_ptr(i);
 
-		HSV::hsv_to_rgb(r_f, g_f, b_f, hue, saturation, (float)(get_h() - 1 - i) / get_h());
+		ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, hue, saturation, (float)(get_h() - 1 - i) / get_h());
 		r = (int)(r_f * 255);
 		g = (int)(g_f * 255);
 		b = (int)(b_f * 255);
@@ -597,7 +597,7 @@ int PaletteOutput::draw()
 {
 	float r_f, g_f, b_f;
 
-	HSV::hsv_to_rgb(r_f, g_f, b_f, window->h, window->s, window->v);
+	ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, window->h, window->s, window->v);
 	set_color(((int)(r_f * 255) << 16) | ((int)(g_f * 255) << 8) | ((int)(b_f * 255)));
 	draw_box(0, 0, get_w(), get_h());
 	return 0;
