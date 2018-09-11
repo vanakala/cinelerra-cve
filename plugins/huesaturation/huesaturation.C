@@ -36,11 +36,11 @@
 #include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
@@ -138,7 +138,6 @@ public:
 	HueUnit(HueEffect *plugin, HueEngine *server);
 	void process_package(LoadPackage *package);
 	HueEffect *plugin;
-	YUV yuv;
 };
 
 class HueEffect : public PluginVClient
@@ -360,10 +359,10 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 				u = (int)in_row[1]; \
 				v = (int)in_row[2]; \
 				if(max == 0xffff) \
-					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
+					ColorSpaces::yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
 				else \
-					yuv.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
-				HSV::rgb_to_hsv((float)r_i / max, \
+					ColorSpaces::yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
+				ColorSpaces::rgb_to_hsv((float)r_i / max, \
 					(float)g_i / max, \
 					(float)b_i / max, \
 					h, \
@@ -375,7 +374,7 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 				r = (float)in_row[0] / max; \
 				g = (float)in_row[1] / max; \
 				b = (float)in_row[2] / max; \
-				HSV::rgb_to_hsv(r, g, b, h, s, va); \
+				ColorSpaces::rgb_to_hsv(r, g, b, h, s, va); \
 			} \
  \
 			h += h_offset; \
@@ -394,14 +393,14 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
  \
 			if(use_yuv) \
 			{ \
-				HSV::hsv_to_yuv(y, u, v, h, s, va, max); \
+				ColorSpaces::hsv_to_yuv(y, u, v, h, s, va, max); \
 				out_row[0] = y; \
 				out_row[1] = u; \
 				out_row[2] = v; \
 			} \
 			else \
 			{ \
-				HSV::hsv_to_rgb(r, g, b, h, s, va); \
+				ColorSpaces::hsv_to_rgb(r, g, b, h, s, va); \
 				if(sizeof(type) < 4) \
 				{ \
 					r *= max; \
@@ -495,8 +494,8 @@ void HueUnit::process_package(LoadPackage *package)
 					y = (int)in_row[1];
 					u = (int)in_row[2];
 					v = (int)in_row[3];
-					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
-					HSV::rgb_to_hsv((float)r_i / 0xffff,
+					ColorSpaces::yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
+					ColorSpaces::rgb_to_hsv((float)r_i / 0xffff,
 						(float)g_i / 0xffff,
 						(float)b_i / 0xffff,
 						h, s, va);
@@ -511,7 +510,7 @@ void HueUnit::process_package(LoadPackage *package)
 					if(va > 1) va = 1;
 					if(s < 0) s = 0;
 					if(va < 0) va = 0;
-					HSV::hsv_to_yuv(y, u, v, h, s, va, 0xffff);
+					ColorSpaces::hsv_to_yuv(y, u, v, h, s, va, 0xffff);
 					out_row[1] = y;
 					out_row[2] = u;
 					out_row[3] = v;
