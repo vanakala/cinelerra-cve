@@ -20,9 +20,9 @@
  */
 
 #include "bcsignals.h"
+#include "clip.h"
 #include "colormodels.inc"
 #include "effecttv.h"
-#include "plugincolors.h"
 #include "vframe.h"
 
 #include <stdint.h> 
@@ -41,8 +41,6 @@ EffectTV::EffectTV(int w, int h)
 	diff2 = new unsigned char[w * h];
 
 	yuv_init();
-	yuv = new YUV;
-
 }
 
 EffectTV::~EffectTV()
@@ -50,7 +48,6 @@ EffectTV::~EffectTV()
 	delete [] background;
 	delete [] diff;
 	delete [] diff2;
-	delete yuv;
 }
 
 

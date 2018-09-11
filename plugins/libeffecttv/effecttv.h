@@ -22,7 +22,6 @@
 #ifndef EFFECTTV_H
 #define EFFECTTV_H
 
-#include "plugincolors.inc"
 #include "vframe.inc"
 #include <stdint.h>
 
@@ -77,8 +76,6 @@ public:
 	int GtoV[0x100];
 	int BtoY[0x100];
 	int BtoV[0x100];
-	YUV *yuv;
-
 };
 
 #endif
