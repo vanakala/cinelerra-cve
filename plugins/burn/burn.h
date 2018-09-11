@@ -38,7 +38,6 @@
 #include "effecttv.inc"
 #include "language.h"
 #include "loadbalance.h"
-#include "plugincolors.inc"
 #include "pluginvclient.h"
 #include "burnwindow.h"
 #include <sys/types.h>
@@ -113,7 +112,6 @@ public:
 
 	EffectTV *effecttv;
 	VFrame *input_ptr, *output_ptr;
-	YUV *yuv;
 };
 
 #endif
