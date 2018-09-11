@@ -21,11 +21,11 @@
 
 #include "clip.h"
 #include "colormodels.inc"
+#include "colorspaces.h"
 #include "effecttv.h"
 #include "holo.h"
 #include "holowindow.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -48,7 +48,6 @@ HoloMain::HoloMain(PluginServer *server)
 	effecttv = 0;
 	bgimage = 0;
 	do_reconfigure = 1;
-	yuv = new YUV;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -62,7 +61,6 @@ HoloMain::~HoloMain()
 
 	if(bgimage)
 		delete bgimage;
-	delete yuv;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -329,7 +327,7 @@ if(sizeof(type) == 2) \
 		int r = (int)src[0] >> 8; \
 		int g = (int)src[1] >> 8; \
 		int b = (int)src[2] >> 8; \
-		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		ColorSpaces::yuv_to_rgb_8(r, g, b); \
 		dest = (r << 16) | (g << 8) | b; \
 	} \
 	else \
@@ -346,7 +344,7 @@ else \
 		int r = (int)src[0]; \
 		int g = (int)src[1]; \
 		int b = (int)src[2]; \
-		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		ColorSpaces::yuv_to_rgb_8(r, g, b); \
 		dest = (r << 16) | (g << 8) | b; \
 	} \
 	else \
@@ -398,7 +396,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
-					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(is_yuv) ColorSpaces::rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \
@@ -464,7 +462,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
-					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(is_yuv) ColorSpaces::rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \
@@ -550,7 +548,7 @@ else \
 						r = (int)src[1] >> 8;
 						g = (int)src[2] >> 8;
 						b = (int)src[3] >> 8;
-						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
 						t = (s & 0xff) +
@@ -572,7 +570,7 @@ else \
 						r = (int)bg[1] >> 8;
 						g = (int)bg[2] >> 8;
 						b = (int)bg[3] >> 8;
-						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
 						r += (s & 0xff0000) >> 17;
@@ -583,7 +581,7 @@ else \
 						if(g > 255) g = 255;
 						if(b > 255) b = 255;
 
-						plugin->yuv->rgb_to_yuv_8(r, g, b);
+						ColorSpaces::rgb_to_yuv_8(r, g, b);
 
 						dest[1] = (r << 8) | r; \
 						dest[2] = (g << 8) | g; \
@@ -612,7 +610,7 @@ else \
 						r = (int)src[1] >> 8;
 						g = (int)src[2] >> 8;
 						b = (int)src[3] >> 8;
-						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
 						t = (s & 0xff) + ((s & 0xff00) >> 6) + ((s & 0xff0000) >> 16);
@@ -632,7 +630,7 @@ else \
 						r = (int)bg[1] >> 8;
 						g = (int)bg[2] >> 8;
 						b = (int)bg[3] >> 8;
-						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
 						r += ((s & 0xff0000) >> 17) + 10;
@@ -643,7 +641,7 @@ else \
 						if(g > 255) g = 255;
 						if(b > 255) b = 255;
 
-						plugin->yuv->rgb_to_yuv_8(r, g, b);
+						ColorSpaces::rgb_to_yuv_8(r, g, b);
 
 						dest[1] = (r << 8) | r;
 						dest[2] = (g << 8) | g;
