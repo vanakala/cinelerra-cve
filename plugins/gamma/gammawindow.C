@@ -20,6 +20,7 @@
  */
 
 #include "bcsubwindow.h"
+#include "clip.h"
 #include "bctitle.h"
 #include "gammawindow.h"
 #include "language.h"
