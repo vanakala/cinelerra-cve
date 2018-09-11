@@ -30,6 +30,7 @@
 #include "bcresources.inc"
 #include "bcsignals.inc"
 #include "bcwindowbase.inc"
+#include "colorspaces.inc"
 #include "glthread.inc"
 #include "hashcache.inc"
 #include "tmpframecache.inc"
@@ -328,6 +329,8 @@ public:
 	static int interpolation_method;
 // OpenGL version strings (version, vendor, renderer)
 	static const char *OpenGLStrings[];
+// Colorspace conversion
+	static ColorSpaces colorspaces;
 
 private:
 // Test for availability of shared memory pixmaps

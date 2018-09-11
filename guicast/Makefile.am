@@ -53,6 +53,7 @@ libguicastcve_la_SOURCES = \
 	bcwindowdraw.C \
 	condition.C \
 	colormodels.C \
+	colorspaces.C \
 	filesystem.C \
 	glthread.C \
 	hashcache.C \
@@ -159,6 +160,8 @@ noinst_HEADERS = \
 	colors.h \
 	colormodels.h \
 	colormodels.inc \
+	colorspaces.h \
+	colorspaces.inc \
 	condition.inc \
 	cursors.h \
 	filesystem.h \
