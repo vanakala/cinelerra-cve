@@ -24,13 +24,13 @@
 #include "bcsignals.h"
 #include "bctitle.h"
 #include "chromakey.h"
+#include "colorspaces.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -601,7 +601,7 @@ ChromaKeyUnit::ChromaKeyUnit(ChromaKeyHSV* plugin, ChromaKeyServer* server)
  \
 /* Convert RGB key to HSV key */ \
 	float hue_key, saturation_key, value_key; \
-	HSV::rgb_to_hsv(red,  \
+	ColorSpaces::rgb_to_hsv(red,  \
 		green, \
 		blue, \
 		hue_key, \
@@ -642,10 +642,10 @@ void ChromaKeyUnit::process_chromakey(int components,
 				float y = r;
 				float u = g;
 				float v = b;
-				YUV::yuv_to_rgb_f(r, g, b, y, u - 0.5, v - 0.5);
+				ColorSpaces::yuv_to_rgb_f(r, g, b, y, u - 0.5, v - 0.5);
 			}
 
-			HSV::rgb_to_hsv(r, g, b, h, s, v);
+			ColorSpaces::rgb_to_hsv(r, g, b, h, s, v);
 
 // First, test if the hue is in range
 			if(tolerance == 0)
@@ -720,14 +720,14 @@ void ChromaKeyUnit::process_chromakey(int components,
 			{
 				s = s * spill_amount * ABS(h - hue_key) / (spill_threshold * 180);
 
-				HSV::hsv_to_rgb(r, g, b, h, s, v);
+				ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
 
 				if(use_yuv)
 				{
 					float y;
 					float u;
 					float v;
-					YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+					ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
 					CLAMP(y, 0, 1.0);
 					CLAMP(u, 0, 1.0);
 					CLAMP(v, 0, 1.0);
@@ -859,7 +859,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 
 		// Convert RGB key to HSV key
 		float hue_key, saturation_key, value_key;
-		HSV::rgb_to_hsv(red, green, blue, hue_key,
+		ColorSpaces::rgb_to_hsv(red, green, blue, hue_key,
 			saturation_key, value_key);
 
 		int w = plugin->input->get_w();
@@ -875,7 +875,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 				float av = 1, ah = 1, as = 1, avm = 1;
 				bool has_match = true;
 
-				HSV::yuv_to_hsv(row[1], row[2], row[3],
+				ColorSpaces::yuv_to_hsv(row[1], row[2], row[3],
 					h, s, v, 0xffff);
 
 				// First, test if the hue is in range
@@ -953,7 +953,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 						(spill_threshold * 180);
 					int iy, iu, iv;
 
-					HSV::hsv_to_yuv(iy, iu, iv, h, s, v, 0xffff);
+					ColorSpaces::hsv_to_yuv(iy, iu, iv, h, s, v, 0xffff);
 					row[1] = iy;
 					row[2] = iu;
 					row[3] = iv;
