@@ -50,7 +50,6 @@ class GradientServer;
 #include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "thread.h"
@@ -279,7 +278,6 @@ public:
 	void process_package(LoadPackage *package);
 	GradientServer *server;
 	GradientMain *plugin;
-	YUV yuv;
 };
 
 class GradientServer : public LoadServer

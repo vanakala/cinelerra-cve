@@ -29,6 +29,7 @@
 #include "bcmenuitem.h"
 #include "clip.h"
 #include "bchash.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "gradient.h"
 #include "keyframe.h"
@@ -861,14 +862,14 @@ void GradientMain::handle_opengl()
 		{
 			float in1, in2, in3, in4;
 			float out1, out2, out3, out4;
-			YUV::rgb_to_yuv_f((float)config.in_r / 0xff,
+			ColorSpaces::rgb_to_yuv_f((float)config.in_r / 0xff,
 				(float)config.in_g / 0xff,
 				(float)config.in_b / 0xff,
 				in1,
 				in2,
 				in3);
 			in4 = (float)config.in_a / 0xff;
-			YUV::rgb_to_yuv_f((float)config.out_r / 0xff,
+			ColorSpaces::rgb_to_yuv_f((float)config.out_r / 0xff,
 				(float)config.out_g / 0xff,
 				(float)config.out_b / 0xff,
 				out1,
@@ -1194,14 +1195,14 @@ void GradientUnit::process_package(LoadPackage *package)
 	{
 		int in1, in2, in3, in4;
 		int out1, out2, out3, out4;
-		yuv.rgb_to_yuv_8(plugin->config.in_r,
+		ColorSpaces::rgb_to_yuv_8(plugin->config.in_r,
 			plugin->config.in_g,
 			plugin->config.in_b,
 			in1,
 			in2,
 			in3);
 		in4 = plugin->config.in_a;
-		yuv.rgb_to_yuv_8(plugin->config.out_r,
+		ColorSpaces::rgb_to_yuv_8(plugin->config.out_r,
 			plugin->config.out_g,
 			plugin->config.out_b,
 			out1,
@@ -1216,14 +1217,14 @@ void GradientUnit::process_package(LoadPackage *package)
 	{
 		int in1, in2, in3, in4;
 		int out1, out2, out3, out4;
-		yuv.rgb_to_yuv_8(plugin->config.in_r,
+		ColorSpaces::rgb_to_yuv_8(plugin->config.in_r,
 			plugin->config.in_g,
 			plugin->config.in_b,
 			in1,
 			in2,
 			in3);
 		in4 = plugin->config.in_a;
-		yuv.rgb_to_yuv_8(plugin->config.out_r,
+		ColorSpaces::rgb_to_yuv_8(plugin->config.out_r,
 			plugin->config.out_g,
 			plugin->config.out_b,
 			out1,
@@ -1252,14 +1253,14 @@ void GradientUnit::process_package(LoadPackage *package)
 	{
 		int in1, in2, in3, in4;
 		int out1, out2, out3, out4;
-		yuv.rgb_to_yuv_16(plugin->config.in_r << 8,
+		ColorSpaces::rgb_to_yuv_16(plugin->config.in_r << 8,
 		plugin->config.in_g << 8,
 			plugin->config.in_b << 8,
 			in1,
 			in2,
 			in3);
 		in4 = plugin->config.in_a << 8;
-		yuv.rgb_to_yuv_16(plugin->config.out_r << 8,
+		ColorSpaces::rgb_to_yuv_16(plugin->config.out_r << 8,
 			plugin->config.out_g << 8,
 			plugin->config.out_b << 8,
 			out1,
