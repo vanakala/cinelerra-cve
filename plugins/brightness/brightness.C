@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "filexml.h"
 #include "brightness.h"
+#include "colorspaces.h"
 #include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
@@ -68,8 +69,6 @@ void BrightnessConfig::interpolate(BrightnessConfig &prev,
 	this->luma = prev.luma;
 }
 
-
-YUV BrightnessMain::yuv;
 
 BrightnessMain::BrightnessMain(PluginServer *server)
  : PluginVClient(server)
@@ -397,7 +396,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						b = input_row[j * components + 2]; \
 						if(max == 0xff) \
 						{ \
-							BrightnessMain::yuv.rgb_to_yuv_8( \
+							ColorSpaces::rgb_to_yuv_8( \
 								r,  \
 								g,  \
 								b,  \
@@ -407,7 +406,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						} \
 						else \
 						{ \
-							BrightnessMain::yuv.rgb_to_yuv_16( \
+							ColorSpaces::rgb_to_yuv_16( \
 								r,  \
 								g,  \
 								b,  \
@@ -432,7 +431,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					{ \
 						if(max == 0xff) \
 						{ \
-							BrightnessMain::yuv.yuv_to_rgb_8( \
+							ColorSpaces::yuv_to_rgb_8( \
 								r,  \
 								g,  \
 								b,  \
@@ -442,7 +441,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						} \
 						else \
 						{ \
-							BrightnessMain::yuv.yuv_to_rgb_16( \
+							ColorSpaces::yuv_to_rgb_16( \
 								r,  \
 								g,  \
 								b,  \
@@ -546,7 +545,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					r = input_row[j * components]; \
 					g = input_row[j * components + 1]; \
 					b = input_row[j * components + 2]; \
-					YUV::rgb_to_yuv_f( \
+					ColorSpaces::rgb_to_yuv_f( \
 						r,  \
 						g,  \
 						b,  \
@@ -557,7 +556,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					y = y * contrast + offset; \
  \
  \
-					YUV::yuv_to_rgb_f( \
+					ColorSpaces::yuv_to_rgb_f( \
 						r,  \
 						g,  \
 						b,  \

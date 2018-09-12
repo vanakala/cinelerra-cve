@@ -38,7 +38,6 @@ class BrightnessEngine;
 #include "brightnesswindow.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 
 class BrightnessConfig
@@ -78,7 +77,6 @@ public:
 
 	BrightnessEngine *engine;
 	int redo_buffers;
-	static YUV yuv;
 
 	VFrame *input, *output;
 };
