@@ -85,6 +85,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    canvastools.C \
 		    clipedit.C \
 		    commonrender.C \
+		    colorpicker.C \
 		    confirmsave.C \
 		    cpanel.C \
 		    cplayback.C \
@@ -323,6 +324,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 canvas.h \
 		 canvastools.h \
 		 clipedit.h \
+		 colorpicker.h \
 		 commonrender.h \
 		 confirmsave.h \
 		 cpanel.h \
