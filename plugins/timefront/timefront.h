@@ -47,7 +47,6 @@ class TimeFrontServer;
 #include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -291,7 +290,6 @@ public:
 	void process_package(LoadPackage *package);
 	TimeFrontServer *server;
 	TimeFrontMain *plugin;
-	YUV yuv;
 };
 
 class TimeFrontServer : public LoadServer
