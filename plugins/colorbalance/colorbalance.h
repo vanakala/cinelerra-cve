@@ -36,7 +36,6 @@
 class ColorBalanceMain;
 
 #include "colorbalancewindow.h"
-#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "language.h"
 #include "thread.h"
@@ -82,7 +81,6 @@ public:
 	int last_frame;
 	Condition input_lock, output_lock;
 	VFrame *input, *output;
-	YUV yuv;
 	float cyan_f, magenta_f, yellow_f;
 };
 

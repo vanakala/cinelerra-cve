@@ -32,6 +32,7 @@ class ColorBalanceReset;
 #include "bcbutton.h"
 #include "bcslider.h"
 #include "bctoggle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "colorbalance.h"

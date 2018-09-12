@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "filexml.h"
 #include "colorbalance.h"
+#include "colorspaces.h"
 #include "bchash.h"
 #include "picon_png.h"
 
@@ -163,9 +164,9 @@ void ColorBalanceEngine::run()
  \
 			if(plugin->config.preserve) \
 			{ \
-				HSV::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v); \
-				HSV::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v); \
-				HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
+				ColorSpaces::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v); \
+				ColorSpaces::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v); \
+				ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
 				r = (type)r_f; \
 				g = (type)g_f; \
 				b = (type)b_f; \
@@ -220,9 +221,9 @@ void ColorBalanceEngine::run()
  \
 			if(plugin->config.preserve) \
 			{ \
-				HSV::rgb_to_hsv(r_n, g_n, b_n, h, s, v); \
-				HSV::rgb_to_hsv(r, g, b, h_old, s_old, v); \
-				HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
+				ColorSpaces::rgb_to_hsv(r_n, g_n, b_n, h, s, v); \
+				ColorSpaces::rgb_to_hsv(r, g, b, h_old, s_old, v); \
+				ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
 				r = (float)r_f; \
 				g = (float)g_f; \
 				b = (float)b_f; \
@@ -244,8 +245,8 @@ void ColorBalanceEngine::run()
 		switch(input->get_color_model())
 		{
 		case BC_RGB888:
-			PROCESS(yuv.yuv_to_rgb_8,
-				yuv.rgb_to_yuv_8,
+			PROCESS(ColorSpaces::yuv_to_rgb_8,
+				ColorSpaces::rgb_to_yuv_8,
 				r_lookup_8,
 				g_lookup_8,
 				b_lookup_8,
@@ -260,8 +261,8 @@ void ColorBalanceEngine::run()
 			break;
 
 		case BC_YUV888:
-			PROCESS(yuv.yuv_to_rgb_8,
-				yuv.rgb_to_yuv_8,
+			PROCESS(ColorSpaces::yuv_to_rgb_8,
+				ColorSpaces::rgb_to_yuv_8,
 				r_lookup_8,
 				g_lookup_8,
 				b_lookup_8,
@@ -276,8 +277,8 @@ void ColorBalanceEngine::run()
 			break;
 
 		case BC_RGBA8888:
-			PROCESS(yuv.yuv_to_rgb_8,
-				yuv.rgb_to_yuv_8,
+			PROCESS(ColorSpaces::yuv_to_rgb_8,
+				ColorSpaces::rgb_to_yuv_8,
 				r_lookup_8,
 				g_lookup_8,
 				b_lookup_8,
@@ -288,8 +289,8 @@ void ColorBalanceEngine::run()
 			break;
 
 		case BC_YUVA8888:
-			PROCESS(yuv.yuv_to_rgb_8,
-				yuv.rgb_to_yuv_8,
+			PROCESS(ColorSpaces::yuv_to_rgb_8,
+				ColorSpaces::rgb_to_yuv_8,
 				r_lookup_8,
 				g_lookup_8,
 				b_lookup_8,
@@ -300,8 +301,8 @@ void ColorBalanceEngine::run()
 			break;
 
 		case BC_YUV161616:
-			PROCESS(yuv.yuv_to_rgb_16,
-				yuv.rgb_to_yuv_16,
+			PROCESS(ColorSpaces::yuv_to_rgb_16,
+				ColorSpaces::rgb_to_yuv_16,
 				r_lookup_16,
 				g_lookup_16,
 				b_lookup_16,
@@ -312,8 +313,8 @@ void ColorBalanceEngine::run()
 			break;
 
 		case BC_RGBA16161616:
-			PROCESS(yuv.yuv_to_rgb_16,
-				yuv.rgb_to_yuv_16,
+			PROCESS(ColorSpaces::yuv_to_rgb_16,
+				ColorSpaces::rgb_to_yuv_16,
 				r_lookup_16,
 				g_lookup_16,
 				b_lookup_16,
@@ -338,7 +339,7 @@ void ColorBalanceEngine::run()
 						y = irow[k + 1];
 						cb = irow[k + 2];
 						cr = irow[k + 3];
-						yuv.yuv_to_rgb_16(r, g, b, y, cb, cr);
+						ColorSpaces::yuv_to_rgb_16(r, g, b, y, cb, cr);
 
 						r = CLAMP(r, 0, 0xfffe);
 						g = CLAMP(g, 0, 0xfffe);
@@ -350,12 +351,12 @@ void ColorBalanceEngine::run()
 
 						if(plugin->config.preserve)
 						{
-							HSV::rgb_to_hsv((float)r_n,
+							ColorSpaces::rgb_to_hsv((float)r_n,
 								(float)g_n, (float)b_n, h, s, v);
-							HSV::rgb_to_hsv((float)r,
+							ColorSpaces::rgb_to_hsv((float)r,
 								(float)g, (float)b,
 							h_old, s_old, v);
-							HSV::hsv_to_rgb(r_f, g_f, b_f,
+							ColorSpaces::hsv_to_rgb(r_f, g_f, b_f,
 								h, s, v);
 							r = (uint16_t)r_f;
 							g = (uint16_t)g_f;
@@ -368,7 +369,7 @@ void ColorBalanceEngine::run()
 							b = b_n;
 						}
 
-						yuv.rgb_to_yuv_16(CLAMP(r, 0, 0xffff),
+						ColorSpaces::rgb_to_yuv_16(CLAMP(r, 0, 0xffff),
 							CLAMP(g, 0, 0xffff),
 							CLAMP(b, 0, 0xffff),
 							y, cb, cr);
