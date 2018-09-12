@@ -37,7 +37,6 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "thresholdwindow.inc"
-#include "plugincolors.inc"
 #include "pluginvclient.h"
 
 
@@ -152,14 +151,12 @@ class ThresholdEngine : public LoadServer
 {
 public:
 	ThresholdEngine(ThresholdMain *plugin);
-	~ThresholdEngine();
 
 	void process_packages(VFrame *data);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
 
-	YUV *yuv;
 	ThresholdMain *plugin;
 	VFrame *data;
 };

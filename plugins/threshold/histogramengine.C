@@ -19,8 +19,8 @@
  * 
  */
 
+#include "colorspaces.h"
 #include "histogramengine.h"
-#include "../colors/plugincolors.h"
 #include "vframe.h"
 
 #include <stdio.h>
@@ -111,7 +111,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = (row[0] << 8) | row[0];
 		u = (row[1] << 8) | row[1];
 		v = (row[2] << 8) | row[2];
-		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(3)
 		break;
 	case BC_RGBA8888:
@@ -133,7 +133,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = (row[0] << 8) | row[0];
 		u = (row[1] << 8) | row[1];
 		v = (row[2] << 8) | row[2];
-		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(4)
 		break;
 	case BC_RGB161616:
@@ -148,7 +148,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = row[0];
 		u = row[1];
 		v = row[2];
-		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(3)
 		break;
 	case BC_RGBA16161616:
@@ -163,7 +163,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = row[0];
 		u = row[1];
 		v = row[2];
-		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(4)
 		break;
 	case BC_AYUV16161616:
@@ -171,7 +171,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = row[1];
 		u = row[2];
 		v = row[3];
-		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(4)
 		break;
 	}
@@ -181,7 +181,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 HistogramEngine::HistogramEngine(int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
 {
-	yuv = new YUV;
 	data = 0;
 	for(int i = 0; i < 5; i++)
 		accum[i] = new int64_t[HISTOGRAM_RANGE];
@@ -189,7 +188,6 @@ HistogramEngine::HistogramEngine(int total_clients, int total_packages)
 
 HistogramEngine::~HistogramEngine()
 {
-	delete yuv;
 	for(int i = 0; i < 5; i++)
 		delete [] accum[i];
 }

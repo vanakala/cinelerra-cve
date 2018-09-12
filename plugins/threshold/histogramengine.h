@@ -24,7 +24,6 @@
 
 #include "histogramengine.inc"
 #include "loadbalance.h"
-#include "../colors/plugincolors.inc"
 #include "vframe.inc"
 
 #include <stdint.h>
@@ -56,7 +55,6 @@ public:
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	VFrame *data;
-	YUV *yuv;
 	int64_t *accum[5];
 };
 
