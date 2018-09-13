@@ -39,8 +39,6 @@ EffectTV::EffectTV(int w, int h)
 	background = (unsigned char*)new uint16_t[w * h];
 	diff = new unsigned char[w * h];
 	diff2 = new unsigned char[w * h];
-
-	yuv_init();
 }
 
 EffectTV::~EffectTV()
@@ -48,29 +46,6 @@ EffectTV::~EffectTV()
 	delete [] background;
 	delete [] diff;
 	delete [] diff2;
-}
-
-
-void EffectTV::yuv_init()
-{
-	int i;
-
-	for(i = 0; i < 256; i++)
-	{
-		YtoRGB[i] =  (int)( 1.164 * (i - 16));
-		VtoR[i] = 	 (int)( 1.596 * (i - 128));
-		VtoG[i] = 	 (int)(-0.813 * (i - 128));
-		UtoG[i] = 	 (int)(-0.391 * (i - 128));
-		UtoB[i] = 	 (int)( 2.018 * (i - 128));
-		RtoY[i] = 	 (int)( 0.257 * i);
-		RtoU[i] = 	 (int)(-0.148 * i);
-		RtoV[i] = 	 (int)( 0.439 * i);
-		GtoY[i] = 	 (int)( 0.504 * i);
-		GtoU[i] = 	 (int)(-0.291 * i);
-		GtoV[i] = 	 (int)(-0.368 * i);
-		BtoY[i] = 	 (int)( 0.098 * i);
-		BtoV[i] = 	 (int)(-0.071 * i);
-	}
 }
 
 void EffectTV::image_set_threshold_y(int threshold)
