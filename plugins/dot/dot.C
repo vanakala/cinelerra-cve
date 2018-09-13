@@ -21,6 +21,7 @@
 
 #include "clip.h"
 #include "colormodels.inc"
+#include "colorspaces.h"
 #include "picon_png.h"
 #include "dot.h"
 #include "dotwindow.h"
@@ -480,79 +481,51 @@ void DotClient::draw_dot(int xx,
 	}
 }
 
-#define RGB_TO_Y(type, is_yuv) \
-{ \
-	type *row_local = (type*)row; \
- \
-	if(sizeof(type) == 4) \
-	{ \
-		int r = (int)(row_local[0] * 0xff); \
-		int g = (int)(row_local[0] * 0xff); \
-		int b = (int)(row_local[0] * 0xff); \
-		CLAMP(r, 0, 0xff); \
-		CLAMP(g, 0, 0xff); \
-		CLAMP(b, 0, 0xff); \
-		i = plugin->effecttv->RtoY[r] + \
-			plugin->effecttv->RtoY[g] + \
-			plugin->effecttv->RtoY[b]; \
-	} \
-	else \
-	if(sizeof(type) == 2) \
-	{ \
-		if(is_yuv) \
-			i = (int)row_local[0] >> 8; \
-		else \
-		{ \
-			i =  plugin->effecttv->RtoY[(int)row_local[0] >> 8]; \
-			i += plugin->effecttv->GtoY[(int)row_local[1] >> 8]; \
-			i += plugin->effecttv->BtoY[(int)row_local[2] >> 8]; \
-		} \
-	} \
-	else \
-	{ \
-		if(is_yuv) \
-			i = (int)row_local[0]; \
-		else \
-		{ \
-			i =  plugin->effecttv->RtoY[(int)row_local[0]]; \
-			i += plugin->effecttv->GtoY[(int)row_local[1]]; \
-			i += plugin->effecttv->BtoY[(int)row_local[2]]; \
-		} \
-	} \
-}
-
 unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
 {
 	unsigned char i;
+	int y, u, v;
+	float *row_f;
+	uint16_t *row_s;
 
 	switch(color_model)
 	{
 	case BC_RGB888:
 	case BC_RGBA8888:
-		RGB_TO_Y(uint8_t, 0);
+		ColorSpaces::rgb_to_yuv_8(row[0], row[1], row[2], y, u, v);
+		i = (unsigned char)y;
 		break;
 	case BC_RGB_FLOAT:
 	case BC_RGBA_FLOAT:
-		RGB_TO_Y(float, 0);
+		row_f = (float *)row;
+		y = row_f[0] * 0xff;
+		u = row_f[1] * 0xff;
+		v = row_f[2] * 0xff;
+		CLAMP(y, 0, 0xff);
+		CLAMP(u, 0, 0xff);
+		CLAMP(v, 0, 0xff);
+		ColorSpaces::rgb_to_yuv_8(y, u, v, y, u, v);
+		i = (unsigned char)y;
 		break;
 	case BC_YUV888:
 	case BC_YUVA8888:
-		RGB_TO_Y(uint8_t, 1);
+		i = row[0];
 		break;
 	case BC_RGB161616:
 	case BC_RGBA16161616:
-		RGB_TO_Y(uint16_t, 0);
+		row_s = (uint16_t *)row;
+		ColorSpaces::rgb_to_yuv_16(row[0], row[1], row[2], y, u, v);
+		i = y;
 		break;
 	case BC_YUV161616:
 	case BC_YUVA16161616:
-		RGB_TO_Y(uint16_t, 1);
+		row_s = (uint16_t *)row;
+		i = row[0] >> 8;
 		break;
-
 	case BC_AYUV16161616:
-		{
-			uint16_t *row_local = (uint16_t*)row;
-			i = (int)row_local[1] >> 8;
-		}
+		row_s = (uint16_t*)row;
+		i = row_s[1] >> 8;
+		break;
 	}
 
 	return i;
