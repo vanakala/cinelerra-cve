@@ -66,6 +66,7 @@ public:
  *     ptstime prev_pts, ptstime next_pts, ptstime current_pts);
  */
 	int onoff;
+	int avlibs;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -73,6 +74,17 @@ class ColorSpaceSwitch : public BC_Radial
 {
 public:
 	ColorSpaceSwitch(ColorSpace *plugin,
+		int x,
+		int y);
+
+	int handle_event();
+	ColorSpace *plugin;
+};
+
+class AVlibsSwitch : public BC_Radial
+{
+public:
+	AVlibsSwitch(ColorSpace *plugin,
 		int x,
 		int y);
 
@@ -90,6 +102,7 @@ public:
 
 	void update();
 	ColorSpaceSwitch *toggle;
+	AVlibsSwitch *avltoggle;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
