@@ -71,7 +71,7 @@ Canvas::Canvas(MWindow *mwindow,
 	this->root_w = subwindow->get_root_w(0, 0);
 	this->root_h = subwindow->get_root_h(0);
 	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
-
+	guidelines.set_canvas(this);
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
 
 	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
@@ -746,6 +746,11 @@ int CanvasOutput::cursor_motion_event()
 int CanvasOutput::keypress_event()
 {
 	return canvas->keypress_event(this);
+}
+
+void CanvasOutput::repeat_event(int duration)
+{
+	canvas->guidelines.repeat_event(duration);
 }
 
 

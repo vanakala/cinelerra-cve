@@ -22,6 +22,7 @@
 #ifndef GUIDELINES_H
 #define GUIDELINES_H
 
+#include "bcwindowbase.inc"
 #include "canvas.inc"
 #include "datatype.h"
 #include "edl.inc"
@@ -43,16 +44,24 @@ public:
 	void add_pixel(int x, int y);
 	void clear();
 	int set_enabled(int value);
+	void set_repeater_period(int period);
 	void shift(ptstime difference);
 	void set_position(ptstime new_start, ptstime new_end);
-	void draw(Canvas *canvas, EDL *edl, ptstime pts);
+	void set_color(int color);
+	void repeat_event(Canvas *repeat_event);
+	int draw(Canvas *canvas, EDL *edl, ptstime pts);
+	int has_repeater_period();
 	void dump(int indent = 0);
 
 private:
 	ptstime start;
 	ptstime end;
 	int period;
+	int period_count;
 	int is_enabled;
+	EDL *edl;
+	ptstime pts;
+	int color;
 	int allocated;
 	uint16_t *dataend;
 	uint16_t *data;
@@ -64,10 +73,17 @@ public:
 	GuideLines();
 	~GuideLines();
 
+	void set_canvas(Canvas *canvas);
 	void delete_guideframes();
 	GuideFrame *append_frame(ptstime start, ptstime end);
-	void draw(Canvas *canvas, EDL *edl, ptstime pts);
+	void draw(EDL *edl, ptstime pts);
+	void activate_repeater();
+	void stop_repeater();
+	void repeat_event(int period);
 	void dump(int indent = 0);
+private:
+	BC_WindowBase *repeater_window;
+	Canvas *canvas;
 };
 
 #endif

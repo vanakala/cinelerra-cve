@@ -238,6 +238,7 @@ public:
 	int button_release_event();
 	int cursor_motion_event();
 	int keypress_event();
+	void repeat_event(int duration);
 
 	Canvas *canvas;
 };

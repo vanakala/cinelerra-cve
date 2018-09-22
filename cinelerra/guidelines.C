@@ -29,6 +29,7 @@
 #include <string.h>
 
 #define GUIDELINE_UNIT 128
+#define GUIDELINE_PERIOD 250
 
 extern MWindow *mwindow_global;
 
@@ -42,6 +43,7 @@ GuideFrame::GuideFrame(ptstime start, ptstime end)
 	data = 0;
 	dataend = 0;
 	is_enabled = 0;
+	color = WHITE;
 }
 
 GuideFrame::~GuideFrame()
@@ -130,6 +132,7 @@ void GuideFrame::add_pixel(int x, int y)
 
 void GuideFrame::clear()
 {
+	period_count = 0;
 	is_enabled = 0;
 	dataend = data;
 }
@@ -154,7 +157,24 @@ void GuideFrame::set_position(ptstime new_start, ptstime new_end)
 	end = new_end;
 }
 
-void GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
+void GuideFrame::set_color(int color)
+{
+	this->color = color;
+}
+
+void GuideFrame::repeat_event(Canvas *canvas)
+{
+	if(period)
+	{
+		if(period_count == 1)
+			draw(canvas, edl, pts);
+		else
+		if(period_count > 0)
+			period_count--;
+	}
+}
+
+int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 {
 	uint16_t *dp;
 	double x1, x2, y1, y2;
@@ -183,7 +203,7 @@ void GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					y2 -= y1;
 				}
 			}
-			canvas->get_canvas()->set_color(WHITE);
+			canvas->get_canvas()->set_color(color);
 
 			switch(*dp++)
 			{
@@ -226,7 +246,28 @@ void GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 				break;
 			}
 		}
+		if(period)
+		{
+			period_count = period;
+			this->edl = edl;
+			this->pts = pts;
+		}
+		return 1;
 	}
+	return 0;
+}
+
+void GuideFrame::set_repeater_period(int period)
+{
+	this->period = period;
+	period_count = period;
+}
+
+int GuideFrame::has_repeater_period()
+{
+	if(period)
+		return 1;
+	return 0;
 }
 
 void GuideFrame::dump(int indent)
@@ -239,8 +280,8 @@ void GuideFrame::dump(int indent)
 	indent += 2;
 	printf("%*speriod %d is_enabled %d %.2f .. %.2f\n", indent, "",
 		period, is_enabled, start, end);
-	printf("%*sallocated %d data %p\n", indent, "",
-		allocated, data);
+	printf("%*sallocated %d data %p color %#x\n", indent, "",
+		allocated, data, color);
 
 	if(data)
 	{
@@ -293,6 +334,8 @@ void GuideFrame::dump(int indent)
 GuideLines::GuideLines()
  : List<GuideFrame>()
 {
+	canvas = 0;
+	repeater_window = 0;
 }
 
 GuideLines::~GuideLines()
@@ -300,8 +343,14 @@ GuideLines::~GuideLines()
 	delete_guideframes();
 }
 
+void GuideLines::set_canvas(Canvas *canvas)
+{
+	this->canvas = canvas;
+}
+
 void GuideLines::delete_guideframes()
 {
+	stop_repeater();
 	while(last)
 		delete last;
 }
@@ -311,14 +360,62 @@ GuideFrame *GuideLines::append_frame(ptstime start, ptstime end)
 	return append(new GuideFrame(start, end));
 }
 
-void GuideLines::draw(Canvas *canvas, EDL *edl, ptstime pts)
+void GuideLines::draw(EDL *edl, ptstime pts)
 {
 	GuideFrame *current;
+	int have_repeater = 0;
 
 	canvas->get_canvas()->set_inverse();
 	for(current = first; current; current = current->next)
-		current->draw(canvas, edl, pts);
+	{
+		if(current->draw(canvas, edl, pts))
+			have_repeater |= current->has_repeater_period();
+	}
 	canvas->get_canvas()->set_opaque();
+
+	if(have_repeater)
+		activate_repeater();
+	else
+		stop_repeater();
+}
+
+void GuideLines::activate_repeater()
+{
+	BC_WindowBase *act_win = canvas->get_canvas();
+
+	if(act_win != repeater_window)
+		stop_repeater();
+
+	if(!repeater_window)
+	{
+		act_win->set_repeat(GUIDELINE_PERIOD);
+		repeater_window = act_win;
+	}
+}
+
+void GuideLines::stop_repeater()
+{
+	if(repeater_window)
+	{
+		repeater_window->unset_repeat(GUIDELINE_PERIOD);
+		repeater_window = 0;
+	}
+}
+
+void GuideLines::repeat_event(int duration)
+{
+	GuideFrame *current;
+
+	if(duration == GUIDELINE_PERIOD && canvas)
+	{
+		canvas->lock_canvas("GuideLines::repeat_event");
+		canvas->get_canvas()->set_inverse();
+		for(current = first; current; current = current->next)
+			current->repeat_event(canvas);
+		canvas->get_canvas()->set_opaque();
+		canvas->get_canvas()->flash();
+		canvas->unlock_canvas();
+	}
 }
 
 void GuideLines::dump(int indent)
@@ -326,6 +423,9 @@ void GuideLines::dump(int indent)
 	GuideFrame *current;
 
 	printf("%*sGuidelines %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*scanvas %p repeater_window %p\n", indent, "",
+		canvas, repeater_window);
 	for(current = first; current; current = current->next)
 	{
 		current->dump(indent + 2);

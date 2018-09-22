@@ -812,9 +812,9 @@ void CWindowCanvas::draw_refresh()
 		else
 			clear_canvas();
 
-		unlock_canvas();
 		draw_overlays();
 		get_canvas()->flash();
+		unlock_canvas();
 	}
 }
 
@@ -1743,7 +1743,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 void CWindowCanvas::draw_overlays()
 {
 	safe_regions->set_enabled(mwindow->edl->session->safe_regions);
-	guidelines.draw(this, mwindow->edl,
+	guidelines.draw(mwindow->edl,
 		mwindow->edl->local_session->get_selectionstart(1));
 
 	if(mwindow->edl->session->cwindow_scrollbars)
