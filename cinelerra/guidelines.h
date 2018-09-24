@@ -28,6 +28,7 @@
 #include "edl.inc"
 #include "guidelines.inc"
 #include "linklist.h"
+#include "vframe.inc"
 
 class GuideFrame : public ListItem<GuideFrame>
 {
@@ -42,13 +43,15 @@ public:
 	void add_disc(int x, int y, int w, int h);
 	void add_circle(int x, int y, int w, int h);
 	void add_pixel(int x, int y);
+	void add_vframe();
 	void clear();
 	int set_enabled(int value);
 	void set_repeater_period(int period);
 	void shift(ptstime difference);
 	void set_position(ptstime new_start, ptstime new_end);
 	void set_color(int color);
-	void repeat_event(Canvas *repeat_event);
+	VFrame *get_vframe(int w, int h);
+	void repeat_event(Canvas *canvas);
 	int draw(Canvas *canvas, EDL *edl, ptstime pts);
 	int has_repeater_period();
 	void dump(int indent = 0);
@@ -65,6 +68,7 @@ private:
 	int allocated;
 	uint16_t *dataend;
 	uint16_t *data;
+	VFrame *vframe;
 };
 
 class GuideLines : public List<GuideFrame>

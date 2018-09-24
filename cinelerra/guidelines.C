@@ -25,6 +25,7 @@
 #include "edlsession.h"
 #include "guidelines.h"
 #include "mwindow.h"
+#include "vframe.h"
 
 #include <string.h>
 
@@ -44,11 +45,13 @@ GuideFrame::GuideFrame(ptstime start, ptstime end)
 	dataend = 0;
 	is_enabled = 0;
 	color = WHITE;
+	vframe = 0;
 }
 
 GuideFrame::~GuideFrame()
 {
 	delete [] data;
+	delete vframe;
 }
 
 void GuideFrame::check_alloc(int num)
@@ -130,6 +133,12 @@ void GuideFrame::add_pixel(int x, int y)
 	*dataend++ = y;
 }
 
+void GuideFrame::add_vframe()
+{
+	check_alloc(1);
+	*dataend++ = GUIDELINE_VFRAME;
+}
+
 void GuideFrame::clear()
 {
 	period_count = 0;
@@ -160,6 +169,22 @@ void GuideFrame::set_position(ptstime new_start, ptstime new_end)
 void GuideFrame::set_color(int color)
 {
 	this->color = color;
+}
+
+VFrame *GuideFrame::get_vframe(int w, int h)
+{
+	if(vframe && (vframe->get_w() != w ||
+		vframe->get_h() != h))
+	{
+		delete vframe;
+		vframe = 0;
+	}
+	if(!vframe)
+	{
+		vframe = new VFrame(0, w, h, BC_A8);
+		vframe->clear_frame();
+	}
+	return vframe;
 }
 
 void GuideFrame::repeat_event(Canvas *canvas)
@@ -242,6 +267,23 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					round(x1), round(y1));
 				dp += 2;
 				break;
+			case GUIDELINE_VFRAME:
+				if(vframe)
+				{
+					double ix1, ix2, iy1, iy2;
+
+					canvas->get_transfers(edl,
+						ix1, iy1, ix2, iy2,
+						x1, y1, x2, y2);
+					vframe->set_pixel_aspect(canvas->sample_aspect_ratio());
+					canvas->get_canvas()->draw_vframe(vframe,
+						round(x1), round(y1),
+						round(x2 - x1), round(y2 - y1),
+						round(ix1), round(iy1),
+						round(ix2 - ix1), round(iy2 - iy1),
+						0);
+				}
+				break;
 			default:
 				break;
 			}
@@ -312,6 +354,10 @@ void GuideFrame::dump(int indent)
 			case GUIDELINE_PIXEL:
 				s = "Pixel: ";
 				n = 2;
+				break;
+			case GUIDELINE_VFRAME:
+				s = "VFrame. ";
+				n = 0;
 				break;
 			default:
 				s = 0;

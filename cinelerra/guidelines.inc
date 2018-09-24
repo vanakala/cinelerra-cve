@@ -29,6 +29,7 @@
 #define GUIDELINE_DISC        4 // coordinate of upper-left corner, width, height
 #define GUIDELINE_CIRCLE      5 // coordinate of upper-left corner, width, height
 #define GUIDELINE_PIXEL       6 // coordinates
+#define GUIDELINE_VFRAME      7 // no parameters
 
 class GuideLines;
 class GuideFrame;
