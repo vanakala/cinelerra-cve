@@ -1206,7 +1206,8 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 			{
 				for(int k = 0; k < 3; k++)
 				{
-					uint64_t difference;
+					int64_t difference;
+
 					difference = *prev_row++ - *current_row++;
 					if(difference < 0)
 						result -= difference;
@@ -1232,7 +1233,8 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 				current_row++;
 				for(int k = 0; k < 3; k++)
 				{
-					uint64_t difference;
+					int64_t difference;
+
 					difference = *prev_row++ - *current_row++;
 					if(difference < 0)
 						result -= difference;
