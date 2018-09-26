@@ -825,6 +825,23 @@ double PluginServer::get_project_framerate()
 	}
 }
 
+void PluginServer::get_project_dimensions(int *width, int *height)
+{
+	if(mwindow)
+	{
+		*width = mwindow->edl->session->output_w;
+		*height = mwindow->edl->session->output_h;
+	}
+	else
+	if(edl)
+	{
+		*width = edl->session->output_w;
+		*height =edl->session->output_h;
+	}
+	else
+		*width = *height = 0;
+}
+
 void PluginServer::save_data(KeyFrame *keyframe)
 {
 	if(!plugin_open) return;

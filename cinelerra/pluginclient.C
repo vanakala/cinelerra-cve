@@ -122,6 +122,11 @@ double PluginClient::get_project_framerate()
 	return server->get_project_framerate();
 }
 
+void PluginClient::get_project_dimensions(int *width, int *height)
+{
+	server->get_project_dimensions(width, height);
+}
+
 void PluginClient::update_display_title()
 {
 	server->generate_display_title(gui_string);

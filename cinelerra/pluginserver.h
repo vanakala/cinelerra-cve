@@ -203,6 +203,8 @@ public:
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
 	double get_project_framerate();         // get framerate of project data before processing
+// get project width and height
+	void get_project_dimensions(int *width, int *height);
 	int set_path(const char *path);    // required first
 // Used by PluginArray and MenuEffects to get user parameters and progress bar.
 // Set pointer to mwindow for opening GUI and reconfiguring EDL.
