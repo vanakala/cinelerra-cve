@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "guidelines.h"
 #include "keyframe.h"
 #include "language.h"
 #include "motion.h"
@@ -854,10 +855,7 @@ void MotionMain::process_frame(VFrame **frame)
 		}
 	}
 
-	if(config.draw_vectors)
-	{
-		draw_vectors(frame[target_layer]);
-	}
+	draw_vectors();
 }
 
 void MotionMain::clamp_scan(int w, 
@@ -947,10 +945,9 @@ void MotionMain::clamp_scan(int w,
 	CLAMP(*block_y2, 0, h);
 }
 
-void MotionMain::draw_vectors(VFrame *frame)
+void MotionMain::draw_vectors()
 {
-	int w = frame->get_w();
-	int h = frame->get_h();
+	int w, h;
 	int global_x1, global_y1;
 	int global_x2, global_y2;
 	int block_x, block_y;
@@ -965,6 +962,14 @@ void MotionMain::draw_vectors(VFrame *frame)
 	int search_x3, search_y3;
 	int search_x4, search_y4;
 
+	GuideFrame *gf = get_guides();
+	gf->clear();
+
+	if(!config.draw_vectors)
+		return;
+
+	get_project_dimensions(&w, &h);
+
 	if(config.global)
 	{
 // Get vector
@@ -972,12 +977,8 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is total accumulation.
 		if(config.mode3 == MotionConfig::TRACK_SINGLE)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100);
+			global_x1 = round(config.block_x * w / 100);
+			global_y1 = round(config.block_y * h / 100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
 		}
@@ -986,37 +987,21 @@ void MotionMain::draw_vectors(VFrame *frame)
 // End of vector is current change.
 		if(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK)
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100);
+			global_x1 = round(config.block_x * w / 100);
+			global_y1 = round(config.block_y * h / 100);
 			global_x2 = global_x1 + current_dx / OVERSAMPLE;
 			global_y2 = global_y1 + current_dy / OVERSAMPLE;
 		}
 		else
 		{
-			global_x1 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				(total_dx - current_dx) / 
-				OVERSAMPLE);
-			global_y1 = (int64_t)(config.block_y *
-				h / 
-				100 +
-				(total_dy - current_dy) /
-				OVERSAMPLE);
-			global_x2 = (int64_t)(config.block_x * 
-				w / 
-				100 + 
-				total_dx / 
-				OVERSAMPLE);
-			global_y2 = (int64_t)(config.block_y *
-				h / 
-				100 +
-				total_dy /
-				OVERSAMPLE);
+			global_x1 = round(config.block_x * w / 100 +
+				(total_dx - current_dx) / OVERSAMPLE);
+			global_y1 = round(config.block_y * h / 100 +
+				(total_dy - current_dy) / OVERSAMPLE);
+			global_x2 = round(config.block_x * w / 100 +
+				total_dx / OVERSAMPLE);
+			global_y2 = round(config.block_y * h / 100 +
+				total_dy / OVERSAMPLE);
 		}
 
 		block_x = global_x1;
@@ -1047,20 +1032,15 @@ void MotionMain::draw_vectors(VFrame *frame)
 			1);
 
 // Vector
-		draw_arrow(frame, global_x1, global_y1, global_x2, global_y2);
-
+		draw_arrow(gf, global_x1, global_y1, global_x2, global_y2);
 // Macroblock
-		draw_line(frame, block_x1, block_y1, block_x2, block_y1);
-		draw_line(frame, block_x2, block_y1, block_x2, block_y2);
-		draw_line(frame, block_x2, block_y2, block_x1, block_y2);
-		draw_line(frame, block_x1, block_y2, block_x1, block_y1);
-
+		gf->add_rectangle(block_x1, block_y1,
+			block_x2 - block_x1,
+			block_y2 - block_y1);
 // Search area
-		draw_line(frame, search_x1, search_y1, search_x2, search_y1);
-		draw_line(frame, search_x2, search_y1, search_x2, search_y2);
-		draw_line(frame, search_x2, search_y2, search_x1, search_y2);
-		draw_line(frame, search_x1, search_y2, search_x1, search_y1);
-
+		gf->add_rectangle(search_x1, search_y1,
+			search_x2 - search_x1,
+			search_y2 - search_y1);
 // Block should be endpoint of motion
 		if(config.rotate)
 		{
@@ -1070,191 +1050,86 @@ void MotionMain::draw_vectors(VFrame *frame)
 	}
 	else
 	{
-		block_x = (int64_t)(config.block_x * w / 100);
-		block_y = (int64_t)(config.block_y * h / 100);
+		block_x = round(config.block_x * w / 100);
+		block_y = round(config.block_y * h / 100);
 	}
 
 	block_w = config.rotation_block_w * w / 100;
 	block_h = config.rotation_block_h * h / 100;
+
 	if(config.rotate)
 	{
-		float angle = total_angle * 2 * M_PI / 360;
-		double base_angle1 = atan((float)block_h / block_w);
-		double base_angle2 = atan((float)block_w / block_h);
+		double angle = total_angle * 2 * M_PI / 360;
+		double base_angle1 = atan((double)block_h / block_w);
+		double base_angle2 = atan((double)block_w / block_h);
 		double target_angle1 = base_angle1 + angle;
 		double target_angle2 = base_angle2 + angle;
 		double radius = sqrt(block_w * block_w + block_h * block_h) / 2;
-		block_x1 = (int)(block_x - cos(target_angle1) * radius);
-		block_y1 = (int)(block_y - sin(target_angle1) * radius);
-		block_x2 = (int)(block_x + sin(target_angle2) * radius);
-		block_y2 = (int)(block_y - cos(target_angle2) * radius);
-		block_x3 = (int)(block_x - sin(target_angle2) * radius);
-		block_y3 = (int)(block_y + cos(target_angle2) * radius);
-		block_x4 = (int)(block_x + cos(target_angle1) * radius);
-		block_y4 = (int)(block_y + sin(target_angle1) * radius);
 
-		draw_line(frame, block_x1, block_y1, block_x2, block_y2);
-		draw_line(frame, block_x2, block_y2, block_x4, block_y4);
-		draw_line(frame, block_x4, block_y4, block_x3, block_y3);
-		draw_line(frame, block_x3, block_y3, block_x1, block_y1);
+		block_x1 = round(block_x - cos(target_angle1) * radius);
+		block_y1 = round(block_y - sin(target_angle1) * radius);
+		block_x2 = round(block_x + sin(target_angle2) * radius);
+		block_y2 = round(block_y - cos(target_angle2) * radius);
+		block_x3 = round(block_x - sin(target_angle2) * radius);
+		block_y3 = round(block_y + cos(target_angle2) * radius);
+		block_x4 = round(block_x + cos(target_angle1) * radius);
+		block_y4 = round(block_y + sin(target_angle1) * radius);
 
+		gf->add_line(block_x1, block_y1, block_x2, block_y2);
+		gf->add_line(block_x2, block_y2, block_x4, block_y4);
+		gf->add_line(block_x4, block_y4, block_x3, block_y3);
+		gf->add_line(block_x3, block_y3, block_x1, block_y1);
 // Center
 		if(!config.global)
-		{
-			draw_line(frame, block_x, block_y - 5, block_x, block_y + 6);
-			draw_line(frame, block_x - 5, block_y, block_x + 6, block_y);
-		}
-	}
-}
-
-void MotionMain::draw_pixel(VFrame *frame, int x, int y)
-{
-	if(!(x >= 0 && y >= 0 && x < frame->get_w() && y < frame->get_h())) return;
-
-#define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
-{ \
-	type *row = (type*)frame->get_row_ptr(y); \
-	row[x * components] = max - row[x * components]; \
-	if(!do_yuv) \
-	{ \
-		row[x * components + 1] = max - row[x * components + 1]; \
-		row[x * components + 2] = max - row[x * components + 2]; \
-	} \
-	else \
-	{ \
-		row[x * components + 1] = (max / 2 + 1) - row[x * components + 1]; \
-		row[x * components + 2] = (max / 2 + 1) - row[x * components + 2]; \
-	} \
-	if(components == 4) \
-		row[x * components + 3] = max; \
-}
-
-	switch(frame->get_color_model())
-	{
-	case BC_RGB888:
-		DRAW_PIXEL(x, y, 3, 0, 0xff, unsigned char);
-		break;
-	case BC_RGBA8888:
-		DRAW_PIXEL(x, y, 4, 0, 0xff, unsigned char);
-		break;
-	case BC_RGB_FLOAT:
-		DRAW_PIXEL(x, y, 3, 0, 1.0, float);
-		break;
-	case BC_RGBA_FLOAT:
-		DRAW_PIXEL(x, y, 4, 0, 1.0, float);
-		break;
-	case BC_YUV888:
-		DRAW_PIXEL(x, y, 3, 1, 0xff, unsigned char);
-		break;
-	case BC_YUVA8888:
-		DRAW_PIXEL(x, y, 4, 1, 0xff, unsigned char);
-		break;
-	case BC_RGB161616:
-		DRAW_PIXEL(x, y, 3, 0, 0xffff, uint16_t);
-		break;
-	case BC_YUV161616:
-		DRAW_PIXEL(x, y, 3, 1, 0xffff, uint16_t);
-		break;
-	case BC_RGBA16161616:
-		DRAW_PIXEL(x, y, 4, 0, 0xffff, uint16_t);
-		break;
-	case BC_YUVA16161616:
-		DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
-		break;
-	case BC_AYUV16161616:
-		uint16_t *pix = &((uint16_t*)frame->get_row_ptr(y))[x * 4];
-		pix[0] = 0xffff;
-		pix[1] = 0xffff - pix[1];
-		pix[2] = 0x8000 - pix[2];
-		pix[3] = 0x8000 - pix[3];
-		break;
-	}
-}
-
-void MotionMain::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
-{
-	int w = labs(x2 - x1);
-	int h = labs(y2 - y1);
-
-	if(!w && !h)
-	{
-		draw_pixel(frame, x1, y1);
-	}
-	else
-	if(w > h)
-	{
-// Flip coordinates so x1 < x2
-		if(x2 < x1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
-		}
-		int numerator = y2 - y1;
-		int denominator = x2 - x1;
-		for(int i = x1; i < x2; i++)
-		{
-			int y = y1 + (int64_t)(i - x1) * (int64_t)numerator / (int64_t)denominator;
-			draw_pixel(frame, i, y);
-		}
-	}
-	else
-	{
-// Flip coordinates so y1 < y2
-		if(y2 < y1)
-		{
-			y2 ^= y1;
-			y1 ^= y2;
-			y2 ^= y1;
-			x1 ^= x2;
-			x2 ^= x1;
-			x1 ^= x2;
-		}
-		int numerator = x2 - x1;
-		int denominator = y2 - y1;
-		for(int i = y1; i < y2; i++)
-		{
-			int x = x1 + (int64_t)(i - y1) * (int64_t)numerator / (int64_t)denominator;
-			draw_pixel(frame, x, i);
-		}
+			gf->add_circle(block_x - 3, block_y - 3, 6, 6);
 	}
 }
 
 #define ARROW_SIZE 10
-void MotionMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
+void MotionMain::draw_arrow(GuideFrame *gf, int x1, int y1, int x2, int y2)
 {
-	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
-	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
-	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
+	double angle;
+	double angle1;
+	double angle2;
 	int x3;
 	int y3;
 	int x4;
 	int y4;
+
+	if(x2 == x1)
+	{
+		gf->add_pixel(x1, y1);
+		return;
+	}
+
+	angle = atan((double)(y2 - y1) / (double)(x2 - x1));
+	angle1 = angle + (double)145 / 360 * 2 * M_PI;
+	angle2 = angle - (double)145 / 360 * 2 * M_PI;
+
 	if(x2 < x1)
 	{
-		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
+		x3 = x2 - round(ARROW_SIZE * cos(angle1));
+		y3 = y2 - round(ARROW_SIZE * sin(angle1));
+		x4 = x2 - round(ARROW_SIZE * cos(angle2));
+		y4 = y2 - round(ARROW_SIZE * sin(angle2));
 	}
 	else
 	{
-		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
-		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
-		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
-		y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
+		x3 = x2 + round(ARROW_SIZE * cos(angle1));
+		y3 = y2 + round(ARROW_SIZE * sin(angle1));
+		x4 = x2 + round(ARROW_SIZE * cos(angle2));
+		y4 = y2 + round(ARROW_SIZE * sin(angle2));
 	}
 
 // Main vector
-	draw_line(frame, x1, y1, x2, y2);
+	gf->add_line(x1, y1, x2, y2);
+// Arrow line
 
+	if(abs(y2 - y1) || abs(x2 - x1))
+		gf->add_line(x2, y2, x3, y3);
 // Arrow line
-	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x3, y3);
-// Arrow line
-	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x4, y4);
+	if(abs(y2 - y1) || abs(x2 - x1))
+		gf->add_line(x2, y2, x4, y4);
 }
 
 #define ABS_DIFF(type, temp_type, multiplier, components) \

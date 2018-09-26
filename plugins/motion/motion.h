@@ -41,6 +41,7 @@
 #include "affine.inc"
 #include "bchash.inc"
 #include "filexml.inc"
+#include "guidelines.inc"
 #include "keyframe.inc"
 #include "loadbalance.h"
 #include "motionwindow.inc"
@@ -156,7 +157,7 @@ public:
 	void process_frame(VFrame **frame);
 	void process_global();
 	void process_rotation();
-	void draw_vectors(VFrame *frame);
+	void draw_vectors();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -193,9 +194,8 @@ public:
 		int *scan_x2,
 		int *scan_y2,
 		int use_absolute);
-	static void draw_pixel(VFrame *frame, int x, int y);
-	static void draw_line(VFrame *frame, int x1, int y1, int x2, int y2);
-	void draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2);
+
+	void draw_arrow(GuideFrame *gf, int x1, int y1, int x2, int y2);
 
 // The frame compared with the previous frame to get the motion.
 // It is moved to compensate for motion and copied to the previous_frame.
