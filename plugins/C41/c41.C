@@ -1157,7 +1157,7 @@ void C41Effect::process_frame(VFrame *frame)
 				for(int i = min_row; i < max_row; i++)
 				{
 					float *row = (float*)frame->get_row_ptr(i);
-					row += pixlen * shave_min_col;
+					row += pixlen * min_col;
 					for(int j = min_col; j < max_col; j++, row += pixlen)
 					{
 						if(row[0] < minima_r) minima_r = row[0];
@@ -1175,9 +1175,12 @@ void C41Effect::process_frame(VFrame *frame)
 				for(int i = min_row; i < max_row; i++)
 				{
 					uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-					row += pixlen * shave_min_col;
+					row += pixlen * min_col;
 					for(int j = min_col; j < max_col; j++, row += pixlen)
 					{
+
+						if(row[0] < min_r) min_r = row[0];
+						if(row[0] > max_r) max_r = row[0];
 
 						if(row[1] < min_g) min_g = row[1];
 						if(row[1] > max_g) max_g = row[1];
@@ -1191,7 +1194,7 @@ void C41Effect::process_frame(VFrame *frame)
 				for(int i = min_row; i < max_row; i++)
 				{
 					uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-					row += pixlen * shave_min_col;
+					row += pixlen * min_col;
 					int r, g, b;
 
 					for(int j = min_col; j < max_col; j++, row += pixlen)
