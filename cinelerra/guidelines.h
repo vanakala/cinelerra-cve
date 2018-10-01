@@ -50,6 +50,7 @@ public:
 	void shift(ptstime difference);
 	void set_position(ptstime new_start, ptstime new_end);
 	void set_color(int color);
+	void set_dimensions(int h, int w);
 	VFrame *get_vframe(int w, int h);
 	void repeat_event(Canvas *canvas);
 	int draw(Canvas *canvas, EDL *edl, ptstime pts);
@@ -59,6 +60,8 @@ public:
 private:
 	ptstime start;
 	ptstime end;
+	int width;
+	int height;
 	int period;
 	int period_count;
 	int is_enabled;

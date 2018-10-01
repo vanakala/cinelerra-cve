@@ -46,6 +46,8 @@ GuideFrame::GuideFrame(ptstime start, ptstime end)
 	is_enabled = 0;
 	color = WHITE;
 	vframe = 0;
+	width = 0;
+	height = 0;
 }
 
 GuideFrame::~GuideFrame()
@@ -171,6 +173,12 @@ void GuideFrame::set_color(int color)
 	this->color = color;
 }
 
+void GuideFrame::set_dimensions(int w, int h)
+{
+	width = w;
+	height = h;
+}
+
 VFrame *GuideFrame::get_vframe(int w, int h)
 {
 	if(vframe && (vframe->get_w() != w ||
@@ -203,26 +211,36 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 {
 	uint16_t *dp;
 	double x1, x2, y1, y2;
+	double hbase, vbase;
 
 	if(is_enabled && data && start <= pts && pts < end)
 	{
+		if(width && height)
+		{
+			hbase = (edl->session->output_w - width) / 2;
+			vbase = (edl->session->output_h - height) / 2;
+		}
+		else
+			hbase = vbase = 0;
+
 		for(dp = data; dp < dataend;)
 		{
-			x1 = dp[1];
-			y1 = dp[2];
+			x1 = dp[1] + hbase;
+			y1 = dp[2] + vbase;
+
 			canvas->output_to_canvas(edl, x1, y1);
 			if(*dp != GUIDELINE_PIXEL)
 			{
 				if(*dp == GUIDELINE_LINE)
 				{
-					x2 = dp[3];
-					y2 = dp[4];
+					x2 = dp[3] + hbase;
+					y2 = dp[4] + vbase;
 					canvas->output_to_canvas(edl, x2, y2);
 				}
 				else
 				{
-					x2 = dp[1] + dp[3];
-					y2 = dp[2] + dp[4];
+					x2 = (dp[1] + dp[3]) + hbase;
+					y2 = (dp[2] + dp[4]) + vbase;
 					canvas->output_to_canvas(edl, x2, y2);
 					x2 -= x1;
 					y2 -= y1;
