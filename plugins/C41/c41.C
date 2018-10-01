@@ -1249,6 +1249,7 @@ void C41Effect::process_frame(VFrame *frame)
 			if(config.compute_magic && config.show_box)
 			{
 				gf->clear();
+				gf->set_dimensions(frame_w, frame_h);
 				if(min_row < max_row - 1)
 				{
 					gf->add_line(0, min_row, frame_w - 1, min_row);
