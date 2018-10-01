@@ -1249,6 +1249,24 @@ void Asset::set_decoder_parameters()
 		FileAVlibs::set_stream_decoder_parameters(&streams[i]);
 }
 
+void Asset::delete_decoder_parameters()
+{
+	for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
+	{
+		delete decoder_parameters[i];
+		decoder_parameters[i] = 0;
+	}
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
+		{
+			delete streams[i].decoding_params[j];
+			streams[i].decoding_params[j] = 0;
+		}
+	}
+}
+
 void Asset::load_defaults(Paramlist *list, int options)
 {
 	if(options & ASSET_PATH)

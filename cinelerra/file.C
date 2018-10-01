@@ -256,6 +256,22 @@ int File::open_file(Preferences *preferences,
 
 		if(probe_result < 0)
 			return FILE_NOT_FOUND;
+// Probe input fills decoder parameters what
+// are not used with some formats
+		switch(this->asset->format)
+		{
+		case FILE_JPEG:
+		case FILE_PNG:
+		case FILE_EXR:
+		case FILE_TGA:
+		case FILE_TIFF:
+		case FILE_PCM:
+		case FILE_AU:
+		case FILE_AIFF:
+		case FILE_SND:
+			this->asset->delete_decoder_parameters();
+			break;
+		}
 	}
 
 	switch(this->asset->format)
