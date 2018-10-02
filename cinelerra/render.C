@@ -280,7 +280,6 @@ void Render::run()
 		Asset *asset = new Asset;
 		load_defaults(asset);
 		check_asset(mwindow->edl, *asset);
-
 // Get format from user
 		RenderWindow *window = new RenderWindow(mwindow, this, asset);
 		result = window->run_window();
@@ -289,20 +288,25 @@ void Render::run()
 			// add to recentlist only on OK
 			window->format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
 		}
-		// deleting window updates the asset
 		delete window;
-		asset->init_streams();
-		save_defaults(asset);
-		mwindow->save_defaults();
 
-		if(!preferences)
-			preferences = new Preferences;
-		preferences->copy_from(mwindow->preferences);
+		if(!check_asset(mwindow->edl, *asset) && !result)
+		{
+			asset->init_streams();
+			save_defaults(asset);
+			mwindow->save_defaults();
 
-		if(asset->single_image)
-			range_type = RANGE_SINGLEFRAME;
+			if(!preferences)
+				preferences = new Preferences;
+			preferences->copy_from(mwindow->preferences);
 
-		if(!result) render(1, asset, mwindow->edl, strategy, range_type);
+			if(asset->single_image)
+				range_type = RANGE_SINGLEFRAME;
+
+			render(1, asset, mwindow->edl, strategy, range_type);
+		}
+		else
+			errormsg(_("No audo or video to render"));
 
 		Garbage::delete_object(asset);
 	}
