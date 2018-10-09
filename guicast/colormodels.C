@@ -16,7 +16,7 @@
  */
 
 
-
+#include "bcbitmap.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "language.h"
@@ -100,6 +100,7 @@ int ColorModels::components(int colormodel)
 
 	case BC_RGBA8888:
 	case BC_YUVA8888:
+	case BC_BGR8888:
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
 	case BC_AYUV16161616:
@@ -166,6 +167,8 @@ int ColorModels::calculate_max(int colormodel)
 	{
 	case BC_A8:
 	case BC_RGB888:
+	case BC_BGR888:
+	case BC_BGR8888:
 	case BC_RGBA8888:
 	case BC_YUV888:
 	case BC_YUVA8888:
@@ -750,4 +753,187 @@ int ColorModels::libinterpolate(int value)
 int ColorModels::libinterpolate()
 {
 	return libinterpolate(BC_Resources::interpolation_method);
+}
+
+void ColorModels::dump_frame(BC_Bitmap *frame, int opts)
+{
+	dump_frame(frame->get_data(), frame->get_w(),
+		frame->get_h(), frame->get_bytes_per_line(),
+		frame->get_color_model(), opts);
+}
+
+void ColorModels::dump_frame(VFrame *frame, int opts)
+{
+	dump_frame(frame->get_data(), frame->get_w(),
+		frame->get_h(), frame->get_bytes_per_line(),
+		frame->get_color_model(), opts);
+}
+
+void ColorModels::dump_frame(unsigned char *data, int width, int height,
+    int bytes_per_line, int colormodel, int opts)
+{
+	int wi_chunk = (width + 15) / 16;
+	int he_chunk = (height + 15) / 16;
+	int min0[16], max0[16], avg0[16];
+	int min1[16], max1[16], avg1[16];
+	int min2[16], max2[16], avg2[16];
+	int min3[16], max3[16], avg3[16];
+	int vals[4], **valsp;
+	int *mins[4], *maxs[4], *avgs[4];
+	int row, col, pixcount, chrow, nextch;
+	int comps, compsize;
+	int comprval = opts & DUMP_FRAME_COMB;
+	const char *s, *t;
+
+	opts &= DUMP_FRAME_MASK;
+	if(!data)
+	{
+		printf("dump_frame: No data\n");
+		return;
+	}
+	comps = components(colormodel);
+	if(!comps)
+	{
+		printf("dump_frame: No components\n");
+		return;
+	}
+	if(comprval)
+		t = " combined";
+	else
+		t = "";
+	switch(opts)
+	{
+	case DUMP_FRAME_AVG:
+		s = "averages";
+		break;
+	case DUMP_FRAME_MIN:
+		s = "minimums";
+		break;
+	case DUMP_FRAME_MAX:
+		s = "maximums";
+		break;
+	}
+	compsize = calculate_pixelsize(colormodel) / comps;
+	printf("Frame %p [%d,%d] dump: subframe [%d,%d] %s %s%s:\n",
+		data, width, height, wi_chunk, he_chunk,
+		name(colormodel), s, t);
+	mins[0] = min0;
+	mins[1] = min1;
+	mins[2] = min2;
+	mins[3] = min3;
+	maxs[0] = max0;
+	maxs[1] = max1;
+	maxs[2] = max2;
+	maxs[3] = max3;
+	avgs[0] = avg0;
+	avgs[1] = avg1;
+	avgs[2] = avg2;
+	avgs[3] = avg3;
+	nextch = 1;
+
+	for(row = 0; row < height;)
+	{
+		if(nextch)
+		{
+			for(int i = 0; i < 16; i++)
+			{
+				min0[i] = min1[i] = min2[i] = min3[i] = 0xffff;
+				max0[i] = max1[i] = max2[i] = max3[i] = 0;
+				avg0[i] = avg1[i] = avg2[i] = avg3[i] = 0;
+			}
+			pixcount = 0;
+			chrow = 0;
+			nextch = 0;
+		}
+
+		for(col = 0; col < width; col++)
+		{
+			switch(compsize)
+			{
+			case 1:
+				{
+					unsigned char *bytep = data + row * bytes_per_line +
+						col * comps;
+					for(int i = 0; i < comps; i++)
+						vals[i] = bytep[i] << 8;
+				}
+				break;
+			case 2:
+				{
+					uint16_t *shortp = (uint16_t*)(data + row * bytes_per_line) +
+						col * comps;
+					for(int i = 0; i < comps; i++)
+						vals[i] = shortp[i];
+				}
+				break;
+			case 4:
+				{
+					float *floatp = (float*)(data + row * bytes_per_line) +
+						col * comps;
+					for(int i = 0; i < comps; i++)
+						vals[i] = floatp[i] * 0xffff;
+				}
+				break;
+			default:
+				printf("ColorModels::dump_frame illegal component size %d\n", compsize);
+				return;
+			}
+
+			int ap = col / wi_chunk;
+
+			for(int i = 0; i < comps; i++)
+			{
+				if(vals[i] < mins[i][ap])
+					mins[i][ap] = vals[i];
+				if(vals[i] > maxs[i][ap])
+					maxs[i][ap] = vals[i];
+				avgs[i][ap] += vals[i];
+			}
+			pixcount++;
+		}
+		row++;
+		chrow++;
+		if(chrow > he_chunk)
+		{
+			nextch++;
+			for(int k = 0; k < comps; k++)
+			{
+				for(int i = 0; i < 16; i++)
+					avgs[k][i] /= pixcount / 16;
+			}
+			switch(opts)
+			{
+			case DUMP_FRAME_MIN:
+				valsp = mins;
+				break;
+			case DUMP_FRAME_MAX:
+				valsp = maxs;
+				break;
+			case DUMP_FRAME_AVG:
+				valsp = avgs;
+				break;
+			}
+			for(int i = 0; i < 16; i++)
+			{
+				int resval = 0;
+
+				for(int k = 0; k < comps; k++)
+				{
+					resval <<= 4;
+					if(comprval)
+					{
+						int c = valsp[k][i];
+						resval |= c >> 12 |
+							(c & 0xf00) >> 9 |
+							(c & 0xf0) >> 6 |
+							(c & 0xf) >> 3;
+					}
+					else
+						resval |= (valsp[k][i] >> 12) & 0xf;
+				}
+				printf(" %0*x", comps, resval);
+			}
+			putchar('\n');
+		}
+	}
 }

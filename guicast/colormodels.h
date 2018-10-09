@@ -19,8 +19,16 @@
 #ifndef COLORMODELS_H
 #define COLORMODELS_H
 
+#include "bcbitmap.inc"
 #include "colormodels.inc"
 #include "vframe.inc"
+
+#define DUMP_FRAME_AVG 1
+#define DUMP_FRAME_MIN 2
+#define DUMP_FRAME_MAX 3
+
+#define DUMP_FRAME_COMB 0x10  // Combine nibbels
+#define DUMP_FRAME_MASK 7     // Value type
 
 extern "C"
 {
@@ -103,6 +111,10 @@ public:
 		unsigned char *input, int in_cmodel, int in_rowspan);
 	static int libinterpolate(int value);
 	static int libinterpolate();
+	static void dump_frame(BC_Bitmap *frame, int opts = DUMP_FRAME_AVG);
+	static void dump_frame(VFrame *frame, int opts = DUMP_FRAME_AVG);
+	static void dump_frame(unsigned char *data, int width, int height,
+		int bytes_per_line, int colormodel, int opts = DUMP_FRAME_AVG);
 
 private:
 	static void transfer_details(struct SwsContext *sws_ctx, int srange);
