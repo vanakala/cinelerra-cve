@@ -1125,16 +1125,6 @@ void VFrame::dump_file(const char *filename)
 
 	if(w == 0 || h == 0)
 		return;
-	if(rows)
-	{
-		if(fp = fopen(filename, "wb"))
-		{
-			for(i = 0; i < h; i++)
-				fwrite(rows[i], w, 1, fp);
-			fclose(fp);
-		}
-		return;
-	}
 	if(y)
 	{
 		if(fp = fopen(filename, "wb"))
@@ -1142,6 +1132,18 @@ void VFrame::dump_file(const char *filename)
 			fwrite(y, w * h, 1, fp);
 			fclose(fp);
 		}
+		else
+			goto err;
 		return;
 	}
+	if(fp = fopen(filename, "wb"))
+	{
+		for(i = 0; i < h; i++)
+			fwrite(get_row_ptr(i), w,
+				calculate_bytes_per_pixel(color_model), fp);
+		fclose(fp);
+	}
+	return;
+err:
+	printf("VFrame::dump_file: Failed to create %s\n", filename);
 }
