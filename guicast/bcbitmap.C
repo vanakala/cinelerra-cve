@@ -448,11 +448,10 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	if(need_shm < 0)
 		need_shm = use_shm;
 
-	aspect = frame->get_pixel_aspect();
-	if(aspect && !EQUIV(aspect, 1.0))
+	if(aspect = frame->get_pixel_aspect())
 	{
 		double hcf = (double)out_h / in_h;
-		double wcf = frame->get_pixel_aspect() * hcf;
+		double wcf = aspect * hcf;
 
 		if(!hardware_scaling())
 		{
