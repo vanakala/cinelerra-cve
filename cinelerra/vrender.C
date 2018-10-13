@@ -94,19 +94,15 @@ int VRender::flash_output()
 VFrame *VRender::process_buffer(VFrame *buffer)
 {
 // process buffer for non realtime
-	int i, j;
 	ptstime render_len = renderengine->edl->session->frame_duration();
-	int reconfigure = 0;
 
 	video_out = buffer;
 
 	current_postime = video_out->get_pts();
 
 // test for automation configuration and shorten the fragment len if necessary
-	reconfigure = vconsole->test_reconfigure(render_len,
-		last_playback);
-
-	if(reconfigure) restart_playback();
+	if(vconsole->test_reconfigure(render_len, last_playback))
+		restart_playback();
 	process_buffer(current_postime);
 	return video_out;
 }
