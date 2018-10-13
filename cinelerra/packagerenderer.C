@@ -339,7 +339,6 @@ int PackageRenderer::do_video()
 			duration = 1.0 / asset->frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);
-
 			if(mwindow && video_device->output_visible())
 			{
 // Vector for video device
@@ -445,10 +444,28 @@ int PackageRenderer::render_package(RenderPackage *package)
 	this->package = package;
 	brender_base = -1;
 
-// FIXME: The design that we only get EDL once does not give us neccessary flexiblity to do things the way they should be donek
+// FIXME: The design that we only get EDL once does not give us neccessary flexiblity
+//  to do things the way they should be done
 	default_asset->video_data = package->video_do;
 	default_asset->audio_data = package->audio_do;
 	Render::check_asset(edl, *default_asset);
+
+// Command initalizes start positions from cursor position
+//  what is irrelevant here. Get start and end from package.
+	if(package->audio_do)
+	{
+		command->start_position = package->audio_start_pts;
+		command->end_position = package->audio_end_pts;
+	}
+
+	if(package->video_do)
+	{
+		if(command->start_position > package->video_start_pts)
+			command->start_position = package->video_start_pts;
+		if(command->end_position < package->video_end_pts)
+			command->end_position = package->video_end_pts;
+	}
+	command->playbackstart = command->start_position;
 
 	if(create_output())
 	{
