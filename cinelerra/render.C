@@ -30,6 +30,7 @@
 #include "cinelerra.h"
 #include "clip.h"
 #include "condition.h"
+#include "cwindow.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -38,7 +39,6 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "formattools.h"
-#include "labels.h"
 #include "language.h"
 #include "loadmode.h"
 #include "localsession.h"
@@ -55,7 +55,6 @@
 #include "preferences.h"
 #include "renderfarm.h"
 #include "render.h"
-#include "statusbar.h"
 #include "theme.h"
 #include "timebar.h"
 #include "tracks.h"
@@ -646,30 +645,32 @@ int Render::render(int test_overwrite,
 		stop_progress();
 	}
 
-// Paste all packages into timeline if desired
-	if(!result && 
-		load_mode != LOADMODE_NOTHING && 
-		mwindow &&
-		mode != Render::BATCH)
+	if(!result && mwindow && mode != Render::BATCH)
 	{
-		ArrayList<Asset*> *assets = packages->get_asset_list();
+// Paste all packages into timeline if desired
+		if(load_mode != LOADMODE_NOTHING)
+		{
+			ArrayList<Asset*> *assets = packages->get_asset_list();
 
-		if(load_mode == LOADMODE_PASTE)
-			mwindow->clear(0);
-		mwindow->load_assets(assets, 
-			-1, 
-			load_mode,
-			0,
-			mwindow->edl->session->edit_actions(),
-			0); // overwrite
-		delete assets;
+			if(load_mode == LOADMODE_PASTE)
+				mwindow->clear(0);
+			mwindow->load_assets(assets,
+				-1,
+				load_mode,
+				0,
+				mwindow->edl->session->edit_actions(),
+				0); // overwrite
+			delete assets;
 
-		mwindow->save_backup();
-		mwindow->undo->update_undo(_("render"), LOAD_ALL);
-		mwindow->update_plugin_guis();
-		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
-		WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-		mwindow->sync_parameters(CHANGE_ALL);
+			mwindow->save_backup();
+			mwindow->undo->update_undo(_("render"), LOAD_ALL);
+			mwindow->update_plugin_guis();
+			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
+			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
+			mwindow->sync_parameters(CHANGE_ALL);
+		}
+		else
+			mwindow->cwindow->update(WUPD_POSITION);
 	}
 
 // Disable hourglass
