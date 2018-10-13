@@ -143,6 +143,8 @@ public:
 
 // pts API - frame must have source_pts, and layer set
 	int get_frame(VFrame *frame, int is_thread = 0);
+// adjust source pts and duration
+	void adjust_times(VFrame *frame, ptstime pts, ptstime src_pts);
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback

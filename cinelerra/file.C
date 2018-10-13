@@ -654,7 +654,7 @@ int File::get_samples(AFrame *aframe)
 
 int File::get_frame(VFrame *frame, int is_thread)
 {
-	ptstime rqpts;
+	ptstime rqpts, srcrqpts;
 
 	if(video_thread && !is_thread)
 		return video_thread->read_frame(frame);
@@ -662,16 +662,18 @@ int File::get_frame(VFrame *frame, int is_thread)
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
+		srcrqpts = frame->get_source_pts();
+		rqpts = frame->get_pts();
 		if(asset->single_image)
 		{
 			frame->set_source_pts(0);
 			use_cache = 1;
 		}
-		rqpts = frame->get_pts();
 // Test cache
 		if(use_cache && frame_cache->get_frame(frame))
 		{
 			frame->set_pts(rqpts);
+			adjust_times(frame, rqpts, srcrqpts);
 			return 0;
 		}
 // Need temp
@@ -714,10 +716,19 @@ int File::get_frame(VFrame *frame, int is_thread)
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);
+		adjust_times(frame, rqpts, srcrqpts);
 		return 0;
 	}
 	else
 		return 1;
+}
+
+void File::adjust_times(VFrame *frame, ptstime pts, ptstime src_pts)
+{
+	frame->set_pts(pts);
+	if(frame->get_source_pts() < src_pts)
+		frame->set_duration(frame->get_duration() -
+			(src_pts - frame->get_source_pts()));
 }
 
 int File::supports(int format)
