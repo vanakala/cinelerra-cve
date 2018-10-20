@@ -61,8 +61,6 @@ BluebananaMain::BluebananaMain(PluginServer *server) : PluginVClient(server)
 
 	colormodel = -1;
 
-	ants_counter = 0;
-
 	memset(red_histogram, 0, sizeof(red_histogram));
 	memset(green_histogram, 0, sizeof(green_histogram));
 	memset(blue_histogram, 0, sizeof(blue_histogram));
@@ -74,11 +72,6 @@ BluebananaMain::BluebananaMain(PluginServer *server) : PluginVClient(server)
 
 BluebananaMain::~BluebananaMain()
 {
-	// if ants are running, run one more pane update to hide them
-	//  (gui is already marked as closed)
-	if(server && server->mwindow)
-		server->mwindow->sync_parameters();
-
 	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
@@ -175,8 +168,6 @@ void BluebananaMain::load_defaults()
 
 	config.Oadj_active = defaults->get("OPACITY_ADJUST_ACTIVE", config.Oadj_active);
 	config.Oadj_val = defaults->get("OPACITY_ADJUST", config.Oadj_val);
-
-	config.ants_counter = defaults->get("ANTS_COUNTER", config.ants_counter);
 }
 
 void BluebananaMain::save_defaults()
@@ -237,8 +228,6 @@ void BluebananaMain::save_defaults()
 	defaults->update("BLUE_ADJUST_GAMMA", config.Badj_gamma);
 
 	defaults->update("OPACITY_ADJUST", config.Oadj_val);
-
-	defaults->update("ANTS_COUNTER", config.ants_counter);
 	defaults->save();
 }
 
@@ -251,6 +240,7 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("BLUEBANANA");
 
 	output.tag.set_property("ACTIVE", config.active);
+	output.tag.set_property("MARK", config.mark);
 	output.tag.set_property("INVERT_SELECTION", config.invert_selection);
 	output.tag.set_property("USE_MASK", config.use_mask);
 	output.tag.set_property("CAPTURE_MASK", config.capture_mask);
@@ -314,89 +304,8 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/BLUEBANANA");
 	output.append_tag();
 	output.append_newline();
-
-	if(keyframe == first_keyframe())
-	{
-		// this will otherwise overwrite the nonauto information as well
-		output_nonauto(&output);
-	}
-
 	output.terminate_string();
 }
-
-// save non-auto data to the default keyframe at zero and does it
-// without alerting the keyframing mechanism
-void BluebananaMain::save_nonauto()
-{
-	KeyFrame *default_keyframe = first_keyframe();
-
-	if(default_keyframe)
-	{
-		FileXML input;
-		FileXML output;
-		int result = 0;
-
-		input.read_from_string(default_keyframe->data);
-		output.set_shared_string(default_keyframe->data, MESSAGESIZE);
-
-		while(!result)
-		{
-			result = input.read_tag();
-
-			if(!result &&
-					!input.tag.title_is("BLUEBANANA_NONAUTO") &&
-					!input.tag.title_is("/BLUEBANANA_NONAUTO"))
-			{
-				// lazy and potentially brittle, but perhaps no less so than
-				//  using the default keyframe for nonauto data to begin
-				//  with.  If this breaks, go to brute force parsing.
-				output.tag.reset_tag();
-				XMLTag swap = output.tag;
-				output.tag = input.tag;
-				input.tag=swap;
-				output.append_tag();
-				output.append_newline();
-			}
-		}
-
-		output_nonauto(&output);
-	}
-}
-
-void BluebananaMain::output_nonauto(FileXML *output)
-{
-	output->tag.set_title("BLUEBANANA_NONAUTO");
-	output->tag.set_property("MARK", config.mark);
-	output->append_tag();
-	output->tag.set_title("/BLUEBANANA_NONAUTO");
-	output->append_tag();
-	output->append_newline();
-	output->terminate_string();
-}
-
-void BluebananaMain::load_nonauto()
-{
-	// nonauto data stored in the default keyframe at position 0 
-	KeyFrame *default_keyframe = first_keyframe();
-
-	if(default_keyframe)
-	{
-		FileXML input;
-		int result = 0;
-		input.set_shared_string(default_keyframe->data, strlen(default_keyframe->data));
-
-		while(!result)
-		{
-			result = input.read_tag();
-
-			if(!result && input.tag.title_is("BLUEBANANA_NONAUTO"))
-			{
-				config.mark = input.tag.get_property("MARK", config.mark);
-			}
-		}
-	}
-}
-
 
 void BluebananaMain::read_data(KeyFrame *keyframe)
 {
@@ -412,6 +321,7 @@ void BluebananaMain::read_data(KeyFrame *keyframe)
 		if(!result && input.tag.title_is("BLUEBANANA"))
 		{
 			config.active = input.tag.get_property("ACTIVE", config.active);
+			config.mark = input.tag.get_property("MARK", config.mark);
 			config.invert_selection = input.tag.get_property("INVERT_SELECTION", config.invert_selection);
 			config.use_mask = input.tag.get_property("USE_MASK", config.use_mask);
 			config.capture_mask = input.tag.get_property("CAPTURE_MASK", config.capture_mask);
@@ -471,8 +381,6 @@ void BluebananaMain::read_data(KeyFrame *keyframe)
 
 		}
 	}
-
-	load_nonauto();
 }
 
 static void select_grow_h(float *hrow, float *vrow, int width)
@@ -779,9 +687,6 @@ float *BluebananaMain::fill_selection(float *in, float *work,
 
 void BluebananaMain::process_frame(VFrame *frame)
 {
-	ants_counter = ++config.ants_counter;
-	config.ants_counter &= 255;
-
 	load_configuration();
 	this->frame = frame;
 

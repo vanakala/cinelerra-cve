@@ -27,6 +27,7 @@
 #include "bluebananaconfig.h"
 #include "loadbalance.h"
 #include "bluebananacolor.c" // need the inlines
+#include "guidelines.h"
 
 BluebananaPackage::BluebananaPackage(BluebananaEngine *engine)
  : LoadPackage()
@@ -49,9 +50,8 @@ void BluebananaUnit::process_package(LoadPackage *package)
 	VFrame *frame = engine->data;
 	int w = frame->get_w();
 	int h = frame->get_h();
-	int ant = plugin->ants_counter;
 	int gui_open = plugin->gui_open();
-	int show_ants = plugin->config.mark && gui_open;
+	int show_ants = plugin->config.mark;
 	int i, j;
 	int active = plugin->config.active;
 	int use_mask = plugin->config.use_mask;
@@ -1054,77 +1054,25 @@ void BluebananaUnit::process_package(LoadPackage *package)
 				}
 
 				// ants
-				if(show_ants)
+				GuideFrame *gf = plugin->get_guides();
+				if(gf)
 				{
-					for(j = 0; j < todo; j++)
+					gf->clear();
+					if(show_ants)
 					{
-						float A = have_selection ? selection[j] : 1.f;
-						if(A > .99999f)
-						{
-							if((ant + rowi - j) & 0x4)
-							{
-								// magenta
-								Rvec[j] = 1;
-								Gvec[j] = 0;
-								Bvec[j] = 1;
-							}
-							else
-							{
-								// green
-								Rvec[j] = 0;
-								Gvec[j] = 1;
-								Bvec[j] = 0;
-							}
-						}
-						else
-						{
-							if((ant + rowi + j) & 0x4)
-							{
-								// black
-								Rvec[j] = 0;
-								Gvec[j] = 0;
-								Bvec[j] = 0;
-							}
-							else
-							{
-								// white
-								Rvec[j] = 1;
-								Gvec[j] = 1;
-								Bvec[j] = 1;
-							}
-						}
-					}
+						VFrame *vgf = gf->get_vframe(frame->get_w(),
+							frame->get_h());
+						unsigned char *colp = vgf->get_row_ptr(rowi) + coli;
 
-					// re-layer back into pipeline color format
-					switch(frame->get_color_model())
-					{
-					case BC_RGB888:
-						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 3);
-						break;
-					case BC_RGBA8888:
-						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 4);
-						break;
-					case BC_RGBA16161616:
-						RGB_to_rgb16(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (uint16_t*)row_fragment, todo, 4);
-						break;
-					case BC_RGB_FLOAT:
-						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (float *)row_fragment, todo, 3);
-						break;
-					case BC_RGBA_FLOAT:
-						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (float *)row_fragment, todo, 4);
-						break;
-					case BC_YUV888:
-						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 3);
-						break;
-					case BC_YUVA8888:
-						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 4);
-						break;
-					case BC_AYUV16161616:
-						RGB_to_ayuv16(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (uint16_t*)row_fragment, todo);
-						break;
+						for(j = 0; j < todo; j++)
+						{
+							if(have_selection)
+								colp[j] = 127 * selection[j];
+							else
+								colp[j] = 0;
+						}
 					}
 				}
-
 				if(active || show_ants || (use_mask && capture_mask))
 				{
 
@@ -1268,6 +1216,7 @@ void BluebananaEngine::process_packages(VFrame *data)
 	task_init_state = 0;
 	task_n = 0;
 	task_finish_count = 0;
+	GuideFrame *gf;
 
 	// If we're doing any spatial modification of the selection, we'll
 	//   need to operate on a temporary selection array that covers the
@@ -1283,7 +1232,12 @@ void BluebananaEngine::process_packages(VFrame *data)
 			selection_workB = new float[w * h];
 		}
 	}
-
+	if(plugin->config.mark && (gf = plugin->get_guides()))
+	{
+		VFrame *vgf = gf->get_vframe(data->get_w(), data->get_h());
+		gf->clear();
+		vgf->clear_frame();
+	}
 	memset(plugin->red_histogram, 0, sizeof(plugin->red_histogram));
 	memset(plugin->green_histogram, 0, sizeof(plugin->green_histogram));
 	memset(plugin->blue_histogram, 0, sizeof(plugin->blue_histogram));
@@ -1374,7 +1328,11 @@ void BluebananaEngine::process_packages(VFrame *data)
 			plugin->hue_histogram_blue[i] =  blue[i] * sum;
 		}
 	}
-
+	if(plugin->config.mark && (gf = plugin->get_guides()))
+	{
+		gf->add_vframe();
+		gf->set_repeater_period(1);
+	}
 	if(selection_workA)
 	{
 		delete[] selection_workA;

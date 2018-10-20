@@ -2075,38 +2075,16 @@ public:
 
 	virtual int handle_event()
 	{
-		if(plugin->config.mark != get_value())
-		{
-			plugin->config.mark = get_value();
-			plugin->save_nonauto();
-			if(plugin->config.mark)
-			{
-				gui->set_repeat(207);
-			}
-			else
-			{
-				gui->unset_repeat(207);
-			}
-			plugin->server->mwindow->sync_parameters();
-		}
+		plugin->config.mark = get_value();
+		gui->enter_config_change();
+		gui->commit_config_change();
 		return 1;
 	}
 
 	void update ()
 	{
-		if(plugin->config.mark != get_value())
-		{
-			this->BC_CheckBox::update(plugin->config.mark, 1);
-			if(plugin->config.mark)
-			{
-				gui->set_repeat(207);
-			}
-			else
-			{
-				gui->unset_repeat(207);
-			}
-		}
-	};
+		BC_CheckBox::update(plugin->config.mark, 1);
+	}
 
 	BluebananaMain *plugin;
 	BluebananaWindow *gui;
@@ -2135,7 +2113,8 @@ public:
 	{
 		if(active != plugin->config.active)
 		{
-			plugin->config.active = active;
+			if(active >= 0)
+				plugin->config.active = active;
 			this->BC_CheckBox::update(plugin->config.active, 1);
 			gui->enter_config_change();
 			gui->Hadj_slider->update();
@@ -2175,7 +2154,6 @@ public:
 	virtual int handle_event()
 	{
 		plugin->config.capture_mask = get_value();
-		plugin->save_nonauto();
 		update();
 		gui->enter_config_change();
 		gui->commit_config_change();
@@ -2274,7 +2252,6 @@ public:
 	virtual int handle_event()
 	{
 		plugin->config.use_mask = get_value();
-		plugin->save_nonauto();
 		update();
 		gui->enter_config_change();
 		gui->commit_config_change();
@@ -2722,7 +2699,7 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 
 	reposition_window(windowx, windowy, get_w(), y);
 	leave_config_change(); // also forces render
-	plugin->server->mwindow->sync_parameters();
+	update();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -2791,16 +2768,6 @@ void BluebananaWindow::repeat_event(int d)
 		if(config_consume == config_produce)
 			flush_config_change();
 		config_consume = config_produce;
-	}
-	if(d == 207)
-	{
-		// if background render is active and we're showing the zebra, mark
-		//  the current frame uncached so that we can push zebra changes
-		if(plugin->config.mark && plugin->server->mwindow->brender)
-			plugin->server->mwindow->brender->set_video_map(plugin->source_start_pts, plugin->source_pts);
-
-		// push update request without an EDL update
-		plugin->server->mwindow->sync_parameters();
 	}
 }
 

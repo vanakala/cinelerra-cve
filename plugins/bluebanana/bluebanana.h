@@ -90,9 +90,6 @@ public:
 	void save_auto(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void load_nonauto();
-	void save_nonauto();
-	void push_nonauto();
 	void enter_config_change();
 	void commit_config_change();
 	void leave_config_change();
@@ -105,7 +102,6 @@ public:
 
 	VFrame *frame;
 	BluebananaEngine *engine;
-	int ants_counter;
 	int colormodel;
 
 	friend class BluebananaEngine;
@@ -160,9 +156,6 @@ public:
 	BluebananaConfig update_cache;
 
 	void update_lookups(int serverside);
-
-private:
-	void output_nonauto(FileXML *output);
 };
 
 class BluebananaPackage : public LoadPackage

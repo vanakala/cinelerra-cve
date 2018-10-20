@@ -84,14 +84,12 @@ BluebananaConfig::BluebananaConfig()
 
 	Oadj_active = 0;
 	Oadj_val = 100;
-
-	ants_counter = 0;
 }
 
 int BluebananaConfig::equivalent(BluebananaConfig &that)
 {
 	if(active != that.active) return 0;
-	// mark is no an auto
+	if(mark != that.mark) return 0;
 	if(use_mask != that.use_mask) return 0;
 	if(capture_mask != that.capture_mask) return 0;
 	if(invert_selection != that.invert_selection) return 0;
