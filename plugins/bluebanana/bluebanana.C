@@ -78,11 +78,6 @@ BluebananaMain::~BluebananaMain()
 
 PLUGIN_CLASS_METHODS
 
-void BluebananaMain::force_update()
-{
-	thread->window->flush_config_change();
-}
-
 void BluebananaMain::render_gui(void *data)
 {
 	if(thread)
