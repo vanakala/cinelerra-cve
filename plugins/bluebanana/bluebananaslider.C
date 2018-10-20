@@ -1764,7 +1764,7 @@ void BluebananaSliderChannel::update()
 
 			for(i = 0; i < ntw; i++)
 			{
-				unsigned char *row = data;
+				unsigned char *row = data + i * trough->get_bytes_per_pixel();
 				for(j = 0; j < nth; j++)
 				{
 					row[0] = tb_r;
