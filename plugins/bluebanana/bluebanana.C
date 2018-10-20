@@ -83,7 +83,6 @@ void BluebananaMain::render_gui(void *data)
 	if(thread)
 	{
 		BluebananaMain *that = (BluebananaMain *)data; // that is server-side
-		thread->window->lock_window("BluebananaMain::render_gui");
 
 		// push histogram data to gui
 		thread->window->update_histograms(that);
@@ -94,8 +93,6 @@ void BluebananaMain::render_gui(void *data)
 			colormodel = that->frame->get_color_model();
 			thread->window->update();
 		}
-
-		thread->window->unlock_window();
 	}
 }
 
