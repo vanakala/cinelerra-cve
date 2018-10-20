@@ -33,7 +33,7 @@
 class GuideFrame : public ListItem<GuideFrame>
 {
 public:
-	GuideFrame(ptstime start, ptstime end);
+	GuideFrame(ptstime start, ptstime end, Canvas *canvas);
 	~GuideFrame();
 
 	void check_alloc(int bytes);
@@ -72,6 +72,7 @@ private:
 	uint16_t *dataend;
 	uint16_t *data;
 	VFrame *vframe;
+	Canvas *canvas;
 };
 
 class GuideLines : public List<GuideFrame>

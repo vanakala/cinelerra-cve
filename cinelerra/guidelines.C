@@ -34,11 +34,12 @@
 
 extern MWindow *mwindow_global;
 
-GuideFrame::GuideFrame(ptstime start, ptstime end)
+GuideFrame::GuideFrame(ptstime start, ptstime end, Canvas *canvas)
  : ListItem<GuideFrame>()
 {
 	this->start = start;
 	this->end = end;
+	this->canvas = canvas;
 	period = 0;
 	allocated = 0;
 	data = 0;
@@ -62,6 +63,7 @@ void GuideFrame::check_alloc(int num)
 
 	if(num > 0 && num + (dataend - data) > allocated)
 	{
+		canvas->lock_canvas("GuideFrame::check_alloc");
 		int len = dataend - data + num;
 
 		if(allocated + GUIDELINE_UNIT > len)
@@ -73,6 +75,7 @@ void GuideFrame::check_alloc(int num)
 		delete [] data;
 		data = new_alloc;
 		allocated = len;
+		canvas->unlock_canvas();
 	}
 	is_enabled = 1;
 }
@@ -181,6 +184,7 @@ void GuideFrame::set_dimensions(int w, int h)
 
 VFrame *GuideFrame::get_vframe(int w, int h)
 {
+	canvas->lock_canvas("GuideFrame::get_vframe");
 	if(vframe && (vframe->get_w() != w ||
 		vframe->get_h() != h))
 	{
@@ -192,6 +196,7 @@ VFrame *GuideFrame::get_vframe(int w, int h)
 		vframe = new VFrame(0, w, h, BC_A8);
 		vframe->clear_frame();
 	}
+	canvas->unlock_canvas();
 	return vframe;
 }
 
@@ -415,13 +420,15 @@ void GuideLines::set_canvas(Canvas *canvas)
 void GuideLines::delete_guideframes()
 {
 	stop_repeater();
+	canvas->lock_canvas("GuideLines::delete_guideframes");
 	while(last)
 		delete last;
+	canvas->unlock_canvas();
 }
 
 GuideFrame *GuideLines::append_frame(ptstime start, ptstime end)
 {
-	return append(new GuideFrame(start, end));
+	return append(new GuideFrame(start, end, canvas));
 }
 
 void GuideLines::draw(EDL *edl, ptstime pts)

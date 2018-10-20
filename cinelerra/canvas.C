@@ -86,16 +86,19 @@ Canvas::~Canvas()
 	delete canvas_subwindow;
 	delete canvas_fullscreen;
 	delete canvas_lock;
+	canvas_lock = 0;
 }
 
 void Canvas::lock_canvas(const char *location)
 {
-	canvas_lock->lock(location);
+	if(canvas_lock)
+		canvas_lock->lock(location);
 }
 
 void Canvas::unlock_canvas()
 {
-	canvas_lock->unlock();
+	if(canvas_lock)
+		canvas_lock->unlock();
 }
 
 int Canvas::is_locked()
