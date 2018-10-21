@@ -127,12 +127,6 @@ void VRender::process_buffer(ptstime input_postime)
 		if(file)
 		{
 // Cache single frames only
-			if(renderengine->command->realtime &&
-					renderengine->edl->session->video_asynchronous)
-				file->start_video_decode_thread();
-			else
-				file->stop_video_thread();
-
 			if(use_cache) file->set_cache_frames(1);
 			video_out->set_source_pts(current_postime);
 			file->get_frame(video_out);

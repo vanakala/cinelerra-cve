@@ -184,8 +184,6 @@ public:
 	int video_channels;
 // play every frame
 	int video_every_frame;
-// decode video asynchronously
-	int video_asynchronous;
 	int video_tracks;
 // number of frames to write to disk at a time during video recording.
 	int video_write_length;

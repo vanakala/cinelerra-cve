@@ -39,8 +39,7 @@ int VEdit::read_frame(VFrame *video_out,
 	ptstime input_postime,
 	CICache *cache,
 	int use_nudge,
-	int use_cache,
-	int use_asynchronous)
+	int use_cache)
 {
 	File *file = cache->check_out(asset, edl);
 
@@ -48,11 +47,6 @@ int VEdit::read_frame(VFrame *video_out,
 
 	if(file)
 	{
-		if(use_asynchronous)
-			file->start_video_decode_thread();
-		else
-			file->stop_video_thread();
-
 		video_out->set_layer(channel);
 		video_out->set_source_pts(input_postime - get_pts() + get_source_pts());
 		if(use_cache) file->set_cache_frames(use_cache);

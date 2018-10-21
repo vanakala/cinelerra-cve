@@ -36,8 +36,7 @@ public:
 			ptstime input_postime,
 			CICache *cache,
 			int use_nudge,
-			int use_cache,
-			int use_asynchronous);
+			int use_cache);
 
 	ptstime get_source_end();
 

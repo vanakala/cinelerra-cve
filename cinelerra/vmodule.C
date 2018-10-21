@@ -117,13 +117,6 @@ VFrame *VModule::import_frame(VFrame *output,
 				src_pts = max_pts;
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
-			int use_asynchronous = !use_cache && renderengine &&
-				renderengine->command->realtime &&
-				renderengine->edl->session->video_asynchronous;
-			if(use_asynchronous)
-				source->start_video_decode_thread();
-			else
-				source->stop_video_thread();
 			output->set_source_pts(src_pts);
 			output->set_layer(current_edit->channel);
 

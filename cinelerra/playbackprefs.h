@@ -74,8 +74,6 @@ public:
 	PlaybackBicubicBicubic *cubic_cubic;
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
-	VideoAsynchronous *asynchronous;
-
 	BC_Title *vdevice_title;
 };
 
@@ -125,17 +123,6 @@ class PlaybackSoftwareTimer : public BC_CheckBox
 {
 public:
 	PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
-class VideoAsynchronous : public BC_CheckBox
-{
-public:
-	VideoAsynchronous(PreferencesWindow *pwindow, int x, int y);
 
 	int handle_event();
 

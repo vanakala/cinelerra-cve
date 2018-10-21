@@ -128,11 +128,10 @@ void PlaybackPrefs::show()
 
 	win = add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
 	y1 = y + 2;
-	y += window->get_h() + 5;
-	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
+	y += window->get_h() + 20;
 
 	y2 = y1;
-	x2 = x + asynchronous->get_w() + 40;
+	x2 = x + 370;
 	win = add_subwindow(new BC_Title(x2, y2, _("Framerate achieved:")));
 	wt = win->get_w();
 	wh = win->get_h() + 5;
@@ -156,8 +155,6 @@ void PlaybackPrefs::show()
 	y2 += wh;
 	add_subwindow(avgdelay_title = new BC_Title(x2, y2, "-", MEDIUMFONT, RED));
 	draw_framerate();
-
-	y += asynchronous->get_h() + 10;
 
 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
@@ -388,25 +385,6 @@ int PlaybackBilinearBilinear::handle_event()
 	return 1;
 }
 
-VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
-	y, 
-	pwindow->thread->edl->session->video_every_frame &&
-		pwindow->thread->edl->session->video_asynchronous, 
-	_("Decode frames asynchronously"))
-{
-	this->pwindow = pwindow;
-	if(!pwindow->thread->edl->session->video_every_frame)
-		disable();
-}
-
-int VideoAsynchronous::handle_event()
-{
-	pwindow->thread->edl->session->video_asynchronous = get_value();
-	return 1;
-}
-
-
 VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback_prefs,
 	int x, 
@@ -420,16 +398,6 @@ VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow,
 int VideoEveryFrame::handle_event()
 {
 	pwindow->thread->edl->session->video_every_frame = get_value();
-	if(!pwindow->thread->edl->session->video_every_frame)
-	{
-		playback_prefs->asynchronous->update(0, 0);
-		playback_prefs->asynchronous->disable();
-	}
-	else
-	{
-		playback_prefs->asynchronous->update(pwindow->thread->edl->session->video_asynchronous, 0);
-		playback_prefs->asynchronous->enable();
-	}
 	return 1;
 }
 
