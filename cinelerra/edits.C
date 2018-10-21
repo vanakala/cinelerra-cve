@@ -325,11 +325,12 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 			if(file->tag.title_is("FILE"))
 			{
 				char filename[1024];
-				strcpy(filename, SILENCE);
+
+				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
 				streamno = file->tag.get_property("STREAMNO", -1);
 // Extend path
-				if(strcmp(filename, SILENCE))
+				if(filename[0])
 				{
 					char directory[BCTEXTLEN], edl_directory[BCTEXTLEN];
 					FileSystem fs;
@@ -345,7 +346,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 				}
 				else
 				{
-					current->asset = edl->assets->get_asset(SILENCE);
+					current->asset = 0;
 				}
 			}
 			else
@@ -358,21 +359,12 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 				current->transition->load_xml(file);
 			}
 			else
-			if(file->tag.title_is(SILENCE))
-			{
-				current->asset = edl->assets->get_asset(SILENCE);
-			}
-			else
 			if(file->tag.title_is("/EDIT"))
 			{
 				result = 1;
 			}
 		}
 	}while(!result);
-
-// in case of incomplete edit tag
-	if(!current->asset)
-		current->asset = edl->assets->get_asset(SILENCE);
 }
 
 // ============================================= accounting

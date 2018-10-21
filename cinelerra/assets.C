@@ -53,7 +53,7 @@ void Assets::load(FileXML *file, uint32_t load_flags)
 			if(file->tag.title_is("ASSET"))
 			{
 				char *path = file->tag.get_property("SRC");
-				Asset *new_asset = new Asset(path ? path : SILENCE);
+				Asset *new_asset = new Asset(path);
 				new_asset->read(file);
 				update(new_asset);
 				Garbage::delete_object(new_asset);
