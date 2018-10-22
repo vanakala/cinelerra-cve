@@ -100,8 +100,6 @@ public:
 		int ring_buffers);
 	void stop_video_thread();
 
-	void start_video_decode_thread();
-
 // Return the thread.
 // Used by functions that read only.
 	FileThread* get_video_thread();

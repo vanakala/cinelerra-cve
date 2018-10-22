@@ -460,15 +460,6 @@ void File::start_video_thread(int buffer_size,
 	}
 }
 
-void File::start_video_decode_thread()
-{
-	if(!video_thread)
-	{
-		video_thread = new FileThread(this, 0, 1);
-		video_thread->start_reading();
-	}
-}
-
 void File::stop_audio_thread()
 {
 	if(audio_thread)

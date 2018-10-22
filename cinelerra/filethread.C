@@ -351,16 +351,6 @@ void FileThread::start_writing(int buffer_size,
 	Thread::start();
 }
 
-void FileThread::start_reading()
-{
-	if(!is_reading)
-	{
-		is_reading = 1;
-		disable_read = 1;
-		done = 0;
-	}
-}
-
 void FileThread::stop_reading()
 {
 	if(is_reading && Thread::running())

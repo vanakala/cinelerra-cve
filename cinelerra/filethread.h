@@ -50,7 +50,6 @@ public:
 
 // ================================ reading section ============================
 // Allocate buffers and start loop for reading
-	void start_reading();
 	void stop_reading();
 
 	int read_frame(VFrame *frame);
