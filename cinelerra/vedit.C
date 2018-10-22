@@ -21,42 +21,13 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "cache.h"
 #include "edl.inc"
-#include "file.h"
+#include "edits.inc"
 #include "vedit.h"
-#include "vedits.h"
-#include "vframe.h"
-#include "vtrack.h"
 
 VEdit::VEdit(EDL *edl, Edits *edits)
  : Edit(edl, edits)
 {
-}
-
-// ================================================== editing
-int VEdit::read_frame(VFrame *video_out, 
-	ptstime input_postime,
-	CICache *cache,
-	int use_nudge,
-	int use_cache)
-{
-	File *file = cache->check_out(asset, edl);
-
-	if(use_nudge) input_postime += track->nudge;
-
-	if(file)
-	{
-		video_out->set_layer(channel);
-		video_out->set_source_pts(input_postime - get_pts() + get_source_pts());
-		if(use_cache) file->set_cache_frames(use_cache);
-		int result = file->get_frame(video_out);
-		if(use_cache) file->set_cache_frames(0);
-		video_out->set_pts(video_out->get_source_pts() - get_source_pts() + get_pts());
-		cache->check_in(asset);
-		return result;
-	}
-	return 1;
 }
 
 ptstime VEdit::get_source_end()

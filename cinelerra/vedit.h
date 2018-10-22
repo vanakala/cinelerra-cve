@@ -32,16 +32,7 @@ class VEdit : public Edit
 public:
 	VEdit(EDL *edl, Edits *edits);
 
-	int read_frame(VFrame *video_out, 
-			ptstime input_postime,
-			CICache *cache,
-			int use_nudge,
-			int use_cache);
-
 	ptstime get_source_end();
-
-private:
-	VEdits *vedits;
 };
 
 #endif
