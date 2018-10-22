@@ -19,7 +19,6 @@
  * 
  */
 
-#include "aedit.h"
 #include "aframe.h"
 #include "asset.h"
 #include "asset.inc"
@@ -45,7 +44,6 @@
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
-#include "vedit.h"
 #include "vframe.h"
 #include "wavecache.h"
 

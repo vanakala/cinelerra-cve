@@ -126,6 +126,17 @@ void Edit::copy(FileXML *file, const char *output_path, int track_type)
 
 ptstime Edit::get_source_end()
 {
+	if(asset && track)
+	{
+		switch(track->data_type)
+		{
+		case TRACK_VIDEO:
+			return asset->video_duration;
+
+		case TRACK_AUDIO:
+			return asset->audio_duration;
+		}
+	}
 	return 0;
 }
 

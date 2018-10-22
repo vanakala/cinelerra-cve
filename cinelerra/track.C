@@ -43,7 +43,6 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
-#include "vedit.h"
 #include "vframe.h"
 #include <string.h>
 
@@ -63,6 +62,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	track_w = edl->session->output_w;
 	track_h = edl->session->output_h;
 	one_unit = (ptstime) 1 / 48000;
+	edits = new Edits(edl, this);
 	id = EDL::next_id();
 }
 

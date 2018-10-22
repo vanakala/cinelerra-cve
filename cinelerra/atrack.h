@@ -22,13 +22,8 @@
 #ifndef ATRACK_H
 #define ATRACK_H
 
-#include "arraylist.h"
-#include "autoconf.inc"
 #include "edl.inc"
 #include "filexml.inc"
-#include "floatautos.inc"
-#include "linklist.h"
-#include "panautos.inc"
 #include "track.h"
 
 

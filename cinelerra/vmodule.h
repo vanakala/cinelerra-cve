@@ -27,7 +27,6 @@
 #include "module.h"
 #include "overlayframe.inc"
 #include "track.inc"
-#include "vedit.inc"
 #include "vframe.inc"
 #include "maskengine.inc"
 
@@ -48,7 +47,7 @@ public:
 private:
 // Read frame from file and perform camera transformation
 	VFrame *import_frame(VFrame *output,
-		VEdit *current_edit);
+		Edit *current_edit);
 
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module

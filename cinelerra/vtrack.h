@@ -22,14 +22,9 @@
 #ifndef VTRACK_H
 #define VTRACK_H
 
-#include "arraylist.h"
-#include "autoconf.inc"
 #include "edl.inc"
 #include "filexml.inc"
-#include "floatautos.inc"
-#include "linklist.h"
 #include "track.h"
-#include "vedit.inc"
 #include "vframe.inc"
 
 

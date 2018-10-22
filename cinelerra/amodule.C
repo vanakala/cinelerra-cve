@@ -20,7 +20,6 @@
  */
 
 #include "aattachmentpoint.h"
-#include "aedit.h"
 #include "aframe.h"
 #include "amodule.h"
 #include "arender.h"
@@ -28,6 +27,7 @@
 #include "atrack.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "edit.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -104,7 +104,7 @@ CICache* AModule::get_cache()
 
 int AModule::render(AFrame *aframe)
 {
-	AEdit *playable_edit;
+	Edit *playable_edit;
 	ptstime start_projpts = aframe->pts;
 	int result = 0;
 
@@ -117,9 +117,9 @@ int AModule::render(AFrame *aframe)
 	ptstime sample_error = 0.8 / aframe->samplerate;
 
 // Get first edit containing the range
-	for(playable_edit = (AEdit*)track->edits->first; 
+	for(playable_edit = track->edits->first;
 		playable_edit;
-		playable_edit = (AEdit*)playable_edit->next)
+		playable_edit = playable_edit->next)
 	{
 		if(start_projpts < playable_edit->end_pts() && 
 				end_projpts > playable_edit->get_pts())
@@ -170,7 +170,7 @@ int AModule::render(AFrame *aframe)
 			}
 
 // Read transition into temp and render
-			AEdit *previous_edit = (AEdit*)playable_edit->previous;
+			Edit *previous_edit = playable_edit->previous;
 			if(transition && previous_edit)
 			{
 				ptstime transition_length = transition->length();
@@ -234,7 +234,7 @@ int AModule::render(AFrame *aframe)
 				}
 			}
 			if(playable_edit && start_projpts + fragment_duration >= edit_end)
-				playable_edit = (AEdit*)playable_edit->next;
+				playable_edit = playable_edit->next;
 		}
 		start_projpts += fragment_duration;
 	}

@@ -41,7 +41,6 @@
 #include "transportcommand.h"
 #include "units.h"
 #include "vattachmentpoint.h"
-#include "vedit.h"
 #include "vframe.h"
 #include "vmodule.h"
 #include "vrender.h"
@@ -85,7 +84,7 @@ CICache* VModule::get_cache()
 }
 
 VFrame *VModule::import_frame(VFrame *output,
-	VEdit *current_edit)
+	Edit *current_edit)
 {
 // Translation of edit
 	int in_x1;
@@ -240,8 +239,8 @@ VFrame *VModule::import_frame(VFrame *output,
 VFrame *VModule::render(VFrame *output)
 {
 	update_transition(output->get_pts());
-	VEdit* current_edit = (VEdit*)track->edits->editof(output->get_pts(), 0);
-	VEdit* previous_edit = 0;
+	Edit* current_edit = track->edits->editof(output->get_pts(), 0);
+	Edit* previous_edit = 0;
 
 	if(!current_edit)
 	{
@@ -265,7 +264,7 @@ VFrame *VModule::render(VFrame *output)
 			current_edit);
 
 // Load transition buffer
-		previous_edit = (VEdit*)current_edit->previous;
+		previous_edit = current_edit->previous;
 
 		output = import_frame(output, previous_edit);
 

@@ -110,10 +110,10 @@ VFrame *VirtualVNode::read_data()
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
 // Current edit in parent track
-	VEdit *parent_edit = 0;
+	Edit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = (VEdit*)parent_node->track->edits->editof(
+		parent_edit = parent_node->track->edits->editof(
 			output_temp->get_pts(), 0);
 	}
 

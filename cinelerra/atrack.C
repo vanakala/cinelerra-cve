@@ -19,11 +19,7 @@
  * 
  */
 
-#include "aedit.h"
-#include "aedits.h"
-#include "amodule.h"
 #include "atrack.h"
-#include "autoconf.h"
 #include "aautomation.h"
 #include "bcresources.h"
 #include "edit.h"
@@ -34,14 +30,13 @@
 #include "datatype.h"
 #include "file.h"
 #include "filexml.h"
-#include "floatautos.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
-#include "panautos.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+#include "units.h"
 
 #include <string.h>
 
@@ -53,7 +48,6 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
 	data_type = TRACK_AUDIO;
 	one_unit = (ptstime)1.0 / edl->session->sample_rate;
 	automation = new AAutomation(edl, this);
-	edits = new AEdits(edl, this);
 }
 
 // Used by PlaybackEngine

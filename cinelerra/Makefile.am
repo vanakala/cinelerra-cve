@@ -49,8 +49,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
 		    aboutprefs.C \
 		    adeviceprefs.C \
-		    aedit.C \
-		    aedits.C \
 		    aframe.C \
 		    affine.C \
 		    amodule.C \
@@ -244,8 +242,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vdevicebase.C \
 		    vdeviceprefs.C \
 		    vdevicex11.C \
-		    vedit.C \
-		    vedits.C \
 		    videodevice.C \
 		    viewmenu.C \
 		    virtualaconsole.C \
@@ -289,8 +285,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 aautomation.h \
 		 aboutprefs.h \
 		 adeviceprefs.h \
-		 aedit.h \
-		 aedits.h \
 		 aframe.h \
 		 affine.h \
 		 amodule.h \
@@ -486,8 +480,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vdevicebase.h \
 		 vdeviceprefs.h \
 		 vdevicex11.h \
-		 vedit.h \
-		 vedits.h \
 		 videodevice.h \
 		 viewmenu.h \
 		 virtualaconsole.h \

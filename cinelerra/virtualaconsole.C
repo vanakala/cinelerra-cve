@@ -19,7 +19,6 @@
  * 
  */
 
-#include "aedit.h"
 #include "aframe.h"
 #include "amodule.h"
 #include "arender.h"

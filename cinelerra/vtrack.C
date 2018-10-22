@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "autoconf.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "cache.h"
@@ -41,8 +40,6 @@
 #include "tracks.h"
 #include "units.h"
 #include "vautomation.h"
-#include "vedit.h"
-#include "vedits.h"
 #include "vframe.h"
 #include "vmodule.h"
 #include "vtrack.h"
@@ -54,7 +51,6 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 	draw = 1;
 	one_unit = (ptstime)1.0 / edl->session->frame_rate;
 	automation = new VAutomation(edl, this);
-	edits = new VEdits(edl, this);
 }
 
 // Used by PlaybackEngine

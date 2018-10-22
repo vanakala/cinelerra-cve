@@ -20,7 +20,6 @@
  */
 
 #include "aattachmentpoint.h"
-#include "aedit.h"
 #include "aframe.h"
 #include "amodule.h"
 #include "arender.h"
@@ -96,10 +95,10 @@ int VirtualANode::read_data(AFrame *aframe)
 	VirtualNode *previous_plugin = 0;
 
 // Current edit in parent track
-	AEdit *parent_edit = 0;
+	Edit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = (AEdit*)parent_node->track->edits->editof(aframe->pts,
+		parent_edit = parent_node->track->edits->editof(aframe->pts,
 			0);
 	}
 

@@ -23,7 +23,6 @@
 #include "atrack.h"
 #include "automation.h"
 #include "bcsignals.h"
-#include "aedits.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"

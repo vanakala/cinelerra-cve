@@ -19,7 +19,6 @@
  * 
  */
 
-#include "aedit.h"
 #include "asset.h"
 #include "assets.h"
 #include "automation.h"
@@ -47,6 +46,11 @@ Edits::Edits(EDL *edl, Track *track)
 	this->edl = edl;
 	this->track = track;
 	loaded_length = 0;
+}
+
+Edit* Edits::create_edit()
+{
+	return new Edit(edl, this);
 }
 
 void Edits::equivalent_output(Edits *edits, ptstime *result)
