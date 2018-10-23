@@ -66,8 +66,6 @@ public:
 
 	friend class AVlibsConfig;
 
-	// Get format string for ffmpeg
-	static int check_sig(Asset *asset);
 	// Probe file and fill asset
 	static int probe_input(Asset *asset);
 	static double convert_framerate(AVRational frate, double dflt = -1);

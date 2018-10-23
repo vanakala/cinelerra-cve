@@ -42,7 +42,6 @@ public:
 	FileSndFile(Asset *asset, File *file);
 	~FileSndFile();
 
-	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	void close_file();
 	int read_aframe(AFrame *aframe);

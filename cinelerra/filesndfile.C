@@ -50,21 +50,6 @@ FileSndFile::~FileSndFile()
 	if(temp_double) delete [] temp_double;
 }
 
-int FileSndFile::check_sig(Asset *asset)
-{
-	int result = 0;
-	SF_INFO fd_config;
-	fd_config.format = 0;
-	SNDFILE *fd = sf_open(asset->path, SFM_READ, &fd_config);
-	if(fd)
-	{
-		sf_close(fd);
-		result = 1;
-	}
-
-	return result;
-}
-
 void FileSndFile::asset_to_format()
 {
 	switch(asset->format)

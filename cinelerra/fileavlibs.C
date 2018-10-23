@@ -195,30 +195,6 @@ FileAVlibs::~FileAVlibs()
 	close_file();
 }
 
-int FileAVlibs::check_sig(Asset *asset)
-{
-	AVFormatContext *ctx = 0;
-	int result = 0;
-
-	avlibs_lock->lock("FileAVlibs::check_sig");
-	avcodec_register_all();
-	av_register_all();
-
-	if(avformat_open_input(&ctx, asset->path, 0, NULL) == 0)
-	{
-		if(avformat_find_stream_info(ctx, NULL) >= 0)
-			result = 1;
-
-		if(result && streamformat(ctx) == FILE_UNKNOWN)
-			result = 0;
-
-		avformat_close_input(&ctx);
-	}
-	avlibs_lock->unlock();
-
-	return result;
-}
-
 // Returns: -1 - cannot open
 //           0 - not avlibs file
 //           1 - avlibs file
