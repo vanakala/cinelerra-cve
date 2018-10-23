@@ -442,7 +442,7 @@ void File::start_audio_thread(int buffer_size, int ring_buffers)
 {
 	if(!audio_thread)
 	{
-		audio_thread = new FileThread(this, 1, 0);
+		audio_thread = new FileThread(this, SUPPORTS_AUDIO);
 		audio_thread->start_writing(buffer_size, 0, ring_buffers);
 	}
 }
@@ -453,7 +453,7 @@ void File::start_video_thread(int buffer_size,
 {
 	if(!video_thread)
 	{
-		video_thread = new FileThread(this, 0, 1);
+		video_thread = new FileThread(this, SUPPORTS_VIDEO);
 		video_thread->start_writing(buffer_size, 
 			color_model, 
 			ring_buffers);

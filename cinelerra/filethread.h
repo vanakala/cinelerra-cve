@@ -38,7 +38,7 @@
 class FileThread : public Thread
 {
 public:
-	FileThread(File *file, int do_audio, int do_video);
+	FileThread(File *file, int options);
 	~FileThread();
 
 // ============================== writing section ==============================

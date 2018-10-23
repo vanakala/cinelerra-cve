@@ -35,7 +35,7 @@
 #include <unistd.h>
 
 
-FileThread::FileThread(File *file, int do_audio, int do_video)
+FileThread::FileThread(File *file, int options)
  : Thread(THREAD_SYNCHRONOUS)
 {
 	audio_buffer = 0;
@@ -54,8 +54,8 @@ FileThread::FileThread(File *file, int do_audio, int do_video)
 	start_pts = end_pts = -1;
 
 	this->file = file;
-	this->do_audio = do_audio;
-	this->do_video = do_video;
+	do_audio = options & SUPPORTS_AUDIO;
+	do_video = options & SUPPORTS_VIDEO;
 	file_lock = new Mutex("FileThread::file_lock");
 	read_wait_lock = new Condition(0, "FileThread::read_wait_lock");
 	user_wait_lock = new Condition(0, "FileThread::user_wait_lock");
