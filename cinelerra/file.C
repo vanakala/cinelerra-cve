@@ -474,7 +474,6 @@ void File::stop_video_thread()
 {
 	if(video_thread)
 	{
-		video_thread->stop_reading();
 		video_thread->stop_writing();
 		delete video_thread;
 		video_thread = 0;
@@ -643,12 +642,9 @@ int File::get_samples(AFrame *aframe)
 	return result;
 }
 
-int File::get_frame(VFrame *frame, int is_thread)
+int File::get_frame(VFrame *frame)
 {
 	ptstime rqpts, srcrqpts;
-
-	if(video_thread && !is_thread)
-		return video_thread->read_frame(frame);
 
 	if(file)
 	{
@@ -813,8 +809,6 @@ size_t File::get_memory_usage()
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	result += frame_cache->get_memory_usage();
-	if(video_thread) result += video_thread->get_memory_usage();
-
 	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
 	return result;
 }

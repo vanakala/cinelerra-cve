@@ -29,7 +29,6 @@
 #include "mutex.h"
 #include "tmpframecache.h"
 #include "vframe.h"
-#include "videodevice.inc"
 
 #include <string.h>
 #include <unistd.h>
@@ -45,11 +44,7 @@ FileThread::FileThread(File *file, int options)
 	output_lock = 0;
 	last_buffer = 0;
 	is_writing = 0;
-	is_reading = 0;
-
-	total_frames = 0;
 	done = 0;
-	disable_read = 1;
 	layer = 0;
 	start_pts = end_pts = -1;
 
@@ -57,12 +52,6 @@ FileThread::FileThread(File *file, int options)
 	do_audio = options & SUPPORTS_AUDIO;
 	do_video = options & SUPPORTS_VIDEO;
 	file_lock = new Mutex("FileThread::file_lock");
-	read_wait_lock = new Condition(0, "FileThread::read_wait_lock");
-	user_wait_lock = new Condition(0, "FileThread::user_wait_lock");
-	frame_lock = new Mutex("FileThread::frame_lock");
-
-	for(int i = 0; i < MAX_READ_FRAMES; i++)
-		read_frames[i] = 0;
 }
 
 FileThread::~FileThread()
@@ -91,132 +80,47 @@ FileThread::~FileThread()
 	delete [] output_size;
 
 	delete file_lock;
-
-	for(int i = 0; i < MAX_READ_FRAMES; i++)
-	{
-		if(read_frames[i])
-			BC_Resources::tmpframes.release_frame(read_frames[i]);
-	}
-
-	delete read_wait_lock;
-	delete user_wait_lock;
-	delete frame_lock;
 }
 
 void FileThread::run()
 {
 	int i, j, result;
 
-	if(is_reading)
+	while(!done)
 	{
-		while(!done && !disable_read)
+		output_lock[local_buffer]->lock("FileThread::run 1");
+		return_value = 0;
+
+		if(!last_buffer[local_buffer])
 		{
-			frame_lock->lock("FileThread::run 1");
-			int local_total_frames = total_frames;
-			frame_lock->unlock();
-			if(local_total_frames >= MAX_READ_FRAMES)
+			if(output_size[local_buffer])
 			{
-				read_wait_lock->lock("FileThread::run");
-				continue;
-			}
-
-			if(done || disable_read) break;
-
-// Make local copes of the locked parameters
-			VFrame *local_frame = 0;
-			ptstime local_pts = 0;
-			int local_layer;
-
-			frame_lock->lock("FileThread::run 2");
-// Get position of next frame to read
-			local_pts = end_pts;
-			local_layer = layer;
-
-// Get first available frame
-			local_total_frames = total_frames;
-			local_frame = read_frames[local_total_frames];
-			frame_lock->unlock();
-
-// Read frame
-			int supported_colormodel =
-				file->get_best_colormodel(PLAYBACK_ASYNCHRONOUS);
-
-// Allocate frame
-			if(local_frame &&
-				!local_frame->params_match(file->asset->width,
-					file->asset->height,
-					supported_colormodel))
-			{
-				BC_Resources::tmpframes.release_frame(local_frame);
-				local_frame = 0;
-			}
-
-			if(!local_frame)
-			{
-				local_frame = BC_Resources::tmpframes.get_tmpframe(
-					file->asset->width,
-					file->asset->height,
-					supported_colormodel);
-			}
-
-// Read it
-			local_frame->set_source_pts(end_pts);
-			local_frame->set_layer(local_layer);
-			file->get_frame(local_frame, 1);
-// Put frame in last position but since the last position now may be
-// lower than it was when we got the frame, swap the current
-// last position with the previous last position.
-			frame_lock->lock("FileThread::run 3");
-			VFrame *old_frame = read_frames[total_frames];
-			read_frames[local_total_frames] = old_frame;
-			read_frames[total_frames++] = local_frame;
-			end_pts = local_frame->next_source_pts();
-			if(start_pts > local_frame->get_source_pts())
-				start_pts = local_frame->get_source_pts();
-			frame_lock->unlock();
-
-// Que the user
-			user_wait_lock->unlock();
-		}
-	}
-	else
-	{
-		while(!done)
-		{
-			output_lock[local_buffer]->lock("FileThread::run 1");
-			return_value = 0;
-
-			if(!last_buffer[local_buffer])
-			{
-				if(output_size[local_buffer])
+				file_lock->lock("FileThread::run 2");
+				if(do_audio)
 				{
-					file_lock->lock("FileThread::run 2");
-					if(do_audio)
-					{
-						result = file->write_aframes(audio_buffer[local_buffer]);
-					}
-					else
-					if(do_video)
-					{
-						result = file->write_frames(video_buffer[local_buffer],
-							output_size[local_buffer]);
-					}
-
-					file_lock->unlock();
-					return_value = result;
+					result = file->write_aframes(audio_buffer[local_buffer]);
 				}
 				else
-					return_value = 0;
+				if(do_video)
+				{
+					result = file->write_frames(video_buffer[local_buffer],
+						output_size[local_buffer]);
+				}
 
-				output_size[local_buffer] = 0;
+				file_lock->unlock();
+				return_value = result;
 			}
 			else
-				done = 1;
+				return_value = 0;
 
-			input_lock[local_buffer]->unlock();
-			local_buffer++;
-			if(local_buffer >= ring_buffers) local_buffer = 0;
+			output_size[local_buffer] = 0;
 		}
+		else
+			done = 1;
+
+		input_lock[local_buffer]->unlock();
+		local_buffer++;
+		if(local_buffer >= ring_buffers) local_buffer = 0;
 	}
 }
 
@@ -349,115 +253,6 @@ void FileThread::start_writing(int buffer_size,
 	is_writing = 1;
 	done = 0;
 	Thread::start();
-}
-
-void FileThread::stop_reading()
-{
-	if(is_reading && Thread::running())
-	{
-		done = 1;
-		read_wait_lock->unlock();
-		Thread::join();
-	}
-}
-
-int FileThread::read_frame(VFrame *frame)
-{
-	VFrame *local_frame = 0;
-	int got_it = 0;
-	int number = 0;
-	ptstime req_pts = frame->get_source_pts();
-	int req_layer = frame->get_layer();
-
-// Set position
-	if(!disable_read && (req_pts < start_pts || req_pts > end_pts + EPSILON
-		|| layer != req_layer))
-	{
-		disable_read = 1;
-		read_wait_lock->unlock();
-		Thread::join();
-		total_frames = 0;
-		end_pts = start_pts = req_pts;
-		layer = req_layer;
-	}
-	else if(disable_read)
-	{
-		end_pts = start_pts = req_pts;
-		layer = req_layer;
-		if(req_pts < end_pts + EPSILON)
-		{
-			disable_read = 0;
-			Thread::start();
-		}
-	}
-// Search thread for frame
-	while(!local_frame && !disable_read)
-	{
-		frame_lock->lock("FileThread::read_frame find");
-		for(int i = 0; i < total_frames; i++)
-		{
-			if(read_frames[i] && read_frames[i]->pts_in_frame_source(req_pts) &&
-				read_frames[i]->get_layer() == req_layer)
-			{
-				local_frame = read_frames[i];
-				number = i;
-				break;
-			}
-		}
-		frame_lock->unlock();
-
-// Not decoded yet but thread active
-		if(!local_frame && !disable_read)
-		{
-			user_wait_lock->lock("FileThread::read_frame");
-		}
-	}
-
-	if(local_frame)
-	{
-// Copy image
-		frame->transfer_from(local_frame);
-		frame->copy_pts(local_frame);
-
-// Recycle all frames before current one but not including current one.
-// This handles redrawing of a single frame but because FileThread has no
-// notion of a still frame, it has to call read_frame for those.
-		frame_lock->lock("FileThread::read_frame remove");
-		VFrame *new_table[MAX_READ_FRAMES];
-		int k = 0;
-		for(int j = number; j < total_frames; j++, k++)
-		{
-			new_table[k] = read_frames[j];
-		}
-		for(int j = 0; j < number; j++, k++)
-		{
-			new_table[k] = read_frames[j];
-		}
-		memcpy(read_frames, new_table, sizeof(VFrame*) * total_frames);
-		total_frames -= number;
-
-		start_pts = frame->get_source_pts();
-		frame_lock->unlock();
-		read_wait_lock->unlock();
-		return 0;
-	}
-	else
-	{
-		int rv = file->get_frame(frame, 1);
-		end_pts = frame->next_source_pts();
-		return rv;
-	}
-}
-
-size_t FileThread::get_memory_usage()
-{
-	frame_lock->lock("FileThread::get_memory_usage");
-	size_t result = 0;
-	for(int i = 0; i < MAX_READ_FRAMES; i++)
-		if(read_frames[i])
-			result += read_frames[i]->get_data_size();
-	frame_lock->unlock();
-	return result;
 }
 
 AFrame** FileThread::get_audio_buffer()

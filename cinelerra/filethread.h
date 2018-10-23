@@ -48,14 +48,6 @@ public:
 			int ring_buffers);
 	void stop_writing();
 
-// ================================ reading section ============================
-// Allocate buffers and start loop for reading
-	void stop_reading();
-
-	int read_frame(VFrame *frame);
-	int read_buffer();
-	size_t get_memory_usage();
-
 // write data into next available buffer
 	int write_buffer(int size);
 // get pointer to next buffer to be written and lock it
@@ -70,8 +62,6 @@ public:
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
 	VFrame ****video_buffer;
 	int *output_size;  // Number of frames or samples to write
-// Not used
-	int *is_compressed; // Whether to use the compressed data in the frame
 	Condition **output_lock, **input_lock;
 // Lock access to the file to allow it to be changed without stopping the loop
 	Mutex *file_lock;
@@ -86,31 +76,8 @@ public:
 	int buffer_size;    // Frames or samples per ring buffer
 
 // Mode of operation
-	int is_reading;
 	int is_writing;
 	int done;
-
-// For the reading mode, the thread reads continuously from the given
-// point until stopped.
-// Maximum frames to preload
-#define MAX_READ_FRAMES 4
-// Total number of frames preloaded
-	int total_frames;
-// Allocated frames
-	VFrame *read_frames[MAX_READ_FRAMES];
-// If the seeking pattern isn't optimal for asynchronous reading, this is
-
-// set to 1 to stop reading.
-	int disable_read;
-
-// Thread waits on this if the maximum frames have been read.
-
-	Condition *read_wait_lock;
-// read_frame waits on this if the thread is running.
-	Condition *user_wait_lock;
-
-// Lock access to read_frames
-	Mutex *frame_lock;
 
 // Duration of clip already decoded
 	ptstime start_pts;
