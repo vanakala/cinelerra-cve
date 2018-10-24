@@ -148,14 +148,6 @@ public:
 // Direct copy routines for direct copy playback
 	int can_copy_from(Edit *edit, int output_w, int output_h) { return 0; };
 
-// These are separated into two routines so a file doesn't have to be
-// allocated.
-// Get best colormodel to translate for hardware accelerated playback.
-// Called by VRender.
-	int get_best_colormodel(int driver);
-// Get best colormodel for hardware accelerated recording.
-// Called by VideoDevice.
-	static int get_best_colormodel(Asset *asset, int driver);
 // Get nearest colormodel that can be decoded without a temporary frame.
 // Used by read_frame.
 	int colormodel_supported(int colormodel);

@@ -98,14 +98,6 @@ int FilePNG::colormodel_supported(int colormodel)
 	}
 }
 
-int FilePNG::get_best_colormodel(Asset *asset, int driver)
-{
-	if(asset->png_use_alpha)
-		return BC_RGBA8888;
-	else
-		return BC_RGB888;
-}
-
 int FilePNG::read_frame_header(const char *path)
 {
 	int result = 0;

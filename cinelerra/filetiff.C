@@ -229,29 +229,6 @@ int FileTIFF::colormodel_supported(int colormodel)
 	}
 }
 
-int FileTIFF::get_best_colormodel(Asset *asset, int driver)
-{
-	switch(asset->tiff_cmodel)
-	{
-	case FileTIFF::GREYSCALE:
-		return BC_RGB888;
-	case FileTIFF::RGB_888:
-		return BC_RGB888;
-	case FileTIFF::RGB_161616:
-		return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_8888:
-		return BC_RGBA8888;
-	case FileTIFF::RGBA_16161616:
-		return BC_RGBA_FLOAT;
-	case FileTIFF::RGB_FLOAT:
-		return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_FLOAT:
-		return BC_RGBA_FLOAT;
-	default:
-		return BC_RGB888;
-	}
-}
-
 static tsize_t tiff_read(thandle_t ptr, tdata_t buf, tsize_t size)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;

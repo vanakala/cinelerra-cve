@@ -172,26 +172,6 @@ int FileJPEG::colormodel_supported(int colormodel)
 	return colormodel;
 }
 
-int FileJPEG::get_best_colormodel(Asset *asset, int driver)
-{
-	switch(driver)
-	{
-	case PLAYBACK_X11:
-		return BC_RGB888;
-	case PLAYBACK_X11_XV:
-	case PLAYBACK_ASYNCHRONOUS:
-		return BC_YUV420P;
-	case PLAYBACK_X11_GL:
-		return BC_YUV888;
-	case VIDEO4LINUX:
-	case VIDEO4LINUX2:
-		return BC_YUV420P;
-	case VIDEO4LINUX2JPEG:
-		return BC_YUV422;
-	}
-	return BC_YUV420P;
-}
-
 void FileJPEG::show_jpeg_error(j_common_ptr cinfo)
 {
 	char buffer[JMSG_LENGTH_MAX];

@@ -139,15 +139,6 @@ int FileTGA::colormodel_supported(int colormodel)
 	return colormodel;
 }
 
-int FileTGA::get_best_colormodel(Asset *asset, int driver)
-{
-	if(!strcasecmp(asset->vcodec, TGA_RGB_RLE) || 
-		!strcasecmp(asset->vcodec, TGA_RGB)) return BC_RGB888;
-	if(!strcasecmp(asset->vcodec, TGA_RGBA_RLE) ||
-		!strcasecmp(asset->vcodec, TGA_RGBA)) return BC_RGBA8888;
-	return BC_RGB888;
-}
-
 int FileTGA::read_frame(VFrame *frame, VFrame *data)
 {
 	read_tga(asset, frame, data, temp);

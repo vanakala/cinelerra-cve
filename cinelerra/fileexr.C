@@ -251,14 +251,6 @@ int FileEXR::colormodel_supported(int colormodel)
 	return native_cmodel;
 }
 
-int FileEXR::get_best_colormodel(Asset *asset, int driver)
-{
-	if(asset->exr_use_alpha)
-		return BC_RGBA_FLOAT;
-	else
-		return BC_RGB_FLOAT;
-}
-
 size_t FileEXR::get_memory_usage()
 {
 	size_t result = FileList::get_memory_usage();

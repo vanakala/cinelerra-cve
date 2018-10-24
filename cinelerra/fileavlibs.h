@@ -75,7 +75,6 @@ public:
 	int open_file(int rd, int wr);
 	void close_file();
 
-	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *frame);
 	int write_frames(VFrame ***frames, int len);

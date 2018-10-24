@@ -765,36 +765,6 @@ int File::supports(int format)
 	return 0;
 }
 
-int File::get_best_colormodel(int driver)
-{
-	return get_best_colormodel(asset, driver);
-}
-
-int File::get_best_colormodel(Asset *asset, int driver)
-{
-	switch(asset->format)
-	{
-	case FILE_JPEG:
-	case FILE_JPEG_LIST:
-		return FileJPEG::get_best_colormodel(asset, driver);
-#ifdef HAVE_OPENEXR
-	case FILE_EXR:
-	case FILE_EXR_LIST:
-		return FileEXR::get_best_colormodel(asset, driver);
-#endif
-	case FILE_PNG:
-	case FILE_PNG_LIST:
-		return FilePNG::get_best_colormodel(asset, driver);
-
-	case FILE_TGA:
-	case FILE_TGA_LIST:
-		return FileTGA::get_best_colormodel(asset, driver);
-	}
-
-	return BC_RGB888;
-}
-
-
 int File::colormodel_supported(int colormodel)
 {
 	if(file)

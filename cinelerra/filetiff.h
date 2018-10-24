@@ -46,7 +46,6 @@ public:
 	static const char* compression_to_str(int value);
 	static const char* cmodel_to_str(int value);
 	int colormodel_supported(int colormodel);
-	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame_header(const char *path);
 	int read_frame(VFrame *output, VFrame *input);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
