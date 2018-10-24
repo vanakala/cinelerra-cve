@@ -34,6 +34,7 @@ extern "C"
 
 struct cm_names ColorModels::color_model_names[] =
 {
+	{ BC_NOCOLOR, N_("None") },
 	{ BC_TRANSPARENCY, N_("Transparency") },
 	{ BC_RGB888, N_("RGB-8 Bit") },
 	{ BC_RGBA8888, N_("RGBA-8 Bit") },

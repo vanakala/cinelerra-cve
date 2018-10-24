@@ -25,13 +25,14 @@ class ColorModels;
 // Colormodels
 // Extracted from Quicktime
 
-#define BC_TRANSPARENCY 0
+#define BC_NOCOLOR      0
 #define BC_COMPRESSED   1
 #define BC_RGB8         2
 #define BC_RGB565       3
 #define BC_BGR565       4
 #define BC_BGR888       5
 #define BC_BGR8888      6
+#define BC_TRANSPARENCY 8
 // Working bitmaps are packed to simplify processing
 #define BC_RGB888       9
 #define BC_RGBA8888     10
