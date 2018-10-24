@@ -108,30 +108,15 @@ int VDeviceX11::output_visible()
 	return !output->get_canvas()->get_hidden();
 }
 
-int VDeviceX11::get_best_colormodel(int colormodel)
+int VDeviceX11::get_accel_colormodel(int colormodel)
 {
-	int result = -1;
 	int c1, c2;
-
-	if(device->out_config->driver == PLAYBACK_X11_GL)
-	{
-		if(colormodel == BC_RGB888 ||
-			colormodel == BC_RGBA8888 ||
-			colormodel == BC_YUV888 ||
-			colormodel == BC_YUVA8888 ||
-			colormodel == BC_RGB_FLOAT ||
-			colormodel == BC_RGBA_FLOAT)
-		{
-			return colormodel;
-		}
-		return BC_RGB888;
-	}
 
 	if(!device->single_frame)
 	{
 		if(device->out_config->driver == PLAYBACK_X11_XV)
 		{
-			if(accel_cmodel >= 0)
+			if(accel_cmodel >= BC_NOCOLOR)
 				return accel_cmodel;
 
 			if(num_xv_cmodels < 0)
@@ -140,7 +125,7 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 // Select the best of hw supported cmodels
 // If we haven't exact cmodel, assume yuv is best to be converted
 // to yuv, rgb to rgb
-			c1 = c2 = -1;
+			c1 = c2 = BC_NOCOLOR;
 			for(int i = 0; i < num_xv_cmodels; i++)
 			{
 				if(colormodel == xv_cmodels[i])
@@ -148,7 +133,7 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 					c1 = xv_cmodels[i];
 					break;
 				}
-				if(c2 < 0)
+				if(c2 == BC_NOCOLOR)
 				{
 					if(ColorModels::is_yuv(colormodel))
 					{
@@ -162,55 +147,38 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 					}
 				}
 			}
-			accel_cmodel = result = c1 > 0 ? c1 : c2;
+			accel_cmodel = c1 != BC_NOCOLOR ? c1 : c2;
 		}
 	}
-
-	if(result < 0)
-	{
-		switch(colormodel)
-		{
-		case BC_RGB888:
-		case BC_RGBA8888:
-		case BC_YUV888:
-		case BC_YUVA8888:
-			result = colormodel;
-			break;
-
-		default:
-			result = output->get_canvas()->get_color_model();
-			break;
-		}
-	}
-	return result;
+	return accel_cmodel;
 }
 
 VFrame *VDeviceX11::new_output_buffer(int colormodel)
 {
-// Get the best colormodel the display can handle.
-	int best_colormodel = get_best_colormodel(colormodel);
-
 // Create new bitmap
-	if(!bitmap)
+	if(device->out_config->driver == PLAYBACK_X11_XV  && !bitmap)
 	{
 // Try hardware accelerated
-		if(device->out_config->driver == PLAYBACK_X11_XV &&
-			output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
+		int accel_colormodel = get_accel_colormodel(colormodel);
+
+		if(accel_colormodel > BC_NOCOLOR &&
+			output->get_canvas()->accel_available(accel_colormodel,
+				device->out_w, device->out_h))
 		{
 			bitmap = new BC_Bitmap(output->get_canvas(),
 				0,
 				0,
-				best_colormodel,
+				accel_colormodel,
 				1);
 		}
-		if(!output_frame)
-		{
+	}
+	if(!output_frame)
+	{
 // Intermediate frame
-			output_frame = BC_Resources::tmpframes.get_tmpframe(
-				device->out_w,
-				device->out_h,
-				colormodel);
-		}
+		output_frame = BC_Resources::tmpframes.get_tmpframe(
+			device->out_w,
+			device->out_h,
+			colormodel);
 	}
 	return output_frame;
 }
