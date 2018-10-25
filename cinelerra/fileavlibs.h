@@ -78,7 +78,6 @@ public:
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *frame);
 	int write_frames(VFrame ***frames, int len);
-	int colormodel_supported(int colormodel);
 	int converts_frame();
 	static void versionifo(int indent);
 	int write_aframes(AFrame **frames);

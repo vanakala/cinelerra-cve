@@ -40,8 +40,6 @@ public:
 		BC_WindowBase* &format_window,
 		int options);
 
-	static int get_best_colormodel(Asset *asset, int driver);
-	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	int read_frame_header(const char *path);

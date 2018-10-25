@@ -167,11 +167,6 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-int FileJPEG::colormodel_supported(int colormodel)
-{
-	return colormodel;
-}
-
 void FileJPEG::show_jpeg_error(j_common_ptr cinfo)
 {
 	char buffer[JMSG_LENGTH_MAX];

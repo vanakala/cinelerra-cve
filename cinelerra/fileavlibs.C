@@ -1889,11 +1889,6 @@ int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	return 0;
 }
 
-int FileAVlibs::colormodel_supported(int colormodel)
-{
-	return colormodel;
-}
-
 int FileAVlibs::converts_frame()
 {
 	return 1;

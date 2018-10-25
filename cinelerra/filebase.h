@@ -78,9 +78,8 @@ public:
 	// tocfile is generated - filebase can do cleanup
 	virtual void toc_is_made(int canceled) {};
 
-// Return either the argument or another colormodel which read_frame should
-// use.
-	virtual int colormodel_supported(int colormodel) { return BC_RGB888; };
+// Return either the argument or another colormodel which read_frame should use.
+	virtual int colormodel_supported(int colormodel) { return colormodel; };
 
 protected:
 	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
