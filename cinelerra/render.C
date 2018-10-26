@@ -190,6 +190,7 @@ Render::Render(MWindow *mwindow)
 	progress = 0;
 	preferences = 0;
 	elapsed_time = 0.0;
+	render_window = 0;
 	package_lock = new Mutex("Render::package_lock");
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
@@ -221,9 +222,8 @@ void Render::start_interactive()
 	else
 	{
 		// raise the window if rendering hasn't started yet
-		if (render_window && ! in_progress) {
+		if(render_window && !in_progress)
 			render_window->raise_window();
-		}
 		else
 			errorbox("Already rendering");
 	}
@@ -280,14 +280,15 @@ void Render::run()
 		load_defaults(asset);
 		check_asset(mwindow->edl, *asset);
 // Get format from user
-		RenderWindow *window = new RenderWindow(mwindow, this, asset);
-		result = window->run_window();
+		render_window = new RenderWindow(mwindow, this, asset);
+		result = render_window->run_window();
 		if(!result)
 		{
 			// add to recentlist only on OK
-			window->format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
+			render_window->format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
 		}
-		delete window;
+		delete render_window;
+		render_window = 0;
 
 		if(!check_asset(mwindow->edl, *asset) && !result)
 		{
