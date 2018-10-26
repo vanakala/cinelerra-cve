@@ -290,23 +290,26 @@ void Render::run()
 		delete render_window;
 		render_window = 0;
 
-		if(!check_asset(mwindow->edl, *asset) && !result)
+		if(!result)
 		{
-			asset->init_streams();
-			save_defaults(asset);
-			mwindow->save_defaults();
+			if(!check_asset(mwindow->edl, *asset))
+			{
+				asset->init_streams();
+				save_defaults(asset);
+				mwindow->save_defaults();
 
-			if(!preferences)
-				preferences = new Preferences;
-			preferences->copy_from(mwindow->preferences);
+				if(!preferences)
+					preferences = new Preferences;
+				preferences->copy_from(mwindow->preferences);
 
-			if(asset->single_image)
-				range_type = RANGE_SINGLEFRAME;
+				if(asset->single_image)
+					range_type = RANGE_SINGLEFRAME;
 
-			render(1, asset, mwindow->edl, strategy, range_type);
+				render(1, asset, mwindow->edl, strategy, range_type);
+			}
+			else
+				errormsg(_("No audo or video to render"));
 		}
-		else
-			errormsg(_("No audo or video to render"));
 
 		Garbage::delete_object(asset);
 	}
