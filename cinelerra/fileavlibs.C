@@ -477,7 +477,9 @@ int FileAVlibs::supports(int format, int decoding)
 	}
 	if(support && !decoding)
 	{
-		enc = known_formats[i].encoder;
+		if(!(enc = known_formats[i].encoder))
+			return 0;
+
 		avlibs_lock->lock("FileAVlibs::supports");
 		avcodec_register_all();
 		av_register_all();
@@ -1996,9 +1998,10 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 
 int FileAVlibs::streamformat(AVFormatContext *context)
 {
-	for(int i = 0; known_formats[i].decoder; i++)
+	for(int i = 0; known_formats[i].fileformat; i++)
 	{
-		if(strcmp(context->iformat->name, known_formats[i].decoder) == 0)
+		if(known_formats[i].decoder &&
+				strcmp(context->iformat->name, known_formats[i].decoder) == 0)
 			return known_formats[i].fileformat;
 	}
 	return FILE_UNKNOWN;
@@ -2006,7 +2009,7 @@ int FileAVlibs::streamformat(AVFormatContext *context)
 
 const char *FileAVlibs::encoder_formatname(int fileformat)
 {
-	for(int i = 0; known_formats[i].encoder; i++)
+	for(int i = 0; known_formats[i].fileformat; i++)
 	{
 		if(known_formats[i].fileformat == fileformat)
 			return known_formats[i].encoder;
