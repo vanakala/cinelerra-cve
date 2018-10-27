@@ -314,6 +314,26 @@ else
 	fi
 ############## End of librsvg
 
+############## opencore-amrnb
+	PKG_CHECK_MODULES(amrnb,opencore-amrnb,[amrnb=yes],:)
+	if test "x$amrnb" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libopencore-amrnb"
+	fi
+############## End of opencore-amrnb
+
+############## opencore-amrwb
+	PKG_CHECK_MODULES(amrwb,opencore-amrwb,[amrwb=yes],:)
+	if test "x$amrwb" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libopencore-amrwb"
+	fi
+############## End of opencore-amrwb
+
+############## upgrade (L)GPL of avlibs to version 3
+	if test "x$amrnb" = xyes -o "x$amrwb" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-version3"
+	fi
+############## End of version 3
+
 ############# Configure internal AVlibs
 	ff_conf_args="--disable-programs --disable-doc \
 		--disable-postproc --disable-avfilter --disable-network \
@@ -564,6 +584,8 @@ RPT(libx265,H.265 Video)
 RPT(libvorbis,Ogg Vorbis)
 RPT(libtheora,Theora)
 RPT(librsvg,Scalable Vector Graphics)
+RPT(amrnb,AMR-NB)
+RPT(amrwb,AMR-WB)
 
 if test "x$mandatory" = "xno"; then
 	echo
