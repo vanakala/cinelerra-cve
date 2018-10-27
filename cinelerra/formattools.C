@@ -23,6 +23,8 @@
 #include "bcsignals.h"
 #include "bctitle.h"
 #include "bcresources.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "file.h"
 #include "formattools.h"
 #include "language.h"
@@ -84,24 +86,38 @@ const struct container_type ContainerSelection::media_containers[] =
 
 int FormatPopup::brender_menu[] = { FILE_JPEG_LIST,
 	FILE_PNG_LIST, FILE_TIFF_LIST };
-int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
-	FILE_JPEG, FILE_JPEG_LIST,
+int FormatPopup::frender_menu1[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
+	FILE_JPEG,
 	FILE_AVI,
-#ifdef HAVE_OPENEXR
-	FILE_EXR, FILE_EXR_LIST,
-#endif
 	FILE_YUV, FILE_WAV,
 	FILE_MOV,
 	FILE_MP3,
 	FILE_RAWDV,
 	FILE_MXF,
 	FILE_MKV,
-	FILE_OGG, FILE_PCM,
-	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
-	FILE_TIFF, FILE_TIFF_LIST,
-	FILE_FLAC, FILE_MPEGTS, FILE_MPEG,
-	FILE_3GP, FILE_MP4, FILE_PSP, FILE_3GPP2,
-	FILE_IPOD, FILE_ISMV, FILE_F4V
+	FILE_OGG,
+	FILE_PNG,  FILE_TGA,
+	FILE_TIFF,
+	FILE_FLAC, FILE_MPEG,
+	FILE_MP4
+};
+
+int FormatPopup::frender_menu2[] = {
+	FILE_PCM,
+	FILE_JPEG_LIST,
+	FILE_PNG_LIST,
+	FILE_TGA_LIST,
+	FILE_TIFF_LIST,
+#ifdef HAVE_OPENEXR
+	FILE_EXR, FILE_EXR_LIST,
+#endif
+	FILE_MPEGTS,
+	FILE_PSP,
+	FILE_3GP,
+	FILE_3GPP2,
+	FILE_IPOD,
+	FILE_ISMV,
+	FILE_F4V
 };
 
 FormatTools::FormatTools(MWindow *mwindow,
@@ -682,8 +698,16 @@ FormatPopup::FormatPopup(BC_WindowBase *parent,
 	}
 	else
 	{
-		menu = frender_menu;
-		length = sizeof(frender_menu) / sizeof(int);
+		if(tools->mwindow->edl->session->encoders_menu)
+		{
+			menu = frender_menu2;
+			length = sizeof(frender_menu2) / sizeof(int);
+		}
+		else
+		{
+			menu = frender_menu1;
+			length = sizeof(frender_menu1) / sizeof(int);
+		}
 	}
 	current_menu = new struct selection_int[length + 1];
 

@@ -259,7 +259,8 @@ public:
 private:
 	ContainerSelection *selection;
 	static int brender_menu[];
-	static int frender_menu[];
+	static int frender_menu1[];
+	static int frender_menu2[];
 	struct selection_int *current_menu;
 };
 

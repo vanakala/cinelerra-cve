@@ -63,6 +63,9 @@ void MiscPrefs::show()
 	y += win->get_h() + 5;
 	win = add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
 		&pwindow->thread->edl->session->experimental_codecs));
+	y += win->get_h() + 5;
+	win = add_subwindow(new ToggleButton(x, y, _("Show another menu of encoders"),
+		&pwindow->thread->edl->session->encoders_menu));
 	y0 = y += win->get_h() + 5;
 	win = add_subwindow(new BC_Title(x, y, _("Author:")));
 	x0 = win->get_w() + 10;

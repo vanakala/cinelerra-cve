@@ -192,6 +192,8 @@ public:
 	int show_avlibsmsgs;
 // allow experimental codecs
 	int experimental_codecs;
+// Show another menu of encoders
+	int encoders_menu;
 // metadata for output file
 	char metadata_author[BCTEXTLEN];
 	char metadata_title[BCTEXTLEN];
