@@ -215,6 +215,9 @@ void FileSndFile::format_to_asset()
 	asset->audio_length = fd_config.frames;
 	if(!asset->sample_rate)
 		asset->sample_rate = fd_config.samplerate;
+	if(asset->audio_length && asset->sample_rate)
+		asset->audio_duration = (ptstime)asset->audio_length / asset->sample_rate;
+	asset->init_streams();
 }
 
 int FileSndFile::open_file(int rd, int wr)
