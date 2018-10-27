@@ -79,6 +79,13 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
+	{ FILE_3GP, 0, "3gp", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_MP4, 0, "mp4", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_PSP, 0, "psp", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_3GPP2, 0, "3g2", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_IPOD, 0, "ipod", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_ISMV, 0, "ismv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_F4V, 0, "f4v", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_SVG, "svg_pipe", 0, SUPPORTS_VIDEO },
 	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 // Needed for proper initalization of streams
@@ -737,6 +744,13 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_RAWDV:
 		case FILE_MXF:
 		case FILE_MKV:
+		case FILE_3GP:
+		case FILE_MP4:
+		case FILE_PSP:
+		case FILE_3GPP2:
+		case FILE_IPOD:
+		case FILE_ISMV:
+		case FILE_F4V:
 			break;
 		case FILE_YUV:
 			if(asset->use_pipe && asset->pipe[0])

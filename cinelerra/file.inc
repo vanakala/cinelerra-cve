@@ -59,6 +59,13 @@
 #define FILE_SVG           35
 #define FILE_MXF           36
 #define FILE_MKV           37
+#define FILE_3GP           38
+#define FILE_MP4           39
+#define FILE_PSP           40
+#define FILE_3GPP2         41
+#define FILE_IPOD          42
+#define FILE_ISMV          43
+#define FILE_F4V           44
 #define FILE_IMAGE         64    // unspecified image file
 
 class File;

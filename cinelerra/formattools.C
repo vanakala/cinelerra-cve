@@ -49,7 +49,16 @@ const struct container_type ContainerSelection::media_containers[] =
 #endif
 	{ N_("YUV4MPEG Stream"), FILE_YUV, "YUV", "m2v" },
 	{ N_("Microsoft WAV"), FILE_WAV, "WAV", "wav" },
-	{ N_("QuickTime/MOV"), FILE_MOV, "MOV", "mov" },
+// MOV/MP4 group
+	{ N_("QuickTime / MOV"), FILE_MOV, "MOV", "mov" },
+	{ N_("3GPP"), FILE_3GP, "3GP", "3gp" },
+	{ N_("MPEG-4"), FILE_MP4, "MP4", "mp4" },
+	{ N_("PSP MP4"), FILE_PSP, "PSP", "psp" },
+	{ N_("3GPP2"), FILE_3GPP2, "3GPP2", "3g2" },
+	{ N_("iPod H.264 MP4"), FILE_IPOD, "IPOD", "m4v" },
+	{ N_("ISMV/ISMA"), FILE_ISMV, "ISMV", "ismv" },
+	{ N_("F4V Adobe Flash"), FILE_F4V, "F4V", "f4v" },
+//
 	{ N_("Raw DV"), FILE_RAWDV, "RAWDV", "dv" },
 	{ N_("OGG Theora/Vorbis"), FILE_OGG, "OGG", "ogg" },
 	{ N_("Raw PCM"), FILE_PCM, "PCM", "pcm" },
@@ -90,7 +99,9 @@ int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 	FILE_OGG, FILE_PCM,
 	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
 	FILE_TIFF, FILE_TIFF_LIST,
-	FILE_FLAC, FILE_MPEGTS, FILE_MPEG
+	FILE_FLAC, FILE_MPEGTS, FILE_MPEG,
+	FILE_3GP, FILE_MP4, FILE_PSP, FILE_3GPP2,
+	FILE_IPOD, FILE_ISMV, FILE_F4V
 };
 
 FormatTools::FormatTools(MWindow *mwindow,
