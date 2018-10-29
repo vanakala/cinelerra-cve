@@ -301,6 +301,9 @@ int FileAVlibs::probe_input(Asset *asset)
 				av_get_channel_layout_string(asset->streams[asset->nb_streams].layout, MAX_LEN_CODECNAME,
 					stream->codecpar->channels, stream->codecpar->channel_layout);
 #endif
+				asset->streams[asset->nb_streams].length =
+					stream->duration * av_q2d(stream->time_base) *
+					asset->streams[asset->nb_streams].sample_rate;
 				asset->streams[asset->nb_streams].options = STRDSC_AUDIO;
 				if(!asset->streams[asset->nb_streams].decoding_params[ASSET_DFORMAT_IX])
 				{
@@ -341,6 +344,8 @@ int FileAVlibs::probe_input(Asset *asset)
 #endif
 				testfr = convert_framerate(av_stream_get_r_frame_rate(stream), testfr);
 				asset->streams[asset->nb_streams].frame_rate = testfr;
+				asset->streams[asset->nb_streams].length =
+					stream->duration * av_q2d(stream->time_base) * testfr;
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
