@@ -86,6 +86,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_IPOD, 0, "ipod", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_ISMV, 0, "ismv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_F4V, 0, "f4v", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_WEBM, 0, "webm", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_SVG, "svg_pipe", 0, SUPPORTS_VIDEO },
 	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 // Needed for proper initalization of streams
@@ -756,6 +757,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_IPOD:
 		case FILE_ISMV:
 		case FILE_F4V:
+		case FILE_WEBM:
 			break;
 		case FILE_YUV:
 			if(asset->use_pipe && asset->pipe[0])

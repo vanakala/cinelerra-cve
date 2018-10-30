@@ -79,6 +79,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("Unknown sound"), FILE_SND, "SND", "snd"},
 	{ N_("Material Exchange Format"), FILE_MXF, "MXF", "mxf" },
 	{ N_("Matroska"), FILE_MKV, "MKV", "mkv" },
+	{ N_("WebM"), FILE_WEBM, "WEBM", "webm" },
 	{ 0, 0 }
 };
 
@@ -99,7 +100,8 @@ int FormatPopup::frender_menu1[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 	FILE_PNG,  FILE_TGA,
 	FILE_TIFF,
 	FILE_FLAC, FILE_MPEG,
-	FILE_MP4
+	FILE_MP4,
+	FILE_WEBM
 };
 
 int FormatPopup::frender_menu2[] = {

@@ -145,6 +145,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_IPOD:
 		case FILE_ISMV:
 		case FILE_F4V:
+		case FILE_WEBM:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -390,6 +391,7 @@ int File::open_file(Preferences *preferences,
 	case FILE_IPOD:
 	case FILE_ISMV:
 	case FILE_F4V:
+	case FILE_WEBM:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
@@ -782,6 +784,7 @@ int File::supports(int format)
 	case FILE_IPOD:
 	case FILE_ISMV:
 	case FILE_F4V:
+	case FILE_WEBM:
 		return FileAVlibs::supports(format, 0);
 		break;
 	}
