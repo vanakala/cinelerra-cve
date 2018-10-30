@@ -328,6 +328,20 @@ else
 	fi
 ############## End of opencore-amrwb
 
+############## libvpx
+	PKG_CHECK_MODULES(libvpx,vpx,[libvpx=yes],:)
+	if test "x$libvpx" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libvpx"
+	fi
+############## End of libvpx
+
+############## libopus
+	PKG_CHECK_MODULES(libopus,opus,[libopus=yes],:)
+	if test "x$libopus" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libopus"
+	fi
+############## End of libopus
+
 ############## upgrade (L)GPL of avlibs to version 3
 	if test "x$amrnb" = xyes -o "x$amrwb" = xyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-version3"
@@ -586,6 +600,8 @@ RPT(libtheora,Theora)
 RPT(librsvg,Scalable Vector Graphics)
 RPT(amrnb,AMR-NB)
 RPT(amrwb,AMR-WB)
+RPT(libvpx,VP8 and VP9)
+RPT(libopus,Opus)
 
 if test "x$mandatory" = "xno"; then
 	echo
