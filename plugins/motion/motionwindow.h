@@ -89,6 +89,20 @@ public:
 	MotionWindow *gui;
 };
 
+
+class Motion_FloatTextBox : public BC_TextBox
+{
+public:
+	Motion_FloatTextBox(MotionMain *plugin,
+		int x, int y, float *property);
+
+	int handle_event();
+
+	MotionMain *plugin;
+	float *property;
+};
+
+
 class TrackFrameNumber : public BC_TextBox
 {
 public:
@@ -321,6 +335,8 @@ public:
 	MotionBlockY *block_y;
 	MotionBlockXText *block_x_text;
 	MotionBlockYText *block_y_text;
+	Motion_FloatTextBox *stab_x_gain;
+	Motion_FloatTextBox *stab_y_gain;
 	GlobalSearchPositions *global_search_positions;
 	RotationSearchPositions *rotation_search_positions;
 	MotionMagnitude *magnitude;

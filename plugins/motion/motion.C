@@ -85,6 +85,8 @@ MotionConfig::MotionConfig()
 	bottom_is_master = 1;
 	horizontal_only = 0;
 	vertical_only = 0;
+	stab_gain_x = 1;
+	stab_gain_y = 1;
 }
 
 void MotionConfig::boundaries()
@@ -124,7 +126,10 @@ int MotionConfig::equivalent(MotionConfig &that)
 		PTSEQU(track_pts, that.track_pts) &&
 		bottom_is_master == that.bottom_is_master &&
 		horizontal_only == that.horizontal_only &&
-		vertical_only == that.vertical_only;
+		vertical_only == that.vertical_only &&
+		EQUIV(stab_gain_x, that.stab_gain_x) &&
+		EQUIV(stab_gain_y, that.stab_gain_y);
+
 }
 
 void MotionConfig::copy_from(MotionConfig &that)
@@ -154,6 +159,8 @@ void MotionConfig::copy_from(MotionConfig &that)
 	bottom_is_master = that.bottom_is_master;
 	horizontal_only = that.horizontal_only;
 	vertical_only = that.vertical_only;
+	stab_gain_x = that.stab_gain_x;
+	stab_gain_y = that.stab_gain_y;
 }
 
 void MotionConfig::interpolate(MotionConfig &prev, 
@@ -189,6 +196,8 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	bottom_is_master = prev.bottom_is_master;
 	horizontal_only = prev.horizontal_only;
 	vertical_only = prev.vertical_only;
+	stab_gain_x = prev_scale * prev.stab_gain_x + next_scale * next.stab_gain_x;
+	stab_gain_y = prev_scale * prev.stab_gain_y + next_scale * next.stab_gain_y;
 }
 
 
@@ -322,6 +331,8 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ROTATION_BLOCK_H", config.rotation_block_h);
 	output.tag.set_property("BLOCK_X", config.block_x);
 	output.tag.set_property("BLOCK_Y", config.block_y);
+	output.tag.set_property("STABILIZE_GAIN_X", config.stab_gain_x);
+	output.tag.set_property("STABILIZE_GAIN_Y", config.stab_gain_y);
 	output.tag.set_property("GLOBAL_RANGE_W", config.global_range_w);
 	output.tag.set_property("GLOBAL_RANGE_H", config.global_range_h);
 	output.tag.set_property("ROTATION_RANGE", config.rotation_range);
@@ -363,6 +374,8 @@ void MotionMain::read_data(KeyFrame *keyframe)
 			config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
 			config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
 			config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
+			config.stab_gain_x = input.tag.get_property("STABILIZE_GAIN_X", config.stab_gain_x);
+			config.stab_gain_y = input.tag.get_property("STABILIZE_GAIN_Y", config.stab_gain_y);
 			config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
 			config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
 			config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
@@ -462,6 +475,9 @@ void MotionMain::process_global()
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
 
+	total_dx = round(config.stab_gain_x * total_dx);
+	total_dy = round(config.stab_gain_y * total_dy);
+
 	if(config.mode3 != MotionConfig::TRACK_SINGLE && !config.rotate)
 	{
 // Transfer current reference frame to previous reference frame and update
@@ -499,6 +515,9 @@ void MotionMain::process_global()
 		dy = -(float)total_dy / OVERSAMPLE;
 		break;
 	}
+
+	dx = config.stab_gain_x * dx;
+	dy = config.stab_gain_y * dy;
 
 	if(config.mode1 != MotionConfig::NOTHING)
 	{
@@ -545,6 +564,9 @@ void MotionMain::process_rotation()
 			dx = (float)current_dx / OVERSAMPLE;
 			dy = (float)current_dy / OVERSAMPLE;
 		}
+
+		dx = config.stab_gain_x * dx;
+		dy = config.stab_gain_y * dy;
 
 		prev_rotate_ref->clear_frame();
 		overlayer->overlay(prev_rotate_ref,

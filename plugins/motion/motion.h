@@ -142,6 +142,9 @@ public:
 
 // Pts of single frame to track relative to timeline start
 	ptstime track_pts;
+// Stablisation gains
+	float stab_gain_x;
+	float stab_gain_y;
 // Master layer
 	int bottom_is_master;
 	PLUGIN_CONFIG_CLASS_MEMBERS

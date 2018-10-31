@@ -130,6 +130,13 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		x + title->get_w() + 10 + block_x->get_w() + 10, 
 		y + 10));
 
+	int xpmd;
+	xpmd = x + title->get_w() + 10 + block_x->get_w() + 10 +
+		block_x_text->get_w() + 30;
+	add_subwindow(title = new BC_Title(xpmd, y + 10, _("Stabilize X gain:")));
+	add_subwindow(stab_x_gain = new Motion_FloatTextBox(plugin,
+		xpmd + title->get_w() + 10, y + 10, &plugin->config.stab_gain_x));
+
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
 	add_subwindow(block_y = new MotionBlockY(plugin, 
@@ -140,6 +147,12 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		this, 
 		x + title->get_w() + 10 + block_y->get_w() + 10, 
 		y + 10));
+
+	xpmd = x + title->get_w() + 10 + block_y->get_w() + 10 +
+		block_y_text->get_w() + 30;
+	add_subwindow(title = new BC_Title(xpmd, y + 10, _("Stabilize Y gain:")));
+	add_subwindow(stab_y_gain = new Motion_FloatTextBox(plugin,
+		xpmd + title->get_w() + 10, y + 10, &plugin->config.stab_gain_y));
 
 	y += 50;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
@@ -237,6 +250,8 @@ void MotionWindow::update()
 	block_y->update(plugin->config.block_y);
 	block_x_text->update((float)plugin->config.block_x);
 	block_y_text->update((float)plugin->config.block_y);
+	stab_x_gain->update(plugin->config.stab_gain_x);
+	stab_y_gain->update(plugin->config.stab_gain_y);
 	magnitude->update(plugin->config.magnitude);
 	return_speed->update(plugin->config.return_speed);
 	track_single->update(plugin->config.mode3 == MotionConfig::TRACK_SINGLE);
@@ -646,6 +661,22 @@ int TrackSingleFrame::handle_event()
 	gui->track_previous->update(0);
 	gui->previous_same->update(0);
 	gui->track_frame_number->enable();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+Motion_FloatTextBox::Motion_FloatTextBox(MotionMain *plugin,
+	int x, int y, float *property)
+ : BC_TextBox(x, y, 100, 1,  *property)
+{
+	this->plugin = plugin;
+	this->property = property;
+}
+
+int Motion_FloatTextBox::handle_event()
+{
+	*property = atof(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
