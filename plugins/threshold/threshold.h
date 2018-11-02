@@ -122,6 +122,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 	HistogramEngine *engine;
 	ThresholdEngine *threshold_engine;
+	VFrame *gui_frame;
 };
 
 

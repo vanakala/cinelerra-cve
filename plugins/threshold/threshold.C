@@ -23,11 +23,13 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "bcresources.h"
 #include "colorspaces.h"
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
 #include "picon_png.h"
+#include "tmpframecache.h"
 #include "threshold.h"
 #include "thresholdwindow.h"
 #include "vframe.h"
@@ -107,6 +109,7 @@ ThresholdMain::ThresholdMain(PluginServer *server)
 {
 	engine = 0;
 	threshold_engine = 0;
+	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -114,6 +117,7 @@ ThresholdMain::~ThresholdMain()
 {
 	delete engine;
 	delete threshold_engine;
+	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -136,7 +140,15 @@ void ThresholdMain::process_frame(VFrame *frame)
 		return;
 	}
 
-	send_render_gui(frame);
+	if(!gui_frame || !gui_frame->equivalent(frame))
+	{
+		BC_Resources::tmpframes.release_frame(gui_frame);
+		gui_frame = BC_Resources::tmpframes.get_tmpframe(
+			frame->get_w(), frame->get_h(), frame->get_color_model());
+	}
+
+	gui_frame->copy_from(frame);
+	send_render_gui(gui_frame);
 
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
