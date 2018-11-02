@@ -29,6 +29,7 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bcresources.h"
 #include "colorspaces.h"
 #include "filexml.h"
 #include "histogram.h"
@@ -37,6 +38,7 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 #include "workarounds.h"
 #include "picon_png.h"
@@ -68,6 +70,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 	dragging_point = 0;
 	input = 0;
 	output = 0;
+	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -82,6 +85,7 @@ HistogramMain::~HistogramMain()
 		delete [] preview_lookup[i];
 	}
 	delete engine;
+	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -530,8 +534,17 @@ void HistogramMain::process_frame(VFrame *frame)
 	this->output = frame;
 
 // Always plot to set the curves if automatic
-	if(config.plot || config.automatic) send_render_gui(frame);
-
+	if(config.plot || config.automatic)
+	{
+		if(!gui_frame || !gui_frame->equivalent(frame))
+		{
+			BC_Resources::tmpframes.release_frame(gui_frame);
+			gui_frame = BC_Resources::tmpframes.get_tmpframe(
+				frame->get_w(), frame->get_h(), frame->get_color_model());
+		}
+		gui_frame->copy_from(frame);
+		send_render_gui(gui_frame);
+	}
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders

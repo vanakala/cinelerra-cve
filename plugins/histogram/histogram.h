@@ -84,6 +84,7 @@ public:
 	int dragging_point;
 	int point_x_offset;
 	int point_y_offset;
+	VFrame *gui_frame;
 };
 
 class HistogramPackage : public LoadPackage
