@@ -92,6 +92,7 @@ public:
 	double rms_accum;
 	double max_accum;
 	int accum_size;
+	double gui_args[2];
 };
 
 #endif
