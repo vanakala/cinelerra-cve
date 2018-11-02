@@ -153,6 +153,8 @@ public:
 	double lookahead_rate;
 // Last requested position
 	ptstime last_pts;
+// Result for gui
+	int gui_result;
 };
 
 
@@ -288,6 +290,7 @@ Decimate::Decimate(PluginServer *server)
 	lookahead_end_pts = -1;
 	last_pts = -1;
 	fdct_ready = 0;
+	gui_result = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -498,9 +501,10 @@ void Decimate::decimate_frame()
 {
 	int64_t min_difference = 0x7fffffffffffffffLL;
 	int64_t max_difference2 = 0x0;
-	int result = -1;
 
 	if(!lookahead_size) return;
+
+	gui_result = -1;
 
 	for(int i = 0; i < lookahead_size; i++)
 	{
@@ -510,20 +514,21 @@ void Decimate::decimate_frame()
 			differences[i] < min_difference)
 		{
 			min_difference = differences[i];
-			result = i;
+			gui_result = i;
 		}
 	}
 
 // If all the frames had differences of 0, like a pure black screen, delete
 // the first frame.
-	if(result < 0) result = 0;
+	if(gui_result < 0)
+		gui_result = 0;
 
-	VFrame *temp = frames[result];
-	for(int i = 0; i < result; i++)
+	VFrame *temp = frames[gui_result];
+	for(int i = 0; i < gui_result; i++)
 	{
 		frames[i]->copy_pts(frames[i + 1]);
 	}
-	for(int i = result; i < lookahead_size - 1; i++)
+	for(int i = gui_result; i < lookahead_size - 1; i++)
 	{
 		frames[i] = frames[i + 1];
 		differences[i] = differences[i + 1];
@@ -531,7 +536,7 @@ void Decimate::decimate_frame()
 
 	frames[lookahead_size - 1] = temp;
 	lookahead_size--;
-	send_render_gui(&result);
+	send_render_gui(&gui_result);
 }
 
 void Decimate::fill_lookahead(ptstime start_pts)
