@@ -180,10 +180,8 @@ public:
 
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
-	void send_render_gui(void *data, int size);
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
-	void render_gui(void *data, int size);
 
 // ============================ for non realtime plugins
 // start processing data in plugin

@@ -186,14 +186,14 @@ void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
 		double arg[2];
 		arg[0] = max_accum;
 		arg[1] = rms_accum;
-		send_render_gui(arg, 2);
+		send_render_gui(arg);
 		rms_accum = 0;
 		max_accum = 0;
 		accum_size = 0;
 	}
 }
 
-void SoundLevelEffect::render_gui(void *data, int size)
+void SoundLevelEffect::render_gui(void *data)
 {
 	if(thread)
 	{

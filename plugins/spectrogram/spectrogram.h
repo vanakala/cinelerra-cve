@@ -104,7 +104,7 @@ public:
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void render_gui(void *data, int size);
+	void render_gui(void *data);
 
 	void reset();
 

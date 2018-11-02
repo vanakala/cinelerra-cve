@@ -279,3 +279,13 @@ int PluginClient::gui_open()
 {
 	return server->gui_open();
 }
+
+void PluginClient::plugin_render_gui(void *data)
+{
+	render_gui(data);
+}
+
+void PluginClient::send_render_gui(void *data)
+{
+	server->send_render_gui(data);
+}

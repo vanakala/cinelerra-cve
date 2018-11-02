@@ -1551,20 +1551,6 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
-{
-	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->values[i]->plugin->identical_location(plugin))
-		{
-			plugin_guis->values[i]->render_gui(data, size);
-			break;
-		}
-	}
-	plugin_gui_lock->unlock();
-}
-
 void MWindow::update_plugin_states()
 {
 	plugin_gui_lock->lock("MWindow::update_plugin_states");

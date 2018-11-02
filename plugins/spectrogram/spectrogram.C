@@ -171,10 +171,10 @@ void Spectrogram::process_frame(AFrame *aframe)
 
 	for(int i = 0; i < HALF_WINDOW; i++)
 		data[i] /= total_windows;
-	send_render_gui(data, HALF_WINDOW);
+	send_render_gui(data);
 }
 
-void Spectrogram::render_gui(void *data, int size)
+void Spectrogram::render_gui(void *data)
 {
 	if(thread)
 	{

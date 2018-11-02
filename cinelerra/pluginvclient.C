@@ -115,16 +115,6 @@ void PluginVClient::process_frame(VFrame *frame)
 	process_realtime(frame, frame);
 }
 
-void PluginVClient::plugin_render_gui(void *data)
-{
-	render_gui(data);
-}
-
-void PluginVClient::send_render_gui(void *data)
-{
-	server->send_render_gui(data);
-}
-
 int PluginVClient::plugin_get_parameters()
 {
 	frame_rate = get_project_framerate();

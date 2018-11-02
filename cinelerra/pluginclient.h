@@ -107,9 +107,6 @@ public:
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
-// Called by plugin server to update GUI with rendered data.
-	virtual void plugin_render_gui(void *data) {};
-	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
 	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
 
@@ -208,6 +205,12 @@ public:
 	int load_data_client();
 	void set_string_client(const char *string);  // set the string identifying the plugin
 	int send_cancelled();        // non realtime plugin sends when cancelled
+
+// Called by plugin server to render the GUI with rendered data.
+	void plugin_render_gui(void *data);
+	virtual void render_gui(void *data) { };
+// Called by client to cause GUI to be rendered with data.
+	void send_render_gui(void *data);
 
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin

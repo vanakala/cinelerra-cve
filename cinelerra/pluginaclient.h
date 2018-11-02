@@ -54,10 +54,6 @@ public:
 // Get the sample rate of the EDL
 	int get_project_samplerate();
 
-	void send_render_gui(void *data, int size);
-	void plugin_render_gui(void *data, int size);
-	virtual void render_gui(void *data, int size) {};
-
 // sample rate of EDL.
 	int project_sample_rate;
 };

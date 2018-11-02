@@ -524,19 +524,9 @@ void PluginServer::send_render_gui(void *data)
 	if(attachmentpoint) attachmentpoint->render_gui(data);
 }
 
-void PluginServer::send_render_gui(void *data, int size)
-{
-	if(attachmentpoint) attachmentpoint->render_gui(data, size);
-}
-
 void PluginServer::render_gui(void *data)
 {
 	if(client) client->plugin_render_gui(data);
-}
-
-void PluginServer::render_gui(void *data, int size)
-{
-	if(client) client->plugin_render_gui(data, size);
 }
 
 MainProgressBar* PluginServer::start_progress(char *string, ptstime length)

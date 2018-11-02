@@ -85,7 +85,7 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void render_gui(void *data, int size);
+	void render_gui(void *data);
 
 	PLUGIN_CLASS_MEMBERS
 
