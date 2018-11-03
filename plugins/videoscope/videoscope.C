@@ -33,6 +33,7 @@
 
 #include "bcbitmap.h"
 #include "bchash.h"
+#include "bcresources.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "colorspaces.h"
@@ -42,6 +43,7 @@
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
+#include "tmpframecache.h"
 #include "fonts.h"
 #include "vframe.h"
 
@@ -266,6 +268,7 @@ public:
 	void render_gui(void *input);
 
 	VFrame *input;
+	VFrame *gui_frame;
 	VideoScopeEngine *engine;
 };
 
@@ -651,12 +654,14 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
+	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 VideoScopeEffect::~VideoScopeEffect()
 {
 	if(engine) delete engine;
+	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -717,7 +722,14 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 
 void VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
-	send_render_gui(input);
+	if(!gui_frame || !gui_frame->equivalent(input))
+	{
+		BC_Resources::tmpframes.release_frame(gui_frame);
+		gui_frame = BC_Resources::tmpframes.get_tmpframe(
+			input->get_w(), input->get_h(), input->get_color_model());
+	}
+	gui_frame->copy_from(input);
+	send_render_gui(gui_frame);
 	if(input != output)
 		output->copy_from(input);
 }
