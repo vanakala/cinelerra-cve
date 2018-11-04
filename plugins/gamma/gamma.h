@@ -117,7 +117,7 @@ public:
 	void handle_opengl();
 
 	GammaEngine *engine;
-	VFrame *frame;
+	VFrame *localframe;
 
 	PLUGIN_CLASS_MEMBERS
 };
