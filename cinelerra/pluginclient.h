@@ -211,6 +211,8 @@ public:
 	virtual void render_gui(void *data) { };
 // Called by client to cause GUI to be rendered with data.
 	void send_render_gui(void *data);
+// Called by gui when it is ready to get data
+	void get_gui_data();
 
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin

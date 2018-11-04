@@ -48,6 +48,7 @@ PluginClient::PluginClient(PluginServer *server)
 
 PluginClient::~PluginClient()
 {
+	server->clear_msgs();
 }
 
 // For realtime plugins initialize buffers
@@ -288,4 +289,9 @@ void PluginClient::plugin_render_gui(void *data)
 void PluginClient::send_render_gui(void *data)
 {
 	server->send_render_gui(data);
+}
+
+void PluginClient::get_gui_data()
+{
+	server->get_gui_data();
 }

@@ -71,6 +71,9 @@ public:
 //	int sort(VirtualNode *virtual_plugin);
 // Called by plugin server to render GUI with data.
 	void render_gui(void *data);
+// Clear messages of a plugin
+	void clear_msgs();
+
 	int gui_open();
 	virtual int get_buffer_size() { return 0; };
 

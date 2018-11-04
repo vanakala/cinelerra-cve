@@ -180,6 +180,10 @@ public:
 
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
+// Called by client gui when it is ready to get data
+	void get_gui_data();
+// Clear messages belonging to this plugin
+	void clear_msgs();
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 

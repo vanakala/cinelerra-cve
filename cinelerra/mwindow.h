@@ -57,6 +57,7 @@
 #include "patchbay.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
+#include "pluginmsgs.h"
 #include "pluginserver.inc"
 #include "pluginset.inc"
 #include "preferences.inc"
@@ -227,7 +228,10 @@ public:
 // Called by Attachmentpoint during playback.
 // Searches for matching plugin and renders data in it.
 	void render_plugin_gui(void *data, Plugin *plugin);
-
+// Clear stored messages of the plugin
+	void clear_msgs(Plugin *plugin);
+// Searches for stored data and sends it to plugin
+	void get_gui_data(PluginServer *srv);
 // Called from PluginVClient::process_buffer
 // Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if
 // they can run.
@@ -409,7 +413,8 @@ public:
 	ArrayList<PluginServer*> *plugin_guis;
 // Closed plugin guis ready to remove
 	ArrayList<PluginServer*> *removed_guis;
-
+// Messges to deliver to plugins
+	PluginMsgs plugin_messages;
 
 // Adjust sample position to line up with frames.
 	int fix_timing(int64_t &samples_out, 

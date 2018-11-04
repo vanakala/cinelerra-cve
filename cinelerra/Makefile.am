@@ -192,6 +192,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    plugin.C \
 		    pluginclient.C \
 		    plugindialog.C \
+		    pluginmsgs.C \
 		    pluginpopup.C \
 		    pluginserver.C \
 		    pluginset.C \
@@ -431,6 +432,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 plugindialog.h \
 		 pluginmacros.h \
 		 plugin.h \
+		 pluginmsgs.h \
 		 pluginpopup.h \
 		 pluginserver.h \
 		 pluginset.h \

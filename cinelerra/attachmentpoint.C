@@ -182,6 +182,12 @@ void AttachmentPoint::render_gui(void *data)
 		renderengine->mwindow->render_plugin_gui(data, plugin);
 }
 
+void AttachmentPoint::clear_msgs()
+{
+	if(plugin && renderengine && renderengine->mwindow)
+		renderengine->mwindow->clear_msgs(plugin);
+}
+
 int AttachmentPoint::gui_open()
 {
 	if(renderengine && renderengine->mwindow)

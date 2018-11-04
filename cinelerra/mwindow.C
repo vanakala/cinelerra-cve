@@ -1548,6 +1548,24 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 			break;
 		}
 	}
+	plugin_messages.add_msg(data, plugin);
+	plugin_gui_lock->unlock();
+}
+
+void MWindow::get_gui_data(PluginServer *srv)
+{
+	struct pluginmsg *msg;
+
+	plugin_gui_lock->lock("MWindow::get_gui_data");
+	if(msg = plugin_messages.find_msg(srv->plugin))
+		srv->render_gui(msg->data);
+	plugin_gui_lock->unlock();
+}
+
+void MWindow::clear_msgs(Plugin *plugin)
+{
+	plugin_gui_lock->lock("MWindow::clear_msgs");
+	plugin_messages.delete_msg(plugin);
 	plugin_gui_lock->unlock();
 }
 

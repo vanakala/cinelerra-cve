@@ -157,6 +157,7 @@ int PluginServer::reset_parameters()
 	client = 0;
 	use_opengl = 0;
 	vdevice = 0;
+	attachmentpoint = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
 	lad_descriptor_function = 0;
@@ -522,6 +523,18 @@ void PluginServer::process_buffer(AFrame **buffer,
 void PluginServer::send_render_gui(void *data)
 {
 	if(attachmentpoint) attachmentpoint->render_gui(data);
+}
+
+void PluginServer::get_gui_data()
+{
+	if(mwindow)
+		mwindow->get_gui_data(this);
+}
+
+void PluginServer::clear_msgs()
+{
+	if(attachmentpoint)
+		attachmentpoint->clear_msgs();
 }
 
 void PluginServer::render_gui(void *data)

@@ -356,6 +356,7 @@ void PLUGIN_THREAD_CLASS::run() \
  \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
 	plugin->thread = this; \
+	plugin->get_gui_data(); \
 	int result = window->run_window(); \
 	window->hide_window(); \
 /* This is needed when the GUI is closed from itself */ \
