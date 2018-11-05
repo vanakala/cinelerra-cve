@@ -216,9 +216,7 @@ void ThresholdMain::render_gui(void *data)
 	if(thread)
 	{
 		calculate_histogram((VFrame*)data);
-		thread->window->lock_window("ThresholdMain::render_gui");
 		thread->window->canvas->draw();
-		thread->window->unlock_window();
 	}
 }
 
