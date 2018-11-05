@@ -739,7 +739,6 @@ void VideoScopeEffect::render_gui(void *input)
 	if(thread)
 	{
 		VideoScopeWindow *window = thread->window;
-		window->lock_window();
 
 		this->input = (VFrame*)input;
 
@@ -773,8 +772,6 @@ void VideoScopeEffect::render_gui(void *input)
 		window->vectorscope->draw_graduations();
 		window->waveform->flash();
 		window->vectorscope->flash();
-
-		window->unlock_window();
 	}
 }
 
