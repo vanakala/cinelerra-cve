@@ -196,7 +196,6 @@ void SoundLevelEffect::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window();
 		char string[BCTEXTLEN];
 		double *arg = (double*)data;
 		sprintf(string, "%.2f", DB::todb(arg[0]));
@@ -204,6 +203,5 @@ void SoundLevelEffect::render_gui(void *data)
 		sprintf(string, "%.2f", DB::todb(arg[1]));
 		thread->window->soundlevel_rms->update(string);
 		thread->window->flush();
-		thread->window->unlock_window();
 	}
 }
