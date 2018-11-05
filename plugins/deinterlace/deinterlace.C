@@ -568,12 +568,10 @@ void DeInterlaceMain::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window();
 		char string[BCTEXTLEN];
 		thread->window->get_status_string(string, *(int*)data);
 		thread->window->status->update(string);
 		thread->window->flush();
-		thread->window->unlock_window();
 	}
 }
 
