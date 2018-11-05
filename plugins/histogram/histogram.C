@@ -101,11 +101,9 @@ void HistogramMain::render_gui(void *data)
 		{
 // Generate curves for value histogram
 // Lock out changes to curves
-			thread->window->lock_window("HistogramMain::render_gui 1");
 			tabulate_curve(HISTOGRAM_RED, 0);
 			tabulate_curve(HISTOGRAM_GREEN, 0);
 			tabulate_curve(HISTOGRAM_BLUE, 0);
-			thread->window->unlock_window();
 		}
 
 		calculate_histogram((VFrame*)data, !config.automatic);
@@ -116,23 +114,19 @@ void HistogramMain::render_gui(void *data)
 
 // Generate curves for value histogram
 // Lock out changes to curves
-			thread->window->lock_window("HistogramMain::render_gui 1");
 			tabulate_curve(HISTOGRAM_RED, 0);
 			tabulate_curve(HISTOGRAM_GREEN, 0);
 			tabulate_curve(HISTOGRAM_BLUE, 0);
-			thread->window->unlock_window();
 
 // Need a second pass to get the luminance values.
 			calculate_histogram((VFrame*)data, 1);
 		}
 
-		thread->window->lock_window("HistogramMain::render_gui 2");
 		thread->window->update_canvas();
 		if(config.automatic)
 		{
 			thread->window->update_input();
 		}
-		thread->window->unlock_window();
 	}
 }
 
