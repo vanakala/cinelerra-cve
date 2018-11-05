@@ -178,7 +178,6 @@ void Spectrogram::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window("Spectrogram::render_gui");
 		float *frame = (float*)data;
 		int niquist = get_project_samplerate();
 		BC_SubWindow *canvas = thread->window->canvas;
@@ -234,8 +233,6 @@ void Spectrogram::render_gui(void *data)
 		canvas->flash();
 		canvas->flush();
 		delete [] temp;
-
-		thread->window->unlock_window();
 	}
 }
 
