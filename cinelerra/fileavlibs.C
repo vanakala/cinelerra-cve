@@ -2405,32 +2405,27 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 		if(tocfile->toc_streams[toc_ix].data1 & STRDSC_SEEKBYTES)
 			fl |= AVSEEK_FLAG_BYTE;
 
+		avcodec_flush_buffers(codec_contexts[stream_index]);
+
 		if((res = avformat_seek_file(context, stream_index,
-			INT64_MIN, itm->offset, INT64_MAX, fl)) < 0)
+			INT64_MIN, itm->offset, itm->offset, fl)) < 0)
 		{
 			liberror(res, _("Media seeking failed"));
 			return -1;
 		}
-		avcodec_flush_buffers(codec_contexts[stream_index]);
 
-		for(int i = 0; i < 3; i++)
+		do
 		{
 			if((res = av_read_frame(context, pkt)) != 0)
 			{
 				liberror(res, _("Reading after media seek failed"));
 				return -1;
 			}
-			if(pkt->stream_index != stream_index)
-			{
-				i--;
-				continue;
-			}
 
-			if(pkt->pts == AV_NOPTS_VALUE)
-				return 1;
-			if(pkt->pts >= itm->index)
-				break;
-		}
+			if(pkt->stream_index != stream_index || pkt->pts != AV_NOPTS_VALUE)
+				continue;
+
+		} while(pkt->pts < itm->index);
 		return 1;
 	}
 	return 0;
@@ -2454,15 +2449,18 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	AVStream *stream;
 	AVCodecContext *decoder_context;
 	AVPacket pkt;
-	int got_it;
-	int64_t pktpos, pktsz, medpos, pkt_duration;
-	int64_t maxoffs = 0;
-	int interrupt = 0;
-	int is_audio;
-	int res, err, trid;
+	int trid;
 	int posbytes;
-	int pktnum;
+	int interrupt;
+	int err;
 	framenum nb_frames;
+	int64_t maxpts = 0;
+	int64_t maxoffs = 0;
+	struct {
+		int64_t pts;
+		int64_t offs;
+		int kf;
+	} kf;
 
 	trid = -1;
 	if(asset->streams[trx].options & (STRDSC_AUDIO | STRDSC_VIDEO))
@@ -2493,107 +2491,88 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	track_data.data1 = posbytes;
 	track_data.data2 = 0;
 	track_data.min_index = INT64_MAX;
-	track_data.min_offset = 0;
+	track_data.min_offset = INT64_MAX;
 	track_data.index_correction = 0;
-	err = avformat_seek_file(context, trid, INT64_MIN, INT64_MIN, 0,
+	avformat_seek_file(context, trid, INT64_MIN, INT64_MIN, 0,
 		AVSEEK_FLAG_ANY);
 
 	avformat_flush(context);
 
 	pkt.buf = 0;
 	pkt.size = 0;
-	pktnum = 0;
 	nb_frames = 0;
+
+	kf.kf = 0;
 
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
 		if(pkt.stream_index == trid)
 		{
-			pktpos = -1;
-			medpos = AV_NOPTS_VALUE;
-			if(posbytes)
+			// New version
+			if(pkt.flags & AV_PKT_FLAG_KEY && pkt.pts != AV_NOPTS_VALUE)
 			{
-				if(pkt.pos != -1)
-					pktpos = pkt.pos;
-			}
-			else
-			{
-				switch(asset->format)
-				{
-				case FILE_MKV:
-					if(pkt.pts != AV_NOPTS_VALUE)
-						pktpos = pkt.pts;
-					break;
-				default:
-					if(pkt.dts != AV_NOPTS_VALUE)
-						pktpos = pkt.dts;
-					break;
-				}
+				kf.pts = pkt.pts;
+				kf.kf = 1;
+				kf.offs = AV_NOPTS_VALUE;
 			}
 
-			if(pkt.pts != AV_NOPTS_VALUE)
-				medpos = pkt.pts;
-			else
-				medpos = pkt.dts;
+			if(kf.kf)
+			{
+				if(posbytes)
+				{
+					if(pkt.pos != 1)
+						kf.offs = pkt.pos;
+				}
+				else if(pkt.dts != AV_NOPTS_VALUE)
+				{
+					kf.offs = pkt.dts;
+				}
+			}
+			if(pkt.pts != AV_NOPTS_VALUE && pkt.pts > maxpts)
+			{
+				maxpts = pkt.pts;
+				maxpts += pkt.duration;
+			}
+			if(posbytes)
+			{
+				if(pkt.pos != -1 && pkt.pos > maxoffs)
+				{
+					maxoffs = pkt.pos;
+					maxoffs += pkt.size;
+				}
+			}
+			else if(pkt.dts != AV_NOPTS_VALUE && pkt.dts > maxoffs)
+			{
+				maxoffs = pkt.dts;
+				maxoffs += pkt.duration;
+			}
+
+			maxpts += pkt.duration;
 
 			switch(decoder_context->codec_type)
 			{
 			case AVMEDIA_TYPE_VIDEO:
-				if(medpos != AV_NOPTS_VALUE)
-				{
-					video_pos = medpos;
+				if(pkt.pts != AV_NOPTS_VALUE)
+					video_pos = pkt.pts;
+				if(pkt.dts != AV_NOPTS_VALUE);
 					nb_frames++;
-				}
-
-				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
-				{
-					interrupt = tocfile->append_item(video_pos, pktpos, pkt.pos);
-					if(video_pos < track_data.min_index)
-					{
-						track_data.min_index = video_pos;
-						track_data.min_offset = pktpos;
-					}
-				}
-				pkt_duration = pkt.duration;
-				video_pos += pkt_duration;
-				pktpos += pkt_duration;
-				is_audio = 0;
 				break;
 
 			case AVMEDIA_TYPE_AUDIO:
-				if(medpos != AV_NOPTS_VALUE)
-					audio_pos = medpos;
-
-				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
-				{
-// Raw dv audio seeks only on frame numbers
-					if(asset->format == FILE_RAWDV)
-						pktpos = pktnum++;
-					interrupt = tocfile->append_item(audio_pos, pktpos, pkt.pos);
-					if(audio_pos < track_data.min_index)
-					{
-						track_data.min_index = audio_pos;
-						track_data.min_offset = pktpos;
-					}
-				}
-				pkt_duration = pkt.duration;
-				audio_pos += pkt_duration;
-				if(asset->format == FILE_RAWDV)
-					pkt_duration = 1;
-				pktpos += pkt_duration;
-				is_audio = 1;
+				if(pkt.pts != AV_NOPTS_VALUE)
+					audio_pos = pkt.pts;
 				break;
 			}
-			if(posbytes)
-				pktsz = pkt.size;
-			else
-				pktsz = pkt_duration;
-
-			if(pktpos != -1)
-				maxoffs = pktpos + pktsz;
-			else
-				maxoffs += pktsz;
-
+			if(kf.kf && kf.offs != AV_NOPTS_VALUE)
+			{
+				interrupt = tocfile->append_item(kf.pts,
+					kf.offs, pkt.pos);
+				kf.kf = 0;
+				if(track_data.min_index > kf.pts)
+					track_data.min_index = kf.pts;
+				if(track_data.min_offset > kf.offs)
+					track_data.min_offset = kf.offs;
+			}
 			if(interrupt)
 				return 0;
 		}
@@ -2609,7 +2588,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 	track_data.data2 = nb_frames;
 	track_data.max_offset = maxoffs;
-	track_data.max_index = (is_audio ? audio_pos : video_pos) + track_data.index_correction;
+	track_data.max_index = maxpts + track_data.index_correction;
 
 	return &track_data;
 }
