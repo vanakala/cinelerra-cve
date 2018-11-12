@@ -363,7 +363,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 guidelines.h \
 		 gwindow.h \
 		 gwindowgui.h \
-		 headers.h \
 		 indexfile.h \
 		 indexthread.h \
 		 intauto.h \
