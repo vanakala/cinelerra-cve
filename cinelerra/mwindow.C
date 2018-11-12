@@ -1960,6 +1960,8 @@ void MWindow::set_filename(const char *filename)
 			FileSystem dir;
 			char string[BCTEXTLEN];
 			dir.extract_name(string, filename);
+			if(BCTEXTLEN - strlen(string) > 64)
+				strcat(string, " - " PROGRAM_NAME);
 			gui->set_title(string);
 		}
 	}
