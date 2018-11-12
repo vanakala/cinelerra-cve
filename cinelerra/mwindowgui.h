@@ -69,13 +69,10 @@ public:
 //          WUPD_CLOCK      - update clock
 //          WUPD_BUTTONBAR  - update buttonbar
 	void update(int options);
-
-	void update_title(const char *path);
 	void translation_event();
 	void resize_event(int w, int h);          // handle a resize event
 	int keypress_event();
 	void close_event();
-	int quit();
 	void save_defaults(BC_Hash *defaults);
 	int menu_h();
 // Draw on the status bar only.

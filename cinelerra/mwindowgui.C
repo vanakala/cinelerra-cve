@@ -219,16 +219,6 @@ void MWindowGUI::show()
 	canvas->activate();
 }
 
-void MWindowGUI::update_title(const char *path)
-{
-	FileSystem fs;
-	char filename[BCTEXTLEN], string[BCTEXTLEN];
-	fs.extract_name(filename, path);
-	strcpy(string, filename);
-	set_title(string);
-	flush();
-}
-
 void MWindowGUI::redraw_time_dependancies() 
 {
 	zoombar->redraw_time_dependancies();
