@@ -63,7 +63,6 @@ int *ColorSpaces::utob_16;
 
 ColorSpaces::ColorSpaces()
 {
-tracemsg("initalizing");
 // initialize tables
 	for(int i = 0; i < 0x100; i++)
 	{
