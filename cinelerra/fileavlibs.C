@@ -2405,6 +2405,9 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 		if(tocfile->toc_streams[toc_ix].data1 & STRDSC_SEEKBYTES)
 			fl |= AVSEEK_FLAG_BYTE;
 
+		avio_flush(context->pb);
+		avformat_flush(context);
+		av_packet_unref(pkt);
 		avcodec_flush_buffers(codec_contexts[stream_index]);
 
 		if((res = avformat_seek_file(context, stream_index,
@@ -2413,7 +2416,6 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 			liberror(res, _("Media seeking failed"));
 			return -1;
 		}
-
 		do
 		{
 			if((res = av_read_frame(context, pkt)) != 0)
@@ -2421,7 +2423,6 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 				liberror(res, _("Reading after media seek failed"));
 				return -1;
 			}
-
 			if(pkt->stream_index != stream_index || pkt->pts != AV_NOPTS_VALUE)
 				continue;
 
