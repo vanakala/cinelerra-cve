@@ -29,6 +29,7 @@
 #include "mutex.inc"
 #include "preferences.inc"
 
+extern Preferences *preferences_global;
 
 class Preferences
 {

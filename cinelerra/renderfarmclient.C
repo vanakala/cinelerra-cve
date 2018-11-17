@@ -80,6 +80,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	strcpy(string, boot_preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
+	preferences_global = boot_preferences;
 }
 
 RenderFarmClient::~RenderFarmClient()
@@ -439,7 +440,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 		File file;
 		for(Asset *current = edl->assets->first; current; current = NEXT)
 		{
-			result |= file.open_file(preferences, current, 1, 0, 0, 0);
+			result |= file.open_file(current, FILE_OPEN_READ);
 			file.close_file(0);
 		}
 	}

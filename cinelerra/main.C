@@ -50,6 +50,8 @@
 
 MWindow *mwindow_global;
 Theme *theme_global;
+Preferences *preferences_global;
+
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 
 enum

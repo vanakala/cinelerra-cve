@@ -317,13 +317,11 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 	file = new File;
 	file->set_processors(cache->preferences->processors);
-
-	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
+	if(result = file->open_file(this->asset, FILE_OPEN_READ))
 	{
 		delete file;
 		file = 0;
 	}
-
 }
 
 CICacheItem::~CICacheItem()

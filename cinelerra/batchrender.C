@@ -481,6 +481,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 	load_defaults(boot_defaults);
 	preferences = new Preferences;
 	preferences->load_defaults(boot_defaults);
+	preferences_global = preferences;
 	MWindow::init_plugins(preferences, plugindb, 0);
 	strcpy(string, preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);

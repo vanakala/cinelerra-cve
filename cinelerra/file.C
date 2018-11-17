@@ -86,7 +86,6 @@ void File::reset_parameters()
 	resample = 0;
 	resample_float = 0;
 	use_cache = 0;
-	preferences = 0;
 }
 
 void File::raise_window()
@@ -245,15 +244,14 @@ int File::is_imagelist(int format)
 	return 0;
 }
 
-int File::open_file(Preferences *preferences, 
-	Asset *asset, 
-	int rd, 
-	int wr,
-	int base_samplerate,
-	float base_framerate)
+int File::open_file(Asset *asset, int open_method)
 {
 	int probe_result, rs;
-	this->preferences = preferences;
+	int rd, wr;
+
+	rd = open_method & FILE_OPEN_READ;
+	wr = open_method & FILE_OPEN_WRITE;
+
 	this->asset->copy_from(asset, 1);
 	file = 0;
 
@@ -402,7 +400,7 @@ int File::open_file(Preferences *preferences,
 	}
 
 // Reopen file with correct parser and get header.
-	if(file->open_file(rd, wr))
+	if(file->open_file(open_method))
 	{
 		delete file;
 		file = 0;
@@ -498,23 +496,9 @@ void File::stop_video_thread()
 	}
 }
 
-FileThread* File::get_video_thread()
+samplenum File::get_audio_length()
 {
-	return video_thread;
-}
-
-samplenum File::get_audio_length(int base_samplerate) 
-{
-	samplenum result = asset->audio_length;
-	if(result > 0)
-	{
-		if(base_samplerate > 0)
-			return (samplenum)((double)result / asset->sample_rate * base_samplerate + 0.5);
-		else
-			return result;
-	}
-	else
-		return -1;
+	return asset->audio_length;
 }
 
 // No resampling here.

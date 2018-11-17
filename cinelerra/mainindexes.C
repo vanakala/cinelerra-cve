@@ -85,12 +85,7 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 		if(!file)
 		{
 			this_file = new File;
-			this_file->open_file(mwindow->preferences,
-				asset,
-				1,
-				0,
-				0,
-				0);
+			this_file->open_file(asset, FILE_OPEN_READ);
 		}
 
 		char index_filename[BCTEXTLEN];

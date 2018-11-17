@@ -72,7 +72,7 @@ public:
 	// Supported streams of format
 	static int supports(int format, int deoding = 0);
 
-	int open_file(int rd, int wr);
+	int open_file(int open_mode);
 	void close_file();
 
 	int read_frame(VFrame *frame);

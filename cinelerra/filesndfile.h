@@ -42,7 +42,7 @@ public:
 	FileSndFile(Asset *asset, File *file);
 	~FileSndFile();
 
-	int open_file(int rd, int wr);
+	int open_file(int open_mode);
 	void close_file();
 	int read_aframe(AFrame *aframe);
 	int write_aframes(AFrame **buffer);

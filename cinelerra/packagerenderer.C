@@ -120,6 +120,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->preferences = preferences;
 	this->default_asset = default_asset;
 	this->plugindb = plugindb;
+	if(!preferences_global)
+		preferences_global = preferences;
 
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
@@ -156,12 +158,7 @@ int PackageRenderer::create_output()
 
 	file->set_processors(preferences->processors);
 
-	result = file->open_file(preferences, 
-		asset,
-		0,
-		1,
-		command->get_edl()->session->sample_rate,
-		command->get_edl()->session->frame_rate);
+	result = file->open_file(asset, FILE_OPEN_WRITE);
 
 	if(mwindow)
 	{

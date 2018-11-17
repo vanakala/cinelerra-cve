@@ -515,7 +515,7 @@ int FileAVlibs::supports(int format, int decoding)
 	return support;
 }
 
-int FileAVlibs::open_file(int rd, int wr)
+int FileAVlibs::open_file(int open_mode)
 {
 	int result = 0;
 	int rv;
@@ -528,8 +528,8 @@ int FileAVlibs::open_file(int rd, int wr)
 	avcodec_register_all();
 	av_register_all();
 
-	reading = rd;
-	writing = wr;
+	reading = open_mode & FILE_OPEN_READ;
+	writing = open_mode & FILE_OPEN_WRITE;
 	audio_pos = 0;
 	video_pos = 0;
 	vpkt_pos = 0;
@@ -540,7 +540,7 @@ int FileAVlibs::open_file(int rd, int wr)
 	pts_base = -1;
 	headers_written = 0;
 
-	if(rd)
+	if(reading)
 	{
 		AVDictionary *dict = 0;
 
@@ -658,7 +658,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				avlibs_lock->unlock();
 				return 0;
 			}
-			tocfile = new FileTOC(this, file->preferences->index_directory,
+			tocfile = new FileTOC(this, preferences_global->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
 			for(int i = 0; i < asset->nb_streams; i++)
@@ -727,7 +727,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			return 1;
 		}
 	}
-	else if(wr)
+	else if(writing)
 	{
 		AVOutputFormat *fmt;
 		int rv;

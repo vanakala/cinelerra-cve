@@ -444,12 +444,7 @@ void MenuEffectThread::run()
 		{
 // open output file in write mode
 			file->set_processors(mwindow->preferences->processors);
-			if(file->open_file(mwindow->preferences, 
-				asset, 
-				0, 
-				1, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->frame_rate))
+			if(file->open_file(asset, FILE_OPEN_WRITE))
 			{
 // open failed
 				errorbox(_("Couldn't open %s"), asset->path);

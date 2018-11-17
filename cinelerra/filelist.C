@@ -66,13 +66,13 @@ FileList::~FileList()
 	close_file();
 	delete table_lock;
 }
-int FileList::open_file(int rd, int wr)
+int FileList::open_file(int open_mode)
 {
-	writing = wr;
+	writing = open_mode & FILE_OPEN_WRITE;
 	int result = 0;
 
 // skip header for write
-	if(wr)
+	if(open_mode & FILE_OPEN_WRITE)
 	{
 // Frame files are created in write_frame and list index is created when
 // file is closed.
@@ -87,7 +87,7 @@ int FileList::open_file(int rd, int wr)
 			asset->format == list_type ? file->cpus : 1);
 	}
 	else
-	if(rd)
+	if(open_mode & FILE_OPEN_READ)
 	{
 // Determine type of file.
 // Header isn't used for background rendering, in which case everything known

@@ -344,7 +344,7 @@ void Render::run()
 				File assetfile;
 				for(Asset *ap = edl->assets->first; ap; ap = ap->next)
 				{
-					if(assetfile.open_file(preferences, ap, 1, 0, 0, 0) == FILE_OK)
+					if(assetfile.open_file(ap, FILE_OPEN_READ) == FILE_OK)
 						assetfile.close_file(0);
 					else
 					{

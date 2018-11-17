@@ -37,7 +37,6 @@
 #include "framecache.inc"
 #include "mutex.inc"
 #include "pluginserver.inc"
-#include "preferences.inc"
 #include "resample.inc"
 #include "vframe.inc"
 
@@ -76,12 +75,7 @@ public:
 	int is_imagelist(int format);
 
 // Format may be preset if the asset format is not 0.
-	int open_file(Preferences *preferences, 
-		Asset *asset, 
-		int rd, 
-		int wr,
-		int base_samplerate,
-		float base_framerate);
+	int open_file(Asset *asset, int open_method);
 
 // Get index from the file if one exists.  Returns 0 on success.
 	int get_index(const char *index_path);
@@ -93,23 +87,17 @@ public:
 // The buffer_size for video needs to be > 1 on SMP systems to utilize 
 // multiple processors.
 // For audio it's the number of samples per buffer.
-// compressed - if 1 write_compressed_frame is called
-//              if 0 write_frames is called
 	void start_video_thread(int buffer_size, 
 		int color_model, 
 		int ring_buffers);
 	void stop_video_thread();
-
-// Return the thread.
-// Used by functions that read only.
-	FileThread* get_video_thread();
 
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
 	void close_file(int ignore_thread = 0);
 
 // get length of file normalized to base samplerate
-	samplenum get_audio_length(int base_samplerate = -1);
+	samplenum get_audio_length();
 
 // write audio frames
 // written to disk and file pointer updated after
@@ -177,8 +165,6 @@ public:
 // A binary lock won't do.  We need a FIFO lock.
 	Condition *write_lock;
 	int cpus;
-
-	Preferences *preferences;
 
 private:
 	void reset_parameters();

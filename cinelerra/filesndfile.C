@@ -220,11 +220,11 @@ void FileSndFile::format_to_asset()
 	asset->init_streams();
 }
 
-int FileSndFile::open_file(int rd, int wr)
+int FileSndFile::open_file(int open_mode)
 {
 	int result = 0;
 
-	if(rd)
+	if(open_mode & FILE_OPEN_READ)
 	{
 		if(asset->format == FILE_PCM)
 		{
@@ -241,7 +241,7 @@ int FileSndFile::open_file(int rd, int wr)
 		}
 	}
 	else
-	if(wr)
+	if(open_mode & FILE_OPEN_WRITE)
 	{
 		asset_to_format();
 		fd = sf_open(asset->path, SFM_WRITE, &fd_config);

@@ -350,7 +350,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 					return;
 
 				int fragment = BUFFERSIZE;
-				samplenum total_samples = source->get_audio_length(-1);
+				samplenum total_samples = source->get_audio_length();
 
 				if(!aframe)
 					aframe = new AFrame(BUFFERSIZE);

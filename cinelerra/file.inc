@@ -22,6 +22,13 @@
 #ifndef FILE_INC
 #define FILE_INC
 
+// Bits of open_method
+#define FILE_OPEN_READ     1
+#define FILE_OPEN_WRITE    2
+#define FILE_OPEN_AUDIO    0x10
+#define FILE_OPEN_VIDEO    0x20
+#define FILE_OPEN_TYPE     0xf0
+
 // Return values for open_file
 #define FILE_OK                 0
 #define FILE_NOT_FOUND          1

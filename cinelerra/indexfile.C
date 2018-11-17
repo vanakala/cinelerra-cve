@@ -174,12 +174,7 @@ int IndexFile::open_file()
 
 int IndexFile::open_source(File *source)
 {
-	if(source->open_file(mwindow->preferences, 
-		asset, 
-		1, 
-		0, 
-		0, 
-		0))
+	if(source->open_file(asset, FILE_OPEN_READ))
 	{
 		return 1;
 	}
@@ -195,7 +190,7 @@ int IndexFile::get_required_scale(File *source)
 {
 	int result;
 // total length of input file
-	samplenum length_source = source->get_audio_length(0);
+	samplenum length_source = source->get_audio_length();
 
 	if(length_source > 0)
 	{
@@ -280,7 +275,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 // from CDROM source.
 
 // total length of input file
-		samplenum length_source = source.get_audio_length(0);
+		samplenum length_source = source.get_audio_length();
 
 // get amount to read at a time in floats
 		int buffersize = 65536;

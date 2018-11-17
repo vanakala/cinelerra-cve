@@ -559,6 +559,7 @@ void MWindow::init_preferences()
 	preferences->load_defaults(defaults);
 	session = new MainSession(this);
 	session->load_defaults(defaults);
+	preferences_global = preferences;
 }
 
 void MWindow::clean_indexes()
@@ -867,7 +868,7 @@ SET_TRACE
 // we have to rebuild the index for the file
 
 		gui->show_message("Loading %s", new_asset->path);
-		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
+		result = new_file->open_file(new_asset, FILE_OPEN_READ);
 
 		switch(result)
 		{
@@ -1020,7 +1021,7 @@ SET_TRACE
 // Recalculate length
 					delete new_file;
 					new_file = new File;
-					result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
+					result = new_file->open_file(new_asset, FILE_OPEN_READ);
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
@@ -1068,7 +1069,7 @@ SET_TRACE
 				{
 					new_files.append(new_file);
 					new_file = new File;
-					if(new_file->open_file(preferences, current, 1, 0, 0, 0) != FILE_OK)
+					if(new_file->open_file(current, FILE_OPEN_READ) != FILE_OK)
 					{
 						result++;
 						break;
