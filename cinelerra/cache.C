@@ -33,10 +33,11 @@
 #include "preferences.h"
 
 // edl came from a command which won't exist anymore
-CICache::CICache(Preferences *preferences)
+CICache::CICache(Preferences *preferences, int open_mode)
  : List<CICacheItem>()
 {
 	this->preferences = preferences;
+	this->open_mode = open_mode;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
 }
@@ -317,7 +318,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 	file = new File;
 	file->set_processors(cache->preferences->processors);
-	if(result = file->open_file(this->asset, FILE_OPEN_READ))
+	if(result = file->open_file(this->asset, FILE_OPEN_READ | cache->open_mode))
 	{
 		delete file;
 		file = 0;

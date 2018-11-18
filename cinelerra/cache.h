@@ -68,7 +68,7 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(Preferences *preferences);
+	CICache(Preferences *preferences, int open_mode);
 	~CICache();
 
 	friend class CICacheItem;
@@ -113,6 +113,7 @@ private:
 // Copy of EDL
 	EDL *edl;
 	Preferences *preferences;
+	int open_mode;
 };
 
 

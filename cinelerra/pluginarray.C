@@ -64,6 +64,8 @@ void PluginArray::start_plugins(MWindow *mwindow,
 	ptstime end,
 	File *file)
 {
+	int open_mode;
+
 	this->mwindow = mwindow;
 	this->edl = edl;
 	this->plugin_server = plugin_server;
@@ -72,7 +74,19 @@ void PluginArray::start_plugins(MWindow *mwindow,
 	this->end = end;
 	this->file = file;
 
-	cache = new CICache(mwindow->preferences);
+	switch(data_type)
+	{
+	case TRACK_AUDIO:
+		open_mode = FILE_OPEN_AUDIO;
+		break;
+	case TRACK_VIDEO:
+		open_mode = FILE_OPEN_VIDEO;
+		break;
+	default:
+		open_mode = 0;
+		break;
+	}
+	cache = new CICache(mwindow->preferences, open_mode);
 	buffer_size = get_bufsize();
 	get_recordable_tracks();
 	create_modules();

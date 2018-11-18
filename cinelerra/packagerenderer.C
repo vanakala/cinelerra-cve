@@ -136,8 +136,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	result = Render::check_asset(edl, *default_asset);
 	default_asset->init_streams();
 
-	audio_cache = new CICache(preferences);
-	video_cache = new CICache(preferences);
+	audio_cache = new CICache(preferences, FILE_OPEN_AUDIO);
+	video_cache = new CICache(preferences, FILE_OPEN_VIDEO);
 
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);
