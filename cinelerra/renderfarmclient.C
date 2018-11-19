@@ -440,7 +440,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 		File file;
 		for(Asset *current = edl->assets->first; current; current = NEXT)
 		{
-			result |= file.open_file(current, FILE_OPEN_READ);
+			result |= file.open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL);
 			file.close_file(0);
 		}
 	}

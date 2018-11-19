@@ -174,7 +174,7 @@ int IndexFile::open_file()
 
 int IndexFile::open_source(File *source)
 {
-	if(source->open_file(asset, FILE_OPEN_READ))
+	if(source->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO))
 	{
 		return 1;
 	}

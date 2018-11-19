@@ -85,7 +85,7 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 		if(!file)
 		{
 			this_file = new File;
-			this_file->open_file(asset, FILE_OPEN_READ);
+			this_file->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO);
 		}
 
 		char index_filename[BCTEXTLEN];

@@ -868,7 +868,8 @@ SET_TRACE
 // we have to rebuild the index for the file
 
 		gui->show_message("Loading %s", new_asset->path);
-		result = new_file->open_file(new_asset, FILE_OPEN_READ);
+// Open all streams
+		result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
 
 		switch(result)
 		{
@@ -1021,7 +1022,7 @@ SET_TRACE
 // Recalculate length
 					delete new_file;
 					new_file = new File;
-					result = new_file->open_file(new_asset, FILE_OPEN_READ);
+					result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
@@ -1069,7 +1070,7 @@ SET_TRACE
 				{
 					new_files.append(new_file);
 					new_file = new File;
-					if(new_file->open_file(current, FILE_OPEN_READ) != FILE_OK)
+					if(new_file->open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
 					{
 						result++;
 						break;
