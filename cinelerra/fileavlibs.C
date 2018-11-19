@@ -581,9 +581,13 @@ int FileAVlibs::open_file(int open_mode)
 				{
 				case AVMEDIA_TYPE_AUDIO:
 					mediatype = _("Audio");
+					if(!(open_mode & FILE_OPEN_AUDIO))
+						continue;
 					break;
 				case AVMEDIA_TYPE_VIDEO:
 					mediatype = _("Video");
+					if(!(open_mode & FILE_OPEN_VIDEO))
+						continue;
 					break;
 				default:
 					continue;
