@@ -2514,11 +2514,18 @@ stream_params *FileAVlibs::get_track_data(int trx)
 		if(pkt.stream_index == trid)
 		{
 			// New version
-			if(pkt.flags & AV_PKT_FLAG_KEY && pkt.pts != AV_NOPTS_VALUE)
+			if(pkt.flags & AV_PKT_FLAG_KEY)
 			{
-				kf.pts = pkt.pts;
-				kf.kf = 1;
-				kf.offs = AV_NOPTS_VALUE;
+				kf.pts = AV_NOPTS_VALUE;
+				if(pkt.pts != AV_NOPTS_VALUE)
+					kf.pts = pkt.pts;
+				else if(pkt.dts != AV_NOPTS_VALUE)
+					kf.pts = pkt.dts;
+				if(kf.pts != AV_NOPTS_VALUE)
+				{
+					kf.kf = 1;
+					kf.offs = AV_NOPTS_VALUE;
+				}
 			}
 
 			if(kf.kf)
