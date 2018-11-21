@@ -129,7 +129,7 @@ Asset* Assets::get_asset(const char *filename, int stream)
 	return result;
 }
 
-Asset* Assets::remove_asset(Asset *asset)
+void Assets::remove_asset(Asset *asset)
 {
 	remove_pointer(asset);
 	Garbage::delete_object(asset);

@@ -62,7 +62,7 @@ public:
 	Asset* get_asset(const char *filename, int stream = -1);
 
 // remove asset from table
-	Asset* remove_asset(Asset *asset);
+	void remove_asset(Asset *asset);
 };
 
 #endif
