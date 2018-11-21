@@ -63,10 +63,6 @@ public:
 
 // remove asset from table
 	Asset* remove_asset(Asset *asset);
-
-// return number of the asset
-	int number_of(Asset *asset);
-	Asset* asset_number(int number);
 };
 
 #endif

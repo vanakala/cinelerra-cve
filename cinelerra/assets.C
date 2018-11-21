@@ -135,28 +135,6 @@ Asset* Assets::remove_asset(Asset *asset)
 	Garbage::delete_object(asset);
 }
 
-int Assets::number_of(Asset *asset)
-{
-	int i;
-	Asset *current;
-
-	for(i = 0, current = first; current && current != asset; 
-		i++, current = NEXT);
-
-	return i;
-}
-
-Asset* Assets::asset_number(int number)
-{
-	int i;
-	Asset *current;
-
-	for(i = 0, current = first; i < number && current; 
-		i++, current = NEXT);
-
-	return current;
-}
-
 void Assets::dump(int indent)
 {
 	printf("%*sAssets %p dump(%d)\n", indent, "", this, total());
