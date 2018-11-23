@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "assetlist.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "batchrender.h"
@@ -853,6 +854,9 @@ SET_TRACE
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);
 
+	if(load_mode == LOADMODE_REPLACE)
+		assetlist_global.reset_inuse();
+
 // Define new_edls and new_assets to load
 	int result = 0;
 	for(int i = 0; i < filenames->total; i++)
@@ -896,6 +900,10 @@ SET_TRACE
 						{
 							new_edl = new EDL;
 							new_edl->copy_session(edl);
+// make a copy for assetlist_global
+							next_asset = new Asset();
+							next_asset->copy_from(new_asset, 0);
+							assetlist_global.add_asset(next_asset);
 							asset_to_edl(new_edl, new_asset);
 							new_edls.append(new_edl);
 							new_edl = 0;
@@ -917,7 +925,7 @@ SET_TRACE
 						new_edl->copy_session(edl);
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
-						Garbage::delete_object(new_asset);
+						assetlist_global.add_asset(new_asset);
 						new_asset = 0;
 						new_edl = 0;
 					}
@@ -1030,7 +1038,7 @@ SET_TRACE
 						new_edl->copy_session(edl);
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
-						Garbage::delete_object(new_asset);
+						assetlist_global.add_asset(new_asset);
 						new_asset = 0;
 						new_edl = 0;
 					}
@@ -1075,6 +1083,10 @@ SET_TRACE
 						result++;
 						break;
 					}
+// Make a copy for assetlist_global
+					new_asset = new Asset();
+					new_asset->copy_from(current, 0);
+					assetlist_global.add_asset(new_asset);
 				}
 				if(!result)
 				{
@@ -1158,12 +1170,14 @@ SET_TRACE
 	new_edls.remove_all_objects();
 
 	for(int i = 0; i < new_assets.total; i++)
-		Garbage::delete_object(new_assets.values[i]);
+		assetlist_global.add_asset(new_assets.values[i]);
+
 	new_assets.remove_all();
 	new_files.remove_all_objects();
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
+	assetlist_global.remove_unused();
 }
 
 void MWindow::test_plugins(EDL *new_edl, const char *path)

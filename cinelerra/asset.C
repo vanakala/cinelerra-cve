@@ -121,6 +121,7 @@ void Asset::init_values()
 	single_image = 0;
 	audio_duration = 0;
 	video_duration = 0;
+	global_inuse = 0;
 
 	layers = 0;
 	frame_rate = 0;
@@ -1524,7 +1525,7 @@ void Asset::dump(int indent, int options)
 	printf("%*sAsset %p dump:\n", indent, "", this);
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
-	printf("%*sindex_status %d id %d\n", indent, "", index_status, id);
+	printf("%*sindex_status %d id %d inuse %d\n", indent, "", index_status, id, global_inuse);
 	printf("%*sfile format '%s', length %" PRId64 "\n", indent, "",
 		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",

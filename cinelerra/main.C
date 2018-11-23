@@ -20,6 +20,7 @@
  */
 
 #include "arraylist.h"
+#include "assetlist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -51,6 +52,7 @@
 MWindow *mwindow_global;
 Theme *theme_global;
 Preferences *preferences_global;
+AssetList assetlist_global;
 
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 

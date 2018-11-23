@@ -1,0 +1,118 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "asset.h"
+#include "assetlist.h"
+#include "bcsignals.h"
+
+#include <stdio.h>
+
+AssetList::AssetList()
+ : List<Asset>()
+{
+tracemsg("%p", this);
+}
+
+AssetList::~AssetList()
+{
+	delete_all();
+}
+
+Asset* AssetList::add_asset(Asset *asset)
+{
+	if(!asset)
+		return 0;
+
+	for(Asset* current = first; current; current = NEXT)
+	{
+// Asset already exists.
+		if(current->test_path(asset))
+		{
+			current->global_inuse = 1;
+			Garbage::delete_object(asset);
+			return current;
+		}
+	}
+// Asset doesn't exist.
+	append(asset);
+	asset->global_inuse = 1;
+	return asset;
+}
+
+void AssetList::delete_all()
+{
+	while(first)
+		remove_asset(first);
+}
+
+Asset* AssetList::get_asset(const char *filename, int stream)
+{
+	for(Asset* current = first; current; current = current->next)
+	{
+		if(current->test_path(filename, stream))
+			return current;
+	}
+	return 0;
+}
+
+void AssetList::remove_asset(Asset *asset)
+{
+	remove_pointer(asset);
+	Garbage::delete_object(asset);
+}
+
+void AssetList::reset_inuse()
+{
+	for(Asset *current = first; current; current = current->next)
+		current->global_inuse = 0;
+}
+
+void AssetList::asset_inuse(Asset *asset)
+{
+	asset->global_inuse++;
+}
+
+void AssetList::remove_unused()
+{
+	Asset *asset;
+
+	for(Asset *current = first; current;)
+	{
+		if(!current->global_inuse)
+		{
+			asset = current->next;
+			remove_asset(current);
+			current = asset;
+		}
+		else
+			current = current->next;
+	}
+}
+
+void AssetList::dump(int indent)
+{
+	printf("%*sAssetList %p dump(%d)\n", indent, "", this, total());
+	indent += 1;
+	for(Asset *current = first; current; current = NEXT)
+	{
+		current->dump(indent);
+	}
+}

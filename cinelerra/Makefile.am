@@ -57,6 +57,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    arender.C \
 		    asset.C \
 		    assetedit.C \
+		    assetlist.C \
 		    assetpopup.C \
 		    assets.C \
 		    atrack.C \
@@ -293,6 +294,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 apluginarray.h \
 		 arender.h \
 		 asset.h \
+		 assetlist.h \
 		 assetedit.h \
 		 assetpopup.h \
 		 assets.h \

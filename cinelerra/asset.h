@@ -299,6 +299,8 @@ public:
 // [high][low][high][low][high][low][high][low]
 	float *index_buffer;
 	int id;
+// Used by assetlist
+	int global_inuse;
 };
 
 
