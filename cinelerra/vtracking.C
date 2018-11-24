@@ -21,7 +21,6 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "assets.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"

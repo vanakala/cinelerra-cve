@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"

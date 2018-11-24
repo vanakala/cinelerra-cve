@@ -22,7 +22,6 @@
 #ifndef NEW_H
 #define NEW_H
 
-#include "assets.inc"
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"

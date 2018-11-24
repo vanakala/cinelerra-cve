@@ -19,7 +19,6 @@
  * 
  */
 
-#include "assets.h"
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "cache.h"

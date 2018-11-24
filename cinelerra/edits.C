@@ -20,7 +20,7 @@
  */
 
 #include "asset.h"
-#include "assets.h"
+#include "assetlist.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "cache.h"
@@ -128,7 +128,8 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 		source_edit && source_edit != source_edits->last;
 		source_edit = source_edit->next)
 	{
-		Asset *dest_asset = edl->assets->update(source_edit->asset);
+		Asset *dest_asset = source_edit->asset;
+		edl->update_assets(source_edit->asset);
 
 		Edit *dest_edit = split_edit(postime + source_edit->get_pts(), 1);
 // Save position of asset
@@ -346,7 +347,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 						fs.join_names(directory, edl_directory, filename);
 						strcpy(filename, directory);
 					}
-					current->asset = edl->assets->get_asset(filename, streamno);
+					current->asset = assetlist_global.get_asset(filename, streamno);
 				}
 				else
 				{

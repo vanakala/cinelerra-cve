@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -342,8 +341,10 @@ void Render::run()
 				edl->load_xml(file, LOAD_ALL);
 
 				File assetfile;
-				for(Asset *ap = edl->assets->first; ap; ap = ap->next)
+				for(int i = 0; i < edl->assets->total; i++)
 				{
+					Asset *ap = edl->assets->values[i];
+
 					if(assetfile.open_file(ap, FILE_OPEN_READ | FILE_OPEN_ALL) == FILE_OK)
 						assetfile.close_file(0);
 					else

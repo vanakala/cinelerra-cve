@@ -21,7 +21,6 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "assets.h"
 #include "clip.h"
 #include "edit.h"
 #include "edits.h"
@@ -165,7 +164,8 @@ int Edit::silence(void)
 
 void Edit::copy_from(Edit *edit)
 {
-	this->asset = edl->assets->update(edit->asset);
+	edl->update_assets(edit->asset);
+	this->asset = edit->asset;
 	this->source_pts = edit->source_pts;
 	this->project_pts = edit->project_pts;
 	strcpy (this->user_title, edit->user_title);

@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "clipedit.h"
 #include "bcclipboard.h"
 #include "bchash.h"
@@ -204,7 +203,6 @@ void VWindow::update_position(int change_type,
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		Asset *asset = edl->assets->first;
 		if(use_slider) 
 			edl->local_session->set_selection(gui->slider->get_value());
 

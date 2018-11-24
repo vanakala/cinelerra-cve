@@ -23,7 +23,6 @@
 #define VDEVICEBASE_H
 
 #include "asset.inc"
-#include "assets.inc"
 #include "bcbitmap.inc"
 #include "edl.inc"
 #include "videodevice.inc"

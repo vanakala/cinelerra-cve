@@ -20,7 +20,7 @@
  */
 
 #include "asset.h"
-#include "assets.h"
+#include "assetlist.h"
 #include "atrack.h"
 #include "autoconf.h"
 #include "automation.h"
@@ -61,7 +61,7 @@ EDL::EDL(EDL *parent_edl)
 	tracks = new Tracks(this);
 	if(!parent_edl)
 	{
-		assets = new Assets(this);
+		assets = new ArrayList<Asset*>;
 		session = new EDLSession(this);
 	}
 	else
@@ -217,7 +217,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				if(file->tag.title_is("ASSETS"))
 				{
 					if(load_flags & LOAD_ASSETS)
-						assets->load(file, load_flags);
+						assetlist_global.load_assets(file, assets);
 				}
 				else
 				if(file->tag.title_is(labels->xml_tag))
@@ -321,7 +321,10 @@ void EDL::copy_clips(EDL *edl)
 void EDL::copy_assets(EDL *edl)
 {
 	if(!parent_edl)
-		assets->copy_from(edl->assets);
+	{
+		for(int i = 0; i < edl->assets->total; i++)
+			assets->append(edl->assets->values[i]);
+	}
 }
 
 void EDL::copy_session(EDL *edl, int session_only)
@@ -349,6 +352,7 @@ void EDL::copy_assets(ptstime start,
 	const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
+	ArrayList<Asset*> *listp;
 	Track* current;
 
 	file->tag.set_title("ASSETS");
@@ -358,12 +362,7 @@ void EDL::copy_assets(ptstime start,
 // Copy everything for a save
 	if(all)
 	{
-		for(Asset *asset = assets->first;
-			asset;
-			asset = asset->next)
-		{
-			asset_list.append(asset);
-		}
+		listp = assets;
 	}
 	else
 // Copy just the ones being used.
@@ -379,15 +378,12 @@ void EDL::copy_assets(ptstime start,
 					&asset_list);
 			}
 		}
+		listp = &asset_list;
 	}
 
 // Paths relativised here
-	for(int i = 0; i < asset_list.total; i++)
-	{
-		asset_list.values[i]->write(file, 
-			0, 
-			output_path);
-	}
+	for(int i = 0; i < listp->total; i++)
+		listp->values[i]->write(file, 0, output_path);
 
 	file->tag.set_title("/ASSETS");
 	file->append_tag();
@@ -715,19 +711,42 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 // Remove from assets
 		if(!parent_edl)
 		{
-			this->assets->remove_asset(assets->values[i]);
+			this->assets->remove(assets->values[i]);
 		}
 	}
 }
 
 void EDL::update_assets(EDL *src)
 {
-	for(Asset *current = src->assets->first;
-		current;
-		current = NEXT)
+	Asset *current;
+	int found;
+
+	for(int i = 0; i < src->assets->total; i++)
 	{
-		assets->update(current);
+		current = src->assets->values[i];
+		found = 0;
+
+		for(int k = 0; k < assets->total; k++)
+		{
+			if(assets->values[k] == current)
+			{
+				found = 1;
+				break;
+			}
+		}
+		if(!found)
+			assets->append(current);
 	}
+}
+
+void EDL::update_assets(Asset *asset)
+{
+	for(int k = 0; k < assets->total; k++)
+	{
+		if(assets->values[k] == asset)
+			return;
+	}
+	assets->append(asset);
 }
 
 int EDL::get_tracks_height(Theme *theme)
@@ -769,7 +788,9 @@ void EDL::dump(int indent)
 	for(int i = 0; i < clips.total; i++)
 		clips.values[i]->dump(indent + 2);
 
-	assets->dump(indent + 1);
+	printf("%*sAssets %p dump(%d):\n", indent + 1, "", this, assets->total);
+	for(int i = 0; i < assets->total; i++)
+		assets->values[i]->dump(indent + 2);
 
 	labels->dump(indent + 1);
 	tracks->dump(indent + 1);
@@ -789,7 +810,7 @@ void EDL::insert_asset(Asset *asset,
 	Track *first_track)
 {
 // Insert asset into asset table
-	Asset *new_asset = assets->update(asset);
+	update_assets(asset);
 
 // Paste video
 	int vtrack = 0;
@@ -798,7 +819,7 @@ void EDL::insert_asset(Asset *asset,
 // Fix length of single frame
 	ptstime length;
 
-	if(new_asset->single_image)
+	if(asset->single_image)
 	{
 		if(session->si_useduration)
 			length = session->si_duration;
@@ -806,20 +827,20 @@ void EDL::insert_asset(Asset *asset,
 			length = 1.0 / session->frame_rate; 
 	}
 	else
-		if(new_asset->frame_rate > 0)
-			length = ((double)new_asset->video_length / new_asset->frame_rate);
+		if(asset->frame_rate > 0)
+			length = ((double)asset->video_length / asset->frame_rate);
 		else
 			length = 1.0 / session->frame_rate;
 
 	for( ;
-		current && vtrack < new_asset->layers;
+		current && vtrack < asset->layers;
 		current = NEXT)
 	{
 		if(!current->record || 
 			current->data_type != TRACK_VIDEO)
 			continue;
 
-		current->insert_asset(new_asset, 
+		current->insert_asset(asset,
 			length, 
 			position, 
 			vtrack);
@@ -829,16 +850,16 @@ void EDL::insert_asset(Asset *asset,
 
 	int atrack = 0;
 	for(current = tracks->first;
-		current && atrack < new_asset->channels;
+		current && atrack < asset->channels;
 		current = NEXT)
 	{
 		if(!current->record ||
 			current->data_type != TRACK_AUDIO)
 			continue;
 
-		current->insert_asset(new_asset, 
-			(double)new_asset->audio_length / 
-				new_asset->sample_rate, 
+		current->insert_asset(asset,
+			(double)asset->audio_length /
+				asset->sample_rate,
 			position, 
 			atrack);
 
@@ -848,7 +869,11 @@ void EDL::insert_asset(Asset *asset,
 
 void EDL::set_index_file(Asset *asset)
 {
-	assets->update_index(asset);
+	for(int i = 0; i < assets->total; i++)
+	{
+		if(assets->values[i]->test_path(asset))
+			assets->values[i]->update_index(asset);
+	}
 }
 
 void EDL::optimize()

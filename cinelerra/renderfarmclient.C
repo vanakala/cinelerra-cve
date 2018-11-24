@@ -20,7 +20,7 @@
  */
 
 #include "asset.h"
-#include "assets.h"
+#include "assetlist.h"
 #include "clip.h"
 #include "bchash.h"
 #include "bcresources.h"
@@ -423,6 +423,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	char *string;
 	FileXML file;
 	int result = 0;
+	Asset *new_asset;
 
 	lock("RenderFarmClientThread::read_edl");
 	send_request_header(RENDERFARM_EDL, 0);
@@ -438,9 +439,18 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	if(edl->assets)
 	{
 		File file;
-		for(Asset *current = edl->assets->first; current; current = NEXT)
+		for(int i = 0; i < edl->assets->total; i++)
 		{
-			result |= file.open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL);
+			Asset *current = edl->assets->values[i];
+
+			if(file.open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) == FILE_OK)
+			{
+				new_asset = new Asset();
+				new_asset->copy_from(current, 0);
+				assetlist_global.add_asset(new_asset);
+			}
+			else
+				result |= 1;
 			file.close_file(0);
 		}
 	}

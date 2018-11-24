@@ -22,8 +22,10 @@
 #ifndef ASSETLIST_H
 #define ASSETLIST_H
 
+#include "arraylist.h"
 #include "asset.inc"
 #include "assetlist.inc"
+#include "filexml.inc"
 #include "linklist.h"
 
 extern AssetList assetlist_global;
@@ -48,6 +50,8 @@ public:
 	void asset_inuse(Asset *asset);
 // remove unused assets from list
 	void remove_unused();
+// Load assets from file
+	void load_assets(FileXML *file, ArrayList<Asset*> *assets);
 
 	void dump(int indent = 0);
 };

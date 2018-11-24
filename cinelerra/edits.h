@@ -24,7 +24,6 @@
 
 
 #include "asset.inc"
-#include "assets.inc"
 #include "edl.inc"
 #include "edit.h"
 #include "filexml.inc"

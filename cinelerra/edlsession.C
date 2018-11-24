@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "autoconf.h"
 #include "awindowgui.h"
 #include "colormodels.h"

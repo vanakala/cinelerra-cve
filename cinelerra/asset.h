@@ -284,7 +284,7 @@ public:
 // Edits store data for the transition
 
 // index info
-	int index_status;     // Macro from assets.inc
+	int index_status;     // Macro from asset.inc
 	int index_zoom;      // zoom factor of index data
 	off_t index_start;     // byte start of index data in the index file
 // Total bytes in source file when the index was buillt

@@ -24,7 +24,6 @@
 
 #include "arraylist.h"
 #include "asset.inc"
-#include "assets.inc"
 #include "audiodevice.inc"
 #include "awindow.inc"
 #include "batchrender.inc"
@@ -385,7 +384,6 @@ public:
 // Main undo stack
 	MainUndo *undo;
 	BC_Hash *defaults;
-	Assets *assets;
 // CICaches for drawing timeline only
 	CICache *audio_cache, *video_cache;
 // Frame cache for drawing timeline only.

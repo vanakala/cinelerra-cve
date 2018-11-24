@@ -24,7 +24,6 @@
 
 #include "aframe.inc"
 #include "asset.inc"
-#include "assets.inc"
 #include "bcwindow.h"
 #include "colormodels.h"
 #include "datatype.h"

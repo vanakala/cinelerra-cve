@@ -23,7 +23,6 @@
 #define EDL_H
 
 #include "asset.inc"
-#include "assets.inc"
 #include "autoconf.inc"
 #include "bchash.inc"
 #include "edits.inc"
@@ -115,6 +114,8 @@ public:
 
 // Add assets from the src to the destination
 	void update_assets(EDL *src);
+
+	void update_assets(Asset *asset);
 	void optimize();
 
 // Debug
@@ -189,7 +190,7 @@ public:
 
 // Media files
 // Shared between all EDLs
-	Assets *assets;
+	ArrayList<Asset*> *assets;
 
 	Tracks *tracks;
 	Labels *labels;

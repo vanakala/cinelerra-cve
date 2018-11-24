@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "file.inc"

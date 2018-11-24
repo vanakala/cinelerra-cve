@@ -24,7 +24,6 @@
 
 
 #include "arraylist.h"
-#include "assets.inc"
 #include "edl.inc"
 #include "mutex.inc"
 #include "mwindow.inc"

@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "canvas.h"

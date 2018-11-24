@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcclipboard.h"
@@ -1051,14 +1050,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		EDL *new_edl = new_edls->values[i];
 
 		ptstime edl_length = new_edl->tracks->total_length();
-
-// Add assets and prepare index files
-		for(Asset *new_asset = new_edl->assets->first;
-			new_asset;
-			new_asset = new_asset->next)
-		{
-			mainindexes->add_next_asset(0, new_asset);
-		}
 
 // Capture index file status from mainindex test
 		edl->update_assets(new_edl);

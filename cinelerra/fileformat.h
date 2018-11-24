@@ -30,7 +30,6 @@ class FileFormatChannels;
 class FileFormatBits;
 
 #include "asset.inc"
-#include "assets.inc"
 #include "bctextbox.h"
 #include "bcwindow.h"
 #include "file.inc"

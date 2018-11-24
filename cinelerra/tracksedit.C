@@ -19,7 +19,6 @@
  * 
  */
 
-#include "assets.h"
 #include "atrack.h"
 #include "automation.h"
 #include "bcsignals.h"

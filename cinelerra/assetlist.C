@@ -22,13 +22,13 @@
 #include "asset.h"
 #include "assetlist.h"
 #include "bcsignals.h"
+#include "filexml.h"
 
 #include <stdio.h>
 
 AssetList::AssetList()
  : List<Asset>()
 {
-tracemsg("%p", this);
 }
 
 AssetList::~AssetList()
@@ -104,6 +104,22 @@ void AssetList::remove_unused()
 		}
 		else
 			current = current->next;
+	}
+}
+
+void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
+{
+	while(!file->read_tag())
+	{
+		if(file->tag.title_is("/ASSETS"))
+			break;
+		if(file->tag.title_is("ASSET"))
+		{
+			Asset *new_asset = new Asset(file->tag.get_property("SRC"));
+			new_asset->read(file);
+			new_asset = add_asset(new_asset);
+			assets->append(new_asset);
+		}
 	}
 }
 

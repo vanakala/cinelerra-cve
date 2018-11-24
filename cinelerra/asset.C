@@ -21,7 +21,6 @@
 
 
 #include "asset.h"
-#include "assets.h"
 #include "awindowgui.h"
 #include "bchash.h"
 #include "bcsignals.h"

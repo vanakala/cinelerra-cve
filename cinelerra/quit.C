@@ -19,7 +19,6 @@
  * 
  */
 
-#include "assets.h"
 #include "mbuttons.h"
 #include "mainerror.h"
 #include "glthread.h"

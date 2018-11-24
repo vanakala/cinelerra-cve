@@ -22,7 +22,6 @@
 #include "aframe.h"
 #include "amodule.h"
 #include "arender.h"
-#include "assets.h"
 #include "atrack.h"
 #include "audiodevice.h"
 #include "bcsignals.h"

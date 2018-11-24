@@ -34,7 +34,6 @@ class AssetMatchSize;
 #include "awindowmenu.inc"
 #include "edl.inc"
 #include "mwindow.inc"
-#include "assets.inc"
 
 
 class AssetPopup : public BC_PopupMenu

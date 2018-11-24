@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "assets.h"
 #include "assetlist.h"
 #include "awindowgui.h"
 #include "awindow.h"
@@ -964,28 +963,16 @@ SET_TRACE
 					indexfile.close_index();
 				}
 
-// Test existing EDLs
+// Test known assets
 				if(result)
 				{
-					for(int j = 0; j < new_edls.total + 1; j++)
+					Asset *old_asset = assetlist_global.get_asset(new_asset->path);
+					if(old_asset)
 					{
-						Asset *old_asset;
-						if(j == new_edls.total)
-						{
-							if(old_asset = edl->assets->get_asset(new_asset->path))
-							{
-								*new_asset = *old_asset;
-								result = 0;
-							}
-						}
-						else
-						{
-							if(old_asset = new_edls.values[j]->assets->get_asset(new_asset->path))
-							{
-								*new_asset = *old_asset;
-								result = 0;
-							}
-						}
+						Garbage::delete_object(new_asset);
+						new_asset = old_asset;
+						new_asset->global_inuse = 1;
+						result = 0;
 					}
 				}
 
@@ -1074,8 +1061,9 @@ SET_TRACE
 						set_filename(new_edl->local_session->clip_title);
 				}
 // Open media files found in xml - open fills media info
-				for(Asset *current = new_edl->assets->first; current; current = NEXT)
+				for(int i = 0; i < new_edl->assets->total; i++)
 				{
+					Asset *current = new_edl->assets->values[i];
 					new_files.append(new_file);
 					new_file = new File;
 					if(new_file->open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
@@ -1158,7 +1146,7 @@ SET_TRACE
 
 			mainindexes->add_next_asset(got_it ? new_file : 0, 
 				new_asset);
-			edl->assets->update(new_asset);
+			edl->update_assets(new_asset);
 		}
 
 // Start examining next batch of index files

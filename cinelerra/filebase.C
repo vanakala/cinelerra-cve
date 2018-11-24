@@ -20,7 +20,6 @@
  */
 
 #include "asset.inc"
-#include "assets.h"
 #include "bctitle.h"
 #include "file.h"
 #include "filebase.h"

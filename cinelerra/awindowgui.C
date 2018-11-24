@@ -20,9 +20,9 @@
  */
 
 #include "asset.h"
+#include "assetlist.h"
 #include "assetedit.h"
 #include "assetpopup.h"
-#include "assets.h"
 #include "awindowgui.h"
 #include "awindowgui.inc"
 #include "awindow.h"
@@ -592,8 +592,8 @@ void AWindowGUI::update_asset_list()
 		}
 	}
 
-// Synchronize EDL assets
-	for(Asset *current = mwindow->edl->assets->first; 
+// Synchronize global assets
+	for(Asset *current = assetlist_global.first;
 		current; 
 		current = NEXT)
 	{

@@ -23,7 +23,6 @@
 #define MAINSESSION_H
 
 #include "asset.inc"
-#include "assets.inc"
 #include "auto.inc"
 #include "arraylist.h"
 #include "bcwindowbase.inc"

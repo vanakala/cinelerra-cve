@@ -25,6 +25,13 @@
 
 class Asset;
 
+// Index statuses
+#define INDEX_READY     0
+#define INDEX_NOTTESTED 1
+#define INDEX_BUILDING  2
+#define INDEX_TOOSMALL  3
+
+// Options of defaults
 #define ASSET_FORMAT       1
 #define ASSET_COMPRESSION  2
 #define ASSET_PATH         4

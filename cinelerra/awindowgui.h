@@ -32,7 +32,6 @@
 #include "bcwindow.h"
 #include "assetpopup.inc"
 #include "asset.inc"
-#include "assets.inc"
 #include "awindow.inc"
 #include "awindowmenu.inc"
 #include "edl.inc"

@@ -23,7 +23,6 @@
 #define VIDEODEVICE_H
 
 #include "asset.inc"
-#include "assets.inc"
 #include "audiodevice.inc"
 #include "bccapture.inc"
 #include "bctimer.h"

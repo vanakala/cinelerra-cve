@@ -22,7 +22,6 @@
 #ifndef PACKAGERENDERER_H
 #define PACKAGERENDERER_H
 
-#include "assets.inc"
 #include "bcwindowbase.inc"
 #include "cache.inc"
 #include "edit.inc"
