@@ -120,6 +120,7 @@ public:
 
 // Debug
 	void dump(int indent = 0);
+	void dump_assets(int indent = 0);
 	static int next_id();
 
 	void modify_edithandles(ptstime oldposition,

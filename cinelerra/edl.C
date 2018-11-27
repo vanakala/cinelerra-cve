@@ -788,12 +788,18 @@ void EDL::dump(int indent)
 	for(int i = 0; i < clips.total; i++)
 		clips.values[i]->dump(indent + 2);
 
-	printf("%*sAssets %p dump(%d):\n", indent + 1, "", this, assets->total);
-	for(int i = 0; i < assets->total; i++)
-		assets->values[i]->dump(indent + 2);
+	dump_assets(indent + 1);
 
 	labels->dump(indent + 1);
 	tracks->dump(indent + 1);
+}
+
+void EDL::dump_assets(int indent)
+{
+	printf("%*sAssets %p dump(%d):\n", indent, "", this, assets->total);
+	indent += 1;
+	for(int i = 0; i < assets->total; i++)
+		assets->values[i]->dump(indent);
 }
 
 EDL* EDL::add_clip(EDL *edl)
