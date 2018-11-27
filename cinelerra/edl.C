@@ -832,8 +832,7 @@ void EDL::insert_asset(Asset *asset,
 		else
 			length = 1.0 / session->frame_rate;
 
-	for( ;
-		current && vtrack < asset->layers;
+	for(; current && vtrack < asset->layers;
 		current = NEXT)
 	{
 		if(!current->record || 
@@ -849,8 +848,7 @@ void EDL::insert_asset(Asset *asset,
 	}
 
 	int atrack = 0;
-	for(current = tracks->first;
-		current && atrack < asset->channels;
+	for(; current && atrack < asset->channels;
 		current = NEXT)
 	{
 		if(!current->record ||
