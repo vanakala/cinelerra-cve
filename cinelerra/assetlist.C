@@ -68,7 +68,10 @@ Asset* AssetList::get_asset(const char *filename, int stream)
 	for(Asset* current = first; current; current = current->next)
 	{
 		if(current->test_path(filename, stream))
+		{
+			current->global_inuse = 1;
 			return current;
+		}
 	}
 	return 0;
 }
