@@ -741,6 +741,9 @@ void EDL::update_assets(EDL *src)
 
 void EDL::update_assets(Asset *asset)
 {
+	if(!asset)
+		return;
+
 	for(int k = 0; k < assets->total; k++)
 	{
 		if(assets->values[k] == asset)
