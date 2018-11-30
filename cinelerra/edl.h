@@ -109,9 +109,6 @@ public:
 	void set_inpoint(ptstime position);
 	void set_outpoint(ptstime position);
 
-// Redraw resources during index builds
-	void set_index_file(Asset *asset);
-
 // Add assets from the src to the destination
 	void update_assets(EDL *src);
 

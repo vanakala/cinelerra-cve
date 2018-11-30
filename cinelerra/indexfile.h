@@ -41,9 +41,7 @@ public:
 	~IndexFile();
 
 	int open_index(Asset *asset);
-	int open_index(MWindow *mwindow, Asset *asset);
 	int create_index(Asset *asset, MainProgressBar *progress);
-	int create_index(MWindow *mwindow, Asset *asset, MainProgressBar *progress);
 	void interrupt_index();
 	static void delete_index(Preferences *preferences, Asset *asset);
 	static void get_index_filename(char *source_filename, 

@@ -876,15 +876,6 @@ void EDL::insert_asset(Asset *asset,
 	}
 }
 
-void EDL::set_index_file(Asset *asset)
-{
-	for(int i = 0; i < assets->total; i++)
-	{
-		if(assets->values[i]->test_path(asset))
-			assets->values[i]->update_index(asset);
-	}
-}
-
 void EDL::optimize()
 {
 	ptstime length = tracks->total_length();

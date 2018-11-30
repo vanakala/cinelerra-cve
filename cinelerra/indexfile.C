@@ -104,11 +104,6 @@ int IndexFile::open_index(Asset *asset)
 	return result;
 }
 
-int IndexFile::open_index(MWindow *mwindow, Asset *asset)
-{
-	return open_index(asset);
-}
-
 void IndexFile::delete_index(Preferences *preferences, Asset *asset)
 {
 	char index_filename[BCTEXTLEN];
@@ -246,19 +241,17 @@ void IndexFile::interrupt_index()
 int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 {
 	int result = 0;
-	this->mwindow = mwindow;
+
 	this->asset = asset;
 	interrupt_flag = 0;
 // open the source file
 	File source;
 	if(open_source(&source)) return 1;
 
-
 	get_index_filename(source_filename, 
 		mwindow->preferences->index_directory, 
 		index_filename, 
 		asset->path, asset->audio_streamno - 1);
-
 
 // Test for index in stream table of contents
 	if(!source.get_index(index_filename))
@@ -268,7 +261,6 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	else
 // Build index from scratch
 	{
-
 		asset->index_zoom = get_required_scale(&source);
 
 // Indexes are now built for everything since it takes too long to draw
@@ -297,7 +289,6 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		samplenum position = 0;
 		int fragment_size = buffersize;
 		int current_buffer = 0;
-
 
 // pass through file once
 		while(position < length_source && !result)
@@ -346,20 +337,9 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	}
 
 	source.close_file();
-
 	open_index(asset);
-
 	close_index();
-
-	mwindow->edl->set_index_file(asset);
 	return 0;
-}
-
-int IndexFile::create_index(MWindow *mwindow, 
-		Asset *asset, 
-		MainProgressBar *progress)
-{
-	return create_index(asset, progress);
 }
 
 void IndexFile::redraw_edits(int force)
@@ -369,12 +349,10 @@ void IndexFile::redraw_edits(int force)
 	if(difference > 250 || force)
 	{
 		redraw_timer->update();
-		mwindow->edl->set_index_file(asset);
 		mwindow->gui->canvas->draw_indexes(asset);
 		asset->old_index_end = asset->index_end;
 	}
 }
-
 
 int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 {
@@ -419,9 +397,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		lengthindex = asset->get_index_size(edit->channel) - startindex;
 	if(lengthindex <= 0) return 0;
 
-
-
-
 // Actual length read from file in bytes
 	int length_read;
 // Start and length of fragment to read from file in bytes.
@@ -442,7 +417,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 // get channel offset
 	startindex += asset->get_index_offset(edit->channel);
-
 
 	if(asset->index_status == INDEX_BUILDING)
 	{
@@ -473,12 +447,9 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 		if(length_read < lengthfile)
 			for(i = length_read / sizeof(float); 
-				i < lengthindex;
-				i++)
+					i < lengthindex; i++)
 				buffer[i] = 0;
 	}
-
-	pixmap->canvas->set_color(mwindow->theme->audio_color);
 
 	double current_frame = 0;
 	float highsample = buffer[0];
@@ -487,9 +458,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
 
-	for(int bufferposition = 0; 
-		bufferposition < lengthindex; 
-		bufferposition += 2)
+	for(int bufferposition = 0; bufferposition < lengthindex;
+			bufferposition += 2)
 	{
 		if(current_frame >= index_frames_per_pixel)
 		{
@@ -500,6 +470,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
+			pixmap->canvas->set_color(mwindow->theme->audio_color);
 			if(mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate == 1)
 			{
 				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
@@ -568,17 +539,17 @@ int IndexFile::read_info(Asset *test_asset)
 	if(test_asset->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data
-		if(fread((char*)&(test_asset->index_start), sizeof(int64_t), 1, file) < 1)
+		if(fread((char*)&(test_asset->index_start), sizeof(off_t), 1, file) < 1)
 			return 1;
 
 // read test_asset info from index
 		char *data;
 
 		data = new char[test_asset->index_start];
-		if(fread(data, test_asset->index_start - sizeof(int64_t), 1, file))
+		if(fread(data, test_asset->index_start - sizeof(off_t), 1, file))
 		{
 			FileXML xml;
-			data[test_asset->index_start - sizeof(int64_t)] = 0;
+			data[test_asset->index_start - sizeof(off_t)] = 0;
 			xml.read_from_string(data);
 			test_asset->read(&xml);
 			delete [] data;

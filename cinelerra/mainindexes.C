@@ -103,15 +103,10 @@ void MainIndexes::add_next_asset(Asset *asset)
 		delete this_file;
 	}
 
-
-// Put copy of asset in stack, not the real thing.
 	if(!got_it)
 	{
-		Asset *new_asset = new Asset;
-		*new_asset = *asset;
-// If the asset existed and was overwritten, the status will be READY.
-		new_asset->index_status = INDEX_NOTTESTED;
-		next_assets.append(new_asset);
+		asset->index_status = INDEX_NOTTESTED;
+		next_assets.append(asset);
 	}
 
 	next_lock->unlock();
@@ -119,8 +114,6 @@ void MainIndexes::add_next_asset(Asset *asset)
 
 void MainIndexes::delete_current_assets()
 {
-	for(int i = 0; i < current_assets.total; i++)
-		Garbage::delete_object(current_assets.values[i]);
 	current_assets.remove_all();
 }
 
@@ -138,7 +131,6 @@ void MainIndexes::stop_loop()
 	interrupt_lock->unlock();
 	Thread::join();
 }
-
 
 void MainIndexes::start_build()
 {
@@ -167,7 +159,6 @@ void MainIndexes::load_next_assets()
 	next_assets.remove_all();
 	next_lock->unlock();
 }
-
 
 void MainIndexes::run()
 {
@@ -201,13 +192,8 @@ void MainIndexes::run()
 					if(progress->is_cancelled()) interrupt_flag = 1;
 				}
 				else
-// Exists.  Update real thing.
 				{
-					if(current_asset->index_status == INDEX_NOTTESTED)
-					{
-						current_asset->index_status = INDEX_READY;
-						mwindow->edl->set_index_file(current_asset);
-					}
+					current_asset->index_status = INDEX_READY;
 					indexfile->close_index();
 				}
 			}

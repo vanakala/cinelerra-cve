@@ -971,7 +971,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			{
 // Test index file
 				IndexFile indexfile(this);
-				result = indexfile.open_index(this, new_asset);
+				result = indexfile.open_index(new_asset);
 				if(!result)
 				{
 					indexfile.close_index();
