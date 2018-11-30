@@ -99,7 +99,7 @@ void AssetList::remove_unused()
 
 	for(Asset *current = first; current;)
 	{
-		if(!current->global_inuse)
+		if(!current->global_inuse && current->index_status == INDEX_READY)
 		{
 			asset = current->next;
 			remove_asset(current);
