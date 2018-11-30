@@ -181,6 +181,8 @@ public:
 // Get the total output size scaled to aspect ratio
 	void output_dimensions_scaled(int &w, int &h);
 	double get_sample_aspect_ratio();
+// Create tracks from assets
+	void finalize_edl(int load_mode);
 
 // Clips
 	ArrayList<EDL*> clips;

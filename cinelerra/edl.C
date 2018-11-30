@@ -32,7 +32,9 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "filesystem.h"
 #include "labels.h"
+#include "loadmode.inc"
 #include "localsession.h"
 #include "mutex.h"
 #include "panauto.h"
@@ -959,4 +961,77 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 		temp /= session->sample_rate;
 
 	return temp;
+}
+
+void EDL::finalize_edl(int load_mode)
+{
+	Track *first, *current;
+	ptstime track_length;
+	int no_track = 0;
+
+// There are no tracks created
+	session->video_tracks = 0;
+	session->audio_tracks = 0;
+
+	for(int i = 0; i < assets->total; i++)
+	{
+		Asset *new_asset = assets->values[i];
+		first = 0;
+
+		if(i == 0)
+		{
+			// Use name of the first asset as clip name
+			char string[BCTEXTLEN];
+			FileSystem fs;
+
+			fs.extract_name(string, new_asset->path);
+			strcpy(local_session->clip_title, string);
+		}
+
+		if(load_mode == LOADMODE_REPLACE_CONCATENATE ||
+			load_mode == LOADMODE_CONCATENATE)
+		{
+			track_length = tracks->total_length_framealigned(session->frame_rate);
+			no_track = i;
+			if(i)
+			{
+				if(session->cursor_on_frames)
+					tracks->clear(track_length, tracks->total_length() + 100, 1);
+			}
+		}
+		else
+			track_length = 0;
+
+		if(!no_track && new_asset->video_data)
+		{
+			session->video_tracks += new_asset->layers;
+
+			for(int k = 0; k < new_asset->layers; k++)
+			{
+				current = tracks->add_video_track(0, 0);
+				if(!first)
+					first = current;
+			}
+		}
+
+		if(!no_track && new_asset->audio_data)
+		{
+			session->audio_tracks += new_asset->channels;
+
+			for(int k = 0; k < new_asset->channels; k++)
+			{
+				current = tracks->add_audio_track(0, 0);
+				if(!first)
+					first = current;
+			}
+		}
+		insert_asset(new_asset, track_length, first);
+	}
+
+// Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
+	if(session->cursor_on_frames)
+	{
+		track_length = tracks->total_length_framealigned(session->frame_rate);
+		tracks->clear(track_length, tracks->total_length() + 100, 1);
+	}
 }
