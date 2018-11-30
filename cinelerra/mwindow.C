@@ -840,10 +840,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode,
 	int update_filename)
 {
-SET_TRACE
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
-	ArrayList<File*> new_files;
+	int result = 0;
 
 	save_defaults();
 	gui->start_hourglass();
@@ -857,19 +856,18 @@ SET_TRACE
 		assetlist_global.reset_inuse();
 
 // Define new_edls and new_assets to load
-	int result = 0;
 	for(int i = 0; i < filenames->total; i++)
 	{
 // Get type of file
 		File *new_file = new File;
-		Asset *new_asset = new Asset(filenames->values[i]);
+		Asset *new_asset;
 		EDL *new_edl = 0;
 		Asset *next_asset;
 
-// Set reel name and number for the asset
-// If the user wants to overwrite the last used reel number for the clip,
-// we have to rebuild the index for the file
+		if(new_asset = assetlist_global.get_asset(filenames->values[i]))
+			continue;
 
+		new_asset = new Asset(filenames->values[i]);
 		gui->show_message("Loading %s", new_asset->path);
 // Open all streams
 		result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
@@ -891,29 +889,39 @@ SET_TRACE
 
 				if(new_asset->nb_programs)
 				{
+					delete new_file;
+					new_file = 0;
+
+					if(load_mode != LOADMODE_RESOURCESONLY)
+					{
+						new_edl = new EDL;
+						new_edl->copy_session(edl);
+					}
+
 					for(i = 0; i < new_asset->nb_programs; i++)
 					{
 						new_asset->set_program(i);
+						next_asset = new Asset();
+						next_asset->copy_from(new_asset, 0);
 
 						if(load_mode != LOADMODE_RESOURCESONLY)
 						{
-							new_edl = new EDL;
-							new_edl->copy_session(edl);
-// make a copy for assetlist_global
-							next_asset = new Asset();
-							next_asset->copy_from(new_asset, 0);
-							assetlist_global.add_asset(next_asset);
-							asset_to_edl(new_edl, new_asset);
-							new_edls.append(new_edl);
-							new_edl = 0;
+							new_asset = assetlist_global.add_asset(new_asset);
+							new_edl->update_assets(new_asset);
+							mainindexes->add_next_asset(0, new_asset);
 						}
 						else
-						{
-							next_asset = new Asset();
-							next_asset->copy_from(new_asset, 0);
 							new_assets.append(new_asset);
-							new_asset = next_asset;
-						}
+
+						new_asset = next_asset;
+					}
+					Garbage::delete_object(new_asset);
+					new_asset = 0;
+					if(load_mode != LOADMODE_RESOURCESONLY)
+					{
+						new_edl->finalize_edl(load_mode);
+						new_edls.append(new_edl);
+						new_edl = 0;
 					}
 				}
 				else
@@ -922,9 +930,11 @@ SET_TRACE
 					{
 						new_edl = new EDL;
 						new_edl->copy_session(edl);
-						asset_to_edl(new_edl, new_asset);
+						new_asset = assetlist_global.add_asset(new_asset);
+						new_edl->update_assets(new_asset);
+						new_edl->finalize_edl(load_mode);
 						new_edls.append(new_edl);
-						assetlist_global.add_asset(new_asset);
+						mainindexes->add_next_asset(0, new_asset);
 						new_asset = 0;
 						new_edl = 0;
 					}
@@ -950,6 +960,10 @@ SET_TRACE
 			case FILE_NOT_FOUND:
 				errormsg(_("Failed to open %s"), new_asset->path);
 				result = 1;
+				delete new_file;
+				Garbage::delete_object(new_asset);
+				new_file = 0;
+				new_asset = 0;
 				break;
 
 // Unknown format
@@ -971,7 +985,6 @@ SET_TRACE
 					{
 						Garbage::delete_object(new_asset);
 						new_asset = old_asset;
-						new_asset->global_inuse = 1;
 						result = 0;
 					}
 				}
@@ -1023,9 +1036,11 @@ SET_TRACE
 					{
 						new_edl = new EDL;
 						new_edl->copy_session(edl);
-						asset_to_edl(new_edl, new_asset);
+						new_asset = assetlist_global.add_asset(new_asset);
+						new_edl->update_assets(new_asset);
+						new_edl->finalize_edl(load_mode);
+						mainindexes->add_next_asset(0, new_asset);
 						new_edls.append(new_edl);
-						assetlist_global.add_asset(new_asset);
 						new_asset = 0;
 						new_edl = 0;
 					}
@@ -1033,6 +1048,8 @@ SET_TRACE
 					{
 						new_assets.append(new_asset);
 					}
+					delete new_file;
+					new_file = 0;
 				}
 				else
 				{
@@ -1060,22 +1077,23 @@ SET_TRACE
 					if(update_filename)
 						set_filename(new_edl->local_session->clip_title);
 				}
+
 // Open media files found in xml - open fills media info
 				for(int i = 0; i < new_edl->assets->total; i++)
 				{
 					Asset *current = new_edl->assets->values[i];
-					new_files.append(new_file);
+					delete new_file;
 					new_file = new File;
 					if(new_file->open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
 					{
 						result++;
 						break;
 					}
-// Make a copy for assetlist_global
-					new_asset = new Asset();
-					new_asset->copy_from(current, 0);
-					assetlist_global.add_asset(new_asset);
+					else
+						mainindexes->add_next_asset(0, current);
 				}
+				delete new_file;
+				new_file = 0;
 				if(!result)
 				{
 					new_edls.append(new_edl);
@@ -1093,15 +1111,10 @@ SET_TRACE
 			new_edl = 0;
 			new_asset = 0;
 		}
-
-// Store for testing index
-		new_files.append(new_file);
 	}
 
 	gui->statusbar->default_message();
-
 // Paste them.
-// Don't back up here.
 	if(new_edls.total)
 	{
 // For pasting, clear the active region
@@ -1130,38 +1143,18 @@ SET_TRACE
 		for(int i = 0; i < new_assets.total; i++)
 		{
 			Asset *new_asset = new_assets.values[i];
-			File *new_file = 0;
-			File *index_file = 0;
-			int got_it = 0;
-			for(int j = 0; j < new_files.total; j++)
-			{
-				new_file = new_files.values[j];
-				if(!strcmp(new_file->asset->path,
-					new_asset->path))
-				{
-					got_it = 1;
-					break;
-				}
-			}
-
-			mainindexes->add_next_asset(got_it ? new_file : 0, 
-				new_asset);
+			new_asset = assetlist_global.add_asset(new_asset);
+			mainindexes->add_next_asset(0, new_asset);
 			edl->update_assets(new_asset);
 		}
-
 // Start examining next batch of index files
 		mainindexes->start_build();
 	}
 
 	update_project(load_mode);
-
 	new_edls.remove_all_objects();
 
-	for(int i = 0; i < new_assets.total; i++)
-		assetlist_global.add_asset(new_assets.values[i]);
-
 	new_assets.remove_all();
-	new_files.remove_all_objects();
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
