@@ -115,7 +115,7 @@ void AssetEdit::run()
 						asset->path, asset->audio_streamno - 1);
 					remove(index_filename);
 					asset->index_status = INDEX_NOTTESTED;
-					mwindow->mainindexes->add_next_asset(0, asset);
+					mwindow->mainindexes->add_next_asset(asset);
 					mwindow->mainindexes->start_build();
 				}
 

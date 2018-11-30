@@ -62,7 +62,7 @@ MainIndexes::~MainIndexes()
 	delete interrupt_lock;
 }
 
-void MainIndexes::add_next_asset(File *file, Asset *asset)
+void MainIndexes::add_next_asset(Asset *asset)
 {
 	next_lock->lock("MainIndexes::add_next_asset");
 
@@ -80,13 +80,9 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 
 	if(!got_it)
 	{
-		File *this_file = file;
+		File *this_file = new File;
 
-		if(!file)
-		{
-			this_file = new File;
-			this_file->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO);
-		}
+		this_file->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO);
 
 		char index_filename[BCTEXTLEN];
 		char source_filename[BCTEXTLEN];
@@ -104,7 +100,7 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 				got_it = 1;
 			}
 		}
-		if(!file) delete this_file;
+		delete this_file;
 	}
 
 

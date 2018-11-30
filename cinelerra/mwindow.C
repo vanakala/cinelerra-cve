@@ -908,7 +908,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						{
 							new_asset = assetlist_global.add_asset(new_asset);
 							new_edl->update_assets(new_asset);
-							mainindexes->add_next_asset(0, new_asset);
+							mainindexes->add_next_asset(new_asset);
 						}
 						else
 							new_assets.append(new_asset);
@@ -934,7 +934,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						new_edl->update_assets(new_asset);
 						new_edl->finalize_edl(load_mode);
 						new_edls.append(new_edl);
-						mainindexes->add_next_asset(0, new_asset);
+						mainindexes->add_next_asset(new_asset);
 						new_asset = 0;
 						new_edl = 0;
 					}
@@ -1039,7 +1039,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						new_asset = assetlist_global.add_asset(new_asset);
 						new_edl->update_assets(new_asset);
 						new_edl->finalize_edl(load_mode);
-						mainindexes->add_next_asset(0, new_asset);
+						mainindexes->add_next_asset(new_asset);
 						new_edls.append(new_edl);
 						new_asset = 0;
 						new_edl = 0;
@@ -1090,7 +1090,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						break;
 					}
 					else
-						mainindexes->add_next_asset(0, current);
+						mainindexes->add_next_asset(current);
 				}
 				delete new_file;
 				new_file = 0;
@@ -1144,7 +1144,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		{
 			Asset *new_asset = new_assets.values[i];
 			new_asset = assetlist_global.add_asset(new_asset);
-			mainindexes->add_next_asset(0, new_asset);
+			mainindexes->add_next_asset(new_asset);
 			edl->update_assets(new_asset);
 		}
 // Start examining next batch of index files
@@ -1693,7 +1693,7 @@ void MWindow::rebuild_indices()
 		remove(index_filename);
 // Schedule index build
 		session->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
-		mainindexes->add_next_asset(0, session->drag_assets->values[i]);
+		mainindexes->add_next_asset(session->drag_assets->values[i]);
 	}
 	mainindexes->start_build();
 }

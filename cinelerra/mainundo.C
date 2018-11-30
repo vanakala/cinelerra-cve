@@ -291,7 +291,7 @@ void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 	mwindow->edl->load_xml(file, load_flags);
 	for(int i = 0; i < mwindow->edl->assets->total; i++)
 	{
-		mwindow->mainindexes->add_next_asset(0, mwindow->edl->assets->values[i]);
+		mwindow->mainindexes->add_next_asset(mwindow->edl->assets->values[i]);
 	}
 	mwindow->mainindexes->start_build();
 }

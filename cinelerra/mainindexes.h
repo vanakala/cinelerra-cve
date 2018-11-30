@@ -38,7 +38,7 @@ public:
 	MainIndexes(MWindow *mwindow);
 	~MainIndexes();
 
-	void add_next_asset(File *file, Asset *asset);
+	void add_next_asset(Asset *asset);
 
 	void start_loop();
 	void stop_loop();
