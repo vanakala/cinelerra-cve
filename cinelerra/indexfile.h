@@ -55,7 +55,7 @@ public:
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);
 	int close_index();
 	int remove_index();
-	int read_info(Asset *test_asset = 0);
+	int read_info();
 	int write_info();
 
 	MWindow *mwindow;

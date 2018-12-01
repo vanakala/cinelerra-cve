@@ -84,18 +84,8 @@ int IndexFile::open_index(Asset *asset)
 	}
 	else
 	if(!(result = open_file()))
-	{
 // opened existing file
-		if(read_info())
-		{
-			result = 1;
-			close_index();
-		}
-		else
-		{
-			asset->index_status = INDEX_READY;
-		}
-	}
+		asset->index_status = INDEX_READY;
 	else
 	{
 		result = 1;
@@ -118,6 +108,7 @@ void IndexFile::delete_index(Preferences *preferences, Asset *asset)
 
 int IndexFile::open_file()
 {
+	struct stat file_stat, idx_stat;
 	int result = 0;
 
 	get_index_filename(source_filename, 
@@ -128,13 +119,12 @@ int IndexFile::open_file()
 	if(file = fopen(index_filename, "rb"))
 	{
 // Index file already exists.
-// Get its last size without changing the status.
-		Asset *test_asset = new Asset;
-		*test_asset = *asset;
-		read_info(test_asset);
+		memset(&file_stat, 0, sizeof(struct stat));
+		memset(&idx_stat, 0, sizeof(struct stat));
+		stat(index_filename, &idx_stat);
+		stat(asset->path, &file_stat);
 
-		FileSystem fs;
-		if(fs.get_date(index_filename) < fs.get_date(test_asset->path))
+		if(read_info() || idx_stat.st_mtime < file_stat.st_mtime)
 		{
 // index older than source
 			result = 2;
@@ -142,7 +132,7 @@ int IndexFile::open_file()
 			file = 0;
 		}
 		else
-		if(fs.get_size(asset->path) != test_asset->index_bytes)
+		if(file_stat.st_size != asset->index_bytes)
 		{
 // source file is a different size than index source file
 			result = 2;
@@ -151,12 +141,9 @@ int IndexFile::open_file()
 		}
 		else
 		{
-			fseek(file, 0, SEEK_END);
-			file_length = ftell(file);
-			fseek(file, 0, SEEK_SET);
+			file_length = idx_stat.st_size;
 			result = 0;
 		}
-		Garbage::delete_object(test_asset);
 	}
 	else
 	{
@@ -533,27 +520,24 @@ int IndexFile::remove_index()
 	}
 }
 
-int IndexFile::read_info(Asset *test_asset)
+int IndexFile::read_info()
 {
-	if(!test_asset) test_asset = asset;
-	if(test_asset->index_status == INDEX_NOTTESTED)
+	if(asset->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data
-		if(fread((char*)&(test_asset->index_start), sizeof(off_t), 1, file) < 1)
+		if(fread((char*)&(asset->index_start), sizeof(off_t), 1, file) < 1)
 			return 1;
-
 // read test_asset info from index
-		char *data;
+		char *data = new char[asset->index_start];
 
-		data = new char[test_asset->index_start];
-		if(fread(data, test_asset->index_start - sizeof(off_t), 1, file))
+		if(fread(data, asset->index_start - sizeof(off_t), 1, file))
 		{
 			FileXML xml;
-			data[test_asset->index_start - sizeof(off_t)] = 0;
+			data[asset->index_start - sizeof(off_t)] = 0;
 			xml.read_from_string(data);
-			test_asset->read(&xml);
+			asset->read(&xml);
 			delete [] data;
-			if(test_asset->format == FILE_UNKNOWN)
+			if(asset->format == FILE_UNKNOWN)
 				return 1;
 		}
 		else
