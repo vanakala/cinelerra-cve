@@ -30,6 +30,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "localsession.h"
+#include "loadmode.inc"
 #include "mainclock.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -74,8 +75,6 @@ void VWindow::delete_edl()
 		mwindow->edl->vwindow_edl = 0;
 		mwindow->edl->vwindow_edl_shared = 0;
 	}
-
-	if(asset) Garbage::delete_object(asset);
 	asset = 0;
 }
 
@@ -104,7 +103,6 @@ void VWindow::change_source()
 	}
 	else
 	{
-		if(asset) Garbage::delete_object(asset);
 		asset = 0;
 		mwindow->edl->vwindow_edl_shared = 0;
 	}
@@ -120,11 +118,11 @@ void VWindow::change_source(Asset *asset)
 	gui->canvas->clear_canvas();
 
 // Generate EDL off of main EDL for cutting
-	this->asset = new Asset;
-	*this->asset = *asset;
+	this->asset = asset;
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
 	mwindow->edl->vwindow_edl_shared = 0;
-	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
+	mwindow->edl->vwindow_edl->update_assets(asset);
+	mwindow->edl->vwindow_edl->finalize_edl(LOADMODE_REPLACE);
 
 // Update GUI
 	gui->change_source(mwindow->edl->vwindow_edl, title);
