@@ -716,6 +716,9 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 			this->assets->remove(assets->values[i]);
 		}
 	}
+// Remove from global list
+	if(!parent_edl)
+		assetlist_global.remove(assets);
 }
 
 void EDL::update_assets(EDL *src)
