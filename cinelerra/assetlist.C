@@ -126,6 +126,24 @@ void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
 	}
 }
 
+void AssetList::remove(ArrayList<Asset*> *assets)
+{
+	for(int i = 0; i < assets->total; i++)
+	{
+		Asset *asset = assets->values[i];
+
+		for(Asset* current = first; current; current = current->next)
+		{
+			if(asset == current)
+			{
+				remove_asset(current);
+				break;
+			}
+		}
+	}
+}
+
+
 void AssetList::dump(int indent)
 {
 	printf("%*sAssetList %p dump(%d)\n", indent, "", this, total());
