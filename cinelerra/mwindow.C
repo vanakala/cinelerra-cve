@@ -852,7 +852,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);
 
-	if(load_mode == LOADMODE_REPLACE)
+	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 		assetlist_global.reset_inuse();
 
 // Define new_edls and new_assets to load
