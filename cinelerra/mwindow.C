@@ -1151,6 +1151,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		mainindexes->start_build();
 	}
 
+	assetlist_global.remove_unused();
 	update_project(load_mode);
 	new_edls.remove_all_objects();
 
@@ -1158,7 +1159,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
-	assetlist_global.remove_unused();
 }
 
 void MWindow::test_plugins(EDL *new_edl, const char *path)
