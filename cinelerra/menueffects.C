@@ -179,7 +179,8 @@ void MenuEffectThread::run()
 // Default configuration
 	Asset *default_asset = new Asset;
 // Output
-	ArrayList<Asset*> assets;
+	ArrayList<char*> path_list;
+	path_list.set_array_delete();
 
 // check for recordable tracks
 	if(!get_recordable_tracks(default_asset))
@@ -331,7 +332,6 @@ void MenuEffectThread::run()
 
 // Close plugin.
 			plugin->save_data(&plugin_data);
-			delete plugin;
 			default_asset->sample_rate = mwindow->edl->session->sample_rate;
 			default_asset->frame_rate = mwindow->edl->session->frame_rate;
 			realtime = 1;
@@ -352,13 +352,18 @@ void MenuEffectThread::run()
 				default_asset->sample_rate = plugin->get_samplerate();
 				default_asset->frame_rate = plugin->get_framerate();
 			}
-			delete plugin;
 			realtime = 0;
 		}
+		if(plugin->audio)
+			default_asset->audio_data = 1;
+		if(plugin->video)
+			default_asset->video_data = 1;
+		delete plugin;
 
 // Should take from first recordable track
 		default_asset->width = mwindow->edl->session->output_w;
 		default_asset->height = mwindow->edl->session->output_h;
+		default_asset->init_streams();
 	}
 
 // Process the total length in fragments
@@ -435,7 +440,10 @@ void MenuEffectThread::run()
 		ptstime fragment_end = packet->end;
 		strcpy(asset->path, packet->path);
 
-		assets.append(asset);
+		char *path = new char[strlen(asset->path) + 16];
+		strcpy(path, asset->path);
+		path_list.append(path);
+
 		File *file = new File;
 
 // Open the output file after getting the information because the sample rate
@@ -444,6 +452,7 @@ void MenuEffectThread::run()
 		{
 // open output file in write mode
 			file->set_processors(mwindow->preferences->processors);
+
 			if(file->open_file(asset, FILE_OPEN_WRITE))
 			{
 // open failed
@@ -475,12 +484,11 @@ void MenuEffectThread::run()
 			plugin_array->stop_plugins();
 			mwindow->sighandler->pull_file(file);
 			file->close_file();
-			asset->audio_length = file->asset->audio_length;
-			asset->video_length = file->asset->video_length;
 			delete plugin_array;
 		}
 
 		delete file;
+		Garbage::delete_object(asset);
 	}
 
 	packets.remove_all_objects();
@@ -490,13 +498,8 @@ void MenuEffectThread::run()
 	{
 		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
-		mwindow->load_assets(&assets,
-			-1,
-			load_mode,
-			0,
-			mwindow->edl->session->edit_actions(),
-			0); // overwrite
 
+		mwindow->load_filenames(&path_list, load_mode, 0);
 		mwindow->save_backup();
 		mwindow->undo->update_undo(title, LOAD_ALL);
 
@@ -507,9 +510,7 @@ void MenuEffectThread::run()
 		mwindow->sync_parameters(CHANGE_ALL);
 	}
 
-	for(int i = 0; i < assets.total; i++)
-		Garbage::delete_object(assets.values[i]);
-	assets.remove_all();
+	path_list.remove_all_objects();
 	Garbage::delete_object(default_asset);
 }
 
