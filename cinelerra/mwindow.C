@@ -1617,42 +1617,6 @@ void MWindow::update_plugin_titles()
 	}
 }
 
-void MWindow::asset_to_edl(EDL *new_edl, 
-	Asset *new_asset)
-{
-// Keep frame rate, sample rate, and output size unchanged.
-// These parameters would revert the project if VWindow displayed an asset
-// of different size than the project.
-	if(new_asset->video_data)
-	{
-		new_edl->session->video_tracks = new_asset->layers;
-	}
-	else
-		new_edl->session->video_tracks = 0;
-
-	if(new_asset->audio_data)
-		new_edl->session->audio_tracks = new_asset->channels;
-	else
-		new_edl->session->audio_tracks = 0;
-
-	new_edl->create_default_tracks();
-
-	new_edl->insert_asset(new_asset, 0, 0);
-
-// Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
-	if(edl->session->cursor_on_frames)
-	{
-		ptstime edl_length = new_edl->tracks->total_length_framealigned(edl->session->frame_rate);
-		new_edl->tracks->clear(edl_length, new_edl->tracks->total_length() + 100, 1);
-	}
-
-	char string[BCTEXTLEN];
-	FileSystem fs;
-	fs.extract_name(string, new_asset->path);
-
-	strcpy(new_edl->local_session->clip_title, string);
-}
-
 // Reset everything after a load.
 void MWindow::update_project(int load_mode)
 {

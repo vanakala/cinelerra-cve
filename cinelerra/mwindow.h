@@ -117,7 +117,6 @@ public:
 	void show_ruler();
 	void tile_windows();
 	void set_titles(int value);
-	void asset_to_edl(EDL *new_edl, Asset *new_asset);
 
 // Entry point to insert assets and insert edls.  Called by TrackCanvas 
 // and AssetPopup when assets are dragged in from AWindow.
