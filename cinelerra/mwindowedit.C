@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "assetlist.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcclipboard.h"
@@ -891,18 +892,19 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	int actions,
 	int overwrite)
 {
-	if(position < 0) position = edl->local_session->get_selectionstart();
-
 	ArrayList<EDL*> new_edls;
-	for(int i = 0; i < new_assets->total; i++)
-	{
-		remove_asset_from_caches(new_assets->values[i]);
-		EDL *new_edl = new EDL;
-		new_edl->copy_session(edl);
-		new_edls.append(new_edl);
+	EDL *new_edl = new EDL;
 
-		asset_to_edl(new_edl, new_assets->values[i]);
-	}
+	new_edl->copy_session(edl);
+
+	if(position < 0)
+		position = edl->local_session->get_selectionstart();
+
+	for(int i = 0; i < new_assets->total; i++)
+		new_edl->update_assets(new_assets->values[i]);
+
+	new_edl->finalize_edl(load_mode);
+	new_edls.append(new_edl);
 
 	paste_edls(&new_edls, 
 		load_mode, 
