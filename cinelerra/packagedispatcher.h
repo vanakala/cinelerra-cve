@@ -55,7 +55,6 @@ public:
 	RenderPackage* get_package(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	ArrayList<Asset*>* get_asset_list();
 	void get_package_paths(ArrayList<char*> *path_list);
 
 	int get_total_packages();

@@ -339,24 +339,6 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	return result;
 }
 
-
-ArrayList<Asset*>* PackageDispatcher::get_asset_list()
-{
-	ArrayList<Asset*> *assets = new ArrayList<Asset*>;
-
-	for(int i = 0; i < current_package; i++)
-	{
-		Asset *asset = new Asset;
-		*asset = *default_asset;
-		strcpy(asset->path, packages[i]->path);
-		asset->video_length = round((packages[i]->video_end_pts - packages[i]->video_start_pts) * asset->frame_rate);
-		asset->audio_length = round((packages[i]->audio_end_pts - packages[i]->audio_start_pts) * asset->sample_rate);
-		assets->append(asset);
-	}
-
-	return assets;
-}
-
 ptstime PackageDispatcher::get_progress_max()
 {
 	if((strategy & (RENDER_FILE_PER_LABEL | RENDER_FARM)) == RENDER_FARM)
