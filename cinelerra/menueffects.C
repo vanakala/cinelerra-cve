@@ -290,7 +290,10 @@ void MenuEffectThread::run()
 	total_start = mwindow->edl->local_session->get_selectionstart();
 
 	if(PTSEQU(mwindow->edl->local_session->get_selectionend(), total_start))
+	{
 		total_end = mwindow->edl->tracks->total_playable_length();
+		total_start = 0;
+	}
 	else
 		total_end = mwindow->edl->local_session->get_selectionend();
 
@@ -471,7 +474,6 @@ void MenuEffectThread::run()
 		{
 			PluginArray *plugin_array;
 			plugin_array = create_plugin_array();
-
 			plugin_array->start_plugins(mwindow, 
 				mwindow->edl, 
 				plugin_server, 
