@@ -655,17 +655,15 @@ int Render::render(int test_overwrite,
 // Paste all packages into timeline if desired
 		if(load_mode != LOADMODE_NOTHING)
 		{
-			ArrayList<Asset*> *assets = packages->get_asset_list();
+			ArrayList<char*> path_list;
+
+			packages->get_package_paths(&path_list);
 
 			if(load_mode == LOADMODE_PASTE)
 				mwindow->clear(0);
-			mwindow->load_assets(assets,
-				-1,
-				load_mode,
-				0,
-				mwindow->edl->session->edit_actions(),
-				0); // overwrite
-			delete assets;
+			mwindow->load_filenames(&path_list, load_mode, 0);
+
+			path_list.remove_all_objects();
 
 			mwindow->save_backup();
 			mwindow->undo->update_undo(_("render"), LOAD_ALL);
