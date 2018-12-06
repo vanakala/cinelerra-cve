@@ -19,6 +19,7 @@
  * 
  */
 
+#include "assetlist.h"
 #include "bcsignals.h"
 #include "bctitle.h"
 #include "clip.h"
@@ -114,6 +115,7 @@ void New::create_new_project()
 
 	mwindow->hide_plugins();
 	delete mwindow->edl;
+	assetlist_global.delete_all();
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 
