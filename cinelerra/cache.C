@@ -66,7 +66,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 		total_lock->lock("CICache::check_out");
 		for(current = first; current && !got_it; current = NEXT)
 		{
-			if(current->asset->test_path(asset))
+			if(current->asset == asset)
 			{
 				got_it = 1;
 				break;
@@ -129,9 +129,7 @@ void CICache::check_in(Asset *asset)
 	total_lock->lock("CICache::check_in");
 	for(current = first; current; current = NEXT)
 	{
-// Need to compare paths because
-// asset pointers are different
-		if(current->asset->test_path(asset))
+		if(current->asset == asset)
 		{
 			current->checked_out = 0;
 			current->GarbageObject::remove_user();
@@ -205,8 +203,7 @@ void CICache::age()
 		prev_memory_usage = memory_usage;
 		memory_usage = get_memory_usage(0);
 	}while(prev_memory_usage != memory_usage &&
-		memory_usage > preferences->cache_size && 
-		!result);
+		memory_usage > preferences->cache_size && !result);
 }
 
 size_t CICache::get_memory_usage(int use_lock)
@@ -308,10 +305,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	int result = 0;
 	age = EDL::next_id();
 
-	this->asset = new Asset;
-
-// Must copy Asset since this belongs to an EDL which won't exist forever.
-	*this->asset = *asset;
+	this->asset = asset;
 	this->cache = cache;
 	checked_out = 0;
 
@@ -326,8 +320,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 CICacheItem::~CICacheItem()
 {
-	if(file) delete file;
-	if(asset) Garbage::delete_object(asset);
+	delete file;
 }
 
 void CICacheItem::dump(int indent)
