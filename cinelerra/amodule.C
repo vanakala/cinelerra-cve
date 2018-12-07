@@ -112,7 +112,7 @@ int AModule::render(AFrame *aframe)
 	aframe->length = 0;
 	aframe->clear_buffer();
 	aframe->samplerate = get_edl()->session->sample_rate;
-	ptstime duration = (ptstime)aframe->source_length / aframe->samplerate;
+	ptstime duration = aframe->get_source_duration();
 	ptstime end_projpts = start_projpts + duration;
 	ptstime sample_error = 0.8 / aframe->samplerate;
 
