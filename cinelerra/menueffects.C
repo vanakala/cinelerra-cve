@@ -143,8 +143,6 @@ void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 	FileXML file;
 	char path[BCTEXTLEN];
 
-	asset->save_defaults(defaults, def_prefix,
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 	asset->save_defaults(&params, ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 	params.append_param("loadmode", load_mode);
 	params.append_param("strategy", strategy);
@@ -161,6 +159,7 @@ void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
 	}
 	// Remove old version keys
+	defaults->delete_keys_prefix(def_prefix);
 	defaults->delete_key("RENDER_EFFECT_LOADMODE");
 	defaults->delete_key("RENDER_EFFECT_STRATEGY");
 }
