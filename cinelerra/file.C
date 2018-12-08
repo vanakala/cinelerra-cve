@@ -49,7 +49,7 @@
 File::File()
 {
 	cpus = 1;
-	asset = new Asset;
+	asset = 0;
 	format_completion = new Mutex("File::format_completion");
 	write_lock = new Condition(1, "File::write_lock");
 	frame_cache = new FrameCache;
@@ -68,7 +68,6 @@ File::~File()
 	if(temp_frame) delete temp_frame;
 
 	close_file(0);
-	Garbage::delete_object(asset);
 	delete format_completion;
 	delete write_lock;
 	if(frame_cache) delete frame_cache;
@@ -210,11 +209,6 @@ void File::get_options(FormatTools *format, int options)
 	format_completion->unlock();
 }
 
-void File::set_asset(Asset *asset)
-{
-	this->asset->copy_from(asset, 1);
-}
-
 void File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 	this->cpus = cpus;
@@ -252,19 +246,19 @@ int File::open_file(Asset *asset, int open_method)
 	rd = open_method & FILE_OPEN_READ;
 	wr = open_method & FILE_OPEN_WRITE;
 
-	this->asset->copy_from(asset, 1);
+	this->asset = asset;
 	file = 0;
 
 	probe_result = 0;
-	if(rd && !is_imagelist(this->asset->format))
+	if(rd && !is_imagelist(asset->format))
 	{
-		probe_result = FileAVlibs::probe_input(this->asset);
+		probe_result = FileAVlibs::probe_input(asset);
 
 		if(probe_result < 0)
 			return FILE_NOT_FOUND;
 // Probe input fills decoder parameters what
 // are not used with some formats
-		switch(this->asset->format)
+		switch(asset->format)
 		{
 		case FILE_JPEG:
 		case FILE_PNG:
@@ -275,19 +269,19 @@ int File::open_file(Asset *asset, int open_method)
 		case FILE_AU:
 		case FILE_AIFF:
 		case FILE_SND:
-			this->asset->delete_decoder_parameters();
+			asset->delete_decoder_parameters();
 			break;
 		}
 	}
 
-	switch(this->asset->format)
+	switch(asset->format)
 	{
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
 	case FILE_UNKNOWN:
 		FILE *stream;
-		if(!(stream = fopen(this->asset->path, "rb")))
+		if(!(stream = fopen(asset->path, "rb")))
 		{
 			return FILE_NOT_FOUND;
 		}
@@ -304,27 +298,27 @@ int File::open_file(Asset *asset, int open_method)
 			errormsg(_("Can't open TOC files directly"));
 			return FILE_NOT_FOUND;
 		}
-		if(FilePNG::check_sig(this->asset))
+		if(FilePNG::check_sig(asset))
 // PNG list
-			file = new FilePNG(this->asset, this);
+			file = new FilePNG(asset, this);
 		else
-		if(FileJPEG::check_sig(this->asset))
+		if(FileJPEG::check_sig(asset))
 // JPEG list
-			file = new FileJPEG(this->asset, this);
+			file = new FileJPEG(asset, this);
 		else
 #ifdef HAVE_OPENEXR
-		if(FileEXR::check_sig(this->asset, test))
+		if(FileEXR::check_sig(asset, test))
 // EXR list
-			file = new FileEXR(this->asset, this);
+			file = new FileEXR(asset, this);
 		else
 #endif
-		if(FileTGA::check_sig(this->asset))
+		if(FileTGA::check_sig(asset))
 // TGA list
-			file = new FileTGA(this->asset, this);
+			file = new FileTGA(asset, this);
 		else
-		if(FileTIFF::check_sig(this->asset))
+		if(FileTIFF::check_sig(asset))
 // TIFF list
-			file = new FileTIFF(this->asset, this);
+			file = new FileTIFF(asset, this);
 		else
 		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
 			test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
@@ -340,32 +334,32 @@ int File::open_file(Asset *asset, int open_method)
 	case FILE_AU:
 	case FILE_AIFF:
 	case FILE_SND:
-		file = new FileSndFile(this->asset, this);
+		file = new FileSndFile(asset, this);
 		break;
 
 	case FILE_PNG:
 	case FILE_PNG_LIST:
-		file = new FilePNG(this->asset, this);
+		file = new FilePNG(asset, this);
 		break;
 
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
-		file = new FileJPEG(this->asset, this);
+		file = new FileJPEG(asset, this);
 		break;
 #ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
-		file = new FileEXR(this->asset, this);
+		file = new FileEXR(asset, this);
 		break;
 #endif
 	case FILE_TGA_LIST:
 	case FILE_TGA:
-		file = new FileTGA(this->asset, this);
+		file = new FileTGA(asset, this);
 		break;
 
 	case FILE_TIFF:
 	case FILE_TIFF_LIST:
-		file = new FileTIFF(this->asset, this);
+		file = new FileTIFF(asset, this);
 		break;
 
 	case FILE_SVG:
@@ -390,12 +384,12 @@ int File::open_file(Asset *asset, int open_method)
 	case FILE_ISMV:
 	case FILE_F4V:
 	case FILE_WEBM:
-		file = new FileAVlibs(this->asset, this);
+		file = new FileAVlibs(asset, this);
 		break;
 
 	default:
 		errormsg("No suitable codec for format '%s'",
-			ContainerSelection::container_to_text(this->asset->format));
+			ContainerSelection::container_to_text(asset->format));
 		return 1;
 	}
 
@@ -409,15 +403,10 @@ int File::open_file(Asset *asset, int open_method)
 // Set extra writing parameters to mandatory settings.
 	if(file && wr)
 	{
-		if(this->asset->dither) file->set_dither();
+		if(asset->dither) file->set_dither();
 		writing = 1;
 	}
 
-// Synchronize header parameters
-	if(file)
-	{
-		asset->copy_from(this->asset, 1);
-	}
 	if(file)
 		return FILE_OK;
 	else

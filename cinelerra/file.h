@@ -61,9 +61,6 @@ public:
 // ===================================== start here
 	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
 
-// When loading, the asset is deleted and a copy created in the EDL.
-	void set_asset(Asset *asset);
-
 // Enable or disable frame caching.  Must be tied to file to know when 
 // to delete the file object.  Otherwise we'd delete just the cached frames
 // while the list of open files grew.
