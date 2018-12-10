@@ -310,7 +310,7 @@ void Render::run()
 				errormsg(_("No audo or video to render"));
 		}
 
-		Garbage::delete_object(asset);
+		delete asset;
 	}
 	else
 	if(mode == Render::BATCH)

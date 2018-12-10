@@ -185,7 +185,7 @@ void MenuEffectThread::run()
 	if(!get_recordable_tracks(default_asset))
 	{
 		errorbox(_("No recordable tracks specified."));
-		Garbage::delete_object(default_asset);
+		delete default_asset;
 		return;
 	}
 
@@ -193,7 +193,7 @@ void MenuEffectThread::run()
 	if(!plugindb->total)
 	{
 		errorbox(_("No plugins available."));
-		Garbage::delete_object(default_asset);
+		delete default_asset;
 		return;
 	}
 
@@ -489,7 +489,7 @@ void MenuEffectThread::run()
 		}
 
 		delete file;
-		Garbage::delete_object(asset);
+		delete asset;
 	}
 
 	packets.remove_all_objects();
@@ -512,7 +512,7 @@ void MenuEffectThread::run()
 	}
 
 	path_list.remove_all_objects();
-	Garbage::delete_object(default_asset);
+	delete default_asset;
 }
 
 

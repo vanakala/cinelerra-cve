@@ -50,15 +50,8 @@ ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap,
 	this->pixmap = pixmap;
 	this->asset = asset;
 	this->operation_count = operation_count;
-	asset->GarbageObject::add_user();
 	last = 0;
 }
-
-ResourceThreadItem::~ResourceThreadItem()
-{
-	asset->GarbageObject::remove_user();
-}
-
 
 VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap, 
 	int picon_x, 

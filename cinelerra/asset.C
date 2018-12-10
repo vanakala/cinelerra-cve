@@ -52,27 +52,27 @@ const char type_audio[] = "audio";
 const char type_video[] = "video";
 
 Asset::Asset()
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>()
 {
 	init_values();
 }
 
 Asset::Asset(Asset &asset)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>()
 {
 	init_values();
 	copy_from(&asset, 1);
 }
 
 Asset::Asset(const char *path)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>()
 {
 	init_values();
 	strcpy(this->path, path);
 }
 
 Asset::Asset(const int plugin_type, const char *plugin_title)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>()
 {
 	init_values();
 }

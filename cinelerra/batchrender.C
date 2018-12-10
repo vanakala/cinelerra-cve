@@ -97,7 +97,7 @@ BatchRenderJob::BatchRenderJob(Preferences *preferences, int jobnum)
 
 BatchRenderJob::~BatchRenderJob()
 {
-	Garbage::delete_object(asset);
+	delete asset;
 }
 
 void BatchRenderJob::copy_from(BatchRenderJob *src)

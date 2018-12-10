@@ -426,7 +426,7 @@ void PackageRenderer::close_output()
 		mwindow->sighandler->pull_file(file);
 	file->close_file();
 	delete file;
-	Garbage::delete_object(asset);
+	delete asset;
 }
 
 // Aborts and returns 1 if an error is encountered.

@@ -47,7 +47,7 @@ Asset* AssetList::add_asset(Asset *asset)
 		if(current->test_path(asset))
 		{
 			current->global_inuse = 1;
-			Garbage::delete_object(asset);
+			delete asset;
 			return current;
 		}
 	}
@@ -78,8 +78,7 @@ Asset* AssetList::get_asset(const char *filename, int stream)
 
 void AssetList::remove_asset(Asset *asset)
 {
-	remove_pointer(asset);
-	Garbage::delete_object(asset);
+	remove(asset);
 }
 
 void AssetList::reset_inuse()
@@ -126,7 +125,7 @@ void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
 	}
 }
 
-void AssetList::remove(ArrayList<Asset*> *assets)
+void AssetList::remove_assets(ArrayList<Asset*> *assets)
 {
 	for(int i = 0; i < assets->total; i++)
 	{

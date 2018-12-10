@@ -612,7 +612,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 			((double)timer.get_difference() / 1000);
 	}
 
-	Garbage::delete_object(default_asset);
+	delete default_asset;
 	delete edl;
 	delete preferences;
 }

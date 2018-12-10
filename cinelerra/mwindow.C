@@ -915,7 +915,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 						new_asset = next_asset;
 					}
-					Garbage::delete_object(new_asset);
+					delete new_asset;
 					new_asset = 0;
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
@@ -961,7 +961,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				errormsg(_("Failed to open %s"), new_asset->path);
 				result = 1;
 				delete new_file;
-				Garbage::delete_object(new_asset);
+				delete new_asset;
 				new_file = 0;
 				new_asset = 0;
 				break;
@@ -983,7 +983,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					Asset *old_asset = assetlist_global.get_asset(new_asset->path);
 					if(old_asset)
 					{
-						Garbage::delete_object(new_asset);
+						delete new_asset;
 						new_asset = old_asset;
 						result = 0;
 					}
@@ -1107,7 +1107,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		if(result)
 		{
 			delete new_edl;
-			Garbage::delete_object(new_asset);
+			delete new_asset;
 			new_edl = 0;
 			new_asset = 0;
 		}

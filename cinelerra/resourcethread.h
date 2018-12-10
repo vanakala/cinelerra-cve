@@ -47,7 +47,7 @@ public:
 		Asset *asset,
 		int data_type,
 		int operation_count);
-	virtual ~ResourceThreadItem();
+	virtual ~ResourceThreadItem() {};
 
 	ResourcePixmap *pixmap;
 	Asset *asset;
