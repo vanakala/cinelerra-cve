@@ -1191,7 +1191,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	delete [] paste_position;
 
 // Fix preview range
-	if(EQUIV(original_length, original_preview_end))
+	if(!EQUIV(original_length, original_preview_end))
 	{
 		edl->local_session->preview_end = edl->tracks->total_playable_length();
 	}
