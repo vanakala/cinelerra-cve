@@ -535,12 +535,7 @@ void FromTextBox::update_position(ptstime new_position)
 	char string[256];
 
 	new_position += master_edl->session->get_frame_offset();
-	Units::totext(string, 
-		new_position, 
-		master_edl->session->time_format,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(string, new_position);
 	update(string);
 }
 
@@ -567,12 +562,7 @@ void LengthTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	Units::totext(string, 
-		new_position, 
-		master_edl->session->time_format,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(string, new_position);
 	update(string);
 }
 
@@ -601,11 +591,6 @@ void ToTextBox::update_position(ptstime new_position)
 
 	new_position += master_edl->session->get_frame_offset() /
 		master_edl->session->frame_rate;
-	Units::totext(string, 
-		new_position, 
-		master_edl->session->time_format,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(string, new_position);
 	update(string);
 }

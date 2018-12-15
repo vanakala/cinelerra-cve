@@ -55,12 +55,8 @@ void MainClock::update(double position)
 
 	position += position_offset;
 
-	Units::totext(string, 
-		position,
-		master_edl->session->time_format,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(string, position);
+
 	BC_Title::update(string);
 }
 

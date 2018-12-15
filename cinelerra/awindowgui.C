@@ -268,11 +268,7 @@ void AssetPicon::init_object()
 	else
 	if(label)
 	{
-		Units::totext(name, label->position,
-				master_edl->session->time_format,
-				master_edl->session->sample_rate,
-				master_edl->session->frame_rate,
-				master_edl->session->frames_per_foot);
+		master_edl->session->ptstotext(name, label->position);
 		set_text(name);
 		icon = gui->file_icon;
 		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN];

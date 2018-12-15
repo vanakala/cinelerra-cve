@@ -102,22 +102,11 @@ void MTimeBar::draw_time()
 	ptstime view_end = master_edl->local_session->view_start_pts +
 		get_w() * time_per_pixel;
 // Get minimum distance between text marks
-	int min_pixels1 = get_text_width(MEDIUMFONT, 
-		Units::totext(string,
-			view_start,
-			master_edl->session->time_format,
-			sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot)) + TEXT_MARGIN;
-	int min_pixels2 = get_text_width(MEDIUMFONT, 
-		Units::totext(string,
-			view_end,
-			master_edl->session->time_format,
-			sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot)) + TEXT_MARGIN;
+	master_edl->session->ptstotext(string, view_start);
+	int min_pixels1 = get_text_width(MEDIUMFONT, string) + TEXT_MARGIN;
+	master_edl->session->ptstotext(string, view_start);
+	int min_pixels2 = get_text_width(MEDIUMFONT, string) + TEXT_MARGIN;
 	int min_pixels = (int)MAX(min_pixels1, min_pixels2);
-
 
 // Minimum seconds between text marks
 	double min_time = (double)min_pixels * 
@@ -337,12 +326,7 @@ void MTimeBar::draw_time()
 		int pixel = round((position1 - master_edl->local_session->view_start_pts) / time_per_pixel);
 		int pixel1 = pixel;
 
-		Units::totext(string, 
-			position1, 
-			master_edl->session->time_format,
-			sample_rate, 
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+		master_edl->session->ptstotext(string, position1);
 		set_color(get_resources()->default_text_color);
 		set_font(MEDIUMFONT);
 

@@ -474,13 +474,7 @@ void VWindowEditing::to_clip()
 		new_edl->load_xml(&file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
 		char string[BCTEXTLEN];
-		Units::totext(string, 
-				end - start, 
-				edl->session->time_format, 
-				edl->session->sample_rate, 
-				edl->session->frame_rate,
-				edl->session->frames_per_foot);
-
+		master_edl->session->ptstotext(string, end - start);
 		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
 
 		new_edl->local_session->set_selection(0);

@@ -200,12 +200,7 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 		htxt = _("   Feet frames");
 		break;
 	}
-	Units::totext(timestring,
-		(double)0,
-		timeformat,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(timestring, (ptstime)0);
 	numboxes = split_timestr(timestring);
 
 	set_icon(thread->icon_image);

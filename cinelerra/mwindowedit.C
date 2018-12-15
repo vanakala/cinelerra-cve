@@ -1493,12 +1493,7 @@ void MWindow::to_clip()
 	new_edl->load_xml(&file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
 	char string[BCTEXTLEN];
-	Units::totext(string, 
-			end - start, 
-			master_edl->session->time_format,
-			master_edl->session->sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+	master_edl->session->ptstotext(string, end - start);
 
 	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
 

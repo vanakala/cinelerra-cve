@@ -3408,12 +3408,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			synchronize_autos(change, current->autos->track, current, 0);
 
 			char string[BCTEXTLEN];
-			Units::totext(string, 
-				current->pos_time,
-				master_edl->session->time_format,
-				master_edl->session->sample_rate,
-				master_edl->session->frame_rate,
-				master_edl->session->frames_per_foot);
+			master_edl->session->ptstotext(string, current->pos_time);
 			gui->show_message("%s, %.2f", string, current->get_value());
 		}
 		break;
@@ -3437,12 +3432,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
-				Units::totext(string, 
-					current->get_control_in_pts(),
-					master_edl->session->time_format,
-					master_edl->session->sample_rate,
-					master_edl->session->frame_rate,
-					master_edl->session->frames_per_foot);
+				master_edl->session->ptstotext(string,
+					current->get_control_in_pts());
 				gui->show_message("%s, %.2f", string, current->get_control_in_value());
 			}
 		}
@@ -3463,12 +3454,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
-				Units::totext(string,
-					((FloatAuto*)current)->get_control_out_pts(),
-					master_edl->session->time_format,
-					master_edl->session->sample_rate,
-					master_edl->session->frame_rate,
-					master_edl->session->frames_per_foot);
+				master_edl->session->ptstotext(string,
+					((FloatAuto*)current)->get_control_out_pts());
 				gui->show_message("%s, %.2f", string, 
 					((FloatAuto*)current)->get_control_out_value());
 			}
@@ -3493,12 +3480,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 		current->pos_time = postime;
 
 		char string[BCTEXTLEN];
-		Units::totext(string,
-			current->pos_time,
-			master_edl->session->time_format,
-			master_edl->session->sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+		master_edl->session->ptstotext(string, current->pos_time);
 		gui->show_message("%s, %d", string, current->value);
 	}
 	return result;
@@ -3548,12 +3530,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		current->pos_time = postime;
 
 		char string[BCTEXTLEN];
-		Units::totext(string, 
-			current->pos_time,
-			master_edl->session->time_format,
-			master_edl->session->sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+		master_edl->session->ptstotext(string, current->pos_time);
 		gui->show_message(string);
 
 		ptstime position_f = current->pos_time;
