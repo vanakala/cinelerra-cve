@@ -70,6 +70,9 @@ public:
 // Duration of one frame
 	ptstime frame_duration();
 
+// Convert pts to text in current formet
+	void ptstotext(char *string, ptstime pts);
+
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;

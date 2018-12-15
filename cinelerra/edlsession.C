@@ -791,6 +791,15 @@ ptstime EDLSession::frame_duration()
 	return 1.0 / frame_rate;
 }
 
+void EDLSession::ptstotext(char *string, ptstime pts)
+{
+	Units::totext(string, pts,
+		time_format,
+		sample_rate,
+		frame_rate,
+		frames_per_foot);
+}
+
 void EDLSession::dump(int indent)
 {
 	printf("%*sEDLSession %p dump\n", indent, "", this);
