@@ -212,10 +212,10 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		0,
 		plugindb);
 
-	mwindow->edl->get_shared_plugins(thread->track,
+	master_edl->get_shared_plugins(thread->track,
 		&plugin_locations);
 
-	mwindow->edl->get_shared_tracks(thread->track,
+	master_edl->get_shared_tracks(thread->track,
 		&module_locations);
 
 // Construct listbox items
@@ -223,12 +223,12 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
-		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
+		Track *track = master_edl->tracks->number(plugin_locations.values[i]->module);
 		char *track_title = track->title;
 		int number = plugin_locations.values[i]->plugin;
-		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->get_selectionstart(1), 
-			number, 
-			0);
+		Plugin *plugin = track->get_current_plugin(
+			master_edl->local_session->get_selectionstart(1),
+			number, 0);
 		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];
 
@@ -237,7 +237,7 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	}
 	for(int i = 0; i < module_locations.total; i++)
 	{
-		Track *track = mwindow->edl->tracks->number(module_locations.values[i]->module);
+		Track *track = master_edl->tracks->number(module_locations.values[i]->module);
 		module_data.append(new BC_ListBoxItem(track->title));
 	}
 

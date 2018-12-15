@@ -272,7 +272,7 @@ void PlayTransport::handle_transport(int command,
 
 EDL* PlayTransport::get_edl()
 {
-	return mwindow->edl;
+	return master_edl;
 }
 
 

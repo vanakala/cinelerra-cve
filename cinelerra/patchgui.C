@@ -221,11 +221,11 @@ void PatchGUI::toggle_behavior(int type,
 {
 	if(toggle->shift_down())
 	{
-		int total_selected = mwindow->edl->tracks->total_of(type);
+		int total_selected = master_edl->tracks->total_of(type);
 
 		if(type == Tracks::MUTE)
 		{
-			total_selected = mwindow->edl->tracks->total() - total_selected;
+			total_selected = master_edl->tracks->total() - total_selected;
 			value = 0;
 		}
 		else
@@ -233,7 +233,7 @@ void PatchGUI::toggle_behavior(int type,
 // nothing previously selected
 		if(total_selected == 0)
 		{
-			mwindow->edl->tracks->select_all(type, value);
+			master_edl->tracks->select_all(type, value);
 		}
 		else
 		if(total_selected == 1)
@@ -241,19 +241,19 @@ void PatchGUI::toggle_behavior(int type,
 // this patch was previously the only one on
 			if((*output && value) || (!*output && !value))
 			{
-				mwindow->edl->tracks->select_all(type, value);
+				master_edl->tracks->select_all(type, value);
 			}
 // another patch was previously the only one on
 			else
 			{
-				mwindow->edl->tracks->select_all(type, !value);
+				master_edl->tracks->select_all(type, !value);
 				*output = value;
 			}
 		}
 		else
 		if(total_selected > 1)
 		{
-			mwindow->edl->tracks->select_all(type, !value);
+			master_edl->tracks->select_all(type, !value);
 			*output = value;
 		}
 		toggle->set_value(value);
@@ -469,7 +469,7 @@ MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 int MutePatch::handle_event()
 {
 	IntAuto *current;
-	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = master_edl->local_session->get_selectionstart(1);
 	Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
 
 	current = (IntAuto*)mute_autos->get_auto_for_editing(position);
@@ -481,7 +481,7 @@ int MutePatch::handle_event()
 
 	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
-	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
+	if(master_edl->session->auto_conf->autos[AUTOMATION_MUTE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -497,8 +497,8 @@ int MutePatch::button_release_event()
 
 int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
 {
-	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position);
+	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
+	unit_position = master_edl->align_to_frame(unit_position);
 
 	return ((IntAutos*)patch->track->automation->autos[AUTOMATION_MUTE])->get_value(
 		unit_position);
@@ -526,7 +526,7 @@ int ExpandPatch::handle_event()
 		get_value(),
 		this,
 		&patch->track->expand_view);
-	mwindow->trackmovement(mwindow->edl->local_session->track_start);
+	mwindow->trackmovement(master_edl->local_session->track_start);
 	return 1;
 }
 

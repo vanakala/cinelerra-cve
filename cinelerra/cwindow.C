@@ -89,7 +89,7 @@ void CWindow::hide_window()
 Track* CWindow::calculate_affected_track()
 {
 	Track* affected_track = 0;
-	for(Track *track = mwindow->edl->tracks->first;
+	for(Track *track = master_edl->tracks->first;
 		track;
 		track = track->next)
 	{
@@ -181,13 +181,13 @@ void CWindow::update(int options)
 	{
 		gui->slider->set_position();
 
-		playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
+		playback_engine->send_command(CURRENT_FRAME, master_edl);
 	}
 
 // Create tool window
 	if(options & WUPD_OPERATION)
 	{
-		gui->set_operation(mwindow->edl->session->cwindow_operation);
+		gui->set_operation(master_edl->session->cwindow_operation);
 	}
 
 	if(options & WUPD_OVERLAYS)
@@ -210,23 +210,23 @@ void CWindow::update(int options)
 	}
 
 	if(options & WUPD_ACHANNELS)
-		gui->meters->set_meters(mwindow->edl->session->audio_channels,
-			mwindow->edl->session->cwindow_meter);
+		gui->meters->set_meters(master_edl->session->audio_channels,
+			master_edl->session->cwindow_meter);
 
-	if(!mwindow->edl->session->cwindow_scrollbars)
+	if(!master_edl->session->cwindow_scrollbars)
 		gui->zoom_panel->update(_("Auto"));
 	else
-		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
+		gui->zoom_panel->update(master_edl->session->cwindow_zoom);
 
-	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
-			mwindow->edl->session->cwindow_yscroll, 
-			mwindow->edl->session->cwindow_zoom);
+	gui->canvas->update_zoom(master_edl->session->cwindow_xscroll,
+			master_edl->session->cwindow_yscroll,
+			master_edl->session->cwindow_zoom);
 
 	if(options & WUPD_ACHANNELS)
 		gui->resize_event(mwindow->session->cwindow_w,
 			mwindow->session->cwindow_h);
 	else
-		gui->canvas->reposition_window(mwindow->edl,
+		gui->canvas->reposition_window(master_edl,
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,

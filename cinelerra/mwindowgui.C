@@ -140,7 +140,7 @@ void MWindowGUI::get_scrollbars()
 	{
 		if(samplescroll) delete samplescroll;
 		samplescroll = 0;
-		mwindow->edl->local_session->view_start_pts = 0;
+		master_edl->local_session->view_start_pts = 0;
 	}
 
 	if(need_yscroll)
@@ -159,7 +159,7 @@ void MWindowGUI::get_scrollbars()
 	{
 		if(trackscroll) delete trackscroll;
 		trackscroll = 0;
-		mwindow->edl->local_session->track_start = 0;
+		master_edl->local_session->track_start = 0;
 	}
 }
 
@@ -202,8 +202,8 @@ void MWindowGUI::show()
 		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
 	mainclock->set_frame_offset( (double) 
-		(mwindow->edl->session->get_frame_offset() /
-		mwindow->edl->session->frame_rate));
+		(master_edl->session->get_frame_offset() /
+		master_edl->session->frame_rate));
 	mainclock->update(0);
 
 	cursor = new MainCursor(mwindow, this);
@@ -223,7 +223,7 @@ void MWindowGUI::redraw_time_dependancies()
 {
 	zoombar->redraw_time_dependancies();
 	timebar->update();
-	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
+	mainclock->update(master_edl->local_session->get_selectionstart(1));
 }
 
 void MWindowGUI::focus_out_event()
@@ -250,13 +250,13 @@ void MWindowGUI::resize_event(int w, int h)
 
 void MWindowGUI::update(int options)
 {
-	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+	master_edl->tracks->update_y_pixels(mwindow->theme);
 	if(options & WUPD_SCROLLBARS) this->get_scrollbars();
 	if(options & WUPD_TIMEBAR) this->timebar->update();
 	if(options & WUPD_ZOOMBAR) this->zoombar->update();
 	if(options & WUPD_PATCHBAY) this->patchbay->update();
 	if(options & WUPD_CLOCK) this->mainclock->update(
-		mwindow->edl->local_session->get_selectionstart(1));
+		master_edl->local_session->get_selectionstart(1));
 	if(options & WUPD_CANVAS)
 	{
 		this->canvas->draw(options & WUPD_CANVAS);
@@ -484,7 +484,7 @@ int MWindowGUI::keypress_event()
 			if(get_keypress() == TAB)
 			{
 // Switch the record button
-				for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
+				for(Track *track = master_edl->tracks->first; track; track = track->next)
 				{
 					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
@@ -504,7 +504,7 @@ int MWindowGUI::keypress_event()
 			else
 			{
 				Track *this_track = 0;
-				for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
+				for(Track *track = master_edl->tracks->first; track; track = track->next)
 				{
 					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
@@ -518,12 +518,12 @@ int MWindowGUI::keypress_event()
 					}
 				}
 
-				int total_selected = mwindow->edl->tracks->total_of(Tracks::RECORD);
+				int total_selected = master_edl->tracks->total_of(Tracks::RECORD);
 
 // nothing previously selected
 				if(total_selected == 0)
 				{
-					mwindow->edl->tracks->select_all(Tracks::RECORD,
+					master_edl->tracks->select_all(Tracks::RECORD,
 						1);
 				}
 				else
@@ -532,13 +532,13 @@ int MWindowGUI::keypress_event()
 // this patch was previously the only one on
 					if(this_track && this_track->record)
 					{
-						mwindow->edl->tracks->select_all(Tracks::RECORD,
+						master_edl->tracks->select_all(Tracks::RECORD,
 							1);
 					}
 // another patch was previously the only one on
 					else
 					{
-						mwindow->edl->tracks->select_all(Tracks::RECORD,
+						master_edl->tracks->select_all(Tracks::RECORD,
 							0);
 						if (this_track)
 							this_track->record = 1;
@@ -548,7 +548,7 @@ int MWindowGUI::keypress_event()
 				else
 				if(total_selected > 1)
 				{
-					mwindow->edl->tracks->select_all(Tracks::RECORD,
+					master_edl->tracks->select_all(Tracks::RECORD,
 						0);
 					if (this_track) 
 						this_track->record = 1;

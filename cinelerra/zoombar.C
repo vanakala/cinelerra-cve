@@ -112,7 +112,7 @@ void ZoomBar::show()
 void ZoomBar::update_formatting(BC_TextBox *dst)
 {
 	dst->set_separators(
-		Units::format_to_separators(mwindow->edl->session->time_format));
+		Units::format_to_separators(master_edl->session->time_format));
 }
 
 void ZoomBar::resize_event()
@@ -133,7 +133,7 @@ void ZoomBar::redraw_time_dependancies()
 {
 // Recalculate sample zoom menu
 	sample_zoom->update_menu();
-	sample_zoom->update(mwindow->edl->local_session->zoom_time);
+	sample_zoom->update(master_edl->local_session->zoom_time);
 	update_formatting(from_value);
 	update_formatting(length_value);
 	update_formatting(to_value);
@@ -149,24 +149,24 @@ void ZoomBar::draw()
 void ZoomBar::update_autozoom()
 {
 	char string[BCTEXTLEN];
-	switch (mwindow->edl->local_session->zoombar_showautotype)
+	switch(master_edl->local_session->zoombar_showautotype)
 	{
 	case AUTOGROUPTYPE_AUDIO_FADE:
 	case AUTOGROUPTYPE_VIDEO_FADE:
 		sprintf(string, "%0.01f to %0.01f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype],
+			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype]);
 		break;
 	case AUTOGROUPTYPE_ZOOM:
 		sprintf(string, "%0.03f to %0.03f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype],
+			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype]);
 		break;
 	case AUTOGROUPTYPE_X:
 	case AUTOGROUPTYPE_Y:
 		sprintf(string, "%0.0f to %.0f\n", 
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype],
+			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype]);
 		break;
 	}
 	auto_zoom_text->update(string);
@@ -174,19 +174,19 @@ void ZoomBar::update_autozoom()
 
 void ZoomBar::update()
 {
-	sample_zoom->update(mwindow->edl->local_session->zoom_time);
-	amp_zoom->update(mwindow->edl->local_session->zoom_y);
-	track_zoom->update(mwindow->edl->local_session->zoom_track);
+	sample_zoom->update(master_edl->local_session->zoom_time);
+	amp_zoom->update(master_edl->local_session->zoom_y);
+	track_zoom->update(master_edl->local_session->zoom_track);
 	update_autozoom();
 	update_clocks();
 }
 
 void ZoomBar::update_clocks()
 {
-	from_value->update_position(mwindow->edl->local_session->get_selectionstart(1));
-	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) - 
-		mwindow->edl->local_session->get_selectionstart(1));
-	to_value->update_position(mwindow->edl->local_session->get_selectionend(1));
+	from_value->update_position(master_edl->local_session->get_selectionstart(1));
+	length_value->update_position(master_edl->local_session->get_selectionend(1) -
+		master_edl->local_session->get_selectionstart(1));
+	to_value->update_position(master_edl->local_session->get_selectionend(1));
 }
 
 void ZoomBar::resize_event(int w, int h)
@@ -202,8 +202,8 @@ void ZoomBar::resize_event(int w, int h)
 
 void ZoomBar::set_selection(int which_one)
 {
-	ptstime start_position = mwindow->edl->local_session->get_selectionstart(1);
-	ptstime end_position = mwindow->edl->local_session->get_selectionend(1);
+	ptstime start_position = master_edl->local_session->get_selectionstart(1);
+	ptstime end_position = master_edl->local_session->get_selectionend(1);
 	ptstime length = end_position - start_position;
 
 // Fix bogus results
@@ -212,70 +212,70 @@ void ZoomBar::set_selection(int which_one)
 	{
 	case SET_LENGTH:
 		start_position = Units::text_to_seconds(from_value->get_text(), 
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 		length = Units::text_to_seconds(length_value->get_text(),
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 		end_position = start_position + length;
 
 		if(end_position < start_position)
 		{
 			start_position = end_position;
-			mwindow->edl->local_session->set_selectionend(
-				mwindow->edl->local_session->get_selectionstart(1));
+			master_edl->local_session->set_selectionend(
+				master_edl->local_session->get_selectionstart(1));
 		}
 		break;
 
 	case SET_FROM:
 		start_position = Units::text_to_seconds(from_value->get_text(), 
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 		end_position = Units::text_to_seconds(to_value->get_text(), 
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 
 		if(end_position < start_position)
 		{
 			end_position = start_position;
-			mwindow->edl->local_session->set_selectionend(
-				mwindow->edl->local_session->get_selectionstart(1));
+			master_edl->local_session->set_selectionend(
+				master_edl->local_session->get_selectionstart(1));
 		}
 		break;
 
 	case SET_TO:
 		start_position = Units::text_to_seconds(from_value->get_text(),
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 		end_position = Units::text_to_seconds(to_value->get_text(),
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->sample_rate,
+			master_edl->session->time_format,
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 
 		if(end_position < start_position)
 		{
 			start_position = end_position;
-			mwindow->edl->local_session->set_selectionend(
-				mwindow->edl->local_session->get_selectionstart(1));
+			master_edl->local_session->set_selectionend(
+				master_edl->local_session->get_selectionstart(1));
 		}
 		break;
 	}
 
-	mwindow->edl->local_session->set_selectionstart(
-		mwindow->edl->align_to_frame(start_position));
-	mwindow->edl->local_session->set_selectionend(
-		mwindow->edl->align_to_frame(end_position));
+	master_edl->local_session->set_selectionstart(
+		master_edl->align_to_frame(start_position));
+	master_edl->local_session->set_selectionend(
+		master_edl->align_to_frame(end_position));
 
 	mwindow->gui->timebar->update_highlights();
 	mwindow->gui->cursor->hide();
@@ -292,7 +292,7 @@ SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
 	int y)
  : ZoomPanel(mwindow, 
 	zoombar,
-	mwindow->edl->local_session->zoom_time, 
+	master_edl->local_session->zoom_time,
 	x, 
 	y, 
 	110, 
@@ -317,7 +317,7 @@ int SampleZoomPanel::handle_event()
 AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, 
 	zoombar,
-	mwindow->edl->local_session->zoom_y, 
+	master_edl->local_session->zoom_y,
 	x, 
 	y, 
 	80,
@@ -342,7 +342,7 @@ int AmpZoomPanel::handle_event()
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, 
 	zoombar, 
-	mwindow->edl->local_session->zoom_track, 
+	master_edl->local_session->zoom_track,
 	x, 
 	y, 
 	70,
@@ -360,7 +360,7 @@ TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 int TrackZoomPanel::handle_event()
 {
 	mwindow->zoom_track((int64_t)get_value());
-	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
+	zoombar->amp_zoom->update(master_edl->local_session->zoom_y);
 	return 1;
 }
 
@@ -381,7 +381,7 @@ AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changem
 
 void AutoZoom::handle_up_event()
 {
-	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,1,changemax);
+	mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
@@ -391,7 +391,7 @@ void AutoZoom::handle_up_event()
 
 void AutoZoom::handle_down_event()
 {
-	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,0,changemax);
+	mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
@@ -401,7 +401,7 @@ void AutoZoom::handle_down_event()
 
 
 AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
-	: BC_PopupMenu(x, y, 120,to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
+	: BC_PopupMenu(x, y, 120,to_text(master_edl->local_session->zoombar_showautotype), 1)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -448,7 +448,7 @@ int AutoTypeMenu::from_text(const char *text)
 
 int AutoTypeMenu::handle_event()
 {
-	mwindow->edl->local_session->zoombar_showautotype = from_text(this->get_text());
+	master_edl->local_session->zoombar_showautotype = from_text(this->get_text());
 	this->zoombar->update_autozoom();
 	return 1;
 }
@@ -476,11 +476,11 @@ int ZoomTextBox::button_press_event()
 
 	// increment
 	if (get_buttonpress() == 4)
-		mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype, 1, changemax);
+		mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, changemax);
 
 	// decrement
 	if (get_buttonpress() == 5)
-		mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype, 0, changemax);
+		mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
@@ -495,12 +495,12 @@ int ZoomTextBox::handle_event()
 
 	if (sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
 	{
-		AUTOMATIONVIEWCLAMPS(min, mwindow->edl->local_session->zoombar_showautotype);
-		AUTOMATIONVIEWCLAMPS(max, mwindow->edl->local_session->zoombar_showautotype);
+		AUTOMATIONVIEWCLAMPS(min, master_edl->local_session->zoombar_showautotype);
+		AUTOMATIONVIEWCLAMPS(max, master_edl->local_session->zoombar_showautotype);
 		if (max > min) 
 		{
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = min;
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = max;
+			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype] = min;
+			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype] = max;
 			mwindow->gui->zoombar->update_autozoom();
 			mwindow->gui->canvas->draw_overlays();
 			mwindow->gui->patchbay->update();
@@ -534,13 +534,13 @@ void FromTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += mwindow->edl->session->get_frame_offset();
+	new_position += master_edl->session->get_frame_offset();
 	Units::totext(string, 
 		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->time_format,
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	update(string);
 }
 
@@ -569,10 +569,10 @@ void LengthTextBox::update_position(ptstime new_position)
 
 	Units::totext(string, 
 		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->time_format,
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	update(string);
 }
 
@@ -599,13 +599,13 @@ void ToTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += mwindow->edl->session->get_frame_offset() /
-			mwindow->edl->session->frame_rate;
+	new_position += master_edl->session->get_frame_offset() /
+		master_edl->session->frame_rate;
 	Units::totext(string, 
 		new_position, 
-		mwindow->edl->session->time_format, 
-		mwindow->edl->session->sample_rate, 
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->time_format,
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	update(string);
 }

@@ -113,7 +113,7 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 	this->keyframe_auto = auto_keyframe;
 
 	/* FIXPOS snap to cursor */
-	ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime current_position = master_edl->local_session->get_selectionstart(1);
 	ptstime new_position = keyframe_auto->pos_time;
 	if(autos->first == auto_keyframe)
 	{
@@ -137,7 +137,7 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 
 	handle_tangent_mode(autos, auto_keyframe);
 
-	mwindow->edl->local_session->set_selection(new_position);
+	master_edl->local_session->set_selection(new_position);
 
 	if(!PTSEQU(current_position, new_position))
 	{

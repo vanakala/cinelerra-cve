@@ -76,7 +76,7 @@ void ClipEdit::run()
 		EDL *original = clip;
 		if(!create_it)
 		{
-			clip = new EDL(mwindow->edl);
+			clip = new EDL(master_edl);
 			clip->copy_all(original);
 		}
 
@@ -93,10 +93,10 @@ void ClipEdit::run()
 			{
 				// Check if clip name is unique
 				name_ok_or_cancel = 1;
-				for (int i = 0; i < mwindow->edl->clips.total; i++)
+				for (int i = 0; i < master_edl->clips.total; i++)
 				{
 					if (!strcasecmp(clip->local_session->clip_title,
-						mwindow->edl->clips.values[i]->local_session->clip_title) &&
+						master_edl->clips.values[i]->local_session->clip_title) &&
 						(create_it || strcasecmp(clip->local_session->clip_title,
 						original->local_session->clip_title)))
 					
@@ -115,7 +115,7 @@ void ClipEdit::run()
 			EDL *new_edl = 0;
 // Add to EDL
 			if(create_it)
-				new_edl = mwindow->edl->add_clip(window->clip);
+				new_edl = master_edl->add_clip(window->clip);
 
 // Copy clip to existing clip in EDL
 			if(!create_it)

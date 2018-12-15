@@ -114,7 +114,7 @@ BC_WindowBase* Canvas::get_canvas()
 		view_y = y;
 		view_w = w;
 		view_h = h;
-		get_scrollbars(mwindow->edl, view_x, view_y, view_w, view_h);
+		get_scrollbars(master_edl, view_x, view_y, view_w, view_h);
 		create_canvas();
 	}
 	if(get_fullscreen() && canvas_fullscreen) 

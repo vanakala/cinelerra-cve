@@ -117,7 +117,6 @@ MWindow::MWindow(const char *config_path)
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	session = 0;
-	edl = 0;
 	init_signals();
 
 	glthread = new GLThread();
@@ -705,11 +704,11 @@ void MWindow::init_theme()
 
 void MWindow::init_edl()
 {
-	edl = new EDL;
-	FormatPresets::fill_preset_defaults(default_standard, edl->session);
-	edl->load_defaults(defaults);
-	edl->create_default_tracks();
-	edl->tracks->update_y_pixels(theme);
+	master_edl = new EDL;
+	FormatPresets::fill_preset_defaults(default_standard, master_edl->session);
+	master_edl->load_defaults(defaults);
+	master_edl->create_default_tracks();
+	master_edl->tracks->update_y_pixels(theme);
 }
 
 void MWindow::init_compositor()
@@ -780,7 +779,7 @@ void MWindow::init_brender()
 		brender->initialize();
 		session->brender_end = 0;
 		brender_lock->unlock();
-		brender->restart(edl);
+		brender->restart(master_edl);
 	}
 	else
 	if(!preferences->use_brender && brender)
@@ -801,7 +800,7 @@ void MWindow::delete_brender()
 
 void MWindow::restart_brender()
 {
-	if(brender) brender->restart(edl);
+	if(brender) brender->restart(master_edl);
 }
 
 void MWindow::stop_brender()
@@ -830,7 +829,7 @@ int MWindow::brender_available(ptstime postime)
 
 void MWindow::set_brender_start()
 {
-	edl->session->brender_start = edl->local_session->get_selectionstart();
+	master_edl->session->brender_start = master_edl->local_session->get_selectionstart();
 	restart_brender();
 	gui->canvas->draw_overlays();
 	gui->canvas->flash();
@@ -895,7 +894,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
 						new_edl = new EDL;
-						new_edl->copy_session(edl);
+						new_edl->copy_session(master_edl);
 					}
 
 					for(i = 0; i < new_asset->nb_programs; i++)
@@ -929,7 +928,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
 						new_edl = new EDL;
-						new_edl->copy_session(edl);
+						new_edl->copy_session(master_edl);
 						new_asset = assetlist_global.add_asset(new_asset);
 						new_edl->update_assets(new_asset);
 						new_edl->finalize_edl(load_mode);
@@ -1035,7 +1034,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
 						new_edl = new EDL;
-						new_edl->copy_session(edl);
+						new_edl->copy_session(master_edl);
 						new_asset = assetlist_global.add_asset(new_asset);
 						new_edl->update_assets(new_asset);
 						new_edl->finalize_edl(load_mode);
@@ -1065,7 +1064,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 // Load EDL for pasting
 				result = 0;
 				new_edl = new EDL;
-				new_edl->copy_session(edl);
+				new_edl->copy_session(master_edl);
 				new_edl->load_xml(&xml_file, LOAD_ALL);
 				test_plugins(new_edl, filenames->values[i]);
 
@@ -1120,19 +1119,19 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 // For pasting, clear the active region
 		if(load_mode == LOADMODE_PASTE)
 		{
-			ptstime start = edl->local_session->get_selectionstart();
-			ptstime end = edl->local_session->get_selectionend();
+			ptstime start = master_edl->local_session->get_selectionstart();
+			ptstime end = master_edl->local_session->get_selectionend();
 			if(!EQUIV(start, end))
-				edl->clear(start, 
+				master_edl->clear(start,
 					end,
-					edl->session->edit_actions());
+					master_edl->session->edit_actions());
 		}
 
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
 			-1,
-			edl->session->edit_actions(),
+			master_edl->session->edit_actions(),
 			0); // overwrite
 	}
 
@@ -1145,7 +1144,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			Asset *new_asset = new_assets.values[i];
 			new_asset = assetlist_global.add_asset(new_asset);
 			mainindexes->add_next_asset(new_asset);
-			edl->update_assets(new_asset);
+			master_edl->update_assets(new_asset);
 		}
 // Start examining next batch of index files
 		mainindexes->start_build();
@@ -1324,7 +1323,8 @@ void MWindow::show_ruler()
 
 void MWindow::toggle_loop_playback()
 {
-	edl->local_session->loop_playback = !edl->local_session->loop_playback;
+	master_edl->local_session->loop_playback =
+		!master_edl->local_session->loop_playback;
 	set_loop_boundaries();
 	save_backup();
 
@@ -1335,13 +1335,13 @@ void MWindow::toggle_loop_playback()
 
 void MWindow::set_titles(int value)
 {
-	edl->session->show_titles = value;
-	trackmovement(edl->local_session->track_start);
+	master_edl->session->show_titles = value;
+	trackmovement(master_edl->local_session->track_start);
 }
 
 void MWindow::set_auto_keyframes(int value)
 {
-	edl->session->auto_keyframes = value;
+	master_edl->session->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
 	cwindow->gui->edit_panel->keyframe->update(value);
@@ -1351,7 +1351,7 @@ void MWindow::set_auto_keyframes(int value)
 
 void MWindow::set_editing_mode(int new_editing_mode)
 {
-	edl->session->editing_mode = new_editing_mode;
+	master_edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->canvas->update_cursor();
 	cwindow->gui->edit_panel->update();
@@ -1359,7 +1359,7 @@ void MWindow::set_editing_mode(int new_editing_mode)
 
 void MWindow::toggle_editing_mode()
 {
-	int mode = edl->session->editing_mode;
+	int mode = master_edl->session->editing_mode;
 	if( mode == EDITING_ARROW )
 		set_editing_mode(EDITING_IBEAM);
 	else
@@ -1368,7 +1368,7 @@ void MWindow::toggle_editing_mode()
 
 void MWindow::set_labels_follow_edits(int value)
 {
-	edl->session->labels_follow_edits = value;
+	master_edl->session->labels_follow_edits = value;
 	gui->mbuttons->edit_panel->locklabels->update(value);
 	gui->mainmenu->labels_follow_edits->set_checked(value);
 	gui->flush();
@@ -1382,7 +1382,7 @@ void MWindow::sync_parameters(int change_type)
 		if(change_type & CHANGE_PARAMS)
 		{
 // TODO: block keyframes until synchronization is done
-			cwindow->playback_engine->sync_parameters(edl);
+			cwindow->playback_engine->sync_parameters(master_edl);
 		}
 		else
 // Stop and restart
@@ -1395,11 +1395,11 @@ void MWindow::sync_parameters(int change_type)
 // Not waiting for tracking gives a faster response but restart position is
 // only as accurate as the last tracking update.
 
-			cwindow->playback_engine->send_command(command, edl, change_type);
+			cwindow->playback_engine->send_command(command, master_edl, change_type);
 		}
 	}
 	else
-		cwindow->playback_engine->send_command(CURRENT_FRAME, edl, change_type);
+		cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, change_type);
 }
 
 void MWindow::age_caches()
@@ -1469,7 +1469,7 @@ void MWindow::show_plugin(Plugin *plugin)
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
 			gui->set_mwindow(this);
-			gui->open_plugin(0, preferences, edl, plugin, -1);
+			gui->open_plugin(0, preferences, master_edl, plugin, -1);
 			gui->show_gui();
 			plugin->show = 1;
 		}
@@ -1579,7 +1579,7 @@ void MWindow::update_plugin_states()
 		PluginServer *src_plugingui = plugin_guis->values[i];
 
 // Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
-		for(Track *track = edl->tracks->first; 
+		for(Track *track = master_edl->tracks->first;
 			track && !result; 
 			track = track->next)
 		{
@@ -1621,7 +1621,7 @@ void MWindow::update_plugin_titles()
 void MWindow::update_project(int load_mode)
 {
 	restart_brender();
-	edl->tracks->update_y_pixels(theme);
+	master_edl->tracks->update_y_pixels(theme);
 
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
@@ -1635,7 +1635,7 @@ void MWindow::update_project(int load_mode)
 	}
 
 	cwindow->gui->slider->set_position();
-	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_ALL);
 
 	awindow->gui->async_update_assets();
 
@@ -1665,8 +1665,8 @@ void MWindow::rebuild_indices()
 void MWindow::save_backup()
 {
 	FileXML file;
-	edl->set_project_path(session->filename);
-	edl->save_xml(&file, BACKUP_PATH, 0, 0);
+	master_edl->set_project_path(session->filename);
+	master_edl->save_xml(&file, BACKUP_PATH, 0, 0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
 	FileSystem fs;
@@ -1731,8 +1731,8 @@ void MWindow::remove_assets_from_project(int push_undo)
 			vwindow->remove_source();
 	}
 
-	edl->remove_from_project(session->drag_assets);
-	edl->remove_from_project(session->drag_clips);
+	master_edl->remove_from_project(session->drag_assets);
+	master_edl->remove_from_project(session->drag_clips);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
@@ -1749,7 +1749,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 void MWindow::save_defaults()
 {
 	gui->save_defaults(defaults);
-	edl->save_defaults(defaults);
+	master_edl->save_defaults(defaults);
 	session->save_defaults(defaults);
 	preferences->save_defaults(defaults);
 // Remove old defaults
@@ -1840,28 +1840,28 @@ void MWindow::interrupt_indexes()
 
 void MWindow::next_time_format()
 {
-	switch(edl->session->time_format)
+	switch(master_edl->session->time_format)
 	{
 	case TIME_HMS:
-		edl->session->time_format = TIME_HMSF;
+		master_edl->session->time_format = TIME_HMSF;
 		break;
 	case TIME_HMSF:
-		edl->session->time_format = TIME_SAMPLES;
+		master_edl->session->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:
-		edl->session->time_format = TIME_SAMPLES_HEX;
+		master_edl->session->time_format = TIME_SAMPLES_HEX;
 		break;
 	case TIME_SAMPLES_HEX: 
-		edl->session->time_format = TIME_FRAMES;
+		master_edl->session->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		edl->session->time_format = TIME_FEET_FRAMES;
+		master_edl->session->time_format = TIME_FEET_FRAMES;
 		break;
 	case TIME_FEET_FRAMES:
-		edl->session->time_format = TIME_SECONDS;
+		master_edl->session->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
-		edl->session->time_format = TIME_HMS;
+		master_edl->session->time_format = TIME_HMS;
 		break;
 	}
 
@@ -1870,28 +1870,28 @@ void MWindow::next_time_format()
 
 void MWindow::prev_time_format()
 {
-	switch(edl->session->time_format)
+	switch(master_edl->session->time_format)
 	{
 	case TIME_HMS:
-		edl->session->time_format = TIME_SECONDS;
+		master_edl->session->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
-		edl->session->time_format = TIME_FEET_FRAMES;
+		master_edl->session->time_format = TIME_FEET_FRAMES;
 		break;
 	case TIME_FEET_FRAMES:
-		edl->session->time_format = TIME_FRAMES;
+		master_edl->session->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		edl->session->time_format = TIME_SAMPLES_HEX;
+		master_edl->session->time_format = TIME_SAMPLES_HEX;
 		break;
 	case TIME_SAMPLES_HEX:
-		edl->session->time_format = TIME_SAMPLES;
+		master_edl->session->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:
-		edl->session->time_format = TIME_HMSF;
+		master_edl->session->time_format = TIME_HMSF;
 		break;
 	case TIME_HMSF:
-		edl->session->time_format = TIME_HMS;
+		master_edl->session->time_format = TIME_HMS;
 		break;
 	}
 
@@ -1902,7 +1902,7 @@ void MWindow::time_format_common()
 {
 	gui->redraw_time_dependancies();
 	char string[BCTEXTLEN];
-	gui->show_message(_("Using %s."), Units::print_time_format(edl->session->time_format, string));
+	gui->show_message(_("Using %s."), Units::print_time_format(master_edl->session->time_format, string));
 	gui->flush();
 }
 
@@ -1930,28 +1930,28 @@ void MWindow::set_filename(const char *filename)
 
 void MWindow::set_loop_boundaries()
 {
-	ptstime start = edl->local_session->get_selectionstart();
-	ptstime end = edl->local_session->get_selectionend();
+	ptstime start = master_edl->local_session->get_selectionstart();
+	ptstime end = master_edl->local_session->get_selectionend();
 
 	if(!PTSEQU(start, end))
 	{
 		;
 	}
 	else
-	if(edl->tracks->total_length())
+	if(master_edl->tracks->total_length())
 	{
 		start = 0;
-		end = edl->tracks->total_length();
+		end = master_edl->tracks->total_length();
 	}
 	else
 	{
 		start = end = 0;
 	}
 
-	if(edl->local_session->loop_playback && !PTSEQU(start, end))
+	if(master_edl->local_session->loop_playback && !PTSEQU(start, end))
 	{
-		edl->local_session->loop_start = start;
-		edl->local_session->loop_end = end;
+		master_edl->local_session->loop_start = start;
+		master_edl->local_session->loop_end = end;
 	}
 }
 
@@ -1968,18 +1968,18 @@ void MWindow::show_program_status()
 	size_t mc, cc, vc;
 
 	printf("%s status:\n", version_name);
-	if(edl)
+	if(master_edl)
 	{
 		printf(" Audio channels %d tracks %d samplerate %d\n",
-			edl->session->audio_channels, edl->session->audio_tracks,
-			edl->session->sample_rate);
+			master_edl->session->audio_channels, master_edl->session->audio_tracks,
+			master_edl->session->sample_rate);
 		printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
-			edl->session->output_w,
-			edl->session->output_h,
-			edl->session->video_channels,
-			edl->session->video_tracks,
-			edl->session->frame_rate,
-			ColorModels::name(edl->session->color_model));
+			master_edl->session->output_w,
+			master_edl->session->output_h,
+			master_edl->session->video_channels,
+			master_edl->session->video_tracks,
+			master_edl->session->frame_rate,
+			ColorModels::name(master_edl->session->color_model));
 	}
 	else
 		printf(" No edl\n");
@@ -2002,8 +2002,8 @@ void MWindow::show_program_status()
 	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
 	printf(" Output device: %s\n",
-		VDriverMenu::driver_to_string(edl->session->playback_config->vconfig->driver));
-	if(edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+		VDriverMenu::driver_to_string(master_edl->session->playback_config->vconfig->driver));
+	if(master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		const char **vs = BC_Resources::OpenGLStrings;
 		if(vs[0])

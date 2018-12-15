@@ -22,7 +22,6 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "bchash.h"
-#include "edl.h"
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"

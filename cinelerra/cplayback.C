@@ -24,8 +24,6 @@
 #include "ctracking.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playtransport.h"

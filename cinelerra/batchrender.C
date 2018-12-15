@@ -307,7 +307,7 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 {
 	char *p;
 
-	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, profile_path);
+	master_edl->session->configuration_path(RENDERCONFIG_DIR, profile_path);
 	RenderProfile::chk_profile_dir(profile_path);
 	p = &profile_path[strlen(profile_path)];
 	*p++ = '/';

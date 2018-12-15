@@ -19,8 +19,6 @@
  * 
  */
 
-#include "edl.h"
-#include "edlsession.h"
 #include "playtransport.h"
 #include "vplayback.h"
 #include "vtracking.h"

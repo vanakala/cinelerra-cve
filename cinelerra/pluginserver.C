@@ -716,7 +716,7 @@ void PluginServer::show_gui()
 		client->total_len_pts = plugin->length();
 		client->source_start_pts = plugin->get_pts();
 	}
-	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
+	client->source_pts = master_edl->local_session->get_selectionstart(1);
 	client->update_display_title();
 	client->show_gui();
 }
@@ -733,7 +733,7 @@ void PluginServer::update_gui()
 
 	client->total_len_pts = plugin->length();
 	client->source_start_pts = plugin->get_pts();
-	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
+	client->source_pts = master_edl->local_session->get_selectionstart(1);
 	client->update_gui();
 }
 
@@ -792,7 +792,7 @@ double PluginServer::get_framerate()
 	}
 	else
 	if(mwindow)
-		return mwindow->edl->session->frame_rate;
+		return master_edl->session->frame_rate;
 	else 
 	{
 		errorbox("PluginServer::get_framerate video and mwindow == NULL");
@@ -803,7 +803,7 @@ double PluginServer::get_framerate()
 int PluginServer::get_project_samplerate()
 {
 	if(mwindow)
-		return mwindow->edl->session->sample_rate;
+		return master_edl->session->sample_rate;
 	else
 	if(edl)
 		return edl->session->sample_rate;
@@ -817,7 +817,7 @@ int PluginServer::get_project_samplerate()
 double PluginServer::get_project_framerate()
 {
 	if(mwindow)
-		return mwindow->edl->session->frame_rate;
+		return master_edl->session->frame_rate;
 	else
 	if(edl)
 		return edl->session->frame_rate;
@@ -832,8 +832,8 @@ void PluginServer::get_project_dimensions(int *width, int *height)
 {
 	if(mwindow)
 	{
-		*width = mwindow->edl->session->output_w;
-		*height = mwindow->edl->session->output_h;
+		*width = master_edl->session->output_w;
+		*height = master_edl->session->output_h;
 	}
 	else
 	if(edl)
@@ -917,7 +917,7 @@ void PluginServer::sync_parameters()
 {
 	if(video) mwindow->restart_brender();
 	mwindow->sync_parameters();
-	if(mwindow->edl->session->auto_conf->plugins)
+	if(master_edl->session->auto_conf->plugins)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

@@ -57,8 +57,8 @@ void ManualGoto::open_window()
 	if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
 		(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
-		position = mwindow->edl->local_session->get_selectionstart(1) +
-			mwindow->edl->session->get_frame_offset();
+		position = master_edl->local_session->get_selectionstart(1) +
+			master_edl->session->get_frame_offset();
 		icon_image = mwindow->theme->get_image("mwindow_icon");
 	}
 	else
@@ -92,7 +92,7 @@ void ManualGoto::run()
 		{
 			// mwindow/cwindow update
 
-			ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime current_position = master_edl->local_session->get_selectionstart(1);
 			switch (modifier)
 			{
 			case '+':
@@ -104,13 +104,13 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			new_position = mwindow->edl->align_to_frame(new_position) -
-				mwindow->edl->session->get_frame_offset();
+			new_position = master_edl->align_to_frame(new_position) -
+				master_edl->session->get_frame_offset();
 			if (new_position < 0) 
 				new_position = 0;
 			if (!PTSEQU(current_position, new_position))
 			{
-				mwindow->edl->local_session->set_selection(new_position);
+				master_edl->local_session->set_selection(new_position);
 				mwindow->find_cursor();
 				mwindow->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
@@ -173,7 +173,7 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 	this->thread = thread;
 	numboxes = 0;
 
-	timeformat = mwindow->edl->session->time_format;
+	timeformat = master_edl->session->time_format;
 
 	switch(timeformat)
 	{
@@ -203,9 +203,9 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 	Units::totext(timestring,
 		(double)0,
 		timeformat,
-		mwindow->edl->session->sample_rate,
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	numboxes = split_timestr(timestring);
 
 	set_icon(thread->icon_image);
@@ -242,10 +242,10 @@ ptstime ManualGotoWindow::get_entered_position_sec()
 	}
 	*--p = 0;
 	return Units::text_to_seconds(timestring,
-		mwindow->edl->session->sample_rate,
+		master_edl->session->sample_rate,
 		timeformat,
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 }
 
 int ManualGotoWindow::split_timestr(char *timestr)
@@ -276,9 +276,9 @@ void ManualGotoWindow::set_entered_position_sec(ptstime position)
 	Units::totext(timestring,
 		position,
 		timeformat,
-		mwindow->edl->session->sample_rate,
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	split_timestr(timestring);
 
 	for(i = 0; i < numboxes; i++)

@@ -252,10 +252,10 @@ void TimeBar::update_highlights()
 	for(int i = 0; i < labels.total; i++)
 	{
 		LabelGUI *label = labels.values[i];
-		if(mwindow->edl->equivalent(label->position, 
-				mwindow->edl->local_session->get_selectionstart(1)) ||
-			mwindow->edl->equivalent(label->position, 
-				mwindow->edl->local_session->get_selectionend(1)))
+		if(master_edl->equivalent(label->position,
+				master_edl->local_session->get_selectionstart(1)) ||
+			master_edl->equivalent(label->position,
+				master_edl->local_session->get_selectionend(1)))
 		{
 			if(!label->get_value()) label->update(1);
 		}
@@ -263,20 +263,20 @@ void TimeBar::update_highlights()
 			if(label->get_value()) label->update(0);
 	}
 
-	if(mwindow->edl->equivalent(mwindow->edl->local_session->get_inpoint(), 
-			mwindow->edl->local_session->get_selectionstart(1)) ||
-		mwindow->edl->equivalent(mwindow->edl->local_session->get_inpoint(), 
-			mwindow->edl->local_session->get_selectionend(1)))
+	if(master_edl->equivalent(master_edl->local_session->get_inpoint(),
+			master_edl->local_session->get_selectionstart(1)) ||
+		master_edl->equivalent(master_edl->local_session->get_inpoint(),
+			master_edl->local_session->get_selectionend(1)))
 	{
 		if(in_point) in_point->update(1);
 	}
 	else
 		if(in_point) in_point->update(0);
 
-	if(mwindow->edl->equivalent(mwindow->edl->local_session->get_outpoint(), 
-			mwindow->edl->local_session->get_selectionstart(1)) ||
-		mwindow->edl->equivalent(mwindow->edl->local_session->get_outpoint(), 
-			mwindow->edl->local_session->get_selectionend(1)))
+	if(master_edl->equivalent(master_edl->local_session->get_outpoint(),
+			master_edl->local_session->get_selectionstart(1)) ||
+		master_edl->equivalent(master_edl->local_session->get_outpoint(),
+			master_edl->local_session->get_selectionend(1)))
 	{
 		if(out_point) out_point->update(1);
 	}
@@ -377,7 +377,7 @@ void TimeBar::update()
 
 EDL* TimeBar::get_edl()
 {
-	return mwindow->edl;
+	return master_edl;
 }
 
 void TimeBar::draw_range()
@@ -628,8 +628,8 @@ int TimeBar::button_press_event()
 			if(get_double_click())
 			{
 				ptstime position = (ptstime)get_cursor_x() *
-					mwindow->edl->local_session->zoom_time +
-					mwindow->edl->local_session->view_start_pts;
+					master_edl->local_session->zoom_time +
+					master_edl->local_session->view_start_pts;
 // Test labels
 				select_region(position);
 				return 1;
@@ -672,8 +672,8 @@ void TimeBar::repeat_event(int duration)
 		if(x_movement)
 		{
 			update_cursor();
-			mwindow->samplemovement(mwindow->edl->local_session->view_start_pts + 
-				distance * mwindow->edl->local_session->zoom_time);
+			mwindow->samplemovement(master_edl->local_session->view_start_pts +
+				distance * master_edl->local_session->zoom_time);
 		}
 	}
 }
@@ -747,9 +747,9 @@ int TimeBar::button_release_event()
 void TimeBar::update_cursor()
 {
 	ptstime position = (double)get_cursor_x() * 
-		mwindow->edl->local_session->zoom_time +
-		mwindow->edl->local_session->view_start_pts;
-	position = mwindow->edl->align_to_frame(position);
+		master_edl->local_session->zoom_time +
+		master_edl->local_session->view_start_pts;
+	position = master_edl->align_to_frame(position);
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;
 
@@ -760,7 +760,7 @@ void TimeBar::update_cursor()
 void TimeBar::select_region(ptstime position)
 {
 	Label *start = 0, *end = 0, *current;
-	for(current = mwindow->edl->labels->first; current; current = NEXT)
+	for(current = master_edl->labels->first; current; current = NEXT)
 	{
 		if(current->position > position)
 		{
@@ -769,7 +769,7 @@ void TimeBar::select_region(ptstime position)
 		}
 	}
 
-	for(current = mwindow->edl->labels->last ; current; current = PREVIOUS)
+	for(current = master_edl->labels->last ; current; current = PREVIOUS)
 	{
 		if(current->position <= position)
 		{
@@ -782,20 +782,20 @@ void TimeBar::select_region(ptstime position)
 	if(end != start)
 	{
 		if(!start)
-			mwindow->edl->local_session->set_selectionstart(0);
+			master_edl->local_session->set_selectionstart(0);
 		else
-			mwindow->edl->local_session->set_selectionstart(start->position);
+			master_edl->local_session->set_selectionstart(start->position);
 
 		if(!end)
-			mwindow->edl->local_session->set_selectionend(mwindow->edl->tracks->total_length());
+			master_edl->local_session->set_selectionend(master_edl->tracks->total_length());
 		else
-			mwindow->edl->local_session->set_selectionend(end->position);
+			master_edl->local_session->set_selectionend(end->position);
 	}
 	else
 	if(end || start)
 	{
-		mwindow->edl->local_session->set_selectionstart(start->position);
-		mwindow->edl->local_session->set_selectionend(start->position);
+		master_edl->local_session->set_selectionstart(start->position);
+		master_edl->local_session->set_selectionend(start->position);
 	}
 
 // Que the CWindow

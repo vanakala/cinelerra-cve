@@ -64,8 +64,8 @@ void AssetPopup::paste_assets()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->paste_assets(mwindow->edl->local_session->get_selectionstart(1), 
-		mwindow->edl->tracks->first,
+	mwindow->paste_assets(master_edl->local_session->get_selectionstart(1),
+		master_edl->tracks->first,
 		0);   // do not overwrite
 }
 

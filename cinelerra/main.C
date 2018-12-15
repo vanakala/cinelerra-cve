@@ -53,6 +53,7 @@ MWindow *mwindow_global;
 Theme *theme_global;
 Preferences *preferences_global;
 AssetList assetlist_global;
+EDL *master_edl;
 
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 

@@ -820,10 +820,11 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccanvas_h = ccomposite_h;
 		cstatus_x = 453;
 		cstatus_y = mwindow->session->cwindow_h - 66;
-		if(mwindow->edl->session->cwindow_meter)
+		if(master_edl->session->cwindow_meter)
 		{
-			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-				mwindow->edl->session->cwindow_meter);
+			cmeter_x = mwindow->session->cwindow_w -
+				MeterPanel::get_meters_width(master_edl->session->audio_channels,
+					master_edl->session->cwindow_meter);
 			ccanvas_w = cmeter_x - ccanvas_x - 5;
 		}
 		else
@@ -884,12 +885,12 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vcanvas_y = 0;
 	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
 
-	if(mwindow->edl->session->vwindow_meter)
+	if(master_edl->session->vwindow_meter)
 	{
 		vmeter_x = mwindow->session->vwindow_w - 
 			VWINDOW_METER_MARGIN - 
-			MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-			mwindow->edl->session->vwindow_meter);
+			MeterPanel::get_meters_width(master_edl->session->audio_channels,
+				master_edl->session->vwindow_meter);
 		vcanvas_w = vmeter_x - vcanvas_x - VWINDOW_METER_MARGIN;
 	}
 	else
@@ -1054,7 +1055,7 @@ void BlueDotTheme::draw_cwindow_bg(CWindowGUI *gui)
 	const int button_division = 530;
 	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
 	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
-	if(mwindow->edl->session->cwindow_meter)
+	if(master_edl->session->cwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
@@ -1083,7 +1084,7 @@ void BlueDotTheme::draw_vwindow_bg(VWindowGUI *gui)
 		vcanvas_h, 
 		button_division, 
 		get_image("vbuttons_left"));
-	if(mwindow->edl->session->vwindow_meter)
+	if(master_edl->session->vwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 

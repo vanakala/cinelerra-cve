@@ -96,7 +96,7 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	const char *pfname;
 	char path[BCTEXTLEN];
 
-	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, path);
+	master_edl->session->configuration_path(RENDERCONFIG_DIR, path);
 	RenderProfile::chk_profile_dir(path);
 	asset->set_renderprofile(path, profile_name);
 	RenderProfile::chk_profile_dir(asset->renderprofile_path);
@@ -286,15 +286,15 @@ void MenuEffectThread::run()
 // Range
 	ptstime total_start, total_end;
 
-	total_start = mwindow->edl->local_session->get_selectionstart();
+	total_start = master_edl->local_session->get_selectionstart();
 
-	if(PTSEQU(mwindow->edl->local_session->get_selectionend(), total_start))
+	if(PTSEQU(master_edl->local_session->get_selectionend(), total_start))
 	{
-		total_end = mwindow->edl->tracks->total_playable_length();
+		total_end = master_edl->tracks->total_playable_length();
 		total_start = 0;
 	}
 	else
-		total_end = mwindow->edl->local_session->get_selectionend();
+		total_end = master_edl->local_session->get_selectionend();
 
 // Trick boundaries in case of a non-realtime synthesis plugin
 	if(plugin && 
@@ -322,7 +322,7 @@ void MenuEffectThread::run()
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(&plugin_data);
 			plugin->set_prompt(&prompt);
-			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
+			plugin->open_plugin(0, mwindow->preferences, master_edl, 0, -1);
 // Must set parameters since there is no plugin object to draw from.
 			plugin->get_parameters(total_start,
 				total_end,
@@ -334,15 +334,15 @@ void MenuEffectThread::run()
 
 // Close plugin.
 			plugin->save_data(&plugin_data);
-			default_asset->sample_rate = mwindow->edl->session->sample_rate;
-			default_asset->frame_rate = mwindow->edl->session->frame_rate;
+			default_asset->sample_rate = master_edl->session->sample_rate;
+			default_asset->frame_rate = master_edl->session->frame_rate;
 			realtime = 1;
 		}
 		else
 // ============================non realtime plugin 
 		{
 			plugin->set_mwindow(mwindow);
-			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
+			plugin->open_plugin(0, mwindow->preferences, master_edl, 0, -1);
 			plugin->update_title();
 			result = plugin->get_parameters(total_start,
 				total_end,
@@ -363,8 +363,8 @@ void MenuEffectThread::run()
 		delete plugin;
 
 // Should take from first recordable track
-		default_asset->width = mwindow->edl->session->output_w;
-		default_asset->height = mwindow->edl->session->output_h;
+		default_asset->width = master_edl->session->output_w;
+		default_asset->height = master_edl->session->output_h;
 		default_asset->init_streams();
 	}
 
@@ -372,7 +372,7 @@ void MenuEffectThread::run()
 	ArrayList<MenuEffectPacket*> packets;
 	if(!result)
 	{
-		Label *current_label = mwindow->edl->labels->first;
+		Label *current_label = master_edl->labels->first;
 		mwindow->stop_brender();
 
 		int current_number;
@@ -474,7 +474,7 @@ void MenuEffectThread::run()
 			PluginArray *plugin_array;
 			plugin_array = create_plugin_array();
 			plugin_array->start_plugins(mwindow, 
-				mwindow->edl, 
+				master_edl,
 				plugin_server, 
 				&plugin_data,
 				fragment_start,

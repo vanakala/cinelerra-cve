@@ -22,7 +22,6 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "meterpanel.h"

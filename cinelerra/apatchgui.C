@@ -111,8 +111,8 @@ int APatchGUI::update(int x, int y)
 		else
 		{
 			FloatAuto *previous = 0, *next = 0;
-			ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-			unit_position = mwindow->edl->align_to_frame(unit_position);
+			ptstime unit_position = master_edl->local_session->get_selectionstart(1);
+			unit_position = master_edl->align_to_frame(unit_position);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
 			float value = ptr->get_value(
 				unit_position,
@@ -120,8 +120,8 @@ int APatchGUI::update(int x, int y)
 				next);
 			fade->update(fade->get_w(),
 					value,
-					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
+					master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 		}
 	}
 	else
@@ -165,17 +165,17 @@ int APatchGUI::update(int x, int y)
 		}
 		else
 		{
-			if(pan->get_total_values() != mwindow->edl->session->audio_channels)
+			if(pan->get_total_values() != master_edl->session->audio_channels)
 			{
-				pan->change_channels(mwindow->edl->session->audio_channels,
-					mwindow->edl->session->achannel_positions);
+				pan->change_channels(master_edl->session->audio_channels,
+					master_edl->session->achannel_positions);
 			}
 			else
 			{
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
-				ptstime position = mwindow->edl->local_session->get_selectionstart(1);
-				position = mwindow->edl->align_to_frame(position);
+				ptstime position = master_edl->local_session->get_selectionstart(1);
+				position = master_edl->align_to_frame(position);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 				ptr->get_handle(handle_x,
 					handle_y,
@@ -193,7 +193,7 @@ int APatchGUI::update(int x, int y)
 		int handle_x, handle_y;
 		PanAuto *previous = 0, *next = 0;
 		PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
-		ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+		ptstime position = master_edl->local_session->get_selectionstart(1);
 		float *values;
 
 		ptr->get_handle(handle_x, handle_y,
@@ -237,8 +237,8 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 	0,
 	w,
 	w,
-	mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-	mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
+	master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+	master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
 	get_keyframe_value(mwindow, patch))
 {
 	this->mwindow = mwindow;
@@ -248,7 +248,7 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 float AFadePatch::update_edl()
 {
 	FloatAuto *current;
-	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = master_edl->local_session->get_selectionstart(1);
 	Autos *fade_autos = patch->atrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
@@ -280,7 +280,7 @@ int AFadePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
+	if(master_edl->session->auto_conf->autos[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -292,8 +292,8 @@ float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 {
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
-	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position);
+	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
+	unit_position = master_edl->align_to_frame(unit_position);
 
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
 	return ptr->get_value(unit_position, prev, next);
@@ -306,8 +306,8 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y,
 		y, 
 		PAN_RADIUS, 
 		MAX_PAN, 
-		mwindow->edl->session->audio_channels, 
-		mwindow->edl->session->achannel_positions, 
+		master_edl->session->audio_channels,
+		master_edl->session->achannel_positions,
 		handle_x,
 		handle_y,
 		values)
@@ -320,7 +320,7 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y,
 int APanPatch::handle_event()
 {
 	PanAuto *current;
-	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = master_edl->local_session->get_selectionstart(1);
 	Autos *pan_autos = patch->atrack->automation->autos[AUTOMATION_PAN];
 	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
@@ -328,13 +328,13 @@ int APanPatch::handle_event()
 
 	current->handle_x = get_stick_x();
 	current->handle_y = get_stick_y();
-	memcpy(current->values, get_values(), sizeof(float) * mwindow->edl->session->audio_channels);
+	memcpy(current->values, get_values(), sizeof(float) * master_edl->session->audio_channels);
 
 	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(need_undo && mwindow->edl->session->auto_conf->autos[AUTOMATION_PAN])
+	if(need_undo && master_edl->session->auto_conf->autos[AUTOMATION_PAN])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -348,8 +348,8 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 		y,
 		METER_HORIZ,
 		patch->patchbay->get_w() - 10,
-		mwindow->edl->session->min_meter_db,
-		mwindow->edl->session->max_meter_db,
+		master_edl->session->min_meter_db,
+		master_edl->session->max_meter_db,
 		0)
 {
 	this->mwindow = mwindow;

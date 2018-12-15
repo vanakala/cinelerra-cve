@@ -243,7 +243,7 @@ void ExportEDL::start_interactive()
 void ExportEDL::run()
 {
 	int result = 0;
-	exportasset = new ExportEDLAsset(mwindow, mwindow->edl);
+	exportasset = new ExportEDLAsset(mwindow, master_edl);
 
 	exportasset->load_defaults();
 
@@ -349,7 +349,7 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 	int serial = 0;
 	if (exportasset->track_number == -1)
 		exportasset->track_number = 0;
-	for(Track *track = mwindow->edl->tracks->first;
+	for(Track *track = master_edl->tracks->first;
 		track;
 		track = track->next)
 	{

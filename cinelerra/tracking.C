@@ -73,13 +73,13 @@ Tracking::~Tracking()
 void Tracking::start_playback(ptstime new_position)
 {
 // Calculate tracking rate
-	tracking_rate = mwindow->edl->session->frame_rate;
+	tracking_rate = master_edl->session->frame_rate;
 	if(tracking_rate <= 0)
 		tracking_rate = TRACKING_RATE_DEFAULT;
 	while(tracking_rate > TRACKING_RATE_MAX)
 		tracking_rate /= 2;
-	set_delays(mwindow->edl->session->meter_over_delay,
-		mwindow->edl->session->meter_peak_delay);
+	set_delays(master_edl->session->meter_over_delay,
+		master_edl->session->meter_peak_delay);
 	if(state != PLAYING)
 	{
 		last_position = new_position;

@@ -24,7 +24,6 @@
 #include "bctitle.h"
 #include "cinelerra.h"
 #include "labeledit.h"
-#include "edl.h"
 #include "fonts.h"
 #include "language.h"
 #include "localsession.h"

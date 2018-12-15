@@ -363,10 +363,10 @@ int FileList::read_frame(VFrame *frame)
 		frame->set_source_pts(0);
 		if(mwindow_global)
 		{
-			if(mwindow_global->edl->session->si_useduration)
-				frame->set_duration(mwindow_global->edl->session->si_duration);
+			if(master_edl->session->si_useduration)
+				frame->set_duration(master_edl->session->si_duration);
 			else
-				frame->set_duration((ptstime)1 / mwindow_global->edl->session->frame_rate);
+				frame->set_duration((ptstime)1 / master_edl->session->frame_rate);
 		}
 	}
 	frame->set_frame_number(current_frame);

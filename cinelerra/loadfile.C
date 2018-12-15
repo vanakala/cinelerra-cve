@@ -327,10 +327,10 @@ int LoadBackup::handle_event()
 	strcpy(out_path, string);
 
 	mwindow->load_filenames(&path_list, LOADMODE_REPLACE, 0);
-	mwindow->edl->local_session->clip_title[0] = 0;
+	master_edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
 // path of the project.
-	mwindow->set_filename(mwindow->edl->project_path);
+	mwindow->set_filename(master_edl->project_path);
 	path_list.remove_all_objects();
 	mwindow->undo->update_undo(_("load backup"), LOAD_ALL, 0, 0);
 	mwindow->save_backup();

@@ -233,23 +233,23 @@ int* GWindowToggle::get_main_value(MWindow *mwindow, toggleinfo toggleinf)
 {
 	if(toggleinf.isauto)
 	{
-		return &mwindow->edl->session->auto_conf->autos[toggleinf.ref];
+		return &master_edl->session->auto_conf->autos[toggleinf.ref];
 	}
 	else
 	{
 		switch(toggleinf.ref)
 		{
 		case NONAUTOTOGGLES_ASSETS:
-			return &mwindow->edl->session->show_assets;
+			return &master_edl->session->show_assets;
 
 		case NONAUTOTOGGLES_TITLES:
-			return &mwindow->edl->session->show_titles;
+			return &master_edl->session->show_titles;
 
 		case NONAUTOTOGGLES_TRANSITIONS:
-			return &mwindow->edl->session->auto_conf->transitions;
+			return &master_edl->session->auto_conf->transitions;
 
 		case NONAUTOTOGGLES_PLUGIN_AUTOS:
-			return &mwindow->edl->session->auto_conf->plugins;
+			return &master_edl->session->auto_conf->plugins;
 		}
 	}
 }

@@ -28,7 +28,6 @@
 #include "condition.h"
 #include "datatype.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "file.h"
 #include "framecache.h"
 #include "mutex.h"
@@ -246,7 +245,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		item->asset->id)))
 	{
 		File *source = mwindow->video_cache->check_out(item->asset,
-			mwindow->edl);
+			master_edl);
 		if(!source)
 			return;
 
@@ -338,7 +337,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			{
 // Load new buffer
 				File *source = mwindow->audio_cache->check_out(item->asset,
-					mwindow->edl);
+					master_edl);
 				if(!source)
 					return;
 

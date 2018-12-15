@@ -58,7 +58,7 @@ MenuVEffectThread::MenuVEffectThread(MWindow *mwindow)
 
 int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 {
-	asset->layers = mwindow->edl->tracks->recordable_video_tracks();
+	asset->layers = master_edl->tracks->recordable_video_tracks();
 	return asset->layers;
 }
 
@@ -69,15 +69,15 @@ PluginArray* MenuVEffectThread::create_plugin_array()
 
 ptstime MenuVEffectThread::one_unit()
 {
-	return (ptstime)1 / mwindow->edl->session->frame_rate;
+	return (ptstime)1 / master_edl->session->frame_rate;
 }
 
 posnum MenuVEffectThread::to_units(ptstime position, int round)
 {
 	if(round)
-		return Units::round(position * mwindow->edl->session->frame_rate);
+		return Units::round(position * master_edl->session->frame_rate);
 	else
-		return (posnum)(position * mwindow->edl->session->frame_rate);
+		return (posnum)(position * master_edl->session->frame_rate);
 }
 
 void MenuVEffectThread::fix_menu(const char *title)

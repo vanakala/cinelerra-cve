@@ -55,7 +55,7 @@ PlaybackEngine* CTracking::get_playback_engine()
 void CTracking::start_playback(ptstime new_position)
 {
 	mwindow->gui->cursor->playing_back = 1;
-	mwindow->edl->local_session->get_selections(selections);
+	master_edl->local_session->get_selections(selections);
 
 	Tracking::start_playback(new_position);
 }
@@ -68,12 +68,12 @@ void CTracking::stop_playback()
 
 	Tracking::stop_playback();
 
-	epos = mwindow->edl->local_session->get_selectionstart();
+	epos = master_edl->local_session->get_selectionstart();
 	if(!PTSEQU(selections[0], selections[1]) &&
 			(PTSEQU(epos, selections[1]) || PTSEQU(epos, selections[0])))
 	{
 		// restore highligt while reached end of highligt
-		mwindow->edl->local_session->set_selection(selections[0], selections[1]);
+		master_edl->local_session->set_selection(selections[0], selections[1]);
 		mwindow->gui->cursor->update();
 	}
 	selections[0] = selections[1] = 0;
@@ -87,12 +87,12 @@ int CTracking::update_scroll(ptstime position)
 {
 	int updated_scroll = 0;
 
-	if(mwindow->edl->session->view_follows_playback)
+	if(master_edl->session->view_follows_playback)
 	{
-		ptstime seconds_per_pixel = mwindow->edl->local_session->zoom_time;
+		ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
 		ptstime half_canvas = seconds_per_pixel * 
 			mwindow->gui->canvas->get_w() / 2;
-		ptstime midpoint = mwindow->edl->local_session->view_start_pts +
+		ptstime midpoint = master_edl->local_session->view_start_pts +
 			half_canvas;
 
 		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD)
@@ -104,7 +104,7 @@ int CTracking::update_scroll(ptstime position)
 				position < right_boundary)
 			{
 				int pixels = round((position - midpoint) /
-					mwindow->edl->local_session->zoom_time);
+					master_edl->local_session->zoom_time);
 				if(pixels) 
 				{
 					mwindow->move_right(pixels);
@@ -119,10 +119,10 @@ int CTracking::update_scroll(ptstime position)
 
 			if(position < right_boundary &&
 				position > left_boundary && 
-				mwindow->edl->local_session->view_start_pts > 0)
+				master_edl->local_session->view_start_pts > 0)
 			{
 				int pixels = round((midpoint - position) /
-						mwindow->edl->local_session->zoom_time);
+						master_edl->local_session->zoom_time);
 				if(pixels) 
 				{
 					mwindow->move_left(pixels);
@@ -139,7 +139,7 @@ void CTracking::update_tracker(ptstime position)
 {
 	int updated_scroll;
 
-	mwindow->edl->local_session->set_selection(position);
+	master_edl->local_session->set_selection(position);
 // Update cwindow slider
 	cwindow->gui->slider->update(position);
 

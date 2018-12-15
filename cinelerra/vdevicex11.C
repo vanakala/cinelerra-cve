@@ -26,7 +26,6 @@
 #include "canvas.h"
 #include "colormodels.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "mwindow.h"
 #include "playbackconfig.h"
 #include "preferences.h"

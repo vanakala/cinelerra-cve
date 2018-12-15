@@ -178,7 +178,7 @@ void AssetPicon::init_object()
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-				File *file = mwindow->video_cache->check_out(asset, mwindow->edl);
+				File *file = mwindow->video_cache->check_out(asset, master_edl);
 
 				if(file)
 				{
@@ -269,10 +269,10 @@ void AssetPicon::init_object()
 	if(label)
 	{
 		Units::totext(name, label->position,
-				mwindow->edl->session->time_format,
-				mwindow->edl->session->sample_rate,
-				mwindow->edl->session->frame_rate,
-				mwindow->edl->session->frames_per_foot);
+				master_edl->session->time_format,
+				master_edl->session->sample_rate,
+				master_edl->session->frame_rate,
+				master_edl->session->frames_per_foot);
 		set_text(name);
 		icon = gui->file_icon;
 		icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN];
@@ -548,7 +548,7 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 void AWindowGUI::create_label_folder()
 {
 	Label *current;
-	for(current = mwindow->edl->labels->first; current; current = NEXT)
+	for(current = master_edl->labels->first; current; current = NEXT)
 	{
 		AssetPicon *picon = new AssetPicon(mwindow, this, current);
 		labellist.append(picon);
@@ -564,7 +564,7 @@ void AWindowGUI::update_asset_list()
 	}
 
 // Synchronize EDL clips
-	for(int i = 0; i < mwindow->edl->clips.total; i++)
+	for(int i = 0; i < master_edl->clips.total; i++)
 	{
 		int exists = 0;
 		
@@ -573,10 +573,10 @@ void AWindowGUI::update_asset_list()
 		{
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if(picon->id == mwindow->edl->clips.values[i]->id)
+			if(picon->id == master_edl->clips.values[i]->id)
 			{
-				picon->edl = mwindow->edl->clips.values[i];
-				picon->set_text(mwindow->edl->clips.values[i]->local_session->clip_title);
+				picon->edl = master_edl->clips.values[i];
+				picon->set_text(master_edl->clips.values[i]->local_session->clip_title);
 				exists = 1;
 				picon->in_use = 1;
 			}
@@ -587,7 +587,7 @@ void AWindowGUI::update_asset_list()
 		{
 			AssetPicon *picon = new AssetPicon(mwindow, 
 				this, 
-				mwindow->edl->clips.values[i]);
+				master_edl->clips.values[i]);
 			assets.append(picon);
 		}
 	}
@@ -634,7 +634,7 @@ void AWindowGUI::update_asset_list()
 
 void AWindowGUI::sort_assets()
 {
-	switch(mwindow->edl->session->awindow_folder)
+	switch(master_edl->session->awindow_folder)
 	{
 	case AW_AEFFECT_FOLDER:
 		sort_picons(&aeffects);
@@ -754,7 +754,7 @@ void AWindowGUI::filter_displayed_assets()
 {
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
-	switch(mwindow->edl->session->awindow_folder)
+	switch(master_edl->session->awindow_folder)
 	{
 	case AW_AEFFECT_FOLDER:
 		copy_picons(displayed_assets, &aeffects, AW_NO_FOLDER);
@@ -774,13 +774,13 @@ void AWindowGUI::filter_displayed_assets()
 		asset_titles[1] = _("Title");
 		break;
 	default:
-		copy_picons(displayed_assets, &assets, mwindow->edl->session->awindow_folder);
+		copy_picons(displayed_assets, &assets, master_edl->session->awindow_folder);
 		break;
 	}
 	// Ensure the current folder icon is highlighted
 	for(int i = 0; i < folders.total; i++)
 		folders.values[i]->set_selected(0);
-	folders.values[mwindow->edl->session->awindow_folder]->set_selected(1);
+	folders.values[master_edl->session->awindow_folder]->set_selected(1);
 }
 
 void AWindowGUI::update_assets()
@@ -793,8 +793,8 @@ void AWindowGUI::update_assets()
 	filter_displayed_assets();
 
 	current_format =  (folder_list->get_format() & LISTBOX_ICONS) ? ASSETS_ICONS : ASSETS_TEXT;
-	if(mwindow->edl->session->folderlist_format != current_format)
-		folder_list->update_format(mwindow->edl->session->folderlist_format ?
+	if(master_edl->session->folderlist_format != current_format)
+		folder_list->update_format(master_edl->session->folderlist_format ?
 				LISTBOX_SMALLFONT | LISTBOX_ICONS : 0, 0);
 	folder_list->update(&folders,
 		0,
@@ -805,13 +805,13 @@ void AWindowGUI::update_assets()
 		-1);
 
 	current_format = (asset_list->get_format() & LISTBOX_ICONS) ? ASSETS_ICONS : ASSETS_TEXT;
-	if(mwindow->edl->session->assetlist_format != current_format)
-		asset_list->update_format(mwindow->edl->session->assetlist_format ?
+	if(master_edl->session->assetlist_format != current_format)
+		asset_list->update_format(master_edl->session->assetlist_format ?
 			LISTBOX_SMALLFONT | LISTBOX_ICONS : 0, 0);
 
 	asset_list->update(displayed_assets,
 		asset_titles,
-		mwindow->edl->session->asset_columns,
+		master_edl->session->asset_columns,
 		ASSET_COLUMNS, 
 		asset_list->get_xposition(),
 		asset_list->get_yposition(),
@@ -896,7 +896,7 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		w, 
 		h,
 		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
-		(mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
+		(master_edl->session->folderlist_format == ASSETS_ICONS ?
 			LISTBOX_ICONS | LISTBOX_SMALLFONT : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
 {
 	this->mwindow = mwindow;
@@ -909,7 +909,7 @@ void AWindowFolders::selection_changed()
 	AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
 	if(picon)
 	{
-		mwindow->edl->session->awindow_folder =  picon->foldernum;
+		master_edl->session->awindow_folder =  picon->foldernum;
 		gui->asset_list->draw_background();
 		gui->async_update_assets();
 	}
@@ -941,10 +941,10 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		w, 
 		h,
 		&gui->assets,    // Each column has an ArrayList of BC_ListBoxItems.
-		(mwindow->edl->session->assetlist_format == ASSETS_ICONS ?
+		(master_edl->session->assetlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0) | LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
 		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
-		mwindow->edl->session->asset_columns)                // width of each column
+		master_edl->session->asset_columns)                // width of each column
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -971,7 +971,7 @@ int AWindowAssets::handle_event()
 {
 	if(get_selection(0, 0))
 	{
-		switch(mwindow->edl->session->awindow_folder)
+		switch(master_edl->session->awindow_folder)
 		{
 		case AW_AEFFECT_FOLDER:
 		case AW_VEFFECT_FOLDER:
@@ -996,17 +996,17 @@ void AWindowAssets::selection_changed()
 // Show popup window
 	if(get_button_down() && get_buttonpress() == 3 && get_selection(0, 0))
 	{
-		if(mwindow->edl->session->awindow_folder == AW_AEFFECT_FOLDER ||
-			mwindow->edl->session->awindow_folder == AW_AEFFECT_FOLDER ||
-			mwindow->edl->session->awindow_folder == AW_VEFFECT_FOLDER ||
-			mwindow->edl->session->awindow_folder == AW_ATRANSITION_FOLDER ||
-			mwindow->edl->session->awindow_folder == AW_VTRANSITION_FOLDER)
+		if(master_edl->session->awindow_folder == AW_AEFFECT_FOLDER ||
+			master_edl->session->awindow_folder == AW_AEFFECT_FOLDER ||
+			master_edl->session->awindow_folder == AW_VEFFECT_FOLDER ||
+			master_edl->session->awindow_folder == AW_ATRANSITION_FOLDER ||
+			master_edl->session->awindow_folder == AW_VTRANSITION_FOLDER)
 		{
 			gui->assetlist_menu->update_titles();
 			gui->assetlist_menu->activate_menu();
 		}
 		else
-		if(mwindow->edl->session->awindow_folder == AW_LABEL_FOLDER)
+		if(master_edl->session->awindow_folder == AW_LABEL_FOLDER)
 		{
 			if(((AssetPicon*)get_selection(0, 0))->label)
 				gui->label_menu->activate_menu();
@@ -1043,9 +1043,9 @@ void AWindowAssets::draw_background()
 	set_color(BC_WindowBase::get_resources()->audiovideo_color);
 	set_font(LARGEFONT);
 	draw_text(get_w() - 
-		get_text_width(LARGEFONT, _(AWindowGUI::folder_names[mwindow->edl->session->awindow_folder])) - 24,
+		get_text_width(LARGEFONT, _(AWindowGUI::folder_names[master_edl->session->awindow_folder])) - 24,
 		30, 
-		_(AWindowGUI::folder_names[mwindow->edl->session->awindow_folder]),
+		_(AWindowGUI::folder_names[master_edl->session->awindow_folder]),
 		-1, 
 		get_bg_surface());
 }
@@ -1057,7 +1057,7 @@ int AWindowAssets::drag_start_event()
 
 	if(BC_ListBox::drag_start_event())
 	{
-		switch(mwindow->edl->session->awindow_folder)
+		switch(master_edl->session->awindow_folder)
 		{
 		case AW_AEFFECT_FOLDER:
 			mwindow->session->current_operation = DRAG_AEFFECT;
@@ -1137,8 +1137,8 @@ void AWindowAssets::drag_stop_event()
 
 int AWindowAssets::column_resize_event()
 {
-	mwindow->edl->session->asset_columns[0] = get_column_width(0);
-	mwindow->edl->session->asset_columns[1] = get_column_width(1);
+	master_edl->session->asset_columns[0] = get_column_width(0);
+	master_edl->session->asset_columns[1] = get_column_width(1);
 	return 1;
 }
 

@@ -72,7 +72,7 @@ int New::handle_event()
 		thread->window_lock->unlock();
 		return 1;
 	}
-	mwindow->edl->save_defaults(mwindow->defaults);
+	master_edl->save_defaults(mwindow->defaults);
 	create_new_edl();
 	thread->start(); 
 
@@ -114,9 +114,9 @@ void New::create_new_project()
 	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
 	mwindow->hide_plugins();
-	delete mwindow->edl;
+	delete master_edl;
 	assetlist_global.delete_all();
-	mwindow->edl = new_edl;
+	master_edl = new_edl;
 	mwindow->save_defaults();
 
 // Load file sequence

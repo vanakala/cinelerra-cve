@@ -25,8 +25,6 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bctitle.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "filexml.h"
 #include "fileavlibs.h"
 #include "formattools.h"

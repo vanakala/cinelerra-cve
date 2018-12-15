@@ -23,8 +23,6 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "condition.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "filexml.h"
 #include "indexfile.h"
 #include "indexthread.h"

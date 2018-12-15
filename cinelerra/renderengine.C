@@ -356,15 +356,15 @@ void RenderEngine::start_render_threads()
 
 void RenderEngine::update_framerate(float framerate)
 {
-	playback_engine->mwindow->edl->session->actual_frame_rate = framerate;
+	master_edl->session->actual_frame_rate = framerate;
 	playback_engine->mwindow->preferences_thread->update_framerate();
 }
 
 void RenderEngine::update_playstatistics(int frames, int late, int delay)
 {
-	playback_engine->mwindow->edl->session->frame_count = frames;
-	playback_engine->mwindow->edl->session->frames_late = late;
-	playback_engine->mwindow->edl->session->avg_delay = delay;
+	master_edl->session->frame_count = frames;
+	master_edl->session->frames_late = late;
+	master_edl->session->avg_delay = delay;
 	playback_engine->mwindow->preferences_thread->update_playstatistics();
 }
 

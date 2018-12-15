@@ -25,8 +25,6 @@
 #include "bctitle.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "formattools.h"
 #include "language.h"
 #include "mwindow.h"

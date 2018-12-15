@@ -138,7 +138,7 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 {
 	VFrame *image;
 
-	switch(mwindow->edl->local_session->zoom_track)
+	switch(master_edl->local_session->zoom_track)
 	{
 	case 1024: 
 		image = get_image("resource1024");

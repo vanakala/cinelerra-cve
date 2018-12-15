@@ -424,9 +424,6 @@ public:
 
 	ExportEDL *exportedl;
 
-
-// Master edl
-	EDL *edl;
 // Main Window GUI
 	MWindowGUI *gui;
 // Compositor

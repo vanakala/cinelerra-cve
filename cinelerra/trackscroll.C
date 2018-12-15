@@ -55,15 +55,15 @@ void TrackScroll::set_position(int handle_length)
 {
 	if(mwindow->gui->canvas)
 	{
-		int64_t length = mwindow->edl->get_tracks_height(mwindow->theme);
-		int64_t position = mwindow->edl->local_session->track_start;
+		int64_t length = master_edl->get_tracks_height(mwindow->theme);
+		int64_t position = master_edl->local_session->track_start;
 
 		if(position > length - handle_length)
 		{
 			position = length - handle_length;
 			if(position < 0)
 				position = 0;
-			mwindow->edl->local_session->track_start = position;
+			master_edl->local_session->track_start = position;
 		}
 		update_length(length, position, handle_length);
 	}
@@ -71,8 +71,8 @@ void TrackScroll::set_position(int handle_length)
 
 int TrackScroll::handle_event()
 {
-	mwindow->edl->local_session->track_start = get_value();
-	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+	master_edl->local_session->track_start = get_value();
+	master_edl->tracks->update_y_pixels(mwindow->theme);
 	mwindow->gui->canvas->draw();
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();

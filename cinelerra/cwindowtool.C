@@ -114,7 +114,7 @@ void CWindowTool::start_tool(int operation)
 			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 
-			if(mwindow->edl->session->tool_window &&
+			if(master_edl->session->tool_window &&
 				mwindow->session->show_cwindow) tool_gui->show_window();
 			tool_gui->flush();
 
@@ -135,13 +135,13 @@ void CWindowTool::stop_tool()
 
 void CWindowTool::show_tool()
 {
-	if(tool_gui && mwindow->edl->session->tool_window)
+	if(tool_gui && master_edl->session->tool_window)
 		tool_gui->show_window();
 }
 
 void CWindowTool::hide_tool()
 {
-	if(tool_gui && mwindow->edl->session->tool_window)
+	if(tool_gui && master_edl->session->tool_window)
 		tool_gui->hide_window();
 }
 
@@ -169,7 +169,7 @@ int CWindowTool::update_show_window()
 	tool_gui_lock->lock("CWindowTool::update_show_window");
 	if(tool_gui)
 	{
-		if(mwindow->edl->session->tool_window) 
+		if(master_edl->session->tool_window)
 		{
 			tool_gui->update();
 			tool_gui->show_window();
@@ -227,9 +227,9 @@ void CWindowToolGUI::close_event()
 {
 	hide_window();
 	flush();
-	mwindow->edl->session->tool_window = 0;
+	master_edl->session->tool_window = 0;
 
-	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
+	thread->gui->composite_panel->set_operation(master_edl->session->cwindow_operation);
 	thread->gui->flush();
 }
 
@@ -248,7 +248,7 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 	int create_z)
 {
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	ptstime pos = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime pos = master_edl->local_session->get_selectionstart(1);
 
 	x_auto = 0;
 	y_auto = 0;
@@ -266,7 +266,7 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 			create_z);
 	}
 
-	if(mwindow->edl->session->auto_keyframes)
+	if(master_edl->session->auto_keyframes)
 	{
 		if(x_auto && !PTSEQU(pos, x_auto->pos_time))
 		{
@@ -369,13 +369,13 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	x += column1 + 5;
 	y = 10;
-	x1 = new CWindowCoord(this, x, y, mwindow->edl->session->crop_x1);
+	x1 = new CWindowCoord(this, x, y, master_edl->session->crop_x1);
 	y += pad;
 	width = new CWindowCoord(this,
 		x, 
 		y, 
-		mwindow->edl->session->crop_x2 - 
-			mwindow->edl->session->crop_x1);
+		master_edl->session->crop_x2 -
+			master_edl->session->crop_x1);
 
 	x += x1->get_w() + 10;
 	y = 10;
@@ -389,13 +389,13 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	y = 10;
 	x += column2 + 5;
-	y1 = new CWindowCoord(this, x, y, mwindow->edl->session->crop_y1);
+	y1 = new CWindowCoord(this, x, y, master_edl->session->crop_y1);
 	y += pad;
 	height = new CWindowCoord(this,
 		x, 
 		y, 
-		mwindow->edl->session->crop_y2 - 
-			mwindow->edl->session->crop_y1);
+		master_edl->session->crop_y2 -
+			master_edl->session->crop_y1);
 }
 
 int CWindowCropGUI::handle_event()
@@ -403,24 +403,24 @@ int CWindowCropGUI::handle_event()
 	int new_x1, new_y1;
 	new_x1 = atol(x1->get_text());
 	new_y1 = atol(y1->get_text());
-	if(new_x1 != mwindow->edl->session->crop_x1)
+	if(new_x1 != master_edl->session->crop_x1)
 	{
-		mwindow->edl->session->crop_x2 = new_x1 +
-			mwindow->edl->session->crop_x2 - 
-			mwindow->edl->session->crop_x1;
-		mwindow->edl->session->crop_x1 = new_x1;
+		master_edl->session->crop_x2 = new_x1 +
+			master_edl->session->crop_x2 -
+			master_edl->session->crop_x1;
+		master_edl->session->crop_x1 = new_x1;
 	}
-	if(new_y1 != mwindow->edl->session->crop_y1)
+	if(new_y1 != master_edl->session->crop_y1)
 	{
-		mwindow->edl->session->crop_y2 = new_y1 +
-			mwindow->edl->session->crop_y2 -
-			mwindow->edl->session->crop_y1;
-		mwindow->edl->session->crop_y1 = atol(y1->get_text());
+		master_edl->session->crop_y2 = new_y1 +
+			master_edl->session->crop_y2 -
+			master_edl->session->crop_y1;
+		master_edl->session->crop_y1 = atol(y1->get_text());
 	}
-	mwindow->edl->session->crop_x2 = atol(width->get_text()) + 
-		mwindow->edl->session->crop_x1;
-	mwindow->edl->session->crop_y2 = atol(height->get_text()) + 
-		mwindow->edl->session->crop_y1;
+	master_edl->session->crop_x2 = atol(width->get_text()) +
+		master_edl->session->crop_x1;
+	master_edl->session->crop_y2 = atol(height->get_text()) +
+		master_edl->session->crop_y1;
 	update();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
@@ -428,12 +428,12 @@ int CWindowCropGUI::handle_event()
 
 void CWindowCropGUI::update()
 {
-	x1->update(mwindow->edl->session->crop_x1);
-	y1->update(mwindow->edl->session->crop_y1);
-	width->update(mwindow->edl->session->crop_x2 - 
-		mwindow->edl->session->crop_x1);
-	height->update(mwindow->edl->session->crop_y2 - 
-		mwindow->edl->session->crop_y1);
+	x1->update(master_edl->session->crop_x1);
+	y1->update(master_edl->session->crop_y1);
+	width->update(master_edl->session->crop_x2 -
+		master_edl->session->crop_x1);
+	height->update(master_edl->session->crop_y2 -
+		master_edl->session->crop_y1);
 }
 
 
@@ -465,12 +465,12 @@ CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
 
 void CWindowEyedropGUI::update()
 {
-	red->update(mwindow->edl->local_session->red);
-	green->update(mwindow->edl->local_session->green);
-	blue->update(mwindow->edl->local_session->blue);
-	int r = round(CLIP(mwindow->edl->local_session->red, 0, 1) * 0xff);
-	int g = round(CLIP(mwindow->edl->local_session->green, 0, 1) * 0xff);
-	int b = round(CLIP(mwindow->edl->local_session->blue, 0, 1) * 0xff);
+	red->update(master_edl->local_session->red);
+	green->update(master_edl->local_session->green);
+	blue->update(master_edl->local_session->blue);
+	int r = round(CLIP(master_edl->local_session->red, 0, 1) * 0xff);
+	int g = round(CLIP(master_edl->local_session->green, 0, 1) * 0xff);
+	int b = round(CLIP(master_edl->local_session->blue, 0, 1) * 0xff);
 	sample->set_color((r << 16) | (g << 8) | b);
 	sample->draw_box(0, 0, sample->get_w(), sample->get_h());
 	sample->set_color(BLACK);
@@ -742,7 +742,7 @@ int CWindowCPLeft::handle_event()
 		{
 			int w = 0, h = 0;
 			track->get_source_dimensions(
-				mwindow->edl->local_session->get_selectionstart(1),
+				master_edl->local_session->get_selectionstart(1),
 				w,
 				h);
 
@@ -756,7 +756,7 @@ int CWindowCPLeft::handle_event()
 		else
 		{
 			x_auto->set_value((double)track->track_w * z_auto->get_value() / 2 -
-				(double)mwindow->edl->session->output_w / 2);
+				(double)master_edl->session->output_w / 2);
 			do_update = 1;
 		}
 
@@ -831,7 +831,7 @@ int CWindowCPRight::handle_event()
 		{
 			int w = 0, h = 0;
 			track->get_source_dimensions(
-				mwindow->edl->local_session->get_selectionstart(1),
+				master_edl->local_session->get_selectionstart(1),
 				w,
 				h);
 
@@ -845,7 +845,7 @@ int CWindowCPRight::handle_event()
 		else
 		{
 			x_auto->set_value(-((double)track->track_w * z_auto->get_value() / 2 -
-				(double)mwindow->edl->session->output_w / 2));
+				(double)master_edl->session->output_w / 2));
 			do_update = 1;
 		}
 
@@ -892,7 +892,7 @@ int CWindowCPTop::handle_event()
 		{
 			int w = 0, h = 0;
 			track->get_source_dimensions(
-				mwindow->edl->local_session->get_selectionstart(1),
+				master_edl->local_session->get_selectionstart(1),
 				w,
 				h);
 
@@ -906,7 +906,7 @@ int CWindowCPTop::handle_event()
 		else
 		{
 			y_auto->set_value((double)track->track_h * z_auto->get_value() / 2 -
-				(double)mwindow->edl->session->output_h / 2);
+				(double)master_edl->session->output_h / 2);
 			do_update = 1;
 		}
 
@@ -980,7 +980,7 @@ int CWindowCPBottom::handle_event()
 		{
 			int w = 0, h = 0;
 			track->get_source_dimensions(
-				mwindow->edl->local_session->get_selectionstart(1),
+				master_edl->local_session->get_selectionstart(1),
 				w,
 				h);
 
@@ -994,7 +994,7 @@ int CWindowCPBottom::handle_event()
 		else
 		{
 			y_auto->set_value(-((double)track->track_h * z_auto->get_value() / 2 -
-				(double)mwindow->edl->session->output_h / 2));
+				(double)master_edl->session->output_h / 2));
 			do_update = 1;
 		}
 
@@ -1095,7 +1095,7 @@ int CWindowMaskDelete::handle_event()
 		for(MaskAuto *current = (MaskAuto*)mask_autos->first;
 			current; current = (MaskAuto*)NEXT)
 		{
-			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
+			SubMask *submask = current->get_submask(master_edl->session->cwindow_mask);
 
 			for(int i = mwindow->cwindow->gui->affected_point;
 				i < submask->points.total - 1;
@@ -1130,7 +1130,7 @@ CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-		mwindow->edl->session->cwindow_mask,
+		master_edl->session->cwindow_mask,
 		0,
 		SUBMASKS - 1,
 		x, 
@@ -1143,7 +1143,7 @@ CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow,
 
 int CWindowMaskNumber::handle_event()
 {
-	mwindow->edl->session->cwindow_mask = atol(get_text());
+	master_edl->session->cwindow_mask = atol(get_text());
 	gui->update();
 	gui->update_preview();
 	return 1;
@@ -1317,7 +1317,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	MaskPoint* &point,
 	int create_it)
 {
-	ptstime pos = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime pos = master_edl->local_session->get_selectionstart(1);
 
 	track = mwindow->cwindow->calculate_affected_track();
 	if(track)
@@ -1325,15 +1325,15 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	else
 		keyframe = 0;
 
-	if(mwindow->edl->session->auto_keyframes && keyframe &&
+	if(master_edl->session->auto_keyframes && keyframe &&
 			!PTSEQU(pos, keyframe->pos_time))
 	{
-		localauto->interpolate_from(keyframe, keyframe->next, mwindow->edl->local_session->get_selectionstart(1), 0);
+		localauto->interpolate_from(keyframe, keyframe->next, master_edl->local_session->get_selectionstart(1), 0);
 		keyframe = localauto;
 	}
 
 	if(keyframe)
-		mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
+		mask = keyframe->get_submask(master_edl->session->cwindow_mask);
 	else
 		mask = 0;
 
@@ -1381,7 +1381,7 @@ void CWindowMaskGUI::update()
 		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}
 
-	number->update(mwindow->edl->session->cwindow_mask);
+	number->update(master_edl->session->cwindow_mask);
 
 }
 
@@ -1459,10 +1459,10 @@ CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
 void CWindowRulerGUI::update()
 {
 	double distance_value =
-		sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
-		SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
-	double angle_value = atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
-		(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) * 360 / 2 / M_PI;
+		sqrt(SQR(master_edl->session->ruler_x2 - master_edl->session->ruler_x1) +
+		SQR(master_edl->session->ruler_y2 - master_edl->session->ruler_y1));
+	double angle_value = atan((master_edl->session->ruler_y2 - master_edl->session->ruler_y1) /
+		(master_edl->session->ruler_x2 - master_edl->session->ruler_x1)) * 360 / 2 / M_PI;
 
 	if(EQUIV(distance_value, 0.0))
 	{
@@ -1480,12 +1480,12 @@ void CWindowRulerGUI::update()
 		mwindow->session->cwindow_output_y);
 	current->update(string);
 	sprintf(string, "%.0f, %.0f",
-		mwindow->edl->session->ruler_x1,
-		mwindow->edl->session->ruler_y1);
+		master_edl->session->ruler_x1,
+		master_edl->session->ruler_y1);
 	point1->update(string);
 	sprintf(string, "%.0f, %.0f",
-		mwindow->edl->session->ruler_x2,
-		mwindow->edl->session->ruler_y2);
+		master_edl->session->ruler_x2,
+		master_edl->session->ruler_y2);
 	point2->update(string);
 
 	sprintf(string, "%0.01f pixels", distance_value);

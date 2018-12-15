@@ -22,8 +22,6 @@
 #include "aattachmentpoint.h"
 #include "bcsignals.h"
 #include "datatype.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "playbackconfig.h"
 #include "plugin.h"
 #include "pluginserver.h"

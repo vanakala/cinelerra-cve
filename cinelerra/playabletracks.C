@@ -22,7 +22,6 @@
 #include "automation.h"
 #include "bcsignals.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "plugin.h"

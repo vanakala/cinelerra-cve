@@ -51,6 +51,8 @@
 // Copy automation: copy just automation from master
 // Paste automation: paste functions in automation
 
+extern EDL *master_edl;
+
 class EDL
 {
 public:

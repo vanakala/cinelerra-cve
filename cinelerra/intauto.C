@@ -19,8 +19,7 @@
  * 
  */
 
-#include "edl.h"
-#include "edlsession.h"
+#include "edl.inc"
 #include "filexml.h"
 #include "intauto.h"
 #include "intautos.h"

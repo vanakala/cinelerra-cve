@@ -25,7 +25,6 @@
 #include "condition.h"
 #include "datatype.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
 #include "mutex.h"

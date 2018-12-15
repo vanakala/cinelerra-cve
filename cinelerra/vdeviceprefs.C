@@ -26,8 +26,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "edl.h"
-#include "edlsession.h"
 #include "formattools.h"
 #include "language.h"
 #include "mwindow.h"

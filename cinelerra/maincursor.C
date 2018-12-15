@@ -87,14 +87,14 @@ void MainCursor::draw(int do_plugintoggles)
 
 	if(!visible)
 	{
-		selectionstart = mwindow->edl->local_session->get_selectionstart(1);
-		selectionend = mwindow->edl->local_session->get_selectionend(1);
-		view_start = mwindow->edl->local_session->view_start_pts;
+		selectionstart = master_edl->local_session->get_selectionstart(1);
+		selectionend = master_edl->local_session->get_selectionend(1);
+		view_start = master_edl->local_session->view_start_pts;
 
 		pixel1 = round((selectionstart - view_start) /
-			mwindow->edl->local_session->zoom_time);
+			master_edl->local_session->zoom_time);
 		pixel2 = round((selectionend - view_start) /
-			mwindow->edl->local_session->zoom_time);
+			master_edl->local_session->zoom_time);
 		if(pixel1 < -10)
 			pixel1 = -10;
 		if(pixel2 > gui->canvas->get_w() + 10)

@@ -26,7 +26,6 @@
 #include "commonrender.h"
 #include "condition.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "virtualconsole.h"
 #include "module.h"
 #include "mutex.h"

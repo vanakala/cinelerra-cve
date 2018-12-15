@@ -109,7 +109,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 				plugin->append_module(modules[i]);
 				plugin->open_plugin(0, 
 					mwindow->preferences, 
-					mwindow->edl, 
+					master_edl,
 					0,
 					-1);
 				if(i == 0) plugin->set_interactive();
@@ -127,7 +127,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 				plugin->append_module(modules[i]);
 			plugin->open_plugin(0, 
 				mwindow->preferences, 
-				mwindow->edl, 
+				master_edl,
 				0,
 				-1);
 // set one plugin for progress bars
@@ -152,7 +152,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 				plugin->append_module(modules[i]);
 				plugin->open_plugin(0, 
 					mwindow->preferences, 
-					mwindow->edl, 
+					master_edl,
 					0,
 					-1);
 				plugin->get_parameters(start, end, 1);
@@ -170,7 +170,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 				plugin->append_module(modules[i]);
 			plugin->open_plugin(0, 
 				mwindow->preferences,
-				mwindow->edl, 
+				master_edl,
 				0,
 				-1);
 			plugin->get_parameters(start, end, total_tracks());

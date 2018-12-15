@@ -277,7 +277,7 @@ void Render::run()
 // Fix the asset for rendering
 		Asset *asset = new Asset;
 		load_defaults(asset);
-		check_asset(mwindow->edl, *asset);
+		check_asset(master_edl, *asset);
 // Get format from user
 		render_window = new RenderWindow(mwindow, this, asset);
 		result = render_window->run_window();
@@ -291,7 +291,7 @@ void Render::run()
 
 		if(!result)
 		{
-			if(!check_asset(mwindow->edl, *asset))
+			if(!check_asset(master_edl, *asset))
 			{
 				asset->init_streams();
 				save_defaults(asset);
@@ -304,7 +304,7 @@ void Render::run()
 				if(asset->single_image)
 					range_type = RANGE_SINGLEFRAME;
 
-				render(1, asset, mwindow->edl, strategy, range_type);
+				render(1, asset, master_edl, strategy, range_type);
 			}
 			else
 				errormsg(_("No audo or video to render"));
@@ -780,7 +780,8 @@ void Render::load_defaults(Asset *asset)
 
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow->defaults->get("RENDERPROFILE", string);
-	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, asset->renderprofile_path);
+	master_edl->session->configuration_path(RENDERCONFIG_DIR,
+		asset->renderprofile_path);
 	p = &asset->renderprofile_path[strlen(asset->renderprofile_path)];
 	*p++ = '/';
 	strcpy(p, string);

@@ -23,8 +23,6 @@
 #include "bcresources.h"
 #include "clip.h"
 #include "datatype.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"

@@ -196,11 +196,11 @@ EditPanel::EditPanel(MWindow *mwindow,
 
 void EditPanel::update()
 {
-	int new_editing_mode = mwindow->edl->session->editing_mode;
+	int new_editing_mode = master_edl->session->editing_mode;
 	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
 	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
-	if(keyframe) keyframe->update(mwindow->edl->session->auto_keyframes);
-	if(locklabels) locklabels->set_value(mwindow->edl->session->labels_follow_edits);
+	if(keyframe) keyframe->update(master_edl->session->auto_keyframes);
+	if(locklabels) locklabels->set_value(master_edl->session->labels_follow_edits);
 	subwindow->flush();
 }
 
@@ -767,7 +767,7 @@ ArrowButton::ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Toggle(x, 
 	y, 
 	mwindow->theme->get_image_set("arrow"),
-	mwindow->edl->session->editing_mode == EDITING_ARROW,
+	master_edl->session->editing_mode == EDITING_ARROW,
 	"",
 	0,
 	0,
@@ -792,7 +792,7 @@ IBeamButton::IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Toggle(x, 
 	y, 
 	mwindow->theme->get_image_set("ibeam"),
-	mwindow->edl->session->editing_mode == EDITING_IBEAM,
+	master_edl->session->editing_mode == EDITING_IBEAM,
 	"",
 	0,
 	0,
@@ -817,7 +817,7 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("autokeyframe"),
-	mwindow->edl->session->auto_keyframes,
+	master_edl->session->auto_keyframes,
 	"",
 	0,
 	0,
@@ -838,7 +838,7 @@ LockLabelsButton::LockLabelsButton(MWindow *mwindow, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("locklabels"),
-	mwindow->edl->session->labels_follow_edits,
+	master_edl->session->labels_follow_edits,
 	"",
 	0,
 	0,

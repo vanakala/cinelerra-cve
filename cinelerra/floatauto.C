@@ -22,7 +22,7 @@
 #include "autos.h"
 #include "automation.inc"
 #include "clip.h"
-#include "edl.h"
+#include "edl.inc"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"

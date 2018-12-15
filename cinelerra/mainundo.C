@@ -118,7 +118,7 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 void MainUndo::capture_state()
 {
 	FileXML file;
-	mwindow->edl->save_xml(&file, "", 0, 0);
+	master_edl->save_xml(&file, "", 0, 0);
 	file.terminate_string();
 	delete [] data_after;
 	data_after = new char[strlen(file.string)+1];
@@ -288,10 +288,10 @@ int MainUndoStackItem::get_size()
 void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 {
 	MWindow* mwindow = main_undo->mwindow;
-	mwindow->edl->load_xml(file, load_flags);
-	for(int i = 0; i < mwindow->edl->assets->total; i++)
+	master_edl->load_xml(file, load_flags);
+	for(int i = 0; i < master_edl->assets->total; i++)
 	{
-		mwindow->mainindexes->add_next_asset(mwindow->edl->assets->values[i]);
+		mwindow->mainindexes->add_next_asset(master_edl->assets->values[i]);
 	}
 	mwindow->mainindexes->start_build();
 }

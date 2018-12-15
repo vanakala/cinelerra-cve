@@ -27,8 +27,6 @@
 #include "automation.h"
 #include "bcsignals.h"
 #include "edits.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "clip.h"
 #include "floatautos.h"
 #include "levelhist.h"

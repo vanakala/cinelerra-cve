@@ -23,7 +23,6 @@
 #include "bcsignals.h"
 #include "filexml.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "mwindow.h"
 #include "mainerror.h"
 #include "plugin.h"

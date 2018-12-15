@@ -23,6 +23,7 @@
 #define PANAUTOS_H
 
 #include "autos.h"
+#include "cinelerra.h"
 #include "edl.inc"
 #include "panauto.inc"
 #include "track.inc"

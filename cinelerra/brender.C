@@ -181,7 +181,7 @@ void BRender::render_done()
 	{
 		// brender failed
 		videomap.set_map(0.0, videomap.last->pts, 0);
-		mwindow->edl->session->brender_start = 0;
+		master_edl->session->brender_start = 0;
 		mwindow->session->brender_end = 0;
 		errormsg(_("Background rendering failed"));
 	}

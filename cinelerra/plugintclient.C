@@ -19,8 +19,6 @@
  * 
  */
 
-#include "edl.h"
-#include "edlsession.h"
 #include "pluginserver.h"
 #include "plugintclient.h"
 

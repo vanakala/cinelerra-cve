@@ -29,7 +29,6 @@
 
 #include "bcsignals.h"
 #include "clip.h"
-#include "edl.inc"
 #include "mutex.h"
 #include "overlayframe.h"
 #include "units.h"

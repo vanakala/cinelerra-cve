@@ -25,7 +25,6 @@
 #include "awindow.inc"
 #include "bctextbox.h"
 #include "bcwindow.h"
-#include "edl.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "vwindow.inc"

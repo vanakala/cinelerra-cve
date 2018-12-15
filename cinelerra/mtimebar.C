@@ -54,8 +54,8 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 
 int MTimeBar::position_to_pixel(ptstime position)
 {
-	return round((position - mwindow->edl->local_session->view_start_pts) /
-		mwindow->edl->local_session->zoom_time);
+	return round((position - master_edl->local_session->view_start_pts) /
+		master_edl->local_session->zoom_time);
 }
 
 void MTimeBar::stop_playback()
@@ -71,8 +71,8 @@ void MTimeBar::stop_playback()
 void MTimeBar::draw_time()
 {
 	char string[BCTEXTLEN];
-	int sample_rate = mwindow->edl->session->sample_rate;
-	double frame_rate = mwindow->edl->session->frame_rate;
+	int sample_rate = master_edl->session->sample_rate;
+	double frame_rate = master_edl->session->frame_rate;
 // Seconds between text markings
 	double text_interval = 3600.0;
 // Seconds between tick marks
@@ -93,35 +93,35 @@ void MTimeBar::draw_time()
 	draw_range();
 
 // Number of seconds per pixel
-	double time_per_pixel = mwindow->edl->local_session->zoom_time;
+	double time_per_pixel = master_edl->local_session->zoom_time;
 // Seconds in each frame
 	double frame_seconds = (double)1.0 / frame_rate;
 // Starting time of view in seconds.
-	ptstime view_start = mwindow->edl->local_session->view_start_pts;
+	ptstime view_start = master_edl->local_session->view_start_pts;
 // Ending time of view in seconds
-	ptstime view_end = mwindow->edl->local_session->view_start_pts +
+	ptstime view_end = master_edl->local_session->view_start_pts +
 		get_w() * time_per_pixel;
 // Get minimum distance between text marks
 	int min_pixels1 = get_text_width(MEDIUMFONT, 
 		Units::totext(string,
 			view_start,
-			mwindow->edl->session->time_format, 
+			master_edl->session->time_format,
 			sample_rate,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot)) + TEXT_MARGIN;
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot)) + TEXT_MARGIN;
 	int min_pixels2 = get_text_width(MEDIUMFONT, 
 		Units::totext(string,
 			view_end,
-			mwindow->edl->session->time_format, 
+			master_edl->session->time_format,
 			sample_rate,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot)) + TEXT_MARGIN;
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot)) + TEXT_MARGIN;
 	int min_pixels = (int)MAX(min_pixels1, min_pixels2);
 
 
 // Minimum seconds between text marks
 	double min_time = (double)min_pixels * 
-		mwindow->edl->local_session->zoom_time;
+		master_edl->local_session->zoom_time;
 
 // Get first text mark on or before window start
 	int starting_mark = 0;
@@ -199,25 +199,25 @@ void MTimeBar::draw_time()
 		text_interval = 3600;
 
 // Set text interval
-	switch(mwindow->edl->session->time_format)
+	switch(master_edl->session->time_format)
 	{
 	case TIME_FEET_FRAMES:
 	{
-		double foot_seconds = frame_seconds * mwindow->edl->session->frames_per_foot;
+		double foot_seconds = frame_seconds * master_edl->session->frames_per_foot;
 		if(frame_seconds >= min_time)
 			text_interval = frame_seconds;
 		else
 		if(foot_seconds / 8.0 > min_time)
-			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 8.0;
+			text_interval = frame_seconds * master_edl->session->frames_per_foot / 8.0;
 		else
 		if(foot_seconds / 4.0 > min_time)
-			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 4.0;
+			text_interval = frame_seconds * master_edl->session->frames_per_foot / 4.0;
 		else
 		if(foot_seconds / 2.0 > min_time)
-			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 2.0;
+			text_interval = frame_seconds * master_edl->session->frames_per_foot / 2.0;
 		else
 		if(foot_seconds > min_time)
-			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot;
+			text_interval = frame_seconds * master_edl->session->frames_per_foot;
 		else
 		if(foot_seconds * 2 >= min_time)
 			text_interval = foot_seconds * 2;
@@ -315,7 +315,7 @@ void MTimeBar::draw_time()
 // Set tick interval
 	tick_interval = text_interval;
 
-	switch(mwindow->edl->session->time_format)
+	switch(master_edl->session->time_format)
 	{
 	case TIME_HMSF:
 	case TIME_FEET_FRAMES:
@@ -326,7 +326,7 @@ void MTimeBar::draw_time()
 	}
 
 // Get first text mark on or before window start
-	starting_mark = mwindow->edl->local_session->view_start_pts / text_interval;
+	starting_mark = master_edl->local_session->view_start_pts / text_interval;
 
 	double start_position = (double)starting_mark * text_interval;
 	int iteration = 0;
@@ -334,15 +334,15 @@ void MTimeBar::draw_time()
 	while(start_position + text_interval * iteration < view_end)
 	{
 		double position1 = start_position + text_interval * iteration;
-		int pixel = round((position1 - mwindow->edl->local_session->view_start_pts) / time_per_pixel);
+		int pixel = round((position1 - master_edl->local_session->view_start_pts) / time_per_pixel);
 		int pixel1 = pixel;
 
 		Units::totext(string, 
 			position1, 
-			mwindow->edl->session->time_format, 
+			master_edl->session->time_format,
 			sample_rate, 
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
+			master_edl->session->frame_rate,
+			master_edl->session->frames_per_foot);
 		set_color(get_resources()->default_text_color);
 		set_font(MEDIUMFONT);
 
@@ -351,14 +351,14 @@ void MTimeBar::draw_time()
 
 		double position2 = start_position + text_interval * (iteration + 1);
 		int pixel2 = round((position2 -
-			mwindow->edl->local_session->view_start_pts) / time_per_pixel);
+			master_edl->local_session->view_start_pts) / time_per_pixel);
 
 		for(double tick_position = position1; 
 			tick_position < position2; 
 			tick_position += tick_interval)
 		{
 			pixel = round((tick_position -
-				mwindow->edl->local_session->view_start_pts) / time_per_pixel);
+				master_edl->local_session->view_start_pts) / time_per_pixel);
 			if(labs(pixel - pixel1) > 1 &&
 				abs(pixel - pixel2) > 1)
 				draw_line(pixel, TICK_MARGIN, pixel, get_h() - 2);
@@ -370,14 +370,14 @@ void MTimeBar::draw_time()
 void MTimeBar::draw_range()
 {
 	int x1 = 0, x2 = 0;
-	if(mwindow->edl->tracks->total_playable_vtracks() &&
+	if(master_edl->tracks->total_playable_vtracks() &&
 		mwindow->preferences->use_brender)
 	{
-		double time_per_pixel = (double)mwindow->edl->local_session->zoom_time;
-		x1 = round((mwindow->edl->session->brender_start -
-			mwindow->edl->local_session->view_start_pts) / time_per_pixel);
+		double time_per_pixel = (double)master_edl->local_session->zoom_time;
+		x1 = round((master_edl->session->brender_start -
+			master_edl->local_session->view_start_pts) / time_per_pixel);
 		x2 = round((mwindow->session->brender_end -
-			mwindow->edl->local_session->view_start_pts) / time_per_pixel);
+			master_edl->local_session->view_start_pts) / time_per_pixel);
 	}
 
 	if(x2 > x1 && 
@@ -396,11 +396,11 @@ void MTimeBar::draw_range()
 
 void MTimeBar::select_label(ptstime position)
 {
-	EDL *edl = mwindow->edl;
+	EDL *edl = master_edl;
 
 	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
 
-	position = mwindow->edl->align_to_frame(position);
+	position = master_edl->align_to_frame(position);
 
 	if(shift_down())
 	{

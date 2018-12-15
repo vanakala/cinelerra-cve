@@ -69,11 +69,11 @@ VWindow::~VWindow()
 
 void VWindow::delete_edl()
 {
-	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared)
+	if(master_edl->vwindow_edl && !master_edl->vwindow_edl_shared)
 	{
-		delete mwindow->edl->vwindow_edl;
-		mwindow->edl->vwindow_edl = 0;
-		mwindow->edl->vwindow_edl_shared = 0;
+		delete master_edl->vwindow_edl;
+		master_edl->vwindow_edl = 0;
+		master_edl->vwindow_edl_shared = 0;
 	}
 	asset = 0;
 }
@@ -85,7 +85,7 @@ void VWindow::run()
 
 EDL* VWindow::get_edl()
 {
-	return mwindow->edl->vwindow_edl;
+	return master_edl->vwindow_edl;
 }
 
 Asset* VWindow::get_asset()
@@ -96,7 +96,7 @@ Asset* VWindow::get_asset()
 void VWindow::change_source()
 {
 	gui->canvas->clear_canvas();
-	if(mwindow->edl->vwindow_edl)
+	if(master_edl->vwindow_edl)
 	{
 		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
@@ -104,7 +104,7 @@ void VWindow::change_source()
 	else
 	{
 		asset = 0;
-		mwindow->edl->vwindow_edl_shared = 0;
+		master_edl->vwindow_edl_shared = 0;
 	}
 }
 
@@ -119,21 +119,21 @@ void VWindow::change_source(Asset *asset)
 
 // Generate EDL off of main EDL for cutting
 	this->asset = asset;
-	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
-	mwindow->edl->vwindow_edl_shared = 0;
-	mwindow->edl->vwindow_edl->update_assets(asset);
-	mwindow->edl->vwindow_edl->finalize_edl(LOADMODE_REPLACE);
+	master_edl->vwindow_edl = new EDL(master_edl);
+	master_edl->vwindow_edl_shared = 0;
+	master_edl->vwindow_edl->update_assets(asset);
+	master_edl->vwindow_edl->finalize_edl(LOADMODE_REPLACE);
 
 // Update GUI
-	gui->change_source(mwindow->edl->vwindow_edl, title);
+	gui->change_source(master_edl->vwindow_edl, title);
 	update_position(CHANGE_ALL, 1, 1);
 }
 
 void VWindow::change_source(EDL *edl)
 {
 // EDLs are identical
-	if(edl && mwindow->edl->vwindow_edl && 
-		edl->id == mwindow->edl->vwindow_edl->id) return;
+	if(edl && master_edl->vwindow_edl &&
+		edl->id == master_edl->vwindow_edl->id) return;
 
 	delete_edl();
 	gui->canvas->clear_canvas();
@@ -141,9 +141,9 @@ void VWindow::change_source(EDL *edl)
 	if(edl)
 	{
 		this->asset = 0;
-		mwindow->edl->vwindow_edl = edl;
+		master_edl->vwindow_edl = edl;
 // in order not to later delete edl if it is shared
-		mwindow->edl->vwindow_edl_shared = 1;
+		master_edl->vwindow_edl_shared = 1;
 
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
@@ -188,8 +188,8 @@ void VWindow::update(int options)
 {
 	if(options & WUPD_ACHANNELS)
 	{
-		gui->meters->set_meters(mwindow->edl->session->audio_channels,
-			mwindow->edl->session->vwindow_meter);
+		gui->meters->set_meters(master_edl->session->audio_channels,
+			master_edl->session->vwindow_meter);
 		gui->resize_event(gui->get_w(), gui->get_h());
 	}
 }

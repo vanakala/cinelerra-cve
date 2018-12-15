@@ -22,8 +22,6 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "editpanel.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "filexml.h"
 #include "keys.h"
 #include "localsession.h"

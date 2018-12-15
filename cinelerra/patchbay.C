@@ -137,7 +137,7 @@ Track *PatchBay::is_over_track()     // called from mwindow
 		cursor_y < get_h())
 	{
 // Get track we're inside of
-		for(Track *track = mwindow->edl->tracks->first;
+		for(Track *track = master_edl->tracks->first;
 			track;
 			track = track->next)
 		{
@@ -164,7 +164,7 @@ int PatchBay::cursor_motion_event()
 			cursor_y < get_h())
 		{
 // Get track we're inside of
-			for(Track *track = mwindow->edl->tracks->first;
+			for(Track *track = master_edl->tracks->first;
 				track;
 				track = track->next)
 			{
@@ -208,7 +208,7 @@ int PatchBay::cursor_motion_event()
 						if(track->expand_view != new_status)
 						{
 							track->expand_view = new_status;
-							mwindow->trackmovement(mwindow->edl->local_session->track_start);
+							mwindow->trackmovement(master_edl->local_session->track_start);
 							update_gui = 0;
 						}
 						break;
@@ -216,7 +216,7 @@ int PatchBay::cursor_motion_event()
 						{
 							IntAuto *current = 0;
 							Auto *keyframe = 0;
-							ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+							ptstime position = master_edl->local_session->get_selectionstart(1);
 							Autos *mute_autos = track->automation->autos[AUTOMATION_MUTE];
 
 							current = (IntAuto*)mute_autos->get_prev_auto(PLAY_FORWARD, 
@@ -234,7 +234,7 @@ int PatchBay::cursor_motion_event()
 								mwindow->restart_brender();
 								mwindow->sync_parameters(CHANGE_PARAMS);
 
-								if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
+								if(master_edl->session->auto_conf->autos[AUTOMATION_MUTE])
 								{
 									mwindow->gui->canvas->draw_overlays();
 									mwindow->gui->canvas->flash();
@@ -344,7 +344,7 @@ void PatchBay::update()
 // Every patch has a GUI regardless of whether or not it is visible.
 // Make sure GUI's are allocated for every patch and deleted for non-existant
 // patches.
-	for(Track *current = mwindow->edl->tracks->first;
+	for(Track *current = master_edl->tracks->first;
 		current;
 		current = NEXT, patch_count++)
 	{
@@ -396,7 +396,7 @@ void PatchBay::update()
 
 void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 {
-	for(Track *current = mwindow->edl->tracks->first;
+	for(Track *current = master_edl->tracks->first;
 		current;
 		current = NEXT)
 	{
@@ -406,19 +406,19 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			current != skip)
 		{
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
-			ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime position = master_edl->local_session->get_selectionstart(1);
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 			float new_value = keyframe->get_value() + change;
 			if(data_type == TRACK_AUDIO)
 				CLAMP(new_value,
-					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
+					master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 			else
 				CLAMP(new_value,
-					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
+					master_edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 
 			keyframe->set_value(new_value);
 
@@ -430,7 +430,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 void PatchBay::synchronize_nudge(posnum value, Track *skip)
 {
-	for(Track *current = mwindow->edl->tracks->first;
+	for(Track *current = master_edl->tracks->first;
 		current;
 		current = NEXT)
 	{

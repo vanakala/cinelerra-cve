@@ -56,24 +56,24 @@ AssetListFormat::AssetListFormat(MWindow *mwindow)
 
 void AssetListFormat::update()
 {
-	set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
+	set_text(master_edl->session->assetlist_format == ASSETS_TEXT ?
 		_("Display icons") : _("Display text"));
 }
 
 int AssetListFormat::handle_event()
 {
-	switch(mwindow->edl->session->assetlist_format)
+	switch(master_edl->session->assetlist_format)
 	{
 	case ASSETS_TEXT:
-		mwindow->edl->session->assetlist_format = ASSETS_ICONS;
+		master_edl->session->assetlist_format = ASSETS_ICONS;
 		break;
 	case ASSETS_ICONS:
-		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
+		master_edl->session->assetlist_format = ASSETS_TEXT;
 		break;
 	}
 
 	mwindow->awindow->gui->asset_list->update_format(
-		mwindow->edl->session->assetlist_format == ASSETS_ICONS ?
+		master_edl->session->assetlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0,
 		1);
 
@@ -109,7 +109,7 @@ FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
 
 void FolderListMenu::update_titles()
 {
-	format->set_text(mwindow->edl->session->folderlist_format == ASSETS_TEXT ?
+	format->set_text(master_edl->session->folderlist_format == ASSETS_TEXT ?
 		_("Display icons") : _("Display text"));
 }
 
@@ -123,18 +123,18 @@ FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
 
 int FolderListFormat::handle_event()
 {
-	switch(mwindow->edl->session->folderlist_format)
+	switch(master_edl->session->folderlist_format)
 	{
 	case ASSETS_TEXT:
-		mwindow->edl->session->folderlist_format = ASSETS_ICONS;
+		master_edl->session->folderlist_format = ASSETS_ICONS;
 		break;
 	case ASSETS_ICONS:
-		mwindow->edl->session->folderlist_format = ASSETS_TEXT;
+		master_edl->session->folderlist_format = ASSETS_TEXT;
 		break;
 	}
 
 	mwindow->awindow->gui->folder_list->update_format(
-		mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
+		master_edl->session->folderlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0, 1);
 	menu->update_titles();
 

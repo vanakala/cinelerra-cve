@@ -93,12 +93,12 @@ SetFormatThread::~SetFormatThread()
 
 void SetFormatThread::run()
 {
-	orig_dimension[0] = dimension[0] = mwindow->edl->session->output_w;
-	orig_dimension[1] = dimension[1] = mwindow->edl->session->output_h;
+	orig_dimension[0] = dimension[0] = master_edl->session->output_w;
+	orig_dimension[1] = dimension[1] = master_edl->session->output_h;
 	ratio[0] = ratio[1] = 1;
 
 	new_settings = new EDL;
-	new_settings->copy_session(mwindow->edl);
+	new_settings->copy_session(master_edl);
 
 // This locks mwindow, so it must be done outside window_lock
 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
@@ -141,10 +141,10 @@ void SetFormatThread::apply_changes()
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
 	AspectRatioSelection::limits(&new_settings->session->sample_aspect_ratio);
 
-	mwindow->edl->copy_session(new_settings, 1);
-	mwindow->edl->session->output_w = dimension[0];
-	mwindow->edl->session->output_h = dimension[1];
-	mwindow->edl->rechannel();
+	master_edl->copy_session(new_settings, 1);
+	master_edl->session->output_w = dimension[0];
+	master_edl->session->output_h = dimension[1];
+	master_edl->rechannel();
 
 	mwindow->save_backup();
 	mwindow->undo->update_undo(_("set format"), LOAD_ALL);
@@ -160,9 +160,9 @@ void SetFormatThread::apply_changes()
 	mwindow->lwindow->gui->flush();
 
 // Warn user
-	if(((mwindow->edl->session->output_w % 4) ||
-		(mwindow->edl->session->output_h % 4)) &&
-		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	if(((master_edl->session->output_w % 4) ||
+		(master_edl->session->output_h % 4)) &&
+		master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		errormsg(_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));

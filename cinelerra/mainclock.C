@@ -57,10 +57,10 @@ void MainClock::update(double position)
 
 	Units::totext(string, 
 		position,
-		mwindow->edl->session->time_format,
-		mwindow->edl->session->sample_rate,
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
+		master_edl->session->time_format,
+		master_edl->session->sample_rate,
+		master_edl->session->frame_rate,
+		master_edl->session->frames_per_foot);
 	BC_Title::update(string);
 }
 

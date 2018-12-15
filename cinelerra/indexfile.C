@@ -354,19 +354,19 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(edit->channel > asset->channels) return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
-	double virtual_edit_x = round((edit->get_pts() - mwindow->edl->local_session->view_start_pts) /
-			mwindow->edl->local_session->zoom_time);
+	double virtual_edit_x = round((edit->get_pts() - master_edl->local_session->view_start_pts) /
+			master_edl->local_session->zoom_time);
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
-		mwindow->edl->session->sample_rate;
+		master_edl->session->sample_rate;
 	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) * 
-		(mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate) + 
+		(master_edl->local_session->zoom_time * master_edl->session->sample_rate) +
 		edit->track->to_units(edit->get_source_pts())) *
 		asset_over_session);
 // just in case we get a numerical error 
 	if (startsource < 0) startsource = 0;
 	int64_t length = (int64_t)(w * 
-		mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate *
+		master_edl->local_session->zoom_time * master_edl->session->sample_rate *
 		asset_over_session);
 
 	if(asset->index_status == INDEX_BUILDING)
@@ -391,14 +391,14 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	float *buffer = 0;
 	int buffer_shared = 0;
 	int i;
-	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
-	int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
-	int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
+	int center_pixel = master_edl->local_session->zoom_track / 2;
+	if(master_edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+	int miny = center_pixel - master_edl->local_session->zoom_track / 2;
+	int maxy = center_pixel + master_edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;
 
-	double index_frames_per_pixel = mwindow->edl->local_session->zoom_time *
-		mwindow->edl->session->sample_rate /
+	double index_frames_per_pixel = master_edl->local_session->zoom_time *
+		master_edl->session->sample_rate /
 		asset->index_zoom * 
 		asset_over_session;
 
@@ -450,15 +450,15 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	{
 		if(current_frame >= index_frames_per_pixel)
 		{
-			int next_y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
-			int next_y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+			int next_y1 = (int)(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
+			int next_y2 = (int)(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
 			int y1 = next_y1;
 			int y2 = next_y2;
 
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
 			pixmap->canvas->set_color(mwindow->theme->audio_color);
-			if(mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate == 1)
+			if(master_edl->local_session->zoom_time * master_edl->session->sample_rate == 1)
 			{
 				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
 			}
@@ -492,8 +492,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // Get last column
 	if(current_frame)
 	{
-		y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
-		y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+		y1 = (int)(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
+		y2 = (int)(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
 		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
 

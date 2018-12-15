@@ -119,7 +119,7 @@ void PreferencesThread::run()
 	edl = new EDL;
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(mwindow->preferences);
-	edl->copy_session(mwindow->edl);
+	edl->copy_session(master_edl);
 	redraw_indexes = 0;
 	redraw_meters = 0;
 	redraw_times = 0;
@@ -176,11 +176,11 @@ void PreferencesThread::apply_settings()
 
 	AudioOutConfig *this_aconfig = edl->session->playback_config->aconfig;
 	VideoOutConfig *this_vconfig = edl->session->playback_config->vconfig;
-	AudioOutConfig *aconfig = mwindow->edl->session->playback_config->aconfig;
-	VideoOutConfig *vconfig = mwindow->edl->session->playback_config->vconfig;
+	AudioOutConfig *aconfig = master_edl->session->playback_config->aconfig;
+	VideoOutConfig *vconfig = master_edl->session->playback_config->vconfig;
 
 	rerender = 
-		edl->session->need_rerender(mwindow->edl->session) ||
+		edl->session->need_rerender(master_edl->session) ||
 		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -226,13 +226,13 @@ void PreferencesThread::apply_settings()
 			strcpy(preferences->index_directory,
 				mwindow->preferences->index_directory);
 	}
-	mwindow->edl->copy_session(edl, 1);
+	master_edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 
-	if(((mwindow->edl->session->output_w % 4) || 
-		(mwindow->edl->session->output_h % 4)) && 
-		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	if(((master_edl->session->output_w % 4) ||
+		(master_edl->session->output_h % 4)) &&
+		master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		errormsg(_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
@@ -274,7 +274,7 @@ void PreferencesThread::apply_settings()
 // This doesn't stop and restart, only reloads the assets before
 // the next play command.
 		mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, 
-				mwindow->edl, CHANGE_ALL);
+				master_edl, CHANGE_ALL);
 		mwindow->vwindow->change_source();
 	}
 
@@ -380,7 +380,7 @@ void PreferencesWindow::update_framerate()
 	if(thread->current_dialog == 0)
 	{
 		thread->edl->session->actual_frame_rate = 
-			mwindow->edl->session->actual_frame_rate;
+			master_edl->session->actual_frame_rate;
 		dialog->draw_framerate();
 		flash();
 	}
@@ -391,11 +391,11 @@ void PreferencesWindow::update_playstatistics()
 	if(thread->current_dialog == 0)
 	{
 		thread->edl->session->frame_count =
-			mwindow->edl->session->frame_count;
+			master_edl->session->frame_count;
 		thread->edl->session->frames_late =
-			mwindow->edl->session->frames_late;
+			master_edl->session->frames_late;
 		thread->edl->session->avg_delay =
-			mwindow->edl->session->avg_delay;
+			master_edl->session->avg_delay;
 		dialog->draw_playstatistics();
 		flash();
 	}
