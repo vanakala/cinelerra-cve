@@ -54,8 +54,6 @@ Mutex* EDL::id_lock = 0;
 EDL::EDL(EDL *parent_edl)
 {
 	this->parent_edl = parent_edl;
-	vwindow_edl = 0;
-	vwindow_edl_shared = 0;
 
 	id = next_id();
 	project_path[0] = 0;
@@ -87,9 +85,6 @@ EDL::~EDL()
 
 	if(local_session)
 		delete local_session;
-
-	if(vwindow_edl && !vwindow_edl_shared)
-		delete vwindow_edl;
 
 	if(!parent_edl)
 	{
@@ -267,9 +262,8 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
+						if(vwindow_edl) delete vwindow_edl;
 						vwindow_edl = new_edl;
-						vwindow_edl_shared = 0;
 					}
 					else
 					{
@@ -305,14 +299,6 @@ void EDL::copy_all(EDL *edl)
 
 void EDL::copy_clips(EDL *edl)
 {
-	if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
-	vwindow_edl = 0;
-	vwindow_edl_shared = 0;
-	if(edl->vwindow_edl)
-	{
-		vwindow_edl = new EDL(this);
-		vwindow_edl->copy_all(edl->vwindow_edl);
-	}
 	clips.remove_all_objects();
 	for(int i = 0; i < edl->clips.total; i++)
 	{

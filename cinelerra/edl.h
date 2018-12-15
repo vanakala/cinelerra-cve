@@ -52,6 +52,7 @@
 // Paste automation: paste functions in automation
 
 extern EDL *master_edl;
+extern EDL *vwindow_edl;
 
 class EDL
 {
@@ -185,10 +186,6 @@ public:
 
 // Clips
 	ArrayList<EDL*> clips;
-// VWindow
-	EDL *vwindow_edl;
-// is the vwindow_edl shared and therefore should not be deleted in destructor
-	int vwindow_edl_shared;
 
 // Media files
 // Shared between all EDLs

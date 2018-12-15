@@ -1187,14 +1187,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		{
 			master_edl->add_clip(new_edl->clips.values[j]);
 		}
-
-		if(new_edl->vwindow_edl)
-		{
-			if(master_edl->vwindow_edl)
-				delete master_edl->vwindow_edl;
-			master_edl->vwindow_edl = new EDL(master_edl);
-			master_edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
-		}
 	}
 	delete [] paste_position;
 

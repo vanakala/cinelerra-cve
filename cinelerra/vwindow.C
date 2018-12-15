@@ -69,11 +69,10 @@ VWindow::~VWindow()
 
 void VWindow::delete_edl()
 {
-	if(master_edl->vwindow_edl && !master_edl->vwindow_edl_shared)
+	if(vwindow_edl)
 	{
-		delete master_edl->vwindow_edl;
-		master_edl->vwindow_edl = 0;
-		master_edl->vwindow_edl_shared = 0;
+		delete vwindow_edl;
+		vwindow_edl = 0;
 	}
 	asset = 0;
 }
@@ -85,7 +84,7 @@ void VWindow::run()
 
 EDL* VWindow::get_edl()
 {
-	return master_edl->vwindow_edl;
+	return vwindow_edl;
 }
 
 Asset* VWindow::get_asset()
@@ -96,16 +95,13 @@ Asset* VWindow::get_asset()
 void VWindow::change_source()
 {
 	gui->canvas->clear_canvas();
-	if(master_edl->vwindow_edl)
+	if(vwindow_edl)
 	{
 		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
-	{
 		asset = 0;
-		master_edl->vwindow_edl_shared = 0;
-	}
 }
 
 void VWindow::change_source(Asset *asset)
@@ -119,21 +115,20 @@ void VWindow::change_source(Asset *asset)
 
 // Generate EDL off of main EDL for cutting
 	this->asset = asset;
-	master_edl->vwindow_edl = new EDL(master_edl);
-	master_edl->vwindow_edl_shared = 0;
-	master_edl->vwindow_edl->update_assets(asset);
-	master_edl->vwindow_edl->finalize_edl(LOADMODE_REPLACE);
+	vwindow_edl = new EDL(master_edl);
+	vwindow_edl->update_assets(asset);
+	vwindow_edl->finalize_edl(LOADMODE_REPLACE);
 
 // Update GUI
-	gui->change_source(master_edl->vwindow_edl, title);
+	gui->change_source(vwindow_edl, title);
 	update_position(CHANGE_ALL, 1, 1);
 }
 
 void VWindow::change_source(EDL *edl)
 {
 // EDLs are identical
-	if(edl && master_edl->vwindow_edl &&
-		edl->id == master_edl->vwindow_edl->id) return;
+	if(edl && vwindow_edl &&
+		edl->id == vwindow_edl->id) return;
 
 	delete_edl();
 	gui->canvas->clear_canvas();
@@ -141,10 +136,7 @@ void VWindow::change_source(EDL *edl)
 	if(edl)
 	{
 		this->asset = 0;
-		master_edl->vwindow_edl = edl;
-// in order not to later delete edl if it is shared
-		master_edl->vwindow_edl_shared = 1;
-
+		vwindow_edl = new EDL(master_edl);
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
