@@ -37,6 +37,8 @@
 #include "pluginserver.inc"
 #include "track.inc"
 
+extern MainSession *mainsession;
+
 // Options not in EDL but not changed in preferences
 class MainSession
 {

@@ -44,7 +44,7 @@ Quit::Quit(MWindow *mwindow, Save *save)
 
 int Quit::handle_event() 
 {
-	if(mwindow->session->changes_made ||
+	if(mainsession->changes_made ||
 		mwindow->render->in_progress) 
 	{
 		start();

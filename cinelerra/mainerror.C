@@ -43,8 +43,8 @@ MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
  : BC_Window(MWindow::create_title(N_("Errors")),
 	x,
 	y,
-	mwindow->session->ewindow_w,
-	mwindow->session->ewindow_h,
+	mainsession->ewindow_w,
+	mainsession->ewindow_h,
 	50,
 	50,
 	1,
@@ -83,8 +83,8 @@ void MainErrorGUI::resize_event(int w, int h)
 		list->get_y(),
 		list_w,
 		list_h);
-	mwindow->session->ewindow_w = w;
-	mwindow->session->ewindow_h = h;
+	mainsession->ewindow_w = w;
+	mainsession->ewindow_h = h;
 }
 
 

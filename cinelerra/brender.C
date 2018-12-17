@@ -182,7 +182,7 @@ void BRender::render_done()
 		// brender failed
 		videomap.set_map(0.0, videomap.last->pts, 0);
 		master_edl->session->brender_start = 0;
-		mwindow->session->brender_end = 0;
+		mainsession->brender_end = 0;
 		errormsg(_("Background rendering failed"));
 	}
 	mwindow->gui->timebar->update();
@@ -196,7 +196,7 @@ void BRender::allocate_map(ptstime brender_start, ptstime start, ptstime end)
 	videomap.set_map(0, brender_start, 0);
 	videomap.set_map(start, end, 0);
 	map_valid = 1;
-	mwindow->session->brender_end = start;
+	mainsession->brender_end = start;
 	map_lock->unlock();
 }
 
@@ -214,9 +214,9 @@ void BRender::set_video_map(ptstime start, ptstime end)
 	videomap.set_map(start, end, 1);
 
 // Maintain last contiguous here to reduce search time
-	if(videomap.last->pts > mwindow->session->brender_end)
+	if(videomap.last->pts > mainsession->brender_end)
 	{
-		mwindow->session->brender_end = videomap.last->pts;
+		mainsession->brender_end = videomap.last->pts;
 
 		if(timer->get_difference() > 1000)
 		{

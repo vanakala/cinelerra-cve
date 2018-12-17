@@ -806,30 +806,30 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - 
+		ccomposite_h = mainsession->cwindow_h -
 			get_image("cbuttons_left")->get_h();
 		cslider_x = 5;
 		cslider_y = ccomposite_h + 23;
 		cedit_x = 10;
 		cedit_y = cslider_y + 17;
 		ctransport_x = 10;
-		ctransport_y = mwindow->session->cwindow_h - 
+		ctransport_y = mainsession->cwindow_h -
 			get_image_set("autokeyframe")[0]->get_h();
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
 		cstatus_x = 453;
-		cstatus_y = mwindow->session->cwindow_h - 66;
+		cstatus_y = mainsession->cwindow_h - 66;
 		if(master_edl->session->cwindow_meter)
 		{
-			cmeter_x = mwindow->session->cwindow_w -
+			cmeter_x = mainsession->cwindow_w -
 				MeterPanel::get_meters_width(master_edl->session->audio_channels,
 					master_edl->session->cwindow_meter);
 			ccanvas_w = cmeter_x - ccanvas_x - 5;
 		}
 		else
 		{
-			cmeter_x = mwindow->session->cwindow_w;
+			cmeter_x = mainsession->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
 	}
@@ -838,22 +838,22 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
+		ccomposite_h = mainsession->cwindow_h - get_image("cbuttons_left")->get_h();
 
 		cslider_x = 5;
-		cslider_y = mwindow->session->cwindow_h;
+		cslider_y = mainsession->cwindow_h;
 		cedit_x = 10;
 		cedit_y = cslider_y + 17;
 		ctransport_x = 10;
 		ctransport_y = cedit_y + 40;
 		ccanvas_x = 0;
 		ccanvas_y = 0;
-		ccanvas_w = mwindow->session->cwindow_w;
-		ccanvas_h = mwindow->session->cwindow_h;
-		cmeter_x = mwindow->session->cwindow_w;
+		ccanvas_w = mainsession->cwindow_w;
+		ccanvas_h = mainsession->cwindow_h;
+		cmeter_x = mainsession->cwindow_w;
 //COPIED START
-		cstatus_x = mwindow->session->cwindow_w;
-		cstatus_y = mwindow->session->cwindow_h;
+		cstatus_x = mainsession->cwindow_w;
+		cstatus_y = mainsession->cwindow_h;
 //COPIED END
 	}
 
@@ -861,7 +861,7 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	czoom_y = ctransport_y + 5;
 
 	cmeter_y = 5;
-	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
+	cmeter_h = mainsession->cwindow_h - cmeter_y;
 
 //Specific to BD
 	cslider_w = ccanvas_x + ccanvas_w - cslider_x;
@@ -880,14 +880,14 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
-	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
+	vmeter_h = mainsession->vwindow_h - cmeter_y;
 	vcanvas_x = 0;
 	vcanvas_y = 0;
-	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
+	vcanvas_h = mainsession->vwindow_h - get_image("vbuttons_left")->get_h();
 
 	if(master_edl->session->vwindow_meter)
 	{
-		vmeter_x = mwindow->session->vwindow_w - 
+		vmeter_x = mainsession->vwindow_w -
 			VWINDOW_METER_MARGIN - 
 			MeterPanel::get_meters_width(master_edl->session->audio_channels,
 				master_edl->session->vwindow_meter);
@@ -895,8 +895,8 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	}
 	else
 	{
-		vmeter_x = mwindow->session->vwindow_w;
-		vcanvas_w = mwindow->session->vwindow_w;
+		vmeter_x = mainsession->vwindow_w;
+		vcanvas_w = mainsession->vwindow_w;
 	}
 
 	vtimebar_x = vcanvas_x;
@@ -911,7 +911,7 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vedit_x = 10;
 	vedit_y = vslider_y + 17;
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - 
+	vtransport_y = mainsession->vwindow_h -
 		get_image_set("autokeyframe")[0]->get_h();
 	vtime_x = 373;
 	vtime_y = vedit_y + 7;
@@ -1063,8 +1063,8 @@ void BlueDotTheme::draw_cwindow_bg(CWindowGUI *gui)
 			get_image("cbuttons_right"));
 		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
 			0, 
-			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
-			mwindow->session->cwindow_h, 
+			mainsession->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN,
+			mainsession->cwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
@@ -1092,8 +1092,8 @@ void BlueDotTheme::draw_vwindow_bg(VWindowGUI *gui)
 			get_image("vbuttons_right"));
 		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
 			0,
-			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
-			mwindow->session->vwindow_h, 
+			mainsession->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN,
+			mainsession->vwindow_h,
 			get_image("vmeter_bg"));
 	}
 	else

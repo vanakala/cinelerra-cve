@@ -119,7 +119,7 @@ AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
 
 int AssetPopupInfo::handle_event()
 {
-	if(mwindow->session->drag_assets->total)
+	if(mainsession->drag_assets->total)
 	{
 		if(mwindow->awindow->asset_edit->running() && 
 			mwindow->awindow->asset_edit->window)
@@ -130,14 +130,14 @@ int AssetPopupInfo::handle_event()
 		else
 		{
 			mwindow->awindow->asset_edit->edit_asset(
-				mwindow->session->drag_assets->values[0]);
+				mainsession->drag_assets->values[0]);
 		}
 	}
 	else
-	if(mwindow->session->drag_clips->total)
+	if(mainsession->drag_clips->total)
 	{
 		popup->gui->awindow->clip_edit->edit_clip(
-			mwindow->session->drag_clips->values[0]);
+			mainsession->drag_clips->values[0]);
 	}
 	return 1;
 }
@@ -180,13 +180,13 @@ AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
 
 int AssetPopupView::handle_event()
 {
-	if(mwindow->session->drag_assets->total)
+	if(mainsession->drag_assets->total)
 		mwindow->vwindow->change_source(
-			mwindow->session->drag_assets->values[0]);
+			mainsession->drag_assets->values[0]);
 	else
-	if(mwindow->session->drag_clips->total)
+	if(mainsession->drag_clips->total)
 		mwindow->vwindow->change_source(
-			mwindow->session->drag_clips->values[0]);
+			mainsession->drag_clips->values[0]);
 	return 1;
 }
 

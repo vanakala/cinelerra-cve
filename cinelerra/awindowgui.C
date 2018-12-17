@@ -280,10 +280,10 @@ void AssetPicon::init_object()
 
 AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
  : BC_Window(MWindow::create_title(N_("Resources")),
-	mwindow->session->awindow_x, 
-	mwindow->session->awindow_y, 
-	mwindow->session->awindow_w, 
-	mwindow->session->awindow_h,
+	mainsession->awindow_x,
+	mainsession->awindow_y,
+	mainsession->awindow_w,
+	mainsession->awindow_h,
 	250,
 	100,
 	1,
@@ -411,10 +411,10 @@ AWindowGUI::~AWindowGUI()
 
 void AWindowGUI::resize_event(int w, int h)
 {
-	mwindow->session->awindow_x = get_x();
-	mwindow->session->awindow_y = get_y();
-	mwindow->session->awindow_w = w;
-	mwindow->session->awindow_h = h;
+	mainsession->awindow_x = get_x();
+	mainsession->awindow_y = get_y();
+	mainsession->awindow_w = w;
+	mainsession->awindow_h = h;
 
 	mwindow->theme->get_awindow_sizes(this);
 	mwindow->theme->draw_awindow_bg(this);
@@ -429,13 +429,13 @@ void AWindowGUI::resize_event(int w, int h)
 
 void AWindowGUI::translation_event()
 {
-	mwindow->session->awindow_x = get_x();
-	mwindow->session->awindow_y = get_y();
+	mainsession->awindow_x = get_x();
+	mainsession->awindow_y = get_y();
 }
 
 void AWindowGUI::reposition_objects()
 {
-	int wmax = mwindow->session->awindow_w-mwindow->theme->adivider_w;
+	int wmax = mainsession->awindow_w-mwindow->theme->adivider_w;
 	int x = mwindow->theme->afolders_x;
 	int w = mwindow->theme->afolders_w;
 	if (w > wmax)
@@ -469,7 +469,7 @@ void AWindowGUI::reposition_objects()
 void AWindowGUI::close_event()
 {
 	hide_window();
-	mwindow->session->show_awindow = 0;
+	mainsession->show_awindow = 0;
 	mwindow->gui->mainmenu->show_awindow->set_checked(0);
 
 	mwindow->save_defaults();
@@ -657,15 +657,15 @@ void AWindowGUI::sort_assets()
 void AWindowGUI::collect_assets()
 {
 	int i = 0;
-	mwindow->session->drag_assets->remove_all();
-	mwindow->session->drag_clips->remove_all();
+	mainsession->drag_assets->remove_all();
+	mainsession->drag_clips->remove_all();
 	while(1)
 	{
 		AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++);
 		if(!result) break;
 
-		if(result->asset) mwindow->session->drag_assets->append(result->asset);
-		if(result->edl) mwindow->session->drag_clips->append(result->edl);
+		if(result->asset) mainsession->drag_assets->append(result->asset);
+		if(result->edl) mainsession->drag_clips->append(result->edl);
 	}
 }
 
@@ -858,7 +858,7 @@ int AWindowDivider::button_press_event()
 {
 	if(is_event_win() && cursor_inside())
 	{
-		mwindow->session->current_operation = DRAG_PARTITION;
+		mainsession->current_operation = DRAG_PARTITION;
 		return 1;
 	}
 	return 0;
@@ -866,9 +866,9 @@ int AWindowDivider::button_press_event()
 
 int AWindowDivider::cursor_motion_event()
 {
-	if(mwindow->session->current_operation == DRAG_PARTITION)
+	if(mainsession->current_operation == DRAG_PARTITION)
 	{
-		mwindow->session->afolders_w = gui->get_relative_cursor_x();
+		mainsession->afolders_w = gui->get_relative_cursor_x();
 		mwindow->theme->get_awindow_sizes(gui);
 		gui->reposition_objects();
 	}
@@ -877,9 +877,9 @@ int AWindowDivider::cursor_motion_event()
 
 int AWindowDivider::button_release_event()
 {
-	if(mwindow->session->current_operation == DRAG_PARTITION)
+	if(mainsession->current_operation == DRAG_PARTITION)
 	{
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 		return 1;
 	}
 	return 0;
@@ -1056,26 +1056,26 @@ int AWindowAssets::drag_start_event()
 		switch(master_edl->session->awindow_folder)
 		{
 		case AW_AEFFECT_FOLDER:
-			mwindow->session->current_operation = DRAG_AEFFECT;
+			mainsession->current_operation = DRAG_AEFFECT;
 			collect_pluginservers = 1;
 			break;
 		case AW_VEFFECT_FOLDER:
-			mwindow->session->current_operation = DRAG_VEFFECT;
+			mainsession->current_operation = DRAG_VEFFECT;
 			collect_pluginservers = 1;
 			break;
 		case AW_ATRANSITION_FOLDER:
-			mwindow->session->current_operation = DRAG_ATRANSITION;
+			mainsession->current_operation = DRAG_ATRANSITION;
 			collect_pluginservers = 1;
 			break;
 		case AW_VTRANSITION_FOLDER:
-			mwindow->session->current_operation = DRAG_VTRANSITION;
+			mainsession->current_operation = DRAG_VTRANSITION;
 			collect_pluginservers = 1;
 			break;
 		case AW_LABEL_FOLDER:
 			// do nothing!
 			break;
 		default:
-			mwindow->session->current_operation = DRAG_ASSET;
+			mainsession->current_operation = DRAG_ASSET;
 			collect_assets = 1;
 			break;
 		}
@@ -1083,13 +1083,13 @@ int AWindowAssets::drag_start_event()
 		if(collect_pluginservers)
 		{
 			int i = 0;
-			mwindow->session->drag_pluginservers->remove_all();
+			mainsession->drag_pluginservers->remove_all();
 			while(1)
 			{
 				AssetPicon *result = (AssetPicon*)get_selection(0, i++);
 				if(!result) break;
 				
-				mwindow->session->drag_pluginservers->append(result->plugin);
+				mainsession->drag_pluginservers->append(result->plugin);
 			}
 		}
 
@@ -1128,7 +1128,7 @@ void AWindowAssets::drag_stop_event()
 	if(result) get_drag_popup()->set_animation(0);
 
 	BC_ListBox::drag_stop_event();
-	mwindow->session->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
+	mainsession->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
 }
 
 int AWindowAssets::column_resize_event()

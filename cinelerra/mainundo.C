@@ -110,7 +110,7 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 
 	capture_state();
 
-	mwindow->session->changes_made = 1;
+	mainsession->changes_made = 1;
 	mwindow->gui->mainmenu->undo->update_caption(item->description);
 	mwindow->gui->mainmenu->redo->update_caption("");
 }
@@ -155,7 +155,7 @@ void MainUndo::push_state(const char *description, uint32_t load_flags, void* cr
 		new_entry->set_data_before(data_after);
 		push_undo_item(new_entry);
 	}
-	mwindow->session->changes_made = 1;
+	mainsession->changes_made = 1;
 }
 
 

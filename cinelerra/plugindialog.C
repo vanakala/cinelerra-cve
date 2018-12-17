@@ -110,8 +110,8 @@ void PluginDialogThread::run()
 	int result = 0;
 
 	plugin_type = 0;
-	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->session->plugindialog_w / 2;
-	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->session->plugindialog_h / 2;
+	int x = mwindow->gui->get_abs_cursor_x(1) - mainsession->plugindialog_w / 2;
+	int y = mwindow->gui->get_abs_cursor_y(1) - mainsession->plugindialog_h / 2;
 
 	window_lock->lock("PluginDialogThread::run 1");
 	window = new PluginDialog(mwindow, this, window_title, x, y);
@@ -185,8 +185,8 @@ PluginDialog::PluginDialog(MWindow *mwindow,
  : BC_Window(window_title, 
 	x,
 	y,
-	mwindow->session->plugindialog_w, 
-	mwindow->session->plugindialog_h, 
+	mainsession->plugindialog_w,
+	mainsession->plugindialog_h,
 	510, 
 	415,
 	1,
@@ -298,8 +298,8 @@ PluginDialog::~PluginDialog()
 
 void PluginDialog::resize_event(int w, int h)
 {
-	mwindow->session->plugindialog_w = w;
-	mwindow->session->plugindialog_h = h;
+	mainsession->plugindialog_w = w;
+	mainsession->plugindialog_h = h;
 	mwindow->theme->get_plugindialog_sizes();
 
 	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x, 

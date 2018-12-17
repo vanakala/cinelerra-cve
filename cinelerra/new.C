@@ -121,7 +121,7 @@ void New::create_new_project()
 
 // Load file sequence
 	mwindow->update_project(LOADMODE_REPLACE);
-	mwindow->session->changes_made = 0;
+	mainsession->changes_made = 0;
 }
 
 NewThread::NewThread(MWindow *mwindow, New *new_project)

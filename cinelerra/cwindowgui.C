@@ -82,10 +82,10 @@ static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
  : BC_Window(MWindow::create_title(N_("Compositor")),
-	mwindow->session->cwindow_x,
-	mwindow->session->cwindow_y,
-	mwindow->session->cwindow_w,
-	mwindow->session->cwindow_h,
+	mainsession->cwindow_x,
+	mainsession->cwindow_y,
+	mainsession->cwindow_w,
+	mainsession->cwindow_h,
 	100,
 	100,
 	1,
@@ -117,7 +117,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
 	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
 
-	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
+	mwindow->theme->get_cwindow_sizes(this, mainsession->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
 
@@ -171,7 +171,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	tool_panel->Thread::start();
 
 	set_operation(master_edl->session->cwindow_operation);
-	resize_event(mwindow->session->cwindow_w, mwindow->session->cwindow_h);
+	resize_event(mainsession->cwindow_w, mainsession->cwindow_h);
 }
 
 CWindowGUI::~CWindowGUI()
@@ -189,18 +189,18 @@ CWindowGUI::~CWindowGUI()
 
 void CWindowGUI::translation_event()
 {
-	mwindow->session->cwindow_x = get_x();
-	mwindow->session->cwindow_y = get_y();
+	mainsession->cwindow_x = get_x();
+	mainsession->cwindow_y = get_y();
 }
 
 void CWindowGUI::resize_event(int w, int h)
 {
-	mwindow->session->cwindow_x = get_x();
-	mwindow->session->cwindow_y = get_y();
-	mwindow->session->cwindow_w = w;
-	mwindow->session->cwindow_h = h;
+	mainsession->cwindow_x = get_x();
+	mainsession->cwindow_y = get_y();
+	mainsession->cwindow_w = w;
+	mainsession->cwindow_h = h;
 
-	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
+	mwindow->theme->get_cwindow_sizes(this, mainsession->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
 
@@ -393,13 +393,13 @@ int CWindowGUI::keypress_event()
 		result = 1;
 		break;
 	case 'f':
-		if(mwindow->session->cwindow_fullscreen)
+		if(mainsession->cwindow_fullscreen)
 			canvas->stop_fullscreen();
 		else
 			canvas->start_fullscreen();
 		break;
 	case ESC:
-		if(mwindow->session->cwindow_fullscreen)
+		if(mainsession->cwindow_fullscreen)
 			canvas->stop_fullscreen();
 		break;
 	case LEFT:
@@ -459,21 +459,21 @@ void CWindowGUI::drag_motion()
 {
 	if(get_hidden()) return;
 
-	if(mwindow->session->current_operation == DRAG_ASSET ||
-		mwindow->session->current_operation == DRAG_VTRANSITION ||
-		mwindow->session->current_operation == DRAG_VEFFECT)
+	if(mainsession->current_operation == DRAG_ASSET ||
+		mainsession->current_operation == DRAG_VTRANSITION ||
+		mainsession->current_operation == DRAG_VEFFECT)
 	{
-		int old_status = mwindow->session->ccanvas_highlighted;
+		int old_status = mainsession->ccanvas_highlighted;
 		int cursor_x = get_relative_cursor_x();
 		int cursor_y = get_relative_cursor_y();
 
-		mwindow->session->ccanvas_highlighted = get_cursor_over_window() &&
+		mainsession->ccanvas_highlighted = get_cursor_over_window() &&
 			cursor_x >= canvas->x &&
 			cursor_x < canvas->x + canvas->w &&
 			cursor_y >= canvas->y &&
 			cursor_y < canvas->y + canvas->h;
 
-		if(old_status != mwindow->session->ccanvas_highlighted)
+		if(old_status != mainsession->ccanvas_highlighted)
 			canvas->draw_refresh();
 	}
 }
@@ -483,45 +483,45 @@ int CWindowGUI::drag_stop()
 	int result = 0;
 	if(get_hidden()) return 0;
 
-	if((mwindow->session->current_operation == DRAG_ASSET ||
-		mwindow->session->current_operation == DRAG_VTRANSITION ||
-		mwindow->session->current_operation == DRAG_VEFFECT) &&
-		mwindow->session->ccanvas_highlighted)
+	if((mainsession->current_operation == DRAG_ASSET ||
+		mainsession->current_operation == DRAG_VTRANSITION ||
+		mainsession->current_operation == DRAG_VEFFECT) &&
+		mainsession->ccanvas_highlighted)
 	{
 // Hide highlighting
-		mwindow->session->ccanvas_highlighted = 0;
+		mainsession->ccanvas_highlighted = 0;
 		canvas->draw_refresh();
 		result = 1;
 	}
 	else
 		return 0;
 
-	if(mwindow->session->current_operation == DRAG_ASSET)
+	if(mainsession->current_operation == DRAG_ASSET)
 	{
-		if(mwindow->session->drag_assets->total)
+		if(mainsession->drag_assets->total)
 		{
 			mwindow->clear(0);
-			mwindow->load_assets(mwindow->session->drag_assets, 
+			mwindow->load_assets(mainsession->drag_assets,
 				master_edl->local_session->get_selectionstart(),
 				LOADMODE_PASTE,
-				mwindow->session->track_highlighted,
+				mainsession->track_highlighted,
 				master_edl->session->edit_actions(),
 				0); // overwrite
 		}
 
-		if(mwindow->session->drag_clips->total)
+		if(mainsession->drag_clips->total)
 		{
 			mwindow->clear(0);
-			mwindow->paste_edls(mwindow->session->drag_clips, 
+			mwindow->paste_edls(mainsession->drag_clips,
 				LOADMODE_PASTE, 
-				mwindow->session->track_highlighted,
+				mainsession->track_highlighted,
 				master_edl->local_session->get_selectionstart(),
 				master_edl->session->edit_actions(),
 				0); // overwrite
 		}
 
-		if(mwindow->session->drag_assets->total ||
-			mwindow->session->drag_clips->total)
+		if(mainsession->drag_assets->total ||
+			mainsession->drag_clips->total)
 		{
 			mwindow->save_backup();
 			mwindow->restart_brender();
@@ -532,20 +532,20 @@ int CWindowGUI::drag_stop()
 		}
 	}
 
-	if(mwindow->session->current_operation == DRAG_VEFFECT)
+	if(mainsession->current_operation == DRAG_VEFFECT)
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
 
 		mwindow->insert_effects_cwindow(affected_track);
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 	}
 
-	if(mwindow->session->current_operation == DRAG_VTRANSITION)
+	if(mainsession->current_operation == DRAG_VTRANSITION)
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
 
 		mwindow->paste_transition_cwindow(affected_track);
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 	}
 
 	return result;
@@ -591,7 +591,7 @@ CWindowMeters::CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, in
 int CWindowMeters::change_status_event()
 {
 	master_edl->session->cwindow_meter = use_meters;
-	mwindow->theme->get_cwindow_sizes(gui, mwindow->session->cwindow_controls);
+	mwindow->theme->get_cwindow_sizes(gui, mainsession->cwindow_controls);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
 }
@@ -733,12 +733,12 @@ void CWindowCanvas::status_event()
 
 int CWindowCanvas::get_fullscreen()
 {
-	return mwindow->session->cwindow_fullscreen;
+	return mainsession->cwindow_fullscreen;
 }
 
 void CWindowCanvas::set_fullscreen(int value)
 {
-	mwindow->session->cwindow_fullscreen = value;
+	mainsession->cwindow_fullscreen = value;
 }
 
 void CWindowCanvas::update_zoom(int x, int y, double zoom)
@@ -863,8 +863,8 @@ int CWindowCanvas::do_ruler(int draw,
 	canvas_to_output(master_edl, output_x, output_y);
 	output_to_canvas(master_edl, canvas_x1, canvas_y1);
 	output_to_canvas(master_edl, canvas_x2, canvas_y2);
-	mwindow->session->cwindow_output_x = round(output_x);
-	mwindow->session->cwindow_output_y = round(output_y);
+	mainsession->cwindow_output_x = round(output_x);
+	mainsession->cwindow_output_y = round(output_y);
 
 	if(button_press && get_buttonpress() == 1)
 	{
@@ -1770,7 +1770,7 @@ void CWindowCanvas::draw_overlays()
 		get_canvas()->set_opaque();
 	}
 
-	if(mwindow->session->ccanvas_highlighted)
+	if(mainsession->ccanvas_highlighted)
 	{
 		get_canvas()->set_color(WHITE);
 		get_canvas()->set_inverse();
@@ -2700,13 +2700,13 @@ void CWindowCanvas::zoom_resize_window(double percentage)
 
 void CWindowCanvas::toggle_controls()
 {
-	mwindow->session->cwindow_controls = !mwindow->session->cwindow_controls;
+	mainsession->cwindow_controls = !mainsession->cwindow_controls;
 	gui->resize_event(gui->get_w(), gui->get_h());
 }
 
 int CWindowCanvas::get_cwindow_controls()
 {
-	return mwindow->session->cwindow_controls;
+	return mainsession->cwindow_controls;
 }
 
 double CWindowCanvas::sample_aspect_ratio()

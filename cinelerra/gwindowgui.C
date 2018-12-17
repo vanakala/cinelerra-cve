@@ -85,8 +85,8 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
  : BC_Window(MWindow::create_title(N_("Overlays")),
-	mwindow->session->gwindow_x,
-	mwindow->session->gwindow_y,
+	mainsession->gwindow_x,
+	mainsession->gwindow_y,
 	w,
 	h,
 	w,
@@ -154,14 +154,14 @@ void GWindowGUI::update_toggles()
 
 void GWindowGUI::translation_event()
 {
-	mwindow->session->gwindow_x = get_x();
-	mwindow->session->gwindow_y = get_y();
+	mainsession->gwindow_x = get_x();
+	mainsession->gwindow_y = get_y();
 }
 
 void GWindowGUI::close_event()
 {
 	hide_window();
-	mwindow->session->show_gwindow = 0;
+	mainsession->show_gwindow = 0;
 	mwindow->gui->mainmenu->show_gwindow->set_checked(0);
 	mwindow->save_defaults();
 }

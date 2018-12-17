@@ -81,7 +81,7 @@ void CWindow::show_window()
 void CWindow::hide_window()
 {
 	gui->hide_window();
-	gui->mwindow->session->show_cwindow = 0;
+	mainsession->show_cwindow = 0;
 	gui->tool_panel->hide_tool();
 	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
 }
@@ -223,8 +223,8 @@ void CWindow::update(int options)
 			master_edl->session->cwindow_zoom);
 
 	if(options & WUPD_ACHANNELS)
-		gui->resize_event(mwindow->session->cwindow_w,
-			mwindow->session->cwindow_h);
+		gui->resize_event(mainsession->cwindow_w,
+			mainsession->cwindow_h);
 	else
 		gui->canvas->reposition_window(master_edl,
 			mwindow->theme->ccanvas_x,

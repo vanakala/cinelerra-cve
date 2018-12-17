@@ -61,10 +61,10 @@
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME,
-		mwindow->session->mwindow_x, 
-		mwindow->session->mwindow_y, 
-		mwindow->session->mwindow_w, 
-		mwindow->session->mwindow_h, 
+		mainsession->mwindow_x,
+		mainsession->mwindow_y,
+		mainsession->mwindow_w,
+		mainsession->mwindow_h,
 		100,
 		100,
 		1,
@@ -233,8 +233,8 @@ void MWindowGUI::focus_out_event()
 
 void MWindowGUI::resize_event(int w, int h)
 {
-	mwindow->session->mwindow_w = w;
-	mwindow->session->mwindow_h = h;
+	mainsession->mwindow_w = w;
+	mainsession->mwindow_h = h;
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
 	flash();
@@ -309,31 +309,31 @@ int MWindowGUI::drag_stop()
 
 void MWindowGUI::default_positions()
 {
-	reposition_window(mwindow->session->mwindow_x, 
-		mwindow->session->mwindow_y,
-		mwindow->session->mwindow_w, 
-		mwindow->session->mwindow_h);
-	mwindow->vwindow->gui->reposition_window(mwindow->session->vwindow_x, 
-		mwindow->session->vwindow_y,
-		mwindow->session->vwindow_w, 
-		mwindow->session->vwindow_h);
-	mwindow->cwindow->gui->reposition_window(mwindow->session->cwindow_x, 
-		mwindow->session->cwindow_y,
-		mwindow->session->cwindow_w, 
-		mwindow->session->cwindow_h);
-	mwindow->awindow->gui->reposition_window(mwindow->session->awindow_x, 
-		mwindow->session->awindow_y,
-		mwindow->session->awindow_w, 
-		mwindow->session->awindow_h);
+	reposition_window(mainsession->mwindow_x,
+		mainsession->mwindow_y,
+		mainsession->mwindow_w,
+		mainsession->mwindow_h);
+	mwindow->vwindow->gui->reposition_window(mainsession->vwindow_x,
+		mainsession->vwindow_y,
+		mainsession->vwindow_w,
+		mainsession->vwindow_h);
+	mwindow->cwindow->gui->reposition_window(mainsession->cwindow_x,
+		mainsession->cwindow_y,
+		mainsession->cwindow_w,
+		mainsession->cwindow_h);
+	mwindow->awindow->gui->reposition_window(mainsession->awindow_x,
+		mainsession->awindow_y,
+		mainsession->awindow_w,
+		mainsession->awindow_h);
 
-	resize_event(mwindow->session->mwindow_w, 
-		mwindow->session->mwindow_h);
-	mwindow->vwindow->gui->resize_event(mwindow->session->vwindow_w, 
-		mwindow->session->vwindow_h);
-	mwindow->cwindow->gui->resize_event(mwindow->session->cwindow_w, 
-		mwindow->session->cwindow_h);
-	mwindow->awindow->gui->resize_event(mwindow->session->awindow_w, 
-		mwindow->session->awindow_h);
+	resize_event(mainsession->mwindow_w,
+		mainsession->mwindow_h);
+	mwindow->vwindow->gui->resize_event(mainsession->vwindow_w,
+		mainsession->vwindow_h);
+	mwindow->cwindow->gui->resize_event(mainsession->cwindow_w,
+		mainsession->cwindow_h);
+	mwindow->awindow->gui->resize_event(mainsession->awindow_w,
+		mainsession->awindow_h);
 
 	flush();
 	mwindow->vwindow->gui->flush();
@@ -348,8 +348,8 @@ void MWindowGUI::repeat_event(int duration)
 
 void MWindowGUI::translation_event()
 {
-	mwindow->session->mwindow_x = get_x();
-	mwindow->session->mwindow_y = get_y();
+	mainsession->mwindow_x = get_x();
+	mainsession->mwindow_y = get_y();
 }
 
 void MWindowGUI::save_defaults(BC_Hash *defaults)

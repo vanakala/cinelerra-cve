@@ -55,10 +55,10 @@
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
  : BC_Window(MWindow::create_title(N_("Viewer")),
-	mwindow->session->vwindow_x,
-	mwindow->session->vwindow_y,
-	mwindow->session->vwindow_w,
-	mwindow->session->vwindow_h,
+	mainsession->vwindow_x,
+	mainsession->vwindow_y,
+	mainsession->vwindow_w,
+	mainsession->vwindow_h,
 	100,
 	100,
 	1,
@@ -113,7 +113,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 
 	deactivate();
 	slider->activate();
-	resize_event(mwindow->session->vwindow_w, mwindow->session->vwindow_h);
+	resize_event(mainsession->vwindow_w, mainsession->vwindow_h);
 }
 
 VWindowGUI::~VWindowGUI()
@@ -143,10 +143,10 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 
 void VWindowGUI::resize_event(int w, int h)
 {
-	mwindow->session->vwindow_x = get_x();
-	mwindow->session->vwindow_y = get_y();
-	mwindow->session->vwindow_w = w;
-	mwindow->session->vwindow_h = h;
+	mainsession->vwindow_x = get_x();
+	mainsession->vwindow_y = get_y();
+	mainsession->vwindow_w = w;
+	mainsession->vwindow_h = h;
 
 	mwindow->theme->get_vwindow_sizes(this);
 	mwindow->theme->draw_vwindow_bg(this);
@@ -179,15 +179,15 @@ void VWindowGUI::resize_event(int w, int h)
 
 void VWindowGUI::translation_event()
 {
-	mwindow->session->vwindow_x = get_x();
-	mwindow->session->vwindow_y = get_y();
+	mainsession->vwindow_x = get_x();
+	mainsession->vwindow_y = get_y();
 }
 
 void VWindowGUI::close_event()
 {
 	vwindow->playback_engine->send_command(STOP);
 	hide_window();
-	mwindow->session->show_vwindow = 0;
+	mainsession->show_vwindow = 0;
 
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
 
@@ -212,13 +212,13 @@ int VWindowGUI::keypress_event()
 		mwindow->redo_entry();
 		break;
 	case 'f':
-		if(mwindow->session->vwindow_fullscreen)
+		if(mainsession->vwindow_fullscreen)
 			canvas->stop_fullscreen();
 		else
 			canvas->start_fullscreen();
 		break;
 	case ESC:
-		if(mwindow->session->vwindow_fullscreen)
+		if(mainsession->vwindow_fullscreen)
 			canvas->stop_fullscreen();
 		break;
 	}
@@ -267,20 +267,20 @@ int VWindowGUI::cursor_motion_event()
 void VWindowGUI::drag_motion()
 {
 	if(get_hidden()) return;
-	if(mwindow->session->current_operation != DRAG_ASSET) return;
+	if(mainsession->current_operation != DRAG_ASSET) return;
 
-	int old_status = mwindow->session->vcanvas_highlighted;
+	int old_status = mainsession->vcanvas_highlighted;
 
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
 
-	mwindow->session->vcanvas_highlighted = (get_cursor_over_window() &&
+	mainsession->vcanvas_highlighted = (get_cursor_over_window() &&
 		cursor_x >= canvas->x &&
 		cursor_x < canvas->x + canvas->w &&
 		cursor_y >= canvas->y &&
 		cursor_y < canvas->y + canvas->h);
 
-	if(old_status != mwindow->session->vcanvas_highlighted)
+	if(old_status != mainsession->vcanvas_highlighted)
 		canvas->draw_refresh();
 }
 
@@ -288,16 +288,16 @@ int VWindowGUI::drag_stop()
 {
 	if(get_hidden()) return 0;
 
-	if(mwindow->session->vcanvas_highlighted &&
-		mwindow->session->current_operation == DRAG_ASSET)
+	if(mainsession->vcanvas_highlighted &&
+		mainsession->current_operation == DRAG_ASSET)
 	{
-		mwindow->session->vcanvas_highlighted = 0;
+		mainsession->vcanvas_highlighted = 0;
 		canvas->draw_refresh();
 
-		Asset *asset = mwindow->session->drag_assets->total ?
-			mwindow->session->drag_assets->values[0] : 0;
-		EDL *edl = mwindow->session->drag_clips->total ?
-			mwindow->session->drag_clips->values[0] : 0;
+		Asset *asset = mainsession->drag_assets->total ?
+			mainsession->drag_assets->values[0] : 0;
+		EDL *edl = mainsession->drag_clips->total ?
+			mainsession->drag_clips->values[0] : 0;
 
 		if(asset)
 			vwindow->change_source(asset);
@@ -472,7 +472,7 @@ void VWindowEditing::to_clip()
 
 		EDL *new_edl = new EDL(master_edl);
 		new_edl->load_xml(&file, LOAD_ALL);
-		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
+		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
 		char string[BCTEXTLEN];
 		master_edl->session->ptstotext(string, end - start);
 		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
@@ -646,7 +646,7 @@ void VWindowCanvas::draw_refresh()
 
 void VWindowCanvas::draw_overlays()
 {
-	if(mwindow->session->vcanvas_highlighted)
+	if(mainsession->vcanvas_highlighted)
 	{
 		get_canvas()->set_color(WHITE);
 		get_canvas()->set_inverse();
@@ -658,12 +658,12 @@ void VWindowCanvas::draw_overlays()
 
 int VWindowCanvas::get_fullscreen()
 {
-	return mwindow->session->vwindow_fullscreen;
+	return mainsession->vwindow_fullscreen;
 }
 
 void VWindowCanvas::set_fullscreen(int value)
 {
-	mwindow->session->vwindow_fullscreen = value;
+	mainsession->vwindow_fullscreen = value;
 }
 
 double VWindowCanvas::sample_aspect_ratio()

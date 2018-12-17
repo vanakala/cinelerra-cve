@@ -65,7 +65,7 @@ void Save::set_saveas(SaveAs *saveas)
 
 int Save::handle_event()
 {
-	if(mwindow->session->filename[0] == 0) 
+	if(mainsession->filename[0] == 0)
 	{
 		saveas->start();
 	}
@@ -75,20 +75,20 @@ int Save::handle_event()
 // TODO: Move this into mwindow.
 		FileXML file;
 		master_edl->save_xml(&file,
-			mwindow->session->filename,
+			mainsession->filename,
 			0,
 			0);
 		file.terminate_string();
 
-		if(file.write_to_file(mwindow->session->filename))
+		if(file.write_to_file(mainsession->filename))
 		{
-			errorbox(_("Couldn't open %s"), mwindow->session->filename);
+			errorbox(_("Couldn't open %s"), mainsession->filename);
 			return 1;
 		}
 		else
-			mwindow->gui->show_message(_("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
+			mwindow->gui->show_message(_("\"%s\" %dC written"), mainsession->filename, strlen(file.string));
 
-		mwindow->session->changes_made = 0;
+		mainsession->changes_made = 0;
 		if(saveas->quit_now)
 			mwindow->glthread->quit();
 	}
@@ -166,7 +166,7 @@ void SaveAs::run()
 	else
 		mwindow->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
 
-	mwindow->session->changes_made = 0;
+	mainsession->changes_made = 0;
 	mmenu->add_load(filename);
 	if(quit_now)
 		mwindow->glthread->quit();

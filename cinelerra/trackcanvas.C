@@ -153,7 +153,7 @@ void TrackCanvas::drag_motion()
 	}
 
 // there's no point in drawing highlights has until drag operation has been set
-	if (!mwindow->session->current_operation)
+	if (!mainsession->current_operation)
 		return;
 
 	if(get_cursor_over_window() &&
@@ -174,9 +174,9 @@ void TrackCanvas::drag_motion()
 				over_track = track;
 				for(Edit *edit = track->edits->first; edit; edit = edit->next)
 				{
-					if (mwindow->session->current_operation != DRAG_ATRANSITION && 
-						mwindow->session->current_operation != DRAG_VTRANSITION &&
-						edit == track->edits->last) 
+					if (mainsession->current_operation != DRAG_ATRANSITION &&
+							mainsession->current_operation != DRAG_VTRANSITION &&
+							edit == track->edits->last)
 						break;
 					int edit_x, edit_y, edit_w, edit_h;
 					edit_dimensions(track, edit->get_pts(), edit->end_pts(),
@@ -225,32 +225,32 @@ void TrackCanvas::drag_motion()
 	if (!over_track) 	// check for pastes from patchbay
 		over_track = mwindow->gui->patchbay->is_over_track();
 
-	if(mwindow->session->track_highlighted != over_track) 
+	if(mainsession->track_highlighted != over_track)
 	{
-		mwindow->session->track_highlighted = over_track;
+		mainsession->track_highlighted = over_track;
 		redraw = 1;
 	}
 
-	if(mwindow->session->edit_highlighted != over_edit)
+	if(mainsession->edit_highlighted != over_edit)
 	{
-		mwindow->session->edit_highlighted = over_edit;
+		mainsession->edit_highlighted = over_edit;
 		redraw = 1;
 	}
 
-	if(mwindow->session->pluginset_highlighted != over_pluginset)
+	if(mainsession->pluginset_highlighted != over_pluginset)
 	{
-		mwindow->session->pluginset_highlighted = over_pluginset;
+		mainsession->pluginset_highlighted = over_pluginset;
 		redraw = 1;
 	}
 
-	if(mwindow->session->plugin_highlighted != over_plugin)
+	if(mainsession->plugin_highlighted != over_plugin)
 	{
-		mwindow->session->plugin_highlighted = over_plugin;
+		mainsession->plugin_highlighted = over_plugin;
 		redraw = 1;
 	}
 
-	if (mwindow->session->current_operation == DRAG_ASSET ||
-			mwindow->session->current_operation == DRAG_EDIT)
+	if(mainsession->current_operation == DRAG_ASSET ||
+			mainsession->current_operation == DRAG_EDIT)
 	{
 		redraw = 1;
 	}
@@ -269,7 +269,7 @@ int TrackCanvas::drag_start_event()
 	int rerender = 0;
 	int new_cursor, update_cursor;
 
-	if(mwindow->session->current_operation != NO_OPERATION) return 0;
+	if(mainsession->current_operation != NO_OPERATION) return 0;
 
 	if(is_event_win())
 	{
@@ -321,18 +321,18 @@ int TrackCanvas::drag_stop()
 	int result = 0, redraw = 0;
 
 	int insertion = 0;           // used in drag and drop mode
-	switch(mwindow->session->current_operation)
+	switch(mainsession->current_operation)
 	{
 	case DRAG_VTRANSITION:
 	case DRAG_ATRANSITION:
-		if(mwindow->session->edit_highlighted)
+		if(mainsession->edit_highlighted)
 		{
-			if((mwindow->session->current_operation == DRAG_ATRANSITION &&
-				mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-				(mwindow->session->current_operation == DRAG_VTRANSITION &&
-				mwindow->session->track_highlighted->data_type == TRACK_VIDEO))
+			if((mainsession->current_operation == DRAG_ATRANSITION &&
+				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+				(mainsession->current_operation == DRAG_VTRANSITION &&
+				mainsession->track_highlighted->data_type == TRACK_VIDEO))
 			{
-				mwindow->session->current_operation = NO_OPERATION;
+				mainsession->current_operation = NO_OPERATION;
 				mwindow->paste_transition();
 				result = 1;
 			}
@@ -347,51 +347,51 @@ int TrackCanvas::drag_stop()
 // plugin instead of sharing it.
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
-		if(mwindow->session->track_highlighted &&
-			((mwindow->session->current_operation == DRAG_AEFFECT_COPY &&
-				mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-				(mwindow->session->current_operation == DRAG_VEFFECT_COPY &&
-				mwindow->session->track_highlighted->data_type == TRACK_VIDEO)))
+		if(mainsession->track_highlighted &&
+			((mainsession->current_operation == DRAG_AEFFECT_COPY &&
+				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+				(mainsession->current_operation == DRAG_VEFFECT_COPY &&
+				mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
-			mwindow->session->current_operation = NO_OPERATION;
+			mainsession->current_operation = NO_OPERATION;
 
 // Insert shared plugin in source
 // Move source to different location
-			if(mwindow->session->pluginset_highlighted)
+			if(mainsession->pluginset_highlighted)
 			{
-				if(mwindow->session->plugin_highlighted)
+				if(mainsession->plugin_highlighted)
 				{
-					mwindow->move_effect(mwindow->session->drag_plugin,
-						mwindow->session->plugin_highlighted->plugin_set,
+					mwindow->move_effect(mainsession->drag_plugin,
+						mainsession->plugin_highlighted->plugin_set,
 						0,
-						mwindow->session->plugin_highlighted->get_pts());
+						mainsession->plugin_highlighted->get_pts());
 				}
 				else
 				{
-					mwindow->move_effect(mwindow->session->drag_plugin,
-						mwindow->session->pluginset_highlighted,
+					mwindow->move_effect(mainsession->drag_plugin,
+						mainsession->pluginset_highlighted,
 						0,
-						mwindow->session->pluginset_highlighted->last->get_pts());
+						mainsession->pluginset_highlighted->last->get_pts());
 				}
 				result = 1;
 			}
 			else
 // Move to a new plugin set between two edits
-			if(mwindow->session->edit_highlighted)
+			if(mainsession->edit_highlighted)
 			{
-				mwindow->move_effect(mwindow->session->drag_plugin,
+				mwindow->move_effect(mainsession->drag_plugin,
 					0,
-					mwindow->session->track_highlighted,
-					mwindow->session->edit_highlighted->get_pts());
+					mainsession->track_highlighted,
+					mainsession->edit_highlighted->get_pts());
 				result = 1;
 			}
 			else
 // Move to a new plugin set
-			if(mwindow->session->track_highlighted)
+			if(mainsession->track_highlighted)
 			{
-				mwindow->move_effect(mwindow->session->drag_plugin,
+				mwindow->move_effect(mainsession->drag_plugin,
 					0,
-					mwindow->session->track_highlighted,
+					mainsession->track_highlighted,
 					0);
 				result = 1;
 			}
@@ -400,26 +400,26 @@ int TrackCanvas::drag_stop()
 
 	case DRAG_AEFFECT:
 	case DRAG_VEFFECT:
-		if(mwindow->session->track_highlighted && 
-			((mwindow->session->current_operation == DRAG_AEFFECT &&
-			mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-			(mwindow->session->current_operation == DRAG_VEFFECT &&
-			mwindow->session->track_highlighted->data_type == TRACK_VIDEO)))
+		if(mainsession->track_highlighted &&
+			((mainsession->current_operation == DRAG_AEFFECT &&
+			mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+			(mainsession->current_operation == DRAG_VEFFECT &&
+			mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
 // Drop all the effects
-			PluginSet *plugin_set = mwindow->session->pluginset_highlighted;
-			Track *track = mwindow->session->track_highlighted;
+			PluginSet *plugin_set = mainsession->pluginset_highlighted;
+			Track *track = mainsession->track_highlighted;
 			ptstime start = 0;
 			ptstime length = track->get_length();
 
-			if(mwindow->session->plugin_highlighted)
+			if(mainsession->plugin_highlighted)
 			{
-				start = mwindow->session->plugin_highlighted->get_pts();
-				length = mwindow->session->plugin_highlighted->length();
+				start = mainsession->plugin_highlighted->get_pts();
+				length = mainsession->plugin_highlighted->length();
 				if(length <= 0) length = track->get_length();
 			}
 			else
-			if(mwindow->session->pluginset_highlighted)
+			if(mainsession->pluginset_highlighted)
 			{
 				start = plugin_set->last->get_pts();
 				length = track->get_length() - start;
@@ -435,33 +435,33 @@ int TrackCanvas::drag_stop()
 			}
 // Move to a point between two edits
 			else
-			if(mwindow->session->edit_highlighted)
+			if(mainsession->edit_highlighted)
 			{
-				start = mwindow->session->edit_highlighted->get_pts();
-				length = mwindow->session->edit_highlighted->length();
+				start = mainsession->edit_highlighted->get_pts();
+				length = mainsession->edit_highlighted->length();
 			}
 
 			mwindow->insert_effects_canvas(start, length);
 			redraw = 1;
 		}
-		if (mwindow->session->track_highlighted)
+		if(mainsession->track_highlighted)
 			result = 1;  // we have to cleanup
 		break;
 
 	case DRAG_ASSET:
-		if(mwindow->session->track_highlighted)
+		if(mainsession->track_highlighted)
 		{
 			ptstime asset_length_float;
 			ptstime position = 0;
 
-			if(mwindow->session->current_operation == DRAG_ASSET &&
-				mwindow->session->drag_assets->total)
+			if(mainsession->current_operation == DRAG_ASSET &&
+				mainsession->drag_assets->total)
 			{
-				Asset *asset = mwindow->session->drag_assets->values[0];
+				Asset *asset = mainsession->drag_assets->values[0];
 				// we use video if we are over video and audio if we are over audio
-				if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+				if (asset->video_data && mainsession->track_highlighted->data_type == TRACK_VIDEO)
 					asset_length_float = asset->video_duration;
-				else if (asset->audio_data && mwindow->session->track_highlighted->data_type == TRACK_AUDIO)
+				else if (asset->audio_data && mainsession->track_highlighted->data_type == TRACK_AUDIO)
 					asset_length_float = asset->audio_duration;
 				else
 				{
@@ -469,10 +469,10 @@ int TrackCanvas::drag_stop()
 					break; // Do not do anything
 				}
 			} else
-			if(mwindow->session->current_operation == DRAG_ASSET &&
-				mwindow->session->drag_clips->total)
+			if(mainsession->current_operation == DRAG_ASSET &&
+				mainsession->drag_clips->total)
 			{
-				EDL *clip = mwindow->session->drag_clips->values[0];
+				EDL *clip = mainsession->drag_clips->values[0];
 				asset_length_float = clip->tracks->total_length();
 			}
 			else
@@ -485,7 +485,7 @@ int TrackCanvas::drag_stop()
 				result = 1;
 				break;		// Do not do anything
 			}
-			Track *track = mwindow->session->track_highlighted;
+			Track *track = mainsession->track_highlighted;
 
 			mwindow->paste_assets(position, track, !insertion);
 			result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
@@ -493,20 +493,22 @@ int TrackCanvas::drag_stop()
 		break;
 
 	case DRAG_EDIT:
-		mwindow->session->current_operation = NO_OPERATION;
-		if(mwindow->session->track_highlighted)
+		mainsession->current_operation = NO_OPERATION;
+		if(mainsession->track_highlighted)
 		{
-			if(mwindow->session->track_highlighted->data_type == mwindow->session->drag_edit->track->data_type)
+			if(mainsession->track_highlighted->data_type == mainsession->drag_edit->track->data_type)
 			{
-				ptstime position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length());
+				ptstime position = get_drop_position(&insertion,
+					mainsession->drag_edit,
+					mainsession->drag_edit->length());
 
-				if (position < -0.5)
+				if(position < -0.5)
 				{
 					result = 1;
 					break;		// Do not do anything
 				}
-				Track *track = mwindow->session->track_highlighted;
-				mwindow->move_edits(mwindow->session->drag_edits,
+				Track *track = mainsession->track_highlighted;
+				mwindow->move_edits(mainsession->drag_edits,
 					track,
 					position,
 					!insertion);
@@ -520,16 +522,16 @@ int TrackCanvas::drag_stop()
 // since we don't have subwindows we have to terminate any drag operation
 	if(result)
 	{
-		if (mwindow->session->track_highlighted
-			|| mwindow->session->edit_highlighted
-			|| mwindow->session->plugin_highlighted
-			|| mwindow->session->pluginset_highlighted) 
+		if(mainsession->track_highlighted
+				|| mainsession->edit_highlighted
+				|| mainsession->plugin_highlighted
+				|| mainsession->pluginset_highlighted)
 			redraw = 1;
-		mwindow->session->track_highlighted = 0;
-		mwindow->session->edit_highlighted = 0;
-		mwindow->session->plugin_highlighted = 0;
-		mwindow->session->pluginset_highlighted = 0;
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->track_highlighted = 0;
+		mainsession->edit_highlighted = 0;
+		mainsession->plugin_highlighted = 0;
+		mainsession->pluginset_highlighted = 0;
+		mainsession->current_operation = NO_OPERATION;
 	}
 
 	if(redraw)
@@ -555,12 +557,12 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	ptstime pos = round(cursor_x * master_edl->local_session->zoom_time) +
 			master_edl->local_session->view_start_pts;
 
-	Track *track = mwindow->session->track_highlighted;
+	Track *track = mainsession->track_highlighted;
 
 // cursor relative position - depending on where we started the drag inside the edit
 	ptstime cursor_position;
 	if (moved_edit)  // relative cursor position depends upon grab point
-		cursor_position = pos - (mwindow->session->drag_position - moved_edit->get_pts());
+		cursor_position = pos - (mainsession->drag_position - moved_edit->get_pts());
 	else             // for clips and assets acts as they were grabbed in the middle
 		cursor_position = pos - moved_edit_length / 2;
 
@@ -936,24 +938,24 @@ void TrackCanvas::draw_paste_destination()
 	ptstime position;
 	int insertion  = 0;
 
-	if((mwindow->session->current_operation == DRAG_ASSET &&
-		(mwindow->session->drag_assets->total ||
-			mwindow->session->drag_clips->total)) ||
-		(mwindow->session->current_operation == DRAG_EDIT &&
-			mwindow->session->drag_edits->total))
+	if((mainsession->current_operation == DRAG_ASSET &&
+		(mainsession->drag_assets->total ||
+			mainsession->drag_clips->total)) ||
+		(mainsession->current_operation == DRAG_EDIT &&
+			mainsession->drag_edits->total))
 	{
 		Asset *asset = 0;
 		EDL *clip = 0;
 		int draw_box = 0;
 
 		canvas_lock->lock("TrackCanvas::draw_paste_destination");
-		if(mwindow->session->current_operation == DRAG_ASSET &&
-			mwindow->session->drag_assets->total)
-			asset = mwindow->session->drag_assets->values[0];
+		if(mainsession->current_operation == DRAG_ASSET &&
+			mainsession->drag_assets->total)
+			asset = mainsession->drag_assets->values[0];
 
-		if(mwindow->session->current_operation == DRAG_ASSET &&
-			mwindow->session->drag_clips->total)
-			clip = mwindow->session->drag_clips->values[0];
+		if(mainsession->current_operation == DRAG_ASSET &&
+				mainsession->drag_clips->total)
+			clip = mainsession->drag_clips->values[0];
 
 // 'Align cursor of frame' lengths calculations
 		ptstime paste_audio_length, paste_video_length;
@@ -979,7 +981,7 @@ void TrackCanvas::draw_paste_destination()
 			if(asset->audio_data)
 			{
 				// we use video if we are over video and audio if we are over audio
-				if(asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+				if(asset->video_data && mainsession->track_highlighted->data_type == TRACK_VIDEO)
 					asset_length = paste_video_length;
 				else
 					asset_length = paste_audio_length;
@@ -1004,7 +1006,7 @@ void TrackCanvas::draw_paste_destination()
 		}
 
 // Get destination track
-		for(Track *dest = mwindow->session->track_highlighted; 
+		for(Track *dest = mainsession->track_highlighted;
 			dest; 
 			dest = dest->next)
 		{
@@ -1014,13 +1016,13 @@ void TrackCanvas::draw_paste_destination()
 				w = -1;
 
 // Use start of highlighted edit
-				if(mwindow->session->edit_highlighted)
-					position = mwindow->session->edit_highlighted->get_pts();
+				if(mainsession->edit_highlighted)
+					position = mainsession->edit_highlighted->get_pts();
 				else
 				{
 // Use end of highlighted track, disregarding effects
-					if(mwindow->session->track_highlighted->edits->last)
-						position = mwindow->session->track_highlighted->edits->last->get_pts();
+					if(mainsession->track_highlighted->edits->last)
+						position = mainsession->track_highlighted->edits->last->get_pts();
 					else
 						position = 0;
 				}
@@ -1043,19 +1045,19 @@ void TrackCanvas::draw_paste_destination()
 						}
 					}
 					else
-					if(mwindow->session->current_operation == DRAG_EDIT &&
-						current_aedit < mwindow->session->drag_edits->total)
+					if(mainsession->current_operation == DRAG_EDIT &&
+						current_aedit < mainsession->drag_edits->total)
 					{
 						Edit *edit;
-						while(current_aedit < mwindow->session->drag_edits->total &&
-							mwindow->session->drag_edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
+						while(current_aedit < mainsession->drag_edits->total &&
+								mainsession->drag_edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
 							current_aedit++;
 
-						if(current_aedit < mwindow->session->drag_edits->total)
+						if(current_aedit < mainsession->drag_edits->total)
 						{
-							edit = mwindow->session->drag_edits->values[current_aedit];
+							edit = mainsession->drag_edits->values[current_aedit];
 							w = round(edit->length() / master_edl->local_session->zoom_time);
-							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length());
+							position = get_drop_position(&insertion, mainsession->drag_edit, mainsession->drag_edit->length());
 							if (position < 0) 
 								w = -1;
 							else
@@ -1086,20 +1088,22 @@ void TrackCanvas::draw_paste_destination()
 						}
 					}
 					else
-					if(mwindow->session->current_operation == DRAG_EDIT &&
-						current_vedit < mwindow->session->drag_edits->total)
+					if(mainsession->current_operation == DRAG_EDIT &&
+						current_vedit < mainsession->drag_edits->total)
 					{
 						Edit *edit;
-						while(current_vedit < mwindow->session->drag_edits->total &&
-							mwindow->session->drag_edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
+						while(current_vedit < mainsession->drag_edits->total &&
+								mainsession->drag_edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
 							current_vedit++;
 
-						if(current_vedit < mwindow->session->drag_edits->total)
+						if(current_vedit < mainsession->drag_edits->total)
 						{
-							edit = mwindow->session->drag_edits->values[current_vedit];
+							edit = mainsession->drag_edits->values[current_vedit];
 							w = round(edit->length() /
 								master_edl->local_session->zoom_time);
-							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length());
+							position = get_drop_position(&insertion,
+								mainsession->drag_edit,
+								mainsession->drag_edit->length());
 							if (position < 0) 
 								w = -1;
 							else
@@ -1260,20 +1264,20 @@ void TrackCanvas::draw_highlighting()
 	int x, y, w, h;
 	int draw_box = 0;
 
-	switch(mwindow->session->current_operation)
+	switch(mainsession->current_operation)
 	{
 	case DRAG_ATRANSITION:
 	case DRAG_VTRANSITION:
-		if(mwindow->session->edit_highlighted)
+		if(mainsession->edit_highlighted)
 		{
-			if((mwindow->session->current_operation == DRAG_ATRANSITION && 
-				mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-				(mwindow->session->current_operation == DRAG_VTRANSITION && 
-				mwindow->session->track_highlighted->data_type == TRACK_VIDEO))
+			if((mainsession->current_operation == DRAG_ATRANSITION &&
+				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+				(mainsession->current_operation == DRAG_VTRANSITION &&
+				mainsession->track_highlighted->data_type == TRACK_VIDEO))
 			{
-				edit_dimensions(mwindow->session->edit_highlighted->track,
-					mwindow->session->edit_highlighted->get_pts(),
-					mwindow->session->edit_highlighted->end_pts(),
+				edit_dimensions(mainsession->edit_highlighted->track,
+					mainsession->edit_highlighted->get_pts(),
+					mainsession->edit_highlighted->end_pts(),
 					x, y, w, h);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -1289,14 +1293,16 @@ void TrackCanvas::draw_highlighting()
 // Dragging a new effect from the Resource window
 	case DRAG_AEFFECT:
 	case DRAG_VEFFECT:
-		if(mwindow->session->track_highlighted &&
-			((mwindow->session->current_operation == DRAG_AEFFECT && mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-				(mwindow->session->current_operation == DRAG_VEFFECT && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)))
+		if(mainsession->track_highlighted &&
+			((mainsession->current_operation == DRAG_AEFFECT &&
+				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+			(mainsession->current_operation == DRAG_VEFFECT &&
+			mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
 // Put it before another plugin
-			if(mwindow->session->plugin_highlighted)
+			if(mainsession->plugin_highlighted)
 			{
-				plugin_dimensions(mwindow->session->plugin_highlighted, 
+				plugin_dimensions(mainsession->plugin_highlighted,
 					x, 
 					y, 
 					w, 
@@ -1304,30 +1310,30 @@ void TrackCanvas::draw_highlighting()
 			}
 			else
 // Put it after a plugin set
-			if(mwindow->session->pluginset_highlighted &&
-				mwindow->session->pluginset_highlighted->last)
+			if(mainsession->pluginset_highlighted &&
+				mainsession->pluginset_highlighted->last)
 			{
-				plugin_dimensions((Plugin*)mwindow->session->pluginset_highlighted->last,
+				plugin_dimensions((Plugin*)mainsession->pluginset_highlighted->last,
 					x,
 					y,
 					w,
 					h);
 				int track_x, track_y, track_w, track_h;
-				track_dimensions(mwindow->session->track_highlighted, 
+				track_dimensions(mainsession->track_highlighted,
 					track_x, 
 					track_y, 
 					track_w, 
 					track_h);
 
 				x += w;
-				w = (int)(round((mwindow->session->track_highlighted->get_length() -
+				w = (int)(round((mainsession->track_highlighted->get_length() -
 					master_edl->local_session->view_start_pts) /
 					master_edl->local_session->zoom_time)) - x;
 				if(w <= 0) w = track_w;
 			}
 			else
 			{
-				track_dimensions(mwindow->session->track_highlighted,
+				track_dimensions(mainsession->track_highlighted,
 					x,
 					y,
 					w,
@@ -1346,12 +1352,12 @@ void TrackCanvas::draw_highlighting()
 				}
 // Put it in a new plugin set determined by an edit boundary
 				else
-				if(mwindow->session->edit_highlighted)
+				if(mainsession->edit_highlighted)
 				{
 					int temp_y, temp_h;
-					edit_dimensions(mwindow->session->edit_highlighted->track,
-						mwindow->session->edit_highlighted->get_pts(),
-						mwindow->session->edit_highlighted->end_pts(),
+					edit_dimensions(mainsession->edit_highlighted->track,
+						mainsession->edit_highlighted->get_pts(),
+						mainsession->edit_highlighted->end_pts(),
 						x,
 						temp_y,
 						w,
@@ -1369,9 +1375,9 @@ void TrackCanvas::draw_highlighting()
 		break;
 
 	case DRAG_ASSET:
-		if(mwindow->session->track_highlighted)
+		if(mainsession->track_highlighted)
 		{
-			track_dimensions(mwindow->session->track_highlighted, x, y, w, h);
+			track_dimensions(mainsession->track_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(y, y + h, 0, get_h()))
 			{
@@ -1383,33 +1389,35 @@ void TrackCanvas::draw_highlighting()
 // Dragging an effect from the timeline
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
-		if((mwindow->session->plugin_highlighted || mwindow->session->track_highlighted) &&
-			((mwindow->session->current_operation == DRAG_AEFFECT_COPY && mwindow->session->track_highlighted->data_type == TRACK_AUDIO) ||
-			(mwindow->session->current_operation == DRAG_VEFFECT_COPY && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)))
+		if((mainsession->plugin_highlighted || mainsession->track_highlighted) &&
+			((mainsession->current_operation == DRAG_AEFFECT_COPY &&
+				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
+			(mainsession->current_operation == DRAG_VEFFECT_COPY &&
+				mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
 // Put it before another plugin
-			if(mwindow->session->plugin_highlighted)
-				plugin_dimensions(mwindow->session->plugin_highlighted, x, y, w, h);
+			if(mainsession->plugin_highlighted)
+				plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
 			else
 // Put it after a plugin set
-			if(mwindow->session->pluginset_highlighted &&
-				mwindow->session->pluginset_highlighted->last)
+			if(mainsession->pluginset_highlighted &&
+				mainsession->pluginset_highlighted->last)
 			{
-				plugin_dimensions((Plugin*)mwindow->session->pluginset_highlighted->last, x, y, w, h);
+				plugin_dimensions((Plugin*)mainsession->pluginset_highlighted->last, x, y, w, h);
 				x += w;
 			}
 			else
-			if(mwindow->session->track_highlighted)
+			if(mainsession->track_highlighted)
 			{
-				track_dimensions(mwindow->session->track_highlighted, x, y, w, h);
+				track_dimensions(mainsession->track_highlighted, x, y, w, h);
 
 // Put it in a new plugin set determined by an edit boundary
-				if(mwindow->session->edit_highlighted)
+				if(mainsession->edit_highlighted)
 				{
 					int temp_y, temp_h;
-					edit_dimensions(mwindow->session->edit_highlighted->track,
-						mwindow->session->edit_highlighted->get_pts(),
-						mwindow->session->edit_highlighted->end_pts(),
+					edit_dimensions(mainsession->edit_highlighted->track,
+						mainsession->edit_highlighted->get_pts(),
+						mainsession->edit_highlighted->end_pts(),
 						x,
 						temp_y,
 						w,
@@ -1418,7 +1426,7 @@ void TrackCanvas::draw_highlighting()
 // Put it in a new plugin set at the start of the track
 			}
 
-			w = (int)(mwindow->session->drag_plugin->length() /
+			w = (int)(mainsession->drag_plugin->length() /
 				master_edl->local_session->zoom_time);
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -1430,11 +1438,11 @@ void TrackCanvas::draw_highlighting()
 		break;
 
 	case DRAG_PLUGINKEY:
-		if(mwindow->session->plugin_highlighted && 
-			mwindow->session->current_operation == DRAG_PLUGINKEY)
+		if(mainsession->plugin_highlighted &&
+			mainsession->current_operation == DRAG_PLUGINKEY)
 		{
 // Just highlight the plugin
-			plugin_dimensions(mwindow->session->plugin_highlighted, x, y, w, h);
+			plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 				MWindowGUI::visible(y, y + h, 0, get_h()))
@@ -1445,9 +1453,9 @@ void TrackCanvas::draw_highlighting()
 		break;
 
 	case DRAG_EDIT:
-		if(mwindow->session->track_highlighted)
+		if(mainsession->track_highlighted)
 		{
-			track_dimensions(mwindow->session->track_highlighted, x, y, w, h);
+			track_dimensions(mainsession->track_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(y, y + h, 0, get_h()))
 			{
@@ -1597,10 +1605,10 @@ void TrackCanvas::refresh_plugintoggles()
 
 void TrackCanvas::draw_drag_handle()
 {
-	if(mwindow->session->current_operation == DRAG_EDITHANDLE2 ||
-		mwindow->session->current_operation == DRAG_PLUGINHANDLE2)
+	if(mainsession->current_operation == DRAG_EDITHANDLE2 ||
+		mainsession->current_operation == DRAG_PLUGINHANDLE2)
 	{
-		int pixel1 = round((mwindow->session->drag_position -
+		int pixel1 = round((mainsession->drag_position -
 			master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
 		set_color(GREEN);
@@ -1865,7 +1873,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 
 				if(result)
 				{
-					if(mwindow->session->current_operation == auto_operations[i])
+					if(mainsession->current_operation == auto_operations[i])
 						rerender = 1;
 					if(buttonpress)
 					{
@@ -1874,9 +1882,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							if(i == AUTOMATION_FADE) 
 								synchronize_autos(0, 
 									track, 
-									(FloatAuto*)mwindow->session->drag_auto, 
+									(FloatAuto*)mainsession->drag_auto,
 									1);
-							mwindow->session->current_operation = pre_auto_operations[i];
+							mainsession->current_operation = pre_auto_operations[i];
 							rerender = 1;
 						}
 						else
@@ -1905,13 +1913,13 @@ int TrackCanvas::do_keyframes(int cursor_x,
 				buttonpress,
 				plugin,
 				keyframe);
-			if(result && mwindow->session->current_operation == DRAG_PLUGINKEY)
+			if(result && mainsession->current_operation == DRAG_PLUGINKEY)
 			{
 				rerender = 1;
 			}
 			if(result && (buttonpress == 1))
 			{
-				mwindow->session->current_operation = DRAG_PLUGINKEY_PRE;
+				mainsession->current_operation = DRAG_PLUGINKEY_PRE;
 				rerender = 1;
 			} else
 			if (result && (buttonpress == 3))
@@ -1926,13 +1934,13 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // Final pass to trap event
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(mwindow->session->current_operation == pre_auto_operations[i] ||
-			mwindow->session->current_operation == auto_operations[i])
+		if(mainsession->current_operation == pre_auto_operations[i] ||
+				mainsession->current_operation == auto_operations[i])
 			result = 1;
 	}
 
-	if(mwindow->session->current_operation == DRAG_PLUGINKEY ||
-		mwindow->session->current_operation == DRAG_PLUGINKEY_PRE)
+	if(mainsession->current_operation == DRAG_PLUGINKEY ||
+		mainsession->current_operation == DRAG_PLUGINKEY_PRE)
 	{
 		result = 1;
 	}
@@ -2098,13 +2106,13 @@ int TrackCanvas::test_auto(Auto *current,
 	{
 		if(buttonpress && buttonpress != 3)
 		{
-			mwindow->session->drag_auto = current;
-			mwindow->session->drag_start_percentage = (float)((IntAuto*)current)->value;;
+			mainsession->drag_auto = current;
+			mainsession->drag_start_percentage = (float)((IntAuto*)current)->value;
 			// Toggle Autos don't respond to vertical zoom, they always show up
 			// with "on" == 100% == line on top
-			mwindow->session->drag_start_postime = current->pos_time;
-			mwindow->session->drag_origin_x = cursor_x;
-			mwindow->session->drag_origin_y = cursor_y;
+			mainsession->drag_start_postime = current->pos_time;
+			mainsession->drag_origin_x = cursor_x;
+			mainsession->drag_origin_y = cursor_y;
 		}
 		result = 1;
 	}
@@ -2214,11 +2222,11 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 
 // buttonpress could be the start of a drag operation
 #define INIT_DRAG(POS, VAL) \
-	mwindow->session->drag_auto = current;      \
-	mwindow->session->drag_origin_x = cursor_x;  \
-	mwindow->session->drag_origin_y = cursor_y;   \
-	mwindow->session->drag_start_postime = (POS); \
-	mwindow->session->drag_start_percentage = (VAL)
+	mainsession->drag_auto = current;      \
+	mainsession->drag_origin_x = cursor_x;  \
+	mainsession->drag_origin_y = cursor_y;   \
+	mainsession->drag_start_postime = (POS); \
+	mainsession->drag_start_percentage = (VAL)
 
 #define WITHIN(X1, X2, Y1, Y2) (cursor_x >= (X1) && cursor_x < (X2) && \
 	cursor_y >= (Y1) && cursor_y < (Y2))
@@ -2239,7 +2247,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 			{
 				INIT_DRAG(current->pos_time,
 					value_to_percentage(current->get_value(), autogrouptype));
-				mwindow->session->drag_handle = HANDLE_MAIN;
+				mainsession->drag_handle = HANDLE_MAIN;
 			}
 		}
 	}
@@ -2257,7 +2265,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 				// drag will start dragging the tangent, if applicable
 				INIT_DRAG(current->pos_time,
 					value_to_percentage(current->get_value(), autogrouptype));
-				mwindow->session->drag_handle = HANDLE_MAIN;
+				mainsession->drag_handle = HANDLE_MAIN;
 			}
 		}
 
@@ -2280,7 +2288,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 				{
 					if(lever == 0.0)
 						lever = 1.0; // we entered by dragging the handle...
-					mwindow->session->drag_handle = HANDLE_LEFT;
+					mainsession->drag_handle = HANDLE_LEFT;
 					float new_invalue = current->get_value() + 
 						lever * current->get_control_in_value();
 					INIT_DRAG(current->pos_time + lever *
@@ -2304,7 +2312,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 				{
 					if(lever == 0.0)
 						lever = 1.0;
-					mwindow->session->drag_handle = HANDLE_RIGHT;
+					mainsession->drag_handle = HANDLE_RIGHT;
 					float new_outvalue = current->get_value() + lever * current->get_control_out_value();
 					INIT_DRAG(current->pos_time + lever *
 						current->get_control_out_pts(),
@@ -2372,7 +2380,7 @@ void TrackCanvas::synchronize_autos(float change,
 	FloatAuto *fauto, 
 	int fill_gangs)
 {
-// fill mwindow->session->drag_auto_gang
+// fill mainsession->drag_auto_gang
 	if (fill_gangs == 1 && skip->gang)
 	{
 		for(Track *current = master_edl->tracks->first;
@@ -2401,7 +2409,7 @@ void TrackCanvas::synchronize_autos(float change,
 				else
 					keyframe->adjust_to_new_coordinates(fauto->pos_time, keyframe->get_value() + change);
 
-				mwindow->session->drag_auto_gang->append((Auto *)keyframe);
+				mainsession->drag_auto_gang->append((Auto *)keyframe);
 			}
 		}
 	} else 
@@ -2409,9 +2417,9 @@ void TrackCanvas::synchronize_autos(float change,
 	if (fill_gangs == 0)
 	{
 // Move the gang!
-		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
+		for (int i = 0; i < mainsession->drag_auto_gang->total; i++)
 		{
-			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
+			FloatAuto *keyframe = (FloatAuto *)mainsession->drag_auto_gang->values[i];
 
 			float new_value = keyframe->get_value() + change;
 			CLAMP(new_value,
@@ -2423,7 +2431,7 @@ void TrackCanvas::synchronize_autos(float change,
 	else
 // remove the gangs
 	if (fill_gangs == -1)
-		mwindow->session->drag_auto_gang->remove_all();
+		mainsession->drag_auto_gang->remove_all();
 }
 
 int TrackCanvas::test_floatline(int center_pixel, 
@@ -2461,13 +2469,13 @@ int TrackCanvas::test_floatline(int center_pixel,
 		if(buttonpress)
 		{
 			Auto *current;
-			current = mwindow->session->drag_auto = autos->insert_auto(timepos);
+			current = mainsession->drag_auto = autos->insert_auto(timepos);
 			((FloatAuto*)current)->set_value(value);
-			mwindow->session->drag_start_percentage = value_to_percentage(value, autogrouptype);
-			mwindow->session->drag_start_postime = current->pos_time;
-			mwindow->session->drag_origin_x = cursor_x;
-			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = HANDLE_MAIN;
+			mainsession->drag_start_percentage = value_to_percentage(value, autogrouptype);
+			mainsession->drag_start_postime = current->pos_time;
+			mainsession->drag_origin_x = cursor_x;
+			mainsession->drag_origin_y = cursor_y;
+			mainsession->drag_handle = HANDLE_MAIN;
 		}
 	}
 
@@ -2519,14 +2527,14 @@ int TrackCanvas::test_toggleline(Autos *autos,
 				ptstime position = cursor_x * master_edl->local_session->zoom_time +
 					master_edl->local_session->view_start_pts;
 				int new_value = (int)((IntAutos*)autos)->get_automation_constant(position, position);
-				current = mwindow->session->drag_auto = autos->insert_auto(position);
+				current = mainsession->drag_auto = autos->insert_auto(position);
 				((IntAuto*)current)->value = new_value;
 				// Toggle Autos don't respond to vertical zoom, they always show up
 				// with "on" == 100% == line on top
-				mwindow->session->drag_start_percentage = (float)new_value;
-				mwindow->session->drag_start_postime = current->pos_time;
-				mwindow->session->drag_origin_x = cursor_x;
-				mwindow->session->drag_origin_y = cursor_y;
+				mainsession->drag_start_percentage = (float)new_value;
+				mainsession->drag_start_postime = current->pos_time;
+				mainsession->drag_origin_x = cursor_x;
+				mainsession->drag_origin_y = cursor_y;
 			}
 		}
 	};
@@ -3078,10 +3086,10 @@ int TrackCanvas::do_autos(Track *track,
 
 					if(buttonpress && (buttonpress != 3))
 					{
-						mwindow->session->drag_auto = current;
-						mwindow->session->drag_start_postime = current->pos_time;
-						mwindow->session->drag_origin_x = cursor_x;
-						mwindow->session->drag_origin_y = cursor_y;
+						mainsession->drag_auto = current;
+						mainsession->drag_start_postime = current->pos_time;
+						mainsession->drag_origin_x = cursor_x;
+						mainsession->drag_origin_y = cursor_y;
 
 						ptstime position = current->pos_time;
 						ptstime center = (master_edl->local_session->get_selectionstart(1) +
@@ -3172,10 +3180,10 @@ int TrackCanvas::do_plugin_autos(Track *track,
 
 							if(buttonpress)
 							{
-								mwindow->session->drag_auto = keyframe;
-								mwindow->session->drag_start_postime = keyframe->pos_time;
-								mwindow->session->drag_origin_x = cursor_x;
-								mwindow->session->drag_origin_y = cursor_y;
+								mainsession->drag_auto = keyframe;
+								mainsession->drag_start_postime = keyframe->pos_time;
+								mainsession->drag_origin_x = cursor_x;
+								mainsession->drag_origin_y = cursor_y;
 
 								ptstime position = keyframe->pos_time;
 								ptstime center = (master_edl->local_session->get_selectionstart(1) +
@@ -3279,17 +3287,17 @@ void TrackCanvas::update_drag_handle()
 	new_position = 
 		master_edl->align_to_frame(new_position);
 
-	if(new_position != mwindow->session->drag_position)
+	if(new_position != mainsession->drag_position)
 	{
-		mwindow->session->drag_position = new_position;
+		mainsession->drag_position = new_position;
 		gui->mainclock->update(new_position);
 	}
 }
 
 #define UPDATE_DRAG_HEAD(do_clamp) \
 	int result = 0; \
-	int x = cursor_x - mwindow->session->drag_origin_x; \
-	int y = cursor_y - mwindow->session->drag_origin_y; \
+	int x = cursor_x - mainsession->drag_origin_x; \
+	int y = cursor_y - mainsession->drag_origin_y; \
  \
 	if(!current->autos->track->record) return 0; \
 	ptstime view_start; \
@@ -3306,12 +3314,12 @@ void TrackCanvas::update_drag_handle()
 		xzoom, \
 		center_pixel); \
  \
-	float percentage = (float)(mwindow->session->drag_origin_y - cursor_y) / \
+	float percentage = (float)(mainsession->drag_origin_y - cursor_y) / \
 		yscale +  \
-		mwindow->session->drag_start_percentage; \
+		mainsession->drag_start_percentage; \
  \
-	ptstime postime = ((cursor_x - mwindow->session->drag_origin_x) / xzoom + \
-		mwindow->session->drag_start_postime); \
+	ptstime postime = ((cursor_x - mainsession->drag_origin_x) / xzoom + \
+		mainsession->drag_start_postime); \
  \
 	if(do_clamp) \
 	{ \
@@ -3328,14 +3336,14 @@ void TrackCanvas::update_drag_handle()
 
 int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 {
-	FloatAuto *current = (FloatAuto*)mwindow->session->drag_auto;
+	FloatAuto *current = (FloatAuto*)mainsession->drag_auto;
 
-	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == HANDLE_MAIN);
+	UPDATE_DRAG_HEAD(mainsession->drag_handle == HANDLE_MAIN);
 
 	float value;
 	float old_value;
 
-	switch(mwindow->session->drag_handle)
+	switch(mainsession->drag_handle)
 	{
 // Center
 	case HANDLE_MAIN:
@@ -3350,9 +3358,9 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				if(x < 0)
 					// drag to the left:
 					// start editing the invalue (left tangent)
-					mwindow->session->drag_handle = HANDLE_LEFT;
+					mainsession->drag_handle = HANDLE_LEFT;
 				else
-					mwindow->session->drag_handle = HANDLE_RIGHT;
+					mainsession->drag_handle = HANDLE_RIGHT;
 			}
 			break;
 		}
@@ -3398,7 +3406,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 		if(alt_down())
 // ALT constrains movement: fixed position, only changing the value
-			postime = mwindow->session->drag_start_postime;
+			postime = mainsession->drag_start_postime;
 
 		if(!EQUIV(value, old_value) || !PTSEQU(postime, current->pos_time))
 		{
@@ -3468,7 +3476,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 {
-	IntAuto *current = (IntAuto*)mwindow->session->drag_auto;
+	IntAuto *current = (IntAuto*)mainsession->drag_auto;
 
 	UPDATE_DRAG_HEAD(1);
 	int value = (int)percentage_to_value(percentage, 1, 0, AUTOGROUPTYPE_INT255);
@@ -3488,7 +3496,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 
 int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 {
-	KeyFrame *current = (KeyFrame*)mwindow->session->drag_auto;
+	KeyFrame *current = (KeyFrame*)mainsession->drag_auto;
 
 	UPDATE_DRAG_HEAD(1)
 
@@ -3524,8 +3532,8 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		if(PTSEQU(postime, current->pos_time))
 			return 0;
 
-		mwindow->session->plugin_highlighted = plugin;
-		mwindow->session->track_highlighted = track;
+		mainsession->plugin_highlighted = plugin;
+		mainsession->track_highlighted = track;
 		result = 1;
 		current->pos_time = postime;
 
@@ -3573,13 +3581,13 @@ int TrackCanvas::cursor_motion_event()
 		break;
 	}
 
-	switch(mwindow->session->current_operation)
+	switch(mainsession->current_operation)
 	{
 	case DRAG_EDITHANDLE1:
 // Outside threshold.  Upgrade status
-		if(abs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W)
+		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
 		{
-			mwindow->session->current_operation = DRAG_EDITHANDLE2;
+			mainsession->current_operation = DRAG_EDITHANDLE2;
 			update_overlay = 1;
 		}
 		break;
@@ -3590,9 +3598,9 @@ int TrackCanvas::cursor_motion_event()
 		break;
 
 	case DRAG_PLUGINHANDLE1:
-		if(abs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W)
+		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
 		{
-			mwindow->session->current_operation = DRAG_PLUGINHANDLE2;
+			mainsession->current_operation = DRAG_PLUGINHANDLE2;
 			update_overlay = 1;
 		}
 			break;
@@ -3628,9 +3636,9 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_MASK_PRE:
 	case DRAG_MODE_PRE:
 	case DRAG_PLUGINKEY_PRE:
-		if(abs(get_cursor_x() - mwindow->session->drag_origin_x) > HANDLE_W)
+		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
 		{
-			mwindow->session->current_operation++;
+			mainsession->current_operation++;
 			update_overlay = 1;
 		}
 		break;
@@ -3830,7 +3838,7 @@ void TrackCanvas::repeat_event(int duration)
 	int y_distance = 0;
 	ptstime position = 0;
 
-	switch(mwindow->session->current_operation)
+	switch(mainsession->current_operation)
 	{
 	case SELECT_REGION:
 		if(get_cursor_x() > get_w())
@@ -3867,7 +3875,7 @@ void TrackCanvas::repeat_event(int duration)
 		position = master_edl->align_to_frame(position);
 		position = MAX(position, 0);
 
-		switch(mwindow->session->current_operation)
+		switch(mainsession->current_operation)
 		{
 		case SELECT_REGION:
 			if(position < selection_midpoint1)
@@ -3904,30 +3912,30 @@ int TrackCanvas::button_release_event()
 {
 	int redraw = 0, update_overlay = 0, result = 0;
 
-	switch(mwindow->session->current_operation)
+	switch(mainsession->current_operation)
 	{
 	case DRAG_EDITHANDLE2:
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
 		end_edithandle_selection();
 		break;
 
 	case DRAG_EDITHANDLE1:
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
 		break;
 
 	case DRAG_PLUGINHANDLE2:
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
 		end_pluginhandle_selection();
 		break;
 
 	case DRAG_PLUGINHANDLE1:
-		mwindow->session->current_operation = NO_OPERATION;
+		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
 		break;
@@ -3949,9 +3957,9 @@ int TrackCanvas::button_release_event()
 	case DRAG_PROJECTOR_Y:
 	case DRAG_PROJECTOR_Z:
 	case DRAG_PLUGINKEY:
-		mwindow->session->current_operation = NO_OPERATION;
-		mwindow->session->drag_handle = HANDLE_MAIN;
-		if(mwindow->session->drag_auto)
+		mainsession->current_operation = NO_OPERATION;
+		mainsession->drag_handle = HANDLE_MAIN;
+		if(mainsession->drag_auto)
 			update_overlay = 1;
 		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 		result = 1;
@@ -3964,14 +3972,14 @@ int TrackCanvas::button_release_event()
 		break;
 
 	default:
-		if(mwindow->session->current_operation)
+		if(mainsession->current_operation)
 		{
-			if(mwindow->session->current_operation == SELECT_REGION)
+			if(mainsession->current_operation == SELECT_REGION)
 			{
 				mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
 			}
 
-			mwindow->session->current_operation = NO_OPERATION;
+			mainsession->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 		}
 		break;
@@ -4058,14 +4066,14 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 // Reposition cursor
 		if(button_press)
 		{
-			mwindow->session->drag_edit = edit_result;
-			mwindow->session->drag_handle = handle_result;
-			mwindow->session->drag_button = get_buttonpress() - 1;
-			mwindow->session->drag_position = position;
-			mwindow->session->current_operation = DRAG_EDITHANDLE1;
-			mwindow->session->drag_origin_x = get_cursor_x();
-			mwindow->session->drag_origin_y = get_cursor_y();
-			mwindow->session->drag_start = position;
+			mainsession->drag_edit = edit_result;
+			mainsession->drag_handle = handle_result;
+			mainsession->drag_button = get_buttonpress() - 1;
+			mainsession->drag_position = position;
+			mainsession->current_operation = DRAG_EDITHANDLE1;
+			mainsession->drag_origin_x = get_cursor_x();
+			mainsession->drag_origin_y = get_cursor_y();
+			mainsession->drag_start = position;
 			rerender = start_selection(position);
 			update_overlay = 1;
 		}
@@ -4138,14 +4146,14 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 		
 		if(button_press)
 		{
-			mwindow->session->drag_plugin = plugin_result;
-			mwindow->session->drag_handle = handle_result;
-			mwindow->session->drag_button = get_buttonpress() - 1;
-			mwindow->session->drag_position = position;
-			mwindow->session->current_operation = DRAG_PLUGINHANDLE1;
-			mwindow->session->drag_origin_x = get_cursor_x();
-			mwindow->session->drag_origin_y = get_cursor_y();
-			mwindow->session->drag_start = position;
+			mainsession->drag_plugin = plugin_result;
+			mainsession->drag_handle = handle_result;
+			mainsession->drag_button = get_buttonpress() - 1;
+			mainsession->drag_position = position;
+			mainsession->current_operation = DRAG_PLUGINHANDLE1;
+			mainsession->drag_origin_x = get_cursor_x();
+			mainsession->drag_origin_y = get_cursor_y();
+			mainsession->drag_start = position;
 
 			rerender = start_selection(position);
 			update_overlay = 1;
@@ -4228,26 +4236,26 @@ int TrackCanvas::do_edits(int cursor_x,
 					if(master_edl->session->editing_mode == EDITING_ARROW)
 					{
 // Need to create drag window
-						mwindow->session->current_operation = DRAG_EDIT;
-						mwindow->session->drag_edit = edit;
+						mainsession->current_operation = DRAG_EDIT;
+						mainsession->drag_edit = edit;
 // Drag only one edit
 						if(ctrl_down())
 						{
-							mwindow->session->drag_edits->remove_all();
-							mwindow->session->drag_edits->append(edit);
+							mainsession->drag_edits->remove_all();
+							mainsession->drag_edits->append(edit);
 						}
 						else
 // Construct list of all affected edits
 						{
 							master_edl->tracks->get_affected_edits(
-								mwindow->session->drag_edits, 
+								mainsession->drag_edits,
 								edit->get_pts(),
 								edit->track);
 						}
-						mwindow->session->drag_origin_x = cursor_x;
-						mwindow->session->drag_origin_y = cursor_y;
+						mainsession->drag_origin_x = cursor_x;
+						mainsession->drag_origin_y = cursor_y;
 // Where the drag started, so we know relative position inside the edit later
-						mwindow->session->drag_position = cursor_x *
+						mainsession->drag_position = cursor_x *
 							master_edl->local_session->zoom_time +
 							master_edl->local_session->view_start_pts;
 
@@ -4338,12 +4346,12 @@ int TrackCanvas::do_plugins(int cursor_x,
 			if(master_edl->session->editing_mode == EDITING_ARROW)
 			{
 				if(plugin->track->data_type == TRACK_AUDIO)
-					mwindow->session->current_operation = DRAG_AEFFECT_COPY;
+					mainsession->current_operation = DRAG_AEFFECT_COPY;
 				else
 				if(plugin->track->data_type == TRACK_VIDEO)
-					mwindow->session->current_operation = DRAG_VEFFECT_COPY;
+					mainsession->current_operation = DRAG_VEFFECT_COPY;
 
-				mwindow->session->drag_plugin = plugin;
+				mainsession->drag_plugin = plugin;
 // Create picon
 				switch(plugin->plugin_type)
 				{
@@ -4656,7 +4664,7 @@ int TrackCanvas::button_press_event()
 			else
 			{
 				rerender = start_selection(position);
-				mwindow->session->current_operation = SELECT_REGION;
+				mainsession->current_operation = SELECT_REGION;
 				update_cursor = 1;
 			}
 

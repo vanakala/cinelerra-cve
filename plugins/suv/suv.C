@@ -639,31 +639,31 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - 
+		ccomposite_h = mainsession->cwindow_h -
 			get_image("cbuttons_left")->get_h();
 		cslider_x = 5;
 		cslider_y = ccomposite_h + 20;
 		cedit_x = 10;
 		cedit_y = cslider_y + BC_Slider::get_span(0);
 		ctransport_x = 10;
-		ctransport_y = mwindow->session->cwindow_h - 
+		ctransport_y = mainsession->cwindow_h -
 			get_image_set("autokeyframe")[0]->get_h() - 5;
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
 		cstatus_x = 420;
-		cstatus_y = mwindow->session->cwindow_h - 
+		cstatus_y = mainsession->cwindow_h -
 			get_image("cwindow_active")->get_h() - 30;
 		if(master_edl->session->cwindow_meter)
 		{
-			cmeter_x = mwindow->session->cwindow_w -
+			cmeter_x = mainsession->cwindow_w -
 				MeterPanel::get_meters_width(master_edl->session->audio_channels,
 					master_edl->session->cwindow_meter);
 			ccanvas_w = cmeter_x - ccanvas_x - 5;
 		}
 		else
 		{
-			cmeter_x = mwindow->session->cwindow_w;
+			cmeter_x = mainsession->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
 	}
@@ -672,28 +672,28 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
+		ccomposite_h = mainsession->cwindow_h - get_image("cbuttons_left")->get_h();
 
 		cslider_x = 5;
-		cslider_y = mwindow->session->cwindow_h;
+		cslider_y = mainsession->cwindow_h;
 		cedit_x = 10;
 		cedit_y = cslider_y + 17;
 		ctransport_x = 10;
 		ctransport_y = cedit_y + 40;
 		ccanvas_x = 0;
 		ccanvas_y = 0;
-		ccanvas_w = mwindow->session->cwindow_w;
-		ccanvas_h = mwindow->session->cwindow_h;
-		cmeter_x = mwindow->session->cwindow_w;
-		cstatus_x = mwindow->session->cwindow_w;
-		cstatus_y = mwindow->session->cwindow_h;
+		ccanvas_w = mainsession->cwindow_w;
+		ccanvas_h = mainsession->cwindow_h;
+		cmeter_x = mainsession->cwindow_w;
+		cstatus_x = mainsession->cwindow_w;
+		cstatus_y = mainsession->cwindow_h;
 	}
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
 
 	cmeter_y = 5;
-	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
+	cmeter_h = mainsession->cwindow_h - cmeter_y;
 
 	cslider_w = ccanvas_x + ccanvas_w - cslider_x - 5;
 	ctimebar_x = ccanvas_x;
@@ -712,14 +712,14 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 void SUV::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
-	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
+	vmeter_h = mainsession->vwindow_h - cmeter_y;
 	vcanvas_x = 0;
 	vcanvas_y = 0;
-	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
+	vcanvas_h = mainsession->vwindow_h - get_image("vbuttons_left")->get_h();
 
 	if(master_edl->session->vwindow_meter)
 	{
-		vmeter_x = mwindow->session->vwindow_w - 
+		vmeter_x = mainsession->vwindow_w -
 			VWINDOW_METER_MARGIN - 
 			MeterPanel::get_meters_width(master_edl->session->audio_channels,
 			master_edl->session->vwindow_meter);
@@ -727,8 +727,8 @@ void SUV::get_vwindow_sizes(VWindowGUI *gui)
 	}
 	else
 	{
-		vmeter_x = mwindow->session->vwindow_w;
-		vcanvas_w = mwindow->session->vwindow_w;
+		vmeter_x = mainsession->vwindow_w;
+		vcanvas_w = mainsession->vwindow_w;
 	}
 
 	vtimebar_x = vcanvas_x;
@@ -742,7 +742,7 @@ void SUV::get_vwindow_sizes(VWindowGUI *gui)
 	vedit_x = 10;
 	vedit_y = vslider_y + BC_Slider::get_span(0);
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - 
+	vtransport_y = mainsession->vwindow_h -
 		get_image_set("autokeyframe")[0]->get_h() - 5;
 	vtime_x = 303;
 	vtime_y = vedit_y + 20;
@@ -795,7 +795,7 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 // Button bar
 	gui->draw_3segmenth(mbuttons_x, 
 		mbuttons_y - 1, 
-		mwindow->session->mwindow_w, 
+		mainsession->mwindow_w,
 		get_image("mbutton_bg"));
 
 	int pdw = get_image("panel_divider")->get_w();
@@ -849,7 +849,7 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 	gui->set_color(0x373737);
 	gui->draw_box(mzoom_x, 
 		mzoom_y,
-		mwindow->session->mwindow_w,
+		mainsession->mwindow_w,
 		25);
 
 // Scrollbar filler
@@ -879,8 +879,8 @@ void SUV::draw_cwindow_bg(CWindowGUI *gui)
 			get_image("cbuttons_right"));
 		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
 			0, 
-			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
-			mwindow->session->cwindow_h, 
+			mainsession->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN,
+			mainsession->cwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
@@ -907,8 +907,8 @@ void SUV::draw_vwindow_bg(VWindowGUI *gui)
 			get_image("cbuttons_right"));
 		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
 			0,
-			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
-			mwindow->session->vwindow_h, 
+			mainsession->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN,
+			mainsession->vwindow_h,
 			get_image("cmeter_bg"));
 	}
 	else
@@ -947,17 +947,17 @@ void SUV::get_plugindialog_sizes()
 	int x = 10, y = 30;
 	plugindialog_new_x = x;
 	plugindialog_new_y = y;
-	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
+	plugindialog_shared_x = mainsession->plugindialog_w / 3;
 	plugindialog_shared_y = y;
-	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
+	plugindialog_module_x = mainsession->plugindialog_w * 2 / 3;
 	plugindialog_module_y = y;
 
 	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 100;
+	plugindialog_new_h = mainsession->plugindialog_h - 100;
 	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 100;
+	plugindialog_shared_h = mainsession->plugindialog_h - 100;
+	plugindialog_module_w = mainsession->plugindialog_w - plugindialog_module_x - 10;
+	plugindialog_module_h = mainsession->plugindialog_h - 100;
 
 	plugindialog_newattach_x = plugindialog_new_x + 20;
 	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;

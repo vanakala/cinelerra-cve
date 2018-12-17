@@ -54,8 +54,8 @@ void Ruler::run()
 
 RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
  : BC_Window(MWindow::create_title(N_("Ruler")),
-	mwindow->session->ruler_x,
-	mwindow->session->ruler_y,
+	mainsession->ruler_x,
+	mainsession->ruler_y,
 	10,
 	10,
 	0, // minw
@@ -79,10 +79,10 @@ RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
 	root_h = get_root_h(0);
 	max_length = root_h * 4 / 5;
 	min_length = RULER_MIN_LENGTH;
-	if(mwindow->session->ruler_length < min_length)
-		mwindow->session->ruler_length;
-	if(mwindow->session->ruler_length > max_length)
-		mwindow->session->ruler_length = max_length;
+	if(mainsession->ruler_length < min_length)
+		mainsession->ruler_length;
+	if(mainsession->ruler_length > max_length)
+		mainsession->ruler_length = max_length;
 	draw_ruler();
 }
 
@@ -110,25 +110,25 @@ void RulerGUI::draw_ruler()
 	th = get_text_height(SMALLFONT) - 2;
 	tw = get_text_width(SMALLFONT, "000");
 	set_font(SMALLFONT);
-	if(mwindow->session->ruler_orientation == RULER_HORIZ)
+	if(mainsession->ruler_orientation == RULER_HORIZ)
 	{
 		r_width = 20 + th;
 		tb = 14 + th;
 		if(get_h() != height || get_w() != width)
 		{
-			resize_window(mwindow->session->ruler_length, r_width);
-			BC_WindowBase::resize_event(mwindow->session->ruler_length, r_width);
+			resize_window(mainsession->ruler_length, r_width);
+			BC_WindowBase::resize_event(mainsession->ruler_length, r_width);
 		}
 		// draw bg
-		clear_box(0, 0, mwindow->session->ruler_length, r_width);
+		clear_box(0, 0, mainsession->ruler_length, r_width);
 		set_color(BC_WindowBase::get_resources()->default_text_color);
-		draw_rectangle(0, 0, mwindow->session->ruler_length, r_width);
-		for(int i = 5; i <  mwindow->session->ruler_length; i += 5)
+		draw_rectangle(0, 0, mainsession->ruler_length, r_width);
+		for(int i = 5; i <  mainsession->ruler_length; i += 5)
 		{
 			h = ticklength(i);
 			draw_line(i, 0, i, h);
 		}
-		for(int i = 50; i < mwindow->session->ruler_length; i += 50)
+		for(int i = 50; i < mainsession->ruler_length; i += 50)
 		{
 			sprintf(string, "%d", i);
 			w = get_text_width(SMALLFONT, string);
@@ -137,7 +137,7 @@ void RulerGUI::draw_ruler()
 		draw_text(10, tb, "x");
 		x_cl = 10 + tw / 6;
 		y_cl = tb - th / 3;
-		width = mwindow->session->ruler_length;
+		width = mainsession->ruler_length;
 		height = r_width;
 	}
 	else
@@ -145,19 +145,19 @@ void RulerGUI::draw_ruler()
 		r_width = 18 + tw;
 		if(get_h() != height || get_w() != width)
 		{
-			resize_window(r_width, mwindow->session->ruler_length);
-			BC_WindowBase::resize_event(r_width, mwindow->session->ruler_length);
+			resize_window(r_width, mainsession->ruler_length);
+			BC_WindowBase::resize_event(r_width, mainsession->ruler_length);
 		}
 		// draw bg
-		clear_box(0, 0, r_width, mwindow->session->ruler_length);
+		clear_box(0, 0, r_width, mainsession->ruler_length);
 		set_color(BC_WindowBase::get_resources()->default_text_color);
-		draw_rectangle(0, 0, r_width, mwindow->session->ruler_length);
-		for(int i = 5; i < mwindow->session->ruler_length; i += 5)
+		draw_rectangle(0, 0, r_width, mainsession->ruler_length);
+		for(int i = 5; i < mainsession->ruler_length; i += 5)
 		{
 			w = ticklength(i);
 			draw_line(0, i, w, i);
 		}
-		for(int i = 50; i < mwindow->session->ruler_length; i += 50)
+		for(int i = 50; i < mainsession->ruler_length; i += 50)
 		{
 			sprintf(string, "%d", i);
 			draw_text(14, i + th / 2, string);
@@ -165,7 +165,7 @@ void RulerGUI::draw_ruler()
 		draw_text(18, 15, "x");
 		x_cl = 18 + tw / 6;
 		y_cl = 15 - th / 3;
-		height = mwindow->session->ruler_length;
+		height = mainsession->ruler_length;
 		width = r_width;
 	}
 	flash();
@@ -173,29 +173,29 @@ void RulerGUI::draw_ruler()
 
 void RulerGUI::resize_event(int w, int h)
 {
-	mwindow->session->ruler_x = get_x();
-	mwindow->session->ruler_y = get_y();
-	if(mwindow->session->ruler_orientation == RULER_HORIZ)
-		mwindow->session->ruler_length = w;
+	mainsession->ruler_x = get_x();
+	mainsession->ruler_y = get_y();
+	if(mainsession->ruler_orientation == RULER_HORIZ)
+		mainsession->ruler_length = w;
 	else
-		mwindow->session->ruler_length = h;
-	if(mwindow->session->ruler_length < min_length)
-		mwindow->session->ruler_length = min_length;
-	if(mwindow->session->ruler_length > max_length)
-		mwindow->session->ruler_length = max_length;
+		mainsession->ruler_length = h;
+	if(mainsession->ruler_length < min_length)
+		mainsession->ruler_length = min_length;
+	if(mainsession->ruler_length > max_length)
+		mainsession->ruler_length = max_length;
 	draw_ruler();
 }
 
 void RulerGUI::translation_event()
 {
-	mwindow->session->ruler_x = get_x();
-	mwindow->session->ruler_y = get_y();
+	mainsession->ruler_x = get_x();
+	mainsession->ruler_y = get_y();
 }
 
 void RulerGUI::close_event()
 {
 	hide_window();
-	mwindow->session->show_ruler = 0;
+	mainsession->show_ruler = 0;
 	mwindow->gui->mainmenu->show_ruler->set_checked(0);
 }
 
@@ -216,15 +216,15 @@ int RulerGUI::cursor_motion_event()
 	if(get_button_down())
 		return 0;
 
-	if(mwindow->session->ruler_orientation == RULER_HORIZ)
+	if(mainsession->ruler_orientation == RULER_HORIZ)
 		cpos = get_cursor_x();
 	else
 		cpos = get_cursor_y();
-	if(cpos > mwindow->session->ruler_length - 5)
+	if(cpos > mainsession->ruler_length - 5)
 	{
 		if(!separate_cursor)
 		{
-			set_cursor(mwindow->session->ruler_orientation == RULER_HORIZ ?
+			set_cursor(mainsession->ruler_orientation == RULER_HORIZ ?
 				HSEPARATE_CURSOR : VSEPARATE_CURSOR);
 			separate_cursor = 1;
 		}
@@ -245,8 +245,8 @@ int RulerGUI::button_release_event()
 
 	if(button == 3)
 	{
-		mwindow->session->ruler_orientation = 
-			mwindow->session->ruler_orientation == RULER_HORIZ ? RULER_VERT : RULER_HORIZ;
+		mainsession->ruler_orientation =
+			mainsession->ruler_orientation == RULER_HORIZ ? RULER_VERT : RULER_HORIZ;
 		width = height = 0;
 		draw_ruler();
 		return 1;
@@ -267,11 +267,11 @@ int RulerGUI::button_release_event()
 int RulerGUI::drag_start_event()
 {
 	int cpos;
-	if(mwindow->session->ruler_orientation == RULER_HORIZ)
+	if(mainsession->ruler_orientation == RULER_HORIZ)
 		cpos = get_cursor_x();
 	else
 		cpos = get_cursor_y();
-	if(cpos > mwindow->session->ruler_length - 5)
+	if(cpos > mainsession->ruler_length - 5)
 		resize = 1;
 	else
 		set_cursor(MOVE_CURSOR);
@@ -282,7 +282,7 @@ void RulerGUI::drag_motion_event()
 {
 	if(resize)
 	{
-		if(mwindow->session->ruler_orientation == RULER_HORIZ)
+		if(mainsession->ruler_orientation == RULER_HORIZ)
 			resize_event(get_cursor_x(), height);
 		else
 			resize_event(width, get_cursor_y());

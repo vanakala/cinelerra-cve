@@ -360,7 +360,7 @@ void MTimeBar::draw_range()
 		double time_per_pixel = (double)master_edl->local_session->zoom_time;
 		x1 = round((master_edl->session->brender_start -
 			master_edl->local_session->view_start_pts) / time_per_pixel);
-		x2 = round((mwindow->session->brender_end -
+		x2 = round((mainsession->brender_end -
 			master_edl->local_session->view_start_pts) / time_per_pixel);
 	}
 

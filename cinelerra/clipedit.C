@@ -126,7 +126,7 @@ void ClipEdit::run()
 		}
 		else
 		{
-			mwindow->session->clip_number--;
+			mainsession->clip_number--;
 		}
 
 

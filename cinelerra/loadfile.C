@@ -133,9 +133,9 @@ void LoadFileThread::run()
 	mwindow->restart_brender();
 
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
-		mwindow->session->changes_made = 0;
+		mainsession->changes_made = 0;
 	else
-		mwindow->session->changes_made = 1;
+		mainsession->changes_made = 1;
 }
 
 
@@ -297,7 +297,7 @@ int LoadPrevious::handle_event()
 	mwindow->defaults->update("LOAD_MODE", load_mode);
 	mwindow->undo->update_undo(_("load previous"), LOAD_ALL);
 	mwindow->save_backup();
-	mwindow->session->changes_made = 0;
+	mainsession->changes_made = 0;
 	return 1;
 }
 
@@ -336,7 +336,7 @@ int LoadBackup::handle_event()
 	mwindow->save_backup();
 // We deliberately mark the project changed, because the backup is most likely
 // not identical to the project file that it refers to.
-	mwindow->session->changes_made = 1;
+	mainsession->changes_made = 1;
 
 	return 1;
 }

@@ -34,10 +34,10 @@
 
 LevelWindowGUI::LevelWindowGUI(MWindow *mwindow)
  : BC_Window(MWindow::create_title(N_("Levels")),
-	mwindow->session->lwindow_x, 
-	mwindow->session->lwindow_y, 
-	mwindow->session->lwindow_w, 
-	mwindow->session->lwindow_h, 
+	mainsession->lwindow_x,
+	mainsession->lwindow_y,
+	mainsession->lwindow_w,
+	mainsession->lwindow_h,
 	10,
 	10,
 	1,
@@ -63,10 +63,10 @@ LevelWindowGUI::~LevelWindowGUI()
 
 void LevelWindowGUI::resize_event(int w, int h)
 {
-	mwindow->session->lwindow_x = get_x();
-	mwindow->session->lwindow_y = get_y();
-	mwindow->session->lwindow_w = w;
-	mwindow->session->lwindow_h = h;
+	mainsession->lwindow_x = get_x();
+	mainsession->lwindow_y = get_y();
+	mainsession->lwindow_w = w;
+	mainsession->lwindow_h = h;
 
 	mwindow->theme->draw_lwindow_bg(this);
 
@@ -79,14 +79,14 @@ void LevelWindowGUI::resize_event(int w, int h)
 
 void LevelWindowGUI::translation_event()
 {
-	mwindow->session->lwindow_x = get_x();
-	mwindow->session->lwindow_y = get_y();
+	mainsession->lwindow_x = get_x();
+	mainsession->lwindow_y = get_y();
 }
 
 void LevelWindowGUI::close_event()
 {
 	hide_window();
-	mwindow->session->show_lwindow = 0;
+	mainsession->show_lwindow = 0;
 	mwindow->gui->mainmenu->show_lwindow->set_checked(0);
 	mwindow->save_defaults();
 }

@@ -595,7 +595,7 @@ void NudgePatch::set_value(ptstime value)
 		mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	mwindow->session->changes_made = 1;
+	mainsession->changes_made = 1;
 }
 
 

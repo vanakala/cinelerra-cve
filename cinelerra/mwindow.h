@@ -391,7 +391,6 @@ public:
 	WaveCache *wave_cache;
 	Preferences *preferences;
 	PreferencesThread *preferences_thread;
-	MainSession *session;
 	Theme *theme;
 	MainIndexes *mainindexes;
 	MainProgress *mainprogress;

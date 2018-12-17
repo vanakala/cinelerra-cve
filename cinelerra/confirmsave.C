@@ -98,8 +98,8 @@ ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow,
  : BC_Window(MWindow::create_title(N_("Files Exist")),
 		mwindow->gui->get_abs_cursor_x(1) - 160, 
 		mwindow->gui->get_abs_cursor_y(1) - 120, 
-		mwindow->session->ewindow_w,
-		mwindow->session->ewindow_h,
+		mainsession->ewindow_w,
+		mainsession->ewindow_h,
 		50, 50)
 {
 	this->mwindow = mwindow;
@@ -132,6 +132,6 @@ void ConfirmSaveWindow::resize_event(int w, int h)
 		y,
 		w - x - 10,
 		h - y - BC_OKButton::calculate_h() - 10);
-	mwindow->session->ewindow_w = w;
-	mwindow->session->ewindow_h = h;
+	mainsession->ewindow_w = w;
+	mainsession->ewindow_h = h;
 }

@@ -115,7 +115,7 @@ void CWindowTool::start_tool(int operation)
 			this->tool_gui = new_gui;
 
 			if(master_edl->session->tool_window &&
-				mwindow->session->show_cwindow) tool_gui->show_window();
+				mainsession->show_cwindow) tool_gui->show_window();
 			tool_gui->flush();
 
 // Signal thread to run next tool GUI
@@ -207,8 +207,8 @@ CWindowToolGUI::CWindowToolGUI(MWindow *mwindow,
 	int w, 
 	int h)
  : BC_Window(title,
-	mwindow->session->ctool_x,
-	mwindow->session->ctool_y,
+	mainsession->ctool_x,
+	mainsession->ctool_y,
 	w,
 	h,
 	w,
@@ -235,8 +235,8 @@ void CWindowToolGUI::close_event()
 
 void CWindowToolGUI::translation_event()
 {
-	mwindow->session->ctool_x = get_x();
-	mwindow->session->ctool_y = get_y();
+	mainsession->ctool_x = get_x();
+	mainsession->ctool_y = get_y();
 }
 
 void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
@@ -1476,8 +1476,8 @@ void CWindowRulerGUI::update()
 
 	char string[BCTEXTLEN];
 	sprintf(string, "%d, %d",
-		mwindow->session->cwindow_output_x,
-		mwindow->session->cwindow_output_y);
+		mainsession->cwindow_output_x,
+		mainsession->cwindow_output_y);
 	current->update(string);
 	sprintf(string, "%.0f, %.0f",
 		master_edl->session->ruler_x1,

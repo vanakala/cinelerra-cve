@@ -934,7 +934,7 @@ ShowVWindow::ShowVWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Viewer"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_vwindow);
+	set_checked(mainsession->show_vwindow);
 }
 int ShowVWindow::handle_event()
 {
@@ -946,7 +946,7 @@ ShowAWindow::ShowAWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Resources"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_awindow);
+	set_checked(mainsession->show_awindow);
 }
 
 int ShowAWindow::handle_event()
@@ -959,7 +959,7 @@ ShowCWindow::ShowCWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Compositor"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_cwindow);
+	set_checked(mainsession->show_cwindow);
 }
 
 int ShowCWindow::handle_event()
@@ -972,7 +972,7 @@ ShowGWindow::ShowGWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Overlays"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_gwindow);
+	set_checked(mainsession->show_gwindow);
 }
 
 int ShowGWindow::handle_event()
@@ -985,7 +985,7 @@ ShowLWindow::ShowLWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Levels"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_lwindow);
+	set_checked(mainsession->show_lwindow);
 }
 
 int ShowLWindow::handle_event()
@@ -1010,7 +1010,7 @@ ShowRuler::ShowRuler(MWindow *mwindow)
  : BC_MenuItem(_("Show Ruler"))
 {
 	this->mwindow = mwindow;
-	set_checked(mwindow->session->show_ruler);
+	set_checked(mainsession->show_ruler);
 }
 
 int ShowRuler::handle_event()

@@ -109,19 +109,19 @@ void Theme::initialize()
 
 void Theme::draw_awindow_bg(AWindowGUI *gui)
 {
-	gui->clear_box(0, 0, mwindow->session->awindow_w, mwindow->session->awindow_h);
+	gui->clear_box(0, 0, mainsession->awindow_w, mainsession->awindow_h);
 	gui->flash();
 }
 
 void Theme::draw_cwindow_bg(CWindowGUI *gui)
 {
-	gui->clear_box(0, 0, mwindow->session->cwindow_w, mwindow->session->cwindow_h);
+	gui->clear_box(0, 0, mainsession->cwindow_w, mainsession->cwindow_h);
 	gui->flash();
 }
 
 void Theme::draw_lwindow_bg(LevelWindowGUI *gui)
 {
-	gui->clear_box(0, 0, mwindow->session->lwindow_w, mwindow->session->lwindow_h);
+	gui->clear_box(0, 0, mainsession->lwindow_w, mainsession->lwindow_h);
 	gui->flash();
 }
 
@@ -176,15 +176,15 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 	abuttons_y = 0;
 	afolders_x = 0;
 	afolders_y = 0;
-	afolders_w = mwindow->session->afolders_w;
-	afolders_h = mwindow->session->awindow_h - afolders_y;
+	afolders_w = mainsession->afolders_w;
+	afolders_h = mainsession->awindow_h - afolders_y;
 	adivider_x = afolders_x + afolders_w;
 	adivider_y = 0;
 	adivider_w = 5;
 	adivider_h = afolders_h;
 	alist_x = afolders_x + afolders_w + 5;
 	alist_y = afolders_y;
-	alist_w = mwindow->session->awindow_w - alist_x;
+	alist_w = mainsession->awindow_w - alist_x;
 	alist_h = afolders_h;
 }
 
@@ -202,17 +202,17 @@ void Theme::get_plugindialog_sizes()
 	int x = 10, y = 30;
 	plugindialog_new_x = x;
 	plugindialog_new_y = y;
-	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
+	plugindialog_shared_x = mainsession->plugindialog_w / 3;
 	plugindialog_shared_y = y;
-	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
+	plugindialog_module_x = mainsession->plugindialog_w * 2 / 3;
 	plugindialog_module_y = y;
 
 	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 100;
+	plugindialog_new_h = mainsession->plugindialog_h - 100;
 	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 100;
+	plugindialog_shared_h = mainsession->plugindialog_h - 100;
+	plugindialog_module_w = mainsession->plugindialog_w - plugindialog_module_x - 10;
+	plugindialog_module_h = mainsession->plugindialog_h - 100;
 
 	plugindialog_newattach_x = plugindialog_new_x + 20;
 	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
@@ -228,8 +228,8 @@ void Theme::get_menueffect_sizes(int use_list)
 	{
 		menueffect_list_x = 10;
 		menueffect_list_y = 10;
-		menueffect_list_w = mwindow->session->menueffect_w - 400;
-		menueffect_list_h = mwindow->session->menueffect_h - 
+		menueffect_list_w = mainsession->menueffect_w - 400;
+		menueffect_list_h = mainsession->menueffect_h -
 			menueffect_list_y -
 			BC_OKButton::calculate_h() - 10;
 	}

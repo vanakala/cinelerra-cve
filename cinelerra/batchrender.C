@@ -233,10 +233,10 @@ BC_Window* BatchRenderThread::new_gui()
 	load_jobs(mwindow->preferences);
 	gui = new BatchRenderGUI(mwindow,
 		this,
-		mwindow->session->batchrender_x,
-		mwindow->session->batchrender_y,
-		mwindow->session->batchrender_w,
-		mwindow->session->batchrender_h);
+		mainsession->batchrender_x,
+		mainsession->batchrender_y,
+		mainsession->batchrender_w,
+		mainsession->batchrender_h);
 	gui->create_list(1);
 	gui->change_job();
 	return gui;
@@ -729,8 +729,8 @@ BatchRenderGUI::~BatchRenderGUI()
 
 void BatchRenderGUI::resize_event(int w, int h)
 {
-	mwindow->session->batchrender_w = w;
-	mwindow->session->batchrender_h = h;
+	mainsession->batchrender_w = w;
+	mainsession->batchrender_h = h;
 	mwindow->theme->get_batchrender_sizes(this, w, h);
 
 	int x = mwindow->theme->batchrender_x1;
@@ -787,8 +787,8 @@ void BatchRenderGUI::resize_event(int w, int h)
 
 void BatchRenderGUI::translation_event()
 {
-	mwindow->session->batchrender_x = get_x();
-	mwindow->session->batchrender_y = get_y();
+	mainsession->batchrender_x = get_x();
+	mainsession->batchrender_y = get_y();
 }
 
 void BatchRenderGUI::close_event()

@@ -95,11 +95,11 @@ BC_Window* TipWindow::new_gui()
 
 char* TipWindow::get_current_tip()
 {
-	CLAMP(mwindow->session->current_tip, 0, total_tips - 1);
-	char *result = _(tips[mwindow->session->current_tip]);
-	mwindow->session->current_tip++;
-	if(mwindow->session->current_tip >= total_tips)
-		mwindow->session->current_tip = 0;
+	CLAMP(mainsession->current_tip, 0, total_tips - 1);
+	char *result = _(tips[mainsession->current_tip]);
+	mainsession->current_tip++;
+	if(mainsession->current_tip >= total_tips)
+		mainsession->current_tip = 0;
 	mwindow->save_defaults();
 	return result;
 }
@@ -113,9 +113,9 @@ void TipWindow::prev_tip()
 {
 	for(int i = 0; i < 2; i++)
 	{
-		mwindow->session->current_tip--;
-		if(mwindow->session->current_tip < 0)
-			mwindow->session->current_tip = total_tips - 1;
+		mainsession->current_tip--;
+		if(mainsession->current_tip < 0)
+			mainsession->current_tip = total_tips - 1;
 	}
 
 	gui->tip_text->update(get_current_tip());

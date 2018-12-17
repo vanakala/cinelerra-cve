@@ -535,9 +535,9 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render effect")),
 		mwindow->gui->get_abs_cursor_x(1),
-		mwindow->gui->get_abs_cursor_y(1) - mwindow->session->menueffect_h / 2,
-		mwindow->session->menueffect_w, 
-		mwindow->session->menueffect_h, 
+		mwindow->gui->get_abs_cursor_y(1) - mainsession->menueffect_h / 2,
+		mainsession->menueffect_w,
+		mainsession->menueffect_h,
 		580,
 		350,
 		1,
@@ -605,8 +605,8 @@ MenuEffectWindow::~MenuEffectWindow()
 
 void MenuEffectWindow::resize_event(int w, int h)
 {
-	mwindow->session->menueffect_w = w;
-	mwindow->session->menueffect_h = h;
+	mainsession->menueffect_w = w;
+	mainsession->menueffect_h = h;
 	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
 	if(plugin_list)

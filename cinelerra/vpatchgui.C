@@ -287,7 +287,7 @@ int VModePatch::handle_event()
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 	}
-	mwindow->session->changes_made = 1;
+	mainsession->changes_made = 1;
 	return 1;
 }
 

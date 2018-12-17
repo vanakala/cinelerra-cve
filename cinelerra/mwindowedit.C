@@ -125,14 +125,14 @@ void MWindow::add_video_track(int above, Track *dst)
 
 void MWindow::asset_to_size()
 {
-	if(session->drag_assets->total &&
-		session->drag_assets->values[0]->video_data)
+	if(mainsession->drag_assets->total &&
+		mainsession->drag_assets->values[0]->video_data)
 	{
 		int w, h;
 
 // Get w and h
-		w = session->drag_assets->values[0]->width;
-		h = session->drag_assets->values[0]->height;
+		w = mainsession->drag_assets->values[0]->width;
+		h = mainsession->drag_assets->values[0]->height;
 
 		master_edl->session->output_w = w;
 		master_edl->session->output_h = h;
@@ -146,7 +146,7 @@ void MWindow::asset_to_size()
 		}
 
 		master_edl->session->sample_aspect_ratio =
-			session->drag_assets->values[0]->sample_aspect_ratio;
+			mainsession->drag_assets->values[0]->sample_aspect_ratio;
 		AspectRatioSelection::limits(&master_edl->session->sample_aspect_ratio);
 		save_backup();
 
@@ -158,13 +158,13 @@ void MWindow::asset_to_size()
 
 void MWindow::asset_to_rate()
 {
-	if(session->drag_assets->total &&
-		session->drag_assets->values[0]->video_data)
+	if(mainsession->drag_assets->total &&
+		mainsession->drag_assets->values[0]->video_data)
 	{
-		if(EQUIV(master_edl->session->frame_rate, session->drag_assets->values[0]->frame_rate))
+		if(EQUIV(master_edl->session->frame_rate, mainsession->drag_assets->values[0]->frame_rate))
 			return;
 
-		master_edl->session->frame_rate = session->drag_assets->values[0]->frame_rate;
+		master_edl->session->frame_rate = mainsession->drag_assets->values[0]->frame_rate;
 
 		save_backup();
 
@@ -476,17 +476,17 @@ void MWindow::insert(ptstime position,
 void MWindow::insert_effects_canvas(ptstime start,
 	ptstime length)
 {
-	Track *dest_track = session->track_highlighted;
+	Track *dest_track = mainsession->track_highlighted;
 	if(!dest_track) return;
 
-	for(int i = 0; i < session->drag_pluginservers->total; i++)
+	for(int i = 0; i < mainsession->drag_pluginservers->total; i++)
 	{
-		PluginServer *plugin = session->drag_pluginservers->values[i];
+		PluginServer *plugin = mainsession->drag_pluginservers->values[i];
 
 		insert_effect(plugin->title,
 			0,
 			dest_track,
-			i == 0 ? session->pluginset_highlighted : 0,
+			i == 0 ? mainsession->pluginset_highlighted : 0,
 			start,
 			length,
 			PLUGIN_STANDALONE);
@@ -514,9 +514,9 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 			master_edl->local_session->get_selectionstart();
 	}
 
-	for(int i = 0; i < session->drag_pluginservers->total; i++)
+	for(int i = 0; i < mainsession->drag_pluginservers->total; i++)
 	{
-		PluginServer *plugin = session->drag_pluginservers->values[i];
+		PluginServer *plugin = mainsession->drag_pluginservers->values[i];
 
 		insert_effect(plugin->title,
 			0,
@@ -564,10 +564,10 @@ void MWindow::insert_effect(const char *title,
 
 void MWindow::modify_edithandles(void)
 {
-	master_edl->modify_edithandles(session->drag_start,
-		session->drag_position, 
-		session->drag_handle, 
-		master_edl->session->edit_handle_mode[session->drag_button],
+	master_edl->modify_edithandles(mainsession->drag_start,
+		mainsession->drag_position,
+		mainsession->drag_handle,
+		master_edl->session->edit_handle_mode[mainsession->drag_button],
 		master_edl->session->edit_actions());
 
 	finish_modify_handles();
@@ -575,10 +575,10 @@ void MWindow::modify_edithandles(void)
 
 void MWindow::modify_pluginhandles()
 {
-	master_edl->modify_pluginhandles(session->drag_start,
-		session->drag_position, 
-		session->drag_handle, 
-		master_edl->session->edit_handle_mode[session->drag_button],
+	master_edl->modify_pluginhandles(mainsession->drag_start,
+		mainsession->drag_position,
+		mainsession->drag_handle,
+		master_edl->session->edit_handle_mode[mainsession->drag_button],
 		master_edl->session->labels_follow_edits);
 
 	finish_modify_handles();
@@ -587,12 +587,12 @@ void MWindow::modify_pluginhandles()
 // Common to edithandles and plugin handles
 void MWindow::finish_modify_handles()
 {
-	int edit_mode = master_edl->session->edit_handle_mode[session->drag_button];
+	int edit_mode = master_edl->session->edit_handle_mode[mainsession->drag_button];
 
 	if(edit_mode != MOVE_NO_EDITS)
-		master_edl->local_session->set_selection(session->drag_position);
+		master_edl->local_session->set_selection(mainsession->drag_position);
 	else
-		master_edl->local_session->set_selection(session->drag_start);
+		master_edl->local_session->set_selection(mainsession->drag_start);
 
 	if(master_edl->local_session->get_selectionstart(1) < 0)
 		master_edl->local_session->set_selection(0);
@@ -857,9 +857,9 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 {
 	int result = 0;
 
-	if(session->drag_assets->total)
+	if(mainsession->drag_assets->total)
 	{
-		load_assets(session->drag_assets, 
+		load_assets(mainsession->drag_assets,
 			position, 
 			LOADMODE_PASTE,
 			dest_track, 
@@ -868,9 +868,9 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 		result = 1;
 	}
 
-	if(session->drag_clips->total)
+	if(mainsession->drag_clips->total)
 	{
-		paste_edls(session->drag_clips, 
+		paste_edls(mainsession->drag_clips,
 			LOADMODE_PASTE, 
 			dest_track,
 			position, 
@@ -1225,13 +1225,13 @@ void MWindow::paste_silence()
 void MWindow::paste_transition()
 {
 // Only the first transition gets dropped.
-	PluginServer *server = session->drag_pluginservers->values[0];
+	PluginServer *server = mainsession->drag_pluginservers->values[0];
 	if(server->audio)
 		strcpy(master_edl->session->default_atransition, server->title);
 	else
 		strcpy(master_edl->session->default_vtransition, server->title);
 
-	master_edl->tracks->paste_transition(server, session->edit_highlighted);
+	master_edl->tracks->paste_transition(server, mainsession->edit_highlighted);
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
@@ -1241,7 +1241,7 @@ void MWindow::paste_transition()
 
 void MWindow::paste_transition_cwindow(Track *dest_track)
 {
-	PluginServer *server = session->drag_pluginservers->values[0];
+	PluginServer *server = mainsession->drag_pluginservers->values[0];
 	master_edl->tracks->paste_video_transition(server, 1);
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
@@ -1491,7 +1491,7 @@ void MWindow::to_clip()
 	EDL *new_edl = new EDL(master_edl);
 
 	new_edl->load_xml(&file, LOAD_ALL);
-	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
+	sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
 	char string[BCTEXTLEN];
 	master_edl->session->ptstotext(string, end - start);
 

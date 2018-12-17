@@ -116,7 +116,6 @@ MWindow::MWindow(const char *config_path)
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
-	session = 0;
 	init_signals();
 
 	glthread = new GLThread();
@@ -158,12 +157,12 @@ MWindow::MWindow(const char *config_path)
 	plugin_guis = new ArrayList<PluginServer*>;
 	removed_guis = new ArrayList<PluginServer*>;
 
-	if(session->show_vwindow) vwindow->gui->show_window();
-	if(session->show_cwindow) cwindow->gui->show_window();
-	if(session->show_awindow) awindow->gui->show_window();
-	if(session->show_lwindow) lwindow->gui->show_window();
-	if(session->show_gwindow) gwindow->gui->show_window();
-	if(session->show_ruler) ruler->gui->show_window();
+	if(mainsession->show_vwindow) vwindow->gui->show_window();
+	if(mainsession->show_cwindow) cwindow->gui->show_window();
+	if(mainsession->show_awindow) awindow->gui->show_window();
+	if(mainsession->show_lwindow) lwindow->gui->show_window();
+	if(mainsession->show_gwindow) gwindow->gui->show_window();
+	if(mainsession->show_ruler) ruler->gui->show_window();
 
 	gui->mainmenu->load_defaults(defaults);
 	gui->mainmenu->update_toggles();
@@ -556,8 +555,8 @@ void MWindow::init_preferences()
 {
 	preferences = new Preferences;
 	preferences->load_defaults(defaults);
-	session = new MainSession();
-	session->load_defaults(defaults);
+	mainsession = new MainSession();
+	mainsession->load_defaults(defaults);
 	preferences_global = preferences;
 }
 
@@ -777,7 +776,7 @@ void MWindow::init_brender()
 		brender_lock->lock("MWindow::init_brender");
 		brender = new BRender(this);
 		brender->initialize();
-		session->brender_end = 0;
+		mainsession->brender_end = 0;
 		brender_lock->unlock();
 		brender->restart(master_edl);
 	}
@@ -793,7 +792,7 @@ void MWindow::delete_brender()
 	{
 		delete brender;
 		brender = 0;
-		session->brender_end = 0;
+		mainsession->brender_end = 0;
 	}
 	brender_lock->unlock();
 }
@@ -1071,7 +1070,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				if(load_mode == LOADMODE_REPLACE || 
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
-					strcpy(session->filename, filenames->values[i]);
+					strcpy(mainsession->filename, filenames->values[i]);
 					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
 					if(update_filename)
 						set_filename(new_edl->local_session->clip_title);
@@ -1263,7 +1262,7 @@ void MWindow::run()
 
 void MWindow::show_vwindow()
 {
-	session->show_vwindow = 1;
+	mainsession->show_vwindow = 1;
 	vwindow->gui->show_window();
 	vwindow->gui->raise_window();
 	vwindow->gui->flush();
@@ -1272,7 +1271,7 @@ void MWindow::show_vwindow()
 
 void MWindow::show_awindow()
 {
-	session->show_awindow = 1;
+	mainsession->show_awindow = 1;
 	awindow->gui->show_window();
 	awindow->gui->raise_window();
 	awindow->gui->flush();
@@ -1281,14 +1280,14 @@ void MWindow::show_awindow()
 
 void MWindow::show_cwindow()
 {
-	session->show_cwindow = 1;
+	mainsession->show_cwindow = 1;
 	cwindow->show_window();
 	gui->mainmenu->show_cwindow->set_checked(1);
 }
 
 void MWindow::show_gwindow()
 {
-	session->show_gwindow = 1;
+	mainsession->show_gwindow = 1;
 
 	gwindow->gui->show_window();
 	gwindow->gui->raise_window();
@@ -1299,7 +1298,7 @@ void MWindow::show_gwindow()
 
 void MWindow::show_lwindow()
 {
-	session->show_lwindow = 1;
+	mainsession->show_lwindow = 1;
 	lwindow->gui->show_window();
 	lwindow->gui->raise_window();
 	lwindow->gui->flush();
@@ -1308,13 +1307,13 @@ void MWindow::show_lwindow()
 
 void MWindow::tile_windows()
 {
-	session->default_window_positions();
+	mainsession->default_window_positions();
 	gui->default_positions();
 }
 
 void MWindow::show_ruler()
 {
-	session->show_ruler = 1;
+	mainsession->show_ruler = 1;
 	ruler->gui->show_window();
 	ruler->gui->raise_window();
 	ruler->gui->flush();
@@ -1646,18 +1645,18 @@ void MWindow::rebuild_indices()
 {
 	char source_filename[BCTEXTLEN], index_filename[BCTEXTLEN];
 
-	for(int i = 0; i < session->drag_assets->total; i++)
+	for(int i = 0; i < mainsession->drag_assets->total; i++)
 	{
 // Erase file
 		IndexFile::get_index_filename(source_filename, 
 			preferences->index_directory,
 			index_filename, 
-			session->drag_assets->values[i]->path,
-			session->drag_assets->values[i]->audio_streamno - 1);
+			mainsession->drag_assets->values[i]->path,
+			mainsession->drag_assets->values[i]->audio_streamno - 1);
 		remove(index_filename);
 // Schedule index build
-		session->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
-		mainindexes->add_next_asset(session->drag_assets->values[i]);
+		mainsession->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
+		mainindexes->add_next_asset(mainsession->drag_assets->values[i]);
 	}
 	mainindexes->start_build();
 }
@@ -1665,7 +1664,7 @@ void MWindow::rebuild_indices()
 void MWindow::save_backup()
 {
 	FileXML file;
-	master_edl->set_project_path(session->filename);
+	master_edl->set_project_path(mainsession->filename);
 	master_edl->save_xml(&file, BACKUP_PATH, 0, 0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
@@ -1712,27 +1711,27 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-	for(int i = 0; i < session->drag_assets->total; i++)
+	for(int i = 0; i < mainsession->drag_assets->total; i++)
 	{
-		Asset *asset = session->drag_assets->values[i];
+		Asset *asset = mainsession->drag_assets->values[i];
 		remove_asset_from_caches(asset);
 	}
 
 // Remove from VWindow.
-	for(int i = 0; i < session->drag_clips->total; i++)
+	for(int i = 0; i < mainsession->drag_clips->total; i++)
 	{
-		if(session->drag_clips->values[i] == vwindow->get_edl())
+		if(mainsession->drag_clips->values[i] == vwindow->get_edl())
 			vwindow->remove_source();
 	}
 
-	for(int i = 0; i < session->drag_assets->total; i++)
+	for(int i = 0; i < mainsession->drag_assets->total; i++)
 	{
-		if(session->drag_assets->values[i] == vwindow->get_asset())
+		if(mainsession->drag_assets->values[i] == vwindow->get_asset())
 			vwindow->remove_source();
 	}
 
-	master_edl->remove_from_project(session->drag_assets);
-	master_edl->remove_from_project(session->drag_clips);
+	master_edl->remove_from_project(mainsession->drag_assets);
+	master_edl->remove_from_project(mainsession->drag_clips);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
@@ -1750,7 +1749,7 @@ void MWindow::save_defaults()
 {
 	gui->save_defaults(defaults);
 	master_edl->save_defaults(defaults);
-	session->save_defaults(defaults);
+	mainsession->save_defaults(defaults);
 	preferences->save_defaults(defaults);
 // Remove old defaults
 // Channel
@@ -1909,7 +1908,7 @@ void MWindow::time_format_common()
 
 void MWindow::set_filename(const char *filename)
 {
-	strcpy(session->filename, filename);
+	strcpy(mainsession->filename, filename);
 	if(gui)
 	{
 		if(filename[0] == 0)
