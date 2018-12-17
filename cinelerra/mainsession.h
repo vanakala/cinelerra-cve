@@ -32,7 +32,6 @@
 #include "edits.inc"
 #include "edl.inc"
 #include "mainsession.inc"
-#include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginset.inc"
 #include "pluginserver.inc"
@@ -42,17 +41,13 @@
 class MainSession
 {
 public:
-	MainSession(MWindow *mwindow);
+	MainSession();
 	~MainSession();
 
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	void default_window_positions();
 	void boundaries();
-
-
-
-
 
 // For drag and drop events
 
@@ -99,7 +94,6 @@ public:
 	ptstime brender_end;
 // Position of cursor in CWindow output.  Used by ruler.
 	int cwindow_output_x, cwindow_output_y;
-
 
 // Show controls in CWindow
 	int cwindow_controls;
@@ -148,8 +142,6 @@ public:
 
 // Tip of the day
 	int current_tip;
-
-	MWindow *mwindow;
 };
 
 #endif

@@ -556,7 +556,7 @@ void MWindow::init_preferences()
 {
 	preferences = new Preferences;
 	preferences->load_defaults(defaults);
-	session = new MainSession(this);
+	session = new MainSession();
 	session->load_defaults(defaults);
 	preferences_global = preferences;
 }

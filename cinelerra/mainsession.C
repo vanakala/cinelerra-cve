@@ -27,18 +27,13 @@
 #include "edlsession.h"
 #include "mainsession.h"
 #include "meterpanel.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
 #include "auto.h"
 #include "ruler.inc"
 
-MainSession::MainSession(MWindow *mwindow)
+MainSession::MainSession()
 {
-	this->mwindow = mwindow;
 	changes_made = 0;
 	filename[0] = 0;
-//	playback_cursor_visible = 0;
-//	is_playing_back = 0;
 	track_highlighted = 0;
 	plugin_highlighted = 0;
 	pluginset_highlighted = 0;
@@ -114,8 +109,6 @@ void MainSession::default_window_positions()
 // Wider than 16:9, narrower than dual head
 	if((float)root_w / root_h > 1.8) root_w /= 2;
 
-
-
 	vwindow_x = root_x;
 	vwindow_y = root_y;
 	vwindow_w = root_w / 2 - border_left - border_right;
@@ -172,10 +165,11 @@ void MainSession::default_window_positions()
 	ruler_orientation = RULER_HORIZ;
 }
 
-int MainSession::load_defaults(BC_Hash *defaults)
+void MainSession::load_defaults(BC_Hash *defaults)
 {
 // Setup main windows
 	default_window_positions();
+
 	vwindow_x = defaults->get("VWINDOW_X", vwindow_x);
 	vwindow_y = defaults->get("VWINDOW_Y", vwindow_y);
 	vwindow_w = defaults->get("VWINDOW_W", vwindow_w);
@@ -251,12 +245,10 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	current_tip = defaults->get("CURRENT_TIP", current_tip);
 
 	boundaries();
-	return 0;
 }
 
-int MainSession::save_defaults(BC_Hash *defaults)
+void MainSession::save_defaults(BC_Hash *defaults)
 {
-
 // Window positions
 	defaults->update("MWINDOW_X", mwindow_x);
 	defaults->update("MWINDOW_Y", mwindow_y);
@@ -330,7 +322,4 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("MENUEFFECT_H", menueffect_h);
 
 	defaults->update("CURRENT_TIP", current_tip);
-
-
-	return 0;
 }
