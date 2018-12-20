@@ -32,7 +32,6 @@ class TransportCommand
 {
 public:
 	TransportCommand();
-	~TransportCommand();
 
 	void reset();
 // Get the direction based on the command
@@ -52,6 +51,7 @@ public:
 
 	int single_frame();
 	EDL* get_edl();
+	void set_edl(EDL *edl);
 	const char* commandstr(int cmd = -1);
 	void dump_command();
 
@@ -65,10 +65,8 @@ public:
 	ptstime playbackstart;
 // Send output to device
 	int realtime;
-// Flag - no real info in edl
-	int edl_empty;
 private:
-// Copied to render engines
+// Pointer to current edl
 	EDL *edl;
 };
 

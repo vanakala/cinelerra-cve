@@ -334,13 +334,7 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 
 	if(new_edl)
 	{
-		if((options & CHANGE_EDL) || new_cmd->edl_empty)
-		{
-			new_cmd->get_edl()->copy_all(new_edl);
-			new_cmd->edl_empty = 0;
-		}
-		else if(options & CHANGE_PARAMS)
-			new_cmd->get_edl()->synchronize_params(new_edl);
+		new_cmd->set_edl(new_edl);
 		new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 	}
 

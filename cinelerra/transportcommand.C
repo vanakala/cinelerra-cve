@@ -30,17 +30,10 @@
 
 TransportCommand::TransportCommand()
 {
-// In rendering we want a master EDL so settings don't get clobbered
-// in the middle of a job.
-	edl = new EDL;
+	edl = 0;
 	command = 0;
 	change_type = 0;
 	reset();
-}
-
-TransportCommand::~TransportCommand()
-{
-	delete edl;
 }
 
 void TransportCommand::reset()
@@ -48,7 +41,6 @@ void TransportCommand::reset()
 	playbackstart = 0;
 	start_position = 0;
 	end_position = 0;
-	edl_empty = 1;
 	realtime = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
@@ -60,12 +52,16 @@ EDL* TransportCommand::get_edl()
 	return edl;
 }
 
+void TransportCommand::set_edl(EDL *edl)
+{
+	this->edl = edl;
+}
+
 void TransportCommand::copy_from(TransportCommand *command)
 {
 	this->command = command->command;
 	this->change_type = command->change_type;
-	this->edl->copy_all(command->edl);
-	this->edl_empty = command->edl_empty;
+	this->edl = command->edl;
 	this->start_position = command->start_position;
 	this->end_position = command->end_position;
 	this->playbackstart = command->playbackstart;
@@ -132,6 +128,12 @@ float TransportCommand::get_speed()
 
 void TransportCommand::set_playback_range(int use_inout)
 {
+	if(!edl)
+	{
+		start_position = end_position = playbackstart = 0;
+		return;
+	}
+
 	switch(command)
 	{
 	case SLOW_FWD:
