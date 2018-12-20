@@ -117,7 +117,7 @@ void PreferencesThread::run()
 
 	preferences = new Preferences;
 	edl = new EDL;
-	this_edlsession = new EDLSession(0);
+	this_edlsession = new EDLSession();
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(mwindow->preferences);
 	edl->copy_session(master_edl);

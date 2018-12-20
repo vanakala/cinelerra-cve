@@ -58,7 +58,7 @@ EDL::EDL(EDL *parent_edl)
 	project_path[0] = 0;
 
 	if(!edlsession)
-		edlsession = new EDLSession(this);
+		edlsession = new EDLSession();
 
 	tracks = new Tracks(this);
 	if(!parent_edl)

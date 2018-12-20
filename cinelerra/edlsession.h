@@ -26,7 +26,7 @@
 #include "bcwindowbase.inc"
 #include "bchash.inc"
 #include "cinelerra.h"
-#include "edl.inc"
+#include "edlsession.inc"
 #include "filexml.inc"
 #include "playbackconfig.inc"
 
@@ -36,7 +36,7 @@ extern EDLSession *edlsession;
 class EDLSession
 {
 public:
-	EDLSession(EDL *edl);
+	EDLSession();
 	~EDLSession();
 
 	void load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
@@ -135,7 +135,6 @@ public:
 	int edit_handle_mode[3];
 // Editing mode
 	int editing_mode;
-	EDL *edl;
 	int enable_duplex;
 // AWindow format
 	int folderlist_format;

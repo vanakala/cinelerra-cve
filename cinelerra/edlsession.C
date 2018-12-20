@@ -27,7 +27,6 @@
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "clip.h"
-#include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -35,13 +34,14 @@
 #include "interlacemodes.h"
 #include "overlayframe.inc"
 #include "playbackconfig.h"
+#include "preferences.inc"
 #include "selection.h"
 #include "tracks.h"
 #include "workarounds.h"
 
 int EDLSession::current_id = 0;
 
-EDLSession::EDLSession(EDL *edl)
+EDLSession::EDLSession()
 {
 	highlighted_track = 0;
 	playback_cursor_visible = 0;
