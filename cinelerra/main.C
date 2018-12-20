@@ -56,6 +56,7 @@ AssetList assetlist_global;
 EDL *master_edl;
 EDL *vwindow_edl;
 MainSession *mainsession;
+EDLSession *edlsession;
 
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 

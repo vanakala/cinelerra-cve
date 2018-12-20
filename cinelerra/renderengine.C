@@ -118,9 +118,9 @@ int RenderEngine::arm_command(TransportCommand *command)
 
 // Fix background rendering asset to use current dimensions and ignore
 // headers.
-	preferences->brender_asset->frame_rate = command->get_edl()->session->frame_rate;
-	preferences->brender_asset->width = command->get_edl()->session->output_w;
-	preferences->brender_asset->height = command->get_edl()->session->output_h;
+	preferences->brender_asset->frame_rate = edlsession->frame_rate;
+	preferences->brender_asset->width = edlsession->output_w;
+	preferences->brender_asset->height = edlsession->output_h;
 	preferences->brender_asset->use_header = 0;
 	preferences->brender_asset->layers = 1;
 	preferences->brender_asset->video_data = 1;
@@ -129,7 +129,7 @@ int RenderEngine::arm_command(TransportCommand *command)
 	interrupted = 0;
 
 // Retool configuration for this node
-	this->config->copy_from(command->get_edl()->session->playback_config);
+	this->config->copy_from(edlsession->playback_config);
 	VideoOutConfig *vconfig = this->config->vconfig;
 	AudioOutConfig *aconfig = this->config->aconfig;
 	if(command->realtime)
@@ -148,7 +148,7 @@ int RenderEngine::arm_command(TransportCommand *command)
 
 	if(do_audio)
 	{
-		fragment_len = aconfig->get_fragment_size(command->get_edl()->session->sample_rate);
+		fragment_len = aconfig->get_fragment_size(edlsession->sample_rate);
 	}
 
 	open_output();
@@ -163,7 +163,7 @@ void RenderEngine::get_duty()
 
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
-		edl->session->audio_channels)
+		edlsession->audio_channels)
 	{
 		do_audio = 1;
 	}
@@ -190,12 +190,12 @@ void RenderEngine::create_render_threads()
 
 int RenderEngine::get_output_w()
 {
-	return edl->session->output_w;
+	return edlsession->output_w;
 }
 
 int RenderEngine::get_output_h()
 {
-	return edl->session->output_h;
+	return edlsession->output_h;
 }
 
 int RenderEngine::brender_available(ptstime position)
@@ -244,9 +244,9 @@ void RenderEngine::open_output()
 			if(!audio)
 				audio = new AudioDevice;
 			if (audio->open_output(config->aconfig, 
-				edl->session->sample_rate, 
+				edlsession->sample_rate,
 				fragment_len,
-				edl->session->audio_channels))
+				edlsession->audio_channels))
 			{
 				do_audio = 0;
 				delete audio;
@@ -286,7 +286,7 @@ void RenderEngine::reset_sync_postime(void)
 	timer.update();
 	if(do_audio)
 	{
-		if(!edl->session->playback_software_position)
+		if(!edlsession->playback_software_position)
 			audio_playing = 1;
 	}
 }
@@ -356,15 +356,15 @@ void RenderEngine::start_render_threads()
 
 void RenderEngine::update_framerate(float framerate)
 {
-	master_edl->session->actual_frame_rate = framerate;
+	edlsession->actual_frame_rate = framerate;
 	playback_engine->mwindow->preferences_thread->update_framerate();
 }
 
 void RenderEngine::update_playstatistics(int frames, int late, int delay)
 {
-	master_edl->session->frame_count = frames;
-	master_edl->session->frames_late = late;
-	master_edl->session->avg_delay = delay;
+	edlsession->frame_count = frames;
+	edlsession->frames_late = late;
+	edlsession->avg_delay = delay;
 	playback_engine->mwindow->preferences_thread->update_playstatistics();
 }
 

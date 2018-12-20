@@ -222,8 +222,8 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 	{
 		if(width && height)
 		{
-			hbase = (edl->session->output_w - width) / 2;
-			vbase = (edl->session->output_h - height) / 2;
+			hbase = (edlsession->output_w - width) / 2;
+			vbase = (edlsession->output_h - height) / 2;
 		}
 		else
 			hbase = vbase = 0;

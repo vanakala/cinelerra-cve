@@ -77,7 +77,7 @@ void ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *so
 {
 	Asset *asset = edit->asset;
 	Track *track = edit->track;
-	double frame_rate = edit->track->edl->session->frame_rate;
+	double frame_rate = edlsession->frame_rate;
 
 	double edit_sourcestart;
 	double edit_sourceend;

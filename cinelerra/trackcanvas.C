@@ -692,7 +692,7 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 
 void TrackCanvas::update_cursor()
 {
-	switch(master_edl->session->editing_mode)
+	switch(edlsession->editing_mode)
 	{
 	case EDITING_ARROW:
 		set_cursor(ARROW_CURSOR);
@@ -717,7 +717,7 @@ void TrackCanvas::draw_indexes(Asset *asset)
 {
 // Don't redraw raw samples
 	if(asset->index_zoom > master_edl->local_session->zoom_time *
-			master_edl->session->sample_rate)
+			edlsession->sample_rate)
 		return;
 
 	draw_resources(WUPD_INDEXES, asset);
@@ -893,7 +893,7 @@ void TrackCanvas::get_pixmap_size(Edit *edit,
 	}
 
 	pixmap_h = master_edl->local_session->zoom_track;
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		pixmap_h += mwindow->theme->get_image("title_bg_data")->get_h();
 }
 
@@ -914,7 +914,7 @@ void TrackCanvas::edit_dimensions(Track *track, ptstime start, ptstime end,
 
 	y = track->y_pixel;
 
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		h += mwindow->theme->get_image("title_bg_data")->get_h();
 }
 
@@ -965,10 +965,10 @@ void TrackCanvas::draw_paste_destination()
 
 		if (asset)
 		{
-			if(master_edl->session->cursor_on_frames)
+			if(edlsession->cursor_on_frames)
 			{
 				paste_video_length = paste_audio_length =
-					asset->total_length_framealigned(master_edl->session->frame_rate);
+					asset->total_length_framealigned(edlsession->frame_rate);
 			} 
 			else 
 			{
@@ -997,8 +997,8 @@ void TrackCanvas::draw_paste_destination()
 
 		if(clip)
 		{
-			if(master_edl->session->cursor_on_frames)
-				paste_audio_length = paste_video_length = clip->tracks->total_length_framealigned(master_edl->session->frame_rate);
+			if(edlsession->cursor_on_frames)
+				paste_audio_length = paste_video_length = clip->tracks->total_length_framealigned(edlsession->frame_rate);
 			else
 				paste_audio_length = paste_video_length = clip->tracks->total_length();
 
@@ -1146,7 +1146,7 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin,
 			master_edl->local_session->zoom_track +
 			plugin->plugin_set->get_number() * 
 			mwindow->theme->get_image("plugin_bg_data")->get_h();
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	h = mwindow->theme->get_image("plugin_bg_data")->get_h();
 }
@@ -1249,7 +1249,7 @@ void TrackCanvas::get_transition_coords(int &x, int &y, int &w, int &h)
 	int transition_w = 30;
 	int transition_h = 30;
 
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 	y += (h - mwindow->theme->get_image("title_bg_data")->get_h()) / 2 - transition_h / 2;
@@ -1638,7 +1638,7 @@ void TrackCanvas::draw_transitions()
 					x, y, w, h);
 				strip_x = x ;
 				strip_y = y;
-				if(master_edl->session->show_titles)
+				if(edlsession->show_titles)
 					strip_y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
@@ -1716,7 +1716,7 @@ void TrackCanvas::draw_brender_start()
 {
 	if(mwindow->preferences->use_brender)
 	{
-		int x = round((master_edl->session->brender_start -
+		int x = round((edlsession->brender_start -
 			master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
 
@@ -1792,7 +1792,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // track context menu to appear
 	int current_tool = 0;
 	int result = 0;
-	EDLSession *session = master_edl->session;
+	EDLSession *session = edlsession;
 
 	BC_Pixmap *auto_pixmaps[] = 
 	{
@@ -2554,7 +2554,7 @@ void TrackCanvas::calculate_viewport(Track *track,
 	yscale = master_edl->local_session->zoom_track;
 	xzoom = get_w() / (view_end - view_start);
 	center_pixel = (int)(track->y_pixel + yscale / 2) + 
-		(master_edl->session->show_titles ?
+		(edlsession->show_titles ?
 			mwindow->theme->get_image("title_bg_data")->get_h() : 
 			0);
 }
@@ -3151,7 +3151,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 		int center_pixel = (int)(track->y_pixel + 
 			master_edl->local_session->zoom_track +
 			(i + 0.5) * mwindow->theme->get_image("plugin_bg_data")->get_h() + 
-			(master_edl->session->show_titles ? mwindow->theme->get_image("title_bg_data")->get_h() : 0));
+			(edlsession->show_titles ? mwindow->theme->get_image("title_bg_data")->get_h() : 0));
 
 		for(Plugin *plugin = (Plugin*)plugin_set->first; 
 			plugin && !result; 
@@ -3229,7 +3229,7 @@ void TrackCanvas::draw_overlays()
 		0);
 
 // Transitions
-	if(master_edl->session->auto_conf->transitions)
+	if(edlsession->auto_conf->transitions)
 		draw_transitions();
 
 // Plugins
@@ -3416,7 +3416,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			synchronize_autos(change, current->autos->track, current, 0);
 
 			char string[BCTEXTLEN];
-			master_edl->session->ptstotext(string, current->pos_time);
+			edlsession->ptstotext(string, current->pos_time);
 			gui->show_message("%s, %.2f", string, current->get_value());
 		}
 		break;
@@ -3440,7 +3440,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
-				master_edl->session->ptstotext(string,
+				edlsession->ptstotext(string,
 					current->get_control_in_pts());
 				gui->show_message("%s, %.2f", string, current->get_control_in_value());
 			}
@@ -3462,7 +3462,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
-				master_edl->session->ptstotext(string,
+				edlsession->ptstotext(string,
 					((FloatAuto*)current)->get_control_out_pts());
 				gui->show_message("%s, %.2f", string, 
 					((FloatAuto*)current)->get_control_out_value());
@@ -3488,7 +3488,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 		current->pos_time = postime;
 
 		char string[BCTEXTLEN];
-		master_edl->session->ptstotext(string, current->pos_time);
+		edlsession->ptstotext(string, current->pos_time);
 		gui->show_message("%s, %d", string, current->value);
 	}
 	return result;
@@ -3538,7 +3538,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		current->pos_time = postime;
 
 		char string[BCTEXTLEN];
-		master_edl->session->ptstotext(string, current->pos_time);
+		edlsession->ptstotext(string, current->pos_time);
 		gui->show_message(string);
 
 		ptstime position_f = current->pos_time;
@@ -3571,7 +3571,7 @@ int TrackCanvas::cursor_motion_event()
 	result = 0;
 
 // Default cursor
-	switch(master_edl->session->editing_mode)
+	switch(edlsession->editing_mode)
 	{
 	case EDITING_ARROW:
 		new_cursor = ARROW_CURSOR;
@@ -4233,7 +4233,7 @@ int TrackCanvas::do_edits(int cursor_x,
 				else
 				if(drag_start && track->record)
 				{
-					if(master_edl->session->editing_mode == EDITING_ARROW)
+					if(edlsession->editing_mode == EDITING_ARROW)
 					{
 // Need to create drag window
 						mainsession->current_operation = DRAG_EDIT;
@@ -4343,7 +4343,7 @@ int TrackCanvas::do_plugins(int cursor_x,
 // Move plugin
 		if(drag_start && plugin->track->record)
 		{
-			if(master_edl->session->editing_mode == EDITING_ARROW)
+			if(edlsession->editing_mode == EDITING_ARROW)
 			{
 				if(plugin->track->data_type == TRACK_AUDIO)
 					mainsession->current_operation = DRAG_AEFFECT_COPY;
@@ -4397,7 +4397,7 @@ int TrackCanvas::do_transitions(int cursor_x,
 	int result = 0;
 	int x, y, w, h;
 
-	if(!master_edl->session->auto_conf->transitions)
+	if(!edlsession->auto_conf->transitions)
 		return 0;
 
 	for(Track *track = master_edl->tracks->first;
@@ -4516,14 +4516,14 @@ int TrackCanvas::button_press_event()
 			result = 1;
 		}
 		else
-		switch(master_edl->session->editing_mode)
+		switch(edlsession->editing_mode)
 		{
 // Test handles and resource boundaries and highlight a track
 		case EDITING_ARROW:
 		{
 			Edit *edit;
 			int handle;
-			if(master_edl->session->auto_conf->transitions &&
+			if(edlsession->auto_conf->transitions &&
 				do_transitions(cursor_x, 
 					cursor_y, 
 					1, 
@@ -4588,7 +4588,7 @@ int TrackCanvas::button_press_event()
 // Test handles only and select a region
 		case EDITING_IBEAM:
 		{
-			if(master_edl->session->auto_conf->transitions &&
+			if(edlsession->auto_conf->transitions &&
 				do_transitions(cursor_x, 
 					cursor_y, 
 					1, 

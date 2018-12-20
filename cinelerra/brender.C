@@ -181,7 +181,7 @@ void BRender::render_done()
 	{
 		// brender failed
 		videomap.set_map(0.0, videomap.last->pts, 0);
-		master_edl->session->brender_start = 0;
+		edlsession->brender_start = 0;
 		mainsession->brender_end = 0;
 		errormsg(_("Background rendering failed"));
 	}
@@ -433,17 +433,17 @@ void BRenderThread::start()
 			1,
 			preferences->local_rate);
 		preferences->brender_asset->use_header = 0;
-		preferences->brender_asset->frame_rate = command->edl->session->frame_rate;
-		preferences->brender_asset->width = command->edl->session->output_w;
-		preferences->brender_asset->height = command->edl->session->output_h;
-		preferences->brender_asset->interlace_mode = command->edl->session->interlace_mode;
-		preferences->brender_asset->sample_aspect_ratio = command->edl->session->sample_aspect_ratio;
+		preferences->brender_asset->frame_rate = edlsession->frame_rate;
+		preferences->brender_asset->width = edlsession->output_w;
+		preferences->brender_asset->height = edlsession->output_h;
+		preferences->brender_asset->interlace_mode = edlsession->interlace_mode;
+		preferences->brender_asset->sample_aspect_ratio = edlsession->sample_aspect_ratio;
 		preferences->brender_asset->video_data = 1;
 		preferences->brender_asset->init_streams();
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
-		ptstime brender_start = command->edl->session->brender_start;
+		ptstime brender_start = edlsession->brender_start;
 		ptstime last_contiguous = brender->videomap.last->pts;
 		ptstime last_good = command->position;
 		if(last_good < 0) last_good = last_contiguous;

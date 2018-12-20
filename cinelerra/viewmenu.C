@@ -37,13 +37,13 @@ ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show assets"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->show_assets);
+	set_checked(edlsession->show_assets);
 }
 
 int ShowAssets::handle_event()
 {
 	set_checked(!get_checked());
-	master_edl->session->show_assets = get_checked();
+	edlsession->show_assets = get_checked();
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	mwindow->gwindow->gui->update_toggles();
 	return 1;
@@ -54,13 +54,13 @@ ShowTitles::ShowTitles(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show titles"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->show_titles);
+	set_checked(edlsession->show_titles);
 }
 
 int ShowTitles::handle_event()
 {
 	set_checked(!get_checked());
-	master_edl->session->show_titles = get_checked();
+	edlsession->show_titles = get_checked();
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	mwindow->gwindow->gui->update_toggles();
 	return 1;
@@ -70,13 +70,13 @@ ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->auto_conf->transitions);
+	set_checked(edlsession->auto_conf->transitions);
 }
 
 int ShowTransitions::handle_event()
 {
 	set_checked(!get_checked());
-	master_edl->session->auto_conf->transitions = get_checked();
+	edlsession->auto_conf->transitions = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();
@@ -92,13 +92,13 @@ ShowAutomation::ShowAutomation(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->subscript = subscript;
-	set_checked(master_edl->session->auto_conf->autos[subscript]);
+	set_checked(edlsession->auto_conf->autos[subscript]);
 }
 
 int ShowAutomation::handle_event()
 {
 	set_checked(!get_checked());
-	master_edl->session->auto_conf->autos[subscript] = get_checked();
+	edlsession->auto_conf->autos[subscript] = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();
@@ -107,7 +107,7 @@ int ShowAutomation::handle_event()
 
 void ShowAutomation::update_toggle()
 {
-	set_checked(master_edl->session->auto_conf->autos[subscript]);
+	set_checked(edlsession->auto_conf->autos[subscript]);
 }
 
 
@@ -120,7 +120,7 @@ PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
 int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
-	master_edl->session->auto_conf->plugins = get_checked();
+	edlsession->auto_conf->plugins = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();

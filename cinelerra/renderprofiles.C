@@ -87,7 +87,7 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		x, 
 		y));
 
-	master_edl->session->configuration_path(RENDERCONFIG_DIR, string);
+	edlsession->configuration_path(RENDERCONFIG_DIR, string);
 	if(dir = opendir(string))
 	{
 		char *pe = &string[strlen(string)];
@@ -136,7 +136,7 @@ int RenderProfile::create_profile(const char *profile)
 	char *p;
 	char *config_path = rwindow->asset->renderprofile_path;
 
-	master_edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
+	edlsession->configuration_path(RENDERCONFIG_DIR, config_path);
 	if(chk_profile_dir(config_path))
 		return 1;
 
@@ -201,7 +201,7 @@ int RenderProfile::select_profile(const char *profile)
 	char *p;
 	char *config_path = rwindow->asset->renderprofile_path;
 
-	master_edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
+	edlsession->configuration_path(RENDERCONFIG_DIR, config_path);
 
 	p = &config_path[strlen(config_path)];
 	*p++ = '/';
@@ -341,7 +341,7 @@ int DeleteRenderProfileButton::handle_event()
 	// Do not delete default profile
 	if(strcmp(profile_name, RENDERCONFIG_DFLT) == 0)
 		return 0;
-	master_edl->session->configuration_path(RENDERCONFIG_DIR, str);
+	edlsession->configuration_path(RENDERCONFIG_DIR, str);
 	p = &str[strlen(str)];
 	*p++ = '/';
 	strcpy(p, profile_name);

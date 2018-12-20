@@ -700,7 +700,7 @@ FormatPopup::FormatPopup(BC_WindowBase *parent,
 	}
 	else
 	{
-		if(master_edl->session->encoders_menu)
+		if(edlsession->encoders_menu)
 		{
 			menu = frender_menu2;
 			length = sizeof(frender_menu2) / sizeof(int);

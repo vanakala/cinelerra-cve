@@ -68,7 +68,7 @@ int VPluginArray::get_bufsize()
 void VPluginArray::create_buffers()
 {
 	file->start_video_thread(buffer_size,
-		edl->session->color_model,
+		edlsession->color_model,
 		RING_BUFFERS);
 }
 
@@ -124,10 +124,10 @@ Track* VPluginArray::track_number(int number)
 
 posnum VPluginArray::to_units(ptstime pts)
 {
-	return round(pts * edl->session->frame_rate);
+	return round(pts * edlsession->frame_rate);
 }
 
 ptstime VPluginArray::from_units(posnum pos)
 {
-	return (ptstime)pos / edl->session->frame_rate;
+	return (ptstime)pos / edlsession->frame_rate;
 }

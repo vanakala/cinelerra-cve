@@ -46,7 +46,7 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_AUDIO;
-	one_unit = (ptstime)1.0 / edl->session->sample_rate;
+	one_unit = (ptstime)1.0 / edlsession->sample_rate;
 	automation = new AAutomation(edl, this);
 }
 
@@ -96,12 +96,12 @@ void ATrack::set_default_title()
 posnum ATrack::to_units(ptstime position, int round)
 {
 	if(round)
-		return Units::round(position * edl->session->sample_rate);
+		return Units::round(position * edlsession->sample_rate);
 	else
-		return Units::to_int64(position * edl->session->sample_rate);
+		return Units::to_int64(position * edlsession->sample_rate);
 }
 
 ptstime ATrack::from_units(posnum position)
 {
-	return (double)position / edl->session->sample_rate;
+	return (double)position / edlsession->sample_rate;
 }

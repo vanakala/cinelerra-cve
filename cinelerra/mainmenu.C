@@ -193,12 +193,12 @@ void MainMenu::load_defaults(BC_Hash *defaults)
 
 void MainMenu::update_toggles()
 {
-	labels_follow_edits->set_checked(master_edl->session->labels_follow_edits);
-	plugins_follow_edits->set_checked(master_edl->session->plugins_follow_edits);
-	cursor_on_frames->set_checked(master_edl->session->cursor_on_frames);
+	labels_follow_edits->set_checked(edlsession->labels_follow_edits);
+	plugins_follow_edits->set_checked(edlsession->plugins_follow_edits);
+	cursor_on_frames->set_checked(edlsession->cursor_on_frames);
 	loop_playback->set_checked(master_edl->local_session->loop_playback);
-	show_titles->set_checked(master_edl->session->show_titles);
-	show_transitions->set_checked(master_edl->session->auto_conf->transitions);
+	show_titles->set_checked(edlsession->show_titles);
+	show_transitions->set_checked(edlsession->auto_conf->transitions);
 	fade_automation->update_toggle();
 	mute_automation->update_toggle();
 	pan_automation->update_toggle();
@@ -208,7 +208,7 @@ void MainMenu::update_toggles()
 	project_x->update_toggle();
 	project_y->update_toggle();
 	project_z->update_toggle();
-	plugin_automation->set_checked(master_edl->session->auto_conf->plugins);
+	plugin_automation->set_checked(edlsession->auto_conf->plugins);
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
 }
@@ -863,7 +863,7 @@ LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)
  : BC_MenuItem(_("Edit labels")) 
 { 
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->labels_follow_edits);
+	set_checked(edlsession->labels_follow_edits);
 }
 
 int LabelsFollowEdits::handle_event()
@@ -877,13 +877,13 @@ PluginsFollowEdits::PluginsFollowEdits(MWindow *mwindow)
  : BC_MenuItem(_("Edit effects")) 
 { 
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->plugins_follow_edits);
+	set_checked(edlsession->plugins_follow_edits);
 }
 
 int PluginsFollowEdits::handle_event()
 {
 	set_checked(get_checked() ^ 1);
-	master_edl->session->plugins_follow_edits = get_checked();
+	edlsession->plugins_follow_edits = get_checked();
 }
 
 
@@ -891,12 +891,12 @@ AutosFollowEdits::AutosFollowEdits(MWindow *mwindow)
  : BC_MenuItem(_("Autos follow edits")) 
 { 
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->autos_follow_edits);
+	set_checked(edlsession->autos_follow_edits);
 }
 
 int AutosFollowEdits::handle_event()
 { 
-	master_edl->session->autos_follow_edits ^= 1;
+	edlsession->autos_follow_edits ^= 1;
 	set_checked(!get_checked());
 }
 
@@ -905,13 +905,13 @@ CursorOnFrames::CursorOnFrames(MWindow *mwindow)
  : BC_MenuItem(_("Align cursor on frames")) 
 { 
 	this->mwindow = mwindow; 
-	set_checked(master_edl->session->cursor_on_frames);
+	set_checked(edlsession->cursor_on_frames);
 }
 
 int CursorOnFrames::handle_event()
 {
-	master_edl->session->cursor_on_frames = !master_edl->session->cursor_on_frames;
-	set_checked(master_edl->session->cursor_on_frames);
+	edlsession->cursor_on_frames = !edlsession->cursor_on_frames;
+	set_checked(edlsession->cursor_on_frames);
 	return 1;
 }
 

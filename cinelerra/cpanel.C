@@ -75,7 +75,7 @@ void CPanel::set_operation(int value)
 	{
 	case CWINDOW_PROTECT:
 	case CWINDOW_ZOOM:
-		master_edl->session->tool_window = 0;
+		edlsession->tool_window = 0;
 		break;
 	}
 
@@ -83,12 +83,12 @@ void CPanel::set_operation(int value)
 	{
 		if(i == CWINDOW_TOOL_WINDOW)
 		{
-			operation[i]->update(master_edl->session->tool_window);
+			operation[i]->update(edlsession->tool_window);
 		}
 		else
 		if(i == CWINDOW_TITLESAFE)
 		{
-			operation[i]->update(master_edl->session->safe_regions);
+			operation[i]->update(edlsession->safe_regions);
 		}
 		else
 		{
@@ -105,7 +105,7 @@ CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y, 
 	mwindow->theme->get_image_set("protect"), 
-	master_edl->session->cwindow_operation == CWINDOW_PROTECT)
+	edlsession->cwindow_operation == CWINDOW_PROTECT)
 {
 	this->gui = gui;
 	set_tooltip(_("Protect video from changes"));
@@ -122,7 +122,7 @@ CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y, 
 	mwindow->theme->get_image_set("mask"), 
-	master_edl->session->cwindow_operation == CWINDOW_MASK)
+	edlsession->cwindow_operation == CWINDOW_MASK)
 {
 	this->gui = gui;
 	set_tooltip(_("Edit mask"));
@@ -139,7 +139,7 @@ CPanelRuler::CPanelRuler(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x,
 	y,
 	mwindow->theme->get_image_set("ruler"),
-	master_edl->session->cwindow_operation == CWINDOW_RULER)
+	edlsession->cwindow_operation == CWINDOW_RULER)
 {
 	this->gui = gui;
 	set_tooltip(_("Ruler"));
@@ -155,7 +155,7 @@ CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("magnify"), 
-	master_edl->session->cwindow_operation == CWINDOW_ZOOM)
+	edlsession->cwindow_operation == CWINDOW_ZOOM)
 {
 	this->gui = gui;
 	set_tooltip(_("Zoom view"));
@@ -172,7 +172,7 @@ CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("camera"), 
-	master_edl->session->cwindow_operation == CWINDOW_CAMERA)
+	edlsession->cwindow_operation == CWINDOW_CAMERA)
 {
 	this->gui = gui;
 	set_tooltip(_("Adjust camera automation"));
@@ -189,7 +189,7 @@ CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("projector"), 
-	master_edl->session->cwindow_operation == CWINDOW_PROJECTOR)
+	edlsession->cwindow_operation == CWINDOW_PROJECTOR)
 {
 	this->gui = gui;
 	set_tooltip(_("Adjust projector automation"));
@@ -206,7 +206,7 @@ CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("crop"), 
-	master_edl->session->cwindow_operation == CWINDOW_CROP)
+	edlsession->cwindow_operation == CWINDOW_CROP)
 {
 	this->gui = gui;
 	set_tooltip(_("Crop a layer or output"));
@@ -223,7 +223,7 @@ CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("eyedrop"), 
-	master_edl->session->cwindow_operation == CWINDOW_EYEDROP)
+	edlsession->cwindow_operation == CWINDOW_EYEDROP)
 {
 	this->gui = gui;
 	set_tooltip(_("Get color"));
@@ -240,7 +240,7 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("tool"), 
-	master_edl->session->tool_window)
+	edlsession->tool_window)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -249,10 +249,10 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
 
 int CPanelToolWindow::handle_event()
 {
-	master_edl->session->tool_window = 1;
-	master_edl->session->tool_window =
+	edlsession->tool_window = 1;
+	edlsession->tool_window =
 		gui->subwindow->tool_panel->update_show_window();
-	set_value(master_edl->session->tool_window, 0);
+	set_value(edlsession->tool_window, 0);
 	return 1;
 }
 
@@ -261,7 +261,7 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
 	y,
 	mwindow->theme->get_image_set("titlesafe"), 
-	master_edl->session->safe_regions)
+	edlsession->safe_regions)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -270,7 +270,7 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
 
 int CPanelTitleSafe::handle_event()
 {
-	master_edl->session->safe_regions = get_value();
+	edlsession->safe_regions = get_value();
 	gui->subwindow->canvas->draw_refresh();
 	return 1;
 }

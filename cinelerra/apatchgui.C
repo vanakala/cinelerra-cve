@@ -165,10 +165,10 @@ int APatchGUI::update(int x, int y)
 		}
 		else
 		{
-			if(pan->get_total_values() != master_edl->session->audio_channels)
+			if(pan->get_total_values() != edlsession->audio_channels)
 			{
-				pan->change_channels(master_edl->session->audio_channels,
-					master_edl->session->achannel_positions);
+				pan->change_channels(edlsession->audio_channels,
+					edlsession->achannel_positions);
 			}
 			else
 			{
@@ -280,7 +280,7 @@ int AFadePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(master_edl->session->auto_conf->autos[AUTOMATION_FADE])
+	if(edlsession->auto_conf->autos[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -306,8 +306,8 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y,
 		y, 
 		PAN_RADIUS, 
 		MAX_PAN, 
-		master_edl->session->audio_channels,
-		master_edl->session->achannel_positions,
+		edlsession->audio_channels,
+		edlsession->achannel_positions,
 		handle_x,
 		handle_y,
 		values)
@@ -328,13 +328,13 @@ int APanPatch::handle_event()
 
 	current->handle_x = get_stick_x();
 	current->handle_y = get_stick_y();
-	memcpy(current->values, get_values(), sizeof(float) * master_edl->session->audio_channels);
+	memcpy(current->values, get_values(), sizeof(float) * edlsession->audio_channels);
 
 	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(need_undo && master_edl->session->auto_conf->autos[AUTOMATION_PAN])
+	if(need_undo && edlsession->auto_conf->autos[AUTOMATION_PAN])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -348,8 +348,8 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 		y,
 		METER_HORIZ,
 		patch->patchbay->get_w() - 10,
-		master_edl->session->min_meter_db,
-		master_edl->session->max_meter_db,
+		edlsession->min_meter_db,
+		edlsession->max_meter_db,
 		0)
 {
 	this->mwindow = mwindow;

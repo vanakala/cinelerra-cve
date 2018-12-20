@@ -174,13 +174,13 @@ void PreferencesThread::apply_settings()
 {
 // Compare sessions
 
-	AudioOutConfig *this_aconfig = edl->session->playback_config->aconfig;
-	VideoOutConfig *this_vconfig = edl->session->playback_config->vconfig;
-	AudioOutConfig *aconfig = master_edl->session->playback_config->aconfig;
-	VideoOutConfig *vconfig = master_edl->session->playback_config->vconfig;
+	AudioOutConfig *this_aconfig = edlsession->playback_config->aconfig;
+	VideoOutConfig *this_vconfig = edlsession->playback_config->vconfig;
+	AudioOutConfig *aconfig = edlsession->playback_config->aconfig;
+	VideoOutConfig *vconfig = edlsession->playback_config->vconfig;
 
 	rerender = 
-		edl->session->need_rerender(master_edl->session) ||
+		edlsession->need_rerender(edlsession) ||
 		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -230,9 +230,9 @@ void PreferencesThread::apply_settings()
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 
-	if(((master_edl->session->output_w % 4) ||
-		(master_edl->session->output_h % 4)) &&
-		master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	if(((edlsession->output_w % 4) ||
+		(edlsession->output_h % 4)) &&
+		edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		errormsg(_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
@@ -241,20 +241,20 @@ void PreferencesThread::apply_settings()
 	if(redraw_meters)
 	{
 		mwindow->cwindow->gui->meters->change_format(
-			edl->session->min_meter_db,
-			edl->session->max_meter_db);
+			edlsession->min_meter_db,
+			edlsession->max_meter_db);
 
 		mwindow->vwindow->gui->meters->change_format(
-			edl->session->min_meter_db,
-			edl->session->max_meter_db);
+			edlsession->min_meter_db,
+			edlsession->max_meter_db);
 
 		mwindow->gui->patchbay->change_meter_format(
-			edl->session->min_meter_db,
-			edl->session->max_meter_db);
+			edlsession->min_meter_db,
+			edlsession->max_meter_db);
 
 		mwindow->lwindow->gui->panel->change_format(
-			edl->session->min_meter_db,
-			edl->session->max_meter_db);
+			edlsession->min_meter_db,
+			edlsession->max_meter_db);
 	}
 
 	if(redraw_overlays)
@@ -379,8 +379,6 @@ void PreferencesWindow::update_framerate()
 {
 	if(thread->current_dialog == 0)
 	{
-		thread->edl->session->actual_frame_rate = 
-			master_edl->session->actual_frame_rate;
 		dialog->draw_framerate();
 		flash();
 	}
@@ -390,12 +388,6 @@ void PreferencesWindow::update_playstatistics()
 {
 	if(thread->current_dialog == 0)
 	{
-		thread->edl->session->frame_count =
-			master_edl->session->frame_count;
-		thread->edl->session->frames_late =
-			master_edl->session->frames_late;
-		thread->edl->session->avg_delay =
-			master_edl->session->avg_delay;
 		dialog->draw_playstatistics();
 		flash();
 	}

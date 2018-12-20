@@ -120,10 +120,13 @@ MWindow::MWindow(const char *config_path)
 
 	glthread = new GLThread();
 
+
 	show_splash();
 
 	init_defaults(defaults, config_path);
 	default_standard = default_std();
+
+	init_edl();
 	init_preferences();
 	init_plugins(preferences, plugindb, splash_window);
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
@@ -134,8 +137,6 @@ MWindow::MWindow(const char *config_path)
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 
-// Default project created here
-	init_edl();
 
 	init_awindow();
 	init_compositor();
@@ -699,15 +700,16 @@ void MWindow::init_theme()
 
 	theme->check_used();
 	theme_global = theme;
+	master_edl->tracks->update_y_pixels(theme);
 }
 
 void MWindow::init_edl()
 {
 	master_edl = new EDL;
-	FormatPresets::fill_preset_defaults(default_standard, master_edl->session);
+
+	FormatPresets::fill_preset_defaults(default_standard, edlsession);
 	master_edl->load_defaults(defaults);
 	master_edl->create_default_tracks();
-	master_edl->tracks->update_y_pixels(theme);
 }
 
 void MWindow::init_compositor()
@@ -828,7 +830,7 @@ int MWindow::brender_available(ptstime postime)
 
 void MWindow::set_brender_start()
 {
-	master_edl->session->brender_start = master_edl->local_session->get_selectionstart();
+	edlsession->brender_start = master_edl->local_session->get_selectionstart();
 	restart_brender();
 	gui->canvas->draw_overlays();
 	gui->canvas->flash();
@@ -1123,14 +1125,14 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			if(!EQUIV(start, end))
 				master_edl->clear(start,
 					end,
-					master_edl->session->edit_actions());
+					edlsession->edit_actions());
 		}
 
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
 			-1,
-			master_edl->session->edit_actions(),
+			edlsession->edit_actions(),
 			0); // overwrite
 	}
 
@@ -1334,13 +1336,13 @@ void MWindow::toggle_loop_playback()
 
 void MWindow::set_titles(int value)
 {
-	master_edl->session->show_titles = value;
+	edlsession->show_titles = value;
 	trackmovement(master_edl->local_session->track_start);
 }
 
 void MWindow::set_auto_keyframes(int value)
 {
-	master_edl->session->auto_keyframes = value;
+	edlsession->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
 	cwindow->gui->edit_panel->keyframe->update(value);
@@ -1350,7 +1352,7 @@ void MWindow::set_auto_keyframes(int value)
 
 void MWindow::set_editing_mode(int new_editing_mode)
 {
-	master_edl->session->editing_mode = new_editing_mode;
+	edlsession->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->canvas->update_cursor();
 	cwindow->gui->edit_panel->update();
@@ -1358,7 +1360,7 @@ void MWindow::set_editing_mode(int new_editing_mode)
 
 void MWindow::toggle_editing_mode()
 {
-	int mode = master_edl->session->editing_mode;
+	int mode = edlsession->editing_mode;
 	if( mode == EDITING_ARROW )
 		set_editing_mode(EDITING_IBEAM);
 	else
@@ -1367,7 +1369,7 @@ void MWindow::toggle_editing_mode()
 
 void MWindow::set_labels_follow_edits(int value)
 {
-	master_edl->session->labels_follow_edits = value;
+	edlsession->labels_follow_edits = value;
 	gui->mbuttons->edit_panel->locklabels->update(value);
 	gui->mainmenu->labels_follow_edits->set_checked(value);
 	gui->flush();
@@ -1839,28 +1841,28 @@ void MWindow::interrupt_indexes()
 
 void MWindow::next_time_format()
 {
-	switch(master_edl->session->time_format)
+	switch(edlsession->time_format)
 	{
 	case TIME_HMS:
-		master_edl->session->time_format = TIME_HMSF;
+		edlsession->time_format = TIME_HMSF;
 		break;
 	case TIME_HMSF:
-		master_edl->session->time_format = TIME_SAMPLES;
+		edlsession->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:
-		master_edl->session->time_format = TIME_SAMPLES_HEX;
+		edlsession->time_format = TIME_SAMPLES_HEX;
 		break;
 	case TIME_SAMPLES_HEX: 
-		master_edl->session->time_format = TIME_FRAMES;
+		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		master_edl->session->time_format = TIME_FEET_FRAMES;
+		edlsession->time_format = TIME_FEET_FRAMES;
 		break;
 	case TIME_FEET_FRAMES:
-		master_edl->session->time_format = TIME_SECONDS;
+		edlsession->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
-		master_edl->session->time_format = TIME_HMS;
+		edlsession->time_format = TIME_HMS;
 		break;
 	}
 
@@ -1869,28 +1871,28 @@ void MWindow::next_time_format()
 
 void MWindow::prev_time_format()
 {
-	switch(master_edl->session->time_format)
+	switch(edlsession->time_format)
 	{
 	case TIME_HMS:
-		master_edl->session->time_format = TIME_SECONDS;
+		edlsession->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
-		master_edl->session->time_format = TIME_FEET_FRAMES;
+		edlsession->time_format = TIME_FEET_FRAMES;
 		break;
 	case TIME_FEET_FRAMES:
-		master_edl->session->time_format = TIME_FRAMES;
+		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		master_edl->session->time_format = TIME_SAMPLES_HEX;
+		edlsession->time_format = TIME_SAMPLES_HEX;
 		break;
 	case TIME_SAMPLES_HEX:
-		master_edl->session->time_format = TIME_SAMPLES;
+		edlsession->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:
-		master_edl->session->time_format = TIME_HMSF;
+		edlsession->time_format = TIME_HMSF;
 		break;
 	case TIME_HMSF:
-		master_edl->session->time_format = TIME_HMS;
+		edlsession->time_format = TIME_HMS;
 		break;
 	}
 
@@ -1901,7 +1903,7 @@ void MWindow::time_format_common()
 {
 	gui->redraw_time_dependancies();
 	char string[BCTEXTLEN];
-	gui->show_message(_("Using %s."), Units::print_time_format(master_edl->session->time_format, string));
+	gui->show_message(_("Using %s."), Units::print_time_format(edlsession->time_format, string));
 	gui->flush();
 }
 
@@ -1970,15 +1972,15 @@ void MWindow::show_program_status()
 	if(master_edl)
 	{
 		printf(" Audio channels %d tracks %d samplerate %d\n",
-			master_edl->session->audio_channels, master_edl->session->audio_tracks,
-			master_edl->session->sample_rate);
+			edlsession->audio_channels, edlsession->audio_tracks,
+			edlsession->sample_rate);
 		printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
-			master_edl->session->output_w,
-			master_edl->session->output_h,
-			master_edl->session->video_channels,
-			master_edl->session->video_tracks,
-			master_edl->session->frame_rate,
-			ColorModels::name(master_edl->session->color_model));
+			edlsession->output_w,
+			edlsession->output_h,
+			edlsession->video_channels,
+			edlsession->video_tracks,
+			edlsession->frame_rate,
+			ColorModels::name(edlsession->color_model));
 	}
 	else
 		printf(" No edl\n");
@@ -2001,8 +2003,8 @@ void MWindow::show_program_status()
 	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
 	printf(" Output device: %s\n",
-		VDriverMenu::driver_to_string(master_edl->session->playback_config->vconfig->driver));
-	if(master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+		VDriverMenu::driver_to_string(edlsession->playback_config->vconfig->driver));
+	if(edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
 		const char **vs = BC_Resources::OpenGLStrings;
 		if(vs[0])

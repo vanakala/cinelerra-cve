@@ -77,7 +77,7 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 		output_temp = BC_Resources::tmpframes.get_tmpframe(
 			track->track_w,
 			track->track_h,
-			renderengine->edl->session->color_model);
+			edlsession->color_model);
 
 		output_temp->set_pts(input_postime + track->nudge);
 		node->render();

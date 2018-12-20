@@ -30,6 +30,7 @@
 #include "filexml.inc"
 #include "playbackconfig.inc"
 
+extern EDLSession *edlsession;
 
 // Session shared between all clips
 class EDLSession
@@ -210,6 +211,8 @@ public:
 // Directory of plugin configurations
 	char plugin_configuration_directory[BCTEXTLEN];
 
+private:
+	int defaults_loaded;
 };
 
 

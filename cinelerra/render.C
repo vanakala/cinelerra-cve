@@ -403,11 +403,11 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	{
 		asset.video_data = 1;
 		asset.layers = 1;
-		asset.width = edl->session->output_w;
-		asset.height = edl->session->output_h;
-		asset.frame_rate = edl->session->frame_rate;
-		asset.interlace_mode = edl->session->interlace_mode;
-		asset.sample_aspect_ratio = edl->session->sample_aspect_ratio;
+		asset.width = edlsession->output_w;
+		asset.height = edlsession->output_h;
+		asset.frame_rate = edlsession->frame_rate;
+		asset.interlace_mode = edlsession->interlace_mode;
+		asset.sample_aspect_ratio = edlsession->sample_aspect_ratio;
 	}
 	else
 	{
@@ -420,8 +420,8 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		(File::supports(asset.format) & SUPPORTS_AUDIO))
 	{
 		asset.audio_data = 1;
-		asset.channels = edl->session->audio_channels;
-		asset.sample_rate = edl->session->sample_rate;
+		asset.channels = edlsession->audio_channels;
+		asset.sample_rate = edlsession->sample_rate;
 		if(asset.format == FILE_MOV) asset.byte_order = 0;
 	}
 	else
@@ -526,8 +526,8 @@ int Render::render(int test_overwrite,
 	audio_cache = new CICache(preferences, FILE_OPEN_AUDIO);
 	video_cache = new CICache(preferences, FILE_OPEN_VIDEO);
 
-	default_asset->frame_rate = command->get_edl()->session->frame_rate;
-	default_asset->sample_rate = command->get_edl()->session->sample_rate;
+	default_asset->frame_rate = edlsession->frame_rate;
+	default_asset->sample_rate = edlsession->sample_rate;
 
 // Conform asset to EDL.  Find out if any tracks are playable.
 	result = check_asset(command->get_edl(), *default_asset);
@@ -780,7 +780,7 @@ void Render::load_defaults(Asset *asset)
 
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow->defaults->get("RENDERPROFILE", string);
-	master_edl->session->configuration_path(RENDERCONFIG_DIR,
+	edlsession->configuration_path(RENDERCONFIG_DIR,
 		asset->renderprofile_path);
 	p = &asset->renderprofile_path[strlen(asset->renderprofile_path)];
 	*p++ = '/';

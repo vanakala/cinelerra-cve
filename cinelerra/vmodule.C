@@ -131,7 +131,7 @@ VFrame *VModule::import_frame(VFrame *output,
 				&out_h1);
 			// Determine the interlacing method to use.
 			int interlace_fixmethod = InterlaceFixSelection::automode2(
-				get_edl()->session->interlace_mode,
+				edlsession->interlace_mode,
 				current_edit->asset->interlace_autofixoption,
 				current_edit->asset->interlace_mode,
 				current_edit->asset->interlace_fixmethod);
@@ -164,7 +164,7 @@ VFrame *VModule::import_frame(VFrame *output,
 				VFrame *input_temp = BC_Resources::tmpframes.get_tmpframe(
 					current_edit->asset->width,
 					current_edit->asset->height,
-					get_edl()->session->color_model);
+					edlsession->color_model);
 				input_temp->copy_pts(output);
 // file -> temp
 // Cache for single frame only
@@ -257,7 +257,7 @@ VFrame *VModule::render(VFrame *output)
 // Get temporary buffer
 		VFrame *transition_temp = BC_Resources::tmpframes.get_tmpframe(
 			track->track_w, track->track_h,
-			get_edl()->session->color_model);
+			edlsession->color_model);
 
 		transition_temp->copy_pts(output);
 		transition_temp = import_frame(transition_temp,

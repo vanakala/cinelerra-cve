@@ -49,7 +49,7 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 {
 	data_type = TRACK_VIDEO;
 	draw = 1;
-	one_unit = (ptstime)1.0 / edl->session->frame_rate;
+	one_unit = (ptstime)1.0 / edlsession->frame_rate;
 	automation = new VAutomation(edl, this);
 }
 
@@ -96,19 +96,19 @@ posnum VTrack::to_units(ptstime position, int round)
 {
 	if(round)
 	{
-		return Units::round(position * edl->session->frame_rate);
+		return Units::round(position * edlsession->frame_rate);
 	}
 	else
 	{
 // Kludge for rounding errors, just on a smaller scale than formal rounding
-		position *= edl->session->frame_rate;
+		position *= edlsession->frame_rate;
 		return Units::to_int64(position);
 	}
 }
 
 ptstime VTrack::from_units(posnum position)
 {
-	return (ptstime)position / edl->session->frame_rate;
+	return (ptstime)position / edlsession->frame_rate;
 }
 
 void VTrack::save_header(FileXML *file)
@@ -211,8 +211,8 @@ void VTrack::calculate_output_transfer(ptstime position,
 		&center_z, 
 		position);
 
-	center_x += edl->session->output_w / 2;
-	center_y += edl->session->output_h / 2;
+	center_x += edlsession->output_w / 2;
+	center_y += edlsession->output_h / 2;
 
 	x[2] = center_x - (track_w / 2) * center_z;
 	y[2] = center_y - (track_h / 2) * center_z;
@@ -230,15 +230,15 @@ void VTrack::calculate_output_transfer(ptstime position,
 		y[0] -= (y[2] - 0) / center_z;
 		y[2] = 0;
 	}
-	if(x[3] > edl->session->output_w)
+	if(x[3] > edlsession->output_w)
 	{
-		x[1] -= (x[3] - edl->session->output_w) / center_z;
-		x[3] = edl->session->output_w;
+		x[1] -= (x[3] - edlsession->output_w) / center_z;
+		x[3] = edlsession->output_w;
 	}
-	if(y[3] > edl->session->output_h)
+	if(y[3] > edlsession->output_h)
 	{
-		y[1] -= (y[3] - edl->session->output_h) / center_z;
-		y[3] = edl->session->output_h;
+		y[1] -= (y[3] - edlsession->output_h) / center_z;
+		y[3] = edlsession->output_h;
 	}
 
 	*in_x = round(x[0]);

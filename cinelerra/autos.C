@@ -177,7 +177,7 @@ int Autos::auto_exists_for_editing(ptstime position)
 {
 	int result = 0;
 
-	if(edl->session->auto_keyframes)
+	if(edlsession->auto_keyframes)
 	{
 		position = edl->align_to_frame(position);
 		if(get_auto_at_position(position))
@@ -220,7 +220,7 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 		position = edl->local_session->get_selectionstart(1);
 	}
 	position = edl->align_to_frame(position);
-	if(edl->session->auto_keyframes)
+	if(edlsession->auto_keyframes)
 	{
 		result = insert_auto(position);
 	}
@@ -539,16 +539,16 @@ void Autos::shift_all(ptstime difference)
 ptstime Autos::unit_round(ptstime pts, int delta)
 {
 	if(track->data_type == TRACK_VIDEO)
-		pts *= edl->session->frame_rate;
+		pts *= edlsession->frame_rate;
 	else
-		pts *= edl->session->sample_rate;
+		pts *= edlsession->sample_rate;
 
 	pts = round(pts + delta);
 
 	if(track->data_type == TRACK_VIDEO)
-		pts /= edl->session->frame_rate;
+		pts /= edlsession->frame_rate;
 	else
-		pts /= edl->session->sample_rate;
+		pts /= edlsession->sample_rate;
 	return pts;
 }
 

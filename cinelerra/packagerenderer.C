@@ -129,17 +129,17 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	command->change_type = CHANGE_ALL;
 	command->set_playback_range();
 
-	default_asset->frame_rate = command->get_edl()->session->frame_rate;
-	default_asset->sample_rate = command->get_edl()->session->sample_rate;
+	default_asset->frame_rate = edlsession->frame_rate;
+	default_asset->sample_rate = edlsession->sample_rate;
 	default_asset->sample_aspect_ratio =
-		command->get_edl()->session->sample_aspect_ratio;
+		edlsession->sample_aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
 	default_asset->init_streams();
 
 	audio_cache = new CICache(preferences, FILE_OPEN_AUDIO);
 	video_cache = new CICache(preferences, FILE_OPEN_VIDEO);
 
-	PlaybackConfig *config = command->get_edl()->session->playback_config;
+	PlaybackConfig *config = edlsession->playback_config;
 	aconfig = new AudioOutConfig(0);
 	vconfig = new VideoOutConfig;
 	vconfig->copy_from(config->vconfig);
@@ -172,7 +172,7 @@ int PackageRenderer::create_output()
 
 void PackageRenderer::create_engine()
 {
-	audio_read_length = command->get_edl()->session->sample_rate / 4;
+	audio_read_length = edlsession->sample_rate / 4;
 
 	aconfig->set_fragment_size(audio_read_length);
 
@@ -224,15 +224,15 @@ void PackageRenderer::create_engine()
 		video_write_length = preferences->processors;
 		video_write_position = 0;
 		file->start_video_thread(video_write_length,
-			command->get_edl()->session->color_model,
+			edlsession->color_model,
 			preferences->processors > 1 ? 2 : 1);
 
 		if(mwindow)
 		{
 			video_device = new VideoDevice;
 			video_device->open_output(vconfig,
-				command->get_edl()->session->output_w, 
-				command->get_edl()->session->output_h, 
+				edlsession->output_w,
+				edlsession->output_h,
 				mwindow->cwindow->gui->canvas,
 				0);
 		}
@@ -339,7 +339,7 @@ int PackageRenderer::do_video()
 			{
 // Vector for video device
 				VFrame *preview_output = video_device->new_output_buffer(
-					command->get_edl()->session->color_model);
+					edlsession->color_model);
 
 				preview_output->copy_from(video_output_ptr);
 				video_device->write_buffer(preview_output, 

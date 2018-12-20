@@ -70,15 +70,15 @@ PluginArray* MenuAEffectThread::create_plugin_array()
 
 ptstime MenuAEffectThread::one_unit()
 {
-	return (ptstime)1 / master_edl->session->sample_rate;
+	return (ptstime)1 / edlsession->sample_rate;
 }
 
 posnum MenuAEffectThread::to_units(ptstime position, int round)
 {
 	if(round)
-		return Units::round(position * master_edl->session->sample_rate);
+		return Units::round(position * edlsession->sample_rate);
 	else
-		return (posnum)(position * master_edl->session->sample_rate);
+		return (posnum)(position * edlsession->sample_rate);
 }
 
 void MenuAEffectThread::fix_menu(const char *title)

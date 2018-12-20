@@ -87,6 +87,7 @@ EDLSession::EDLSession(EDL *edl)
 	metadata_title[0] = 0;
 	metadata_copyright[0] = 0;
 	cwindow_operation = CWINDOW_NONE;
+	defaults_loaded = 0;
 }
 
 EDLSession::~EDLSession()
@@ -131,6 +132,12 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	double aspect_w, aspect_h, aspect_ratio;
+
+// Load defaults once
+	if(defaults_loaded)
+		return;
+
+	defaults_loaded = 1;
 
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)

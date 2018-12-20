@@ -45,7 +45,7 @@ void MiscPrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, get_resources()->text_default));
 	y += 30;
 	win = add_subwindow(new StillImageUseDuration(pwindow,
-		pwindow->thread->edl->session->si_useduration,
+		edlsession->si_useduration,
 		x,
 		y));
 	x += win->get_w() + 10;
@@ -59,13 +59,13 @@ void MiscPrefs::show()
 	add_subwindow(new BC_Title(x, y, _("AVlibs"), LARGEFONT, get_resources()->text_default));
 	y += 30;
 	win = add_subwindow(new ToggleButton(x, y, _("Show messages of avlibs in terminal"),
-		&pwindow->thread->edl->session->show_avlibsmsgs));
+		&edlsession->show_avlibsmsgs));
 	y += win->get_h() + 5;
 	win = add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
-		&pwindow->thread->edl->session->experimental_codecs));
+		&edlsession->experimental_codecs));
 	y += win->get_h() + 5;
 	win = add_subwindow(new ToggleButton(x, y, _("Show another menu of encoders"),
-		&pwindow->thread->edl->session->encoders_menu));
+		&edlsession->encoders_menu));
 	y0 = y += win->get_h() + 5;
 	win = add_subwindow(new BC_Title(x, y, _("Author:")));
 	x0 = win->get_w() + 10;
@@ -79,11 +79,11 @@ void MiscPrefs::show()
 		x0 = win->get_w() + 10;
 	x = x0 + mwindow->theme->preferencesoptions_x;
 	y = y0;
-	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_author));
+	win = add_subwindow(new MiscText(x, y, edlsession->metadata_author));
 	y += boxh;
-	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_title));
+	win = add_subwindow(new MiscText(x, y, edlsession->metadata_title));
 	y += boxh;
-	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_copyright));
+	win = add_subwindow(new MiscText(x, y, edlsession->metadata_copyright));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
@@ -94,19 +94,19 @@ StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int val
 
 int StillImageUseDuration::handle_event()
 {
-	pwindow->thread->edl->session->si_useduration = get_value();
+	edlsession->si_useduration = get_value();
 }
 
 
 StillImageDuration::StillImageDuration(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->si_duration)
+ : BC_TextBox(x, y, 70, 1, edlsession->si_duration)
 {
 	this->pwindow = pwindow;
 }
 
 int StillImageDuration::handle_event()
 {
-	pwindow->thread->edl->session->si_duration = atof(get_text());
+	edlsession->si_duration = atof(get_text());
 	return 1;
 }
 

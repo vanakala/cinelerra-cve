@@ -202,8 +202,8 @@ void MWindowGUI::show()
 		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
 	mainclock->set_frame_offset( (double) 
-		(master_edl->session->get_frame_offset() /
-		master_edl->session->frame_rate));
+		(edlsession->get_frame_offset() /
+		edlsession->frame_rate));
 	mainclock->update(0);
 
 	cursor = new MainCursor(mwindow, this);

@@ -96,7 +96,7 @@ void PanAutos::dump(int indent)
 	printf("%*sdefault values:", indent + 4, " ");
 	if(edl)
 	{
-		for(int i = 0; i < edl->session->audio_channels; i++)
+		for(int i = 0; i < edlsession->audio_channels; i++)
 			printf(" %.1f", default_values[i]);
 		putchar('\n');
 	}

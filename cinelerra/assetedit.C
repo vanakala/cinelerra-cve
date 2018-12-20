@@ -498,7 +498,7 @@ void Interlaceautofix::showhideotherwidgets()
 {
 	if(get_value())
 	{
-		int method = InterlaceFixSelection::automode(master_edl->session->interlace_mode,
+		int method = InterlaceFixSelection::automode(edlsession->interlace_mode,
 			fwindow->asset->interlace_mode);
 		fwindow->ilacefix_selection->disable(0);
 		fwindow->ilacefix_selection->update(method);

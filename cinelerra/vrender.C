@@ -93,7 +93,7 @@ int VRender::flash_output()
 VFrame *VRender::process_buffer(VFrame *buffer)
 {
 // process buffer for non realtime
-	ptstime render_len = renderengine->edl->session->frame_duration();
+	ptstime render_len = edlsession->frame_duration();
 
 	video_out = buffer;
 
@@ -114,10 +114,10 @@ void VRender::process_buffer(ptstime input_postime)
 // Get output buffer from device
 	if(renderengine->command->realtime)
 		video_out = renderengine->video->new_output_buffer(
-			renderengine->edl->session->color_model);
+			edlsession->color_model);
 	input_postime = round(input_postime *
-		renderengine->edl->session->frame_rate) /
-		renderengine->edl->session->frame_rate;
+		edlsession->frame_rate) /
+		edlsession->frame_rate;
 	if(renderengine->brender_available(current_postime))
 	{
 		Asset *asset = renderengine->preferences->brender_asset;
@@ -148,7 +148,7 @@ void VRender::run()
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
 	ptstime current_input_duration;
-	ptstime len_pts = renderengine->edl->session->frame_duration();
+	ptstime len_pts = edlsession->frame_duration();
 	int direction = renderengine->command->get_direction();
 // Statistics
 	frame_count = 0;
@@ -197,7 +197,7 @@ void VRender::run()
 			start_pts = current_postime;
 			if((len_pts = video_out->get_duration()) < EPSILON)
 // We have no current frame
-				len_pts = renderengine->edl->session->frame_duration();
+				len_pts = edlsession->frame_duration();
 
 // latest time at which the frame can be shown.
 			end_pts = start_pts + len_pts;
@@ -218,7 +218,7 @@ void VRender::run()
 					flash_output();
 				late_frame++;
 
-				if(renderengine->edl->session->video_every_frame)
+				if(edlsession->video_every_frame)
 				{
 // User wants every frame.
 					current_input_duration = len_pts;
@@ -247,7 +247,7 @@ void VRender::run()
 // advance position in project
 		if(!last_playback)
 		{
-			ptstime project_len_pts = renderengine->edl->session->frame_duration();
+			ptstime project_len_pts = edlsession->frame_duration();
 
 			get_boundaries(current_input_duration, project_len_pts / 2.0);
 			first_frame = advance_position(video_out->get_pts(),
@@ -259,7 +259,7 @@ void VRender::run()
 		{
 // Calculate the framerate counter
 			framerate_counter++;
-			if(framerate_counter >= renderengine->edl->session->frame_rate)
+			if(framerate_counter >= edlsession->frame_rate)
 			{
 				renderengine->update_framerate((float)framerate_counter / 
 					((float)framerate_timer.get_difference() / 1000));

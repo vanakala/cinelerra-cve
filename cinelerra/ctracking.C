@@ -87,7 +87,7 @@ int CTracking::update_scroll(ptstime position)
 {
 	int updated_scroll = 0;
 
-	if(master_edl->session->view_follows_playback)
+	if(edlsession->view_follows_playback)
 	{
 		ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
 		ptstime half_canvas = seconds_per_pixel * 

@@ -141,7 +141,7 @@ void Canvas::calculate_sizes(EDL *edl,
 	int &h)
 {
 	double aspect = sample_aspect_ratio() *
-		edl->session->output_w / edl->session->output_h;
+		edlsession->output_w / edlsession->output_h;
 	// Horizontal stretch
 	if((double)output_w / output_h <= aspect)
 	{
@@ -169,7 +169,7 @@ double Canvas::get_x_offset(EDL *edl,
 		}
 		else
 			return ((double)-get_canvas()->get_w() / zoom_x +
-				edl->session->output_w) / 2;
+				edlsession->output_w) / 2;
 	}
 	else
 	{
@@ -203,7 +203,7 @@ double Canvas::get_y_offset(EDL *edl,
 		}
 		else
 			return ((double)-get_canvas()->get_h() / zoom_y + 
-				edl->session->output_h) / 2;
+				edlsession->output_h) / 2;
 	}
 	else
 	{
@@ -260,8 +260,8 @@ void Canvas::get_zooms(EDL *edl,
 		{
 			out_h = round(out_w / (conformed_w / conformed_h));
 		}
-		zoom_x = out_w / edl->session->output_w;
-		zoom_y = out_h / edl->session->output_h;
+		zoom_x = out_w / edlsession->output_w;
+		zoom_y = out_h / edlsession->output_h;
 	}
 }
 
@@ -371,7 +371,7 @@ void Canvas::get_transfers(EDL *edl,
 			double out_w = canvas_x2 - canvas_x1;
 			double out_h = canvas_y2 - canvas_y1;
 			double aspect = sample_aspect_ratio() *
-				edl->session->output_w / edl->session->output_h;
+				edlsession->output_w / edlsession->output_h;
 			if(out_w / out_h > aspect)
 			{
 				out_w = round(out_h * aspect);
@@ -412,7 +412,7 @@ int Canvas::scrollbars_exist()
 int Canvas::get_output_w(EDL *edl)
 {
 	if(edl)
-		return edl->session->output_w;
+		return edlsession->output_w;
 	else
 		return 0;
 }
@@ -420,7 +420,7 @@ int Canvas::get_output_w(EDL *edl)
 int Canvas::get_output_h(EDL *edl)
 {
 	if(edl)
-		return edl->session->output_h;
+		return edlsession->output_h;
 	else
 		return 0;
 }
@@ -437,8 +437,8 @@ void Canvas::get_scrollbars(EDL *edl,
 
 	if(edl)
 	{
-		w_needed = edl->session->output_w;
-		h_needed = edl->session->output_h;
+		w_needed = edlsession->output_w;
+		h_needed = edlsession->output_h;
 		w_visible = w_needed;
 		h_visible = h_needed;
 
@@ -498,7 +498,7 @@ void Canvas::get_scrollbars(EDL *edl,
 			else
 				yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
-			if(yscroll->get_length() != edl->session->output_h ||
+			if(yscroll->get_length() != edlsession->output_h ||
 					yscroll->get_handlelength() != h_visible)
 				yscroll->update_length(h_needed, get_yscroll(), h_visible);
 		}

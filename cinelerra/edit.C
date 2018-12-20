@@ -144,7 +144,7 @@ void Edit::insert_transition(const char *title, KeyFrame *default_keyframe)
 	transition = new Transition(edl, 
 		this, 
 		title, 
-		edl->session->default_transition_length, default_keyframe);
+		edlsession->default_transition_length, default_keyframe);
 }
 
 void Edit::detach_transition(void)

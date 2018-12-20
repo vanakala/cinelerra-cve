@@ -193,8 +193,7 @@ public:
 
 	Tracks *tracks;
 	Labels *labels;
-// Shared between all EDLs in a tree, for projects.
-	EDLSession *session;
+
 // Specific to this EDL, for clips.
 	LocalSession *local_session;
 

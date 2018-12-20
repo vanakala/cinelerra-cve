@@ -135,11 +135,7 @@ void MainSession::default_window_positions()
 	ewindow_w = 640;
 	ewindow_h = 240;
 
-	if(master_edl)
-		lwindow_w = MeterPanel::get_meters_width(master_edl->session->audio_channels, 1);
-	else
-		lwindow_w = 100;
-
+	lwindow_w = 100;
 	lwindow_y = 0;
 	lwindow_x = root_w - lwindow_w;
 	lwindow_h = mwindow_y;

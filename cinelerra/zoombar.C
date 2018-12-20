@@ -112,7 +112,7 @@ void ZoomBar::show()
 void ZoomBar::update_formatting(BC_TextBox *dst)
 {
 	dst->set_separators(
-		Units::format_to_separators(master_edl->session->time_format));
+		Units::format_to_separators(edlsession->time_format));
 }
 
 void ZoomBar::resize_event()
@@ -212,15 +212,15 @@ void ZoomBar::set_selection(int which_one)
 	{
 	case SET_LENGTH:
 		start_position = Units::text_to_seconds(from_value->get_text(), 
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 		length = Units::text_to_seconds(length_value->get_text(),
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 		end_position = start_position + length;
 
 		if(end_position < start_position)
@@ -233,15 +233,15 @@ void ZoomBar::set_selection(int which_one)
 
 	case SET_FROM:
 		start_position = Units::text_to_seconds(from_value->get_text(), 
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 		end_position = Units::text_to_seconds(to_value->get_text(), 
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 
 		if(end_position < start_position)
 		{
@@ -253,15 +253,15 @@ void ZoomBar::set_selection(int which_one)
 
 	case SET_TO:
 		start_position = Units::text_to_seconds(from_value->get_text(),
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 		end_position = Units::text_to_seconds(to_value->get_text(),
-			master_edl->session->sample_rate,
-			master_edl->session->time_format,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->sample_rate,
+			edlsession->time_format,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 
 		if(end_position < start_position)
 		{
@@ -534,8 +534,8 @@ void FromTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += master_edl->session->get_frame_offset();
-	master_edl->session->ptstotext(string, new_position);
+	new_position += edlsession->get_frame_offset();
+	edlsession->ptstotext(string, new_position);
 	update(string);
 }
 
@@ -562,7 +562,7 @@ void LengthTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	master_edl->session->ptstotext(string, new_position);
+	edlsession->ptstotext(string, new_position);
 	update(string);
 }
 
@@ -589,8 +589,8 @@ void ToTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += master_edl->session->get_frame_offset() /
-		master_edl->session->frame_rate;
-	master_edl->session->ptstotext(string, new_position);
+	new_position += edlsession->get_frame_offset() /
+		edlsession->frame_rate;
+	edlsession->ptstotext(string, new_position);
 	update(string);
 }

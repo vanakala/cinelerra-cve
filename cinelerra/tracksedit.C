@@ -131,8 +131,8 @@ void Tracks::copy_automation(ptstime selectionstart,
 
 	file->tag.set_title("AUTO_CLIPBOARD");
 	file->tag.set_property("LENGTH", selectionend - selectionstart);
-	file->tag.set_property("FRAMERATE", edl->session->frame_rate);
-	file->tag.set_property("SAMPLERATE", edl->session->sample_rate);
+	file->tag.set_property("FRAMERATE", edlsession->frame_rate);
+	file->tag.set_property("SAMPLERATE", edlsession->sample_rate);
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
@@ -529,8 +529,8 @@ void Tracks::paste_automation(ptstime selectionstart,
 	Track* current_vtrack = 0;
 	int result = 0;
 	ptstime length;
-	double frame_rate = edl->session->frame_rate;
-	int sample_rate = edl->session->sample_rate;
+	double frame_rate = edlsession->frame_rate;
+	int sample_rate = edlsession->sample_rate;
 	char string[BCTEXTLEN];
 	string[0] = 0;
 

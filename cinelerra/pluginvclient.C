@@ -33,18 +33,7 @@ PluginVClient::PluginVClient(PluginServer *server)
  : PluginClient(server)
 {
 	temp = 0;
-	if(server &&
-		server->edl &&
-		server->edl->session)
-	{
-		project_frame_rate = server->edl->session->frame_rate;
-		frame_rate = project_frame_rate;
-	}
-	else
-	{
-		project_frame_rate = 1.0;
-		frame_rate = project_frame_rate;
-	}
+	frame_rate = project_frame_rate = edlsession->frame_rate;
 	memset(input, 0, sizeof(VFrame *) * MAXCHANNELS);
 	memset(output, 0, sizeof(VFrame *) * MAXCHANNELS);
 }
@@ -96,9 +85,9 @@ VFrame* PluginVClient::get_temp()
 
 void PluginVClient::init_realtime_parameters()
 {
-	project_frame_rate = server->edl->session->frame_rate;
-	project_color_model = server->edl->session->color_model;
-	sample_aspect_ratio = server->edl->session->sample_aspect_ratio;
+	project_frame_rate = edlsession->frame_rate;
+	project_color_model = edlsession->color_model;
+	sample_aspect_ratio = edlsession->sample_aspect_ratio;
 }
 
 void PluginVClient::process_frame(VFrame **frame)

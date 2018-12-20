@@ -102,7 +102,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	if(mode & WUPD_CANVPICIGN) return;
 
 	int y = 0;
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	Track *track = edit->edits->track;
 
@@ -123,9 +123,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 			if(data_type == TRACK_AUDIO)
 			{
 				double asset_over_session = (double)edit->asset->sample_rate / 
-					master_edl->session->sample_rate;
+					edlsession->sample_rate;
 				if(index_zoom <=
-						master_edl->session->sample_rate *
+						edlsession->sample_rate *
 						master_edl->local_session->zoom_time *
 						asset_over_session)
 					need_redraw = 1;
@@ -343,7 +343,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 			master_edl->local_session->zoom_track + y);
 
 // Draw media
-	if(track->draw && master_edl->session->show_assets)
+	if(track->draw && edlsession->show_assets)
 	{
 		switch(track->data_type)
 		{
@@ -365,7 +365,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	}
 
 // Draw title
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		draw_title(edit, edit_x, edit_w, pixmap_x, pixmap_w);
 }
 
@@ -430,7 +430,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
 	if(w <= 0) return;
 	double asset_over_session = (double)edit->asset->sample_rate / 
-		master_edl->session->sample_rate;
+		edlsession->sample_rate;
 
 // Develop strategy for drawing
 	switch(edit->asset->index_status)
@@ -446,7 +446,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 			{
 				if(edit->asset->index_zoom > 
 					master_edl->local_session->zoom_time *
-					master_edl->session->sample_rate *
+					edlsession->sample_rate *
 					asset_over_session)
 				{
 					draw_audio_source(edit, x, w);
@@ -473,16 +473,16 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 	w++;
 	double asset_over_session = (double)edit->asset->sample_rate / 
-		master_edl->session->sample_rate;
+		edlsession->sample_rate;
 	int source_len = round(w * master_edl->local_session->zoom_time *
-		master_edl->session->sample_rate);
+		edlsession->sample_rate);
 	int center_pixel = master_edl->local_session->zoom_track / 2;
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
 // Single sample zoom
 	if(round(master_edl->local_session->zoom_time *
-		master_edl->session->sample_rate) == 1)
+		edlsession->sample_rate) == 1)
 	{
 		ptstime src_pts = (pixmap_x - edit_x + x)
 				* master_edl->local_session->zoom_time
@@ -493,7 +493,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
 			round(master_edl->local_session->zoom_time *
-				master_edl->session->sample_rate) +
+				edlsession->sample_rate) +
 			edit->track->to_units(edit->get_source_pts())) *
 			asset_over_session);
 		double oldsample, newsample;
@@ -544,12 +544,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 // Starting sample of pixel relative to asset rate.
 			samplenum source_start = (((pixmap_x - edit_x + x) * 
 				round(master_edl->local_session->zoom_time *
-					master_edl->session->sample_rate) +
+					edlsession->sample_rate) +
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
 			samplenum source_end = (((pixmap_x - edit_x + x + 1) * 
 				round(master_edl->local_session->zoom_time *
-					master_edl->session->sample_rate) +
+					edlsession->sample_rate) +
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
@@ -603,7 +603,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 void ResourcePixmap::draw_wave(int x, double high, double low)
 {
 	int top_pixel = 0;
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		top_pixel = mwindow->theme->get_image("title_bg_data")->get_h();
 	int center_pixel = master_edl->local_session->zoom_track / 2 + top_pixel;
 	int bottom_pixel = top_pixel + master_edl->local_session->zoom_track;
@@ -640,7 +640,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Current pixel relative to pixmap
 	int x = 0;
 	int y = 0;
-	if(master_edl->session->show_titles)
+	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 	double picons = ((double)(refresh_x + pixmap_x - edit_x) / picon_w);

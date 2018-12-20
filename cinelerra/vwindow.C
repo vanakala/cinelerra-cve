@@ -180,8 +180,8 @@ void VWindow::update(int options)
 {
 	if(options & WUPD_ACHANNELS)
 	{
-		gui->meters->set_meters(master_edl->session->audio_channels,
-			master_edl->session->vwindow_meter);
+		gui->meters->set_meters(edlsession->audio_channels,
+			edlsession->vwindow_meter);
 		gui->resize_event(gui->get_w(), gui->get_h());
 	}
 }

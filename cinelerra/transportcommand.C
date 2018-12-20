@@ -168,13 +168,13 @@ void TransportCommand::set_playback_range(int use_inout)
 	case SINGLE_FRAME_FWD:
 		start_position = edl->local_session->get_selectionstart(1);
 		end_position = start_position + 
-			1.0 / edl->session->frame_rate;
+			1.0 / edlsession->frame_rate;
 		break;
 
 	case SINGLE_FRAME_REWIND:
 		start_position = edl->local_session->get_selectionend(1);
 		end_position = start_position - 
-			1.0 / edl->session->frame_rate;
+			1.0 / edlsession->frame_rate;
 			break;
 	}
 

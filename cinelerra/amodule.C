@@ -62,7 +62,7 @@ AModule::AModule(RenderEngine *renderengine,
 	{
 		module_levels = new LevelHistory();
 		module_levels->reset(get_buffer_size(),
-			get_edl()->session->sample_rate, 1);
+			edlsession->sample_rate, 1);
 	}
 }
 
@@ -83,7 +83,7 @@ void AModule::reset()
 // Not needed in pluginarray
 	if(commonrender)
 		module_levels->reset(get_buffer_size(),
-			get_edl()->session->sample_rate, 1);
+			edlsession->sample_rate, 1);
 }
 
 int AModule::get_buffer_size()
@@ -111,7 +111,7 @@ int AModule::render(AFrame *aframe)
 // Clear buffer
 	aframe->length = 0;
 	aframe->clear_buffer();
-	aframe->samplerate = get_edl()->session->sample_rate;
+	aframe->samplerate = edlsession->sample_rate;
 	ptstime duration = aframe->get_source_duration();
 	ptstime end_projpts = start_projpts + duration;
 	ptstime sample_error = 0.8 / aframe->samplerate;

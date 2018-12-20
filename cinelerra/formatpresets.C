@@ -140,16 +140,16 @@ struct formatpresets *FormatPresets::find_preset(EDL *edl)
 		double ratio = (double)preset->aspect_w / preset->aspect_h *
 			preset->output_h / preset->output_w;
 
-		if(edl->session->audio_tracks == preset->audio_tracks &&
-			edl->session->audio_channels == preset->audio_channels &&
-			edl->session->sample_rate == preset->sample_rate &&
-			edl->session->video_tracks == preset->video_tracks &&
-			EQUIV(edl->session->frame_rate, preset->frame_rate) &&
-			edl->session->output_w == preset->output_w &&
-			edl->session->output_h == preset->output_h &&
-			EQUIV(edl->session->sample_aspect_ratio, ratio) &&
-			edl->session->interlace_mode == preset->interlace_mode &&
-			edl->session->color_model == preset->color_model)
+		if(edlsession->audio_tracks == preset->audio_tracks &&
+			edlsession->audio_channels == preset->audio_channels &&
+			edlsession->sample_rate == preset->sample_rate &&
+			edlsession->video_tracks == preset->video_tracks &&
+			EQUIV(edlsession->frame_rate, preset->frame_rate) &&
+			edlsession->output_w == preset->output_w &&
+			edlsession->output_h == preset->output_h &&
+			EQUIV(edlsession->sample_aspect_ratio, ratio) &&
+			edlsession->interlace_mode == preset->interlace_mode &&
+			edlsession->color_model == preset->color_model)
 		{
 			return preset;
 		}
@@ -174,7 +174,7 @@ void FormatPresets::set_edl(EDL *edl)
 
 void FormatPresets::update_edl(const char *preset)
 {
-	fill_preset_defaults(preset, current_edl->session);
+	fill_preset_defaults(preset, edlsession);
 	handle_event();
 }
 

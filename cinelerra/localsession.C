@@ -200,7 +200,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		track_start = file->tag.get_property("TRACK_START", track_start);
 		int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
 		if(zoom_sample)
-			zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
+			zoom_time = (ptstime)zoom_sample / edlsession->sample_rate;
 		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
 		zoom_time = ZoomPanel::adjust_zoom(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
 		int64_t view_start = file->tag.get_property("VIEW_START", (int64_t)0);
@@ -253,7 +253,7 @@ void LocalSession::load_defaults(BC_Hash *defaults)
 // For backwards compatibility
 	int64_t zoom_sample = defaults->get("ZOOM_SAMPLE", (int64_t)0);
 	if(zoom_sample)
-		zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
+		zoom_time = (ptstime)zoom_sample / edlsession->sample_rate;
 	else
 		zoom_time = DEFAULT_ZOOM_TIME;
 	zoom_time = defaults->get("ZOOM_TIME", zoom_time);

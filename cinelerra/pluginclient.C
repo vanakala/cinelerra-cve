@@ -271,8 +271,8 @@ void PluginClient::get_projector(double *x, double *y, double *z, ptstime postim
 
 EDLSession* PluginClient::get_edlsession()
 {
-	if(server->edl) 
-		return server->edl->session;
+	if(edlsession)
+		return edlsession;
 	return 0;
 }
 

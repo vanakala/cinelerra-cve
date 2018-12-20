@@ -44,8 +44,8 @@ int PanAuto::operator==(Auto &that)
 void PanAuto::rechannel()
 {
 	BC_Pan::stick_to_values(values,
-		edl->session->audio_channels, 
-		edl->session->achannel_positions, 
+		edlsession->audio_channels,
+		edlsession->achannel_positions,
 		handle_x, 
 		handle_y,
 		PAN_RADIUS,
@@ -57,7 +57,7 @@ void PanAuto::load(FileXML *file)
 	memset(values, 0, MAXCHANNELS * sizeof(float));
 	handle_x = file->tag.get_property("HANDLE_X", handle_x);
 	handle_y = file->tag.get_property("HANDLE_Y", handle_y);
-	for(int i = 0; i < edl->session->audio_channels; i++)
+	for(int i = 0; i < edlsession->audio_channels; i++)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "VALUE%d", i);
@@ -71,7 +71,7 @@ void PanAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->tag.set_property("POSTIME", pos_time - start);
 	file->tag.set_property("HANDLE_X", handle_x);
 	file->tag.set_property("HANDLE_Y", handle_y);
-	for(int i = 0; i < edl->session->audio_channels; i++)
+	for(int i = 0; i < edlsession->audio_channels; i++)
 	{
 		char  string[BCTEXTLEN];
 		sprintf(string, "VALUE%d", i);
@@ -99,7 +99,7 @@ void PanAuto::dump(int indent)
 	if(edl)
 	{
 		printf("%*svalues:", indent + 2, "");
-		for(int i = 0; i < edl->session->audio_channels; i++)
+		for(int i = 0; i < edlsession->audio_channels; i++)
 			printf(" %.1f", values[i]);
 		putchar('\n');
 	}

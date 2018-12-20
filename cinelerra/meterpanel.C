@@ -202,8 +202,8 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	y,
 	METER_VERT,
 	h,
-	master_edl->session->min_meter_db,
-	panel->use_recording ? 0 : master_edl->session->max_meter_db,
+	edlsession->min_meter_db,
+	panel->use_recording ? 0 : edlsession->max_meter_db,
 	titles)
 {
 	this->mwindow = mwindow;

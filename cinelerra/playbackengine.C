@@ -275,7 +275,7 @@ void PlaybackEngine::run()
 
 		default:
 			is_playing_back = 1;
-			double frame_len = 1.0 / command->get_edl()->session->frame_rate;
+			double frame_len = 1.0 / edlsession->frame_rate;
 
 			if(command->command == SINGLE_FRAME_FWD)
 				command->playbackstart = get_tracking_position() + frame_len;

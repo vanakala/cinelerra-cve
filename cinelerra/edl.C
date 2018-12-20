@@ -41,7 +41,6 @@
 #include "panautos.h"
 #include "playbackconfig.h"
 #include "plugin.h"
-#include "preferences.h"
 #include "sharedlocation.h"
 #include "theme.h"
 #include "tracks.h"
@@ -58,17 +57,14 @@ EDL::EDL(EDL *parent_edl)
 	id = next_id();
 	project_path[0] = 0;
 
+	if(!edlsession)
+		edlsession = new EDLSession(this);
+
 	tracks = new Tracks(this);
 	if(!parent_edl)
-	{
 		assets = new ArrayList<Asset*>;
-		session = new EDLSession(this);
-	}
 	else
-	{
 		assets = parent_edl->assets;
-		session = parent_edl->session;
-	}
 
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
@@ -87,10 +83,7 @@ EDL::~EDL()
 		delete local_session;
 
 	if(!parent_edl)
-	{
 		delete assets;
-		delete session;
-	}
 
 	clips.remove_all_objects();
 }
@@ -104,7 +97,7 @@ EDL& EDL::operator=(EDL &edl)
 void EDL::load_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
-		session->load_defaults(defaults);
+		edlsession->load_defaults(defaults);
 
 	local_session->load_defaults(defaults);
 }
@@ -112,23 +105,23 @@ void EDL::load_defaults(BC_Hash *defaults)
 void EDL::save_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
-		session->save_defaults(defaults);
+		edlsession->save_defaults(defaults);
 
 	local_session->save_defaults(defaults);
 }
 
 void EDL::boundaries()
 {
-	session->boundaries();
+	edlsession->boundaries();
 	local_session->boundaries();
 }
 
 void EDL::create_default_tracks()
 {
-	for(int i = 0; i < session->video_tracks; i++)
+	for(int i = 0; i < edlsession->video_tracks; i++)
 		tracks->add_video_track(0, 0);
 
-	for(int i = 0; i < session->audio_tracks; i++)
+	for(int i = 0; i < edlsession->audio_tracks; i++)
 		tracks->add_audio_track(0, 0);
 }
 
@@ -201,14 +194,14 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				{
 					if((load_flags & LOAD_VCONFIG) &&
 						(load_flags & LOAD_SESSION))
-						session->load_video_config(file, 0, load_flags);
+						edlsession->load_video_config(file, 0, load_flags);
 				}
 				else
 				if(file->tag.title_is("AUDIO"))
 				{
 					if((load_flags & LOAD_ACONFIG) &&
 						(load_flags & LOAD_SESSION))
-						session->load_audio_config(file, 0, load_flags);
+						edlsession->load_audio_config(file, 0, load_flags);
 				}
 				else
 				if(file->tag.title_is("ASSETS"))
@@ -234,7 +227,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				{
 					if((load_flags & LOAD_SESSION) &&
 						!parent_edl)
-						session->load_xml(file, 0, load_flags);
+						edlsession->load_xml(file, 0, load_flags);
 				}
 				else
 				if(file->tag.title_is("TRACK"))
@@ -290,7 +283,6 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 void EDL::copy_all(EDL *edl)
 {
-	copy_session(edl);
 	copy_assets(edl);
 	copy_clips(edl);
 	tracks->copy_from(edl->tracks);
@@ -320,11 +312,6 @@ void EDL::copy_session(EDL *edl, int session_only)
 	if(!session_only)
 	{
 		strcpy(this->project_path, edl->project_path);
-	}
-
-	if(!parent_edl)
-	{
-		session->copy(edl->session);
 	}
 
 	if(!session_only)
@@ -424,9 +411,9 @@ void EDL::copy(ptstime start,
 // Top level stuff.
 // Need to copy all this from child EDL if pasting is desired.
 // Session
-	session->save_xml(file);
-	session->save_video_config(file);
-	session->save_audio_config(file);
+	edlsession->save_xml(file);
+	edlsession->save_video_config(file);
+	edlsession->save_audio_config(file);
 
 // Media
 // Don't replicate all assets for every clip.
@@ -530,10 +517,10 @@ int EDL::equivalent(ptstime position1, ptstime position2)
 {
 	ptstime threshold;
 
-	if(session->cursor_on_frames) 
-		threshold = (double).5 / session->frame_rate;
+	if(edlsession->cursor_on_frames)
+		threshold = (double).5 / edlsession->frame_rate;
 	else
-		threshold = (double)1 / session->sample_rate;
+		threshold = (double)1 / edlsession->sample_rate;
 
 	if(fabs(position2 - position1) < threshold)
 		return 1;
@@ -544,7 +531,6 @@ int EDL::equivalent(ptstime position1, ptstime position2)
 double EDL::equivalent_output(EDL *edl)
 {
 	double result = -1;
-	session->equivalent_output(edl->session, &result);
 	tracks->equivalent_output(edl->tracks, &result);
 	return result;
 }
@@ -758,13 +744,13 @@ int EDL::get_tracks_height(Theme *theme)
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(double &w, double &h)
 {
-	w = session->output_w * session->sample_aspect_ratio;
-	h = session->output_h;
+	w = edlsession->output_w * edlsession->sample_aspect_ratio;
+	h = edlsession->output_h;
 }
 
 double EDL::get_sample_aspect_ratio()
 {
-	return session->sample_aspect_ratio;
+	return edlsession->sample_aspect_ratio;
 }
 
 void EDL::dump(int indent)
@@ -775,7 +761,7 @@ void EDL::dump(int indent)
 		printf("%*sEDL %p dump:\n", indent, "", this);
 	local_session->dump(indent + 2);
 	indent += 2;
-	session->dump(indent + 1);
+	edlsession->dump(indent + 1);
 
 	printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
 
@@ -821,16 +807,16 @@ void EDL::insert_asset(Asset *asset,
 
 	if(asset->single_image)
 	{
-		if(session->si_useduration)
-			length = session->si_duration;
+		if(edlsession->si_useduration)
+			length = edlsession->si_duration;
 		else
-			length = 1.0 / session->frame_rate; 
+			length = 1.0 / edlsession->frame_rate;
 	}
 	else
 		if(asset->frame_rate > 0)
 			length = ((double)asset->video_length / asset->frame_rate);
 		else
-			length = 1.0 / session->frame_rate;
+			length = 1.0 / edlsession->frame_rate;
 
 	for(; current && vtrack < asset->layers;
 		current = NEXT)
@@ -924,10 +910,10 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 {
 	ptstime temp;
 // Seconds -> Frames/samples
-	if(session->cursor_on_frames)
-		temp = position * session->frame_rate;
+	if(edlsession->cursor_on_frames)
+		temp = position * edlsession->frame_rate;
 	else
-		temp = position * session->sample_rate;
+		temp = position * edlsession->sample_rate;
 
 	if(roundit)
 		temp = round(temp);
@@ -935,10 +921,10 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 		temp = nearbyint(temp);
 
 // Frames/samples -> Seconds
-	if(session->cursor_on_frames)
-		temp /= session->frame_rate;
+	if(edlsession->cursor_on_frames)
+		temp /= edlsession->frame_rate;
 	else
-		temp /= session->sample_rate;
+		temp /= edlsession->sample_rate;
 
 	return temp;
 }
@@ -950,8 +936,8 @@ void EDL::finalize_edl(int load_mode)
 	int no_track = 0;
 
 // There are no tracks created
-	session->video_tracks = 0;
-	session->audio_tracks = 0;
+	edlsession->video_tracks = 0;
+	edlsession->audio_tracks = 0;
 
 	for(int i = 0; i < assets->total; i++)
 	{
@@ -971,11 +957,11 @@ void EDL::finalize_edl(int load_mode)
 		if(load_mode == LOADMODE_REPLACE_CONCATENATE ||
 			load_mode == LOADMODE_CONCATENATE)
 		{
-			track_length = tracks->total_length_framealigned(session->frame_rate);
+			track_length = tracks->total_length_framealigned(edlsession->frame_rate);
 			no_track = i;
 			if(i)
 			{
-				if(session->cursor_on_frames)
+				if(edlsession->cursor_on_frames)
 					tracks->clear(track_length, tracks->total_length() + 100, 1);
 			}
 		}
@@ -984,7 +970,7 @@ void EDL::finalize_edl(int load_mode)
 
 		if(!no_track && new_asset->video_data)
 		{
-			session->video_tracks += new_asset->layers;
+			edlsession->video_tracks += new_asset->layers;
 
 			for(int k = 0; k < new_asset->layers; k++)
 			{
@@ -996,7 +982,7 @@ void EDL::finalize_edl(int load_mode)
 
 		if(!no_track && new_asset->audio_data)
 		{
-			session->audio_tracks += new_asset->channels;
+			edlsession->audio_tracks += new_asset->channels;
 
 			for(int k = 0; k < new_asset->channels; k++)
 			{
@@ -1009,9 +995,9 @@ void EDL::finalize_edl(int load_mode)
 	}
 
 // Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
-	if(session->cursor_on_frames)
+	if(edlsession->cursor_on_frames)
 	{
-		track_length = tracks->total_length_framealigned(session->frame_rate);
+		track_length = tracks->total_length_framealigned(edlsession->frame_rate);
 		tracks->clear(track_length, tracks->total_length() + 100, 1);
 	}
 }

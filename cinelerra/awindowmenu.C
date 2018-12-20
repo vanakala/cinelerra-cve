@@ -56,24 +56,24 @@ AssetListFormat::AssetListFormat(MWindow *mwindow)
 
 void AssetListFormat::update()
 {
-	set_text(master_edl->session->assetlist_format == ASSETS_TEXT ?
+	set_text(edlsession->assetlist_format == ASSETS_TEXT ?
 		_("Display icons") : _("Display text"));
 }
 
 int AssetListFormat::handle_event()
 {
-	switch(master_edl->session->assetlist_format)
+	switch(edlsession->assetlist_format)
 	{
 	case ASSETS_TEXT:
-		master_edl->session->assetlist_format = ASSETS_ICONS;
+		edlsession->assetlist_format = ASSETS_ICONS;
 		break;
 	case ASSETS_ICONS:
-		master_edl->session->assetlist_format = ASSETS_TEXT;
+		edlsession->assetlist_format = ASSETS_TEXT;
 		break;
 	}
 
 	mwindow->awindow->gui->asset_list->update_format(
-		master_edl->session->assetlist_format == ASSETS_ICONS ?
+		edlsession->assetlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0,
 		1);
 
@@ -109,7 +109,7 @@ FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
 
 void FolderListMenu::update_titles()
 {
-	format->set_text(master_edl->session->folderlist_format == ASSETS_TEXT ?
+	format->set_text(edlsession->folderlist_format == ASSETS_TEXT ?
 		_("Display icons") : _("Display text"));
 }
 
@@ -123,18 +123,18 @@ FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
 
 int FolderListFormat::handle_event()
 {
-	switch(master_edl->session->folderlist_format)
+	switch(edlsession->folderlist_format)
 	{
 	case ASSETS_TEXT:
-		master_edl->session->folderlist_format = ASSETS_ICONS;
+		edlsession->folderlist_format = ASSETS_ICONS;
 		break;
 	case ASSETS_ICONS:
-		master_edl->session->folderlist_format = ASSETS_TEXT;
+		edlsession->folderlist_format = ASSETS_TEXT;
 		break;
 	}
 
 	mwindow->awindow->gui->folder_list->update_format(
-		master_edl->session->folderlist_format == ASSETS_ICONS ?
+		edlsession->folderlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0, 1);
 	menu->update_titles();
 

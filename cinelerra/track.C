@@ -59,8 +59,8 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	record = 1;
 	play = 1;
 	nudge = 0;
-	track_w = edl->session->output_w;
-	track_h = edl->session->output_h;
+	track_w = edlsession->output_w;
+	track_h = edlsession->output_h;
 	one_unit = (ptstime) 1 / 48000;
 	edits = new Edits(edl, this);
 	id = EDL::next_id();
@@ -203,7 +203,7 @@ int Track::vertical_span(Theme *theme)
 	else
 		result = edl->local_session->zoom_track;
 
-	if(edl->session->show_titles)
+	if(edlsession->show_titles)
 		result += theme->get_image("title_bg_data")->get_h();
 
 	return result;
@@ -735,7 +735,7 @@ void Track::copy_automation(ptstime selectionstart,
 
 	automation->copy(selectionstart, selectionend, file);
 
-	if(edl->session->auto_conf->plugins)
+	if(edlsession->auto_conf->plugins)
 	{
 		file->tag.set_title("PLUGINSETS");
 		file->append_tag();
@@ -770,9 +770,9 @@ void Track::paste_automation(ptstime selectionstart,
 	double scale;
 
 	if(data_type == TRACK_AUDIO)
-		scale = edl->session->sample_rate / sample_rate;
+		scale = edlsession->sample_rate / sample_rate;
 	else
-		scale = edl->session->frame_rate / frame_rate;
+		scale = edlsession->frame_rate / frame_rate;
 
 	total_length *= scale;
 	result = 0;
@@ -811,9 +811,9 @@ void Track::clear_automation(ptstime selectionstart,
 	int shift_autos,
 	int default_only)
 {
-	automation->clear(selectionstart, selectionend, edl->session->auto_conf, 0);
+	automation->clear(selectionstart, selectionend, edlsession->auto_conf, 0);
 
-	if(edl->session->auto_conf->plugins)
+	if(edlsession->auto_conf->plugins)
 	{
 		for(int i = 0; i < plugin_set.total; i++)
 		{
@@ -825,7 +825,7 @@ void Track::clear_automation(ptstime selectionstart,
 
 void Track::straighten_automation(ptstime selectionstart, ptstime selectionend)
 {
-	automation->straighten(selectionstart, selectionend, edl->session->auto_conf);
+	automation->straighten(selectionstart, selectionend, edlsession->auto_conf);
 }
 
 

@@ -96,7 +96,7 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	const char *pfname;
 	char path[BCTEXTLEN];
 
-	master_edl->session->configuration_path(RENDERCONFIG_DIR, path);
+	edlsession->configuration_path(RENDERCONFIG_DIR, path);
 	RenderProfile::chk_profile_dir(path);
 	asset->set_renderprofile(path, profile_name);
 	RenderProfile::chk_profile_dir(asset->renderprofile_path);
@@ -334,8 +334,8 @@ void MenuEffectThread::run()
 
 // Close plugin.
 			plugin->save_data(&plugin_data);
-			default_asset->sample_rate = master_edl->session->sample_rate;
-			default_asset->frame_rate = master_edl->session->frame_rate;
+			default_asset->sample_rate = edlsession->sample_rate;
+			default_asset->frame_rate = edlsession->frame_rate;
 			realtime = 1;
 		}
 		else
@@ -363,8 +363,8 @@ void MenuEffectThread::run()
 		delete plugin;
 
 // Should take from first recordable track
-		default_asset->width = master_edl->session->output_w;
-		default_asset->height = master_edl->session->output_h;
+		default_asset->width = edlsession->output_w;
+		default_asset->height = edlsession->output_h;
 		default_asset->init_streams();
 	}
 

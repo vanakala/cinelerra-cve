@@ -111,7 +111,7 @@ int VirtualAConsole::process_buffer(int len,
 			VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 			output_temp->init_aframe(start_postime + node->track->nudge, len);
 			output_temp->source_length = len;
-			output_temp->samplerate = renderengine->edl->session->sample_rate;
+			output_temp->samplerate = edlsession->sample_rate;
 			output_temp->channel = i;
 			node->render(output_temp);
 		}
@@ -126,7 +126,7 @@ int VirtualAConsole::process_buffer(int len,
 			{
 				current_aframe->init_aframe(start_postime, len);
 				current_aframe->length = len;
-				current_aframe->samplerate = renderengine->edl->session->sample_rate;
+				current_aframe->samplerate = edlsession->sample_rate;
 				current_aframe->duration = (ptstime)len / output_temp->samplerate;
 			}
 		}
@@ -147,7 +147,7 @@ int VirtualAConsole::process_buffer(int len,
 		int k;
 		double *audio_buf[MAX_CHANNELS];
 		double **in_process;
-		int audio_channels = renderengine->edl->session->audio_channels;
+		int audio_channels = edlsession->audio_channels;
 		int direction = renderengine->command->get_direction();
 		float speed = renderengine->command->get_speed();
 

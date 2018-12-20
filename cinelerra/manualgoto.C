@@ -58,7 +58,7 @@ void ManualGoto::open_window()
 		(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
 		position = master_edl->local_session->get_selectionstart(1) +
-			master_edl->session->get_frame_offset();
+			edlsession->get_frame_offset();
 		icon_image = mwindow->theme->get_image("mwindow_icon");
 	}
 	else
@@ -105,7 +105,7 @@ void ManualGoto::run()
 				break;
 			}
 			new_position = master_edl->align_to_frame(new_position) -
-				master_edl->session->get_frame_offset();
+				edlsession->get_frame_offset();
 			if (new_position < 0) 
 				new_position = 0;
 			if (!PTSEQU(current_position, new_position))
@@ -173,7 +173,7 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 	this->thread = thread;
 	numboxes = 0;
 
-	timeformat = master_edl->session->time_format;
+	timeformat = edlsession->time_format;
 
 	switch(timeformat)
 	{
@@ -200,7 +200,7 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 		htxt = _("   Feet frames");
 		break;
 	}
-	master_edl->session->ptstotext(timestring, (ptstime)0);
+	edlsession->ptstotext(timestring, (ptstime)0);
 	numboxes = split_timestr(timestring);
 
 	set_icon(thread->icon_image);
@@ -237,10 +237,10 @@ ptstime ManualGotoWindow::get_entered_position_sec()
 	}
 	*--p = 0;
 	return Units::text_to_seconds(timestring,
-		master_edl->session->sample_rate,
+		edlsession->sample_rate,
 		timeformat,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+		edlsession->frame_rate,
+		edlsession->frames_per_foot);
 }
 
 int ManualGotoWindow::split_timestr(char *timestr)
@@ -271,9 +271,9 @@ void ManualGotoWindow::set_entered_position_sec(ptstime position)
 	Units::totext(timestring,
 		position,
 		timeformat,
-		master_edl->session->sample_rate,
-		master_edl->session->frame_rate,
-		master_edl->session->frames_per_foot);
+		edlsession->sample_rate,
+		edlsession->frame_rate,
+		edlsession->frames_per_foot);
 	split_timestr(timestring);
 
 	for(i = 0; i < numboxes; i++)

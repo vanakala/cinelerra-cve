@@ -134,20 +134,20 @@ void MWindow::asset_to_size()
 		w = mainsession->drag_assets->values[0]->width;
 		h = mainsession->drag_assets->values[0]->height;
 
-		master_edl->session->output_w = w;
-		master_edl->session->output_h = h;
+		edlsession->output_w = w;
+		edlsession->output_h = h;
 
-		if(((master_edl->session->output_w % 4) ||
-			(master_edl->session->output_h % 4)) &&
-			master_edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+		if(((edlsession->output_w % 4) ||
+			(edlsession->output_h % 4)) &&
+			edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 		{
 			errormsg(_("This project's dimensions are not multiples of 4 so\n"
 				"it can't be rendered by OpenGL."));
 		}
 
-		master_edl->session->sample_aspect_ratio =
+		edlsession->sample_aspect_ratio =
 			mainsession->drag_assets->values[0]->sample_aspect_ratio;
-		AspectRatioSelection::limits(&master_edl->session->sample_aspect_ratio);
+		AspectRatioSelection::limits(&edlsession->sample_aspect_ratio);
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);
@@ -161,10 +161,10 @@ void MWindow::asset_to_rate()
 	if(mainsession->drag_assets->total &&
 		mainsession->drag_assets->values[0]->video_data)
 	{
-		if(EQUIV(master_edl->session->frame_rate, mainsession->drag_assets->values[0]->frame_rate))
+		if(EQUIV(edlsession->frame_rate, mainsession->drag_assets->values[0]->frame_rate))
 			return;
 
-		master_edl->session->frame_rate = mainsession->drag_assets->values[0]->frame_rate;
+		edlsession->frame_rate = mainsession->drag_assets->values[0]->frame_rate;
 
 		save_backup();
 
@@ -200,7 +200,7 @@ void MWindow::clear(int clear_handle)
 	{
 		master_edl->clear(start,
 			end, 
-			master_edl->session->edit_actions());
+			edlsession->edit_actions());
 	}
 }
 
@@ -256,7 +256,7 @@ void MWindow::clear_labels(ptstime start, ptstime end)
 
 void MWindow::concatenate_tracks()
 {
-	master_edl->tracks->concatenate_tracks(master_edl->session->plugins_follow_edits);
+	master_edl->tracks->concatenate_tracks(edlsession->plugins_follow_edits);
 	save_backup();
 	undo->update_undo(_("concatenate tracks"), LOAD_EDITS);
 
@@ -310,36 +310,36 @@ void MWindow::copy_automation()
 void MWindow::crop_video()
 {
 // Clamp EDL crop region
-	if(master_edl->session->crop_x1 > master_edl->session->crop_x2)
+	if(edlsession->crop_x1 > edlsession->crop_x2)
 	{
-		master_edl->session->crop_x1 ^= master_edl->session->crop_x2;
-		master_edl->session->crop_x2 ^= master_edl->session->crop_x1;
-		master_edl->session->crop_x1 ^= master_edl->session->crop_x2;
+		edlsession->crop_x1 ^= edlsession->crop_x2;
+		edlsession->crop_x2 ^= edlsession->crop_x1;
+		edlsession->crop_x1 ^= edlsession->crop_x2;
 	}
-	if(master_edl->session->crop_y1 > master_edl->session->crop_y2)
+	if(edlsession->crop_y1 > edlsession->crop_y2)
 	{
-		master_edl->session->crop_y1 ^= master_edl->session->crop_y2;
-		master_edl->session->crop_y2 ^= master_edl->session->crop_y1;
-		master_edl->session->crop_y1 ^= master_edl->session->crop_y2;
+		edlsession->crop_y1 ^= edlsession->crop_y2;
+		edlsession->crop_y2 ^= edlsession->crop_y1;
+		edlsession->crop_y1 ^= edlsession->crop_y2;
 	}
 
-	float old_projector_x = (float)master_edl->session->output_w / 2;
-	float old_projector_y = (float)master_edl->session->output_h / 2;
-	float new_projector_x = (float)(master_edl->session->crop_x1 +
-		master_edl->session->crop_x2) / 2;
-	float new_projector_y = (float)(master_edl->session->crop_y1 +
-		master_edl->session->crop_y2) / 2;
+	float old_projector_x = (float)edlsession->output_w / 2;
+	float old_projector_y = (float)edlsession->output_h / 2;
+	float new_projector_x = (float)(edlsession->crop_x1 +
+		edlsession->crop_x2) / 2;
+	float new_projector_y = (float)(edlsession->crop_y1 +
+		edlsession->crop_y2) / 2;
 	float projector_offset_x = -(new_projector_x - old_projector_x);
 	float projector_offset_y = -(new_projector_y - old_projector_y);
 
 	master_edl->tracks->translate_projector(projector_offset_x, projector_offset_y);
 
-	master_edl->session->output_w = master_edl->session->crop_x2 - master_edl->session->crop_x1;
-	master_edl->session->output_h = master_edl->session->crop_y2 - master_edl->session->crop_y1;
-	master_edl->session->crop_x1 = 0;
-	master_edl->session->crop_y1 = 0;
-	master_edl->session->crop_x2 = master_edl->session->output_w;
-	master_edl->session->crop_y2 = master_edl->session->output_h;
+	edlsession->output_w = edlsession->crop_x2 - edlsession->crop_x1;
+	edlsession->output_h = edlsession->crop_y2 - edlsession->crop_y1;
+	edlsession->crop_x1 = 0;
+	edlsession->crop_y1 = 0;
+	edlsession->crop_x2 = edlsession->output_w;
+	edlsession->crop_y2 = edlsession->output_h;
 
 	undo->update_undo(_("crop"), LOAD_ALL);
 
@@ -356,7 +356,7 @@ void MWindow::cut()
 	copy(start, end);
 	master_edl->clear(start,
 		end,
-		master_edl->session->edit_actions());
+		edlsession->edit_actions());
 
 	master_edl->optimize();
 	save_backup();
@@ -459,8 +459,8 @@ void MWindow::insert(ptstime position,
 	new_edls.append(&edl);
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
-	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
-	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
+	if(!edlsession->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
+	if(!edlsession->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
 
 	edl.load_xml(file, load_flags);
 
@@ -567,8 +567,8 @@ void MWindow::modify_edithandles(void)
 	master_edl->modify_edithandles(mainsession->drag_start,
 		mainsession->drag_position,
 		mainsession->drag_handle,
-		master_edl->session->edit_handle_mode[mainsession->drag_button],
-		master_edl->session->edit_actions());
+		edlsession->edit_handle_mode[mainsession->drag_button],
+		edlsession->edit_actions());
 
 	finish_modify_handles();
 }
@@ -578,8 +578,8 @@ void MWindow::modify_pluginhandles()
 	master_edl->modify_pluginhandles(mainsession->drag_start,
 		mainsession->drag_position,
 		mainsession->drag_handle,
-		master_edl->session->edit_handle_mode[mainsession->drag_button],
-		master_edl->session->labels_follow_edits);
+		edlsession->edit_handle_mode[mainsession->drag_button],
+		edlsession->labels_follow_edits);
 
 	finish_modify_handles();
 }
@@ -587,7 +587,7 @@ void MWindow::modify_pluginhandles()
 // Common to edithandles and plugin handles
 void MWindow::finish_modify_handles()
 {
-	int edit_mode = master_edl->session->edit_handle_mode[mainsession->drag_button];
+	int edit_mode = edlsession->edit_handle_mode[mainsession->drag_button];
 
 	if(edit_mode != MOVE_NO_EDITS)
 		master_edl->local_session->set_selection(mainsession->drag_position);
@@ -609,8 +609,8 @@ void MWindow::finish_modify_handles()
 
 void MWindow::match_output_size(Track *track)
 {
-	track->track_w = master_edl->session->output_w;
-	track->track_h = master_edl->session->output_h;
+	track->track_w = edlsession->output_w;
+	track->track_h = edlsession->output_h;
 	save_backup();
 	undo->update_undo(_("match output size"), LOAD_ALL);
 
@@ -735,10 +735,10 @@ void MWindow::mute_selection()
 	{
 		master_edl->clear(start,
 			end, 
-			master_edl->session->plugins_follow_edits ? EDIT_PLUGINS : 0);
+			edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
 		master_edl->local_session->set_selectionend(end);
 		master_edl->local_session->set_selectionstart(start);
-		master_edl->paste_silence(start, end, 0, master_edl->session->plugins_follow_edits);
+		master_edl->paste_silence(start, end, 0, edlsession->plugins_follow_edits);
 		save_backup();
 		undo->update_undo(_("mute"), LOAD_EDITS);
 
@@ -837,7 +837,7 @@ void MWindow::paste()
 
 		insert(start, 
 			&file, 
-			master_edl->session->edit_actions());
+			edlsession->edit_actions());
 		master_edl->optimize();
 		delete [] string;
 
@@ -863,7 +863,7 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			position, 
 			LOADMODE_PASTE,
 			dest_track, 
-			master_edl->session->edit_actions(),
+			edlsession->edit_actions(),
 			overwrite);
 		result = 1;
 	}
@@ -874,7 +874,7 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			LOADMODE_PASTE, 
 			dest_track,
 			position, 
-			master_edl->session->edit_actions(),
+			edlsession->edit_actions(),
 			overwrite); // o
 		result = 1;
 	}
@@ -1019,7 +1019,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 					master_edl->tracks->add_audio_track(0, 0);
 					destination_tracks.append(master_edl->tracks->last);
 				}
-				master_edl->session->highlighted_track =
+				edlsession->highlighted_track =
 					master_edl->tracks->total() - 1;
 			}
 
@@ -1035,7 +1035,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
-		if(load_mode == LOADMODE_PASTE && master_edl->session->labels_follow_edits)
+		if(load_mode == LOADMODE_PASTE && edlsession->labels_follow_edits)
 			master_edl->labels->clear(
 				master_edl->local_session->get_selectionstart(),
 				master_edl->local_session->get_selectionend(), 1);
@@ -1208,8 +1208,8 @@ void MWindow::paste_silence()
 	ptstime end = master_edl->local_session->get_selectionend();
 	master_edl->paste_silence(start,
 		end, 
-		master_edl->session->labels_follow_edits,
-		master_edl->session->plugins_follow_edits);
+		edlsession->labels_follow_edits,
+		edlsession->plugins_follow_edits);
 	master_edl->optimize();
 	save_backup();
 	undo->update_undo(_("silence"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -1227,9 +1227,9 @@ void MWindow::paste_transition()
 // Only the first transition gets dropped.
 	PluginServer *server = mainsession->drag_pluginservers->values[0];
 	if(server->audio)
-		strcpy(master_edl->session->default_atransition, server->title);
+		strcpy(edlsession->default_atransition, server->title);
 	else
-		strcpy(master_edl->session->default_vtransition, server->title);
+		strcpy(edlsession->default_vtransition, server->title);
 
 	master_edl->tracks->paste_transition(server, mainsession->edit_highlighted);
 	save_backup();
@@ -1252,12 +1252,12 @@ void MWindow::paste_transition_cwindow(Track *dest_track)
 
 void MWindow::paste_audio_transition()
 {
-	PluginServer *server = scan_plugindb(master_edl->session->default_atransition,
+	PluginServer *server = scan_plugindb(edlsession->default_atransition,
 		TRACK_AUDIO);
 	if(!server)
 	{
 		gui->show_message(_("No default transition '%s' found."),
-			master_edl->session->default_atransition);
+			edlsession->default_atransition);
 		return;
 	}
 
@@ -1271,12 +1271,12 @@ void MWindow::paste_audio_transition()
 
 void MWindow::paste_video_transition()
 {
-	PluginServer *server = scan_plugindb(master_edl->session->default_vtransition,
+	PluginServer *server = scan_plugindb(edlsession->default_vtransition,
 		TRACK_VIDEO);
 	if(!server)
 	{
 		gui->show_message(_("No default transition '%s' found."),
-			master_edl->session->default_vtransition);
+			edlsession->default_vtransition);
 		return;
 	}
 
@@ -1450,7 +1450,7 @@ void MWindow::splice(EDL *source)
 	paste(start, 
 		start, 
 		&file,
-		master_edl->session->edit_actions());
+		edlsession->edit_actions());
 
 // Position at end of clip
 	master_edl->local_session->set_selection(start + source_end - source_start);
@@ -1493,7 +1493,7 @@ void MWindow::to_clip()
 	new_edl->load_xml(&file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
 	char string[BCTEXTLEN];
-	master_edl->session->ptstotext(string, end - start);
+	edlsession->ptstotext(string, end - start);
 
 	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
 
@@ -1574,7 +1574,7 @@ void MWindow::trim_selection()
 {
 	master_edl->trim_selection(master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend(),
-		master_edl->session->edit_actions());
+		edlsession->edit_actions());
 
 	save_backup();
 	undo->update_undo(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -1671,8 +1671,8 @@ void MWindow::map_audio(int pattern)
 			}
 
 			BC_Pan::calculate_stick_position(
-				master_edl->session->audio_channels,
-				master_edl->session->achannel_positions,
+				edlsession->audio_channels,
+				edlsession->achannel_positions,
 				pan_auto->values, 
 				MAX_PAN, 
 				PAN_RADIUS,
@@ -1681,7 +1681,7 @@ void MWindow::map_audio(int pattern)
 
 			current_channel++;
 			current_track++;
-			if(current_channel >= master_edl->session->audio_channels)
+			if(current_channel >= edlsession->audio_channels)
 				current_channel = 0;
 		}
 	}

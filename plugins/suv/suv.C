@@ -654,11 +654,11 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cstatus_x = 420;
 		cstatus_y = mainsession->cwindow_h -
 			get_image("cwindow_active")->get_h() - 30;
-		if(master_edl->session->cwindow_meter)
+		if(edlsession->cwindow_meter)
 		{
 			cmeter_x = mainsession->cwindow_w -
-				MeterPanel::get_meters_width(master_edl->session->audio_channels,
-					master_edl->session->cwindow_meter);
+				MeterPanel::get_meters_width(edlsession->audio_channels,
+					edlsession->cwindow_meter);
 			ccanvas_w = cmeter_x - ccanvas_x - 5;
 		}
 		else
@@ -717,12 +717,12 @@ void SUV::get_vwindow_sizes(VWindowGUI *gui)
 	vcanvas_y = 0;
 	vcanvas_h = mainsession->vwindow_h - get_image("vbuttons_left")->get_h();
 
-	if(master_edl->session->vwindow_meter)
+	if(edlsession->vwindow_meter)
 	{
 		vmeter_x = mainsession->vwindow_w -
 			VWINDOW_METER_MARGIN - 
-			MeterPanel::get_meters_width(master_edl->session->audio_channels,
-			master_edl->session->vwindow_meter);
+			MeterPanel::get_meters_width(edlsession->audio_channels,
+			edlsession->vwindow_meter);
 		vcanvas_w = vmeter_x - vcanvas_x - VWINDOW_METER_MARGIN;
 	}
 	else
@@ -871,7 +871,7 @@ void SUV::draw_cwindow_bg(CWindowGUI *gui)
 	const int button_division = 450;
 	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
 	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
-	if(master_edl->session->cwindow_meter)
+	if(edlsession->cwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
@@ -899,7 +899,7 @@ void SUV::draw_vwindow_bg(VWindowGUI *gui)
 		vcanvas_h, 
 		button_division, 
 		get_image("vbuttons_left"));
-	if(master_edl->session->vwindow_meter)
+	if(edlsession->vwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 

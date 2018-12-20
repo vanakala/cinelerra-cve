@@ -174,7 +174,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	swr_ctx = 0;
 	tocfile = 0;
 	stream_pipe = 0;
-	if(mwindow_global && master_edl->session->show_avlibsmsgs)
+	if(mwindow_global && edlsession->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
 	else
 		av_log_set_level(AV_LOG_QUIET);
@@ -2886,19 +2886,19 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		if(!asset->encoder_parameters[FILEAVLIBS_METADT_IX])
 			asset->encoder_parameters[FILEAVLIBS_METADT_IX] = new Paramlist("metadata");
 		list = asset->encoder_parameters[FILEAVLIBS_METADT_IX];
-		if(master_edl->session->metadata_copyright[0])
-			list->set("copyright", master_edl->session->metadata_copyright);
+		if(edlsession->metadata_copyright[0])
+			list->set("copyright", edlsession->metadata_copyright);
 		else
 			list->remove_param("copyright");
-		if(master_edl->session->metadata_title[0])
-			list->set("title", master_edl->session->metadata_title);
+		if(edlsession->metadata_title[0])
+			list->set("title", edlsession->metadata_title);
 		else
 			list->remove_param("title");
-		if(master_edl->session->metadata_author[0])
-			list->set("author", master_edl->session->metadata_author);
+		if(edlsession->metadata_author[0])
+			list->set("author", edlsession->metadata_author);
 		else
 			list->remove_param("author");
-		if(master_edl->session->experimental_codecs)
+		if(edlsession->experimental_codecs)
 			list->set("strict", "-2");
 		else
 			list->remove_param("strict");
@@ -3289,7 +3289,7 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 			return;
 		if(codecs->find(encoder->name))
 			return;
-		if(!master_edl->session->experimental_codecs &&
+		if(!edlsession->experimental_codecs &&
 				encoder->capabilities & AV_CODEC_CAP_EXPERIMENTAL)
 			return;
 		param = codecs->append_param(encoder->name, codec_id);

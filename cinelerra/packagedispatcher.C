@@ -116,8 +116,8 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		else
 		{
 			package_len = preferences->brender_fragment /
-				edl->session->frame_rate;
-			min_package_len = 1.0 / edl->session->frame_rate;
+				edlsession->frame_rate;
+			min_package_len = 1.0 / edlsession->frame_rate;
 		}
 	}
 	else

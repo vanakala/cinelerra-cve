@@ -93,21 +93,21 @@ void New::create_new_project()
 
 	mwindow->reset_caches();
 
-	memcpy(new_edl->session->achannel_positions,
+	memcpy(edlsession->achannel_positions,
 		&mwindow->preferences->channel_positions[
-			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
+			MAXCHANNELS * (edlsession->audio_channels - 1)],
 		sizeof(int) * MAXCHANNELS);
-	if(SampleRateSelection::limits(&new_edl->session->sample_rate) < 0)
+	if(SampleRateSelection::limits(&edlsession->sample_rate) < 0)
 		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
-	if(FrameRateSelection::limits(&new_edl->session->frame_rate) < 0)
+	if(FrameRateSelection::limits(&edlsession->frame_rate) < 0)
 		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_FRAME_RATE, MAX_FRAME_RATE);
-	if(FrameSizeSelection::limits(&new_edl->session->output_w,
-			&new_edl->session->output_h) < 0)
+	if(FrameSizeSelection::limits(&edlsession->output_w,
+			&edlsession->output_h) < 0)
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
-	new_edl->session->boundaries();
+	edlsession->boundaries();
 	new_edl->create_default_tracks();
 
 	mwindow->set_filename("");
@@ -226,7 +226,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
 	x1 += 100;
 	add_subwindow(sample_rate = new SampleRateSelection(x1, y, this,
-		&new_edl->session->sample_rate));
+		&edlsession->sample_rate));
 
 	x += 250;
 	y = y1;
@@ -244,7 +244,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	add_subwindow(new BC_Title(x1, y, _("Framerate:")));
 	x1 += 100;
 	add_subwindow(frame_rate = new FrameRateSelection(x1, y, this,
-		&new_edl->session->frame_rate));
+		&edlsession->frame_rate));
 	y += frame_rate->get_h() + 5;
 
 	x1 = x;
@@ -253,7 +253,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	x1 += 100;
 	add_subwindow(framesize_selection = new FrameSizeSelection(x1, y,
 		x1 + SELECTION_TB_WIDTH + 10, y,
-		this, &new_edl->session->output_w, &new_edl->session->output_h));
+		this, &edlsession->output_w, &edlsession->output_h));
 	y += framesize_selection->get_h() + 5;
 
 	x1 = x;
@@ -262,20 +262,20 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x1, y,
 		x1 + SELECTION_TB_WIDTH + 10, y,
-		this, &new_edl->session->sample_aspect_ratio,
-		&new_edl->session->output_w, &new_edl->session->output_h));
+		this, &edlsession->sample_aspect_ratio,
+		&edlsession->output_w, &edlsession->output_h));
 
 	y += aspectratio_selection->get_h() + 5;
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	cmodel_selection = new ColormodelSelection(x + 100, y, this,
-		&new_edl->session->color_model);
+		&edlsession->color_model);
 	y += cmodel_selection->selection->get_h() + 5;
 
 	// --------------------
 	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
 	add_subwindow(interlace_selection = new InterlaceModeSelection(x + 100, y, this,
-		&new_edl->session->interlace_mode));
+		&edlsession->interlace_mode));
 	y += interlace_selection->get_h() + 5;
 
 	add_subwindow(new BC_OKButton(this, 
@@ -295,16 +295,16 @@ NewWindow::~NewWindow()
 
 void NewWindow::update()
 {
-	atracks->update((int64_t)new_edl->session->audio_tracks);
-	achannels->update((int64_t)new_edl->session->audio_channels);
-	sample_rate->update(new_edl->session->sample_rate);
-	vtracks->update((int64_t)new_edl->session->video_tracks);
-	frame_rate->update((float)new_edl->session->frame_rate);
-	framesize_selection->update(new_edl->session->output_w,
-		new_edl->session->output_h);
-	aspectratio_selection->update_sar(new_edl->session->sample_aspect_ratio);
-	interlace_selection->update(new_edl->session->interlace_mode);
-	cmodel_selection->update(new_edl->session->color_model);
+	atracks->update((int64_t)edlsession->audio_tracks);
+	achannels->update((int64_t)edlsession->audio_channels);
+	sample_rate->update(edlsession->sample_rate);
+	vtracks->update((int64_t)edlsession->video_tracks);
+	frame_rate->update((float)edlsession->frame_rate);
+	framesize_selection->update(edlsession->output_w,
+		edlsession->output_h);
+	aspectratio_selection->update_sar(edlsession->sample_aspect_ratio);
+	interlace_selection->update(edlsession->interlace_mode);
+	cmodel_selection->update(edlsession->color_model);
 }
 
 
@@ -329,7 +329,7 @@ NewATracks::NewATracks(NewWindow *nwindow, const char *text, int x, int y)
 
 int NewATracks::handle_event()
 {
-	nwindow->new_edl->session->audio_tracks = atol(get_text());
+	edlsession->audio_tracks = atol(get_text());
 	return 1;
 }
 
@@ -342,14 +342,14 @@ NewATracksTumbler::NewATracksTumbler(NewWindow *nwindow, int x, int y)
 
 void NewATracksTumbler::handle_up_event()
 {
-	nwindow->new_edl->session->audio_tracks++;
+	edlsession->audio_tracks++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
 
 void NewATracksTumbler::handle_down_event()
 {
-	nwindow->new_edl->session->audio_tracks--;
+	edlsession->audio_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
@@ -363,7 +363,7 @@ NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
 
 int NewAChannels::handle_event()
 {
-	nwindow->new_edl->session->audio_channels = atol(get_text());
+	edlsession->audio_channels = atol(get_text());
 	return 1;
 }
 
@@ -376,14 +376,14 @@ NewAChannelsTumbler::NewAChannelsTumbler(NewWindow *nwindow, int x, int y)
 
 void NewAChannelsTumbler::handle_up_event()
 {
-	nwindow->new_edl->session->audio_channels++;
+	edlsession->audio_channels++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
 
 void NewAChannelsTumbler::handle_down_event()
 {
-	nwindow->new_edl->session->audio_channels--;
+	edlsession->audio_channels--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
@@ -396,7 +396,7 @@ NewVTracks::NewVTracks(NewWindow *nwindow, const char *text, int x, int y)
 
 int NewVTracks::handle_event()
 {
-	nwindow->new_edl->session->video_tracks = atol(get_text());
+	edlsession->video_tracks = atol(get_text());
 	return 1;
 }
 
@@ -409,14 +409,14 @@ NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
 
 void NewVTracksTumbler::handle_up_event()
 {
-	nwindow->new_edl->session->video_tracks++;
+	edlsession->video_tracks++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
 
 void NewVTracksTumbler::handle_down_event()
 {
-	nwindow->new_edl->session->video_tracks--;
+	edlsession->video_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }

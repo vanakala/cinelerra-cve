@@ -455,7 +455,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	if(duration > EPSILON)
 		framerate = 1.0 / duration;
 	else
-		framerate = edl->session->frame_rate;
+		framerate = edlsession->frame_rate;
 
 	vclient->source_pts = frame[0]->get_pts();
 	vclient->total_len_pts = total_length;
@@ -570,9 +570,9 @@ int PluginServer::get_parameters(ptstime start, ptstime end, int channels)
 	if(!plugin_open) return 0;
 
 	if(video)
-		rate = edl->session->frame_rate;
+		rate = edlsession->frame_rate;
 	else
-		rate = edl->session->sample_rate;
+		rate = edlsession->sample_rate;
 	client->start_pts = start;
 	client->end_pts = end;
 	client->source_start_pts = start;
@@ -628,9 +628,9 @@ void PluginServer::start_loop(ptstime start,
 	if(!plugin_open) return;
 
 	if(video)
-		rate = edl->session->frame_rate;
+		rate = edlsession->frame_rate;
 	else
-		rate = edl->session->sample_rate;
+		rate = edlsession->sample_rate;
 	total_in_buffers = total_buffers;
 	if(client->has_pts_api())
 		client->plugin_start_loop(start, end, total_buffers);
@@ -792,7 +792,7 @@ double PluginServer::get_framerate()
 	}
 	else
 	if(mwindow)
-		return master_edl->session->frame_rate;
+		return edlsession->frame_rate;
 	else 
 	{
 		errorbox("PluginServer::get_framerate video and mwindow == NULL");
@@ -802,47 +802,18 @@ double PluginServer::get_framerate()
 
 int PluginServer::get_project_samplerate()
 {
-	if(mwindow)
-		return master_edl->session->sample_rate;
-	else
-	if(edl)
-		return edl->session->sample_rate;
-	else
-	{
-		errorbox("PluginServer::get_project_samplerate mwindow and edl are NULL.");
-		return 1;
-	}
+	return edlsession->sample_rate;
 }
 
 double PluginServer::get_project_framerate()
 {
-	if(mwindow)
-		return master_edl->session->frame_rate;
-	else
-	if(edl)
-		return edl->session->frame_rate;
-	else
-	{
-		errorbox("PluginServer::get_project_framerate mwindow and edl are NULL.");
-		return 1;
-	}
+	return edlsession->frame_rate;
 }
 
 void PluginServer::get_project_dimensions(int *width, int *height)
 {
-	if(mwindow)
-	{
-		*width = master_edl->session->output_w;
-		*height = master_edl->session->output_h;
-	}
-	else
-	if(edl)
-	{
-		*width = edl->session->output_w;
-		*height =edl->session->output_h;
-	}
-	else
-		*width = *height = 0;
+	*width = edlsession->output_w;
+	*height = edlsession->output_h;
 }
 
 void PluginServer::save_data(KeyFrame *keyframe)
@@ -917,7 +888,7 @@ void PluginServer::sync_parameters()
 {
 	if(video) mwindow->restart_brender();
 	mwindow->sync_parameters();
-	if(master_edl->session->auto_conf->plugins)
+	if(edlsession->auto_conf->plugins)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -926,8 +897,8 @@ void PluginServer::sync_parameters()
 
 const char *PluginServer::plugin_conf_dir()
 {
-	if(edl)
-		return edl->session->plugin_configuration_directory;
+	if(edlsession)
+		return edlsession->plugin_configuration_directory;
 	return BCASTDIR;
 }
 

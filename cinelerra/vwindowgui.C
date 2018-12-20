@@ -321,8 +321,8 @@ VWindowMeters::VWindowMeters(MWindow *mwindow,
 		x,
 		y,
 		h,
-		master_edl->session->audio_channels,
-		master_edl->session->vwindow_meter)
+		edlsession->audio_channels,
+		edlsession->vwindow_meter)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -330,7 +330,7 @@ VWindowMeters::VWindowMeters(MWindow *mwindow,
 
 int VWindowMeters::change_status_event()
 {
-	master_edl->session->vwindow_meter = use_meters;
+	edlsession->vwindow_meter = use_meters;
 	mwindow->theme->get_vwindow_sizes(gui);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
@@ -474,7 +474,7 @@ void VWindowEditing::to_clip()
 		new_edl->load_xml(&file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
 		char string[BCTEXTLEN];
-		master_edl->session->ptstotext(string, end - start);
+		edlsession->ptstotext(string, end - start);
 		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
 
 		new_edl->local_session->set_selection(0);
@@ -588,8 +588,8 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 
 	int canvas_w, canvas_h;
 	calculate_sizes(edl,
-		edl->session->output_w, 
-		edl->session->output_h, 
+		edlsession->output_w,
+		edlsession->output_h,
 		percentage,
 		canvas_w,
 		canvas_h);

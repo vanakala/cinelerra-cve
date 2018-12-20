@@ -69,7 +69,7 @@ void ARender::arm_command()
 	CommonRender::arm_command();
 
 	output_levels->reset(renderengine->fragment_len,
-		renderengine->edl->session->sample_rate, get_total_tracks());
+		edlsession->sample_rate, get_total_tracks());
 }
 
 
@@ -90,13 +90,13 @@ void ARender::init_output_buffers()
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 // Reset the output buffers in case speed changed
-			if(i < renderengine->edl->session->audio_channels)
+			if(i < edlsession->audio_channels)
 			{
 				if(audio_out[i])
 					audio_out[i]->check_buffer(renderengine->fragment_len);
 				else
 					audio_out[i] = new AFrame(renderengine->fragment_len);
-				audio_out[i]->samplerate = renderengine->edl->session->sample_rate;
+				audio_out[i]->samplerate = edlsession->sample_rate;
 				audio_out[i]->channel = i;
 			}
 		}
@@ -112,14 +112,14 @@ VirtualConsole* ARender::new_vconsole_object()
 posnum ARender::tounits(ptstime position, int roundfl)
 {
 	if(roundfl)
-		return round(position * renderengine->edl->session->sample_rate);
+		return round(position * edlsession->sample_rate);
 	else
-		return (posnum)(position * renderengine->edl->session->sample_rate);
+		return (posnum)(position * edlsession->sample_rate);
 }
 
 ptstime ARender::fromunits(posnum position)
 {
-	return (double)position / renderengine->edl->session->sample_rate;
+	return (double)position / edlsession->sample_rate;
 }
 
 

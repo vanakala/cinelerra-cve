@@ -151,7 +151,7 @@ int Automation::paste(ptstime start,
 	FileXML *file, 
 	AutoConf *autoconf)
 {
-	if(!autoconf) autoconf = edl->session->auto_conf;
+	if(!autoconf) autoconf = edlsession->auto_conf;
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -266,7 +266,7 @@ void Automation::get_extents(float *min,
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && edl->session->auto_conf->autos[i])
+		if(autos[i] && edlsession->auto_conf->autos[i])
 		{
 			if (autos[i]->autogrouptype == autogrouptype)
 				autos[i]->get_extents(min, max, coords_undefined, start, end);

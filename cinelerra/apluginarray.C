@@ -103,7 +103,7 @@ int APluginArray::write_buffers(int len)
 
 int APluginArray::get_bufsize()
 {
-	return edl->session->sample_rate;
+	return edlsession->sample_rate;
 }
 
 
@@ -124,10 +124,10 @@ Track* APluginArray::track_number(int number)
 
 posnum APluginArray::to_units(ptstime pts)
 {
-	return round(pts * edl->session->sample_rate);
+	return round(pts * edlsession->sample_rate);
 }
 
 ptstime APluginArray::from_units(posnum pos)
 {
-	return (ptstime)pos / edl->session->sample_rate;
+	return (ptstime)pos / edlsession->sample_rate;
 }

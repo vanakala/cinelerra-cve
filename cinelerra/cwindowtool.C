@@ -114,7 +114,7 @@ void CWindowTool::start_tool(int operation)
 			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 
-			if(master_edl->session->tool_window &&
+			if(edlsession->tool_window &&
 				mainsession->show_cwindow) tool_gui->show_window();
 			tool_gui->flush();
 
@@ -135,13 +135,13 @@ void CWindowTool::stop_tool()
 
 void CWindowTool::show_tool()
 {
-	if(tool_gui && master_edl->session->tool_window)
+	if(tool_gui && edlsession->tool_window)
 		tool_gui->show_window();
 }
 
 void CWindowTool::hide_tool()
 {
-	if(tool_gui && master_edl->session->tool_window)
+	if(tool_gui && edlsession->tool_window)
 		tool_gui->hide_window();
 }
 
@@ -169,7 +169,7 @@ int CWindowTool::update_show_window()
 	tool_gui_lock->lock("CWindowTool::update_show_window");
 	if(tool_gui)
 	{
-		if(master_edl->session->tool_window)
+		if(edlsession->tool_window)
 		{
 			tool_gui->update();
 			tool_gui->show_window();
@@ -227,9 +227,9 @@ void CWindowToolGUI::close_event()
 {
 	hide_window();
 	flush();
-	master_edl->session->tool_window = 0;
+	edlsession->tool_window = 0;
 
-	thread->gui->composite_panel->set_operation(master_edl->session->cwindow_operation);
+	thread->gui->composite_panel->set_operation(edlsession->cwindow_operation);
 	thread->gui->flush();
 }
 
@@ -266,7 +266,7 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 			create_z);
 	}
 
-	if(master_edl->session->auto_keyframes)
+	if(edlsession->auto_keyframes)
 	{
 		if(x_auto && !PTSEQU(pos, x_auto->pos_time))
 		{
@@ -369,13 +369,13 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	x += column1 + 5;
 	y = 10;
-	x1 = new CWindowCoord(this, x, y, master_edl->session->crop_x1);
+	x1 = new CWindowCoord(this, x, y, edlsession->crop_x1);
 	y += pad;
 	width = new CWindowCoord(this,
 		x, 
 		y, 
-		master_edl->session->crop_x2 -
-			master_edl->session->crop_x1);
+		edlsession->crop_x2 -
+			edlsession->crop_x1);
 
 	x += x1->get_w() + 10;
 	y = 10;
@@ -389,13 +389,13 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	y = 10;
 	x += column2 + 5;
-	y1 = new CWindowCoord(this, x, y, master_edl->session->crop_y1);
+	y1 = new CWindowCoord(this, x, y, edlsession->crop_y1);
 	y += pad;
 	height = new CWindowCoord(this,
 		x, 
 		y, 
-		master_edl->session->crop_y2 -
-			master_edl->session->crop_y1);
+		edlsession->crop_y2 -
+			edlsession->crop_y1);
 }
 
 int CWindowCropGUI::handle_event()
@@ -403,24 +403,24 @@ int CWindowCropGUI::handle_event()
 	int new_x1, new_y1;
 	new_x1 = atol(x1->get_text());
 	new_y1 = atol(y1->get_text());
-	if(new_x1 != master_edl->session->crop_x1)
+	if(new_x1 != edlsession->crop_x1)
 	{
-		master_edl->session->crop_x2 = new_x1 +
-			master_edl->session->crop_x2 -
-			master_edl->session->crop_x1;
-		master_edl->session->crop_x1 = new_x1;
+		edlsession->crop_x2 = new_x1 +
+			edlsession->crop_x2 -
+			edlsession->crop_x1;
+		edlsession->crop_x1 = new_x1;
 	}
-	if(new_y1 != master_edl->session->crop_y1)
+	if(new_y1 != edlsession->crop_y1)
 	{
-		master_edl->session->crop_y2 = new_y1 +
-			master_edl->session->crop_y2 -
-			master_edl->session->crop_y1;
-		master_edl->session->crop_y1 = atol(y1->get_text());
+		edlsession->crop_y2 = new_y1 +
+			edlsession->crop_y2 -
+			edlsession->crop_y1;
+		edlsession->crop_y1 = atol(y1->get_text());
 	}
-	master_edl->session->crop_x2 = atol(width->get_text()) +
-		master_edl->session->crop_x1;
-	master_edl->session->crop_y2 = atol(height->get_text()) +
-		master_edl->session->crop_y1;
+	edlsession->crop_x2 = atol(width->get_text()) +
+		edlsession->crop_x1;
+	edlsession->crop_y2 = atol(height->get_text()) +
+		edlsession->crop_y1;
 	update();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
@@ -428,12 +428,12 @@ int CWindowCropGUI::handle_event()
 
 void CWindowCropGUI::update()
 {
-	x1->update(master_edl->session->crop_x1);
-	y1->update(master_edl->session->crop_y1);
-	width->update(master_edl->session->crop_x2 -
-		master_edl->session->crop_x1);
-	height->update(master_edl->session->crop_y2 -
-		master_edl->session->crop_y1);
+	x1->update(edlsession->crop_x1);
+	y1->update(edlsession->crop_y1);
+	width->update(edlsession->crop_x2 -
+		edlsession->crop_x1);
+	height->update(edlsession->crop_y2 -
+		edlsession->crop_y1);
 }
 
 
@@ -756,7 +756,7 @@ int CWindowCPLeft::handle_event()
 		else
 		{
 			x_auto->set_value((double)track->track_w * z_auto->get_value() / 2 -
-				(double)master_edl->session->output_w / 2);
+				(double)edlsession->output_w / 2);
 			do_update = 1;
 		}
 
@@ -845,7 +845,7 @@ int CWindowCPRight::handle_event()
 		else
 		{
 			x_auto->set_value(-((double)track->track_w * z_auto->get_value() / 2 -
-				(double)master_edl->session->output_w / 2));
+				(double)edlsession->output_w / 2));
 			do_update = 1;
 		}
 
@@ -906,7 +906,7 @@ int CWindowCPTop::handle_event()
 		else
 		{
 			y_auto->set_value((double)track->track_h * z_auto->get_value() / 2 -
-				(double)master_edl->session->output_h / 2);
+				(double)edlsession->output_h / 2);
 			do_update = 1;
 		}
 
@@ -994,7 +994,7 @@ int CWindowCPBottom::handle_event()
 		else
 		{
 			y_auto->set_value(-((double)track->track_h * z_auto->get_value() / 2 -
-				(double)master_edl->session->output_h / 2));
+				(double)edlsession->output_h / 2));
 			do_update = 1;
 		}
 
@@ -1095,7 +1095,7 @@ int CWindowMaskDelete::handle_event()
 		for(MaskAuto *current = (MaskAuto*)mask_autos->first;
 			current; current = (MaskAuto*)NEXT)
 		{
-			SubMask *submask = current->get_submask(master_edl->session->cwindow_mask);
+			SubMask *submask = current->get_submask(edlsession->cwindow_mask);
 
 			for(int i = mwindow->cwindow->gui->affected_point;
 				i < submask->points.total - 1;
@@ -1130,7 +1130,7 @@ CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-		master_edl->session->cwindow_mask,
+		edlsession->cwindow_mask,
 		0,
 		SUBMASKS - 1,
 		x, 
@@ -1143,7 +1143,7 @@ CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow,
 
 int CWindowMaskNumber::handle_event()
 {
-	master_edl->session->cwindow_mask = atol(get_text());
+	edlsession->cwindow_mask = atol(get_text());
 	gui->update();
 	gui->update_preview();
 	return 1;
@@ -1325,7 +1325,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	else
 		keyframe = 0;
 
-	if(master_edl->session->auto_keyframes && keyframe &&
+	if(edlsession->auto_keyframes && keyframe &&
 			!PTSEQU(pos, keyframe->pos_time))
 	{
 		localauto->interpolate_from(keyframe, keyframe->next, master_edl->local_session->get_selectionstart(1), 0);
@@ -1333,7 +1333,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	}
 
 	if(keyframe)
-		mask = keyframe->get_submask(master_edl->session->cwindow_mask);
+		mask = keyframe->get_submask(edlsession->cwindow_mask);
 	else
 		mask = 0;
 
@@ -1381,7 +1381,7 @@ void CWindowMaskGUI::update()
 		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}
 
-	number->update(master_edl->session->cwindow_mask);
+	number->update(edlsession->cwindow_mask);
 
 }
 
@@ -1459,10 +1459,10 @@ CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
 void CWindowRulerGUI::update()
 {
 	double distance_value =
-		sqrt(SQR(master_edl->session->ruler_x2 - master_edl->session->ruler_x1) +
-		SQR(master_edl->session->ruler_y2 - master_edl->session->ruler_y1));
-	double angle_value = atan((master_edl->session->ruler_y2 - master_edl->session->ruler_y1) /
-		(master_edl->session->ruler_x2 - master_edl->session->ruler_x1)) * 360 / 2 / M_PI;
+		sqrt(SQR(edlsession->ruler_x2 - edlsession->ruler_x1) +
+		SQR(edlsession->ruler_y2 - edlsession->ruler_y1));
+	double angle_value = atan((edlsession->ruler_y2 - edlsession->ruler_y1) /
+		(edlsession->ruler_x2 - edlsession->ruler_x1)) * 360 / 2 / M_PI;
 
 	if(EQUIV(distance_value, 0.0))
 	{
@@ -1480,12 +1480,12 @@ void CWindowRulerGUI::update()
 		mainsession->cwindow_output_y);
 	current->update(string);
 	sprintf(string, "%.0f, %.0f",
-		master_edl->session->ruler_x1,
-		master_edl->session->ruler_y1);
+		edlsession->ruler_x1,
+		edlsession->ruler_y1);
 	point1->update(string);
 	sprintf(string, "%.0f, %.0f",
-		master_edl->session->ruler_x2,
-		master_edl->session->ruler_y2);
+		edlsession->ruler_x2,
+		edlsession->ruler_y2);
 	point2->update(string);
 
 	sprintf(string, "%0.01f pixels", distance_value);

@@ -241,10 +241,10 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 			value;
 		Units::totext(string,
 			total_seconds,
-			master_edl->session->time_format,
-			master_edl->session->sample_rate,
-			master_edl->session->frame_rate,
-			master_edl->session->frames_per_foot);
+			edlsession->time_format,
+			edlsession->sample_rate,
+			edlsession->frame_rate,
+			edlsession->frames_per_foot);
 		break;
 	}
 	return string;

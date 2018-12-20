@@ -230,7 +230,7 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 		current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO) current_pan++;
-		if(current_pan >= edl->session->audio_channels) current_pan = 0;
+		if(current_pan >= edlsession->audio_channels) current_pan = 0;
 	}
 
 	PanAutos* pan_autos = 
@@ -238,8 +238,8 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 
 	pan_autos->default_values[current_pan] = 1.0;
 
-	BC_Pan::calculate_stick_position(edl->session->audio_channels,
-		edl->session->achannel_positions,
+	BC_Pan::calculate_stick_position(edlsession->audio_channels,
+		edlsession->achannel_positions,
 		pan_autos->default_values,
 		MAX_PAN,
 		PAN_RADIUS,

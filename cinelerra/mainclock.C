@@ -55,7 +55,7 @@ void MainClock::update(double position)
 
 	position += position_offset;
 
-	master_edl->session->ptstotext(string, position);
+	edlsession->ptstotext(string, position);
 
 	BC_Title::update(string);
 }

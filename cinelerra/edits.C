@@ -360,7 +360,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 				current->transition = new Transition(edl,
 					current, 
 					"",
-					edl->session->default_transition_length, 0);
+					edlsession->default_transition_length, 0);
 				current->transition->load_xml(file);
 			}
 			else

@@ -52,7 +52,7 @@ LevelWindowGUI::LevelWindowGUI(MWindow *mwindow)
 		5,
 		5,
 		get_h() - 10,
-		master_edl->session->audio_channels,
+		edlsession->audio_channels,
 		1);
 }
 

@@ -349,7 +349,7 @@ KeyFrame* Plugin::get_keyframe()
 		get_prev_keyframe(edl->local_session->get_selectionstart(1));
 
 // Return nearest keyframe if not in automatic keyframe generation
-	if(!edl->session->auto_keyframes)
+	if(!edlsession->auto_keyframes)
 	{
 		return result;
 	}

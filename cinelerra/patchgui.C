@@ -481,7 +481,7 @@ int MutePatch::handle_event()
 
 	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
-	if(master_edl->session->auto_conf->autos[AUTOMATION_MUTE])
+	if(edlsession->auto_conf->autos[AUTOMATION_MUTE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -638,7 +638,7 @@ ptstime NudgePatch::calculate_increment()
 	}
 	else
 	{
-		return (ptstime)ceil(1.0 / patch->track->edl->session->frame_rate);
+		return (ptstime)ceil(1.0 / edlsession->frame_rate);
 	}
 }
 

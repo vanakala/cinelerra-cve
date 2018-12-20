@@ -234,7 +234,7 @@ int PatchBay::cursor_motion_event()
 								mwindow->restart_brender();
 								mwindow->sync_parameters(CHANGE_PARAMS);
 
-								if(master_edl->session->auto_conf->autos[AUTOMATION_MUTE])
+								if(edlsession->auto_conf->autos[AUTOMATION_MUTE])
 								{
 									mwindow->gui->canvas->draw_overlays();
 									mwindow->gui->canvas->flash();

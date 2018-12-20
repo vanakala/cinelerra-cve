@@ -187,7 +187,7 @@ void CWindow::update(int options)
 // Create tool window
 	if(options & WUPD_OPERATION)
 	{
-		gui->set_operation(master_edl->session->cwindow_operation);
+		gui->set_operation(edlsession->cwindow_operation);
 	}
 
 	if(options & WUPD_OVERLAYS)
@@ -210,17 +210,17 @@ void CWindow::update(int options)
 	}
 
 	if(options & WUPD_ACHANNELS)
-		gui->meters->set_meters(master_edl->session->audio_channels,
-			master_edl->session->cwindow_meter);
+		gui->meters->set_meters(edlsession->audio_channels,
+			edlsession->cwindow_meter);
 
-	if(!master_edl->session->cwindow_scrollbars)
+	if(!edlsession->cwindow_scrollbars)
 		gui->zoom_panel->update(_("Auto"));
 	else
-		gui->zoom_panel->update(master_edl->session->cwindow_zoom);
+		gui->zoom_panel->update(edlsession->cwindow_zoom);
 
-	gui->canvas->update_zoom(master_edl->session->cwindow_xscroll,
-			master_edl->session->cwindow_yscroll,
-			master_edl->session->cwindow_zoom);
+	gui->canvas->update_zoom(edlsession->cwindow_xscroll,
+			edlsession->cwindow_yscroll,
+			edlsession->cwindow_zoom);
 
 	if(options & WUPD_ACHANNELS)
 		gui->resize_event(mainsession->cwindow_w,

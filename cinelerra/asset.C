@@ -878,16 +878,16 @@ void Asset::set_single_image()
 
 	if(mwindow_global)
 	{
-		if(master_edl->session->si_useduration)
+		if(edlsession->si_useduration)
 		{
 			frame_rate = 1. /
-				master_edl->session->si_duration;
-			video_duration = master_edl->session->si_duration;
+				edlsession->si_duration;
+			video_duration = edlsession->si_duration;
 		}
 		else
 		{
-			frame_rate = master_edl->session->frame_rate;
-			video_duration = 1. / master_edl->session->frame_rate;
+			frame_rate = edlsession->frame_rate;
+			video_duration = 1. / edlsession->frame_rate;
 		}
 	}
 	video_length = 1;

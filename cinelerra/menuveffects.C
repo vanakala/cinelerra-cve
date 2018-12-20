@@ -69,15 +69,15 @@ PluginArray* MenuVEffectThread::create_plugin_array()
 
 ptstime MenuVEffectThread::one_unit()
 {
-	return (ptstime)1 / master_edl->session->frame_rate;
+	return (ptstime)1 / edlsession->frame_rate;
 }
 
 posnum MenuVEffectThread::to_units(ptstime position, int round)
 {
 	if(round)
-		return Units::round(position * master_edl->session->frame_rate);
+		return Units::round(position * edlsession->frame_rate);
 	else
-		return (posnum)(position * master_edl->session->frame_rate);
+		return (posnum)(position * edlsession->frame_rate);
 }
 
 void MenuVEffectThread::fix_menu(const char *title)
