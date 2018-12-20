@@ -60,7 +60,7 @@ void PlaybackPrefs::show()
 	BC_WindowBase *win;
 	int maxw;
 
-	playback_config = edlsession->playback_config;
+	playback_config = pwindow->thread->this_edlsession->playback_config;
 
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
@@ -103,9 +103,9 @@ void PlaybackPrefs::show()
 		y);
 	y += audio_offset->get_h() + 5;
 
-	win = add_subwindow(new PlaybackViewFollows(pwindow, edlsession->view_follows_playback, y));
+	win = add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->this_edlsession->view_follows_playback, y));
 	y += win->get_h();
-	win = add_subwindow(new PlaybackSoftwareTimer(pwindow, edlsession->playback_software_position, y));
+	win = add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->this_edlsession->playback_software_position, y));
 
 	y += win->get_h() + 10;
 	win = add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
@@ -194,16 +194,16 @@ void PlaybackPrefs::show()
 	x += 370;
 	win = add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT));
 	x += win->get_w();
-	sprintf(string, "%d", edlsession->timecode_offset[3]);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[3]);
 	win = add_subwindow(new TimecodeOffset(x, y, pwindow, this, string, 3));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", edlsession->timecode_offset[2]);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[2]);
 	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 2));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", edlsession->timecode_offset[1]);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[1]);
 	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 1));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", edlsession->timecode_offset[0]);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[0]);
 	add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 0));
 	x = x2;
 	y += 10;
@@ -230,14 +230,14 @@ void PlaybackPrefs::update(int interpolation)
 
 void PlaybackPrefs::draw_framerate()
 {
-	framerate_title->update(edlsession->actual_frame_rate);
+	framerate_title->update(pwindow->thread->this_edlsession->actual_frame_rate);
 }
 
 void PlaybackPrefs::draw_playstatistics()
 {
-	playedframes_title->update(edlsession->frame_count);
-	lateframes_title->update(edlsession->frames_late);
-	avgdelay_title->update(edlsession->avg_delay);
+	playedframes_title->update(pwindow->thread->this_edlsession->frame_count);
+	lateframes_title->update(pwindow->thread->this_edlsession->frames_late);
+	avgdelay_title->update(pwindow->thread->this_edlsession->avg_delay);
 }
 
 PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow, 
@@ -295,7 +295,7 @@ PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, 
 
 int PlaybackViewFollows::handle_event() 
 { 
-	edlsession->view_follows_playback = get_value();
+	pwindow->thread->this_edlsession->view_follows_playback = get_value();
 	return 1;
 }
 
@@ -308,7 +308,7 @@ PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int val
 
 int PlaybackSoftwareTimer::handle_event() 
 { 
-	edlsession->playback_software_position = get_value();
+	pwindow->thread->this_edlsession->playback_software_position = get_value();
 	return 1;
 }
 
@@ -389,7 +389,7 @@ VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow,
 	PlaybackPrefs *playback_prefs,
 	int x, 
 	int y)
- : BC_CheckBox(x, y, edlsession->video_every_frame, _("Play every frame"))
+ : BC_CheckBox(x, y, pwindow->thread->this_edlsession->video_every_frame, _("Play every frame"))
 {
 	this->pwindow = pwindow;
 	this->playback_prefs = playback_prefs;
@@ -397,7 +397,7 @@ VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow,
 
 int VideoEveryFrame::handle_event()
 {
-	edlsession->video_every_frame = get_value();
+	pwindow->thread->this_edlsession->video_every_frame = get_value();
 	return 1;
 }
 
@@ -412,6 +412,6 @@ TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
 
 int TimecodeOffset::handle_event()
 {
-	edlsession->timecode_offset[unit] = atol(get_text());
+	pwindow->thread->this_edlsession->timecode_offset[unit] = atol(get_text());
 	return 1;
 }

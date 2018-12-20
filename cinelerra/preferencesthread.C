@@ -117,9 +117,11 @@ void PreferencesThread::run()
 
 	preferences = new Preferences;
 	edl = new EDL;
+	this_edlsession = new EDLSession(0);
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(mwindow->preferences);
 	edl->copy_session(master_edl);
+	this_edlsession->copy(edlsession);
 	redraw_indexes = 0;
 	redraw_meters = 0;
 	redraw_times = 0;
@@ -152,6 +154,7 @@ void PreferencesThread::run()
 	window_lock->unlock();
 	delete preferences;
 	delete edl;
+	delete this_edlsession;
 
 	mwindow->defaults->update("DEFAULTPREF", current_dialog);
 }
@@ -174,13 +177,13 @@ void PreferencesThread::apply_settings()
 {
 // Compare sessions
 
-	AudioOutConfig *this_aconfig = edlsession->playback_config->aconfig;
-	VideoOutConfig *this_vconfig = edlsession->playback_config->vconfig;
+	AudioOutConfig *this_aconfig = this_edlsession->playback_config->aconfig;
+	VideoOutConfig *this_vconfig = this_edlsession->playback_config->vconfig;
 	AudioOutConfig *aconfig = edlsession->playback_config->aconfig;
 	VideoOutConfig *vconfig = edlsession->playback_config->vconfig;
 
 	rerender = 
-		edlsession->need_rerender(edlsession) ||
+		this_edlsession->need_rerender(edlsession) ||
 		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -227,6 +230,7 @@ void PreferencesThread::apply_settings()
 				mwindow->preferences->index_directory);
 	}
 	master_edl->copy_session(edl, 1);
+	edlsession->copy(this_edlsession);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 
@@ -379,6 +383,8 @@ void PreferencesWindow::update_framerate()
 {
 	if(thread->current_dialog == 0)
 	{
+		thread->this_edlsession->actual_frame_rate =
+			edlsession->actual_frame_rate;
 		dialog->draw_framerate();
 		flash();
 	}
@@ -388,6 +394,12 @@ void PreferencesWindow::update_playstatistics()
 {
 	if(thread->current_dialog == 0)
 	{
+		thread->this_edlsession->frame_count =
+			edlsession->frame_count;
+		thread->this_edlsession->frames_late =
+			edlsession->frames_late;
+		thread->this_edlsession->avg_delay =
+			edlsession->avg_delay;
 		dialog->draw_playstatistics();
 		flash();
 	}

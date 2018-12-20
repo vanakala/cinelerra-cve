@@ -29,6 +29,7 @@
 #include "bctextbox.h"
 #include "bcwindow.h"
 #include "edl.inc"
+#include "edlsession.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
@@ -75,6 +76,7 @@ public:
 // Copy of mwindow preferences
 	Preferences *preferences;
 	EDL *edl;
+	EDLSession *this_edlsession;
 
 // Categories
 #define CATEGORIES 5

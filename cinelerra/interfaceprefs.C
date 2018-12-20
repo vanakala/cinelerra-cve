@@ -67,36 +67,36 @@ void InterfacePrefs::show()
 
 	y += get_text_height(LARGEFONT) + 5;
 	add_subwindow(hms = new TimeFormatHMS(this,
-		edlsession->time_format == TIME_HMS,
+		pwindow->thread->this_edlsession->time_format == TIME_HMS,
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hmsf = new TimeFormatHMSF(this,
-		edlsession->time_format == TIME_HMSF,
+		pwindow->thread->this_edlsession->time_format == TIME_HMSF,
 		x, 
 		y));
 	y += 20;
 	add_subwindow(samples = new TimeFormatSamples(this,
-		edlsession->time_format == TIME_SAMPLES,
+		pwindow->thread->this_edlsession->time_format == TIME_SAMPLES,
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hex = new TimeFormatHex(this,
-		edlsession->time_format == TIME_SAMPLES_HEX,
+		pwindow->thread->this_edlsession->time_format == TIME_SAMPLES_HEX,
 		x, 
 		y));
 	y += 20;
 	add_subwindow(frames = new TimeFormatFrames(this,
-		edlsession->time_format == TIME_FRAMES,
+		pwindow->thread->this_edlsession->time_format == TIME_FRAMES,
 		x, 
 		y));
 	y += 20;
 	add_subwindow(feet = new TimeFormatFeet(this,
-		edlsession->time_format == TIME_FEET_FRAMES,
+		pwindow->thread->this_edlsession->time_format == TIME_FEET_FRAMES,
 		x, 
 		y));
 
-	sprintf(string, "%0.2f", edlsession->frames_per_foot);
+	sprintf(string, "%0.2f", pwindow->thread->this_edlsession->frames_per_foot);
 	win = add_subwindow(new TimeFormatFeetSetting(pwindow,
 		x + feet->get_w() + 5,
 		y - 5,
@@ -105,7 +105,7 @@ void InterfacePrefs::show()
 		y, _("frames per foot")));
 	y += 20;
 	add_subwindow(seconds = new TimeFormatSeconds(this,
-		edlsession->time_format == TIME_SECONDS,
+		pwindow->thread->this_edlsession->time_format == TIME_SECONDS,
 		x, 
 		y));
 
@@ -184,33 +184,33 @@ void InterfacePrefs::show()
 
 	ViewBehaviourSelection *selection;
 	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
-		&edlsession->edit_handle_mode[0]));
-	selection->update(edlsession->edit_handle_mode[0]);
+		&pwindow->thread->this_edlsession->edit_handle_mode[0]));
+	selection->update(pwindow->thread->this_edlsession->edit_handle_mode[0]);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 2:")));
 	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
-		&edlsession->edit_handle_mode[1]));
-	selection->update(edlsession->edit_handle_mode[1]);
+		&pwindow->thread->this_edlsession->edit_handle_mode[1]));
+	selection->update(pwindow->thread->this_edlsession->edit_handle_mode[1]);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
 	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
-		&edlsession->edit_handle_mode[2]));
-	selection->update(edlsession->edit_handle_mode[2]);
+		&pwindow->thread->this_edlsession->edit_handle_mode[2]));
+	selection->update(pwindow->thread->this_edlsession->edit_handle_mode[2]);
 
 	y += 35;
 	int x1 = x;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
 	x += title->get_w() + 10;
-	sprintf(string, "%d", edlsession->min_meter_db);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, x, y));
 
 	x += min_db->get_w() + 10;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Max DB:")));
 	x += title->get_w() + 10;
-	sprintf(string, "%d", edlsession->max_meter_db);
+	sprintf(string, "%d", pwindow->thread->this_edlsession->max_meter_db);
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
 
 	x = x1;
@@ -224,7 +224,7 @@ void InterfacePrefs::show()
 void InterfacePrefs::update(int new_value)
 {
 	pwindow->thread->redraw_times = 1;
-	edlsession->time_format = new_value;
+	pwindow->thread->this_edlsession->time_format = new_value;
 	hms->update(new_value == TIME_HMS);
 	hmsf->update(new_value == TIME_HMSF);
 	samples->update(new_value == TIME_SAMPLES);
@@ -399,9 +399,9 @@ TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, 
 
 int TimeFormatFeetSetting::handle_event()
 {
-	edlsession->frames_per_foot = atof(get_text());
-	if(edlsession->frames_per_foot < 1)
-		edlsession->frames_per_foot = 1;
+	pwindow->thread->this_edlsession->frames_per_foot = atof(get_text());
+	if(pwindow->thread->this_edlsession->frames_per_foot < 1)
+		pwindow->thread->this_edlsession->frames_per_foot = 1;
 	return 1;
 }
 
@@ -414,7 +414,7 @@ MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int 
 int MeterMinDB::handle_event()
 { 
 	pwindow->thread->redraw_meters = 1;
-	edlsession->min_meter_db = atol(get_text());
+	pwindow->thread->this_edlsession->min_meter_db = atol(get_text());
 	return 1;
 }
 
@@ -428,7 +428,7 @@ MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int 
 int MeterMaxDB::handle_event()
 { 
 	pwindow->thread->redraw_meters = 1;
-	edlsession->max_meter_db = atol(get_text());
+	pwindow->thread->this_edlsession->max_meter_db = atol(get_text());
 	return 1;
 }
 
