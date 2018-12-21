@@ -24,7 +24,6 @@
 
 #include "edl.inc"
 #include "file.inc"
-#include "filexml.inc"
 #include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
@@ -41,16 +40,16 @@ public:
 	New(MWindow *mwindow);
 
 	int handle_event();
-	int run_script(FileXML *script);
+
 	void create_new_project();
 
 	MWindow *mwindow;
 	NewThread *thread;
 	EDL *new_edl;
+	EDLSession *new_edlsession;
 
 private:
 	void create_new_edl();
-	FileXML *script;
 };
 
 
@@ -81,6 +80,7 @@ public:
 	MWindow *mwindow;
 	NewThread *new_thread;
 	EDL *new_edl;
+	EDLSession *new_edlsession;
 	BC_TextBox *atracks;
 	BC_TextBox *achannels;
 	BC_TextBox *sample_rate;
