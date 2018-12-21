@@ -132,7 +132,7 @@ FormatPresets::~FormatPresets()
 	delete [] presets_menu;
 }
 
-struct formatpresets *FormatPresets::find_preset(EDL *edl)
+struct formatpresets *FormatPresets::find_preset(EDLSession *edlsession)
 {
 	for(int i = 0; i < MAX_NUM_PRESETS; i++)
 	{
@@ -157,24 +157,24 @@ struct formatpresets *FormatPresets::find_preset(EDL *edl)
 	return 0;
 }
 
-const char* FormatPresets::get_preset_text(EDL *edl)
+const char* FormatPresets::get_preset_text(EDLSession *edlsession)
 {
-	struct formatpresets *item = find_preset(edl);
+	struct formatpresets *item = find_preset(edlsession);
 	if(item)
 		return item->name;
 	else
 		return "User Defined";
 }
 
-void FormatPresets::set_edl(EDL *edl)
+void FormatPresets::set_edlsession(EDLSession *edlsession)
 {
-	current_edl = edl;
-	selection->update(get_preset_text(edl));
+	selection->update(get_preset_text(edlsession));
+	current_edlsession = edlsession;
 }
 
-void FormatPresets::update_edl(const char *preset)
+void FormatPresets::update_edlsession(const char *preset)
 {
-	fill_preset_defaults(preset, edlsession);
+	fill_preset_defaults(preset, current_edlsession);
 	handle_event();
 }
 
@@ -214,7 +214,7 @@ FormatSelection::FormatSelection(int x, int y,
 
 int FormatSelection::handle_event()
 {
-	presets->update_edl(get_text());
+	presets->update_edlsession(get_text());
 }
 
 

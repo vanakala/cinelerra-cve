@@ -23,7 +23,6 @@
 #define FORMATPRESETS_H
 
 
-#include "edl.inc"
 #include "edlsession.inc"
 #include "formatpresets.inc"
 #include "mwindow.inc"
@@ -67,20 +66,20 @@ public:
 	FormatPresets(BC_WindowBase* base_gui, int x, int y);
 	virtual ~FormatPresets();
 
-// Find the item which corresponds to the values in the edl.
-	struct formatpresets *find_preset(EDL *edl);
-	const char* get_preset_text(EDL *edl);
+// Find the item which corresponds to the values in the edlsesion
+	struct formatpresets *find_preset(EDLSession *edlsesion);
+	const char* get_preset_text(EDLSession *session);
 
 	static void fill_preset_defaults(const char *preset, EDLSession *session);
-	void set_edl(EDL *edl);
-	void update_edl(const char *preset);
+	void set_edlsession(EDLSession *edlsession);
+	void update_edlsession(const char *preset);
 // New preset selected
 	virtual int handle_event() { return 0; };
 private:
 	struct selection_int *presets_menu;
 	int selection_value;
 	FormatSelection *selection;
-	EDL *current_edl;
+	EDLSession *current_edlsession;
 
 	static struct formatpresets format_presets[];
 };

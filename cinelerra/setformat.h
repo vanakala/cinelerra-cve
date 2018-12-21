@@ -22,7 +22,7 @@
 #ifndef SETFORMAT_H
 #define SETFORMAT_H
 
-#include "edl.inc"
+#include "edlsession.inc"
 #include "formatpresets.h"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -66,7 +66,7 @@ public:
 	Mutex *window_lock;
 	SetFormatWindow *window;
 	MWindow *mwindow;
-	EDL *new_settings;
+	EDLSession *new_edlsession;
 	double ratio[2];
 	int dimension[2];
 	int orig_dimension[2];

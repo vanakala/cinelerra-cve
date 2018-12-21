@@ -202,7 +202,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	y += 20;
 
 	format_presets = new NewPresets(this, x, y);
-	format_presets->set_edl(new_edl);
+	format_presets->set_edlsession(new_edlsession);
 
 	y += 60;
 	y1 = y;

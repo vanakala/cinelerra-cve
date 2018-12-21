@@ -97,8 +97,8 @@ void SetFormatThread::run()
 	orig_dimension[1] = dimension[1] = edlsession->output_h;
 	ratio[0] = ratio[1] = 1;
 
-	new_settings = new EDL;
-	new_settings->copy_session(master_edl);
+	new_edlsession = new EDLSession();
+	new_edlsession->copy(edlsession);
 
 // This locks mwindow, so it must be done outside window_lock
 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
@@ -119,29 +119,29 @@ void SetFormatThread::run()
 	{
 		apply_changes();
 	}
-	delete new_settings;
+	delete new_edlsession;
 }
 
 void SetFormatThread::apply_changes()
 {
-	int new_channels = edlsession->audio_channels;
+	int new_channels = new_edlsession->audio_channels;
 	CLAMP(new_channels, 1, MAXCHANNELS);
 
 	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
-		edlsession->achannel_positions,
+		new_edlsession->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
-	if(SampleRateSelection::limits(&edlsession->sample_rate) < 0)
+	if(SampleRateSelection::limits(&new_edlsession->sample_rate) < 0)
 		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
-	if(FrameRateSelection::limits(&edlsession->frame_rate) < 0)
+	if(FrameRateSelection::limits(&new_edlsession->frame_rate) < 0)
 		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_FRAME_RATE, MAX_FRAME_RATE);
 	if(FrameSizeSelection::limits(&dimension[0], &dimension[1]) < 0)
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
-	AspectRatioSelection::limits(&edlsession->sample_aspect_ratio);
+	AspectRatioSelection::limits(&new_edlsession->sample_aspect_ratio);
 
-	master_edl->copy_session(new_settings, 1);
+	edlsession->copy(new_edlsession);
 	edlsession->output_w = dimension[0];
 	edlsession->output_h = dimension[1];
 	master_edl->rechannel();
@@ -174,19 +174,19 @@ void SetFormatThread::apply_changes()
 
 void SetFormatThread::update()
 {
-	window->sample_rate->update(edlsession->sample_rate);
-	window->channels->update(edlsession->audio_channels);
-	window->frame_rate->update(edlsession->frame_rate);
-	dimension[0] = edlsession->output_w;
-	dimension[1] = edlsession->output_h;
+	window->sample_rate->update(new_edlsession->sample_rate);
+	window->channels->update(new_edlsession->audio_channels);
+	window->frame_rate->update(new_edlsession->frame_rate);
+	dimension[0] = new_edlsession->output_w;
+	dimension[1] = new_edlsession->output_h;
 	window->framesize_selection->update(dimension[0], dimension[1]);
 	ratio[0] = (double)dimension[0] / orig_dimension[0];
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (double)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-	window->aspectratio_selection->update_sar(edlsession->sample_aspect_ratio);
-	window->interlace_selection->update(edlsession->interlace_mode);
-	window->cmodel_selection->update(edlsession->color_model);
+	window->aspectratio_selection->update_sar(new_edlsession->sample_aspect_ratio);
+	window->interlace_selection->update(new_edlsession->interlace_mode);
+	window->cmodel_selection->update(new_edlsession->color_model);
 
 	window->canvas->draw();
 }
@@ -243,7 +243,7 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	y = mwindow->theme->setformat_y1;
 
 	presets = new SetFormatPresets(this, x, y);
-	presets->set_edl(thread->new_settings);
+	presets->set_edlsession(thread->new_edlsession);
 
 	y = mwindow->theme->setformat_y2;
 
@@ -258,8 +258,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 		_("Samplerate:")));
 	add_subwindow(sample_rate = new SampleRateSelection(
 		mwindow->theme->setformat_x2, y,
-		this, &edlsession->sample_rate));
-	sample_rate->update(edlsession->sample_rate);
+		this, &thread->new_edlsession->sample_rate));
+	sample_rate->update(thread->new_edlsession->sample_rate);
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
@@ -299,8 +299,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 		_("Frame rate:")));
 	add_subwindow(frame_rate = new FrameRateSelection(
 		mwindow->theme->setformat_x4, y, this,
-		&edlsession->frame_rate));
-	frame_rate->update(edlsession->frame_rate);
+		&thread->new_edlsession->frame_rate));
+	frame_rate->update(thread->new_edlsession->frame_rate);
 
 	int y0;
 	y0 = y += mwindow->theme->setformat_margin;
@@ -338,8 +338,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 		_("Color model:")));
 	x = mwindow->theme->setformat_x4;
 	cmodel_selection = new ColormodelSelection(x, y, this,
-		&edlsession->color_model);
-	cmodel_selection->update(edlsession->color_model);
+		&thread->new_edlsession->color_model);
+	cmodel_selection->update(thread->new_edlsession->color_model);
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
@@ -349,9 +349,9 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	x = mwindow->theme->setformat_x3;
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
 		x + SELECTION_TB_WIDTH + 15, y, this,
-		&edlsession->sample_aspect_ratio,
+		&thread->new_edlsession->sample_aspect_ratio,
 		&thread->dimension[0], &thread->dimension[1]));
-	aspectratio_selection->update_sar(edlsession->sample_aspect_ratio);
+	aspectratio_selection->update_sar(thread->new_edlsession->sample_aspect_ratio);
 	y += mwindow->theme->setformat_margin;
 
 // --------------------
@@ -359,8 +359,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 		y, 
 		_("Interlace mode:")));
 	add_subwindow(interlace_selection = new InterlaceModeSelection(mwindow->theme->setformat_x4,
-		y, this, &edlsession->interlace_mode));
-	interlace_selection->update(edlsession->interlace_mode);
+		y, this, &thread->new_edlsession->interlace_mode));
+	interlace_selection->update(thread->new_edlsession->interlace_mode);
 	y += mwindow->theme->setformat_margin;
 
 	BC_OKTextButton *ok;
@@ -395,7 +395,7 @@ int SetFormatPresets::handle_event()
 
 
 SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, edlsession->audio_channels)
+ : BC_TextBox(x, y, 100, 1, thread->new_edlsession->audio_channels)
 {
 	this->thread = thread;
 }
@@ -404,11 +404,11 @@ int SetChannelsTextBox::handle_event()
 {
 	int new_channels = CLIP(atoi(get_text()), 1, MAXCHANNELS);
 
-	edlsession->audio_channels = new_channels;
+	thread->new_edlsession->audio_channels = new_channels;
 
 	if(new_channels > 0)
 	{
-		memcpy(edlsession->achannel_positions,
+		memcpy(thread->new_edlsession->achannel_positions,
 			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 			sizeof(int) * MAXCHANNELS);
 	}
@@ -461,14 +461,14 @@ void SetChannelsCanvas::draw(int angle)
 	int x, y, w, h;
 	char string[32];
 	set_color(mwindow->theme->channel_position_color);
-	for(int i = 0; i < edlsession->audio_channels; i++)
+	for(int i = 0; i < thread->new_edlsession->audio_channels; i++)
 	{
-		get_dimensions(edlsession->achannel_positions[i],
+		get_dimensions(thread->new_edlsession->achannel_positions[i],
 			x, 
 			y, 
 			w, 
 			h);
-		double rotate_angle = edlsession->achannel_positions[i];
+		double rotate_angle = thread->new_edlsession->achannel_positions[i];
 		rotate_angle = -rotate_angle;
 		while(rotate_angle < 0) rotate_angle += 360;
 		rotater->rotate(temp_picon, 
@@ -516,11 +516,11 @@ int SetChannelsCanvas::button_press_event()
 	if(!cursor_inside()) return 0;
 // get active channel
 	for(int i = 0; 
-		i < edlsession->audio_channels;
+		i < thread->new_edlsession->audio_channels;
 		i++)
 	{
 		int x, y, w, h;
-		get_dimensions(edlsession->achannel_positions[i],
+		get_dimensions(thread->new_edlsession->achannel_positions[i],
 			x, 
 			y, 
 			w, 
@@ -532,8 +532,8 @@ int SetChannelsCanvas::button_press_event()
 			degree_offset = (int)Units::xy_to_polar(get_cursor_x() - this->get_w() / 2, get_cursor_y() - this->get_h() / 2);
 			degree_offset += 90;
 			if(degree_offset >= 360) degree_offset -= 360;
-			degree_offset -= edlsession->achannel_positions[i];
-			draw(edlsession->achannel_positions[i]);
+			degree_offset -= thread->new_edlsession->achannel_positions[i];
+			draw(thread->new_edlsession->achannel_positions[i]);
 			return 1;
 		}
 	}
@@ -564,14 +564,14 @@ int SetChannelsCanvas::cursor_motion_event()
 		while(new_d >= 360) new_d -= 360;
 		while(new_d < 0) new_d += 360;
 
-		if(edlsession->achannel_positions[active_channel] != new_d)
+		if(thread->new_edlsession->achannel_positions[active_channel] != new_d)
 		{
-			edlsession->achannel_positions[active_channel] = new_d;
-			int new_channels = edlsession->audio_channels;
+			thread->new_edlsession->achannel_positions[active_channel] = new_d;
+			int new_channels = thread->new_edlsession->audio_channels;
 			memcpy(&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
-				edlsession->achannel_positions,
+				thread->new_edlsession->achannel_positions,
 				sizeof(int) * MAXCHANNELS);
-			draw(edlsession->achannel_positions[active_channel]);
+			draw(thread->new_edlsession->achannel_positions[active_channel]);
 		}
 		return 1;
 	}
