@@ -125,7 +125,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
-	command->get_edl()->copy_all(edl);
+	command->set_edl(edl);
 	command->change_type = CHANGE_ALL;
 	command->set_playback_range();
 

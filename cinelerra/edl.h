@@ -53,6 +53,7 @@
 
 extern EDL *master_edl;
 extern EDL *vwindow_edl;
+extern EDL *render_edl;
 
 class EDL
 {

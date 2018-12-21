@@ -277,7 +277,9 @@ void Render::run()
 // Fix the asset for rendering
 		Asset *asset = new Asset;
 		load_defaults(asset);
-		check_asset(master_edl, *asset);
+		render_edl = new EDL();
+		render_edl->copy_all(master_edl);
+		check_asset(render_edl, *asset);
 // Get format from user
 		render_window = new RenderWindow(mwindow, this, asset);
 		result = render_window->run_window();
@@ -291,7 +293,7 @@ void Render::run()
 
 		if(!result)
 		{
-			if(!check_asset(master_edl, *asset))
+			if(!check_asset(render_edl, *asset))
 			{
 				asset->init_streams();
 				save_defaults(asset);
@@ -304,13 +306,15 @@ void Render::run()
 				if(asset->single_image)
 					range_type = RANGE_SINGLEFRAME;
 
-				render(1, asset, master_edl, strategy, range_type);
+				render(1, asset, render_edl, strategy, range_type);
 			}
 			else
 				errormsg(_("No audo or video to render"));
 		}
 
 		delete asset;
+		delete render_edl;
+		render_edl = 0;
 	}
 	else
 	if(mode == Render::BATCH)
@@ -499,7 +503,7 @@ int Render::render(int test_overwrite,
 // Create rendering command
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
-	command->get_edl()->copy_all(edl);
+	command->set_edl(render_edl);
 	command->change_type = CHANGE_ALL;
 
 	switch(range_type)
