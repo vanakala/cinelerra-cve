@@ -46,6 +46,7 @@ public:
 	void save_audio_config(FileXML *xml);
 	void load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 	void save_video_config(FileXML *xml);
+	void clear();
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
 // Used by CWindowGUI during initialization.

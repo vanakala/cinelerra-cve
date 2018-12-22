@@ -128,6 +128,11 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		*result = brender_start;
 }
 
+void EDLSession::clear()
+{
+	defaults_loaded = 0;
+}
+
 void EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
