@@ -26,6 +26,7 @@
 #include "bcresources.h"
 #include "bctimer.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
@@ -74,6 +75,8 @@ RenderFarmClient::RenderFarmClient(int port,
 		perror("RenderFarmClient::RenderFarmClient - nice");
 
 	MWindow::init_defaults(boot_defaults, config_path);
+	master_edl = new EDL;
+	master_edl->load_defaults(boot_defaults);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(boot_preferences, plugindb, 0);
@@ -433,6 +436,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	file.read_from_string((char*)string);
 	delete [] string;
 
+	edlsession->clear();
 	edl->load_xml(&file, LOAD_ALL);
 
 // Open assets - fill asset info

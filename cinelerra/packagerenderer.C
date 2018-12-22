@@ -439,7 +439,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 	this->package = package;
 	brender_base = -1;
-
 // FIXME: The design that we only get EDL once does not give us neccessary flexiblity
 //  to do things the way they should be done
 	default_asset->video_data = package->video_do;

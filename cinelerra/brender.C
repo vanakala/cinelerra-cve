@@ -161,7 +161,7 @@ void BRender::restart(EDL *edl)
 {
 	BRenderCommand *new_command = new BRenderCommand;
 	map_valid = 0;
-	new_command->copy_edl(edl);
+	new_command->edl = edl;
 	new_command->command = BRenderCommand::BRENDER_RESTART;
 	thread->send_command(new_command);
 // Map should be reallocated before this returns.
@@ -238,29 +238,8 @@ void BRender::set_video_map(ptstime start, ptstime end)
 BRenderCommand::BRenderCommand()
 {
 	edl = 0;
+	position = 0;
 	command = BRENDER_NONE;
-	position = 0.0;
-}
-
-BRenderCommand::~BRenderCommand()
-{
-// EDL should be zeroed if copied
-	if(edl) delete edl;
-}
-
-void BRenderCommand::copy_from(BRenderCommand *src)
-{
-	this->edl = src->edl;
-	src->edl = 0;
-	this->position = src->position;
-	this->command = src->command;
-}
-
-void BRenderCommand::copy_edl(EDL *edl)
-{
-	this->edl = new EDL;
-	this->edl->copy_all(edl);
-	this->position = 0;
 }
 
 
@@ -277,6 +256,7 @@ BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
 	farm_server = 0;
 	farm_result = 0;
 	preferences = 0;
+	edl = 0;
 }
 
 BRenderThread::~BRenderThread()
@@ -291,6 +271,7 @@ BRenderThread::~BRenderThread()
 	if(command) delete command;
 	if(command_queue) delete command_queue;
 	if(preferences) delete preferences;
+	delete edl;
 }
 
 void BRenderThread::initialize()
@@ -367,12 +348,11 @@ void BRenderThread::run()
 		if(new_command->command == BRenderCommand::BRENDER_RESTART)
 		{
 // Compare EDL's and get last equivalent position in new EDL
-			if(command && command->edl)
+			if(command && edl)
 				new_command->position = 
-					new_command->edl->equivalent_output(command->edl);
+					new_command->edl->equivalent_output(edl);
 			else
 				new_command->position = 0;
-
 
 			stop();
 			brender->completion_lock->lock("BRenderThread::run 4");
@@ -381,6 +361,9 @@ void BRenderThread::run()
 			{
 				if(command) delete command;
 				command = new_command;
+				delete edl;
+				edl = new EDL();
+				edl->copy_all(command->edl);
 				start();
 			}
 			else
@@ -451,7 +434,6 @@ void BRenderThread::start()
 		start_pts = MAX(start_pts, brender_start);
 		ptstime end_pts = command->edl->tracks->total_video_length();
 		if(end_pts < start_pts) end_pts = start_pts;
-
 		brender->allocate_map(brender_start, start_pts, end_pts);
 
 		result = packages->create_packages(mwindow,

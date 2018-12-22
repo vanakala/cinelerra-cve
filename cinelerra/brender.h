@@ -123,12 +123,6 @@ class BRenderCommand
 {
 public:
 	BRenderCommand();
-	~BRenderCommand();
-
-// Transfers EDL pointer but doesn't create a new EDL.
-	void copy_from(BRenderCommand *command);
-// Make new EDL
-	void copy_edl(EDL *edl);
 
 	EDL *edl;
 
@@ -140,6 +134,7 @@ public:
 	};
 
 	int command;
+
 // The location of the last change.
 	double position;
 // The earliest point to include in background rendering would be stored in the
@@ -170,6 +165,8 @@ public:
 	PackageDispatcher *packages;
 // Copy of preferences with modified render farm.
 	Preferences *preferences;
+// Cpoy of current edl
+	EDL *edl;
 // Render farm polls these.
 	int farm_result;
 	double fps_result;
