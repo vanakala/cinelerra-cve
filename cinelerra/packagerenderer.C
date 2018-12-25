@@ -379,7 +379,9 @@ int PackageRenderer::do_video()
 			}
 			package->count++;
 			video_pts += duration;
-			if(get_result() || progress_cancelled())
+			if(get_result())
+				return 1;
+			if(!package->use_brender && progress_cancelled())
 				return 1;
 		}
 	}
@@ -550,7 +552,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 			set_progress(duration_rendered);
 
-			if(progress_cancelled())
+			if(!package->use_brender && progress_cancelled())
 			{
 				sprintf(pkg_error, _("Rendering canelled"));
 				result = 1;

@@ -379,7 +379,7 @@ void BRenderThread::stop()
 {
 	if(farm_server)
 	{
-		farm_result = 1;
+		farm_result = 0;
 		farm_server->wait_clients();
 		delete farm_server;
 		delete packages;
@@ -435,7 +435,6 @@ void BRenderThread::start()
 		ptstime end_pts = command->edl->tracks->total_video_length();
 		if(end_pts < start_pts) end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
-
 		result = packages->create_packages(mwindow,
 			command->edl,
 			preferences,

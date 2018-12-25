@@ -269,7 +269,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	else
 	if(strategy & RENDER_BRENDER)
 	{
-		if(video_pts < video_end_pts)
+		if(video_pts < video_end_pts - EPSILON)
 		{
 // Allocate new packages
 			if(total_packages == 0)
