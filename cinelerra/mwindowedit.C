@@ -967,7 +967,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 	if(!new_edls->total) return;
 
-	ptstime original_length = master_edl->tracks->total_playable_length();
+	ptstime original_length = master_edl->total_playable_length();
 	ptstime original_preview_end = master_edl->local_session->preview_end;
 
 // Delete current project
@@ -1193,7 +1193,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 // Fix preview range
 	if(!EQUIV(original_length, original_preview_end))
 	{
-		master_edl->local_session->preview_end = master_edl->tracks->total_playable_length();
+		master_edl->local_session->preview_end = master_edl->total_playable_length();
 	}
 
 // Start examining next batch of index files

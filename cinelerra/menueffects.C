@@ -53,7 +53,6 @@
 #include "renderprofiles.h"
 #include "sighandler.h"
 #include "theme.h"
-#include "tracks.h"
 
 
 
@@ -290,7 +289,7 @@ void MenuEffectThread::run()
 
 	if(PTSEQU(master_edl->local_session->get_selectionend(), total_start))
 	{
-		total_end = master_edl->tracks->total_playable_length();
+		total_end = master_edl->total_playable_length();
 		total_start = 0;
 	}
 	else

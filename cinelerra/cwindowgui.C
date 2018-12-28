@@ -58,7 +58,6 @@
 #include "playtransport.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "vtrack.h"
 #include "vframe.h"
@@ -655,7 +654,8 @@ int CWindowSlider::handle_event()
 
 void CWindowSlider::set_position()
 {
-	double new_length = master_edl->tracks->total_playable_length();
+	ptstime new_length = master_edl->total_playable_length();
+
 	if(master_edl->local_session->preview_end <= 0 ||
 		master_edl->local_session->preview_end > new_length)
 		master_edl->local_session->preview_end = new_length;

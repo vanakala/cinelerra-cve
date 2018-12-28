@@ -25,7 +25,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
-#include "tracks.h"
 #include "transportcommand.h"
 
 TransportCommand::TransportCommand()
@@ -141,7 +140,7 @@ void TransportCommand::set_playback_range(int use_inout)
 	case NORMAL_FWD:
 		start_position = edl->local_session->get_selectionstart(1);
 		if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-			end_position = edl->tracks->total_playable_length();
+			end_position = edl->total_playable_length();
 		else
 			end_position = edl->local_session->get_selectionend(1);
 // this prevents a crash if start position is after the loop when playing forwards
@@ -219,13 +218,13 @@ void TransportCommand::playback_range_inout()
 	if(edl->local_session->outpoint_valid())
 		end_position = edl->local_session->get_outpoint();
 	else
-		end_position = edl->tracks->total_playable_length();
+		end_position = edl->total_playable_length();
 }
 
 void TransportCommand::playback_range_project()
 {
 	start_position = 0;
-	end_position = edl->tracks->total_playable_length();
+	end_position = edl->total_playable_length();
 }
 
 // Debug
