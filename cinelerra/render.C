@@ -503,7 +503,7 @@ int Render::render(int test_overwrite,
 // Create rendering command
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
-	command->set_edl(render_edl);
+	command->set_edl(edl);
 	command->change_type = CHANGE_ALL;
 
 	switch(range_type)

@@ -431,6 +431,8 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 	Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
 {
+	EDL *current_edl;
+
 	for(int i = 0; i < jobs.total; i++)
 	{
 		BatchRenderJob *job = jobs.values[i];
@@ -438,27 +440,20 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 		{
 			PackageDispatcher *packages = new PackageDispatcher;
 
-// Load EDL
-			TransportCommand *command = new TransportCommand;
 			FileXML *file = new FileXML;
 			file->read_from_file(job->edl_path);
 
-// Use command to calculate range.
-			command->command = NORMAL_FWD;
-			command->get_edl()->load_xml(file,
-				LOAD_ALL);
-			command->change_type = CHANGE_ALL;
-			command->set_playback_range();
-			command->playback_range_adjust_inout();
+			current_edl = new EDL();
+			current_edl->load_xml(file, LOAD_ALL);
 
 // Create test packages
 			packages->create_packages(mwindow,
-				command->get_edl(),
+				current_edl,
 				preferences,
 				job->strategy, 
 				job->asset, 
-				command->start_position, 
-				command->end_position,
+				0,
+				current_edl->total_playable_length(),
 				0);
 
 // Append output paths allocated to total
@@ -466,8 +461,8 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 
 // Delete package harness
 			delete packages;
-			delete command;
 			delete file;
+			delete current_edl;
 		}
 	}
 }
