@@ -100,7 +100,7 @@ void MWindow::fit_selection(void)
 	if(EQUIV(master_edl->local_session->get_selectionstart(1),
 		master_edl->local_session->get_selectionend(1)))
 	{
-		selection_length = master_edl->tracks->total_length();
+		selection_length = master_edl->total_length();
 	}
 	else
 	{
@@ -128,7 +128,7 @@ void MWindow::fit_autos(int doall)
 		master_edl->local_session->get_selectionend(1)))
 	{
 		start = 0;
-		end = master_edl->tracks->total_length();
+		end = master_edl->total_length();
 	}
 	else
 // Test autos in highlighting only
@@ -341,11 +341,11 @@ void MWindow::goto_end(void)
 {
 	ptstime old_view_start_pts = master_edl->local_session->view_start_pts;
 
-	if(master_edl->tracks->total_length() > (ptstime)gui->canvas->get_w() *
+	if(master_edl->total_length() > (ptstime)gui->canvas->get_w() *
 		master_edl->local_session->zoom_time)
 	{
 		master_edl->local_session->view_start_pts =
-			master_edl->tracks->total_length() -
+			master_edl->total_length() -
 			(gui->canvas->get_w() * master_edl->local_session->zoom_time) / 2;
 	}
 	else
@@ -355,11 +355,11 @@ void MWindow::goto_end(void)
 
 	if(gui->shift_down())
 	{
-		master_edl->local_session->set_selectionend(master_edl->tracks->total_length());
+		master_edl->local_session->set_selectionend(master_edl->total_length());
 	}
 	else
 	{
-		master_edl->local_session->set_selection(master_edl->tracks->total_length());
+		master_edl->local_session->set_selection(master_edl->total_length());
 	}
 
 	if(!EQUIV(master_edl->local_session->view_start_pts, old_view_start_pts))
@@ -433,7 +433,7 @@ void MWindow::move_right(int distance)
 void MWindow::select_all(void)
 {
 	master_edl->local_session->set_selectionstart(0);
-	master_edl->local_session->set_selectionend(master_edl->tracks->total_length());
+	master_edl->local_session->set_selectionend(master_edl->total_length());
 	gui->update(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_CLOCK);
 	gui->canvas->activate();
 	cwindow->update(WUPD_POSITION);

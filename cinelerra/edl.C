@@ -277,7 +277,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 void EDL::save_xml(FileXML *file, const char *output_path,
 	int is_clip, int is_vwindow)
 {
-	copy(0, tracks->total_length(), 1, is_clip,
+	copy(0, total_length(), 1, is_clip,
 		is_vwindow, file, output_path, 0);
 }
 
@@ -508,7 +508,7 @@ void EDL::trim_selection(ptstime start,
 			start,
 			actions);
 		clear(end - start, 
-			tracks->total_length(),
+			total_length(),
 			actions);
 	}
 }
@@ -853,7 +853,7 @@ void EDL::insert_asset(Asset *asset,
 
 void EDL::optimize()
 {
-	ptstime length = tracks->total_length();
+	ptstime length = total_length();
 
 	if(local_session->preview_end > length) local_session->preview_end = length;
 	if(local_session->preview_start > length ||
@@ -962,7 +962,7 @@ void EDL::finalize_edl(int load_mode)
 			if(i)
 			{
 				if(edlsession->cursor_on_frames)
-					tracks->clear(track_length, tracks->total_length() + 100, 1);
+					tracks->clear(track_length, total_length() + 100, 1);
 			}
 		}
 		else
@@ -998,11 +998,18 @@ void EDL::finalize_edl(int load_mode)
 	if(edlsession->cursor_on_frames)
 	{
 		track_length = tracks->total_length_framealigned(edlsession->frame_rate);
-		tracks->clear(track_length, tracks->total_length() + 100, 1);
+		tracks->clear(track_length, total_length() + 100, 1);
 	}
 }
 
 ptstime EDL::total_playable_length()
+{
+	if(tracks && tracks->total())
+		return tracks->total_playable_length();
+	return 0;
+}
+
+ptstime EDL::total_length()
 {
 	if(tracks && tracks->total())
 		return tracks->total_playable_length();

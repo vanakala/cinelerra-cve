@@ -414,17 +414,6 @@ ptstime Tracks::total_recordable_length()
 	return total;
 }
 
-ptstime Tracks::total_length()
-{
-	ptstime total = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->get_length() > total) total = current->get_length();
-	}
-	return total;
-}
-
 ptstime Tracks::total_audio_length()
 {
 	ptstime total = 0;

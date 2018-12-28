@@ -33,7 +33,6 @@
 #include "mtimebar.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 
 SampleScroll::SampleScroll(MWindow *mwindow, 
 	int x,
@@ -70,7 +69,7 @@ void SampleScroll::set_position(void)
 	if(mwindow->gui->canvas)
 	{
 		lock->lock("set_position");
-		int64_t length = round(master_edl->tracks->total_length() /
+		int64_t length = round(master_edl->total_length() /
 			master_edl->local_session->zoom_time);
 		int64_t position = round(master_edl->local_session->view_start_pts /
 			master_edl->local_session->zoom_time);

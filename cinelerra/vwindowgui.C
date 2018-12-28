@@ -412,7 +412,7 @@ void VWindowEditing::next_label()
 		{
 			vwindow->playback_engine->interrupt_playback(1);
 
-			ptstime position = edl->tracks->total_length();
+			ptstime position = edl->total_length();
 			edl->local_session->set_selection(position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 		}
@@ -457,7 +457,7 @@ void VWindowEditing::to_clip()
 
 		if(PTSEQU(start, end))
 		{
-			end = edl->tracks->total_length();
+			end = edl->total_length();
 			start = 0;
 		}
 

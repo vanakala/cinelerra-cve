@@ -46,7 +46,6 @@
 #include "theme.h"
 #include "timebar.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "units.h"
 #include "vframe.h"
 #include "vwindow.h"
@@ -787,7 +786,7 @@ void TimeBar::select_region(ptstime position)
 			master_edl->local_session->set_selectionstart(start->position);
 
 		if(!end)
-			master_edl->local_session->set_selectionend(master_edl->tracks->total_length());
+			master_edl->local_session->set_selectionend(master_edl->total_length());
 		else
 			master_edl->local_session->set_selectionend(end->position);
 	}

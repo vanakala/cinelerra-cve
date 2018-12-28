@@ -38,7 +38,6 @@
 #include "cwindow.h"
 #include "mwindowgui.h"
 #include "edlsession.h"
-#include "tracks.h"
 #include "units.h"
 #include "theme.h"
 
@@ -135,8 +134,8 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			if (new_position > vwindow->get_edl()->tracks->total_length())
-				new_position = vwindow->get_edl()->tracks->total_length();
+			if (new_position > vwindow->get_edl()->total_length())
+				new_position = vwindow->get_edl()->total_length();
 			if (new_position < 0)
 				new_position = 0;
 			new_position = vwindow->get_edl()->align_to_frame(new_position);

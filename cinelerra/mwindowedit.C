@@ -1058,7 +1058,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	{
 		EDL *new_edl = new_edls->values[i];
 
-		ptstime edl_length = new_edl->tracks->total_length();
+		ptstime edl_length = new_edl->total_length();
 
 // Capture index file status from mainindex test
 		master_edl->update_assets(new_edl);
@@ -1475,7 +1475,7 @@ void MWindow::to_clip()
 	if(EQUIV(end, start)) 
 	{
 		start = 0;
-		end = master_edl->tracks->total_length();
+		end = master_edl->total_length();
 	}
 
 // Don't copy all since we don't want the clips twice.

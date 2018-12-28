@@ -1939,10 +1939,10 @@ void MWindow::set_loop_boundaries()
 		;
 	}
 	else
-	if(master_edl->tracks->total_length())
+	if(master_edl->total_length())
 	{
 		start = 0;
-		end = master_edl->tracks->total_length();
+		end = master_edl->total_length();
 	}
 	else
 	{

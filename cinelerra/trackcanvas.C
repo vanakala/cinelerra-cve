@@ -473,7 +473,7 @@ int TrackCanvas::drag_stop()
 				mainsession->drag_clips->total)
 			{
 				EDL *clip = mainsession->drag_clips->values[0];
-				asset_length_float = clip->tracks->total_length();
+				asset_length_float = clip->total_length();
 			}
 			else
 			{
@@ -1000,9 +1000,9 @@ void TrackCanvas::draw_paste_destination()
 			if(edlsession->cursor_on_frames)
 				paste_audio_length = paste_video_length = clip->tracks->total_length_framealigned(edlsession->frame_rate);
 			else
-				paste_audio_length = paste_video_length = clip->tracks->total_length();
+				paste_audio_length = paste_video_length = clip->total_length();
 
-			desta_position = get_drop_position(&insertion, NULL, clip->tracks->total_length());
+			desta_position = get_drop_position(&insertion, NULL, clip->total_length());
 		}
 
 // Get destination track

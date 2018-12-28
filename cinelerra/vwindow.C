@@ -35,7 +35,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playbackengine.h"
-#include "tracks.h"
 #include "transportcommand.inc"
 #include "vplayback.h"
 #include "vtimebar.h"
@@ -168,7 +167,7 @@ void VWindow::goto_end()
 {
 	if(get_edl())
 	{
-		ptstime position = get_edl()->tracks->total_length();
+		ptstime position = get_edl()->total_length();
 		get_edl()->local_session->set_selection(position);
 		update_position(CHANGE_NONE, 
 			0, 
