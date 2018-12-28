@@ -1001,3 +1001,10 @@ void EDL::finalize_edl(int load_mode)
 		tracks->clear(track_length, tracks->total_length() + 100, 1);
 	}
 }
+
+ptstime EDL::total_playable_length()
+{
+	if(tracks && tracks->total())
+		return tracks->total_playable_length();
+	return 0;
+}

@@ -185,6 +185,8 @@ public:
 // Create tracks from assets
 	void finalize_edl(int load_mode);
 
+	ptstime total_playable_length();
+
 // Clips
 	ArrayList<EDL*> clips;
 
