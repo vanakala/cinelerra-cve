@@ -64,7 +64,7 @@ Tracks::~Tracks()
 
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
-	if(total_playable_vtracks() != tracks->total_playable_vtracks())
+	if(playable_video_tracks() != tracks->playable_video_tracks())
 	{
 		*result = 0;
 	}
@@ -529,17 +529,4 @@ Track* Tracks::number(int number)
 		i++;
 
 	return current;
-}
-
-int Tracks::total_playable_vtracks()
-{
-	int result = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO && current->play)
-			result++;
-	}
-
-	return result;
 }

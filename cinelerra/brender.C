@@ -357,7 +357,7 @@ void BRenderThread::run()
 			stop();
 			brender->completion_lock->lock("BRenderThread::run 4");
 
-			if(new_command->edl->tracks->total_playable_vtracks())
+			if(new_command->edl->tracks->playable_video_tracks())
 			{
 				if(command) delete command;
 				command = new_command;

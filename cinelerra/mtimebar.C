@@ -354,7 +354,7 @@ void MTimeBar::draw_time()
 void MTimeBar::draw_range()
 {
 	int x1 = 0, x2 = 0;
-	if(master_edl->tracks->total_playable_vtracks() &&
+	if(master_edl->tracks->playable_video_tracks() &&
 		mwindow->preferences->use_brender)
 	{
 		double time_per_pixel = (double)master_edl->local_session->zoom_time;
