@@ -401,22 +401,26 @@ ptstime Tracks::total_playable_length()
 
 ptstime Tracks::total_audio_length()
 {
-	ptstime total = 0;
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_AUDIO && current->get_length() > total)
-			total = current->get_length();
-	}
-	return total;
+	return total_length_of(TRACK_AUDIO);
 }
 
 ptstime Tracks::total_video_length()
 {
-	ptstime total = 0;
+	return total_length_of(TRACK_VIDEO);
+}
+
+ptstime Tracks::total_length_of(int type)
+{
+	ptstime len, total = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO &&
-			current->get_length() > total) total = current->get_length();
+		if(current->data_type == type)
+		{
+			len = current->get_length();
+			if(len > total)
+				total = len;
+		}
 	}
 	return total;
 }
