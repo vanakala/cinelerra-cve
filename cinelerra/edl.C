@@ -1024,3 +1024,9 @@ ptstime EDL::total_length()
 		return tracks->total_playable_length();
 	return 0;
 }
+
+ptstime EDL::total_length_of(int type)
+{
+	if(tracks && tracks->total())
+		return tracks->total_length_of(type);
+}
