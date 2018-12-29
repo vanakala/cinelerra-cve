@@ -70,7 +70,7 @@ int New::handle_event()
 		thread->window_lock->unlock();
 		return 1;
 	}
-	master_edl->save_defaults(mwindow->defaults);
+	master_edl->save_defaults(mwindow->defaults, edlsession);
 	create_new_edl();
 	thread->start(); 
 
@@ -80,9 +80,8 @@ int New::handle_event()
 void New::create_new_edl()
 {
 	new_edl = new EDL;
-	new_edl->load_defaults(mwindow->defaults);
 	new_edlsession = new EDLSession();
-	new_edlsession->load_defaults(mwindow->defaults);
+	new_edl->load_defaults(mwindow->defaults, new_edlsession);
 }
 
 void New::create_new_project()
@@ -157,16 +156,17 @@ void NewThread::run()
 	nwindow = 0;
 	window_lock->unlock();
 
-	new_project->new_edl->save_defaults(mwindow->defaults);
-	mwindow->defaults->save();
 
 	if(result)
 	{
 // Aborted
 		delete new_project->new_edl;
+		delete new_project->new_edlsession;
 	}
 	else
 	{
+		new_project->new_edl->save_defaults(mwindow->defaults, new_project->new_edlsession);
+		mwindow->defaults->save();
 		new_project->create_new_project();
 	}
 }

@@ -64,13 +64,13 @@ public:
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
-	void load_defaults(BC_Hash *defaults);
-	void save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults, EDLSession *session);
+	void save_defaults(BC_Hash *defaults, EDLSession *session);
 // Clip default settings to boundaries.
 	void boundaries();
 // Create tracks using existing configuration
 	void create_default_tracks();
-	void load_xml(FileXML *file, uint32_t load_flags);
+	void load_xml(FileXML *file, uint32_t load_flags, EDLSession *session);
 	void save_xml(FileXML *xml, const char *output_path,
 		int is_clip, int is_vwindow);
 	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
@@ -200,6 +200,9 @@ public:
 
 // Specific to this EDL, for clips.
 	LocalSession *local_session;
+// EDLSession specific of this edl
+// Not owned by this edl
+	EDLSession *this_edlsession;
 
 // In the top EDL, this is the path it was loaded from.  Restores 
 // project titles from backups.  This is only used for loading backups.

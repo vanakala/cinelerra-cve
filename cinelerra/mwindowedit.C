@@ -462,7 +462,7 @@ void MWindow::insert(ptstime position,
 	if(!edlsession->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
 	if(!edlsession->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
 
-	edl.load_xml(file, load_flags);
+	edl.load_xml(file, load_flags, 0);
 
 	paste_edls(&new_edls, 
 		LOADMODE_PASTE, 
@@ -975,7 +975,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
 		reset_caches();
-		master_edl->save_defaults(defaults);
+		master_edl->save_defaults(defaults, 0);
 		hide_plugins();
 
 		delete master_edl;
@@ -1490,7 +1490,7 @@ void MWindow::to_clip()
 
 	EDL *new_edl = new EDL(master_edl);
 
-	new_edl->load_xml(&file, LOAD_ALL);
+	new_edl->load_xml(&file, LOAD_ALL, 0);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
 	char string[BCTEXTLEN];
 	edlsession->ptstotext(string, end - start);

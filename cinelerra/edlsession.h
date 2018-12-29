@@ -39,12 +39,12 @@ public:
 	EDLSession();
 	~EDLSession();
 
-	void load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
+	void load_xml(FileXML *xml);
 	void save_xml(FileXML *xml);
 	void copy(EDLSession *session);
-	void load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
+	void load_audio_config(FileXML *file);
 	void save_audio_config(FileXML *xml);
-	void load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
+	void load_video_config(FileXML *file);
 	void save_video_config(FileXML *xml);
 	void clear();
 	void load_defaults(BC_Hash *defaults);
@@ -67,7 +67,7 @@ public:
 	ptstime get_frame_offset();
 
 // calculate actions for edit
-	int edit_actions(void);
+	int edit_actions();
 
 // Duration of one frame
 	ptstime frame_duration();

@@ -706,9 +706,10 @@ void MWindow::init_theme()
 void MWindow::init_edl()
 {
 	master_edl = new EDL;
+	edlsession = new EDLSession();
 
 	FormatPresets::fill_preset_defaults(default_standard, edlsession);
-	master_edl->load_defaults(defaults);
+	master_edl->load_defaults(defaults, edlsession);
 	master_edl->create_default_tracks();
 }
 
@@ -1066,17 +1067,19 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				result = 0;
 				new_edl = new EDL;
 				new_edl->copy_session(master_edl);
-				new_edl->load_xml(&xml_file, LOAD_ALL);
-				test_plugins(new_edl, filenames->values[i]);
 
 				if(load_mode == LOADMODE_REPLACE || 
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
+					new_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
 					strcpy(mainsession->filename, filenames->values[i]);
 					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
 					if(update_filename)
 						set_filename(new_edl->local_session->clip_title);
 				}
+				else
+					new_edl->load_xml(&xml_file, LOAD_ALL, 0);
+				test_plugins(new_edl, filenames->values[i]);
 
 // Open media files found in xml - open fills media info
 				for(int i = 0; i < new_edl->assets->total; i++)
@@ -1750,7 +1753,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 void MWindow::save_defaults()
 {
 	gui->save_defaults(defaults);
-	master_edl->save_defaults(defaults);
+	master_edl->save_defaults(defaults, edlsession);
 	mainsession->save_defaults(defaults);
 	preferences->save_defaults(defaults);
 // Remove old defaults

@@ -422,13 +422,10 @@ void EDLSession::boundaries()
 	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 }
 
-void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
+void EDLSession::load_video_config(FileXML *file)
 {
 	char string[1024];
 	double aspect_w, aspect_h, aspect_ratio;
-
-	if(append_mode)
-		return;
 
 	BC_Resources::interpolation_method = file->tag.get_property("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	ColorModels::to_text(string, color_model);
@@ -458,14 +455,11 @@ void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load
 	sample_aspect_ratio = file->tag.get_property("SAMPLEASPECT", sample_aspect_ratio);
 }
 
-void EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
+void EDLSession::load_audio_config(FileXML *file)
 {
 	char string[32];
 
 // load channels setting
-	if(append_mode)
-		return;
-
 	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
 
 	for(int i = 0; i < audio_channels; i++)
@@ -477,74 +471,68 @@ void EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load
 	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
 }
 
-void EDLSession::load_xml(FileXML *file,
-	int append_mode, 
-	uint32_t load_flags)
+void EDLSession::load_xml(FileXML *file)
 {
 	char string[BCTEXTLEN];
 
-	if(!append_mode)
+	assetlist_format = file->tag.get_property("ASSETLIST_FORMAT", assetlist_format);
+	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
-		assetlist_format = file->tag.get_property("ASSETLIST_FORMAT", assetlist_format);
-		for(int i = 0; i < ASSET_COLUMNS; i++)
-		{
-			sprintf(string, "ASSET_COLUMN%d", i);
-			asset_columns[i] = file->tag.get_property(string, asset_columns[i]);
-		}
-		auto_conf->load_xml(file);
-		auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
-		autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
-		brender_start = file->tag.get_property("BRENDER_START", brender_start);
-		crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
-		crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
-		crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
-		crop_y2 = file->tag.get_property("CROP_Y2", crop_y2);
-
-		ruler_x1 = file->tag.get_property("RULER_X1", ruler_x1);
-		ruler_y1 = file->tag.get_property("RULER_Y1", ruler_y1);
-		ruler_x2 = file->tag.get_property("RULER_X2", ruler_x2);
-		ruler_y2 = file->tag.get_property("RULER_Y2", ruler_y2);
-
-		string[0] = 0;
-		file->tag.get_property("CURRENT_FOLDER", string);
-		if(string[0])
-			awindow_folder = AWindowGUI::folder_number(string);
-		awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
-		cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
-		cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
-		cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
-		cwindow_meter = file->tag.get_property("CWINDOW_METER", cwindow_meter);
-		cwindow_operation = file->tag.get_property("CWINDOW_OPERATION", cwindow_operation);
-		cwindow_scrollbars = file->tag.get_property("CWINDOW_SCROLLBARS", cwindow_scrollbars);
-		cwindow_xscroll = file->tag.get_property("CWINDOW_XSCROLL", cwindow_xscroll);
-		cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
-		cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
-		file->tag.get_property("DEFAULT_ATRANSITION", default_atransition);
-		file->tag.get_property("DEFAULT_VTRANSITION", default_vtransition);
-		default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
-		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
-		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
-		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
-		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
-		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
-		show_assets = file->tag.get_property("SHOW_ASSETS", 1);
-		show_titles = file->tag.get_property("SHOW_TITLES", 1);
-		time_format = file->tag.get_property("TIME_FORMAT", time_format);
-		for(int i = 0; i < 4; i++)
-		{
-			sprintf(string, "TIMECODE_OFFSET_%d", i);
-			timecode_offset[i] = file->tag.get_property(string, timecode_offset[i]);
-		}
-		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
-		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
-		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
-		file->tag.get_property("METADATA_AUTHOR", metadata_author);
-		file->tag.get_property("METADATA_TITLE", metadata_title);
-		file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
-
-		boundaries();
+		sprintf(string, "ASSET_COLUMN%d", i);
+		asset_columns[i] = file->tag.get_property(string, asset_columns[i]);
 	}
+	auto_conf->load_xml(file);
+	auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
+	autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
+	brender_start = file->tag.get_property("BRENDER_START", brender_start);
+	crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
+	crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
+	crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
+	crop_y2 = file->tag.get_property("CROP_Y2", crop_y2);
+
+	ruler_x1 = file->tag.get_property("RULER_X1", ruler_x1);
+	ruler_y1 = file->tag.get_property("RULER_Y1", ruler_y1);
+	ruler_x2 = file->tag.get_property("RULER_X2", ruler_x2);
+	ruler_y2 = file->tag.get_property("RULER_Y2", ruler_y2);
+
+	string[0] = 0;
+	file->tag.get_property("CURRENT_FOLDER", string);
+	if(string[0])
+		awindow_folder = AWindowGUI::folder_number(string);
+	awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
+	cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
+	cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
+	cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
+	cwindow_meter = file->tag.get_property("CWINDOW_METER", cwindow_meter);
+	cwindow_operation = file->tag.get_property("CWINDOW_OPERATION", cwindow_operation);
+	cwindow_scrollbars = file->tag.get_property("CWINDOW_SCROLLBARS", cwindow_scrollbars);
+	cwindow_xscroll = file->tag.get_property("CWINDOW_XSCROLL", cwindow_xscroll);
+	cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
+	cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
+	file->tag.get_property("DEFAULT_ATRANSITION", default_atransition);
+	file->tag.get_property("DEFAULT_VTRANSITION", default_vtransition);
+	default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
+	editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
+	folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
+	highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
+	labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
+	plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
+	safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
+	show_assets = file->tag.get_property("SHOW_ASSETS", 1);
+	show_titles = file->tag.get_property("SHOW_TITLES", 1);
+	time_format = file->tag.get_property("TIME_FORMAT", time_format);
+	for(int i = 0; i < 4; i++)
+	{
+		sprintf(string, "TIMECODE_OFFSET_%d", i);
+		timecode_offset[i] = file->tag.get_property(string, timecode_offset[i]);
+	}
+	tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
+	vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
+	vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
+	file->tag.get_property("METADATA_AUTHOR", metadata_author);
+	file->tag.get_property("METADATA_TITLE", metadata_title);
+	file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
+	boundaries();
 }
 
 void EDLSession::save_xml(FileXML *file)
@@ -778,7 +766,7 @@ ptstime EDLSession::get_frame_offset()
 }
 
 // FIXIT: use bits instead of ..follow_edits
-int EDLSession::edit_actions(void)
+int EDLSession::edit_actions()
 {
 	int result = 0;
 

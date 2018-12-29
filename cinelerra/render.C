@@ -339,10 +339,11 @@ void Render::run()
 
 				FileXML *file = new FileXML;
 				EDL *edl = new EDL;
+				EDLSession *session = new EDLSession();
 				file->read_from_file(job->edl_path);
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
-				edl->load_xml(file, LOAD_ALL);
+				edl->load_xml(file, LOAD_ALL, session);
 
 				File assetfile;
 				for(int i = 0; i < edl->assets->total; i++)

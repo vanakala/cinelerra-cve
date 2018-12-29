@@ -57,8 +57,7 @@ EDL::EDL(EDL *parent_edl)
 	id = next_id();
 	project_path[0] = 0;
 
-	if(!edlsession)
-		edlsession = new EDLSession();
+	this_edlsession = 0;
 
 	tracks = new Tracks(this);
 	if(!parent_edl)
@@ -94,25 +93,29 @@ EDL& EDL::operator=(EDL &edl)
 	return *this;
 }
 
-void EDL::load_defaults(BC_Hash *defaults)
+void EDL::load_defaults(BC_Hash *defaults, EDLSession *session)
 {
-	if(!parent_edl)
-		edlsession->load_defaults(defaults);
+	if(session)
+	{
+		session->load_defaults(defaults);
+		this_edlsession = session;
+	}
 
 	local_session->load_defaults(defaults);
 }
 
-void EDL::save_defaults(BC_Hash *defaults)
+void EDL::save_defaults(BC_Hash *defaults, EDLSession *session)
 {
-	if(!parent_edl)
-		edlsession->save_defaults(defaults);
+	if(session)
+		session->save_defaults(defaults);
 
 	local_session->save_defaults(defaults);
 }
 
 void EDL::boundaries()
 {
-	edlsession->boundaries();
+	if(this_edlsession)
+		this_edlsession->boundaries();
 	local_session->boundaries();
 }
 
@@ -125,7 +128,7 @@ void EDL::create_default_tracks()
 		tracks->add_audio_track(0, 0);
 }
 
-void EDL::load_xml(FileXML *file, uint32_t load_flags)
+void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 {
 	int result = 0;
 // Track numbering offset for replacing undo data.
@@ -192,16 +195,16 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				else
 				if(file->tag.title_is("VIDEO"))
 				{
-					if((load_flags & LOAD_VCONFIG) &&
-						(load_flags & LOAD_SESSION))
-						edlsession->load_video_config(file, 0, load_flags);
+					if(session && (load_flags & LOAD_VCONFIG) &&
+							(load_flags & LOAD_SESSION))
+						session->load_video_config(file);
 				}
 				else
 				if(file->tag.title_is("AUDIO"))
 				{
-					if((load_flags & LOAD_ACONFIG) &&
-						(load_flags & LOAD_SESSION))
-						edlsession->load_audio_config(file, 0, load_flags);
+					if(session && (load_flags & LOAD_ACONFIG) &&
+							(load_flags & LOAD_SESSION))
+						session->load_audio_config(file);
 				}
 				else
 				if(file->tag.title_is("ASSETS"))
@@ -219,15 +222,18 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				if(file->tag.title_is("LOCALSESSION"))
 				{
 					if((load_flags & LOAD_SESSION) ||
-						(load_flags & LOAD_TIMEBAR))
+							(load_flags & LOAD_TIMEBAR))
 						local_session->load_xml(file, load_flags);
 				}
 				else
 				if(file->tag.title_is("SESSION"))
 				{
 					if((load_flags & LOAD_SESSION) &&
-						!parent_edl)
-						edlsession->load_xml(file, 0, load_flags);
+							session)
+					{
+						session->load_xml(file);
+						this_edlsession = session;
+					}
 				}
 				else
 				if(file->tag.title_is("TRACK"))
@@ -240,7 +246,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				if(file->tag.title_is("CLIP_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL, 0);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 						clips.append(new_edl);
@@ -251,7 +257,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags)
 				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL, 0);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
@@ -761,7 +767,10 @@ void EDL::dump(int indent)
 		printf("%*sEDL %p dump:\n", indent, "", this);
 	local_session->dump(indent + 2);
 	indent += 2;
-	edlsession->dump(indent + 1);
+	if(this_edlsession)
+		this_edlsession->dump(indent + 1);
+	else
+		printf("%*sNo EDLSession\n", indent + 1, "");
 
 	printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
 

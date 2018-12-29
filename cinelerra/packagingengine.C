@@ -70,7 +70,7 @@ void PackagingEngine::create_packages_single_farm(
 	total_allocated = total_packages + preferences->get_enabled_nodes();
 	packages = new RenderPackage*[total_allocated];
 	package_len = total_len / total_packages;
-	min_package_len = 2.0 / edlsession->frame_rate;
+	min_package_len = 2.0 / edl->this_edlsession->frame_rate;
 
 
 	int current_number;    // The number being injected into the filename.
