@@ -363,16 +363,6 @@ ptstime Tracks::total_length()
 	return total;
 }
 
-ptstime Tracks::total_audio_length()
-{
-	return total_length_of(TRACK_AUDIO);
-}
-
-ptstime Tracks::total_video_length()
-{
-	return total_length_of(TRACK_VIDEO);
-}
-
 ptstime Tracks::total_length_of(int type)
 {
 	ptstime len, total = 0;
