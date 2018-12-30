@@ -184,7 +184,6 @@ public:
 // Create tracks from assets
 	void finalize_edl(int load_mode);
 
-	ptstime total_playable_length();
 	ptstime total_length();
 	ptstime total_length_of(int type);
 	int total_tracks_of(int type);

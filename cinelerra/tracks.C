@@ -425,7 +425,7 @@ int Tracks::total_tracks_of(int type)
 	return result;
 }
 
-ptstime Tracks::total_playable_length()
+ptstime Tracks::total_length()
 {
 	ptstime total = 0;
 

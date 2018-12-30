@@ -176,7 +176,7 @@ public:
 		int handle_mode,
 		int edit_labels);
 
-	ptstime total_playable_length();     // Longest track.
+	ptstime total_length();     // Longest track.
 
 	int totalpixels();       // height of all tracks in pixels
 	int number_of(Track *track);        // track number of pointer

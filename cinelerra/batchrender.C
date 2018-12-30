@@ -453,7 +453,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 				job->strategy, 
 				job->asset, 
 				0,
-				current_edl->total_playable_length(),
+				current_edl->total_length(),
 				0);
 
 // Append output paths allocated to total

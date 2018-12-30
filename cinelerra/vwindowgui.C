@@ -518,7 +518,7 @@ void VWindowSlider::set_position()
 	EDL *edl = vwindow->get_edl();
 	if(edl)
 	{
-		ptstime new_length = edl->total_playable_length();
+		ptstime new_length = edl->total_length();
 		if(EQUIV(edl->local_session->preview_end, 0))
 			edl->local_session->preview_end = new_length;
 		if(edl->local_session->preview_end > new_length)

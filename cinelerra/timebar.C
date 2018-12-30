@@ -415,7 +415,7 @@ void TimeBar::get_edl_length()
 
 	if(get_edl())
 	{
-		edl_length = get_edl()->total_playable_length();
+		edl_length = get_edl()->total_length();
 	}
 
 	if(!EQUIV(edl_length, 0))

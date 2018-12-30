@@ -654,7 +654,7 @@ int CWindowSlider::handle_event()
 
 void CWindowSlider::set_position()
 {
-	ptstime new_length = master_edl->total_playable_length();
+	ptstime new_length = master_edl->total_length();
 
 	if(master_edl->local_session->preview_end <= 0 ||
 		master_edl->local_session->preview_end > new_length)
