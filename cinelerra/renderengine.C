@@ -162,13 +162,13 @@ void RenderEngine::get_duty()
 	do_video = 0;
 
 	if(!command->single_frame() &&
-		edl->tracks->playable_audio_tracks() &&
+		edl->tracks->playable_tracks_of(TRACK_AUDIO) &&
 		edlsession->audio_channels)
 	{
 		do_audio = 1;
 	}
 
-	if(edl->tracks->playable_video_tracks())
+	if(edl->tracks->playable_tracks_of(TRACK_VIDEO))
 	{
 		do_video = 1;
 	}

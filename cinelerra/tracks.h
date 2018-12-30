@@ -75,6 +75,7 @@ public:
 // Return the numbers of tracks with the play patch enabled
 	int playable_audio_tracks();
 	int playable_video_tracks();
+	int playable_tracks_of(int type);
 // Return number of tracks with the record patch enabled
 	int recordable_audio_tracks();
 	int recordable_video_tracks();

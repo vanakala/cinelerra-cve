@@ -56,7 +56,6 @@
 #include "render.h"
 #include "theme.h"
 #include "timebar.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "units.h"
 #include "vframe.h"
@@ -403,7 +402,7 @@ void Render::run()
 int Render::check_asset(EDL *edl, Asset &asset)
 {
 	if(asset.video_data && 
-		edl->tracks->playable_video_tracks() &&
+		edl->playable_tracks_of(TRACK_VIDEO) &&
 		(File::supports(asset.format) & SUPPORTS_VIDEO))
 	{
 		asset.video_data = 1;
@@ -421,7 +420,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	}
 
 	if(asset.audio_data && 
-		edl->tracks->playable_audio_tracks() &&
+		edl->playable_tracks_of(TRACK_AUDIO) &&
 		(File::supports(asset.format) & SUPPORTS_AUDIO))
 	{
 		asset.audio_data = 1;

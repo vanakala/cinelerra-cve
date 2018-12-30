@@ -1031,4 +1031,12 @@ int EDL::total_tracks_of(int type)
 {
 	if(tracks && tracks->total())
 		return tracks->total_tracks_of(type);
+	return 0;
+}
+
+int EDL::playable_tracks_of(int type)
+{
+	if(tracks && tracks->total())
+		return tracks->playable_tracks_of(type);
+	return 0;
 }

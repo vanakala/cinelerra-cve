@@ -37,7 +37,6 @@
 #include "packagedispatcher.h"
 #include "preferences.h"
 #include "renderfarm.h"
-#include "tracks.h"
 #include "units.h"
 
 #include <errno.h>
@@ -357,7 +356,7 @@ void BRenderThread::run()
 			stop();
 			brender->completion_lock->lock("BRenderThread::run 4");
 
-			if(new_command->edl->tracks->playable_video_tracks())
+			if(new_command->edl->playable_tracks_of(TRACK_VIDEO))
 			{
 				if(command) delete command;
 				command = new_command;
