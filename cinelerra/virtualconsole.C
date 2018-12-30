@@ -32,7 +32,6 @@
 #include "playabletracks.h"
 #include "renderengine.h"
 #include "intautos.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "virtualnode.h"
 
@@ -106,7 +105,7 @@ Module* VirtualConsole::module_number(int track_number)
 // the tracks with matching data type but virtual modules only exist for
 // the matching data type.
 // Convert from absolute track number to data type track number.
-	Track *current = renderengine->edl->tracks->first;
+	Track *current = renderengine->edl->first_track();
 	int data_type_number = 0, number = 0;
 
 	for( ; current; current = NEXT, number++)
@@ -155,7 +154,7 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 	ptstime track_unit = 1.0;
 
 // Test playback status against virtual console for current position.
-	for(current_track = renderengine->edl->tracks->first;
+	for(current_track = renderengine->edl->first_track();
 		current_track && !result;
 		current_track = current_track->next)
 	{
@@ -195,7 +194,7 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
-	for(current_track = renderengine->edl->tracks->first;
+	for(current_track = renderengine->edl->first_track();
 		current_track;
 		current_track = current_track->next)
 	{

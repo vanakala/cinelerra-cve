@@ -163,7 +163,7 @@ void TrackCanvas::drag_motion()
 		cursor_y < get_h())
 	{
 // Find the edit and track the cursor is over
-		for(Track *track = master_edl->tracks->first; track; track = track->next)
+		for(Track *track = master_edl->first_track(); track; track = track->next)
 		{
 			int track_x, track_y, track_w, track_h;
 			track_dimensions(track, track_x, track_y, track_w, track_h);
@@ -744,7 +744,7 @@ void TrackCanvas::draw_resources(int mode,
 		resource_pixmaps.remove_all_objects();
 
 // Search every edit
-	for(Track *current = master_edl->tracks->first;
+	for(Track *current = master_edl->first_track();
 		current;
 		current = NEXT)
 	{
@@ -1482,7 +1482,7 @@ void TrackCanvas::draw_plugins()
 	for(int i = 0; i < plugin_show_toggles.total; i++)
 		plugin_show_toggles.values[i]->in_use = 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track;
 		track = track->next)
 	{
@@ -1622,7 +1622,7 @@ void TrackCanvas::draw_transitions()
 {
 	int x, y, w, h;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track;
 		track = track->next)
 	{
@@ -1810,7 +1810,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		0,
 	};
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{
@@ -2383,7 +2383,7 @@ void TrackCanvas::synchronize_autos(float change,
 // fill mainsession->drag_auto_gang
 	if (fill_gangs == 1 && skip->gang)
 	{
-		for(Track *current = master_edl->tracks->first;
+		for(Track *current = master_edl->first_track();
 			current;
 			current = NEXT)
 		{
@@ -4011,7 +4011,7 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 	int handle_result = 0;
 	int result = 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{
@@ -4093,7 +4093,7 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	int handle_result = 0;
 	int result = 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{
@@ -4169,7 +4169,7 @@ int TrackCanvas::do_tracks(int cursor_x,
 {
 	int result = 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{
@@ -4201,7 +4201,7 @@ int TrackCanvas::do_edits(int cursor_x,
 	int result = 0;
 	int over_edit_handle = 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{
@@ -4286,7 +4286,7 @@ int TrackCanvas::do_plugins(int cursor_x,
 	int x, y, w, h;
 	Track *track = 0;
 
-	for(track = master_edl->tracks->first;
+	for(track = master_edl->first_track();
 		track && !done;
 		track = track->next)
 	{
@@ -4400,7 +4400,7 @@ int TrackCanvas::do_transitions(int cursor_x,
 	if(!edlsession->auto_conf->transitions)
 		return 0;
 
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
 	{

@@ -24,6 +24,7 @@
 
 #include "auto.inc"
 #include "autos.inc"
+#include "automation.h"
 #include "cplayback.inc"
 #include "ctracking.inc"
 #include "cwindowgui.inc"

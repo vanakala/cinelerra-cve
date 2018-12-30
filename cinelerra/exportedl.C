@@ -38,7 +38,7 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "exportedl.h"
-#include "tracks.h"
+#include "track.h"
 #include "transition.h"
 #include "theme.h"
 
@@ -121,7 +121,7 @@ int ExportEDLAsset::export_it()
 // Find the track...
 	int serial = 0;
 	Track *track;
-	for(track = edl->tracks->first;
+	for(track = edl->first_track();
 		track;
 		track = track->next)
 	{
@@ -349,7 +349,7 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 	int serial = 0;
 	if (exportasset->track_number == -1)
 		exportasset->track_number = 0;
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track;
 		track = track->next)
 	{

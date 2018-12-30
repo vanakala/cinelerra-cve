@@ -36,7 +36,6 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "track.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "virtualconsole.h"
 
@@ -100,7 +99,7 @@ void CommonRender::arm_command()
 void CommonRender::create_modules()
 {
 // Create a module for every track, playable or not
-	Track *current = renderengine->edl->tracks->first;
+	Track *current = renderengine->edl->first_track();
 	int module = 0;
 
 	if(!modules)

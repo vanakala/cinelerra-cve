@@ -1047,3 +1047,10 @@ ptstime EDL::total_length_framealigned()
 		return tracks->total_length_framealigned(edlsession->frame_rate);
 	return 0;
 }
+
+Track *EDL::first_track()
+{
+	if(tracks && tracks->total())
+		return tracks->first;
+	return 0;
+}

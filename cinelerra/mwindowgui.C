@@ -484,7 +484,7 @@ int MWindowGUI::keypress_event()
 			if(get_keypress() == TAB)
 			{
 // Switch the record button
-				for(Track *track = master_edl->tracks->first; track; track = track->next)
+				for(Track *track = master_edl->first_track(); track; track = track->next)
 				{
 					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
@@ -504,7 +504,7 @@ int MWindowGUI::keypress_event()
 			else
 			{
 				Track *this_track = 0;
-				for(Track *track = master_edl->tracks->first; track; track = track->next)
+				for(Track *track = master_edl->first_track(); track; track = track->next)
 				{
 					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);

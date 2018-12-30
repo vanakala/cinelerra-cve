@@ -41,7 +41,6 @@
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "mwindow.h"
 
@@ -89,7 +88,7 @@ void CWindow::hide_window()
 Track* CWindow::calculate_affected_track()
 {
 	Track* affected_track = 0;
-	for(Track *track = master_edl->tracks->first;
+	for(Track *track = master_edl->first_track();
 		track;
 		track = track->next)
 	{

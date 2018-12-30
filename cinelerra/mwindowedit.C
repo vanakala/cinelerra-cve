@@ -1002,7 +1002,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		for(int i = 0; i < new_edls->total; i++)
 		{
 			EDL *new_edl = new_edls->values[i];
-			for(Track *current = new_edl->tracks->first;
+			for(Track *current = new_edl->first_track();
 				current;
 				current = NEXT)
 			{
@@ -1040,7 +1040,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 				master_edl->local_session->get_selectionstart(),
 				master_edl->local_session->get_selectionend(), 1);
 
-		Track *current = first_track ? first_track : master_edl->tracks->first;
+		Track *current = first_track ? first_track : master_edl->first_track();
 		for( ; current; current = NEXT)
 		{
 			if(current->record)
@@ -1113,7 +1113,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 					edl_length,
 					actions & EDIT_LABELS);
 
-			for(Track *new_track = new_edl->tracks->first; 
+			for(Track *new_track = new_edl->first_track();
 				new_track; 
 				new_track = new_track->next)
 			{
@@ -1625,7 +1625,7 @@ void MWindow::map_audio(int pattern)
 {
 	int current_channel = 0;
 	int current_track = 0;
-	for(Track *current = master_edl->tracks->first; current; current = NEXT)
+	for(Track *current = master_edl->first_track(); current; current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO && 
 			current->record)

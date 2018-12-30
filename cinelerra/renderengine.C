@@ -35,7 +35,6 @@
 #include "preferencesthread.h"
 #include "renderengine.h"
 #include "mainsession.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "videodevice.h"
 #include "vrender.h"
@@ -162,13 +161,13 @@ void RenderEngine::get_duty()
 	do_video = 0;
 
 	if(!command->single_frame() &&
-		edl->tracks->playable_tracks_of(TRACK_AUDIO) &&
+		edl->playable_tracks_of(TRACK_AUDIO) &&
 		edlsession->audio_channels)
 	{
 		do_audio = 1;
 	}
 
-	if(edl->tracks->playable_tracks_of(TRACK_VIDEO))
+	if(edl->playable_tracks_of(TRACK_VIDEO))
 	{
 		do_video = 1;
 	}

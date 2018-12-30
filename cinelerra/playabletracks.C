@@ -29,7 +29,6 @@
 #include "renderengine.h"
 #include "intauto.h"
 #include "intautos.h"
-#include "tracks.h"
 
 
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
@@ -41,7 +40,7 @@ PlayableTracks::PlayableTracks(RenderEngine *renderengine,
 	this->renderengine = renderengine;
 	this->data_type = data_type;
 
-	for(Track *current_track = renderengine->edl->tracks->first; 
+	for(Track *current_track = renderengine->edl->first_track();
 		current_track; 
 		current_track = current_track->next)
 	{

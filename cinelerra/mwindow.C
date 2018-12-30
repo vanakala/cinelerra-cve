@@ -1167,7 +1167,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 void MWindow::test_plugins(EDL *new_edl, const char *path)
 {
 // Do a check weather plugins exist
-	for(Track *track = new_edl->tracks->first; track; track = track->next)
+	for(Track *track = new_edl->first_track(); track; track = track->next)
 	{
 		for(int k = 0; k < track->plugin_set.total; k++)
 		{
@@ -1583,7 +1583,7 @@ void MWindow::update_plugin_states()
 		PluginServer *src_plugingui = plugin_guis->values[i];
 
 // Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
-		for(Track *track = master_edl->tracks->first;
+		for(Track *track = master_edl->first_track();
 			track && !result; 
 			track = track->next)
 		{

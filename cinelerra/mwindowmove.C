@@ -527,7 +527,7 @@ void MWindow::next_edit_handle(int shift_down)
 	ptstime position = master_edl->local_session->get_selectionend(1);
 	ptstime new_position = INFINITY;
 // Test for edit handles after cursor position
-	for (Track *track = master_edl->tracks->first; track; track = track->next)
+	for (Track *track = master_edl->first_track(); track; track = track->next)
 	{
 		if (track->record)
 		{
@@ -581,7 +581,7 @@ void MWindow::prev_edit_handle(int shift_down)
 	ptstime new_position = -1;
 
 // Test for edit handles before cursor position
-	for (Track *track = master_edl->tracks->first; track; track = track->next)
+	for (Track *track = master_edl->first_track(); track; track = track->next)
 	{
 		if (track->record)
 		{

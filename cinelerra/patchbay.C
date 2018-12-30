@@ -137,7 +137,7 @@ Track *PatchBay::is_over_track()     // called from mwindow
 		cursor_y < get_h())
 	{
 // Get track we're inside of
-		for(Track *track = master_edl->tracks->first;
+		for(Track *track = master_edl->first_track();
 			track;
 			track = track->next)
 		{
@@ -164,7 +164,7 @@ int PatchBay::cursor_motion_event()
 			cursor_y < get_h())
 		{
 // Get track we're inside of
-			for(Track *track = master_edl->tracks->first;
+			for(Track *track = master_edl->first_track();
 				track;
 				track = track->next)
 			{
@@ -344,7 +344,7 @@ void PatchBay::update()
 // Every patch has a GUI regardless of whether or not it is visible.
 // Make sure GUI's are allocated for every patch and deleted for non-existant
 // patches.
-	for(Track *current = master_edl->tracks->first;
+	for(Track *current = master_edl->first_track();
 		current;
 		current = NEXT, patch_count++)
 	{
@@ -396,7 +396,7 @@ void PatchBay::update()
 
 void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 {
-	for(Track *current = master_edl->tracks->first;
+	for(Track *current = master_edl->first_track();
 		current;
 		current = NEXT)
 	{
@@ -430,7 +430,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 void PatchBay::synchronize_nudge(posnum value, Track *skip)
 {
-	for(Track *current = master_edl->tracks->first;
+	for(Track *current = master_edl->first_track();
 		current;
 		current = NEXT)
 	{
