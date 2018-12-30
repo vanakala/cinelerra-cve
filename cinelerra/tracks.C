@@ -64,7 +64,7 @@ Tracks::~Tracks()
 
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
-	if(playable_video_tracks() != tracks->playable_video_tracks())
+	if(playable_tracks_of(TRACK_VIDEO) != tracks->playable_tracks_of(TRACK_VIDEO))
 	{
 		*result = 0;
 	}
@@ -345,32 +345,6 @@ int Tracks::recordable_tracks_of(int type)
 	{
 		if(current->data_type == type && current->record)
 			result++;
-	}
-	return result;
-}
-
-int Tracks::playable_audio_tracks()
-{
-	int result = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_AUDIO && current->play)
-			result++;
-	}
-	return result;
-}
-
-int Tracks::playable_video_tracks()
-{
-	int result = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO && current->play)
-		{
-			result++;
-		}
 	}
 	return result;
 }
