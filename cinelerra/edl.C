@@ -1040,3 +1040,10 @@ int EDL::playable_tracks_of(int type)
 		return tracks->playable_tracks_of(type);
 	return 0;
 }
+
+int EDL::recordable_tracks_of(int type)
+{
+	if(tracks && tracks->total())
+		return tracks->recordable_tracks_of(type);
+	return 0;
+}

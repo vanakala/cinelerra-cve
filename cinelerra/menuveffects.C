@@ -32,7 +32,6 @@
 #include "menuveffects.h"
 #include "patchbay.h"
 #include "renderprofiles.inc"
-#include "tracks.h"
 #include "units.h"
 #include "vpluginarray.h"
 
@@ -58,7 +57,7 @@ MenuVEffectThread::MenuVEffectThread(MWindow *mwindow)
 
 int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 {
-	asset->layers = master_edl->tracks->recordable_video_tracks();
+	asset->layers = master_edl->recordable_tracks_of(TRACK_VIDEO);
 	return asset->layers;
 }
 

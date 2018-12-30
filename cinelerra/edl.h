@@ -189,6 +189,7 @@ public:
 	ptstime total_length_of(int type);
 	int total_tracks_of(int type);
 	int playable_tracks_of(int type);
+	int recordable_tracks_of(int type);
 
 // Clips
 	ArrayList<EDL*> clips;

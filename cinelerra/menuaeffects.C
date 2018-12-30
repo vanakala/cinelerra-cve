@@ -33,7 +33,6 @@
 #include "menuaeffects.h"
 #include "patchbay.h"
 #include "renderprofiles.inc"
-#include "tracks.h"
 
 // ============================================= audio effects
 
@@ -59,7 +58,7 @@ MenuAEffectThread::MenuAEffectThread(MWindow *mwindow)
 
 int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 {
-	asset->channels = master_edl->tracks->recordable_audio_tracks();
+	asset->channels = master_edl->recordable_tracks_of(TRACK_AUDIO);
 	return asset->channels;
 }
 

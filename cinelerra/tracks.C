@@ -337,6 +337,18 @@ int Tracks::recordable_video_tracks()
 	return result;
 }
 
+int Tracks::recordable_tracks_of(int type)
+{
+	int result = 0;
+
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == type && current->record)
+			result++;
+	}
+	return result;
+}
+
 int Tracks::playable_audio_tracks()
 {
 	int result = 0;
