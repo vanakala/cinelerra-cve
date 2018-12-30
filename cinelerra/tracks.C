@@ -415,14 +415,25 @@ ptstime Tracks::total_length_of(int type)
 
 ptstime Tracks::total_length_framealigned(double fps)
 {
-	if (total_audio_tracks() && total_video_tracks())
-		return MIN(floor(total_audio_length() * fps), floor(total_video_length() * fps)) / fps;
+	int atracks, vtracks;
+	ptstime alen, vlen;
 
-	if (total_audio_tracks())
-		return floor(total_audio_length() * fps) / fps;
+	alen = vlen = 0;
 
-	if (total_video_tracks())
-		return floor(total_video_length() * fps) / fps;
+	if(atracks = total_tracks_of(TRACK_AUDIO))
+		alen = total_length_of(TRACK_AUDIO);
+
+	if(vtracks = total_tracks_of(TRACK_VIDEO))
+		vlen = total_length_of(TRACK_VIDEO);
+
+	if(atracks && vtracks)
+		return MIN(floor(alen * fps), floor(vlen * fps)) / fps;
+
+	if(atracks)
+		return floor(alen * fps) / fps;
+
+	if(vtracks)
+		return floor(vlen * fps) / fps;
 
 	return 0;
 }
