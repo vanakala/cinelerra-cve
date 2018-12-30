@@ -339,30 +339,6 @@ int Tracks::playable_tracks_of(int type)
 	return result;
 }
 
-int Tracks::total_audio_tracks()
-{
-	int result = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_AUDIO)
-			result++;
-	}
-	return result;
-}
-
-int Tracks::total_video_tracks()
-{
-	int result = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO)
-			result++;
-	}
-	return result;
-}
-
 int Tracks::total_tracks_of(int type)
 {
 	int result = 0;

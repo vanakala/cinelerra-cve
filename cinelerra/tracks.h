@@ -76,8 +76,6 @@ public:
 	int playable_tracks_of(int type);
 // Return number of tracks with the record patch enabled
 	int recordable_tracks_of(int type);
-	int total_audio_tracks();
-	int total_video_tracks();
 	int total_tracks_of(int type);
 	ptstime total_audio_length();
 	ptstime total_video_length();
