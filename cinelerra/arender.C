@@ -40,7 +40,6 @@
 #include "playbackengine.h"
 #include "preferences.h"
 #include "renderengine.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "virtualaconsole.h"
 #include "virtualconsole.h"
@@ -75,7 +74,7 @@ void ARender::arm_command()
 
 int ARender::get_total_tracks()
 {
-	return renderengine->edl->tracks->total_audio_tracks();
+	return renderengine->edl->total_tracks_of(TRACK_AUDIO);
 }
 
 Module* ARender::new_module(Track *track)

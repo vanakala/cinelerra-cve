@@ -38,7 +38,6 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "renderengine.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "units.h"
 #include "vframe.h"
@@ -73,7 +72,7 @@ VirtualConsole* VRender::new_vconsole_object()
 
 int VRender::get_total_tracks()
 {
-	return renderengine->edl->tracks->total_video_tracks();
+	return renderengine->edl->total_tracks_of(TRACK_VIDEO);
 }
 
 Module* VRender::new_module(Track *track)

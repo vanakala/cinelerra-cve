@@ -1024,4 +1024,11 @@ ptstime EDL::total_length_of(int type)
 {
 	if(tracks && tracks->total())
 		return tracks->total_length_of(type);
+	return 0;
+}
+
+int EDL::total_tracks_of(int type)
+{
+	if(tracks && tracks->total())
+		return tracks->total_tracks_of(type);
 }

@@ -1030,7 +1030,7 @@ void TrackCanvas::draw_paste_destination()
 				if(dest->data_type == TRACK_AUDIO)
 				{
 					if( (asset && current_atrack < asset->channels)
-						|| (clip  && current_atrack < clip->tracks->total_audio_tracks()) )
+						|| (clip  && current_atrack < clip->total_tracks_of(TRACK_AUDIO)) )
 					{
 						w = round(paste_audio_length /
 							master_edl->local_session->zoom_time);
@@ -1072,7 +1072,7 @@ void TrackCanvas::draw_paste_destination()
 				if(dest->data_type == TRACK_VIDEO)
 				{
 					if( (asset && current_vtrack < asset->layers)
-						|| (clip && current_vtrack < clip->tracks->total_video_tracks()) )
+						|| (clip && current_vtrack < clip->total_tracks_of(TRACK_VIDEO)) )
 					{
 						// Images have length -1
 						w = round(paste_video_length /

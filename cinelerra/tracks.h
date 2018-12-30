@@ -80,6 +80,7 @@ public:
 	int recordable_video_tracks();
 	int total_audio_tracks();
 	int total_video_tracks();
+	int total_tracks_of(int type);
 	ptstime total_audio_length();
 	ptstime total_video_length();
 	ptstime total_length_of(int type);
