@@ -120,8 +120,8 @@ void PreferencesThread::run()
 	this_edlsession = new EDLSession();
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(mwindow->preferences);
-	edl->copy_session(master_edl);
 	this_edlsession->copy(edlsession);
+	edl->copy_session(master_edl, this_edlsession);
 	redraw_indexes = 0;
 	redraw_meters = 0;
 	redraw_times = 0;
@@ -229,7 +229,6 @@ void PreferencesThread::apply_settings()
 			strcpy(preferences->index_directory,
 				mwindow->preferences->index_directory);
 	}
-	master_edl->copy_session(edl, 1);
 	edlsession->copy(this_edlsession);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();

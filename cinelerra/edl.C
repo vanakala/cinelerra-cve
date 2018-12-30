@@ -313,17 +313,12 @@ void EDL::copy_assets(EDL *edl)
 	}
 }
 
-void EDL::copy_session(EDL *edl, int session_only)
+void EDL::copy_session(EDL *edl, EDLSession *session)
 {
-	if(!session_only)
-	{
-		strcpy(this->project_path, edl->project_path);
-	}
-
-	if(!session_only)
-	{
-		local_session->copy_from(edl->local_session);
-	}
+	strcpy(this->project_path, edl->project_path);
+	local_session->copy_from(edl->local_session);
+	if(session)
+		this_edlsession = session;
 }
 
 void EDL::copy_assets(ptstime start, 

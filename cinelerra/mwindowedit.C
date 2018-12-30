@@ -980,7 +980,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 		delete master_edl;
 		master_edl = new EDL;
-		master_edl->copy_session(new_edls->values[0]);
+		master_edl->copy_session(new_edls->values[0], edlsession);
 
 		gui->mainmenu->update_toggles();
 		gwindow->gui->update_toggles();
