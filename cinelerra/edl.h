@@ -186,6 +186,7 @@ public:
 
 	ptstime total_length();
 	ptstime total_length_of(int type);
+	ptstime total_length_framealigned();
 	int total_tracks_of(int type);
 	int playable_tracks_of(int type);
 	int recordable_tracks_of(int type);

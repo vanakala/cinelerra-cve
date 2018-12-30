@@ -998,7 +998,7 @@ void TrackCanvas::draw_paste_destination()
 		if(clip)
 		{
 			if(edlsession->cursor_on_frames)
-				paste_audio_length = paste_video_length = clip->tracks->total_length_framealigned(edlsession->frame_rate);
+				paste_audio_length = paste_video_length = clip->total_length_framealigned();
 			else
 				paste_audio_length = paste_video_length = clip->total_length();
 

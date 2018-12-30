@@ -961,7 +961,7 @@ void EDL::finalize_edl(int load_mode)
 		if(load_mode == LOADMODE_REPLACE_CONCATENATE ||
 			load_mode == LOADMODE_CONCATENATE)
 		{
-			track_length = tracks->total_length_framealigned(edlsession->frame_rate);
+			track_length = total_length_framealigned();
 			no_track = i;
 			if(i)
 			{
@@ -1001,7 +1001,7 @@ void EDL::finalize_edl(int load_mode)
 // Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
 	if(edlsession->cursor_on_frames)
 	{
-		track_length = tracks->total_length_framealigned(edlsession->frame_rate);
+		track_length = total_length_framealigned();
 		tracks->clear(track_length, total_length() + 100, 1);
 	}
 }
@@ -1038,5 +1038,12 @@ int EDL::recordable_tracks_of(int type)
 {
 	if(tracks && tracks->total())
 		return tracks->recordable_tracks_of(type);
+	return 0;
+}
+
+ptstime EDL::total_length_framealigned()
+{
+	if(tracks && tracks->total())
+		return tracks->total_length_framealigned(edlsession->frame_rate);
 	return 0;
 }
