@@ -203,7 +203,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 		{
 			int real_module_number = shared_location.module;
 			int real_plugin_number = shared_location.plugin;
-			Track *track = edl->tracks->number(real_module_number);
+			Track *track = edl->number(real_module_number);
 // Get shared plugin from master track
 			Plugin *plugin = track->get_current_plugin(postime, 
 				real_plugin_number, 
@@ -217,7 +217,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 	case PLUGIN_SHAREDMODULE:
 		{
 			int real_module_number = shared_location.module;
-			Track *track = edl->tracks->number(real_module_number);
+			Track *track = edl->number(real_module_number);
 			return track->is_synthesis(renderengine, postime);
 		}
 	}

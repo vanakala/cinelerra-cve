@@ -475,23 +475,3 @@ int Tracks::totalpixels()
 
 	return result;
 }
-
-int Tracks::number_of(Track *track)
-{
-	int i = 0;
-
-	for(Track *current = first; current && current != track; current = NEXT)
-		i++;
-	return i;
-}
-
-Track* Tracks::number(int number)
-{
-	Track *current;
-	int i = 0;
-
-	for(current = first; current && i < number; current = NEXT)
-		i++;
-
-	return current;
-}

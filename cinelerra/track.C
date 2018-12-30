@@ -480,7 +480,7 @@ void Track::xchg_pluginsets(PluginSet *set1, PluginSet *set2)
 		plugin_set.values[si2] = temp;
 
 		SharedLocation old_location, new_location;
-		new_location.module = old_location.module = tracks->number_of(this);
+		new_location.module = old_location.module = number_of();
 		old_location.plugin = si1;
 		new_location.plugin = si2;
 		tracks->change_plugins(old_location, new_location, 1);
@@ -500,7 +500,7 @@ void Track::move_plugins_up(PluginSet *plugin_set)
 			this->plugin_set.values[i] = temp;
 
 			SharedLocation old_location, new_location;
-			new_location.module = old_location.module = tracks->number_of(this);
+			new_location.module = old_location.module = number_of();
 			old_location.plugin = i;
 			new_location.plugin = i - 1;
 			tracks->change_plugins(old_location, new_location, 1);
@@ -522,7 +522,7 @@ void Track::move_plugins_down(PluginSet *plugin_set)
 			this->plugin_set.values[i] = temp;
 
 			SharedLocation old_location, new_location;
-			new_location.module = old_location.module = tracks->number_of(this);
+			new_location.module = old_location.module = number_of();
 			old_location.plugin = i;
 			new_location.plugin = i + 1;
 			tracks->change_plugins(old_location, new_location, 1);
@@ -554,7 +554,7 @@ void Track::remove_pluginset(PluginSet *plugin_set)
 	for(i++ ; i < this->plugin_set.total; i++)
 	{
 		SharedLocation old_location, new_location;
-		new_location.module = old_location.module = tracks->number_of(this);
+		new_location.module = old_location.module = number_of();
 		old_location.plugin = i;
 		new_location.plugin = i - 1;
 		tracks->change_plugins(old_location, new_location, 0);
@@ -716,7 +716,7 @@ Track::Track() : ListItem<Track>()
 
 int Track::number_of() 
 { 
-	return tracks->number_of(this); 
+	return tracks->edl->number_of(this);
 }
 
 

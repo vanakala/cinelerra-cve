@@ -128,12 +128,13 @@ EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
 	this->mwindow = mwindow;
 	this->popup = popup;
 	dialog_thread = new ResizeTrackThread(mwindow, 
-		popup->track->tracks->number_of(popup->track));
+		popup->track->number_of());
 }
 
 int EditPopupResize::handle_event()
 {
-	dialog_thread->start_window(popup->track, popup->track->tracks->number_of(popup->track));
+	dialog_thread->start_window(popup->track,
+		popup->track->number_of());
 	return 1;
 }
 

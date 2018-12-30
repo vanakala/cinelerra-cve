@@ -192,6 +192,10 @@ public:
 	int recordable_tracks_of(int type);
 // Pointer to the first track
 	Track *first_track();
+// Number of pointed track
+	int number_of(Track *track);
+// Pointer to track number
+	Track *number(int number);
 
 // Clips
 	ArrayList<EDL*> clips;

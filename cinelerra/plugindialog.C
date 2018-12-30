@@ -223,7 +223,7 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
-		Track *track = master_edl->tracks->number(plugin_locations.values[i]->module);
+		Track *track = master_edl->number(plugin_locations.values[i]->module);
 		char *track_title = track->title;
 		int number = plugin_locations.values[i]->plugin;
 		Plugin *plugin = track->get_current_plugin(
@@ -237,7 +237,7 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	}
 	for(int i = 0; i < module_locations.total; i++)
 	{
-		Track *track = master_edl->tracks->number(module_locations.values[i]->module);
+		Track *track = master_edl->number(module_locations.values[i]->module);
 		module_data.append(new BC_ListBoxItem(track->title));
 	}
 

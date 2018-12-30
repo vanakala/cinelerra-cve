@@ -890,7 +890,7 @@ void EDL::get_shared_plugins(Track *source,
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
-					plugin_locations->append(new SharedLocation(tracks->number_of(track), i));
+					plugin_locations->append(new SharedLocation(number_of(track), i));
 				}
 			}
 		}
@@ -904,7 +904,7 @@ void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_loc
 		if(current != track && 
 			current->data_type == track->data_type)
 		{
-			module_locations->append(new SharedLocation(tracks->number_of(current), 0));
+			module_locations->append(new SharedLocation(number_of(current), 0));
 		}
 	}
 }
@@ -1053,4 +1053,30 @@ Track *EDL::first_track()
 	if(tracks && tracks->total())
 		return tracks->first;
 	return 0;
+}
+
+int EDL::number_of(Track *track)
+{
+	int i = 0;
+
+	if(tracks && tracks->total())
+	{
+		for(Track *current = tracks->first; current && current != track;
+				current = NEXT)
+			i++;
+	}
+	return i;
+}
+
+Track *EDL::number(int number)
+{
+	Track *current = 0;
+	int i = 0;
+
+	if(tracks && tracks->total())
+	{
+		for(current = tracks->first; current && i < number; current = NEXT)
+			i++;
+	}
+	return current;
 }
