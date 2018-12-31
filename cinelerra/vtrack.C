@@ -37,7 +37,7 @@
 #include "mainsession.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "tracks.h"
+#include "tracks.inc"
 #include "units.h"
 #include "vautomation.h"
 #include "vframe.h"

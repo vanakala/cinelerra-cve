@@ -32,7 +32,6 @@
 #include "mainsession.h"
 #include "track.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "transition.h"
 #include "transitionpopup.h"
 #include <string.h>

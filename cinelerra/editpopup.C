@@ -28,7 +28,6 @@
 #include "plugindialog.h"
 #include "resizetrackthread.h"
 #include "track.h"
-#include "tracks.h"
 #include "trackcanvas.h"
 
 

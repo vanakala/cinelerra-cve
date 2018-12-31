@@ -39,8 +39,8 @@
 #include "mainsession.h"
 #include "theme.h"
 #include "track.h"
-#include "trackcanvas.h"
 #include "tracks.h"
+#include "trackcanvas.h"
 #include "vpatchgui.h"
 #include <string.h>
 

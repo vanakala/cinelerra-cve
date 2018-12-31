@@ -45,7 +45,6 @@
 #include "preferences.h"
 #include "theme.h"
 #include "timebar.h"
-#include "tracks.h"
 #include "vframe.h"
 #include "vplayback.h"
 #include "vtimebar.h"

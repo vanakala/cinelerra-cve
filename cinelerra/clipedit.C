@@ -34,7 +34,6 @@
 #include "vwindowgui.h"
 #include "mainerror.h"
 #include "theme.h"
-#include "tracks.h"
 
 
 ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)

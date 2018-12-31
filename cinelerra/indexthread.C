@@ -33,7 +33,6 @@
 #include "mainsession.h"
 #include <unistd.h>
 #include "trackcanvas.h"
-#include "tracks.h"
 
 // Read data from buffers and calculate peaks
 

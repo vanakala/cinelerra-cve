@@ -39,7 +39,6 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "thread.h"
-#include "tracks.h"
 #include "transportcommand.h"
 #include "virtualaconsole.h"
 #include "virtualanode.h"

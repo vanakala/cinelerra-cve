@@ -41,8 +41,8 @@
 #include "resourcepixmap.h"
 #include "theme.h"
 #include "bctimer.h"
+#include "track.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include <unistd.h>
 #include "vframe.h"
 

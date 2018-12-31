@@ -19,6 +19,7 @@
  * 
  */
 
+#include "automation.h"
 #include "bcmenuitem.h"
 #include "clip.h"
 #include "edl.h"
@@ -35,7 +36,6 @@
 #include "patchbay.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "units.h"
 #include "vframe.h"
 #include "zoombar.h"

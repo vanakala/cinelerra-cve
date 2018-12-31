@@ -29,7 +29,7 @@
 #include "module.h"
 #include "plugin.h"
 #include "renderengine.h"
-#include "tracks.h"
+#include "track.h"
 #include "virtualconsole.h"
 #include "virtualnode.h"
 

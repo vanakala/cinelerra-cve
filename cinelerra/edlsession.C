@@ -27,6 +27,7 @@
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "clip.h"
+#include "edit.inc"
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -36,7 +37,6 @@
 #include "playbackconfig.h"
 #include "preferences.inc"
 #include "selection.h"
-#include "tracks.h"
 #include "workarounds.h"
 
 int EDLSession::current_id = 0;
