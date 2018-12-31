@@ -428,7 +428,7 @@ void EDL::copy(ptstime start,
 // Don't want this if using clipboard
 	if(all)
 	{
-		if(vwindow_edl)
+		if(vwindow_edl && this != vwindow_edl)
 		{
 			vwindow_edl->save_xml(file,
 				output_path,
