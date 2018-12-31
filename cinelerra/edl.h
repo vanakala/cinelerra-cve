@@ -196,6 +196,10 @@ public:
 	int number_of(Track *track);
 // Pointer to track number
 	Track *number(int number);
+// Set toggles of all tracks to value
+	void set_all_toggles(int toggle_type, int value);
+// Count number of toggels set
+	int total_toggled(int toggle_type);
 
 // Clips
 	ArrayList<EDL*> clips;

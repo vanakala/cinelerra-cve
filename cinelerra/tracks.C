@@ -288,31 +288,6 @@ void Tracks::detach_shared_effects(int module)
 		current->detach_shared_effects(module);
 }
 
-int Tracks::total_of(int type)
-{
-	int result = 0;
-	IntAuto *mute_keyframe = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(type == MUTE)
-		{
-			ptstime start = edl->local_session->get_selectionstart(1);
-			result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->get_automation_constant(start, start);
-		}
-		else
-		{
-			result +=
-				(current->play && type == PLAY) ||
-				(current->record && type == RECORD) ||
-				(current->gang && type == GANG) ||
-				(current->draw && type == DRAW) ||
-				(current->expand_view && type == EXPAND);
-		}
-	}
-	return result;
-}
-
 int Tracks::recordable_tracks_of(int type)
 {
 	int result = 0;
@@ -434,27 +409,6 @@ void Tracks::dump(int indent)
 		current->dump(indent);
 	}
 }
-
-void Tracks::select_all(int type, int value)
-{
-	for(Track* current = first; current; current = NEXT)
-	{
-		ptstime position = edl->local_session->get_selectionstart(1);
-
-		if(type == PLAY) current->play = value;
-		if(type == RECORD) current->record = value;
-		if(type == GANG) current->gang = value;
-		if(type == DRAW) current->draw = value;
-		
-		if(type == MUTE)
-		{
-			((IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_auto_for_editing(position))->value = value;
-		}
-
-		if(type == EXPAND) current->expand_view = value;
-	}
-}
-
 
 // ===================================== file operations
 

@@ -33,6 +33,8 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "intauto.h"
+#include "intautos.h"
 #include "labels.h"
 #include "loadmode.inc"
 #include "localsession.h"
@@ -1079,4 +1081,73 @@ Track *EDL::number(int number)
 			i++;
 	}
 	return current;
+}
+
+void EDL::set_all_toggles(int toggle_type, int value)
+{
+	if(tracks && tracks->total())
+	{
+		for(Track* current = tracks->first; current; current = NEXT)
+		{
+			ptstime position = local_session->get_selectionstart(1);
+
+			switch(toggle_type)
+			{
+			case Tracks::PLAY:
+				current->play = value;
+				break;
+			case Tracks::RECORD:
+				current->record = value;
+				break;
+			case Tracks::GANG:
+				current->gang = value;
+				break;
+			case Tracks::DRAW:
+				current->draw = value;
+				break;
+			case Tracks::MUTE:
+				((IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_auto_for_editing(position))->value = value;
+				break;
+			case Tracks::EXPAND:
+				current->expand_view = value;
+				break;
+			}
+		}
+	}
+}
+
+int EDL::total_toggled(int toggle_type)
+{
+	ptstime start;
+	int result = 0;
+
+	if(tracks && tracks->total())
+	{
+		for(Track *current = tracks->first; current; current = NEXT)
+		{
+			switch(toggle_type)
+			{
+			case Tracks::MUTE:
+				start = local_session->get_selectionstart(1);
+				result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->get_automation_constant(start, start);
+				break;
+			case Tracks::PLAY:
+				result += !!current->play;
+				break;
+			case Tracks::RECORD:
+				result += !!current->record;
+				break;
+			case Tracks::GANG:
+				result += !!current->gang;
+				break;
+			case Tracks::DRAW:
+				result += !!current->draw;
+				break;
+			case Tracks::EXPAND:
+				result = !!current->expand_view;
+				break;
+			}
+		}
+	}
+	return result;
 }

@@ -518,12 +518,12 @@ int MWindowGUI::keypress_event()
 					}
 				}
 
-				int total_selected = master_edl->tracks->total_of(Tracks::RECORD);
+				int total_selected = master_edl->total_toggled(Tracks::RECORD);
 
 // nothing previously selected
 				if(total_selected == 0)
 				{
-					master_edl->tracks->select_all(Tracks::RECORD,
+					master_edl->set_all_toggles(Tracks::RECORD,
 						1);
 				}
 				else
@@ -532,15 +532,15 @@ int MWindowGUI::keypress_event()
 // this patch was previously the only one on
 					if(this_track && this_track->record)
 					{
-						master_edl->tracks->select_all(Tracks::RECORD,
+						master_edl->set_all_toggles(Tracks::RECORD,
 							1);
 					}
 // another patch was previously the only one on
 					else
 					{
-						master_edl->tracks->select_all(Tracks::RECORD,
+						master_edl->set_all_toggles(Tracks::RECORD,
 							0);
-						if (this_track)
+						if(this_track)
 							this_track->record = 1;
 
 					}
@@ -548,9 +548,9 @@ int MWindowGUI::keypress_event()
 				else
 				if(total_selected > 1)
 				{
-					master_edl->tracks->select_all(Tracks::RECORD,
+					master_edl->set_all_toggles(Tracks::RECORD,
 						0);
-					if (this_track) 
+					if(this_track)
 						this_track->record = 1;
 				}
 

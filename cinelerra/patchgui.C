@@ -221,7 +221,7 @@ void PatchGUI::toggle_behavior(int type,
 {
 	if(toggle->shift_down())
 	{
-		int total_selected = master_edl->tracks->total_of(type);
+		int total_selected = master_edl->total_toggled(type);
 
 		if(type == Tracks::MUTE)
 		{
@@ -233,7 +233,7 @@ void PatchGUI::toggle_behavior(int type,
 // nothing previously selected
 		if(total_selected == 0)
 		{
-			master_edl->tracks->select_all(type, value);
+			master_edl->set_all_toggles(type, value);
 		}
 		else
 		if(total_selected == 1)
@@ -241,19 +241,19 @@ void PatchGUI::toggle_behavior(int type,
 // this patch was previously the only one on
 			if((*output && value) || (!*output && !value))
 			{
-				master_edl->tracks->select_all(type, value);
+				master_edl->set_all_toggles(type, value);
 			}
 // another patch was previously the only one on
 			else
 			{
-				master_edl->tracks->select_all(type, !value);
+				master_edl->set_all_toggles(type, !value);
 				*output = value;
 			}
 		}
 		else
 		if(total_selected > 1)
 		{
-			master_edl->tracks->select_all(type, !value);
+			master_edl->set_all_toggles(type, !value);
 			*output = value;
 		}
 		toggle->set_value(value);
