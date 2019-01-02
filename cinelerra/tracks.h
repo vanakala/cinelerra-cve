@@ -40,6 +40,7 @@ public:
 	Tracks(EDL *edl);
 	virtual ~Tracks();
 
+	void reset_instance();
 	Tracks& operator=(Tracks &tracks);
 	void load(FileXML *xml, int &track_offset, uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, 

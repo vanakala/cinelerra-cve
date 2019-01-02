@@ -62,6 +62,11 @@ Tracks::~Tracks()
 	delete_all_tracks();
 }
 
+void Tracks::reset_instance()
+{
+	delete_all_tracks();
+}
+
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
 	if(playable_tracks_of(TRACK_VIDEO) != tracks->playable_tracks_of(TRACK_VIDEO))
