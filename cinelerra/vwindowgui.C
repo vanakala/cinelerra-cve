@@ -121,23 +121,22 @@ VWindowGUI::~VWindowGUI()
 	delete transport;
 }
 
-void VWindowGUI::change_source(EDL *edl, const char *title)
+void VWindowGUI::change_source(const char *title)
 {
-	char string[BCTEXTLEN];
+	int no_title = 0;
 
 	if(title && title[0])
-	{
-		sprintf(string,"%s - " PROGRAM_NAME, title);
-		strcpy(loaded_title, title);
-	}
+		sprintf(loaded_title,"%s - " PROGRAM_NAME, title);
 	else
 	{
-		strcpy(string, MWindow::create_title(N_("Viewer")));
-		loaded_title[0] = 0;
+		strcpy(loaded_title, MWindow::create_title(N_("Viewer")));
+		no_title = 1;
 	}
 	slider->set_position();
 	timebar->update();
-	set_title(string);
+	set_title(loaded_title);
+	if(no_title)
+		loaded_title[0] = 0;
 }
 
 void VWindowGUI::resize_event(int w, int h)

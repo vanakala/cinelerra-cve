@@ -85,7 +85,7 @@ void VWindow::change_source()
 	gui->canvas->clear_canvas();
 	if(vwindow_edl)
 	{
-		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
+		gui->change_source(vwindow_edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
@@ -107,7 +107,7 @@ void VWindow::change_source(Asset *asset)
 	vwindow_edl->finalize_edl(LOADMODE_REPLACE);
 
 // Update GUI
-	gui->change_source(vwindow_edl, title);
+	gui->change_source(title);
 	update_position(CHANGE_ALL, 1, 1);
 }
 
@@ -125,16 +125,16 @@ void VWindow::change_source(EDL *edl)
 		vwindow_edl->reset_instance();
 		vwindow_edl->copy_all(edl);
 // Update GUI
-		gui->change_source(edl, edl->local_session->clip_title);
+		gui->change_source(edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
-		gui->change_source(edl, _("Viewer"));
+		gui->change_source(0);
 }
 
 void VWindow::remove_source()
 {
-	gui->change_source(0, 0);
+	gui->change_source(0);
 	gui->clock->update(0);
 	gui->canvas->draw_refresh();
 }

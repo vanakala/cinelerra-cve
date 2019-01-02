@@ -64,7 +64,7 @@ public:
 	int cursor_motion_event();
 
 // Update GUI to reflect new source
-	void change_source(EDL *edl, const char *title);
+	void change_source(const char *title);
 	void drag_motion();
 	int drag_stop();
 
