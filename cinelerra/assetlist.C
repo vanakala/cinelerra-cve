@@ -111,6 +111,8 @@ void AssetList::remove_unused()
 
 void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
 {
+	int i;
+
 	while(!file->read_tag())
 	{
 		if(file->tag.title_is("/ASSETS"))
@@ -120,7 +122,16 @@ void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
 			Asset *new_asset = new Asset(file->tag.get_property("SRC"));
 			new_asset->read(file);
 			new_asset = add_asset(new_asset);
-			assets->append(new_asset);
+			if(assets)
+			{
+				for(i = 0; i < assets->total; i++)
+				{
+					if(assets->values[i] == new_asset)
+						break;
+				}
+				if(i >= assets->total)
+					assets->append(new_asset);
+			}
 		}
 	}
 }
