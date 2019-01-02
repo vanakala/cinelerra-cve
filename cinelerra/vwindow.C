@@ -62,18 +62,7 @@ VWindow::~VWindow()
 {
 	delete playback_engine;
 	delete playback_cursor;
-	delete_edl();
 	delete clip_edit;
-}
-
-void VWindow::delete_edl()
-{
-	if(vwindow_edl)
-	{
-		delete vwindow_edl;
-		vwindow_edl = 0;
-	}
-	asset = 0;
 }
 
 void VWindow::run()
@@ -109,12 +98,11 @@ void VWindow::change_source(Asset *asset)
 	FileSystem fs;
 	fs.extract_name(title, asset->path);
 
-	delete_edl();
 	gui->canvas->clear_canvas();
 
 // Generate EDL off of main EDL for cutting
 	this->asset = asset;
-	vwindow_edl = new EDL(master_edl);
+	vwindow_edl->reset_instance();
 	vwindow_edl->update_assets(asset);
 	vwindow_edl->finalize_edl(LOADMODE_REPLACE);
 
@@ -129,13 +117,13 @@ void VWindow::change_source(EDL *edl)
 	if(edl && vwindow_edl &&
 		edl->id == vwindow_edl->id) return;
 
-	delete_edl();
 	gui->canvas->clear_canvas();
 
 	if(edl)
 	{
 		this->asset = 0;
-		vwindow_edl = new EDL(master_edl);
+		vwindow_edl->reset_instance();
+		vwindow_edl->copy_all(edl);
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
@@ -146,7 +134,6 @@ void VWindow::change_source(EDL *edl)
 
 void VWindow::remove_source()
 {
-	delete_edl();
 	gui->change_source(0, 0);
 	gui->clock->update(0);
 	gui->canvas->draw_refresh();

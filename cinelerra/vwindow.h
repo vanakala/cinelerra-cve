@@ -62,7 +62,6 @@ public:
 	void clear_inpoint();
 	void clear_outpoint();
 	void copy();
-	void delete_edl();
 	void goto_start();
 	void goto_end();
 	void update(int options);

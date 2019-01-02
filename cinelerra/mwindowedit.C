@@ -978,8 +978,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		master_edl->save_defaults(defaults, 0);
 		hide_plugins();
 
-		delete master_edl;
-		master_edl = new EDL;
+		master_edl->reset_instance();
 		master_edl->copy_session(new_edls->values[0], edlsession);
 
 		gui->mainmenu->update_toggles();

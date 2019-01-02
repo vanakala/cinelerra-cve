@@ -61,6 +61,7 @@ public:
 	EDL(EDL *parent_edl = 0);
 	~EDL();
 
+	void reset_instance();
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
@@ -87,7 +88,6 @@ public:
 // Sets this_edlsession to session if given
 	void copy_session(EDL *edl, EDLSession *session = 0);
 	void copy_all(EDL *edl);
-	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
 
 // Copy pan and fade settings from edl

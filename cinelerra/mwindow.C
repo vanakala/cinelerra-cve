@@ -209,6 +209,8 @@ MWindow::~MWindow()
 	delete plugin_guis;
 	delete removed_guis;
 	delete plugin_gui_lock;
+	delete vwindow_edl;
+	delete master_edl;
 }
 
 void MWindow::init_error()
@@ -707,6 +709,7 @@ void MWindow::init_edl()
 {
 	master_edl = new EDL;
 	edlsession = new EDLSession();
+	vwindow_edl = new EDL(master_edl);
 
 	FormatPresets::fill_preset_defaults(default_standard, edlsession);
 	master_edl->load_defaults(defaults, edlsession);

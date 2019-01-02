@@ -89,6 +89,15 @@ EDL::~EDL()
 	clips.remove_all_objects();
 }
 
+void EDL::reset_instance()
+{
+	tracks->reset_instance();
+	labels->reset_instance();
+	if(!parent_edl)
+		assets->remove_all();
+	clips.remove_all_objects();
+}
+
 EDL& EDL::operator=(EDL &edl)
 {
 	copy_all(&edl);
@@ -143,7 +152,6 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 
 // The parent_edl test is required to make EDL loading work because
 // when loading an EDL the EDL tag is already read by the parent.
-
 	if(!parent_edl)
 	{
 		do{
@@ -263,14 +271,12 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl) delete vwindow_edl;
-						vwindow_edl = new_edl;
+						vwindow_edl->copy_all(new_edl);
+						vwindow_edl->copy_session(new_edl);
 					}
-					else
-					{
-						delete new_edl;
-						new_edl = 0;
-					}
+
+					delete new_edl;
+					new_edl = 0;
 				}
 			}
 		}while(!result);
@@ -291,7 +297,7 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 void EDL::copy_all(EDL *edl)
 {
-	copy_assets(edl);
+	update_assets(edl);
 	copy_clips(edl);
 	tracks->copy_from(edl->tracks);
 	labels->copy_from(edl->labels);
@@ -303,15 +309,6 @@ void EDL::copy_clips(EDL *edl)
 	for(int i = 0; i < edl->clips.total; i++)
 	{
 		add_clip(edl->clips.values[i]);
-	}
-}
-
-void EDL::copy_assets(EDL *edl)
-{
-	if(!parent_edl)
-	{
-		for(int i = 0; i < edl->assets->total; i++)
-			assets->append(edl->assets->values[i]);
 	}
 }
 
