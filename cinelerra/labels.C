@@ -46,6 +46,11 @@ Labels::~Labels()
 	delete_all();
 }
 
+void Labels::reset_instance()
+{
+	delete_all();
+}
+
 void Labels::dump(int indent)
 {
 	printf("%*sLabels %p dump(%d):\n", indent, "", this, total());
