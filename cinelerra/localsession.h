@@ -34,8 +34,8 @@ class LocalSession
 {
 public:
 	LocalSession(EDL *edl);
-	~LocalSession();
 
+	void reset_instance();
 // Get selected range based on precidence of in/out points and
 // highlighted region.
 // 1) If a highlighted selection exists it's used.

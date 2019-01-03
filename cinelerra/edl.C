@@ -96,6 +96,7 @@ void EDL::reset_instance()
 	if(!parent_edl)
 		assets->remove_all();
 	clips.remove_all_objects();
+	local_session->reset_instance();
 }
 
 EDL& EDL::operator=(EDL &edl)

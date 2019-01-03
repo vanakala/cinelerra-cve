@@ -93,8 +93,14 @@ LocalSession::LocalSession(EDL *edl)
 	red = green = blue = 0;
 }
 
-LocalSession::~LocalSession()
+void LocalSession::reset_instance()
 {
+	clip_title[0] = 0;
+	clip_notes[0] = 0;
+	selectionstart = selectionend = 0;
+	in_point = out_point = -1;
+	view_start_pts = 0;
+	track_start = 0;
 }
 
 void LocalSession::copy_from(LocalSession *that)
