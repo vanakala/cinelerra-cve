@@ -57,6 +57,7 @@ public:
 		int use_scrollbars);
 	virtual ~Canvas();
 
+	void release_refresh_frame();
 // Get dimensions given a zoom
 	void calculate_sizes(EDL *edl,
 		int output_w, 

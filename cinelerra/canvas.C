@@ -89,6 +89,17 @@ Canvas::~Canvas()
 	canvas_lock = 0;
 }
 
+void Canvas::release_refresh_frame()
+{
+	if(refresh_frame)
+	{
+		lock_canvas("Canvas::release_refresh_frame");
+		BC_Resources::tmpframes.release_frame(refresh_frame);
+		refresh_frame = 0;
+		unlock_canvas();
+	}
+}
+
 void Canvas::lock_canvas(const char *location)
 {
 	if(canvas_lock)
