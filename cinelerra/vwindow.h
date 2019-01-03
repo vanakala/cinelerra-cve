@@ -46,11 +46,6 @@ public:
 	void change_source();
 // Remove source
 	void remove_source();
-// Returns private EDL of VWindow
-// If an asset is dropped in, a new VWindow EDL is created in the master EDL
-// and this points to it.
-// If a clip is dropped in, it points to the clip EDL.
-	EDL* get_edl();
 // Returns last argument of change_source or 0 if it was an EDL
 	Asset* get_asset();
 

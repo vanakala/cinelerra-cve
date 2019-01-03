@@ -56,7 +56,7 @@ void VTimeBar::resize_event()
 
 EDL* VTimeBar::get_edl()
 {
-	return gui->vwindow->get_edl();
+	return vwindow_edl;
 }
 
 void VTimeBar::draw_time()
@@ -71,36 +71,20 @@ void VTimeBar::update_preview()
 
 void VTimeBar::select_label(ptstime position)
 {
-	EDL *edl = get_edl();
+	gui->transport->handle_transport(STOP, 1, 0);
 
-	if(edl)
+	position = vwindow_edl->align_to_frame(position);
+
+	if(shift_down())
 	{
-		gui->transport->handle_transport(STOP, 1, 0);
-
-		position = master_edl->align_to_frame(position);
-
-		if(shift_down())
-		{
-			if(position > edl->local_session->get_selectionend(1) / 2 + 
-				edl->local_session->get_selectionstart(1) / 2)
-			{
-
-				edl->local_session->set_selectionend(position);
-			}
-			else
-			{
-				edl->local_session->set_selectionstart(position);
-			}
-		}
+		if(position > vwindow_edl->local_session->get_selectionend(1) / 2 +
+				vwindow_edl->local_session->get_selectionstart(1) / 2)
+			vwindow_edl->local_session->set_selectionend(position);
 		else
-		{
-			edl->local_session->set_selectionstart(position);
-			edl->local_session->set_selectionend(position);
-		}
-
-		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
+			vwindow_edl->local_session->set_selectionstart(position);
 	}
+	else
+		vwindow_edl->local_session->set_selection(position);
+
+	mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
 }
-
-
-

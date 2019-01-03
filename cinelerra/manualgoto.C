@@ -61,13 +61,10 @@ void ManualGoto::open_window()
 		icon_image = mwindow->theme->get_image("mwindow_icon");
 	}
 	else
-	if (mwindow->vwindow->get_edl())
 	{
-		position = mwindow->vwindow->get_edl()->local_session->get_selectionstart(1);
+		position = vwindow_edl->local_session->get_selectionstart(1);
 		icon_image = mwindow->theme->get_image("vwindow_icon");
 	}
-	else
-		return;
 
 	if(!running())
 		start();
@@ -117,12 +114,11 @@ void ManualGoto::run()
 				mwindow->cwindow->update(WUPD_POSITION);
 			}
 		} else
-		if ((masterwindow == (BC_WindowBase *)mwindow->vwindow->gui) &&
-			mwindow->vwindow->get_edl())
+		if(masterwindow == (BC_WindowBase *)mwindow->vwindow->gui)
 		{
 			// vwindow update
 			VWindow *vwindow = mwindow->vwindow;
-			ptstime current_position = vwindow->get_edl()->local_session->get_selectionstart(1);
+			ptstime current_position = vwindow_edl->local_session->get_selectionstart(1);
 			switch (modifier)
 			{
 			case '+':
@@ -134,14 +130,14 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			if (new_position > vwindow->get_edl()->total_length())
-				new_position = vwindow->get_edl()->total_length();
+			if(new_position > vwindow_edl->total_length())
+				new_position = vwindow_edl->total_length();
 			if (new_position < 0)
 				new_position = 0;
-			new_position = vwindow->get_edl()->align_to_frame(new_position);
+			new_position = vwindow_edl->align_to_frame(new_position);
 			if (!PTSEQU(current_position, new_position))
 			{
-				vwindow->get_edl()->local_session->set_selection(new_position);
+				vwindow_edl->local_session->set_selection(new_position);
 				vwindow->update_position(CHANGE_NONE, 0, 1);
 			}
 		}

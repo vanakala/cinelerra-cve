@@ -70,11 +70,6 @@ void VWindow::run()
 	gui->run_window();
 }
 
-EDL* VWindow::get_edl()
-{
-	return vwindow_edl;
-}
-
 Asset* VWindow::get_asset()
 {
 	return this->asset;
@@ -141,25 +136,16 @@ void VWindow::remove_source()
 
 void VWindow::goto_start()
 {
-	if(get_edl())
-	{
-		get_edl()->local_session->set_selection(0);
-		update_position(CHANGE_NONE, 
-			0, 
-			1);
-	}
+	vwindow_edl->local_session->set_selection(0);
+	update_position(CHANGE_NONE, 0, 1);
 }
 
 void VWindow::goto_end()
 {
-	if(get_edl())
-	{
-		ptstime position = get_edl()->total_length();
-		get_edl()->local_session->set_selection(position);
-		update_position(CHANGE_NONE, 
-			0, 
-			1);
-	}
+	ptstime position = vwindow_edl->total_length();
+
+	vwindow_edl->local_session->set_selection(position);
+	update_position(CHANGE_NONE, 0, 1);
 }
 
 void VWindow::update(int options)
@@ -176,82 +162,57 @@ void VWindow::update_position(int change_type,
 	int use_slider, 
 	int update_slider)
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		if(use_slider) 
-			edl->local_session->set_selection(gui->slider->get_value());
+	if(use_slider)
+		vwindow_edl->local_session->set_selection(gui->slider->get_value());
 
-		if(update_slider)
-		{
-			gui->slider->set_position();
-		}
+	if(update_slider)
+		gui->slider->set_position();
 
-		gui->timebar->update();
-		playback_engine->send_command(CURRENT_FRAME, edl, change_type);
+	gui->timebar->update();
+	playback_engine->send_command(CURRENT_FRAME, vwindow_edl, change_type);
 
-		gui->clock->update(edl->local_session->get_selectionstart(1));
-	}
+	gui->clock->update(vwindow_edl->local_session->get_selectionstart(1));
 }
 
 void VWindow::set_inpoint()
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		edl->set_inpoint(edl->local_session->get_selectionstart(1));
-		gui->timebar->update();
-	}
+	vwindow_edl->set_inpoint(vwindow_edl->local_session->get_selectionstart(1));
+	gui->timebar->update();
 }
 
 void VWindow::set_outpoint()
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		edl->set_outpoint(edl->local_session->get_selectionstart(1));
-		gui->timebar->update();
-	}
+	vwindow_edl->set_outpoint(vwindow_edl->local_session->get_selectionstart(1));
+	gui->timebar->update();
 }
 
 void VWindow::clear_inpoint()
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		edl->local_session->unset_inpoint();
-		gui->timebar->update();
-	}
+	vwindow_edl->local_session->unset_inpoint();
+	gui->timebar->update();
 }
 
 void VWindow::clear_outpoint()
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		edl->local_session->unset_outpoint();
-		gui->timebar->update();
-	}
+	vwindow_edl->local_session->unset_outpoint();
+	gui->timebar->update();
 }
 
 void VWindow::copy()
 {
-	EDL *edl = get_edl();
-	if(edl)
-	{
-		ptstime start = edl->local_session->get_selectionstart();
-		ptstime end = edl->local_session->get_selectionend();
-		FileXML file;
-		edl->copy(start,
-			end,
-			0,
-			0,
-			0,
-			&file,
-			"",
-			1);
-		mwindow->gui->get_clipboard()->to_clipboard(file.string,
-			strlen(file.string),
-			SECONDARY_SELECTION);
-	}
+	ptstime start = vwindow_edl->local_session->get_selectionstart();
+	ptstime end = vwindow_edl->local_session->get_selectionend();
+	FileXML file;
+
+	vwindow_edl->copy(start,
+		end,
+		0,
+		0,
+		0,
+		&file,
+		"",
+		1);
+	mwindow->gui->get_clipboard()->to_clipboard(file.string,
+		strlen(file.string),
+		SECONDARY_SELECTION);
 }

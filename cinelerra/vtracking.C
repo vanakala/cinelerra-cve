@@ -49,18 +49,10 @@ PlaybackEngine* VTracking::get_playback_engine()
 
 void VTracking::update_tracker(ptstime position)
 {
-	EDL *edl = vwindow->get_edl();
+	vwindow_edl->local_session->set_selection(position);
+	vwindow->gui->slider->update(position);
 
-	if(edl)
-	{
-		Asset *asset = vwindow->get_asset();
-
-		edl->local_session->set_selectionstart(position);
-		edl->local_session->set_selectionend(position);
-		vwindow->gui->slider->update(position);
-
-		vwindow->gui->clock->update(position);
-	}
+	vwindow->gui->clock->update(position);
 	vwindow->gui->timebar->update();
 
 	update_meters(position);

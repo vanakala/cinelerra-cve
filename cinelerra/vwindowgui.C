@@ -355,72 +355,57 @@ void VWindowEditing::copy_selection()
 
 void VWindowEditing::splice_selection()
 {
-	if(vwindow->get_edl())
-		mwindow->splice(vwindow->get_edl());
+	mwindow->splice(vwindow_edl);
 }
 
 void VWindowEditing::overwrite_selection()
 {
-	if(vwindow->get_edl())
-		mwindow->overwrite(vwindow->get_edl());
+	mwindow->overwrite(vwindow_edl);
 }
 
 void VWindowEditing::toggle_label()
 {
-	if(vwindow->get_edl())
-	{
-		EDL *edl = vwindow->get_edl();
-		edl->labels->toggle_label(edl->local_session->get_selectionstart(1),
-			edl->local_session->get_selectionend(1));
-		vwindow->gui->timebar->update();
-	}
+	vwindow_edl->labels->toggle_label(vwindow_edl->local_session->get_selectionstart(1),
+		vwindow_edl->local_session->get_selectionend(1));
+	vwindow->gui->timebar->update();
 }
 
 void VWindowEditing::prev_label()
 {
-	if(vwindow->get_edl())
+	vwindow->playback_engine->interrupt_playback(1);
+
+	Label *current = vwindow_edl->labels->prev_label(
+			vwindow_edl->local_session->get_selectionstart(1));
+
+	if(!current)
 	{
-		EDL *edl = vwindow->get_edl();
-		vwindow->playback_engine->interrupt_playback(1);
-
-		Label *current = edl->labels->prev_label(
-			edl->local_session->get_selectionstart(1));
-
-		if(!current)
-		{
-			edl->local_session->set_selection(0);
-			vwindow->update_position(CHANGE_NONE, 0, 1);
-		}
-		else
-		{
-			edl->local_session->set_selection(current->position);
-			vwindow->update_position(CHANGE_NONE, 0, 1);
-		}
+		vwindow_edl->local_session->set_selection(0);
+		vwindow->update_position(CHANGE_NONE, 0, 1);
+	}
+	else
+	{
+		vwindow_edl->local_session->set_selection(current->position);
+		vwindow->update_position(CHANGE_NONE, 0, 1);
 	}
 }
 
 void VWindowEditing::next_label()
 {
-	if(vwindow->get_edl())
+	Label *current = vwindow_edl->labels->next_label(
+		vwindow_edl->local_session->get_selectionstart(1));
+	vwindow->playback_engine->interrupt_playback(1);
+
+	if(!current)
 	{
-		EDL *edl = vwindow->get_edl();
-		Label *current = edl->labels->next_label(
-			edl->local_session->get_selectionstart(1));
-		if(!current)
-		{
-			vwindow->playback_engine->interrupt_playback(1);
+		ptstime position = vwindow_edl->total_length();
 
-			ptstime position = edl->total_length();
-			edl->local_session->set_selection(position);
-			vwindow->update_position(CHANGE_NONE, 0, 1);
-		}
-		else
-		{
-			vwindow->playback_engine->interrupt_playback(1);
-
-			edl->local_session->set_selection(current->position);
-			vwindow->update_position(CHANGE_NONE, 0, 1);
-		}
+		vwindow_edl->local_session->set_selection(position);
+		vwindow->update_position(CHANGE_NONE, 0, 1);
+	}
+	else
+	{
+		vwindow_edl->local_session->set_selection(current->position);
+		vwindow->update_position(CHANGE_NONE, 0, 1);
 	}
 }
 
@@ -446,38 +431,35 @@ void VWindowEditing::clear_outpoint()
 
 void VWindowEditing::to_clip()
 {
-	if(vwindow->get_edl())
+	FileXML file;
+	ptstime start = vwindow_edl->local_session->get_selectionstart();
+	ptstime end = vwindow_edl->local_session->get_selectionend();
+
+	if(PTSEQU(start, end))
 	{
-		FileXML file;
-		EDL *edl = vwindow->get_edl();
-		ptstime start = edl->local_session->get_selectionstart();
-		ptstime end = edl->local_session->get_selectionend();
-
-		if(PTSEQU(start, end))
-		{
-			end = edl->total_length();
-			start = 0;
-		}
-
-		edl->copy(start, 
-			end, 
-			1,
-			0,
-			0,
-			&file,
-			"",
-			1);
-
-		EDL *new_edl = new EDL(master_edl);
-		new_edl->load_xml(&file, LOAD_ALL, 0);
-		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
-		char string[BCTEXTLEN];
-		edlsession->ptstotext(string, end - start);
-		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
-
-		new_edl->local_session->set_selection(0);
-		vwindow->clip_edit->create_clip(new_edl);
+		end = vwindow_edl->total_length();
+		start = 0;
 	}
+
+	vwindow_edl->copy(start,
+		end,
+		1,
+		0,
+		0,
+		&file,
+		"",
+		1);
+
+	EDL *new_edl = new EDL(master_edl);
+	new_edl->load_xml(&file, LOAD_ALL, 0);
+	sprintf(new_edl->local_session->clip_title, _("Clip %d"),
+		mainsession->clip_number++);
+	char string[BCTEXTLEN];
+	edlsession->ptstotext(string, end - start);
+	sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
+
+	new_edl->local_session->set_selection(0);
+	vwindow->clip_edit->create_clip(new_edl);
 }
 
 
@@ -513,24 +495,19 @@ int VWindowSlider::handle_event()
 
 void VWindowSlider::set_position()
 {
-	EDL *edl = vwindow->get_edl();
-	if(edl)
-	{
-		ptstime new_length = edl->total_length();
-		if(EQUIV(edl->local_session->preview_end, 0))
-			edl->local_session->preview_end = new_length;
-		if(edl->local_session->preview_end > new_length)
-			edl->local_session->preview_end = new_length;
-		if(edl->local_session->preview_start > new_length)
-			edl->local_session->preview_start = 0;
+	ptstime new_length = vwindow_edl->total_length();
 
-		update(mwindow->theme->vslider_w, 
-			edl->local_session->get_selectionstart(1), 
-			edl->local_session->preview_start, 
-			edl->local_session->preview_end);
-	}
-	else
-		update(0, 0, 0, 0);
+	if(EQUIV(vwindow_edl->local_session->preview_end, 0))
+		vwindow_edl->local_session->preview_end = new_length;
+	if(vwindow_edl->local_session->preview_end > new_length)
+		vwindow_edl->local_session->preview_end = new_length;
+	if(vwindow_edl->local_session->preview_start > new_length)
+		vwindow_edl->local_session->preview_start = 0;
+
+	update(mwindow->theme->vslider_w,
+		vwindow_edl->local_session->get_selectionstart(1),
+		vwindow_edl->local_session->preview_start,
+		vwindow_edl->local_session->preview_end);
 }
 
 
@@ -545,12 +522,6 @@ VWindowTransport::VWindowTransport(MWindow *mwindow,
 {
 	this->gui = gui;
 }
-
-EDL* VWindowTransport::get_edl()
-{
-	return gui->vwindow->get_edl();
-}
-
 
 void VWindowTransport::goto_start()
 {
@@ -581,17 +552,15 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 
 void VWindowCanvas::zoom_resize_window(double percentage)
 {
-	EDL *edl = mwindow->vwindow->get_edl();
-	if(!edl) edl = master_edl;
-
 	int canvas_w, canvas_h;
-	calculate_sizes(edl,
+	int new_w, new_h;
+
+	calculate_sizes(vwindow_edl,
 		edlsession->output_w,
 		edlsession->output_h,
 		percentage,
 		canvas_w,
 		canvas_h);
-	int new_w, new_h;
 	new_w = canvas_w + (gui->get_w() - mwindow->theme->vcanvas_w);
 	new_h = canvas_h + (gui->get_h() - mwindow->theme->vcanvas_h);
 	gui->resize_window(new_w, new_h);
@@ -606,16 +575,15 @@ void VWindowCanvas::close_source()
 
 void VWindowCanvas::draw_refresh()
 {
-	EDL *edl = gui->vwindow->get_edl();
 	if(!get_canvas()->get_video_on())
 	{
 		lock_canvas("VWindowCanvas::draw_refresh");
 		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
-		if(refresh_frame && edl)
+		if(refresh_frame)
 		{
 			double in_x1, in_y1, in_x2, in_y2;
 			double out_x1, out_y1, out_x2, out_y2;
-			get_transfers(edl,
+			get_transfers(vwindow_edl,
 				in_x1,
 				in_y1,
 				in_x2,

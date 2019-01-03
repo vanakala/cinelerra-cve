@@ -1728,7 +1728,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 // Remove from VWindow.
 	for(int i = 0; i < mainsession->drag_clips->total; i++)
 	{
-		if(mainsession->drag_clips->values[i] == vwindow->get_edl())
+		if(mainsession->drag_clips->values[i] == vwindow_edl)
 			vwindow->remove_source();
 	}
 

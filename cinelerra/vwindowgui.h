@@ -165,7 +165,6 @@ public:
 		VWindowGUI *gui, 
 		int x, 
 		int y);
-	EDL* get_edl();
 	void goto_start();
 	void goto_end();
 
