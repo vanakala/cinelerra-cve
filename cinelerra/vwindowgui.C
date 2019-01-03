@@ -578,7 +578,6 @@ void VWindowCanvas::draw_refresh()
 	if(!get_canvas()->get_video_on())
 	{
 		lock_canvas("VWindowCanvas::draw_refresh");
-		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 		if(refresh_frame)
 		{
 			double in_x1, in_y1, in_x2, in_y2;
@@ -604,9 +603,12 @@ void VWindowCanvas::draw_refresh()
 				round(in_y2 - in_y1),
 				0);
 		}
-		unlock_canvas();
+		else
+			clear_canvas();
+
 		draw_overlays();
 		get_canvas()->flash();
+		unlock_canvas();
 	}
 }
 
