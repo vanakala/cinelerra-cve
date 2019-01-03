@@ -131,6 +131,7 @@ void VWindow::remove_source()
 {
 	gui->change_source(0);
 	gui->clock->update(0);
+	gui->canvas->release_refresh_frame();
 	gui->canvas->draw_refresh();
 }
 
