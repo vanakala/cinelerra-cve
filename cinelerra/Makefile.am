@@ -330,7 +330,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindow.h \
 		 cwindowtool.h \
 		 deleteallindexes.h \
-		 dv1394.h \
 		 edit.h \
 		 editpanel.h \
 		 editpopup.h \
