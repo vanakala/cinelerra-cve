@@ -108,6 +108,7 @@ public:
 
 	void reallocate_string(int new_available);     // change size of string to accomodate new output
 	void set_shared_string(char *shared_string, long available);    // force writing to a message buffer
+	int skip_to_tag(const char *string);          // skip to next tag
 	void rewind();
 
 	char *string;      // string that contains the actual file

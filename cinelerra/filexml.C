@@ -365,7 +365,15 @@ void FileXML::set_shared_string(char *shared_string, long available)
 	}
 }
 
-
+int FileXML::skip_to_tag(const char *string)
+{
+	while(!read_tag())
+	{
+		if(tag.title_is(string))
+			return 0;
+	}
+	return 1;
+}
 
 // ================================ XML tag
 
