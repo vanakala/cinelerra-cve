@@ -52,40 +52,26 @@
 Mutex* EDL::id_lock = 0;
 
 
-EDL::EDL(EDL *parent_edl)
+EDL::EDL(int is_master)
 {
-	this->parent_edl = parent_edl;
-
+	this->is_master = is_master;
 	id = next_id();
 	project_path[0] = 0;
 
 	this_edlsession = 0;
 
 	tracks = new Tracks(this);
-	if(!parent_edl)
-		assets = new ArrayList<Asset*>;
-	else
-		assets = parent_edl->assets;
-
+	assets = new ArrayList<Asset*>;
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
 }
 
-
 EDL::~EDL()
 {
-	if(tracks)
-		delete tracks;
-
-	if(labels)
-		delete labels;
-
-	if(local_session)
-		delete local_session;
-
-	if(!parent_edl)
-		delete assets;
-
+	delete tracks;
+	delete labels;
+	delete local_session;
+	delete assets;
 	clips.remove_all_objects();
 }
 
@@ -93,8 +79,7 @@ void EDL::reset_instance()
 {
 	tracks->reset_instance();
 	labels->reset_instance();
-	if(!parent_edl)
-		assets->remove_all();
+	assets->remove_all();
 	clips.remove_all_objects();
 	local_session->reset_instance();
 }
@@ -146,19 +131,9 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
 
-// Search for start of master EDL.
-
-// The parent_edl test caused clip creation to fail since those XML files
-// contained an EDL tag.
-
-// The parent_edl test is required to make EDL loading work because
-// when loading an EDL the EDL tag is already read by the parent.
-	if(!parent_edl)
+	if(is_master)
 	{
-		do{
-			result = file->read_tag();
-		}while(!result && 
-			!file->tag.title_is("XML") && 
+		while(!file->read_tag() &&
 			!file->tag.title_is("EDL"));
 	}
 
@@ -253,31 +228,25 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 				}
 				else
 // Sub EDL.
-// Causes clip creation to fail because that involves an opening EDL tag.
-				if(file->tag.title_is("CLIP_EDL") && !parent_edl)
+				if(file->tag.title_is("CLIP_EDL"))
 				{
-					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(file, LOAD_ALL, 0);
+					if(is_master && (load_flags & LOAD_ALL) == LOAD_ALL)
+					{
+						EDL *new_edl = new EDL(0);
+						new_edl->load_xml(file, LOAD_ALL, 0);
 
-					if((load_flags & LOAD_ALL) == LOAD_ALL)
 						clips.append(new_edl);
+					}
 					else
-						delete new_edl;
+						file->skip_to_tag("/CLIP_EDL");
 				}
 				else
-				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
+				if(file->tag.title_is("VWINDOW_EDL"))
 				{
-					EDL *new_edl = new EDL(this);
-					new_edl->load_xml(file, LOAD_ALL, 0);
-
-					if((load_flags & LOAD_ALL) == LOAD_ALL)
-					{
-						vwindow_edl->copy_all(new_edl);
-						vwindow_edl->copy_session(new_edl);
-					}
-
-					delete new_edl;
-					new_edl = 0;
+					if(is_master && (load_flags & LOAD_ALL) == LOAD_ALL)
+						vwindow_edl->load_xml(file, LOAD_ALL, 0);
+					else
+						file->skip_to_tag("/VWINDOW__EDL");
 				}
 			}
 		}while(!result);
@@ -665,15 +634,13 @@ void EDL::remove_from_project(ArrayList<EDL*> *clips)
 void EDL::remove_from_project(ArrayList<Asset*> *assets)
 {
 // Remove from clips
-	if(!parent_edl)
-		for(int j = 0; j < clips.total; j++)
-		{
-			clips.values[j]->remove_from_project(assets);
-		}
+	for(int j = 0; j < clips.total; j++)
+	{
+		clips.values[j]->remove_from_project(assets);
+	}
 
 // Remove from VWindow
-	if(vwindow_edl)
-		vwindow_edl->remove_from_project(assets);
+	vwindow_edl->remove_from_project(assets);
 
 	for(int i = 0; i < assets->total; i++)
 	{
@@ -684,13 +651,10 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 		}
 
 // Remove from assets
-		if(!parent_edl)
-		{
-			this->assets->remove(assets->values[i]);
-		}
+		this->assets->remove(assets->values[i]);
 	}
 // Remove from global list
-	if(!parent_edl)
+	if(is_master)
 		assetlist_global.remove_assets(assets);
 }
 
@@ -756,8 +720,8 @@ double EDL::get_sample_aspect_ratio()
 
 void EDL::dump(int indent)
 {
-	if(parent_edl)
-		printf("%*sCLIP %p dump: (parent %p)\n", indent, "", this, parent_edl);
+	if(!is_master)
+		printf("%*sCLIP %p dump:\n", indent, "", this);
 	else
 		printf("%*sEDL %p dump:\n", indent, "", this);
 	local_session->dump(indent + 2);
@@ -789,7 +753,7 @@ void EDL::dump_assets(int indent)
 EDL* EDL::add_clip(EDL *edl)
 {
 // Copy argument.  New edls are deleted from MWindow::load_filenames.
-	EDL *new_edl = new EDL(this);
+	EDL *new_edl = new EDL(0);
 	new_edl->copy_all(edl);
 	clips.append(new_edl);
 	return new_edl;

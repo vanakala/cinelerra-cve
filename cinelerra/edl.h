@@ -58,7 +58,7 @@ extern EDL *render_edl;
 class EDL
 {
 public:
-	EDL(EDL *parent_edl = 0);
+	EDL(int is_master);
 	~EDL();
 
 	void reset_instance();
@@ -224,13 +224,11 @@ public:
 // to the backup file, not the project file.
 	char project_path[BCTEXTLEN];
 
-// Use parent Assets if nonzero
-	EDL *parent_edl;
-
 	static Mutex *id_lock;
 
 // unique ID of this EDL for resource window
 	int id;
+	int is_master;
 };
 
 #endif

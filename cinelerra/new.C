@@ -79,7 +79,7 @@ int New::handle_event()
 
 void New::create_new_edl()
 {
-	new_edl = new EDL;
+	new_edl = new EDL(0);
 	new_edlsession = new EDLSession();
 	new_edl->load_defaults(mwindow->defaults, new_edlsession);
 }

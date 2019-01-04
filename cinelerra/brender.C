@@ -361,7 +361,7 @@ void BRenderThread::run()
 				if(command) delete command;
 				command = new_command;
 				delete edl;
-				edl = new EDL();
+				edl = new EDL(0);
 				edl->copy_all(command->edl);
 				start();
 			}

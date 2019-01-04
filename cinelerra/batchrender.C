@@ -443,7 +443,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			FileXML *file = new FileXML;
 			file->read_from_file(job->edl_path);
 
-			current_edl = new EDL();
+			current_edl = new EDL(0);
 			current_edl->load_xml(file, LOAD_ALL, 0);
 
 // Create test packages

@@ -116,7 +116,7 @@ void PreferencesThread::run()
 	int need_new_indexes;
 
 	preferences = new Preferences;
-	edl = new EDL;
+	edl = new EDL(0);
 	this_edlsession = new EDLSession();
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(mwindow->preferences);

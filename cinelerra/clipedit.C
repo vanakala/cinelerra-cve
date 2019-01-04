@@ -75,7 +75,7 @@ void ClipEdit::run()
 		EDL *original = clip;
 		if(!create_it)
 		{
-			clip = new EDL(master_edl);
+			clip = new EDL(1);
 			clip->copy_all(original);
 		}
 

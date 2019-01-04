@@ -452,7 +452,7 @@ void MWindow::insert(ptstime position,
 // For clipboard pasting make the new edl use a separate session 
 // from the master EDL.  Then it can be resampled to the master rates.
 // For splice, overwrite, and dragging need same session to get the assets.
-	EDL edl(parent_edl);
+	EDL edl(0);
 	ArrayList<EDL*> new_edls;
 	uint32_t load_flags = LOAD_ALL;
 
@@ -896,7 +896,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	int overwrite)
 {
 	ArrayList<EDL*> new_edls;
-	EDL *new_edl = new EDL;
+	EDL *new_edl = new EDL(0);
 
 	new_edl->copy_session(master_edl);
 
@@ -1487,7 +1487,7 @@ void MWindow::to_clip()
 		"",
 		1);
 
-	EDL *new_edl = new EDL(master_edl);
+	EDL *new_edl = new EDL(0);
 
 	new_edl->load_xml(&file, LOAD_ALL, 0);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);

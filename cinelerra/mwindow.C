@@ -707,9 +707,9 @@ void MWindow::init_theme()
 
 void MWindow::init_edl()
 {
-	master_edl = new EDL;
+	master_edl = new EDL(1);
 	edlsession = new EDLSession();
-	vwindow_edl = new EDL(master_edl);
+	vwindow_edl = new EDL(0);
 
 	FormatPresets::fill_preset_defaults(default_standard, edlsession);
 	master_edl->load_defaults(defaults, edlsession);
@@ -902,7 +902,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
-						new_edl = new EDL;
+						new_edl = new EDL(0);
 						new_edl->copy_session(master_edl);
 					}
 
@@ -936,7 +936,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				{
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
-						new_edl = new EDL;
+						new_edl = new EDL(0);
 						new_edl->copy_session(master_edl);
 						new_asset = assetlist_global.add_asset(new_asset);
 						new_edl->update_assets(new_asset);
@@ -1042,7 +1042,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
-						new_edl = new EDL;
+						new_edl = new EDL(0);
 						new_edl->copy_session(master_edl);
 						new_asset = assetlist_global.add_asset(new_asset);
 						new_edl->update_assets(new_asset);
@@ -1068,30 +1068,38 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 			case FILE_IS_XML:
 			{
+				EDL *cur_edl;
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
-// Load EDL for pasting
 				result = 0;
-				new_edl = new EDL;
-				new_edl->copy_session(master_edl);
 
 				if(load_mode == LOADMODE_REPLACE || 
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
-					new_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
+					master_edl->reset_instance();
+					master_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
 					strcpy(mainsession->filename, filenames->values[i]);
-					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
+					strcpy(master_edl->local_session->clip_title, filenames->values[i]);
 					if(update_filename)
-						set_filename(new_edl->local_session->clip_title);
+						set_filename(master_edl->local_session->clip_title);
+					test_plugins(master_edl, filenames->values[i]);
+					cur_edl = master_edl;
+					new_edl = 0;
 				}
 				else
+				{
+// Load EDL for pasting
+					new_edl = new EDL(0);
+					new_edl->copy_session(master_edl);
 					new_edl->load_xml(&xml_file, LOAD_ALL, 0);
-				test_plugins(new_edl, filenames->values[i]);
+					test_plugins(new_edl, filenames->values[i]);
+					cur_edl = new_edl;
+				}
 
 // Open media files found in xml - open fills media info
-				for(int i = 0; i < new_edl->assets->total; i++)
+				for(int i = 0; i < cur_edl->assets->total; i++)
 				{
-					Asset *current = new_edl->assets->values[i];
+					Asset *current = cur_edl->assets->values[i];
 					delete new_file;
 					new_file = new File;
 					if(new_file->open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
@@ -1104,7 +1112,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				}
 				delete new_file;
 				new_file = 0;
-				if(!result)
+				if(!result && new_edl)
 				{
 					new_edls.append(new_edl);
 					new_edl = 0;

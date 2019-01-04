@@ -75,7 +75,7 @@ RenderFarmClient::RenderFarmClient(int port,
 		perror("RenderFarmClient::RenderFarmClient - nice");
 
 	MWindow::init_defaults(boot_defaults, config_path);
-	master_edl = new EDL;
+	master_edl = new EDL(0);
 	edlsession = new EDLSession();
 	master_edl->load_defaults(boot_defaults, edlsession);
 	boot_preferences = new Preferences;
@@ -580,7 +580,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	preferences = new Preferences;
 	default_asset = new Asset;
 	package = new RenderPackage;
-	edl = new EDL;
+	edl = new EDL(0);
 
 	read_preferences(socket_fd, preferences);
 	result |= read_asset(socket_fd, default_asset);

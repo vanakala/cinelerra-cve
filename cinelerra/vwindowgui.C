@@ -450,7 +450,7 @@ void VWindowEditing::to_clip()
 		"",
 		1);
 
-	EDL *new_edl = new EDL(master_edl);
+	EDL *new_edl = new EDL(0);
 	new_edl->load_xml(&file, LOAD_ALL, 0);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"),
 		mainsession->clip_number++);

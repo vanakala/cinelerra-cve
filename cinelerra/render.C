@@ -276,7 +276,7 @@ void Render::run()
 // Fix the asset for rendering
 		Asset *asset = new Asset;
 		load_defaults(asset);
-		render_edl = new EDL();
+		render_edl = new EDL(0);
 		render_edl->copy_all(master_edl);
 		check_asset(render_edl, *asset);
 // Get format from user
@@ -337,7 +337,7 @@ void Render::run()
 				}
 
 				FileXML *file = new FileXML;
-				EDL *edl = new EDL;
+				EDL *edl = new EDL(0);
 				EDLSession *session = new EDLSession();
 				file->read_from_file(job->edl_path);
 				if(!plugindb && mwindow)
