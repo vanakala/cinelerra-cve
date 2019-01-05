@@ -270,11 +270,6 @@ void PlayTransport::handle_transport(int command,
 		engine->send_command(STOP);
 }
 
-EDL* PlayTransport::get_edl()
-{
-	return master_edl;
-}
-
 
 PTransportButton::PTransportButton(PlayTransport *transport, int x, int y, VFrame **data)
  : BC_Button(x, y, data)

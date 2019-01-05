@@ -62,7 +62,7 @@ public:
 	int get_w();
 
 // Get the EDL to play back with default to mwindow->edl
-	virtual EDL* get_edl();
+	virtual EDL* get_edl() { return 0; };
 
 // playback parameters
 	int reverse;

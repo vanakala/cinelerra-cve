@@ -535,6 +535,10 @@ void VWindowTransport::goto_end()
 	gui->vwindow->goto_end();
 }
 
+EDL* VWindowTransport::get_edl()
+{
+	return vwindow_edl;
+}
 
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
  : Canvas(mwindow,
