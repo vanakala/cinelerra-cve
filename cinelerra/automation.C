@@ -178,14 +178,14 @@ void Automation::paste(ptstime start,
 	}
 }
 
-int Automation::copy(ptstime start,
+void Automation::copy(ptstime start,
 	ptstime end,
 	FileXML *file)
 {
 // Copy regardless of what's visible.
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i])
+		if(autos[i] && autos[i]->total())
 		{
 			file->tag.set_title(xml_titles[i]);
 			file->append_tag();
@@ -200,8 +200,6 @@ int Automation::copy(ptstime start,
 			file->append_newline();
 		}
 	}
-
-	return 0;
 }
 
 
