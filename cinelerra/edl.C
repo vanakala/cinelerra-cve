@@ -388,14 +388,14 @@ void EDL::copy(ptstime start,
 // Media
 // Don't replicate all assets for every clip.
 // The assets for the clips are probably in the mane EDL.
-	if(!is_clip)
+	if(!is_clip && !is_vwindow)
 		copy_assets(start, end, file, all, output_path);
 
 // Clips
 // Don't want this if using clipboard
 	if(all)
 	{
-		if(vwindow_edl && this != vwindow_edl)
+		if(vwindow_edl->total_tracks() && this != vwindow_edl)
 		{
 			vwindow_edl->save_xml(file,
 				output_path,
@@ -981,6 +981,13 @@ ptstime EDL::total_length_of(int type)
 {
 	if(tracks && tracks->total())
 		return tracks->total_length_of(type);
+	return 0;
+}
+
+int EDL::total_tracks()
+{
+	if(tracks)
+		return tracks->total();
 	return 0;
 }
 
