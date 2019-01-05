@@ -167,6 +167,10 @@ void Labels::delete_all()
 void Labels::copy(ptstime start, ptstime end, FileXML *xml)
 {
 	char string[BCTEXTLEN];
+
+	if(!total())
+		return;
+
 	xml->tag.set_title(xml_tag);
 	xml->append_tag();
 	xml->append_newline();
