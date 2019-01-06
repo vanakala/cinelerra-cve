@@ -1,8 +1,8 @@
-This file contains information about my branch of Cinelerra 2.3.5 CV
-To get a copy of the latest version of the branch
-git clone git://git.cinelerra-cv.org/einar/cinelerra.git my_cinelerra
+Cinelerra-CVE is a fork of Cinelerra-CV.
+This file contains information about Cinelerra-CVE 2.3.5
+The sources are available at https://github.com/vanakala/cinelerra-cve
 
-This file describes status of this branch as of Apr 10, 2018
+This file describes status of Cinelerra-CVE as of Jan 6, 2019
 
 Contents.
 
@@ -15,7 +15,7 @@ Known problems (eg todo list)
 
 About this branch
 
-This branch is a try to make Cinelerra more stabile - no hangupps
+This branch is a attempt to make Cinelerra more stabile - no hangups
 no crashes.
 
 Currently this branch is under development. There is no warranty
@@ -25,17 +25,22 @@ may work, parts not.
 This branch is developed and tested on Ubuntu 14.04 x86-32 and 
 Ubuntu 16.04 x86_64
 
-Main change in this branch is display locking. The change was 
+Main change in this branch is display locking. The change was
 huge and locking issues are hard to test.
 Another huge change implementation of pts based timing. This enables
 to edit media with variable framerate and get rid of assumption
 that audio and video start simultaneously.
 
-The branch is backward compatible - it can load projects created with 
-official branch of Cinelerra, the result may be somehow different.
-The projects saved by this branch can not be loaded to offical Cinelerra.
+The branch is backward compatible - it can load projects created with
+Cinelerra-CV, the result may be somehow different.
+The projects saved by Cinelerra-CVE can not be loaded to any other forks
+of Cinelerra
 
-Changes in this branch:
+Manual under doc directory is from Cinelerra-CV 2.1 version and unchanged.
+It is still usable as a general introduction and a recommended reading.
+Some details may differ.
+
+Changes of this fork:
 
 - changed size of Preferences window to fit it on 800 px height
 - edit_font_color initialization of S.U.V
@@ -48,9 +53,8 @@ Changes in this branch:
 - composer and viewer always display the frame starting at the time 
     shown on clock. Frame displayed does not depend on
     forward/backward direction.
-- goto window honours time format
+- goto window honours the time format
 - lots of cleanups
-- OpenGL is enabled while server glx version is >= 1.3
 - new one-line internal api for error messages (macros errormsg
     and errorbox)
 - cleanup: removed unused sources from cinelerra, guicast, plugins
@@ -58,8 +62,6 @@ Changes in this branch:
 - implemented pts based timing on video and audio making possible
     projects without constant framerate
 - improved synchronization with Alsa output: no jumping around on playback
-- projects created or modified with this branch are incompatible with
-    other branches
 - removed playback direction dependancy from core rendering
 - replaced samplerate based timing with clock based timing
 - implemented new API and support macros of all plugins, removed old API
@@ -81,12 +83,16 @@ Changes in this branch:
 - freetype2/xft is the only font rendering system
 - using improved images for cinelerra logo and icon
 - new plugin: Blue Banana color grading/correction filter
-- replaced all coding and encoding with AVlibs (ffmpeg libraries)
+- replaced all decoding and encoding with AVlibs (ffmpeg libraries)
 - program may be linked to external (system) AVlibs
-- AVlibs from ffmpeg 2.8 and later are supported
+- AVlibs from ffmpeg 2.8 to 3.4 are supported
 - OpenGl support is almost removed, will be rewritten
+- improved Russian translations (thanks to Igor Vladimirsky aka igor_ubuntu)
+- new GuideLines system for plugins
+- support of aspect ratio
 
 Known problems (todo list)
+- optimize playback and EDL manipulation
 - use internally only 16bit per color colormodels
 - restore OpenGL support of playback and hopefully rendering
 - new API of plugins and macros need some documentation
@@ -95,9 +101,9 @@ Known problems (todo list)
 - reel name must be read from project
 
 Bug reporting.
-I am very interested about reports of crashes and hangs.
+I am very interested in reports of crashes and hangs.
 To help debug cinelerra, start it from terminal. If cinelerra hangs,
-press Ctrl-C. Copy output to mail and send it to cinelerra ml.
+press Ctrl-C. Copy output to mail and send it to me.
 It will be fine if you can describe setps to reproduce crash or hang 
 of cinelerra.
 
