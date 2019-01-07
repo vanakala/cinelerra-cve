@@ -41,7 +41,7 @@ Compiling process
 ----------------------------
 
 	cd <cinellera-src>
-	./autogen.ah
+	./autogen.sh
 	./configure
 	make
 	sudo make install
