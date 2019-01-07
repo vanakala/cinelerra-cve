@@ -30,6 +30,7 @@
 #include "cache.h"
 #include "clip.h"
 #include "clipedit.h"
+#include "cliplist.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "cwindow.h"
@@ -1056,6 +1057,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	for(int i = 0; i < new_edls->total; i++)
 	{
 		EDL *new_edl = new_edls->values[i];
+		EDL *edl_copy;
 
 		ptstime edl_length = new_edl->total_length();
 
@@ -1093,7 +1095,9 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			break;
 
 		case LOADMODE_RESOURCESONLY:
-			master_edl->add_clip(new_edl);
+			edl_copy = new EDL(0);
+			edl_copy->copy_all(new_edl);
+			cliplist_global.add_clip(edl_copy);
 			break;
 		}
 
@@ -1174,19 +1178,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			current_position += edl_length;
 	}
 
-// Move loading of clips and vwindow to the end - this fixes some
-// strange issue, for index not being shown
-// Assume any paste operation from the same EDL won't contain any clips.
-// If it did it would duplicate every clip here.
-	for(int i = 0; i < new_edls->total; i++)
-	{
-		EDL *new_edl = new_edls->values[i];
-
-		for(int j = 0; j < new_edl->clips.total; j++)
-		{
-			master_edl->add_clip(new_edl->clips.values[j]);
-		}
-	}
 	delete [] paste_position;
 
 // Fix preview range

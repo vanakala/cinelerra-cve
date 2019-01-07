@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "cliplist.h"
 #include "clipedit.h"
 #include "bctitle.h"
 #include "edl.h"
@@ -77,6 +78,7 @@ void ClipEdit::run()
 		{
 			clip = new EDL(1);
 			clip->copy_all(original);
+			clip->copy_session(original);
 		}
 
 		ClipEditWindow *window = new ClipEditWindow(mwindow, this);
@@ -92,10 +94,10 @@ void ClipEdit::run()
 			{
 				// Check if clip name is unique
 				name_ok_or_cancel = 1;
-				for (int i = 0; i < master_edl->clips.total; i++)
+				for (int i = 0; i < cliplist_global.total; i++)
 				{
 					if (!strcasecmp(clip->local_session->clip_title,
-						master_edl->clips.values[i]->local_session->clip_title) &&
+						cliplist_global.values[i]->local_session->clip_title) &&
 						(create_it || strcasecmp(clip->local_session->clip_title,
 						original->local_session->clip_title)))
 					
@@ -111,27 +113,31 @@ void ClipEdit::run()
 
 		if(!result)
 		{
-			EDL *new_edl = 0;
-// Add to EDL
+// Add to cliplist
 			if(create_it)
-				new_edl = master_edl->add_clip(window->clip);
+				cliplist_global.add_clip(clip);
 
 // Copy clip to existing clip in EDL
 			if(!create_it)
+			{
 				original->copy_session(clip);
+				delete clip;
+			}
 
 			mwindow->awindow->gui->async_update_assets();
 
 		}
 		else
 		{
-			mainsession->clip_number--;
+			if(create_it)
+			{
+				delete clip;
+				mainsession->clip_number--;
+			}
 		}
-
 
 // For creating new clips, the original was copied in add_clip.
 // For editing old clips, the original was transferred to another variable.
-		delete window->clip;
 		delete window;
 		clip = 0;
 		create_it = 0;

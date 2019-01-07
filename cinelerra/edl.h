@@ -88,7 +88,6 @@ public:
 // Sets this_edlsession to session if given
 	void copy_session(EDL *edl, EDLSession *session = 0);
 	void copy_all(EDL *edl);
-	void copy_clips(EDL *edl);
 
 // Copy pan and fade settings from edl
 	void synchronize_params(EDL *edl);
@@ -158,7 +157,6 @@ public:
 		int edit_labels, 
 		int edit_plugins);
 	void remove_from_project(ArrayList<Asset*> *assets);
-	void remove_from_project(ArrayList<EDL*> *clips);
 	void clear(ptstime start,
 		ptstime end,
 		int actions);
@@ -168,8 +166,6 @@ public:
 		Track *first_track = 0);
 // Insert the clip at a point in the EDL
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
-// Add a copy of EDL* to the clip array.  Returns the copy.
-	EDL* add_clip(EDL *edl);
 
 	void get_shared_plugins(Track *source, ArrayList<SharedLocation*> *plugin_locations);
 	void get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations);
@@ -201,9 +197,6 @@ public:
 	void set_all_toggles(int toggle_type, int value);
 // Count number of toggels set
 	int total_toggled(int toggle_type);
-
-// Clips
-	ArrayList<EDL*> clips;
 
 // Media files
 // Shared between all EDLs

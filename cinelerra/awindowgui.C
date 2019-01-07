@@ -32,6 +32,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "cache.h"
+#include "cliplist.h"
 #include "colormodels.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -560,7 +561,7 @@ void AWindowGUI::update_asset_list()
 	}
 
 // Synchronize EDL clips
-	for(int i = 0; i < master_edl->clips.total; i++)
+	for(int i = 0; i < cliplist_global.total; i++)
 	{
 		int exists = 0;
 		
@@ -569,10 +570,10 @@ void AWindowGUI::update_asset_list()
 		{
 			AssetPicon *picon = (AssetPicon*)assets.values[j];
 
-			if(picon->id == master_edl->clips.values[i]->id)
+			if(picon->id == cliplist_global.values[i]->id)
 			{
-				picon->edl = master_edl->clips.values[i];
-				picon->set_text(master_edl->clips.values[i]->local_session->clip_title);
+				picon->edl = cliplist_global.values[i];
+				picon->set_text(cliplist_global.values[i]->local_session->clip_title);
 				exists = 1;
 				picon->in_use = 1;
 			}
@@ -583,7 +584,7 @@ void AWindowGUI::update_asset_list()
 		{
 			AssetPicon *picon = new AssetPicon(mwindow, 
 				this, 
-				master_edl->clips.values[i]);
+				cliplist_global.values[i]);
 			assets.append(picon);
 		}
 	}

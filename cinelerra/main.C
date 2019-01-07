@@ -21,6 +21,7 @@
 
 #include "arraylist.h"
 #include "assetlist.h"
+#include "cliplist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -53,6 +54,7 @@ MWindow *mwindow_global;
 Theme *theme_global;
 Preferences *preferences_global;
 AssetList assetlist_global;
+ClipList cliplist_global;
 EDL *master_edl;
 EDL *vwindow_edl;
 EDL *render_edl;

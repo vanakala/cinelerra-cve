@@ -27,6 +27,7 @@
 #include "awindowgui.inc"
 #include "bcsignals.h"
 #include "clip.h"
+#include "cliplist.h"
 #include "colormodels.h"
 #include "bchash.h"
 #include "edl.h"
@@ -72,7 +73,6 @@ EDL::~EDL()
 	delete labels;
 	delete local_session;
 	delete assets;
-	clips.remove_all_objects();
 }
 
 void EDL::reset_instance()
@@ -80,7 +80,6 @@ void EDL::reset_instance()
 	tracks->reset_instance();
 	labels->reset_instance();
 	assets->remove_all();
-	clips.remove_all_objects();
 	local_session->reset_instance();
 }
 
@@ -152,7 +151,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 
 		if((load_flags & LOAD_ALL) == LOAD_ALL)
 		{
-			clips.remove_all_objects();
+			cliplist_global.remove_all_objects();
 		}
 
 		if(load_flags & LOAD_TIMEBAR)
@@ -235,7 +234,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 						EDL *new_edl = new EDL(0);
 						new_edl->load_xml(file, LOAD_ALL, 0);
 
-						clips.append(new_edl);
+						cliplist_global.add_clip(new_edl);
 					}
 					else
 						file->skip_to_tag("/CLIP_EDL");
@@ -268,18 +267,8 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 void EDL::copy_all(EDL *edl)
 {
 	update_assets(edl);
-	copy_clips(edl);
 	tracks->copy_from(edl->tracks);
 	labels->copy_from(edl->labels);
-}
-
-void EDL::copy_clips(EDL *edl)
-{
-	clips.remove_all_objects();
-	for(int i = 0; i < edl->clips.total; i++)
-	{
-		add_clip(edl->clips.values[i]);
-	}
 }
 
 void EDL::copy_session(EDL *edl, EDLSession *session)
@@ -346,24 +335,24 @@ void EDL::copy(ptstime start,
 	int rewind_it)
 {
 // begin file
-	if(is_clip)
-		file->tag.set_title("CLIP_EDL");
-	else
-	if(is_vwindow)
-		file->tag.set_title("VWINDOW_EDL");
-	else
+	if(!is_clip)    // Cliplist writes tag itself
 	{
-		file->tag.set_title("EDL");
-		file->tag.set_property("VERSION", CINELERRA_VERSION);
-// Save path for restoration of the project title from a backup.
-		if(this->project_path[0])
+		if(is_vwindow)
+			file->tag.set_title("VWINDOW_EDL");
+		else
 		{
-			file->tag.set_property("PROJECT_PATH", project_path);
+			file->tag.set_title("EDL");
+			file->tag.set_property("VERSION", CINELERRA_VERSION);
+// Save path for restoration of the project title from a backup.
+			if(this->project_path[0])
+			{
+				file->tag.set_property("PROJECT_PATH", project_path);
+			}
 		}
-	}
 
-	file->append_tag();
-	file->append_newline();
+		file->append_tag();
+		file->append_newline();
+	}
 
 // Set clipboard samples only if copying to clipboard
 	if(!all)
@@ -387,7 +376,6 @@ void EDL::copy(ptstime start,
 
 // Media
 // Don't replicate all assets for every clip.
-// The assets for the clips are probably in the mane EDL.
 	if(!is_clip && !is_vwindow)
 		copy_assets(start, end, file, all, output_path);
 
@@ -402,12 +390,8 @@ void EDL::copy(ptstime start,
 				0,
 				1);
 		}
-
-		for(int i = 0; i < clips.total; i++)
-			clips.values[i]->save_xml(file,
-				output_path,
-				1,
-				0);
+		if(this == master_edl)
+			cliplist_global.save_xml(file, output_path);
 	}
 
 	file->append_newline();
@@ -417,16 +401,15 @@ void EDL::copy(ptstime start,
 	tracks->copy(start, end, all, file, output_path);
 
 // terminate file
-	if(is_clip)
-		file->tag.set_title("/CLIP_EDL");
-	else
-	if(is_vwindow)
-		file->tag.set_title("/VWINDOW_EDL");
-	else
-		file->tag.set_title("/EDL");
-	file->append_tag();
-	file->append_newline();
-
+	if(!is_clip)
+	{
+		if(is_vwindow)
+			file->tag.set_title("/VWINDOW_EDL");
+		else
+			file->tag.set_title("/EDL");
+		file->append_tag();
+		file->append_newline();
+	}
 // For editing operations we want to rewind it for immediate pasting.
 // For clips and saving to disk leave it alone.
 	if(rewind_it)
@@ -617,28 +600,8 @@ void EDL::paste_silence(ptstime start,
 		edit_plugins);
 }
 
-void EDL::remove_from_project(ArrayList<EDL*> *clips)
-{
-	for(int i = 0; i < clips->total; i++)
-	{
-		for(int j = 0; j < this->clips.total; j++)
-		{
-			if(this->clips.values[j] == clips->values[i])
-			{
-				this->clips.remove_object(clips->values[i]);
-			}
-		}
-	}
-}
-
 void EDL::remove_from_project(ArrayList<Asset*> *assets)
 {
-// Remove from clips
-	for(int j = 0; j < clips.total; j++)
-	{
-		clips.values[j]->remove_from_project(assets);
-	}
-
 // Remove from VWindow
 	vwindow_edl->remove_from_project(assets);
 
@@ -730,12 +693,11 @@ void EDL::dump(int indent)
 		this_edlsession->dump(indent + 1);
 	else
 		printf("%*sNo EDLSession\n", indent + 1, "");
-
-	printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
-
-	for(int i = 0; i < clips.total; i++)
-		clips.values[i]->dump(indent + 2);
-
+	if(this == master_edl)
+	{
+		printf("%*sClips (total %d)\n", indent + 1, "", cliplist_global.total);
+		cliplist_global.dump(indent + 2);
+	}
 	dump_assets(indent + 1);
 
 	labels->dump(indent + 1);
@@ -748,15 +710,6 @@ void EDL::dump_assets(int indent)
 	indent += 1;
 	for(int i = 0; i < assets->total; i++)
 		assets->values[i]->dump(indent);
-}
-
-EDL* EDL::add_clip(EDL *edl)
-{
-// Copy argument.  New edls are deleted from MWindow::load_filenames.
-	EDL *new_edl = new EDL(0);
-	new_edl->copy_all(edl);
-	clips.append(new_edl);
-	return new_edl;
 }
 
 void EDL::insert_asset(Asset *asset, 

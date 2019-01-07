@@ -32,6 +32,7 @@
 #include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"
+#include "cliplist.h"
 #include "colormodels.h"
 #include "cplayback.h"
 #include "ctimebar.h"
@@ -1751,7 +1752,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 	}
 
 	master_edl->remove_from_project(mainsession->drag_assets);
-	master_edl->remove_from_project(mainsession->drag_clips);
+	cliplist_global.remove_from_project(mainsession->drag_clips);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
