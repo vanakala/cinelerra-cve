@@ -22,6 +22,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "editpanel.h"
+#include "edl.h"
 #include "filexml.h"
 #include "keys.h"
 #include "localsession.h"
@@ -103,6 +104,11 @@ void MainTransport::goto_end()
 {
 	handle_transport(GOTO_END, 1);
 	mwindow->goto_end();
+}
+
+EDL *MainTransport::get_edl()
+{
+	return master_edl;
 }
 
 
