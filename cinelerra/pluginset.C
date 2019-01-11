@@ -34,7 +34,6 @@
 PluginSet::PluginSet(EDL *edl, Track *track)
  : Edits(edl, track)
 {
-	record = 1;
 }
 
 PluginSet::~PluginSet()
@@ -57,7 +56,6 @@ void PluginSet::copy_from(PluginSet *src)
 		append(new_plugin = (Plugin*)create_edit());
 		new_plugin->copy_from(current);
 	}
-	this->record = src->record;
 }
 
 Plugin* PluginSet::get_first_plugin()
@@ -378,7 +376,6 @@ void PluginSet::shift_effects(ptstime start, ptstime length)
 void PluginSet::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("PLUGINSET");
-	file->tag.set_property("RECORD", record);
 	file->append_tag();
 	file->append_newline();
 
@@ -397,7 +394,6 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	Plugin *current, *new_plugin;
 	ptstime pos, epos;
 
-	record = src->record;
 	current = src->get_first_plugin();
 	pos = current->get_pts() - start;
 	if(pos < 0)
@@ -429,7 +425,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 	Plugin *plugin = (Plugin*)first;
 	ptstime startproject = 0;
 
-	record = file->tag.get_property("RECORD", record);
 	do{
 		result = file->read_tag();
 

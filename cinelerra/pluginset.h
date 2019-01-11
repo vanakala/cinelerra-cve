@@ -77,7 +77,6 @@ public:
 		int plugin_type,
 		SharedLocation *shared_location,
 		KeyFrame *default_keyframe);
-	int record;
 };
 
 #endif
