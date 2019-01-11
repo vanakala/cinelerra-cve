@@ -74,6 +74,18 @@ Plugin* PluginSet::get_first_plugin()
 	return 0;
 }
 
+Plugin *PluginSet::active_in(ptstime start, ptstime end)
+{
+	Plugin *plugin = get_first_plugin();
+
+	if(plugin)
+	{
+		if(plugin->get_pts() < end && plugin->end_pts() > start)
+			return plugin;
+	}
+	return 0;
+}
+
 ptstime PluginSet::plugin_change_duration(ptstime input_position,
 	ptstime input_length)
 {
@@ -378,6 +390,31 @@ void PluginSet::copy(ptstime start, ptstime end, FileXML *file)
 	file->tag.set_title("/PLUGINSET");
 	file->append_tag();
 	file->append_newline();
+}
+
+void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
+{
+	Plugin *current, *new_plugin;
+	ptstime pos, epos;
+
+	record = src->record;
+	current = src->get_first_plugin();
+	pos = current->get_pts() - start;
+	if(pos < 0)
+		pos = 0;
+	epos = current->end_pts() - start;
+	if(epos > end)
+		epos = end;
+	new_plugin = (Plugin*)insert_edit(pos, epos - pos);
+	new_plugin->plugin_type = current->plugin_type;
+	new_plugin->in = current->in;
+	new_plugin->out = current->out;
+	new_plugin->show = current->show;
+	new_plugin->on = current->on;
+	strcpy(new_plugin->title, current->title);
+	new_plugin->shared_location = current->shared_location;
+	new_plugin->keyframes->base_pts = pos;
+	new_plugin->keyframes->copy(current->keyframes, start, end);
 }
 
 void PluginSet::save(FileXML *file)

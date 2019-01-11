@@ -152,6 +152,7 @@ public:
 		FileXML *file, 
 		const char *output_path,
 		int rewind_it);     // Rewind EDL for easy pasting
+	void copy(EDL *edl, ptstime start, ptstime end);
 	void paste_silence(ptstime start,
 		ptstime end,
 		int edit_labels, 

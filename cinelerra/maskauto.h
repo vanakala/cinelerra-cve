@@ -70,6 +70,7 @@ public:
 	int identical(MaskAuto *src);
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file);
+	void copy(Auto *that, ptstime start, ptstime end);
 	void copy_from(Auto *src);
 	void interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *templ = 0);
 	void interpolate_values(ptstime pts, int *new_value, int *new_feather);

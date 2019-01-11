@@ -45,6 +45,7 @@ public:
 // bezier interpolation
 	void interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ = 0);
 	void copy(ptstime start, ptstime end, FileXML *file);
+	void copy(Auto *that, ptstime start, ptstime end);
 	void load(FileXML *xml);
 	void dump(int ident = 0);
 

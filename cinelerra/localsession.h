@@ -61,6 +61,7 @@ public:
 	void unset_outpoint();
 
 	void copy_from(LocalSession *that);
+	void copy(LocalSession *that, ptstime start, ptstime end);
 	void save_xml(FileXML *file, double start);
 	void load_xml(FileXML *file, unsigned long load_flags);
 	void load_defaults(BC_Hash *defaults);

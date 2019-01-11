@@ -198,6 +198,19 @@ void Labels::copy(ptstime start, ptstime end, FileXML *xml)
 	xml->append_newline();
 }
 
+void Labels::copy(Labels *that, ptstime start, ptstime end)
+{
+	while(last)
+		delete(last);
+
+	for(Label *current = that->first; current; current = NEXT)
+	{
+		if(current->position < start + EPSILON || current->position > end - EPSILON)
+			continue;
+		append(new Label(edl, this, current->position - start, current->textstr));
+	}
+}
+
 void Labels::copy_from(Labels *labels)
 {
 	while(last) delete last;

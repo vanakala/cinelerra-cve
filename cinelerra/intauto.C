@@ -61,6 +61,14 @@ void IntAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->append_newline();
 }
 
+void IntAuto::copy(Auto *src, ptstime start, ptstime end)
+{
+	IntAuto *that = (IntAuto*)src;
+
+	pos_time = that->pos_time - start;
+	value = that->value;
+}
+
 void IntAuto::copy_from(Auto *that)
 {
 	copy_from((IntAuto*)that);

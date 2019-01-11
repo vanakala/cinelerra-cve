@@ -391,6 +391,19 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->append_newline();
 }
 
+void MaskAuto::copy(Auto *src, ptstime start, ptstime end)
+{
+	MaskAuto *that = (MaskAuto*)src;
+
+	pos_time = that->pos_time - start;
+	value = that->value;
+	feather = that->feather;
+	apply_before_plugins = that-> apply_before_plugins;
+
+	for(int i = 0; i < that->masks.total; i++)
+		masks.values[i]->copy_from(*that->masks.values[i]);
+}
+
 void MaskAuto::dump(int indent)
 {
 	printf("%*sMaskauto %p: value: %d feather %d before %d\n", indent, " ", 

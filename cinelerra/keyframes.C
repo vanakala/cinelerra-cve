@@ -48,6 +48,35 @@ void KeyFrames::drag_limits(Auto *current, ptstime *prev, ptstime *next)
 		*next = plugin->end_pts();
 }
 
+void KeyFrames::copy(ptstime start,
+	ptstime end,
+	FileXML *file)
+{
+	for(KeyFrame* current = (KeyFrame*)autoof(start);
+		current && current->pos_time <= end;
+		current = (KeyFrame*)NEXT)
+	{
+// Want to copy single keyframes by putting the cursor on them
+		if(current->pos_time >= start && current->pos_time <= end)
+			current->copy(start, end, file);
+	}
+}
+
+void KeyFrames::copy(KeyFrames *src, ptstime start, ptstime end)
+{
+	KeyFrame *current;
+
+	for(current = (KeyFrame*)src->autoof(start); current && current->pos_time <= end;
+		current = (KeyFrame*)NEXT)
+	{
+		if(current->pos_time >= start - EPSILON && current->pos_time <= end)
+		{
+			KeyFrame *new_keyframe = (KeyFrame*)append_auto();
+			new_keyframe->copy(current, start, end);
+		}
+	}
+}
+
 void KeyFrames::dump(int indent)
 {
 	printf("%*sKeyFrames %p dump(%d): base %.3f\n", indent, " ", this, total(), base_pts);

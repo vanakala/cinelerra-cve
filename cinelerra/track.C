@@ -870,6 +870,30 @@ void Track::copy(ptstime start,
 	file->append_newline();
 }
 
+void Track::copy(Track *track, ptstime start, ptstime end)
+{
+	record = track->record;
+	nudge = track->nudge;
+	play = track->play;
+	gang = track->gang;
+	draw = track->draw;
+	expand_view = track->expand_view;
+	track_w = track_w;
+	track_h = track_h;
+	strcpy(title, track->title);
+	edits->copy(track->edits, start, end);
+	automation->copy(track->automation, start, end);
+
+	for(int i = 0; i < track->plugin_set.total; i++)
+	{
+		if(track->plugin_set.values[i]->active_in(start, end))
+		{
+			PluginSet *new_plugin_set = plugin_set.append(new PluginSet(edl, this));
+			new_plugin_set->copy(track->plugin_set.values[i], start, end);
+		}
+	}
+}
+
 void Track::copy_assets(ptstime start,
 	ptstime end,
 	ArrayList<Asset*> *asset_list)

@@ -65,6 +65,7 @@ public:
 	void copy(ptstime start,
 		ptstime end,
 		FileXML *xml);
+	void copy(Automation *automation, ptstime start, ptstime end);
 
 // For paste automation only
 	int paste(ptstime start,

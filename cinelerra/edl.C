@@ -419,6 +419,15 @@ void EDL::copy(ptstime start,
 	}
 }
 
+void EDL::copy(EDL *edl, ptstime start, ptstime end)
+{
+	if(PTSEQU(start, end))
+		return;
+	local_session->copy(edl->local_session, start, end);
+	labels->copy(edl->labels, start, end);
+	tracks->copy(edl->tracks, start, end);
+}
+
 void EDL::rechannel()
 {
 	for(Track *current = tracks->first; current; current = NEXT)

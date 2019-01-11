@@ -47,6 +47,8 @@ public:
 	void clear(ptstime start, ptstime end);
 	void copy_from(PluginSet *src);
 	void copy(ptstime start, ptstime end, FileXML *file);
+	void copy(PluginSet *src, ptstime start, ptstime end);
+	Plugin *active_in(ptstime start, ptstime end);
 	void copy_keyframes(ptstime start,
 		ptstime end,
 		FileXML *file);

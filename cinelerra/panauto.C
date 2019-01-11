@@ -82,6 +82,18 @@ void PanAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->append_tag();
 }
 
+void PanAuto::copy(Auto *src, ptstime start, ptstime end)
+{
+	PanAuto *that = (PanAuto*)src;
+
+	pos_time = that->pos_time - start;
+	handle_x = that->handle_x;
+	handle_y = that->handle_y;
+
+	for(int i = 0; i < edlsession->audio_channels; i++)
+		values[i] = that->values[i];
+}
+
 void PanAuto::copy_from(Auto *that)
 {
 	Auto::copy_from(that);

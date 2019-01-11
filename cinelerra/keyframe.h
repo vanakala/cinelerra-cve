@@ -38,6 +38,7 @@ public:
 
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file);
+	void copy(Auto *that, ptstime start, ptstime end);
 	void copy_from(Auto *that);
 	void copy_from(KeyFrame *that);
 	int operator==(Auto &that);

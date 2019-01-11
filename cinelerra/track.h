@@ -183,6 +183,7 @@ public:
 		ptstime end,
 		FileXML *file, 
 		const char *output_path = "");
+	void copy(Track *track, ptstime start, ptstime end);
 	void copy_assets(ptstime start,
 		ptstime end,
 		ArrayList<Asset*> *asset_list);

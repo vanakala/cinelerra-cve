@@ -131,6 +131,38 @@ void LocalSession::copy_from(LocalSession *that)
 	blue = that->blue;
 }
 
+void LocalSession::copy(LocalSession *that, ptstime start, ptstime end)
+{
+	in_point = that->in_point - start;
+	loop_playback = that->loop_playback;
+	loop_start = that->loop_start - start;
+	loop_end = that->loop_end - start;
+	out_point = that->out_point - start;
+	selectionstart = that->selectionstart - start;
+	selectionend = that->selectionend - start;
+	strcpy(clip_title, that->clip_title);
+	strcpy(clip_notes, that->clip_notes);
+	awindow_folder = that->awindow_folder;
+	track_start = that->track_start;
+	view_start_pts = that->view_start_pts;
+	zoom_time = that->zoom_time;
+	zoom_track = that->zoom_track;
+	preview_start = that->preview_start - start;
+	if(preview_start < 0)
+		preview_start = 0;
+	preview_end = this->preview_end - start;
+	if(preview_end  < 0)
+		preview_end = 0;
+	red = that->red;
+	green = that->green;
+	blue = that->blue;
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	{
+		automation_mins[i] = that->automation_mins[i];
+		automation_maxs[i] = that->automation_maxs[i];
+	}
+}
+
 void LocalSession::save_xml(FileXML *file, double start)
 {
 	file->tag.set_title("LOCALSESSION");

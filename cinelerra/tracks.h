@@ -128,6 +128,8 @@ public:
 		FileXML *file, 
 		const char *output_path = "");
 
+	void copy(Tracks *tracks, ptstime start, ptstime end);
+
 	int copy_assets(FileXML *xml, 
 		double start, 
 		double end, 

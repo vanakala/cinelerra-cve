@@ -202,6 +202,14 @@ void Automation::copy(ptstime start,
 	}
 }
 
+void Automation::copy(Automation *automation, ptstime start, ptstime end)
+{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(automation->autos[i] && automation->autos[i]->total())
+			autos[i]->copy(automation->autos[i], start, end);
+	}
+}
 
 void Automation::clear(ptstime start,
 	ptstime end,

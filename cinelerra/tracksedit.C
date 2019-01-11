@@ -433,6 +433,32 @@ void Tracks::copy(ptstime start,
 	}
 }
 
+void Tracks::copy(Tracks *tracks, ptstime start, ptstime end)
+{
+	Track *current, *new_track;
+
+	for(current = tracks->first; current; current = NEXT)
+	{
+		switch(current->data_type)
+		{
+		case TRACK_VIDEO:
+			new_track = add_video_track(0, 0);
+			break;
+
+		case TRACK_AUDIO:
+			new_track = add_audio_track(0, 0);
+			break;
+
+		default:
+			new_track = 0;
+			break;
+		}
+
+		if(new_track)
+			new_track->copy(current, start, end);
+	}
+}
+
 void Tracks::move_track_up(Track *track)
 {
 	Track *next_track = track->previous;

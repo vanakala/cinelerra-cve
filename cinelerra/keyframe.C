@@ -55,6 +55,14 @@ void KeyFrame::copy(ptstime start, ptstime end, FileXML *file)
 	file->append_newline();
 }
 
+void KeyFrame::copy(Auto *src, ptstime start, ptstime end)
+{
+	KeyFrame *that = (KeyFrame*)src;
+
+	pos_time = that->pos_time - start;
+	strcpy(data, that->data);
+}
+
 void KeyFrame::copy_from(Auto *that)
 {
 	copy_from((KeyFrame*)that);

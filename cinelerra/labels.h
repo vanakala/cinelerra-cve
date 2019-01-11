@@ -71,6 +71,7 @@ public:
 		int handle_mode,
 		int edit_labels);
 	void copy(ptstime start, ptstime end, FileXML *xml);
+	void copy(Labels *that, ptstime start, ptstime end);
 	void insert(ptstime start, ptstime length);
 
 // Setting follow to 1 causes labels to move forward after clear.

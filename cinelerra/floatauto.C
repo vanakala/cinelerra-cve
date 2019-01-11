@@ -385,6 +385,17 @@ void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->append_newline();
 }
 
+void FloatAuto::copy(Auto *src, ptstime start, ptstime end)
+{
+	FloatAuto *that = (FloatAuto*)src;
+
+	pos_time = that->pos_time - start;
+	value = that->value;
+	control_in_value = that->control_in_value;
+	control_out_value = that->control_out_value;
+	tangent_mode = that->tangent_mode;
+}
+
 void FloatAuto::load(FileXML *file)
 {
 	value = file->tag.get_property("VALUE", value);

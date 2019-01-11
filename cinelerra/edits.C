@@ -482,6 +482,53 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 	file->append_newline();
 }
 
+void Edits::copy(Edits *edits, ptstime start, ptstime end)
+{
+	Edit *current_edit, *new_edit = 0;
+
+	for(current_edit = edits->first; current_edit; current_edit = current_edit->next)
+	{
+		if(current_edit->end_pts() < start - EPSILON)
+			continue;
+
+		if(current_edit->get_pts() < start && !PTSEQU(current_edit->get_pts(), start))
+		{
+			new_edit = append(create_edit());
+			new_edit->copy_from(current_edit);
+			new_edit->set_pts(0);
+			if(new_edit->asset)
+			{
+				new_edit->set_source_pts(current_edit->get_source_pts() +
+					start - current_edit->get_pts());
+				edl->update_assets(new_edit->asset);
+			}
+		}
+		else
+		if(current_edit->get_pts() > end && !PTSEQU(current_edit->get_pts(), end))
+		{
+			new_edit = append(create_edit());
+			new_edit->set_pts(end - start);
+			break;
+		}
+		else
+		{
+			if(fabs(start) > EPSILON)
+			{
+				new_edit = append(create_edit());
+				new_edit->copy_from(current_edit);
+				new_edit->shift(-start);
+			}
+			else
+			{
+				new_edit = append(create_edit());
+				new_edit->copy_from(current_edit);
+			}
+		}
+		if(PTSEQU(current_edit->get_pts(), end))
+			break;
+	}
+}
+
 void Edits::clear(ptstime start, ptstime end)
 {
 	Edit* edit1 = editof(start, 0);

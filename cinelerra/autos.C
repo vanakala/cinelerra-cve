@@ -410,6 +410,31 @@ void Autos::copy(ptstime start,
 	}
 }
 
+void Autos::copy(Autos *autos, ptstime start, ptstime end)
+{
+	Auto *prev_auto = 0;
+	Auto *new_auto;
+
+	for(Auto* current = autos->first; current && current->pos_time <= end;
+		current = NEXT)
+	{
+		if(current->pos_time >= start - EPSILON )
+		{
+			if(prev_auto && current->pos_time > start + EPSILON)
+			{
+				new_auto = append_auto();
+				new_auto->copy_from(prev_auto);
+				new_auto->pos_time = 0;
+				prev_auto = 0;
+			}
+			new_auto = append_auto();
+			new_auto->copy(current, start, end);
+		}
+		else
+			prev_auto = current;
+	}
+}
+
 void Autos::clear(ptstime start,
 	ptstime end,
 	int shift_autos)
