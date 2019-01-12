@@ -1456,8 +1456,9 @@ void MWindow::splice(EDL *source)
 
 void MWindow::to_clip()
 {
-	FileXML file;
+	EDL *new_edl = new EDL(0);
 	ptstime start, end;
+	char string[BCTEXTLEN];
 
 	start = master_edl->local_session->get_selectionstart();
 	end = master_edl->local_session->get_selectionend();
@@ -1468,27 +1469,13 @@ void MWindow::to_clip()
 		end = master_edl->total_length();
 	}
 
-// Don't copy all since we don't want the clips twice.
-	master_edl->copy(start,
-		end, 
-		0,
-		0,
-		0,
-		&file,
-		"",
-		1);
-
-	EDL *new_edl = new EDL(0);
-
-	new_edl->load_xml(&file, LOAD_ALL, 0);
+	new_edl->copy(master_edl, start, end);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), mainsession->clip_number++);
-	char string[BCTEXTLEN];
 	edlsession->ptstotext(string, end - start);
 
 	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
 
 	new_edl->local_session->set_selection(0);
-
 	awindow->clip_edit->create_clip(new_edl);
 	save_backup();
 }
