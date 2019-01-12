@@ -410,7 +410,7 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	strcpy(new_plugin->title, current->title);
 	new_plugin->shared_location = current->shared_location;
 	new_plugin->keyframes->base_pts = pos;
-	new_plugin->keyframes->copy(current->keyframes, start, end);
+	((Autos*)new_plugin->keyframes)->copy((Autos*)current->keyframes, start, end);
 }
 
 void PluginSet::save(FileXML *file)

@@ -40,7 +40,6 @@ public:
 	Auto* new_auto();
 	void drag_limits(Auto *current, ptstime *prev, ptstime *next);
 	void copy(ptstime start, ptstime end, FileXML *file);
-	void copy(KeyFrames *src, ptstime start, ptstime end);
 	void dump(int indent = 0);
 
 private:
