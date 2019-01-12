@@ -431,9 +431,10 @@ void VWindowEditing::clear_outpoint()
 
 void VWindowEditing::to_clip()
 {
-	FileXML file;
+	EDL *new_edl = new EDL(0);
 	ptstime start = vwindow_edl->local_session->get_selectionstart();
 	ptstime end = vwindow_edl->local_session->get_selectionend();
+	char string[BCTEXTLEN];
 
 	if(PTSEQU(start, end))
 	{
@@ -441,20 +442,9 @@ void VWindowEditing::to_clip()
 		start = 0;
 	}
 
-	vwindow_edl->copy(start,
-		end,
-		1,
-		0,
-		0,
-		&file,
-		"",
-		1);
-
-	EDL *new_edl = new EDL(0);
-	new_edl->load_xml(&file, LOAD_ALL, 0);
+	new_edl->copy(vwindow_edl, start, end);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"),
 		mainsession->clip_number++);
-	char string[BCTEXTLEN];
 	edlsession->ptstotext(string, end - start);
 	sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
 
