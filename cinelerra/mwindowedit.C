@@ -474,6 +474,20 @@ void MWindow::insert(ptstime position,
 	new_edls.remove_all();
 }
 
+void MWindow::insert(EDL *edl, ptstime position, int actions)
+{
+	ArrayList<EDL*> new_edls;
+
+	new_edls.append(edl);
+
+	paste_edls(&new_edls,
+		LOADMODE_PASTE,
+		0,
+		position,
+		actions,
+		0); // overwrite
+}
+
 void MWindow::insert_effects_canvas(ptstime start,
 	ptstime length)
 {
@@ -1421,26 +1435,13 @@ void MWindow::set_outpoint()
 
 void MWindow::splice(EDL *source)
 {
-	FileXML file;
-
-	source->copy(source->local_session->get_selectionstart(), 
-		source->local_session->get_selectionend(), 
-		1,
-		0,
-		0,
-		&file,
-		"",
-		1);
-
 	ptstime start = master_edl->local_session->get_selectionstart();
-	ptstime end = master_edl->local_session->get_selectionend();
 	ptstime source_start = source->local_session->get_selectionstart();
 	ptstime source_end = source->local_session->get_selectionend();
+	EDL edl(0);
 
-	paste(start, 
-		start, 
-		&file,
-		edlsession->edit_actions());
+	edl.copy(source, source_start, source_end);
+	insert(&edl, start, edlsession->edit_actions());
 
 // Position at end of clip
 	master_edl->local_session->set_selection(start + source_end - source_start);

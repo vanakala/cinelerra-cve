@@ -283,6 +283,7 @@ public:
 		FileXML *file,
 		int actions,
 		EDL *parent_edl = 0);
+	void insert(EDL *edl, ptstime position, int actions);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 // into pluginset_highlighted.
