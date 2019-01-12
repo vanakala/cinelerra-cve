@@ -1118,7 +1118,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_edls.append(new_edl);
 					new_edl = 0;
 				}
-				else if(update_filename)
+				else if(result && update_filename)
 					set_filename("");
 				break;
 			}
