@@ -203,16 +203,15 @@ void VWindow::copy()
 {
 	ptstime start = vwindow_edl->local_session->get_selectionstart();
 	ptstime end = vwindow_edl->local_session->get_selectionend();
-	FileXML file;
 
-	vwindow_edl->copy(start,
-		end,
-		0,
-		0,
-		0,
-		&file,
-		"",
-		1);
+	if(PTSEQU(start, end))
+		return;
+
+	FileXML file;
+	EDL edl(0);
+
+	edl.copy(vwindow_edl, start, end);
+	edl.save_xml(&file, "", 0, 0);
 	mwindow->gui->get_clipboard()->to_clipboard(file.string,
 		strlen(file.string),
 		SECONDARY_SELECTION);
