@@ -278,16 +278,10 @@ void MWindow::copy(ptstime start, ptstime end)
 		return;
 
 	FileXML file;
-	master_edl->copy(start,
-		end, 
-		0,
-		0,
-		0,
-		&file, 
-		"",
-		1);
+	EDL edl(0);
 
-// File is now terminated and rewound
+	edl.copy(master_edl, start, end);
+	edl.save_xml(&file, "", 0, 0);
 
 	gui->get_clipboard()->to_clipboard(file.string, strlen(file.string), SECONDARY_SELECTION);
 	save_backup();
