@@ -365,7 +365,7 @@ void EDL::copy(ptstime start,
 	}
 
 // Sessions
-	local_session->save_xml(file, start);
+	local_session->save_xml(file);
 
 // Top level stuff.
 // Need to copy all this from child EDL if pasting is desired.

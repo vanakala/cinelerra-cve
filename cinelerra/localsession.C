@@ -163,17 +163,17 @@ void LocalSession::copy(LocalSession *that, ptstime start, ptstime end)
 	}
 }
 
-void LocalSession::save_xml(FileXML *file, double start)
+void LocalSession::save_xml(FileXML *file)
 {
 	file->tag.set_title("LOCALSESSION");
 
-	file->tag.set_property("IN_POINT", in_point - start);
+	file->tag.set_property("IN_POINT", in_point);
 	file->tag.set_property("LOOP_PLAYBACK", loop_playback);
-	file->tag.set_property("LOOP_START", loop_start - start);
-	file->tag.set_property("LOOP_END", loop_end - start);
-	file->tag.set_property("OUT_POINT", out_point - start);
-	file->tag.set_property("SELECTION_START", selectionstart - start);
-	file->tag.set_property("SELECTION_END", selectionend - start);
+	file->tag.set_property("LOOP_START", loop_start);
+	file->tag.set_property("LOOP_END", loop_end);
+	file->tag.set_property("OUT_POINT", out_point);
+	file->tag.set_property("SELECTION_START", selectionstart);
+	file->tag.set_property("SELECTION_END", selectionend);
 	file->tag.set_property("CLIP_TITLE", clip_title);
 	file->tag.set_property("CLIP_NOTES", clip_notes);
 	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
@@ -183,9 +183,9 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("ZOOMY", zoom_y);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
 
-	double preview_start = this->preview_start - start;
+	ptstime preview_start = this->preview_start;
 	if(preview_start < 0) preview_start = 0;
-	double preview_end = this->preview_end - start;
+	ptstime preview_end = this->preview_end;
 	if(preview_end < 0) preview_end = 0;
 
 	file->tag.set_property("PREVIEW_START", preview_start);
