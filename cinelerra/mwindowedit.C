@@ -767,6 +767,7 @@ void MWindow::overwrite(EDL *source)
 	ptstime overwrite_len = source->local_session->get_selectionend() - src_start;
 	ptstime dst_start = master_edl->local_session->get_selectionstart();
 	ptstime dst_len = master_edl->local_session->get_selectionend() - dst_start;
+	EDL edl(0);
 
 	if (!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
 	{
@@ -775,29 +776,16 @@ void MWindow::overwrite(EDL *source)
 		overwrite_len = dst_len;
 	}
 
-	source->copy(src_start, 
-		src_start + overwrite_len, 
-		1,
-		0,
-		0,
-		&file,
-		"",
-		1);
-
 // HACK around paste_edl get_start/endselection on its own
 // so we need to clear only when not using both io points
 // FIXME: need to write simple overwrite_edl to be used for overwrite function
 	if (master_edl->local_session->get_inpoint() < 0 ||
-		master_edl->local_session->get_outpoint() < 0)
+			master_edl->local_session->get_outpoint() < 0)
 		master_edl->clear(dst_start,
 			dst_start + overwrite_len, 
 			0);
-
-	paste(dst_start, 
-		dst_start + overwrite_len, 
-		&file,
-		EDIT_NONE);
-
+	edl.copy(source, src_start, src_start + overwrite_len);
+	insert(&edl, dst_start, EDIT_NONE);
 	master_edl->local_session->set_selection(dst_start + overwrite_len);
 
 	save_backup();
