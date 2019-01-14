@@ -90,15 +90,6 @@ void Tracks::straighten_automation(ptstime selectionstart, ptstime selectionend)
 	}
 }
 
-void Tracks::clear_default_keyframe(void)
-{
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->record)
-			current->clear_automation(0, 0, 0, 1);
-	}
-}
-
 void Tracks::clear_handle(ptstime start,
 	ptstime end,
 	ptstime &longest_distance,
@@ -153,11 +144,6 @@ void Tracks::copy_automation(ptstime selectionstart,
 	file->append_tag();
 	file->append_newline();
 	file->terminate_string();
-}
-
-void Tracks::copy_default_keyframe(FileXML *file)
-{
-	copy_automation(0, 0, file, 1, 0);
 }
 
 int Tracks::delete_tracks(void)

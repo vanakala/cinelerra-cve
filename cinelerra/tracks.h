@@ -139,7 +139,6 @@ public:
 		ptstime selectionend);
 	void straighten_automation(ptstime selectionstart,
 		ptstime selectionend);
-	void clear_default_keyframe(void);
 	void clear_handle(ptstime start,
 		ptstime end,
 		double &longest_distance,
@@ -149,7 +148,6 @@ public:
 		FileXML *file,
 		int default_only,
 		int autos_only);
-	void copy_default_keyframe(FileXML *file);
 	void paste_automation(ptstime selectionstart,
 		FileXML *xml,
 		int default_only);
