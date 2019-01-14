@@ -253,16 +253,6 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 	boundaries();
 }
 
-// Output path is the path of the output file if name truncation is desired.
-// It is a "" if complete names should be used.
-// Called recursively by copy for clips, thus the string can't be terminated.
-// The string is not terminated in this call.
-void EDL::save_xml(FileXML *file, const char *output_path,
-	int is_clip, int is_vwindow)
-{
-	copy(0, total_length(), 1, is_clip,
-		is_vwindow, file, output_path, 0);
-}
 
 void EDL::copy_all(EDL *edl)
 {
@@ -325,15 +315,15 @@ void EDL::copy_assets(ptstime start,
 	file->append_newline();
 }
 
-void EDL::copy(ptstime start, 
-	ptstime end, 
-	int all, 
-	int is_clip,
-	int is_vwindow,
-	FileXML *file, 
-	const char *output_path,
-	int rewind_it)
+// Output path is the path of the output file if name truncation is desired.
+// It is a "" if complete names should be used.
+// Called recursively by copy for clips, thus the string can't be terminated.
+// The string is not terminated in this call.
+void EDL::save_xml(FileXML *file, const char *output_path,
+	int is_clip, int is_vwindow)
 {
+	ptstime start = 0;
+	ptstime end = total_length();
 // begin file
 	if(!is_clip)    // Cliplist writes tag itself
 	{
@@ -354,51 +344,40 @@ void EDL::copy(ptstime start,
 		file->append_newline();
 	}
 
-// Set clipboard samples only if copying to clipboard
-	if(!all)
-	{
-		file->tag.set_title("CLIPBOARD");
-		file->tag.set_title("/CLIPBOARD");
-		file->append_tag();
-		file->append_newline();
-		file->append_newline();
-	}
-
 // Sessions
 	local_session->save_xml(file);
 
 // Top level stuff.
 // Need to copy all this from child EDL if pasting is desired.
 // Session
-	edlsession->save_xml(file);
-	edlsession->save_video_config(file);
-	edlsession->save_audio_config(file);
+	if(this_edlsession)
+	{
+		this_edlsession->save_xml(file);
+		this_edlsession->save_video_config(file);
+		this_edlsession->save_audio_config(file);
+	}
 
 // Media
 // Don't replicate all assets for every clip.
 	if(!is_clip && !is_vwindow)
-		copy_assets(start, end, file, all, output_path);
+		copy_assets(start, end, file, 1, output_path);
 
 // Clips
 // Don't want this if using clipboard
-	if(all)
+	if(vwindow_edl->total_tracks() && this != vwindow_edl)
 	{
-		if(vwindow_edl->total_tracks() && this != vwindow_edl)
-		{
-			vwindow_edl->save_xml(file,
-				output_path,
-				0,
-				1);
-		}
-		if(this == master_edl)
-			cliplist_global.save_xml(file, output_path);
+		vwindow_edl->save_xml(file,
+			output_path,
+			0,
+			1);
 	}
+	if(this == master_edl)
+		cliplist_global.save_xml(file, output_path);
 
-	file->append_newline();
 	file->append_newline();
 
 	labels->copy(start, end, file);
-	tracks->copy(start, end, all, file, output_path);
+	tracks->copy(start, end, 1, file, output_path);
 
 // terminate file
 	if(!is_clip)
@@ -409,13 +388,6 @@ void EDL::copy(ptstime start,
 			file->tag.set_title("/EDL");
 		file->append_tag();
 		file->append_newline();
-	}
-// For editing operations we want to rewind it for immediate pasting.
-// For clips and saving to disk leave it alone.
-	if(rewind_it)
-	{
-		file->terminate_string();
-		file->rewind();
 	}
 }
 
