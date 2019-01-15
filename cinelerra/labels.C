@@ -164,7 +164,7 @@ void Labels::delete_all()
 		remove(last);
 }
 
-void Labels::copy(ptstime start, ptstime end, FileXML *xml)
+void Labels::save_xml(FileXML *xml)
 {
 	char string[BCTEXTLEN];
 
@@ -178,12 +178,10 @@ void Labels::copy(ptstime start, ptstime end, FileXML *xml)
 	Label *current;
 	sprintf(string, "/%s", xml_tag);
 	string[strlen(string) - 1] = 0; // remove trailing "S" on "LABELS" giving "LABEL"
-	for(current = label_of(start); 
-		current && current->position <= end; 
-		current = NEXT)
+	for(current = first; current; current = NEXT)
 	{
-		xml->tag.set_title(string+1); // skip the "/" for opening tag
-		xml->tag.set_property("TIME", (double)current->position - start);
+		xml->tag.set_title(string + 1); // skip the "/" for opening tag
+		xml->tag.set_property("TIME", current->position);
 		xml->tag.set_property("TEXTSTR", current->textstr);
 		xml->append_tag();
 		xml->tag.set_title(string); // closing tag
@@ -194,7 +192,6 @@ void Labels::copy(ptstime start, ptstime end, FileXML *xml)
 	sprintf(string, "/%s", xml_tag);
 	xml->tag.set_title(string);
 	xml->append_tag();
-	xml->append_newline();
 	xml->append_newline();
 }
 
@@ -226,33 +223,6 @@ Labels& Labels::operator=(Labels &that)
 {
 	copy_from(&that);
 	return *this;
-}
-
-
-void Labels::save(FileXML *xml)
-// Note: Normally the saving of Labels is done by Labels::copy()
-{
-	xml->tag.set_title("LABELS");
-	xml->append_tag();
-	xml->append_newline();
-
-	Label *current;
-
-	for(current = first; current; current = NEXT)
-	{
-		xml->tag.set_title("LABEL");
-		xml->tag.set_property("TIME", (double)current->position);
-		xml->tag.set_property("TEXTSTR", current->textstr);
-		xml->append_tag();
-		xml->tag.set_title("/LABEL");
-		xml->append_tag();
-		xml->append_newline();
-	}
-	xml->append_newline();
-	xml->tag.set_title("/LABELS");
-	xml->append_tag();
-	xml->append_newline();
-	xml->append_newline();
 }
 
 void Labels::load(FileXML *xml, uint32_t load_flags)

@@ -376,7 +376,7 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 	file->append_newline();
 
-	labels->copy(start, end, file);
+	labels->save_xml(file);
 	tracks->copy(start, end, 1, file, output_path);
 
 // terminate file

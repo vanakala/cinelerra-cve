@@ -49,7 +49,7 @@ class Labels : public List<Label>
 {
 public:
 	Labels(EDL *edl, const char *xml_tag);
-	virtual ~Labels();
+	~Labels();
 
 	void reset_instance();
 	void dump(int indent = 0);
@@ -58,7 +58,6 @@ public:
 	void copy_from(Labels *labels);
 	void toggle_label(ptstime start, ptstime end);
 	void delete_all();
-	void save(FileXML *xml);
 	void load(FileXML *xml, uint32_t load_flags);
 	void insert_labels(Labels *labels, 
 		ptstime start,
@@ -70,7 +69,7 @@ public:
 		int currentend, 
 		int handle_mode,
 		int edit_labels);
-	void copy(ptstime start, ptstime end, FileXML *xml);
+	void save_xml(FileXML *xml);
 	void copy(Labels *that, ptstime start, ptstime end);
 	void insert(ptstime start, ptstime length);
 
