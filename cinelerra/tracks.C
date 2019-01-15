@@ -55,6 +55,7 @@ Tracks::Tracks(EDL *edl)
 Tracks::Tracks()
  : List<Track>()
 {
+    edl = 0;
 }
 
 Tracks::~Tracks()
