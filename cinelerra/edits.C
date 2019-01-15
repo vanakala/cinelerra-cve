@@ -500,7 +500,8 @@ void Edits::copy(Edits *edits, ptstime start, ptstime end)
 			{
 				new_edit->set_source_pts(current_edit->get_source_pts() +
 					start - current_edit->get_pts());
-				edl->update_assets(new_edit->asset);
+				if(edl)
+					edl->update_assets(new_edit->asset);
 			}
 		}
 		else

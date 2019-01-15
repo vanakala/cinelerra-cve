@@ -164,7 +164,8 @@ int Edit::silence(void)
 
 void Edit::copy_from(Edit *edit)
 {
-	edl->update_assets(edit->asset);
+	if(edl)
+		edl->update_assets(edit->asset);
 	this->asset = edit->asset;
 	this->source_pts = edit->source_pts;
 	this->project_pts = edit->project_pts;
