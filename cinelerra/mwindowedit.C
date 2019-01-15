@@ -290,11 +290,11 @@ void MWindow::copy(ptstime start, ptstime end)
 void MWindow::copy_automation()
 {
 	FileXML file;
-	master_edl->tracks->copy_automation(master_edl->local_session->get_selectionstart(),
-		master_edl->local_session->get_selectionend(),
-		&file,
-		0,
-		0); 
+	Tracks tracks;
+
+	tracks.copy(master_edl->tracks, master_edl->local_session->get_selectionstart(),
+		master_edl->local_session->get_selectionend());
+	tracks.automation_xml(&file);
 	gui->get_clipboard()->to_clipboard(file.string, 
 		strlen(file.string), 
 		SECONDARY_SELECTION);

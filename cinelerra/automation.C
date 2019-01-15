@@ -178,9 +178,7 @@ void Automation::paste(ptstime start,
 	}
 }
 
-void Automation::copy(ptstime start,
-	ptstime end,
-	FileXML *file)
+void Automation::save_xml(FileXML *file)
 {
 // Copy regardless of what's visible.
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -190,9 +188,7 @@ void Automation::copy(ptstime start,
 			file->tag.set_title(xml_titles[i]);
 			file->append_tag();
 			file->append_newline();
-			autos[i]->copy(start, 
-					end,
-					file);
+			autos[i]->copy(0, track->get_length(), file);
 			char string[BCTEXTLEN];
 			sprintf(string, "/%s", xml_titles[i]);
 			file->tag.set_title(string);

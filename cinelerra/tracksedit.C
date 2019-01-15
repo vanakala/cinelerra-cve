@@ -111,21 +111,16 @@ void Tracks::clear_handle(ptstime start,
 	}
 }
 
-void Tracks::copy_automation(ptstime selectionstart,
-	ptstime selectionend,
-	FileXML *file,
-	int default_only,
-	int autos_only)
+void Tracks::automation_xml(FileXML *file)
 {
 // called by MWindow::copy_automation for copying automation alone
 	Track* current_track;
 
 	file->tag.set_title("AUTO_CLIPBOARD");
-	file->tag.set_property("LENGTH", selectionend - selectionstart);
+	file->tag.set_property("LENGTH", total_length());
 	file->tag.set_property("FRAMERATE", edlsession->frame_rate);
 	file->tag.set_property("SAMPLERATE", edlsession->sample_rate);
 	file->append_tag();
-	file->append_newline();
 	file->append_newline();
 
 	for(current_track = first; 
@@ -134,9 +129,7 @@ void Tracks::copy_automation(ptstime selectionstart,
 	{
 		if(current_track->record)
 		{
-			current_track->copy_automation(selectionstart, 
-				selectionend, 
-				file);
+			current_track->automation_xml(file);
 		}
 	}
 
@@ -207,9 +200,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
 // Copy keyframes
 					FileXML temp;
-					source_track->automation->copy(source_edit->get_pts(),
-						source_edit->end_pts(),
-						&temp);
+					source_track->automation->save_xml(&temp);
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes

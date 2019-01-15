@@ -202,25 +202,6 @@ void PluginSet::clear_keyframes(ptstime start, ptstime end)
 		current->keyframes->clear(start, end, 0);
 }
 
-void PluginSet::copy_keyframes(ptstime start,
-	ptstime end,
-	FileXML *file)
-{
-	file->tag.set_title("PLUGINSET");
-	file->append_tag();
-	file->append_newline();
-
-	for(Plugin *current = (Plugin*)first; 
-		current; 
-		current = (Plugin*)NEXT)
-	{
-		current->copy_keyframes(start, end, file);
-	}
-
-	file->tag.set_title("/PLUGINSET");
-	file->append_tag();
-	file->append_newline();
-}
 
 void PluginSet::paste_keyframes(ptstime start,
 	ptstime length,
@@ -373,7 +354,7 @@ void PluginSet::shift_effects(ptstime start, ptstime length)
 	}
 }
 
-void PluginSet::copy(ptstime start, ptstime end, FileXML *file)
+void PluginSet::save_xml(FileXML *file)
 {
 	file->tag.set_title("PLUGINSET");
 	file->append_tag();
@@ -381,7 +362,7 @@ void PluginSet::copy(ptstime start, ptstime end, FileXML *file)
 
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
 	{
-		current->copy(start, end, file);
+		current->copy(0, length(), file);
 	}
 
 	file->tag.set_title("/PLUGINSET");
@@ -411,11 +392,6 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	new_plugin->shared_location = current->shared_location;
 	new_plugin->keyframes->base_pts = pos;
 	((Autos*)new_plugin->keyframes)->copy((Autos*)current->keyframes, start, end);
-}
-
-void PluginSet::save(FileXML *file)
-{
-	copy(0, length(), file);
 }
 
 void PluginSet::load(FileXML *file, uint32_t load_flags)

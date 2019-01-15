@@ -62,9 +62,7 @@ public:
 	virtual void copy_from(Automation *automation);
 	int load(FileXML *file);
 // For copy automation, copy, and save
-	void copy(ptstime start,
-		ptstime end,
-		FileXML *xml);
+	void save_xml(FileXML *xml);
 	void copy(Automation *automation, ptstime start, ptstime end);
 
 // For paste automation only

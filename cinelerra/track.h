@@ -198,9 +198,7 @@ public:
 		int default_only);
 	void straighten_automation(double selectionstart, 
 		double selectionend);
-	void copy_automation(ptstime selectionstart,
-		ptstime selectionend,
-		FileXML *file);
+	void automation_xml(FileXML *file);
 	void paste_automation(ptstime selectionstart, 
 		ptstime total_length, 
 		double frame_rate,

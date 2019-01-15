@@ -46,12 +46,10 @@ public:
 	void clear_keyframes(ptstime start, ptstime end);
 	void clear(ptstime start, ptstime end);
 	void copy_from(PluginSet *src);
-	void copy(ptstime start, ptstime end, FileXML *file);
+	void save_xml(FileXML *file);
 	void copy(PluginSet *src, ptstime start, ptstime end);
 	Plugin *active_in(ptstime start, ptstime end);
-	void copy_keyframes(ptstime start,
-		ptstime end,
-		FileXML *file);
+
 	static void paste_keyframes(ptstime start,
 		ptstime length,
 		FileXML *file,
@@ -66,7 +64,7 @@ public:
 	Plugin* get_first_plugin();
 // The plugin set number in the track
 	int get_number();
-	void save(FileXML *file);
+
 	void load(FileXML *file, uint32_t load_flags);
 	void dump(int indent = 0);
 

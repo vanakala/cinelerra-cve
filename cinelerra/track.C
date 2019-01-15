@@ -723,9 +723,7 @@ int Track::number_of()
 // ================================================= editing
 
 // used for copying automation alone
-void Track::copy_automation(ptstime selectionstart, 
-	ptstime selectionend,
-	FileXML *file)
+void Track::automation_xml(FileXML *file)
 {
 	file->tag.set_title("TRACK");
 // Video or audio
@@ -733,7 +731,7 @@ void Track::copy_automation(ptstime selectionstart,
 	file->append_tag();
 	file->append_newline();
 
-	automation->copy(selectionstart, selectionend, file);
+	automation->save_xml(file);
 
 	if(edlsession->auto_conf->plugins)
 	{
@@ -742,9 +740,7 @@ void Track::copy_automation(ptstime selectionstart,
 		file->append_newline();
 		for(int i = 0; i < plugin_set.total; i++)
 		{
-			plugin_set.values[i]->copy_keyframes(selectionstart,
-				selectionend,
-				file);
+			plugin_set.values[i]->save_xml(file);
 		}
 		file->tag.set_title("/PLUGINSETS");
 		file->append_tag();
@@ -753,9 +749,6 @@ void Track::copy_automation(ptstime selectionstart,
 
 	file->tag.set_title("/TRACK");
 	file->append_tag();
-	file->append_newline();
-	file->append_newline();
-	file->append_newline();
 	file->append_newline();
 }
 
@@ -855,11 +848,11 @@ void Track::copy(ptstime start,
 	file->append_newline();
 
 	edits->copy(start, end, file, output_path);
-	automation->copy(start, end, file);
+	automation->save_xml(file);
 
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		plugin_set.values[i]->copy(start, end, file);
+		plugin_set.values[i]->save_xml(file);
 	}
 
 	file->tag.set_title("/TRACK");
