@@ -93,9 +93,9 @@ void PanAutos::dump(int indent)
 {
 	printf("%*sPanAutos %p dump(%d): base %.3f handles: %d, %d\n", indent, " ", this, 
 		total(), base_pts, default_handle_x, default_handle_y);
-	printf("%*sdefault values:", indent + 4, " ");
 	if(edl)
 	{
+		printf("%*sdefault values:", indent + 4, " ");
 		for(int i = 0; i < edlsession->audio_channels; i++)
 			printf(" %.1f", default_values[i]);
 		putchar('\n');
