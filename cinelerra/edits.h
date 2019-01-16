@@ -55,8 +55,7 @@ public:
 		int actions,
 		ptstime &distance);
 	virtual Edit* create_edit();
-	void save(FileXML *xml, const char *output_path);
-	void copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
+	void save_xml(FileXML *xml, const char *output_path);
 	void copy(Edits *edits, ptstime start, ptstime end);
 // Clear region of edits
 	virtual void clear(ptstime start, ptstime end);

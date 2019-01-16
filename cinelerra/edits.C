@@ -264,11 +264,6 @@ Edit* Edits::split_edit(ptstime postime, int force)
 	return new_edit;
 }
 
-void Edits::save(FileXML *xml, const char *output_path)
-{
-	copy(0, length(), xml, output_path);
-}
-
 // ===================================== file operations
 
 void Edits::load(FileXML *file, int track_offset)
@@ -423,60 +418,17 @@ Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
 
 // ================================================ editing
 
-void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
+void Edits::save_xml(FileXML *file, const char *output_path)
 {
-	Edit *current_edit, *tmp_edit = 0;
-	int stream;
+	Edit *current_edit;
 
 	file->tag.set_title("EDITS");
 	file->append_tag();
 	file->append_newline();
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
-	{
-		if(current_edit->end_pts() < start - EPSILON)
-			continue;
-		if(!tmp_edit)
-			tmp_edit = create_edit();
-		if(current_edit->get_pts() < start && !PTSEQU(current_edit->get_pts(), start))
-		{
-			tmp_edit->copy_from(current_edit);
-			tmp_edit->set_pts(0);
-			stream = -1;
-			if(tmp_edit->asset)
-			{
-				tmp_edit->set_source_pts(current_edit->get_source_pts() + start - current_edit->get_pts());
-			}
-			tmp_edit->copy(file, output_path, track->data_type);
-		}
-		else
-		if(current_edit->get_pts() > end && !PTSEQU(current_edit->get_pts(), end))
-		{
-			if(!tmp_edit)
-				tmp_edit = create_edit();
-			tmp_edit->set_pts(end - start);
-			tmp_edit->asset = 0;
-			tmp_edit->set_source_pts(0);
-			tmp_edit->transition = 0;
-			tmp_edit->channel = 0;
-			tmp_edit->copy(file, output_path, track->data_type);
-			break;
-		}
-		else
-		{
-			if(fabs(start) > EPSILON)
-			{
-				tmp_edit->copy_from(current_edit);
-				tmp_edit->shift(-start);
-			}
-			else
-				current_edit->copy(file, output_path, track->data_type);
-		}
-		if(PTSEQU(current_edit->get_pts(), end))
-			break;
-	}
+		current_edit->copy(file, output_path, track->data_type);
 
-	delete tmp_edit;
 	file->tag.set_title("/EDITS");
 	file->append_tag();
 	file->append_newline();

@@ -844,7 +844,7 @@ void Track::save_xml(FileXML *file, const char *output_path)
 	file->append_tag();
 	file->append_newline();
 
-	edits->copy(0, get_length(), file, output_path);
+	edits->save_xml(file, output_path);
 	automation->save_xml(file);
 
 	for(int i = 0; i < plugin_set.total; i++)
