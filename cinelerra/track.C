@@ -822,10 +822,7 @@ void Track::straighten_automation(ptstime selectionstart, ptstime selectionend)
 }
 
 
-void Track::copy(ptstime start,
-	ptstime end,
-	FileXML *file, 
-	const char *output_path)
+void Track::save_xml(FileXML *file, const char *output_path)
 {
 	file->tag.set_title("TRACK");
 	file->tag.set_property("RECORD", record);
@@ -847,7 +844,7 @@ void Track::copy(ptstime start,
 	file->append_tag();
 	file->append_newline();
 
-	edits->copy(start, end, file, output_path);
+	edits->copy(0, get_length(), file, output_path);
 	automation->save_xml(file);
 
 	for(int i = 0; i < plugin_set.total; i++)
@@ -857,9 +854,6 @@ void Track::copy(ptstime start,
 
 	file->tag.set_title("/TRACK");
 	file->append_tag();
-	file->append_newline();
-	file->append_newline();
-	file->append_newline();
 	file->append_newline();
 }
 

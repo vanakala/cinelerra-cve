@@ -179,10 +179,7 @@ public:
 	void dump(int indent = 0);
 
 // ===================================== editing
-	void copy(ptstime start,
-		ptstime end,
-		FileXML *file, 
-		const char *output_path = "");
+	void save_xml(FileXML *file, const char *output_path = "");
 	void copy(Track *track, ptstime start, ptstime end);
 	void copy_assets(ptstime start,
 		ptstime end,

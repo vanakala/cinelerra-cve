@@ -392,7 +392,7 @@ void Tracks::save_xml(FileXML *file, const char *output_path)
 	Track* current;
 
 	for(current = first; current; current = NEXT)
-		current->copy(0, total_length(), file, output_path);
+		current->save_xml(file, output_path);
 }
 
 void Tracks::copy(Tracks *tracks, ptstime start, ptstime end)
