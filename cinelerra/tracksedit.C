@@ -387,27 +387,12 @@ void Tracks::change_plugins(SharedLocation &old_location, SharedLocation &new_lo
 
 // =========================================== EDL editing
 
-void Tracks::copy(ptstime start,
-	ptstime end,
-	int all, 
-	FileXML *file, 
-	const char *output_path)
+void Tracks::save_xml(FileXML *file, const char *output_path)
 {
-// nothing selected
-	if(PTSEQU(start, end) && !all)
-		return;
-
 	Track* current;
 
-	for(current = first; 
-		current; 
-		current = NEXT)
-	{
-		if(current->record || all)
-		{
-			current->copy(start, end, file, output_path);
-		}
-	}
+	for(current = first; current; current = NEXT)
+		current->copy(0, total_length(), file, output_path);
 }
 
 void Tracks::copy(Tracks *tracks, ptstime start, ptstime end)

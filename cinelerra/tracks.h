@@ -122,11 +122,7 @@ public:
 	void copy_from(Tracks *tracks);
 
 // ================================== EDL editing
-	void copy(ptstime start,
-		ptstime end,
-		int all, 
-		FileXML *file, 
-		const char *output_path = "");
+	void save_xml(FileXML *file, const char *output_path = "");
 
 	void copy(Tracks *tracks, ptstime start, ptstime end);
 
