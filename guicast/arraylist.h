@@ -45,15 +45,15 @@ public:
 // allocate
 	void allocate(int total);
 // remove last pointer from end
-	void remove();          
+	void remove();
 // remove last pointer and object from end
-	void remove_object();          
+	void remove_object();
 // remove pointer to object from list
-	void remove(TYPE value);       
+	void remove(TYPE value);
 // remove object and pointer to it from list
-	void remove_object(TYPE value);     
+	void remove_object(TYPE value);
 // remove object and pointer to it from list
-	void remove_object_number(int number);     
+	void remove_object_number(int number);
 // remove pointer to item numbered
 	void remove_number(int number);
 // Return number of first object matching argument
@@ -87,7 +87,6 @@ ArrayList<TYPE>::ArrayList()
 	values = new TYPE[available];
 }
 
-
 template<class TYPE>
 ArrayList<TYPE>::~ArrayList()
 {
@@ -100,16 +99,13 @@ template<class TYPE>
 void ArrayList<TYPE>::set_array_delete()
 {
     removeobject_type = ARRAYLIST_REMOVEOBJECT_DELETEARRAY;
-
 }
 
 template<class TYPE>
 void ArrayList<TYPE>::set_free()
 {
     removeobject_type = ARRAYLIST_REMOVEOBJECT_FREE;
-
 }
-
 
 template<class TYPE>
 void ArrayList<TYPE>::allocate(int total)
@@ -135,7 +131,6 @@ TYPE ArrayList<TYPE>::append(TYPE value)            // add to end of list
 		delete [] values;
 		values = newvalues;
 	}
-	
 	values[total++] = value;
 	return value;
 }
@@ -152,7 +147,6 @@ TYPE ArrayList<TYPE>::append()            // add to end of list
 		values = newvalues;
 	}
 	total++;
-
 	return values[total - 1];
 }
 
@@ -189,26 +183,24 @@ TYPE ArrayList<TYPE>::last()                   // last element in list
 	return values[total - 1];
 }
 
-
-
 template<class TYPE>
 void ArrayList<TYPE>::remove_object(TYPE value)                   // remove value from anywhere in list
 {
 	remove(value);
 	switch (removeobject_type)
 	{
-		case ARRAYLIST_REMOVEOBJECT_DELETE:
-			delete value;
-			break;
-		case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
-			delete [] value;
-			break;
-		case ARRAYLIST_REMOVEOBJECT_FREE:
-			free(value);
-			break;
-		default:
-			printf("Unknown function to use to free array\n");
-			break;
+	case ARRAYLIST_REMOVEOBJECT_DELETE:
+		delete value;
+		break;
+	case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
+		delete [] value;
+		break;
+	case ARRAYLIST_REMOVEOBJECT_FREE:
+		free(value);
+		break;
+	default:
+		printf("Unknown function to use to free array\n");
+		break;
 	}
 }
 
@@ -219,26 +211,24 @@ void ArrayList<TYPE>::remove_object_number(int number)
 	{
 		switch (removeobject_type)
 		{
-			case ARRAYLIST_REMOVEOBJECT_DELETE:
-				delete values[number];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
-				delete [] values[number];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_FREE:
-				free(values[number]);
-				break;
-			default:
-				printf("Unknown function to use to free array\n");
-				break;
+		case ARRAYLIST_REMOVEOBJECT_DELETE:
+			delete values[number];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
+			delete [] values[number];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_FREE:
+			free(values[number]);
+			break;
+		default:
+			printf("Unknown function to use to free array\n");
+			break;
 		}
-
 		remove_number(number);
 	}
 	else
 		fprintf(stderr, "ArrayList<TYPE>::remove_object_number: number %d out of range %d.\n", number, total);
 }
-
 
 template<class TYPE>
 void ArrayList<TYPE>::remove_object()                   // remove last object from array
@@ -247,27 +237,24 @@ void ArrayList<TYPE>::remove_object()                   // remove last object fr
 	{
 		switch (removeobject_type)
 		{
-			case ARRAYLIST_REMOVEOBJECT_DELETE:
-				delete values[total - 1];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
-				delete [] values[total -1];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_FREE:
-				free(values[total - 1]);
-				break;
-			default:
-				printf("Unknown function to use to free array\n");
-				break;
+		case ARRAYLIST_REMOVEOBJECT_DELETE:
+			delete values[total - 1];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
+			delete [] values[total -1];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_FREE:
+			free(values[total - 1]);
+			break;
+		default:
+			printf("Unknown function to use to free array\n");
+			break;
 		}
-
 		remove();
 	}
 	else
 		fprintf(stderr, "ArrayList<TYPE>::remove_object: array is 0 length.\n");
 }
-
-
 
 template<class TYPE>
 void ArrayList<TYPE>::remove()
@@ -277,7 +264,7 @@ void ArrayList<TYPE>::remove()
 
 // remove pointer from anywhere in list
 template<class TYPE>
-void ArrayList<TYPE>::remove_number(int number)                   
+void ArrayList<TYPE>::remove_number(int number)
 {
 	int in, out;
 	for(in = 0, out = 0; in < total;)
@@ -286,7 +273,7 @@ void ArrayList<TYPE>::remove_number(int number)
 			values[out++] = values[in++];
 		else
 // need to delete it here
-			in++;       
+			in++;
 	}
 	total = out;
 }
@@ -294,23 +281,22 @@ void ArrayList<TYPE>::remove_number(int number)
 template<class TYPE>
 void ArrayList<TYPE>::remove_all_objects()
 {
-//printf("ArrayList<TYPE>::remove_all_objects 1 %d\n", total);
 	for(int i = 0; i < total; i++)
 	{
 		switch (removeobject_type)
 		{
-			case ARRAYLIST_REMOVEOBJECT_DELETE:
-				delete values[i];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
-				delete [] values[i];
-				break;
-			case ARRAYLIST_REMOVEOBJECT_FREE:
-				free(values[i]);
-				break;
-			default:
-				printf("Unknown function to use to free array\n");
-				break;
+		case ARRAYLIST_REMOVEOBJECT_DELETE:
+			delete values[i];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_DELETEARRAY:
+			delete [] values[i];
+			break;
+		case ARRAYLIST_REMOVEOBJECT_FREE:
+			free(values[i]);
+			break;
+		default:
+			printf("Unknown function to use to free array\n");
+			break;
 		}
 	}
 	total = 0;
@@ -354,6 +340,5 @@ int ArrayList<TYPE>::number_of(TYPE object)
 	}
 	return 0;
 }
-
 
 #endif
