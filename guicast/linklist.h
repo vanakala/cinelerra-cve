@@ -111,7 +111,7 @@ int List<TYPE>::number_of(TYPE *item)
 		if(current == item) return total;
 		total++;
 	}
-	return 0;
+	return -1;
 }
 
 template<class TYPE>
