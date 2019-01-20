@@ -43,10 +43,7 @@ public:
 	void reset_instance();
 	Tracks& operator=(Tracks &tracks);
 	void load(FileXML *xml, int &track_offset, uint32_t load_flags);
-	void move_edits(ArrayList<Edit*> *edits, 
-		Track *track,
-		ptstime position,
-		int behaviour);
+
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track, 
