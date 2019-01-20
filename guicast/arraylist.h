@@ -338,7 +338,7 @@ int ArrayList<TYPE>::number_of(TYPE object)
 	{
 		if(values[i] == object) return i;
 	}
-	return 0;
+	return -1;
 }
 
 #endif
