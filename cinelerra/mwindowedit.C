@@ -632,11 +632,24 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 		ptstime position,
 		int behaviour)
 {
-	master_edl->tracks->move_edits(edits,
-		track, 
-		position,
-		behaviour);
+	EDL edl(0);
+	ptstime start, end;
+	ArrayList<Track*> tracks;
+	ArrayList<EDL*> new_edls;
 
+	if(!edits->total)
+		return;
+
+	start = edits->values[0]->get_pts();
+	end = edits->values[0]->end_pts();
+
+	for(int i = 0; i < edits->total; i++)
+		tracks.append(edits->values[i]->track);
+	edl.copy(master_edl, start, end, &tracks);
+	new_edls.append(&edl);
+	paste_edls(&new_edls, LOADMODE_PASTE, track, position,
+		edlsession->edit_actions(), behaviour);
+	master_edl->clear(start, end, edlsession->edit_actions());
 	save_backup();
 	undo->update_undo(_("move edit"), LOAD_ALL);
 
