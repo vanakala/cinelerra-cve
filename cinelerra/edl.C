@@ -965,12 +965,8 @@ int EDL::number_of(Track *track)
 	int i = 0;
 
 	if(tracks && tracks->total())
-	{
-		for(Track *current = tracks->first; current && current != track;
-				current = NEXT)
-			i++;
-	}
-	return i;
+		return tracks->number_of(track);
+	return -1;
 }
 
 Track *EDL::number(int number)
