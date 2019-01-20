@@ -391,13 +391,13 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 	}
 }
 
-void EDL::copy(EDL *edl, ptstime start, ptstime end)
+void EDL::copy(EDL *edl, ptstime start, ptstime end, ArrayList<Track*> *src_tracks)
 {
 	if(PTSEQU(start, end))
 		return;
 	local_session->copy(edl->local_session, start, end);
 	labels->copy(edl->labels, start, end);
-	tracks->copy(edl->tracks, start, end);
+	tracks->copy(edl->tracks, start, end, src_tracks);
 }
 
 void EDL::rechannel()

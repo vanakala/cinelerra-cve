@@ -395,12 +395,16 @@ void Tracks::save_xml(FileXML *file, const char *output_path)
 		current->save_xml(file, output_path);
 }
 
-void Tracks::copy(Tracks *tracks, ptstime start, ptstime end)
+void Tracks::copy(Tracks *tracks, ptstime start, ptstime end,
+	ArrayList<Track*> *src_tracks)
 {
 	Track *current, *new_track;
 
 	for(current = tracks->first; current; current = NEXT)
 	{
+		if(src_tracks && src_tracks->number_of(current) < 0)
+			continue;
+
 		switch(current->data_type)
 		{
 		case TRACK_VIDEO:

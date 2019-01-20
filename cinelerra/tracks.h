@@ -124,7 +124,8 @@ public:
 // ================================== EDL editing
 	void save_xml(FileXML *file, const char *output_path = "");
 
-	void copy(Tracks *tracks, ptstime start, ptstime end);
+	void copy(Tracks *tracks, ptstime start, ptstime end,
+		ArrayList<Track*> *src_tracks = 0);
 
 	int copy_assets(FileXML *xml, 
 		double start, 

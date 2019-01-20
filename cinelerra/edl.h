@@ -144,7 +144,8 @@ public:
 		FileXML *file, 
 		int all, 
 		const char *output_path);
-	void copy(EDL *edl, ptstime start, ptstime end);
+	void copy(EDL *edl, ptstime start, ptstime end,
+		ArrayList<Track*> *src_tracks = 0);
 	void paste_silence(ptstime start,
 		ptstime end,
 		int edit_labels, 
