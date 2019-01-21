@@ -91,7 +91,7 @@ public:
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 
-	void copy(ptstime start, ptstime end, FileXML *file);
+	void save_xml(FileXML *file);
 	void load(FileXML *file);
 // Shift in time
 	void shift(ptstime difference);

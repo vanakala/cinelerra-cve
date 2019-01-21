@@ -361,9 +361,7 @@ void PluginSet::save_xml(FileXML *file)
 	file->append_newline();
 
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
-	{
-		current->copy(0, length(), file);
-	}
+		current->save_xml(file);
 
 	file->tag.set_title("/PLUGINSET");
 	file->append_tag();

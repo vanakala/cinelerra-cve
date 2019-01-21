@@ -361,74 +361,58 @@ KeyFrame* Plugin::get_keyframe()
 	return 0;
 }
 
-void Plugin::copy(ptstime start, ptstime end, FileXML *file)
+void Plugin::save_xml(FileXML *file)
 {
-	ptstime endproject = end_pts();
-
-	if((get_pts() >= start && get_pts() <= end) ||  // startproject in range
-		(endproject <= end && endproject >= start) ||   // endproject in range
-		(get_pts() <= start && get_pts() >= end))    // range in project
-	{
-// edit is in range
-		ptstime startprj_in_selection = get_pts(); // start of edit in selection in project
-		ptstime len_in_selection = length();             // length of edit in selection
-
-		if(get_pts() < start)
-		{         // start is after start of edit in project
-			startprj_in_selection += start - get_pts();
-		}
-
 // Plugins don't store silence
-		file->tag.set_title("PLUGIN");
-		file->tag.set_property("POSTIME", startprj_in_selection);
-		file->tag.set_property("TYPE", plugin_type);
-		file->tag.set_property("TITLE", title);
-		file->append_tag();
-		file->append_newline();
+	file->tag.set_title("PLUGIN");
+	file->tag.set_property("POSTIME", get_pts());
+	file->tag.set_property("TYPE", plugin_type);
+	file->tag.set_property("TITLE", title);
+	file->append_tag();
+	file->append_newline();
 
-		if(plugin_type == PLUGIN_SHAREDPLUGIN ||
+	if(plugin_type == PLUGIN_SHAREDPLUGIN ||
 			plugin_type == PLUGIN_SHAREDMODULE)
-		{
-			shared_location.save(file);
-		}
+	{
+		shared_location.save(file);
+	}
 
-		if(in)
-		{
-			file->tag.set_title("IN");
-			file->append_tag();
-			file->tag.set_title("/IN");
-			file->append_tag();
-		}
-		if(out)
-		{
-			file->tag.set_title("OUT");
-			file->append_tag();
-			file->tag.set_title("/OUT");
-			file->append_tag();
-		}
-		if(show)
-		{
-			file->tag.set_title("SHOW");
-			file->append_tag();
-			file->tag.set_title("/SHOW");
-			file->append_tag();
-		}
-		if(on)
-		{
-			file->tag.set_title("ON");
-			file->append_tag();
-			file->tag.set_title("/ON");
-			file->append_tag();
-		}
-		file->append_newline();
+	if(in)
+	{
+		file->tag.set_title("IN");
+		file->append_tag();
+		file->tag.set_title("/IN");
+		file->append_tag();
+	}
+	if(out)
+	{
+		file->tag.set_title("OUT");
+		file->append_tag();
+		file->tag.set_title("/OUT");
+		file->append_tag();
+	}
+	if(show)
+	{
+		file->tag.set_title("SHOW");
+		file->append_tag();
+		file->tag.set_title("/SHOW");
+		file->append_tag();
+	}
+	if(on)
+	{
+		file->tag.set_title("ON");
+		file->append_tag();
+		file->tag.set_title("/ON");
+		file->append_tag();
+	}
+	file->append_newline();
 
 // Keyframes
-		keyframes->save_xml(file);
+	keyframes->save_xml(file);
 
-		file->tag.set_title("/PLUGIN");
-		file->append_tag();
-		file->append_newline();
-	}
+	file->tag.set_title("/PLUGIN");
+	file->append_tag();
+	file->append_newline();
 }
 
 void Plugin::load(FileXML *file)
