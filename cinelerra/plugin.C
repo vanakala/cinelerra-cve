@@ -130,13 +130,6 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::copy_keyframes(ptstime start,
-	ptstime end,
-	FileXML *file)
-{
-	keyframes->copy(start, end, file);
-}
-
 void Plugin::synchronize_params(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;

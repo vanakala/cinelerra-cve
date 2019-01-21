@@ -90,10 +90,7 @@ public:
 		int plugin_type);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
-// For copying to clipboard
-	void copy_keyframes(ptstime start,
-		ptstime end,
-		FileXML *file);
+
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void load(FileXML *file);
 // Shift in time
