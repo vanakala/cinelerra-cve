@@ -448,10 +448,7 @@ void MWindow::insert(ptstime position,
 // from the master EDL.  Then it can be resampled to the master rates.
 // For splice, overwrite, and dragging need same session to get the assets.
 	EDL edl(0);
-	ArrayList<EDL*> new_edls;
 	uint32_t load_flags = LOAD_ALL;
-
-	new_edls.append(&edl);
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
 	if(!edlsession->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
@@ -459,22 +456,17 @@ void MWindow::insert(ptstime position,
 
 	edl.load_xml(file, load_flags, 0);
 
-	paste_edls(&new_edls, 
+	paste_edl(&edl,
 		LOADMODE_PASTE, 
 		0, 
 		position,
 		actions,
 		0); // overwrite
-	new_edls.remove_all();
 }
 
 void MWindow::insert(EDL *edl, ptstime position, int actions)
 {
-	ArrayList<EDL*> new_edls;
-
-	new_edls.append(edl);
-
-	paste_edls(&new_edls,
+	paste_edl(edl,
 		LOADMODE_PASTE,
 		0,
 		position,
@@ -635,7 +627,6 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	EDL edl(0);
 	ptstime start, end;
 	ArrayList<Track*> tracks;
-	ArrayList<EDL*> new_edls;
 
 	if(!edits->total)
 		return;
@@ -646,8 +637,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	for(int i = 0; i < edits->total; i++)
 		tracks.append(edits->values[i]->track);
 	edl.copy(master_edl, start, end, &tracks);
-	new_edls.append(&edl);
-	paste_edls(&new_edls, LOADMODE_PASTE, track, position,
+	paste_edl(&edl, LOADMODE_PASTE, track, position,
 		edlsession->edit_actions(), behaviour);
 	master_edl->clear(start, end, edlsession->edit_actions());
 	save_backup();
@@ -774,8 +764,6 @@ void MWindow::mute_selection()
 
 void MWindow::overwrite(EDL *source)
 {
-	FileXML file;
-
 	ptstime src_start = source->local_session->get_selectionstart();
 	ptstime overwrite_len = source->local_session->get_selectionend() - src_start;
 	ptstime dst_start = master_edl->local_session->get_selectionstart();
@@ -905,21 +893,19 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	int actions,
 	int overwrite)
 {
-	ArrayList<EDL*> new_edls;
-	EDL *new_edl = new EDL(0);
+	EDL edl(0);
 
-	new_edl->copy_session(master_edl);
+	edl.copy_session(master_edl);
 
 	if(position < 0)
 		position = master_edl->local_session->get_selectionstart();
 
 	for(int i = 0; i < new_assets->total; i++)
-		new_edl->update_assets(new_assets->values[i]);
+		edl.update_assets(new_assets->values[i]);
 
-	new_edl->finalize_edl(load_mode);
-	new_edls.append(new_edl);
+	edl.finalize_edl(load_mode);
 
-	paste_edls(&new_edls, 
+	paste_edl(&edl,
 		load_mode, 
 		first_track,
 		position,
@@ -927,7 +913,6 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		overwrite);
 
 	save_backup();
-	new_edls.remove_all_objects();
 }
 
 void MWindow::paste_automation()
@@ -962,6 +947,21 @@ void MWindow::paste_automation()
 		gui->patchbay->update();
 		cwindow->update(WUPD_POSITION);
 	}
+}
+
+void MWindow::paste_edl(EDL *new_edl,
+	int load_mode,
+	Track *first_track,
+	ptstime current_position,
+	int actions,
+	int overwrite)
+{
+	ArrayList<EDL*> new_edls;
+
+	new_edls.append(new_edl);
+
+	paste_edls(&new_edls, load_mode, first_track,
+		current_position, actions, overwrite);
 }
 
 // Insert edls with project deletion and index file generation.
