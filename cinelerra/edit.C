@@ -71,7 +71,7 @@ Edit::~Edit()
 	if(transition) delete transition;
 }
 
-void Edit::copy(FileXML *file, const char *output_path, int track_type)
+void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 {
 	if(file)    // only if not counting
 	{

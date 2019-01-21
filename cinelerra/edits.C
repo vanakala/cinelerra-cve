@@ -427,7 +427,7 @@ void Edits::save_xml(FileXML *file, const char *output_path)
 	file->append_newline();
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
-		current_edit->copy(file, output_path, track->data_type);
+		current_edit->save_xml(file, output_path, track->data_type);
 
 	file->tag.set_title("/EDITS");
 	file->append_tag();
