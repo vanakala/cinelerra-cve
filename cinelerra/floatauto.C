@@ -371,10 +371,10 @@ void FloatAuto::adjust_to_new_coordinates(ptstime position, float value)
 	adjust_ctrl_positions();
 }
 
-void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
+void FloatAuto::save_xml(FileXML *file)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("CONTROL_IN_VALUE", control_in_value / 2.0);  // compatibility, see below
 	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value / 2.0);

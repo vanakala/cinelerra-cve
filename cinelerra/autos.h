@@ -95,9 +95,7 @@ public:
 	void paste_silence(ptstime start, ptstime end);
 	void remove_after(ptstime pts);
 
-	void copy(ptstime start,
-		ptstime end,
-		FileXML *xml);
+	void save_xml(FileXML *xml);
 	virtual void copy(Autos *autos, ptstime start, ptstime end);
 
 // Stores the background rendering position in result

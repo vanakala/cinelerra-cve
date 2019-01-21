@@ -109,7 +109,7 @@ void Transition::save_xml(FileXML *file)
 		file->tag.set_title("/ON");
 		file->append_tag();
 	}
-	keyframes->copy(0, 0, file);
+	keyframes->save_xml(file);
 	file->tag.set_title("/TRANSITION");
 	file->append_tag();
 	file->append_newline();

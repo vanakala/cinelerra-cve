@@ -188,7 +188,7 @@ void Automation::save_xml(FileXML *file)
 			file->tag.set_title(xml_titles[i]);
 			file->append_tag();
 			file->append_newline();
-			autos[i]->copy(0, track->get_length(), file);
+			autos[i]->save_xml(file);
 			char string[BCTEXTLEN];
 			sprintf(string, "/%s", xml_titles[i]);
 			file->tag.set_title(string);

@@ -145,7 +145,7 @@ void SubMask::load(FileXML *file)
 	}
 }
 
-void SubMask::copy(FileXML *file)
+void SubMask::save_xml(FileXML *file)
 {
 	if(points.total)
 	{
@@ -367,7 +367,7 @@ void MaskAuto::load(FileXML *file)
 	}
 }
 
-void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
+void MaskAuto::save_xml(FileXML *file)
 {
 	file->tag.set_title("AUTO");
 	if(autos && autos->first == this)
@@ -376,14 +376,12 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->tag.set_property("FEATHER", feather);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 
-	file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time);
 	file->append_tag();
 	file->append_newline();
 
 	for(int i = 0; i < masks.total; i++)
-	{
-		masks.values[i]->copy(file);
-	}
+		masks.values[i]->save_xml(file);
 
 	file->append_newline();
 	file->tag.set_title("/AUTO");

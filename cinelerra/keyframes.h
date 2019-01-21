@@ -39,7 +39,7 @@ public:
 
 	Auto* new_auto();
 	void drag_limits(Auto *current, ptstime *prev, ptstime *next);
-	void copy(ptstime start, ptstime end, FileXML *file);
+	void save_xml(FileXML *file);
 	void dump(int indent = 0);
 
 private:

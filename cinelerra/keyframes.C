@@ -48,18 +48,10 @@ void KeyFrames::drag_limits(Auto *current, ptstime *prev, ptstime *next)
 		*next = plugin->end_pts();
 }
 
-void KeyFrames::copy(ptstime start,
-	ptstime end,
-	FileXML *file)
+void KeyFrames::save_xml(FileXML *file)
 {
-	for(KeyFrame* current = (KeyFrame*)autoof(start);
-		current && current->pos_time <= end;
-		current = (KeyFrame*)NEXT)
-	{
-// Want to copy single keyframes by putting the cursor on them
-		if(current->pos_time >= start && current->pos_time <= end)
-			current->copy(start, end, file);
-	}
+	for(KeyFrame* current = (KeyFrame*)first; current; current = (KeyFrame*)NEXT)
+		current->save_xml(file);
 }
 
 void KeyFrames::dump(int indent)

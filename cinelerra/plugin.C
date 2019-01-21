@@ -423,7 +423,7 @@ void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 		file->append_newline();
 
 // Keyframes
-		keyframes->copy(start, end, file);
+		keyframes->save_xml(file);
 
 		file->tag.set_title("/PLUGIN");
 		file->append_tag();

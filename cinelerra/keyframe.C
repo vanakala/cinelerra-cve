@@ -42,10 +42,10 @@ void KeyFrame::load(FileXML *file)
 	file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 }
 
-void KeyFrame::copy(ptstime start, ptstime end, FileXML *file)
+void KeyFrame::save_xml(FileXML *file)
 {
 	file->tag.set_title("KEYFRAME");
-	file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time);
 	file->append_tag();
 
 	file->append_text(data);

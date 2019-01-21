@@ -37,7 +37,7 @@ public:
 	KeyFrame(EDL *edl, KeyFrames *autos);
 
 	void load(FileXML *file);
-	void copy(ptstime start, ptstime end, FileXML *file);
+	void save_xml(FileXML *file);
 	void copy(Auto *that, ptstime start, ptstime end);
 	void copy_from(Auto *that);
 	void copy_from(KeyFrame *that);

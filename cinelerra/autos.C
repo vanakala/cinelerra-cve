@@ -396,18 +396,10 @@ void Autos::remove_after(ptstime pts)
 	}
 }
 
-void Autos::copy(ptstime start,
-	ptstime end,
-	FileXML *file)
+void Autos::save_xml(FileXML *file)
 {
-	for(Auto* current = autoof(start); 
-		current && current->pos_time <= end;
-		current = NEXT)
-	{
-// Want to copy single keyframes by putting the cursor on them
-		if(current->pos_time >= start && current->pos_time <= end)
-			current->copy(start, end, file);
-	}
+	for(Auto* current = first; current; current = NEXT)
+		current->save_xml(file);
 }
 
 void Autos::copy(Autos *autos, ptstime start, ptstime end)

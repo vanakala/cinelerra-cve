@@ -50,10 +50,10 @@ void IntAuto::load(FileXML *file)
 	value = file->tag.get_property("VALUE", value);
 }
 
-void IntAuto::copy(ptstime start, ptstime end, FileXML *file)
+void IntAuto::save_xml(FileXML *file)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time);
 	file->tag.set_property("VALUE", value);
 	file->append_tag();
 	file->tag.set_title("/AUTO");

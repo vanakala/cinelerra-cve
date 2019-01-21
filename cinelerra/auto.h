@@ -45,7 +45,7 @@ public:
 	/* create an interpolation using a1 and a2, (defaulting to previous and next)  */
 	/* if not possible, just fill from a1 (or from template if given) */
 	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime new_postime, Auto *templ);
-	virtual void copy(ptstime start, ptstime end, FileXML *file) {};
+	virtual void save_xml(FileXML *file) {};
 	virtual void copy(Auto *that, ptstime start, ptstime end) {};
 
 	virtual void load(FileXML *file) {};
