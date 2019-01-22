@@ -324,7 +324,8 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 		{
 			if(file->tag.title_is("FILE"))
 			{
-				char filename[1024];
+				char filename[BCTEXTLEN];
+				char *filepath;
 
 				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
@@ -332,17 +333,18 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 // Extend path
 				if(filename[0])
 				{
-					char directory[BCTEXTLEN], edl_directory[BCTEXTLEN];
+					char directory[BCTEXTLEN];
 					FileSystem fs;
-					fs.set_current_dir("");
-					fs.extract_dir(directory, filename);
-					if(!strlen(directory))
+
+					if(filename[0] != '/')
 					{
-						fs.extract_dir(edl_directory, file->filename);
-						fs.join_names(directory, edl_directory, filename);
-						strcpy(filename, directory);
+						fs.extract_dir(directory, file->filename);
+						strcat(directory, filename);
+						filepath = directory;
 					}
-					current->asset = assetlist_global.get_asset(filename, streamno);
+					else
+						filepath = filename;
+					current->asset = assetlist_global.get_asset(filepath, streamno);
 				}
 				else
 				{

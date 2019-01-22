@@ -89,24 +89,23 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 
 		if(asset)
 		{
-			char stored_path[1024];
-			char asset_directory[1024], output_directory[1024];
+			char *store_path = asset->path;
 			FileSystem fs;
 
-			fs.extract_dir(asset_directory, asset->path);
-
 			if(output_path)
-				fs.extract_dir(output_directory, output_path);
-			else
-				output_directory[0] = 0;
+			{
+				int pathlen;
+				char output_directory[BCTEXTLEN];
 
-			if(output_path && !strcmp(asset_directory, output_directory))
-				fs.extract_name(stored_path, asset->path);
-			else
-				strcpy(stored_path, asset->path);
+				fs.extract_dir(output_directory, output_path);
+				pathlen = strlen(output_directory);
+
+				if(strncmp(asset->path, output_path, pathlen) == 0)
+					store_path = &asset->path[pathlen];
+			}
 
 			file->tag.set_title("FILE");
-			file->tag.set_property("SRC", stored_path);
+			file->tag.set_property("SRC", store_path);
 			file->tag.set_property("STREAMNO", track_type == TRACK_AUDIO ?
 				asset->audio_streamno : asset->video_streamno);
 			file->append_tag();
