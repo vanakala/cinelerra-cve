@@ -600,30 +600,14 @@ void Asset::read(FileXML *file,
 	int result = 0;
 
 // Check for relative path.
-	if(expand_relative)
+	if(expand_relative && path[0] != '/')
 	{
 		char new_path[BCTEXTLEN];
-		char asset_directory[BCTEXTLEN];
-		char input_directory[BCTEXTLEN];
 		FileSystem fs;
 
 		strcpy(new_path, path);
-		fs.set_current_dir("");
-
-		fs.extract_dir(asset_directory, path);
-
-// No path in asset.
-// Take path of XML file.
-		if(!asset_directory[0])
-		{
-			fs.extract_dir(input_directory, file->filename);
-
-// Input file has a path
-			if(input_directory[0])
-			{
-				fs.join_names(path, input_directory, new_path);
-			}
-		}
+		fs.extract_dir(path, file->filename);
+		strcat(path, new_path);
 	}
 
 	while(!result)
@@ -819,26 +803,19 @@ void Asset::write(FileXML *file,
 	int include_index, 
 	const char *output_path)
 {
-	char new_path[BCTEXTLEN];
-	char asset_directory[BCTEXTLEN];
+	char *new_path;
+	int pathlen;
 	char output_directory[BCTEXTLEN];
 	FileSystem fs;
 
-// Make path relative
-	fs.extract_dir(asset_directory, path);
-	if(output_path && output_path[0]) 
+// Make path relative if asset is in the same or subdirectory
+	new_path = path;
+	if(output_path && output_path[0])
+	{
 		fs.extract_dir(output_directory, output_path);
-	else
-		output_directory[0] = 0;
-
-// Asset and EDL are in same directory.  Extract just the name.
-	if(!strcmp(asset_directory, output_directory))
-	{
-		fs.extract_name(new_path, path);
-	}
-	else
-	{
-		strcpy(new_path, path);
+		pathlen = strlen(output_directory);
+		if(strncmp(path, output_directory, pathlen) == 0)
+			new_path = &path[pathlen];
 	}
 
 	file->tag.set_title("ASSET");
