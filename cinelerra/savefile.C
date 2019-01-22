@@ -154,6 +154,7 @@ void SaveAs::run()
 // save it
 	FileXML file;
 	mwindow->set_filename(filename);      // update the project name
+	strcpy(master_edl->project_path, filename);
 	master_edl->save_xml(&file, filename, 0, 0);
 	file.terminate_string();
 
