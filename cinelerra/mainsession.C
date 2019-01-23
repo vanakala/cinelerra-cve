@@ -84,10 +84,6 @@ void MainSession::boundaries()
 	awindow_y = MAX(0, awindow_y);
 	gwindow_x = MAX(0, gwindow_x);
 	gwindow_y = MAX(0, gwindow_y);
-	rwindow_x = MAX(0, rwindow_x);
-	rwindow_y = MAX(0, rwindow_y);
-	rmonitor_x = MAX(0, rmonitor_x);
-	rmonitor_y = MAX(0, rmonitor_y);
 	ruler_x = MAX(0, ruler_x);
 	ruler_y = MAX(0, ruler_y);
 	cwindow_controls = CLIP(cwindow_controls, 0, 1);
@@ -139,16 +135,6 @@ void MainSession::default_window_positions()
 	lwindow_y = 0;
 	lwindow_x = root_w - lwindow_w;
 	lwindow_h = mwindow_y;
-
-	rwindow_x = 0;
-	rwindow_y = 0;
-	rwindow_h = 500;
-	rwindow_w = 650;
-
-	rmonitor_x = rwindow_x + rwindow_w + 10;
-	rmonitor_y = rwindow_y;
-	rmonitor_w = root_w - rmonitor_x;
-	rmonitor_h = rwindow_h;
 
 	batchrender_w = 680;
 	batchrender_h = 340;
@@ -204,15 +190,6 @@ void MainSession::load_defaults(BC_Hash *defaults)
 
 // Other windows
 	afolders_w = defaults->get("ABINS_W", 100);
-	rwindow_x = defaults->get("RWINDOW_X", rwindow_x);
-	rwindow_y = defaults->get("RWINDOW_Y", rwindow_y);
-	rwindow_w = defaults->get("RWINDOW_W", rwindow_w);
-	rwindow_h = defaults->get("RWINDOW_H", rwindow_h);
-
-	rmonitor_x = defaults->get("RMONITOR_X", rmonitor_x);
-	rmonitor_y = defaults->get("RMONITOR_Y", rmonitor_y);
-	rmonitor_w = defaults->get("RMONITOR_W", rmonitor_w);
-	rmonitor_h = defaults->get("RMONITOR_H", rmonitor_h);
 
 	batchrender_x = defaults->get("BATCHRENDER_X", batchrender_x);
 	batchrender_y = defaults->get("BATCHRENDER_Y", batchrender_y);
@@ -280,17 +257,17 @@ void MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("EWINDOW_W", ewindow_w);
 	defaults->update("EWINDOW_H", ewindow_h);
 
- 	defaults->update("ABINS_W", afolders_w);
+	defaults->update("ABINS_W", afolders_w);
 
-	defaults->update("RMONITOR_X", rmonitor_x);
-	defaults->update("RMONITOR_Y", rmonitor_y);
-	defaults->update("RMONITOR_W", rmonitor_w);
-	defaults->update("RMONITOR_H", rmonitor_h);
+	defaults->delete_key("RMONITOR_X");
+	defaults->delete_key("RMONITOR_Y");
+	defaults->delete_key("RMONITOR_W");
+	defaults->delete_key("RMONITOR_H");
 
-	defaults->update("RWINDOW_X", rwindow_x);
-	defaults->update("RWINDOW_Y", rwindow_y);
-	defaults->update("RWINDOW_W", rwindow_w);
-	defaults->update("RWINDOW_H", rwindow_h);
+	defaults->delete_key("RWINDOW_X");
+	defaults->delete_key("RWINDOW_Y");
+	defaults->delete_key("RWINDOW_W");
+	defaults->delete_key("RWINDOW_H");
 
 	defaults->update("BATCHRENDER_X", batchrender_x);
 	defaults->update("BATCHRENDER_Y", batchrender_y);

@@ -124,10 +124,6 @@ public:
 // asset window
 	int awindow_x, awindow_y, awindow_w, awindow_h;
 	int gwindow_x, gwindow_y;
-// record monitor
-	int rmonitor_x, rmonitor_y, rmonitor_w, rmonitor_h;
-// record status
-	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
 // ruler
 	int ruler_x, ruler_y, ruler_length, ruler_orientation;
 // error window
