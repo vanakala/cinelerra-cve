@@ -88,6 +88,9 @@ EDLSession::EDLSession()
 	metadata_copyright[0] = 0;
 	cwindow_operation = CWINDOW_NONE;
 	defaults_loaded = 0;
+	automatic_backups = 1;
+	backup_interval = 0;
+
 }
 
 EDLSession::~EDLSession()
@@ -268,6 +271,8 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	defaults->get("METADATA_AUTHOR", metadata_author);
 	defaults->get("METADATA_TITLE", metadata_title);
 	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
+	automatic_backups = defaults->get("AUTOMATIC_BACKUPS", automatic_backups);
+	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
 
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
@@ -387,6 +392,9 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("METADATA_TITLE", metadata_title);
 	defaults->update("METADATA_COPYRIGHT", metadata_copyright);
 	defaults->delete_key("DECODE_SUBTITLES");
+	defaults->update("AUTOMATIC_BACKUPS", automatic_backups);
+	defaults->update("BACKUP_INTERVAL", backup_interval);
+
 }
 
 // GCC 3.0 fails to compile
@@ -420,6 +428,8 @@ void EDLSession::boundaries()
 	if(brender_start < 0)
 		brender_start = 0.0;
 	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
+
+	backup_interval = CLIP(backup_interval, 0, 3600);
 }
 
 void EDLSession::load_video_config(FileXML *file)
@@ -755,6 +765,8 @@ void EDLSession::copy(EDLSession *session)
 	strcpy(metadata_author, session->metadata_author);
 	strcpy(metadata_title, session->metadata_title);
 	strcpy(metadata_copyright, session->metadata_copyright);
+	automatic_backups = session->automatic_backups;
+	backup_interval = session->backup_interval;
 }
 
 ptstime EDLSession::get_frame_offset()

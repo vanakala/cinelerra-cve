@@ -18,6 +18,7 @@
  *
  */
 
+#include "bcbar.h"
 #include "bctitle.h"
 #include "bcresources.h"
 #include "edl.h"
@@ -84,6 +85,19 @@ void MiscPrefs::show()
 	win = add_subwindow(new MiscText(x, y, pwindow->thread->this_edlsession->metadata_title));
 	y += boxh;
 	win = add_subwindow(new MiscText(x, y, pwindow->thread->this_edlsession->metadata_copyright));
+
+	y += 35;
+	add_subwindow(new BC_Bar(5, y,  get_w() - 10));
+	y += 25;
+	x = mwindow->theme->preferencesoptions_x;
+	win = add_subwindow(new ToggleButton(x, y, _("Automatic backups with interval"),
+		&pwindow->thread->this_edlsession->automatic_backups));
+	x += win->get_w() + 10;
+	win = add_subwindow(new MiscValue(x, y,
+		&pwindow->thread->this_edlsession->backup_interval));
+	x += win->get_w() + 10;
+	y += 3;
+	add_subwindow(new BC_Title(x, y, _("seconds")));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
@@ -130,4 +144,17 @@ MiscText::MiscText(int x, int y, char *boxtext)
 int MiscText::handle_event()
 {
 	strcpy(str, get_text());
+	return 1;
+}
+
+MiscValue::MiscValue(int x, int y, int *value)
+ : BC_TextBox(x, y, 70, 1, *value)
+{
+	valueptr = value;
+}
+
+int MiscValue::handle_event()
+{
+	*valueptr = atoi(get_text());
+	return 1;
 }

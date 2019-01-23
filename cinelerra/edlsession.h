@@ -210,6 +210,10 @@ public:
 	PlaybackConfig* playback_config;
 // Directory of plugin configurations
 	char plugin_configuration_directory[BCTEXTLEN];
+// Do automatic backups
+	int automatic_backups;
+// Interval of automatic backups (seconds)
+	int backup_interval;
 
 private:
 	int defaults_loaded;

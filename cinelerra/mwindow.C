@@ -137,7 +137,7 @@ MWindow::MWindow(const char *config_path)
 	strcpy(string, preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
-
+	last_backup_time = time(0);
 
 	init_awindow();
 	init_compositor();
@@ -1682,14 +1682,27 @@ void MWindow::rebuild_indices()
 	mainindexes->start_build();
 }
 
-void MWindow::save_backup()
+void MWindow::save_backup(int is_manual)
 {
 	FileXML file;
+	char path[BCTEXTLEN];
+	FileSystem fs;
+
+	if(!is_manual)
+	{
+		if(edlsession->automatic_backups)
+		{
+			time_t moment = time(0);
+			if(last_backup_time + edlsession->backup_interval > moment)
+				return;
+			last_backup_time = moment;
+		}
+		else
+			return;
+	}
 	master_edl->set_project_path(mainsession->filename);
 	master_edl->save_xml(&file, BACKUP_PATH, 0, 0);
 	file.terminate_string();
-	char path[BCTEXTLEN];
-	FileSystem fs;
 	strcpy(path, BACKUP_PATH);
 	fs.complete_path(path);
 

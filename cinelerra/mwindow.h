@@ -220,7 +220,7 @@ public:
 	void crop_video();
 	void update_plugins();
 // Call after every edit operation
-	void save_backup();
+	void save_backup(int is_manual = 0);
 	void show_plugin(Plugin *plugin);
 	void hide_plugin(Plugin *plugin, int lock);
 	void hide_plugins();
@@ -499,6 +499,8 @@ public:
 
 	void clean_indexes();
 	SigHandler *sighandler;
+private:
+	time_t last_backup_time;
 };
 
 #endif
