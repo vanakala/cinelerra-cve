@@ -37,14 +37,12 @@
 #include <string.h>
 
 Transition::Transition(EDL *edl, Edit *edit, const char *title, 
-	ptstime length, KeyFrame *default_keyframe)
+	ptstime length)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;
 	this->length_time = length;
 	KeyFrame *new_auto = (KeyFrame *)keyframes->insert_auto(0);
-	if(default_keyframe)
-		new_auto->copy_from(default_keyframe);
 }
 
 KeyFrame* Transition::get_keyframe()

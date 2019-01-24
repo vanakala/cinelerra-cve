@@ -379,7 +379,6 @@ void Track::insert_plugin_set(Track *track, ptstime position)
 
 Plugin* Track::insert_effect(const char *title, 
 		SharedLocation *shared_location, 
-		KeyFrame *default_keyframe,
 		PluginSet *plugin_set,
 		ptstime start,
 		ptstime length,
@@ -411,8 +410,7 @@ Plugin* Track::insert_effect(const char *title,
 					source_plugin->get_pts(),
 					source_plugin->length(),
 					plugin_type, 
-					shared_location,
-					default_keyframe);
+					shared_location);
 			}
 			else
 // From a drag operation
@@ -421,8 +419,7 @@ Plugin* Track::insert_effect(const char *title,
 					start,
 					length,
 					plugin_type,
-					shared_location,
-					default_keyframe);
+					shared_location);
 			}
 		}
 	}
@@ -448,8 +445,7 @@ Plugin* Track::insert_effect(const char *title,
 			start,
 			length,
 			plugin_type, 
-			shared_location,
-			default_keyframe);
+			shared_location);
 	}
 
 	expand_view = 1;

@@ -190,7 +190,6 @@ void Tracks::move_effect(Plugin *plugin,
 		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
 				0,
-				0,
 				dest_postime,
 				plugin->length(),
 				plugin->plugin_type);
@@ -524,7 +523,7 @@ void Tracks::paste_default_keyframe(FileXML *file)
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
-	dest_edit->insert_transition(server->title, &server->default_keyframe);
+	dest_edit->insert_transition(server->title);
 }
 
 void Tracks::paste_video_transition(PluginServer *server, int first_track)

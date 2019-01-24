@@ -124,8 +124,7 @@ Plugin* PluginSet::insert_plugin(const char *title,
 	ptstime position,
 	ptstime length,
 	int plugin_type,
-	SharedLocation *shared_location,
-	KeyFrame *default_keyframe)
+	SharedLocation *shared_location)
 {
 	Plugin *plugin = (Plugin*)insert_edit(position, length);
 
@@ -135,13 +134,9 @@ Plugin* PluginSet::insert_plugin(const char *title,
 
 	plugin->plugin_type = plugin_type;
 	plugin->keyframes->base_pts = position;
+	KeyFrame *kf = (KeyFrame*)plugin->keyframes->append_auto();
+	kf->pos_time = position;
 
-	if(default_keyframe)
-	{
-		plugin->keyframes->append_auto();
-		*((KeyFrame *)plugin->keyframes->first) = *default_keyframe;
-		plugin->keyframes->first->pos_time = position;
-	}
 	return plugin;
 }
 
@@ -431,8 +426,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 						startproject, 
 						length,
 						plugin_type,
-						&shared_location,
-						0);
+						&shared_location);
 					plugin->load(file);
 					startproject += length;
 				}

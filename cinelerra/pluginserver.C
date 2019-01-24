@@ -113,7 +113,6 @@ PluginServer::PluginServer(PluginServer &that)
 	uses_gui = that.uses_gui;
 	mwindow = that.mwindow;
 	keyframe = that.keyframe;
-	default_keyframe.copy_from(&that.default_keyframe);
 	plugin_fd = that.plugin_fd;
 	new_plugin = that.new_plugin;
 #ifdef HAVE_LADSPA

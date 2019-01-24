@@ -543,18 +543,12 @@ void MWindow::insert_effect(const char *title,
 	ptstime length,
 	int plugin_type)
 {
-	KeyFrame *default_keyframe = 0;
-
 	if(plugin_type == PLUGIN_STANDALONE)
-	{
 		PluginServer *server = scan_plugindb(title, track->data_type);
-		default_keyframe = &server->default_keyframe;
-	}
 
 // Insert plugin object
 	track->insert_effect(title, 
 		shared_location, 
-		default_keyframe, 
 		plugin_set,
 		start,
 		length,

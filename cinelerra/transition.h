@@ -34,7 +34,7 @@ class Transition : public Plugin
 {
 public:
 	Transition(EDL *edl, Edit *edit, const char *title,
-		ptstime length, KeyFrame *default_keyframe);
+		ptstime length);
 	Transition(Transition *that, Edit *edit);
 
 	void save_xml(FileXML *file);

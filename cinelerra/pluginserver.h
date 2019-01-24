@@ -272,7 +272,6 @@ public:
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
 	AttachmentPoint *attachment;
-	KeyFrame default_keyframe;
 // Storage of keyframes and GUI status
 	Plugin *plugin;
 

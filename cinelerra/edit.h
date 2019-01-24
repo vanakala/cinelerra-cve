@@ -66,7 +66,7 @@ public:
 // Shift in time
 	virtual void shift(ptstime difference);
 	void shift_source(ptstime difference);
-	void insert_transition(const char *title, KeyFrame *default_keyframe);
+	void insert_transition(const char *title);
 	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);

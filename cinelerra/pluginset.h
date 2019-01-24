@@ -73,8 +73,7 @@ public:
 		ptstime position,
 		ptstime length,
 		int plugin_type,
-		SharedLocation *shared_location,
-		KeyFrame *default_keyframe);
+		SharedLocation *shared_location);
 };
 
 #endif
