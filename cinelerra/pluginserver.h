@@ -30,7 +30,7 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "guidelines.inc"
-#include "keyframe.h"
+#include "keyframe.inc"
 #include "mainprogress.inc"
 #include "menueffects.inc"
 #include "module.inc"
@@ -41,7 +41,6 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"
-#include "thread.h"
 #include "track.inc"
 #include "vframe.inc"
 #include "videodevice.inc"
@@ -66,11 +65,9 @@
 class PluginServer
 {
 public:
-	PluginServer();
 	PluginServer(const char *path);
 	PluginServer(PluginServer &);
 	virtual ~PluginServer();
-
 
 	friend class PluginAClientLAD;
 	friend class PluginAClientConfig;
@@ -116,9 +113,6 @@ public:
 	Theme* new_theme();
 // Get theme being used by Cinelerra currently.  Used by all plugins.
 	Theme* get_theme();
-
-
-
 
 // =============================== for realtime plugins
 // save configuration of plugin
@@ -207,7 +201,6 @@ public:
 	double get_project_framerate();         // get framerate of project data before processing
 // get project width and height
 	void get_project_dimensions(int *width, int *height);
-	int set_path(const char *path);    // required first
 // Used by PluginArray and MenuEffects to get user parameters and progress bar.
 // Set pointer to mwindow for opening GUI and reconfiguring EDL.
 	void set_mwindow(MWindow *mwindow);

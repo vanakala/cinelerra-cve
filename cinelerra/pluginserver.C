@@ -23,12 +23,10 @@
 
 #include "aframe.h"
 #include "amodule.h"
-#include "atrack.h"
 #include "attachmentpoint.h"
 #include "autoconf.h"
 #include "bcsignals.h"
 #include "bcresources.h"
-#include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -47,37 +45,24 @@
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "preferences.h"
-#include "sema.h"
 #include "tmpframecache.h"
-#include "mainsession.h"
+#include "track.h"
 #include "trackcanvas.h"
-#include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
 #include "virtualanode.h"
 #include "virtualvnode.h"
 #include "vmodule.h"
-#include "vtrack.h"
-
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
 
-extern MWindow *mwindow_global;
-
-
-PluginServer::PluginServer()
-{
-	reset_parameters();
-	modules = new ArrayList<Module*>;
-	nodes = new ArrayList<VirtualNode*>;
-}
-
 PluginServer::PluginServer(const char *path)
 {
 	reset_parameters();
-	set_path(path);
+	this->path = new char[strlen(path) + 1];
+	strcpy(this->path, path);
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
 }
@@ -194,14 +179,6 @@ void PluginServer::set_keyframe(KeyFrame *keyframe)
 void PluginServer::set_prompt(MenuEffectPrompt *prompt)
 {
 	this->prompt = prompt;
-}
-
-
-int PluginServer::set_path(const char *path)
-{
-	if(this->path) delete [] this->path;
-	this->path = new char[strlen(path) + 1];
-	strcpy(this->path, path);
 }
 
 void PluginServer::set_title(const char *string)

@@ -28,6 +28,7 @@
 #include "edl.inc"
 #include "filexml.inc"
 #include "labels.inc"
+#include "linklist.h"
 #include "mwindow.inc"
 #include "timebar.inc"
 
