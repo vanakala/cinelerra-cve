@@ -266,8 +266,7 @@ void Module::update_transition(ptstime current_position)
 			transition_server->open_plugin(0, 
 				renderengine->preferences, 
 				get_edl(), 
-				transition,
-				-1);
+				transition);
 			transition_server->init_realtime(1);
 		}
 		else
@@ -278,8 +277,7 @@ void Module::update_transition(ptstime current_position)
 			transition_server->open_plugin(0, 
 				plugin_array->mwindow->preferences,
 				get_edl(), 
-				transition,
-				-1);
+				transition);
 			transition_server->init_realtime(1);
 		}
 	}

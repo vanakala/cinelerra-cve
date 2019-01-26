@@ -71,6 +71,9 @@ PluginServer::PluginServer(PluginServer &that)
 {
 	reset_parameters();
 
+	if(!that.plugin_fd)
+		that.load_plugin();
+
 	if(that.title)
 	{
 		title = new char[strlen(that.title) + 1];
@@ -82,10 +85,8 @@ PluginServer::PluginServer(PluginServer &that)
 		path = new char[strlen(that.path) + 1];
 		strcpy(path, that.path);
 	}
-
 	modules = new ArrayList<Module*>;
 	nodes = new ArrayList<VirtualNode*>;
-
 	attachment = that.attachment;
 	realtime = that.realtime;
 	multichannel = that.multichannel;
@@ -102,6 +103,7 @@ PluginServer::PluginServer(PluginServer &that)
 	new_plugin = that.new_plugin;
 #ifdef HAVE_LADSPA
 	is_lad = that.is_lad;
+	ladspa_index = that.ladspa_index;
 	lad_descriptor = that.lad_descriptor;
 	lad_descriptor_function = that.lad_descriptor_function;
 #endif
@@ -144,6 +146,7 @@ int PluginServer::reset_parameters()
 	attachmentpoint = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
+	ladspa_index = -1;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
 #endif
@@ -243,70 +246,23 @@ int PluginServer::open_plugin(int master,
 	Plugin *plugin,
 	int lad_index)
 {
-	if(plugin_open) return 0;
+	int res;
+
+	if(plugin_open)
+		return PLUGINSERVER_OK;
 
 	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
 
-	if(!new_plugin && !plugin_fd) plugin_fd = dlopen(path, RTLD_NOW);
-
-	if(!new_plugin && !plugin_fd)
+	if(!plugin_fd)
 	{
-		fprintf(stderr, "open_plugin: %s\n", dlerror());
-		return PLUGINSERVER_NOT_RECOGNIZED;
-	}
-
-	if(!new_plugin
 #ifdef HAVE_LADSPA
-		&& !lad_descriptor
+		if(lad_index >= 0)
+			ladspa_index = lad_index;
 #endif
-			)
-	{
-		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
-
-// Probably a LAD plugin but we're not going to instantiate it here anyway.
-		if(!new_plugin)
-		{
-#ifdef HAVE_LADSPA
-			lad_descriptor_function = (LADSPA_Descriptor_Function)dlsym(
-				plugin_fd,
-				"ladspa_descriptor");
-
-			if(!lad_descriptor_function)
-			{
-// Not a recognized plugin
-				fprintf(stderr, "Unrecognized plugin: %s\n", path);
-				dlclose(plugin_fd);
-				plugin_fd = 0;
-				return PLUGINSERVER_NOT_RECOGNIZED;
-			}
-			else
-			{
-// LAD plugin,  Load the descriptor and get parameters.
-				is_lad = 1;
-				if(lad_index >= 0)
-				{
-					lad_descriptor = lad_descriptor_function(lad_index);
-				}
-
-// make plugin initializer handle the subplugins in the LAD plugin or stop
-// trying subplugins.
-				if(!lad_descriptor)
-				{
-					dlclose(plugin_fd);
-					plugin_fd = 0;
-					return PLUGINSERVER_IS_LAD;
-				}
-			}
-#else
-// Not a recognized plugin
-			fprintf(stderr, "Unrecognized plugin %s\n", path);
-			dlclose(plugin_fd);
-			plugin_fd = 0;
-			return PLUGINSERVER_NOT_RECOGNIZED;
-#endif
-		}
+		if((res = load_plugin()) != PLUGINSERVER_OK)
+			return res;
 	}
 
 #ifdef HAVE_LADSPA
@@ -353,11 +309,67 @@ void PluginServer::close_plugin()
 {
 	if(!plugin_open) return;
 
-	if(client) delete client;
-
+	delete client;
+	client = 0;
 	plugin_open = 0;
-
 	cleanup_plugin();
+}
+
+int PluginServer::load_plugin()
+{
+	if(plugin_fd)
+		return PLUGINSERVER_OK;
+
+	if(!(plugin_fd = dlopen(path, RTLD_NOW)))
+	{
+		fprintf(stderr, "open_plugin: %s\n", dlerror());
+		return PLUGINSERVER_NOT_RECOGNIZED;
+	}
+	if(!is_lad)
+		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
+
+	if(!new_plugin)
+	{
+#ifdef HAVE_LADSPA
+		lad_descriptor_function = (LADSPA_Descriptor_Function)dlsym(
+			plugin_fd, "ladspa_descriptor");
+		if(!lad_descriptor_function)
+		{
+			fprintf(stderr, "Unrecognized plugin: %s\n", path);
+			dlclose(plugin_fd);
+			plugin_fd = 0;
+			return PLUGINSERVER_NOT_RECOGNIZED;
+		}
+		is_lad = 1;
+
+		if(ladspa_index >= 0)
+			lad_descriptor = lad_descriptor_function(ladspa_index);
+// Make plugin initializer handle the subplugins in the LAD plugin or stop
+//  trying subplugins.
+		if(!lad_descriptor)
+		{
+			dlclose(plugin_fd);
+			plugin_fd = 0;
+			return PLUGINSERVER_IS_LAD;
+		}
+#else
+// Not a recognized plugin
+		fprintf(stderr, "Unrecognized plugin %s\n", path);
+		dlclose(plugin_fd);
+		plugin_fd = 0;
+		return PLUGINSERVER_NOT_RECOGNIZED;
+#endif
+	}
+	return PLUGINSERVER_OK;
+}
+
+void PluginServer::release_plugin()
+{
+	if(!plugin_fd)
+		return;
+
+	dlclose(plugin_fd);
+	plugin_fd = 0;
 }
 
 void PluginServer::client_side_close()

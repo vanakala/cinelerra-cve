@@ -321,7 +321,7 @@ void MenuEffectThread::run()
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(&plugin_data);
 			plugin->set_prompt(&prompt);
-			plugin->open_plugin(0, mwindow->preferences, master_edl, 0, -1);
+			plugin->open_plugin(0, mwindow->preferences, master_edl, 0);
 // Must set parameters since there is no plugin object to draw from.
 			plugin->get_parameters(total_start,
 				total_end,

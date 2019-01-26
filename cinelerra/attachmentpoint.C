@@ -75,8 +75,7 @@ void AttachmentPoint::render_init()
 					plugin_servers.values[i]->open_plugin(0, 
 						renderengine->preferences,
 						renderengine->edl, 
-						plugin,
-						-1);
+						plugin);
 					plugin_servers.values[i]->init_realtime(
 						plugin_server->multichannel ? new_virtual_plugins.total : 1);
 				}

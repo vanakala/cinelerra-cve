@@ -325,12 +325,13 @@ void MWindow::init_plugin_path(Preferences *preferences,
 // Try to query the plugin
 				fs->complete_path(path);
 				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
+				int result = new_plugin->open_plugin(1, preferences, 0, 0);
 
 				if(!result)
 				{
 					plugindb->append(new_plugin);
 					new_plugin->close_plugin();
+					new_plugin->release_plugin();
 					if(splash_window)
 						splash_window->operation->update(_(new_plugin->title));
 				}
@@ -353,6 +354,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 						{
 							plugindb->append(new_plugin);
 							new_plugin->close_plugin();
+							new_plugin->release_plugin();
 							if(splash_window)
 								splash_window->operation->update(_(new_plugin->title));
 						}
@@ -661,7 +663,7 @@ void MWindow::init_theme()
 			!strcasecmp(preferences->theme, plugindb->values[i]->title))
 		{
 			PluginServer plugin = *plugindb->values[i];
-			plugin.open_plugin(0, preferences, 0, 0, -1);
+			plugin.open_plugin(0, preferences, 0, 0);
 			theme = plugin.new_theme();
 			theme->mwindow = this;
 			strcpy(theme->path, plugin.path);
@@ -680,7 +682,7 @@ void MWindow::init_theme()
 				!strcasecmp(preferences->theme, plugindb->values[i]->title))
 			{
 				PluginServer plugin = *plugindb->values[i];
-				plugin.open_plugin(0, preferences, 0, 0, -1);
+				plugin.open_plugin(0, preferences, 0, 0);
 				theme = plugin.new_theme();
 				theme->mwindow = this;
 				strcpy(theme->path, plugin.path);
@@ -1488,7 +1490,7 @@ void MWindow::show_plugin(Plugin *plugin)
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
 			gui->set_mwindow(this);
-			gui->open_plugin(0, preferences, master_edl, plugin, -1);
+			gui->open_plugin(0, preferences, master_edl, plugin);
 			gui->show_gui();
 			plugin->show = 1;
 		}

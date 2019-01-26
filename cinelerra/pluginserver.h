@@ -59,9 +59,6 @@
 #include <unistd.h>
 
 
-
-
-
 class PluginServer
 {
 public:
@@ -82,9 +79,13 @@ public:
 		Preferences *preferences,
 		EDL *edl, 
 		Plugin *plugin,
-		int lad_index);
+		int lad_index = -1);
 // close the plugin
 	void close_plugin();
+// Dynamic loading
+	int load_plugin();
+	void release_plugin();
+
 	void dump(int indent = 0);
 // Release any objects which are required after playback stops.
 	void render_stop();
@@ -294,6 +295,7 @@ private:
 #ifdef HAVE_LADSPA
 // LAD support
 	int is_lad;
+	int ladspa_index;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
 #endif
