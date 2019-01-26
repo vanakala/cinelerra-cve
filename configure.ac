@@ -13,7 +13,6 @@ GETTEXT_PACKAGE="AC_PACKAGE_NAME"
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[The prefix for our gettext translation domains])
 AM_ICONV
-AM_PROG_AS
 
 AC_LANG_CPLUSPLUS
 AC_LANG_C
@@ -30,20 +29,9 @@ LTCXX_FLAGS="--tag=CXX"
 AC_SUBST(LTC_FLAGS)
 AC_SUBST(LTCXX_FLAGS)
 
-dnl Check for nasm
-AC_CHECK_PROG(HAVE_NASM, nasm, yes)
-if test x$HAVE_NASM != "xyes"; then
-    AC_MSG_ERROR(nasm is missing. Please install it.)
-fi
-
 if test "$am_cv_func_iconv" = "yes"; then
     funiconv=yes
 fi
-
-# hack for using nasm for .S files
-CCAS="\$(top_srcdir)/admin/nasm"
-AC_SUBST(CCAS)
-AC_SUBST(CCASFLAGS)
 
 dnl Check for ladspa
 AH_TEMPLATE(HAVE_LADSPA, [Define to 1 if ladspa-sdk is available.])

@@ -509,17 +509,12 @@ cinelerracve_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/guicast/libguicastcve.la \
 	@FFMPEG_LIBS@ \
-	$(XIPH_LIBS) \
-	$(A52DEC_LIBS) \
 	$(OPENEXR_LIBS) \
 	-lsndfile \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
-	$(LIBDV_LIBS) \
 	$(OPENGL_LIBS) \
-	$(MP3LAME_LIBS) \
 	$(X_PRE_LIBS) $(X_LIBS) \
-	-luuid \
-	$(MJPEG_LIBS)
+	-luuid
 
 EXTRA_DIST = gen-feather-h
