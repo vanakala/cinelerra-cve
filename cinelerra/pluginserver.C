@@ -63,8 +63,6 @@ PluginServer::PluginServer(const char *path)
 	reset_parameters();
 	this->path = new char[strlen(path) + 1];
 	strcpy(this->path, path);
-	modules = new ArrayList<Module*>;
-	nodes = new ArrayList<VirtualNode*>;
 }
 
 PluginServer::PluginServer(PluginServer &that)
@@ -80,13 +78,6 @@ PluginServer::PluginServer(PluginServer &that)
 		strcpy(title, that.title);
 	}
 
-	if(that.path)
-	{
-		path = new char[strlen(that.path) + 1];
-		strcpy(path, that.path);
-	}
-	modules = new ArrayList<Module*>;
-	nodes = new ArrayList<VirtualNode*>;
 	attachment = that.attachment;
 	realtime = that.realtime;
 	multichannel = that.multichannel;
@@ -114,8 +105,8 @@ PluginServer::~PluginServer()
 	close_plugin();
 	if(path) delete [] path;
 	if(title) delete [] title;
-	if(modules) delete modules;
-	if(nodes) delete nodes;
+	delete modules;
+	delete nodes;
 	if(picon) delete picon;
 }
 
@@ -144,6 +135,8 @@ int PluginServer::reset_parameters()
 	use_opengl = 0;
 	vdevice = 0;
 	attachmentpoint = 0;
+	modules = 0;
+	nodes = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
 	ladspa_index = -1;
@@ -577,17 +570,23 @@ void PluginServer::set_interactive()
 
 void PluginServer::append_module(Module *module)
 {
+	if(!modules)
+		modules = new ArrayList<Module*>;
+
 	modules->append(module);
 }
 
 void PluginServer::append_node(VirtualNode *node)
 {
+	if(!nodes)
+		nodes = new ArrayList<VirtualNode*>;
 	nodes->append(node);
 }
 
 void PluginServer::reset_nodes()
 {
-	nodes->remove_all();
+	if(nodes)
+		nodes->remove_all();
 }
 
 int PluginServer::process_loop(VFrame **buffers)
@@ -647,7 +646,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 
 	int channel = buffer->get_layer();
 
-	if(nodes->total > channel)
+	if(nodes && nodes->total > channel)
 	{
 		// FIXIT: get rid of frame copy here
 		frame = ((VirtualVNode*)nodes->values[channel])->get_output_temp();
@@ -656,7 +655,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 		buffer->copy_from(frame, 1);
 	}
 	else
-	if(modules->total > channel)
+	if(modules && modules->total > channel)
 	{
 		((VModule*)modules->values[channel])->render(buffer);
 	}
@@ -671,12 +670,12 @@ void PluginServer::get_aframe(AFrame *aframe)
 {
 	if(!multichannel)
 		aframe->channel = 0;
-	if(nodes->total > aframe->channel)
+	if(nodes && nodes->total > aframe->channel)
 	{
 		((VirtualANode*)nodes->values[aframe->channel])->read_data(aframe);
 		return;
 	}
-	if(modules->total > aframe->channel)
+	if(modules && modules->total > aframe->channel)
 	{
 		((AModule*)modules->values[aframe->channel])->render(aframe);
 		return;

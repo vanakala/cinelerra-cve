@@ -249,7 +249,6 @@ public:
 	char *contents_buffer;
 	ArrayList<char*> contents;
 	ArrayList<int> offsets;
-	char path[BCTEXTLEN];
 	char *last_image;
 	int last_offset;
 };

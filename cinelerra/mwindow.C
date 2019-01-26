@@ -666,7 +666,6 @@ void MWindow::init_theme()
 			plugin.open_plugin(0, preferences, 0, 0);
 			theme = plugin.new_theme();
 			theme->mwindow = this;
-			strcpy(theme->path, plugin.path);
 			plugin.close_plugin();
 		}
 	}
@@ -685,7 +684,6 @@ void MWindow::init_theme()
 				plugin.open_plugin(0, preferences, 0, 0);
 				theme = plugin.new_theme();
 				theme->mwindow = this;
-				strcpy(theme->path, plugin.path);
 				plugin.close_plugin();
 			}
 		}
