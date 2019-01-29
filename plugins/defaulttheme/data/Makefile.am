@@ -136,6 +136,10 @@ locklabels_unlockedhi.png \
 magnify.png \
 maskkeyframe.png \
 mask.png \
+mastertrack-hi.png \
+mastertrack-selected-hi.png \
+mastertrack-selected.png \
+mastertrack.png \
 mbutton_bg.png \
 mbutton_blue.png \
 mclock.png \
