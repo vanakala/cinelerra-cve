@@ -122,6 +122,8 @@ void EDL::create_default_tracks()
 
 	for(int i = 0; i < edlsession->audio_tracks; i++)
 		tracks->add_audio_track(0, 0);
+// Set master track
+	first_track()->master = 1;
 }
 
 void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
@@ -249,6 +251,12 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 				}
 			}
 		}while(!result);
+	}
+	// Set master track if missing
+	if(total_toggled(Tracks::MASTER) != 1)
+	{
+		set_all_toggles(Tracks::MASTER, 0);
+		first_track()->master = 1;
 	}
 	boundaries();
 }
@@ -1010,6 +1018,9 @@ void EDL::set_all_toggles(int toggle_type, int value)
 			case Tracks::EXPAND:
 				current->expand_view = value;
 				break;
+			case Tracks::MASTER:
+				current->master = value;
+				break;
 			}
 		}
 	}
@@ -1043,7 +1054,10 @@ int EDL::total_toggled(int toggle_type)
 				result += !!current->draw;
 				break;
 			case Tracks::EXPAND:
-				result = !!current->expand_view;
+				result += !!current->expand_view;
+				break;
+			case Tracks::MASTER:
+				result += !!current->master;
 				break;
 			}
 		}

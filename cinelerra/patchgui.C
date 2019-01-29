@@ -65,6 +65,7 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	mute = 0;
 	expand = 0;
 	nudge = 0;
+	master = 0;
 	change_source = 0;
 	track_id = -1;
 	if(track) track_id = track->get_id();
@@ -73,14 +74,15 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 
 PatchGUI::~PatchGUI()
 {
-	if(title) delete title;
-	if(record) delete record;
-	if(play) delete play;
-	if(gang) delete gang;
-	if(draw) delete draw;
-	if(mute) delete mute;
-	if(expand) delete expand;
-	if(nudge) delete nudge;
+	delete title;
+	delete record;
+	delete play;
+	delete gang;
+	delete draw;
+	delete mute;
+	delete expand;
+	delete nudge;
+	delete master;
 	delete patchgui_lock;
 }
 
@@ -170,12 +172,14 @@ int PatchGUI::update(int x, int y)
 			delete draw;
 			delete mute;
 			delete expand;
+			delete master;
 			play = 0;
 			record = 0;
 			gang = 0;
 			draw = 0;
 			mute = 0;
 			expand = 0;
+			master = 0;
 		}
 		else
 		{
@@ -185,11 +189,14 @@ int PatchGUI::update(int x, int y)
 			draw->update(track->draw);
 			mute->update(mute->get_keyframe_value(mwindow, this));
 			expand->update(track->expand_view);
+			master->update(track->master);
 		}
 	}
 	else
 	if(h - y1 >= mwindow->theme->play_h)
 	{
+		patchbay->add_subwindow(master = new MasterTrackPatch(this, 0, y1 + y));
+		x1 += master->get_w();
 		patchbay->add_subwindow(play = new PlayPatch(mwindow, this, x1 + x, y1 + y));
 		x1 += play->get_w();
 		patchbay->add_subwindow(record = new RecordPatch(mwindow, this, x1 + x, y1 + y));
@@ -304,6 +311,20 @@ void PatchGUI::toggle_behavior(int type,
 		mwindow->undo->update_undo(_("expand patch"), LOAD_PATCHES);
 		break;
 	}
+}
+
+void PatchGUI::toggle_master(int value,
+	MasterTrackPatch *toggle,
+	int *output)
+{
+	if(!*output)
+	{
+		master_edl->set_all_toggles(Tracks::MASTER, 0);
+		*output = 1;
+		patchbay->update();
+	}
+	else
+		toggle->update(*output);
 }
 
 char* PatchGUI::calculate_nudge_text(int *changed)
@@ -504,6 +525,25 @@ int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
 		unit_position);
 }
 
+MasterTrackPatch::MasterTrackPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y,
+	mwindow_global->theme->get_image_set("mastertrack_data"),
+	patch->track->master,
+	"",
+	0,
+	0,
+	0)
+{
+	this->patch = patch;
+	set_tooltip(_("Set master track"));
+}
+
+int MasterTrackPatch::handle_event()
+{
+	patch->toggle_master(get_value(),
+		this, &patch->track->master);
+	return 1;
+}
 
 ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, 

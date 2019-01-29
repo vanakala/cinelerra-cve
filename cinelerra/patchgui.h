@@ -40,6 +40,7 @@ class DrawPatch;
 class MutePatch;
 class ExpandPatch;
 class NudgePatch;
+class MasterTrackPatch;
 
 class PatchGUI
 {
@@ -56,6 +57,7 @@ public:
 		int value,
 		BC_Toggle *toggle,
 		int *output);
+	void toggle_master(int value, MasterTrackPatch *toggle, int *output);
 	virtual int update(int x, int y);
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
@@ -74,6 +76,7 @@ public:
 	int change_source;
 
 	TitlePatch *title;
+	MasterTrackPatch *master;
 	RecordPatch *record;
 	PlayPatch *play;
 	GangPatch *gang;
@@ -145,6 +148,15 @@ public:
 	int button_release_event();
 	static int get_keyframe_value(MWindow *mwindow, PatchGUI *patch);
 	MWindow *mwindow;
+	PatchGUI *patch;
+};
+
+class MasterTrackPatch : public BC_Toggle
+{
+public:
+	MasterTrackPatch(PatchGUI *patch, int x, int y);
+
+	int handle_event();
 	PatchGUI *patch;
 };
 

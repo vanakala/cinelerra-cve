@@ -100,7 +100,8 @@ public:
 		GANG,
 		DRAW,
 		MUTE,
-		EXPAND
+		EXPAND,
+		MASTER
 	};
 
 	void change_channels(int oldchannels, int newchannels);

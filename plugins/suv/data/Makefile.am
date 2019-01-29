@@ -113,6 +113,10 @@ PNGS = \
 	magnify.png \
 	mask.png \
 	maskkeyframe.png \
+	mastertrack-hi.png \
+	mastertrack-selected-hi.png \
+	mastertrack-selected.png \
+	mastertrack.png \
 	mbutton_bg.png \
 	mclock_flat.png \
 	menu_popup_bg.png \
