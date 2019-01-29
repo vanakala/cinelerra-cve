@@ -445,7 +445,7 @@ unsigned char* BC_Theme::get_image_data(const char *title)
 		}
 	}
 
-	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
+	fprintf(stderr, _("BC_Theme::get_image: %s not found.\n"), title);
 	return 0;
 }
 
