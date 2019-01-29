@@ -170,6 +170,10 @@ magnify.png \
 magnifyS.png \
 mask.png \
 maskkeyframe.png \
+mastertrack-hi.png \
+mastertrack-selected-hi.png \
+mastertrack-selected.png \
+mastertrack.png \
 mbutton_left.png \
 mbutton_right.png \
 mclock.png \

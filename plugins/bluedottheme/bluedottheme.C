@@ -525,6 +525,14 @@ void BlueDotTheme::initialize()
 		"expandpatch_dn.png",
 		"expandpatch_checkedhi.png");
 
+	new_image_set("mastertrack_data",
+		5,
+		"mastertrack.png",
+		"mastertrack-hi.png",
+		"mastertrack-selected.png",
+		"mastertrack.png",
+		"mastertrack-selected-hi.png");
+
 	build_icons();
 	build_bg_data();
 	build_overlays();
