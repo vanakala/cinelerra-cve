@@ -516,11 +516,6 @@ void Tracks::paste_automation(ptstime selectionstart,
 	}
 }
 
-void Tracks::paste_default_keyframe(FileXML *file)
-{
-	paste_automation(0, file, 1);
-}
-
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
 	dest_edit->insert_transition(server->title);

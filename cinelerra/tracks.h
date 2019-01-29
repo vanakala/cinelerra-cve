@@ -142,7 +142,6 @@ public:
 	void paste_automation(ptstime selectionstart,
 		FileXML *xml,
 		int default_only);
-	void paste_default_keyframe(FileXML *file);
 	void paste_silence(ptstime start,
 		ptstime end,
 		int edit_plugins);
