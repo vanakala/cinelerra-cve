@@ -165,6 +165,8 @@ public:
 	char title[BCTEXTLEN];
 	int play;
 	int record;
+// This track is master
+	int master;
 // Nudge in seconds.  Positive shifts track earlier in time.  This way
 // the position variables only need to add the nudge.
 	ptstime nudge;

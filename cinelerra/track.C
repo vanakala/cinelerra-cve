@@ -59,6 +59,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	record = 1;
 	play = 1;
 	nudge = 0;
+	master = 0;
 	track_w = edlsession->output_w;
 	track_h = edlsession->output_h;
 	one_unit = (ptstime) 1 / 48000;
@@ -689,10 +690,25 @@ void Track::synchronize_params(Track *track)
 
 void Track::dump(int indent)
 {
+	const char *tp;
+
 	printf("%*sTrack %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*sData type %d play %d record %d nudge %.2f\n", indent, "",
-		data_type, play, record, nudge);
+	switch(data_type)
+	{
+	case TRACK_AUDIO:
+		tp = "Audio";
+		break;
+	case TRACK_VIDEO:
+		tp = "Video";
+		break;
+	default:
+		tp = "Unknown";
+		break;
+	}
+	printf("%*sType %s %c-%c-%c-%c-%c nudge %.2f\n", indent, "",
+		tp, master ? 'M' : 'm', play ? 'P' : 'p',
+		record ? 'A' : 'a', gang ? 'G' : 'g', draw ? 'D' : 'd', nudge);
 	printf("%*sTitle %s\n", indent, "", title);
 	edits->dump(indent);
 	automation->dump(indent);
