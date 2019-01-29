@@ -118,6 +118,7 @@ MWindow::MWindow(const char *config_path)
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	init_signals();
+	mwindow_global = this;
 
 	glthread = new GLThread();
 
