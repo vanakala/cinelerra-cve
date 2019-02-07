@@ -81,6 +81,10 @@ public:
 	ptstime get_pts();
 	ptstime set_source_pts(ptstime pts);
 	ptstime get_source_pts();
+// End of current edit in source
+	ptstime source_end_pts();
+// End of asset
+	ptstime get_source_length();
 
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
@@ -102,8 +106,6 @@ public:
 
 	ptstime load_properties(FileXML *xml, ptstime project_pts);
 
-// ============================= editing
-	ptstime get_source_end();
 	void dump(int indent = 0);
 private:
 // Start of edit in source file in seconds

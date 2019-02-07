@@ -146,11 +146,13 @@ public:
 		ptstime end,
 		int edit_plugins);
 
-	void modify_edithandles(ptstime &oldposition,
-		ptstime &newposition,
+	ptstime adjust_position(ptstime oldposition, ptstime newposition,
+		int currentend, int handle_mode);
+
+	void modify_edithandles(ptstime oldpodition,
+		ptstime newposition,
 		int currentend, 
-		int handle_mode,
-		int actions);
+		int handle_mode);
 	void modify_pluginhandles(ptstime &oldposition,
 		ptstime &newposition,
 		int currentend, 

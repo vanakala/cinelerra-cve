@@ -122,7 +122,7 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 	}
 }
 
-ptstime Edit::get_source_end()
+ptstime Edit::get_source_length()
 {
 	if(asset && track)
 	{
@@ -330,7 +330,8 @@ void Edit::shift(ptstime difference)
 
 void Edit::shift_source(ptstime difference)
 {
-	source_pts += difference;
+	if(asset)
+		source_pts += difference;
 }
 
 ptstime Edit::set_pts(ptstime pts)
@@ -355,4 +356,11 @@ ptstime Edit::set_source_pts(ptstime pts)
 ptstime Edit::get_source_pts()
 {
 	return source_pts;
+}
+
+ptstime Edit::source_end_pts()
+{
+	if(asset && next)
+		return source_pts + next->project_pts - project_pts;
+	return 0;
 }

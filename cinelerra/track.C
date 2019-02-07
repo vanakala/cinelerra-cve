@@ -944,13 +944,19 @@ void Track::clear_handle(ptstime start,
 	edits->clear_handle(start, end, actions, distance);
 }
 
-void Track::modify_edithandles(ptstime &oldposition,
-	ptstime &newposition,
-	int currentend,
-	int handle_mode,
-	int actions)
+ptstime Track::adjust_position(ptstime oldposition, ptstime newposition,
+	int currentend, int handle_mode)
 {
-	edits->modify_handles(oldposition, newposition, handle_mode);
+	return edits->adjust_position(oldposition, newposition,
+		currentend, handle_mode);
+}
+
+void Track::modify_edithandles(ptstime oldposition,
+	ptstime newposition,
+	int currentend,
+	int handle_mode)
+{
+	edits->modify_handles(oldposition, newposition, currentend, handle_mode);
 }
 
 void Track::modify_pluginhandles(ptstime oldposition,
@@ -961,7 +967,7 @@ void Track::modify_pluginhandles(ptstime oldposition,
 {
 	for(int i = 0; i < plugin_set.total; i++)
 		plugin_set.values[i]->modify_handles(oldposition, newposition,
-			handle_mode);
+			currentend, handle_mode);
 }
 
 void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)

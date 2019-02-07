@@ -38,6 +38,7 @@
 #include "track.h"
 #include "transition.h"
 
+
 #include <string.h>
 
 Edits::Edits(EDL *edl, Track *track)
@@ -583,24 +584,128 @@ void Edits::clear_handle(ptstime start,
 	}
 }
 
-void Edits::modify_handles(ptstime &oldposition,
-	ptstime &newposition,
+void Edits::modify_handles(ptstime oldposition,
+	ptstime newposition,
+	int edit_handle,
 	int edit_mode)
 {
 	Edit *current_edit;
+	ptstime diff, src_pts;
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
 	{
 		if(edl->equivalent(current_edit->get_pts(), oldposition))
+			break;
+	}
+
+	if(current_edit)
+	{
+		oldposition = current_edit->get_pts();
+// Can't move the first edit
+		if((edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
+				&& current_edit == first)
+			return;
+
+		if(PTSEQU(oldposition, newposition))
+			return;
+
+		diff = newposition - oldposition;
+
+		switch(edit_mode)
 		{
-			oldposition = current_edit->get_pts();
+		case MOVE_ALL_EDITS:
+			if(edit_handle == HANDLE_LEFT)
+				current_edit->shift_source(diff);
+			for(; current_edit;current_edit = current_edit->next)
+				current_edit->shift(diff);
+			break;
+		case MOVE_ONE_EDIT:
+			current_edit->shift(diff);
+			current_edit->shift_source(diff);
+			break;
+		case MOVE_NO_EDITS:
+			current_edit->shift_source(diff);
 			break;
 		}
 	}
-	if(current_edit)
+}
+
+ptstime Edits::adjust_position(ptstime oldposition, ptstime newposition,
+	int edit_handle, int edit_mode)
+{
+	Edit *edit;
+
+	for(edit = first; edit; edit = edit->next)
 	{
-		move_edits(current_edit, newposition, edit_mode);
+		if(edl->equivalent(edit->get_pts(), oldposition))
+			break;
 	}
+
+	if(edit)
+	{
+		if(edit_mode != MOVE_NO_EDITS)
+		{
+			int chk_end = 0;
+
+			if(newposition > oldposition)
+				chk_end = 1;
+
+			newposition = limit_move(edit, newposition, 1);
+			// Check previohus edit
+			if(newposition > oldposition && edit->previous)
+			{
+				ptstime prevlen = edit->previous->length();
+				newposition = limit_source_move(edit->previous,
+					newposition - prevlen) + prevlen;
+			}
+		}
+
+		if(edit_mode == MOVE_ONE_EDIT || edit_mode == MOVE_NO_EDITS ||
+				edit_mode == MOVE_ALL_EDITS && edit_handle == HANDLE_LEFT)
+			newposition = limit_source_move(edit, newposition);
+	}
+	return newposition;
+}
+
+ptstime Edits::limit_move(Edit *edit, ptstime newposition, int check_end)
+{
+	if(newposition < 0)
+		newposition = 0;
+
+	if(!edit->track->master && newposition > edl->total_length())
+		newposition = edl->total_length();
+
+	if(check_end)
+	{
+		ptstime new_end = newposition + edit->length();
+		ptstime tot_len = edl->total_length();
+
+		if(!edit->track->master && new_end > tot_len)
+			newposition = tot_len - edit->length();
+	}
+	return newposition;
+}
+
+ptstime Edits::limit_source_move(Edit *edit, ptstime newposition)
+{
+	if(edit->asset)
+	{
+		ptstime new_pts = edit->get_source_pts() + newposition - edit->get_pts();
+		ptstime src_end = edit->get_source_length();
+
+		if(new_pts + edit->length() > src_end)
+		{
+			new_pts = src_end - edit->length();
+			newposition = new_pts - edit->get_source_pts() + edit->get_pts();
+		}
+
+		if(new_pts < 0)
+		{
+			newposition -= new_pts;
+			new_pts = 0;
+		}
+	}
+	return newposition;
 }
 
 void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
@@ -628,7 +733,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 					&& current_edit->asset)
 			{
 // Limit shift with the length of asset
-				apts = current_edit->get_pts() - (current_edit->get_source_end() -
+				apts = current_edit->get_pts() - (current_edit->get_source_length() -
 					current_edit->get_source_pts() - current_edit->length());
 				if(apts > newposition)
 					newposition = apts;
@@ -663,7 +768,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 			{
 				if((ed = current_edit->previous) && ed->asset)
 				{
-					apts = ed->get_source_end() - ed->get_source_pts() + ed->get_pts();
+					apts = ed->get_source_length() - ed->get_source_pts() + ed->get_pts();
 
 					if(apts < newposition)
 						newposition = apts;

@@ -120,7 +120,13 @@ public:
 // Debug
 	void dump(int indent = 0);
 	void dump_assets(int indent = 0);
+
 	static int next_id();
+
+	ptstime adjust_position(ptstime oldposition,
+		ptstime newposition,
+		int currentend,
+		int handle_mode);
 
 	void modify_edithandles(ptstime oldposition,
 		ptstime newposition,
@@ -191,6 +197,8 @@ public:
 	void set_all_toggles(int toggle_type, int value);
 // Count number of toggels set
 	int total_toggled(int toggle_type);
+// Name of the handle
+	static const char *handle_name(int handle);
 
 // Media files
 // Shared between all EDLs

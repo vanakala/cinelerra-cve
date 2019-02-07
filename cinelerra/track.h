@@ -208,12 +208,13 @@ public:
 		ptstime &distance);
 	void paste_silence(ptstime start, ptstime end, int edit_plugins);
 
-// Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
-	void modify_edithandles(ptstime &oldposition,
-		ptstime &newposition,
+	ptstime adjust_position(ptstime oldposition, ptstime newposition,
+		int currentend, int handle_mode);
+
+	void modify_edithandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
-		int handle_mode,
-		int actions);
+		int handle_mode);
 	void modify_pluginhandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 

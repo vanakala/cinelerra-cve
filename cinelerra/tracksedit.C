@@ -554,11 +554,24 @@ void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
 	}
 }
 
-void Tracks::modify_edithandles(ptstime &oldposition,
-	ptstime &newposition,
+ptstime Tracks::adjust_position(ptstime oldposition,
+	ptstime newposition,
+	int currentend,
+	int handle_mode)
+{
+	for(Track *current = first; current; current = current->next)
+	{
+		if(current->record)
+			newposition = current->adjust_position(oldposition,
+				newposition, currentend, handle_mode);
+	}
+	return newposition;
+}
+
+void Tracks::modify_edithandles(ptstime oldposition,
+	ptstime newposition,
 	int currentend, 
-	int handle_mode,
-	int actions)
+	int handle_mode)
 {
 	Track *current;
 
@@ -566,11 +579,10 @@ void Tracks::modify_edithandles(ptstime &oldposition,
 	{
 		if(current->record)
 		{
-			current->modify_edithandles(oldposition, 
+			current->modify_edithandles(oldposition,
 				newposition, 
 				currentend,
-				handle_mode,
-				actions);
+				handle_mode);
 		}
 	}
 }

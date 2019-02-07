@@ -90,10 +90,15 @@ public:
 
 // ==================================== editing
 
-	void modify_handles(ptstime &oldposition,
-		ptstime &newposition,
+	void modify_handles(ptstime oldposition,
+		ptstime newposition,
+		int edit_handle,
 		int edit_mode);
 	void move_edits(Edit *current_edit, ptstime &newposition, int edit_mode);
+	ptstime adjust_position(ptstime oldposition, ptstime newposition,
+		int edit_handle, int edit_mode);
+	ptstime limit_move(Edit *edit, ptstime newposition, int check_end = 0);
+	ptstime limit_source_move(Edit *edit, ptstime newposition);
 
 	ptstime loaded_length;
 };

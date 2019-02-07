@@ -545,19 +545,31 @@ void EDL::clear(ptstime start,
 	local_session->set_selectionstart(position);
 }
 
-void EDL::modify_edithandles(ptstime oldposition,
+ptstime EDL::adjust_position(ptstime oldposition,
 	ptstime newposition,
 	int currentend,
-	int handle_mode,
+	int handle_mode)
+{
+	if(tracks && tracks->total())
+		return tracks->adjust_position(oldposition, newposition,
+			currentend, handle_mode);
+	return newposition;
+}
+
+void EDL::modify_edithandles(ptstime oldposition,
+	ptstime newposition,
+	int currentend, // handle
+	int handle_mode, // button mode
 	int actions)
 {
-	tracks->modify_edithandles(oldposition, 
-		newposition, 
+	ptstime newpos = adjust_position(oldposition, newposition, currentend,
+		handle_mode);
+	tracks->modify_edithandles(oldposition,
+		newpos,
 		currentend,
-		handle_mode,
-		actions);
-	labels->modify_handles(oldposition, 
-		newposition, 
+		handle_mode);
+	labels->modify_handles(oldposition,
+		newpos,
 		currentend,
 		handle_mode,
 		actions & EDIT_LABELS);
@@ -1063,4 +1075,18 @@ int EDL::total_toggled(int toggle_type)
 		}
 	}
 	return result;
+}
+
+const char *EDL::handle_name(int handle)
+{
+	switch(handle)
+	{
+	case HANDLE_MAIN:
+		return "Main handle";
+	case HANDLE_LEFT:
+		return "Left handle";
+	case HANDLE_RIGHT:
+		return "Right handle";
+	}
+	return "Unknown handlle";
 }
