@@ -610,6 +610,28 @@ void Edits::modify_handles(ptstime oldposition,
 
 		diff = newposition - oldposition;
 
+		if(diff < 0 && (edit_mode == MOVE_ALL_EDITS ||
+			edit_mode == MOVE_ONE_EDIT))
+		{
+			for(Edit *edit = current_edit->previous; edit &&
+				edit->get_pts() >= newposition;)
+			{
+				Edit *tmp = edit->previous;
+				remove(edit);
+				edit = tmp;
+			}
+		}
+		else if(diff > 0 && edit_mode == MOVE_ONE_EDIT)
+		{
+			for(Edit *edit = current_edit->next; edit &&
+				edit->get_pts() <= newposition;)
+			{
+				Edit *tmp = edit->next;
+				remove(edit);
+				edit = tmp;
+			}
+		}
+
 		switch(edit_mode)
 		{
 		case MOVE_ALL_EDITS:
