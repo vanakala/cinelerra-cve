@@ -165,8 +165,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 			}
 			if(dest_edit != last)
 			{
-				move_edits(dest_edit->next, end_pos,
-					MOVE_ALL_EDITS);
+				move_edits(dest_edit->next, end_pos);
 			}
 		}
 	}
@@ -528,7 +527,7 @@ void Edits::clear(ptstime start, ptstime end)
 	if(current_edit)
 	{
 		ptstime end_pos = current_edit->get_pts() - len;
-		move_edits(current_edit, end_pos, MOVE_ALL_EDITS);
+		move_edits(current_edit, end_pos);
 	}
 	cleanup();
 }
@@ -708,7 +707,7 @@ ptstime Edits::limit_source_move(Edit *edit, ptstime newposition)
 	return newposition;
 }
 
-void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
+void Edits::move_edits(Edit *current_edit, ptstime newposition)
 {
 	Edit *ed, *ted;
 	ptstime cut_length, apts, oldposition;
@@ -717,99 +716,52 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 	{
 		oldposition = current_edit->get_pts();
 
-		if(edit_mode != MOVE_NO_EDITS && newposition < 0)
+		if(newposition < 0)
 			newposition = 0;
 		if(PTSEQU(oldposition, newposition))
 			return;
 
 // Can't move the first edit
-		if((edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
-				&& current_edit == first)
+		if(current_edit == first)
 			return;
 		if(newposition < oldposition)
 		{
 // shift left
-			if((edit_mode == MOVE_NO_EDITS || edit_mode == MOVE_ONE_EDIT)
-					&& current_edit->asset)
-			{
-// Limit shift with the length of asset
-				apts = current_edit->get_pts() - (current_edit->get_source_length() -
-					current_edit->get_source_pts() - current_edit->length());
-				if(apts > newposition)
-					newposition = apts;
-			}
-			if(edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
-			{
-				cut_length = newposition - oldposition;
+			cut_length = newposition - oldposition;
 
-				for(ed = current_edit->previous;
-						ed && (ed->get_pts() > newposition || PTSEQU(ed->get_pts(), newposition));
-						ed = ted)
-				{
-					ted = ed->previous;
-					remove(ed);
-				}
-
-				current_edit->set_pts(newposition);
-				current_edit->shift_keyframes(cut_length);
-				if(current_edit->previous)
-					current_edit->previous->remove_keyframes_after(newposition);
-			}
-			else if(edit_mode == MOVE_NO_EDITS)
+			for(ed = current_edit->previous;
+				ed && (ed->get_pts() > newposition || PTSEQU(ed->get_pts(), newposition));
+					ed = ted)
 			{
-				if((cut_length = oldposition - newposition) > 0)
-					current_edit->shift_source(cut_length);
+				ted = ed->previous;
+				remove(ed);
 			}
+
+			current_edit->set_pts(newposition);
+			current_edit->shift_keyframes(cut_length);
+			if(current_edit->previous)
+				current_edit->previous->remove_keyframes_after(newposition);
 		}
 		else
 		{
 // shift right
-			if(edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
+			if((ed = current_edit->previous) && ed->asset)
 			{
-				if((ed = current_edit->previous) && ed->asset)
-				{
-					apts = ed->get_source_length() - ed->get_source_pts() + ed->get_pts();
+				apts = ed->get_source_length() - ed->get_source_pts() + ed->get_pts();
 
-					if(apts < newposition)
-						newposition = apts;
-				}
-				if(edit_mode == MOVE_ONE_EDIT && newposition > current_edit->end_pts())
-				{
-// Moved over next edit - remove current
-					if(current_edit != last)
-					{
-						newposition = current_edit->end_pts();
-						remove(current_edit);
-						return;
-					}
-				}
-				current_edit->set_pts(newposition);
-				cut_length = newposition - oldposition;
-				current_edit->shift_keyframes(cut_length);
-				current_edit->remove_keyframes_after(current_edit->end_pts());
+				if(apts < newposition)
+					newposition = apts;
 			}
-			else if(edit_mode == MOVE_NO_EDITS)
-			{
-				if(current_edit->asset)
-				{
-					apts = current_edit->get_source_pts() + current_edit->get_pts();
-
-					if(newposition > apts)
-						newposition = apts;
-				}
-
-				if((cut_length = newposition - oldposition) > 0)
-					current_edit->shift_source(-cut_length);
-			}
+			current_edit->set_pts(newposition);
+			cut_length = newposition - oldposition;
+			current_edit->shift_keyframes(cut_length);
+			current_edit->remove_keyframes_after(current_edit->end_pts());
 		}
 
-		if(edit_mode == MOVE_ALL_EDITS)
+		for(ed = current_edit->next; ed; ed = ed->next)
 		{
-			for(ed = current_edit->next; ed; ed = ed->next)
-			{
-				ed->shift(cut_length);
-				ed->shift_keyframes(cut_length);
-			}
+			ed->shift(cut_length);
+			ed->shift_keyframes(cut_length);
 		}
 	}
 }
@@ -835,7 +787,7 @@ void Edits::paste_silence(ptstime start, ptstime end)
 		new_edit->set_source_pts(0);
 	}
 	if(new_edit->next)
-		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
+		move_edits(new_edit->next, end);
 }
 
 Edit* Edits::shift(ptstime position, ptstime difference)
@@ -846,7 +798,7 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 	if(fabs(difference) < EPSILON)
 		return new_edit;
 	if(new_edit->next)
-		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
+		move_edits(new_edit->next, end);
 	else
 		split_edit(end, 1);
 	return new_edit;

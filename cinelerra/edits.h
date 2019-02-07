@@ -94,7 +94,7 @@ public:
 		ptstime newposition,
 		int edit_handle,
 		int edit_mode);
-	void move_edits(Edit *current_edit, ptstime &newposition, int edit_mode);
+	void move_edits(Edit *current_edit, ptstime newposition);
 	ptstime adjust_position(ptstime oldposition, ptstime newposition,
 		int edit_handle, int edit_mode);
 	ptstime limit_move(Edit *edit, ptstime newposition, int check_end = 0);

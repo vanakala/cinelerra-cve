@@ -167,7 +167,7 @@ void PluginSet::clear(ptstime start, ptstime end)
 			diff = end - start;
 			current->keyframes->clear(start, end, 1);
 			diff = plend - (end -start);
-			move_edits(current->next, diff, MOVE_ALL_EDITS);
+			move_edits(current->next, diff);
 			break;
 		}
 		else if(plpts >= start && plend < end)
@@ -175,7 +175,7 @@ void PluginSet::clear(ptstime start, ptstime end)
 // Plugin inside selection
 			Plugin *plp = (Plugin*)NEXT;
 			remove(current);
-			move_edits(plp, start, MOVE_ALL_EDITS);
+			move_edits(plp, start);
 			break;
 		}
 		else if(plpts >= start && plpts < end)
@@ -184,8 +184,8 @@ void PluginSet::clear(ptstime start, ptstime end)
 			if(current->previous)
 				((Plugin *)current->previous)->keyframes->clear(start, end, 0);
 			current->keyframes->clear(start, end, 1);
-			move_edits(current, end, MOVE_ONE_EDIT);
-			move_edits(current, start, MOVE_ALL_EDITS);
+			current->set_pts(end);
+			move_edits(current, start);
 			break;
 		}
 	}
