@@ -62,7 +62,7 @@ public:
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
 // Synchronize playback numbers
-	virtual void synchronize_params(Track *track);
+	void synchronize_params(Track *track);
 
 // Get number of pixels to display
 	virtual int vertical_span(Theme *theme);
@@ -130,7 +130,7 @@ public:
 // Used by PlayableTracks::is_playable
 	int plugin_used(ptstime position);
 
-	virtual void copy_settings(Track *track);
+	void copy_settings(Track *track);
 	void shift_keyframes(ptstime position, ptstime length);
 	void shift_effects(ptstime position, ptstime length);
 	void change_plugins(SharedLocation &old_location, 

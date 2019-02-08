@@ -35,8 +35,6 @@ public:
 
 	void set_default_title();
 	void save_header(FileXML *file);
-	void copy_settings(Track *track);
-	void synchronize_params(Track *track);
 	posnum to_units(ptstime position, int round = 0);
 	ptstime from_units(posnum position);
 

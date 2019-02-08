@@ -22,20 +22,15 @@
 #include "atrack.h"
 #include "aautomation.h"
 #include "bcresources.h"
-#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "cache.h"
 #include "clip.h"
 #include "datatype.h"
 #include "file.h"
 #include "filexml.h"
 #include "language.h"
-#include "localsession.h"
-#include "mainsession.h"
 #include "theme.h"
-#include "trackcanvas.h"
-#include "tracks.h"
+#include "tracks.inc"
 #include "units.h"
 
 #include <string.h>
@@ -48,21 +43,6 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
 	data_type = TRACK_AUDIO;
 	one_unit = (ptstime)1.0 / edlsession->sample_rate;
 	automation = new AAutomation(edl, this);
-}
-
-// Used by PlaybackEngine
-void ATrack::synchronize_params(Track *track)
-{
-	Track::synchronize_params(track);
-
-	ATrack *atrack = (ATrack*)track;
-}
-
-void ATrack::copy_settings(Track *track)
-{
-	Track::copy_settings(track);
-
-	ATrack *atrack = (ATrack*)track;
 }
 
 void ATrack::save_header(FileXML *file)

@@ -22,26 +22,18 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "bcresources.h"
-#include "cache.h"
 #include "clip.h"
 #include "datatype.h"
-#include "edit.h"
-#include "edits.h"
-#include "edl.h"
+#include "edl.inc"
 #include "edlsession.h"
-#include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "filexml.h"
 #include "language.h"
-#include "localsession.h"
-#include "mainsession.h"
 #include "theme.h"
-#include "trackcanvas.h"
 #include "tracks.inc"
 #include "units.h"
 #include "vautomation.h"
-#include "vframe.h"
-#include "vmodule.h"
 #include "vtrack.h"
 
 VTrack::VTrack(EDL *edl, Tracks *tracks)
@@ -51,22 +43,6 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 	draw = 1;
 	one_unit = (ptstime)1.0 / edlsession->frame_rate;
 	automation = new VAutomation(edl, this);
-}
-
-// Used by PlaybackEngine
-void VTrack::synchronize_params(Track *track)
-{
-	Track::synchronize_params(track);
-
-	VTrack *vtrack = (VTrack*)track;
-}
-
-// Used by EDL::operator=
-void VTrack::copy_settings(Track *track)
-{
-	Track::copy_settings(track);
-
-	VTrack *vtrack = (VTrack*)track;
 }
 
 int VTrack::vertical_span(Theme *theme)
