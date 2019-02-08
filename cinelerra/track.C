@@ -721,12 +721,6 @@ void Track::dump(int indent)
 		plugin_set.values[i]->dump(indent + 2);
 }
 
-
-Track::Track() : ListItem<Track>()
-{
-	y_pixel = 0;
-}
-
 // ======================================== accounting
 
 int Track::number_of() 

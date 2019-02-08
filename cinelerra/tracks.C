@@ -416,16 +416,6 @@ void Tracks::dump(int indent)
 	}
 }
 
-// ===================================== file operations
-
-void Tracks::change_channels(int oldchannels, int newchannels)
-{
-	for(Track *current = first; current; current = NEXT)
-	{
-		current->change_channels(oldchannels, newchannels);
-	}
-}
-
 int Tracks::totalpixels()
 {
 	int result = 0;

@@ -104,7 +104,6 @@ public:
 		MASTER
 	};
 
-	void change_channels(int oldchannels, int newchannels);
 	void dump(int indent = 0);
 
 // Change references to shared modules in all tracks from old to new.

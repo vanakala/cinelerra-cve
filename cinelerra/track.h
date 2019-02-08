@@ -48,14 +48,12 @@
 
 #include <stdint.h>
 
-// UNITS ARE SAMPLES FOR ALL
-
 class Track : public ListItem<Track>
 {
 public:
 	Track(EDL *edl, Tracks *tracks);
-	Track();
 	virtual ~Track();
+
 	int get_id();
 	void load(FileXML *file, int track_offset, uint32_t load_flags);
 	virtual void save_header(FileXML *file) {};
@@ -63,7 +61,6 @@ public:
 
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
-	virtual PluginSet* new_plugins() { return 0; };
 // Synchronize playback numbers
 	virtual void synchronize_params(Track *track);
 
@@ -130,9 +127,6 @@ public:
 // Returns 1 if the track is in the output boundaries.
 	virtual int is_playable(ptstime position);
 
-// Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(ptstime start, int use_nudge) { return 1; };
-
 // Used by PlayableTracks::is_playable
 	int plugin_used(ptstime position);
 
@@ -176,7 +170,6 @@ public:
 	int load_automation(FileXML *file);
 	int load_edits(FileXML *file);
 
-	virtual int change_channels(int oldchannels, int newchannels) { return 0; };
 	void dump(int indent = 0);
 
 // ===================================== editing
