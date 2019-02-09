@@ -326,10 +326,6 @@ void Track::insert_asset(Asset *asset,
 
 // Insert data
 
-// Default keyframes: We don't replace default keyframes in pasting but
-// when inserting the first EDL of a load operation we need to replace
-// the default keyframes.
-
 // Plugins:  This is an arbitrary behavior
 //
 // 1) No plugin in source track: Paste silence into destination
@@ -340,12 +336,8 @@ void Track::insert_asset(Asset *asset,
 
 void Track::insert_track(Track *track, 
 	ptstime position,
-	int replace_default,
 	int edit_plugins)
 {
-// Decide whether to copy settings based on load_mode
-	if(replace_default) copy_settings(track);
-
 	edits->insert_edits(track->edits, position);
 
 	if(edit_plugins)
@@ -355,7 +347,6 @@ void Track::insert_track(Track *track,
 		position,
 		track->get_length());
 	optimize();
-
 }
 
 // Called by insert_track

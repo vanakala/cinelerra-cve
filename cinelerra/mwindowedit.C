@@ -1140,13 +1140,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 				{
 					Track *track = destination_tracks.values[destination_track];
 
-// Replace default keyframes if first EDL and new tracks were created.
-// This means data copied from one track and pasted to another won't retain
-// the camera position unless it's a keyframe.  If it did, previous data in the
-// track might get unknowingly corrupted.  Ideally we would detect when differing
-// default keyframes existed and create discrete keyframes for both.
-					int replace_default = (i == 0) && need_new_tracks;
-
 // Insert new track at current position
 					switch(load_mode)
 					{
@@ -1166,7 +1159,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 								actions | EDIT_EDITS);
 					track->insert_track(new_track, 
 						current_position, 
-						replace_default,
 						actions & EDIT_PLUGINS);
 				}
 

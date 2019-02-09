@@ -88,7 +88,6 @@ public:
 // Insert a track from another EDL
 	void insert_track(Track *track, 
 		ptstime position,
-		int replace_default,
 		int edit_plugins);
 // Optimize editing
 	void optimize();

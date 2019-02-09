@@ -242,9 +242,9 @@ int Tracks::concatenate_tracks(int edit_plugins)
 			while(input_track)
 			{
 				output_start = output_track->get_length();
+
 				output_track->insert_track(input_track, 
 					output_start, 
-					0,
 					edit_plugins);
 
 // Get next source and destination
