@@ -257,7 +257,8 @@ void MWindow::clear_labels(ptstime start, ptstime end)
 
 void MWindow::concatenate_tracks()
 {
-	master_edl->tracks->concatenate_tracks(edlsession->plugins_follow_edits);
+	master_edl->tracks->concatenate_tracks(
+		edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
 	save_backup();
 	undo->update_undo(_("concatenate tracks"), LOAD_EDITS);
 
@@ -1163,7 +1164,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 						track->clear(current_position, 
 								current_position + new_track->get_length(), 
 								actions | EDIT_EDITS);
-
 					track->insert_track(new_track, 
 						current_position, 
 						replace_default,
