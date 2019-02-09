@@ -110,7 +110,7 @@ public:
 // If do_swap is true values of new are replaced with old.
 	void change_modules(int old_location, int new_location, int do_swap);
 // Append all the tracks to the end of the recordable tracks
-	int concatenate_tracks(int edit_plugins);
+	void concatenate_tracks(int edit_plugins);
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 	int delete_tracks(void);     // delete all the recordable tracks

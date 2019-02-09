@@ -58,6 +58,9 @@ typedef double ptstime;
 
 #define TRACK_AUDIO 0
 #define TRACK_VIDEO 1
+// Number of track types
+#define TRACK_TYPES 2
+
 #define TRACK_VTRANSITION 2
 #define TRACK_ATRANSITION 3
 

@@ -205,35 +205,34 @@ void Tracks::move_effect(Plugin *plugin,
 	}
 }
 
-int Tracks::concatenate_tracks(int edit_plugins)
+void Tracks::concatenate_tracks(int edit_plugins)
 {
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
 	ptstime output_start;
-	FileXML *clipboard;
-	int result = 0;
-	IntAuto *play_keyframe = 0;
 
 // Relocate tracks
-	for(i = 0; i < 2; i++)
+	for(i = 0; i < TRACK_TYPES; i++)
 	{
 // Get first output track
-		for(output_track = first; 
-			output_track; 
+		for(output_track = first; output_track;
 			output_track = output_track->next)
+		{
 			if(output_track->data_type == data_type && 
-				output_track->record) break;
+					output_track->record)
+				break;
+		}
 
 		first_output_track = output_track;
 
 // Get first input track
-		for(input_track = first;
-			input_track;
+		for(input_track = first; input_track;
 			input_track = input_track->next)
 		{
 			if(input_track->data_type == data_type &&
-				input_track->play && 
-				!input_track->record) break;
+					input_track->play &&
+					!input_track->record)
+				break;
 		}
 
 		if(output_track && input_track)
@@ -254,8 +253,9 @@ int Tracks::concatenate_tracks(int edit_plugins)
 				{
 
 					if(input_track->data_type == data_type && 
-						!input_track->record && 
-						input_track->play) break;
+							!input_track->record &&
+							input_track->play)
+						break;
 				}
 
 				for(output_track = output_track->next; 
@@ -263,7 +263,8 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					output_track = output_track->next)
 				{
 					if(output_track->data_type == data_type && 
-						output_track->record) break;
+							output_track->record)
+						break;
 				}
 
 				if(!output_track)
@@ -271,12 +272,11 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					output_track = first_output_track;
 				}
 			}
-			result = 1;
 		}
 
-		if(data_type == TRACK_AUDIO) data_type = TRACK_VIDEO;
+		if(data_type == TRACK_AUDIO)
+			data_type = TRACK_VIDEO;
 	}
-	return result;
 }
 
 void Tracks::delete_all_tracks()
