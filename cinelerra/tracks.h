@@ -117,6 +117,8 @@ public:
 	void delete_all_tracks();      // delete just the tracks
 
 	void copy_from(Tracks *tracks);
+// Get master track
+	Track *master();
 
 // ================================== EDL editing
 	void save_xml(FileXML *file, const char *output_path = "");

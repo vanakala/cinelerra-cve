@@ -210,7 +210,26 @@ void Tracks::concatenate_tracks(int edit_plugins)
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
 	ptstime output_start;
+	Track *master_track = master();
+	ptstime output_max = -1;
 
+// Calculate new length
+	if(master_track)
+	{
+		output_max = master_track->get_length();
+
+		if(master_track->record)
+		{
+			for(output_track = first; output_track;
+				output_track = output_track->next)
+			{
+				if(output_track->data_type == master_track->data_type &&
+						!output_track->record &&
+						output_track->play)
+					output_max += output_track->get_length();
+			}
+		}
+	}
 // Relocate tracks
 	for(i = 0; i < TRACK_TYPES; i++)
 	{
@@ -242,13 +261,22 @@ void Tracks::concatenate_tracks(int edit_plugins)
 			{
 				output_start = output_track->get_length();
 
-				output_track->insert_track(input_track, 
-					output_start, 
-					edit_plugins);
+				if(output_start < output_max - EPSILON)
+				{
+					output_track->insert_track(input_track,
+						output_start,
+						edit_plugins);
+					if(output_track->get_length() > output_max)
+					{
+						output_track->clear(output_max,
+							output_track->get_length(),
+							EDIT_EDITS | EDIT_PLUGINS);
+					}
+				}
 
 // Get next source and destination
-				for(input_track = input_track->next; 
-					input_track; 
+				for(input_track = input_track->next;
+					input_track;
 					input_track = input_track->next)
 				{
 
@@ -606,4 +634,14 @@ void Tracks::modify_pluginhandles(ptstime &oldposition,
 				edit_labels);
 		}
 	}
+}
+
+Track *Tracks::master()
+{
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->master)
+			return current;
+	}
+	return 0;
 }
