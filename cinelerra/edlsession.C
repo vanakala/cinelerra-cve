@@ -58,7 +58,6 @@ EDLSession::EDLSession()
 	default_transition_length = 1.0;
 	folderlist_format = ASSETS_TEXT;
 	frame_rate = 25; // just has to be something by default
-	autos_follow_edits = 1; // this is needed for predictability
 	labels_follow_edits = 1;
 	plugins_follow_edits = 1;
 	audio_tracks = -10;	// these insane values let us crash early if something is forgotten to be set
@@ -183,7 +182,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	audio_channels = defaults->get("ACHANNELS", audio_channels);
 	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 	auto_conf->load_defaults(defaults);
-	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
 	brender_start = defaults->get("BRENDER_START", brender_start);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
@@ -303,7 +301,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ASPECTH");
 	defaults->delete_key("ASPECTRATIO");
 	defaults->update("ATRACKS", audio_tracks);
-	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
+	defaults->delete_key("AUTOS_FOLLOW_EDITS");
 	defaults->update("BRENDER_START", brender_start);
 	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
 	defaults->update("INTERLACE_MODE", AInterlaceModeSelection::xml_text(interlace_mode));
@@ -493,7 +491,6 @@ void EDLSession::load_xml(FileXML *file)
 	}
 	auto_conf->load_xml(file);
 	auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
-	autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	brender_start = file->tag.get_property("BRENDER_START", brender_start);
 	crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
 	crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
@@ -558,7 +555,6 @@ void EDLSession::save_xml(FileXML *file)
 	}
 	auto_conf->save_xml(file);
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
-	file->tag.set_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	file->tag.set_property("BRENDER_START", brender_start);
 	file->tag.set_property("CROP_X1", crop_x1);
 	file->tag.set_property("CROP_Y1", crop_y1);
@@ -683,7 +679,6 @@ void EDLSession::copy(EDLSession *session)
 	sample_aspect_ratio = session->sample_aspect_ratio;
 	audio_channels = session->audio_channels;
 	audio_tracks = session->audio_tracks;
-	autos_follow_edits = session->autos_follow_edits;
 	brender_start = session->brender_start;
 	color_model = session->color_model;
 	interlace_mode = session->interlace_mode;

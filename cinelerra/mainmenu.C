@@ -887,20 +887,6 @@ int PluginsFollowEdits::handle_event()
 }
 
 
-AutosFollowEdits::AutosFollowEdits(MWindow *mwindow)
- : BC_MenuItem(_("Autos follow edits")) 
-{ 
-	this->mwindow = mwindow; 
-	set_checked(edlsession->autos_follow_edits);
-}
-
-int AutosFollowEdits::handle_event()
-{ 
-	edlsession->autos_follow_edits ^= 1;
-	set_checked(!get_checked());
-}
-
-
 CursorOnFrames::CursorOnFrames(MWindow *mwindow)
  : BC_MenuItem(_("Align cursor on frames")) 
 { 

@@ -92,8 +92,6 @@ public:
 	double sample_aspect_ratio;
 	int audio_channels;
 	int audio_tracks;
-// automation follows edits during editing
-	int autos_follow_edits;
 // Generate keyframes for every tweek
 	int auto_keyframes;
 // Where to start background rendering

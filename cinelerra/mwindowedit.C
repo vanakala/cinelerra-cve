@@ -452,7 +452,6 @@ void MWindow::insert(ptstime position,
 	uint32_t load_flags = LOAD_ALL;
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
-	if(!edlsession->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
 	if(!edlsession->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
 
 	edl.load_xml(file, load_flags, 0);
