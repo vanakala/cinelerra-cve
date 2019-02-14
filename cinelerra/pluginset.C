@@ -164,7 +164,6 @@ void PluginSet::clear(ptstime start, ptstime end)
 		if(plpts < start && plend > end)
 		{
 // Selection in the middle of the plugin
-			diff = end - start;
 			current->keyframes->clear(start, end, 1);
 			diff = plend - (end -start);
 			move_edits(current->next, diff);
@@ -186,6 +185,13 @@ void PluginSet::clear(ptstime start, ptstime end)
 			current->keyframes->clear(start, end, 1);
 			current->set_pts(end);
 			move_edits(current, start);
+			break;
+		}
+		else if(plpts < start && plend > start)
+		{
+// start before, end inside
+			current->keyframes->clear(start, end, 1);
+			move_edits(current->next, start);
 			break;
 		}
 	}
