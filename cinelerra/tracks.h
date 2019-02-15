@@ -154,8 +154,8 @@ public:
 		ptstime newposition,
 		int currentend, 
 		int handle_mode);
-	void modify_pluginhandles(ptstime &oldposition,
-		ptstime &newposition,
+	void modify_pluginhandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels);

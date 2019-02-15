@@ -935,8 +935,12 @@ void Track::clear_handle(ptstime start,
 ptstime Track::adjust_position(ptstime oldposition, ptstime newposition,
 	int currentend, int handle_mode)
 {
-	return edits->adjust_position(oldposition, newposition,
+	ptstime newpos = edits->adjust_position(oldposition, newposition,
 		currentend, handle_mode);
+	for(int i = 0; i < plugin_set.total; i++)
+		newpos = plugin_set.values[i]->adjust_position(oldposition, newpos,
+			currentend, handle_mode);
+	return newpos;
 }
 
 void Track::modify_edithandles(ptstime oldposition,

@@ -574,7 +574,7 @@ void MWindow::modify_pluginhandles()
 		mainsession->drag_position,
 		mainsession->drag_handle,
 		edlsession->edit_handle_mode[mainsession->drag_button],
-		edlsession->labels_follow_edits);
+		edlsession->edit_actions());
 
 	finish_modify_handles();
 }

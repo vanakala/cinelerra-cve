@@ -589,9 +589,8 @@ ptstime Tracks::adjust_position(ptstime oldposition,
 {
 	for(Track *current = first; current; current = current->next)
 	{
-		if(current->record)
-			newposition = current->adjust_position(oldposition,
-				newposition, currentend, handle_mode);
+		newposition = current->adjust_position(oldposition,
+			newposition, currentend, handle_mode);
 	}
 	return newposition;
 }
@@ -615,8 +614,8 @@ void Tracks::modify_edithandles(ptstime oldposition,
 	}
 }
 
-void Tracks::modify_pluginhandles(ptstime &oldposition,
-	ptstime &newposition,
+void Tracks::modify_pluginhandles(ptstime oldposition,
+	ptstime newposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels)
