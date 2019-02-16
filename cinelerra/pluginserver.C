@@ -318,7 +318,10 @@ int PluginServer::load_plugin()
 		fprintf(stderr, "open_plugin: %s\n", dlerror());
 		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
+
+#ifdef HAVE_LADSPA
 	if(!is_lad)
+#endif
 		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
 
 	if(!new_plugin)
