@@ -267,11 +267,7 @@ void Tracks::concatenate_tracks(int edit_plugins)
 						output_start,
 						edit_plugins);
 					if(output_track->get_length() > output_max)
-					{
-						output_track->clear(output_max,
-							output_track->get_length(),
-							EDIT_EDITS | EDIT_PLUGINS);
-					}
+						output_track->clear_after(output_max);
 				}
 
 // Get next source and destination

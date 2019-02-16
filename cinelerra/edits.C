@@ -532,6 +532,35 @@ void Edits::clear(ptstime start, ptstime end)
 	cleanup();
 }
 
+void Edits::clear_after(ptstime pts)
+{
+	Edit *current;
+
+	if(pts < EPSILON)
+		return;
+
+	for(current = first; current;current = NEXT)
+	{
+		if(current->get_pts() < pts)
+			continue;
+
+		if(current->get_pts() > pts)
+		{
+			current->set_pts(pts);
+			break;
+		}
+	}
+	if(current)
+	{
+		for(current = NEXT; current;)
+		{
+			Edit *next = NEXT;
+			remove(current);
+			current = next;
+		}
+	}
+}
+
 void Edits::clear_handle(ptstime start,
 	ptstime end, 
 	int actions,

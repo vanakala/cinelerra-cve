@@ -92,6 +92,7 @@ public:
 		ptstime end,
 		AutoConf *autoconf, 
 		int shift_autos);
+	void clear_after(ptstime pts);
 	void straighten(ptstime start, 
 		ptstime end,
 		AutoConf *autoconf);

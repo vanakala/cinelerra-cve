@@ -460,6 +460,21 @@ void Autos::clear(ptstime start,
 	}
 }
 
+void Autos::clear_after(ptstime pts)
+{
+	Auto *current, *next;
+
+	if(!(current = autoof(pts)))
+		return;
+
+	for(current->next; current;)
+	{
+		next = NEXT;
+		remove(current);
+		current = next;
+	}
+}
+
 void Autos::load(FileXML *file)
 {
 	while(last)

@@ -219,6 +219,15 @@ void Automation::clear(ptstime start,
 	}
 }
 
+void Automation::clear_after(ptstime pts)
+{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i])
+			autos[i]->clear_after(pts);
+	}
+}
+
 void Automation::straighten(ptstime start,
 	ptstime end,
 	AutoConf *autoconf)

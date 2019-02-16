@@ -197,6 +197,35 @@ void PluginSet::clear(ptstime start, ptstime end)
 	}
 }
 
+void PluginSet::clear_after(ptstime pts)
+{
+	ptstime pos;
+	Plugin *current;
+
+	for(Plugin *current = (Plugin*)first;
+		current && current != last;
+		current = (Plugin*)NEXT)
+	{
+		if((pos = current->get_pts()) < pts)
+			continue;
+
+		if(pos > pts)
+		{
+			current->set_pts(pts);
+			current->keyframes->clear_after(pts);
+		}
+	}
+	if(current)
+	{
+		for(current = (Plugin*)current->next; current;)
+		{
+			Plugin *p = (Plugin*)current->next;
+			remove(current);
+			current = p;
+		}
+	}
+}
+
 void PluginSet::clear_keyframes(ptstime start, ptstime end)
 {
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)

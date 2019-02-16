@@ -102,6 +102,7 @@ public:
 	void clear(ptstime start,
 		ptstime end,
 		int shift_autos);
+	void clear_after(ptstime pts);
 	virtual void straighten(ptstime start, ptstime end) {};
 
 	int save(FileXML *xml);

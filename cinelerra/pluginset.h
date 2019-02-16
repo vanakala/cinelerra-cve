@@ -45,6 +45,7 @@ public:
 // -1 means nothing changed.
 	void clear_keyframes(ptstime start, ptstime end);
 	void clear(ptstime start, ptstime end);
+	void clear_after(ptstime pts);
 	void copy_from(PluginSet *src);
 	void save_xml(FileXML *file);
 	void copy(PluginSet *src, ptstime start, ptstime end);

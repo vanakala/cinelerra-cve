@@ -59,6 +59,8 @@ public:
 	void copy(Edits *edits, ptstime start, ptstime end);
 // Clear region of edits
 	virtual void clear(ptstime start, ptstime end);
+// Clear edita after
+	virtual void clear_after(ptstime pts);
 
 // Does not return an edit - does what it says, nothing more or less
 	void paste_silence(ptstime start, ptstime end);

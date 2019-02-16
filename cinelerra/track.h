@@ -180,6 +180,8 @@ public:
 	void clear(ptstime start,
 		ptstime end,
 		int actions);
+// remove everything after pts
+	void clear_after(ptstime pts);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, 

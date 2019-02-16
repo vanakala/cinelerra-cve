@@ -924,6 +924,16 @@ void Track::clear(ptstime start,
 		edits->clear(start, end);
 }
 
+void Track::clear_after(ptstime pts)
+{
+	automation->clear_after(pts);
+
+	for(int i = 0; i < plugin_set.total; i++)
+		plugin_set.values[i]->clear_after(pts);
+
+	edits->clear_after(pts);
+}
+
 void Track::clear_handle(ptstime start,
 	ptstime end,
 	int actions,
