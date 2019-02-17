@@ -593,14 +593,13 @@ void EDL::modify_pluginhandles(ptstime oldposition,
 
 void EDL::paste_silence(ptstime start,
 	ptstime end,
-	int edit_labels, 
-	int edit_plugins)
+	int action)
 {
-	if(edit_labels) 
+	if(action & EDIT_LABELS)
 		labels->paste_silence(start, end);
 	tracks->paste_silence(start, 
 		end, 
-		edit_plugins);
+		action & EDIT_PLUGINS);
 }
 
 void EDL::remove_from_project(ArrayList<Asset*> *assets)

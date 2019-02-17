@@ -744,7 +744,7 @@ void MWindow::mute_selection()
 			edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
 		master_edl->local_session->set_selectionend(end);
 		master_edl->local_session->set_selectionstart(start);
-		master_edl->paste_silence(start, end, 0, edlsession->plugins_follow_edits);
+		master_edl->paste_silence(start, end, edlsession->edit_actions() & EDIT_EDITS);
 		save_backup();
 		undo->update_undo(_("mute"), LOAD_EDITS);
 
@@ -1192,8 +1192,7 @@ void MWindow::paste_silence()
 	ptstime end = master_edl->local_session->get_selectionend();
 	master_edl->paste_silence(start,
 		end, 
-		edlsession->labels_follow_edits,
-		edlsession->plugins_follow_edits);
+		edlsession->edit_actions());
 	master_edl->optimize();
 	save_backup();
 	undo->update_undo(_("silence"), LOAD_EDITS | LOAD_TIMEBAR);

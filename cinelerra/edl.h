@@ -154,8 +154,7 @@ public:
 		ArrayList<Track*> *src_tracks = 0);
 	void paste_silence(ptstime start,
 		ptstime end,
-		int edit_labels, 
-		int edit_plugins);
+		int action);
 	void remove_from_project(ArrayList<Asset*> *assets);
 	void clear(ptstime start,
 		ptstime end,
