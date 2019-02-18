@@ -139,6 +139,8 @@ void Plugin::synchronize_params(Edit *edit)
 	this->on = plugin->on;
 	strcpy(this->title, plugin->title);
 	copy_keyframes(plugin);
+	if(!PTSEQU(keyframes->base_pts, get_pts()))
+		shift_keyframes(get_pts() - keyframes->base_pts);
 }
 
 void Plugin::shift_keyframes(ptstime difference)
