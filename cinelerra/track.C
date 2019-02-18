@@ -352,22 +352,24 @@ void Track::insert_track(Track *track,
 // Called by insert_track
 void Track::insert_plugin_set(Track *track, ptstime position)
 {
-// Extend plugins if no incoming plugins
-	if(!track->plugin_set.total)
-	{
-		shift_effects(position, 
-			track->get_length());
-	}
-	else
+	PluginSet *new_set;
+	Plugin *plugin, *new_plugin;
+
+	shift_effects(position, track->get_length());
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
-		if(i >= plugin_set.total)
-			plugin_set.append(new PluginSet(edl, this));
-
-		plugin_set.values[i]->insert_edits(track->plugin_set.values[i], position);
+		plugin = track->plugin_set.values[i]->get_first_plugin();
+		if(plugin)
+		{
+			plugin_set.append(new_set = new PluginSet(edl, this));
+			new_plugin = (Plugin*)new_set->insert_edit(
+				plugin->get_pts() + position,
+				plugin->length());
+			new_plugin->synchronize_params(plugin);
+			new_plugin->plugin_type = plugin->plugin_type;
+		}
 	}
 }
-
 
 Plugin* Track::insert_effect(const char *title, 
 		SharedLocation *shared_location, 
@@ -932,6 +934,7 @@ void Track::clear_after(ptstime pts)
 		plugin_set.values[i]->clear_after(pts);
 
 	edits->clear_after(pts);
+	optimize();
 }
 
 void Track::clear_handle(ptstime start,
