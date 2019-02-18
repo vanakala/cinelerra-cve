@@ -41,7 +41,7 @@
 #include "filexml.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
-#include "keyframe.h"
+#include "keyframes.h"
 #include "language.h"
 #include "labels.h"
 #include "levelwindow.h"
@@ -543,17 +543,26 @@ void MWindow::insert_effect(const char *title,
 	ptstime length,
 	int plugin_type)
 {
+	PluginServer *server = 0;
+	Plugin *new_plugin;
+	int result;
+
 	if(plugin_type == PLUGIN_STANDALONE)
-		PluginServer *server = scan_plugindb(title, track->data_type);
+		server = scan_plugindb(title, track->data_type);
 
 // Insert plugin object
-	track->insert_effect(title, 
+	new_plugin = track->insert_effect(title,
 		shared_location, 
 		plugin_set,
 		start,
 		length,
 		plugin_type);
 
+	if(server && !(result = server->open_plugin(1, preferences, 0, 0)))
+	{
+		server->save_data((KeyFrame*)new_plugin->keyframes->first);
+		server->close_plugin();
+	}
 	track->optimize();
 }
 
