@@ -202,9 +202,8 @@ void PluginSet::clear_after(ptstime pts)
 	ptstime pos;
 	Plugin *current;
 
-	for(Plugin *current = (Plugin*)first;
-		current && current != last;
-		current = (Plugin*)NEXT)
+	for(Plugin *current = (Plugin*)first; current;
+			current = (Plugin*)NEXT)
 	{
 		if((pos = current->get_pts()) < pts)
 			continue;
@@ -212,11 +211,20 @@ void PluginSet::clear_after(ptstime pts)
 		if(pos > pts)
 		{
 			current->set_pts(pts);
-			current->keyframes->clear_after(pts);
+			// shortened previous keyframe
+			if(current->previous)
+				((Plugin *)current->previous)->keyframes->clear_after(pts);
+			break;
 		}
 	}
 	if(current)
 	{
+		if(current->plugin_type != PLUGIN_NONE)
+		{
+			remove(current);
+			// pluginset is empty
+			return;
+		}
 		for(current = (Plugin*)current->next; current;)
 		{
 			Plugin *p = (Plugin*)current->next;
