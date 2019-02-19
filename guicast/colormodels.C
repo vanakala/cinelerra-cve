@@ -61,7 +61,7 @@ struct intp_types ColorModels::interpolation_types[] =
 {
 	{ NEAREST_NEIGHBOR, SWS_POINT },
 	{ CUBIC_CUBIC, SWS_BICUBIC },
-	{ LINEAR_LINEAR, SWS_BILINEAR },
+	{ LINEAR_LINEAR, SWS_FAST_BILINEAR },
 	{ LANCZOS_LANCZOS, SWS_LANCZOS }
 };
 
