@@ -93,10 +93,12 @@ void BC_Button::reposition_window(int x, int y)
 
 void BC_Button::update_bitmaps(VFrame **data)
 {
+	top_level->lock_window("BC_Button::update_bitmaps");
 	this->data = data;
 	set_images(data);
 	draw_top_background(parent_window, 0, 0, w, h);
 	draw_face();
+	top_level->unlock_window();
 }
 
 void BC_Button::enable()
@@ -135,6 +137,7 @@ void BC_Button::set_images(VFrame **data)
 
 void BC_Button::draw_face()
 {
+	top_level->lock_window("BC_Button::draw_face");
 	draw_top_background(parent_window, 0, 0, w, h);
 	pixmap->draw_pixmap(images[status], 
 			0, 
@@ -144,6 +147,7 @@ void BC_Button::draw_face()
 			0,
 			0);
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_Button::repeat_event(int duration)
@@ -390,6 +394,7 @@ int BC_GenericButton::calculate_h()
 
 void BC_GenericButton::draw_face()
 {
+	top_level->lock_window("BC_GenericButton::draw_face");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_3segmenth(0, 0, get_w(), images[status]);
 
@@ -428,6 +433,7 @@ void BC_GenericButton::draw_face()
 	}
 
 	flash();
+	top_level->unlock_window();
 }
 
 
