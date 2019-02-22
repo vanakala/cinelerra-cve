@@ -71,7 +71,9 @@ void BC_Bar::resize_event(int w, int h)
 
 void BC_Bar::draw()
 {
+	top_level->lock_window("BC_Bar::draw");
 	draw_top_background(parent_window, 0, 0,w, h);
 	draw_3segmenth(0, 0, w, 0, w, image);
 	flash();
+	top_level->unlock_window();
 }
