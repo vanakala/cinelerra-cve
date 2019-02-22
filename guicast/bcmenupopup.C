@@ -317,6 +317,7 @@ void BC_MenuPopup::deactivate_menu()
 
 void BC_MenuPopup::draw_items()
 {
+	top_level->lock_window("BC_MenuPopup::draw_items");
 	if(menu_bar)
 		popup->draw_top_tiles(menu_bar, 0, 0, w, h);
 	else
@@ -344,6 +345,7 @@ void BC_MenuPopup::draw_items()
 		menu_items.values[i]->draw();
 	}
 	popup->flash();
+	top_level->unlock_window();
 }
 
 void BC_MenuPopup::get_dimensions()
