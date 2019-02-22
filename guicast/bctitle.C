@@ -195,6 +195,7 @@ void BC_Title::draw()
 {
 	int i, j, x, y, l;
 
+	top_level->lock_window("BC_Title::draw");
 // Fix background for block fonts.
 // This should eventually be included in a BC_WindowBase::is_blocked_font()
 
@@ -273,6 +274,7 @@ void BC_Title::draw()
 	set_font(MEDIUMFONT);    // reset
 	flash();
 	flush();
+	top_level->unlock_window();
 }
 
 int BC_Title::calculate_w(BC_WindowBase *gui, const char *text, int font)
