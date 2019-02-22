@@ -47,6 +47,8 @@ BC_DeleteFile::BC_DeleteFile(BC_FileBox *filebox, int x, int y)
 
 	this->filebox = filebox;
 	x = 10, y = 10;
+	if(filebox->icon_vframe)
+		set_icon(filebox->icon_vframe);
 	while((path = filebox->get_path(i)))
 	{
 		data->append(new BC_ListBoxItem(path));

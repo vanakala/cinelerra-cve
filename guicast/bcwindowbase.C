@@ -214,6 +214,7 @@ void BC_WindowBase::initialize()
 	shared_bg_pixmap = 0;
 	icon_pixmap = 0;
 	icon_window = 0;
+	icon_vframe = 0;
 	window_type = MAIN_WINDOW;
 	translation_count = 0;
 	x_correction = y_correction = 0;
@@ -3139,6 +3140,7 @@ int BC_WindowBase::get_toggle_drag()
 void BC_WindowBase::set_icon(VFrame *data)
 {
 	top_level->lock_window("BC_WindowBase::set_icon");
+	icon_vframe = data;
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	icon_pixmap = new BC_Pixmap(top_level, 

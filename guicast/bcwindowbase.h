@@ -506,6 +506,7 @@ public:
 #endif
 
 	int test_keypress;
+	VFrame *icon_vframe;
 
 private:
 // Create a window
