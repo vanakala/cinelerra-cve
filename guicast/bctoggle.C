@@ -184,6 +184,8 @@ void BC_Toggle::set_select_drag(int value)
 void BC_Toggle::draw_face()
 {
 	BC_Resources *resources = get_resources();
+
+	top_level->lock_window("BC_Toggle::draw_face");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	if(has_caption())
 	{
@@ -239,6 +241,7 @@ void BC_Toggle::draw_face()
 
 	draw_pixmap(images[status]);
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_Toggle::enable()
