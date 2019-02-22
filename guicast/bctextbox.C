@@ -518,6 +518,8 @@ void BC_TextBox::reposition_window(int x, int y, int w, int rows)
 void BC_TextBox::draw_border()
 {
 	BC_Resources *resources = get_resources();
+
+	top_level->lock_window("BC_TextBox::draw_border");
 // Clear margins
 	set_color(background_color);
 	draw_box(0, 0, left_margin, get_h());
@@ -538,10 +540,12 @@ void BC_TextBox::draw_border()
 				resources->text_border3,
 				resources->text_border4);
 	}
+	top_level->unlock_window();
 }
 
 void BC_TextBox::draw_cursor()
 {
+	top_level->lock_window("BC_TextBox::draw_cursor");
 	set_color(WHITE);
 	set_inverse();
 
@@ -550,6 +554,7 @@ void BC_TextBox::draw_cursor()
 		BCCURSORW, 
 		text_height);
 	set_opaque();
+	top_level->unlock_window();
 }
 
 void BC_TextBox::draw()
@@ -561,6 +566,7 @@ void BC_TextBox::draw()
 	wchar_t *wtext_row;
 	BC_Resources *resources = get_resources();
 
+	top_level->lock_window("BC_TextBox::draw");
 // Background
 	if(has_border)
 	{
@@ -655,6 +661,7 @@ void BC_TextBox::draw()
 	draw_border();
 	flash();
 	flush();
+	top_level->unlock_window();
 }
 
 void BC_TextBox::focus_in_event()
