@@ -252,6 +252,7 @@ void BC_MenuBar::unhighlight()
 
 void BC_MenuBar::draw_face()
 {
+	top_level->lock_window("BC_MenuBar::draw_face");
 	if(menu_bar_bg)
 	{
 		draw_9segment(0, 0, get_w(), get_h(), menu_bar_bg);
@@ -260,6 +261,7 @@ void BC_MenuBar::draw_face()
 	{
 		int lx,ly,ux,uy;
 		int h, w;
+
 		h = get_h();
 		w = get_w();
 		h--; 
@@ -267,7 +269,6 @@ void BC_MenuBar::draw_face()
 
 		lx = 1;  ly = 1;
 		ux = w - 1;  uy = h - 1;
-
 		set_color(top_level->get_resources()->menu_light);
 		draw_line(0, 0, 0, uy);
 		draw_line(0, 0, ux, 0);
@@ -279,7 +280,7 @@ void BC_MenuBar::draw_face()
 		draw_line(w, 0, w, h);
 		draw_line(0, h, w, h);
 	}
-
 	flash();
 	flush();
+	top_level->unlock_window();
 }
