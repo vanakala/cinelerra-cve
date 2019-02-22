@@ -88,6 +88,8 @@ void BC_Pot::set_use_caption(int value)
 void BC_Pot::draw()
 {
 	int x1, y1, x2, y2;
+
+	top_level->lock_window("BC_Pot::draw");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_pixmap(images[status]);
 	set_color(get_resources()->pot_needle_color);
@@ -96,6 +98,7 @@ void BC_Pot::draw()
 	draw_line(x1, y1, x2, y2);
 
 	flash();
+	top_level->unlock_window();
 }
 
 float BC_Pot::percentage_to_angle(float percentage)
