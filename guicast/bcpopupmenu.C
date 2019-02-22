@@ -215,12 +215,13 @@ void BC_PopupMenu::draw_title()
 	if(!use_title) return;
 	BC_Resources *resources = get_resources();
 
+	top_level->lock_window("BC_PopupMenu::draw_title");
 // Background
 	draw_top_background(parent_window, 0, 0, w, h);
+	set_color(get_resources()->popup_title_text);
 	draw_3segmenth(0, 0, w, images[status]);
 
 // Overlay text
-	set_color(get_resources()->popup_title_text);
 	int offset = 0;
 	if(status == BUTTON_DN)
 		offset = 1;
@@ -245,6 +246,7 @@ void BC_PopupMenu::draw_title()
 		TRIANGLE_W, TRIANGLE_H);
 
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_PopupMenu::deactivate()
