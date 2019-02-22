@@ -1914,12 +1914,20 @@ void BC_WindowBase::stop_video()
 
 int BC_WindowBase::get_color()
 {
-	return top_level->current_color;
+	return current_color;
 }
 
 void BC_WindowBase::set_color(int color)
 {
-	top_level->current_color = color;
+	current_color = color;
+}
+
+void BC_WindowBase::set_current_color(int color)
+{
+	if(color == -1)
+		color = current_color;
+	else
+		current_color = color;
 	XSetForeground(top_level->display, 
 		top_level->gc, 
 		top_level->get_color(color));

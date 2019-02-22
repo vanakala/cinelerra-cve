@@ -51,6 +51,7 @@ void BC_WindowBase::copy_area(int x1, int y1, int x2, int y2, int w, int h, BC_P
 
 void BC_WindowBase::draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
+	set_current_color();
 	XFillRectangle(top_level->display, 
 		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -63,6 +64,7 @@ void BC_WindowBase::draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 
 void BC_WindowBase::draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
+	set_current_color();
 	XDrawArc(top_level->display, 
 		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -76,6 +78,7 @@ void BC_WindowBase::draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap)
 
 void BC_WindowBase::draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
+	set_current_color();
 	XFillArc(top_level->display, 
 		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -89,7 +92,8 @@ void BC_WindowBase::draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap)
 
 void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
-	set_color(bg_color);
+	top_level->lock_window("BC_WindowBase::clear_box");
+	set_current_color(bg_color);
 	XFillRectangle(top_level->display, 
 		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -97,6 +101,7 @@ void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 		y, 
 		w, 
 		h);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_text(int x, 
@@ -110,6 +115,7 @@ void BC_WindowBase::draw_text(int x,
 	switch(top_level->current_font)
 	{
 	case MEDIUM_7SEGMENT:
+		set_current_color();
 		for(int i = 0; i < length; i++)
 		{
 			VFrame *image;
@@ -342,11 +348,12 @@ void BC_WindowBase::draw_wtext(int x,
 	if(!basefont)
 		return;
 
-	color.red = (top_level->current_color & 0xff0000) >> 16;
+	top_level->lock_window("BC_WindowBase::draw_wtext");
+	color.red = (current_color & 0xff0000) >> 16;
 	color.red |= color.red << 8;
-	color.green = (top_level->current_color & 0xff00) >> 8;
+	color.green = (current_color & 0xff00) >> 8;
 	color.green |= color.green << 8;
-	color.blue = (top_level->current_color & 0xff);
+	color.blue = (current_color & 0xff);
 	color.blue |= color.blue << 8;
 	color.alpha = 0xffff;
 
@@ -432,6 +439,7 @@ void BC_WindowBase::draw_wtext(int x,
 		top_level->vis,
 		top_level->cmap,
 		&xft_color);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
@@ -469,6 +477,7 @@ void BC_WindowBase::draw_center_text(int x, int y, const wchar_t *text, int leng
 
 void BC_WindowBase::draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
 {
+	set_current_color();
 	XDrawLine(top_level->display, 
 		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -489,8 +498,9 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
 		points[i].y = y->values[i];
 	}
 
+	set_current_color();
 	XDrawLines(top_level->display,
-	pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
 		top_level->gc,
 		points,
 		npoints,
@@ -502,6 +512,7 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
 
 void BC_WindowBase::draw_rectangle(int x, int y, int w, int h)
 {
+	set_current_color();
 	XDrawRectangle(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -516,6 +527,7 @@ void BC_WindowBase::draw_3d_border(int x, int y, int w, int h,
 {
 	int lx, ly, ux, uy;
 
+	top_level->lock_window("BC_WindowBase::draw_3d_border");
 	h--; w--;
 
 	lx = x+1;  ly = y+1;
@@ -534,6 +546,7 @@ void BC_WindowBase::draw_3d_border(int x, int y, int w, int h,
 	set_color(shadow2);
 	draw_line(x + w, y, x + w, y + h);
 	draw_line(x, y + h, x + w, y + h);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_3d_box(int x, 
@@ -549,6 +562,7 @@ void BC_WindowBase::draw_3d_box(int x,
 {
 	int lx, ly, ux, uy;
 
+	top_level->lock_window("BC_WindowBase::draw_3d_box");
 	h--; w--;
 
 	lx = x+1;  ly = y+1;
@@ -570,6 +584,7 @@ void BC_WindowBase::draw_3d_box(int x,
 	set_color(shadow2);
 	draw_line(x + w, y, x + w, y + h, pixmap);
 	draw_line(x, y + h, x + w, y + h, pixmap);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_colored_box(int x, int y, int w, int h, int down, int highlighted)
@@ -616,6 +631,7 @@ void BC_WindowBase::draw_border(const char *text, int x, int y, int w, int h)
 	int left_indent = 20;
 	int lx, ly, ux, uy;
 
+	top_level->lock_window("BC_WindowBase::draw_border");
 	h--; w--;
 	lx = x + 1;  ly = y + 1;
 	ux = x + w - 1;  uy = y + h - 1;
@@ -642,6 +658,7 @@ void BC_WindowBase::draw_border(const char *text, int x, int y, int w, int h)
 	draw_line(lx, ly, lx, uy - 1);
 	draw_line(x + w, y, x + w, y + h);
 	draw_line(x, y + h, x + w, y + h);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
@@ -649,12 +666,14 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 	int x1, y1, x2, y2, x3, y3;
 	XPoint point[3];
 
+	top_level->lock_window("BC_WindowBase::draw_triangle_up");
 	x1 = x; x2 = x + w / 2; x3 = x + w - 1;
 	y1 = y; y2 = y + h - 1;
 
 	point[0].x = x2; point[0].y = y2; point[1].x = x3;
 	point[1].y = y1; point[2].x = x1; point[2].y = y1;
 
+	set_current_color();
 	XFillPolygon(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -662,6 +681,7 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 		3, 
 		Nonconvex, 
 		CoordModeOrigin);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h, 
@@ -670,6 +690,7 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 	int x1, y1, x2, y2, x3, y3;
 	XPoint point[3];
 
+	top_level->lock_window("BC_WindowBase::draw_triangle_up");
 	x1 = x; y1 = y; x2 = x + w / 2;
 	y2 = y + h - 1; x3 = x + w - 1;
 
@@ -677,7 +698,7 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 	point[0].x = x2; point[0].y = y1; point[1].x = x3;
 	point[1].y = y2; point[2].x = x1; point[2].y = y2;
 
-	set_color(middle);
+	set_current_color(middle);
 	XFillPolygon(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -699,6 +720,7 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 	draw_line(x2+1, y1, x1+1, y2);
 	set_color(light1);
 	draw_line(x2, y1, x1, y2);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_triangle_down(int x, int y, int w, int h, 
@@ -707,13 +729,14 @@ void BC_WindowBase::draw_triangle_down(int x, int y, int w, int h,
 	int x1, y1, x2, y2, x3, y3;
 	XPoint point[3];
 
+	top_level->lock_window("BC_WindowBase::draw_triangle_down");
 	x1 = x; x2 = x + w / 2; x3 = x + w - 1;
 	y1 = y; y2 = y + h - 1;
 
 	point[0].x = x2; point[0].y = y2; point[1].x = x3;
 	point[1].y = y1; point[2].x = x1; point[2].y = y1;
 
-	set_color(middle);
+	set_current_color(middle);
 	XFillPolygon(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -735,6 +758,7 @@ void BC_WindowBase::draw_triangle_down(int x, int y, int w, int h,
 	draw_line(x3-1, y1, x2-1, y2);
 	set_color(shadow2);
 	draw_line(x3, y1, x2, y2);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h, 
@@ -743,6 +767,7 @@ void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h,
 	int x1, y1, x2, y2, x3, y3;
 	XPoint point[3];
 
+	top_level->lock_window("BC_WindowBase::draw_triangle_left");
 	// draw back arrow
 	y1 = y; x1 = x; y2 = y + h / 2;
 	x2 = x + w - 1; y3 = y + h - 1;
@@ -750,7 +775,7 @@ void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h,
 	point[0].x = x1; point[0].y = y2; point[1].x = x2; 
 	point[1].y = y1; point[2].x = x2; point[2].y = y3;
 
-	set_color(middle);
+	set_current_color(middle);
 	XFillPolygon(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -772,6 +797,7 @@ void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h,
 	draw_line(x1, y2, x2, y1);
 	set_color(light2);
 	draw_line(x1, y2+1, x2, y1+1);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h, 
@@ -780,13 +806,14 @@ void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h,
 	int x1, y1, x2, y2, x3, y3;
 	XPoint point[3];
 
+	top_level->lock_window("BC_WindowBase::draw_triangle_left");
 	y1 = y; y2 = y + h / 2; y3 = y + h - 1; 
 	x1 = x; x2 = x + w - 1;
 
 	point[0].x = x1; point[0].y = y1; point[1].x = x2; 
 	point[1].y = y2; point[2].x = x1; point[2].y = y3;
 
-	set_color(middle);
+	set_current_color(middle);
 	XFillPolygon(top_level->display, 
 		pixmap->opaque_pixmap, 
 		top_level->gc, 
@@ -808,12 +835,14 @@ void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h,
 	draw_line(x2, y2-1, x1, y3-1);
 	set_color(shadow2);
 	draw_line(x2, y2, x1, y3);
+	top_level->unlock_window();
 }
-
 
 void BC_WindowBase::draw_check(int x, int y)
 {
 	const int w = 15, h = 15;
+
+	top_level->lock_window("BC_WindowBase::draw_check");
 	draw_line(x + 3, y + h / 2 + 0, x + 6, y + h / 2 + 2);
 	draw_line(x + 3, y + h / 2 + 1, x + 6, y + h / 2 + 3);
 	draw_line(x + 6, y + h / 2 + 2, x + w - 4, y + h / 2 - 3);
@@ -821,6 +850,7 @@ void BC_WindowBase::draw_check(int x, int y)
 	draw_line(x + 6, y + h / 2 + 2, x + w - 4, y + h / 2 - 3);
 	draw_line(x + 6, y + h / 2 + 3, x + w - 4, y + h / 2 - 2);
 	draw_line(x + 6, y + h / 2 + 4, x + w - 4, y + h / 2 - 1);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_tiles(BC_Pixmap *tile, int origin_x, int origin_y, int x, int y, int w, int h)
@@ -846,7 +876,6 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 	Window tempwin;
 	int origin_x, origin_y;
 
-	top_level->lock_window("BC_WindowBase::draw_top_tiles");
 	XTranslateCoordinates(top_level->display, 
 			parent_window->win, 
 			win, 
@@ -862,7 +891,6 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 		y,
 		w,
 		h);
-	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window, 
@@ -875,7 +903,6 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 	Window tempwin;
 	int top_x, top_y;
 
-	top_level->lock_window("BC_WindowBase::draw_top_background");
 	XTranslateCoordinates(top_level->display, 
 			win, 
 			parent_window->win, 
@@ -895,7 +922,6 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 		h, 
 		x, 
 		y);
-	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_background(int x, int y, int w, int h)
@@ -1059,6 +1085,8 @@ void BC_WindowBase::draw_tooltip()
 	if(tooltip_popup)
 	{
 		int w = tooltip_popup->get_w(), h = tooltip_popup->get_h();
+
+		top_level->lock_window("BC_WindowBase::draw_tooltip");
 		tooltip_popup->set_color(get_resources()->tooltip_bg_color);
 		tooltip_popup->draw_box(0, 0, w, h);
 		tooltip_popup->set_color(BLACK);
@@ -1067,6 +1095,7 @@ void BC_WindowBase::draw_tooltip()
 		tooltip_popup->draw_text(TOOLTIP_MARGIN, 
 			get_text_ascent(MEDIUMFONT) + TOOLTIP_MARGIN, 
 			tooltip_wtext, tooltip_length);
+		top_level->unlock_window();
 	}
 }
 
@@ -1108,6 +1137,7 @@ void BC_WindowBase::slide_up(int distance)
 {
 	if(distance < h)
 	{
+		top_level->lock_window("BC_WindowBase::slide_up");
 		XCopyArea(top_level->display, 
 			pixmap->opaque_pixmap, 
 			pixmap->opaque_pixmap, 
@@ -1118,7 +1148,7 @@ void BC_WindowBase::slide_up(int distance)
 			h - distance, 
 			0, 
 			0);
-		set_color(bg_color);
+		set_current_color(bg_color);
 		XFillRectangle(top_level->display, 
 			pixmap->opaque_pixmap, 
 			top_level->gc, 
@@ -1126,6 +1156,7 @@ void BC_WindowBase::slide_up(int distance)
 			h - distance, 
 			w, 
 			distance);
+		top_level->unlock_window();
 	}
 }
 
@@ -1133,6 +1164,7 @@ void BC_WindowBase::slide_down(int distance)
 {
 	if(distance < h)
 	{
+		top_level->lock_window("BC_WindowBase::slide_down");
 		XCopyArea(top_level->display, 
 			pixmap->opaque_pixmap, 
 			pixmap->opaque_pixmap, 
@@ -1143,7 +1175,7 @@ void BC_WindowBase::slide_down(int distance)
 			h - distance, 
 			0, 
 			distance);
-		set_color(bg_color);
+		set_current_color(bg_color);
 		XFillRectangle(top_level->display, 
 			pixmap->opaque_pixmap, 
 			top_level->gc, 
@@ -1151,6 +1183,7 @@ void BC_WindowBase::slide_down(int distance)
 			0, 
 			w, 
 			distance);
+		top_level->unlock_window();
 	}
 }
 

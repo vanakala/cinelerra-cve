@@ -284,8 +284,10 @@ public:
 // Get if toggle is being dragged
 	int get_toggle_drag();
 
-// Set the gc to the color
+// Set the window to the color
 	void set_color(int color);
+// Set gc to the color
+	void set_current_color(int color = -1);
 	int get_bgcolor();
 	void set_font(int font);
 // Set the cursor to a macro from cursors.h
