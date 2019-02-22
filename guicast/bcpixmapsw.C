@@ -58,8 +58,10 @@ void BC_PixmapSW::reposition_widget(int x, int y)
 
 void BC_PixmapSW::draw()
 {
+	top_level->lock_window("BC_PixmapSW::draw");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_pixmap(thepixmap);
 	flash();
+	top_level->unlock_window();
 }
 
