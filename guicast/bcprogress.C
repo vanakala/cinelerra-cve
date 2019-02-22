@@ -92,6 +92,7 @@ void BC_ProgressBar::draw(int force)
 
 	if(new_pixel != pixel || force)
 	{
+		top_level->lock_window("BC_ProgressBar::draw");
 		pixel = new_pixel;
 // Clear background
 		draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -107,6 +108,7 @@ void BC_ProgressBar::draw(int force)
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}
 		flash();
+		top_level->unlock_window();
 	}
 }
 
