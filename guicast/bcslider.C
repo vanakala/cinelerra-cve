@@ -115,6 +115,7 @@ int BC_Slider::get_span(int vertical)
 void BC_Slider::draw_face()
 {
 // Clear background
+	top_level->lock_window("BC_Slider::draw_face");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 
 	if(vertical)
@@ -148,6 +149,7 @@ void BC_Slider::draw_face()
 	}
 
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_Slider::set_images(VFrame **images)
