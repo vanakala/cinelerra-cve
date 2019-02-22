@@ -77,7 +77,6 @@ void BC_Tumbler::reposition_window(int x, int y, int w, int h)
 void BC_Tumbler::update_bitmaps(VFrame **data)
 {
 	set_images(data);
-	draw_top_background(parent_window, 0, 0, w, h);
 	draw_face();
 }
 
@@ -92,6 +91,7 @@ void BC_Tumbler::set_images(VFrame **data)
 
 void BC_Tumbler::draw_face()
 {
+	top_level->lock_window("BC_Tumbler::draw_face");
 	draw_top_background(parent_window, 0, 0, w, h);
 	pixmap->draw_pixmap(images[status], 
 			0, 
@@ -101,6 +101,7 @@ void BC_Tumbler::draw_face()
 			0,
 			0);
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_Tumbler::repeat_event(int duration)
