@@ -278,10 +278,12 @@ void BC_Pan::update(int x, int y)
 
 void BC_Pan::draw_popup()
 {
-	popup->draw_background(0, 0, popup->get_w(), popup->get_h());
-
 	int x1, y1;
 	float rotate_angle;
+
+	top_level->lock_window("BC_Pan::draw_popup");
+	popup->draw_background(0, 0, popup->get_w(), popup->get_h());
+
 	float scale = (float)(popup->get_w() - 
 		get_resources()->pan_data[PAN_CHANNEL]->get_w()) / 
 		(virtual_r * 2);
@@ -314,6 +316,7 @@ void BC_Pan::draw_popup()
 	y1 = (int)(stick_y * scale);
 	popup->draw_pixmap(images[PAN_STICK], x1, y1);
 	popup->flash();
+	top_level->unlock_window();
 }
 
 #define PICON_W 6
@@ -321,6 +324,7 @@ void BC_Pan::draw_popup()
 
 void BC_Pan::draw()
 {
+	top_level->lock_window("BC_Pan::draw_popup");
 	draw_top_background(parent_window, 0, 0, w, h);
 
 	draw_pixmap(images[highlighted ? PAN_HI : PAN_UP]);
@@ -355,6 +359,7 @@ void BC_Pan::draw()
 	draw_pixmap(images[PAN_STICK_SMALL], x1, y1);
 
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_Pan::stick_to_values()
