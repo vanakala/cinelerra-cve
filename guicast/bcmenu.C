@@ -248,6 +248,7 @@ void BC_Menu::draw_title()
 	BC_Resources *resources = top_level->get_resources();
 	int text_offset = 0;
 
+	top_level->lock_window("BC_Menu::draw_title");
 	if(active && menu_popup)
 	{
 // Menu is pulled down and title is recessed.
@@ -301,6 +302,7 @@ void BC_Menu::draw_title()
 		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
 		text);
 	menu_bar->flash();
+	top_level->unlock_window();
 }
 
 void BC_Menu::deactivate_menu()
