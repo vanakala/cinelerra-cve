@@ -26,7 +26,6 @@ libguicastcve_la_SOURCES = \
 	bcnewfolder.C \
 	bcpan.C \
 	bcpixmap.C \
-	bcpixmapsw.C \
 	bcpopup.C \
 	bcpopupmenu.C \
 	bcpot.C \
@@ -112,8 +111,6 @@ noinst_HEADERS = \
 	bcpan.h bcpan.inc \
 	bcpixmap.h \
 	bcpixmap.inc \
-	bcpixmapsw.h \
-	bcpixmapsw.inc \
 	bcpopup.h bcpopup.inc \
 	bcpopupmenu.h \
 	bcpopupmenu.inc \
