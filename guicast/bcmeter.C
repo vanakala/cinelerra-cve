@@ -262,6 +262,7 @@ void BC_Meter::draw_titles()
 {
 	if(!use_titles) return;
 
+	top_level->lock_window("BC_Meter::draw_titles");
 	set_font(get_resources()->meter_font);
 
 	if(orientation == METER_HORIZ)
@@ -314,6 +315,7 @@ void BC_Meter::draw_titles()
 
 		flash(0, 0, get_title_w(), get_h());
 	}
+	top_level->unlock_window();
 }
 
 int BC_Meter::region_pixel(int region)
@@ -353,6 +355,7 @@ void BC_Meter::draw_face()
 	int x = use_titles ? get_title_w() : 0;
 	int w = use_titles ? this->w - get_title_w() : this->w;
 
+	top_level->lock_window("BC_Meter::draw_face");
 	draw_top_background(parent_window, x, 0, w, h);
 
 	while(pixel < pixels)
@@ -472,6 +475,7 @@ void BC_Meter::draw_face()
 	else
 		flash(x, 0, w, pixels);
 	flush();
+	top_level->unlock_window();
 }
 
 void BC_Meter::update(float new_value, int over)
