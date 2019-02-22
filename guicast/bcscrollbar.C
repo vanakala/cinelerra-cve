@@ -143,6 +143,7 @@ int BC_ScrollBar::get_arrow_pixels()
 
 void BC_ScrollBar::draw()
 {
+	top_level->lock_window("BC_ScrollBar::draw");
 	draw_top_background(parent_window, 0, 0, w, h);
 	get_handle_dimensions();
 
@@ -287,6 +288,7 @@ void BC_ScrollBar::draw()
 		break;
 	}
 	flash();
+	top_level->unlock_window();
 }
 
 void BC_ScrollBar::get_handle_dimensions()
