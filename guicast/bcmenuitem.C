@@ -309,6 +309,7 @@ void BC_MenuItem::draw()
 	int text_line = top_level->get_text_descent(MEDIUMFONT);
 	BC_Resources *resources = top_level->get_resources();
 
+	top_level->lock_window("BC_MenuItem::draw");
 	if(!strcmp(text, "-"))
 	{
 		menu_popup->get_popup()->set_color(DKGREY);
@@ -390,6 +391,7 @@ void BC_MenuItem::draw()
 			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
 		}
 	}
+	top_level->unlock_window();
 }
 
 
