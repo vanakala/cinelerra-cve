@@ -583,7 +583,7 @@ void BC_ListBox::draw_button()
 	if(is_popup)
 	{
 		int image_number = 0;
-
+		top_level->lock_window("BC_ListBox::draw_button");
 		draw_top_background(parent_window, 0, 0, w, h);
 
 		if(button_highlighted)
@@ -601,6 +601,7 @@ void BC_ListBox::draw_button()
 			0,
 			0);
 		flash();
+		top_level->unlock_window();
 	}
 }
 
@@ -3863,6 +3864,7 @@ BC_Pixmap* BC_ListBox::get_bg_surface()
 
 void BC_ListBox::draw_background()
 {
+	top_level->lock_window("BC_ListBox::draw_background");
 // White background pixmap
 	set_color(top_level->get_resources()->listbox_inactive);
 	draw_box(0, 0, bg_surface->get_w(), bg_surface->get_h(), bg_surface);
@@ -3872,6 +3874,7 @@ void BC_ListBox::draw_background()
 		bg_surface->draw_pixmap(bg_pixmap,
 			bg_surface->get_w() - top_level->get_resources()->listbox_bg->get_w(),
 			0);
+	top_level->unlock_window();
 }
 
 void BC_ListBox::clear_listbox(int x, int y, int w, int h)
@@ -3918,7 +3921,7 @@ void BC_ListBox::draw_items(int flash)
 
 // Create and destroy scrollbars as needed
 		get_scrollbars();
-
+		top_level->lock_window("BC_ListBox::draw_items");
 // Icon display
 		if(display_format)
 		{
@@ -4027,6 +4030,7 @@ void BC_ListBox::draw_items(int flash)
 			gui->flash();
 			gui->flush();
 		}
+		top_level->unlock_window();
 	}
 }
 
@@ -4038,7 +4042,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 	if(!data) return;
 
 	BC_Resources *resources = get_resources();
-
+	top_level->lock_window("BC_ListBox::draw_text_recursive");
 	set_font(labelfont);
 	int subindent = 0;
 
@@ -4140,6 +4144,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 				current_toggle);
 		}
 	}
+	top_level->unlock_window();
 }
 
 void BC_ListBox::draw_border(int flash)
@@ -4169,6 +4174,7 @@ void BC_ListBox::draw_titles(int flash)
 {
 	if(column_titles && !display_format)
 	{
+		top_level->lock_window("BC_ListBox::draw_titles");
 		for(int i = 0; i < columns; i++)
 		{
 // Column title background
@@ -4218,13 +4224,14 @@ void BC_ListBox::draw_titles(int flash)
 				_(column_titles[i]));
 		}
 		draw_border(0);
+		if(flash)
+		{
+			gui->flash();
+			gui->flush();
+		}
+		top_level->unlock_window();
 	}
 
-	if(flash)
-	{
-		gui->flash();
-		gui->flush();
-	}
 }
 
 void BC_ListBox::draw_toggles(int flash)
@@ -4248,6 +4255,7 @@ void BC_ListBox::draw_rectangle(int flash)
 
 	if(x1 == x2 || y1 == y2) return;
 
+	top_level->lock_window("BC_ListBox::draw_rectangle");
 	gui->set_inverse();
 	gui->set_color(WHITE);
 	gui->draw_rectangle(x1, y1, x2 - x1, y2 - y1);
@@ -4258,6 +4266,7 @@ void BC_ListBox::draw_rectangle(int flash)
 		gui->flash();
 		gui->flush();
 	}
+	top_level->unlock_window();
 }
 
 void BC_ListBox::dump(int indent)
