@@ -1063,16 +1063,12 @@ char* BC_FileBox::get_newfolder_title()
 
 char* BC_FileBox::get_delete_title()
 {
-	char *letter2 = strchr(title, ':');
-	new_folder_title[0] = 0;
+	char *letter2 = strchr(title, '-');
+
+	strcpy(new_folder_title, _("Delete "));
 
 	if(letter2)
-	{
-		memcpy(new_folder_title, title, letter2 - title);
-		new_folder_title[letter2 - title] = 0;
-	}
-
-	strcat(new_folder_title, _(": Delete"));
+		strcat(new_folder_title, letter2);
 
 	return new_folder_title;
 }
