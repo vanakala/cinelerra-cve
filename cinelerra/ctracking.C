@@ -158,8 +158,7 @@ void CTracking::update_tracker(ptstime position)
 		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
 		if(get_playback_engine()->command->single_frame())
 			mwindow->gui->timebar->update_highlights();
-		mwindow->gui->canvas->flash();
-		mwindow->gui->flush();
+		mwindow->gui->canvas->flash(1);
 	}
 
 	mwindow->update_plugin_guis();

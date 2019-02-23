@@ -130,6 +130,5 @@ void AboutPrefs::show()
 	x += mwindow->theme->about_bg->get_w() + 10;
 	y += get_text_height(LARGEFONT) * 2;
 
-	flash();
-	flush();
+	flash(1);
 }

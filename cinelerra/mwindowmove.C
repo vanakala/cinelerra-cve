@@ -293,9 +293,8 @@ void MWindow::zoom_amp(int64_t zoom_amp)
 {
 	master_edl->local_session->zoom_y = zoom_amp;
 	gui->canvas->draw(0, 0);
-	gui->canvas->flash();
 	gui->patchbay->update();
-	gui->flush();
+	gui->canvas->flash(1);
 }
 
 void MWindow::zoom_track(int64_t zoom_track)
@@ -317,8 +316,7 @@ void MWindow::trackmovement(int track_start)
 	master_edl->tracks->update_y_pixels(theme);
 	gui->canvas->draw(0, 0);
 	gui->patchbay->update();
-	gui->canvas->flash();
-	gui->flush();
+	gui->canvas->flash(1);
 }
 
 void MWindow::move_up(int distance)
@@ -470,8 +468,7 @@ void MWindow::next_label(int shift_down)
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->canvas->flash(1);
 		}
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
@@ -511,8 +508,7 @@ void MWindow::prev_label(int shift_down)
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->canvas->flash(1);
 		}
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
@@ -564,8 +560,7 @@ void MWindow::next_edit_handle(int shift_down)
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->canvas->flash(1);
 		}
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
@@ -621,8 +616,7 @@ void MWindow::prev_edit_handle(int shift_down)
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->canvas->flash(1);
 		}
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}

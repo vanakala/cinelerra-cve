@@ -541,8 +541,7 @@ int TrackCanvas::drag_stop()
 		draw();
 		gui->patchbay->update();
 		gui->cursor->update();
-		flash();
-		flush();
+		flash(1);
 	}
 
 	return result;
@@ -722,8 +721,7 @@ void TrackCanvas::draw_indexes(Asset *asset)
 
 	draw_resources(WUPD_INDEXES, asset);
 	draw_overlays();
-	flash();
-	flush();
+	flash(1);
 }
 
 void TrackCanvas::draw_resources(int mode, 

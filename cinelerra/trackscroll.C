@@ -76,7 +76,6 @@ int TrackScroll::handle_event()
 	mwindow->gui->canvas->draw();
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();
-	mwindow->gui->canvas->flash();
-	flush();
+	mwindow->gui->canvas->flash(1);
 	return 1;
 }
