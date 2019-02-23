@@ -272,8 +272,7 @@ void BC_Title::draw()
 		}
 	}
 	set_font(MEDIUMFONT);    // reset
-	flash();
-	flush();
+	flash(1);
 	top_level->unlock_window();
 }
 

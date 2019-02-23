@@ -280,7 +280,6 @@ void BC_MenuBar::draw_face()
 		draw_line(w, 0, w, h);
 		draw_line(0, h, w, h);
 	}
-	flash();
-	flush();
+	flash(1);
 	top_level->unlock_window();
 }

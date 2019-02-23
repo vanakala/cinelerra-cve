@@ -1314,8 +1314,7 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 		draw_tooltip();
 		tooltip_popup->set_font(MEDIUMFONT);
-		tooltip_popup->flash();
-		tooltip_popup->flush();
+		tooltip_popup->flash(1);
 	}
 }
 
