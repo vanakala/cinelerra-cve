@@ -160,6 +160,7 @@ int Tracks::delete_tracks(void)
 			}
 		}
 	}
+	edl->check_master_track();
 	return total_deleted;
 }
 

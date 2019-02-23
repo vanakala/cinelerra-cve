@@ -286,6 +286,7 @@ void Tracks::delete_track(Track *track)
 		change_modules(number_of(current), number_of(current) - 1, 0);
 
 	if(track) delete track;
+	edl->check_master_track();
 }
 
 void Tracks::detach_shared_effects(int module)
