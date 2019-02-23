@@ -2373,7 +2373,7 @@ BC_WidgetGrid* BC_WindowBase::add_widgetgrid(BC_WidgetGrid *widgetgrid)
 }
 
 
-int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
+void BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);
@@ -2388,10 +2388,9 @@ int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 
 	if(flush)
 		this->flush();
-	return 0;
 }
 
-int BC_WindowBase::flash(int flush)
+void BC_WindowBase::flash(int flush)
 {
 	flash(-1, -1, -1, -1, flush);
 }
