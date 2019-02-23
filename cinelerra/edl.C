@@ -252,12 +252,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 			}
 		}while(!result);
 	}
-	// Set master track if missing
-	if(total_toggled(Tracks::MASTER) != 1)
-	{
-		set_all_toggles(Tracks::MASTER, 0);
-		first_track()->master = 1;
-	}
+	check_master_track();
 	boundaries();
 }
 
@@ -1076,6 +1071,18 @@ int EDL::total_toggled(int toggle_type)
 		}
 	}
 	return result;
+}
+
+void EDL::check_master_track()
+{
+	if(total_toggled(Tracks::MASTER) != 1)
+	{
+		if(tracks && tracks->total())
+		{
+			set_all_toggles(Tracks::MASTER, 0);
+			tracks->first->master = 1;
+		}
+	}
 }
 
 const char *EDL::handle_name(int handle)

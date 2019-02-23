@@ -196,6 +196,8 @@ public:
 	void set_all_toggles(int toggle_type, int value);
 // Count number of toggels set
 	int total_toggled(int toggle_type);
+// Ensure that only one track is master
+	void check_master_track();
 // Name of the handle
 	static const char *handle_name(int handle);
 
