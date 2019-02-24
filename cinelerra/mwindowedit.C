@@ -257,6 +257,8 @@ void MWindow::clear_labels(ptstime start, ptstime end)
 
 void MWindow::concatenate_tracks()
 {
+	if(cwindow->stop_playback())
+		return;
 	master_edl->tracks->concatenate_tracks(
 		edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
 	save_backup();
@@ -397,12 +399,17 @@ void MWindow::delete_outpoint()
 
 void MWindow::delete_track()
 {
+	if(cwindow->stop_playback())
+		return;
 	if(master_edl->tracks->last)
 		delete_track(master_edl->tracks->last);
 }
 
 void MWindow::delete_tracks()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->delete_tracks();
 	undo->update_undo(_("delete tracks"), LOAD_ALL);
 	save_backup();
@@ -698,6 +705,9 @@ void MWindow::move_plugins_down(PluginSet *plugin_set)
 
 void MWindow::move_track_down(Track *track)
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->move_track_down(track);
 	save_backup();
 	undo->update_undo(_("move track down"), LOAD_ALL);
@@ -710,6 +720,9 @@ void MWindow::move_track_down(Track *track)
 
 void MWindow::move_tracks_down()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->move_tracks_down();
 	save_backup();
 	undo->update_undo(_("move tracks down"), LOAD_ALL);
@@ -722,6 +735,9 @@ void MWindow::move_tracks_down()
 
 void MWindow::move_track_up(Track *track)
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->move_track_up(track);
 	save_backup();
 	undo->update_undo(_("move track up"), LOAD_ALL);
@@ -733,6 +749,9 @@ void MWindow::move_track_up(Track *track)
 
 void MWindow::move_tracks_up()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->move_tracks_up();
 	save_backup();
 	undo->update_undo(_("move tracks up"), LOAD_ALL);
