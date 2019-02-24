@@ -236,3 +236,13 @@ GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end)
 {
 	return gui->canvas->guidelines.append_frame(start, end);
 }
+
+int CWindow::stop_playback()
+{
+	playback_engine->send_command(STOP, 0, CMDOPT_WAITTRACKING);
+
+	for(int i = 0; playback_engine->is_playing_back && i < 5; i++)
+		usleep(50000);
+
+	return playback_engine->is_playing_back;
+}

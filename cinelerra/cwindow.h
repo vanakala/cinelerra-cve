@@ -64,6 +64,7 @@ public:
 	void show_window();
 	void hide_window();
 	GuideFrame *new_guideframe(ptstime start, ptstime end);
+	int stop_playback();
 
 	int destination;
 	MWindow *mwindow;
