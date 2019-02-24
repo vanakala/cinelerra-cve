@@ -259,6 +259,7 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	gang = file->tag.get_property("GANG", gang);
 	draw = file->tag.get_property("DRAW", draw);
 	nudge = file->tag.get_property("NUDGE", nudge);
+	master = file->tag.get_property("MASTER", master);
 	expand_view = file->tag.get_property("EXPAND", expand_view);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
@@ -833,6 +834,8 @@ void Track::save_xml(FileXML *file, const char *output_path)
 	file->tag.set_property("GANG", gang);
 	file->tag.set_property("DRAW", draw);
 	file->tag.set_property("EXPAND", expand_view);
+	if(master)
+		file->tag.set_property("MASTER", master);
 	file->tag.set_property("TRACK_W", track_w);
 	file->tag.set_property("TRACK_H", track_h);
 	save_header(file);
@@ -866,6 +869,7 @@ void Track::copy(Track *track, ptstime start, ptstime end)
 	play = track->play;
 	gang = track->gang;
 	draw = track->draw;
+	master = track->master;
 	expand_view = track->expand_view;
 	track_w = track_w;
 	track_h = track_h;
