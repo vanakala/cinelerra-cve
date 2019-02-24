@@ -311,7 +311,7 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 		else
 			new_cmd = cmds[0];
 		used_cmds = 1;
-		interrupt_playback();
+		interrupt_playback(options & CMDOPT_WAITTRACKING);
 	}
 	else
 	{
