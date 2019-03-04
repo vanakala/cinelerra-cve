@@ -211,7 +211,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 			output_channels->get_h());
 
 		output->get_canvas()->draw_bitmap(bitmap,
-			!device->single_frame,
 			round(canvas_x1),
 			round(canvas_y1),
 			round(canvas_x2 - canvas_x1),

@@ -430,7 +430,6 @@ public:
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
 // Draw a bitmap on the window
 	void draw_bitmap(BC_Bitmap *bitmap, 
-		int dont_wait, 
 		int dest_x = 0, 
 		int dest_y = 0, 
 		int dest_w = 0, 

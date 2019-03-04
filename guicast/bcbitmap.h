@@ -73,8 +73,7 @@ public:
 			int dest_x, 
 			int dest_y, 
 			int dest_w, 
-			int dest_h, 
-			int dont_wait);
+			int dest_h);
 	void write_drawable(Drawable &pixmap, 
 			GC &gc,
 			int dest_x, 
@@ -82,8 +81,8 @@ public:
 			int source_x, 
 			int source_y, 
 			int dest_w, 
-			int dest_h, 
-			int dont_wait);
+			int dest_h);
+
 // the bitmap must be wholly contained in the source during a GetImage
 	void read_drawable(Drawable &pixmap, int source_x, int source_y);
 

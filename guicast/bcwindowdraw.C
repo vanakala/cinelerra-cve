@@ -937,7 +937,6 @@ void BC_WindowBase::draw_background(int x, int y, int w, int h)
 }
 
 void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap, 
-	int dont_wait,
 	int dest_x, 
 	int dest_y,
 	int dest_w,
@@ -984,9 +983,7 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 			dest_x, 
 			dest_y, 
 			dest_w, 
-			dest_h, 
-			dont_wait);
-		top_level->flush();
+			dest_h);
 	}
 	else
 	{
@@ -997,8 +994,7 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 			src_x, 
 			src_y, 
 			dest_w, 
-			dest_h, 
-			dont_wait);
+			dest_h);
 	}
 }
 
@@ -1068,7 +1064,6 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		1, get_color_model());
 
 	draw_bitmap(temp_bitmap, 
-		0, 
 		dest_x, 
 		dest_y,
 		dest_w,
@@ -1297,7 +1292,6 @@ void BC_WindowBase::draw_3segmenth(int x,
 	if(left_out_w > 0)
 	{
 		draw_bitmap(temp_bitmap, 
-			0, 
 			left_out_x, 
 			y,
 			left_out_w,
@@ -1312,7 +1306,6 @@ void BC_WindowBase::draw_3segmenth(int x,
 	if(right_out_w > 0)
 	{
 		draw_bitmap(temp_bitmap, 
-			0, 
 			right_out_x, 
 			y,
 			right_out_w,
@@ -1333,7 +1326,6 @@ void BC_WindowBase::draw_3segmenth(int x,
 			fragment_w = (center_out_x + center_out_w) - pixel;
 
 		draw_bitmap(temp_bitmap, 
-			0, 
 			pixel, 
 			y,
 			fragment_w,
@@ -1583,7 +1575,6 @@ void BC_WindowBase::draw_3segmentv(int x,
 	if(left_out_h > 0)
 	{
 		draw_bitmap(temp_bitmap, 
-			0,
 			x,
 			left_out_y, 
 			src->get_w(),
@@ -1598,7 +1589,6 @@ void BC_WindowBase::draw_3segmentv(int x,
 	if(right_out_h > 0)
 	{
 		draw_bitmap(temp_bitmap, 
-			0,
 			x,
 			right_out_y, 
 			src->get_w(),
@@ -1619,7 +1609,6 @@ void BC_WindowBase::draw_3segmentv(int x,
 			fragment_h = right_out_y - pixel;
 
 		draw_bitmap(temp_bitmap, 
-			0,
 			x,
 			pixel, 
 			src->get_w(),
@@ -1924,7 +1913,6 @@ void BC_WindowBase::draw_9segment(int x,
 
 // Segment 1
 	draw_bitmap(temp_bitmap,
-		0,
 		x + out_x1, 
 		y + out_y1,
 		out_x2 - out_x1,
@@ -1942,7 +1930,6 @@ void BC_WindowBase::draw_9segment(int x,
 		{
 			int w = MIN(in_x3 - in_x2, out_x3 - i);
 			draw_bitmap(temp_bitmap,
-				0,
 				x + i, 
 				y + out_y1,
 				w,
@@ -1957,7 +1944,6 @@ void BC_WindowBase::draw_9segment(int x,
 
 // Segment 3
 	draw_bitmap(temp_bitmap,
-		0,
 		x + out_x3, 
 		y + out_y1,
 		out_x4 - out_x3,
@@ -1975,7 +1961,6 @@ void BC_WindowBase::draw_9segment(int x,
 		{
 			int h = MIN(in_y3 - in_y2, out_y3 - i);
 			draw_bitmap(temp_bitmap,
-				0,
 				x + out_x1, 
 				y + i,
 				out_x2 - out_x1,
@@ -2000,7 +1985,6 @@ void BC_WindowBase::draw_9segment(int x,
 				int w = MIN(in_x3 - in_x2, out_x3 - j);
 				if(out_x3 - j > 0)
 					draw_bitmap(temp_bitmap,
-						0,
 						x + j, 
 						y + i,
 						w,
@@ -2021,7 +2005,6 @@ void BC_WindowBase::draw_9segment(int x,
 		{
 			int h = MIN(in_y_third, out_y3 - i);
 			draw_bitmap(temp_bitmap,
-				0,
 				x + out_x3, 
 				y + i,
 				out_x4 - out_x3,
@@ -2036,7 +2019,6 @@ void BC_WindowBase::draw_9segment(int x,
 
 // Segment 7
 	draw_bitmap(temp_bitmap,
-		0,
 		x + out_x1, 
 		y + out_y3,
 		out_x2 - out_x1,
@@ -2054,7 +2036,6 @@ void BC_WindowBase::draw_9segment(int x,
 		{
 			int w = MIN(in_x_third, out_x3 - i);
 			draw_bitmap(temp_bitmap,
-				0,
 				x + i, 
 				y + out_y3,
 				w,
@@ -2069,7 +2050,6 @@ void BC_WindowBase::draw_9segment(int x,
 
 // Segment 9
 	draw_bitmap(temp_bitmap,
-		0,
 		x + out_x3, 
 		y + out_y3,
 		out_x4 - out_x3,

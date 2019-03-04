@@ -306,8 +306,7 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 	int source_x,
 	int source_y,
 	int dest_w,
-	int dest_h,
-	int dont_wait)
+	int dest_h)
 {
 	write_drawable(pixmap, 
 		gc,
@@ -318,8 +317,7 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 		dest_x, 
 		dest_y, 
 		dest_w, 
-		dest_h, 
-		dont_wait);
+		dest_h);
 }
 
 void BC_Bitmap::rewind_ring()
@@ -337,14 +335,11 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 		int dest_x, 
 		int dest_y, 
 		int dest_w, 
-		int dest_h, 
-		int dont_wait)
+		int dest_h)
 {
 	top_level->lock_window("BC_Bitmap::write_drawable");
 	if(use_shm)
 	{
-		if(dont_wait) XSync(top_level->display, False);
-
 		if(hardware_scaling())
 		{
 			XvShmPutImage(top_level->display, 
@@ -379,10 +374,6 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_h, 
 				False);
 		}
-
-// Force the X server into processing all requests.
-// This allows the shared memory to be written to again.
-		if(!dont_wait) XSync(top_level->display, False);
 	}
 	else
 	{
@@ -401,6 +392,7 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 	if(current_ringbuffer >= ring_buffers)
 		current_ringbuffer = 0;
 	top_level->unlock_window();
+	XFlush(top_level->display);
 }
 
 

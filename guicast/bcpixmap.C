@@ -88,8 +88,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 			0,
 			0,
 			w,
-			h,
-			1);
+			h);
 		delete opaque_bitmap;
 	}
 
@@ -102,8 +101,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 			icon_offset ? 2 : 0, 
 			icon_offset ? 2 : 0, 
 			w, 
-			h, 
-			1);
+			h);
 		delete alpha_bitmap;
 		XFreeGC(top_level->display, copy_gc);
 
