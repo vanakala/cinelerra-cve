@@ -69,6 +69,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 		ximage[i] = 0;
 		xv_image[i] = 0;
 		data[i] = 0;
+		busyflag[i] = 0;
 	}
 	last_pixmap_used = 0;
 	last_pixmap = 0;
@@ -77,6 +78,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	xv_portid = 0;
 	base_left = 0;
 	base_top = 0;
+	completion_used = 0;
 
 	if(w == 0 || h == 0)
 		return;
@@ -128,6 +130,7 @@ void BC_Bitmap::allocate_data()
 						w,
 						h,
 						&shm_info);
+			data_size = xv_image[0]->data_size;
 // Create the shared memory
 			shm_info.shmid = shmget(IPC_PRIVATE,
 				xv_image[0]->data_size * ring_buffers + 4,
@@ -183,6 +186,7 @@ void BC_Bitmap::allocate_data()
 				&shm_info,
 				w,
 				h);
+			data_size = h * ximage[0]->bytes_per_line;
 // Create shared memory
 			shm_info.shmid = shmget(IPC_PRIVATE, 
 				h * ximage[0]->bytes_per_line * ring_buffers + 4,
@@ -215,7 +219,6 @@ void BC_Bitmap::allocate_data()
 				ximage[i]->data = (char*)data[i];
 			}
 		}
-
 		if(!XShmAttach(top_level->display, &shm_info))
 		{
 			perror("BC_Bitmap::allocate_data XShmAttach");
@@ -258,6 +261,9 @@ void BC_Bitmap::delete_data()
 		top_level->lock_window("BC_Bitmap::delete_data");
 		if(use_shm)
 		{
+			if(completion_used)
+				parent_window->reset_completion();
+
 			if(xv_image[0])
 			{
 				if(last_pixmap_used) XvStopVideo(top_level->display, xv_portid, last_pixmap);
@@ -342,6 +348,19 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 	{
 		if(hardware_scaling())
 		{
+			if(completion_used)
+			{
+				unsigned long offs = parent_window->get_completion_offset();
+
+				if(offs != ULONG_MAX)
+					busyflag[offs / data_size] = 0;
+
+				if(busyflag[current_ringbuffer])
+				{
+					top_level->unlock_window();
+					return;
+				}
+			}
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -355,10 +374,14 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_y, 
 				dest_w, 
 				dest_h, 
-				False);
+				True);
 // Need to pass these to the XvStopVideo
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;
+
+			parent_window->set_completion_drawable(pixmap);
+			completion_used = 1;
+			busyflag[current_ringbuffer] = 1;
 		}
 		else
 		{

@@ -62,7 +62,7 @@ public:
 
 // When showing the same frame twice need to rewind
 	void rewind_ring();
-// If dont_wait is true, the XSync comes before the flash.
+
 // For YUV bitmaps, the image is scaled to fill dest_x ... w * dest_y ... h
 	void write_drawable(Drawable &pixmap, 
 			GC &gc,
@@ -149,6 +149,10 @@ private:
 	XImage *ximage[BITMAP_RING];
 	XvImage *xv_image[BITMAP_RING];
 	XShmSegmentInfo shm_info;
+// Completion
+	int completion_used;
+	unsigned int data_size;
+	char busyflag[BITMAP_RING];
 };
 
 #endif
