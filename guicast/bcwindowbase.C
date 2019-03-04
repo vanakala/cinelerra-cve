@@ -621,7 +621,7 @@ void BC_WindowBase::dispatch_event()
 	int cancel_resize, cancel_translation;
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-	lock_window("BC_WindowBase::dispatch_event");
+	lock_window("BC_WindowBase::dispatch_event1");
 	if(XPending(display) ||
 			(!motion_events && !resize_events && !translation_events))
 	{
@@ -633,7 +633,7 @@ void BC_WindowBase::dispatch_event()
 			fds.events = POLLIN | POLLPRI;
 			fds.revents = 0;
 			int rv = poll(&fds, 1, -1);
-			lock_window("BC_WindowBase::dispatch_event");
+			lock_window("BC_WindowBase::dispatch_event2");
 		}
 		XNextEvent(display, &event);
 		unlock_window();
