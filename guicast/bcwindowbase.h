@@ -161,6 +161,7 @@ public:
 	virtual int drag_start_event() { return 0; };
 	virtual void drag_motion_event() {};
 	virtual void drag_stop_event() {};
+	virtual int completion_event(XEvent *event);
 
 	virtual int uses_text() { return 0; };
 // Only if opengl is enabled
@@ -184,8 +185,10 @@ public:
 // Shouldn't deference a pointer to delete a window if a parent is 
 // currently being deleted.  This returns 1 if any parent is being deleted.
 	int get_deleting();
-
-
+// Completion functions
+	void set_completion_drawable(Drawable drawable);
+	void reset_completion();
+	unsigned long get_completion_offset();
 
 //============================= OpenGL functions ===============================
 // OpenGL functions must be called from inside a GLThread command.
@@ -580,6 +583,7 @@ private:
 	int dispatch_drag_motion();
 	int dispatch_drag_stop();
 	void dispatch_expose_event();
+	int dispatch_completion(XEvent *event);
 
 	void find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
 	void find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
@@ -773,6 +777,15 @@ private:
 	XIC input_context;
 	wchar_t *wide_text;
 	wchar_t wide_buffer[BCTEXTLEN];
+
+// Completion event
+#define COMPLETION_MAX 8
+	int completion_event_type;
+	int completion_read;
+	int completion_write;
+	int completion_drawable;
+	Drawable completion_drawables[COMPLETION_MAX];
+	unsigned long completion_offsets[COMPLETION_MAX];
 
 protected:
 	int resize_wide_text(int length);

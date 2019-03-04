@@ -998,6 +998,70 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 	}
 }
 
+void BC_WindowBase::set_completion_drawable(Drawable drawable)
+{
+	for(int i = 0; i < COMPLETION_MAX; i++)
+	{
+		if(completion_drawables[i] == drawable)
+			return;
+	}
+	completion_drawables[completion_drawable] = drawable;
+
+	if(++completion_drawable >= COMPLETION_MAX)
+		completion_drawable = 0;
+}
+
+void BC_WindowBase::reset_completion()
+{
+	completion_drawable = 0;
+	for(int i = 0; i < COMPLETION_MAX; i++)
+	{
+		completion_offsets[i] = ULONG_MAX;
+		completion_drawables[i] = 0;
+	}
+	completion_read = 0;
+	completion_write = 0;
+	completion_drawable = 0;
+}
+
+unsigned long BC_WindowBase::get_completion_offset()
+{
+	unsigned long offs;
+
+	if(completion_read >= COMPLETION_MAX)
+		completion_read = 0;
+	offs = completion_offsets[completion_read];
+	completion_offsets[completion_read] = ULONG_MAX;
+
+	if(offs != ULONG_MAX)
+		completion_read++;
+
+	return offs;
+}
+
+int BC_WindowBase::completion_event(XEvent *event)
+{
+	XShmCompletionEvent *ev = (XShmCompletionEvent*)event;
+	int res = 0;
+
+	top_level->lock_window("BC_WindowBase::completion_event");
+	if(completion_drawables[0])
+	{
+		for(int i = 0; i < COMPLETION_MAX; i++)
+		{
+			if(completion_drawables[i] == ev->drawable)
+			{
+				if(completion_write >= COMPLETION_MAX)
+					completion_write = 0;
+				completion_offsets[completion_write++] = ev->offset;
+				res = 1;
+				break;
+			}
+		}
+	}
+	top_level->unlock_window();
+	return res;
+}
 
 void BC_WindowBase::draw_pixel(int x, int y, BC_Pixmap *pixmap)
 {

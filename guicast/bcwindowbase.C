@@ -243,6 +243,8 @@ void BC_WindowBase::initialize()
 	have_gl_context = 0;
 	wide_text = wide_buffer;
 	*wide_text = 0;
+	completion_event_type = 0;
+	reset_completion();
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \
@@ -437,6 +439,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 					true);
 		}
 		init_im();
+		completion_event_type = XShmGetEventBase(display) + ShmCompletion;
 	}
 
 #ifdef HAVE_LIBXXF86VM
@@ -905,6 +908,10 @@ void BC_WindowBase::dispatch_event()
 		cursor_y = event.xcrossing.y;
 		dispatch_cursor_enter();
 		break;
+	default:
+		if(completion_event_type && event.type == completion_event_type)
+			dispatch_completion(&event);
+		break;
 	}
 }
 
@@ -1052,6 +1059,21 @@ void BC_WindowBase::dispatch_focus_out()
 	}
 
 	focus_out_event();
+}
+
+int BC_WindowBase::dispatch_completion(XEvent *event)
+{
+	int result = 0;
+
+	for(int i = 0; subwindows && i < subwindows->total; i++)
+	{
+		if(result = subwindows->values[i]->dispatch_completion(event))
+			break;
+	}
+
+	if(!result)
+		result = completion_event(event);
+	return result;
 }
 
 int BC_WindowBase::get_has_focus()
