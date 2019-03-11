@@ -1170,6 +1170,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		mainindexes->start_build();
 	}
 
+	master_edl->check_master_track();
 	assetlist_global.remove_unused();
 	update_project(load_mode);
 	new_edls.remove_all_objects();
