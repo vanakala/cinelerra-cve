@@ -326,12 +326,6 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 		dest_h);
 }
 
-void BC_Bitmap::rewind_ring()
-{
-	current_ringbuffer--;
-	if(current_ringbuffer < 0) current_ringbuffer = ring_buffers - 1;
-}
-
 void BC_Bitmap::write_drawable(Drawable &pixmap, 
 		GC &gc,
 		int source_x, 
@@ -612,12 +606,6 @@ unsigned char* BC_Bitmap::get_u_plane()
 		return data[current_ringbuffer] + xv_image[current_ringbuffer]->offsets[2];
 	else
 		return 0;
-}
-
-void BC_Bitmap::rewind_ringbuffer()
-{
-	current_ringbuffer--;
-	if(current_ringbuffer < 0) current_ringbuffer = ring_buffers - 1;
 }
 
 int BC_Bitmap::hardware_scaling()

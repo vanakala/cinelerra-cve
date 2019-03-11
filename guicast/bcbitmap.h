@@ -60,9 +60,6 @@ public:
 // Test if bitmap already matches parameters
 	int params_match(int w, int h, int color_model, int use_shm);
 
-// When showing the same frame twice need to rewind
-	void rewind_ring();
-
 // For YUV bitmaps, the image is scaled to fill dest_x ... w * dest_y ... h
 	void write_drawable(Drawable &pixmap, 
 			GC &gc,
@@ -103,9 +100,6 @@ public:
 	long get_y_offset();
 	long get_u_offset();
 	long get_v_offset();
-
-// Rewing ringbuffer to the previous frame
-	void rewind_ringbuffer();
 
 	void dump(int minmax = 0);
 
