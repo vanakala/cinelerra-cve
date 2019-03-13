@@ -852,10 +852,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	save_defaults();
 	gui->start_hourglass();
 
-// Need to stop playback since tracking depends on the EDL not getting
-// deleted.
-	cwindow->playback_engine->send_command(STOP);
-	vwindow->playback_engine->send_command(STOP);
+// Stop playback EDL-s are going modified
+	cwindow->stop_playback();
+	vwindow->stop_playback();
 
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
