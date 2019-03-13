@@ -60,6 +60,7 @@ public:
 	void goto_start();
 	void goto_end();
 	void update(int options);
+	int stop_playback();
 
 	VTracking *playback_cursor;
 
