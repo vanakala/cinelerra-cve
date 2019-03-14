@@ -971,6 +971,7 @@ void MWindow::paste_automation()
 	}
 }
 
+// Insert edls with project deletion and index file generation.
 void MWindow::paste_edl(EDL *new_edl,
 	int load_mode,
 	Track *first_track,
@@ -978,29 +979,22 @@ void MWindow::paste_edl(EDL *new_edl,
 	int actions,
 	int overwrite)
 {
-	ArrayList<EDL*> new_edls;
-
-	new_edls.append(new_edl);
-
-	paste_edls(&new_edls, load_mode, first_track,
-		current_position, actions, overwrite);
-}
-
-// Insert edls with project deletion and index file generation.
-void MWindow::paste_edls(ArrayList<EDL*> *new_edls, 
-	int load_mode, 
-	Track *first_track,
-	ptstime current_position,
-	int actions,
-	int overwrite)
-{
+	ptstime original_length;
+	ptstime original_preview_end;
+	Track *new_track;
 	ArrayList<Track*> destination_tracks;
-	int need_new_tracks = 0;
 
-	if(!new_edls->total) return;
+	if(new_edl == 0)
+		return;
 
-	ptstime original_length = master_edl->total_length();
-	ptstime original_preview_end = master_edl->local_session->preview_end;
+	if(load_mode == LOADMODE_RESOURCESONLY)
+	{
+		cliplist_global.add_clip(new_edl);
+		return;
+	}
+
+	original_length = master_edl->total_length();
+	original_preview_end = master_edl->local_session->preview_end;
 
 // Delete current project
 	if(load_mode == LOADMODE_REPLACE ||
@@ -1011,7 +1005,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		hide_plugins();
 
 		master_edl->reset_instance();
-		master_edl->copy_session(new_edls->values[0], edlsession);
+		master_edl->copy_session(new_edl, edlsession);
 
 		gui->mainmenu->update_toggles();
 		gwindow->gui->update_toggles();
@@ -1023,195 +1017,170 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		original_preview_end = -1;
 	}
 
-// Create new tracks in master EDL
 	if(load_mode == LOADMODE_REPLACE || 
 		load_mode == LOADMODE_REPLACE_CONCATENATE ||
 		load_mode == LOADMODE_NEW_TRACKS)
 	{
-
-		need_new_tracks = 1;
-		for(int i = 0; i < new_edls->total; i++)
+		for(Track *current = new_edl->first_track();
+			current; current = NEXT)
 		{
-			EDL *new_edl = new_edls->values[i];
-			for(Track *current = new_edl->first_track();
-				current;
-				current = NEXT)
-			{
-				if(current->data_type == TRACK_VIDEO)
-				{
-					master_edl->tracks->add_video_track(0, 0);
-					if(current->draw)
-						master_edl->tracks->last->draw = 1;
-					destination_tracks.append(master_edl->tracks->last);
-				}
-				else
-				if(current->data_type == TRACK_AUDIO)
-				{
-					master_edl->tracks->add_audio_track(0, 0);
-					destination_tracks.append(master_edl->tracks->last);
-				}
-				edlsession->highlighted_track =
-					master_edl->tracks->total() - 1;
-			}
+			new_track = 0;
 
-// Base track count on first EDL only for concatenation
-			if(load_mode == LOADMODE_REPLACE_CONCATENATE) break;
+			if(current->data_type == TRACK_VIDEO)
+				new_track = master_edl->tracks->add_video_track(0, 0);
+			else
+			if(current->data_type == TRACK_AUDIO)
+				new_track = master_edl->tracks->add_audio_track(0, 0);
+
+			if(new_track)
+			{
+				destination_tracks.append(new_track);
+
+				if(load_mode == LOADMODE_REPLACE)
+					new_track->master = current->master;
+			}
+			edlsession->highlighted_track =
+				master_edl->tracks->total() - 1;
 		}
 	}
-	else
-// Recycle existing tracks of master EDL
+
 	if(load_mode == LOADMODE_CONCATENATE || load_mode == LOADMODE_PASTE)
 	{
-
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
-		if(load_mode == LOADMODE_PASTE && edlsession->labels_follow_edits)
+		if(load_mode == LOADMODE_PASTE && (actions & EDIT_LABELS))
 			master_edl->labels->clear(
 				master_edl->local_session->get_selectionstart(),
 				master_edl->local_session->get_selectionend(), 1);
 
 		Track *current = first_track ? first_track : master_edl->first_track();
-		for( ; current; current = NEXT)
+		for(; current; current = NEXT)
 		{
 			if(current->record)
-			{
 				destination_tracks.append(current);
-			}
 		}
 	}
 
 	int destination_track = 0;
 	ptstime *paste_position = new ptstime[destination_tracks.total];
-
-// Iterate through the edls
-	for(int i = 0; i < new_edls->total; i++)
-	{
-		EDL *new_edl = new_edls->values[i];
-		EDL *edl_copy;
-
-		ptstime edl_length = new_edl->total_length();
+	ptstime edl_length = new_edl->total_length();
 
 // Capture index file status from mainindex test
-		master_edl->update_assets(new_edl);
+	master_edl->update_assets(new_edl);
 
 // Get starting point of insertion.  Need this to paste labels.
-		switch(load_mode)
-		{
-		case LOADMODE_REPLACE:
-		case LOADMODE_NEW_TRACKS:
+	switch(load_mode)
+	{
+	case LOADMODE_REPLACE:
+	case LOADMODE_NEW_TRACKS:
+		current_position = 0;
+		break;
+
+	case LOADMODE_CONCATENATE:
+	case LOADMODE_REPLACE_CONCATENATE:
+		destination_track = 0;
+		if(destination_tracks.total)
+			current_position = destination_tracks.values[0]->get_length();
+		else
 			current_position = 0;
-			break;
+		break;
 
-		case LOADMODE_CONCATENATE:
-		case LOADMODE_REPLACE_CONCATENATE:
-			destination_track = 0;
-			if(destination_tracks.total)
-				current_position = destination_tracks.values[0]->get_length();
-			else
-				current_position = 0;
-			break;
-
-		case LOADMODE_PASTE:
-			destination_track = 0;
-			if(i == 0)
-			{
-				for(int j = 0; j < destination_tracks.total; j++)
-				{
-					paste_position[j] = (current_position >= 0) ? 
-						current_position :
-						master_edl->local_session->get_selectionstart();
-				}
-			}
-			break;
-
-		case LOADMODE_RESOURCESONLY:
-			edl_copy = new EDL(0);
-			edl_copy->copy_all(new_edl);
-			cliplist_global.add_clip(edl_copy);
-			break;
-		}
+	case LOADMODE_PASTE:
+		destination_track = 0;
+		for(int j = 0; j < destination_tracks.total; j++)
+			paste_position[j] = (current_position >= 0) ?
+				current_position :
+				master_edl->local_session->get_selectionstart();
+		break;
+	}
 
 // Insert edl
-		if(load_mode != LOADMODE_RESOURCESONLY)
-		{
 // Insert labels
-			if(load_mode == LOADMODE_PASTE)
-				master_edl->labels->insert_labels(new_edl->labels,
-					destination_tracks.total ? paste_position[0] : 0.0,
-					edl_length,
-					actions & EDIT_LABELS);
-			else
-				master_edl->labels->insert_labels(new_edl->labels,
-					current_position,
-					edl_length,
-					actions & EDIT_LABELS);
+	if(load_mode == LOADMODE_PASTE)
+		master_edl->labels->insert_labels(new_edl->labels,
+			destination_tracks.total ? paste_position[0] : 0.0,
+			edl_length, actions & EDIT_LABELS);
+	else
+		master_edl->labels->insert_labels(new_edl->labels,
+			current_position, edl_length, actions & EDIT_LABELS);
 
-			for(Track *new_track = new_edl->first_track();
-				new_track; 
-				new_track = new_track->next)
-			{
+	for(Track *new_track = new_edl->first_track();
+		new_track; new_track = new_track->next)
+	{
 // Get destination track of same type as new_track
-				for(int k = 0; 
-					k < destination_tracks.total &&
-					destination_tracks.values[destination_track]->data_type != new_track->data_type;
-					k++, destination_track++)
-				{
-					if(destination_track >= destination_tracks.total - 1)
-						destination_track = 0;
-				}
-
-// Insert data into destination track
-				if(destination_track < destination_tracks.total &&
-					destination_tracks.values[destination_track]->data_type == new_track->data_type)
-				{
-					Track *track = destination_tracks.values[destination_track];
-
-// Insert new track at current position
-					switch(load_mode)
-					{
-					case LOADMODE_REPLACE_CONCATENATE:
-					case LOADMODE_CONCATENATE:
-						current_position = track->get_length();
-						break;
-
-					case LOADMODE_PASTE:
-						current_position = paste_position[destination_track];
-						paste_position[destination_track] += new_track->get_length();
-						break;
-					}
-					if (overwrite)
-						track->clear(current_position, 
-								current_position + new_track->get_length(), 
-								actions | EDIT_EDITS);
-					track->insert_track(new_track, 
-						current_position, 
-						actions & EDIT_PLUGINS);
-				}
-
-// Get next destination track
-				destination_track++;
-				if(destination_track >= destination_tracks.total)
-					destination_track = 0;
-			}
+		for(int k = 0; k < destination_tracks.total &&
+			destination_tracks.values[destination_track]->data_type != new_track->data_type;
+			k++, destination_track++)
+		{
+			if(destination_track >= destination_tracks.total - 1)
+				destination_track = 0;
 		}
 
-		if(load_mode == LOADMODE_PASTE)
-			current_position += edl_length;
+// Insert data into destination track
+		if(destination_track < destination_tracks.total &&
+			destination_tracks.values[destination_track]->data_type == new_track->data_type)
+		{
+			Track *track = destination_tracks.values[destination_track];
+
+// Insert new track at current position
+			switch(load_mode)
+			{
+			case LOADMODE_REPLACE_CONCATENATE:
+			case LOADMODE_CONCATENATE:
+				current_position = track->get_length();
+				break;
+
+			case LOADMODE_PASTE:
+				current_position = paste_position[destination_track];
+				paste_position[destination_track] += new_track->get_length();
+				break;
+			}
+
+			if(overwrite)
+				track->clear(current_position,
+					current_position + new_track->get_length(),
+					actions | EDIT_EDITS);
+			track->insert_track(new_track,
+				current_position, actions & EDIT_PLUGINS);
+		}
+
+// Get next destination track
+		destination_track++;
+		if(destination_track >= destination_tracks.total)
+			destination_track = 0;
 	}
 
 	delete [] paste_position;
 
 // Fix preview range
 	if(!EQUIV(original_length, original_preview_end))
-	{
 		master_edl->local_session->preview_end = master_edl->total_length();
-	}
 
 // Start examining next batch of index files
 	mainindexes->start_build();
+}
 
-// Don't save a backup after loading since the loaded file is on disk already.
+void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
+	int load_mode,
+	Track *first_track,
+	ptstime current_position,
+	int actions,
+	int overwrite)
+{
+	ArrayList<Track*> destination_tracks;
+	int need_new_tracks = 0;
+
+	for(int i = 0; i < new_edls->total; i++)
+	{
+		paste_edl(new_edls->values[i], load_mode,
+			first_track, current_position,
+			actions, overwrite);
+
+		if(load_mode == LOADMODE_REPLACE ||
+				load_mode == LOADMODE_REPLACE_CONCATENATE)
+			load_mode = LOADMODE_NEW_TRACKS;
+	}
 }
 
 void MWindow::paste_silence()
