@@ -29,7 +29,7 @@
 #include "theme.h"
 #include "language.h"
 
-const struct selection_int InsertionModeSelection::insertion_modes[] =
+const struct selection_int LoadMode::insertion_modes[] =
 {
 	{ N_("Insert nothing"), LOADMODE_NOTHING },
 	{ N_("Replace current project"), LOADMODE_REPLACE },
@@ -41,7 +41,7 @@ const struct selection_int InsertionModeSelection::insertion_modes[] =
 	{ 0, 0 }
 };
 
-#define NUM_INSMODES (sizeof(InsertionModeSelection::insertion_modes) / sizeof(struct selection_int) - 1)
+#define NUM_INSMODES (sizeof(LoadMode::insertion_modes) / sizeof(struct selection_int) - 1)
 
 
 LoadMode::LoadMode(BC_WindowBase *window,
@@ -65,20 +65,7 @@ void LoadMode::reposition_window(int x, int y)
 	modeselection->reposition_window(x, y);
 }
 
-InsertionModeSelection::InsertionModeSelection(int x, int y,
-	BC_WindowBase *base, int *value, int optmask)
- : Selection(x, y , base, insertion_modes, value,
-	SELECTION_VARWIDTH | SELECTION_VARNUMITEMS | optmask)
-{
-	disable(1);
-}
-
-void InsertionModeSelection::update(int value)
-{
-	BC_TextBox::update(mode_to_text(value));
-}
-
-const char* InsertionModeSelection::mode_to_text(int mode)
+const char* LoadMode::name(int mode)
 {
 	for(int i = 0; i < NUM_INSMODES; i++)
 	{
@@ -86,4 +73,18 @@ const char* InsertionModeSelection::mode_to_text(int mode)
 			return _(insertion_modes[i].text);
 	}
 	return _("Unknown");
+}
+
+
+InsertionModeSelection::InsertionModeSelection(int x, int y,
+	BC_WindowBase *base, int *value, int optmask)
+ : Selection(x, y , base, LoadMode::insertion_modes, value,
+	SELECTION_VARWIDTH | SELECTION_VARNUMITEMS | optmask)
+{
+	disable(1);
+}
+
+void InsertionModeSelection::update(int value)
+{
+	BC_TextBox::update(LoadMode::name(value));
 }

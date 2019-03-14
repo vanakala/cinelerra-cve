@@ -35,7 +35,12 @@ public:
 		int *output,
 		int use_nothing);
 
+	friend class InsertionModeSelection;
+
 	void reposition_window(int x, int y);
+	static const char* name(int mode);
+private:
+	static const struct selection_int insertion_modes[];
 	BC_Title *title;
 	InsertionModeSelection *modeselection;
 };
@@ -47,9 +52,6 @@ public:
 		BC_WindowBase *base, int *value, int optmask);
 
 	void update(int value);
-	static const char* mode_to_text(int mode);
-private:
-	static const struct selection_int insertion_modes[];
 };
 
 #endif
