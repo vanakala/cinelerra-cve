@@ -261,6 +261,16 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 	return new_track;
 }
 
+ptstime Tracks::length()
+{
+	for(Track *track = first; track; track = track->next)
+	{
+		if(track->master)
+			return track->get_length();
+	}
+	return 0;
+}
+
 void Tracks::delete_track(Track *track)
 {
 	if(!track)
