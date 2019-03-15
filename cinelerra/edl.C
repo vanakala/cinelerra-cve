@@ -123,7 +123,8 @@ void EDL::create_default_tracks()
 	for(int i = 0; i < edlsession->audio_tracks; i++)
 		tracks->add_audio_track(0, 0);
 // Set master track
-	first_track()->master = 1;
+	if(first_track())
+		first_track()->master = 1;
 }
 
 void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
