@@ -24,38 +24,25 @@
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "bchash.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "file.h"
 #include "filexml.h"
-#include "intauto.h"
-#include "intautos.h"
 #include "localsession.h"
-#include "module.h"
 #include "panauto.h"
 #include "panautos.h"
-#include "patchbay.h"
-#include "mainsession.h"
-#include "theme.h"
+#include "theme.inc"
 #include "track.h"
-#include "trackcanvas.h"
 #include "tracks.h"
 #include "vtrack.h"
+
 #include <string.h>
 
 Tracks::Tracks(EDL *edl)
  : List<Track>()
 {
 	this->edl = edl;
-}
-
-Tracks::Tracks()
- : List<Track>()
-{
-    edl = 0;
 }
 
 Tracks::~Tracks()

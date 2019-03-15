@@ -293,7 +293,7 @@ void MWindow::copy(ptstime start, ptstime end)
 void MWindow::copy_automation()
 {
 	FileXML file;
-	Tracks tracks;
+	Tracks tracks(0);
 
 	tracks.copy(master_edl->tracks, master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend());

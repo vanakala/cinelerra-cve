@@ -36,9 +36,8 @@
 class Tracks : public List<Track>
 {
 public:
-	Tracks();
 	Tracks(EDL *edl);
-	virtual ~Tracks();
+	~Tracks();
 
 	void reset_instance();
 	Tracks& operator=(Tracks &tracks);
@@ -61,7 +60,6 @@ public:
 		int autogrouptype);
 
 	void equivalent_output(Tracks *tracks, ptstime *result);
-
 	void move_track_up(Track *track);        // move recordable tracks up
 	void move_track_down(Track *track);      // move recordable tracks down
 	int move_tracks_up();                    // move recordable tracks up
@@ -126,10 +124,6 @@ public:
 	void copy(Tracks *tracks, ptstime start, ptstime end,
 		ArrayList<Track*> *src_tracks = 0);
 
-	int copy_assets(FileXML *xml, 
-		double start, 
-		double end, 
-		int all);
 	void clear(ptstime start, ptstime end, int clear_plugins);
 	void clear_automation(ptstime selectionstart,
 		ptstime selectionend);
