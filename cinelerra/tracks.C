@@ -19,6 +19,7 @@
  * 
  */
 
+#include "asset.h"
 #include "atrack.h"
 #include "bcpan.h"
 #include "automation.h"
@@ -269,6 +270,91 @@ ptstime Tracks::length()
 			return track->get_length();
 	}
 	return 0;
+}
+
+void Tracks::append_asset(Asset *asset)
+{
+	Track *master = 0;
+	int atracks, vtracks;
+	ptstime alength = 0;
+	ptstime start = 0;
+	ptstime dur;
+
+	atracks = vtracks = 0;
+
+	if(asset->video_data)
+		vtracks = asset->layers;
+
+	if(asset->audio_data)
+		atracks = asset->channels;
+
+	// Determine the start and length
+	// If master track is part of the operation, the length
+	// is sum of master and asset duration
+	// else the final length is the current length of master track
+	for(Track *current = first; current; current = current->next)
+	{
+		if(!current->record)
+			continue;
+
+		dur = 0;
+
+		if(vtracks && current->data_type == TRACK_VIDEO)
+		{
+			vtracks--;
+			dur = current->get_length();
+			if(current->master)
+			{
+				master = current;
+				alength = asset->video_duration;
+			}
+		}
+
+		if(atracks && current->data_type == TRACK_AUDIO)
+		{
+			atracks--;
+			dur = current->get_length();
+			if(current->master)
+			{
+				master = current;
+				alength = asset->audio_duration;
+			}
+		}
+		if(dur > start)
+			start = dur;
+	}
+	// If master is part of operation we append to master
+	// If master does not paticipate, append to the longest participating track
+	if(master)
+		start = master->get_length();
+	else
+		alength = length() - start;
+
+	atracks = vtracks = 0;
+
+	if(asset->video_data)
+		vtracks = asset->layers;
+
+	if(asset->audio_data)
+		atracks = asset->channels;
+
+	for(Track *current = first; current; current = current->next)
+	{
+		if(!current->record)
+			continue;
+		if(vtracks && current->data_type == TRACK_VIDEO)
+		{
+			current->insert_asset(asset, alength,
+				start, asset->layers - vtracks);
+			vtracks--;
+		}
+		if(atracks && current->data_type == TRACK_AUDIO)
+		{
+			current->insert_asset(asset, alength,
+				start, asset->layers - vtracks);
+			atracks--;
+		}
+	}
 }
 
 void Tracks::delete_track(Track *track)

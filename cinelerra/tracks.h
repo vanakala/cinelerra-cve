@@ -22,6 +22,7 @@
 #ifndef TRACKS_H
 #define TRACKS_H
 
+#include "asset.inc"
 #include "autoconf.h"
 #include "edl.inc"
 #include "file.inc"
@@ -87,6 +88,8 @@ public:
 	void delete_track(Track* track);
 // detach shared effects referencing module
 	void detach_shared_effects(int module);
+// Append asset to existing tracks
+	void append_asset(Asset *asset);
 
 	EDL *edl;
 
