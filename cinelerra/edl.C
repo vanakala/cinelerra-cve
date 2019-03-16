@@ -919,6 +919,7 @@ void EDL::finalize_edl(int load_mode)
 		track_length = total_length_framealigned();
 		tracks->clear(track_length, total_length() + 100, 1);
 	}
+	check_master_track();
 }
 
 ptstime EDL::total_length()
