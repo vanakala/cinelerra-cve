@@ -36,7 +36,7 @@ const struct selection_int LoadMode::insertion_modes[] =
 	{ N_("Replace current project and concatenate tracks"), LOADMODE_REPLACE_CONCATENATE },
 	{ N_("Append in new tracks"), LOADMODE_NEW_TRACKS },
 	{ N_("Concatenate to existing tracks"), LOADMODE_CONCATENATE },
-	{ N_("Paste at insertion point"), LOADMODE_CONCATENATE },
+	{ N_("Paste at insertion point"), LOADMODE_PASTE },
 	{ N_("Create new resources only"), LOADMODE_RESOURCESONLY },
 	{ 0, 0 }
 };
