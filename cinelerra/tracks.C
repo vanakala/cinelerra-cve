@@ -357,6 +357,46 @@ void Tracks::append_asset(Asset *asset)
 	}
 }
 
+void Tracks::create_new_tracks(Asset *asset)
+{
+	ptstime master_length = length();
+	ptstime len;
+	Track *new_track;
+	int atracks, vtracks;
+
+	atracks = vtracks = 0;
+
+	if(asset->video_data)
+		vtracks = asset->layers;
+
+	if(asset->audio_data)
+		atracks = asset->channels;
+
+	if(master_length < EPSILON)
+		master_length = MIN(asset->video_duration, asset->audio_duration);
+
+	if(!atracks && !vtracks || master_length < EPSILON)
+		return;
+
+	for(int i = 0; i < vtracks; i++)
+	{
+		new_track = add_video_track(0, 0);
+		len = asset->video_duration;
+		if(len > master_length)
+			len = master_length;
+		new_track->insert_asset(asset, len, 0, i);
+	}
+
+	for(int i = 0; i < atracks; i++)
+	{
+		new_track = add_audio_track(0, 0);
+		len = asset->audio_duration;
+		if(len > master_length)
+			len = master_length;
+		new_track->insert_asset(asset, len, 0, i);
+	}
+}
+
 void Tracks::delete_track(Track *track)
 {
 	if(!track)
