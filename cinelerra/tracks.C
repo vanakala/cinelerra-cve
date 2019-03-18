@@ -344,13 +344,13 @@ void Tracks::append_asset(Asset *asset)
 			continue;
 		if(vtracks && current->data_type == TRACK_VIDEO)
 		{
-			current->insert_asset(asset, alength,
+			current->insert_asset(asset, MIN(alength, asset->video_duration),
 				start, asset->layers - vtracks);
 			vtracks--;
 		}
 		if(atracks && current->data_type == TRACK_AUDIO)
 		{
-			current->insert_asset(asset, alength,
+			current->insert_asset(asset, MIN(alength, asset->audio_duration),
 				start, asset->layers - vtracks);
 			atracks--;
 		}
