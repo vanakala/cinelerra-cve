@@ -272,7 +272,7 @@ ptstime Tracks::length()
 	return 0;
 }
 
-void Tracks::append_asset(Asset *asset)
+void Tracks::append_asset(Asset *asset, ptstime paste_at)
 {
 	Track *master = 0;
 	int atracks, vtracks;
@@ -323,12 +323,21 @@ void Tracks::append_asset(Asset *asset)
 		if(dur > start)
 			start = dur;
 	}
-	// If master is part of operation we append to master
-	// If master does not paticipate, append to the longest participating track
-	if(master)
-		start = master->get_length();
+	if(paste_at < 0)
+	{
+		// If master is part of operation we append to master
+		// If master does not paticipate, append to the longest participating track
+		if(master)
+			start = master->get_length();
+		else
+			alength = length() - start;
+	}
 	else
-		alength = length() - start;
+	{
+		start = paste_at;
+		if(!master)
+			alength = length() - start;
+	}
 
 	atracks = vtracks = 0;
 
@@ -342,6 +351,7 @@ void Tracks::append_asset(Asset *asset)
 	{
 		if(!current->record)
 			continue;
+
 		if(vtracks && current->data_type == TRACK_VIDEO)
 		{
 			current->insert_asset(asset, MIN(alength, asset->video_duration),
