@@ -178,24 +178,24 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 
 	if(length >= EPSILON)
 	{
-		ptstime end = pts + length;
+		ptstime new_src = new_edit->get_source_pts();
 
 		if(new_edit->next)
 		{
-			if(new_edit->next->get_pts() < end)
-			{
-				ptstime shift = end - new_edit->next->get_pts();
-				for(Edit *e = new_edit->next; e; e = e->next)
-					e->shift(shift);
-			}
-			else
-				split_edit(pts + length);
+			Edit *ed;
+
+			for(ed = new_edit->next; ed; ed = ed->next)
+				ed->shift(length);
+
+			ed = split_edit(pts + length);
+			if(ed->asset)
+				ed->set_source_pts(new_src);
 		}
 		else
 		{
 			Edit *le = create_edit();
 			append(le);
-			le->set_pts(end);
+			le->set_pts(pts + length);
 		}
 	}
 	return new_edit;
