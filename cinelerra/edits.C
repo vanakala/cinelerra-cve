@@ -174,7 +174,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 // Inserts a new edit with requested length
 Edit* Edits::insert_edit(ptstime pts, ptstime length)
 {
-	Edit *new_edit = split_edit(pts);
+	Edit *new_edit = split_edit(pts, 1);
 
 	if(length >= EPSILON)
 	{
@@ -187,9 +187,15 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 			for(ed = new_edit->next; ed; ed = ed->next)
 				ed->shift(length);
 
-			ed = split_edit(pts + length);
-			if(ed->asset)
-				ed->set_source_pts(new_src);
+			pts += length;
+			ptstime npts = new_edit->next->get_pts();
+
+			if(!master_edl->equivalent(npts, pts))
+			{
+				ed = split_edit(pts);
+				if(ed->asset)
+					ed->set_source_pts(new_src);
+			}
 		}
 		else
 		{
