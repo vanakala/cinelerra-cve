@@ -272,13 +272,13 @@ ptstime Tracks::length()
 	return 0;
 }
 
-void Tracks::append_asset(Asset *asset, ptstime paste_at)
+ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 {
 	Track *master = 0;
 	int atracks, vtracks;
 	ptstime alength = 0;
 	ptstime start = 0;
-	ptstime dur;
+	ptstime dur, pasted_length;
 
 	atracks = vtracks = 0;
 
@@ -347,24 +347,35 @@ void Tracks::append_asset(Asset *asset, ptstime paste_at)
 	if(asset->audio_data)
 		atracks = asset->channels;
 
+	pasted_length  = 0;
+
+	start = master_edl->align_to_frame(start);
+	alength = master_edl->align_to_frame(alength);
+
 	for(Track *current = first; current; current = current->next)
 	{
+		dur = 0;
 		if(!current->record)
 			continue;
 
 		if(vtracks && current->data_type == TRACK_VIDEO)
 		{
-			current->insert_asset(asset, MIN(alength, asset->video_duration),
+			dur = MIN(alength, asset->video_duration);
+			current->insert_asset(asset, dur,
 				start, asset->layers - vtracks);
 			vtracks--;
 		}
 		if(atracks && current->data_type == TRACK_AUDIO)
 		{
+			dur = MIN(alength, asset->audio_duration);
 			current->insert_asset(asset, MIN(alength, asset->audio_duration),
 				start, asset->layers - vtracks);
 			atracks--;
 		}
+		if(dur > pasted_length)
+			pasted_length = dur;
 	}
+	return pasted_length;
 }
 
 void Tracks::create_new_tracks(Asset *asset)
