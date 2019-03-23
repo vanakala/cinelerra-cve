@@ -58,6 +58,7 @@ struct streamdesc
 	int channels;     // audo channels
 	int sample_rate;  // audio sample rate
 	int bits;         // bits per sample
+	int signedsample; // audio sample is signed
 	int width;        // frame width
 	int height;       // frame height
 	samplenum length; // length in frames or samples

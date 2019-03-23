@@ -184,6 +184,7 @@ void Asset::set_audio_stream(int stream)
 	channels = desc->channels;
 	sample_rate = desc->sample_rate;
 	bits = desc->bits;
+	signed_ = desc->signedsample;
 	audio_length = desc->length;
 	audio_duration = desc->end - desc->start;
 	strcpy(acodec, desc->codec);
@@ -225,6 +226,7 @@ void Asset::init_streams()
 			desc->channels = channels;
 			desc->sample_rate = sample_rate;
 			desc->bits = bits;
+			desc->signedsample = signed_;
 			desc->length = audio_length;
 			desc->start = 0;
 			desc->end = audio_duration;
@@ -675,6 +677,7 @@ void Asset::read_audio(FileXML *file)
 
 	if(file->tag.title_is("AUDIO")) audio_data = 1;
 	channels = file->tag.get_property("CHANNELS", 2);
+	sample_rate = file->tag.get_property("SAMPLERATE", 48000);
 
 	streamno = file->tag.get_property("STREAMNO", 0);
 	if(streamno > 0)
@@ -1026,6 +1029,7 @@ void Asset::write_audio(FileXML *file)
 		file->tag.set_title("AUDIO_OMIT");
 // Necessary for PCM audio
 	file->tag.set_property("CHANNELS", channels);
+	file->tag.set_property("SAMPLERATE", sample_rate);
 
 	if(bits)
 		file->tag.set_property("BITS", bits);
@@ -1536,11 +1540,12 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d samples:%" PRId64 " codec:'%s' '%s' '%s'\n",
+				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d signed %d samples:%" PRId64 " codec:'%s' '%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
-					streams[i].bits, streams[i].length, streams[i].codec,
+					streams[i].bits, streams[i].signedsample,
+					streams[i].length, streams[i].codec,
 					streams[i].samplefmt, streams[i].layout);
 			}
 			if(streams[i].options & STRDSC_VIDEO)
