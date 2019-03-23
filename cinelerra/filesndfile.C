@@ -250,7 +250,7 @@ int FileSndFile::open_file(int open_mode)
 	if(!fd) 
 	{
 		result = 1;
-		errormsg("%s", sf_strerror(0));
+		errormsg("SndFile:%s", sf_strerror(0));
 	}
 
 	return result;
