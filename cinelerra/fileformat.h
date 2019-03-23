@@ -40,7 +40,7 @@ class FileFormatBits;
 class FileFormat : public BC_Window
 {
 public:
-	FileFormat(MWindow *mwindow, Asset *asset, const char *string2);
+	FileFormat(Asset *asset, const char *string2);
 	~FileFormat();
 
 	Asset *asset;
@@ -50,14 +50,13 @@ public:
 	FileFormatHeader *header_button;
 	Selection *rate_button;
 	FileFormatChannels *channels_button;
-	MWindow *mwindow;
 };
 
 
 class FileFormatChannels : public BC_TumbleTextBox
 {
 public:
-	FileFormatChannels(int x, int y, FileFormat *fwindow, char *text);
+	FileFormatChannels(int x, int y, FileFormat *fwindow, int value);
 
 	int handle_event();
 
@@ -68,7 +67,7 @@ public:
 class FileFormatHeader : public BC_TextBox
 {
 public:
-	FileFormatHeader(int x, int y, FileFormat *fwindow, char *text);
+	FileFormatHeader(int x, int y, FileFormat *fwindow, int value);
 
 	int handle_event();
 

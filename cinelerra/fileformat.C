@@ -30,22 +30,22 @@
 #include "new.h"
 
 
-FileFormat::FileFormat(MWindow *mwindow, Asset *asset, const char *string2)
+FileFormat::FileFormat(Asset *asset, const char *string2)
  : BC_Window(MWindow::create_title(N_("File Format")),
-		mwindow->gui->get_abs_cursor_x(1),
-		mwindow->gui->get_abs_cursor_y(1),
+		mwindow_global->gui->get_abs_cursor_x(1),
+		mwindow_global->gui->get_abs_cursor_y(1),
 		375, 
 		300, 
 		375, 
 		300)
 {
-	char string[1024];
 	int x1 = 10, x2 = 180;
 	int x = x1, y = 10;
 	SampleBitsSelection *bitspopup;
 
-	this->mwindow = mwindow;
 	this->asset = asset;
+
+	set_icon(mwindow_global->theme->get_image("mwindow_icon"));
 
 	add_subwindow(new BC_Title(x, y, string2));
 	y += 20;
@@ -53,8 +53,7 @@ FileFormat::FileFormat(MWindow *mwindow, Asset *asset, const char *string2)
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Channels:")));
-	sprintf(string, "%d", asset->channels);
-	channels_button = new FileFormatChannels(x2, y, this, string);
+	channels_button = new FileFormatChannels(x2, y, this, asset->channels);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Sample rate:")));
@@ -70,8 +69,7 @@ FileFormat::FileFormat(MWindow *mwindow, Asset *asset, const char *string2)
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Header length:")));
-	sprintf(string, "%d", asset->header);
-	add_subwindow(header_button = new FileFormatHeader(x2, y, this, string));
+	add_subwindow(header_button = new FileFormatHeader(x2, y, this, asset->header));
 
 	y += 30;
 
@@ -97,11 +95,11 @@ FileFormat::~FileFormat()
 }
 
 
-FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, char *text)
+FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, int value)
  : BC_TumbleTextBox(fwindow, 
-	(int)atol(text), 
-	(int)1, 
-	(int)MAXCHANNELS, 
+	value,
+	1,
+	MAXCHANNELS,
 	x, 
 	y, 
 	50)
@@ -116,8 +114,8 @@ int FileFormatChannels::handle_event()
 }
 
 
-FileFormatHeader::FileFormatHeader(int x, int y, FileFormat *fwindow, char *text)
- : BC_TextBox(x, y, 100, 1, text)
+FileFormatHeader::FileFormatHeader(int x, int y, FileFormat *fwindow, int value)
+ : BC_TextBox(x, y, 100, 1, value)
 {
 	this->fwindow = fwindow;
 }
