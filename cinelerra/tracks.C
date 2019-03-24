@@ -334,9 +334,11 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 	}
 	else
 	{
-		start = paste_at;
+		dur = length();
+		start = MIN(paste_at, dur);
+
 		if(!master)
-			alength = length() - start;
+			alength = dur - start;
 	}
 
 	atracks = vtracks = 0;
