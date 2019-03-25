@@ -848,6 +848,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
 	int result = 0;
+	ptstime pos, dur;
 
 	save_defaults();
 	gui->start_hourglass();
@@ -861,6 +862,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		assetlist_global.reset_inuse();
 		vwindow->remove_source();
 		vwindow_edl->reset_instance();
+		master_edl->reset_instance();
 	}
 
 // Define new_edls and new_assets to load
@@ -900,65 +902,78 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					delete new_file;
 					new_file = 0;
 
-					if(load_mode != LOADMODE_RESOURCESONLY)
-					{
-						new_edl = new EDL(0);
-						new_edl->copy_session(master_edl);
-					}
-
 					for(i = 0; i < new_asset->nb_programs; i++)
 					{
 						new_asset->set_program(i);
 						next_asset = new Asset();
 						next_asset->copy_from(new_asset, 0);
+						new_asset = assetlist_global.add_asset(new_asset);
+						mainindexes->add_next_asset(new_asset);
 
 						if(load_mode != LOADMODE_RESOURCESONLY)
 						{
-							new_asset = assetlist_global.add_asset(new_asset);
-							new_edl->update_assets(new_asset);
-							mainindexes->add_next_asset(new_asset);
+							master_edl->update_assets(new_asset);
+							switch(load_mode)
+							{
+							case LOADMODE_REPLACE_CONCATENATE:
+								master_edl->finalize_edl(load_mode);
+								load_mode = LOADMODE_CONCATENATE;
+								break;
+							case LOADMODE_NEW_TRACKS:
+								master_edl->tracks->create_new_tracks(new_asset);
+								break;
+							case LOADMODE_CONCATENATE:
+								master_edl->tracks->append_asset(new_asset);
+								break;
+							case LOADMODE_PASTE:
+								pos = master_edl->local_session->get_selectionstart();
+								dur = master_edl->tracks->append_asset(new_asset,
+									master_edl->local_session->get_selectionstart());
+								master_edl->local_session->set_selection(pos + dur);
+								break;
+							}
 						}
-						else
-							new_assets.append(new_asset);
-
 						new_asset = next_asset;
 					}
-					delete new_asset;
 					new_asset = 0;
-					if(load_mode != LOADMODE_RESOURCESONLY)
+					if(load_mode == LOADMODE_REPLACE)
 					{
-						new_edl->finalize_edl(load_mode);
-						new_edls.append(new_edl);
-						new_edl = 0;
+						master_edl->finalize_edl(load_mode);
+						load_mode = LOADMODE_NEW_TRACKS;
 					}
 				}
 				else
 				{
+					delete new_file;
+					new_file = 0;
+					new_asset = assetlist_global.add_asset(new_asset);
+					mainindexes->add_next_asset(new_asset);
+
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
-						new_edl = new EDL(0);
-						new_edl->copy_session(master_edl);
-						new_asset = assetlist_global.add_asset(new_asset);
-						new_edl->update_assets(new_asset);
-						new_edl->finalize_edl(load_mode);
-						new_edls.append(new_edl);
-						mainindexes->add_next_asset(new_asset);
-						new_asset = 0;
-						new_edl = 0;
+						master_edl->update_assets(new_asset);
+
+						switch(load_mode)
+						{
+						case LOADMODE_CONCATENATE:
+							master_edl->tracks->append_asset(new_asset);
+							break;
+						case LOADMODE_NEW_TRACKS:
+							master_edl->tracks->create_new_tracks(new_asset);
+							break;
+						case LOADMODE_PASTE:
+							pos = master_edl->local_session->get_selectionstart();
+							dur = master_edl->tracks->append_asset(new_asset,
+								master_edl->local_session->get_selectionstart());
+							master_edl->local_session->set_selection(pos + dur);
+							break;
+						case LOADMODE_REPLACE_CONCATENATE:
+							master_edl->finalize_edl(load_mode);
+							load_mode = LOADMODE_CONCATENATE;
+							break;
+						}
 					}
-					else
-					{
-						new_assets.append(new_asset);
-					}
-				}
-				if(load_mode == LOADMODE_REPLACE || 
-					load_mode == LOADMODE_REPLACE_CONCATENATE)
-				{
-					for(int i = 0; i < new_edls.total; i++)
-					{
-						new_edls.values[i]->local_session->view_start_pts = 0;
-						new_edls.values[i]->local_session->track_start = 0;
-					}
+					new_asset = 0;
 				}
 
 				result = 0;
@@ -979,12 +994,14 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			{
 // Test index file
 				IndexFile indexfile(this);
+				new_asset->nb_streams = 0;
+				new_asset->audio_streamno = 1;
 				result = indexfile.open_index(new_asset);
 				if(!result)
 				{
 					indexfile.close_index();
+					new_asset->init_streams();
 				}
-
 // Test known assets
 				if(result)
 				{
@@ -1013,8 +1030,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
 					new_asset->signed_ = defaults->get("SIGNED_", 1);
 					new_asset->header = defaults->get("HEADER", 0);
+					new_asset->nb_streams = 0;
 
-					FileFormat fwindow(this, new_asset, string);
+					FileFormat fwindow(new_asset, string);
 					result = fwindow.run_window();
 					if(!result)
 					{
@@ -1029,9 +1047,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						defaults->update("SIGNED_", new_asset->signed_);
 						defaults->update("HEADER", new_asset->header);
 						save_defaults();
+						new_asset->init_streams();
 					}
 				}
-
 // Append to list
 				if(!result)
 				{
@@ -1040,21 +1058,33 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_file = new File;
 					result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
 
-					if(load_mode != LOADMODE_RESOURCESONLY)
+					if(!result)
 					{
-						new_edl = new EDL(0);
-						new_edl->copy_session(master_edl);
 						new_asset = assetlist_global.add_asset(new_asset);
-						new_edl->update_assets(new_asset);
-						new_edl->finalize_edl(load_mode);
 						mainindexes->add_next_asset(new_asset);
-						new_edls.append(new_edl);
+
+						if(load_mode != LOADMODE_RESOURCESONLY)
+						{
+							master_edl->update_assets(new_asset);
+							switch(load_mode)
+							{
+							case LOADMODE_CONCATENATE:
+								master_edl->tracks->append_asset(new_asset);
+								break;
+							case LOADMODE_NEW_TRACKS:
+								master_edl->tracks->create_new_tracks(new_asset);
+								break;
+							case LOADMODE_PASTE:
+								master_edl->tracks->append_asset(new_asset,
+									master_edl->local_session->get_selectionstart());
+								break;
+							case LOADMODE_REPLACE_CONCATENATE:
+								master_edl->finalize_edl(load_mode);
+								load_mode = LOADMODE_CONCATENATE;
+								break;
+							}
+						}
 						new_asset = 0;
-						new_edl = 0;
-					}
-					else
-					{
-						new_assets.append(new_asset);
 					}
 					delete new_file;
 					new_file = 0;
@@ -1166,8 +1196,11 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			master_edl->update_assets(new_asset);
 		}
 // Start examining next batch of index files
-		mainindexes->start_build();
 	}
+
+	if(load_mode == LOADMODE_REPLACE)
+		master_edl->finalize_edl(load_mode);
+	mainindexes->start_build();
 
 	master_edl->check_master_track();
 	assetlist_global.remove_unused();
@@ -1175,7 +1208,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	new_edls.remove_all_objects();
 
 	new_assets.remove_all();
-
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
 }
