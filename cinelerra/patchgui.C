@@ -104,6 +104,8 @@ int PatchGUI::reposition(int x, int y)
 
 		if(play)
 		{
+			master->reposition_window(x1, y1 + y);
+			x1 += master->get_w();
 			play->reposition_window(x1, y1 + y);
 			x1 += play->get_w();
 			record->reposition_window(x1, y1 + y);
