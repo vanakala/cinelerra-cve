@@ -854,7 +854,9 @@ void EDL::finalize_edl(int load_mode)
 	ptstime track_length;
 	int no_track = 0;
 
-// There are no tracks created
+	if(tracks && tracks->total())
+		return;
+
 	edlsession->video_tracks = 0;
 	edlsession->audio_tracks = 0;
 
