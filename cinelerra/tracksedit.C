@@ -258,8 +258,8 @@ void Tracks::concatenate_tracks(int edit_plugins)
 				if(output_start < output_max - EPSILON)
 				{
 					output_track->insert_track(input_track,
-						output_start,
-						edit_plugins);
+						input_track->get_length(),
+						output_start);
 					if(output_track->get_length() > output_max)
 						output_track->clear_after(output_max);
 				}

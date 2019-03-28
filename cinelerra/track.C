@@ -336,17 +336,17 @@ void Track::insert_asset(Asset *asset,
 // necessary.
 
 void Track::insert_track(Track *track, 
-	ptstime position,
-	int edit_plugins)
+	ptstime length,
+	ptstime position)
 {
 	edits->insert_edits(track->edits, position);
 
-	if(edit_plugins)
+	if(edlsession->plugins_follow_edits)
 		insert_plugin_set(track, position);
 
 	automation->insert_track(track->automation, 
 		position,
-		track->get_length());
+		length);
 	optimize();
 }
 

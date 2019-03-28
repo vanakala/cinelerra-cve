@@ -87,8 +87,8 @@ public:
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, 
-		ptstime position,
-		int edit_plugins);
+		ptstime length,
+		ptstime position);
 // Optimize editing
 	void optimize();
 
