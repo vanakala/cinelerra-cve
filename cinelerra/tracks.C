@@ -420,6 +420,37 @@ void Tracks::create_new_tracks(Asset *asset)
 	}
 }
 
+void Tracks::create_new_tracks(Tracks *tracks)
+{
+	ptstime master_length = length();
+	ptstime len;
+	Track *new_track;
+
+	if(master_length < EPSILON)
+		master_length = tracks->length();
+
+	if(!tracks->total() || master_length < EPSILON)
+		return;
+
+	for(Track *track = tracks->first; track; track = track->next)
+	{
+		switch(track->data_type)
+		{
+		case TRACK_VIDEO:
+			new_track = add_video_track(0, 0);
+			break;
+		case TRACK_AUDIO:
+			new_track = add_audio_track(0, 0);
+			break;
+		}
+		len = track->get_length();
+		if(len > master_length)
+			len = master_length;
+		new_track->insert_track(track, len, 0);
+	}
+	edl->check_master_track();
+}
+
 void Tracks::delete_track(Track *track)
 {
 	if(!track)

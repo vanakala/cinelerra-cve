@@ -92,6 +92,8 @@ public:
 	ptstime append_asset(Asset *asset, ptstime paste_at = -1);
 // Create new tracks and insert asset
 	void create_new_tracks(Asset *asset);
+// Create new tracks and insert tracks
+	void create_new_tracks(Tracks *tracks);
 
 	EDL *edl;
 
