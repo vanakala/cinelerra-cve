@@ -384,11 +384,7 @@ void PluginSet::shift_effects(ptstime start, ptstime length)
 		{
 			current->shift(length);
 			current->keyframes->base_pts = current->get_pts();
-			if(current->keyframes->first && current->keyframes->first->pos_time >= start)
-				current->keyframes->first->pos_time += length;
 		}
-// Shift keyframes in this effect.
-		current->keyframes->paste_silence(start, start + length);
 	}
 }
 
