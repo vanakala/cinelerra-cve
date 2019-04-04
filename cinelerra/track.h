@@ -83,12 +83,12 @@ public:
 		ptstime start,
 		ptstime length,
 		int plugin_type);
-	void insert_plugin_set(Track *track, ptstime position);
+	void insert_plugin_set(Track *track, ptstime position,
+		ptstime length = -1, int overwrite = 0);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
-	void insert_track(Track *track, 
-		ptstime length,
-		ptstime position);
+	void insert_track(Track *track, ptstime length,
+		ptstime position, int overwrite = 0);
 // Optimize editing
 	void optimize();
 

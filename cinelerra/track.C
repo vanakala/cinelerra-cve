@@ -337,12 +337,13 @@ void Track::insert_asset(Asset *asset,
 
 void Track::insert_track(Track *track, 
 	ptstime length,
-	ptstime position)
+	ptstime position,
+	int overwrite)
 {
-	edits->insert_edits(track->edits, position);
+	edits->insert_edits(track->edits, position, length, overwrite);
 
 	if(edlsession->plugins_follow_edits)
-		insert_plugin_set(track, position);
+		insert_plugin_set(track, position, length, overwrite);
 
 	automation->insert_track(track->automation, 
 		position,
@@ -351,25 +352,45 @@ void Track::insert_track(Track *track,
 }
 
 // Called by insert_track
-void Track::insert_plugin_set(Track *track, ptstime position)
+void Track::insert_plugin_set(Track *track, ptstime position,
+	ptstime duration, int overwrite)
 {
 	PluginSet *new_set;
 	Plugin *plugin, *new_plugin;
+	ptstime end;
 
-	shift_effects(position, track->get_length());
+	if(duration < 0)
+		duration = track->get_length();
+
+	end = position + duration;
+
+	if(overwrite)
+	{
+		for(int i = 0; i < plugin_set.total; i++)
+			plugin_set.values[i]->clear(position, end);
+	}
+	else
+		shift_effects(position, duration);
+
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
 		plugin = track->plugin_set.values[i]->get_first_plugin();
-		if(plugin)
+		if(plugin && plugin->get_pts() < end)
 		{
+			ptstime plugin_start = plugin->get_pts() + position;
+			ptstime plugin_end  = plugin_end + plugin->length();
+
+			if(plugin_end > end)
+				plugin_end = end;
+
 			plugin_set.append(new_set = new PluginSet(edl, this));
 			new_plugin = (Plugin*)new_set->insert_edit(
-				plugin->get_pts() + position,
-				plugin->length());
+				plugin_start, plugin_end - plugin_start);
 			new_plugin->synchronize_params(plugin);
 			new_plugin->plugin_type = plugin->plugin_type;
 		}
 	}
+	optimize();
 }
 
 Plugin* Track::insert_effect(const char *title, 
