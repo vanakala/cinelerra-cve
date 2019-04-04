@@ -380,6 +380,150 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 	return pasted_length;
 }
 
+ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
+	Track *first_track, int overwrite)
+{
+	Track *master = 0;
+	ptstime alength = 0;
+	ptstime start = 0;
+	ptstime dur, pasted_length;
+	Track *new_track;
+
+	// Determine the start and length
+	// If master track is part of the operation, the length
+	// is sum of master and asset duration
+	// else the final length is the current length of master track
+	new_track = tracks->first;
+	for(Track *current = first_track ? first_track : first;
+			current; current = current->next)
+	{
+		if(!current->record)
+			continue;
+
+		dur = 0;
+
+		if(current->data_type == TRACK_VIDEO)
+		{
+			for(; new_track; new_track = new_track->next)
+				if(new_track->data_type == TRACK_VIDEO)
+					break;
+			if(new_track)
+			{
+				dur = current->get_length();
+				if(current->master)
+				{
+					master = current;
+					alength = new_track->get_length();
+				}
+			}
+		}
+		if(dur > start)
+			start = dur;
+	}
+
+	new_track = tracks->first;
+	for(Track *current = first_track ? first_track : first;
+			current; current = current->next)
+	{
+		if(!current->record)
+			continue;
+
+		dur = 0;
+
+		if(current->data_type == TRACK_AUDIO)
+		{
+			for(; new_track; new_track = new_track->next)
+				if(new_track->data_type == TRACK_AUDIO)
+					break;
+			if(new_track)
+			{
+				dur = current->get_length();
+				if(current->master)
+				{
+					master = current;
+					alength = new_track->get_length();
+				}
+			}
+		}
+		if(dur > start)
+			start = dur;
+	}
+
+	if(paste_at < 0)
+	{
+		// If master is part of operation we append to master
+		// If master does not paticipate, append to the longest participating track
+		if(master)
+			start = master->get_length();
+		else
+			alength = length() - start;
+	}
+	else
+	{
+		dur = length();
+		start = MIN(paste_at, dur);
+
+		if(!master)
+			alength = dur - start;
+	}
+
+	pasted_length  = 0;
+
+	start = master_edl->align_to_frame(start);
+	alength = master_edl->align_to_frame(alength);
+
+	if(alength < EPSILON)
+		return 0;
+
+// Paste video tracks, then audio
+	new_track = tracks->first;
+	for(Track *current = first_track ? first_track : first;
+			current; current = current->next)
+	{
+		dur = 0;
+		if(!current->record)
+			continue;
+
+		if(current->data_type == TRACK_VIDEO)
+		{
+			for(; new_track; new_track = new_track->next)
+				if(new_track->data_type == TRACK_VIDEO)
+					break;
+			if(!new_track)
+				break;
+			dur = new_track->get_length();
+			dur = MIN(alength, dur);
+			current->insert_track(new_track, dur, start, overwrite);
+		}
+		if(dur > pasted_length)
+			pasted_length = dur;
+	}
+
+	new_track = tracks->first;
+	for(Track *current = first_track ? first_track : first;
+		current; current = current->next)
+	{
+		dur = 0;
+		if(!current->record)
+			continue;
+
+		if(current->data_type == TRACK_AUDIO)
+		{
+			for(; new_track; new_track = new_track->next)
+				if(new_track->data_type == TRACK_AUDIO)
+					break;
+			if(!new_track)
+				break;
+			dur = new_track->get_length();
+			dur = MIN(alength, dur);
+			current->insert_track(new_track, dur, start, overwrite);
+		}
+		if(dur > pasted_length)
+			pasted_length = dur;
+	}
+	return pasted_length;
+}
+
 void Tracks::create_new_tracks(Asset *asset)
 {
 	ptstime master_length = length();
