@@ -255,15 +255,15 @@ void Automation::paste_silence(ptstime start, ptstime end)
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
 	ptstime start,
-	ptstime length)
+	ptstime length,
+	int overwrite)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(autos[i] && automation->autos[i])
 		{
 			autos[i]->insert_track(automation->autos[i], 
-				start,
-				length);
+				start, length, overwrite);
 		}
 	}
 }

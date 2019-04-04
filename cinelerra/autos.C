@@ -128,10 +128,15 @@ void Autos::copy_from(Autos *autos)
 
 void Autos::insert_track(Autos *automation,
 	ptstime start,
-	ptstime length)
+	ptstime length,
+	int overwrite)
 {
 // Insert silence
-	insert(start, start + length);
+	if(overwrite)
+		clear(start, start + length, 0);
+	else
+		insert(start, start + length);
+
 	for(Auto *current = automation->first; current; current = NEXT)
 	{
 // fill new auto with values from current (template), interpolate values if possible

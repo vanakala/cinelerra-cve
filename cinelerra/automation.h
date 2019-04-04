@@ -99,7 +99,8 @@ public:
 	void paste_silence(ptstime start, ptstime end);
 	void insert_track(Automation *automation, 
 		ptstime start,
-		ptstime length);
+		ptstime length,
+		int overwrite = 0);
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,

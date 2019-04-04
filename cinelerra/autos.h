@@ -63,7 +63,8 @@ public:
 	Auto* insert_auto(ptstime position, Auto *templ = 0);
 	void insert_track(Autos *automation, 
 		ptstime start,
-		ptstime length);
+		ptstime length,
+		int overwrite = 0);
 	virtual void load(FileXML *xml);
 	void paste(ptstime start,
 		ptstime length,
