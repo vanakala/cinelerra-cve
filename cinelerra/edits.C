@@ -123,51 +123,45 @@ void Edits::insert_asset(Asset *asset,
 		new_edit->channel = track_number % asset->layers;
 }
 
-void Edits::insert_edits(Edits *source_edits, ptstime postime)
+void Edits::insert_edits(Edits *source_edits, ptstime postime,
+	ptstime duration, int replace)
 {
+	Edit *first_dest, *last_dest;
+
+	if(duration < 0)
+		duration = source_edits->length();
+
+	if(!source_edits->first || fabs(duration) < EPSILON)
+		return;
+
+	first_dest = split_edit(postime);
+	if(replace)
+	{
+		last_dest = split_edit(postime + duration);
+		for(Edit *ed = first_dest->next; ed && ed != last_dest;)
+		{
+			Edit *nx = ed->next;
+			delete ed;
+			ed = nx;
+		}
+	}
+	else
+		move_edits(first_dest, duration);
+
 	for(Edit *source_edit = source_edits->first;
-		source_edit && source_edit != source_edits->last;
+		source_edit && source_edit != source_edits->last &&
+			duration > source_edit->get_pts();
 		source_edit = source_edit->next)
 	{
+		if(duration < source_edit->get_pts())
+			break;
 		Asset *dest_asset = source_edit->asset;
 		edl->update_assets(source_edit->asset);
 
 		Edit *dest_edit = split_edit(postime + source_edit->get_pts(), 1);
-// Save position of asset
-		Asset *split_asset = dest_edit->asset;
-		ptstime split_src = dest_edit->get_source_pts();
 
 		dest_edit->copy_from(source_edit);
-		dest_edit->asset = dest_asset;
 		dest_edit->set_pts(postime + source_edit->get_pts());
-
-// Shift keyframes in source edit to their position in the
-// destination edit for plugin case
-		dest_edit->shift_keyframes(postime);
-
-		ptstime req_length = source_edit->length();
-		ptstime dst_length = dest_edit->length();
-
-		if(!PTSEQU(req_length, dst_length))
-		{
-			ptstime end_pos = dest_edit->get_pts() + req_length;
-
-			if(req_length < dst_length || dest_edit == last)
-			{
-				dest_edit = split_edit(end_pos);
-				if(dest_edit != last)
-				{
-					dest_edit->asset = split_asset;
-					if(split_asset)
-						dest_edit->set_source_pts(split_src);
-					end_pos = dest_edit->next->get_pts() + req_length;
-				}
-			}
-			if(dest_edit != last)
-			{
-				move_edits(dest_edit->next, end_pos);
-			}
-		}
 	}
 }
 
