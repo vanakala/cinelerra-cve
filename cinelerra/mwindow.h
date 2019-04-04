@@ -134,7 +134,7 @@ public:
 		Track *first_track,
 		int actions,
 		int overwrite);
-	void paste_edl(EDL *new_edl,
+	ptstime paste_edl(EDL *new_edl,
 		int load_mode,
 		Track *first_track,
 		ptstime current_position,

@@ -45,6 +45,7 @@
 #include "language.h"
 #include "labels.h"
 #include "levelwindow.h"
+#include "loadmode.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
@@ -971,8 +972,7 @@ void MWindow::paste_automation()
 	}
 }
 
-// Insert edls with project deletion and index file generation.
-void MWindow::paste_edl(EDL *new_edl,
+ptstime MWindow::paste_edl(EDL *new_edl,
 	int load_mode,
 	Track *first_track,
 	ptstime current_position,
@@ -981,184 +981,41 @@ void MWindow::paste_edl(EDL *new_edl,
 {
 	ptstime original_length;
 	ptstime original_preview_end;
-	Track *new_track;
-	ArrayList<Track*> destination_tracks;
+	ptstime pasted_length = 0;
 
 	if(new_edl == 0)
-		return;
-
-	if(load_mode == LOADMODE_RESOURCESONLY)
-	{
-		cliplist_global.add_clip(new_edl);
-		return;
-	}
+		return 0;
 
 	original_length = master_edl->total_length();
 	original_preview_end = master_edl->local_session->preview_end;
 
-// Delete current project
-	if(load_mode == LOADMODE_REPLACE ||
-		load_mode == LOADMODE_REPLACE_CONCATENATE)
-	{
-		reset_caches();
-		master_edl->save_defaults(defaults, 0);
-		hide_plugins();
-
-		master_edl->reset_instance();
-		master_edl->copy_session(new_edl, edlsession);
-
-		gui->mainmenu->update_toggles();
-		gwindow->gui->update_toggles();
-
-// Insert labels for certain modes constitutively
-		actions = EDIT_LABELS|EDIT_PLUGINS;
-// Force reset of preview
-		original_length = 0;
-		original_preview_end = -1;
-	}
-
-	if(load_mode == LOADMODE_REPLACE || 
-		load_mode == LOADMODE_REPLACE_CONCATENATE ||
-		load_mode == LOADMODE_NEW_TRACKS)
-	{
-		for(Track *current = new_edl->first_track();
-			current; current = NEXT)
-		{
-			new_track = 0;
-
-			if(current->data_type == TRACK_VIDEO)
-				new_track = master_edl->tracks->add_video_track(0, 0);
-			else
-			if(current->data_type == TRACK_AUDIO)
-				new_track = master_edl->tracks->add_audio_track(0, 0);
-
-			if(new_track)
-			{
-				destination_tracks.append(new_track);
-
-				if(load_mode == LOADMODE_REPLACE)
-					new_track->master = current->master;
-			}
-			edlsession->highlighted_track =
-				master_edl->tracks->total() - 1;
-		}
-	}
-
-	if(load_mode == LOADMODE_CONCATENATE || load_mode == LOADMODE_PASTE)
-	{
-// The point of this is to shift forward labels after the selection so they can
-// then be shifted back to their original locations without recursively
-// shifting back every paste.
-		if(load_mode == LOADMODE_PASTE && (actions & EDIT_LABELS))
-			master_edl->labels->clear(
-				master_edl->local_session->get_selectionstart(),
-				master_edl->local_session->get_selectionend(), 1);
-
-		Track *current = first_track ? first_track : master_edl->first_track();
-		for(; current; current = NEXT)
-		{
-			if(current->record)
-				destination_tracks.append(current);
-		}
-	}
-
-	int destination_track = 0;
-	ptstime *paste_position = new ptstime[destination_tracks.total];
-	ptstime edl_length = new_edl->total_length();
-
-// Capture index file status from mainindex test
-	master_edl->update_assets(new_edl);
-
-// Get starting point of insertion.  Need this to paste labels.
 	switch(load_mode)
 	{
+	case LOADMODE_RESOURCESONLY:
 	case LOADMODE_REPLACE:
-	case LOADMODE_NEW_TRACKS:
-		current_position = 0;
-		break;
-
-	case LOADMODE_CONCATENATE:
 	case LOADMODE_REPLACE_CONCATENATE:
-		destination_track = 0;
-		if(destination_tracks.total)
-			current_position = destination_tracks.values[0]->get_length();
-		else
-			current_position = 0;
+		errorbox("paste_edl: Unsupported '%s'", LoadMode::name(load_mode));
+		return 0;
+	case LOADMODE_NEW_TRACKS:
+		master_edl->tracks->create_new_tracks(new_edl->tracks);
 		break;
-
+	case LOADMODE_CONCATENATE:
+		master_edl->tracks->append_tracks(new_edl->tracks);
+		break;
 	case LOADMODE_PASTE:
-		destination_track = 0;
-		for(int j = 0; j < destination_tracks.total; j++)
-			paste_position[j] = (current_position >= 0) ?
-				current_position :
-				master_edl->local_session->get_selectionstart();
+		if(current_position < 0)
+			current_position = master_edl->local_session->get_selectionstart();
+		pasted_length = master_edl->tracks->append_tracks(new_edl->tracks,
+			current_position, first_track, overwrite);
 		break;
 	}
-
-// Insert edl
-// Insert labels
-	if(load_mode == LOADMODE_PASTE)
-		master_edl->labels->insert_labels(new_edl->labels,
-			destination_tracks.total ? paste_position[0] : 0.0,
-			edl_length, actions & EDIT_LABELS);
-	else
-		master_edl->labels->insert_labels(new_edl->labels,
-			current_position, edl_length, actions & EDIT_LABELS);
-
-	for(Track *new_track = new_edl->first_track();
-		new_track; new_track = new_track->next)
-	{
-// Get destination track of same type as new_track
-		for(int k = 0; k < destination_tracks.total &&
-			destination_tracks.values[destination_track]->data_type != new_track->data_type;
-			k++, destination_track++)
-		{
-			if(destination_track >= destination_tracks.total - 1)
-				destination_track = 0;
-		}
-
-// Insert data into destination track
-		if(destination_track < destination_tracks.total &&
-			destination_tracks.values[destination_track]->data_type == new_track->data_type)
-		{
-			Track *track = destination_tracks.values[destination_track];
-
-// Insert new track at current position
-			switch(load_mode)
-			{
-			case LOADMODE_REPLACE_CONCATENATE:
-			case LOADMODE_CONCATENATE:
-				current_position = track->get_length();
-				break;
-
-			case LOADMODE_PASTE:
-				current_position = paste_position[destination_track];
-				paste_position[destination_track] += new_track->get_length();
-				break;
-			}
-
-			if(overwrite)
-				track->clear(current_position,
-					current_position + new_track->get_length(),
-					actions | EDIT_EDITS);
-			track->insert_track(new_track,
-				current_position, actions & EDIT_PLUGINS);
-		}
-
-// Get next destination track
-		destination_track++;
-		if(destination_track >= destination_tracks.total)
-			destination_track = 0;
-	}
-
-	delete [] paste_position;
-
 // Fix preview range
 	if(!EQUIV(original_length, original_preview_end))
 		master_edl->local_session->preview_end = master_edl->total_length();
 
 // Start examining next batch of index files
 	mainindexes->start_build();
+	return pasted_length;
 }
 
 void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
