@@ -311,7 +311,7 @@ void Autos::clear_all()
 
 void Autos::insert(ptstime start, ptstime end)
 {
-	ptstime length;
+	ptstime shift;
 	Auto *current = first;
 
 	if(current)
@@ -319,12 +319,10 @@ void Autos::insert(ptstime start, ptstime end)
 
 	for( ; current && current->pos_time < start; current = NEXT);
 
-	length = end - start;
+	shift = end - start - start;
 
 	for(; current; current = NEXT)
-	{
-		current->pos_time += length;
-	}
+		current->pos_time += shift;
 }
 
 void Autos::paste(ptstime start,
