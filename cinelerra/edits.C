@@ -841,20 +841,6 @@ void Edits::paste_silence(ptstime start, ptstime end)
 		move_edits(new_edit->next, end);
 }
 
-Edit* Edits::shift(ptstime position, ptstime difference)
-{
-	ptstime end = position + difference;
-	Edit *new_edit = split_edit(position, 1);
-
-	if(fabs(difference) < EPSILON)
-		return new_edit;
-	if(new_edit->next)
-		move_edits(new_edit->next, end);
-	else
-		split_edit(end, 1);
-	return new_edit;
-}
-
 void Edits::cleanup()
 {
 	for(Edit *current = first; current; current = current->next)
