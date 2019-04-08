@@ -400,15 +400,10 @@ void ResourcePixmap::draw_title(Edit *edit,
 		char title[BCTEXTLEN], channel[BCTEXTLEN];
 		FileSystem fs;
 
-		if(edit->user_title[0])
-			strcpy(title, edit->user_title);
-		else
-		{
-			fs.extract_name(title, edit->asset->path);
+		fs.extract_name(title, edit->asset->path);
 
-			sprintf(channel, " #%d", edit->channel + 1);
-			strcat(title, channel);
-		}
+		sprintf(channel, " #%d", edit->channel + 1);
+		strcat(title, channel);
 
 		canvas->set_color(mwindow->theme->title_color);
 		canvas->set_font(mwindow->theme->title_font);

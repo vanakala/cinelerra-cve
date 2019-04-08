@@ -86,10 +86,6 @@ public:
 // End of asset
 	ptstime get_source_length();
 
-// User defined title for timeline
-	char user_title[BCTEXTLEN];
-
-
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
 	Transition *transition;

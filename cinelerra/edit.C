@@ -44,7 +44,6 @@ Edit::Edit(EDL *edl, Track *track)
 	asset = 0;
 	transition = 0;
 	channel = 0;
-	user_title[0] = 0;
 	this->edl = edl;
 	this->track = track;
 	if(track) this->edits = track->edits;
@@ -59,7 +58,6 @@ Edit::Edit(EDL *edl, Edits *edits)
 	asset = 0;
 	transition = 0;
 	channel = 0;
-	user_title[0] = 0;
 	this->edl = edl;
 	this->edits = edits;
 	if(edits) this->track = edits->track;
@@ -83,7 +81,6 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 			file->tag.set_property("SOURCE_PTS", source_pts);
 			file->tag.set_property("CHANNEL", channel);
 		}
-		if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 
 		file->append_tag();
 
@@ -168,7 +165,6 @@ void Edit::copy_from(Edit *edit)
 	this->asset = edit->asset;
 	this->source_pts = edit->source_pts;
 	this->project_pts = edit->project_pts;
-	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
 	{
@@ -312,8 +308,6 @@ ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 	}
 	else
 		this->project_pts = cur_pts;
-	user_title[0] = 0;
-	file->tag.get_property("USER_TITLE", user_title);
 	channel = file->tag.get_property("CHANNEL", (int32_t)0);
 	return length_time;
 }
