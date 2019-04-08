@@ -140,6 +140,33 @@ Plugin* PluginSet::insert_plugin(const char *title,
 	return plugin;
 }
 
+void PluginSet::insert_plugin(Plugin *plugin, ptstime position, ptstime duration)
+{
+	Plugin *new_plugin;
+	ptstime end = position + duration;
+
+	if(!plugin)
+		return;
+
+	ptstime plugin_start = plugin->get_pts() + position;
+	ptstime plugin_end = plugin_start + plugin->length();
+
+	if(plugin_start < end)
+	{
+		if(plugin_end > end)
+			plugin_end = end;
+
+		append(new_plugin = (Plugin*)create_edit());
+		if(plugin_start > 0)
+			append(new_plugin = (Plugin*)create_edit());
+		new_plugin->set_pts(plugin_start);
+		new_plugin->synchronize_params(plugin);
+		new_plugin->plugin_type = plugin->plugin_type;
+		append(new_plugin = (Plugin*)create_edit());
+		new_plugin->set_pts(plugin_end);
+	}
+}
+
 Edit* PluginSet::create_edit()
 {
 	return new Plugin(edl, this, "");

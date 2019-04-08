@@ -375,22 +375,15 @@ void Track::insert_plugin_set(Track *track, ptstime position,
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
 		plugin = track->plugin_set.values[i]->get_first_plugin();
-		if(plugin && plugin->get_pts() < end)
+		if(plugin)
 		{
-			ptstime plugin_start = plugin->get_pts() + position;
-			ptstime plugin_end  = plugin_end + plugin->length();
-
-			if(plugin_end > end)
-				plugin_end = end;
-
-			plugin_set.append(new_set = new PluginSet(edl, this));
-			new_plugin = (Plugin*)new_set->insert_edit(
-				plugin_start, plugin_end - plugin_start);
-			new_plugin->synchronize_params(plugin);
-			new_plugin->plugin_type = plugin->plugin_type;
+			if(plugin->get_pts() + position < end)
+			{
+				plugin_set.append(new_set = new PluginSet(edl, this));
+				new_set->insert_plugin(plugin, position, duration);
+			}
 		}
 	}
-	optimize();
 }
 
 Plugin* Track::insert_effect(const char *title, 

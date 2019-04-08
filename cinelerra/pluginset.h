@@ -75,6 +75,9 @@ public:
 		ptstime length,
 		int plugin_type,
 		SharedLocation *shared_location);
+// Insert plugin into empty set
+	void insert_plugin(Plugin *old_plugin,
+		ptstime position, ptstime duration);
 };
 
 #endif
