@@ -134,11 +134,15 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 	if(!source_edits->first || fabs(duration) < EPSILON)
 		return;
 
-	first_dest = split_edit(postime);
+	first_dest = split_edit(postime, 1);
+	// do not move first edit
+	if(first_dest == first)
+		first_dest = first->next;
+
 	if(replace)
 	{
 		last_dest = split_edit(postime + duration);
-		for(Edit *ed = first_dest->next; ed && ed != last_dest;)
+		for(Edit *ed = first_dest; ed && ed != last_dest;)
 		{
 			Edit *nx = ed->next;
 			delete ed;
@@ -146,7 +150,10 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 		}
 	}
 	else
-		move_edits(first_dest, duration);
+	{
+		for(Edit *ed = first_dest; ed; ed = ed->next)
+			ed->shift(duration);
+	}
 
 	for(Edit *source_edit = source_edits->first;
 		source_edit && source_edit != source_edits->last &&
@@ -158,7 +165,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 		Asset *dest_asset = source_edit->asset;
 		edl->update_assets(source_edit->asset);
 
-		Edit *dest_edit = split_edit(postime + source_edit->get_pts(), 1);
+		Edit *dest_edit = split_edit(postime + source_edit->get_pts());
 
 		dest_edit->copy_from(source_edit);
 		dest_edit->set_pts(postime + source_edit->get_pts());
