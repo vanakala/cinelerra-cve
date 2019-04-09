@@ -217,10 +217,10 @@ Edit* Edits::split_edit(ptstime postime, int force)
 	{
 		// List is empty create edit at 0, next edit at postime
 		append(edit = create_edit());
-		if(postime > EPSILON)
+		if(postime > EPSILON || force)
 		{
-			append(edit = create_edit());
-			edit->set_pts(postime);
+			append(new_edit = create_edit());
+			new_edit->set_pts(postime);
 		}
 		return edit;
 	}
