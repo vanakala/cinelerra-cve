@@ -55,6 +55,7 @@
 #include "levelwindowgui.h"
 #include "levelwindow.h"
 #include "loadfile.inc"
+#include "loadmode.h"
 #include "localsession.h"
 #include "maincursor.h"
 #include "mainerror.h"
@@ -845,8 +846,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode,
 	int update_filename)
 {
-	ArrayList<EDL*> new_edls;
-	ArrayList<Asset*> new_assets;
 	int result = 0;
 	ptstime pos, dur;
 
@@ -859,13 +858,14 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
+		reset_caches();
+		hide_plugins();
 		assetlist_global.reset_inuse();
 		vwindow->remove_source();
 		vwindow_edl->reset_instance();
 		master_edl->reset_instance();
 	}
 
-// Define new_edls and new_assets to load
 	for(int i = 0; i < filenames->total; i++)
 	{
 // Get type of file
@@ -885,74 +885,190 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		switch(result)
 		{
 // Convert media file to EDL
-			case FILE_OK:
+		case FILE_OK:
 // Warn about odd image dimensions
-				if(!new_asset->single_image && new_asset->video_data &&
-					((new_asset->width % 2) ||
-					(new_asset->height % 2)))
-				{
-					errormsg("%s's\nresolution is %dx%d. Images with odd dimensions may not decode properly.",
-						new_asset->path,
-						new_asset->width,
-						new_asset->height);
-				}
+			if(!new_asset->single_image && new_asset->video_data &&
+				((new_asset->width % 2) ||
+				(new_asset->height % 2)))
+			{
+				errormsg("%s's\nresolution is %dx%d. Images with odd dimensions may not decode properly.",
+					new_asset->path,
+					new_asset->width,
+					new_asset->height);
+			}
 
-				if(new_asset->nb_programs)
-				{
-					delete new_file;
-					new_file = 0;
+			if(new_asset->nb_programs)
+			{
+				delete new_file;
+				new_file = 0;
 
-					for(i = 0; i < new_asset->nb_programs; i++)
-					{
-						new_asset->set_program(i);
-						next_asset = new Asset();
-						next_asset->copy_from(new_asset, 0);
-						new_asset = assetlist_global.add_asset(new_asset);
-						mainindexes->add_next_asset(new_asset);
-
-						if(load_mode != LOADMODE_RESOURCESONLY)
-						{
-							master_edl->update_assets(new_asset);
-							switch(load_mode)
-							{
-							case LOADMODE_REPLACE_CONCATENATE:
-								master_edl->finalize_edl(load_mode);
-								load_mode = LOADMODE_CONCATENATE;
-								break;
-							case LOADMODE_NEW_TRACKS:
-								master_edl->tracks->create_new_tracks(new_asset);
-								break;
-							case LOADMODE_CONCATENATE:
-								master_edl->tracks->append_asset(new_asset);
-								break;
-							case LOADMODE_PASTE:
-								pos = master_edl->local_session->get_selectionstart();
-								dur = master_edl->tracks->append_asset(new_asset,
-									master_edl->local_session->get_selectionstart());
-								master_edl->local_session->set_selection(pos + dur);
-								break;
-							}
-						}
-						new_asset = next_asset;
-					}
-					new_asset = 0;
-					if(load_mode == LOADMODE_REPLACE)
-					{
-						master_edl->finalize_edl(load_mode);
-						load_mode = LOADMODE_NEW_TRACKS;
-					}
-				}
-				else
+				for(i = 0; i < new_asset->nb_programs; i++)
 				{
-					delete new_file;
-					new_file = 0;
+					new_asset->set_program(i);
+					next_asset = new Asset();
+					next_asset->copy_from(new_asset, 0);
 					new_asset = assetlist_global.add_asset(new_asset);
 					mainindexes->add_next_asset(new_asset);
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
 						master_edl->update_assets(new_asset);
+						switch(load_mode)
+						{
+						case LOADMODE_REPLACE:
+							master_edl->finalize_edl(load_mode);
+							load_mode = LOADMODE_NEW_TRACKS;
+							break;
+						case LOADMODE_REPLACE_CONCATENATE:
+							master_edl->finalize_edl(load_mode);
+							load_mode = LOADMODE_CONCATENATE;
+							break;
+						case LOADMODE_NEW_TRACKS:
+							master_edl->tracks->create_new_tracks(new_asset);
+							break;
+						case LOADMODE_CONCATENATE:
+							master_edl->tracks->append_asset(new_asset);
+							break;
+						case LOADMODE_PASTE:
+							pos = master_edl->local_session->get_selectionstart();
+							dur = master_edl->tracks->append_asset(new_asset,
+								master_edl->local_session->get_selectionstart());
+							master_edl->local_session->set_selection(pos + dur);
+							break;
+						}
+					}
+					new_asset = next_asset;
+				}
+				new_asset = 0;
+			}
+			else
+			{
+				delete new_file;
+				new_file = 0;
+				new_asset = assetlist_global.add_asset(new_asset);
+				mainindexes->add_next_asset(new_asset);
 
+				if(load_mode != LOADMODE_RESOURCESONLY)
+				{
+					master_edl->update_assets(new_asset);
+
+					switch(load_mode)
+					{
+					case LOADMODE_REPLACE:
+						master_edl->finalize_edl(load_mode);
+						load_mode = LOADMODE_NEW_TRACKS;
+						break;
+					case LOADMODE_CONCATENATE:
+						master_edl->tracks->append_asset(new_asset);
+						break;
+					case LOADMODE_NEW_TRACKS:
+						master_edl->tracks->create_new_tracks(new_asset);
+						break;
+					case LOADMODE_PASTE:
+						pos = master_edl->local_session->get_selectionstart();
+						dur = master_edl->tracks->append_asset(new_asset,
+							master_edl->local_session->get_selectionstart());
+						master_edl->local_session->set_selection(pos + dur);
+						break;
+					case LOADMODE_REPLACE_CONCATENATE:
+						master_edl->finalize_edl(load_mode);
+						load_mode = LOADMODE_CONCATENATE;
+						break;
+					}
+				}
+				new_asset = 0;
+			}
+
+			result = 0;
+			break;
+
+// File not found
+		case FILE_NOT_FOUND:
+			errormsg(_("Failed to open %s"), new_asset->path);
+			result = 1;
+			delete new_file;
+			delete new_asset;
+			new_file = 0;
+			new_asset = 0;
+			break;
+
+// Unknown format
+		case FILE_UNRECOGNIZED_CODEC:
+		{
+// Test index file
+			IndexFile indexfile(this);
+			new_asset->nb_streams = 0;
+			new_asset->audio_streamno = 1;
+			result = indexfile.open_index(new_asset);
+			if(!result)
+			{
+				indexfile.close_index();
+				new_asset->init_streams();
+			}
+// Test known assets
+			if(result)
+			{
+				Asset *old_asset = assetlist_global.get_asset(new_asset->path);
+				if(old_asset)
+				{
+					delete new_asset;
+					new_asset = old_asset;
+					result = 0;
+				}
+			}
+
+// Prompt user
+			if(result)
+			{
+				char string[BCTEXTLEN];
+				FileSystem fs;
+				fs.extract_name(string, new_asset->path);
+
+				strcat(string, _("'s format couldn't be determined."));
+				new_asset->audio_data = 1;
+				new_asset->format = FILE_PCM;
+				new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
+				new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
+				new_asset->bits = defaults->get("AUDIO_BITS", 16);
+				new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
+				new_asset->signed_ = defaults->get("SIGNED_", 1);
+				new_asset->header = defaults->get("HEADER", 0);
+				new_asset->nb_streams = 0;
+
+				FileFormat fwindow(new_asset, string);
+				result = fwindow.run_window();
+				if(!result)
+				{
+					if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
+						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
+
+					defaults->update("AUDIO_CHANNELS", new_asset->channels);
+					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
+					defaults->update("AUDIO_BITS", new_asset->bits);
+					defaults->update("BYTE_ORDER", new_asset->byte_order);
+					defaults->update("SIGNED_", new_asset->signed_);
+					defaults->update("HEADER", new_asset->header);
+					save_defaults();
+					new_asset->init_streams();
+				}
+			}
+
+// Append to list
+			if(!result)
+			{
+// Recalculate length
+				delete new_file;
+				new_file = new File;
+				result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
+
+				if(!result)
+				{
+					new_asset = assetlist_global.add_asset(new_asset);
+					mainindexes->add_next_asset(new_asset);
+					if(load_mode != LOADMODE_RESOURCESONLY)
+					{
+						master_edl->update_assets(new_asset);
 						switch(load_mode)
 						{
 						case LOADMODE_CONCATENATE:
@@ -962,159 +1078,58 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 							master_edl->tracks->create_new_tracks(new_asset);
 							break;
 						case LOADMODE_PASTE:
-							pos = master_edl->local_session->get_selectionstart();
-							dur = master_edl->tracks->append_asset(new_asset,
+							master_edl->tracks->append_asset(new_asset,
 								master_edl->local_session->get_selectionstart());
-							master_edl->local_session->set_selection(pos + dur);
 							break;
 						case LOADMODE_REPLACE_CONCATENATE:
 							master_edl->finalize_edl(load_mode);
 							load_mode = LOADMODE_CONCATENATE;
 							break;
+						case LOADMODE_REPLACE:
+							master_edl->finalize_edl(load_mode);
+							load_mode = LOADMODE_NEW_TRACKS;
+							break;
 						}
 					}
 					new_asset = 0;
 				}
-
-				result = 0;
-				break;
-
-// File not found
-			case FILE_NOT_FOUND:
-				errormsg(_("Failed to open %s"), new_asset->path);
-				result = 1;
 				delete new_file;
-				delete new_asset;
 				new_file = 0;
-				new_asset = 0;
-				break;
-
-// Unknown format
-			case FILE_UNRECOGNIZED_CODEC:
-			{
-// Test index file
-				IndexFile indexfile(this);
-				new_asset->nb_streams = 0;
-				new_asset->audio_streamno = 1;
-				result = indexfile.open_index(new_asset);
-				if(!result)
-				{
-					indexfile.close_index();
-					new_asset->init_streams();
-				}
-// Test known assets
-				if(result)
-				{
-					Asset *old_asset = assetlist_global.get_asset(new_asset->path);
-					if(old_asset)
-					{
-						delete new_asset;
-						new_asset = old_asset;
-						result = 0;
-					}
-				}
-
-// Prompt user
-				if(result)
-				{
-					char string[BCTEXTLEN];
-					FileSystem fs;
-					fs.extract_name(string, new_asset->path);
-
-					strcat(string, _("'s format couldn't be determined."));
-					new_asset->audio_data = 1;
-					new_asset->format = FILE_PCM;
-					new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
-					new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
-					new_asset->bits = defaults->get("AUDIO_BITS", 16);
-					new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
-					new_asset->signed_ = defaults->get("SIGNED_", 1);
-					new_asset->header = defaults->get("HEADER", 0);
-					new_asset->nb_streams = 0;
-
-					FileFormat fwindow(new_asset, string);
-					result = fwindow.run_window();
-					if(!result)
-					{
-						if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
-							errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
-								MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
-
-						defaults->update("AUDIO_CHANNELS", new_asset->channels);
-						defaults->update("SAMPLE_RATE", new_asset->sample_rate);
-						defaults->update("AUDIO_BITS", new_asset->bits);
-						defaults->update("BYTE_ORDER", new_asset->byte_order);
-						defaults->update("SIGNED_", new_asset->signed_);
-						defaults->update("HEADER", new_asset->header);
-						save_defaults();
-						new_asset->init_streams();
-					}
-				}
-// Append to list
-				if(!result)
-				{
-// Recalculate length
-					delete new_file;
-					new_file = new File;
-					result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
-
-					if(!result)
-					{
-						new_asset = assetlist_global.add_asset(new_asset);
-						mainindexes->add_next_asset(new_asset);
-
-						if(load_mode != LOADMODE_RESOURCESONLY)
-						{
-							master_edl->update_assets(new_asset);
-							switch(load_mode)
-							{
-							case LOADMODE_CONCATENATE:
-								master_edl->tracks->append_asset(new_asset);
-								break;
-							case LOADMODE_NEW_TRACKS:
-								master_edl->tracks->create_new_tracks(new_asset);
-								break;
-							case LOADMODE_PASTE:
-								master_edl->tracks->append_asset(new_asset,
-									master_edl->local_session->get_selectionstart());
-								break;
-							case LOADMODE_REPLACE_CONCATENATE:
-								master_edl->finalize_edl(load_mode);
-								load_mode = LOADMODE_CONCATENATE;
-								break;
-							}
-						}
-						new_asset = 0;
-					}
-					delete new_file;
-					new_file = 0;
-				}
-				else
-				{
-					result = 1;
-				}
-				break;
 			}
+			else
+			{
+				result = 1;
+			}
+			break;
+		}
 
-			case FILE_IS_XML:
+		case FILE_IS_XML:
 			{
 				EDL *cur_edl;
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
 				result = 0;
 
-				if(load_mode == LOADMODE_REPLACE || 
+				if(load_mode == LOADMODE_REPLACE ||
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
+					reset_caches();
+					hide_plugins();
 					master_edl->reset_instance();
 					master_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
 					strcpy(mainsession->filename, filenames->values[i]);
 					strcpy(master_edl->local_session->clip_title, filenames->values[i]);
 					if(update_filename)
 						set_filename(master_edl->local_session->clip_title);
-					test_plugins(master_edl, filenames->values[i]);
 					cur_edl = master_edl;
 					new_edl = 0;
+					if(load_mode == LOADMODE_REPLACE_CONCATENATE)
+						load_mode = LOADMODE_CONCATENATE;
+					else
+						load_mode = LOADMODE_NEW_TRACKS;
+					master_edl->finalize_edl(load_mode);
+					gui->mainmenu->update_toggles();
+					gwindow->gui->update_toggles();
 				}
 				else
 				{
@@ -1122,9 +1137,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_edl = new EDL(0);
 					new_edl->copy_session(master_edl);
 					new_edl->load_xml(&xml_file, LOAD_ALL, 0);
-					test_plugins(new_edl, filenames->values[i]);
 					cur_edl = new_edl;
 				}
+				test_plugins(cur_edl, filenames->values[i]);
 
 // Open media files found in xml - open fills media info
 				for(int i = 0; i < cur_edl->assets->total; i++)
@@ -1144,7 +1159,18 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				new_file = 0;
 				if(!result && new_edl)
 				{
-					new_edls.append(new_edl);
+					switch(load_mode)
+					{
+					case LOADMODE_RESOURCESONLY:
+						cliplist_global.add_clip(new_edl);
+						new_edl = 0;
+						break;
+					default:
+						paste_edl(new_edl, load_mode,
+							0, -1,
+							edlsession->edit_actions(), 0);
+					}
+					delete new_edl;
 					new_edl = 0;
 				}
 				else if(result && update_filename)
@@ -1162,52 +1188,13 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	}
 
 	gui->statusbar->default_message();
-// Paste them.
-	if(new_edls.total)
-	{
-// For pasting, clear the active region
-		if(load_mode == LOADMODE_PASTE)
-		{
-			ptstime start = master_edl->local_session->get_selectionstart();
-			ptstime end = master_edl->local_session->get_selectionend();
-			if(!EQUIV(start, end))
-				master_edl->clear(start,
-					end,
-					edlsession->edit_actions());
-		}
 
-		paste_edls(&new_edls, 
-			load_mode,
-			0,
-			-1,
-			edlsession->edit_actions(),
-			0); // overwrite
-	}
-
-// Add new assets to EDL and schedule assets for index building.
-// Used for loading resources only.
-	if(new_assets.total)
-	{
-		for(int i = 0; i < new_assets.total; i++)
-		{
-			Asset *new_asset = new_assets.values[i];
-			new_asset = assetlist_global.add_asset(new_asset);
-			mainindexes->add_next_asset(new_asset);
-			master_edl->update_assets(new_asset);
-		}
-// Start examining next batch of index files
-	}
-
-	if(load_mode == LOADMODE_REPLACE)
-		master_edl->finalize_edl(load_mode);
 	mainindexes->start_build();
 
 	master_edl->check_master_track();
 	assetlist_global.remove_unused();
 	update_project(load_mode);
-	new_edls.remove_all_objects();
 
-	new_assets.remove_all();
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
 }
