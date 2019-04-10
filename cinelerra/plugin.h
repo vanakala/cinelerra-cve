@@ -44,16 +44,7 @@ class PluginOnToggle;
 class Plugin : public Edit
 {
 public:
-// Plugin which belongs to a transition.
-	Plugin(EDL *edl, 
-		Track *track, 
-		const char *title);
-// Called by  PluginSet::create_edit, PluginSet::insert_edit_after.
-// Plugin can't take a track because it would get the edits pointer from 
-// the track instead of the plugin set.
-	Plugin(EDL *edl, 
-		PluginSet *plugin_set, 
-		const char *title);
+	Plugin(EDL *edl, PluginSet *plugin_set, const char *title = 0);
 	virtual ~Plugin();
 
 	virtual Plugin& operator=(Plugin& edit);

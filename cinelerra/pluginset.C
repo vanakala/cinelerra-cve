@@ -181,7 +181,7 @@ void PluginSet::insert_plugin(Plugin *plugin, ptstime position, ptstime duration
 
 Edit* PluginSet::create_edit()
 {
-	return new Plugin(edl, this, "");
+	return new Plugin(edl, this);
 }
 
 int PluginSet::get_number()

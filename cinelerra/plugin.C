@@ -37,29 +37,15 @@
 #include "virtualnode.h"
 
 
-Plugin::Plugin(EDL *edl, 
-		Track *track, 
-		const char *title)
- : Edit(edl, track)
-{
-	this->track = track;
-	this->plugin_set = 0;
-	strcpy(this->title, title);
-	plugin_type = PLUGIN_NONE;
-	in = 1;
-	out = 1;
-	show = 0;
-	on = 1;
-	guideframe = 0;
-	keyframes = new KeyFrames(edl, track, this);
-}
-
 Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
  : Edit(edl, plugin_set)
 {
 	this->track = plugin_set->track;
 	this->plugin_set = plugin_set;
-	strcpy(this->title, title);
+	if(title)
+		strcpy(this->title, title);
+	else
+		this->title[0] = 0;
 	plugin_type = PLUGIN_NONE;
 	in = 1;
 	out = 1;
