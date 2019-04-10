@@ -120,17 +120,29 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 	}
 }
 
-Plugin* PluginSet::insert_plugin(const char *title, 
+Plugin* PluginSet::insert_plugin(const char *title,
 	ptstime position,
 	ptstime length,
 	int plugin_type,
 	SharedLocation *shared_location)
 {
-	Plugin *plugin = (Plugin*)insert_edit(position, length);
+	Plugin *plugin, *new_plugin;
 
-	if(title) strcpy(plugin->title, title);
+	if(plugin_type == PLUGIN_NONE)
+		return 0;
 
-	if(shared_location) plugin->shared_location = *shared_location;
+	append(plugin = (Plugin*)create_edit());
+	if(position > 0)
+		append(plugin = (Plugin*)create_edit());
+	plugin->set_pts(position);
+	append(new_plugin = (Plugin*)create_edit());
+	new_plugin->set_pts(position + length);
+
+	if(title)
+		strcpy(plugin->title, title);
+
+	if(shared_location)
+		plugin->shared_location = *shared_location;
 
 	plugin->plugin_type = plugin_type;
 	plugin->keyframes->base_pts = position;
@@ -457,12 +469,11 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 {
 	int result = 0;
 // Current plugin being amended
-	Plugin *plugin = (Plugin*)first;
+	Plugin *plugin = 0;
 	ptstime startproject = 0;
 
 	do{
 		result = file->read_tag();
-
 
 		if(!result)
 		{
@@ -480,31 +491,37 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 				startproject = file->tag.get_property("POSTIME", startproject);
 				loaded_length += length;
 				int plugin_type = file->tag.get_property("TYPE", 1);
-				char title[BCTEXTLEN];
-				title[0] = 0;
-				file->tag.get_property("TITLE", title);
-				SharedLocation shared_location;
-				shared_location.load(file);
+				if(plugin_type != PLUGIN_NONE)
+				{
+					char title[BCTEXTLEN];
+					title[0] = 0;
+					file->tag.get_property("TITLE", title);
+					SharedLocation shared_location;
+					shared_location.load(file);
 
-				if(load_flags & LOAD_EDITS)
-				{
-					plugin = insert_plugin(title, 
-						startproject, 
-						length,
-						plugin_type,
-						&shared_location);
-					plugin->load(file);
-					startproject += length;
-				}
-				else
-				if(load_flags & LOAD_AUTOMATION)
-				{
-					if(plugin)
+					if(load_flags & LOAD_EDITS)
 					{
+						plugin = insert_plugin(title,
+							startproject,
+							length,
+							plugin_type,
+							&shared_location);
 						plugin->load(file);
-						plugin = (Plugin*)plugin->next;
+						startproject += length;
+					}
+					else
+					if(load_flags & LOAD_AUTOMATION)
+					{
+						if(plugin)
+						{
+							plugin->load(file);
+							plugin = (Plugin*)plugin->next;
+						}
 					}
 				}
+				else
+				if(plugin && plugin->next)
+					plugin->next->set_pts(startproject);
 			}
 		}
 	}while(!result);
