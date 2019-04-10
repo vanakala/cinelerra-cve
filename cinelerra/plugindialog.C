@@ -159,7 +159,6 @@ void PluginDialogThread::run()
 							track,
 							0,
 							0,
-							0,
 							plugin_type);
 			}
 

@@ -79,7 +79,6 @@ public:
 		int track_number);
 	Plugin* insert_effect(const char *title, 
 		SharedLocation *shared_location, 
-		PluginSet *plugin_set,
 		ptstime start,
 		ptstime length,
 		int plugin_type);

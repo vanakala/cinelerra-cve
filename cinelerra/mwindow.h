@@ -305,7 +305,6 @@ public:
 	void insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		Track *track,
-		PluginSet *plugin_set,
 		ptstime start,
 		ptstime length,
 		int plugin_type);

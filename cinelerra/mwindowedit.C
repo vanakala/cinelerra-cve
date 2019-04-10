@@ -495,7 +495,6 @@ void MWindow::insert_effects_canvas(ptstime start,
 		insert_effect(plugin->title,
 			0,
 			dest_track,
-			i == 0 ? mainsession->pluginset_highlighted : 0,
 			start,
 			length,
 			PLUGIN_STANDALONE);
@@ -530,7 +529,6 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 		insert_effect(plugin->title,
 			0,
 			dest_track,
-			0,
 			start,
 			length,
 			PLUGIN_STANDALONE);
@@ -546,7 +544,6 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 void MWindow::insert_effect(const char *title, 
 	SharedLocation *shared_location, 
 	Track *track,
-	PluginSet *plugin_set,
 	ptstime start,
 	ptstime length,
 	int plugin_type)
@@ -561,7 +558,6 @@ void MWindow::insert_effect(const char *title,
 // Insert plugin object
 	new_plugin = track->insert_effect(title,
 		shared_location, 
-		plugin_set,
 		start,
 		length,
 		plugin_type);

@@ -388,18 +388,14 @@ void Track::insert_plugin_set(Track *track, ptstime position,
 
 Plugin* Track::insert_effect(const char *title, 
 		SharedLocation *shared_location, 
-		PluginSet *plugin_set,
 		ptstime start,
 		ptstime length,
 		int plugin_type)
 {
-	if(!plugin_set)
-	{
-		plugin_set = new PluginSet(edl, this);
-		this->plugin_set.append(plugin_set);
-	}
-
+	PluginSet *plugin_set = new PluginSet(edl, this);
 	Plugin *plugin = 0;
+
+	this->plugin_set.append(plugin_set);
 
 // Position is identical to source plugin
 	if(plugin_type == PLUGIN_SHAREDPLUGIN)
@@ -411,7 +407,6 @@ Plugin* Track::insert_effect(const char *title,
 				edl->local_session->get_selectionstart(), 
 				shared_location->plugin, 
 				0);
-
 // From an attach operation
 			if(source_plugin)
 			{

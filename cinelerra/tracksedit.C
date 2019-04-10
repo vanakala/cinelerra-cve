@@ -183,7 +183,6 @@ void Tracks::move_effect(Plugin *plugin,
 	{
 		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
-				0,
 				dest_postime,
 				plugin->length(),
 				plugin->plugin_type);
