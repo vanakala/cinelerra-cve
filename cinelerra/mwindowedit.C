@@ -555,6 +555,23 @@ void MWindow::insert_effect(const char *title,
 	if(plugin_type == PLUGIN_STANDALONE)
 		server = scan_plugindb(title, track->data_type);
 
+	if(EQUIV(length, 0))
+	{
+		if(master_edl->local_session->get_selectionend() >
+			master_edl->local_session->get_selectionstart())
+		{
+			start = master_edl->local_session->get_selectionstart();
+			length = master_edl->local_session->get_selectionend() - start;
+		}
+		else
+		{
+			start = 0;
+			length = track->get_length();
+		}
+	}
+	start = master_edl->align_to_frame(start, 1);
+	length = master_edl->align_to_frame(length, 1);
+
 // Insert plugin object
 	new_plugin = track->insert_effect(title,
 		shared_location, 

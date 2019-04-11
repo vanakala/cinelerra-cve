@@ -386,12 +386,15 @@ void Track::insert_plugin_set(Track *track, ptstime position,
 	}
 }
 
-Plugin* Track::insert_effect(const char *title, 
-		SharedLocation *shared_location, 
-		ptstime start,
-		ptstime length,
-		int plugin_type)
+Plugin* Track::insert_effect(const char *title,
+	SharedLocation *shared_location,
+	ptstime start,
+	ptstime length,
+	int plugin_type)
 {
+	if(length < EPSILON)
+		return 0;
+
 	PluginSet *plugin_set = new PluginSet(edl, this);
 	Plugin *plugin = 0;
 
@@ -429,22 +432,6 @@ Plugin* Track::insert_effect(const char *title,
 	}
 	else
 	{
-// This should be done in the caller
-		if(EQUIV(length, 0))
-		{
-			if(edl->local_session->get_selectionend() > 
-				edl->local_session->get_selectionstart())
-			{
-				start = edl->local_session->get_selectionstart();
-				length = edl->local_session->get_selectionend() - start;
-			}
-			else
-			{
-				start = 0;
-				length = get_length();
-			}
-		}
-
 		plugin = plugin_set->insert_plugin(title, 
 			start,
 			length,
