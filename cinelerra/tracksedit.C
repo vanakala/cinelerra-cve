@@ -181,7 +181,7 @@ void Tracks::move_effect(Plugin *plugin,
 	else
 // Create a new plugin set
 	{
-		result = dest_track->insert_effect("", 
+		result = dest_track->insert_effect(0,
 				&plugin->shared_location, 
 				dest_postime,
 				plugin->length(),
@@ -189,12 +189,8 @@ void Tracks::move_effect(Plugin *plugin,
 
 		result->copy_from(plugin);
 		result->shift(dest_postime - plugin->get_pts());
-
-// Clear new plugin from old set
-		plugin->plugin_set->clear(plugin->get_pts(),
-			plugin->end_pts());
-
-		source_track->optimize();
+// Delete old plugin
+		source_track->remove_pluginset(plugin->plugin_set);
 	}
 }
 
