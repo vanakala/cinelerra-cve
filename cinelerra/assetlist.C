@@ -44,6 +44,11 @@ Asset* AssetList::add_asset(Asset *asset)
 	for(Asset* current = first; current; current = NEXT)
 	{
 // Asset already exists.
+		if(current == asset)
+		{
+			current->global_inuse = 1;
+			return current;
+		}
 		if(current->test_path(asset))
 		{
 			current->global_inuse = 1;
