@@ -323,6 +323,10 @@ void Track::insert_asset(Asset *asset,
 		position,
 		track_number);
 	edits->loaded_length += length;
+
+	if(edlsession->plugins_follow_edits)
+		shift_effects(position, length);
+	automation->paste_silence(position, position + length);
 }
 
 // Insert data
