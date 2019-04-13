@@ -848,6 +848,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 {
 	int result = 0;
 	ptstime pos, dur;
+	int oloadmode = load_mode;
 
 	save_defaults();
 	gui->start_hourglass();
@@ -875,10 +876,16 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		Asset *next_asset;
 
 		if(new_asset = assetlist_global.get_asset(filenames->values[i]))
+		{
+			if(load_mode != LOADMODE_REPLACE &&
+				load_mode != LOADMODE_REPLACE_CONCATENATE)
 			continue;
-
-		new_asset = new Asset(filenames->values[i]);
-		gui->show_message("Loading %s", new_asset->path);
+		}
+		else
+		{
+			new_asset = new Asset(filenames->values[i]);
+			gui->show_message("Loading %s", new_asset->path);
+		}
 // Open all streams
 		result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
 
@@ -1190,10 +1197,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	gui->statusbar->default_message();
 
 	mainindexes->start_build();
-
 	master_edl->check_master_track();
 	assetlist_global.remove_unused();
-	update_project(load_mode);
+	update_project(oloadmode);
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
