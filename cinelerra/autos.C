@@ -324,7 +324,7 @@ void Autos::insert(ptstime start, ptstime end)
 
 	for( ; current && current->pos_time < start; current = NEXT);
 
-	shift = end - start - start;
+	shift = end - start + start;
 
 	for(; current; current = NEXT)
 		current->pos_time += shift;
