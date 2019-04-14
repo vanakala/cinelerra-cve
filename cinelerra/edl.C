@@ -1079,12 +1079,19 @@ int EDL::total_toggled(int toggle_type)
 
 void EDL::check_master_track()
 {
-	if(total_toggled(Tracks::MASTER) != 1)
+	if(!tracks || !tracks->total())
+		return;
+
+	if(total_toggled(Tracks::MASTER) != 1 || tracks->length() < EPSILON)
 	{
-		if(tracks && tracks->total())
+		set_all_toggles(Tracks::MASTER, 0);
+		for(Track *current = tracks->first; current; current = NEXT)
 		{
-			set_all_toggles(Tracks::MASTER, 0);
-			tracks->first->master = 1;
+			if(current->get_length() > EPSILON)
+			{
+				current->master = 1;
+				break;
+			}
 		}
 	}
 }
