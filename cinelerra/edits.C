@@ -531,11 +531,8 @@ void Edits::clear(ptstime start, ptstime end)
 		current_edit = current_edit->next;
 	}
 
-	if(current_edit)
-	{
-		ptstime end_pos = current_edit->get_pts() - len;
-		move_edits(current_edit, end_pos);
-	}
+	for(; current_edit; current_edit = current_edit->next)
+		current_edit->shift(-len);
 	cleanup();
 }
 
