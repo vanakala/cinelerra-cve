@@ -927,6 +927,8 @@ void Track::clear(ptstime start,
 
 	if(actions & EDIT_EDITS)
 		edits->clear(start, end);
+
+	optimize();
 }
 
 void Track::clear_after(ptstime pts)
