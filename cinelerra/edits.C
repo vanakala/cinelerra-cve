@@ -863,6 +863,38 @@ void Edits::cleanup()
 		remove(first);
 }
 
+void Edits::shift_edits(Edit *edit, ptstime diff)
+{
+	if(!edit)
+		return;
+
+	if(diff < 0)
+	{
+		ptstime new_pos = edit->get_pts() + diff;
+
+		if(new_pos < 0)
+			return;
+// Remove edits what will be overwritten by shifted edits
+		for(Edit *ed = first; ed && ed != edit;)
+		{
+			if(ed->get_pts() > new_pos)
+			{
+				Edit *next = ed->next;
+				delete ed;
+				ed = next;
+			}
+			else
+				ed = ed->next;
+		}
+	}
+	else
+		if(edit == first)
+			edit = edit->next;
+
+	for(; edit; edit = edit->next)
+		edit->shift(diff);
+}
+
 void Edits::dump(int indent)
 {
 	Edit *edit;
