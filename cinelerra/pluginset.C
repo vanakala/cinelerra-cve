@@ -192,47 +192,41 @@ int PluginSet::get_number()
 void PluginSet::clear(ptstime start, ptstime end)
 {
 	ptstime diff;
+	Plugin *plugin = get_first_plugin();
 
-	for(Plugin *current = (Plugin*)first;
-		current && current != last;
-		current = (Plugin*)NEXT)
-	{
-		ptstime plpts = current->get_pts();
-		ptstime plend = current->end_pts();
+	if(!plugin)
+		return;
 
-		if(plpts < start && plend > end)
-		{
-// Selection in the middle of the plugin
-			current->keyframes->clear(start, end, 1);
-			diff = plend - (end -start);
-			move_edits(current->next, diff);
-			break;
-		}
-		else if(plpts >= start && plend < end)
-		{
+	ptstime plstart = plugin->get_pts();
+	ptstime plend = plugin->end_pts();
+
+	if(plend <= start)
+// Plugin before selection
+		return;
+	if(plstart > end)
+// Plugin after selection
+		shift_edits(plugin, start - end);
+	else if(plstart >= start && plend <= end)
 // Plugin inside selection
-			Plugin *plp = (Plugin*)NEXT;
-			remove(current);
-			move_edits(plp, start);
-			break;
-		}
-		else if(plpts >= start && plpts < end)
+		remove(plugin);
+	else if(plstart < start && plend > end)
+// Selection inside plugin
+	{
+		plugin->keyframes->clear(start, end, 1);
+		plugin->next->set_pts(plend - (end - start));
+	}
+	else
+	{
+// Half of plugin inside selection
+		plugin->keyframes->clear(start, end, 1);
+		if(plstart > start)
 		{
-// Plugin starts in the middle of selection
-			if(current->previous)
-				((Plugin *)current->previous)->keyframes->clear(start, end, 0);
-			current->keyframes->clear(start, end, 1);
-			current->set_pts(end);
-			move_edits(current, start);
-			break;
+			plugin->set_pts(start);
+			plugin->keyframes->base_pts = start;
+			plugin->keyframes->first->pos_time = start;
 		}
-		else if(plpts < start && plend > start)
-		{
-// start before, end inside
-			current->keyframes->clear(start, end, 1);
-			move_edits(current->next, start);
-			break;
-		}
+		else
+			plugin->next->set_pts(start);
 	}
 }
 
