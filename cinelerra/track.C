@@ -612,8 +612,7 @@ void Track::optimize()
 	{
 		PluginSet *plugin_set = this->plugin_set.values[i];
 
-// new definition of empty track...
-		if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
+		if(!plugin_set->get_first_plugin())
 		{
 			remove_pluginset(plugin_set);
 			i--;
