@@ -196,6 +196,7 @@ void MWindow::clear_entry()
 
 void MWindow::clear(int clear_handle)
 {
+	cwindow->stop_playback();
 	ptstime start = master_edl->local_session->get_selectionstart();
 	ptstime end = master_edl->local_session->get_selectionend();
 	if(clear_handle || !EQUIV(start, end))
