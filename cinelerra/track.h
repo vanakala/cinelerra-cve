@@ -35,16 +35,12 @@
 #include "floatautos.inc"
 #include "keyframe.inc"
 #include "linklist.h"
-#include "module.inc"
 #include "plugin.inc"
 #include "pluginset.inc"
 #include "renderengine.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
-#include "intautos.inc"
-#include "trackcanvas.inc"
 #include "tracks.inc"
-#include "transition.inc"
 
 #include <stdint.h>
 
