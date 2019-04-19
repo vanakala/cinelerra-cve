@@ -1055,6 +1055,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 void MWindow::paste_silence()
 {
+	cwindow->stop_playback();
 	ptstime start = master_edl->local_session->get_selectionstart();
 	ptstime end = master_edl->local_session->get_selectionend();
 	master_edl->paste_silence(start,
