@@ -565,7 +565,8 @@ void Autos::shift_all(ptstime difference)
 {
 	Auto *current;
 
-	base_pts += difference;
+	if(first)
+		base_pts += difference;
 
 	for(current = first; current; current = current->next)
 		current->pos_time += difference;
