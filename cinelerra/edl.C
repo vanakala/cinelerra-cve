@@ -714,16 +714,13 @@ void EDL::insert_asset(Asset *asset,
 	ptstime position, 
 	Track *first_track)
 {
+	Track *current = first_track ? first_track : tracks->first;
+	ptstime length;
+
 // Insert asset into asset table
 	update_assets(asset);
 
-// Paste video
-	int vtrack = 0;
-	Track *current = first_track ? first_track : tracks->first;
-
 // Fix length of single frame
-	ptstime length;
-
 	if(asset->single_image)
 	{
 		if(edlsession->si_useduration)
@@ -732,12 +729,10 @@ void EDL::insert_asset(Asset *asset,
 			length = 1.0 / edlsession->frame_rate;
 	}
 	else
-		if(asset->frame_rate > 0)
-			length = ((double)asset->video_length / asset->frame_rate);
-		else
-			length = 1.0 / edlsession->frame_rate;
+		length = asset->total_length_framealigned(edlsession->frame_rate);
 
-	for(; current && vtrack < asset->layers;
+// Paste video
+	for(int vtrack = 0; current && vtrack < asset->layers;
 		current = NEXT)
 	{
 		if(!current->record || 
@@ -752,8 +747,7 @@ void EDL::insert_asset(Asset *asset,
 		vtrack++;
 	}
 
-	int atrack = 0;
-	for(; current && atrack < asset->channels;
+	for(int atrack = 0; current && atrack < asset->channels;
 		current = NEXT)
 	{
 		if(!current->record ||
@@ -761,8 +755,7 @@ void EDL::insert_asset(Asset *asset,
 			continue;
 
 		current->insert_asset(asset,
-			(double)asset->audio_length /
-				asset->sample_rate,
+			length,
 			position, 
 			atrack);
 
