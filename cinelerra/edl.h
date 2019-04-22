@@ -177,7 +177,7 @@ public:
 	void output_dimensions_scaled(int &w, int &h);
 	double get_sample_aspect_ratio();
 // Create tracks from assets
-	void finalize_edl(int load_mode);
+	void init_edl();
 
 	ptstime total_length();
 	ptstime total_length_of(int type);

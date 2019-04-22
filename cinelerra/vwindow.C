@@ -99,7 +99,7 @@ void VWindow::change_source(Asset *asset)
 	this->asset = asset;
 	vwindow_edl->reset_instance();
 	vwindow_edl->update_assets(asset);
-	vwindow_edl->finalize_edl(LOADMODE_REPLACE);
+	vwindow_edl->init_edl();
 
 // Update GUI
 	gui->change_source(title);

@@ -939,8 +939,8 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 
 	for(int i = 0; i < new_assets->total; i++)
 		edl.update_assets(new_assets->values[i]);
-
-	edl.finalize_edl(load_mode);
+// Does not work - Should be fixed
+//	edl.finalize_edl(load_mode);
 
 	paste_edl(&edl,
 		load_mode, 

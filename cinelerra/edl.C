@@ -848,79 +848,44 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 	return temp;
 }
 
-void EDL::finalize_edl(int load_mode)
+void EDL::init_edl()
 {
-	Track *first, *current;
-	ptstime track_length;
-	int no_track = 0;
+	Asset *new_asset;
+	char string[BCTEXTLEN];
+	FileSystem fs;
 
 	if(tracks && tracks->total())
+		return;
+	if(!assets->total)
 		return;
 
 	edlsession->video_tracks = 0;
 	edlsession->audio_tracks = 0;
 
-	for(int i = 0; i < assets->total; i++)
+// Edl has only one asset here
+	new_asset = assets->values[0];
+
+	// Use name of the first asset as clip name
+	fs.extract_name(string, new_asset->path);
+	strcpy(local_session->clip_title, string);
+
+	if(new_asset->video_data)
 	{
-		Asset *new_asset = assets->values[i];
-		first = 0;
+		edlsession->video_tracks += new_asset->layers;
 
-		if(i == 0)
-		{
-			// Use name of the first asset as clip name
-			char string[BCTEXTLEN];
-			FileSystem fs;
-
-			fs.extract_name(string, new_asset->path);
-			strcpy(local_session->clip_title, string);
-		}
-
-		if(load_mode == LOADMODE_REPLACE_CONCATENATE ||
-			load_mode == LOADMODE_CONCATENATE)
-		{
-			track_length = total_length_framealigned();
-			no_track = i;
-			if(i)
-			{
-				if(edlsession->cursor_on_frames)
-					tracks->clear(track_length, total_length() + 100, 1);
-			}
-		}
-		else
-			track_length = 0;
-
-		if(!no_track && new_asset->video_data)
-		{
-			edlsession->video_tracks += new_asset->layers;
-
-			for(int k = 0; k < new_asset->layers; k++)
-			{
-				current = tracks->add_video_track(0, 0);
-				if(!first)
-					first = current;
-			}
-		}
-
-		if(!no_track && new_asset->audio_data)
-		{
-			edlsession->audio_tracks += new_asset->channels;
-
-			for(int k = 0; k < new_asset->channels; k++)
-			{
-				current = tracks->add_audio_track(0, 0);
-				if(!first)
-					first = current;
-			}
-		}
-		insert_asset(new_asset, track_length, first);
+		for(int k = 0; k < new_asset->layers; k++)
+			tracks->add_video_track(0, 0);
 	}
 
-// Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
-	if(edlsession->cursor_on_frames)
+	if(new_asset->audio_data)
 	{
-		track_length = total_length_framealigned();
-		tracks->clear(track_length, total_length() + 100, 1);
+		edlsession->audio_tracks += new_asset->channels;
+
+		for(int k = 0; k < new_asset->channels; k++)
+			tracks->add_audio_track(0, 0);
 	}
+	insert_asset(new_asset, 0);
+
 	check_master_track();
 }
 

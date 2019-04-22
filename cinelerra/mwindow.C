@@ -923,11 +923,11 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						switch(load_mode)
 						{
 						case LOADMODE_REPLACE:
-							master_edl->finalize_edl(load_mode);
+							master_edl->init_edl();
 							load_mode = LOADMODE_NEW_TRACKS;
 							break;
 						case LOADMODE_REPLACE_CONCATENATE:
-							master_edl->finalize_edl(load_mode);
+							master_edl->init_edl();
 							load_mode = LOADMODE_CONCATENATE;
 							break;
 						case LOADMODE_NEW_TRACKS:
@@ -962,7 +962,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					switch(load_mode)
 					{
 					case LOADMODE_REPLACE:
-						master_edl->finalize_edl(load_mode);
+						master_edl->init_edl();
 						load_mode = LOADMODE_NEW_TRACKS;
 						break;
 					case LOADMODE_CONCATENATE:
@@ -978,7 +978,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						master_edl->local_session->set_selection(pos + dur);
 						break;
 					case LOADMODE_REPLACE_CONCATENATE:
-						master_edl->finalize_edl(load_mode);
+						master_edl->init_edl();
 						load_mode = LOADMODE_CONCATENATE;
 						break;
 					}
@@ -1089,11 +1089,11 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 								master_edl->local_session->get_selectionstart());
 							break;
 						case LOADMODE_REPLACE_CONCATENATE:
-							master_edl->finalize_edl(load_mode);
+							master_edl->init_edl();
 							load_mode = LOADMODE_CONCATENATE;
 							break;
 						case LOADMODE_REPLACE:
-							master_edl->finalize_edl(load_mode);
+							master_edl->init_edl();
 							load_mode = LOADMODE_NEW_TRACKS;
 							break;
 						}
@@ -1134,7 +1134,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						load_mode = LOADMODE_CONCATENATE;
 					else
 						load_mode = LOADMODE_NEW_TRACKS;
-					master_edl->finalize_edl(load_mode);
 					gui->mainmenu->update_toggles();
 					gwindow->gui->update_toggles();
 				}
