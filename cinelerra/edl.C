@@ -1052,6 +1052,9 @@ void EDL::check_master_track()
 			}
 		}
 	}
+	// All tracks are empty
+	if(!total_toggled(Tracks::MASTER))
+		tracks->first->master = 1;
 }
 
 const char *EDL::handle_name(int handle)
