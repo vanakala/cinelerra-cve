@@ -891,12 +891,13 @@ void MWindow::paste()
 int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 {
 	int result = 0;
-
+tracemsg("%.2f track %p overwrite %d", position, dest_track, overwrite);
+tracemsg("assets %d clips %d", mainsession->drag_assets->total,
+    mainsession->drag_clips->total);
 	if(mainsession->drag_assets->total)
 	{
 		load_assets(mainsession->drag_assets,
 			position, 
-			LOADMODE_PASTE,
 			dest_track, 
 			edlsession->edit_actions(),
 			overwrite);
@@ -925,30 +926,21 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 
 void MWindow::load_assets(ArrayList<Asset*> *new_assets, 
 	ptstime position,
-	int load_mode,
 	Track *first_track,
 	int actions,
 	int overwrite)
 {
-	EDL edl(0);
-
-	edl.copy_session(master_edl);
+	ptstime duration;
 
 	if(position < 0)
 		position = master_edl->local_session->get_selectionstart();
 
 	for(int i = 0; i < new_assets->total; i++)
-		edl.update_assets(new_assets->values[i]);
-// Does not work - Should be fixed
-//	edl.finalize_edl(load_mode);
-
-	paste_edl(&edl,
-		load_mode, 
-		first_track,
-		position,
-		actions,
-		overwrite);
-
+	{
+		master_edl->update_assets(new_assets->values[i]);
+		duration = master_edl->tracks->append_asset(new_assets->values[i],
+			position, first_track, overwrite);
+	}
 	save_backup();
 }
 

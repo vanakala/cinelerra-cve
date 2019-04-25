@@ -130,7 +130,6 @@ public:
 // labels.
 	void load_assets(ArrayList<Asset*> *new_assets, 
 		ptstime position,
-		int load_mode,
 		Track *first_track,
 		int actions,
 		int overwrite);

@@ -502,7 +502,6 @@ int CWindowGUI::drag_stop()
 			mwindow->clear(0);
 			mwindow->load_assets(mainsession->drag_assets,
 				master_edl->local_session->get_selectionstart(),
-				LOADMODE_PASTE,
 				mainsession->track_highlighted,
 				edlsession->edit_actions(),
 				0); // overwrite
