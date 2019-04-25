@@ -272,7 +272,8 @@ ptstime Tracks::length()
 	return 0;
 }
 
-ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
+ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
+	Track *first_track, int overwrite)
 {
 	Track *master = 0;
 	int atracks, vtracks;
@@ -288,11 +289,14 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 	if(asset->audio_data)
 		atracks = asset->channels;
 
+	alength = asset->total_length_framealigned(edlsession->frame_rate);
+
 	// Determine the start and length
 	// If master track is part of the operation, the length
 	// is sum of master and asset duration
 	// else the final length is the current length of master track
-	for(Track *current = first; current; current = current->next)
+	for(Track *current = first_track ? first_track : first;
+			current; current = current->next)
 	{
 		if(!current->record)
 			continue;
@@ -304,10 +308,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 			vtracks--;
 			dur = current->get_length();
 			if(current->master)
-			{
 				master = current;
-				alength = asset->video_duration;
-			}
 		}
 
 		if(atracks && current->data_type == TRACK_AUDIO)
@@ -315,29 +316,27 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 			atracks--;
 			dur = current->get_length();
 			if(current->master)
-			{
 				master = current;
-				alength = asset->audio_duration;
-			}
 		}
 		if(dur > start)
 			start = dur;
 	}
+
 	if(paste_at < 0)
 	{
 		// If master is part of operation we append to master
 		// If master does not paticipate, append to the longest participating track
 		if(master)
 			start = master->get_length();
-		else
-			alength = length() - start;
+		else if((dur = length()) > 0)
+			alength = dur - start;
 	}
 	else
 	{
 		dur = length();
 		start = MIN(paste_at, dur);
 
-		if(!master)
+		if(!master && dur > 0)
 			alength = dur - start;
 	}
 
@@ -354,7 +353,8 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 	start = master_edl->align_to_frame(start);
 	alength = master_edl->align_to_frame(alength);
 
-	for(Track *current = first; current; current = current->next)
+	for(Track *current = first_track ? first_track : first;
+		current; current = current->next)
 	{
 		dur = 0;
 		if(!current->record)
@@ -364,14 +364,14 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at)
 		{
 			dur = MIN(alength, asset->video_duration);
 			current->insert_asset(asset, dur,
-				start, asset->layers - vtracks);
+				start, asset->layers - vtracks, overwrite);
 			vtracks--;
 		}
 		if(atracks && current->data_type == TRACK_AUDIO)
 		{
 			dur = MIN(alength, asset->audio_duration);
 			current->insert_asset(asset, MIN(alength, asset->audio_duration),
-				start, asset->layers - vtracks);
+				start, asset->layers - vtracks, overwrite);
 			atracks--;
 		}
 		if(dur > pasted_length)

@@ -89,7 +89,8 @@ public:
 // detach shared effects referencing module
 	void detach_shared_effects(int module);
 // Append asset to existing tracks, returns inserted length
-	ptstime append_asset(Asset *asset, ptstime paste_at = -1);
+	ptstime append_asset(Asset *asset, ptstime paste_at = -1,
+		Track *first_track = 0, int overwrite = 0);
 // Append tracks to existing tracks
 	ptstime append_tracks(Tracks *tracks, ptstime paste_at = -1,
 		Track *first_track = 0, int overwrite = 0);
