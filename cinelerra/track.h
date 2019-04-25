@@ -72,7 +72,8 @@ public:
 	void insert_asset(Asset *asset, 
 		ptstime length,
 		ptstime position,
-		int track_number);
+		int track_number,
+		int overwrite = 0);
 	Plugin* insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		ptstime start,

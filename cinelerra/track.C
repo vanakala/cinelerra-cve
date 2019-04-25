@@ -306,20 +306,24 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	}while(!result);
 }
 
-void Track::insert_asset(Asset *asset, 
+void Track::insert_asset(Asset *asset,
 		ptstime length,
-		ptstime position, 
-		int track_number)
+		ptstime position,
+		int track_number,
+		int overwrite)
 {
 	edits->insert_asset(asset, 
 		length,
 		position,
-		track_number);
-	edits->loaded_length += length;
+		track_number, overwrite);
 
-	if(edlsession->plugins_follow_edits)
-		shift_effects(position, length);
-	automation->paste_silence(position, position + length);
+	if(!overwrite)
+	{
+		edits->loaded_length += length;
+		if(edlsession->plugins_follow_edits)
+			shift_effects(position, length);
+		automation->paste_silence(position, position + length);
+	}
 }
 
 // Insert data
