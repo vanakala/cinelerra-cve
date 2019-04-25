@@ -101,13 +101,31 @@ Edits& Edits::operator=(Edits& edits)
 	return *this;
 }
 
-
 void Edits::insert_asset(Asset *asset,
 	ptstime len_time,
 	ptstime postime,
-	int track_number)
+	int track_number,
+	int overwrite)
 {
-	Edit *new_edit = insert_edit(postime, len_time);
+	Edit *new_edit, *last_edit, *edit;
+
+	new_edit = split_edit(postime);
+
+	if(overwrite)
+	{
+		last_edit = split_edit(postime + len_time);
+		for(edit = new_edit->next; edit && edit != last_edit;)
+		{
+			Edit *nxt = edit->next;
+			delete edit;
+			edit = nxt;
+		}
+	}
+	else
+	{
+		new_edit = split_edit(postime, 1);
+		shift_edits(new_edit->next, len_time);
+	}
 	new_edit->asset = asset;
 	new_edit->set_source_pts(0);
 
