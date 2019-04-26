@@ -68,9 +68,6 @@ public:
 // Does not return an edit - does what it says, nothing more or less
 	void paste_silence(ptstime start, ptstime end);
 
-// Returns the newly created edit
-	Edit *insert_edit(ptstime pts, ptstime length = 0);
-
 // Sanitize edits
 	virtual void cleanup();
 

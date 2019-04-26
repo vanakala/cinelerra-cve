@@ -136,6 +136,7 @@ void Edits::insert_asset(Asset *asset,
 		new_edit->channel = track_number % asset->layers;
 }
 
+
 void Edits::insert_edits(Edits *source_edits, ptstime postime,
 	ptstime duration, int replace)
 {
@@ -183,42 +184,6 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 		dest_edit->copy_from(source_edit);
 		dest_edit->set_pts(postime + source_edit->get_pts());
 	}
-}
-
-// Inserts a new edit with requested length
-Edit* Edits::insert_edit(ptstime pts, ptstime length)
-{
-	Edit *new_edit = split_edit(pts, 1);
-
-	if(length >= EPSILON)
-	{
-		ptstime new_src = new_edit->get_source_pts();
-
-		if(new_edit->next)
-		{
-			Edit *ed;
-
-			for(ed = new_edit->next; ed; ed = ed->next)
-				ed->shift(length);
-
-			pts += length;
-			ptstime npts = new_edit->next->get_pts();
-
-			if(!master_edl->equivalent(npts, pts))
-			{
-				ed = split_edit(pts);
-				if(ed->asset)
-					ed->set_source_pts(new_src);
-			}
-		}
-		else
-		{
-			Edit *le = create_edit();
-			append(le);
-			le->set_pts(pts + length);
-		}
-	}
-	return new_edit;
 }
 
 Edit* Edits::split_edit(ptstime postime, int force)
