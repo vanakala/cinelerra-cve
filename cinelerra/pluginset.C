@@ -445,9 +445,20 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	if(pos < 0)
 		pos = 0;
 	epos = current->end_pts() - start;
-	if(epos > end)
-		epos = end;
-	new_plugin = (Plugin*)insert_edit(pos, epos - pos);
+	if(epos > end - start)
+		epos = end - start;
+
+	if(!first && pos > 0)
+		append(create_edit());
+	else
+	{
+		while(last && last != first)
+			delete last;
+		if(pos < EPSILON)
+			delete first;
+	}
+	new_plugin = (Plugin*)split_edit(pos);
+	split_edit(epos);
 	new_plugin->plugin_type = current->plugin_type;
 	new_plugin->in = current->in;
 	new_plugin->out = current->out;

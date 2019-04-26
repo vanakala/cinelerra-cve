@@ -891,9 +891,7 @@ void MWindow::paste()
 int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 {
 	int result = 0;
-tracemsg("%.2f track %p overwrite %d", position, dest_track, overwrite);
-tracemsg("assets %d clips %d", mainsession->drag_assets->total,
-    mainsession->drag_clips->total);
+
 	if(mainsession->drag_assets->total)
 	{
 		load_assets(mainsession->drag_assets,
