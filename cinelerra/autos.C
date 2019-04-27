@@ -428,6 +428,15 @@ void Autos::copy(Autos *autos, ptstime start, ptstime end)
 		else
 			prev_auto = current;
 	}
+	// No autos inside selection copy auto before start
+	if(!first && autos->first)
+	{
+		prev_auto = 0;
+		autos->get_prev_auto(start, prev_auto);
+		new_auto = append_auto();
+		new_auto->copy_from(prev_auto);
+		new_auto->pos_time = 0;
+	}
 }
 
 void Autos::clear(ptstime start,
