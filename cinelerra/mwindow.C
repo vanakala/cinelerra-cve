@@ -1199,6 +1199,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	mainindexes->start_build();
 	master_edl->check_master_track();
 	assetlist_global.remove_unused();
+	// Synchronize edl with assetlist
+	for(Asset *g_asset = assetlist_global.first; g_asset; g_asset = g_asset->next)
+		master_edl->update_assets(g_asset);
 	update_project(oloadmode);
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
