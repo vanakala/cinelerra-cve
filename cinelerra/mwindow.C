@@ -862,6 +862,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		reset_caches();
 		hide_plugins();
 		assetlist_global.reset_inuse();
+		cliplist_global.remove_all_objects();
 		vwindow->remove_source();
 		vwindow_edl->reset_instance();
 		master_edl->reset_instance();

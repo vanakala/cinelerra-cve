@@ -152,11 +152,6 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 			while(tracks->last) delete tracks->last;
 		}
 
-		if((load_flags & LOAD_ALL) == LOAD_ALL)
-		{
-			cliplist_global.remove_all_objects();
-		}
-
 		if(load_flags & LOAD_TIMEBAR)
 		{
 			while(labels->last) delete labels->last;
