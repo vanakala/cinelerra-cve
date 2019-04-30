@@ -494,7 +494,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 				if(length_units)
 					length = track->from_units(length_units);
 				startproject = file->tag.get_property("POSTIME", startproject);
-				loaded_length += length;
 				int plugin_type = file->tag.get_property("TYPE", 1);
 				if(plugin_type != PLUGIN_NONE)
 				{

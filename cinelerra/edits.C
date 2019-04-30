@@ -41,7 +41,6 @@ Edits::Edits(EDL *edl, Track *track)
 {
 	this->edl = edl;
 	this->track = track;
-	loaded_length = 0;
 }
 
 Edit* Edits::create_edit()
@@ -91,7 +90,6 @@ void Edits::copy_from(Edits *edits)
 		Edit *new_edit = append(create_edit());
 		new_edit->copy_from(current);
 	}
-	loaded_length = edits->loaded_length;
 }
 
 
@@ -255,8 +253,10 @@ void Edits::load(FileXML *file, int track_offset)
 {
 	int result = 0;
 	ptstime project_time = 0;
-	while (last) 
+
+	while(last)
 		delete last;
+
 	do{
 		result = file->read_tag();
 
@@ -264,7 +264,7 @@ void Edits::load(FileXML *file, int track_offset)
 		{
 			if(!strcmp(file->tag.get_title(), "EDIT"))
 			{
-				load_edit(file, project_time, track_offset);
+				project_time = load_edit(file, project_time, track_offset);
 			}
 			else
 			if(!strcmp(file->tag.get_title(), "/EDITS"))
@@ -273,20 +273,9 @@ void Edits::load(FileXML *file, int track_offset)
 			}
 		}
 	}while(!result);
-	if (last)
-	{
-		loaded_length = last->end_pts();
-		if(!PTSEQU(loaded_length, project_time))
-		{
-			Edit *edit = append(create_edit());
-			loaded_length = edit->set_pts(project_time);
-		}
-	}
-	else 
-		loaded_length = 0;
 }
 
-void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
+ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 {
 	Edit* current;
 	ptstime duration;
@@ -352,6 +341,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 			}
 		}
 	}while(!result);
+	return project_time;
 }
 
 // ============================================= accounting

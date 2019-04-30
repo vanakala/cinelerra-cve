@@ -74,10 +74,6 @@ public:
 	EDL *edl;
 	Track *track;
 
-// ================================== file operations
-
-	void load(FileXML *xml, int track_offset);
-	void load_edit(FileXML *xml, ptstime &project_time, int track_offset);
 
 // ==================================== accounting
 
@@ -99,7 +95,11 @@ public:
 	ptstime limit_move(Edit *edit, ptstime newposition, int check_end = 0);
 	ptstime limit_source_move(Edit *edit, ptstime newposition);
 
-	ptstime loaded_length;
+// ================================== file operations
+
+	void load(FileXML *xml, int track_offset);
+private:
+	ptstime load_edit(FileXML *xml, ptstime project_time, int track_offset);
 };
 
 #endif

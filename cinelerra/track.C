@@ -319,7 +319,6 @@ void Track::insert_asset(Asset *asset,
 
 	if(!overwrite)
 	{
-		edits->loaded_length += length;
 		if(edlsession->plugins_follow_edits)
 			shift_effects(position, length);
 		automation->paste_silence(position, position + length);
