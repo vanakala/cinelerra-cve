@@ -52,6 +52,8 @@ public:
 	void remove_unused();
 // Load assets from file
 	void load_assets(FileXML *file, ArrayList<Asset*> *assets);
+// Fill properties of asset
+	int check_asset(Asset *asset);
 // Remove listed assets
 	void remove_assets(ArrayList<Asset*> *assets);
 

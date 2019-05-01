@@ -23,6 +23,7 @@
 #include "assetlist.h"
 #include "bcsignals.h"
 #include "filexml.h"
+#include "file.h"
 
 #include <stdio.h>
 
@@ -58,6 +59,8 @@ Asset* AssetList::add_asset(Asset *asset)
 	}
 // Asset doesn't exist.
 	append(asset);
+	if(asset->format == FILE_UNKNOWN || !asset->nb_streams)
+		check_asset(asset);
 	asset->global_inuse = 1;
 	return asset;
 }
@@ -135,10 +138,21 @@ void AssetList::load_assets(FileXML *file, ArrayList<Asset*> *assets)
 						break;
 				}
 				if(i >= assets->total)
+				{
 					assets->append(new_asset);
+				}
 			}
 		}
 	}
+}
+
+int AssetList::check_asset(Asset *asset)
+{
+	File new_file;
+
+	if(new_file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
+		return 1;
+	return 0;
 }
 
 void AssetList::remove_assets(ArrayList<Asset*> *assets)
