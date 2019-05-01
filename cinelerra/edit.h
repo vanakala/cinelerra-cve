@@ -100,7 +100,7 @@ public:
 
 // ============================= initialization
 
-	ptstime load_properties(FileXML *xml, ptstime project_pts);
+	posnum load_properties(FileXML *xml, ptstime project_pts);
 
 	void dump(int indent = 0);
 private:

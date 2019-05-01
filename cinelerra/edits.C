@@ -278,16 +278,14 @@ void Edits::load(FileXML *file, int track_offset)
 ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 {
 	Edit* current;
-	ptstime duration;
+	posnum length;
 	int streamno;
 
 	current = append(create_edit());
 
-	duration = current->load_properties(file, project_time);
-	if(duration < 0)
+	length = current->load_properties(file, project_time);
+	if(length < 0)
 		project_time = current->get_pts();
-	else
-		project_time += duration;
 
 	int result = 0;
 
@@ -319,6 +317,9 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 					else
 						filepath = filename;
 					current->asset = assetlist_global.get_asset(filepath, streamno);
+
+					if(length > 0 && current->asset)
+						project_time += current->asset->from_units(track->data_type, length);
 				}
 				else
 				{

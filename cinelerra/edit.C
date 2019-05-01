@@ -287,10 +287,10 @@ void Edit::dump(int indent)
 		transition->dump(indent);
 }
 
-ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
+posnum Edit::load_properties(FileXML *file, ptstime project_pts)
 {
-	posnum startsource, length;
-	ptstime length_time = -1;
+	posnum startsource;
+	posnum length = -1;
 	ptstime cur_pts;
 
 	startsource = file->tag.get_property("STARTSOURCE", (posnum)0);
@@ -300,16 +300,13 @@ ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 	cur_pts = file->tag.get_property("PTS", -1.0);
 	if(cur_pts < -EPSILON)
 	{
-		length = file->tag.get_property("LENGTH", (int64_t)0);
-		if(length)
-			length_time = track->from_units(length);
-		length_time = file->tag.get_property("LENGTH_TIME", length_time);
+		length = file->tag.get_property("LENGTH", length);
 		this->project_pts = project_pts;
 	}
 	else
 		this->project_pts = cur_pts;
 	channel = file->tag.get_property("CHANNEL", (int32_t)0);
-	return length_time;
+	return length;
 }
 
 void Edit::shift(ptstime difference)
