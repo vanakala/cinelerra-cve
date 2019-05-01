@@ -187,6 +187,7 @@ public:
 	void update_path(const char *new_path);
 
 	ptstime total_length_framealigned(double fps);
+	ptstime from_units(int track_type, posnum position);
 
 // Path to file
 	char path[BCTEXTLEN];

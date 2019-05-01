@@ -27,10 +27,10 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "file.h"
 #include "filesystem.h"
 #include "fileavlibs.h"
 #include "filexml.h"
+#include "formattools.h"
 #include "formatpresets.h"
 #include "language.h"
 #include "mainerror.h"
@@ -1605,6 +1605,18 @@ void Asset::dump(int indent, int options)
 	}
 	if(options & ASSETDUMP_RENDERPARAMS)
 		dump_parameters(indent + 1, 0);
+}
+
+ptstime Asset::from_units(int track_type, posnum position)
+{
+	switch(track_type)
+	{
+	case TRACK_AUDIO:
+		return (ptstime)position / sample_rate;
+	case TRACK_VIDEO:
+		return (ptstime)position / frame_rate;
+	}
+	return 0;
 }
 
 void Asset::dump_parameters(int indent, int decoder)
