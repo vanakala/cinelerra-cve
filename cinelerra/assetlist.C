@@ -150,9 +150,10 @@ int AssetList::check_asset(Asset *asset)
 {
 	File new_file;
 
-	if(new_file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
-		return 1;
-	return 0;
+	if(asset->format != FILE_UNKNOWN && asset->nb_streams)
+		return FILE_OK;
+
+	return new_file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_ALL);
 }
 
 void AssetList::remove_assets(ArrayList<Asset*> *assets)
