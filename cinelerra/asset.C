@@ -684,12 +684,14 @@ void Asset::read_audio(FileXML *file)
 		audio_streamno = streamno;
 
 	bits = file->tag.get_property("BITS", 16);
-	byte_order = file->tag.get_property("BYTE_ORDER", 1);
-	signed_ = file->tag.get_property("SIGNED", 1);
+	byte_order = file->tag.get_property("BYTE_ORDER", 0);
+	signed_ = file->tag.get_property("SIGNED", 0);
 	header = file->tag.get_property("HEADER", 0);
 	dither = file->tag.get_property("DITHER", 0);
 
 	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
+	if(audio_length && sample_rate)
+		audio_duration = (ptstime)audio_length / sample_rate;
 }
 
 void Asset::read_video(FileXML *file)
