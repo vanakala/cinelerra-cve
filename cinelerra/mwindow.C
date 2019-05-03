@@ -43,7 +43,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "fileformat.h"
-#include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "framecache.h"
@@ -871,7 +870,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	for(int i = 0; i < filenames->total; i++)
 	{
 // Get type of file
-		File *new_file = new File;
 		Asset *new_asset;
 		EDL *new_edl = 0;
 		Asset *next_asset;
@@ -879,16 +877,16 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		if(new_asset = assetlist_global.get_asset(filenames->values[i]))
 		{
 			if(load_mode != LOADMODE_REPLACE &&
-				load_mode != LOADMODE_REPLACE_CONCATENATE)
-			continue;
+					load_mode != LOADMODE_REPLACE_CONCATENATE)
+				continue;
 		}
 		else
 		{
 			new_asset = new Asset(filenames->values[i]);
 			gui->show_message("Loading %s", new_asset->path);
 		}
-// Open all streams
-		result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
+// Fill asset data
+		result = assetlist_global.check_asset(new_asset);
 
 		switch(result)
 		{
@@ -907,9 +905,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 			if(new_asset->nb_programs)
 			{
-				delete new_file;
-				new_file = 0;
-
 				for(i = 0; i < new_asset->nb_programs; i++)
 				{
 					new_asset->set_program(i);
@@ -951,8 +946,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			}
 			else
 			{
-				delete new_file;
-				new_file = 0;
 				new_asset = assetlist_global.add_asset(new_asset);
 				mainindexes->add_next_asset(new_asset);
 
@@ -994,9 +987,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		case FILE_NOT_FOUND:
 			errormsg(_("Failed to open %s"), new_asset->path);
 			result = 1;
-			delete new_file;
 			delete new_asset;
-			new_file = 0;
 			new_asset = 0;
 			break;
 
@@ -1008,6 +999,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			new_asset->nb_streams = 0;
 			new_asset->audio_streamno = 1;
 			result = indexfile.open_index(new_asset);
+
 			if(!result)
 			{
 				indexfile.close_index();
@@ -1066,9 +1058,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			if(!result)
 			{
 // Recalculate length
-				delete new_file;
-				new_file = new File;
-				result = new_file->open_file(new_asset, FILE_OPEN_READ | FILE_OPEN_ALL);
+				result = assetlist_global.check_asset(new_asset);
 
 				if(!result)
 				{
@@ -1101,8 +1091,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					}
 					new_asset = 0;
 				}
-				delete new_file;
-				new_file = 0;
 			}
 			else
 			{
@@ -1117,13 +1105,12 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
 				result = 0;
+				delete new_asset;
+				new_asset = 0;
 
 				if(load_mode == LOADMODE_REPLACE ||
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
-					reset_caches();
-					hide_plugins();
-					master_edl->reset_instance();
 					master_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
 					strcpy(mainsession->filename, filenames->values[i]);
 					strcpy(master_edl->local_session->clip_title, filenames->values[i]);
@@ -1148,22 +1135,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				}
 				test_plugins(cur_edl, filenames->values[i]);
 
-// Open media files found in xml - open fills media info
 				for(int i = 0; i < cur_edl->assets->total; i++)
-				{
-					Asset *current = cur_edl->assets->values[i];
-					delete new_file;
-					new_file = new File;
-					if(new_file->open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) != FILE_OK)
-					{
-						result++;
-						break;
-					}
-					else
-						mainindexes->add_next_asset(current);
-				}
-				delete new_file;
-				new_file = 0;
+					mainindexes->add_next_asset(cur_edl->assets->values[i]);
+
 				if(!result && new_edl)
 				{
 					switch(load_mode)
