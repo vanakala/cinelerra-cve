@@ -414,7 +414,7 @@ void Labels::optimize()
 		for(current = first; current && NEXT && !result;)
 		{
 			Label *next = NEXT;
-			if(current->position == next->position)
+			if(EQUIV(current->position, next->position))
 			{
 				delete current;
 				result  = 1;
