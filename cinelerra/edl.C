@@ -595,23 +595,15 @@ void EDL::paste_silence(ptstime start,
 
 void EDL::remove_from_project(ArrayList<Asset*> *assets)
 {
-// Remove from VWindow
-	vwindow_edl->remove_from_project(assets);
-
 	for(int i = 0; i < assets->total; i++)
 	{
 // Remove from tracks
 		for(Track *track = tracks->first; track; track = track->next)
-		{
 			track->remove_asset(assets->values[i]);
-		}
 
 // Remove from assets
 		this->assets->remove(assets->values[i]);
 	}
-// Remove from global list
-	if(is_master)
-		assetlist_global.remove_assets(assets);
 }
 
 void EDL::update_assets(EDL *src)

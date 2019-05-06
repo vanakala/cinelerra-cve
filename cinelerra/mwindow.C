@@ -1751,22 +1751,12 @@ void MWindow::remove_assets_from_project(int push_undo)
 	{
 		Asset *asset = mainsession->drag_assets->values[i];
 		remove_asset_from_caches(asset);
-	}
-
-// Remove from VWindow.
-	for(int i = 0; i < mainsession->drag_clips->total; i++)
-	{
-		if(mainsession->drag_clips->values[i] == vwindow_edl)
-			vwindow->remove_source();
-	}
-
-	for(int i = 0; i < mainsession->drag_assets->total; i++)
-	{
-		if(mainsession->drag_assets->values[i] == vwindow->get_asset())
+		if(asset == vwindow->get_asset())
 			vwindow->remove_source();
 	}
 
 	master_edl->remove_from_project(mainsession->drag_assets);
+	vwindow_edl->remove_from_project(mainsession->drag_assets);
 	cliplist_global.remove_from_project(mainsession->drag_clips);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
