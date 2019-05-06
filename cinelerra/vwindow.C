@@ -22,19 +22,16 @@
 #include "asset.h"
 #include "clipedit.h"
 #include "bcclipboard.h"
-#include "bchash.h"
-#include "bcresources.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
 #include "localsession.h"
-#include "loadmode.inc"
 #include "mainclock.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "playbackengine.h"
 #include "transportcommand.inc"
 #include "vplayback.h"
 #include "vtimebar.h"
@@ -100,6 +97,7 @@ void VWindow::change_source(Asset *asset)
 	vwindow_edl->reset_instance();
 	vwindow_edl->update_assets(asset);
 	vwindow_edl->init_edl();
+	vwindow_edl->id = vwindow_edl->next_id();
 
 // Update GUI
 	gui->change_source(title);
@@ -119,6 +117,7 @@ void VWindow::change_source(EDL *edl)
 		this->asset = 0;
 		vwindow_edl->reset_instance();
 		vwindow_edl->copy_all(edl);
+		vwindow_edl->id = edl->id;
 // Update GUI
 		gui->change_source(edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
@@ -129,6 +128,7 @@ void VWindow::change_source(EDL *edl)
 
 void VWindow::remove_source()
 {
+	vwindow_edl->id = vwindow_edl->next_id();
 	gui->change_source(0);
 	gui->clock->update(0);
 	gui->canvas->release_refresh_frame();

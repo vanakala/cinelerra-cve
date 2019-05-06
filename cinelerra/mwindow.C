@@ -1754,7 +1754,12 @@ void MWindow::remove_assets_from_project(int push_undo)
 		if(asset == vwindow->get_asset())
 			vwindow->remove_source();
 	}
-
+// Remove from VWindow.
+	for(int i = 0; i < mainsession->drag_clips->total; i++)
+	{
+		if(mainsession->drag_clips->values[i]->id == vwindow_edl->id)
+			vwindow->remove_source();
+	}
 	master_edl->remove_from_project(mainsession->drag_assets);
 	vwindow_edl->remove_from_project(mainsession->drag_assets);
 	cliplist_global.remove_from_project(mainsession->drag_clips);
