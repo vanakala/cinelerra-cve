@@ -669,9 +669,9 @@ double EDL::get_sample_aspect_ratio()
 void EDL::dump(int indent)
 {
 	if(!is_master)
-		printf("%*sCLIP %p dump:\n", indent, "", this);
+		printf("%*sCLIP %p dump: id %d\n", indent, "", this, id);
 	else
-		printf("%*sEDL %p dump:\n", indent, "", this);
+		printf("%*sEDL %p dump: id %d\n", indent, "", this, id);
 	local_session->dump(indent + 2);
 	indent += 2;
 	if(this_edlsession)
