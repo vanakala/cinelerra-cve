@@ -1763,6 +1763,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 	master_edl->remove_from_project(mainsession->drag_assets);
 	vwindow_edl->remove_from_project(mainsession->drag_assets);
 	cliplist_global.remove_from_project(mainsession->drag_clips);
+	assetlist_global.remove_assets(mainsession->drag_assets);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
