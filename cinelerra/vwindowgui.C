@@ -630,7 +630,10 @@ void VWindowCanvas::set_fullscreen(int value)
 
 double VWindowCanvas::sample_aspect_ratio()
 {
-	Asset *asset = gui->vwindow->asset;
+	Asset *asset = 0;
+
+	if(vwindow_edl->assets->total)
+		asset = vwindow_edl->assets->values[0];
 	if(asset && asset->sample_aspect_ratio)
 		return asset->sample_aspect_ratio;
 	return 1.0;

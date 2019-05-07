@@ -45,10 +45,7 @@ public:
 // Change source to master EDL's vwindow EDL after a load.
 	void change_source();
 // Remove source
-	void remove_source();
-// Returns last argument of change_source or 0 if it was an EDL
-	Asset* get_asset();
-
+	void remove_source(Asset *asset = 0);
 	void update_position(int change_type = CHANGE_NONE,
 		int use_slider = 1,
 		int update_slider = 0);
@@ -64,16 +61,11 @@ public:
 
 	VTracking *playback_cursor;
 
-// Number of source in GUI list
 	MWindow *mwindow;
 	VWindow *vwindow;
 	VWindowGUI *gui;
 	VPlayback *playback_engine;
 	ClipEdit *clip_edit;
-// Object being played back.
-
-// Pointer to asset for accounting
-	Asset *asset;
 };
 
 #endif

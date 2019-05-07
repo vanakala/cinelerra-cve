@@ -1751,8 +1751,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 	{
 		Asset *asset = mainsession->drag_assets->values[i];
 		remove_asset_from_caches(asset);
-		if(asset == vwindow->get_asset())
-			vwindow->remove_source();
+		vwindow->remove_source(asset);
 	}
 // Remove from VWindow.
 	for(int i = 0; i < mainsession->drag_clips->total; i++)

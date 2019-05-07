@@ -43,7 +43,6 @@
 VWindow::VWindow(MWindow *mwindow) : Thread()
 {
 	this->mwindow = mwindow;
-	asset = 0;
 
 	gui = new VWindowGUI(mwindow, this);
 
@@ -67,11 +66,6 @@ void VWindow::run()
 	gui->run_window();
 }
 
-Asset* VWindow::get_asset()
-{
-	return this->asset;
-}
-
 void VWindow::change_source()
 {
 	gui->canvas->clear_canvas();
@@ -80,8 +74,6 @@ void VWindow::change_source()
 		gui->change_source(vwindow_edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
-	else
-		asset = 0;
 }
 
 void VWindow::change_source(Asset *asset)
@@ -93,7 +85,6 @@ void VWindow::change_source(Asset *asset)
 	gui->canvas->clear_canvas();
 
 // Generate EDL off of main EDL for cutting
-	this->asset = asset;
 	vwindow_edl->reset_instance();
 	vwindow_edl->update_assets(asset);
 	vwindow_edl->init_edl();
@@ -114,7 +105,6 @@ void VWindow::change_source(EDL *edl)
 
 	if(edl)
 	{
-		this->asset = 0;
 		vwindow_edl->reset_instance();
 		vwindow_edl->copy_all(edl);
 		vwindow_edl->id = edl->id;
@@ -126,8 +116,23 @@ void VWindow::change_source(EDL *edl)
 		gui->change_source(0);
 }
 
-void VWindow::remove_source()
+void VWindow::remove_source(Asset *asset)
 {
+	if(asset && vwindow_edl->assets->total)
+	{
+		int found = 0;
+
+		for(int i = 0; i < vwindow_edl->assets->total; i++)
+		{
+			if(vwindow_edl->assets->values[i] == asset)
+			{
+				found = 1;
+				break;
+			}
+		}
+		if(!found)
+			return;
+	}
 	vwindow_edl->id = vwindow_edl->next_id();
 	gui->change_source(0);
 	gui->clock->update(0);
