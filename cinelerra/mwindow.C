@@ -1747,6 +1747,9 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
+	cwindow->stop_playback();
+	vwindow->stop_playback();
+
 	for(int i = 0; i < mainsession->drag_assets->total; i++)
 	{
 		Asset *asset = mainsession->drag_assets->values[i];
