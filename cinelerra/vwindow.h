@@ -25,6 +25,7 @@
 #include "asset.inc"
 #include "clipedit.inc"
 #include "edl.inc"
+#include "edlsession.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "vplayback.inc"
@@ -59,6 +60,7 @@ public:
 	void update(int options);
 	int stop_playback();
 
+	EDLSession *vedlsession;
 	VTracking *playback_cursor;
 
 	MWindow *mwindow;

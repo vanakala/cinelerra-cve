@@ -632,9 +632,7 @@ double VWindowCanvas::sample_aspect_ratio()
 {
 	Asset *asset = 0;
 
-	if(vwindow_edl->assets->total)
-		asset = vwindow_edl->assets->values[0];
-	if(asset && asset->sample_aspect_ratio)
-		return asset->sample_aspect_ratio;
+	if(vwindow_edl->this_edlsession)
+		return vwindow_edl->this_edlsession->sample_aspect_ratio;
 	return 1.0;
 }

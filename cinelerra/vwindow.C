@@ -52,6 +52,7 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new VTracking(mwindow, this);
 	clip_edit = new ClipEdit(mwindow, 0, this);
+	vedlsession = new EDLSession();
 }
 
 VWindow::~VWindow()
@@ -59,6 +60,7 @@ VWindow::~VWindow()
 	delete playback_engine;
 	delete playback_cursor;
 	delete clip_edit;
+	delete vedlsession;
 }
 
 void VWindow::run()
@@ -89,6 +91,19 @@ void VWindow::change_source(Asset *asset)
 	vwindow_edl->update_assets(asset);
 	vwindow_edl->init_edl();
 	vwindow_edl->id = vwindow_edl->next_id();
+	vwindow_edl->this_edlsession = vedlsession;
+	vedlsession->copy(edlsession);
+	if(asset->audio_data)
+		vedlsession->audio_channels = asset->channels;
+	else
+		vedlsession->audio_channels = 0;
+	if(asset->video_data)
+	{
+		vedlsession->sample_aspect_ratio = asset->sample_aspect_ratio;
+		vedlsession->frame_rate = asset->frame_rate;
+		vedlsession->output_w = asset->width;
+		vedlsession->output_h = asset->height;
+	}
 
 // Update GUI
 	gui->change_source(title);
@@ -108,6 +123,10 @@ void VWindow::change_source(EDL *edl)
 		vwindow_edl->reset_instance();
 		vwindow_edl->copy_all(edl);
 		vwindow_edl->id = edl->id;
+		if(edl->this_edlsession)
+			vedlsession->copy(edl->this_edlsession);
+		else
+			vedlsession->copy(edlsession);
 // Update GUI
 		gui->change_source(edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
@@ -158,7 +177,7 @@ void VWindow::update(int options)
 {
 	if(options & WUPD_ACHANNELS)
 	{
-		gui->meters->set_meters(edlsession->audio_channels,
+		gui->meters->set_meters(vedlsession->audio_channels,
 			edlsession->vwindow_meter);
 		gui->resize_event(gui->get_w(), gui->get_h());
 	}
