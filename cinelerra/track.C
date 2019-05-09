@@ -465,12 +465,6 @@ void Track::xchg_pluginsets(PluginSet *set1, PluginSet *set2)
 		PluginSet *temp = plugin_set.values[si1];
 		plugin_set.values[si1] = plugin_set.values[si2];
 		plugin_set.values[si2] = temp;
-
-		SharedLocation old_location, new_location;
-		new_location.module = old_location.module = number_of();
-		old_location.plugin = si1;
-		new_location.plugin = si2;
-		tracks->change_plugins(old_location, new_location, 1);
 	}
 }
 
