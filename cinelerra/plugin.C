@@ -47,8 +47,6 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	else
 		this->title[0] = 0;
 	plugin_type = PLUGIN_NONE;
-	in = 1;
-	out = 1;
 	show = 0;
 	on = 1;
 	guideframe = 0;
@@ -100,8 +98,6 @@ void Plugin::copy_from(Edit *edit)
 	this->set_pts(edit->get_pts());
 
 	this->plugin_type = plugin->plugin_type;
-	this->in = plugin->in;
-	this->out = plugin->out;
 	this->show = plugin->show;
 	this->on = plugin->on;
 // Should reconfigure this based on where the first track is now.
@@ -119,8 +115,7 @@ void Plugin::copy_keyframes(Plugin *plugin)
 void Plugin::synchronize_params(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
-	this->in = plugin->in;
-	this->out = plugin->out;
+
 	this->show = plugin->show;
 	this->on = plugin->on;
 	strcpy(this->title, plugin->title);
@@ -364,21 +359,6 @@ void Plugin::save_xml(FileXML *file)
 	{
 		shared_location.save(file);
 	}
-
-	if(in)
-	{
-		file->tag.set_title("IN");
-		file->append_tag();
-		file->tag.set_title("/IN");
-		file->append_tag();
-	}
-	if(out)
-	{
-		file->tag.set_title("OUT");
-		file->append_tag();
-		file->tag.set_title("/OUT");
-		file->append_tag();
-	}
 	if(show)
 	{
 		file->tag.set_title("SHOW");
@@ -406,8 +386,7 @@ void Plugin::save_xml(FileXML *file)
 void Plugin::load(FileXML *file)
 {
 	int result = 0;
-	in = 0;
-	out = 0;
+
 // Currently show is ignored when loading
 	show = 0;
 	on = 0;
@@ -426,16 +405,6 @@ void Plugin::load(FileXML *file)
 			if(file->tag.title_is("SHARED_LOCATION"))
 			{
 				shared_location.load(file);
-			}
-			else
-			if(file->tag.title_is("IN"))
-			{
-				in = 1;
-			}
-			else
-			if(file->tag.title_is("OUT"))
-			{
-				out = 1;
 			}
 			else
 			if(file->tag.title_is("ON"))

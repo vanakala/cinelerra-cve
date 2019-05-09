@@ -110,8 +110,6 @@ public:
 // Title of the plugin currently attached
 	char title[BCTEXTLEN];
 	int plugin_type;
-// In and out aren't used anymore.
-	int in, out;
 	int show, on;
 	PluginSet *plugin_set;
 

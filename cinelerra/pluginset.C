@@ -460,8 +460,6 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	new_plugin = (Plugin*)split_edit(pos);
 	split_edit(epos);
 	new_plugin->plugin_type = current->plugin_type;
-	new_plugin->in = current->in;
-	new_plugin->out = current->out;
 	new_plugin->show = current->show;
 	new_plugin->on = current->on;
 	strcpy(new_plugin->title, current->title);
