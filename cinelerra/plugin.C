@@ -350,7 +350,8 @@ void Plugin::save_xml(FileXML *file)
 	file->tag.set_title("PLUGIN");
 	file->tag.set_property("POSTIME", get_pts());
 	file->tag.set_property("TYPE", plugin_type);
-	file->tag.set_property("TITLE", title);
+	if(title[0])
+		file->tag.set_property("TITLE", title);
 	file->append_tag();
 	file->append_newline();
 
