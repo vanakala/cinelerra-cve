@@ -50,6 +50,8 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	show = 0;
 	on = 1;
 	guideframe = 0;
+	shared_track = 0;
+	shared_plugin = 0;
 	keyframes = new KeyFrames(edl, track, this);
 }
 
@@ -94,15 +96,15 @@ void Plugin::copy_from(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
 
-	this->set_source_pts(edit->get_source_pts());
-	this->set_pts(edit->get_pts());
+	set_source_pts(edit->get_source_pts());
+	set_pts(edit->get_pts());
 
-	this->plugin_type = plugin->plugin_type;
-	this->show = plugin->show;
-	this->on = plugin->on;
-// Should reconfigure this based on where the first track is now.
-	this->shared_location = plugin->shared_location;
-	strcpy(this->title, plugin->title);
+	plugin_type = plugin->plugin_type;
+	show = plugin->show;
+	on = plugin->on;
+	shared_track = plugin->shared_track;
+	shared_plugin = plugin->shared_plugin;
+	strcpy(title, plugin->title);
 
 	copy_keyframes(plugin);
 }
@@ -150,7 +152,8 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 	if(!PTSEQU(get_pts(), plugin->get_pts()) ||
 		plugin_type != plugin->plugin_type ||
 		on != plugin->on ||
-		!(shared_location == plugin->shared_location) ||
+		shared_track != plugin->shared_track ||
+		shared_plugin != plugin->shared_plugin ||
 		strcmp(title, plugin->title))
 	{
 		if(*result < 0 || get_pts() < *result)
@@ -177,24 +180,17 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 // Dereference real plugin and descend another level
 	case PLUGIN_SHAREDPLUGIN:
 		{
-			int real_module_number = shared_location.module;
-			int real_plugin_number = shared_location.plugin;
-			Track *track = edl->number(real_module_number);
-// Get shared plugin from master track
-			Plugin *plugin = track->get_current_plugin(postime, 
-				real_plugin_number, 
-				0);
-
-			if(plugin)
-				return plugin->is_synthesis(renderengine, postime);
+			if(shared_plugin)
+				return shared_plugin->is_synthesis(renderengine, postime);
+			break;
 		}
 
 // Dereference the real track and descend
 	case PLUGIN_SHAREDMODULE:
 		{
-			int real_module_number = shared_location.module;
-			Track *track = edl->number(real_module_number);
-			return track->is_synthesis(renderengine, postime);
+			if(shared_track)
+				return shared_track->is_synthesis(renderengine, postime);
+			break;
 		}
 	}
 	return 0;
@@ -211,13 +207,15 @@ int Plugin::identical(Plugin *that)
 	case PLUGIN_STANDALONE:
 		if(strcmp(title, that->title))
 			return 0;
+		break;
 	case PLUGIN_SHAREDPLUGIN:
-		if(shared_location.module != that->shared_location.module ||
-				shared_location.plugin != that->shared_location.plugin)
+		if(shared_plugin != that->shared_plugin)
 			return 0;
+		break;
 	case PLUGIN_SHAREDMODULE:
-		if(shared_location.module != that->shared_location.module)
+		if(shared_track != that->shared_track)
 			return 0;
+		break;
 	}
 
 // Test remaining fields
@@ -240,12 +238,14 @@ int Plugin::identical_location(Plugin *that)
 	return 0;
 }
 
-void Plugin::change_plugin(const char *title, 
-		SharedLocation *shared_location, 
-		int plugin_type)
+void Plugin::change_plugin(const char *title, int plugin_type,
+	Plugin *shared_plugin, Track *shared_track)
 {
-	strcpy(this->title, title);
-	this->shared_location = *shared_location;
+	if(title)
+		strcpy(this->title, title);
+
+	this->shared_plugin = shared_plugin;
+	this->shared_track = shared_track;
 	this->plugin_type = plugin_type;
 	if(guideframe)
 		guideframe->clear();
@@ -358,7 +358,7 @@ void Plugin::save_xml(FileXML *file)
 	if(plugin_type == PLUGIN_SHAREDPLUGIN ||
 			plugin_type == PLUGIN_SHAREDMODULE)
 	{
-		shared_location.save(file);
+		save_shared_location(file);
 	}
 	if(show)
 	{
@@ -384,6 +384,30 @@ void Plugin::save_xml(FileXML *file)
 	file->append_newline();
 }
 
+void Plugin::save_shared_location(FileXML *file)
+{
+	int numtrack, numplugin;
+
+	numtrack = numplugin = -1;
+
+	file->tag.set_title("SHARED_LOCATION");
+	if(shared_track)
+		numtrack = shared_track->number_of();
+	else if(shared_plugin)
+	{
+		numplugin = shared_plugin->plugin_set->get_number();
+		numtrack = shared_plugin->plugin_set->track->number_of();
+	}
+	if(numtrack >= 0)
+		file->tag.set_property("SHARED_MODULE", numtrack);
+	if(numplugin >= 0)
+		file->tag.set_property("SHARED_PLUGIN", numplugin);
+	file->append_tag();
+	file->tag.set_title("/SHARED_LOCATION");
+	file->append_tag();
+	file->append_newline();
+}
+
 void Plugin::load(FileXML *file)
 {
 	int result = 0;
@@ -391,6 +415,9 @@ void Plugin::load(FileXML *file)
 // Currently show is ignored when loading
 	show = 0;
 	on = 0;
+	shared_track_num = -1;
+	shared_plugin_num = -1;
+
 	while(keyframes->last) delete keyframes->last;
 
 	do{
@@ -405,7 +432,8 @@ void Plugin::load(FileXML *file)
 			else
 			if(file->tag.title_is("SHARED_LOCATION"))
 			{
-				shared_location.load(file);
+				shared_track_num = file->tag.get_property("SHARED_MODULE", shared_track_num);
+				shared_plugin_num = file->tag.get_property("SHARED_PLUGIN", shared_plugin_num);
 			}
 			else
 			if(file->tag.title_is("ON"))
@@ -444,39 +472,49 @@ void Plugin::load(FileXML *file)
 	}while(!result);
 }
 
-void Plugin::get_shared_location(SharedLocation *result)
+void Plugin::init_shared_pointers()
 {
-	if(plugin_type == PLUGIN_STANDALONE && plugin_set)
-	{
-		result->module = edl->tracks->number_of(track);
-		result->plugin = track->plugin_set.number_of(plugin_set);
-	}
-	else
-	{
-		*result = this->shared_location;
-	}
-}
+	Track *other_track = 0;
+	Plugin *other_plugin = 0;
 
-Track* Plugin::get_shared_track()
-{
-	return edl->tracks->get_item_number(shared_location.module);
+	if(shared_track_num >= 0)
+		other_track = edl->tracks->get_item_number(shared_track_num);
+	if(shared_plugin_num >= 0 && other_track &&
+			other_track->plugin_set.total > shared_plugin_num)
+		other_plugin = other_track->plugin_set.values[shared_plugin_num]->get_first_plugin();
+
+	if(other_plugin && plugin_type == PLUGIN_SHAREDPLUGIN)
+		shared_plugin = other_plugin;
+	else
+		shared_track = other_track;
 }
 
 void Plugin::calculate_title(char *string, int use_nudge)
 {
+	string[0] = 0;
+
 	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
 	{
 		strcpy(string, _(title));
 	}
 	else
-	if(plugin_type == PLUGIN_SHAREDPLUGIN || plugin_type == PLUGIN_SHAREDMODULE)
+	if(plugin_type == PLUGIN_SHAREDMODULE)
 	{
-		shared_location.calculate_title(string, 
-			edl, 
-			get_pts(),
-			plugin_type,
-			use_nudge);
+		if(shared_track)
+			strcpy(string, shared_track->title);
 	}
+	else
+	if(plugin_type == PLUGIN_SHAREDPLUGIN)
+	{
+		if(shared_plugin)
+		{
+			strcpy(string, shared_plugin->track->title);
+			strcat(string, ": ");
+			strcat(string, shared_plugin->title);
+		}
+	}
+	else
+		strcpy(string, _("None"));
 }
 
 void Plugin::shift(ptstime difference)
@@ -512,13 +550,13 @@ void Plugin::dump(int indent)
 
 	printf("%*sPlugin %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*stype=%s title=\"%s\" on=%d track=%d plugin=%d\n", indent, "",
-		s,
-		title, 
-		on, 
-		shared_location.module,
-		shared_location.plugin);
-	printf("%*sproject_pts %.3f length %.3f\n", indent, "",
+	printf("%*sType: '%s' title: \"%s\" on: %d", indent, "",
+		s, title, on);
+	if(shared_track)
+		printf(" shared_track %p", shared_track);
+	if(shared_plugin)
+		printf("  shared_plugin %p", shared_plugin);
+	printf("\n%*sproject_pts %.3f length %.3f\n", indent, "",
 		get_pts(), length());
 
 	keyframes->dump(indent);

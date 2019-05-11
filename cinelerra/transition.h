@@ -27,8 +27,6 @@
 #include "filexml.inc"
 #include "mwindow.inc"
 #include "plugin.h"
-#include "sharedlocation.h"
-
 
 class Transition : public Plugin
 {

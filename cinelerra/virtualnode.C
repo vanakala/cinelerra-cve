@@ -143,25 +143,10 @@ void VirtualNode::expand_as_plugin(int duplicate)
 	{
 // Attached to a shared plugin.
 // Get the real real plugin it's attached to.
-
-// Redirect the real_plugin to the shared plugin.
-		int real_module_number = real_plugin->shared_location.module;
-		int real_plugin_number = real_plugin->shared_location.plugin;
-		Module *real_module = vconsole->module_number(real_module_number);
-		real_plugin = 0;
-// module references are absolute so may get the wrong data type track.
-		if(real_module)
-		{
-			attachment = real_module->get_attachment(real_plugin_number);
-// Attachment is NULL if off
-			if(attachment)
-			{
-				real_plugin = attachment->plugin;
-
+		real_plugin = real_plugin->shared_plugin;
 // Real plugin not on then null it.
-				if(!real_plugin || !real_plugin->on) real_plugin = 0;
-			}
-		}
+		if(real_plugin && !real_plugin->on)
+			real_plugin = 0;
 	}
 
 	if(plugin_type == PLUGIN_STANDALONE)
@@ -191,7 +176,7 @@ void VirtualNode::attach_virtual_module(Plugin *plugin,
 {
 	if(plugin->on)
 	{
-		int real_module_number = plugin->shared_location.module;
+		int real_module_number = plugin->shared_track->number_of();
 		Module *real_module = vconsole->module_number(real_module_number);
 // If a track is deleted real_module is not found
 		if(!real_module) return;
@@ -221,22 +206,7 @@ void VirtualNode::attach_virtual_plugin(Plugin *plugin,
 
 	if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
-		int real_module_number = plugin->shared_location.module;
-		int real_plugin_number = plugin->shared_location.plugin;
-		Module *real_module = vconsole->module_number(real_module_number);
-		if(real_module)
-		{
-			AttachmentPoint *attachment = real_module->get_attachment(real_plugin_number);
-			if(attachment)
-			{
-				Plugin *real_plugin = attachment->plugin;
-				if(!real_plugin || !real_plugin->on)
-					is_on = 0;
-			}
-			else
-				is_on = 0;
-		}
-		else
+		if(!plugin->shared_plugin || !plugin->shared_plugin->on)
 			is_on = 0;
 	}
 

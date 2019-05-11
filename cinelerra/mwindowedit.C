@@ -494,7 +494,6 @@ void MWindow::insert_effects_canvas(ptstime start,
 		PluginServer *plugin = mainsession->drag_pluginservers->values[i];
 
 		insert_effect(plugin->title,
-			0,
 			dest_track,
 			start,
 			length,
@@ -528,7 +527,6 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 		PluginServer *plugin = mainsession->drag_pluginservers->values[i];
 
 		insert_effect(plugin->title,
-			0,
 			dest_track,
 			start,
 			length,
@@ -543,11 +541,12 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 }
 
 void MWindow::insert_effect(const char *title, 
-	SharedLocation *shared_location, 
 	Track *track,
 	ptstime start,
 	ptstime length,
-	int plugin_type)
+	int plugin_type,
+	Plugin *shared_plugin,
+	Track *shared_track)
 {
 	PluginServer *server = 0;
 	Plugin *new_plugin;
@@ -575,10 +574,9 @@ void MWindow::insert_effect(const char *title,
 
 // Insert plugin object
 	new_plugin = track->insert_effect(title,
-		shared_location, 
-		start,
-		length,
-		plugin_type);
+		start, length,
+		plugin_type,
+		shared_plugin, shared_track);
 
 	if(server && !(result = server->open_plugin(1, preferences, 0, 0)))
 	{

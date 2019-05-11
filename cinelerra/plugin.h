@@ -34,7 +34,6 @@
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
 #include "renderengine.inc"
-#include "sharedlocation.h"
 #include "virtualnode.inc"
 
 class PluginOnToggle;
@@ -76,14 +75,15 @@ public:
 // Remove keyframes after pts
 	void remove_keyframes_after(ptstime pts);
 
-	void change_plugin(const char *title, 
-		SharedLocation *shared_location, 
-		int plugin_type);
+	void change_plugin(const char *title, int plugin_type,
+		Plugin *shared_plugin, Track *shared_track);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 
 	void save_xml(FileXML *file);
+	void save_shared_location(FileXML *file);
 	void load(FileXML *file);
+	void init_shared_pointers();
 // Shift in time
 	void shift(ptstime difference);
 	void dump(int indent = 0);
@@ -91,17 +91,12 @@ public:
 	KeyFrame* get_prev_keyframe(ptstime postime);
 	KeyFrame* get_next_keyframe(ptstime postime);
 	KeyFrame* first_keyframe();
-// If this is a standalone plugin fill its location in the result.
-// If it's shared copy the shared location into the result
-	void get_shared_location(SharedLocation *result);
 // Get keyframes for editing with automatic creation if enabled.
 // The direction is always assumed to be forward.
 	virtual KeyFrame* get_keyframe();
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
 	void calculate_title(char *string, int use_nudge);
-// Resolve objects pointed to by shared_location
-	Track* get_shared_track();
 
 // Need to resample keyframes
 	void resample(double old_rate, double new_rate);
@@ -121,11 +116,15 @@ public:
 // Default keyframe has position = 0.
 // Other keyframes have absolute position.
 	KeyFrames *keyframes;
-
-// location of plugin if shared
-	SharedLocation shared_location;
+// Shared track of type sharedmodule
+	Track *shared_track;
+// Shared plugin of type sharedplugin
+	Plugin *shared_plugin;
 // Guidelines of plugin
 	GuideFrame *guideframe;
+private:
+	int shared_track_num;
+	int shared_plugin_num;
 };
 
 #endif

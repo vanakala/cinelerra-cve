@@ -63,7 +63,6 @@
 #include "preferencesthread.inc"
 #include "render.inc"
 #include "ruler.inc"
-#include "sharedlocation.inc"
 #include "sighandler.inc"
 #include "splashgui.inc"
 #include "theme.inc"
@@ -302,11 +301,12 @@ public:
 // This is called multiple times by the above functions.
 // It can't sync parameters.
 	void insert_effect(const char *title, 
-		SharedLocation *shared_location, 
 		Track *track,
 		ptstime start,
 		ptstime length,
-		int plugin_type);
+		int plugin_type,
+		Plugin *shared_plugin = 0,
+		Track *shared_track = 0);
 
 	void match_output_size(Track *track);
 // Move edit to new position

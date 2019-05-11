@@ -87,14 +87,15 @@ void PluginDialogThread::start_window(Track *track,
 		if(plugin)
 		{
 			plugin->calculate_title(plugin_title, 0);
-			this->shared_location = plugin->shared_location;
+			this->shared_plugin = plugin->shared_plugin;
+			this->shared_track = plugin->shared_track;
 			this->plugin_type = plugin->plugin_type;
 		}
 		else
 		{
 			this->plugin_title[0] = 0;
-			this->shared_location.plugin = -1;
-			this->shared_location.module = -1;
+			this->shared_plugin = 0;
+			this->shared_track = 0;
 			this->plugin_type = PLUGIN_NONE;
 		}
 
@@ -149,17 +150,14 @@ void PluginDialogThread::run()
 			if(plugin)
 			{
 				plugin->change_plugin(plugin_title,
-					&shared_location,
-					plugin_type);
+					plugin_type, shared_plugin,
+					shared_track);
 			}
 			else
 			{
-				mwindow->insert_effect(plugin_title, 
-							&shared_location,
-							track,
-							0,
-							0,
-							plugin_type);
+				mwindow->insert_effect(plugin_title,
+					track, 0, 0, plugin_type,
+					shared_plugin, shared_track);
 			}
 
 			mwindow->save_backup();
@@ -221,23 +219,15 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
-		Track *track = master_edl->number(plugin_locations.values[i]->module);
-		char *track_title = track->title;
-		int number = plugin_locations.values[i]->plugin;
-		Plugin *plugin = track->get_current_plugin(
-			master_edl->local_session->get_selectionstart(1),
-			number, 0);
-		char *plugin_title = plugin->title;
+		char *track_title = plugin_locations.values[i]->track->title;
+		char *plugin_title = plugin_locations.values[i]->title;
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%s: %s", track_title, _(plugin_title));
 		shared_data.append(new BC_ListBoxItem(string));
 	}
 	for(int i = 0; i < module_locations.total; i++)
-	{
-		Track *track = master_edl->number(module_locations.values[i]->module);
-		module_data.append(new BC_ListBoxItem(track->title));
-	}
+		module_data.append(new BC_ListBoxItem(module_locations.values[i]->title));
 
 // Create widgets
 	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x, 
@@ -337,7 +327,7 @@ void PluginDialog::attach_shared(int number)
 	if(number > -1 && number < shared_data.total) 
 	{
 		thread->plugin_type = PLUGIN_SHAREDPLUGIN;         // type is shared plugin
-		thread->shared_location = *(plugin_locations.values[number]); // copy location
+		thread->shared_plugin = plugin_locations.values[number]; // copy location
 	}
 }
 
@@ -346,7 +336,7 @@ void PluginDialog::attach_module(int number)
 	if(number > -1 && number < module_data.total) 
 	{
 		thread->plugin_type = PLUGIN_SHAREDMODULE;         // type is module
-		thread->shared_location = *(module_locations.values[number]); // copy location
+		thread->shared_track = module_locations.values[number]; // copy location
 	}
 }
 

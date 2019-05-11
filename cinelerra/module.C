@@ -32,7 +32,6 @@
 #include "pluginarray.h"
 #include "pluginserver.h"
 #include "renderengine.h"
-#include "sharedlocation.h"
 #include "track.h"
 #include "tracks.h"
 

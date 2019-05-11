@@ -182,10 +182,11 @@ void Tracks::move_effect(Plugin *plugin,
 // Create a new plugin set
 	{
 		result = dest_track->insert_effect(0,
-				&plugin->shared_location, 
 				dest_postime,
 				plugin->length(),
-				plugin->plugin_type);
+				plugin->plugin_type,
+				plugin->shared_plugin,
+				plugin->shared_track);
 
 		result->copy_from(plugin);
 		result->shift(dest_postime - plugin->get_pts());
@@ -297,18 +298,6 @@ void Tracks::delete_all_tracks()
 	while(last) delete last;
 }
 
-void Tracks::change_modules(int old_location, int new_location, int do_swap)
-{
-	for(Track* current = first ; current; current = current->next)
-		current->change_modules(old_location, new_location, do_swap);
-}
-
-void Tracks::change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap)
-{
-	for(Track* current = first ; current; current = current->next)
-		current->change_plugins(old_location, new_location, do_swap);
-}
-
 // =========================================== EDL editing
 
 void Tracks::save_xml(FileXML *file, const char *output_path)
@@ -354,8 +343,6 @@ void Tracks::move_track_up(Track *track)
 	Track *next_track = track->previous;
 	if(!next_track) next_track = last;
 
-	change_modules(number_of(track), number_of(next_track), 1);
-
 	swap(track, next_track);
 }
 
@@ -364,7 +351,6 @@ void Tracks::move_track_down(Track *track)
 	Track *next_track = track->next;
 	if(!next_track) next_track = first;
 
-	change_modules(number_of(track), number_of(next_track), 1);
 	swap(track, next_track);
 }
 
@@ -383,8 +369,6 @@ int Tracks::move_tracks_up()
 		{
 			if(track->previous)
 			{
-				change_modules(number_of(track->previous), number_of(track), 1);
-
 				swap(track->previous, track);
 				result = 1;
 			}
@@ -409,8 +393,6 @@ int Tracks::move_tracks_down()
 		{
 			if(track->next)
 			{
-				change_modules(number_of(track), number_of(track->next), 1);
-
 				swap(track, track->next);
 				result = 1;
 			}

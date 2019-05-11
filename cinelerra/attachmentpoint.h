@@ -31,7 +31,6 @@
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "renderengine.inc"
-#include "sharedlocation.h"
 #include "vframe.inc"
 #include "virtualnode.inc"
 

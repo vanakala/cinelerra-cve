@@ -35,7 +35,6 @@ class PluginDialog;
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
-#include "sharedlocation.h"
 #include "thread.h"
 #include "transition.inc"
 
@@ -64,10 +63,10 @@ public:
 	char window_title[BCTEXTLEN];
 
 // type of attached plugin
-	int plugin_type;    // 0: none  1: plugin   2: shared plugin   3: module
+	int plugin_type;    // constants defined in plugin.inc
 
-// location of attached plugin if shared
-	SharedLocation shared_location;
+	Plugin *shared_plugin;
+	Track *shared_track;
 
 // Title of attached plugin if new
 	char plugin_title[BCTEXTLEN];
@@ -102,9 +101,9 @@ public:
 	ArrayList<BC_ListBoxItem*> standalone_data;
 	ArrayList<BC_ListBoxItem*> shared_data;
 	ArrayList<BC_ListBoxItem*> module_data;
-	ArrayList<SharedLocation*> plugin_locations; // locations of all shared plugins
-	ArrayList<SharedLocation*> module_locations; // locations of all shared modules
-	ArrayList<PluginServer*> plugindb;           // locations of all simple plugins, no need for memory freeing!
+	ArrayList<Plugin*> plugin_locations;        // locations of all shared plugins
+	ArrayList<Track*> module_locations;         // locations of all shared modules
+	ArrayList<PluginServer*> plugindb;          // locations of all simple plugins, no need for memory freeing!
 
 	int selected_available;
 	int selected_shared;

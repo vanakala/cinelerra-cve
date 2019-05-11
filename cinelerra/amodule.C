@@ -43,7 +43,6 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "mainsession.h"
-#include "sharedlocation.h"
 #include "theme.h"
 #include "transition.h"
 

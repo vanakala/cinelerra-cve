@@ -221,7 +221,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    savefile.C \
 		    selection.C \
 		    setformat.C \
-		    sharedlocation.C \
 		    sighandler.C \
 		    splashgui.C \
 		    statusbar.C \
@@ -460,7 +459,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 savefile.h \
 		 selection.h \
 		 setformat.h \
-		 sharedlocation.h \
 		 sighandler.h \
 		 splashgui.h \
 		 statusbar.h \

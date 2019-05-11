@@ -124,7 +124,8 @@ Plugin* PluginSet::insert_plugin(const char *title,
 	ptstime position,
 	ptstime length,
 	int plugin_type,
-	SharedLocation *shared_location)
+	Plugin *shared_plugin,
+	Track *shared_track)
 {
 	Plugin *plugin, *new_plugin;
 
@@ -140,9 +141,10 @@ Plugin* PluginSet::insert_plugin(const char *title,
 
 	if(title)
 		strcpy(plugin->title, title);
-
-	if(shared_location)
-		plugin->shared_location = *shared_location;
+	if(shared_plugin)
+		plugin->shared_plugin = shared_plugin;
+	if(shared_track)
+		plugin->shared_track = shared_track;
 
 	plugin->plugin_type = plugin_type;
 	plugin->keyframes->base_pts = position;
@@ -463,7 +465,8 @@ void PluginSet::copy(PluginSet *src, ptstime start, ptstime end)
 	new_plugin->show = current->show;
 	new_plugin->on = current->on;
 	strcpy(new_plugin->title, current->title);
-	new_plugin->shared_location = current->shared_location;
+	new_plugin->shared_plugin = current->shared_plugin;
+	new_plugin->shared_track = current->shared_track;
 	new_plugin->keyframes->base_pts = pos;
 	((Autos*)new_plugin->keyframes)->copy((Autos*)current->keyframes, start, end);
 }
@@ -498,16 +501,13 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 					char title[BCTEXTLEN];
 					title[0] = 0;
 					file->tag.get_property("TITLE", title);
-					SharedLocation shared_location;
-					shared_location.load(file);
 
 					if(load_flags & LOAD_EDITS)
 					{
 						plugin = insert_plugin(title,
 							startproject,
 							length,
-							plugin_type,
-							&shared_location);
+							plugin_type);
 						plugin->load(file);
 						startproject += length;
 					}

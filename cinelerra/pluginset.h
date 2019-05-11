@@ -29,7 +29,6 @@
 #include "keyframe.inc"
 #include "module.inc"
 #include "plugin.inc"
-#include "sharedlocation.inc"
 #include "track.inc"
 
 class PluginSet : public Edits
@@ -74,7 +73,8 @@ public:
 		ptstime position,
 		ptstime length,
 		int plugin_type,
-		SharedLocation *shared_location);
+		Plugin *shared_plugin = 0,
+		Track *shared_track = 0);
 // Insert plugin into empty set
 	void insert_plugin(Plugin *old_plugin,
 		ptstime position, ptstime duration);

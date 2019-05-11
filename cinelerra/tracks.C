@@ -199,6 +199,12 @@ void Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 	if(track) track->load(xml, track_offset, load_flags);
 }
 
+void Tracks::init_shared_pointers()
+{
+	for(Track *current = first; current; current = NEXT)
+		current->init_shared_pointers();
+}
+
 Track* Tracks::add_audio_track(int above, Track *dst_track)
 {
 	ATrack* new_track = new ATrack(edl, this);
@@ -210,10 +216,6 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 		insert_before(dst_track, (Track*)new_track);
 	else
 		insert_after(dst_track, (Track*)new_track);
-
-// Shift effects referenced below the new track
-	for(Track *track = last; track && track != new_track; track = track->previous)
-		change_modules(number_of(track) - 1, number_of(track), 0);
 
 	new_track->set_default_title();
 
@@ -253,10 +255,6 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 		insert_before(dst_track, (Track*)new_track);
 	else
 		insert_after(dst_track, (Track*)new_track);
-
-// Shift effects referenced below the new track
-	for(Track *track = last; track && track != new_track; track = track->previous)
-		change_modules(number_of(track) - 1, number_of(track), 0);
 
 	new_track->set_default_title();
 	return new_track;
@@ -600,20 +598,16 @@ void Tracks::delete_track(Track *track)
 	if(!track)
 		return;
 
-	detach_shared_effects(number_of(track));
-
-// Shift effects referencing effects below the deleted track
-	for(Track *current = track; current; current = NEXT)
-		change_modules(number_of(current), number_of(current) - 1, 0);
+	detach_shared_effects(0, track);
 
 	if(track) delete track;
 	edl->check_master_track();
 }
 
-void Tracks::detach_shared_effects(int module)
+void Tracks::detach_shared_effects(Plugin *plugin, Track *track)
 {
 	for(Track *current = first; current; current = NEXT)
-		current->detach_shared_effects(module);
+		current->detach_shared_effects(plugin, track);
 }
 
 int Tracks::recordable_tracks_of(int type)

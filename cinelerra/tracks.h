@@ -43,6 +43,7 @@ public:
 	void reset_instance();
 	Tracks& operator=(Tracks &tracks);
 	void load(FileXML *xml, int &track_offset, uint32_t load_flags);
+	void init_shared_pointers();
 
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
@@ -86,8 +87,8 @@ public:
 	Track* add_video_track(int above, Track *dst_track);
 // delete any track
 	void delete_track(Track* track);
-// detach shared effects referencing module
-	void detach_shared_effects(int module);
+// detach shared effects referencing track or plugin
+	void detach_shared_effects(Plugin *plugin, Track *track);
 // Append asset to existing tracks, returns inserted length
 	ptstime append_asset(Asset *asset, ptstime paste_at = -1,
 		Track *first_track = 0, int overwrite = 0);
@@ -116,13 +117,9 @@ public:
 
 	void dump(int indent = 0);
 
-// Change references to shared modules in all tracks from old to new.
-// If do_swap is true values of new are replaced with old.
-	void change_modules(int old_location, int new_location, int do_swap);
 // Append all the tracks to the end of the recordable tracks
 	void concatenate_tracks(int edit_plugins);
-// Change references to shared plugins in all tracks
-	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
+
 	int delete_tracks(void);     // delete all the recordable tracks
 	void delete_all_tracks();      // delete just the tracks
 

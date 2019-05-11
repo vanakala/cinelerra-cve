@@ -34,7 +34,6 @@
 #include "pluginserver.inc"
 #include "pluginset.inc"
 #include "renderengine.inc"
-#include "sharedlocation.inc"
 #include "track.inc"
 
 class Module

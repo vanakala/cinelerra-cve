@@ -306,6 +306,12 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	}while(!result);
 }
 
+void Track::init_shared_pointers()
+{
+	for(int i = 0; i < plugin_set.total; i++)
+		plugin_set.values[0]->get_first_plugin()->init_shared_pointers();
+}
+
 void Track::insert_asset(Asset *asset,
 		ptstime length,
 		ptstime position,
@@ -387,10 +393,11 @@ void Track::insert_plugin_set(Track *track, ptstime position,
 }
 
 Plugin* Track::insert_effect(const char *title,
-	SharedLocation *shared_location,
 	ptstime start,
 	ptstime length,
-	int plugin_type)
+	int plugin_type,
+	Plugin *shared_plugin,
+	Track *shared_track)
 {
 	if(length < EPSILON)
 		return 0;
@@ -403,31 +410,25 @@ Plugin* Track::insert_effect(const char *title,
 // Position is identical to source plugin
 	if(plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
-		Track *source_track = tracks->get_item_number(shared_location->module);
-		if(source_track)
-		{
-			Plugin *source_plugin = source_track->get_current_plugin(
-				edl->local_session->get_selectionstart(), 
-				shared_location->plugin, 
-				0);
 // From an attach operation
-			if(source_plugin)
-			{
-				plugin = plugin_set->insert_plugin(title, 
-					source_plugin->get_pts(),
-					source_plugin->length(),
-					plugin_type, 
-					shared_location);
-			}
-			else
+		if(shared_plugin)
+		{
+			plugin = plugin_set->insert_plugin(title,
+				shared_plugin->get_pts(),
+				shared_plugin->length(),
+				plugin_type,
+				shared_plugin,
+				shared_track);
+		}
+		else
 // From a drag operation
-			{
-				plugin = plugin_set->insert_plugin(title, 
-					start,
-					length,
-					plugin_type,
-					shared_location);
-			}
+		{
+			plugin = plugin_set->insert_plugin(title,
+				start,
+				length,
+				plugin_type,
+				shared_plugin,
+				shared_track);
 		}
 	}
 	else
@@ -436,7 +437,8 @@ Plugin* Track::insert_effect(const char *title,
 			start,
 			length,
 			plugin_type, 
-			shared_location);
+			shared_plugin,
+			shared_track);
 	}
 
 	expand_view = 1;
@@ -479,12 +481,6 @@ void Track::move_plugins_up(PluginSet *plugin_set)
 			PluginSet *temp = this->plugin_set.values[i - 1];
 			this->plugin_set.values[i - 1] = this->plugin_set.values[i];
 			this->plugin_set.values[i] = temp;
-
-			SharedLocation old_location, new_location;
-			new_location.module = old_location.module = number_of();
-			old_location.plugin = i;
-			new_location.plugin = i - 1;
-			tracks->change_plugins(old_location, new_location, 1);
 			break;
 		}
 	}
@@ -501,12 +497,6 @@ void Track::move_plugins_down(PluginSet *plugin_set)
 			PluginSet *temp = this->plugin_set.values[i + 1];
 			this->plugin_set.values[i + 1] = this->plugin_set.values[i];
 			this->plugin_set.values[i] = temp;
-
-			SharedLocation old_location, new_location;
-			new_location.module = old_location.module = number_of();
-			old_location.plugin = i;
-			new_location.plugin = i + 1;
-			tracks->change_plugins(old_location, new_location, 1);
 			break;
 		}
 	}
@@ -532,14 +522,6 @@ void Track::remove_pluginset(PluginSet *plugin_set)
 		if(plugin_set == this->plugin_set.values[i]) break;
 
 	this->plugin_set.remove_object(plugin_set);
-	for(i++ ; i < this->plugin_set.total; i++)
-	{
-		SharedLocation old_location, new_location;
-		new_location.module = old_location.module = number_of();
-		old_location.plugin = i;
-		new_location.plugin = i - 1;
-		tracks->change_plugins(old_location, new_location, 0);
-	}
 }
 
 void Track::shift_keyframes(ptstime position, ptstime length)
@@ -574,7 +556,7 @@ void Track::detach_effect(Plugin *plugin)
 	}
 }
 
-void Track::detach_shared_effects(int module)
+void Track::detach_shared_effects(Plugin *plugin, Track *track)
 {
 	for(int i = 0; i < plugin_set.total; i++)
 	{
@@ -583,10 +565,14 @@ void Track::detach_shared_effects(int module)
 			dest; 
 			dest = (Plugin*)dest->next)
 		{
-			if ((dest->plugin_type == PLUGIN_SHAREDPLUGIN ||
-				dest->plugin_type == PLUGIN_SHAREDMODULE)
-				&&
-				dest->shared_location.module == module)
+			if(plugin && dest->shared_plugin == plugin)
+				dest->shared_plugin = 0;
+			if(track && dest->shared_track == track)
+				dest->shared_track = 0;
+			if((dest->plugin_type == PLUGIN_SHAREDPLUGIN &&
+					!dest->shared_plugin) ||
+				(dest->plugin_type == PLUGIN_SHAREDMODULE &&
+					!dest->shared_track))
 			{
 				this->plugin_set.remove_object_number(i);
 				--i;
@@ -594,7 +580,6 @@ void Track::detach_shared_effects(int module)
 		}
 	}
 }
-
 
 void Track::optimize()
 {
@@ -975,47 +960,6 @@ void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
 	edits->paste_silence(start, end);
 	shift_keyframes(start, end - start);
 	if(edit_plugins) shift_effects(start, end - start);
-}
-
-void Track::change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap)
-{
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		for(Plugin *plugin = (Plugin*)plugin_set.values[i]->first; 
-			plugin; 
-			plugin = (Plugin*)plugin->next)
-		{
-			if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
-			{
-				if(plugin->shared_location == old_location)
-					plugin->shared_location = new_location;
-				else
-				if(do_swap && plugin->shared_location == new_location)
-					plugin->shared_location = old_location;
-			}
-		}
-	}
-}
-
-void Track::change_modules(int old_location, int new_location, int do_swap)
-{
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		for(Plugin *plugin = (Plugin*)plugin_set.values[i]->first; 
-			plugin; 
-			plugin = (Plugin*)plugin->next)
-		{
-			if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN ||
-				plugin->plugin_type == PLUGIN_SHAREDMODULE)
-			{
-				if(plugin->shared_location.module == old_location)
-					plugin->shared_location.module = new_location;
-				else
-				if(do_swap && plugin->shared_location.module == new_location)
-					plugin->shared_location.module = old_location;
-			}
-		}
-	}
 }
 
 int Track::playable_edit(ptstime position)

@@ -44,7 +44,6 @@
 #include "panautos.h"
 #include "playbackconfig.h"
 #include "plugin.h"
-#include "sharedlocation.h"
 #include "theme.h"
 #include "tracks.h"
 #include "vtrack.h"
@@ -248,6 +247,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 			}
 		}while(!result);
 	}
+	tracks->init_shared_pointers();
 	check_master_track();
 	boundaries();
 }
@@ -770,7 +770,7 @@ int EDL::next_id()
 }
 
 void EDL::get_shared_plugins(Track *source, 
-	ArrayList<SharedLocation*> *plugin_locations)
+	ArrayList<Plugin*> *plugin_locations)
 {
 	for(Track *track = tracks->first; track; track = track->next)
 	{
@@ -785,22 +785,20 @@ void EDL::get_shared_plugins(Track *source,
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
-					plugin_locations->append(new SharedLocation(number_of(track), i));
+					plugin_locations->append(plugin);
 				}
 			}
 		}
 	}
 }
 
-void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations)
+void EDL::get_shared_tracks(Track *track, ArrayList<Track*> *module_locations)
 {
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
 		if(current != track && 
-			current->data_type == track->data_type)
-		{
-			module_locations->append(new SharedLocation(number_of(current), 0));
-		}
+				current->data_type == track->data_type)
+			module_locations->append(current);
 	}
 }
 

@@ -38,7 +38,6 @@
 #include "plugin.inc"
 #include "pluginset.inc"
 #include "renderengine.inc"
-#include "sharedlocation.inc"
 #include "theme.inc"
 #include "tracks.inc"
 
@@ -52,6 +51,7 @@ public:
 
 	int get_id();
 	void load(FileXML *file, int track_offset, uint32_t load_flags);
+	void init_shared_pointers();
 	virtual void save_header(FileXML *file) {};
 	void equivalent_output(Track *track, ptstime *result);
 
@@ -75,10 +75,11 @@ public:
 		int track_number,
 		int overwrite = 0);
 	Plugin* insert_effect(const char *title, 
-		SharedLocation *shared_location, 
 		ptstime start,
 		ptstime length,
-		int plugin_type);
+		int plugin_type,
+		Plugin *shared_plugin,
+		Track *shared_track);
 	void insert_plugin_set(Track *track, ptstime position,
 		ptstime length = -1, int overwrite = 0);
 	void detach_effect(Plugin *plugin);
@@ -109,8 +110,8 @@ public:
 		int use_nudge);
 	Plugin* get_current_transition(ptstime position);
 
-// detach shared effects referencing module
-	void detach_shared_effects(int module);
+// detach shared effects referencing plugin or track
+	void detach_shared_effects(Plugin *plugin, Track *track);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
@@ -128,12 +129,6 @@ public:
 	void copy_settings(Track *track);
 	void shift_keyframes(ptstime position, ptstime length);
 	void shift_effects(ptstime position, ptstime length);
-	void change_plugins(SharedLocation &old_location, 
-		SharedLocation &new_location, 
-		int do_swap);
-	void change_modules(int old_location, 
-		int new_location, 
-		int do_swap);
 
 	EDL *edl;
 	Tracks *tracks;
