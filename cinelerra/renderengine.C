@@ -66,10 +66,9 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	this->command = new TransportCommand;
 	this->preferences->copy_from(preferences);
 	this->command->copy_from(command);
-	edl = new EDL(0);
+	edl = command->get_edl();
 // EDL only changed in construction.
 // The EDL contained in later commands is ignored.
-	edl->copy_all(command->get_edl());
 	audio_cache = 0;
 	video_cache = 0;
 	if(playback_engine && playback_engine->mwindow)
@@ -96,7 +95,6 @@ RenderEngine::~RenderEngine()
 	if(vrender) delete vrender;
 	if(audio) delete audio;
 	if(video) delete video;
-	delete edl;
 	delete input_lock;
 	delete start_lock;
 	delete output_lock;
