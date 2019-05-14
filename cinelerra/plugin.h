@@ -82,6 +82,7 @@ public:
 
 	void save_xml(FileXML *file);
 	void save_shared_location(FileXML *file);
+	int module_number();
 	void load(FileXML *file);
 	void init_shared_pointers();
 // Shift in time

@@ -408,6 +408,11 @@ void Plugin::save_shared_location(FileXML *file)
 	file->append_newline();
 }
 
+int Plugin::module_number()
+{
+	return plugin_set->track->number_of();
+}
+
 void Plugin::load(FileXML *file)
 {
 	int result = 0;
