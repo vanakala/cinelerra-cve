@@ -147,6 +147,12 @@ void VirtualNode::expand_as_plugin(int duplicate)
 // Real plugin not on then null it.
 		if(real_plugin && !real_plugin->on)
 			real_plugin = 0;
+		if(real_plugin)
+		{
+			Module *module = vconsole->module_number(
+				real_plugin->module_number());
+			attachment = module->attachment_of(real_plugin);
+		}
 	}
 
 	if(plugin_type == PLUGIN_STANDALONE)
