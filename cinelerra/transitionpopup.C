@@ -30,7 +30,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "plugin.h"
-#include "transition.h"
 #include "track.h"
 #include "tracks.h"
 #include "transitionpopup.h"
@@ -50,7 +49,7 @@ void TransitionLengthThread::run()
 }
 
 
-TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Transition *transition)
+TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Plugin *transition)
  : BC_Window(MWindow::create_title(N_("Transition length")),
 		mwindow->gui->get_abs_cursor_x(1) - 150,
 		mwindow->gui->get_abs_cursor_y(1) - 50,
@@ -75,7 +74,7 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-	gui->transition->length(),
+	gui->transition->get_length(),
 	(float)0, 
 	(float)100, 
 	x,
@@ -89,10 +88,10 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 int TransitionLengthText::handle_event()
 {
 	double result = atof(get_text());
-	if(!EQUIV(result, gui->transition->length()))
+	if(!EQUIV(result, gui->transition->get_length()))
 	{
-		gui->transition->length_time = result;
-		if(gui->transition->edit->track->data_type == TRACK_VIDEO) 
+		gui->transition->set_length(result);
+		if(gui->transition->track->data_type == TRACK_VIDEO) 
 			mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		edlsession->default_transition_length = result;
@@ -123,13 +122,13 @@ TransitionPopup::~TransitionPopup()
 	delete length_thread;
 }
 
-void TransitionPopup::update(Transition *transition)
+void TransitionPopup::update(Plugin *transition)
 {
 	this->transition = transition;
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
 	char len_text[50];
-	sprintf(len_text, _("Length: %2.2f sec"), transition->length_time);
+	sprintf(len_text, _("Length: %2.2f sec"), transition->get_length());
 	length->set_text(len_text);
 }
 

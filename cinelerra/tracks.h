@@ -31,7 +31,6 @@
 #include "pluginserver.inc"
 #include "track.h"
 #include "trackcanvas.inc"
-#include "transition.inc"
 
 
 class Tracks : public List<Track>
@@ -46,7 +45,6 @@ public:
 	void init_shared_pointers();
 
 	void move_effect(Plugin *plugin,
-		PluginSet *plugin_set,
 		Track *track, 
 		ptstime position);
 

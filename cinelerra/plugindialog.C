@@ -38,7 +38,6 @@
 #include "pluginserver.h"
 #include "theme.h"
 #include "track.h"
-#include "transition.h"
 
 
 PluginDialogThread::PluginDialogThread(MWindow *mwindow)

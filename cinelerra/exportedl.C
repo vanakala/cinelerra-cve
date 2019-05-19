@@ -38,8 +38,8 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "exportedl.h"
+#include "plugin.h"
 #include "track.h"
-#include "transition.h"
 #include "theme.h"
 
 #include <ctype.h>
@@ -175,7 +175,7 @@ int ExportEDLAsset::export_it()
 					colnum --;
 				}
 				edittype[0] = 'D';
-				fprintf(fh, "%03d %8s %s %4s %03" PRId64, colnum, reel_name, avselect, edittype, track->to_units(edit->transition->length()));
+				fprintf(fh, "%03d %8s %s %4s %03" PRId64, colnum, reel_name, avselect, edittype, track->to_units(edit->transition->get_length()));
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");

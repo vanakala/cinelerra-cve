@@ -36,8 +36,6 @@
 #include "keyframe.inc"
 #include "linklist.h"
 #include "plugin.inc"
-#include "pluginset.inc"
-#include "renderengine.inc"
 #include "theme.inc"
 #include "tracks.inc"
 
@@ -80,20 +78,19 @@ public:
 		int plugin_type,
 		Plugin *shared_plugin,
 		Track *shared_track);
-	void insert_plugin_set(Track *track, ptstime position,
+	void insert_plugin(Track *track, ptstime position,
 		ptstime length = -1, int overwrite = 0);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, ptstime length,
 		ptstime position, int overwrite = 0);
-// Optimize editing
-	void optimize();
 
-	void xchg_pluginsets(PluginSet *set1, PluginSet *set2);
-	void move_plugins_up(PluginSet *plugin_set);
-	void move_plugins_down(PluginSet *plugin_set);
-	void remove_pluginset(PluginSet *plugin_set);
+	void xchg_plugins(Plugin *plugin1, Plugin *plugin2);
+	void move_plugin_up(Plugin *plugin);
+	void move_plugin_down(Plugin *plugin);
+	void remove_plugin(Plugin *plugin);
 	void remove_asset(Asset *asset);
+	void detach_transition(Plugin *transition);
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
@@ -116,8 +113,7 @@ public:
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
-	int is_synthesis(RenderEngine *renderengine, 
-		ptstime position);
+	int is_synthesis(ptstime position);
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.
@@ -134,8 +130,7 @@ public:
 	Tracks *tracks;
 
 	Edits *edits;
-// Plugin set uses key frames for automation
-	ArrayList<PluginSet*> plugin_set;
+	ArrayList<Plugin*> plugins;
 	Automation *automation;
 
 // Vertical offset from top of timeline
@@ -171,6 +166,7 @@ public:
 	void clear(ptstime start,
 		ptstime end,
 		int actions);
+	void clear_plugins(ptstime start, ptstime end);
 // remove everything after pts
 	void clear_after(ptstime pts);
 // Returns the point to restart background rendering at.
@@ -186,6 +182,8 @@ public:
 		ptstime total_length, 
 		double frame_rate,
 		int sample_rate,
+		FileXML *file);
+	void paste_keyframes(ptstime start, ptstime length,
 		FileXML *file);
 	void clear_handle(ptstime start,
 		ptstime end,

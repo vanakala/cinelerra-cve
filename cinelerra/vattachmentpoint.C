@@ -98,7 +98,7 @@ void VAttachmentPoint::render(VFrame **output,
 		buffer_vector[buffer_number] = frame;
 // Process plugin
 		plugin_servers.values[0]->process_buffer(buffer_vector,
-			plugin->length());
+			plugin->get_length());
 
 		frame = buffer_vector[buffer_number];
 		buffer_vector[buffer_number] = *output;
@@ -116,7 +116,7 @@ void VAttachmentPoint::render(VFrame **output,
 			output_temp[0]->get_color_model());
 		(*output)->copy_pts(output_temp[0]);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
-			plugin->length());
+			plugin->get_length());
 		BC_Resources::tmpframes.release_frame(*output);
 		*output = output_temp[0];
 	}

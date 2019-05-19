@@ -33,11 +33,11 @@
 #include "file.h"
 #include "mwindow.h"
 #include "overlayframe.h"
+#include "plugin.h"
 #include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "tmpframecache.h"
-#include "transition.h"
 #include "transportcommand.h"
 #include "units.h"
 #include "vattachmentpoint.h"
@@ -272,7 +272,7 @@ VFrame *VModule::render(VFrame *output)
 		transition_server->process_transition(transition_temp,
 			output,
 			output->get_pts() - current_edit->get_pts(),
-			transition->length());
+			transition->get_length());
 		BC_Resources::tmpframes.release_frame(transition_temp);
 	}
 	else

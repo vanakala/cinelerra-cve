@@ -33,7 +33,6 @@
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "track.inc"
-#include "transition.inc"
 
 // Generic edit of something
 
@@ -67,7 +66,6 @@ public:
 	virtual void shift(ptstime difference);
 	void shift_source(ptstime difference);
 	void insert_transition(const char *title);
-	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);
 
@@ -88,7 +86,7 @@ public:
 
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
-	Transition *transition;
+	Plugin *transition;
 	EDL *edl;
 
 	Edits *edits;

@@ -29,19 +29,16 @@
 #include "language.h"
 #include "localsession.h"
 #include "plugin.h"
-#include "pluginset.h"
 #include "pluginserver.h"
-#include "renderengine.h"
 #include "track.h"
 #include "tracks.h"
 #include "virtualnode.h"
 
 
-Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
- : Edit(edl, plugin_set)
+Plugin::Plugin(EDL *edl, Track *track, const char *title)
 {
-	this->track = plugin_set->track;
-	this->plugin_set = plugin_set;
+	this->edl = edl;
+	this->track = track;
 	if(title)
 		strcpy(this->title, title);
 	else
@@ -53,6 +50,8 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	shared_track = 0;
 	shared_plugin = 0;
 	keyframes = new KeyFrames(edl, track, this);
+	id = EDL::next_id();
+	plugin_server = 0;
 }
 
 Plugin::~Plugin()
@@ -60,28 +59,6 @@ Plugin::~Plugin()
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
 	delete guideframe;
-}
-
-Edit& Plugin::operator=(Edit& edit)
-{
-	copy_from(&edit);
-	return *this;
-}
-
-Plugin& Plugin::operator=(Plugin& edit)
-{
-	copy_from(&edit);
-	return *this;
-}
-
-int Plugin::operator==(Plugin& that)
-{
-	return identical(&that);
-}
-
-int Plugin::operator==(Edit& that)
-{
-	return identical((Plugin*)&that);
 }
 
 int Plugin::silence()
@@ -92,12 +69,21 @@ int Plugin::silence()
 		return 1;
 }
 
-void Plugin::copy_from(Edit *edit)
+void Plugin::copy(Plugin *plugin, ptstime start, ptstime end)
 {
-	Plugin *plugin = (Plugin*)edit;
+	plugin->copy_from(plugin);
 
-	set_source_pts(edit->get_source_pts());
-	set_pts(edit->get_pts());
+	if(pts < start)
+		pts = start;
+
+	if(end_pts() > end)
+		duration = end - pts;
+}
+
+void Plugin::copy_from(Plugin *plugin)
+{
+	pts = plugin->get_pts();
+	duration = plugin->get_length();
 
 	plugin_type = plugin->plugin_type;
 	show = plugin->show;
@@ -109,21 +95,51 @@ void Plugin::copy_from(Edit *edit)
 	copy_keyframes(plugin);
 }
 
+ptstime Plugin::get_pts()
+{
+	return pts;
+}
+
+ptstime Plugin::end_pts()
+{
+	return pts + duration;
+}
+
+void Plugin::set_pts(ptstime pts)
+{
+	this->pts = pts;
+}
+
+ptstime Plugin::get_length()
+{
+	return duration;
+}
+
+void Plugin::set_length(ptstime length)
+{
+	duration = length;
+}
+
+Plugin *Plugin::active_in(ptstime start, ptstime end)
+{
+	if(pts < end && pts + duration > start)
+		return this;
+	return 0;
+}
+
 void Plugin::copy_keyframes(Plugin *plugin)
 {
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::synchronize_params(Edit *edit)
+void Plugin::synchronize_params(Plugin *plugin)
 {
-	Plugin *plugin = (Plugin*)edit;
-
 	this->show = plugin->show;
 	this->on = plugin->on;
 	strcpy(this->title, plugin->title);
 	copy_keyframes(plugin);
-	if(!PTSEQU(keyframes->base_pts, get_pts()))
-		shift_keyframes(get_pts() - keyframes->base_pts);
+	if(!PTSEQU(keyframes->base_pts, pts))
+		shift_keyframes(pts - keyframes->base_pts);
 }
 
 void Plugin::shift_keyframes(ptstime difference)
@@ -136,12 +152,11 @@ void Plugin::remove_keyframes_after(ptstime pts)
 	keyframes->remove_after(pts);
 }
 
-void Plugin::equivalent_output(Edit *edit, ptstime *result)
+void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
 {
-	Plugin *plugin = (Plugin*)edit;
 // End of plugin changed
-	ptstime thisend = end_pts();
-	ptstime plugend = end_pts();
+	ptstime thisend = pts + duration;
+	ptstime plugend = plugin->end_pts();
 	if(!PTSEQU(thisend, plugend))
 	{
 		if(*result < 0 || thisend < *result)
@@ -162,34 +177,28 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 
 // Test keyframes
 	keyframes->equivalent_output(plugin->keyframes, 
-		get_pts(), result);
+		pts, result);
 }
 
-int Plugin::is_synthesis(RenderEngine *renderengine, 
-		ptstime postime)
+int Plugin::is_synthesis(ptstime postime)
 {
-	switch(plugin_type)
+	if(plugin_server)
 	{
-	case PLUGIN_STANDALONE:
+		switch(plugin_type)
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(title,
-				track->data_type);
+		case PLUGIN_STANDALONE:
 			return plugin_server->synthesis;
-		}
 
 // Dereference real plugin and descend another level
-	case PLUGIN_SHAREDPLUGIN:
-		{
+		case PLUGIN_SHAREDPLUGIN:
 			if(shared_plugin)
-				return shared_plugin->is_synthesis(renderengine, postime);
+				return shared_plugin->is_synthesis(postime);
 			break;
-		}
 
 // Dereference the real track and descend
-	case PLUGIN_SHAREDMODULE:
-		{
+		case PLUGIN_SHAREDMODULE:
 			if(shared_track)
-				return shared_track->is_synthesis(renderengine, postime);
+				return shared_track->is_synthesis(postime);
 			break;
 		}
 	}
@@ -228,14 +237,17 @@ int Plugin::identical(Plugin *that)
 
 int Plugin::identical_location(Plugin *that)
 {
-	if(!plugin_set || !plugin_set->track) return 0;
-	if(!that->plugin_set || !that->plugin_set->track) return 0;
-
-	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
-		plugin_set->get_number() == that->plugin_set->get_number() &&
-		PTSEQU(get_pts(), that->get_pts())) return 1;
+	if(track->number_of() == that->track->number_of() &&
+			get_number() == that->get_number() &&
+			PTSEQU(pts, that->get_pts()))
+		return 1;
 
 	return 0;
+}
+
+int Plugin::get_number()
+{
+	track->plugins.number_of(this);
 }
 
 void Plugin::change_plugin(const char *title, int plugin_type,
@@ -261,23 +273,18 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 // This doesn't work because edl->selectionstart doesn't change during
 // playback at the same rate as PluginClient::source_position.
 	if(postime < 0)
-	{
 		postime = edl->local_session->get_selectionstart(1);
-	}
 
 // Get keyframe on or before current position
 	for(current = (KeyFrame*)keyframes->last;
-		current;
-		current = (KeyFrame*)PREVIOUS)
-	{
-		if(current->pos_time <= postime) break;
-	}
+			current;
+			current = (KeyFrame*)PREVIOUS)
+		if(current->pos_time <= postime)
+			break;
 
 // Nothing before current position
 	if(!current && keyframes->first)
-	{
 		current = (KeyFrame*)keyframes->first;
-	}
 	return current;
 }
 
@@ -291,23 +298,19 @@ KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 // This doesn't work for playback because edl->selectionstart doesn't 
 // change during playback at the same rate as PluginClient::source_position.
 	if(postime < 0)
-	{
 		postime = edl->local_session->get_selectionstart(1);
-	}
 
 // Get keyframe after current position
 	for(current = (KeyFrame*)keyframes->first;
-		current;
-		current = (KeyFrame*)NEXT)
-	{
-		if(current->pos_time > postime) break;
-	}
+			current;
+			current = (KeyFrame*)NEXT)
+		if(current->pos_time > postime)
+			break;
 
 // Nothing after current position
 	if(!current && keyframes->last)
-	{
 		current = (KeyFrame*)keyframes->last;
-	}
+
 	return current;
 }
 
@@ -326,20 +329,14 @@ KeyFrame* Plugin::get_keyframe()
 
 // Return nearest keyframe if not in automatic keyframe generation
 	if(!edlsession->auto_keyframes)
-	{
 		return result;
-	}
 	else
 // Return new keyframe
 	if(!PTSEQU(result->pos_time, edl->local_session->get_selectionstart(1)))
-	{
 		return (KeyFrame*)keyframes->insert_auto(edl->local_session->get_selectionstart(1));
-	}
 	else
 // Return existing keyframe
-	{
 		return result;
-	}
 
 	return 0;
 }
@@ -391,26 +388,33 @@ void Plugin::save_shared_location(FileXML *file)
 	numtrack = numplugin = -1;
 
 	file->tag.set_title("SHARED_LOCATION");
-	if(shared_track)
-		numtrack = shared_track->number_of();
-	else if(shared_plugin)
-	{
-		numplugin = shared_plugin->plugin_set->get_number();
-		numtrack = shared_plugin->plugin_set->track->number_of();
-	}
-	if(numtrack >= 0)
-		file->tag.set_property("SHARED_MODULE", numtrack);
-	if(numplugin >= 0)
-		file->tag.set_property("SHARED_PLUGIN", numplugin);
+	calculate_ref_numbers();
+	if(shared_track_num >= 0)
+		file->tag.set_property("SHARED_MODULE", shared_track_num);
+	if(shared_plugin_num >= 0)
+		file->tag.set_property("SHARED_PLUGIN", shared_plugin_num);
 	file->append_tag();
 	file->tag.set_title("/SHARED_LOCATION");
 	file->append_tag();
 	file->append_newline();
 }
 
+void Plugin::calculate_ref_numbers()
+{
+	shared_plugin_num = shared_track_num = -1;
+
+	if(shared_track)
+		shared_track_num = shared_track->number_of();
+	else if(shared_plugin)
+	{
+		shared_plugin_num = shared_plugin->get_number();
+		shared_track_num = shared_plugin->track->number_of();
+	}
+}
+
 int Plugin::module_number()
 {
-	return plugin_set->track->number_of();
+	return track->number_of();
 }
 
 void Plugin::load(FileXML *file)
@@ -430,7 +434,7 @@ void Plugin::load(FileXML *file)
 
 		if(!result)
 		{
-			if(file->tag.title_is("/PLUGIN"))
+			if(file->tag.title_is("/PLUGIN") || file->tag.title_is("/TRANSITION"))
 			{
 				result = 1;
 			}
@@ -485,8 +489,8 @@ void Plugin::init_shared_pointers()
 	if(shared_track_num >= 0)
 		other_track = edl->tracks->get_item_number(shared_track_num);
 	if(shared_plugin_num >= 0 && other_track &&
-			other_track->plugin_set.total > shared_plugin_num)
-		other_plugin = other_track->plugin_set.values[shared_plugin_num]->get_first_plugin();
+			other_track->plugins.total > shared_plugin_num)
+		other_plugin = other_track->plugins.values[shared_plugin_num];
 
 	if(other_plugin && plugin_type == PLUGIN_SHAREDPLUGIN)
 		shared_plugin = other_plugin;
@@ -524,10 +528,22 @@ void Plugin::calculate_title(char *string, int use_nudge)
 
 void Plugin::shift(ptstime difference)
 {
-	Edit::shift(difference);
+	pts += difference;
 	shift_keyframes(difference);
 	if(guideframe)
 		guideframe->shift(difference);
+}
+
+ptstime Plugin::plugin_change_duration(ptstime start, ptstime length)
+{
+	ptstime ipt_end = start + length;
+	ptstime cur_end = end_pts();
+
+	if(pts > start && pts < ipt_end)
+		return pts - start;
+	if(cur_end > start && cur_end < ipt_end)
+		return cur_end - start;
+	return length;
 }
 
 void Plugin::dump(int indent)
@@ -548,6 +564,9 @@ void Plugin::dump(int indent)
 	case PLUGIN_SHAREDMODULE:
 		s = "SharedModule";
 		break;
+	case PLUGIN_TRANSITION:
+		s = "Transition";
+		break;
 	default:
 		s = "Unknown";
 		break;
@@ -562,7 +581,7 @@ void Plugin::dump(int indent)
 	if(shared_plugin)
 		printf("  shared_plugin %p", shared_plugin);
 	printf("\n%*sproject_pts %.3f length %.3f\n", indent, "",
-		get_pts(), length());
+		pts, duration);
 
 	keyframes->dump(indent);
 }

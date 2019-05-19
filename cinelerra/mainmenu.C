@@ -57,7 +57,6 @@
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transition.h"
 #include "viewmenu.h"
 #include "zoombar.h"
 #include "exportedl.h"

@@ -58,7 +58,6 @@
 #include "plugin.inc"
 #include "pluginmsgs.h"
 #include "pluginserver.inc"
-#include "pluginset.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
 #include "render.inc"
@@ -72,7 +71,6 @@
 #include "track.inc"
 #include "tracking.inc"
 #include "tracks.inc"
-#include "transition.inc"
 #include "transportcommand.inc"
 #include "vwindow.inc"
 #include "wavecache.inc"
@@ -282,7 +280,7 @@ public:
 	void delete_track();
 	void delete_track(Track *track);
 	void delete_tracks();
-	void detach_transition(Transition *transition);
+	void detach_transition(Plugin *transition);
 	void insert(ptstime position, 
 		FileXML *file,
 		int actions,
@@ -290,7 +288,6 @@ public:
 	void insert(EDL *edl, ptstime position, int actions);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
-// into pluginset_highlighted.
 	void insert_effects_canvas(ptstime start,
 		ptstime length);
 
@@ -316,11 +313,10 @@ public:
 		int behaviour);       // behaviour: 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 // Move effect to position
 	void move_effect(Plugin *plugin,
-		PluginSet *plugin_set,
 		Track *track,
 		ptstime position);
-	void move_plugins_up(PluginSet *plugin_set);
-	void move_plugins_down(PluginSet *plugin_set);
+	void move_plugin_up(Plugin *plugin);
+	void move_plugin_down(Plugin *plugin);
 	void move_track_down(Track *track);
 	void move_tracks_down();
 	void move_track_up(Track *track);

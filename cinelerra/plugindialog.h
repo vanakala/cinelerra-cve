@@ -31,12 +31,14 @@ class PluginDialogThru;
 class PluginDialog;
 
 #include "bclistbox.h"
+#include "bcwindow.h"
 #include "condition.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
+#include "pluginserver.inc"
+#include "transitionpopup.inc"
 #include "thread.h"
-#include "transition.inc"
 
 class PluginDialogThread : public Thread
 {
@@ -53,7 +55,7 @@ public:
 	MWindow *mwindow;
 	Track *track;
 	int data_type;
-	Transition *transition;
+	Plugin *transition;
 	PluginDialog *window;
 
 // Plugin being modified if there is one

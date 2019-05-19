@@ -142,7 +142,7 @@ PluginPopupUp::PluginPopupUp(MWindow *mwindow, PluginPopup *popup)
 
 int PluginPopupUp::handle_event()
 {
-	mwindow->move_plugins_up(popup->plugin->plugin_set);
+	mwindow->move_plugin_up(popup->plugin);
 	return 1;
 }
 
@@ -156,6 +156,6 @@ PluginPopupDown::PluginPopupDown(MWindow *mwindow, PluginPopup *popup)
 
 int PluginPopupDown::handle_event()
 {
-	mwindow->move_plugins_down(popup->plugin->plugin_set);
+	mwindow->move_plugin_down(popup->plugin);
 	return 1;
 }

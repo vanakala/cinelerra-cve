@@ -28,6 +28,7 @@
 #include "autos.inc"
 #include "plugin.inc"
 #include "track.inc"
+#include "renderengine.inc"
 #include "virtualconsole.inc"
 
 // The virtual node makes up the virtual console.

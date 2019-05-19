@@ -37,7 +37,6 @@
 #include "plugin.h"
 #include "renderengine.h"
 #include "track.h"
-#include "transition.h"
 #include "transportcommand.h"
 #include "virtualaconsole.h"
 #include "virtualanode.h"

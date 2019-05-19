@@ -118,7 +118,7 @@ void AAttachmentPoint::render(AFrame *output, int buffer_number)
 
 // Process plugin
 		plugin_servers.values[0]->process_buffer(output_temp,
-			plugin->length());
+			plugin->get_length());
 
 	}
 	else
@@ -127,7 +127,7 @@ void AAttachmentPoint::render(AFrame *output, int buffer_number)
 		AFrame *output_temp[1];
 		output_temp[0] = output;
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
-			plugin->length());
+			plugin->get_length());
 	}
 }
 

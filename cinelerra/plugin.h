@@ -22,7 +22,6 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#include "edit.h"
 #include "edl.inc"
 #include "filexml.inc"
 #include "guidelines.h"
@@ -30,46 +29,37 @@
 #include "keyframes.inc"
 #include "module.inc"
 #include "plugin.inc"
-#include "pluginset.inc"
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
-#include "renderengine.inc"
+#include "track.inc"
 #include "virtualnode.inc"
 
 class PluginOnToggle;
 
 
 // Plugin is inherited by Transition, Plugins
-class Plugin : public Edit
+class Plugin
 {
 public:
-	Plugin(EDL *edl, PluginSet *plugin_set, const char *title = 0);
-	virtual ~Plugin();
-
-	virtual Plugin& operator=(Plugin& edit);
-	virtual Edit& operator=(Edit& edit);
+	Plugin(EDL *edl, Track *track, const char *title = 0);
+	~Plugin();
 
 // Called by Edits::equivalent_output to override the keyframe behavior and check
 // title.
-	void equivalent_output(Edit *edit, ptstime *result);
+	void equivalent_output(Plugin *plugin, ptstime *result);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
-	int is_synthesis(RenderEngine *renderengine, 
-		ptstime position);
+	int is_synthesis(ptstime position);
 
-	virtual int operator==(Plugin& that);
-	virtual int operator==(Edit& that);
+	void copy(Plugin *plugin, ptstime start, ptstime end);
+	void copy_from(Plugin *plugin);
 
-	virtual void copy_from(Edit *edit);
-
-// Called by == operators, Edit::equivalent output
-// to test title and keyframe of transition.
-	virtual int identical(Plugin *that);
-// Called by render_gui.  Only need the track, position, and pluginset
+	int identical(Plugin *that);
+// Called by render_gui.  Only need the track, position,
 // to determine a corresponding GUI.
 	int identical_location(Plugin *that);
-	virtual void synchronize_params(Edit *edit);
+	void synchronize_params(Plugin *edit);
 // Shift plugin keyframes
 	void shift_keyframes(ptstime difference);
 // Remove keyframes after pts
@@ -82,6 +72,7 @@ public:
 
 	void save_xml(FileXML *file);
 	void save_shared_location(FileXML *file);
+	void calculate_ref_numbers();
 	int module_number();
 	void load(FileXML *file);
 	void init_shared_pointers();
@@ -99,15 +90,28 @@ public:
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
 	void calculate_title(char *string, int use_nudge);
 
+// Position, length
+	ptstime get_pts();
+	ptstime get_length();
+	ptstime end_pts();
+	void set_pts(ptstime pts);
+	void set_length(ptstime length);
+	Plugin *active_in(ptstime start, ptstime end);
+
+	ptstime plugin_change_duration(ptstime start, ptstime length);
+	int get_number();
+
 // Need to resample keyframes
 	void resample(double old_rate, double new_rate);
 
+	int id;
 // The title of the plugin is stored and not the plugindb entry in case it doesn't exist in the db
 // Title of the plugin currently attached
 	char title[BCTEXTLEN];
 	int plugin_type;
 	int show, on;
-	PluginSet *plugin_set;
+	Track *track;
+	EDL *edl;
 
 // Data for the plugin is stored here.  Default keyframe always exists.
 // As for storing in PluginSet instead of Plugin:
@@ -123,9 +127,14 @@ public:
 	Plugin *shared_plugin;
 // Guidelines of plugin
 	GuideFrame *guideframe;
+// Server
+	PluginServer *plugin_server;
+
 private:
 	int shared_track_num;
 	int shared_plugin_num;
+	ptstime pts;
+	ptstime duration;
 };
 
 #endif

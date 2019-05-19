@@ -757,8 +757,6 @@ void EDL::optimize()
 	if(local_session->preview_end > length) local_session->preview_end = length;
 	if(local_session->preview_start > length ||
 		local_session->preview_start < 0) local_session->preview_start = 0;
-	for(Track *current = tracks->first; current; current = NEXT)
-		current->optimize();
 }
 
 int EDL::next_id()
@@ -777,7 +775,7 @@ void EDL::get_shared_plugins(Track *source,
 		if(track != source && 
 			track->data_type == source->data_type)
 		{
-			for(int i = 0; i < track->plugin_set.total; i++)
+			for(int i = 0; i < track->plugins.total; i++)
 			{
 				Plugin *plugin = track->get_current_plugin(
 					local_session->get_selectionstart(1), 

@@ -30,7 +30,6 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "pluginserver.h"
-#include "pluginset.h"
 #include "tracks.h"
 #include "vtrack.h"
 
@@ -158,32 +157,30 @@ int Tracks::delete_tracks(void)
 }
 
 void Tracks::move_effect(Plugin *plugin,
-	PluginSet *dest_plugin_set,
-	Track *dest_track, 
+	Track *dest_track,
 	ptstime dest_postime)
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
 // Insert on an existing plugin set
-	if(!dest_track && dest_plugin_set)
+	if(!dest_track)
 	{
-		if(plugin->plugin_set == dest_plugin_set)
-		{
-			ptstime opos = plugin->get_pts();
-			ptstime length = plugin->length();
-			dest_postime = plugin->set_pts(dest_postime);
-			plugin->next->set_pts(dest_postime + length);
-			plugin->shift_keyframes(dest_postime - opos);
-		}
+		int i = plugin->get_number();
+		int j;
+
+		if(i > 0)
+			j = i - 1;
 		else
-			source_track->xchg_pluginsets(dest_plugin_set, plugin->plugin_set);
+			j = i + 1;
+		source_track->xchg_plugins(source_track->plugins.values[i],
+			source_track->plugins.values[j]);
 	}
 	else
 // Create a new plugin set
 	{
 		result = dest_track->insert_effect(0,
 				dest_postime,
-				plugin->length(),
+				plugin->get_length(),
 				plugin->plugin_type,
 				plugin->shared_plugin,
 				plugin->shared_track);
@@ -191,7 +188,7 @@ void Tracks::move_effect(Plugin *plugin,
 		result->copy_from(plugin);
 		result->shift(dest_postime - plugin->get_pts());
 // Delete old plugin
-		source_track->remove_pluginset(plugin->plugin_set);
+		source_track->remove_plugin(plugin);
 	}
 }
 

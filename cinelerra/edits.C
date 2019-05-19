@@ -30,8 +30,8 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "plugin.h"
 #include "track.h"
-#include "transition.h"
 
 
 #include <string.h>
@@ -187,7 +187,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 Edit* Edits::split_edit(ptstime postime, int force)
 {
 	Edit *edit, *new_edit;
-	Transition *trans;
+	Plugin *trans;
 
 	if(!first)
 	{
@@ -240,8 +240,8 @@ Edit* Edits::split_edit(ptstime postime, int force)
 
 	if(trans)
 	{
-		if(edit->length() < trans->length_time)
-			trans->length_time = edit->length();
+		if(edit->length() < trans->get_length())
+			trans->set_length(edit->length());
 		edit->transition = trans;
 	}
 	return new_edit;
@@ -329,11 +329,10 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 			else
 			if(file->tag.title_is("TRANSITION"))
 			{
-				current->transition = new Transition(edl,
-					current, 
-					"",
-					edlsession->default_transition_length);
-				current->transition->load_xml(file);
+				current->transition = new Plugin(edl,
+					track,
+					0);
+				current->transition->load(file);
 			}
 			else
 			if(file->tag.title_is("/EDIT"))

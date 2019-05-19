@@ -39,6 +39,8 @@
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
+#include "edit.h"
+#include "edits.h"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -73,7 +75,6 @@
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginserver.h"
-#include "pluginset.h"
 #include "preferences.h"
 #include "render.h"
 #include "ruler.h"
@@ -89,7 +90,6 @@
 #include "track.h"
 #include "tracking.h"
 #include "tracks.h"
-#include "transition.h"
 #include "transportcommand.h"
 #include "vdeviceprefs.h"
 #include "vframe.h"
@@ -1187,43 +1187,40 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 // Do a check weather plugins exist
 	for(Track *track = new_edl->first_track(); track; track = track->next)
 	{
-		for(int k = 0; k < track->plugin_set.total; k++)
+		for(int k = 0; k < track->plugins.total; k++)
 		{
-			PluginSet *plugin_set = track->plugin_set.values[k];
-			for(Plugin *plugin = (Plugin*)plugin_set->first; 
-				plugin;
-				plugin = (Plugin*)plugin->next)
+			Plugin *plugin = track->plugins.values[k];
+
+			if(plugin->plugin_type == PLUGIN_STANDALONE)
 			{
-				if(plugin->plugin_type == PLUGIN_STANDALONE)
+				// Replace old plugin name with new for compatipility with previous version
+				const char *nnp = PluginServer::translate_pluginname(track->data_type, plugin->title);
+				if(nnp)
+					strcpy(plugin->title, nnp);
+				// ok we need to find it in plugindb
+				int plugin_found = 0;
+				for(int j = 0; j < plugindb->total; j++)
 				{
-					// Replace old plugin name with new for compatipility with previous version
-					const char *nnp = PluginServer::translate_pluginname(track->data_type, plugin->title);
-					if(nnp)
-						strcpy(plugin->title, nnp);
-					// ok we need to find it in plugindb
-					int plugin_found = 0;
-					for(int j = 0; j < plugindb->total; j++)
-					{
-						PluginServer *server = plugindb->values[j];
-						if(!strcasecmp(server->title, plugin->title) &&
-							((track->data_type == TRACK_AUDIO && server->audio) ||
-							(track->data_type == TRACK_VIDEO && server->video)) &&
-							(!server->transition))
-							plugin_found = 1;
-					}
-					if (!plugin_found) 
-						errormsg("The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
-							"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-							plugin->title,
-							path);
+					PluginServer *server = plugindb->values[j];
+
+					if(!strcasecmp(server->title, plugin->title) &&
+						((track->data_type == TRACK_AUDIO && server->audio) ||
+						(track->data_type == TRACK_VIDEO && server->video)) &&
+						(!server->transition))
+						plugin_found = 1;
 				}
+				if(!plugin_found)
+					errormsg("The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
+						plugin->title,
+						path);
 			}
 		}
 		for(Edit *edit = (Edit*)track->edits->first;
 			edit;
 			edit = (Edit*)edit->next)
 		{
-			if (edit->transition)
+			if(edit->transition)
 			{
 				// ok we need to find transition in plugindb
 				int transition_found = 0;
@@ -1236,10 +1233,10 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 						(server->transition))
 						transition_found = 1;
 				}
-				if (!transition_found) 
+				if(!transition_found)
 					errormsg("The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-						edit->transition->title, 
+						edit->transition->title,
 						path); 
 			}
 		}
@@ -1605,18 +1602,14 @@ void MWindow::update_plugin_states()
 			track && !result; 
 			track = track->next)
 		{
-			for(int j = 0; 
-				j < track->plugin_set.total && !result; 
+			for(int j = 0; j < track->plugins.total && !result;
 				j++)
 			{
-				PluginSet *plugin_set = track->plugin_set.values[j];
-				for(Plugin *plugin = (Plugin*)plugin_set->first; 
-					plugin && !result; 
-					plugin = (Plugin*)plugin->next)
-				{
-					if(plugin == src_plugin &&
-						!strcmp(plugin->title, src_plugingui->title)) result = 1;
-				}
+				Plugin *plugin = track->plugins.values[j];
+
+				if(plugin == src_plugin &&
+						!strcmp(plugin->title, src_plugingui->title))
+					result = 1;
 			}
 		}
 

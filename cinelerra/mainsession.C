@@ -36,7 +36,6 @@ MainSession::MainSession()
 	filename[0] = 0;
 	track_highlighted = 0;
 	plugin_highlighted = 0;
-	pluginset_highlighted = 0;
 	vcanvas_highlighted = 0;
 	ccanvas_highlighted = 0;
 	edit_highlighted = 0;

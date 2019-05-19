@@ -29,13 +29,12 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "keyframes.h"
 #include "localsession.h"
 #include "plugin.h"
-#include "pluginset.h"
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
-#include "transition.h"
 #include "vframe.h"
 #include <string.h>
 
@@ -64,7 +63,7 @@ Track::~Track()
 {
 	delete automation;
 	delete edits;
-	plugin_set.remove_all_objects();
+	plugins.remove_all_objects();
 }
 
 void Track::copy_settings(Track *track)
@@ -99,19 +98,19 @@ void Track::equivalent_output(Track *track, ptstime *result)
 	automation->equivalent_output(track->automation, &result2);
 	edits->equivalent_output(track->edits, &result2);
 
-	int plugin_sets = MIN(plugin_set.total, track->plugin_set.total);
+	int num_plugins = MIN(plugins.total, track->plugins.total);
 // Test existing plugin sets
-	for(int i = 0; i < plugin_sets; i++)
+	for(int i = 0; i < num_plugins; i++)
 	{
-		plugin_set.values[i]->equivalent_output(
-			track->plugin_set.values[i], 
+		plugins.values[i]->equivalent_output(
+			track->plugins.values[i],
 			&result2);
 	}
 
 // New EDL has more plugin sets.  Get starting plugin in new plugin sets
-	for(int i = plugin_sets; i < plugin_set.total; i++)
+	for(int i = num_plugins; i < plugins.total; i++)
 	{
-		Plugin *current = plugin_set.values[i]->get_first_plugin();
+		Plugin *current = plugins.values[i];
 		if(current)
 		{
 			if(result2 < 0 || current->get_pts() < result2)
@@ -120,9 +119,9 @@ void Track::equivalent_output(Track *track, ptstime *result)
 	}
 
 // New EDL has fewer plugin sets.  Get starting plugin in old plugin set
-	for(int i = plugin_sets; i < track->plugin_set.total; i++)
+	for(int i = num_plugins; i < track->plugins.total; i++)
 	{
-		Plugin *current = track->plugin_set.values[i]->get_first_plugin();
+		Plugin *current = track->plugins.values[i];
 		if(current)
 		{
 			if(result2 < 0 || current->get_pts() < result2)
@@ -132,7 +131,7 @@ void Track::equivalent_output(Track *track, ptstime *result)
 
 // Number of plugin sets differs but somehow we didn't find the start of the
 // change.  Assume 0
-	if(track->plugin_set.total != plugin_set.total && result2 < 0)
+	if(track->plugins.total != plugins.total && result2 < 0)
 		result2 = 0;
 
 	if(result2 >= 0 && (*result < 0 || result2 < *result))
@@ -140,24 +139,22 @@ void Track::equivalent_output(Track *track, ptstime *result)
 }
 
 
-int Track::is_synthesis(RenderEngine *renderengine, 
-	ptstime position)
+int Track::is_synthesis(ptstime position)
 {
 	int is_synthesis = 0;
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		Plugin *plugin = get_current_plugin(position,
-			i,
-			0);
+		Plugin *plugin = get_current_plugin(position, i, 0);
+
 		if(plugin)
 		{
 // Assume data from a shared track is synthesized
 			if(plugin->plugin_type == PLUGIN_SHAREDMODULE) 
 				is_synthesis = 1;
 			else
-				is_synthesis = plugin->is_synthesis(renderengine, 
-					position);
-			if(is_synthesis) break;
+				is_synthesis = plugin->is_synthesis(position);
+			if(is_synthesis)
+				break;
 		}
 	}
 	return is_synthesis;
@@ -167,14 +164,13 @@ void Track::copy_from(Track *track)
 {
 	copy_settings(track);
 	edits->copy_from(track->edits);
-	for(int i = 0; i < this->plugin_set.total; i++)
-		delete this->plugin_set.values[i];
-	this->plugin_set.remove_all_objects();
+	plugins.remove_all_objects();
 
-	for(int i = 0; i < track->plugin_set.total; i++)
+	for(int i = 0; i < track->plugins.total; i++)
 	{
-		PluginSet *new_plugin_set = plugin_set.append(new PluginSet(edl, this));
-		new_plugin_set->copy_from(track->plugin_set.values[i]);
+		Plugin *new_plugin = plugins.append(new Plugin(edl, this,
+			track->plugins.values[i]->title));
+		new_plugin->copy_from(track->plugins.values[i]);
 	}
 	automation->copy_from(track->automation);
 	this->track_w = track->track_w;
@@ -192,7 +188,7 @@ int Track::vertical_span(Theme *theme)
 	int result = 0;
 	if(expand_view)
 		result = edl->local_session->zoom_track + 
-			plugin_set.total * 
+			plugins.total *
 			theme->get_image("plugin_bg_data")->get_h();
 	else
 		result = edl->local_session->zoom_track;
@@ -207,21 +203,19 @@ ptstime Track::get_length()
 {
 	ptstime total_length = 0;
 	ptstime length = 0;
-	Edit *plugin;
+	Plugin *plugin;
 
 // Test edits
 	if(edits->last)
 		total_length = edits->last->get_pts();
 
 // Test plugins
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		if(plugin = plugin_set.values[i]->last)
-		{
-			length = plugin->get_pts();
-			if(length > total_length)
-				total_length = length;
-		}
+		plugin = plugins.values[i];
+		length = plugin->end_pts();
+		if(length > total_length)
+			total_length = length;
 	}
 	return total_length;
 }
@@ -287,17 +281,17 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			{
 				if(load_flags & LOAD_EDITS)
 				{
-					PluginSet *plugin_set = new PluginSet(edl, this);
-					this->plugin_set.append(plugin_set);
-					plugin_set->load(file, load_flags);
+					Plugin *plugin = new Plugin(edl, this, 0);
+					plugins.append(plugin);
+					plugin->load(file);
 				}
 				else
 				if(load_flags & LOAD_AUTOMATION)
 				{
-					if(current_plugin < this->plugin_set.total)
+					if(current_plugin < plugins.total)
 					{
-						PluginSet *plugin_set = this->plugin_set.values[current_plugin];
-						plugin_set->load(file, load_flags);
+						Plugin *plugin = plugins.values[current_plugin];
+						plugin->load(file);
 						current_plugin++;
 					}
 				}
@@ -308,8 +302,8 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 
 void Track::init_shared_pointers()
 {
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[0]->get_first_plugin()->init_shared_pointers();
+	for(int i = 0; i < plugins.total; i++)
+		plugins.values[0]->init_shared_pointers();
 }
 
 void Track::insert_asset(Asset *asset,
@@ -349,21 +343,19 @@ void Track::insert_track(Track *track,
 	edits->insert_edits(track->edits, position, length, overwrite);
 
 	if(edlsession->plugins_follow_edits)
-		insert_plugin_set(track, position, length, overwrite);
+		insert_plugin(track, position, length, overwrite);
 
 	automation->insert_track(track->automation, 
 		position,
 		length);
-	optimize();
 }
 
 // Called by insert_track
-void Track::insert_plugin_set(Track *track, ptstime position,
+void Track::insert_plugin(Track *track, ptstime position,
 	ptstime duration, int overwrite)
 {
-	PluginSet *new_set;
 	Plugin *plugin, *new_plugin;
-	ptstime end;
+	ptstime end, new_start, new_length;
 
 	if(duration < 0)
 		duration = track->get_length();
@@ -371,23 +363,24 @@ void Track::insert_plugin_set(Track *track, ptstime position,
 	end = position + duration;
 
 	if(overwrite)
-	{
-		for(int i = 0; i < plugin_set.total; i++)
-			plugin_set.values[i]->clear(position, end);
-	}
+		clear_plugins(position, end);
 	else
 		shift_effects(position, duration);
 
-	for(int i = 0; i < track->plugin_set.total; i++)
+	for(int i = 0; i < track->plugins.total; i++)
 	{
-		plugin = track->plugin_set.values[i]->get_first_plugin();
-		if(plugin)
+		plugin = track->plugins.values[i];
+
+		new_start = position + plugin->get_pts();
+		if(new_start < end)
 		{
-			if(plugin->get_pts() + position < end)
-			{
-				plugin_set.append(new_set = new PluginSet(edl, this));
-				new_set->insert_plugin(plugin, position, duration);
-			}
+			plugins.append(new_plugin = new Plugin(edl, this, 0));
+			new_plugin->copy_from(plugin);
+			new_plugin->set_pts(new_start);
+			new_length = plugin->get_length();
+			if(new_start + new_length > end)
+				new_length = end - new_start;
+			new_plugin->set_length(new_length);
 		}
 	}
 }
@@ -402,10 +395,12 @@ Plugin* Track::insert_effect(const char *title,
 	if(length < EPSILON)
 		return 0;
 
-	PluginSet *plugin_set = new PluginSet(edl, this);
-	Plugin *plugin = 0;
+	Plugin *plugin = new Plugin(edl, this, title);
 
-	this->plugin_set.append(plugin_set);
+	plugins.append(plugin);
+	plugin->plugin_type = plugin_type;
+	plugin->shared_track = shared_track;
+	plugin->shared_plugin = shared_plugin;
 
 // Position is identical to source plugin
 	if(plugin_type == PLUGIN_SHAREDPLUGIN)
@@ -413,90 +408,79 @@ Plugin* Track::insert_effect(const char *title,
 // From an attach operation
 		if(shared_plugin)
 		{
-			plugin = plugin_set->insert_plugin(title,
-				shared_plugin->get_pts(),
-				shared_plugin->length(),
-				plugin_type,
-				shared_plugin,
-				shared_track);
+			plugin->set_pts(shared_plugin->get_pts());
+			plugin->set_length(shared_plugin->get_length());
 		}
 		else
 // From a drag operation
 		{
-			plugin = plugin_set->insert_plugin(title,
-				start,
-				length,
-				plugin_type,
-				shared_plugin,
-				shared_track);
+			plugin->set_pts(start);
+			plugin->set_length(length);
 		}
 	}
 	else
 	{
-		plugin = plugin_set->insert_plugin(title, 
-			start,
-			length,
-			plugin_type, 
-			shared_plugin,
-			shared_track);
+		plugin->set_pts(start);
+		plugin->set_length(length);
 	}
 
 	expand_view = 1;
 	return plugin;
 }
 
-void Track::xchg_pluginsets(PluginSet *set1, PluginSet *set2)
+void Track::xchg_plugins(Plugin *plugin1, Plugin *plugin2)
 {
 	int si1, si2;
 
-	if(set1 == set2)
+	if(plugin1 == plugin2)
 		return;
 
 	si1 = si2 = -1;
 
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		if(plugin_set.values[i] == set1)
+		if(plugins.values[i] == plugin1)
 			si1 = i;
-		if(plugin_set.values[i] == set2)
+		if(plugins.values[i] == plugin2)
 			si2 = i;
 	}
 
 	if(si1 >= 0 && si2 >= 0)
 	{
-		PluginSet *temp = plugin_set.values[si1];
-		plugin_set.values[si1] = plugin_set.values[si2];
-		plugin_set.values[si2] = temp;
+		Plugin *temp = plugins.values[si1];
+		plugins.values[si1] = plugins.values[si2];
+		plugins.values[si2] = temp;
 	}
 }
 
-void Track::move_plugins_up(PluginSet *plugin_set)
+void Track::move_plugin_up(Plugin *plugin)
 {
-	for(int i = 0; i < this->plugin_set.total; i++)
+	for(int i = 0; i < this->plugins.total; i++)
 	{
-		if(this->plugin_set.values[i] == plugin_set)
+		if(this->plugins.values[i] == plugin)
 		{
 			if(i == 0) break;
 
-			PluginSet *temp = this->plugin_set.values[i - 1];
-			this->plugin_set.values[i - 1] = this->plugin_set.values[i];
-			this->plugin_set.values[i] = temp;
+			Plugin *temp = plugins.values[i - 1];
+			plugins.values[i - 1] = plugins.values[i];
+			plugins.values[i] = temp;
 			break;
 		}
 	}
 }
 
-void Track::move_plugins_down(PluginSet *plugin_set)
+void Track::move_plugin_down(Plugin *plugin)
 {
-	for(int i = 0; i < this->plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		if(this->plugin_set.values[i] == plugin_set)
+		if(plugins.values[i] == plugin)
 		{
-			if(i == this->plugin_set.total - 1) break;
+			if(i == plugins.total - 1)
+				break;
 
-			PluginSet *temp = this->plugin_set.values[i + 1];
-			this->plugin_set.values[i + 1] = this->plugin_set.values[i];
-			this->plugin_set.values[i] = temp;
+			Plugin *temp = plugins.values[i + 1];
+			plugins.values[i + 1] = plugins.values[i];
+			plugins.values[i] = temp;
 			break;
 		}
 	}
@@ -512,16 +496,20 @@ void Track::remove_asset(Asset *asset)
 			edit->asset = 0;
 		}
 	}
-	optimize();
 }
 
-void Track::remove_pluginset(PluginSet *plugin_set)
+void Track::remove_plugin(Plugin *plugin)
 {
 	int i;
-	for(i = 0; i < this->plugin_set.total; i++)
-		if(plugin_set == this->plugin_set.values[i]) break;
 
-	this->plugin_set.remove_object(plugin_set);
+	for(i = 0; i < plugins.total; i++)
+	{
+		if(plugin == plugins.values[i])
+		{
+			plugins.remove_object(plugin);
+			break;
+		}
+	}
 }
 
 void Track::shift_keyframes(ptstime position, ptstime length)
@@ -532,90 +520,57 @@ void Track::shift_keyframes(ptstime position, ptstime length)
 
 void Track::shift_effects(ptstime position, ptstime length)
 {
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		plugin_set.values[i]->shift_effects(position, length);
+		Plugin *plugin = plugins.values[i];
+
+		if(plugin->get_pts() >= position)
+			plugin->shift(length);
 	}
 }
 
 void Track::detach_effect(Plugin *plugin)
 {
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		PluginSet *plugin_set = this->plugin_set.values[i];
-		for(Plugin *dest = (Plugin*)plugin_set->first; 
-			dest; 
-			dest = (Plugin*)dest->next)
-		{
-			if(dest == plugin)
-			{
-				remove_pluginset(plugin_set);
-				return;
-			}
-		}
-	}
+	remove_plugin(plugin);
 }
 
 void Track::detach_shared_effects(Plugin *plugin, Track *track)
 {
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		PluginSet *plugin_set = this->plugin_set.values[i];
-		for(Plugin *dest = (Plugin*)plugin_set->first; 
-			dest; 
-			dest = (Plugin*)dest->next)
-		{
-			if(plugin && dest->shared_plugin == plugin)
-				dest->shared_plugin = 0;
-			if(track && dest->shared_track == track)
-				dest->shared_track = 0;
-			if((dest->plugin_type == PLUGIN_SHAREDPLUGIN &&
-					!dest->shared_plugin) ||
-				(dest->plugin_type == PLUGIN_SHAREDMODULE &&
-					!dest->shared_track))
-			{
-				this->plugin_set.remove_object_number(i);
-				--i;
-			}
-		}
-	}
-}
+		Plugin *dest = plugins.values[i];
 
-void Track::optimize()
-{
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		PluginSet *plugin_set = this->plugin_set.values[i];
-
-		if(!plugin_set->get_first_plugin())
+		if(plugin && dest->shared_plugin == plugin)
+			dest->shared_plugin = 0;
+		if(track && dest->shared_track == track)
+			dest->shared_track = 0;
+		if((dest->plugin_type == PLUGIN_SHAREDPLUGIN &&
+				!dest->shared_plugin) ||
+			(dest->plugin_type == PLUGIN_SHAREDMODULE &&
+				!dest->shared_track))
 		{
-			remove_pluginset(plugin_set);
-			i--;
+			plugins.remove_object_number(i);
+			--i;
 		}
 	}
 }
 
 Plugin* Track::get_current_plugin(ptstime postime,
-	int plugin_set, 
+	int num,
 	int use_nudge)
 {
-	Plugin *current;
-
 	if(use_nudge) postime += nudge;
 
-	if(plugin_set >= this->plugin_set.total || plugin_set < 0) return 0;
-
-	for(current = (Plugin*)this->plugin_set.values[plugin_set]->last; 
-		current; 
-		current = (Plugin*)PREVIOUS)
+	if(num >= 0 && num < plugins.total)
 	{
+		Plugin *current = plugins.values[num];
+
 		if(current->get_pts() <= postime &&
 			current->end_pts() > postime)
 		{
 			return current;
 		}
 	}
-
 	return 0;
 }
 
@@ -628,14 +583,14 @@ Plugin* Track::get_current_transition(ptstime position)
 	{
 		if(current->get_pts() <= position && current->end_pts() > position)
 		{
-			if(current->transition && position < current->get_pts() + current->transition->length())
+			if(current->transition && position <
+				current->get_pts() + current->transition->get_length())
 			{
 				result = current->transition;
 				break;
 			}
 		}
 	}
-
 	return result;
 }
 
@@ -648,8 +603,8 @@ void Track::synchronize_params(Track *track)
 		this_edit->synchronize_params(that_edit);
 	}
 
-	for(int i = 0; i < plugin_set.total && i < track->plugin_set.total; i++)
-		plugin_set.values[i]->synchronize_params(track->plugin_set.values[i]);
+	for(int i = 0; i < plugins.total && i < track->plugins.total; i++)
+		plugins.values[i]->synchronize_params(plugins.values[i]);
 
 	automation->copy_from(track->automation);
 	this->nudge = track->nudge;
@@ -683,19 +638,18 @@ void Track::dump(int indent)
 		printf("%*sTitle: '%s'\n", indent, "", title);
 	edits->dump(indent);
 	automation->dump(indent);
-	printf("%*sPlugin Sets: %d\n", indent, "", plugin_set.total);
+	printf("%*sPlugins: %d\n", indent, "", plugins.total);
 
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->dump(indent + 2);
+	for(int i = 0; i < plugins.total; i++)
+		plugins.values[i]->dump(indent + 2);
 }
 
 // ======================================== accounting
 
 int Track::number_of() 
 { 
-	return tracks->edl->number_of(this);
+	return tracks->number_of(this);
 }
-
 
 // ================================================= editing
 
@@ -715,9 +669,17 @@ void Track::automation_xml(FileXML *file)
 		file->tag.set_title("PLUGINSETS");
 		file->append_tag();
 		file->append_newline();
-		for(int i = 0; i < plugin_set.total; i++)
+
+		for(int i = 0; i < plugins.total; i++)
 		{
-			plugin_set.values[i]->save_xml(file);
+// For historical reasons we have pluginsets
+			file->tag.set_title("PLUGINSET");
+			file->append_tag();
+			file->append_newline();
+			plugins.values[i]->save_xml(file);
+			file->tag.set_title("/PLUGINSET");
+			file->append_tag();
+			file->append_newline();
 		}
 		file->tag.set_title("/PLUGINSETS");
 		file->append_tag();
@@ -730,7 +692,7 @@ void Track::automation_xml(FileXML *file)
 }
 
 void Track::paste_automation(ptstime selectionstart,
-	ptstime total_length, 
+	ptstime total_length,
 	double frame_rate,
 	int sample_rate,
 	FileXML *file)
@@ -767,10 +729,88 @@ void Track::paste_automation(ptstime selectionstart,
 			else
 			if(file->tag.title_is("PLUGINSETS"))
 			{
-				PluginSet::paste_keyframes(selectionstart, 
+				paste_keyframes(selectionstart,
 					total_length, 
-					file,
-					this);
+					file);
+			}
+		}
+	}
+}
+
+void Track::paste_keyframes(ptstime start, ptstime length,
+	FileXML *file)
+{
+	char data[MESSAGESIZE];
+
+	int result = 0;
+
+	Plugin *target_plugin = 0;
+	Plugin *second_choice_plugin = 0;
+	ArrayList<Plugin*> unused_plugins;
+// get all available target plugins, we will be removing them one by one
+//    when we will paste into them
+	for(int i = 0; i < plugins.total; i++)
+		unused_plugins.append(plugins.values[i]);
+
+	while(!result)
+	{
+		result = file->read_tag();
+
+		if(!result)
+		{
+			if(file->tag.title_is("/PLUGINSETS"))
+				result = 1;
+			else
+			if(file->tag.title_is("PLUGINSET"))
+			{
+				target_plugin = 0;
+			}
+			else
+			if(file->tag.title_is("KEYFRAME"))
+			{
+				ptstime position = file->tag.get_property("POSTIME", 0);
+				position += start;
+				file->read_text_until("/KEYFRAME",
+					data, MESSAGESIZE);
+
+				if(!target_plugin && data[0])
+				{
+// now try to find the target
+					int name_len = strchr(data, ' ') - data + 1;
+
+					second_choice_plugin = 0;
+					for(int i = 0; i < unused_plugins.total; i++)
+					{
+						Plugin *current = unused_plugins.values[i];
+
+						if(position >= current->get_pts() &&
+							position <= current->end_pts() &&
+							!strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
+						{
+							target_plugin = current;
+							break;
+						}
+
+						if(position >= current->get_pts() &&
+							!strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
+						{
+							second_choice_plugin = current;
+							break;
+						}
+					}
+				}
+
+				if(!target_plugin)
+					target_plugin = second_choice_plugin;
+
+				if(target_plugin)
+				{
+					KeyFrame *keyframe;
+					keyframe = (KeyFrame*)target_plugin->keyframes->insert_auto(position);
+					strcpy(keyframe->data, data);
+					keyframe->pos_time = position;
+					unused_plugins.remove(target_plugin);
+				}
 			}
 		}
 	}
@@ -785,9 +825,10 @@ void Track::clear_automation(ptstime selectionstart,
 
 	if(edlsession->auto_conf->plugins)
 	{
-		for(int i = 0; i < plugin_set.total; i++)
+		for(int i = 0; i < plugins.total; i++)
 		{
-			plugin_set.values[i]->clear_keyframes(selectionstart, selectionend);
+			plugins.values[i]->keyframes->clear(selectionstart,
+				selectionend, 0);
 		}
 	}
 
@@ -826,9 +867,9 @@ void Track::save_xml(FileXML *file, const char *output_path)
 	edits->save_xml(file, output_path);
 	automation->save_xml(file);
 
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		plugin_set.values[i]->save_xml(file);
+		plugins.values[i]->save_xml(file);
 	}
 
 	file->tag.set_title("/TRACK");
@@ -851,12 +892,12 @@ void Track::copy(Track *track, ptstime start, ptstime end)
 	edits->copy(track->edits, start, end);
 	automation->copy(track->automation, start, end);
 
-	for(int i = 0; i < track->plugin_set.total; i++)
+	for(int i = 0; i < track->plugins.total; i++)
 	{
-		if(track->plugin_set.values[i]->active_in(start, end))
+		if(track->plugins.values[i]->active_in(start, end))
 		{
-			PluginSet *new_plugin_set = plugin_set.append(new PluginSet(edl, this));
-			new_plugin_set->copy(track->plugin_set.values[i], start, end);
+			Plugin *new_plugin = plugins.append(new Plugin(edl, this, 0));
+			new_plugin->copy(track->plugins.values[i], start, end);
 		}
 	}
 }
@@ -895,26 +936,65 @@ void Track::clear(ptstime start,
 		automation->clear(start, end, 0, 1);
 
 	if(actions & EDIT_PLUGINS)
-		for(int i = 0; i < plugin_set.total; i++)
-		{
-			plugin_set.values[i]->clear(start, end);
-		}
+	{
+		clear_plugins(start, end);
+	}
 
 	if(actions & EDIT_EDITS)
 		edits->clear(start, end);
+}
 
-	optimize();
+void Track::clear_plugins(ptstime start, ptstime end)
+{
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+		ptstime pts = plugin->get_pts();
+		ptstime pl_end = plugin->end_pts();
+
+		if(start > pl_end)
+			continue;
+		if(end < pts)
+			plugin->shift(end - start);
+		else if(end < pl_end && end >= pts)
+		{
+			plugin->keyframes->clear_after(end);
+			plugin->set_length(end - start);
+		}
+		else if(start <= pts && end < pl_end)
+		{
+			plugin->set_length(end - pts);
+			plugin->shift(end - pts);
+		}
+		else // start < pts && end > pl_end
+		{
+			plugins.remove_object(plugin);
+			i--;
+		}
+	}
 }
 
 void Track::clear_after(ptstime pts)
 {
 	automation->clear_after(pts);
 
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->clear_after(pts);
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+		ptstime plugin_pts = plugin->get_pts();
+		ptstime plugin_end = plugin->end_pts();
 
+		if(plugin_end < pts)
+			continue;
+		if(plugin_pts < pts && plugin_end > pts)
+			plugin->set_length(pts - plugin_pts);
+		if(plugin->get_pts() > pts)
+		{
+			plugins.remove_object(plugin);
+			i--;
+		}
+	}
 	edits->clear_after(pts);
-	optimize();
 }
 
 void Track::clear_handle(ptstime start,
@@ -930,9 +1010,17 @@ ptstime Track::adjust_position(ptstime oldposition, ptstime newposition,
 {
 	ptstime newpos = edits->adjust_position(oldposition, newposition,
 		currentend, handle_mode);
-	for(int i = 0; i < plugin_set.total; i++)
-		newpos = plugin_set.values[i]->adjust_position(oldposition, newpos,
-			currentend, handle_mode);
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+
+		if(edl->equivalent(plugin->get_pts(), oldposition) &&
+				newpos < plugin->end_pts())
+			plugin->set_pts(newpos);
+		else if(edl->equivalent(plugin->end_pts(), oldposition) &&
+				newpos > plugin->get_pts())
+			plugin->set_length(newpos -plugin->get_pts());
+	}
 	return newpos;
 }
 
@@ -950,9 +1038,17 @@ void Track::modify_pluginhandles(ptstime oldposition,
 	int handle_mode,
 	int edit_labels)
 {
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->modify_handles(oldposition, newposition,
-			currentend, handle_mode);
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+
+		if(edl->equivalent(plugin->get_pts(), oldposition) &&
+				newposition < plugin->end_pts())
+			plugin->set_pts(newposition);
+		else if(edl->equivalent(plugin->end_pts(), oldposition) &&
+				newposition > plugin->get_pts())
+			plugin->set_length(newposition - plugin->get_pts());
+	}
 }
 
 void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
@@ -977,7 +1073,6 @@ int Track::playable_edit(ptstime position)
 	return result;
 }
 
-
 int Track::need_edit(Edit *current, int test_transitions)
 {
 	return ((test_transitions && current->transition) ||
@@ -988,12 +1083,14 @@ ptstime Track::plugin_change_duration(ptstime input_position,
 	ptstime input_length)
 {
 	input_position += nudge;
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		ptstime new_duration = plugin_set.values[i]->plugin_change_duration(
+		ptstime new_duration = plugins.values[i]->plugin_change_duration(
 			input_position, 
 			input_length);
-		if(new_duration < input_length) input_length = new_duration;
+
+		if(new_duration < input_length)
+			input_length = new_duration;
 	}
 	return input_length;
 }
@@ -1035,12 +1132,11 @@ ptstime Track::edit_change_duration(ptstime input_position,
 				current && 
 				current->get_pts() < input_position + input_length &&
 				!need_edit(current, test_transitions);
-				current = NEXT)
-				;
+				current = NEXT);
 
-				if(current && need_edit(current, test_transitions) &&
-						current->get_pts() < input_position + input_length)
-					edit_length = current->get_pts() - input_position;
+			if(current && need_edit(current, test_transitions) &&
+					current->get_pts() < input_position + input_length)
+				edit_length = current->get_pts() - input_position;
 		}
 	}
 	else
@@ -1065,11 +1161,9 @@ int Track::is_playable(ptstime position)
 
 int Track::plugin_used(ptstime position)
 {
-	for(int i = 0; i < this->plugin_set.total; i++)
+	for(int i = 0; i < this->plugins.total; i++)
 	{
-		Plugin *current_plugin = get_current_plugin(position, 
-			i, 
-			0);
+		Plugin *current_plugin = plugins.values[i];
 
 		if(current_plugin && 
 			(current_plugin->on && 
@@ -1079,6 +1173,19 @@ int Track::plugin_used(ptstime position)
 		}
 	}
 	return 0;
+}
+
+void Track::detach_transition(Plugin *transition)
+{
+	for(Edit *current = edits->first; current; current = current->next)
+	{
+		if(current->transition == transition)
+		{
+			delete transition;
+			current->transition = 0;
+			break;
+		}
+	}
 }
 
 posnum Track::to_units(ptstime position, int round)

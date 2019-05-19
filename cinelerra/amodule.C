@@ -44,7 +44,6 @@
 #include "renderengine.h"
 #include "mainsession.h"
 #include "theme.h"
-#include "transition.h"
 
 #include <string.h>
 
@@ -172,7 +171,7 @@ int AModule::render(AFrame *aframe)
 			Edit *previous_edit = playable_edit->previous;
 			if(transition && previous_edit)
 			{
-				ptstime transition_length = transition->length();
+				ptstime transition_length = transition->get_length();
 				ptstime previous_start = previous_edit->get_pts();
 				ptstime previous_src = previous_edit->get_source_pts();
 
@@ -229,7 +228,7 @@ int AModule::render(AFrame *aframe)
 						transition_temp,
 						aframe,
 						start_projpts - edit_start,
-						transition->length());
+						transition->get_length());
 				}
 			}
 			if(playable_edit && start_projpts + fragment_duration >= edit_end)

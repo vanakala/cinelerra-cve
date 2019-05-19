@@ -703,7 +703,7 @@ void PluginServer::show_gui()
 	client->smp = preferences->processors - 1;
 	if(plugin)
 	{
-		client->total_len_pts = plugin->length();
+		client->total_len_pts = plugin->get_length();
 		client->source_start_pts = plugin->get_pts();
 	}
 	client->source_pts = master_edl->local_session->get_selectionstart(1);
@@ -721,7 +721,7 @@ void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
 
-	client->total_len_pts = plugin->length();
+	client->total_len_pts = plugin->get_length();
 	client->source_start_pts = plugin->get_pts();
 	client->source_pts = master_edl->local_session->get_selectionstart(1);
 	client->update_gui();
@@ -897,7 +897,7 @@ GuideFrame *PluginServer::get_plugin_guides()
 	if(!plugin->guideframe && mwindow_global)
 	{
 		ptstime start = plugin->get_pts();
-		ptstime end = start + plugin->length();
+		ptstime end = start + plugin->get_length();
 		plugin->guideframe = mwindow_global->cwindow->new_guideframe(start, end);
 	}
 	return plugin->guideframe;

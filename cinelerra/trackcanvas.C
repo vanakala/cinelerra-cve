@@ -58,7 +58,6 @@
 #include "resourcethread.h"
 #include "plugin.h"
 #include "pluginpopup.h"
-#include "pluginset.h"
 #include "plugintoggles.h"
 #include "preferences.h"
 #include "resourcepixmap.h"
@@ -69,7 +68,6 @@
 #include "intautos.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transition.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -143,7 +141,6 @@ void TrackCanvas::drag_motion()
 	int cursor_y = get_relative_cursor_y();
 	Track *over_track = 0;
 	Edit *over_edit = 0;
-	PluginSet *over_pluginset = 0;
 	Plugin *over_plugin = 0;
 	int redraw = 0;
 
@@ -192,28 +189,21 @@ void TrackCanvas::drag_motion()
 					}
 				}
 
-				for(int i = 0; i < track->plugin_set.total; i++)
+				for(int i = 0; i < track->plugins.total; i++)
 				{
-					PluginSet *pluginset = track->plugin_set.values[i];
+					Plugin *plugin = track->plugins.values[i];
 
-					for(Plugin *plugin = (Plugin*)pluginset->first;
-						plugin != pluginset->last;
-						plugin = (Plugin*)plugin->next)
+					int plugin_x, plugin_y, plugin_w, plugin_h;
+					plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
+
+					if(cursor_y >= plugin_y &&
+						cursor_y < plugin_y + plugin_h)
 					{
-						int plugin_x, plugin_y, plugin_w, plugin_h;
-						plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
-
-						if(cursor_y >= plugin_y &&
-							cursor_y < plugin_y + plugin_h)
+						if(cursor_x >= plugin_x &&
+							cursor_x < plugin_x + plugin_w)
 						{
-							over_pluginset = plugin->plugin_set;
-
-							if(cursor_x >= plugin_x &&
-								cursor_x < plugin_x + plugin_w)
-							{
-								over_plugin = plugin;
-								break;
-							}
+							over_plugin = plugin;
+							break;
 						}
 					}
 				}
@@ -234,12 +224,6 @@ void TrackCanvas::drag_motion()
 	if(mainsession->edit_highlighted != over_edit)
 	{
 		mainsession->edit_highlighted = over_edit;
-		redraw = 1;
-	}
-
-	if(mainsession->pluginset_highlighted != over_pluginset)
-	{
-		mainsession->pluginset_highlighted = over_pluginset;
 		redraw = 1;
 	}
 
@@ -357,22 +341,11 @@ int TrackCanvas::drag_stop()
 
 // Insert shared plugin in source
 // Move source to different location
-			if(mainsession->pluginset_highlighted)
+			if(mainsession->plugin_highlighted)
 			{
-				if(mainsession->plugin_highlighted)
-				{
-					mwindow->move_effect(mainsession->drag_plugin,
-						mainsession->plugin_highlighted->plugin_set,
-						0,
-						mainsession->plugin_highlighted->get_pts());
-				}
-				else
-				{
-					mwindow->move_effect(mainsession->drag_plugin,
-						mainsession->pluginset_highlighted,
-						0,
-						mainsession->pluginset_highlighted->last->get_pts());
-				}
+				mwindow->move_effect(mainsession->drag_plugin,
+					0,
+					mainsession->plugin_highlighted->get_pts());
 				result = 1;
 			}
 			else
@@ -380,7 +353,6 @@ int TrackCanvas::drag_stop()
 			if(mainsession->edit_highlighted)
 			{
 				mwindow->move_effect(mainsession->drag_plugin,
-					0,
 					mainsession->track_highlighted,
 					mainsession->edit_highlighted->get_pts());
 				result = 1;
@@ -390,7 +362,6 @@ int TrackCanvas::drag_stop()
 			if(mainsession->track_highlighted)
 			{
 				mwindow->move_effect(mainsession->drag_plugin,
-					0,
 					mainsession->track_highlighted,
 					0);
 				result = 1;
@@ -407,7 +378,6 @@ int TrackCanvas::drag_stop()
 			mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
 // Drop all the effects
-			PluginSet *plugin_set = mainsession->pluginset_highlighted;
 			Track *track = mainsession->track_highlighted;
 			ptstime start = 0;
 			ptstime length = track->get_length();
@@ -415,14 +385,7 @@ int TrackCanvas::drag_stop()
 			if(mainsession->plugin_highlighted)
 			{
 				start = mainsession->plugin_highlighted->get_pts();
-				length = mainsession->plugin_highlighted->length();
-				if(length <= 0) length = track->get_length();
-			}
-			else
-			if(mainsession->pluginset_highlighted)
-			{
-				start = plugin_set->last->get_pts();
-				length = track->get_length() - start;
+				length = mainsession->plugin_highlighted->get_length();
 				if(length <= 0) length = track->get_length();
 			}
 			else
@@ -524,13 +487,11 @@ int TrackCanvas::drag_stop()
 	{
 		if(mainsession->track_highlighted
 				|| mainsession->edit_highlighted
-				|| mainsession->plugin_highlighted
-				|| mainsession->pluginset_highlighted)
+				|| mainsession->plugin_highlighted)
 			redraw = 1;
 		mainsession->track_highlighted = 0;
 		mainsession->edit_highlighted = 0;
 		mainsession->plugin_highlighted = 0;
-		mainsession->pluginset_highlighted = 0;
 		mainsession->current_operation = NO_OPERATION;
 	}
 
@@ -1138,11 +1099,11 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin,
 {
 	x = round((plugin->get_pts() - master_edl->local_session->view_start_pts) /
 		master_edl->local_session->zoom_time);
-	w = round(plugin->length() /
+	w = round(plugin->get_length() /
 		master_edl->local_session->zoom_time);
 	y = plugin->track->y_pixel + 
 			master_edl->local_session->zoom_track +
-			plugin->plugin_set->get_number() * 
+			plugin->get_number() *
 			mwindow->theme->get_image("plugin_bg_data")->get_h();
 	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
@@ -1308,28 +1269,6 @@ void TrackCanvas::draw_highlighting()
 			}
 			else
 // Put it after a plugin set
-			if(mainsession->pluginset_highlighted &&
-				mainsession->pluginset_highlighted->last)
-			{
-				plugin_dimensions((Plugin*)mainsession->pluginset_highlighted->last,
-					x,
-					y,
-					w,
-					h);
-				int track_x, track_y, track_w, track_h;
-				track_dimensions(mainsession->track_highlighted,
-					track_x, 
-					track_y, 
-					track_w, 
-					track_h);
-
-				x += w;
-				w = (int)(round((mainsession->track_highlighted->get_length() -
-					master_edl->local_session->view_start_pts) /
-					master_edl->local_session->zoom_time)) - x;
-				if(w <= 0) w = track_w;
-			}
-			else
 			{
 				track_dimensions(mainsession->track_highlighted,
 					x,
@@ -1397,14 +1336,6 @@ void TrackCanvas::draw_highlighting()
 			if(mainsession->plugin_highlighted)
 				plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
 			else
-// Put it after a plugin set
-			if(mainsession->pluginset_highlighted &&
-				mainsession->pluginset_highlighted->last)
-			{
-				plugin_dimensions((Plugin*)mainsession->pluginset_highlighted->last, x, y, w, h);
-				x += w;
-			}
-			else
 			if(mainsession->track_highlighted)
 			{
 				track_dimensions(mainsession->track_highlighted, x, y, w, h);
@@ -1424,7 +1355,7 @@ void TrackCanvas::draw_highlighting()
 // Put it in a new plugin set at the start of the track
 			}
 
-			w = (int)(mainsession->drag_plugin->length() /
+			w = (int)(mainsession->drag_plugin->get_length() /
 				master_edl->local_session->zoom_time);
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -1487,92 +1418,87 @@ void TrackCanvas::draw_plugins()
 		if(track->expand_view)
 		{
 			pixmaps_lock->lock("TrackCanvas::draw_plugins");
-			for(int i = 0; i < track->plugin_set.total; i++)
+			for(int i = 0; i < track->plugins.total; i++)
 			{
-				PluginSet *pluginset = track->plugin_set.values[i];
+				Plugin *plugin = track->plugins.values[i];
+				int total_x, y, total_w, h;
 
-				for(Plugin *plugin = (Plugin*)pluginset->first; plugin; plugin = (Plugin*)plugin->next)
+				plugin_dimensions(plugin, total_x, y, total_w, h);
+
+				if(plugin->plugin_type != PLUGIN_NONE &&
+					MWindowGUI::visible(total_x, total_x + total_w, 0, get_w()) &&
+					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
-					int total_x, y, total_w, h;
-					plugin_dimensions(plugin, total_x, y, total_w, h);
+					int x = total_x, w = total_w, left_margin = 5;
+					int right_margin = 5;
 
-					if(plugin->plugin_type != PLUGIN_NONE &&
-						MWindowGUI::visible(total_x, total_x + total_w, 0, get_w()) &&
-						MWindowGUI::visible(y, y + h, 0, get_h()))
+					if(x < 0)
 					{
-						int x = total_x, w = total_w, left_margin = 5;
-						int right_margin = 5;
-						if(x < 0)
-						{
-							w -= -x;
-							x = 0;
-						}
-						if(w + x > get_w()) w -= (w + x) - get_w();
-						draw_3segmenth(x, 
-							y, 
-							w, 
-							total_x,
-							total_w,
-							mwindow->theme->get_image("plugin_bg_data"),
-							0);
-						plugin->calculate_title(string, 0);
+						w -= -x;
+						x = 0;
+					}
+					if(w + x > get_w()) w -= (w + x) - get_w();
+					draw_3segmenth(x, y, w,
+						total_x, total_w,
+						mwindow->theme->get_image("plugin_bg_data"),
+						0);
+					plugin->calculate_title(string, 0);
 
-// Truncate string to int64_test visible in background
-						int len = strlen(string), j;
-						for(j = len; j >= 0; j--)
+// Truncate string visible in background
+					int len = strlen(string), j;
+					for(j = len; j >= 0; j--)
+					{
+						if(left_margin + get_text_width(MEDIUMFONT_3D, string) > w)
 						{
-							if(left_margin + get_text_width(MEDIUMFONT_3D, string) > w)
-							{
-								string[j] = 0;
-							}
-							else
-								break;
+							string[j] = 0;
 						}
+						else
+							break;
+					}
 
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
-						int text_x = total_x + left_margin;
-						text_x = MAX(left_margin, text_x);
-						set_color(get_resources()->default_text_color);
-						set_font(MEDIUMFONT_3D);
-						draw_text(text_x, 
-							y + get_text_ascent(MEDIUMFONT_3D) + 2, 
-							string,
-							strlen(string),
-							0);
+					int text_x = total_x + left_margin;
+					text_x = MAX(left_margin, text_x);
+					set_color(get_resources()->default_text_color);
+					set_font(MEDIUMFONT_3D);
+					draw_text(text_x,
+						y + get_text_ascent(MEDIUMFONT_3D) + 2,
+						string,
+						strlen(string),
+						0);
 // Update plugin toggles
-						int toggle_x = total_x + total_w;
-						toggle_x = MIN(get_w() - right_margin, toggle_x);
-						toggle_x -= PluginOn::calculate_w(mwindow) + 10;
-						int toggle_y = y;
+					int toggle_x = total_x + total_w;
+					toggle_x = MIN(get_w() - right_margin, toggle_x);
+					toggle_x -= PluginOn::calculate_w(mwindow) + 10;
+					int toggle_y = y;
 
-						if(onoff_toggle >= plugin_on_toggles.total)
+					if(onoff_toggle >= plugin_on_toggles.total)
+					{
+						PluginOn *plugin_on = new PluginOn(mwindow, toggle_x, toggle_y, plugin);
+						add_subwindow(plugin_on);
+						plugin_on_toggles.append(plugin_on);
+					}
+					else
+					{
+						plugin_on_toggles.values[onoff_toggle]->update(toggle_x, toggle_y, plugin);
+					}
+					onoff_toggle++;
+
+					if(plugin->plugin_type == PLUGIN_STANDALONE)
+					{
+						toggle_x -= PluginShow::calculate_w(mwindow) + 10;
+						if(show_toggle >= plugin_show_toggles.total)
 						{
-							PluginOn *plugin_on = new PluginOn(mwindow, toggle_x, toggle_y, plugin);
-							add_subwindow(plugin_on);
-							plugin_on_toggles.append(plugin_on);
+							PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
+							add_subwindow(plugin_off);
+							plugin_show_toggles.append(plugin_off);
 						}
 						else
 						{
-							plugin_on_toggles.values[onoff_toggle]->update(toggle_x, toggle_y, plugin);
+							plugin_show_toggles.values[show_toggle]->update(toggle_x, toggle_y, plugin);
 						}
-						onoff_toggle++;
-
-						if(plugin->plugin_type == PLUGIN_STANDALONE)
-						{
-							toggle_x -= PluginShow::calculate_w(mwindow) + 10;
-							if(show_toggle >= plugin_show_toggles.total)
-							{
-								PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
-								add_subwindow(plugin_off);
-								plugin_show_toggles.append(plugin_off);
-							}
-							else
-							{
-								plugin_show_toggles.values[show_toggle]->update(toggle_x, toggle_y, plugin);
-							}
-							show_toggle++;
-						}
+						show_toggle++;
 					}
 				}
 			}
@@ -1640,7 +1566,7 @@ void TrackCanvas::draw_transitions()
 					strip_y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
-				strip_w = Units::round(edit->transition->length() /
+				strip_w = Units::round(edit->transition->get_length() /
 					master_edl->local_session->zoom_time);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -3143,70 +3069,62 @@ int TrackCanvas::do_plugin_autos(Track *track,
 		xzoom,
 		center_pixel);
 
-	for(int i = 0; i < track->plugin_set.total && !result; i++)
+	for(int i = 0; i < track->plugins.total && !result; i++)
 	{
-		PluginSet *plugin_set = track->plugin_set.values[i];
-		int center_pixel = (int)(track->y_pixel + 
+		Plugin *plugin = track->plugins.values[i];
+
+		int center_pixel = (int)(track->y_pixel +
 			master_edl->local_session->zoom_track +
 			(i + 0.5) * mwindow->theme->get_image("plugin_bg_data")->get_h() + 
 			(edlsession->show_titles ? mwindow->theme->get_image("title_bg_data")->get_h() : 0));
 
-		for(Plugin *plugin = (Plugin*)plugin_set->first; 
-			plugin && !result; 
-			plugin = (Plugin*)plugin->next)
+		if(plugin->keyframes->first == plugin->keyframes->last)
+			continue;
+		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+			keyframe && !result;
+			keyframe = (KeyFrame*)keyframe->next)
 		{
-			if(plugin->keyframes->first == plugin->keyframes->last)
-				continue;
-			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first; 
-				keyframe && !result; 
-				keyframe = (KeyFrame*)keyframe->next)
+			if(keyframe->pos_time >= view_start && keyframe->pos_time < view_end)
 			{
-				if(keyframe->pos_time >= view_start && keyframe->pos_time < view_end)
+				int x = (int)((keyframe->pos_time - view_start) * xzoom);
+				int y = center_pixel - keyframe_pixmap->get_h() / 2;
+
+				if(!draw)
 				{
-					int x = (int)((keyframe->pos_time - view_start) * xzoom);
-					int y = center_pixel - keyframe_pixmap->get_h() / 2;
-
-					if(!draw)
+					if(cursor_x >= x && cursor_y >= y &&
+						cursor_x < x + keyframe_pixmap->get_w() &&
+						cursor_y < y + keyframe_pixmap->get_h())
 					{
-						if(cursor_x >= x && cursor_y >= y &&
-							cursor_x < x + keyframe_pixmap->get_w() &&
-							cursor_y < y + keyframe_pixmap->get_h())
+						result = 1;
+						keyframe_plugin = plugin;
+						keyframe_instance = keyframe;
+
+						if(buttonpress)
 						{
-							result = 1;
-							keyframe_plugin = plugin;
-							keyframe_instance = keyframe;
+							mainsession->drag_auto = keyframe;
+							mainsession->drag_start_postime = keyframe->pos_time;
+							mainsession->drag_origin_x = cursor_x;
+							mainsession->drag_origin_y = cursor_y;
 
-							if(buttonpress)
+							ptstime position = keyframe->pos_time;
+							ptstime center = (master_edl->local_session->get_selectionstart(1) +
+								master_edl->local_session->get_selectionend(1)) / 2;
+
+							if(!shift_down())
 							{
-								mainsession->drag_auto = keyframe;
-								mainsession->drag_start_postime = keyframe->pos_time;
-								mainsession->drag_origin_x = cursor_x;
-								mainsession->drag_origin_y = cursor_y;
-
-								ptstime position = keyframe->pos_time;
-								ptstime center = (master_edl->local_session->get_selectionstart(1) +
-									master_edl->local_session->get_selectionend(1)) / 2;
-
-								if(!shift_down())
-								{
-									master_edl->local_session->set_selectionstart(position);
-									master_edl->local_session->set_selectionend(position);
-								}
-								else
-								if(position < center)
-								{
-									master_edl->local_session->set_selectionstart(position);
-								}
-								else
-									master_edl->local_session->set_selectionend(position);
+								master_edl->local_session->set_selectionstart(position);
+								master_edl->local_session->set_selectionend(position);
 							}
+							else
+							if(position < center)
+								master_edl->local_session->set_selectionstart(position);
+							else
+								master_edl->local_session->set_selectionend(position);
 						}
 					}
-					else
-						draw_pixmap(keyframe_pixmap, 
-							x, 
-							y);
 				}
+				else
+					draw_pixmap(keyframe_pixmap, x, y);
 			}
 		}
 	}
@@ -3501,29 +3419,23 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 	if(!PTSEQU(postime, current->pos_time))
 	{
 		Track *track = current->autos->track;
-		PluginSet *pluginset;
 		Plugin *plugin = 0;
-// figure out the correct pluginset & correct plugin 
+// figure out the correct plugin 
 		int found = 0;
-		for(int i = 0; i < track->plugin_set.total; i++)
+		for(int i = 0; i < track->plugins.total; i++)
 		{
-			pluginset = track->plugin_set.values[i];
-			for(plugin = (Plugin *)pluginset->first; plugin; plugin = (Plugin *)plugin->next)
+			plugin = track->plugins.values[i];
+
+			KeyFrames *keyframes = plugin->keyframes;
+			for(KeyFrame *currentkeyframe = (KeyFrame *)keyframes->first; currentkeyframe; currentkeyframe = (KeyFrame *) currentkeyframe->next)
 			{
-				KeyFrames *keyframes = plugin->keyframes;
-				for(KeyFrame *currentkeyframe = (KeyFrame *)keyframes->first; currentkeyframe; currentkeyframe = (KeyFrame *) currentkeyframe->next)
+				if(currentkeyframe == current)
 				{
-					if (currentkeyframe == current) 
-					{
-						found = 1;
-						break;
-					}
- 
-				}
-				if (found) 
+					found = 1;
 					break;
+				}
 			}
-			if (found) 
+			if(found)
 				break;
 		}
 
@@ -4095,32 +4007,27 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 		track && !result;
 		track = track->next)
 	{
-		for(int i = 0; i < track->plugin_set.total && !result; i++)
+		for(int i = 0; i < track->plugins.total && !result; i++)
 		{
-			PluginSet *plugin_set = track->plugin_set.values[i];
-			for(Plugin *plugin = (Plugin*)plugin_set->first; 
-				plugin && !result; 
-				plugin = (Plugin*)plugin->next)
-			{
-				int plugin_x, plugin_y, plugin_w, plugin_h;
-				plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
+			Plugin *plugin = track->plugins.values[i];
+			int plugin_x, plugin_y, plugin_w, plugin_h;
+			plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
 
-				if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
-					cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h)
+			if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
+				cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h)
+			{
+				if(cursor_x < plugin_x + HANDLE_W)
 				{
-					if(cursor_x < plugin_x + HANDLE_W)
-					{
-						plugin_result = plugin;
-						handle_result = 0;
-						result = 1;
-					}
-					else
-					if(cursor_x >= plugin_x + plugin_w - HANDLE_W)
-					{
-						plugin_result = plugin;
-						handle_result = 1;
-						result = 1;
-					}
+					plugin_result = plugin;
+					handle_result = 0;
+					result = 1;
+				}
+				else
+				if(cursor_x >= plugin_x + plugin_w - HANDLE_W)
+				{
+					plugin_result = plugin;
+					handle_result = 1;
+					result = 1;
 				}
 			}
 		}
@@ -4290,26 +4197,18 @@ int TrackCanvas::do_plugins(int cursor_x,
 	{
 		if(!track->expand_view) continue;
 
-		for(int i = 0; i < track->plugin_set.total && !done; i++)
+		for(int i = 0; i < track->plugins.total && !done; i++)
 		{
-			// first check if plugins are visible at all
-			if (!track->expand_view)
-				continue;
-			PluginSet *plugin_set = track->plugin_set.values[i];
-			for(plugin = (Plugin*)plugin_set->first;
-				plugin && !done;
-				plugin = (Plugin*)plugin->next)
+			Plugin *plugin = track->plugins.values[i];
+			plugin_dimensions(plugin, x, y, w, h);
+			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
+				MWindowGUI::visible(y, y + h, 0, get_h()))
 			{
-				plugin_dimensions(plugin, x, y, w, h);
-				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-					MWindowGUI::visible(y, y + h, 0, get_h()))
+				if(cursor_x >= x && cursor_x < x + w &&
+					cursor_y >= y && cursor_y < y + h)
 				{
-					if(cursor_x >= x && cursor_x < x + w &&
-						cursor_y >= y && cursor_y < y + h)
-					{
-						done = 1;
-						break;
-					}
+					done = 1;
+					break;
 				}
 			}
 		}
@@ -4391,7 +4290,7 @@ int TrackCanvas::do_transitions(int cursor_x,
 	int &new_cursor,
 	int &update_cursor)
 {
-	Transition *transition = 0;
+	Plugin *transition = 0;
 	int result = 0;
 	int x, y, w, h;
 

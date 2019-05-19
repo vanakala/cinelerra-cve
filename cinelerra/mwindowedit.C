@@ -37,6 +37,7 @@
 #include "cwindowgui.h"
 #include "bchash.h"
 #include "edl.h"
+#include "edit.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "gwindow.h"
@@ -61,13 +62,12 @@
 #include "panauto.h"
 #include "patchbay.h"
 #include "playbackengine.h"
-#include "pluginset.h"
+#include "plugin.h"
 #include "samplescroll.h"
 #include "selection.h"
 #include "trackcanvas.h"
 #include "track.h"
 #include "tracks.h"
-#include "transition.h"
 #include "units.h"
 #include "undostackitem.h"
 #include "vplayback.h"
@@ -434,11 +434,11 @@ void MWindow::delete_track(Track *track)
 	save_backup();
 }
 
-void MWindow::detach_transition(Transition *transition)
+void MWindow::detach_transition(Plugin *transition)
 {
 	hide_plugin(transition, 1);
-	int is_video = (transition->edit->track->data_type == TRACK_VIDEO);
-	transition->edit->detach_transition();
+	int is_video = (transition->track->data_type == TRACK_VIDEO);
+	transition->track->detach_transition(transition);
 	save_backup();
 	undo->update_undo(_("detach transition"), LOAD_ALL);
 
@@ -583,7 +583,6 @@ void MWindow::insert_effect(const char *title,
 		server->save_data((KeyFrame*)new_plugin->keyframes->first);
 		server->close_plugin();
 	}
-	track->optimize();
 }
 
 void MWindow::modify_edithandles(void)
@@ -674,13 +673,11 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 }
 
 void MWindow::move_effect(Plugin *plugin,
-	PluginSet *dest_plugin_set,
 	Track *dest_track,
 	ptstime dest_position)
 {
 
 	master_edl->tracks->move_effect(plugin,
-		dest_plugin_set, 
 		dest_track, 
 		dest_position);
 
@@ -694,9 +691,9 @@ void MWindow::move_effect(Plugin *plugin,
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
 }
 
-void MWindow::move_plugins_up(PluginSet *plugin_set)
+void MWindow::move_plugin_up(Plugin *plugin)
 {
-	plugin_set->track->move_plugins_up(plugin_set);
+	plugin->track->move_plugin_up(plugin);
 
 	save_backup();
 	undo->update_undo(_("move effect up"), LOAD_ALL);
@@ -705,9 +702,9 @@ void MWindow::move_plugins_up(PluginSet *plugin_set)
 	sync_parameters(CHANGE_EDL);
 }
 
-void MWindow::move_plugins_down(PluginSet *plugin_set)
+void MWindow::move_plugin_down(Plugin *plugin)
 {
-	plugin_set->track->move_plugins_down(plugin_set);
+	plugin->track->move_plugin_down(plugin);
 
 	save_backup();
 	undo->update_undo(_("move effect down"), LOAD_ALL);

@@ -196,7 +196,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    pluginmsgs.C \
 		    pluginpopup.C \
 		    pluginserver.C \
-		    pluginset.C \
 		    plugintclient.C \
 		    plugintoggles.C \
 		    pluginvclient.C \
@@ -234,7 +233,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    tracks.C \
 		    trackscroll.C \
 		    tracksedit.C \
-		    transition.C \
 		    transitionpopup.C \
 		    transportcommand.C \
 		    undostackitem.C \
@@ -434,7 +432,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pluginmsgs.h \
 		 pluginpopup.h \
 		 pluginserver.h \
-		 pluginset.h \
 		 plugintclient.h \
 		 plugintoggles.h \
 		 pluginvclient.h \
@@ -471,7 +468,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 tracking.h \
 		 trackscroll.h \
 		 tracks.h \
-		 transition.h \
 		 transitionpopup.h \
 		 transportcommand.h \
 		 undostackitem.h \

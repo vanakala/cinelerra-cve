@@ -99,14 +99,14 @@ void VirtualNode::expand(int persistent_plugins, ptstime current_position)
 void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 {
 // create the plugins for this module
-	for(int i = 0; i < track->plugin_set.total; i++)
+	for(int i = 0; i < track->plugins.total; i++)
 	{
 		Plugin *plugin = track->get_current_plugin(current_postime,
 			i, 
 			1);
 
 // Switch off if circular reference.  This happens if a plugin set or a track is deleted.
-		if(plugin == real_plugin) continue;
+		if(plugin && plugin == real_plugin) continue;
 
 		if(plugin && plugin->on)
 		{

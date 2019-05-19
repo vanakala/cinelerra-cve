@@ -57,7 +57,7 @@ Module::~Module()
 {
 	if(attachments)
 	{
-		for(int i = 0; i < track->plugin_set.total; i++)
+		for(int i = 0; i < track->plugins.total; i++)
 		{
 			if(attachments[i])
 			{
@@ -94,7 +94,7 @@ void Module::create_new_attachments()
 // Not used in pluginarray
 	if(commonrender)
 	{
-		new_total_attachments = track->plugin_set.total;
+		new_total_attachments = track->plugins.total;
 		if(new_total_attachments)
 		{
 			new_attachments = new AttachmentPoint*[new_total_attachments];
@@ -202,7 +202,8 @@ void Module::reset_attachments()
 // Used in playback
 int Module::test_plugins(void)
 {
-	if(total_attachments != track->plugin_set.total) return 1;
+	if(total_attachments != track->plugins.total)
+		return 1;
 
 	for(int i = 0; i < total_attachments; i++)
 	{

@@ -33,7 +33,6 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transition.h"
 #include <string.h>
 
 Edit::Edit(EDL *edl, Track *track)
@@ -137,16 +136,10 @@ ptstime Edit::get_source_length()
 
 void Edit::insert_transition(const char *title)
 {
-	transition = new Transition(edl, 
-		this, 
-		title, 
-		edlsession->default_transition_length);
-}
-
-void Edit::detach_transition(void)
-{
-	if(transition) delete transition;
-	transition = 0;
+	transition = new Plugin(edl,
+		track,
+		title);
+	transition->set_length(edlsession->default_transition_length);
 }
 
 int Edit::silence(void)
@@ -168,11 +161,11 @@ void Edit::copy_from(Edit *edit)
 
 	if(edit->transition)
 	{
-		if(!transition) transition = new Transition(edl, 
-			this, 
-			edit->transition->title,
-			edit->transition->length());
-		*this->transition = *edit->transition;
+		if(!transition)
+			transition = new Plugin(edl,
+				track,
+				edit->transition->title);
+		transition->copy_from(edit->transition);
 	}
 	this->channel = edit->channel;
 }

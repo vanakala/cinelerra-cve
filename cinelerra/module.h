@@ -32,7 +32,6 @@
 #include "plugin.inc"
 #include "pluginarray.inc"
 #include "pluginserver.inc"
-#include "pluginset.inc"
 #include "renderengine.inc"
 #include "track.inc"
 
@@ -90,9 +89,9 @@ public:
 	PluginServer *transition_server;
 
 // Currently active plugins.
-// Use one AttachmentPoint for every pluginset to allow shared plugins to create
+// Use one AttachmentPoint for every plugin to allow shared plugins to create
 // extra plugin servers.
-// AttachmentPoints are 0 if there is no plugin on the pluginset.
+// AttachmentPoints are 0 if there is no plugin.
 	AttachmentPoint **attachments;
 	int total_attachments;
 // AttachmentPoints are swapped in at render start to keep unchanged modules

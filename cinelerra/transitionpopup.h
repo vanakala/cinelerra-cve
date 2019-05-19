@@ -29,7 +29,6 @@
 #include "mwindowgui.inc"
 #include "plugin.inc"
 #include "thread.h"
-#include "transition.inc"
 
 class TransitionPopupOn;
 class TransitionPopupShow;
@@ -52,10 +51,10 @@ public:
 class TransitionLengthDialog : public BC_Window
 {
 public:
-	TransitionLengthDialog(MWindow *mwindow, Transition *transition);
+	TransitionLengthDialog(MWindow *mwindow, Plugin *transition);
 
 	MWindow *mwindow;
-	Transition *transition;
+	Plugin *transition;
 	TransitionLengthText *text;
 };
 
@@ -78,10 +77,10 @@ public:
 	TransitionPopup(MWindow *mwindow, MWindowGUI *gui);
 	~TransitionPopup();
 
-	void update(Transition *transition);
+	void update(Plugin *transition);
 
 // Acquired through the update command as the plugin currently being operated on
-	Transition *transition;
+	Plugin *transition;
 
 // Set when the user clicks a transition.
 	MWindow *mwindow;

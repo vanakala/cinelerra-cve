@@ -29,7 +29,6 @@
 #include "filexml.inc"
 #include "linklist.h"
 #include "track.inc"
-#include "transition.inc"
 
 
 // Generic list of edits of something

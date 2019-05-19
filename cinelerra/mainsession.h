@@ -33,7 +33,6 @@
 #include "edl.inc"
 #include "mainsession.inc"
 #include "plugin.inc"
-#include "pluginset.inc"
 #include "pluginserver.inc"
 #include "track.inc"
 
@@ -57,8 +56,6 @@ public:
 	Track *track_highlighted;
 // The edit after the point where the media is going to be dropped.
 	Edit *edit_highlighted;
-// The plugin set where the plugin is going to be dropped.
-	PluginSet *pluginset_highlighted;
 // The plugin after the point where the plugin is going to be dropped.
 	Plugin *plugin_highlighted;
 // Viewer canvas highlighted
