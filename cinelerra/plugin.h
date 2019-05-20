@@ -96,6 +96,7 @@ public:
 	ptstime end_pts();
 	void set_pts(ptstime pts);
 	void set_length(ptstime length);
+	void set_end(ptstime end);
 	Plugin *active_in(ptstime start, ptstime end);
 
 	ptstime plugin_change_duration(ptstime start, ptstime length);

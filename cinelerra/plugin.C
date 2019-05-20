@@ -108,6 +108,7 @@ ptstime Plugin::end_pts()
 void Plugin::set_pts(ptstime pts)
 {
 	this->pts = pts;
+	keyframes->base_pts = pts;
 }
 
 ptstime Plugin::get_length()
@@ -118,6 +119,11 @@ ptstime Plugin::get_length()
 void Plugin::set_length(ptstime length)
 {
 	duration = length;
+}
+
+void Plugin::set_end(ptstime end)
+{
+	duration = end - pts;
 }
 
 Plugin *Plugin::active_in(ptstime start, ptstime end)
