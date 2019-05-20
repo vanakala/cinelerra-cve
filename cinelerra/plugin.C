@@ -253,7 +253,7 @@ int Plugin::identical_location(Plugin *that)
 
 int Plugin::get_number()
 {
-	track->plugins.number_of(this);
+	return track->plugins.number_of(this);
 }
 
 void Plugin::change_plugin(const char *title, int plugin_type,
