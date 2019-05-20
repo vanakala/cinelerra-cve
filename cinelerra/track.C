@@ -238,8 +238,9 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 {
 	int result = 0;
-	int current_channel = 0;
+	ptstime startproject = 0;
 	int current_plugin = 0;
+	Plugin *plugin = 0;
 
 	record = file->tag.get_property("RECORD", record);
 	play = file->tag.get_property("PLAY", play);
@@ -281,9 +282,37 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			{
 				if(load_flags & LOAD_EDITS)
 				{
-					Plugin *plugin = new Plugin(edl, this, 0);
-					plugins.append(plugin);
-					plugin->load(file);
+					while(!file->read_tag())
+					{
+						if(file->tag.title_is("PLUGIN"))
+						{
+							posnum length_units = file->tag.get_property("LENGTH", (int64_t)0);
+							ptstime length = 0;
+							if(length_units)
+								length = from_units(length_units);
+							startproject = file->tag.get_property("POSTIME", startproject);
+							int type = file->tag.get_property("TYPE", PLUGIN_NONE);
+
+							if(type != PLUGIN_NONE)
+							{
+								plugin = new Plugin(edl, this, 0);
+
+								plugins.append(plugin);
+								file->tag.get_property("TITLE", plugin->title);
+								plugin->plugin_type = type;
+								plugin->set_pts(startproject);
+								plugin->set_length(length);
+								plugin->load(file);
+							}
+							else if(plugin)
+							{
+								plugin->set_end(startproject);
+								plugin = 0;
+							}
+						}
+						if(file->tag.title_is("/PLUGINSET"))
+							break;
+					}
 				}
 				else
 				if(load_flags & LOAD_AUTOMATION)
