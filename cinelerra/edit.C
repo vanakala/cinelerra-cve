@@ -107,6 +107,7 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 			file->append_tag();
 			file->tag.set_title("/FILE");
 			file->append_tag();
+			file->append_newline();
 		}
 
 		if(transition)

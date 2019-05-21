@@ -44,6 +44,8 @@ Plugin::Plugin(EDL *edl, Track *track, const char *title)
 	else
 		this->title[0] = 0;
 	plugin_type = PLUGIN_NONE;
+	pts = 0;
+	duration = 0;
 	show = 0;
 	on = 1;
 	guideframe = 0;
@@ -349,9 +351,14 @@ KeyFrame* Plugin::get_keyframe()
 
 void Plugin::save_xml(FileXML *file)
 {
-	file->tag.set_title("PLUGIN");
-	file->tag.set_property("POSTIME", pts);
-	file->tag.set_property("TYPE", plugin_type);
+	if(plugin_type == PLUGIN_TRANSITION)
+		file->tag.set_title("TRANSITION");
+	else
+	{
+		file->tag.set_title("PLUGIN");
+		file->tag.set_property("POSTIME", pts);
+		file->tag.set_property("TYPE", plugin_type);
+	}
 	if(title[0])
 		file->tag.set_property("TITLE", title);
 	file->tag.set_property("DURATION", duration);
@@ -369,7 +376,10 @@ void Plugin::save_xml(FileXML *file)
 // Keyframes
 	keyframes->save_xml(file);
 
-	file->tag.set_title("/PLUGIN");
+	if(plugin_type == PLUGIN_TRANSITION)
+		file->tag.set_title("/TRANSITION");
+	else
+		file->tag.set_title("/PLUGIN");
 	file->append_tag();
 	file->append_newline();
 }

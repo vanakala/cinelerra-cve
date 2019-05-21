@@ -329,9 +329,18 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 			else
 			if(file->tag.title_is("TRANSITION"))
 			{
+				ptstime length_time = 0;
 				current->transition = new Plugin(edl,
-					track,
-					0);
+					track, 0);
+				file->tag.get_property("TITLE", current->transition->title);
+				current->transition->plugin_type = PLUGIN_TRANSITION;
+				posnum length = file->tag.get_property("LENGTH", 0);
+				if(length)
+					length_time = track->from_units(length);
+				length_time = file->tag.get_property("LENGTH_TIME", length_time);
+				length_time = file->tag.get_property("DURATION", length_time);
+				current->transition->on = !file->tag.get_property("OFF", 0);
+				current->transition->set_length(length_time);
 				current->transition->load(file);
 			}
 			else
