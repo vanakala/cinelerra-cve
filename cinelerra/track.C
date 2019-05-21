@@ -290,6 +290,7 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 							ptstime length = 0;
 							if(length_units)
 								length = from_units(length_units);
+							length = file->tag.get_property("DURATION", length);
 							startproject = file->tag.get_property("POSTIME", startproject);
 							int type = file->tag.get_property("TYPE", PLUGIN_NONE);
 
@@ -302,7 +303,11 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 								plugin->plugin_type = type;
 								plugin->set_pts(startproject);
 								plugin->set_length(length);
+								plugin->on = !file->tag.get_property("OFF", 0);
 								plugin->load(file);
+								// got length - ignore next plugin pts
+								if(length > 0)
+									plugin = 0;
 							}
 							else if(plugin)
 							{
@@ -898,7 +903,14 @@ void Track::save_xml(FileXML *file, const char *output_path)
 
 	for(int i = 0; i < plugins.total; i++)
 	{
+// For historical reasons we have pluginsets
+		file->tag.set_title("PLUGINSET");
+		file->append_tag();
+		file->append_newline();
 		plugins.values[i]->save_xml(file);
+		file->tag.set_title("/PLUGINSET");
+		file->append_tag();
+		file->append_newline();
 	}
 
 	file->tag.set_title("/TRACK");

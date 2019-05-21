@@ -349,12 +349,14 @@ KeyFrame* Plugin::get_keyframe()
 
 void Plugin::save_xml(FileXML *file)
 {
-// Plugins don't store silence
 	file->tag.set_title("PLUGIN");
-	file->tag.set_property("POSTIME", get_pts());
+	file->tag.set_property("POSTIME", pts);
 	file->tag.set_property("TYPE", plugin_type);
 	if(title[0])
 		file->tag.set_property("TITLE", title);
+	file->tag.set_property("DURATION", duration);
+	if(!on)
+		file->tag.set_property("OFF", !on);
 	file->append_tag();
 	file->append_newline();
 
@@ -363,21 +365,6 @@ void Plugin::save_xml(FileXML *file)
 	{
 		save_shared_location(file);
 	}
-	if(show)
-	{
-		file->tag.set_title("SHOW");
-		file->append_tag();
-		file->tag.set_title("/SHOW");
-		file->append_tag();
-	}
-	if(on)
-	{
-		file->tag.set_title("ON");
-		file->append_tag();
-		file->tag.set_title("/ON");
-		file->append_tag();
-	}
-	file->append_newline();
 
 // Keyframes
 	keyframes->save_xml(file);
@@ -427,9 +414,6 @@ void Plugin::load(FileXML *file)
 {
 	int result = 0;
 
-// Currently show is ignored when loading
-	show = 0;
-	on = 0;
 	shared_track_num = -1;
 	shared_plugin_num = -1;
 
