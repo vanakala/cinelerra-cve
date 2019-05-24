@@ -296,11 +296,16 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 
 							if(type != PLUGIN_NONE)
 							{
-								char string[BCTEXTLEN];
-								string[0] = 0;
-								file->tag.get_property("TITLE", string);
-								plugin = new Plugin(edl, this,
-									plugindb.get_pluginserver(string, data_type));
+								PluginServer *server = 0;
+
+								if(type == PLUGIN_STANDALONE)
+								{
+									char string[BCTEXTLEN];
+									string[0] = 0;
+									file->tag.get_property("TITLE", string);
+									server = plugindb.get_pluginserver(string, data_type);
+								}
+								plugin = new Plugin(edl, this, server);
 								plugins.append(plugin);
 								plugin->plugin_type = type;
 								plugin->set_pts(startproject);
