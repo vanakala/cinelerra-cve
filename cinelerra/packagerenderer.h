@@ -75,8 +75,7 @@ public:
 	int initialize(MWindow *mwindow,
 		EDL *edl, 
 		Preferences *preferences, 
-		Asset *default_asset,
-		ArrayList<PluginServer*> *plugindb);
+		Asset *default_asset);
 
 // Aborts and returns 1 if an error is encountered.
 	int render_package(RenderPackage *package);
@@ -105,7 +104,6 @@ public:
 	EDL *edl;
 	Preferences *preferences;
 	Asset *default_asset;
-	ArrayList<PluginServer*> *plugindb;
 
 // Created locally
 	Asset *asset;

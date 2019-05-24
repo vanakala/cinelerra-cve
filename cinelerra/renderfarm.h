@@ -162,8 +162,7 @@ enum
 class RenderFarmServer
 {
 public:
-	RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
-		PackageDispatcher *packages,
+	RenderFarmServer(PackageDispatcher *packages,
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
@@ -185,7 +184,6 @@ public:
 
 
 	ArrayList<RenderFarmServerThread*> clients;
-	ArrayList<PluginServer*> *plugindb;
 	PackageDispatcher *packages;
 	Preferences *preferences;
 // Use master node's framerate
@@ -208,9 +206,7 @@ public:
 class RenderFarmServerThread : public Thread
 {
 public:
-	RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
-		RenderFarmServer *server, 
-		int number);
+	RenderFarmServerThread(RenderFarmServer *server, int number);
 	~RenderFarmServerThread();
 
 
@@ -238,7 +234,6 @@ public:
 	void reallocate_buffer(int size);
 	void run();
 
-	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
 	RenderFarmWatchdog *watchdog;
 	int socket_fd;

@@ -29,6 +29,7 @@
 #include "mwindow.h"
 #include "preferences.h"
 #include "preferencesthread.h"
+#include "plugindb.h"
 #include "interfaceprefs.h"
 #include "theme.h"
 #include "units.h"
@@ -438,7 +439,7 @@ ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
 {
 	ArrayList<PluginServer*> themes;
 
-	pwindow->mwindow->create_plugindb(0, 
+	plugindb.fill_plugindb(0,
 		0, 
 		0, 
 		0,

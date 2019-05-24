@@ -443,8 +443,7 @@ void BRenderThread::start()
 			end_pts,
 			0);
 
-		farm_server = new RenderFarmServer(mwindow->plugindb, 
-			packages,
+		farm_server = new RenderFarmServer(packages,
 			preferences,
 			0,
 			&farm_result,

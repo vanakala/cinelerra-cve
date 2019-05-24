@@ -33,6 +33,7 @@
 #include "mainerror.h"
 #include "mutex.h"
 #include "mwindow.h"
+#include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarm.h"
@@ -80,19 +81,17 @@ RenderFarmClient::RenderFarmClient(int port,
 	master_edl->load_defaults(boot_defaults, edlsession);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
-	MWindow::init_plugins(boot_preferences, plugindb, 0);
+	preferences_global = boot_preferences;
+	plugindb.init_plugins(0);
 	strcpy(string, boot_preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
-	preferences_global = boot_preferences;
 }
 
 RenderFarmClient::~RenderFarmClient()
 {
 	delete boot_defaults;
 	delete boot_preferences;
-	plugindb->remove_all_objects();
-	delete plugindb;
 }
 
 void RenderFarmClient::main_loop()
@@ -589,8 +588,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	package_renderer.initialize(0,
 			edl, 
 			preferences, 
-			default_asset,
-			client->plugindb);
+			default_asset);
 
 // Read packages
 	while(1)

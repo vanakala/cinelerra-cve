@@ -28,6 +28,7 @@
 #include "intautos.h"
 #include "module.h"
 #include "plugin.h"
+#include "pluginserver.h"
 #include "renderengine.h"
 #include "track.h"
 #include "virtualconsole.h"
@@ -76,7 +77,7 @@ void VirtualNode::dump(int indent)
 	else
 	if(real_plugin)
 	{
-		printf("%*sPlugin: '%s'\n", indent, "", real_plugin->title);
+		printf("%*sPlugin: '%s'\n", indent, "", real_plugin->plugin_server->title);
 	}
 }
 

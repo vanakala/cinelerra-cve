@@ -47,6 +47,7 @@
 #include "paramlist.h"
 #include "playbackengine.h"
 #include "pluginarray.h"
+#include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
@@ -168,7 +169,6 @@ void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 void MenuEffectThread::run()
 {
 // get stuff from main window
-	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
 	BC_Hash *defaults = mwindow->defaults;
 	ArrayList<BC_ListBoxItem*> plugin_list;
 	ArrayList<PluginServer*> local_plugindb;
@@ -189,7 +189,7 @@ void MenuEffectThread::run()
 	}
 
 // check for plugins
-	if(!plugindb->total)
+	if(!plugindb.count())
 	{
 		errorbox(_("No plugins available."));
 		delete default_asset;
@@ -206,7 +206,7 @@ void MenuEffectThread::run()
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
-		mwindow->create_plugindb(default_asset->audio_data, 
+		plugindb.fill_plugindb(default_asset->audio_data,
 			default_asset->video_data, 
 			-1, 
 			0,
@@ -247,16 +247,15 @@ void MenuEffectThread::run()
 	}
 	else
 	{
-		for(int i = 0; i < plugindb->total && !plugin_server; i++)
-		{
-			if(!strcmp(plugindb->values[i]->title, title) &&
-				((default_asset->audio_data && plugindb->values[i]->audio) ||
-				(default_asset->video_data && plugindb->values[i]->video)))
-			{
-				plugin_server = plugindb->values[i];
-				plugin_number = i;
-			}
-		}
+		int data_type = 0;
+
+		if(default_asset->audio_data)
+			data_type = TRACK_AUDIO;
+		else if(default_asset->video_data)
+			data_type = TRACK_VIDEO;
+
+		if(plugin_server = plugindb.get_pluginserver(title, data_type))
+			plugin_number = 0;
 	}
 
 // Update the  most recently used effects and copy the plugin server.

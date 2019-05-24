@@ -63,6 +63,7 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "plugin.h"
+#include "plugindb.h"
 #include "samplescroll.h"
 #include "selection.h"
 #include "trackcanvas.h"
@@ -553,7 +554,7 @@ void MWindow::insert_effect(const char *title,
 	int result;
 
 	if(plugin_type == PLUGIN_STANDALONE)
-		server = scan_plugindb(title, track->data_type);
+		server = plugindb.get_pluginserver(title, track->data_type);
 
 	if(EQUIV(length, 0))
 	{
@@ -573,7 +574,7 @@ void MWindow::insert_effect(const char *title,
 	length = master_edl->align_to_frame(length, 1);
 
 // Insert plugin object
-	new_plugin = track->insert_effect(title,
+	new_plugin = track->insert_effect(server,
 		start, length,
 		plugin_type,
 		shared_plugin, shared_track);
@@ -1089,7 +1090,7 @@ void MWindow::paste_transition_cwindow(Track *dest_track)
 
 void MWindow::paste_audio_transition()
 {
-	PluginServer *server = scan_plugindb(edlsession->default_atransition,
+	PluginServer *server = plugindb.get_pluginserver(edlsession->default_atransition,
 		TRACK_AUDIO);
 	if(!server)
 	{
@@ -1108,7 +1109,7 @@ void MWindow::paste_audio_transition()
 
 void MWindow::paste_video_transition()
 {
-	PluginServer *server = scan_plugindb(edlsession->default_vtransition,
+	PluginServer *server = plugindb.get_pluginserver(edlsession->default_vtransition,
 		TRACK_VIDEO);
 	if(!server)
 	{

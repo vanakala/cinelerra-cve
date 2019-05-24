@@ -41,6 +41,7 @@
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "paramlist.h"
+#include "plugindb.h"
 #include "preferences.h"
 #include "render.h"
 #include "renderprofiles.h"
@@ -183,7 +184,6 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	current_job = -1;
 	rendering_job = -1;
 	is_rendering = 0;
-	plugindb = 0;
 	boot_defaults = 0;
 	preferences = 0;
 	gui = 0;
@@ -199,7 +199,6 @@ BatchRenderThread::BatchRenderThread()
 	current_job = -1;
 	rendering_job = -1;
 	is_rendering = 0;
-	plugindb = 0;
 	boot_defaults = 0;
 	preferences = 0;
 	render = 0;
@@ -210,7 +209,6 @@ BatchRenderThread::BatchRenderThread()
 
 BatchRenderThread::~BatchRenderThread()
 {
-	delete plugindb;
 	delete boot_defaults;
 	delete preferences;
 	delete render;
@@ -428,8 +426,7 @@ int BatchRenderThread::test_edl_files()
 }
 
 void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
-	Preferences *preferences,
-	ArrayList<PluginServer*> *plugindb)
+	Preferences *preferences)
 {
 	EDL *current_edl;
 
@@ -477,7 +474,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 	preferences = new Preferences;
 	preferences->load_defaults(boot_defaults);
 	preferences_global = preferences;
-	MWindow::init_plugins(preferences, plugindb, 0);
+	plugindb.init_plugins(0);
 	strcpy(string, preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
@@ -492,8 +489,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 // Predict all destination paths
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths,
-		preferences,
-		plugindb);
+		preferences);
 
 	int result = ConfirmSave::test_files(0, &paths);
 	paths.remove_all_objects();
@@ -502,8 +498,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 	if(result) return;
 	render = new Render(0);
 	render->start_batches(&jobs, 
-		preferences,
-		plugindb);
+		preferences);
 }
 
 void BatchRenderThread::start_rendering()
@@ -524,8 +519,7 @@ void BatchRenderThread::start_rendering()
 // Predict all destination paths
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths,
-		mwindow->preferences,
-		mwindow->plugindb);
+		mwindow->preferences);
 
 // Test destination files for overwrite
 	int result = ConfirmSave::test_files(mwindow, &paths);

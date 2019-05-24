@@ -330,9 +330,11 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
 			if(file->tag.title_is("TRANSITION"))
 			{
 				ptstime length_time = 0;
+				char plugin_name[BCTEXTLEN];
+
 				current->transition = new Plugin(edl,
 					track, 0);
-				file->tag.get_property("TITLE", current->transition->title);
+				file->tag.get_property("TITLE", plugin_name);
 				current->transition->plugin_type = PLUGIN_TRANSITION;
 				posnum length = file->tag.get_property("LENGTH", 0);
 				if(length)

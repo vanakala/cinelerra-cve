@@ -83,8 +83,7 @@ public:
 
 	int test_edl_files();
 	void calculate_dest_paths(ArrayList<char*> *paths,
-		Preferences *preferences,
-		ArrayList<PluginServer*> *plugindb);
+		Preferences *preferences);
 
 // Load batch rendering jobs
 	void load_jobs(Preferences *preferences);
@@ -113,7 +112,6 @@ public:
 	double current_start;
 	double current_end;
 	ArrayList<BatchRenderJob*> jobs;
-	ArrayList<PluginServer*> *plugindb;
 
 	BC_Hash *boot_defaults;
 	Preferences *preferences;

@@ -199,39 +199,6 @@ void PluginServer::generate_display_title(char *string)
 		sprintf(string, "%s - %s", lbuf, PROGRAM_NAME);
 }
 
-static struct oldpluginnames
-{
-	int datatype;
-	char oldname[64];
-	char newname[64];
-} oldpluginnames[] = {
-	{ TRACK_AUDIO, "Invert Audio", "Invert" },
-	{ TRACK_AUDIO, "Delay audio", "Delay" },
-	{ TRACK_AUDIO, "Loop audio", "Loop" },
-	{ TRACK_AUDIO, "Reverse audio", "Reverse" },
-	{ TRACK_AUDIO, "Heroine College Concert Hall", "HC Concert Hall" },
-	{ TRACK_VIDEO, "Invert Video", "Invert" },
-	{ TRACK_VIDEO, "Denoise video", "Denoise" },
-	{ TRACK_VIDEO, "Selective Temporal Averaging", "STA" },
-	{ TRACK_VIDEO, "Delay Video", "Delay" },
-	{ TRACK_VIDEO, "Loop video", "Loop" },
-	{ TRACK_VIDEO, "Reverse video", "Reverse" },
-	{ 0, "", "" }
-};
-
-const char *PluginServer::translate_pluginname(int type, const char *oname)
-{
-	struct oldpluginnames *pnp;
-
-	for(int i = 0; oldpluginnames[i].oldname[0]; i++)
-	{
-		if(type == oldpluginnames[i].datatype && 
-				strcmp(oldpluginnames[i].oldname, oname) == 0)
-			return oldpluginnames[i].newname;
-	}
-	return 0;
-}
-
 // Open plugin for signal processing
 int PluginServer::open_plugin(int master, 
 	Preferences *preferences,

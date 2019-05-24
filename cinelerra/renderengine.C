@@ -45,13 +45,11 @@
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	Preferences *preferences, 
 	TransportCommand *command,
-	Canvas *output,
-	ArrayList<PluginServer*> *plugindb)
+	Canvas *output)
  : Thread(THREAD_SYNCHRONOUS)
 {
 	this->playback_engine = playback_engine;
 	this->output = output;
-	this->plugindb = plugindb;
 	audio = 0;
 	video = 0;
 	config = new PlaybackConfig;
@@ -294,20 +292,6 @@ ptstime RenderEngine::sync_postime(void)
 		return audio->current_postime(command->get_speed());
 
 	return (ptstime)timer.get_difference() / 1000;
-}
-
-PluginServer* RenderEngine::scan_plugindb(char *title, 
-	int data_type)
-{
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		PluginServer *server = plugindb->values[i];
-		if(!strcasecmp(server->title, title) &&
-			((data_type == TRACK_AUDIO && server->audio) ||
-			(data_type == TRACK_VIDEO && server->video)))
-			return plugindb->values[i];
-	}
-	return 0;
 }
 
 void RenderEngine::start_command()

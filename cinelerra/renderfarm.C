@@ -54,8 +54,7 @@
 
 
 
-RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
-	PackageDispatcher *packages,
+RenderFarmServer::RenderFarmServer(PackageDispatcher *packages,
 	Preferences *preferences,
 	int use_local_rate,
 	int *result_return,
@@ -65,7 +64,6 @@ RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb,
 	EDL *edl,
 	BRender *brender)
 {
-	this->plugindb = plugindb;
 	this->packages = packages;
 	this->preferences = preferences;
 	this->use_local_rate = use_local_rate;
@@ -92,8 +90,8 @@ int RenderFarmServer::start_clients()
 
 	if(brender)
 	{
-		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb,
-			this, brendernode);
+		RenderFarmServerThread *client = new RenderFarmServerThread(this,
+			brendernode);
 		clients.append(client);
 		result = client->start_loop();
 	}
@@ -107,7 +105,7 @@ int RenderFarmServer::start_clients()
 			{
 				client_lock->lock("RenderFarmServer::start_clients");
 				RenderFarmServerThread *client = new RenderFarmServerThread(
-					plugindb, this, i);
+					this, i);
 				clients.append(client);
 				result = client->start_loop();
 				client_lock->unlock();
@@ -126,12 +124,10 @@ void RenderFarmServer::wait_clients()
 
 // Waits for requests from every client.
 // Joins when the client is finished.
-RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
-	RenderFarmServer *server, 
+RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server,
 	int number)
  : Thread()
 {
-	this->plugindb = plugindb;
 	this->server = server;
 	this->number = number;
 	socket_fd = -1;

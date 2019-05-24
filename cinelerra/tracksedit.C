@@ -510,7 +510,7 @@ void Tracks::paste_automation(ptstime selectionstart,
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
-	dest_edit->insert_transition(server->title);
+	dest_edit->insert_transition(server);
 }
 
 void Tracks::paste_video_transition(PluginServer *server, int first_track)

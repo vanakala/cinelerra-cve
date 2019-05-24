@@ -56,7 +56,6 @@ public:
 // The plugin paths must be known before any threads are started
 	BC_Hash *boot_defaults;
 	Preferences *boot_preferences;
-	ArrayList<PluginServer*> *plugindb;
 };
 
 

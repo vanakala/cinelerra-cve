@@ -153,27 +153,12 @@ public:
 	void shrink_autos(int changeall, int domin, int domax);
 // move the window to include the cursor
 	void find_cursor(void);
-// Append a plugindb with pointers to the master plugindb
-	void create_plugindb(int do_audio, 
-		int do_video, 
-		int is_realtime, 
-		int is_multichannel,
-		int is_transition,
-		int is_theme,
-		ArrayList<PluginServer*> &plugindb);
-// Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(const char *title,
-		int data_type);
-	void dump_plugindb(int data_type = -1);
 
 	void load_filenames(ArrayList<char*> *filenames, 
 		int load_mode = LOADMODE_REPLACE,
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
 		int update_filename = 1);
-
-// Print out plugins which are referenced in the EDL but not loaded.
-	void test_plugins(EDL *new_edl, const char *path);
 
 	void interrupt_indexes();  // Stop index building
 
@@ -404,20 +389,12 @@ public:
 
 // ====================================== plugins ==============================
 
-// Contain file descriptors for all the dlopens
-	ArrayList<PluginServer*> *plugindb;
 // Currently visible plugins
 	ArrayList<PluginServer*> *plugin_guis;
 // Closed plugin guis ready to remove
 	ArrayList<PluginServer*> *removed_guis;
 // Messges to deliver to plugins
 	PluginMsgs plugin_messages;
-
-// Adjust sample position to line up with frames.
-	int fix_timing(int64_t &samples_out, 
-		int64_t &frames_out, 
-		int64_t samples_in);
-
 
 	BatchRenderThread *batch_render;
 	Render *render;
@@ -489,7 +466,6 @@ public:
 	void init_indexes();
 	void init_gui();
 	void init_playbackcursor();
-	void delete_plugins();
 
 	void clean_indexes();
 	SigHandler *sighandler;

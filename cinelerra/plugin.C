@@ -35,14 +35,10 @@
 #include "virtualnode.h"
 
 
-Plugin::Plugin(EDL *edl, Track *track, const char *title)
+Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 {
 	this->edl = edl;
 	this->track = track;
-	if(title)
-		strcpy(this->title, title);
-	else
-		this->title[0] = 0;
 	plugin_type = PLUGIN_NONE;
 	pts = 0;
 	duration = 0;
@@ -53,7 +49,7 @@ Plugin::Plugin(EDL *edl, Track *track, const char *title)
 	shared_plugin = 0;
 	keyframes = new KeyFrames(edl, track, this);
 	id = EDL::next_id();
-	plugin_server = 0;
+	plugin_server = server;
 }
 
 Plugin::~Plugin()
@@ -92,7 +88,7 @@ void Plugin::copy_from(Plugin *plugin)
 	on = plugin->on;
 	shared_track = plugin->shared_track;
 	shared_plugin = plugin->shared_plugin;
-	strcpy(title, plugin->title);
+	plugin_server = plugin->plugin_server;
 
 	copy_keyframes(plugin);
 }
@@ -144,7 +140,7 @@ void Plugin::synchronize_params(Plugin *plugin)
 {
 	this->show = plugin->show;
 	this->on = plugin->on;
-	strcpy(this->title, plugin->title);
+	plugin_server = plugin->plugin_server;
 	copy_keyframes(plugin);
 	if(!PTSEQU(keyframes->base_pts, pts))
 		shift_keyframes(pts - keyframes->base_pts);
@@ -177,7 +173,7 @@ void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
 		on != plugin->on ||
 		shared_track != plugin->shared_track ||
 		shared_plugin != plugin->shared_plugin ||
-		strcmp(title, plugin->title))
+		plugin_server != plugin->plugin_server)
 	{
 		if(*result < 0 || get_pts() < *result)
 			*result = get_pts();
@@ -218,11 +214,11 @@ int Plugin::identical(Plugin *that)
 // Test type
 	if(plugin_type != that->plugin_type) return 0;
 
-// Test title or location
+// Test server or location
 	switch(plugin_type)
 	{
 	case PLUGIN_STANDALONE:
-		if(strcmp(title, that->title))
+		if(plugin_server != that->plugin_server)
 			return 0;
 		break;
 	case PLUGIN_SHAREDPLUGIN:
@@ -258,12 +254,10 @@ int Plugin::get_number()
 	return track->plugins.number_of(this);
 }
 
-void Plugin::change_plugin(const char *title, int plugin_type,
+void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	Plugin *shared_plugin, Track *shared_track)
 {
-	if(title)
-		strcpy(this->title, title);
-
+	plugin_server = server;
 	this->shared_plugin = shared_plugin;
 	this->shared_track = shared_track;
 	this->plugin_type = plugin_type;
@@ -359,8 +353,8 @@ void Plugin::save_xml(FileXML *file)
 		file->tag.set_property("POSTIME", pts);
 		file->tag.set_property("TYPE", plugin_type);
 	}
-	if(title[0])
-		file->tag.set_property("TITLE", title);
+	if(plugin_server)
+		file->tag.set_property("TITLE", plugin_server->title);
 	file->tag.set_property("DURATION", duration);
 	if(!on)
 		file->tag.set_property("OFF", !on);
@@ -502,9 +496,9 @@ void Plugin::calculate_title(char *string, int use_nudge)
 {
 	string[0] = 0;
 
-	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
+	if(plugin_type == PLUGIN_STANDALONE && plugin_server)
 	{
-		strcpy(string, _(title));
+		strcpy(string, _(plugin_server->title));
 	}
 	else
 	if(plugin_type == PLUGIN_SHAREDMODULE)
@@ -519,7 +513,7 @@ void Plugin::calculate_title(char *string, int use_nudge)
 		{
 			strcpy(string, shared_plugin->track->title);
 			strcat(string, ": ");
-			strcat(string, shared_plugin->title);
+			strcat(string, shared_plugin->plugin_server->title);
 		}
 	}
 	else
@@ -574,8 +568,12 @@ void Plugin::dump(int indent)
 
 	printf("%*sPlugin %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*sType: '%s' title: \"%s\" on: %d", indent, "",
-		s, title, on);
+	if(plugin_server)
+		printf("%*sType: '%s' title: \"%s\" on: %d", indent, "",
+			s, plugin_server->title, on);
+	else
+		printf("%*sType: '%s' on: %d", indent, "",
+			s, on);
 	if(shared_track)
 		printf(" shared_track %p", shared_track);
 	if(shared_plugin)

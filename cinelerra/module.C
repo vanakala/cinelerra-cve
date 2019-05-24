@@ -245,7 +245,7 @@ void Module::update_transition(ptstime current_position)
 	if (transition && 
 		transition_server)
 	{
-		if (strcmp(transition->title, transition_server->plugin->title))
+		if(transition->plugin_server !=  transition_server->plugin->plugin_server)
 		{
 			transition_server->close_plugin();
 			delete transition_server;
@@ -260,8 +260,7 @@ void Module::update_transition(ptstime current_position)
 	{
 		if(renderengine)
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
-				track->data_type);
+			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
 				renderengine->preferences, 
@@ -272,7 +271,7 @@ void Module::update_transition(ptstime current_position)
 		else
 		if(plugin_array)
 		{
-			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
+			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
 				plugin_array->mwindow->preferences,

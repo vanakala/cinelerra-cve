@@ -157,7 +157,7 @@ int ExportEDLAsset::export_it()
 			else
 				strcpy(avselect, "V   ");
 
-			if (edit->transition && !strcmp(edit->transition->title, "Dissolve"))
+			if (edit->transition && !strcmp(edit->transition->plugin_server->title, "Dissolve"))
 			{
 				char last_sourceout[12];
 				edit_to_timecodes(edit->previous, sourceinpoint, last_sourceout, destinpoint, destoutpoint, reel_name);

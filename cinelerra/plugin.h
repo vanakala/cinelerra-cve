@@ -37,11 +37,10 @@
 class PluginOnToggle;
 
 
-// Plugin is inherited by Transition, Plugins
 class Plugin
 {
 public:
-	Plugin(EDL *edl, Track *track, const char *title = 0);
+	Plugin(EDL *edl, Track *track, PluginServer *server);
 	~Plugin();
 
 // Called by Edits::equivalent_output to override the keyframe behavior and check
@@ -65,7 +64,7 @@ public:
 // Remove keyframes after pts
 	void remove_keyframes_after(ptstime pts);
 
-	void change_plugin(const char *title, int plugin_type,
+	void change_plugin(PluginServer *server, int plugin_type,
 		Plugin *shared_plugin, Track *shared_track);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
@@ -102,25 +101,13 @@ public:
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();
 
-// Need to resample keyframes
-	void resample(double old_rate, double new_rate);
-
 	int id;
-// The title of the plugin is stored and not the plugindb entry in case it doesn't exist in the db
-// Title of the plugin currently attached
-	char title[BCTEXTLEN];
+
 	int plugin_type;
 	int show, on;
 	Track *track;
 	EDL *edl;
 
-// Data for the plugin is stored here.  Default keyframe always exists.
-// As for storing in PluginSet instead of Plugin:
-
-// Each plugin needs a default keyframe of its own.
-// The keyframes are meaningless except for the plugin they're stored in.
-// Default keyframe has position = 0.
-// Other keyframes have absolute position.
 	KeyFrames *keyframes;
 // Shared track of type sharedmodule
 	Track *shared_track;

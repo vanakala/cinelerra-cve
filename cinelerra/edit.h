@@ -32,6 +32,7 @@
 #include "linklist.h"
 #include "mwindow.inc"
 #include "plugin.inc"
+#include "pluginserver.inc"
 #include "track.inc"
 
 // Generic edit of something
@@ -65,7 +66,7 @@ public:
 // Shift in time
 	virtual void shift(ptstime difference);
 	void shift_source(ptstime difference);
-	void insert_transition(const char *title);
+	void insert_transition(PluginServer *server);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);
 

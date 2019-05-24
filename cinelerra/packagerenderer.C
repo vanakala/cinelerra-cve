@@ -109,8 +109,7 @@ PackageRenderer::~PackageRenderer()
 int PackageRenderer::initialize(MWindow *mwindow,
 		EDL *edl, 
 		Preferences *preferences, 
-		Asset *default_asset,
-		ArrayList<PluginServer*> *plugindb)
+		Asset *default_asset)
 {
 	int result = 0;
 
@@ -118,7 +117,6 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->edl = edl;
 	this->preferences = preferences;
 	this->default_asset = default_asset;
-	this->plugindb = plugindb;
 	if(!preferences_global)
 		preferences_global = preferences;
 
@@ -178,8 +176,7 @@ void PackageRenderer::create_engine()
 	render_engine = new RenderEngine(0,
 		preferences,
 		command,
-		0,
-		plugindb);
+		0);
 
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);

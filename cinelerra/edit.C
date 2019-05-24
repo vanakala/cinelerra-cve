@@ -135,11 +135,12 @@ ptstime Edit::get_source_length()
 	return 0;
 }
 
-void Edit::insert_transition(const char *title)
+void Edit::insert_transition(PluginServer *server)
 {
 	transition = new Plugin(edl,
 		track,
-		title);
+		server);
+	transition->plugin_type = PLUGIN_TRANSITION;
 	transition->set_length(edlsession->default_transition_length);
 }
 
@@ -165,7 +166,7 @@ void Edit::copy_from(Edit *edit)
 		if(!transition)
 			transition = new Plugin(edl,
 				track,
-				edit->transition->title);
+				0);
 		transition->copy_from(edit->transition);
 	}
 	this->channel = edit->channel;

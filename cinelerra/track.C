@@ -32,6 +32,7 @@
 #include "keyframes.h"
 #include "localsession.h"
 #include "plugin.h"
+#include "plugindb.h"
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
@@ -168,8 +169,7 @@ void Track::copy_from(Track *track)
 
 	for(int i = 0; i < track->plugins.total; i++)
 	{
-		Plugin *new_plugin = plugins.append(new Plugin(edl, this,
-			track->plugins.values[i]->title));
+		Plugin *new_plugin = plugins.append(new Plugin(edl, this, 0));
 		new_plugin->copy_from(track->plugins.values[i]);
 	}
 	automation->copy_from(track->automation);
@@ -296,10 +296,12 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 
 							if(type != PLUGIN_NONE)
 							{
-								plugin = new Plugin(edl, this, 0);
-
+								char string[BCTEXTLEN];
+								string[0] = 0;
+								file->tag.get_property("TITLE", string);
+								plugin = new Plugin(edl, this,
+									plugindb.get_pluginserver(string, data_type));
 								plugins.append(plugin);
-								file->tag.get_property("TITLE", plugin->title);
 								plugin->plugin_type = type;
 								plugin->set_pts(startproject);
 								plugin->set_length(length);
@@ -419,7 +421,7 @@ void Track::insert_plugin(Track *track, ptstime position,
 	}
 }
 
-Plugin* Track::insert_effect(const char *title,
+Plugin* Track::insert_effect(PluginServer *server,
 	ptstime start,
 	ptstime length,
 	int plugin_type,
@@ -429,7 +431,7 @@ Plugin* Track::insert_effect(const char *title,
 	if(length < EPSILON)
 		return 0;
 
-	Plugin *plugin = new Plugin(edl, this, title);
+	Plugin *plugin = new Plugin(edl, this, server);
 
 	plugins.append(plugin);
 	plugin->plugin_type = plugin_type;

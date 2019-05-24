@@ -45,7 +45,6 @@ public:
 	PluginArray(int data_type);
 	virtual ~PluginArray();
 
-	PluginServer* scan_plugindb(const char *title);
 	void start_plugins(MWindow *mwindow, 
 		EDL *edl, 
 		PluginServer *plugin_server, 

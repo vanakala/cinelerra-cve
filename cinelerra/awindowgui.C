@@ -49,6 +49,7 @@
 #include "mainsession.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "plugindb.h"
 #include "preferences.h"
 #include "theme.h"
 #include "vframe.h"
@@ -517,20 +518,20 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 	int is_realtime, 
 	int is_transition)
 {
-	ArrayList<PluginServer*> plugindb;
+	ArrayList<PluginServer*> plugins;
 
 // Get pointers to plugindb entries
-	mwindow->create_plugindb(do_audio, 
+	plugindb.fill_plugindb(do_audio,
 			do_video, 
 			is_realtime, 
 			-1,
 			is_transition,
 			0,
-			plugindb);
+			plugins);
 
-	for(int i = 0; i < plugindb.total; i++)
+	for(int i = 0; i < plugins.total; i++)
 	{
-		PluginServer *server = plugindb.values[i];
+		PluginServer *server = plugins.values[i];
 		int exists = 0;
 
 // Create new listitem

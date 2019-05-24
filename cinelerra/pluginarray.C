@@ -50,12 +50,6 @@ PluginArray::~PluginArray()
 	delete [] modules;
 }
 
-
-PluginServer* PluginArray::scan_plugindb(const char *title)
-{
-	return mwindow->scan_plugindb(title, data_type);
-}
-
 void PluginArray::start_plugins(MWindow *mwindow, 
 	EDL *edl, 
 	PluginServer *plugin_server, 

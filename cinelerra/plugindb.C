@@ -1,0 +1,341 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "arraylist.h"
+#include "bcsignals.h"
+#include "filesystem.h"
+#include "language.h"
+#include "mainerror.h"
+#include "plugindb.h"
+#include "pluginserver.h"
+#include "splashgui.h"
+#include "preferences.h"
+
+#include <string.h>
+
+static struct oldpluginnames
+{
+	int datatype;
+	char oldname[64];
+	char newname[64];
+} oldpluginnames[] = {
+	{ TRACK_AUDIO, "Invert Audio", "Invert" },
+	{ TRACK_AUDIO, "Delay audio", "Delay" },
+	{ TRACK_AUDIO, "Loop audio", "Loop" },
+	{ TRACK_AUDIO, "Reverse audio", "Reverse" },
+	{ TRACK_AUDIO, "Heroine College Concert Hall", "HC Concert Hall" },
+	{ TRACK_VIDEO, "Invert Video", "Invert" },
+	{ TRACK_VIDEO, "Denoise video", "Denoise" },
+	{ TRACK_VIDEO, "Selective Temporal Averaging", "STA" },
+	{ TRACK_VIDEO, "Delay Video", "Delay" },
+	{ TRACK_VIDEO, "Loop video", "Loop" },
+	{ TRACK_VIDEO, "Reverse video", "Reverse" },
+	{ 0, "", "" }
+};
+
+PluginDB::PluginDB()
+ : ArrayList<PluginServer*>()
+{
+}
+
+PluginDB::~PluginDB()
+{
+	for(int i = 0; i < total; i++)
+		delete values[i];
+}
+
+void PluginDB::init_plugin_path(FileSystem *fs,
+	SplashGUI *splash_window,
+	int *counter)
+{
+	int result = 0;
+	PluginServer *newplugin;
+ 
+	if(!result)
+	{
+		for(int i = 0; i < fs->dir_list.total; i++)
+		{
+			char path[BCTEXTLEN];
+			strcpy(path, fs->dir_list.values[i]->path);
+ 
+// File is a directory
+			if(fs->is_dir(path))
+				continue;
+			else
+			{
+// Try to query the plugin
+				fs->complete_path(path);
+				PluginServer *new_plugin = new PluginServer(path);
+				int result = new_plugin->open_plugin(1,
+					preferences_global, 0, 0);
+
+				if(!result)
+				{
+					append(new_plugin);
+					new_plugin->close_plugin();
+					new_plugin->release_plugin();
+					if(splash_window)
+						splash_window->operation->update(_(new_plugin->title));
+				}
+				else
+				if(result == PLUGINSERVER_IS_LAD)
+				{
+					delete new_plugin;
+// Open LAD subplugins
+					int id = 0;
+					do
+					{
+						new_plugin = new PluginServer(path);
+						result = new_plugin->open_plugin(1,
+							preferences_global, 0, 0, id);
+						id++;
+						if(!result)
+						{
+							append(new_plugin);
+							new_plugin->close_plugin();
+							new_plugin->release_plugin();
+							if(splash_window)
+								splash_window->operation->update(_(new_plugin->title));
+						}
+					}while(!result);
+				}
+				else
+				{
+// Plugin failed to open
+					delete new_plugin;
+				}
+			}
+			if(splash_window)
+				splash_window->progress->update((*counter)++);
+		}
+	}
+}
+
+void PluginDB::init_plugins(SplashGUI *splash_window)
+{
+	FileSystem cinelerra_fs;
+	ArrayList<FileSystem*> lad_fs;
+	int result = 0;
+
+// Get directories
+	cinelerra_fs.set_filter("[*.so]");
+	result = cinelerra_fs.update(preferences_global->global_plugin_dir);
+
+	if(result)
+		errorbox(_("Couldn't open plugins directory '%s'"),
+			preferences_global->global_plugin_dir);
+
+#ifdef HAVE_LADSPA
+// Parse LAD environment variable
+	char *env = getenv("LADSPA_PATH");
+
+	if(env)
+	{
+		char string[BCTEXTLEN];
+		char *ptr1 = env;
+
+		while(ptr1)
+		{
+			char *ptr = strchr(ptr1, ':');
+			char *end;
+
+			if(ptr)
+				end = ptr;
+			else
+				end = env + strlen(env);
+
+			if(end > ptr1)
+			{
+				int len = end - ptr1;
+				memcpy(string, ptr1, len);
+				string[len] = 0;
+
+				FileSystem *fs = new FileSystem;
+				lad_fs.append(fs);
+				fs->set_filter("*.so");
+				result = fs->update(string);
+
+				if(result)
+					errorbox(_("Couldn't open LADSPA directory '%s'"),
+						string);
+			}
+
+			if(ptr)
+				ptr1 = ptr + 1;
+			else
+				ptr1 = ptr;
+		}
+	}
+#endif
+	int total = cinelerra_fs.total_files();
+	int counter = 0;
+	for(int i = 0; i < lad_fs.total; i++)
+	total += lad_fs.values[i]->total_files();
+	if(splash_window)
+		splash_window->progress->update_length(total);
+
+	init_plugin_path(&cinelerra_fs,
+		splash_window,
+		&counter);
+
+// LAD
+	for(int i = 0; i < lad_fs.total; i++)
+		init_plugin_path(lad_fs.values[i],
+			splash_window,
+			&counter);
+
+	lad_fs.remove_all_objects();
+}
+
+void PluginDB::fill_plugindb(int do_audio,
+		int do_video,
+		int is_realtime,
+		int is_multichannel,
+		int is_transition,
+		int is_theme,
+		ArrayList<PluginServer*> &plugindb)
+{
+// Get plugins
+	for(int i = 0; i < total; i++)
+	{
+		PluginServer *current = values[i];
+
+		if(current->audio == do_audio &&
+				current->video == do_video &&
+				(current->realtime == is_realtime || is_realtime < 0) &&
+				(current->multichannel == is_multichannel || is_multichannel < 0) &&
+				current->transition == is_transition &&
+				current->theme == is_theme)
+			plugindb.append(current);
+	}
+// Alphabetize list by title
+	int done = 0;
+
+	while(!done)
+	{
+		done = 1;
+
+		for(int i = 0; i < plugindb.total - 1; i++)
+		{
+			PluginServer *value1 = plugindb.values[i];
+			PluginServer *value2 = plugindb.values[i + 1];
+			if(strcmp(_(value1->title), _(value2->title)) > 0)
+			{
+				done = 0;
+				plugindb.values[i] = value2;
+				plugindb.values[i + 1] = value1;
+			}
+		}
+	}
+}
+
+// oli scan_plugindb
+PluginServer* PluginDB::get_pluginserver(const char *title, int data_type)
+{
+	const char *new_title;
+
+	for(int i = 0; i < total; i++)
+	{
+		PluginServer *server = values[i];
+
+		if(((data_type == TRACK_AUDIO && server->audio) ||
+				(data_type == TRACK_VIDEO && server->video)) &&
+				!strcmp(server->title, title))
+			return server;
+	}
+// Check if name has been changed
+	if(new_title = translate_pluginname(title, data_type))
+	{
+		for(int i = 0; i < total; i++)
+		{
+			PluginServer *server = values[i];
+
+			if(((data_type == TRACK_AUDIO && server->audio) ||
+					(data_type == TRACK_VIDEO && server->video)) &&
+					!strcmp(server->title, new_title))
+				return server;
+		}
+	}
+	errormsg("The effect '%s' is not part of your installation of " PROGRAM_NAME ".", title);
+	return 0;
+}
+
+PluginServer *PluginDB::get_theme(const char *title)
+{
+	for(int i = 0; i < total; i++)
+	{
+		PluginServer *server = values[i];
+
+		if(server->theme && !strcmp(server->title, title))
+			return server;
+	}
+	return 0;
+}
+
+const char *PluginDB::translate_pluginname(const char *oldname, int data_type)
+{
+	struct oldpluginnames *pnp;
+
+	for(int i = 0; oldpluginnames[i].oldname[0]; i++)
+	{
+		if(data_type == oldpluginnames[i].datatype &&
+				strcmp(oldpluginnames[i].oldname, oldname) == 0)
+			return oldpluginnames[i].newname;
+	}
+	return 0;
+}
+
+int PluginDB::count()
+{
+	return total;
+}
+
+void PluginDB::dump(int indent, int data_type)
+{
+	int typ;
+
+	for(int i = 0; i < total; i++)
+	{
+		PluginServer *server = values[i];
+
+		if(data_type > 0)
+		{
+			if(data_type == TRACK_AUDIO && !server->audio)
+				continue;
+			if(data_type == TRACK_VIDEO && !server->video)
+				continue;
+		}
+		if(server->audio)
+			typ = 'A';
+		else if(server->video)
+			typ = 'V';
+		else if(server->theme)
+			typ = 'T';
+		else
+			typ = '-';
+		printf("%*s%c%c%c%c%c%c%d %s\n", indent, "",
+			server->realtime ? 'R' : '-', typ,
+			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-',
+			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-',
+			server->apiversion, server->title);
+		}
+}

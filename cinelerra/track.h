@@ -36,6 +36,7 @@
 #include "keyframe.inc"
 #include "linklist.h"
 #include "plugin.inc"
+#include "pluginserver.inc"
 #include "theme.inc"
 #include "tracks.inc"
 
@@ -72,7 +73,7 @@ public:
 		ptstime position,
 		int track_number,
 		int overwrite = 0);
-	Plugin* insert_effect(const char *title, 
+	Plugin* insert_effect(PluginServer *server,
 		ptstime start,
 		ptstime length,
 		int plugin_type,

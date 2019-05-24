@@ -1572,8 +1572,8 @@ void TrackCanvas::draw_transitions()
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
-					PluginServer *server = mwindow->scan_plugindb(edit->transition->title,
-						track->data_type);
+					PluginServer *server = edit->transition->plugin_server;
+
 					draw_vframe(server->picon, 
 						x, 
 						y, 
@@ -4254,10 +4254,9 @@ int TrackCanvas::do_plugins(int cursor_x,
 				{
 				case PLUGIN_STANDALONE:
 				{
-					PluginServer *server = mwindow->scan_plugindb(
-						plugin->title,
-						plugin->track->data_type);
-					if (server) 
+					PluginServer *server = plugin->plugin_server;
+
+					if(server)
 					{
 						VFrame *frame = server->picon;
 

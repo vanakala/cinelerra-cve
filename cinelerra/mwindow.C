@@ -74,6 +74,7 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "plugin.h"
+#include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
@@ -130,7 +131,7 @@ MWindow::MWindow(const char *config_path)
 
 	init_edl();
 	init_preferences();
-	init_plugins(preferences, plugindb, splash_window);
+	plugindb.init_plugins(splash_window);
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
 	init_theme();
 	init_error();
@@ -300,263 +301,6 @@ void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
 	defaults->load();
 }
 
-void MWindow::init_plugin_path(Preferences *preferences, 
-	ArrayList<PluginServer*>* &plugindb,
-	FileSystem *fs,
-	SplashGUI *splash_window,
-	int *counter)
-{
-	int result = 0;
-	PluginServer *newplugin;
-
-	if(!result)
-	{
-		for(int i = 0; i < fs->dir_list.total; i++)
-		{
-			char path[BCTEXTLEN];
-			strcpy(path, fs->dir_list.values[i]->path);
-
-// File is a directory
-			if(fs->is_dir(path))
-			{
-				continue;
-			}
-			else
-			{
-// Try to query the plugin
-				fs->complete_path(path);
-				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, preferences, 0, 0);
-
-				if(!result)
-				{
-					plugindb->append(new_plugin);
-					new_plugin->close_plugin();
-					new_plugin->release_plugin();
-					if(splash_window)
-						splash_window->operation->update(_(new_plugin->title));
-				}
-				else
-				if(result == PLUGINSERVER_IS_LAD)
-				{
-					delete new_plugin;
-// Open LAD subplugins
-					int id = 0;
-					do
-					{
-						new_plugin = new PluginServer(path);
-						result = new_plugin->open_plugin(1,
-							preferences,
-							0,
-							0,
-							id);
-						id++;
-						if(!result)
-						{
-							plugindb->append(new_plugin);
-							new_plugin->close_plugin();
-							new_plugin->release_plugin();
-							if(splash_window)
-								splash_window->operation->update(_(new_plugin->title));
-						}
-					}while(!result);
-				}
-				else
-				{
-// Plugin failed to open
-					delete new_plugin;
-				}
-			}
-
-			if(splash_window) splash_window->progress->update((*counter)++);
-		}
-	}
-}
-
-void MWindow::init_plugins(Preferences *preferences, 
-	ArrayList<PluginServer*>* &plugindb,
-	SplashGUI *splash_window)
-{
-	plugindb = new ArrayList<PluginServer*>;
-
-	FileSystem cinelerra_fs;
-	ArrayList<FileSystem*> lad_fs;
-	int result = 0;
-
-// Get directories
-	cinelerra_fs.set_filter("[*.plugin][*.so]");
-	result = cinelerra_fs.update(preferences->global_plugin_dir);
-
-	if(result)
-	{
-		errorbox(_("Couldn't open plugins directory '%s'"),
-			preferences->global_plugin_dir);
-	}
-
-#ifdef HAVE_LADSPA
-// Parse LAD environment variable
-	char *env = getenv("LADSPA_PATH");
-	if(env)
-	{
-		char string[BCTEXTLEN];
-		char *ptr1 = env;
-		while(ptr1)
-		{
-			char *ptr = strchr(ptr1, ':');
-			char *end;
-			if(ptr)
-			{
-				end = ptr;
-			}
-			else
-			{
-				end = env + strlen(env);
-			}
-
-			if(end > ptr1)
-			{
-				int len = end - ptr1;
-				memcpy(string, ptr1, len);
-				string[len] = 0;
-
-				FileSystem *fs = new FileSystem;
-				lad_fs.append(fs);
-				fs->set_filter("*.so");
-				result = fs->update(string);
-
-				if(result)
-				{
-					errorbox(_("Couldn't open LADSPA directory '%s'"),
-						string);
-				}
-			}
-
-			if(ptr)
-				ptr1 = ptr + 1;
-			else
-				ptr1 = ptr;
-		};
-	}
-#endif
-
-	int total = cinelerra_fs.total_files();
-	int counter = 0;
-	for(int i = 0; i < lad_fs.total; i++)
-		total += lad_fs.values[i]->total_files();
-	if(splash_window) splash_window->progress->update_length(total);
-
-	init_plugin_path(preferences,
-		plugindb,
-		&cinelerra_fs,
-		splash_window,
-		&counter);
-
-// LAD
-	for(int i = 0; i < lad_fs.total; i++)
-		init_plugin_path(preferences,
-			plugindb,
-			lad_fs.values[i],
-			splash_window,
-			&counter);
-
-	lad_fs.remove_all_objects();
-}
-
-void MWindow::delete_plugins()
-{
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		delete plugindb->values[i];
-	}
-	delete plugindb;
-}
-
-void MWindow::create_plugindb(int do_audio, 
-		int do_video, 
-		int is_realtime, 
-		int is_multichannel,
-		int is_transition,
-		int is_theme,
-		ArrayList<PluginServer*> &plugindb)
-{
-// Get plugins
-	for(int i = 0; i < this->plugindb->total; i++)
-	{
-		PluginServer *current = this->plugindb->values[i];
-
-		if(current->audio == do_audio &&
-			current->video == do_video &&
-			(current->realtime == is_realtime || is_realtime < 0) &&
-			(current->multichannel == is_multichannel || is_multichannel < 0) &&
-			current->transition == is_transition &&
-			current->theme == is_theme)
-			plugindb.append(current);
-	}
-
-// Alphabetize list by title
-	int done = 0;
-	while(!done)
-	{
-		done = 1;
-		
-		for(int i = 0; i < plugindb.total - 1; i++)
-		{
-			PluginServer *value1 = plugindb.values[i];
-			PluginServer *value2 = plugindb.values[i + 1];
-			if(strcmp(_(value1->title), _(value2->title)) > 0)
-			{
-				done = 0;
-				plugindb.values[i] = value2;
-				plugindb.values[i + 1] = value1;
-			}
-		}
-	}
-}
-
-PluginServer* MWindow::scan_plugindb(const char *title,
-		int data_type)
-{
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		PluginServer *server = plugindb->values[i];
-		if(!strcasecmp(server->title, title) &&
-		((data_type == TRACK_AUDIO && server->audio) ||
-		(data_type == TRACK_VIDEO && server->video))) 
-			return plugindb->values[i];
-	}
-	return 0;
-}
-
-void MWindow::dump_plugindb(int data_type)
-{
-	int typ;
-
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		PluginServer *server = plugindb->values[i];
-		if(data_type > 0)
-		{
-			if(data_type == TRACK_AUDIO && !server->audio)
-				continue;
-			if(data_type == TRACK_VIDEO && !server->video)
-				continue;
-		}
-		if(server->audio)
-			typ = 'A';
-		else if(server->video)
-			typ = 'V';
-		else if(server->theme)
-			typ = 'T';
-		else
-			typ = '-';
-		printf("    %c%c%c%c%c%c%d %s\n",
-			server->realtime ? 'R' : '-', typ,
-			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-', 
-			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-', 
-			server->apiversion, server->title);
-	}
-}
-
 void MWindow::init_preferences()
 {
 	preferences = new Preferences;
@@ -658,36 +402,22 @@ void MWindow::init_theme()
 {
 	theme = 0;
 
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		if(plugindb->values[i]->theme &&
-			!strcasecmp(preferences->theme, plugindb->values[i]->title))
-		{
-			PluginServer plugin = *plugindb->values[i];
-			plugin.open_plugin(0, preferences, 0, 0);
-			theme = plugin.new_theme();
-			theme->mwindow = this;
-			plugin.close_plugin();
-		}
-	}
+	PluginServer *plugin = plugindb.get_theme(preferences->theme);
+	plugin->open_plugin(0, preferences, 0, 0);
+	theme = plugin->new_theme();
+	theme->mwindow = this;
+	plugin->close_plugin();
 
 	if(!theme)
 	{
 		errorbox(_("Can't find theme '%s'."), preferences->theme);
 		// Theme load fails, try default
 		strcpy(preferences->theme, DEFAULT_THEME);
-		for(int i = 0; i < plugindb->total; i++)
-		{
-			if(plugindb->values[i]->theme &&
-				!strcasecmp(preferences->theme, plugindb->values[i]->title))
-			{
-				PluginServer plugin = *plugindb->values[i];
-				plugin.open_plugin(0, preferences, 0, 0);
-				theme = plugin.new_theme();
-				theme->mwindow = this;
-				plugin.close_plugin();
-			}
-		}
+		plugindb.get_theme(preferences->theme);
+		plugin->open_plugin(0, preferences, 0, 0);
+		theme = plugin->new_theme();
+		theme->mwindow = this;
+		plugin->close_plugin();
 	}
 
 	if(!theme)
@@ -1133,7 +863,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_edl->load_xml(&xml_file, LOAD_ALL, 0);
 					cur_edl = new_edl;
 				}
-				test_plugins(cur_edl, filenames->values[i]);
 
 				for(int i = 0; i < cur_edl->assets->total; i++)
 					mainindexes->add_next_asset(cur_edl->assets->values[i]);
@@ -1180,67 +909,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
-}
-
-void MWindow::test_plugins(EDL *new_edl, const char *path)
-{
-// Do a check weather plugins exist
-	for(Track *track = new_edl->first_track(); track; track = track->next)
-	{
-		for(int k = 0; k < track->plugins.total; k++)
-		{
-			Plugin *plugin = track->plugins.values[k];
-
-			if(plugin->plugin_type == PLUGIN_STANDALONE)
-			{
-				// Replace old plugin name with new for compatipility with previous version
-				const char *nnp = PluginServer::translate_pluginname(track->data_type, plugin->title);
-				if(nnp)
-					strcpy(plugin->title, nnp);
-				// ok we need to find it in plugindb
-				int plugin_found = 0;
-				for(int j = 0; j < plugindb->total; j++)
-				{
-					PluginServer *server = plugindb->values[j];
-
-					if(!strcasecmp(server->title, plugin->title) &&
-						((track->data_type == TRACK_AUDIO && server->audio) ||
-						(track->data_type == TRACK_VIDEO && server->video)) &&
-						(!server->transition))
-						plugin_found = 1;
-				}
-				if(!plugin_found)
-					errormsg("The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
-						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-						plugin->title,
-						path);
-			}
-		}
-		for(Edit *edit = (Edit*)track->edits->first;
-			edit;
-			edit = (Edit*)edit->next)
-		{
-			if(edit->transition)
-			{
-				// ok we need to find transition in plugindb
-				int transition_found = 0;
-				for(int j = 0; j < plugindb->total; j++)
-				{
-					PluginServer *server = plugindb->values[j];
-					if(!strcasecmp(server->title, edit->transition->title) &&
-						((track->data_type == TRACK_AUDIO && server->audio) ||
-						(track->data_type == TRACK_VIDEO && server->video)) &&
-						(server->transition))
-						transition_found = 1;
-				}
-				if(!transition_found)
-					errormsg("The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
-						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-						edit->transition->title,
-						path); 
-			}
-		}
-	}
 }
 
 void MWindow::show_splash()
@@ -1480,8 +1148,7 @@ void MWindow::show_plugin(Plugin *plugin)
 
 	if(!done)
 	{
-		PluginServer *server = scan_plugindb(plugin->title,
-			plugin->track->data_type);
+		PluginServer *server = plugin->plugin_server;
 
 		if(server && server->uses_gui)
 		{
@@ -1608,7 +1275,7 @@ void MWindow::update_plugin_states()
 				Plugin *plugin = track->plugins.values[j];
 
 				if(plugin == src_plugin &&
-						!strcmp(plugin->title, src_plugingui->title))
+						plugin->plugin_server == src_plugingui)
 					result = 1;
 			}
 		}

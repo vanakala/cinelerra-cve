@@ -48,6 +48,7 @@
 #include "new.h"
 #include "patchbay.h"
 #include "playbackengine.h"
+#include "plugindb.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "quit.h"
@@ -438,7 +439,7 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 
 int DumpPlugins::handle_event()
 {
-	mwindow->dump_plugindb();
+	plugindb.dump();
 	return 1;
 }
 

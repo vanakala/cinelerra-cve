@@ -34,6 +34,7 @@
 #include "module.h"
 #include "mutex.h"
 #include "plugin.h"
+#include "plugindb.h"
 #include "plugindialog.h"
 #include "pluginserver.h"
 #include "theme.h"
@@ -148,7 +149,9 @@ void PluginDialogThread::run()
 		{
 			if(plugin)
 			{
-				plugin->change_plugin(plugin_title,
+				plugin->change_plugin(
+					plugindb.get_pluginserver(plugin_title,
+						plugin_type),
 					plugin_type, shared_plugin,
 					shared_track);
 			}
@@ -199,13 +202,13 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
-	mwindow->create_plugindb(thread->data_type == TRACK_AUDIO, 
+	plugindb.fill_plugindb(thread->data_type == TRACK_AUDIO,
 		thread->data_type == TRACK_VIDEO, 
 		1,
 		-1,
 		0,
 		0,
-		plugindb);
+		local_plugindb);
 
 	master_edl->get_shared_plugins(thread->track,
 		&plugin_locations);
@@ -214,12 +217,12 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		&module_locations);
 
 // Construct listbox items
-	for(int i = 0; i < plugindb.total; i++)
-		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
+	for(int i = 0; i < local_plugindb.total; i++)
+		standalone_data.append(new BC_ListBoxItem(_(local_plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
 		char *track_title = plugin_locations.values[i]->track->title;
-		char *plugin_title = plugin_locations.values[i]->title;
+		char *plugin_title = plugin_locations.values[i]->plugin_server->title;
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%s: %s", track_title, _(plugin_title));
@@ -316,7 +319,7 @@ void PluginDialog::attach_new(int number)
 {
 	if(number > -1 && number < standalone_data.total) 
 	{
-		strcpy(thread->plugin_title, plugindb.values[number]->title);
+		strcpy(thread->plugin_title, local_plugindb.values[number]->title);
 		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
 	}
 }

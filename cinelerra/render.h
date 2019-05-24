@@ -99,8 +99,7 @@ public:
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // The batches are processed in the foreground in non interactive mode.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs,
-		Preferences *preferences,
-		ArrayList<PluginServer*> *plugindb);
+		Preferences *preferences);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 	void run();
@@ -161,8 +160,6 @@ public:
 	Mutex *package_lock, *counter_lock;
 // Copy of mwindow preferences
 	Preferences *preferences;
-// For use in non interactive mode
-	ArrayList<PluginServer*> *plugindb;
 	int strategy;
 	int range_type;
 // Total selection to render in seconds

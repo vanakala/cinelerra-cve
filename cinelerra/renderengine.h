@@ -47,8 +47,7 @@ public:
 	RenderEngine(PlaybackEngine *playback_engine,
 		Preferences *preferences, 
 		TransportCommand *command, 
-		Canvas *output,
-		ArrayList<PluginServer*> *plugindb);
+		Canvas *output);
 	~RenderEngine();
 
 	void get_duty();
@@ -62,9 +61,6 @@ public:
 	int get_output_h();
 	int brender_available(ptstime position);
 
-// Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title,
-		int data_type);
 	CICache* get_acache();
 	CICache* get_vcache();
 	void set_acache(CICache *cache);
@@ -123,8 +119,6 @@ public:
 	float actual_frame_rate;
 // If the termination came from interrupt or end of selection
 	int interrupted;
-
-	ArrayList<PluginServer*> *plugindb;
 
 // Samples in audio buffer to process
 	int fragment_len;

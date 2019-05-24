@@ -183,7 +183,6 @@ Render::Render(MWindow *mwindow)
  : Thread()
 {
 	this->mwindow = mwindow;
-	if(mwindow) plugindb = mwindow->plugindb;
 	in_progress = 0;
 	progress = 0;
 	preferences = 0;
@@ -242,14 +241,12 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	Preferences *preferences,
-	ArrayList<PluginServer*> *plugindb)
+	Preferences *preferences)
 {
 	mode = Render::BATCH;
 	batch_cancelled = 0;
 	this->jobs = jobs;
 	this->preferences = preferences;
-	this->plugindb = plugindb;
 
 	completion->reset();
 	run();
@@ -340,8 +337,6 @@ void Render::run()
 				EDL *edl = new EDL(0);
 				EDLSession *session = new EDLSession();
 				file->read_from_file(job->edl_path);
-				if(!plugindb && mwindow)
-					plugindb = mwindow->plugindb;
 				edl->load_xml(file, LOAD_ALL, session);
 
 				File assetfile;
@@ -583,8 +578,7 @@ int Render::render(int test_overwrite,
 		}
 		if(strategy & RENDER_FARM)
 		{
-			farm_server = new RenderFarmServer(plugindb, 
-				packages,
+			farm_server = new RenderFarmServer(packages,
 				preferences, 
 				1,
 				&result,
@@ -613,8 +607,7 @@ int Render::render(int test_overwrite,
 			result = package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
 				preferences, 
-				default_asset,
-				plugindb);
+				default_asset);
 
 			while(!result)
 			{

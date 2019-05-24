@@ -37,6 +37,7 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarmclient.h"
@@ -60,7 +61,7 @@ EDL *vwindow_edl;
 EDL *render_edl;
 MainSession *mainsession;
 EDLSession *edlsession;
-
+PluginDB plugindb;
 
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 

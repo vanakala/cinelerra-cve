@@ -40,8 +40,7 @@ AttachmentPoint::AttachmentPoint(RenderEngine *renderengine,
 	this->plugin_id = plugin->id;
 	this->renderengine = renderengine;
 	this->data_type = data_type;
-	plugin_server = renderengine->scan_plugindb(plugin->title,
-		data_type);
+	plugin_server = plugin->plugin_server;
 }
 
 AttachmentPoint::~AttachmentPoint()
