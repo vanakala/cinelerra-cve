@@ -425,6 +425,9 @@ void MWindow::delete_tracks()
 
 void MWindow::delete_track(Track *track)
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->delete_track(track);
 	undo->update_undo(_("delete track"), LOAD_ALL);
 
