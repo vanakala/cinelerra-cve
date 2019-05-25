@@ -81,7 +81,6 @@ public:
 		Track *shared_track);
 	void insert_plugin(Track *track, ptstime position,
 		ptstime length = -1, int overwrite = 0);
-	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, ptstime length,
 		ptstime position, int overwrite = 0);

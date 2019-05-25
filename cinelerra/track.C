@@ -551,6 +551,7 @@ void Track::remove_plugin(Plugin *plugin)
 			break;
 		}
 	}
+	tracks->detach_shared_effects(plugin, 0);
 }
 
 void Track::shift_keyframes(ptstime position, ptstime length)
@@ -568,11 +569,6 @@ void Track::shift_effects(ptstime position, ptstime length)
 		if(plugin->get_pts() >= position)
 			plugin->shift(length);
 	}
-}
-
-void Track::detach_effect(Plugin *plugin)
-{
-	remove_plugin(plugin);
 }
 
 void Track::detach_shared_effects(Plugin *plugin, Track *track)
