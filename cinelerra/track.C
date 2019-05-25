@@ -62,6 +62,16 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 
 Track::~Track()
 {
+	for(Track *track = tracks->first; track; track = track->next)
+	{
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *plugin = track->plugins.values[i];
+
+			if(plugin->shared_track == this)
+				plugin->shared_track = 0;
+		}
+	}
 	delete automation;
 	delete edits;
 	plugins.remove_all_objects();
