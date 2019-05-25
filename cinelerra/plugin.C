@@ -54,6 +54,18 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 
 Plugin::~Plugin()
 {
+	if(plugin_type != PLUGIN_TRANSITION)
+	{
+		for(Track *track = edl->first_track(); track;
+			track = track->next)
+		{
+			for(int i = 0; i < track->plugins.total; i++)
+			{
+				if(track->plugins.values[i]->shared_plugin == this)
+					track->plugins.values[i]->shared_plugin = 0;
+			}
+		}
+	}
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
 	delete guideframe;
