@@ -4199,14 +4199,15 @@ int TrackCanvas::do_plugins(int cursor_x,
 
 		for(int i = 0; i < track->plugins.total && !done; i++)
 		{
-			Plugin *plugin = track->plugins.values[i];
-			plugin_dimensions(plugin, x, y, w, h);
+			Plugin *current = track->plugins.values[i];
+			plugin_dimensions(current, x, y, w, h);
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 				MWindowGUI::visible(y, y + h, 0, get_h()))
 			{
 				if(cursor_x >= x && cursor_x < x + w &&
 					cursor_y >= y && cursor_y < y + h)
 				{
+					plugin = current;
 					done = 1;
 					break;
 				}
