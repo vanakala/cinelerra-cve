@@ -362,7 +362,7 @@ public:
 
 	void select_point(ptstime position);
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
-
+	int stop_composer();             // stop composer playback
 	SplashGUI *splash_window;
 	GLThread *glthread;
 

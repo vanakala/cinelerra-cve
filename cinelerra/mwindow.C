@@ -1439,6 +1439,11 @@ void MWindow::remove_assets_from_project(int push_undo)
 	sync_parameters(CHANGE_ALL);
 }
 
+int MWindow::stop_composer()
+{
+	return cwindow->stop_playback();
+}
+
 void MWindow::save_defaults()
 {
 	gui->save_defaults(defaults);
