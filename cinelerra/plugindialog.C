@@ -20,18 +20,17 @@
  */
 
 #include "bclistboxitem.h"
+#include "bcsignals.h"
 #include "bctitle.h"
 #include "bcbutton.h"
 #include "cinelerra.h"
 #include "condition.h"
 #include "edl.h"
 #include "language.h"
-#include "localsession.h"
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "module.h"
 #include "mutex.h"
 #include "plugin.h"
 #include "plugindb.h"
@@ -278,9 +277,6 @@ PluginDialog::~PluginDialog()
 	standalone_data.remove_all_objects();
 	shared_data.remove_all_objects();
 	module_data.remove_all_objects();
-	plugin_locations.remove_all_objects();
-	module_locations.remove_all_objects();
-
 	delete standalone_list;
 	delete shared_list;
 	delete module_list;
