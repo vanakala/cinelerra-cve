@@ -313,6 +313,8 @@ void PluginDB::dump(int indent, int data_type)
 {
 	int typ;
 
+	printf("%*sKnown plugins:\n", indent, "");
+	indent += 2;
 	for(int i = 0; i < total; i++)
 	{
 		PluginServer *server = values[i];
