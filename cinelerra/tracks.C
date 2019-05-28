@@ -33,6 +33,7 @@
 #include "localsession.h"
 #include "panauto.h"
 #include "panautos.h"
+#include "plugin.h"
 #include "theme.inc"
 #include "track.h"
 #include "tracks.h"
@@ -521,7 +522,17 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 		if(dur > pasted_length)
 			pasted_length = dur;
 	}
+	init_plugin_pointers_by_ids();
 	return pasted_length;
+}
+
+void Tracks::init_plugin_pointers_by_ids()
+{
+	for(Track *current = first; current; current = current->next)
+	{
+		for(int i = 0; i < current->plugins.total; i++)
+			current->plugins.values[i]->init_pointers_by_ids();
+	}
 }
 
 void Tracks::create_new_tracks(Asset *asset)

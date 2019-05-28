@@ -50,6 +50,8 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	keyframes = new KeyFrames(edl, track, this);
 	id = EDL::next_id();
 	plugin_server = server;
+	shared_track_id = shared_plugin_id = -1;
+	shared_track_num = shared_plugin_num = -1;
 }
 
 Plugin::~Plugin()
@@ -92,6 +94,7 @@ void Plugin::copy(Plugin *plugin, ptstime start, ptstime end)
 
 void Plugin::copy_from(Plugin *plugin)
 {
+	plugin->calculate_ref_ids();
 	pts = plugin->get_pts();
 	duration = plugin->get_length();
 
@@ -101,6 +104,9 @@ void Plugin::copy_from(Plugin *plugin)
 	shared_track = plugin->shared_track;
 	shared_plugin = plugin->shared_plugin;
 	plugin_server = plugin->plugin_server;
+	shared_track_id = plugin->shared_track_id;
+	shared_plugin_id = plugin->shared_plugin_id;
+	id = plugin->id;
 
 	copy_keyframes(plugin);
 }
@@ -421,6 +427,51 @@ void Plugin::calculate_ref_numbers()
 	}
 }
 
+void Plugin::calculate_ref_ids()
+{
+	shared_track_id = shared_plugin_id = -1;
+
+	if(shared_track)
+		shared_track_id = shared_track->get_id();
+	if(shared_plugin)
+		shared_plugin_id = shared_plugin->id;
+}
+
+void Plugin::init_pointers_by_ids()
+{
+	if(shared_track_id < 0 && shared_plugin_id < 0)
+		return;
+
+	shared_track = 0;
+	shared_plugin = 0;
+
+	for(Track *track = edl->first_track(); track; track = track->next)
+	{
+		if(shared_track_id >= 0 && track->get_id() == shared_track_id)
+		{
+			shared_track = track;
+			shared_track_id = -1;
+			break;
+		}
+		if(shared_plugin_id >= 0)
+		{
+			for(int i = 0; i < track->plugins.total; i++)
+			{
+				Plugin *plugin = track->plugins.values[i];
+
+				if(plugin->id == shared_plugin_id)
+				{
+					shared_plugin = plugin;
+					shared_plugin_id = -1;
+					break;
+				}
+			}
+			if(shared_plugin)
+				break;
+		}
+	}
+}
+
 int Plugin::module_number()
 {
 	return track->number_of();
@@ -589,9 +640,13 @@ void Plugin::dump(int indent)
 	if(shared_track)
 		printf(" shared_track %p", shared_track);
 	if(shared_plugin)
-		printf("  shared_plugin %p", shared_plugin);
-	printf("\n%*sproject_pts %.3f length %.3f\n", indent, "",
-		pts, duration);
+		printf(" shared_plugin %p", shared_plugin);
+	if(shared_track_id >= 0)
+		printf(" shared_track_id: %d", shared_track_id);
+	if(shared_plugin_id >= 0)
+		printf(" shared_plugin_id: %d", shared_plugin_id);
+	printf("\n%*sproject_pts %.3f length %.3f id %d\n", indent, "",
+		pts, duration, id);
 
 	keyframes->dump(indent);
 }

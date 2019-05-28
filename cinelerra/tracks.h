@@ -93,6 +93,8 @@ public:
 // Append tracks to existing tracks
 	ptstime append_tracks(Tracks *tracks, ptstime paste_at = -1,
 		Track *first_track = 0, int overwrite = 0);
+// Init pointers of shared plugins from
+	void init_plugin_pointers_by_ids();
 // Create new tracks and insert asset
 	void create_new_tracks(Asset *asset);
 // Create new tracks and insert tracks

@@ -176,6 +176,7 @@ void Track::copy_from(Track *track)
 	copy_settings(track);
 	edits->copy_from(track->edits);
 	plugins.remove_all_objects();
+	id = track->id;
 
 	for(int i = 0; i < track->plugins.total; i++)
 	{

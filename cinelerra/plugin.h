@@ -72,6 +72,8 @@ public:
 	void save_xml(FileXML *file);
 	void save_shared_location(FileXML *file);
 	void calculate_ref_numbers();
+	void calculate_ref_ids();
+	void init_pointers_by_ids();
 	int module_number();
 	void load(FileXML *file);
 	void init_shared_pointers();
@@ -121,6 +123,8 @@ public:
 private:
 	int shared_track_num;
 	int shared_plugin_num;
+	int shared_track_id;
+	int shared_plugin_id;
 	ptstime pts;
 	ptstime duration;
 };
