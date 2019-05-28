@@ -76,8 +76,7 @@ void VirtualConsole::create_nodes()
 				module_of(playable_tracks->values[i]), i);
 
 // Expand the trees
-			entry_nodes[i]->expand(1,
-				commonrender->current_postime);
+			entry_nodes[i]->expand(commonrender->current_postime);
 		}
 		commonrender->restart_plugins = 1;
 	}

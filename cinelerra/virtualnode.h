@@ -48,17 +48,13 @@ public:
 	void dump(int indent = 0);
 
 // expand plugins
-	void expand(int persistent_plugins, ptstime current_position);
+	void expand(ptstime current_position);
 
 // create a node for a module and expand it
-	void attach_virtual_module(Plugin *plugin,
-		int plugin_number, 
-		int duplicate, 
+	void attach_virtual_module(Plugin *plugin, int plugin_number,
 		ptstime current_position);
 // create a node for a plugin and expand it
-	void attach_virtual_plugin(Plugin *plugin,
-		int plugin_number, 
-		int duplicate, 
+	void attach_virtual_plugin(Plugin *plugin, int plugin_number,
 		ptstime current_position);
 	virtual VirtualNode* create_module(Plugin *real_plugin,
 		Module *real_module, Track *track) { return 0; };
@@ -102,8 +98,8 @@ protected:
 				Autos *autos);
 
 private:
-	void expand_as_module(int duplicate, ptstime current_position);
-	void expand_as_plugin(int duplicate);
+	void expand_as_module(ptstime current_position);
+	void expand_as_plugin();
 };
 
 #endif

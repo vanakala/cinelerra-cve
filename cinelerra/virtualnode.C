@@ -81,23 +81,23 @@ void VirtualNode::dump(int indent)
 	}
 }
 
-void VirtualNode::expand(int persistent_plugins, ptstime current_position)
+void VirtualNode::expand(ptstime current_position)
 {
 // module needs to know where the input data for the next process is
 	if(real_module)
 	{
-		expand_as_module(persistent_plugins, current_position);
+		expand_as_module(current_position);
 	}
 	else
 	if(real_plugin)
 	{
 // attach to a real plugin for a plugin
 // plugin always takes data from input to output
-		expand_as_plugin(persistent_plugins);
+		expand_as_plugin();
 	}
 }
 
-void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
+void VirtualNode::expand_as_module(ptstime current_postime)
 {
 // create the plugins for this module
 	for(int i = 0; i < track->plugins.total; i++)
@@ -115,9 +115,7 @@ void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 			if(plugin_type == PLUGIN_SHAREDMODULE)
 			{
 // plugin is a module
-				attach_virtual_module(plugin,
-					i, 
-					duplicate, 
+				attach_virtual_module(plugin, i,
 					current_postime);
 			}
 			else
@@ -125,9 +123,7 @@ void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 				plugin_type == PLUGIN_STANDALONE)
 			{
 // plugin is a plugin
-				attach_virtual_plugin(plugin, 
-					i, 
-					duplicate, 
+				attach_virtual_plugin(plugin, i,
 					current_postime);
 			}
 		}
@@ -136,7 +132,7 @@ void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 	if(!parent_node) vconsole->append_exit_node(this);
 }
 
-void VirtualNode::expand_as_plugin(int duplicate)
+void VirtualNode::expand_as_plugin()
 {
 	plugin_type = real_plugin->plugin_type;
 
@@ -178,7 +174,6 @@ void VirtualNode::expand_as_plugin(int duplicate)
 
 void VirtualNode::attach_virtual_module(Plugin *plugin,
 	int plugin_number, 
-	int duplicate, 
 	ptstime current_postime)
 {
 	if(plugin->on)
@@ -199,13 +194,11 @@ void VirtualNode::attach_virtual_module(Plugin *plugin,
 			track);
 
 		subnodes.append(virtual_module);
-		virtual_module->expand(duplicate, current_postime);
+		virtual_module->expand(current_postime);
 	}
 }
 
-void VirtualNode::attach_virtual_plugin(Plugin *plugin,
-	int plugin_number, 
-	int duplicate, 
+void VirtualNode::attach_virtual_plugin(Plugin *plugin, int plugin_number,
 	ptstime current_postime)
 {
 // Get real plugin and test if it is on.
@@ -221,7 +214,7 @@ void VirtualNode::attach_virtual_plugin(Plugin *plugin,
 	{
 		VirtualNode *virtual_plugin = create_plugin(plugin);
 		subnodes.append(virtual_plugin);
-		virtual_plugin->expand(duplicate, current_postime);
+		virtual_plugin->expand(current_postime);
 	}
 }
 
