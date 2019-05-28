@@ -439,7 +439,7 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 
 int DumpPlugins::handle_event()
 {
-	plugindb.dump();
+	plugindb.dump(4);
 	return 1;
 }
 
