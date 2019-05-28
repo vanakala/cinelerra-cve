@@ -584,7 +584,7 @@ void MWindow::insert_effect(const char *title,
 
 	if(server && !(result = server->open_plugin(1, preferences, 0, 0)))
 	{
-		server->save_data((KeyFrame*)new_plugin->keyframes->first);
+		server->save_data(new_plugin->keyframes->get_first());
 		server->close_plugin();
 	}
 }
