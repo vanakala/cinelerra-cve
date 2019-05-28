@@ -676,9 +676,9 @@ void Track::dump(int indent)
 		tp = "Unknown";
 		break;
 	}
-	printf("%*sType: %s %c-%c-%c-%c-%c nudge %.2f\n", indent, "",
+	printf("%*sType: %s %c-%c-%c-%c-%c nudge %.2f id %d\n", indent, "",
 		tp, master ? 'M' : 'm', play ? 'P' : 'p',
-		record ? 'A' : 'a', gang ? 'G' : 'g', draw ? 'D' : 'd', nudge);
+		record ? 'A' : 'a', gang ? 'G' : 'g', draw ? 'D' : 'd', nudge, id);
 	if(data_type == TRACK_VIDEO)
 		printf("%*sTitle: '%s' [%d,%d]\n", indent, "", title, track_w, track_h);
 	else
