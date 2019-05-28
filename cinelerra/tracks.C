@@ -492,6 +492,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 			dur = new_track->get_length();
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
+			new_track = new_track->next;
 		}
 		if(dur > pasted_length)
 			pasted_length = dur;
@@ -515,6 +516,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 			dur = new_track->get_length();
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
+			new_track = new_track->next;
 		}
 		if(dur > pasted_length)
 			pasted_length = dur;
