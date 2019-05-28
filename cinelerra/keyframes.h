@@ -40,6 +40,8 @@ public:
 	Auto* new_auto();
 	void drag_limits(Auto *current, ptstime *prev, ptstime *next);
 	void save_xml(FileXML *file);
+	// Returns first keyframe, creates if does not exist
+	KeyFrame *get_first();
 	void dump(int indent = 0);
 
 private:

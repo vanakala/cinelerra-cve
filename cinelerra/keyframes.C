@@ -54,6 +54,18 @@ void KeyFrames::save_xml(FileXML *file)
 		current->save_xml(file);
 }
 
+KeyFrame *KeyFrames::get_first()
+{
+	KeyFrame *current;
+
+	if(!first)
+	{
+		current = (KeyFrame *)append(new_auto());
+		current->pos_time = base_pts;
+	}
+	return (KeyFrame *)first;
+}
+
 void KeyFrames::dump(int indent)
 {
 	printf("%*sKeyFrames %p dump(%d): base %.3f\n", indent, " ", this, total(), base_pts);
