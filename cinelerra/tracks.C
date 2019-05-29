@@ -603,6 +603,7 @@ void Tracks::create_new_tracks(Tracks *tracks)
 			len = master_length;
 		new_track->insert_track(track, len, 0);
 	}
+	init_plugin_pointers_by_ids();
 	edl->check_master_track();
 }
 
