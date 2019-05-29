@@ -556,6 +556,9 @@ void MWindow::insert_effect(const char *title,
 	Plugin *new_plugin;
 	int result;
 
+	if(cwindow->stop_playback())
+		return;
+
 	if(plugin_type == PLUGIN_STANDALONE)
 		server = plugindb.get_pluginserver(title, track->data_type);
 
