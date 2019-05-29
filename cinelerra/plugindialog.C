@@ -146,6 +146,8 @@ void PluginDialogThread::run()
 	{
 		if(plugin_type)
 		{
+			if(mwindow->stop_composer())
+				return;
 			if(plugin)
 			{
 				plugin->change_plugin(
