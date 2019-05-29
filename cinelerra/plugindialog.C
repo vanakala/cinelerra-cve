@@ -152,7 +152,7 @@ void PluginDialogThread::run()
 			{
 				plugin->change_plugin(
 					plugindb.get_pluginserver(plugin_title,
-						plugin_type),
+						plugin->track->data_type),
 					plugin_type, shared_plugin,
 					shared_track);
 			}
