@@ -1220,12 +1220,10 @@ int Track::plugin_used(ptstime position)
 	{
 		Plugin *current_plugin = plugins.values[i];
 
-		if(current_plugin && 
-			(current_plugin->on && 
-			current_plugin->plugin_type != PLUGIN_NONE))
-		{
+		if(current_plugin->get_pts() <= position &&
+				current_plugin->end_pts() > position &&
+				current_plugin->on)
 			return 1;
-		}
 	}
 	return 0;
 }
