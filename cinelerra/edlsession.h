@@ -139,8 +139,6 @@ public:
 	int folderlist_format;
 	double frame_rate;
 	float frames_per_foot;
-// Number of highlighted track
-	int highlighted_track;
 // labels follow edits during editing
 	int labels_follow_edits;
 	int plugins_follow_edits;

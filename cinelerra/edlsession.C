@@ -43,7 +43,6 @@ int EDLSession::current_id = 0;
 
 EDLSession::EDLSession()
 {
-	highlighted_track = 0;
 	playback_cursor_visible = 0;
 	aconfig_duplex = new AudioOutConfig(1);
 	test_playback_edits = 1;
@@ -335,7 +334,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("FOLDERLIST_FORMAT", folderlist_format);
 	defaults->update("FRAMERATE", frame_rate);
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
-	defaults->update("HIGHLIGHTED_TRACK", highlighted_track);
+	defaults->delete_key("HIGHLIGHTED_TRACK");
 	defaults->update("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
@@ -521,7 +520,6 @@ void EDLSession::load_xml(FileXML *file)
 	default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 	editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 	folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
-	highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 	labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
@@ -581,7 +579,6 @@ void EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
-	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
@@ -711,7 +708,6 @@ void EDLSession::copy(EDLSession *session)
 	folderlist_format = session->folderlist_format;
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
-	highlighted_track = session->highlighted_track;
 	labels_follow_edits = session->labels_follow_edits;
 	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;
