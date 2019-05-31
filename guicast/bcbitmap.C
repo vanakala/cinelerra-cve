@@ -87,16 +87,6 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 
 	if(w < MIN_SHM || h < MIN_SHM)
 		use_shm = 0;
-// Set ring buffers based on total memory used.
-// The program icon must use multiple buffers but larger bitmaps may not fit
-// in memory.
-	int pixelsize = ColorModels::calculate_pixelsize(color_model);
-	int buffer_size = w * h * pixelsize;
-
-	if(buffer_size < 0x40000)
-		ring_buffers = BITMAP_RING;
-	else
-		ring_buffers = 1;
 
 	allocate_data();
 }
