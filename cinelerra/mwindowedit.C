@@ -204,7 +204,7 @@ void MWindow::clear(int clear_handle)
 	{
 		master_edl->clear(start,
 			end, 
-			edlsession->edit_actions());
+			edlsession->labels_follow_edits);
 	}
 }
 
@@ -262,8 +262,7 @@ void MWindow::concatenate_tracks()
 {
 	if(cwindow->stop_playback())
 		return;
-	master_edl->tracks->concatenate_tracks(
-		edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
+	master_edl->tracks->concatenate_tracks();
 	save_backup();
 	undo->update_undo(_("concatenate tracks"), LOAD_EDITS);
 
@@ -357,7 +356,7 @@ void MWindow::cut()
 	copy(start, end);
 	master_edl->clear(start,
 		end,
-		edlsession->edit_actions());
+		edlsession->labels_follow_edits);
 
 	master_edl->optimize();
 	save_backup();
@@ -455,7 +454,6 @@ void MWindow::detach_transition(Plugin *transition)
 // Insert data from clipboard
 void MWindow::insert(ptstime position,
 	FileXML *file,
-	int actions,
 	EDL *parent_edl)
 {
 // For clipboard pasting make the new edl use a separate session 
@@ -473,17 +471,15 @@ void MWindow::insert(ptstime position,
 		LOADMODE_PASTE, 
 		0, 
 		position,
-		actions,
 		0); // overwrite
 }
 
-void MWindow::insert(EDL *edl, ptstime position, int actions)
+void MWindow::insert(EDL *edl, ptstime position)
 {
 	paste_edl(edl,
 		LOADMODE_PASTE,
 		0,
 		position,
-		actions,
 		0); // overwrite
 }
 
@@ -598,7 +594,7 @@ void MWindow::modify_edithandles(void)
 		mainsession->drag_position,
 		mainsession->drag_handle,
 		edlsession->edit_handle_mode[mainsession->drag_button],
-		edlsession->edit_actions());
+		edlsession->labels_follow_edits);
 
 	finish_modify_handles();
 }
@@ -608,8 +604,7 @@ void MWindow::modify_pluginhandles()
 	master_edl->modify_pluginhandles(mainsession->drag_start,
 		mainsession->drag_position,
 		mainsession->drag_handle,
-		edlsession->edit_handle_mode[mainsession->drag_button],
-		edlsession->edit_actions());
+		edlsession->edit_handle_mode[mainsession->drag_button]);
 
 	finish_modify_handles();
 }
@@ -666,9 +661,8 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	for(int i = 0; i < edits->total; i++)
 		tracks.append(edits->values[i]->track);
 	edl.copy(master_edl, start, end, &tracks);
-	paste_edl(&edl, LOADMODE_PASTE, track, position,
-		edlsession->edit_actions(), behaviour);
-	master_edl->clear(start, end, edlsession->edit_actions());
+	paste_edl(&edl, LOADMODE_PASTE, track, position, behaviour);
+	master_edl->clear(start, end, edlsession->labels_follow_edits);
 	save_backup();
 	undo->update_undo(_("move edit"), LOAD_ALL);
 
@@ -784,12 +778,10 @@ void MWindow::mute_selection()
 
 	if(!PTSEQU(start,end))
 	{
-		master_edl->clear(start,
-			end, 
-			edlsession->plugins_follow_edits ? EDIT_PLUGINS : 0);
+		master_edl->clear(start, end, edlsession->labels_follow_edits);
 		master_edl->local_session->set_selectionend(end);
 		master_edl->local_session->set_selectionstart(start);
-		master_edl->paste_silence(start, end, edlsession->edit_actions() & EDIT_EDITS);
+		master_edl->paste_silence(start, end, 0);
 		save_backup();
 		undo->update_undo(_("mute"), LOAD_EDITS);
 
@@ -825,7 +817,7 @@ void MWindow::overwrite(EDL *source)
 			dst_start + overwrite_len, 
 			0);
 	edl.copy(source, src_start, src_start + overwrite_len);
-	insert(&edl, dst_start, EDIT_NONE);
+	insert(&edl, dst_start);
 	master_edl->local_session->set_selection(dst_start + overwrite_len);
 
 	save_backup();
@@ -841,16 +833,12 @@ void MWindow::overwrite(EDL *source)
 // For splice and overwrite
 void MWindow::paste(ptstime start,
 	ptstime end,
-	FileXML *file,
-	int actions)
+	FileXML *file)
 {
 	clear(0);
 
 // Want to insert with assets shared with the master EDL.
-	insert(start, 
-			file,
-			actions,
-			master_edl);
+	insert(start, file, master_edl);
 }
 
 // For editing use insertion point position
@@ -872,9 +860,7 @@ void MWindow::paste()
 
 		clear(0);
 
-		insert(start, 
-			&file, 
-			edlsession->edit_actions());
+		insert(start, &file);
 		master_edl->optimize();
 		delete [] string;
 
@@ -899,7 +885,6 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 		load_assets(mainsession->drag_assets,
 			position, 
 			dest_track, 
-			edlsession->edit_actions(),
 			overwrite);
 		result = 1;
 	}
@@ -910,7 +895,6 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			LOADMODE_PASTE, 
 			dest_track,
 			position, 
-			edlsession->edit_actions(),
 			overwrite); // o
 		result = 1;
 	}
@@ -927,7 +911,6 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 void MWindow::load_assets(ArrayList<Asset*> *new_assets, 
 	ptstime position,
 	Track *first_track,
-	int actions,
 	int overwrite)
 {
 	ptstime duration;
@@ -982,7 +965,6 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 	int load_mode,
 	Track *first_track,
 	ptstime current_position,
-	int actions,
 	int overwrite)
 {
 	ptstime original_length;
@@ -1028,7 +1010,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	int load_mode,
 	Track *first_track,
 	ptstime current_position,
-	int actions,
 	int overwrite)
 {
 	ArrayList<Track*> destination_tracks;
@@ -1038,7 +1019,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	{
 		paste_edl(new_edls->values[i], load_mode,
 			first_track, current_position,
-			actions, overwrite);
+			overwrite);
 
 		if(load_mode == LOADMODE_REPLACE ||
 				load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -1053,7 +1034,7 @@ void MWindow::paste_silence()
 	ptstime end = master_edl->local_session->get_selectionend();
 	master_edl->paste_silence(start,
 		end, 
-		edlsession->edit_actions());
+		edlsession->labels_follow_edits);
 	master_edl->optimize();
 	save_backup();
 	undo->update_undo(_("silence"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -1281,7 +1262,7 @@ void MWindow::splice(EDL *source)
 	EDL edl(0);
 
 	edl.copy(source, source_start, source_end);
-	insert(&edl, start, edlsession->edit_actions());
+	insert(&edl, start);
 
 // Position at end of clip
 	master_edl->local_session->set_selection(start + source_end - source_start);
@@ -1392,7 +1373,7 @@ void MWindow::trim_selection()
 {
 	master_edl->trim_selection(master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend(),
-		edlsession->edit_actions());
+		edlsession->labels_follow_edits);
 
 	save_backup();
 	undo->update_undo(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);

@@ -151,7 +151,6 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	settingsmenu->add_item(preferences = new PreferencesMenuitem(mwindow));
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
-	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
@@ -194,7 +193,6 @@ void MainMenu::load_defaults(BC_Hash *defaults)
 void MainMenu::update_toggles()
 {
 	labels_follow_edits->set_checked(edlsession->labels_follow_edits);
-	plugins_follow_edits->set_checked(edlsession->plugins_follow_edits);
 	cursor_on_frames->set_checked(edlsession->cursor_on_frames);
 	loop_playback->set_checked(master_edl->local_session->loop_playback);
 	show_titles->set_checked(edlsession->show_titles);
@@ -870,20 +868,6 @@ int LabelsFollowEdits::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->set_labels_follow_edits(get_checked());
-}
-
-
-PluginsFollowEdits::PluginsFollowEdits(MWindow *mwindow)
- : BC_MenuItem(_("Edit effects")) 
-{ 
-	this->mwindow = mwindow; 
-	set_checked(edlsession->plugins_follow_edits);
-}
-
-int PluginsFollowEdits::handle_event()
-{
-	set_checked(get_checked() ^ 1);
-	edlsession->plugins_follow_edits = get_checked();
 }
 
 

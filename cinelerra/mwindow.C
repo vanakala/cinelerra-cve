@@ -877,8 +877,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						break;
 					default:
 						paste_edl(new_edl, load_mode,
-							0, -1,
-							edlsession->edit_actions(), 0);
+							0, -1, 0);
 					}
 					delete new_edl;
 					new_edl = 0;

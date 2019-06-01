@@ -24,7 +24,6 @@
 
 class AEffectMenu;
 class LabelsFollowEdits;
-class PluginsFollowEdits;
 class CursorOnFrames;
 class LoopPlayback;
 
@@ -103,7 +102,6 @@ public:
 	BC_Menu *filemenu, *audiomenu, *videomenu;      // needed by most recents
 
 	LabelsFollowEdits *labels_follow_edits;
-	PluginsFollowEdits *plugins_follow_edits;
 	CursorOnFrames *cursor_on_frames;
 	LoopPlayback *loop_playback;
 	ShowAssets *show_assets;
@@ -462,16 +460,6 @@ class LabelsFollowEdits : public BC_MenuItem
 {
 public:
 	LabelsFollowEdits(MWindow *mwindow);
-
-	int handle_event();
-
-	MWindow *mwindow;
-};
-
-class PluginsFollowEdits : public BC_MenuItem
-{
-public:
-	PluginsFollowEdits(MWindow *mwindow);
 
 	int handle_event();
 

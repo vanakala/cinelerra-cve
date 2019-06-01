@@ -163,9 +163,7 @@ public:
 	void copy_assets(ptstime start,
 		ptstime end,
 		ArrayList<Asset*> *asset_list);
-	void clear(ptstime start,
-		ptstime end,
-		int actions);
+	void clear(ptstime start, ptstime end);
 	void clear_plugins(ptstime start, ptstime end);
 // remove everything after pts
 	void clear_after(ptstime pts);
@@ -189,7 +187,7 @@ public:
 		ptstime end,
 		int actions,
 		ptstime &distance);
-	void paste_silence(ptstime start, ptstime end, int edit_plugins);
+	void paste_silence(ptstime start, ptstime end);
 
 	ptstime adjust_position(ptstime oldposition, ptstime newposition,
 		int currentend, int handle_mode);
@@ -201,8 +199,7 @@ public:
 	void modify_pluginhandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 
-		int handle_mode,
-		int edit_labels);
+		int handle_mode);
 
 // Absolute number of this track
 	int number_of();

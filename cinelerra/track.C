@@ -371,22 +371,12 @@ void Track::insert_asset(Asset *asset,
 
 	if(!overwrite)
 	{
-		if(edlsession->plugins_follow_edits)
-			shift_effects(position, length);
+		shift_effects(position, length);
 		automation->paste_silence(position, position + length);
 	}
 }
 
 // Insert data
-
-// Plugins:  This is an arbitrary behavior
-//
-// 1) No plugin in source track: Paste silence into destination
-// plugin sets.
-// 2) Plugin in source track: plugin in source track is inserted into
-// existing destination track plugin sets, new sets being added when
-// necessary.
-
 void Track::insert_track(Track *track, 
 	ptstime length,
 	ptstime position,
@@ -394,8 +384,7 @@ void Track::insert_track(Track *track,
 {
 	edits->insert_edits(track->edits, position, length, overwrite);
 
-	if(edlsession->plugins_follow_edits)
-		insert_plugin(track, position, length, overwrite);
+	insert_plugin(track, position, length, overwrite);
 
 	automation->insert_track(track->automation, 
 		position,
@@ -984,19 +973,11 @@ void Track::copy_assets(ptstime start,
 }
 
 void Track::clear(ptstime start,
-	ptstime end,
-	int actions)
+	ptstime end)
 {
-	if(actions & EDIT_EDITS)
-		automation->clear(start, end, 0, 1);
-
-	if(actions & EDIT_PLUGINS)
-	{
-		clear_plugins(start, end);
-	}
-
-	if(actions & EDIT_EDITS)
-		edits->clear(start, end);
+	automation->clear(start, end, 0, 1);
+	clear_plugins(start, end);
+	edits->clear(start, end);
 }
 
 void Track::clear_plugins(ptstime start, ptstime end)
@@ -1090,8 +1071,7 @@ void Track::modify_edithandles(ptstime oldposition,
 void Track::modify_pluginhandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
-	int handle_mode,
-	int edit_labels)
+	int handle_mode)
 {
 	for(int i = 0; i < plugins.total; i++)
 	{
@@ -1106,11 +1086,11 @@ void Track::modify_pluginhandles(ptstime oldposition,
 	}
 }
 
-void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
+void Track::paste_silence(ptstime start, ptstime end)
 {
 	edits->paste_silence(start, end);
 	shift_keyframes(start, end - start);
-	if(edit_plugins) shift_effects(start, end - start);
+	shift_effects(start, end - start);
 }
 
 int Track::playable_edit(ptstime position)

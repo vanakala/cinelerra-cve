@@ -128,19 +128,16 @@ public:
 	void load_assets(ArrayList<Asset*> *new_assets, 
 		ptstime position,
 		Track *first_track,
-		int actions,
 		int overwrite);
 	ptstime paste_edl(EDL *new_edl,
 		int load_mode,
 		Track *first_track,
 		ptstime current_position,
-		int actions,
 		int overwrite);
 	void paste_edls(ArrayList<EDL*> *new_edls, 
 		int load_mode, 
 		Track *first_track,
 		ptstime current_position,
-		int actions,
 		int overwrite);
 // Reset everything for a load
 	void update_project(int load_mode);
@@ -268,9 +265,8 @@ public:
 	void detach_transition(Plugin *transition);
 	void insert(ptstime position, 
 		FileXML *file,
-		int actions,
 		EDL *parent_edl = 0);
-	void insert(EDL *edl, ptstime position, int actions);
+	void insert(EDL *edl, ptstime position);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 	void insert_effects_canvas(ptstime start,
@@ -313,8 +309,7 @@ public:
 // For splice and overwrite
 	void paste(ptstime start,
 		ptstime end,
-		FileXML *file,
-		int actions);
+		FileXML *file);
 	void paste_silence();
 
 	void paste_transition();

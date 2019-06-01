@@ -578,9 +578,8 @@ void Edits::clear_handle(ptstime start,
 						current_edit->next->get_pts() + length);
 
 // Lengthen effects
-					if(actions & EDIT_PLUGINS)
-						track->shift_effects(current_edit->next->get_pts(),
-							length);
+					track->shift_effects(current_edit->next->get_pts(),
+						length);
 
 					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
 					{

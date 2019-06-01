@@ -118,7 +118,7 @@ public:
 	void dump(int indent = 0);
 
 // Append all the tracks to the end of the recordable tracks
-	void concatenate_tracks(int edit_plugins);
+	void concatenate_tracks();
 
 	int delete_tracks(void);     // delete all the recordable tracks
 	void delete_all_tracks();      // delete just the tracks
@@ -133,7 +133,7 @@ public:
 	void copy(Tracks *tracks, ptstime start, ptstime end,
 		ArrayList<Track*> *src_tracks = 0);
 
-	void clear(ptstime start, ptstime end, int clear_plugins);
+	void clear(ptstime start, ptstime end);
 	void clear_automation(ptstime selectionstart,
 		ptstime selectionend);
 	void straighten_automation(ptstime selectionstart,
@@ -147,8 +147,7 @@ public:
 		FileXML *xml,
 		int default_only);
 	void paste_silence(ptstime start,
-		ptstime end,
-		int edit_plugins);
+		ptstime end);
 
 	ptstime adjust_position(ptstime oldposition, ptstime newposition,
 		int currentend, int handle_mode);
@@ -160,8 +159,7 @@ public:
 	void modify_pluginhandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 
-		int handle_mode,
-		int edit_labels);
+		int handle_mode);
 
 	ptstime total_length();     // Longest track.
 

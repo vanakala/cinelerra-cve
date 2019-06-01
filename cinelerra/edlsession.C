@@ -58,7 +58,6 @@ EDLSession::EDLSession()
 	folderlist_format = ASSETS_TEXT;
 	frame_rate = 25; // just has to be something by default
 	labels_follow_edits = 1;
-	plugins_follow_edits = 1;
 	audio_tracks = -10;	// these insane values let us crash early if something is forgotten to be set
 	audio_channels = -10;
 	video_tracks = -10;
@@ -218,7 +217,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
 	BC_Resources::interpolation_method = defaults->get("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", 1);
-	plugins_follow_edits = defaults->get("PLUGINS_FOLLOW_EDITS", 1);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
@@ -337,7 +335,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("HIGHLIGHTED_TRACK");
 	defaults->update("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
-	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
+	defaults->delete_key("PLUGINS_FOLLOW_EDITS");
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
 	defaults->update("MIN_METER_DB", min_meter_db);
 	defaults->update("MAX_METER_DB", max_meter_db);
@@ -521,7 +519,6 @@ void EDLSession::load_xml(FileXML *file)
 	editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 	folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 	labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-	plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 	show_assets = file->tag.get_property("SHOW_ASSETS", 1);
 	show_titles = file->tag.get_property("SHOW_TITLES", 1);
@@ -580,7 +577,6 @@ void EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
 	file->tag.set_property("SHOW_ASSETS", show_assets);
 	file->tag.set_property("SHOW_TITLES", show_titles);
@@ -709,7 +705,6 @@ void EDLSession::copy(EDLSession *session)
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
 	labels_follow_edits = session->labels_follow_edits;
-	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;
 	min_meter_db = session->min_meter_db;
 	max_meter_db = session->max_meter_db;
@@ -766,18 +761,6 @@ ptstime EDLSession::get_frame_offset()
 		timecode_offset[2] * 60 +
 		timecode_offset[1]) +
 		timecode_offset[0] / frame_rate;
-}
-
-// FIXIT: use bits instead of ..follow_edits
-int EDLSession::edit_actions()
-{
-	int result = 0;
-
-	if(labels_follow_edits)
-		result |= EDIT_LABELS;
-	if(plugins_follow_edits)
-		result |= EDIT_PLUGINS;
-	return result;
 }
 
 char *EDLSession::configuration_path(const char *filename, char *outbuf)

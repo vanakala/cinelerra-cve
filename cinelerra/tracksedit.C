@@ -35,7 +35,7 @@
 
 #include <string.h>
 
-void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
+void Tracks::clear(ptstime start, ptstime end)
 {
 	Track *current_track;
 
@@ -43,12 +43,8 @@ void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
 		current_track; 
 		current_track = current_track->next)
 	{
-		if(current_track->record) 
-		{
-			current_track->clear(start, 
-				end, 
-				EDIT_EDITS | EDIT_LABELS | (clear_plugins ? EDIT_PLUGINS : 0));
-		}
+		if(current_track->record)
+			current_track->clear(start, end);
 	}
 }
 
@@ -192,7 +188,7 @@ void Tracks::move_effect(Plugin *plugin,
 	}
 }
 
-void Tracks::concatenate_tracks(int edit_plugins)
+void Tracks::concatenate_tracks()
 {
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
@@ -533,7 +529,7 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 	}
 }
 
-void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
+void Tracks::paste_silence(ptstime start, ptstime end)
 {
 	Track* current_track;
 
@@ -542,7 +538,7 @@ void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
 		current_track = current_track->next)
 	{
 		if(current_track->record) 
-			current_track->paste_silence(start, end, edit_plugins); 
+			current_track->paste_silence(start, end);
 	}
 }
 
@@ -581,8 +577,7 @@ void Tracks::modify_edithandles(ptstime oldposition,
 void Tracks::modify_pluginhandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
-	int handle_mode,
-	int edit_labels)
+	int handle_mode)
 {
 	Track *current;
 
@@ -593,8 +588,7 @@ void Tracks::modify_pluginhandles(ptstime oldposition,
 			current->modify_pluginhandles(oldposition, 
 				newposition, 
 				currentend, 
-				handle_mode,
-				edit_labels);
+				handle_mode);
 		}
 	}
 }

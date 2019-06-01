@@ -66,9 +66,6 @@ public:
 // calculates the frame offset for programme timecode
 	ptstime get_frame_offset();
 
-// calculate actions for edit
-	int edit_actions();
-
 // Duration of one frame
 	ptstime frame_duration();
 
@@ -141,7 +138,6 @@ public:
 	float frames_per_foot;
 // labels follow edits during editing
 	int labels_follow_edits;
-	int plugins_follow_edits;
 	float meter_over_delay;
 	float meter_peak_delay;
 	int min_meter_db;

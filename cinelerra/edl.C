@@ -432,17 +432,14 @@ void EDL::synchronize_params(EDL *edl)
 
 void EDL::trim_selection(ptstime start, 
 	ptstime end,
-	int actions)
+	int edit_labels)
 {
 	if(start != end)
 	{
 // clear the data
-		clear(0, 
-			start,
-			actions);
-		clear(end - start, 
-			total_length(),
-			actions);
+		clear(0, start, edit_labels);
+		clear(end - start, total_length(),
+			edit_labels);
 	}
 }
 
@@ -505,7 +502,7 @@ void EDL::set_outpoint(ptstime position)
 
 void EDL::clear(ptstime start,
 	ptstime end,
-	int actions)
+	int edit_labels)
 {
 	if(PTSEQU(start, end))
 	{
@@ -513,17 +510,15 @@ void EDL::clear(ptstime start,
 		tracks->clear_handle(start, 
 			end,
 			distance, 
-			actions);
-		if((actions & EDIT_LABELS) && distance > 0)
+			edit_labels);
+		if(edit_labels && distance > 0)
 			labels->paste_silence(start, 
 				start + distance);
 	}
 	else
 	{
-		tracks->clear(start, 
-			end,
-			actions & EDIT_PLUGINS);
-		if(actions & EDIT_LABELS)
+		tracks->clear(start, end);
+		if(edit_labels)
 			labels->clear(start, 
 				end, 
 				1);
@@ -551,7 +546,7 @@ void EDL::modify_edithandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, // handle
 	int handle_mode, // button mode
-	int actions)
+	int edit_labels)
 {
 	ptstime newpos = adjust_position(oldposition, newposition, currentend,
 		handle_mode);
@@ -563,34 +558,30 @@ void EDL::modify_edithandles(ptstime oldposition,
 		newpos,
 		currentend,
 		handle_mode,
-		actions & EDIT_LABELS);
+		edit_labels);
 }
 
 void EDL::modify_pluginhandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
-	int handle_mode,
-	int edit_labels)
+	int handle_mode)
 {
 	ptstime newpos = adjust_position(oldposition, newposition, currentend,
 		handle_mode);
 	tracks->modify_pluginhandles(oldposition, 
 		newpos,
 		currentend, 
-		handle_mode,
-		edit_labels & EDIT_LABELS);
+		handle_mode);
 	optimize();
 }
 
 void EDL::paste_silence(ptstime start,
 	ptstime end,
-	int action)
+	int edit_labels)
 {
-	if(action & EDIT_LABELS)
+	if(edit_labels)
 		labels->paste_silence(start, end);
-	tracks->paste_silence(start, 
-		end, 
-		action & EDIT_PLUGINS);
+	tracks->paste_silence(start, end);
 }
 
 void EDL::remove_from_project(ArrayList<Asset*> *assets)
