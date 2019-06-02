@@ -1114,7 +1114,7 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 	if(!temp_bitmap) temp_bitmap = new BC_Bitmap(this, 
 		0, 0,
 		get_color_model(), 
-		1);
+		0);
 
 	temp_bitmap->read_frame(frame, 
 		src_x, 
@@ -1125,7 +1125,7 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		0, 
 		dest_w, 
 		dest_h,
-		1, get_color_model());
+		0, get_color_model());
 
 	draw_bitmap(temp_bitmap, 
 		dest_x, 

@@ -32,7 +32,6 @@
 #include <unistd.h>
 #include <X11/extensions/Xvlib.h>
 
-#define MIN_SHM 128
 
 BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, 
 	int w, 
@@ -84,9 +83,6 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 
 	if(w == 0 || h == 0)
 		return;
-
-	if(w < MIN_SHM || h < MIN_SHM)
-		use_shm = 0;
 
 	allocate_data();
 }
@@ -480,8 +476,6 @@ void BC_Bitmap::read_frame(VFrame *frame,
 		disp_h = out_h;
 		base_top = base_left = 0;
 	}
-	if(disp_w < MIN_SHM && disp_h < MIN_SHM)
-		need_shm = 0;
 
 	if(w < disp_w || h < disp_h ||
 		color_model != cmodel ||
