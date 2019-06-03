@@ -578,6 +578,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	int result = 0;
 	ptstime pos, dur;
 	int oloadmode = load_mode;
+	ptstime original_length;
+	ptstime original_preview_end;
 
 	save_defaults();
 	gui->start_hourglass();
@@ -596,6 +598,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		vwindow_edl->reset_instance();
 		master_edl->reset_instance();
 	}
+
+	original_length = master_edl->total_length();
+	original_preview_end = master_edl->local_session->preview_end;
 
 	for(int i = 0; i < filenames->total; i++)
 	{
@@ -904,6 +909,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	// Synchronize edl with assetlist
 	for(Asset *g_asset = assetlist_global.first; g_asset; g_asset = g_asset->next)
 		master_edl->update_assets(g_asset);
+// Fix preview range
+	if(EQUIV(original_length, original_preview_end))
+		master_edl->local_session->preview_end = master_edl->total_length();
 	update_project(oloadmode);
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);

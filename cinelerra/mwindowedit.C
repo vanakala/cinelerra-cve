@@ -998,7 +998,7 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 		break;
 	}
 // Fix preview range
-	if(!EQUIV(original_length, original_preview_end))
+	if(EQUIV(original_length, original_preview_end))
 		master_edl->local_session->preview_end = master_edl->total_length();
 
 // Start examining next batch of index files
