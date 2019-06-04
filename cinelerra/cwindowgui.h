@@ -52,7 +52,6 @@ class CWindowCanvas;
 class CWindowEditing;
 
 
-
 class CWindowGUI : public BC_Window
 {
 public:
@@ -199,7 +198,9 @@ class CWindowReset : public BC_Button
 public:
 	CWindowReset(MWindow *mwindow, CWindowGUI *cwindow, int x, int y);
 	~CWindowReset();
+
 	int handle_event();
+
 	CWindowGUI *cwindow;
 	MWindow *mwindow;
 };
@@ -208,10 +209,9 @@ public:
 class CWindowTransport : public PlayTransport
 {
 public:
-	CWindowTransport(MWindow *mwindow, 
-		CWindowGUI *gui, 
-		int x, 
-		int y);
+	CWindowTransport(MWindow *mwindow, CWindowGUI *gui, 
+		int x, int y);
+
 	EDL* get_edl();
 	void goto_start();
 	void goto_end();
@@ -232,9 +232,9 @@ public:
 	int get_yscroll();
 	double get_zoom();
 	int do_eyedrop(int &rerender, int button_press);
-	int do_mask(int &redraw, 
-		int &rerender, 
-		int button_press, 
+	int do_mask(int &redraw,
+		int &rerender,
+		int button_press,
 		int cursor_motion,
 		int draw);
 	void draw_refresh();
@@ -250,8 +250,8 @@ public:
 	void set_fullscreen(int value);
 	int test_crop(int button_press, int &redraw);
 	int test_bezier(int button_press, 
-		int &redraw, 
-		int &redraw_canvas, 
+		int &redraw,
+		int &redraw_canvas,
 		int &rerender,
 		int do_camera);
 	int do_ruler(int draw, int motion, int button_press, int button_release);

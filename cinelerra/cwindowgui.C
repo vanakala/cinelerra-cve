@@ -549,13 +549,12 @@ int CWindowGUI::drag_stop()
 
 
 CWindowEditing::CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *meter_panel)
- : EditPanel(mwindow, 
-		gui,
-		mwindow->theme->cedit_x, 
-		mwindow->theme->cedit_y,
-		EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
-			| EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
-		meter_panel)
+ : EditPanel(mwindow, gui,
+	mwindow->theme->cedit_x,
+	mwindow->theme->cedit_y,
+	EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
+		| EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
+	meter_panel)
 {
 	this->mwindow = mwindow;
 }
@@ -572,13 +571,9 @@ void CWindowEditing::set_outpoint()
 
 
 CWindowMeters::CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h)
- : MeterPanel(mwindow, 
-		gui,
-		x,
-		y,
-		h,
-		edlsession->audio_channels,
-		edlsession->cwindow_meter)
+ : MeterPanel(mwindow, gui, x, y, h,
+	edlsession->audio_channels,
+	edlsession->cwindow_meter)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -595,16 +590,9 @@ int CWindowMeters::change_status_event()
 
 CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y, 
 	const char *first_item_text)
- : ZoomPanel(mwindow, 
-	gui, 
-	edlsession->cwindow_zoom,
-	x, 
-	y,
-	80, 
-	my_zoom_table, 
-	total_zooms, 
-	ZOOM_PERCENTAGE,
-	first_item_text)
+ : ZoomPanel(mwindow, gui, edlsession->cwindow_zoom,
+	x, y, 80,  my_zoom_table, total_zooms,
+	ZOOM_PERCENTAGE, first_item_text)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -613,27 +601,17 @@ CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y,
 int CWindowZoom::handle_event()
 {
 	if(!strcasecmp(_("Auto"), get_text()))
-	{
 		gui->zoom_canvas(1, get_value(), 0);
-	}
 	else
-	{
 		gui->zoom_canvas(0, get_value(), 0);
-	}
 
 	return 1;
 }
 
 
 CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels)
- : BC_PercentageSlider(x, 
-			y,
-			0,
-			pixels, 
-			pixels, 
-			0, 
-			1, 
-			0)
+ : BC_PercentageSlider(x, y, 0, pixels, pixels,
+	0, 1, 0)
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;
@@ -654,10 +632,10 @@ void CWindowSlider::set_position()
 	ptstime new_length = master_edl->total_length();
 
 	if(master_edl->local_session->preview_end <= 0 ||
-		master_edl->local_session->preview_end > new_length)
+			master_edl->local_session->preview_end > new_length)
 		master_edl->local_session->preview_end = new_length;
 	if(master_edl->local_session->preview_start >
-		master_edl->local_session->preview_end)
+			master_edl->local_session->preview_end)
 		master_edl->local_session->preview_start = 0;
 
 	update(mwindow->theme->cslider_w, 
@@ -678,13 +656,8 @@ void CWindowSlider::decrease_value()
 
 
 CWindowTransport::CWindowTransport(MWindow *mwindow, 
-	CWindowGUI *gui, 
-	int x, 
-	int y)
- : PlayTransport(mwindow, 
-	gui, 
-	x, 
-	y)
+	CWindowGUI *gui, int x, int y)
+ : PlayTransport(mwindow, gui, x, y)
 {
 	this->gui = gui;
 }
@@ -708,9 +681,7 @@ void CWindowTransport::goto_end()
 
 
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
- : Canvas(mwindow,
-	gui,
-	0,
+ : Canvas(mwindow, gui, 0,
 	mwindow->theme->ccanvas_x,
 	mwindow->theme->ccanvas_y,
 	mwindow->theme->ccanvas_w,
@@ -778,14 +749,8 @@ void CWindowCanvas::draw_refresh()
 			double in_x1, in_y1, in_x2, in_y2;
 			double out_x1, out_y1, out_x2, out_y2;
 			get_transfers(master_edl,
-				in_x1, 
-				in_y1, 
-				in_x2, 
-				in_y2, 
-				out_x1, 
-				out_y1, 
-				out_x2, 
-				out_y2);
+				in_x1, in_y1, in_x2, in_y2,
+				out_x1, out_y1, out_x2, out_y2);
 
 			if(out_x2 > out_x1 && 
 				out_y2 > out_y1 && 
@@ -1043,20 +1008,16 @@ int CWindowCanvas::do_ruler(int draw,
 		else
 		{
 			if(canvas_cursor_x >= canvas_x1 - RULERHANDLE_W / 2 &&
-				canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 &&
-				canvas_cursor_y >= canvas_y1 - RULERHANDLE_W &&
-				canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
-			{
+					canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 &&
+					canvas_cursor_y >= canvas_y1 - RULERHANDLE_W &&
+					canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
 				set_cursor(UPRIGHT_ARROW_CURSOR);
-			}
 			else
 			if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 &&
-				canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 &&
-				canvas_cursor_y >= canvas_y2 - RULERHANDLE_W &&
-				canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
-			{
+					canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 &&
+					canvas_cursor_y >= canvas_y2 - RULERHANDLE_W &&
+					canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
 				set_cursor(UPRIGHT_ARROW_CURSOR);
-			}
 			else
 				set_cursor(CROSS_CURSOR);
 // Update current position
@@ -1175,8 +1136,8 @@ int CWindowCanvas::do_mask(int &redraw,
 		for(int i = 0; i < points.total && !result; i++)
 		{
 			MaskPoint *point1 = points.values[i];
-			MaskPoint *point2 = (i >= points.total - 1) ? 
-				points.values[0] : 
+			MaskPoint *point2 = (i >= points.total - 1) ?
+				points.values[0] :
 				points.values[i + 1];
 			double x0, x1, x2, x3;
 			double y0, y1, y2, y3;
@@ -1389,9 +1350,9 @@ int CWindowCanvas::do_mask(int &redraw,
 // Draw first anchor
 					if(i == 0 && draw)
 					{
-						get_canvas()->draw_disc((int)round(x) - FIRST_CONTROL_W / 2, 
-							(int)round(y) - FIRST_CONTROL_H / 2, 
-							FIRST_CONTROL_W, 
+						get_canvas()->draw_disc((int)round(x) - FIRST_CONTROL_W / 2,
+							(int)round(y) - FIRST_CONTROL_H / 2,
+							FIRST_CONTROL_W,
 							FIRST_CONTROL_H);
 					}
 
@@ -1632,9 +1593,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 	double cursor_y = get_cursor_y();
 
 	if(button_press)
-	{
 		gui->current_operation = CWINDOW_EYEDROP;
-	}
 
 	if(gui->current_operation == CWINDOW_EYEDROP)
 	{
@@ -2106,9 +2065,8 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		result = 1;
 	}
 	else
-	{
 		set_cursor(ARROW_CURSOR);
-	}
+
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 
 	if(redraw)
@@ -2515,10 +2473,7 @@ int CWindowCanvas::cursor_motion_event()
 	case CWINDOW_MASK_CONTROL_OUT:
 	case CWINDOW_MASK_TRANSLATE:
 		result = do_mask(redraw, 
-			rerender, 
-			0, 
-			1,
-			0);
+			rerender, 0, 1, 0);
 		break;
 
 	case CWINDOW_EYEDROP:
@@ -2539,7 +2494,6 @@ int CWindowCanvas::cursor_motion_event()
 			break;
 		}
 	}
-
 
 // If the window is never unlocked before calling send_command the
 // display shouldn't get stuck on the old video frame although it will
@@ -2633,7 +2587,7 @@ int CWindowCanvas::button_press_event()
 	}
 
 // rerendering can also be caused by press event
-	if(rerender) 
+	if(rerender)
 	{
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
