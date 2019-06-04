@@ -811,8 +811,10 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 							master_edl->tracks->create_new_tracks(new_asset);
 							break;
 						case LOADMODE_PASTE:
-							master_edl->tracks->append_asset(new_asset,
-								master_edl->local_session->get_selectionstart());
+							pos = master_edl->local_session->get_selectionstart();
+							dur = master_edl->tracks->append_asset(new_asset,
+								pos);
+							master_edl->local_session->set_selection(pos + dur);
 							break;
 						case LOADMODE_REPLACE_CONCATENATE:
 							master_edl->init_edl();
