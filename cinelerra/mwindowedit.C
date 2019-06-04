@@ -995,6 +995,7 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 			current_position = master_edl->local_session->get_selectionstart();
 		pasted_length = master_edl->tracks->append_tracks(new_edl->tracks,
 			current_position, first_track, overwrite);
+		master_edl->local_session->set_selection(current_position + pasted_length);
 		break;
 	}
 // Fix preview range
