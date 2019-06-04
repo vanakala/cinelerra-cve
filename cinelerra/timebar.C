@@ -23,50 +23,35 @@
 #include "bcresources.h"
 #include "cinelerra.h"
 #include "clip.h"
-#include "cplayback.h"
 #include "cursors.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "filexml.h"
-#include "fonts.h"
 #include "labels.h"
 #include "labeledit.h"
 #include "language.h"
 #include "localsession.h"
 #include "maincursor.h"
 #include "mainundo.h"
-#include "mbuttons.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "patchbay.h"
-#include "preferences.h"
-#include "localsession.h"
-#include "mainsession.h"
 #include "theme.h"
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "units.h"
 #include "vframe.h"
-#include "vwindow.h"
-#include "vwindowgui.h"
 #include "zoombar.h"
 
 
-LabelGUI::LabelGUI(MWindow *mwindow, 
-	TimeBar *timebar, 
-	int pixel, 
-	int y, 
-	ptstime position,
+LabelGUI::LabelGUI(MWindow *mwindow, TimeBar *timebar,
+	int pixel, int y, ptstime position,
 	VFrame **data)
- : BC_Toggle(translate_pixel(mwindow, pixel), 
-		y,
+ : BC_Toggle(translate_pixel(mwindow, pixel), y,
 		data ? data : mwindow->theme->label_toggle,
 		0)
 {
 	this->mwindow = mwindow;
 	this->timebar = timebar;
-	this->gui = 0;
 	this->pixel = pixel;
 	this->position = position;
 	this->label = 0;
@@ -74,7 +59,7 @@ LabelGUI::LabelGUI(MWindow *mwindow,
 
 int LabelGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
-	return timebar->get_h() - 
+	return timebar->get_h() -
 		mwindow->theme->label_toggle[0]->get_h();
 }
 
@@ -131,32 +116,22 @@ int InPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 }
 
 
-OutPointGUI::OutPointGUI(MWindow *mwindow, 
-	TimeBar *timebar, 
-	int pixel, 
-	ptstime position)
- : LabelGUI(mwindow, 
-	timebar,
-	pixel, 
-	get_y(mwindow, timebar), 
-	position, 
-	mwindow->theme->out_point)
+OutPointGUI::OutPointGUI(MWindow *mwindow, TimeBar *timebar,
+	int pixel, ptstime position)
+ : LabelGUI(mwindow, timebar, pixel, get_y(mwindow, timebar),
+	position, mwindow->theme->out_point)
 {
 }
 
 int OutPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
-	return timebar->get_h() - 
+	return timebar->get_h() -
 		mwindow->theme->out_point[0]->get_h();
 }
 
 
-TimeBar::TimeBar(MWindow *mwindow, 
-	BC_WindowBase *gui,
-	int x, 
-	int y,
-	int w,
-	int h)
+TimeBar::TimeBar(MWindow *mwindow, BC_WindowBase *gui,
+	int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h)
 {
 	this->gui = gui;
@@ -169,8 +144,8 @@ TimeBar::TimeBar(MWindow *mwindow,
 
 TimeBar::~TimeBar()
 {
-	if(in_point) delete in_point;
-	if(out_point) delete out_point;
+	delete in_point;
+	delete out_point;
 	delete label_edit;
 	labels.remove_all_objects();
 }
@@ -241,9 +216,7 @@ void TimeBar::update_labels()
 
 // Delete excess labels
 	while(labels.total > output)
-	{
 		labels.remove_object();
-	}
 }
 
 void TimeBar::update_highlights()
@@ -252,33 +225,27 @@ void TimeBar::update_highlights()
 	{
 		LabelGUI *label = labels.values[i];
 		if(master_edl->equivalent(label->position,
-				master_edl->local_session->get_selectionstart(1)) ||
-			master_edl->equivalent(label->position,
-				master_edl->local_session->get_selectionend(1)))
-		{
+					master_edl->local_session->get_selectionstart(1)) ||
+				master_edl->equivalent(label->position,
+					master_edl->local_session->get_selectionend(1)))
 			if(!label->get_value()) label->update(1);
-		}
 		else
 			if(label->get_value()) label->update(0);
 	}
 
 	if(master_edl->equivalent(master_edl->local_session->get_inpoint(),
-			master_edl->local_session->get_selectionstart(1)) ||
-		master_edl->equivalent(master_edl->local_session->get_inpoint(),
-			master_edl->local_session->get_selectionend(1)))
-	{
+				master_edl->local_session->get_selectionstart(1)) ||
+			master_edl->equivalent(master_edl->local_session->get_inpoint(),
+				master_edl->local_session->get_selectionend(1)))
 		if(in_point) in_point->update(1);
-	}
 	else
 		if(in_point) in_point->update(0);
 
 	if(master_edl->equivalent(master_edl->local_session->get_outpoint(),
-			master_edl->local_session->get_selectionstart(1)) ||
-		master_edl->equivalent(master_edl->local_session->get_outpoint(),
-			master_edl->local_session->get_selectionend(1)))
-	{
+				master_edl->local_session->get_selectionstart(1)) ||
+			master_edl->equivalent(master_edl->local_session->get_outpoint(),
+				master_edl->local_session->get_selectionend(1)))
 		if(out_point) out_point->update(1);
-	}
 	else
 		if(out_point) out_point->update(0);
 }
@@ -305,9 +272,7 @@ void TimeBar::update_points()
 				in_point->reposition();
 			}
 			else
-			{
 				in_point->draw_face();
-			}
 		}
 		else
 		{
@@ -319,9 +284,8 @@ void TimeBar::update_points()
 	if(edl && edl->local_session->inpoint_valid() && 
 		pixel >= 0 && pixel < get_w())
 	{
-		add_subwindow(in_point = new InPointGUI(mwindow, 
-			this, 
-			pixel, 
+		add_subwindow(in_point = new InPointGUI(mwindow,
+			this, pixel,
 			edl->local_session->get_inpoint()));
 		in_point->set_cursor(ARROW_CURSOR);
 	}
@@ -330,22 +294,18 @@ void TimeBar::update_points()
 
 	if(out_point)
 	{
-		if(edl &&
-			edl->local_session->outpoint_valid() && 
-			pixel >= 0 && 
-			pixel < get_w())
+		if(edl && edl->local_session->outpoint_valid() &&
+			pixel >= 0 && pixel < get_w())
 		{
 			if(!EQUIV(edl->local_session->get_outpoint(), out_point->position) ||
-				out_point->pixel != pixel) 
+				out_point->pixel != pixel)
 			{
 				out_point->pixel = pixel;
 				out_point->position = edl->local_session->get_outpoint();
 				out_point->reposition();
 			}
 			else
-			{
 				out_point->draw_face();
-			}
 		}
 		else
 		{
@@ -354,13 +314,11 @@ void TimeBar::update_points()
 		}
 	}
 	else
-	if(edl && 
-		edl->local_session->outpoint_valid() && 
+	if(edl && edl->local_session->outpoint_valid() &&
 		pixel >= 0 && pixel < get_w())
 	{
 		add_subwindow(out_point = new OutPointGUI(mwindow, 
-			this, 
-			pixel, 
+			this, pixel,
 			edl->local_session->get_outpoint()));
 		out_point->set_cursor(ARROW_CURSOR);
 	}
@@ -381,8 +339,10 @@ EDL* TimeBar::get_edl()
 
 void TimeBar::draw_range()
 {
+	EDL *edl;
 	int x1 = 0, x2 = 0;
-	if(get_edl())
+
+	if(edl = get_edl())
 	{
 		get_preview_pixels(x1, x2);
 
@@ -393,17 +353,13 @@ void TimeBar::draw_range()
 		set_color(BLACK);
 		draw_line(x1, 0, x1, get_h());
 		draw_line(x2, 0, x2, get_h());
-		
-		EDL *edl;
-		if(edl = get_edl())
-		{
-			int pixel = position_to_pixel(
-				edl->local_session->get_selectionstart(1));
+
+		int pixel = position_to_pixel(
+			edl->local_session->get_selectionstart(1));
 // Draw insertion point position if this timebar to a window which 
 // has something other than the master EDL.
-			set_color(RED);
-			draw_line(pixel, 0, pixel, get_h());
-		}
+		set_color(RED);
+		draw_line(pixel, 0, pixel, get_h());
 	}
 	else
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
@@ -414,18 +370,12 @@ void TimeBar::get_edl_length()
 	edl_length = 0;
 
 	if(get_edl())
-	{
 		edl_length = get_edl()->total_length();
-	}
 
 	if(!EQUIV(edl_length, 0))
-	{
 		time_per_pixel = edl_length / get_w();
-	}
 	else
-	{
 		time_per_pixel = 0;
-	}
 }
 
 void TimeBar::get_preview_pixels(int &x1, int &x2)
@@ -440,10 +390,10 @@ void TimeBar::get_preview_pixels(int &x1, int &x2)
 		if(!EQUIV(edl_length, 0))
 		{
 			if(get_edl()->local_session->preview_end <= 0 ||
-				get_edl()->local_session->preview_end > edl_length)
+					get_edl()->local_session->preview_end > edl_length)
 				get_edl()->local_session->preview_end = edl_length;
-			if(get_edl()->local_session->preview_start > 
-				get_edl()->local_session->preview_end)
+			if(get_edl()->local_session->preview_start >
+					get_edl()->local_session->preview_end)
 				get_edl()->local_session->preview_start = 0;
 			x1 = (int)(get_edl()->local_session->preview_start / time_per_pixel);
 			x2 = (int)(get_edl()->local_session->preview_end / time_per_pixel);
@@ -460,10 +410,11 @@ int TimeBar::test_preview(int buttonpress)
 {
 	int result = 0;
 	int x1, x2;
+	EDL *edl;
 
 	get_preview_pixels(x1, x2);
 
-	if(get_edl())
+	if(edl = get_edl())
 	{
 // Inside left handle
 		if(cursor_inside() &&
@@ -475,7 +426,7 @@ int TimeBar::test_preview(int buttonpress)
 			if(buttonpress)
 			{
 				current_operation = TIMEBAR_DRAG_LEFT;
-				start_position = get_edl()->local_session->preview_start;
+				start_position = edl->local_session->preview_start;
 				start_cursor_x = get_cursor_x();
 				result = 1;
 			}
@@ -497,7 +448,7 @@ int TimeBar::test_preview(int buttonpress)
 			if(buttonpress)
 			{
 				current_operation = TIMEBAR_DRAG_RIGHT;
-				start_position = get_edl()->local_session->preview_end;
+				start_position = edl->local_session->preview_end;
 				start_cursor_x = get_cursor_x();
 				result = 1;
 			}
@@ -516,8 +467,8 @@ int TimeBar::test_preview(int buttonpress)
 			if(buttonpress)
 			{
 				current_operation = TIMEBAR_DRAG_CENTER;
-				starting_start_position = get_edl()->local_session->preview_start;
-				starting_end_position = get_edl()->local_session->preview_end;
+				starting_start_position = edl->local_session->preview_start;
+				starting_end_position = edl->local_session->preview_end;
 				start_cursor_x = get_cursor_x();
 				result = 1;
 			}
@@ -547,48 +498,48 @@ int TimeBar::test_preview(int buttonpress)
 
 int TimeBar::move_preview(int &redraw)
 {
+	EDL *edl = get_edl();
 	int result = 0;
 
 	if(current_operation == TIMEBAR_DRAG_LEFT)
 	{
-		get_edl()->local_session->preview_start = 
-			start_position + 
+		edl->local_session->preview_start =
+			start_position +
 			time_per_pixel * (get_cursor_x() - start_cursor_x);
-		CLAMP(get_edl()->local_session->preview_start, 
-			0, 
-			get_edl()->local_session->preview_end);
+		CLAMP(edl->local_session->preview_start, 0,
+			edl->local_session->preview_end);
 		result = 1;
 	}
 	else
 	if(current_operation == TIMEBAR_DRAG_RIGHT)
 	{
-		get_edl()->local_session->preview_end = 
-			start_position + 
+		edl->local_session->preview_end =
+			start_position +
 			time_per_pixel * (get_cursor_x() - start_cursor_x);
-		CLAMP(get_edl()->local_session->preview_end, 
-			get_edl()->local_session->preview_start, 
+		CLAMP(edl->local_session->preview_end,
+			edl->local_session->preview_start,
 			edl_length);
 		result = 1;
 	}
 	else
 	if(current_operation == TIMEBAR_DRAG_CENTER)
 	{
-		get_edl()->local_session->preview_start = 
+		edl->local_session->preview_start =
 			starting_start_position +
 			time_per_pixel * (get_cursor_x() - start_cursor_x);
-		get_edl()->local_session->preview_end = 
+		edl->local_session->preview_end =
 			starting_end_position +
 			time_per_pixel * (get_cursor_x() - start_cursor_x);
-		if(get_edl()->local_session->preview_start < 0)
+		if(edl->local_session->preview_start < 0)
 		{
-			get_edl()->local_session->preview_end -= get_edl()->local_session->preview_start;
-			get_edl()->local_session->preview_start = 0;
+			edl->local_session->preview_end -= edl->local_session->preview_start;
+			edl->local_session->preview_start = 0;
 		}
 		else
-		if(get_edl()->local_session->preview_end > edl_length)
+		if(edl->local_session->preview_end > edl_length)
 		{
-			get_edl()->local_session->preview_start -= get_edl()->local_session->preview_end - edl_length;
-			get_edl()->local_session->preview_end = edl_length;
+			edl->local_session->preview_start -= edl->local_session->preview_end - edl_length;
+			edl->local_session->preview_end = edl_length;
 		}
 		result = 1;
 	}
@@ -617,10 +568,7 @@ int TimeBar::button_press_event()
 			return 1;
 		}
 		else
-		if(test_preview(1))
-		{
-		}
-		else
+		if(!test_preview(1))
 		{
 
 // Select region between two labels
@@ -745,7 +693,7 @@ int TimeBar::button_release_event()
 // Update the selection cursor during a dragging operation
 void TimeBar::update_cursor()
 {
-	ptstime position = (double)get_cursor_x() * 
+	ptstime position = (double)get_cursor_x() *
 		master_edl->local_session->zoom_time +
 		master_edl->local_session->view_start_pts;
 	position = master_edl->align_to_frame(position);
@@ -759,6 +707,7 @@ void TimeBar::update_cursor()
 void TimeBar::select_region(ptstime position)
 {
 	Label *start = 0, *end = 0, *current;
+
 	for(current = master_edl->labels->first; current; current = NEXT)
 	{
 		if(current->position > position)

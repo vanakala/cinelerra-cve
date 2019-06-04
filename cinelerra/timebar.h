@@ -26,12 +26,10 @@
 #include "bcsubwindow.h"
 #include "datatype.h"
 #include "edl.inc"
-#include "filexml.inc"
 #include "labels.inc"
 #include "labeledit.inc"
 #include "mwindow.inc"
 #include "timebar.inc"
-#include "vwindowgui.inc"
 
 class TimeBarLeftArrow;
 class TimeBarRightArrow;
@@ -65,7 +63,6 @@ public:
 
 	Label *label;
 	MWindow *mwindow;
-	VWindowGUI *gui;
 	TimeBar *timebar;
 	int pixel;
 	ptstime position;
@@ -131,11 +128,6 @@ public:
 // Update highlight cursor during a drag
 	void update_cursor();
 
-// ================================= file operations
-	int load(FileXML *xml, int undo_type);
-	int draw() { return 0; };                  // draw everything over
-	int refresh_labels();
-
 // ========================================= editing
 
 	void select_region(ptstime position);
@@ -149,7 +141,7 @@ public:
 
 private:
 	void get_preview_pixels(int &x1, int &x2);
-	int draw_bevel();
+
 	ArrayList<LabelGUI*> labels;
 	InPointGUI *in_point;
 	OutPointGUI *out_point;
