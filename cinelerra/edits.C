@@ -273,6 +273,7 @@ void Edits::load(FileXML *file, int track_offset)
 			}
 		}
 	}while(!result);
+	cleanup();
 }
 
 ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
