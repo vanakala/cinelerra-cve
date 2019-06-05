@@ -1260,13 +1260,11 @@ void MWindow::splice(EDL *source)
 	ptstime start = master_edl->local_session->get_selectionstart();
 	ptstime source_start = source->local_session->get_selectionstart();
 	ptstime source_end = source->local_session->get_selectionend();
+
 	EDL edl(0);
 
 	edl.copy(source, source_start, source_end);
-	insert(&edl, start);
-
-// Position at end of clip
-	master_edl->local_session->set_selection(start + source_end - source_start);
+	paste_edl(&edl, LOADMODE_PASTE, 0, start, 0);
 
 	save_backup();
 	undo->update_undo(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
