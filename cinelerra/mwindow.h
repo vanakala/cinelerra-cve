@@ -306,10 +306,7 @@ public:
 	void overwrite(EDL *source);
 // For clipboard commands
 	void paste();
-// For splice and overwrite
-	void paste(ptstime start,
-		ptstime end,
-		FileXML *file);
+
 	void paste_silence();
 
 	void paste_transition();

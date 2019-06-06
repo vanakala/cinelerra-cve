@@ -823,17 +823,6 @@ void MWindow::overwrite(EDL *source)
 	sync_parameters(CHANGE_EDL);
 }
 
-// For splice and overwrite
-void MWindow::paste(ptstime start,
-	ptstime end,
-	FileXML *file)
-{
-	clear(0);
-
-// Want to insert with assets shared with the master EDL.
-	insert(start, file, master_edl);
-}
-
 // For editing use insertion point position
 void MWindow::paste()
 {
