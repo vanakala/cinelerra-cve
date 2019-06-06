@@ -801,23 +801,14 @@ void MWindow::overwrite(EDL *source)
 	ptstime dst_len = master_edl->local_session->get_selectionend() - dst_start;
 	EDL edl(0);
 
-	if (!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
-	{
 // in/out points or selection present and shorter than overwrite range
 // shorten the copy range
+	if(!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
 		overwrite_len = dst_len;
-	}
 
-// HACK around paste_edl get_start/endselection on its own
-// so we need to clear only when not using both io points
-// FIXME: need to write simple overwrite_edl to be used for overwrite function
-	if (master_edl->local_session->get_inpoint() < 0 ||
-			master_edl->local_session->get_outpoint() < 0)
-		master_edl->clear(dst_start,
-			dst_start + overwrite_len, 
-			0);
 	edl.copy(source, src_start, src_start + overwrite_len);
-	insert(&edl, dst_start);
+	paste_edl(&edl, LOADMODE_PASTE, 0, dst_start, 1);
+
 	master_edl->local_session->set_selection(dst_start + overwrite_len);
 
 	save_backup();
