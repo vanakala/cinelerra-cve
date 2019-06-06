@@ -801,6 +801,8 @@ void MWindow::overwrite(EDL *source)
 	ptstime dst_len = master_edl->local_session->get_selectionend() - dst_start;
 	EDL edl(0);
 
+	if(cwindow->stop_playback())
+		return;
 // in/out points or selection present and shorter than overwrite range
 // shorten the copy range
 	if(!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
@@ -1251,8 +1253,10 @@ void MWindow::splice(EDL *source)
 	ptstime start = master_edl->local_session->get_selectionstart();
 	ptstime source_start = source->local_session->get_selectionstart();
 	ptstime source_end = source->local_session->get_selectionend();
-
 	EDL edl(0);
+
+	if(cwindow->stop_playback())
+		return;
 
 	edl.copy(source, source_start, source_end);
 	paste_edl(&edl, LOADMODE_PASTE, 0, start, 0);
