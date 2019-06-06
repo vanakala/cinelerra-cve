@@ -266,7 +266,6 @@ public:
 	void insert(ptstime position, 
 		FileXML *file,
 		EDL *parent_edl = 0);
-	void insert(EDL *edl, ptstime position);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 	void insert_effects_canvas(ptstime start,

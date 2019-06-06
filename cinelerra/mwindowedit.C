@@ -474,15 +474,6 @@ void MWindow::insert(ptstime position,
 		0); // overwrite
 }
 
-void MWindow::insert(EDL *edl, ptstime position)
-{
-	paste_edl(edl,
-		LOADMODE_PASTE,
-		0,
-		position,
-		0); // overwrite
-}
-
 void MWindow::insert_effects_canvas(ptstime start,
 	ptstime length)
 {
