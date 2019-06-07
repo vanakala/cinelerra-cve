@@ -119,8 +119,7 @@ public:
 // and AssetPopup when assets are dragged in from AWindow.
 // Takes the drag vectors from MainSession and
 // pastes either assets or clips depending on which is full.
-// Returns 1 if the vectors were full
-	int paste_assets(ptstime position, Track *dest_track, int overwrite);
+	void paste_assets(ptstime position, Track *dest_track, int overwrite);
 
 // Insert the assets at a point in the EDL.  Called by menueffects,
 // render, and CWindow drop but recording calls paste_edls directly for

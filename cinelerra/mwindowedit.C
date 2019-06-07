@@ -849,9 +849,12 @@ void MWindow::paste()
 	}
 }
 
-int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
+void MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 {
-	int result = 0;
+	ptstime cursor_pos = master_edl->local_session->get_selectionstart();
+
+	if(cwindow->stop_playback())
+		return;
 
 	if(mainsession->drag_assets->total)
 	{
@@ -859,7 +862,6 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			position, 
 			dest_track, 
 			overwrite);
-		result = 1;
 	}
 
 	if(mainsession->drag_clips->total)
@@ -869,16 +871,16 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			dest_track,
 			position, 
 			overwrite); // o
-		result = 1;
 	}
 
+	master_edl->local_session->set_selection(cursor_pos);
 	save_backup();
 
 	undo->update_undo(_("paste assets"), LOAD_EDITS);
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR | WUPD_CLOCK);
+	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR | WUPD_CLOCK |
+		WUPD_ZOOMBAR);
 	sync_parameters(CHANGE_EDL);
-	return result;
 }
 
 void MWindow::load_assets(ArrayList<Asset*> *new_assets, 
@@ -896,6 +898,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		master_edl->update_assets(new_assets->values[i]);
 		duration = master_edl->tracks->append_asset(new_assets->values[i],
 			position, first_track, overwrite);
+		master_edl->local_session->preview_end = position + duration;
 	}
 	save_backup();
 }
