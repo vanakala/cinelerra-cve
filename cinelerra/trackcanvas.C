@@ -514,7 +514,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	*is_insertion = 0;
 // get the canvas/track position
 	int cursor_x = get_relative_cursor_x();
-	ptstime pos = round(cursor_x * master_edl->local_session->zoom_time) +
+	ptstime pos = cursor_x * master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
 
 	Track *track = mainsession->track_highlighted;
