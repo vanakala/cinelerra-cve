@@ -826,6 +826,9 @@ void MWindow::paste()
 	{
 		char *string = new char[len + 1];
 
+		if(cwindow->stop_playback())
+			return;
+
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
 			SECONDARY_SELECTION);
