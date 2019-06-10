@@ -532,13 +532,41 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 void Tracks::paste_silence(ptstime start, ptstime end)
 {
 	Track* current_track;
+	ptstime paste_end = 0;
+	ptstime track_end = length();
+	ptstime silence_len = end - start;
 
-	for(current_track = first; 
-		current_track; 
+	if(silence_len < EPSILON)
+		return;
+
+	for(current_track = first; current_track;
 		current_track = current_track->next)
 	{
-		if(current_track->record) 
-			current_track->paste_silence(start, end);
+		if(!current_track->record)
+			continue;
+		if(current_track->master && current_track->record)
+		{
+			paste_end = end;
+			if(start > track_end)
+				start = track_end;
+			break;
+		}
+		ptstime len = current_track->get_length();
+		if(len + silence_len > track_end)
+		{
+			silence_len = track_end - len;
+			paste_end = start + silence_len;
+		}
+	}
+
+	if(paste_end < EPSILON || paste_end < start)
+		return;
+
+	for(current_track = first; current_track;
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+			current_track->paste_silence(start, paste_end);
 	}
 }
 
