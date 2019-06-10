@@ -319,7 +319,7 @@ void EDL::copy_assets(ptstime start,
 // Called recursively by copy for clips, thus the string can't be terminated.
 // The string is not terminated in this call.
 void EDL::save_xml(FileXML *file, const char *output_path,
-	int is_clip, int is_vwindow)
+	int is_clip, int is_vwindow, int to_clipboard)
 {
 	ptstime start = 0;
 	ptstime end = total_length();
@@ -363,7 +363,7 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 // Clips
 // Don't want this if using clipboard
-	if(vwindow_edl->total_tracks() && this != vwindow_edl)
+	if(!to_clipboard && vwindow_edl->total_tracks() && this != vwindow_edl)
 	{
 		vwindow_edl->save_xml(file,
 			output_path,

@@ -72,7 +72,7 @@ public:
 	void create_default_tracks();
 	void load_xml(FileXML *file, uint32_t load_flags, EDLSession *session);
 	void save_xml(FileXML *xml, const char *output_path,
-		int is_clip, int is_vwindow);
+		int is_clip, int is_vwindow, int to_clipboard = 0);
 	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
