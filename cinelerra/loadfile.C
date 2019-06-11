@@ -124,7 +124,7 @@ void LoadFileThread::run()
 	}
 
 	mwindow->interrupt_indexes();
-	mwindow->load_filenames(&path_list, load_mode, 0);
+	mwindow->load_filenames(&path_list, load_mode);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
@@ -326,7 +326,7 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 
-	mwindow->load_filenames(&path_list, LOADMODE_REPLACE, 0);
+	mwindow->load_filenames(&path_list, LOADMODE_REPLACE);
 	master_edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
 // path of the project.

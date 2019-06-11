@@ -571,9 +571,8 @@ void MWindow::set_brender_start()
 	gui->canvas->flash();
 }
 
-void MWindow::load_filenames(ArrayList<char*> *filenames, 
-	int load_mode,
-	int update_filename)
+void MWindow::load_filenames(ArrayList<char*> *filenames,
+	int load_mode)
 {
 	int result = 0;
 	ptstime pos, dur;
@@ -656,6 +655,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						case LOADMODE_REPLACE:
 							master_edl->init_edl();
 							load_mode = LOADMODE_NEW_TRACKS;
+							if(!master_edl->local_session->clip_title[0])
+								master_edl->local_session->set_clip_title(new_asset->path);
 							break;
 						case LOADMODE_REPLACE_CONCATENATE:
 							master_edl->init_edl();
@@ -693,6 +694,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					case LOADMODE_REPLACE:
 						master_edl->init_edl();
 						load_mode = LOADMODE_NEW_TRACKS;
+							if(!master_edl->local_session->clip_title[0])
+								master_edl->local_session->set_clip_title(new_asset->path);
 						break;
 					case LOADMODE_CONCATENATE:
 						master_edl->tracks->append_asset(new_asset);
@@ -849,10 +852,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
 					master_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
-					strcpy(mainsession->filename, filenames->values[i]);
-					strcpy(master_edl->local_session->clip_title, filenames->values[i]);
-					if(update_filename)
-						set_filename(master_edl->local_session->clip_title);
+					set_filename(master_edl->project_path);
 					cur_edl = master_edl;
 					new_edl = 0;
 					if(load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -889,7 +889,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					delete new_edl;
 					new_edl = 0;
 				}
-				else if(result && update_filename)
+				else if(result)
 					set_filename(0);
 				break;
 			}

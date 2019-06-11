@@ -150,11 +150,8 @@ public:
 // move the window to include the cursor
 	void find_cursor(void);
 
-	void load_filenames(ArrayList<char*> *filenames, 
-		int load_mode = LOADMODE_REPLACE,
-// Cause the project filename on the top of the window to be updated.
-// Not wanted for loading backups.
-		int update_filename = 1);
+	void load_filenames(ArrayList<char*> *filenames,
+		int load_mode = LOADMODE_REPLACE);
 
 	void interrupt_indexes();  // Stop index building
 

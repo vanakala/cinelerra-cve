@@ -498,7 +498,7 @@ void MenuEffectThread::run()
 		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 
-		mwindow->load_filenames(&path_list, load_mode, 0);
+		mwindow->load_filenames(&path_list, load_mode);
 		mwindow->save_backup();
 		mwindow->undo->update_undo(title, LOAD_ALL);
 

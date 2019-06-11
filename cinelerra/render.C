@@ -658,7 +658,7 @@ int Render::render(int test_overwrite,
 
 			if(load_mode == LOADMODE_PASTE)
 				mwindow->clear(0);
-			mwindow->load_filenames(&path_list, load_mode, 0);
+			mwindow->load_filenames(&path_list, load_mode);
 
 			path_list.remove_all_objects();
 
