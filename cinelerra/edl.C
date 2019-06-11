@@ -506,7 +506,8 @@ void EDL::clear(ptstime start,
 {
 	if(PTSEQU(start, end))
 	{
-		double distance = 0;
+		ptstime distance = 0;
+
 		tracks->clear_handle(start, 
 			end,
 			distance, 
@@ -526,9 +527,7 @@ void EDL::clear(ptstime start,
 
 // Need to put at beginning so a subsequent paste operation starts at the
 // right position.
-	double position = local_session->get_selectionstart();
-	local_session->set_selectionend(position);
-	local_session->set_selectionstart(position);
+	local_session->set_selection(local_session->get_selectionstart());
 }
 
 ptstime EDL::adjust_position(ptstime oldposition,
