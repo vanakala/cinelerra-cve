@@ -160,7 +160,7 @@ void SaveAs::run()
 
 	if(file.write_to_file(filename))
 	{
-		mwindow->set_filename("");      // update the project name
+		mwindow->set_filename(0);      // update the project name
 		errorbox(_("Couldn't open %s."), filename);
 		return;
 	}

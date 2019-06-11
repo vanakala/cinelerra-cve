@@ -890,7 +890,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					new_edl = 0;
 				}
 				else if(result && update_filename)
-					set_filename("");
+					set_filename(0);
 				break;
 			}
 		}
@@ -1616,10 +1616,14 @@ void MWindow::time_format_common()
 
 void MWindow::set_filename(const char *filename)
 {
-	strcpy(mainsession->filename, filename);
+	if(filename)
+		strcpy(mainsession->filename, filename);
+	else
+		mainsession->filename[0] = 0;
+
 	if(gui)
 	{
-		if(filename[0] == 0)
+		if(!filename || filename[0] == 0)
 		{
 			gui->set_title(PROGRAM_NAME);
 		}

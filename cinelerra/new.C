@@ -109,7 +109,7 @@ void New::create_new_project()
 	new_edlsession->boundaries();
 	new_edl->create_default_tracks();
 
-	mwindow->set_filename("");
+	mwindow->set_filename(0);
 	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
 	mwindow->hide_plugins();
