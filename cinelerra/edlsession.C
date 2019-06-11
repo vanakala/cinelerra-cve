@@ -86,7 +86,7 @@ EDLSession::EDLSession()
 	cwindow_operation = CWINDOW_NONE;
 	defaults_loaded = 0;
 	automatic_backups = 1;
-	backup_interval = 0;
+	backup_interval = 60;
 
 }
 
