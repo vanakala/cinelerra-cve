@@ -818,8 +818,6 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 void EDL::init_edl()
 {
 	Asset *new_asset;
-	char string[BCTEXTLEN];
-	FileSystem fs;
 
 	if(tracks && tracks->total())
 		return;
@@ -831,10 +829,6 @@ void EDL::init_edl()
 
 // Edl has only one asset here
 	new_asset = assets->values[0];
-
-	// Use name of the first asset as clip name
-	fs.extract_name(string, new_asset->path);
-	strcpy(local_session->clip_title, string);
 
 	if(new_asset->video_data)
 	{
