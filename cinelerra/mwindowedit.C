@@ -770,6 +770,9 @@ void MWindow::mute_selection()
 
 	if(!PTSEQU(start,end))
 	{
+		if(cwindow->stop_playback())
+			return;
+
 		master_edl->clear(start, end, edlsession->labels_follow_edits);
 		master_edl->local_session->set_selectionend(end);
 		master_edl->local_session->set_selectionstart(start);
