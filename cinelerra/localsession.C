@@ -59,8 +59,8 @@ LocalSession::LocalSession(EDL *edl)
 	selectionstart = selectionend = 0;
 	in_point = out_point = -1;
 	awindow_folder = AW_CLIP_FOLDER;
-	sprintf(clip_title, "Program");
-	strcpy(clip_notes, "Hello world");
+	clip_title[0] = 0;
+	clip_notes[0] = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;
 	loop_start = 0;
@@ -223,7 +223,6 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 {
 	if(load_flags & LOAD_SESSION)
 	{
-// Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
 		char *string = file->tag.get_property("FOLDER");
@@ -253,8 +252,10 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		green = file->tag.get_property("GREEN", green);
 		blue = file->tag.get_property("BLUE", blue);
 
-		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-			if (!Automation::autogrouptypes_fixedrange[i]) {
+		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+		{
+			if(!Automation::autogrouptypes_fixedrange[i])
+			{
 				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
 				automation_maxs[i] = file->tag.get_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
 			}
@@ -274,6 +275,28 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		in_point = file->tag.get_property("IN_POINT", (ptstime)-1);
 		out_point = file->tag.get_property("OUT_POINT", (ptstime)-1);
 	}
+}
+
+void LocalSession::set_clip_title(const char *path)
+{
+	char *name, *dot;
+	char str[BCTEXTLEN];
+
+	if(!path || path[0] == 0)
+	{
+		clip_title[0] = 0;
+		return;
+	}
+
+	strncpy(str, path, BCTEXTLEN);
+	str[BCTEXTLEN - 1] = 0;
+
+	name = basename(str);
+	if(!name)
+		name = str;
+	if(dot = strrchr(name, '.'))
+		*dot = 0;
+	strcpy(clip_title, name);
 }
 
 void LocalSession::boundaries()

@@ -66,6 +66,8 @@ public:
 	void load_xml(FileXML *file, unsigned long load_flags);
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
+// Set clip title from path
+	void set_clip_title(const char *path);
 // Used to copy parameters that affect rendering.
 	void synchronize_params(LocalSession *that);
 
