@@ -1357,6 +1357,9 @@ void MWindow::toggle_label()
 
 void MWindow::trim_selection()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->trim_selection(master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend(),
 		edlsession->labels_follow_edits);
