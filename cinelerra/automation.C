@@ -145,34 +145,14 @@ int Automation::load(FileXML *file)
 	return 0;
 }
 
-int Automation::paste(ptstime start,
-	ptstime length,
-	double scale,
-	FileXML *file, 
-	AutoConf *autoconf)
-{
-	if(!autoconf) autoconf = edlsession->auto_conf;
-
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		if(file->tag.title_is(xml_titles[i]) && autos[i] && autoconf->autos[i])
-		{
-			autos[i]->paste(start, length, scale, file);
-			return 1;
-		}
-	}
-	return 0;
-}
-
 void Automation::paste(ptstime start,
-	ptstime length,
 	FileXML *file)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(file->tag.title_is(xml_titles[i]) && autos[i])
 		{
-			autos[i]->paste(start, length, 1.0, file);
+			autos[i]->paste(start, file);
 			return;
 		}
 	}

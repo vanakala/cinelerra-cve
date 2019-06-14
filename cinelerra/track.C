@@ -249,9 +249,7 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 {
 	int result = 0;
-	ptstime startproject = 0;
 	int current_plugin = 0;
-	Plugin *plugin = 0;
 
 	record = file->tag.get_property("RECORD", record);
 	play = file->tag.get_property("PLAY", play);
@@ -292,51 +290,7 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			if(file->tag.title_is("PLUGINSET"))
 			{
 				if(load_flags & LOAD_EDITS)
-				{
-					while(!file->read_tag())
-					{
-						if(file->tag.title_is("PLUGIN"))
-						{
-							posnum length_units = file->tag.get_property("LENGTH", (int64_t)0);
-							ptstime length = 0;
-							if(length_units)
-								length = from_units(length_units);
-							length = file->tag.get_property("DURATION", length);
-							startproject = file->tag.get_property("POSTIME", startproject);
-							int type = file->tag.get_property("TYPE", PLUGIN_NONE);
-
-							if(type != PLUGIN_NONE)
-							{
-								PluginServer *server = 0;
-
-								if(type == PLUGIN_STANDALONE)
-								{
-									char string[BCTEXTLEN];
-									string[0] = 0;
-									file->tag.get_property("TITLE", string);
-									server = plugindb.get_pluginserver(string, data_type);
-								}
-								plugin = new Plugin(edl, this, server);
-								plugins.append(plugin);
-								plugin->plugin_type = type;
-								plugin->set_pts(startproject);
-								plugin->set_length(length);
-								plugin->on = !file->tag.get_property("OFF", 0);
-								plugin->load(file);
-								// got length - ignore next plugin pts
-								if(length > 0)
-									plugin = 0;
-							}
-							else if(plugin)
-							{
-								plugin->set_end(startproject);
-								plugin = 0;
-							}
-						}
-						if(file->tag.title_is("/PLUGINSET"))
-							break;
-					}
-				}
+					load_pluginset(file, 0);
 				else
 				if(load_flags & LOAD_AUTOMATION)
 				{
@@ -350,6 +304,58 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			}
 		}
 	}while(!result);
+}
+
+void Track::load_pluginset(FileXML *file, ptstime start)
+{
+	ptstime startproject = 0;
+	Plugin *plugin = 0;
+
+	while(!file->read_tag())
+	{
+		if(file->tag.title_is("PLUGIN"))
+		{
+			posnum length_units = file->tag.get_property("LENGTH", (int64_t)0);
+			ptstime length = 0;
+
+			if(length_units)
+				length = from_units(length_units);
+
+			length = file->tag.get_property("DURATION", length);
+			startproject = file->tag.get_property("POSTIME", startproject);
+			int type = file->tag.get_property("TYPE", PLUGIN_NONE);
+
+			if(type != PLUGIN_NONE)
+			{
+				PluginServer *server = 0;
+
+				if(type == PLUGIN_STANDALONE)
+				{
+					char string[BCTEXTLEN];
+					string[0] = 0;
+					file->tag.get_property("TITLE", string);
+					server = plugindb.get_pluginserver(string, data_type);
+				}
+				plugin = new Plugin(edl, this, server);
+				plugins.append(plugin);
+				plugin->plugin_type = type;
+				plugin->set_pts(startproject + start);
+				plugin->set_length(length);
+				plugin->on = !file->tag.get_property("OFF", 0);
+				plugin->load(file, start);
+				// got length - ignore next plugin pts
+				if(length > 0)
+					plugin = 0;
+			}
+			else if(plugin)
+			{
+				plugin->set_end(startproject + start);
+				plugin = 0;
+			}
+		}
+		if(file->tag.title_is("/PLUGINSET"))
+			break;
+	}
 }
 
 void Track::init_shared_pointers()
@@ -728,147 +734,41 @@ void Track::automation_xml(FileXML *file)
 	file->append_newline();
 }
 
-void Track::paste_automation(ptstime selectionstart,
-	ptstime total_length,
-	double frame_rate,
-	int sample_rate,
-	FileXML *file)
+void Track::paste_automation(ptstime selectionstart, FileXML *file)
 {
 // Only used for pasting automation alone.
-	int result;
-	double scale;
-
-	if(data_type == TRACK_AUDIO)
-		scale = edlsession->sample_rate / sample_rate;
-	else
-		scale = edlsession->frame_rate / frame_rate;
-
-	total_length *= scale;
-	result = 0;
-
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-
-		if(!result)
+		if(file->tag.title_is("/TRACK"))
+			break;
+		else
 		{
-			if(file->tag.title_is("/TRACK"))
-				result = 1;
-			else
-			if(automation->paste(selectionstart,
-					total_length,
-					scale,
-					file,
-					0))
-			{
-				;
-			}
-			else
+			automation->paste(selectionstart, file);
+
 			if(file->tag.title_is("PLUGINSETS"))
-			{
-				paste_keyframes(selectionstart,
-					total_length, 
-					file);
-			}
+				paste_pluginsets(selectionstart, file);
 		}
 	}
 }
 
-void Track::paste_keyframes(ptstime start, ptstime length,
-	FileXML *file)
+void Track::paste_pluginsets(ptstime start, FileXML *file)
 {
 	char data[MESSAGESIZE];
 
-	int result = 0;
-
-	Plugin *target_plugin = 0;
-	Plugin *second_choice_plugin = 0;
-	ArrayList<Plugin*> unused_plugins;
-// get all available target plugins, we will be removing them one by one
-//    when we will paste into them
-	for(int i = 0; i < plugins.total; i++)
-		unused_plugins.append(plugins.values[i]);
-
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-
-		if(!result)
-		{
-			if(file->tag.title_is("/PLUGINSETS"))
-				result = 1;
-			else
-			if(file->tag.title_is("PLUGINSET"))
-			{
-				target_plugin = 0;
-			}
-			else
-			if(file->tag.title_is("KEYFRAME"))
-			{
-				ptstime position = file->tag.get_property("POSTIME", 0);
-				position += start;
-				file->read_text_until("/KEYFRAME",
-					data, MESSAGESIZE);
-
-				if(!target_plugin && data[0])
-				{
-// now try to find the target
-					int name_len = strchr(data, ' ') - data + 1;
-
-					second_choice_plugin = 0;
-					for(int i = 0; i < unused_plugins.total; i++)
-					{
-						Plugin *current = unused_plugins.values[i];
-
-						if(position >= current->get_pts() &&
-							position <= current->end_pts() &&
-							!strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
-						{
-							target_plugin = current;
-							break;
-						}
-
-						if(position >= current->get_pts() &&
-							!strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
-						{
-							second_choice_plugin = current;
-							break;
-						}
-					}
-				}
-
-				if(!target_plugin)
-					target_plugin = second_choice_plugin;
-
-				if(target_plugin)
-				{
-					KeyFrame *keyframe;
-					keyframe = (KeyFrame*)target_plugin->keyframes->insert_auto(position);
-					strcpy(keyframe->data, data);
-					keyframe->pos_time = position;
-					unused_plugins.remove(target_plugin);
-				}
-			}
-		}
+		if(file->tag.title_is("/PLUGINSETS"))
+			break;
+		else
+		if(file->tag.title_is("PLUGINSET"))
+			load_pluginset(file, start);
 	}
 }
 
 void Track::clear_automation(ptstime selectionstart,
-	ptstime selectionend,
-	int shift_autos,
-	int default_only)
+	ptstime selectionend)
 {
 	automation->clear(selectionstart, selectionend, edlsession->auto_conf, 0);
-
-	if(edlsession->auto_conf->plugins)
-	{
-		for(int i = 0; i < plugins.total; i++)
-		{
-			plugins.values[i]->keyframes->clear(selectionstart,
-				selectionend, 0);
-		}
-	}
-
 }
 
 void Track::straighten_automation(ptstime selectionstart, ptstime selectionend)

@@ -75,7 +75,7 @@ public:
 	void calculate_ref_ids();
 	void init_pointers_by_ids();
 	int module_number();
-	void load(FileXML *file);
+	void load(FileXML *file, ptstime start = 0);
 	void init_shared_pointers();
 // Shift in time
 	void shift(ptstime difference);

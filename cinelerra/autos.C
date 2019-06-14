@@ -330,12 +330,8 @@ void Autos::insert(ptstime start, ptstime end)
 		current->pos_time += shift;
 }
 
-void Autos::paste(ptstime start,
-	ptstime length,
-	double scale,
-	FileXML *file)
+void Autos::paste(ptstime start, FileXML *file)
 {
-	int total = 0;
 	int result = 0;
 
 	do{
@@ -359,16 +355,12 @@ void Autos::paste(ptstime start,
 					posnum curpos = file->tag.get_property("POSITON", 0);
 					pospts = track->from_units(curpos);
 				}
-				pospts = file->tag.get_property("POSTIME", pospts) *
-						scale + start;
+				pospts = file->tag.get_property("POSTIME", pospts) + start;
 // Paste active auto into track
 				current = insert_auto(pospts);
 
 				if(current)
-				{
 					current->load(file);
-				}
-				total++;
 			}
 		}
 	}while(!result);

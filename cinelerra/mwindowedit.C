@@ -301,6 +301,7 @@ void MWindow::copy_automation()
 	tracks.copy(master_edl->tracks, master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend());
 	tracks.automation_xml(&file);
+
 	gui->get_clipboard()->to_clipboard(file.string, 
 		strlen(file.string), 
 		SECONDARY_SELECTION);
@@ -916,6 +917,9 @@ void MWindow::paste_automation()
 
 	if(len)
 	{
+		if(cwindow->stop_playback())
+			return;
+
 		char *string = new char[len + 1];
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
@@ -927,19 +931,15 @@ void MWindow::paste_automation()
 			master_edl->local_session->get_selectionstart(),
 			master_edl->local_session->get_selectionend());
 		master_edl->tracks->paste_automation(
-			master_edl->local_session->get_selectionstart(),
-			&file,
-			0); 
+			master_edl->local_session->get_selectionstart(), &file);
 		save_backup();
 		undo->update_undo(_("paste keyframes"), LOAD_AUTOMATION);
 		delete [] string;
 
 		restart_brender();
+		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
 		update_plugin_guis();
-		gui->canvas->draw_overlays();
-		gui->canvas->flash();
 		sync_parameters(CHANGE_PARAMS);
-		gui->patchbay->update();
 		cwindow->update(WUPD_POSITION);
 	}
 }

@@ -66,10 +66,7 @@ public:
 		ptstime length,
 		int overwrite = 0);
 	virtual void load(FileXML *xml);
-	void paste(ptstime start,
-		ptstime length,
-		double scale,
-		FileXML *file);
+	void paste(ptstime start, FileXML *file);
 
 // Round pts to track units, add delta units to position
 	ptstime unit_round(ptstime pts, int delta = 0);

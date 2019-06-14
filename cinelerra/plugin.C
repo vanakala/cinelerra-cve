@@ -58,13 +58,13 @@ Plugin::~Plugin()
 {
 	if(plugin_type != PLUGIN_TRANSITION)
 	{
-		for(Track *track = edl->first_track(); track;
-			track = track->next)
+		for(Track *current = track->tracks->first; current;
+			current = current->next)
 		{
-			for(int i = 0; i < track->plugins.total; i++)
+			for(int i = 0; i < current->plugins.total; i++)
 			{
-				if(track->plugins.values[i]->shared_plugin == this)
-					track->plugins.values[i]->shared_plugin = 0;
+				if(current->plugins.values[i]->shared_plugin == this)
+					current->plugins.values[i]->shared_plugin = 0;
 			}
 		}
 	}
@@ -83,13 +83,20 @@ int Plugin::silence()
 
 void Plugin::copy(Plugin *plugin, ptstime start, ptstime end)
 {
-	plugin->copy_from(plugin);
+	copy_from(plugin);
 
 	if(pts < start)
+	{
+		duration -= start - pts;
+		shift_keyframes(start - pts);
 		pts = start;
+	}
 
 	if(end_pts() > end)
-		duration = end - pts;
+		duration -= end - pts;
+
+	keyframes->clear_after(pts + duration);
+	shift(-start);
 }
 
 void Plugin::copy_from(Plugin *plugin)
@@ -445,19 +452,19 @@ void Plugin::init_pointers_by_ids()
 	shared_track = 0;
 	shared_plugin = 0;
 
-	for(Track *track = edl->first_track(); track; track = track->next)
+	for(Track *current = track->tracks->first; current; current = current->next)
 	{
-		if(shared_track_id >= 0 && track->get_id() == shared_track_id)
+		if(shared_track_id >= 0 && current->get_id() == shared_track_id)
 		{
-			shared_track = track;
+			shared_track = current;
 			shared_track_id = -1;
 			break;
 		}
 		if(shared_plugin_id >= 0)
 		{
-			for(int i = 0; i < track->plugins.total; i++)
+			for(int i = 0; i < current->plugins.total; i++)
 			{
-				Plugin *plugin = track->plugins.values[i];
+				Plugin *plugin = current->plugins.values[i];
 
 				if(plugin->id == shared_plugin_id)
 				{
@@ -477,7 +484,7 @@ int Plugin::module_number()
 	return track->number_of();
 }
 
-void Plugin::load(FileXML *file)
+void Plugin::load(FileXML *file, ptstime start)
 {
 	int result = 0;
 
@@ -523,7 +530,7 @@ void Plugin::load(FileXML *file)
 						if(position)
 							postime = track->from_units(position);
 					}
-					postime = file->tag.get_property("POSTIME", postime);
+					postime = file->tag.get_property("POSTIME", postime) + start;
 				}
 				KeyFrame *keyframe;
 

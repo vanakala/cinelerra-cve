@@ -57,9 +57,7 @@ void Tracks::clear_automation(ptstime selectionstart, ptstime selectionend)
 		if(current_track->record)
 		{
 			current_track->clear_automation(selectionstart, 
-				selectionend, 
-				0,
-				0); 
+				selectionend);
 		}
 	}
 }
@@ -105,9 +103,6 @@ void Tracks::automation_xml(FileXML *file)
 	Track* current_track;
 
 	file->tag.set_title("AUTO_CLIPBOARD");
-	file->tag.set_property("LENGTH", total_length());
-	file->tag.set_property("FRAMERATE", edlsession->frame_rate);
-	file->tag.set_property("SAMPLERATE", edlsession->sample_rate);
 	file->append_tag();
 	file->append_newline();
 
@@ -329,6 +324,7 @@ void Tracks::copy(Tracks *tracks, ptstime start, ptstime end,
 		if(new_track)
 			new_track->copy(current, start, end);
 	}
+	init_plugin_pointers_by_ids();
 }
 
 void Tracks::move_track_up(Track *track)
@@ -412,31 +408,21 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	}
 }
 
-void Tracks::paste_automation(ptstime selectionstart, 
-	FileXML *file,
-	int default_only)
+void Tracks::paste_automation(ptstime selectionstart, FileXML *file)
 {
 	Track* current_atrack = 0;
 	Track* current_vtrack = 0;
 	int result = 0;
-	ptstime length;
-	double frame_rate = edlsession->frame_rate;
-	int sample_rate = edlsession->sample_rate;
 	char string[BCTEXTLEN];
 	string[0] = 0;
 
 // Search for start
 	do{
 		result = file->read_tag();
-	}while(!result && 
-		!file->tag.title_is("AUTO_CLIPBOARD"));
+	}while(!result && !file->tag.title_is("AUTO_CLIPBOARD"));
 
 	if(!result)
 	{
-		length = file->tag.get_property("LENGTH_TIME", (ptstime)0);
-		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
-		sample_rate = file->tag.get_property("SAMPLERATE", sample_rate);
-
 		do
 		{
 			result = file->read_tag();
@@ -451,7 +437,7 @@ void Tracks::paste_automation(ptstime selectionstart,
 				if(file->tag.title_is("TRACK"))
 				{
 					file->tag.get_property("TYPE", string);
-					
+
 					if(!strcmp(string, "AUDIO"))
 					{
 // Get next audio track
@@ -468,10 +454,8 @@ void Tracks::paste_automation(ptstime selectionstart,
 // Paste it
 						if(current_atrack)
 						{
-							current_atrack->paste_automation(selectionstart,
-								length,
-								frame_rate,
-								sample_rate,
+							current_atrack->paste_automation(
+								selectionstart,
 								file);
 						}
 					}
@@ -491,10 +475,8 @@ void Tracks::paste_automation(ptstime selectionstart,
 // Paste it
 						if(current_vtrack)
 						{
-							current_vtrack->paste_automation(selectionstart,
-								length,
-								frame_rate,
-								sample_rate,
+							current_vtrack->paste_automation(
+								selectionstart,
 								file);
 						}
 					}

@@ -64,16 +64,7 @@ public:
 // For copy automation, copy, and save
 	void save_xml(FileXML *xml);
 	void copy(Automation *automation, ptstime start, ptstime end);
-
-// For paste automation only
-	int paste(ptstime start,
-		ptstime length,
-		double scale,
-		FileXML *file,
-		AutoConf *autoconf);
-	void paste(ptstime start,
-		ptstime length,
-		FileXML *file);
+	void paste(ptstime start, FileXML *file);
 
 // Get projector coordinates if this is video automation
 	virtual void get_projector(double *x,

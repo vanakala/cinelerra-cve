@@ -50,6 +50,7 @@ public:
 
 	int get_id();
 	void load(FileXML *file, int track_offset, uint32_t load_flags);
+	void load_pluginset(FileXML *file, ptstime start);
 	void init_shared_pointers();
 	virtual void save_header(FileXML *file) {};
 	void equivalent_output(Track *track, ptstime *result);
@@ -167,22 +168,14 @@ public:
 	void clear_plugins(ptstime start, ptstime end);
 // remove everything after pts
 	void clear_after(ptstime pts);
-// Returns the point to restart background rendering at.
-// -1 means nothing changed.
-	void clear_automation(double selectionstart, 
-		double selectionend, 
-		int shift_autos,
-		int default_only);
-	void straighten_automation(double selectionstart, 
-		double selectionend);
+
+	void clear_automation(ptstime selectionstart,
+		ptstime selectionend);
+	void straighten_automation(ptstime selectionstart,
+		ptstime selectionend);
 	void automation_xml(FileXML *file);
-	void paste_automation(ptstime selectionstart, 
-		ptstime total_length, 
-		double frame_rate,
-		int sample_rate,
-		FileXML *file);
-	void paste_keyframes(ptstime start, ptstime length,
-		FileXML *file);
+	void paste_automation(ptstime selectionstart, FileXML *file);
+	void paste_pluginsets(ptstime start, FileXML *file);
 	void clear_handle(ptstime start,
 		ptstime end,
 		int actions,

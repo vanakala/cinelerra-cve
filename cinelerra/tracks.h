@@ -143,9 +143,7 @@ public:
 		double &longest_distance,
 		int actions);
 	void automation_xml(FileXML *file);
-	void paste_automation(ptstime selectionstart,
-		FileXML *xml,
-		int default_only);
+	void paste_automation(ptstime selectionstart, FileXML *xml);
 	void paste_silence(ptstime start,
 		ptstime end);
 
