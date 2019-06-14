@@ -371,26 +371,6 @@ void Autos::paste_silence(ptstime start, ptstime end)
 	insert(start, end);
 }
 
-void Autos::remove_after(ptstime pts)
-{
-	Auto *atmp;
-
-	if(!first)
-		return;
-
-		for(Auto* current = first->next; current;)
-	{
-		if(current->pos_time >= pts)
-		{
-			atmp = NEXT;
-			remove(current);
-			current = atmp;
-		}
-		else
-			current = NEXT;
-	}
-}
-
 void Autos::save_xml(FileXML *file)
 {
 	for(Auto* current = first; current; current = NEXT)

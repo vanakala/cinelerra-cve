@@ -91,7 +91,6 @@ public:
 	void clear_all();
 	void insert(ptstime start, ptstime end);
 	void paste_silence(ptstime start, ptstime end);
-	void remove_after(ptstime pts);
 
 	void save_xml(FileXML *xml);
 	virtual void copy(Autos *autos, ptstime start, ptstime end);

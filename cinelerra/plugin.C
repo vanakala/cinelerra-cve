@@ -178,7 +178,7 @@ void Plugin::shift_keyframes(ptstime difference)
 
 void Plugin::remove_keyframes_after(ptstime pts)
 {
-	keyframes->remove_after(pts);
+	keyframes->clear_after(pts);
 }
 
 void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
