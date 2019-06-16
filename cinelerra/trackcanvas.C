@@ -1652,58 +1652,6 @@ void TrackCanvas::draw_brender_start()
 	}
 }
 
-static int auto_colors[] = 
-{
-	BLUE,
-	RED,
-	GREEN,
-	BLUE,
-	RED,
-	GREEN,
-	BLUE,
-	WHITE,
-	0,
-	0,
-	0,
-	0
-};
-
-// The operations which correspond to each automation type
-static int auto_operations[] = 
-{
-	DRAG_MUTE,
-	DRAG_CAMERA_X,
-	DRAG_CAMERA_Y,
-	DRAG_CAMERA_Z,
-	DRAG_PROJECTOR_X,
-	DRAG_PROJECTOR_Y,
-	DRAG_PROJECTOR_Z,
-	DRAG_FADE,
-	DRAG_PAN,
-	DRAG_MODE,
-	DRAG_MASK,
-	DRAG_NUDGE
-};
-
-// The buttonpress operations, so nothing changes unless the mouse moves
-// a certain amount.  This allows the keyframe to be used to position the
-// insertion point without moving itself.
-static int pre_auto_operations[] =
-{
-	DRAG_MUTE,
-	DRAG_CAMERA_X,
-	DRAG_CAMERA_Y,
-	DRAG_CAMERA_Z,
-	DRAG_PROJECTOR_X,
-	DRAG_PROJECTOR_Y,
-	DRAG_PROJECTOR_Z,
-	DRAG_FADE,
-	DRAG_PAN_PRE,
-	DRAG_MODE_PRE,
-	DRAG_MASK_PRE,
-	DRAG_NUDGE
-};
-
 int TrackCanvas::do_keyframes(int cursor_x, 
 	int cursor_y, 
 	int draw, 
@@ -1718,22 +1666,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	int result = 0;
 	EDLSession *session = edlsession;
 
-	BC_Pixmap *auto_pixmaps[] = 
-	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		pankeyframe_pixmap,
-		modekeyframe_pixmap,
-		maskkeyframe_pixmap,
-		0,
-	};
-
 	for(Track *track = master_edl->first_track();
 		track && !result;
 		track = track->next)
@@ -1746,21 +1678,32 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		{
 // Event not trapped and automation visible
 			Autos *autos = automation->autos[i];
-			if(!result && session->auto_conf->autos[i] && autos)
+			if(!result && session->auto_conf->auto_visible[i] && autos)
 			{
 				pixmaps_lock->lock("TrackCanvas::do_keyframes");
 				switch(i)
 				{
 				case AUTOMATION_MODE:
+					result = do_autos(track, autos,
+						cursor_x, cursor_y,
+						draw, buttonpress,
+						modekeyframe_pixmap,
+						auto_keyframe);
+					break;
+
 				case AUTOMATION_PAN:
+					result = do_autos(track, autos,
+						cursor_x, cursor_y,
+						draw, buttonpress,
+						pankeyframe_pixmap,
+						auto_keyframe);
+					break;
+
 				case AUTOMATION_MASK:
-					result = do_autos(track, 
-						autos,
-						cursor_x, 
-						cursor_y, 
-						draw, 
-						buttonpress,
-						auto_pixmaps[i],
+					result = do_autos(track, autos,
+						cursor_x, cursor_y,
+						draw, buttonpress,
+						maskkeyframe_pixmap,
 						auto_keyframe);
 					break;
 
@@ -1768,16 +1711,14 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					switch(autos->get_type())
 					{
 					case AUTOMATION_TYPE_FLOAT:
-						{
-							result = do_float_autos(track, 
-								autos,
-								cursor_x,
-								cursor_y,
-								draw,
-								buttonpress,
-								auto_colors[i],
-								auto_keyframe);
-						}
+						result = do_float_autos(track,
+							autos,
+							cursor_x,
+							cursor_y,
+							draw,
+							buttonpress,
+							Automation::automation_tbl[i].color,
+							auto_keyframe);
 						break;
 
 					case AUTOMATION_TYPE_INT:
@@ -1787,7 +1728,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							cursor_y,
 							draw, 
 							buttonpress,
-							auto_colors[i],
+							Automation::automation_tbl[i].color,
 							auto_keyframe);
 						break;
 					}
@@ -1797,7 +1738,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 
 				if(result)
 				{
-					if(mainsession->current_operation == auto_operations[i])
+					if(mainsession->current_operation ==
+							Automation::automation_tbl[i].operation)
 						rerender = 1;
 					if(buttonpress)
 					{
@@ -1808,7 +1750,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 									track, 
 									(FloatAuto*)mainsession->drag_auto,
 									1);
-							mainsession->current_operation = pre_auto_operations[i];
+							mainsession->current_operation =
+								Automation::automation_tbl[i].preoperation;
 							rerender = 1;
 						}
 						else
@@ -1825,8 +1768,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(!result && 
-			session->auto_conf->plugins)
+		if(!result && session->auto_conf->plugins_visible)
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
@@ -1858,8 +1800,10 @@ int TrackCanvas::do_keyframes(int cursor_x,
 // Final pass to trap event
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(mainsession->current_operation == pre_auto_operations[i] ||
-				mainsession->current_operation == auto_operations[i])
+		if(mainsession->current_operation ==
+					Automation::automation_tbl[i].preoperation ||
+				mainsession->current_operation ==
+					Automation::automation_tbl[i].operation)
 			result = 1;
 	}
 
@@ -3145,7 +3089,7 @@ void TrackCanvas::draw_overlays()
 		0);
 
 // Transitions
-	if(edlsession->auto_conf->transitions)
+	if(edlsession->auto_conf->transitions_visible)
 		draw_transitions();
 
 // Plugins
@@ -4294,7 +4238,7 @@ int TrackCanvas::do_transitions(int cursor_x,
 	int result = 0;
 	int x, y, w, h;
 
-	if(!edlsession->auto_conf->transitions)
+	if(!edlsession->auto_conf->transitions_visible)
 		return 0;
 
 	for(Track *track = master_edl->first_track();
@@ -4420,7 +4364,7 @@ int TrackCanvas::button_press_event()
 		{
 			Edit *edit;
 			int handle;
-			if(edlsession->auto_conf->transitions &&
+			if(edlsession->auto_conf->transitions_visible &&
 				do_transitions(cursor_x, 
 					cursor_y, 
 					1, 
@@ -4485,7 +4429,7 @@ int TrackCanvas::button_press_event()
 // Test handles only and select a region
 		case EDITING_IBEAM:
 		{
-			if(edlsession->auto_conf->transitions &&
+			if(edlsession->auto_conf->transitions_visible &&
 				do_transitions(cursor_x, 
 					cursor_y, 
 					1, 

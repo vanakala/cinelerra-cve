@@ -23,86 +23,54 @@
 #include "bchash.h"
 #include "filexml.h"
 
-static const char *xml_titles[] = 
-{
-	"SHOW_MUTE",
-	"SHOW_CAMERA_X",
-	"SHOW_CAMERA_Y",
-	"SHOW_CAMERA_Z",
-	"SHOW_PROJECTOR_X",
-	"SHOW_PROJECTOR_Y",
-	"SHOW_PROJECTOR_Z",
-	"SHOW_FADE",
-	"SHOW_PAN",
-	"SHOW_MODE",
-	"SHOW_MASK",
-	"SHOW_NUDGE"
-};
-
-static int auto_defaults[] = 
-{
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	1,
-	0,
-	0,
-	0,
-	0
-};
-
 void AutoConf::load_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		autos[i] = defaults->get(xml_titles[i], auto_defaults[i]);
-	}
-	transitions = defaults->get("SHOW_TRANSITIONS", 1);
-	plugins = defaults->get("SHOW_PLUGINS", 1);
+		auto_visible[i] = defaults->get(Automation::automation_tbl[i].xml_visible,
+			Automation::automation_tbl[i].is_visble);
+
+	transitions_visible = defaults->get("SHOW_TRANSITIONS", 1);
+	plugins_visible = defaults->get("SHOW_PLUGINS", 1);
 }
 
 void AutoConf::load_xml(FileXML *file)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		autos[i] = file->tag.get_property(xml_titles[i], auto_defaults[i]);
-	}
-	transitions = file->tag.get_property("SHOW_TRANSITIONS", 1);
-	plugins = file->tag.get_property("SHOW_PLUGINS", 1);
+		auto_visible[i] = file->tag.get_property(
+			Automation::automation_tbl[i].xml_visible,
+			Automation::automation_tbl[i].is_visble);
+
+	transitions_visible = file->tag.get_property("SHOW_TRANSITIONS", 1);
+	plugins_visible = file->tag.get_property("SHOW_PLUGINS", 1);
 }
 
 void AutoConf::save_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		defaults->update(xml_titles[i], autos[i]);
-	}
-	defaults->update("SHOW_TRANSITIONS", transitions);
-	defaults->update("SHOW_PLUGINS", plugins);
+		defaults->update(Automation::automation_tbl[i].xml_visible,
+			auto_visible[i]);
+
+	defaults->update("SHOW_TRANSITIONS", transitions_visible);
+	defaults->update("SHOW_PLUGINS", plugins_visible);
 }
 
 void AutoConf::save_xml(FileXML *file)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		file->tag.set_property(xml_titles[i], autos[i]);
-	}
-	file->tag.set_property("SHOW_TRANSITIONS", transitions);
-	file->tag.set_property("SHOW_PLUGINS", plugins);
+		file->tag.set_property(Automation::automation_tbl[i].xml_visible,
+			auto_visible[i]);
+
+	file->tag.set_property("SHOW_TRANSITIONS", transitions_visible);
+	file->tag.set_property("SHOW_PLUGINS", plugins_visible);
 }
 
 void AutoConf::set_all(int value)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		autos[i] = value;
-	}
-	transitions = value;
-	plugins = value;
+		auto_visible[i] = value;
+
+	transitions_visible = value;
+	plugins_visible = value;
 }
 
 AutoConf& AutoConf::operator=(AutoConf &that)
@@ -115,10 +83,10 @@ void AutoConf::copy_from(AutoConf *src)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		autos[i] = src->autos[i];
+		auto_visible[i] = src->auto_visible[i];
 	}
-	transitions = src->transitions;
-	plugins = src->plugins;
+	transitions_visible = src->transitions_visible;
+	plugins_visible = src->plugins_visible;
 }
 
 

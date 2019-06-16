@@ -196,7 +196,7 @@ void MainMenu::update_toggles()
 	cursor_on_frames->set_checked(edlsession->cursor_on_frames);
 	loop_playback->set_checked(master_edl->local_session->loop_playback);
 	show_titles->set_checked(edlsession->show_titles);
-	show_transitions->set_checked(edlsession->auto_conf->transitions);
+	show_transitions->set_checked(edlsession->auto_conf->transitions_visible);
 	fade_automation->update_toggle();
 	mute_automation->update_toggle();
 	pan_automation->update_toggle();
@@ -206,7 +206,7 @@ void MainMenu::update_toggles()
 	project_x->update_toggle();
 	project_y->update_toggle();
 	project_z->update_toggle();
-	plugin_automation->set_checked(edlsession->auto_conf->plugins);
+	plugin_automation->set_checked(edlsession->auto_conf->plugins_visible);
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
 }

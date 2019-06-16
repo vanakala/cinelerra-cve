@@ -174,7 +174,7 @@ void MWindow::fit_autos(int doall)
 			}
 			break;
 		}
-		if (!Automation::autogrouptypes_fixedrange[i]) 
+		if(!Automation::autogrouptypes[i].fixedrange)
 		{
 			master_edl->local_session->automation_mins[i] = min;
 			master_edl->local_session->automation_maxs[i] = max;

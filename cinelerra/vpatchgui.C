@@ -220,7 +220,7 @@ int VFadePatch::handle_event()
 
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	if(edlsession->auto_conf->autos[AUTOMATION_FADE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -282,7 +282,7 @@ int VModePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(edlsession->auto_conf->autos[AUTOMATION_MODE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_MODE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

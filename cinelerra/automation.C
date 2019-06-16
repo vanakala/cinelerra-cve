@@ -28,19 +28,57 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "language.h"
+#include "mainsession.inc"
 #include "intautos.h"
 #include "track.h"
 
-int Automation::autogrouptypes_fixedrange[] =
+struct autogrouptype_def Automation::autogrouptypes[] =
 {
-	0,
-	0,
-	0,
-	0,
-	0,
-	1
+	{ "AUTOGROUPTYPE_AUDIO_FADE_MAX", "AUTOGROUPTYPE_AUDIO_FADE_MIN", 0,},
+	{ "AUTOGROUPTYPE_VIDEO_FADE_MAX", "AUTOGROUPTYPE_VIDEO_FADE_MIN", 0 },
+	{ "AUTOGROUPTYPE_ZOOM_MAX", "AUTOGROUPTYPE_ZOOM_MIN", 0 },
+	{ "AUTOGROUPTYPE_X_MAX", "AUTOGROUPTYPE_X_MIN", 0 },
+	{ "AUTOGROUPTYPE_Y_MAX", "AUTOGROUPTYPE_Y_MIN", 0 },
+	{ "AUTOGROUPTYPE_INT255_MAX", "AUTOGROUPTYPE_INT255_MIN", 1 }
 };
 
+struct automation_def Automation::automation_tbl[] =
+{
+	{ N_("Mute"), "MUTEAUTOS", "SHOW_MUTE",
+		0, AUTOGROUPTYPE_INT255, AUTOMATION_TYPE_INT,
+		BLUE, DRAG_MUTE, DRAG_MUTE },
+	{ N_("Camera X"), "CAMERA_X", "SHOW_CAMERA_X",
+		0, AUTOGROUPTYPE_X, AUTOMATION_TYPE_FLOAT,
+		RED, DRAG_CAMERA_X, DRAG_CAMERA_X },
+	{ N_("Camera Y"), "CAMERA_Y", "SHOW_CAMERA_Y",
+		0, AUTOGROUPTYPE_Y, AUTOMATION_TYPE_FLOAT,
+		GREEN, DRAG_CAMERA_Y, DRAG_CAMERA_Y },
+	{ N_("Camera Z"), "CAMERA_Z", "SHOW_CAMERA_Z",
+		0, AUTOGROUPTYPE_ZOOM, AUTOMATION_TYPE_FLOAT,
+		BLUE, DRAG_CAMERA_Z, DRAG_CAMERA_Z },
+	{ N_("Projector X"), "PROJECTOR_X", "SHOW_PROJECTOR_X",
+		0, AUTOGROUPTYPE_X, AUTOMATION_TYPE_FLOAT,
+		RED, DRAG_PROJECTOR_X, DRAG_PROJECTOR_X },
+	{ _("Projector Y"), "PROJECTOR_Y", "SHOW_PROJECTOR_Y",
+		0, AUTOGROUPTYPE_Y, AUTOMATION_TYPE_FLOAT,
+		GREEN, DRAG_PROJECTOR_Y, DRAG_PROJECTOR_Y },
+	{ N_("Projector Z"), "PROJECTOR_Z", "SHOW_PROJECTOR_Z",
+		0, AUTOGROUPTYPE_ZOOM, AUTOMATION_TYPE_FLOAT,
+		BLUE, DRAG_PROJECTOR_Z, DRAG_PROJECTOR_Z },
+	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
+		1, AUTOGROUPTYPE_AUDIO_FADE, AUTOMATION_TYPE_FLOAT,
+		WHITE, DRAG_FADE, DRAG_FADE },
+	{ N_("Pan"), "PANAUTOS", "SHOW_PAN",
+		0, -1, AUTOMATION_PAN,
+		0, DRAG_PAN_PRE, DRAG_PAN },
+	{ N_("Mode"), "MODEAUTOS", "SHOW_MODE",
+		0, -1, AUTOMATION_TYPE_INT,
+		0, DRAG_MODE, DRAG_MODE_PRE },
+	{ N_("Mask"), "MASKAUTOS", "SHOW_MASK",
+		0, -1, AUTOMATION_TYPE_MASK,
+		0, DRAG_MASK_PRE, DRAG_MASK }
+};
 
 Automation::Automation(EDL *edl, Track *track)
 {
@@ -63,32 +101,25 @@ Automation::~Automation()
 
 int Automation::autogrouptype(int autoidx, Track *track)
 {
-	int autogrouptype = -1;
-	switch (autoidx) 
+	int autogrouptype;
+
+	if(autoidx < AUTOMATION_TOTAL)
 	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		autogrouptype = AUTOGROUPTYPE_X;
-		break;
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		autogrouptype = AUTOGROUPTYPE_Y;
-		break;
-	case AUTOMATION_CAMERA_Z:
-	case AUTOMATION_PROJECTOR_Z:
-		autogrouptype = AUTOGROUPTYPE_ZOOM;
-		break;
-	case AUTOMATION_FADE:
-		if (track->data_type == TRACK_AUDIO)
-			autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
-		else
-			autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
-		break;
-	case AUTOMATION_MUTE:
-		autogrouptype = AUTOGROUPTYPE_INT255;
-		break;
+		autogrouptype = automation_tbl[autoidx].autogrouptype;
+		if(autogrouptype == AUTOGROUPTYPE_AUDIO_FADE)
+		{
+			switch(track->data_type)
+			{
+			case TRACK_AUDIO:
+				break;
+			case TRACK_VIDEO:
+				autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
+				break;
+			}
+		}
+		return autogrouptype;
 	}
-	return (autogrouptype);
+	return -1;
 }
 
 Automation& Automation::operator=(Automation& automation)
@@ -115,28 +146,11 @@ void Automation::copy_from(Automation *automation)
 	}
 }
 
-// These must match the enumerations
-static const char *xml_titles[] = 
-{
-	"MUTEAUTOS",
-	"CAMERA_X",
-	"CAMERA_Y",
-	"CAMERA_Z",
-	"PROJECTOR_X",
-	"PROJECTOR_Y",
-	"PROJECTOR_Z",
-	"FADEAUTOS",
-	"PANAUTOS",
-	"MODEAUTOS",
-	"MASKAUTOS",
-	"NUDGEAUTOS"
-};
-
 int Automation::load(FileXML *file)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(file->tag.title_is(xml_titles[i]) && autos[i])
+		if(file->tag.title_is(automation_tbl[i].xml_title) && autos[i])
 		{
 			autos[i]->load(file);
 			return 1;
@@ -150,7 +164,7 @@ void Automation::paste(ptstime start,
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(file->tag.title_is(xml_titles[i]) && autos[i])
+		if(file->tag.title_is(automation_tbl[i].xml_title) && autos[i])
 		{
 			autos[i]->paste(start, file);
 			return;
@@ -165,12 +179,12 @@ void Automation::save_xml(FileXML *file)
 	{
 		if(autos[i] && autos[i]->total())
 		{
-			file->tag.set_title(xml_titles[i]);
+			file->tag.set_title(automation_tbl[i].xml_title);
 			file->append_tag();
 			file->append_newline();
 			autos[i]->save_xml(file);
 			char string[BCTEXTLEN];
-			sprintf(string, "/%s", xml_titles[i]);
+			sprintf(string, "/%s", automation_tbl[i].xml_title);
 			file->tag.set_title(string);
 			file->append_tag();
 			file->append_newline();
@@ -194,7 +208,7 @@ void Automation::clear(ptstime start,
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && (!autoconf || autoconf->autos[i]))
+		if(autos[i] && (!autoconf || autoconf->auto_visible[i]))
 			autos[i]->clear(start, end, shift_autos);
 	}
 }
@@ -214,7 +228,7 @@ void Automation::straighten(ptstime start,
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && (!autoconf || autoconf->autos[i]))
+		if(autos[i] && (!autoconf || autoconf->auto_visible[i]))
 			autos[i]->straighten(start, end);
 	}
 }
@@ -257,7 +271,7 @@ void Automation::get_extents(float *min,
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && edlsession->auto_conf->autos[i])
+		if(autos[i] && edlsession->auto_conf->auto_visible[i])
 		{
 			if (autos[i]->autogrouptype == autogrouptype)
 				autos[i]->get_extents(min, max, coords_undefined, start, end);
@@ -274,7 +288,7 @@ void Automation::dump(int indent)
 	{
 		if(autos[i])
 		{
-			printf("%*s%s:\n", indent, "", xml_titles[i]);
+			printf("%*s%s:\n", indent, "", automation_tbl[i].name);
 			autos[i]->dump(indent + 2);
 		}
 	}

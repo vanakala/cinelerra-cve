@@ -49,10 +49,29 @@
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
 		value = 0;
 
+struct automation_def
+{
+	const char *name;
+	const char *xml_title;
+	const char *xml_visible;
+	int is_visble;
+	int autogrouptype;
+	int type;
+	int color;
+	int preoperation;
+	int operation;
+};
+
+struct autogrouptype_def
+{
+	const char *titlemax;
+	const char *titlemin;
+	int fixedrange;
+};
+
 class Automation
 {
 public:
-	static int autogrouptypes_fixedrange[];
 	Automation(EDL *edl, Track *track);
 	virtual ~Automation();
 
@@ -102,7 +121,8 @@ public:
 	void dump(int indent = 0);
 
 	Autos *autos[AUTOMATION_TOTAL];
-
+	static struct automation_def automation_tbl[];
+	static struct autogrouptype_def autogrouptypes[];
 	EDL *edl;
 	Track *track;
 };

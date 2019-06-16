@@ -46,22 +46,6 @@ static const char *other_text[NONAUTOTOGGLES_COUNT] =
 	N_("Plugin Autos")
 };
 
-static const char *auto_text[] = 
-{
-	N_("Mute"),
-	N_("Camera X"),
-	N_("Camera Y"),
-	N_("Camera Z"),
-	N_("Projector X"),
-	N_("Projector Y"),
-	N_("Projector Z"),
-	N_("Fade"),
-	N_("Pan"),
-	N_("Mode"),
-	N_("Mask"),
-	N_("Nudge")
-};
-
 static toggleinfo toggle_order[] = 
 {
 	{0, NONAUTOTOGGLES_ASSETS},
@@ -130,7 +114,8 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 			&temp5, 
 			&temp6,
 			&temp7, 
-			toggle_order[i].isauto ? _(auto_text[toggle_order[i].ref]) : _(other_text[toggle_order[i].ref]));
+			toggle_order[i].isauto ? _(Automation::automation_tbl[toggle_order[i].ref].name) :
+				_(other_text[toggle_order[i].ref]));
 		*w = MAX(current_w, *w);
 		*h += current_h + 5;
 	}
@@ -191,7 +176,8 @@ GWindowToggle::GWindowToggle(MWindow *mwindow,
  : BC_CheckBox(x, 
 	y,
 	*get_main_value(mwindow, toggleinf), 
-	toggleinf.isauto ? _(auto_text[toggleinf.ref]) : _(other_text[toggleinf.ref]))
+	toggleinf.isauto ? _(Automation::automation_tbl[toggleinf.ref].name) :
+		_(other_text[toggleinf.ref]))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -233,7 +219,7 @@ int* GWindowToggle::get_main_value(MWindow *mwindow, toggleinfo toggleinf)
 {
 	if(toggleinf.isauto)
 	{
-		return &edlsession->auto_conf->autos[toggleinf.ref];
+		return &edlsession->auto_conf->auto_visible[toggleinf.ref];
 	}
 	else
 	{
@@ -246,10 +232,10 @@ int* GWindowToggle::get_main_value(MWindow *mwindow, toggleinfo toggleinf)
 			return &edlsession->show_titles;
 
 		case NONAUTOTOGGLES_TRANSITIONS:
-			return &edlsession->auto_conf->transitions;
+			return &edlsession->auto_conf->transitions_visible;
 
 		case NONAUTOTOGGLES_PLUGIN_AUTOS:
-			return &edlsession->auto_conf->plugins;
+			return &edlsession->auto_conf->plugins_visible;
 		}
 	}
 }

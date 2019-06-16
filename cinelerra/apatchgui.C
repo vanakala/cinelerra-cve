@@ -280,7 +280,7 @@ int AFadePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(edlsession->auto_conf->autos[AUTOMATION_FADE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -334,7 +334,7 @@ int APanPatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(need_undo && edlsession->auto_conf->autos[AUTOMATION_PAN])
+	if(need_undo && edlsession->auto_conf->auto_visible[AUTOMATION_PAN])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

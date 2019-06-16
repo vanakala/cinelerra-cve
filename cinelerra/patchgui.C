@@ -504,7 +504,7 @@ int MutePatch::handle_event()
 
 	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
-	if(edlsession->auto_conf->autos[AUTOMATION_MUTE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

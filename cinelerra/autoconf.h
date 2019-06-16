@@ -33,7 +33,6 @@ class AutoConf
 {
 public:
 	AutoConf() {};
-	~AutoConf() {};
 
 	AutoConf& operator=(AutoConf &that);
 	void copy_from(AutoConf *src);
@@ -45,11 +44,11 @@ public:
 
 
 // The array entries correspond to the Automation enums.
-	int autos[AUTOMATION_TOTAL];
+	int auto_visible[AUTOMATION_TOTAL];
 
 // Other viewable things
-	int transitions;
-	int plugins;
+	int transitions_visible;
+	int plugins_visible;
 };
 
 #endif

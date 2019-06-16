@@ -24,12 +24,8 @@
 
 class Automation;
 
-// These must match the following arrays:
-// xml_titles in autoconf.C and automation.C.
-// auto_colors in trackcanvas.C
-// auto_operations in trackcanvas.C
-// auto_pixmaps in trackcanvas.C
-// auto_text in gwindowgui.C
+// These must match the following array:
+// Automation::automation_tbl in automation.C
 enum
 {
 	AUTOMATION_MUTE,
@@ -43,17 +39,12 @@ enum
 	AUTOMATION_PAN,
 	AUTOMATION_MODE,
 	AUTOMATION_MASK,
-//	AUTOMATION_NUDGE,
 	AUTOMATION_TOTAL
 };
 
-
-
 // Automation group types (used by the gui to control the ranges)
-
-// These must match the following arrays:
-// xml_autogrouptypes_* in localsession.C
-// autogrouptypes_fixedrange in automation.C
+// These must match the following array:
+// Automation::autogrouptypes in automation.C
 enum
 {
 	AUTOGROUPTYPE_AUDIO_FADE,
@@ -65,8 +56,6 @@ enum
 	AUTOGROUPTYPE_COUNT
 };
 
-
-
 // Automation types
 enum
 {
@@ -75,6 +64,5 @@ enum
 	AUTOMATION_TYPE_INT,
 	AUTOMATION_TYPE_PAN
 };
-
 
 #endif

@@ -845,7 +845,7 @@ void PluginServer::sync_parameters()
 {
 	if(video) mwindow->restart_brender();
 	mwindow->sync_parameters();
-	if(edlsession->auto_conf->plugins)
+	if(edlsession->auto_conf->plugins_visible)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

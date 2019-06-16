@@ -32,26 +32,6 @@
 
 #include <inttypes.h>
 
-static const char *xml_autogrouptypes_titlesmax[] = 
-{
-	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
-	"AUTOGROUPTYPE_VIDEO_FADE_MAX",
-	"AUTOGROUPTYPE_ZOOM_MAX",
-	"AUTOGROUPTYPE_X_MAX",
-	"AUTOGROUPTYPE_Y_MAX",
-	"AUTOGROUPTYPE_INT255_MAX"
-};
-
-static const char *xml_autogrouptypes_titlesmin[] = 
-{
-	"AUTOGROUPTYPE_AUDIO_FADE_MIN",
-	"AUTOGROUPTYPE_VIDEO_FADE_MIN",
-	"AUTOGROUPTYPE_ZOOM_MIN",
-	"AUTOGROUPTYPE_X_MIN",
-	"AUTOGROUPTYPE_Y_MIN",
-	"AUTOGROUPTYPE_INT255_MIN"
-};
-
 LocalSession::LocalSession(EDL *edl)
 {
 	this->edl = edl;
@@ -194,10 +174,14 @@ void LocalSession::save_xml(FileXML *file)
 	file->tag.set_property("GREEN", green);
 	file->tag.set_property("BLUE", blue);
 
-	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (!Automation::autogrouptypes_fixedrange[i]) {
-			file->tag.set_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
-			file->tag.set_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	{
+		if(!Automation::autogrouptypes[i].fixedrange)
+		{
+			file->tag.set_property(Automation::autogrouptypes[i].titlemin,
+				automation_mins[i]);
+			file->tag.set_property(Automation::autogrouptypes[i].titlemax,
+				automation_maxs[i]);
 		}
 	}
 	file->append_tag();
@@ -254,10 +238,14 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 
 		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 		{
-			if(!Automation::autogrouptypes_fixedrange[i])
+			if(!Automation::autogrouptypes[i].fixedrange)
 			{
-				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
-				automation_maxs[i] = file->tag.get_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
+				automation_mins[i] = file->tag.get_property(
+					Automation::autogrouptypes[i].titlemin,
+					automation_mins[i]);
+				automation_maxs[i] = file->tag.get_property(
+					Automation::autogrouptypes[i].titlemax,
+					automation_maxs[i]);
 			}
 		}
 	}
@@ -324,10 +312,16 @@ void LocalSession::load_defaults(BC_Hash *defaults)
 	green = defaults->get("GREEN", 0.0);
 	blue = defaults->get("BLUE", 0.0);
 
-	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (!Automation::autogrouptypes_fixedrange[i]) {
-			automation_mins[i] = defaults->get(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
-			automation_maxs[i] = defaults->get(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	{
+		if(!Automation::autogrouptypes[i].fixedrange)
+		{
+			automation_mins[i] = defaults->get(
+				Automation::autogrouptypes[i].titlemin,
+				automation_mins[i]);
+			automation_maxs[i] = defaults->get(
+				Automation::autogrouptypes[i].titlemax,
+				automation_maxs[i]);
 		}
 	}
 }
@@ -350,10 +344,14 @@ void LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("GREEN", green);
 	defaults->update("BLUE", blue);
 
-	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (!Automation::autogrouptypes_fixedrange[i]) {
-			defaults->update(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
-			defaults->update(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	{
+		if(!Automation::autogrouptypes[i].fixedrange)
+		{
+			defaults->update(Automation::autogrouptypes[i].titlemin,
+				automation_mins[i]);
+			defaults->update(Automation::autogrouptypes[i].titlemax,
+				automation_maxs[i]);
 		}
 	}
 }

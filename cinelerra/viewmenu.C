@@ -70,13 +70,13 @@ ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
-	set_checked(edlsession->auto_conf->transitions);
+	set_checked(edlsession->auto_conf->transitions_visible);
 }
 
 int ShowTransitions::handle_event()
 {
 	set_checked(!get_checked());
-	edlsession->auto_conf->transitions = get_checked();
+	edlsession->auto_conf->transitions_visible = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();
@@ -92,13 +92,13 @@ ShowAutomation::ShowAutomation(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->subscript = subscript;
-	set_checked(edlsession->auto_conf->autos[subscript]);
+	set_checked(edlsession->auto_conf->auto_visible[subscript]);
 }
 
 int ShowAutomation::handle_event()
 {
 	set_checked(!get_checked());
-	edlsession->auto_conf->autos[subscript] = get_checked();
+	edlsession->auto_conf->auto_visible[subscript] = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();
@@ -107,7 +107,7 @@ int ShowAutomation::handle_event()
 
 void ShowAutomation::update_toggle()
 {
-	set_checked(edlsession->auto_conf->autos[subscript]);
+	set_checked(edlsession->auto_conf->auto_visible[subscript]);
 }
 
 
@@ -120,7 +120,7 @@ PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
 int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
-	edlsession->auto_conf->plugins = get_checked();
+	edlsession->auto_conf->plugins_visible = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->gwindow->gui->update_toggles();

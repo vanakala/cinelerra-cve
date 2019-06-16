@@ -707,7 +707,7 @@ void Track::automation_xml(FileXML *file)
 
 	automation->save_xml(file);
 
-	if(edlsession->auto_conf->plugins)
+	if(edlsession->auto_conf->plugins_visible)
 	{
 		file->tag.set_title("PLUGINSETS");
 		file->append_tag();
