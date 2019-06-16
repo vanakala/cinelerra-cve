@@ -209,54 +209,44 @@ public:
 	MWindow *mwindow;
 };
 
-class CutKeyframes : public BC_MenuItem
+class CutEffects : public BC_MenuItem
 {
 public:
-	CutKeyframes(MWindow *mwindow);
+	CutEffects();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
-class CopyKeyframes : public BC_MenuItem
+class CopyEffects : public BC_MenuItem
 {
 public:
-	CopyKeyframes(MWindow *mwindow);
+	CopyEffects();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
-class PasteKeyframes : public BC_MenuItem
+class PasteEffects : public BC_MenuItem
 {
 public:
-	PasteKeyframes(MWindow *mwindow);
+	PasteEffects();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ClearKeyframes : public BC_MenuItem
 {
 public:
-	ClearKeyframes(MWindow *mwindow);
+	ClearKeyframes();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class StraightenKeyframes : public BC_MenuItem
 {
 public:
-	StraightenKeyframes(MWindow *mwindow);
+	StraightenKeyframes();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class PasteSilence : public BC_MenuItem

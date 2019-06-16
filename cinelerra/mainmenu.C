@@ -118,13 +118,13 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	editmenu->add_item(new BC_MenuItem("-"));
 	editmenu->add_item(new ClearLabels(mwindow));
 
-	BC_Menu *keyframemenu;
-	add_menu(keyframemenu = new BC_Menu(_("Keyframes")));
-	keyframemenu->add_item(new CutKeyframes(mwindow));
-	keyframemenu->add_item(new CopyKeyframes(mwindow));
-	keyframemenu->add_item(new PasteKeyframes(mwindow));
-	keyframemenu->add_item(new ClearKeyframes(mwindow));
-	keyframemenu->add_item(new StraightenKeyframes(mwindow));
+	BC_Menu *menu;
+	add_menu(menu = new BC_Menu(_("Effects")));
+	menu->add_item(new CutEffects());
+	menu->add_item(new CopyEffects());
+	menu->add_item(new PasteEffects());
+	menu->add_item(new ClearKeyframes());
+	menu->add_item(new StraightenKeyframes());
 
 	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
@@ -495,67 +495,62 @@ int Redo::update_caption(const char *new_caption)
 	set_text(string);
 }
 
-CutKeyframes::CutKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Cut keyframes"), "Shift-X", 'X')
+CutEffects::CutEffects()
+ : BC_MenuItem(_("Cut effects"), "Shift-X", 'X')
 { 
 	set_shift(); 
-	this->mwindow = mwindow; 
 }
 
-int CutKeyframes::handle_event()
+int CutEffects::handle_event()
 {
-	mwindow->cut_automation();
+	mwindow_global->cut_automation();
 	return 1;
 }
 
-CopyKeyframes::CopyKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Copy keyframes"), "Shift-C", 'C')
-{ 
-	set_shift(); 
-	this->mwindow = mwindow; 
+CopyEffects::CopyEffects()
+ : BC_MenuItem(_("Copy effects"), "Shift-C", 'C')
+{
+	set_shift();
 }
 
-int CopyKeyframes::handle_event()
+int CopyEffects::handle_event()
 {
-	mwindow->copy_automation();
+	mwindow_global->copy_automation();
 	return 1;
 }
 
-PasteKeyframes::PasteKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Paste keyframes"), "Shift-V", 'V')
+PasteEffects::PasteEffects()
+ : BC_MenuItem(_("Paste effects"), "Shift-V", 'V')
 {
-	set_shift(); 
-	this->mwindow = mwindow; 
+	set_shift();
 }
 
-int PasteKeyframes::handle_event()
+int PasteEffects::handle_event()
 {
-	mwindow->paste_automation(); 
+	mwindow_global->paste_automation();
 }
 
-ClearKeyframes::ClearKeyframes(MWindow *mwindow)
+ClearKeyframes::ClearKeyframes()
  : BC_MenuItem(_("Clear keyframes"), "Shift-Del", DELETE)
 {
-	set_shift(); 
-	this->mwindow = mwindow; 
+	set_shift();
 }
 
 int ClearKeyframes::handle_event()
 {
-	mwindow->clear_automation();
+	mwindow_global->clear_automation();
 	return 1;
 }
 
 
-StraightenKeyframes::StraightenKeyframes(MWindow *mwindow)
+StraightenKeyframes::StraightenKeyframes()
  : BC_MenuItem(_("Straighten curves"))
 {
-	this->mwindow = mwindow; 
 }
 
 int StraightenKeyframes::handle_event()
 {
-	mwindow->straighten_automation();
+	mwindow_global->straighten_automation();
 	return 1;
 }
 
