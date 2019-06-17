@@ -551,7 +551,7 @@ void Plugin::init_shared_pointers()
 	Plugin *other_plugin = 0;
 
 	if(shared_track_num >= 0)
-		other_track = edl->tracks->get_item_number(shared_track_num);
+		other_track = track->tracks->get_item_number(shared_track_num);
 	if(shared_plugin_num >= 0 && other_track &&
 			other_track->plugins.total > shared_plugin_num)
 		other_plugin = other_track->plugins.values[shared_plugin_num];
