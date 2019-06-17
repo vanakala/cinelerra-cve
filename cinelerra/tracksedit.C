@@ -408,82 +408,35 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	}
 }
 
-void Tracks::paste_automation(ptstime selectionstart, FileXML *file)
+void Tracks::load_effects(FileXML *file)
 {
-	Track* current_atrack = 0;
-	Track* current_vtrack = 0;
-	int result = 0;
+	Track *current;
 	char string[BCTEXTLEN];
 	string[0] = 0;
 
 // Search for start
-	do{
-		result = file->read_tag();
-	}while(!result && !file->tag.title_is("AUTO_CLIPBOARD"));
+	while(!file->read_tag() && file->tag.title_is("AUTO_CLIPBOARD"));
 
-	if(!result)
+	do
 	{
-		do
+		if(file->tag.title_is("/AUTO_CLIPBOARD"))
+			break;
+
+		if(file->tag.title_is("TRACK"))
 		{
-			result = file->read_tag();
+			file->tag.get_property("TYPE", string);
 
-			if(!result)
-			{
-				if(file->tag.title_is("/AUTO_CLIPBOARD"))
-				{
-					result = 1;
-				}
-				else
-				if(file->tag.title_is("TRACK"))
-				{
-					file->tag.get_property("TYPE", string);
+			if(!strcmp(string, "VIDEO"))
+				current = add_video_track(0, 0);
 
-					if(!strcmp(string, "AUDIO"))
-					{
-// Get next audio track
-						if(!current_atrack)
-							current_atrack = first;
-						else
-							current_atrack = current_atrack->next;
+			if(!strcmp(string, "AUDIO"))
+				current = add_audio_track(0, 0);
 
-						while(current_atrack && 
-							(current_atrack->data_type != TRACK_AUDIO ||
-							!current_atrack->record))
-							current_atrack = current_atrack->next;
+			current->load_effects(file);
+		}
+	}while(!file->read_tag());
 
-// Paste it
-						if(current_atrack)
-						{
-							current_atrack->paste_automation(
-								selectionstart,
-								file);
-						}
-					}
-					else
-					{
-// Get next video track
-						if(!current_vtrack)
-							current_vtrack = first;
-						else
-							current_vtrack = current_vtrack->next;
-
-						while(current_vtrack && 
-							(current_vtrack->data_type != TRACK_VIDEO ||
-							!current_vtrack->record))
-							current_vtrack = current_vtrack->next;
-
-// Paste it
-						if(current_vtrack)
-						{
-							current_vtrack->paste_automation(
-								selectionstart,
-								file);
-						}
-					}
-				}
-			}
-		}while(!result);
-	}
+	init_shared_pointers();
 }
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)

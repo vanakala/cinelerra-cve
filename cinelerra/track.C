@@ -428,6 +428,7 @@ void Track::insert_plugin(Track *track, ptstime position,
 			if(new_start + new_length > end)
 				new_length = end - new_start;
 			new_plugin->set_length(new_length);
+			new_plugin->shift_keyframes(position);
 		}
 	}
 }
@@ -734,34 +735,32 @@ void Track::automation_xml(FileXML *file)
 	file->append_newline();
 }
 
-void Track::paste_automation(ptstime selectionstart, FileXML *file)
+void Track::load_effects(FileXML *file)
 {
-// Only used for pasting automation alone.
+// Only used for pasting effects alone.
 	while(!file->read_tag())
 	{
 		if(file->tag.title_is("/TRACK"))
 			break;
 		else
 		{
-			automation->paste(selectionstart, file);
+			automation->paste(0, file);
 
 			if(file->tag.title_is("PLUGINSETS"))
-				paste_pluginsets(selectionstart, file);
+				load_pluginsets(file);
 		}
 	}
 }
 
-void Track::paste_pluginsets(ptstime start, FileXML *file)
+void Track::load_pluginsets(FileXML *file)
 {
-	char data[MESSAGESIZE];
-
 	while(!file->read_tag())
 	{
 		if(file->tag.title_is("/PLUGINSETS"))
 			break;
 		else
 		if(file->tag.title_is("PLUGINSET"))
-			load_pluginset(file, start);
+			load_pluginset(file, 0);
 	}
 }
 

@@ -143,7 +143,8 @@ public:
 		double &longest_distance,
 		int actions);
 	void automation_xml(FileXML *file);
-	void paste_automation(ptstime selectionstart, FileXML *xml);
+// Loads effects from xml to empty Tracks
+	void load_effects(FileXML *file);
 	void paste_silence(ptstime start,
 		ptstime end);
 

@@ -917,6 +917,9 @@ void MWindow::paste_automation()
 
 	if(len)
 	{
+		FileXML file;
+		Tracks tracks(0);
+
 		if(cwindow->stop_playback())
 			return;
 
@@ -924,14 +927,11 @@ void MWindow::paste_automation()
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
 			SECONDARY_SELECTION);
-		FileXML file;
 		file.read_from_string(string);
-
-		master_edl->tracks->clear_automation(
+		tracks.load_effects(&file);
+		master_edl->tracks->append_tracks(&tracks,
 			master_edl->local_session->get_selectionstart(),
-			master_edl->local_session->get_selectionend());
-		master_edl->tracks->paste_automation(
-			master_edl->local_session->get_selectionstart(), &file);
+			0, 1); // overwrite
 		save_backup();
 		undo->update_undo(_("paste keyframes"), LOAD_AUTOMATION);
 		delete [] string;
