@@ -293,7 +293,7 @@ void MWindow::copy(ptstime start, ptstime end)
 	save_backup();
 }
 
-void MWindow::copy_automation()
+void MWindow::copy_effects()
 {
 	FileXML file;
 	Tracks tracks(0);
@@ -371,9 +371,9 @@ void MWindow::cut()
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 }
 
-void MWindow::cut_automation()
+void MWindow::cut_effects()
 {
-	copy_automation();
+	copy_effects();
 
 	master_edl->tracks->clear_automation(master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend());
@@ -911,7 +911,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	save_backup();
 }
 
-void MWindow::paste_automation()
+void MWindow::paste_effects(int operation)
 {
 	int len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 
@@ -928,12 +928,12 @@ void MWindow::paste_automation()
 			len, 
 			SECONDARY_SELECTION);
 		file.read_from_string(string);
-		tracks.load_effects(&file);
+		tracks.load_effects(&file, operation);
 		master_edl->tracks->append_tracks(&tracks,
 			master_edl->local_session->get_selectionstart(),
 			0, 1); // overwrite
 		save_backup();
-		undo->update_undo(_("paste keyframes"), LOAD_AUTOMATION);
+		undo->update_undo(_("paste effects"), LOAD_AUTOMATION);
 		delete [] string;
 
 		restart_brender();

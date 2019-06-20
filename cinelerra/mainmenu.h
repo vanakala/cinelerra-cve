@@ -233,6 +233,22 @@ public:
 	int handle_event();
 };
 
+class PasteAutos : public BC_MenuItem
+{
+public:
+	PasteAutos();
+
+	int handle_event();
+};
+
+class PastePlugins : public BC_MenuItem
+{
+public:
+	PastePlugins();
+
+	int handle_event();
+};
+
 class ClearKeyframes : public BC_MenuItem
 {
 public:

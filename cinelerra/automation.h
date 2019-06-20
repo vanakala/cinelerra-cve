@@ -29,7 +29,7 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "module.inc"
+#include "mwindow.inc"
 #include "track.inc"
 
 #include <stdint.h>
@@ -79,11 +79,10 @@ public:
 	void equivalent_output(Automation *automation, ptstime *result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
-	int load(FileXML *file);
+	int load(FileXML *file, int operation = PASTE_ALL);
 // For copy automation, copy, and save
 	void save_xml(FileXML *xml);
 	void copy(Automation *automation, ptstime start, ptstime end);
-	void paste(ptstime start, FileXML *file);
 
 // Get projector coordinates if this is video automation
 	virtual void get_projector(double *x,
@@ -117,6 +116,7 @@ public:
 		ptstime start,
 		ptstime end,
 		int autogrouptype);
+	ptstime get_length();
 
 	void dump(int indent = 0);
 

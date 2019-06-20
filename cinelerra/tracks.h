@@ -144,7 +144,7 @@ public:
 		int actions);
 	void automation_xml(FileXML *file);
 // Loads effects from xml to empty Tracks
-	void load_effects(FileXML *file);
+	void load_effects(FileXML *file, int operation);
 	void paste_silence(ptstime start,
 		ptstime end);
 

@@ -131,7 +131,7 @@ ptstime Plugin::end_pts()
 void Plugin::set_pts(ptstime pts)
 {
 	this->pts = pts;
-	keyframes->base_pts = pts;
+	this->keyframes->base_pts = pts;
 }
 
 ptstime Plugin::get_length()

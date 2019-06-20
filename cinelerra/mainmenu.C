@@ -123,6 +123,8 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	menu->add_item(new CutEffects());
 	menu->add_item(new CopyEffects());
 	menu->add_item(new PasteEffects());
+	menu->add_item(new PasteAutos());
+	menu->add_item(new PastePlugins());
 	menu->add_item(new ClearKeyframes());
 	menu->add_item(new StraightenKeyframes());
 
@@ -503,7 +505,7 @@ CutEffects::CutEffects()
 
 int CutEffects::handle_event()
 {
-	mwindow_global->cut_automation();
+	mwindow_global->cut_effects();
 	return 1;
 }
 
@@ -515,7 +517,7 @@ CopyEffects::CopyEffects()
 
 int CopyEffects::handle_event()
 {
-	mwindow_global->copy_automation();
+	mwindow_global->copy_effects();
 	return 1;
 }
 
@@ -527,7 +529,30 @@ PasteEffects::PasteEffects()
 
 int PasteEffects::handle_event()
 {
-	mwindow_global->paste_automation();
+	mwindow_global->paste_effects(PASTE_ALL);
+	return 1;
+}
+
+PasteAutos::PasteAutos()
+ : BC_MenuItem(_("Paste automation"))
+{
+}
+
+int PasteAutos::handle_event()
+{
+	mwindow_global->paste_effects(PASTE_AUTOS);
+	return 1;
+}
+
+PastePlugins::PastePlugins()
+ : BC_MenuItem(_("Paste plugins"))
+{
+}
+
+int PastePlugins::handle_event()
+{
+	mwindow_global->paste_effects(PASTE_PLUGINS);
+	return 1;
 }
 
 ClearKeyframes::ClearKeyframes()

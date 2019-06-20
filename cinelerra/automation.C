@@ -146,30 +146,23 @@ void Automation::copy_from(Automation *automation)
 	}
 }
 
-int Automation::load(FileXML *file)
+int Automation::load(FileXML *file, int operation)
 {
+	if(operation != PASTE_ALL && operation != PASTE_AUTOS)
+		return 0;
+
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(file->tag.title_is(automation_tbl[i].xml_title) && autos[i])
 		{
+			if(operation == PASTE_AUTOS && !edlsession->auto_conf->auto_visible[i])
+				return 0;
+
 			autos[i]->load(file);
 			return 1;
 		}
 	}
 	return 0;
-}
-
-void Automation::paste(ptstime start,
-	FileXML *file)
-{
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		if(file->tag.title_is(automation_tbl[i].xml_title) && autos[i])
-		{
-			autos[i]->paste(start, file);
-			return;
-		}
-	}
 }
 
 void Automation::save_xml(FileXML *file)
@@ -244,9 +237,6 @@ void Automation::paste_silence(ptstime start, ptstime end)
 	}
 }
 
-// We don't replace it in pasting but
-// when inserting the first EDL of a load operation we need to replace
-// the default keyframe.
 void Automation::insert_track(Automation *automation, 
 	ptstime start,
 	ptstime length,
@@ -277,6 +267,23 @@ void Automation::get_extents(float *min,
 				autos[i]->get_extents(min, max, coords_undefined, start, end);
 		}
 	}
+}
+
+ptstime Automation::get_length()
+{
+	ptstime last_pts = 0;
+	ptstime cur_pts;
+
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && autos[i]->last)
+		{
+			cur_pts = autos[i]->last->pos_time;
+			if(cur_pts > last_pts)
+				last_pts = cur_pts;
+		}
+	}
+	return last_pts;
 }
 
 void Automation::dump(int indent)

@@ -30,6 +30,11 @@
 #define SELECTION_SAMPLES 0
 #define SELECTION_EDIT 1
 
+// Behaviour of paste effects operations
+#define PASTE_NONE    1
+#define PASTE_AUTOS   2
+#define PASTE_PLUGINS 3
+#define PASTE_ALL     4
 class MWindow;
 
 #endif

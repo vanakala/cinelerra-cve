@@ -408,7 +408,7 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	}
 }
 
-void Tracks::load_effects(FileXML *file)
+void Tracks::load_effects(FileXML *file, int operation)
 {
 	Track *current;
 	char string[BCTEXTLEN];
@@ -432,7 +432,7 @@ void Tracks::load_effects(FileXML *file)
 			if(!strcmp(string, "AUDIO"))
 				current = add_audio_track(0, 0);
 
-			current->load_effects(file);
+			current->load_effects(file, operation);
 		}
 	}while(!file->read_tag());
 

@@ -333,9 +333,9 @@ public:
 	void undo_entry();
 	void redo_entry();
 
-	void cut_automation();
-	void copy_automation();
-	void paste_automation();
+	void cut_effects();
+	void copy_effects();
+	void paste_effects(int operation);
 	void clear_automation();
 	void straighten_automation();
 

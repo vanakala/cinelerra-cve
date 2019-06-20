@@ -174,8 +174,8 @@ public:
 	void straighten_automation(ptstime selectionstart,
 		ptstime selectionend);
 	void automation_xml(FileXML *file);
-	void load_effects(FileXML *file);
-	void load_pluginsets(FileXML *file);
+	void load_effects(FileXML *file, int operation);
+	void load_pluginsets(FileXML *file, int operation);
 	void clear_handle(ptstime start,
 		ptstime end,
 		int actions,

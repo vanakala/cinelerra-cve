@@ -228,6 +228,14 @@ ptstime Track::get_length()
 		if(length > total_length)
 			total_length = length;
 	}
+// Paste automation has no edits, may have no plugins
+// Test then automation
+	if(!edl)
+	{
+		length = automation->get_length();
+		if(length > total_length)
+			total_length = length;
+	}
 	return total_length;
 }
 
@@ -402,7 +410,7 @@ void Track::insert_plugin(Track *track, ptstime position,
 	ptstime duration, int overwrite)
 {
 	Plugin *plugin, *new_plugin;
-	ptstime end, new_start, new_length;
+	ptstime end, new_start;
 
 	if(duration < 0)
 		duration = track->get_length();
@@ -423,12 +431,9 @@ void Track::insert_plugin(Track *track, ptstime position,
 		{
 			plugins.append(new_plugin = new Plugin(edl, this, 0));
 			new_plugin->copy_from(plugin);
-			new_plugin->set_pts(new_start);
-			new_length = plugin->get_length();
-			if(new_start + new_length > end)
-				new_length = end - new_start;
-			new_plugin->set_length(new_length);
-			new_plugin->shift_keyframes(position);
+			new_plugin->shift(position);
+			if(new_plugin->end_pts() > end)
+				new_plugin->set_end(end);
 		}
 	}
 }
@@ -735,7 +740,7 @@ void Track::automation_xml(FileXML *file)
 	file->append_newline();
 }
 
-void Track::load_effects(FileXML *file)
+void Track::load_effects(FileXML *file, int operation)
 {
 // Only used for pasting effects alone.
 	while(!file->read_tag())
@@ -744,22 +749,23 @@ void Track::load_effects(FileXML *file)
 			break;
 		else
 		{
-			automation->paste(0, file);
+			automation->load(file, operation);
 
 			if(file->tag.title_is("PLUGINSETS"))
-				load_pluginsets(file);
+				load_pluginsets(file, operation);
 		}
 	}
 }
 
-void Track::load_pluginsets(FileXML *file)
+void Track::load_pluginsets(FileXML *file, int operation)
 {
 	while(!file->read_tag())
 	{
 		if(file->tag.title_is("/PLUGINSETS"))
 			break;
 		else
-		if(file->tag.title_is("PLUGINSET"))
+		if(file->tag.title_is("PLUGINSET") &&
+				(operation == PASTE_ALL || operation == PASTE_PLUGINS))
 			load_pluginset(file, 0);
 	}
 }

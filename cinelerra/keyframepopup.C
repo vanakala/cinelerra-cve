@@ -212,7 +212,7 @@ int KeyframePopupCopy::handle_event()
 //	we want to copy just keyframe under cursor, NOT all keyframes at this frame
 //	- very hard to do, so this is good approximation for now...
 
-	mwindow->copy_automation();
+	mwindow->copy_effects();
 	return 1;
 }
 
