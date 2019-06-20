@@ -203,66 +203,57 @@ void LocalSession::synchronize_params(LocalSession *that)
 	blue = that->blue;
 }
 
-void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
+void LocalSession::load_xml(FileXML *file)
 {
-	if(load_flags & LOAD_SESSION)
-	{
-		file->tag.get_property("CLIP_TITLE", clip_title);
-		file->tag.get_property("CLIP_NOTES", clip_notes);
-		char *string = file->tag.get_property("FOLDER");
-		if(string)
-			awindow_folder = AWindowGUI::folder_number(string);
-		awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
-		loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
-		loop_start = file->tag.get_property("LOOP_START", (ptstime)0);
-		loop_end = file->tag.get_property("LOOP_END", (ptstime)0);
-		selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
-		selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
-		track_start = file->tag.get_property("TRACK_START", track_start);
-		int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
-		if(zoom_sample)
-			zoom_time = (ptstime)zoom_sample / edlsession->sample_rate;
-		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
-		zoom_time = ZoomPanel::adjust_zoom(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
-		int64_t view_start = file->tag.get_property("VIEW_START", (int64_t)0);
-		if(view_start)
-			view_start_pts = (ptstime)view_start * zoom_time;
-		view_start_pts = file->tag.get_property("VIEW_START_PTS", view_start_pts);
-		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
-		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
-		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
-		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
-		red = file->tag.get_property("RED", red);
-		green = file->tag.get_property("GREEN", green);
-		blue = file->tag.get_property("BLUE", blue);
+	file->tag.get_property("CLIP_TITLE", clip_title);
+	file->tag.get_property("CLIP_NOTES", clip_notes);
+	char *string = file->tag.get_property("FOLDER");
+	if(string)
+		awindow_folder = AWindowGUI::folder_number(string);
+	awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
+	loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
+	loop_start = file->tag.get_property("LOOP_START", (ptstime)0);
+	loop_end = file->tag.get_property("LOOP_END", (ptstime)0);
+	selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
+	selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
+	track_start = file->tag.get_property("TRACK_START", track_start);
+	int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
+	if(zoom_sample)
+		zoom_time = (ptstime)zoom_sample / edlsession->sample_rate;
+	zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
+	zoom_time = ZoomPanel::adjust_zoom(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
+	int64_t view_start = file->tag.get_property("VIEW_START", (int64_t)0);
+	if(view_start)
+		view_start_pts = (ptstime)view_start * zoom_time;
+	view_start_pts = file->tag.get_property("VIEW_START_PTS", view_start_pts);
+	zoom_y = file->tag.get_property("ZOOMY", zoom_y);
+	zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
+	preview_start = file->tag.get_property("PREVIEW_START", preview_start);
+	preview_end = file->tag.get_property("PREVIEW_END", preview_end);
+	red = file->tag.get_property("RED", red);
+	green = file->tag.get_property("GREEN", green);
+	blue = file->tag.get_property("BLUE", blue);
 
-		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+	{
+		if(!Automation::autogrouptypes[i].fixedrange)
 		{
-			if(!Automation::autogrouptypes[i].fixedrange)
-			{
-				automation_mins[i] = file->tag.get_property(
-					Automation::autogrouptypes[i].titlemin,
-					automation_mins[i]);
-				automation_maxs[i] = file->tag.get_property(
-					Automation::autogrouptypes[i].titlemax,
-					automation_maxs[i]);
-			}
+			automation_mins[i] = file->tag.get_property(
+				Automation::autogrouptypes[i].titlemin,
+				automation_mins[i]);
+			automation_maxs[i] = file->tag.get_property(
+				Automation::autogrouptypes[i].titlemax,
+				automation_maxs[i]);
 		}
 	}
 
 // on operations like cut, paste, slice, clear... we should also undo the cursor position as users
 // expect - this is additionally important in keyboard-only editing in viewer window
-	if(load_flags & LOAD_SESSION || load_flags & LOAD_TIMEBAR)
-	{
-		selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
-		selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
-	}
+	selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
+	selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
 
-	if(load_flags & LOAD_TIMEBAR)
-	{
-		in_point = file->tag.get_property("IN_POINT", (ptstime)-1);
-		out_point = file->tag.get_property("OUT_POINT", (ptstime)-1);
-	}
+	in_point = file->tag.get_property("IN_POINT", (ptstime)-1);
+	out_point = file->tag.get_property("OUT_POINT", (ptstime)-1);
 }
 
 void LocalSession::set_clip_title(const char *path)

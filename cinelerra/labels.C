@@ -225,7 +225,7 @@ Labels& Labels::operator=(Labels &that)
 	return *this;
 }
 
-void Labels::load(FileXML *xml, uint32_t load_flags)
+void Labels::load(FileXML *xml)
 {
 	int result = 0;
 	char string1[BCTEXTLEN], string2[BCTEXTLEN];

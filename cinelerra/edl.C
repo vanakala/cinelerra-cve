@@ -126,11 +126,9 @@ void EDL::create_default_tracks()
 		first_track()->master = 1;
 }
 
-void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
+void EDL::load_xml(FileXML *file, EDLSession *session)
 {
 	int result = 0;
-// Track numbering offset for replacing undo data.
-	int track_offset = 0;
 
 	if(is_master)
 	{
@@ -145,18 +143,11 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 		file->tag.get_property("PROJECT_PATH", project_path);
 
 // Erase everything
-		if((load_flags & LOAD_ALL) == LOAD_ALL ||
-			(load_flags & LOAD_EDITS) == LOAD_EDITS)
-		{
-			while(tracks->last) delete tracks->last;
-		}
+		while(tracks->last) delete tracks->last;
 
-		if(load_flags & LOAD_TIMEBAR)
-		{
-			while(labels->last) delete labels->last;
-			local_session->unset_inpoint();
-			local_session->unset_outpoint();
-		}
+		while(labels->last) delete labels->last;
+		local_session->unset_inpoint();
+		local_session->unset_outpoint();
 
 		do{
 			result = file->read_tag();
@@ -169,6 +160,7 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 					file->tag.title_is("/VWINDOW_EDL"))
 				{
 					result = 1;
+					break;
 				}
 				else
 				if(file->tag.title_is("CLIPBOARD"))
@@ -177,41 +169,28 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 				else
 				if(file->tag.title_is("VIDEO"))
 				{
-					if(session && (load_flags & LOAD_VCONFIG) &&
-							(load_flags & LOAD_SESSION))
+					if(session)
 						session->load_video_config(file);
 				}
 				else
 				if(file->tag.title_is("AUDIO"))
 				{
-					if(session && (load_flags & LOAD_ACONFIG) &&
-							(load_flags & LOAD_SESSION))
+					if(session)
 						session->load_audio_config(file);
 				}
 				else
 				if(file->tag.title_is("ASSETS"))
-				{
-					if(load_flags & LOAD_ASSETS)
-						assetlist_global.load_assets(file, assets);
-				}
+					assetlist_global.load_assets(file, assets);
 				else
 				if(file->tag.title_is(labels->xml_tag))
-				{
-					if(load_flags & LOAD_TIMEBAR)
-						labels->load(file, load_flags);
-				}
+					labels->load(file);
 				else
 				if(file->tag.title_is("LOCALSESSION"))
-				{
-					if((load_flags & LOAD_SESSION) ||
-							(load_flags & LOAD_TIMEBAR))
-						local_session->load_xml(file, load_flags);
-				}
+					local_session->load_xml(file);
 				else
 				if(file->tag.title_is("SESSION"))
 				{
-					if((load_flags & LOAD_SESSION) &&
-							session)
+					if(session)
 					{
 						session->load_xml(file);
 						this_edlsession = session;
@@ -219,18 +198,16 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 				}
 				else
 				if(file->tag.title_is("TRACK"))
-				{
-					tracks->load(file, track_offset, load_flags);
-				}
+					tracks->load(file);
 				else
 // Sub EDL.
 				if(file->tag.title_is("CLIP_EDL"))
 				{
-					if(is_master && (load_flags & LOAD_ALL) == LOAD_ALL)
+					if(is_master)
 					{
 						EDL *new_edl = new EDL(0);
-						new_edl->load_xml(file, LOAD_ALL, 0);
 
+						new_edl->load_xml(file, 0);
 						cliplist_global.add_clip(new_edl);
 					}
 					else
@@ -239,8 +216,8 @@ void EDL::load_xml(FileXML *file, uint32_t load_flags, EDLSession *session)
 				else
 				if(file->tag.title_is("VWINDOW_EDL"))
 				{
-					if(is_master && (load_flags & LOAD_ALL) == LOAD_ALL)
-						vwindow_edl->load_xml(file, LOAD_ALL, 0);
+					if(is_master)
+						vwindow_edl->load_xml(file, 0);
 					else
 						file->skip_to_tag("/VWINDOW__EDL");
 				}

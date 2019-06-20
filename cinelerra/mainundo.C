@@ -289,7 +289,7 @@ int MainUndoStackItem::get_size()
 void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 {
 	MWindow* mwindow = main_undo->mwindow;
-	master_edl->load_xml(file, load_flags, edlsession);
+	master_edl->load_xml(file, edlsession);
 	for(int i = 0; i < master_edl->assets->total; i++)
 	{
 		mwindow->mainindexes->add_next_asset(master_edl->assets->values[i]);

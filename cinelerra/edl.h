@@ -70,11 +70,9 @@ public:
 	void boundaries();
 // Create tracks using existing configuration
 	void create_default_tracks();
-	void load_xml(FileXML *file, uint32_t load_flags, EDLSession *session);
+	void load_xml(FileXML *file, EDLSession *session);
 	void save_xml(FileXML *xml, const char *output_path,
 		int is_clip, int is_vwindow, int to_clipboard = 0);
-	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
-	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
 // Convert position to frames if cursor alignment is enabled
 	ptstime align_to_frame(ptstime position, int round = 1);

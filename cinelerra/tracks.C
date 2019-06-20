@@ -168,7 +168,7 @@ Tracks& Tracks::operator=(Tracks &tracks)
 	return *this;
 }
 
-void Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
+void Tracks::load(FileXML *xml)
 {
 // add the appropriate type of track
 	char string[BCTEXTLEN];
@@ -178,26 +178,14 @@ void Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 
 	xml->tag.get_property("TYPE", string);
 
-	if((load_flags & LOAD_ALL) == LOAD_ALL ||
-		(load_flags & LOAD_EDITS))
-	{
-		if(!strcmp(string, "VIDEO"))
-		{
-			add_video_track(0, 0);
-		}
-		else
-		{
-			add_audio_track(0, 0);    // default to audio
-		}
-		track = last;
-	}
+	if(!strcmp(string, "VIDEO"))
+		add_video_track(0, 0);
 	else
-	{
-		track = get_item_number(track_offset);
-		track_offset++;
-	}
+		add_audio_track(0, 0);    // default to audio
+	track = last;
 
-	if(track) track->load(xml, track_offset, load_flags);
+	if(track)
+		track->load(xml);
 }
 
 void Tracks::init_shared_pointers()

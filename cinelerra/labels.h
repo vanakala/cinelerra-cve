@@ -59,7 +59,7 @@ public:
 	void copy_from(Labels *labels);
 	void toggle_label(ptstime start, ptstime end);
 	void delete_all();
-	void load(FileXML *xml, uint32_t load_flags);
+	void load(FileXML *xml);
 	void insert_labels(Labels *labels, 
 		ptstime start,
 		ptstime length,

@@ -458,16 +458,9 @@ void MWindow::insert(ptstime position,
 	FileXML *file,
 	EDL *parent_edl)
 {
-// For clipboard pasting make the new edl use a separate session 
-// from the master EDL.  Then it can be resampled to the master rates.
-// For splice, overwrite, and dragging need same session to get the assets.
 	EDL edl(0);
-	uint32_t load_flags = LOAD_ALL;
 
-	if(parent_edl) load_flags &= ~LOAD_SESSION;
-	if(!edlsession->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
-
-	edl.load_xml(file, load_flags, 0);
+	edl.load_xml(file, 0);
 
 	paste_edl(&edl,
 		LOADMODE_PASTE, 

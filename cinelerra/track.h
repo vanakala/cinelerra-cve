@@ -49,7 +49,7 @@ public:
 	virtual ~Track();
 
 	int get_id();
-	void load(FileXML *file, int track_offset, uint32_t load_flags);
+	void load(FileXML *file);
 	void load_pluginset(FileXML *file, ptstime start);
 	void init_shared_pointers();
 	virtual void save_header(FileXML *file) {};

@@ -851,7 +851,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				if(load_mode == LOADMODE_REPLACE ||
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
-					master_edl->load_xml(&xml_file, LOAD_ALL, edlsession);
+					master_edl->load_xml(&xml_file, edlsession);
 					set_filename(master_edl->project_path);
 					cur_edl = master_edl;
 					new_edl = 0;
@@ -867,7 +867,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 // Load EDL for pasting
 					new_edl = new EDL(0);
 					new_edl->copy_session(master_edl);
-					new_edl->load_xml(&xml_file, LOAD_ALL, 0);
+					new_edl->load_xml(&xml_file, 0);
 					cur_edl = new_edl;
 				}
 

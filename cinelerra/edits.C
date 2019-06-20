@@ -249,7 +249,7 @@ Edit* Edits::split_edit(ptstime postime, int force)
 
 // ===================================== file operations
 
-void Edits::load(FileXML *file, int track_offset)
+void Edits::load(FileXML *file)
 {
 	int result = 0;
 	ptstime project_time = 0;
@@ -264,7 +264,7 @@ void Edits::load(FileXML *file, int track_offset)
 		{
 			if(!strcmp(file->tag.get_title(), "EDIT"))
 			{
-				project_time = load_edit(file, project_time, track_offset);
+				project_time = load_edit(file, project_time);
 			}
 			else
 			if(!strcmp(file->tag.get_title(), "/EDITS"))
@@ -276,7 +276,7 @@ void Edits::load(FileXML *file, int track_offset)
 	cleanup();
 }
 
-ptstime Edits::load_edit(FileXML *file, ptstime project_time, int track_offset)
+ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 {
 	Edit* current;
 	posnum length;

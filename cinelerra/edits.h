@@ -96,9 +96,9 @@ public:
 
 // ================================== file operations
 
-	void load(FileXML *xml, int track_offset);
+	void load(FileXML *xml);
 private:
-	ptstime load_edit(FileXML *xml, ptstime project_time, int track_offset);
+	ptstime load_edit(FileXML *xml, ptstime project_time);
 };
 
 #endif

@@ -254,7 +254,7 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 	}
 }
 
-void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
+void Track::load(FileXML *file)
 {
 	int result = 0;
 	int current_plugin = 0;
@@ -284,32 +284,16 @@ void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 				file->read_text_until("/TITLE", title, BCTEXTLEN);
 			}
 			else
-			if(load_flags && automation->load(file))
+			if(automation->load(file))
 			{
 				;
 			}
 			else
 			if(file->tag.title_is("EDITS"))
-			{
-				if(load_flags & LOAD_EDITS)
-					edits->load(file, track_offset);
-			}
+				edits->load(file);
 			else
 			if(file->tag.title_is("PLUGINSET"))
-			{
-				if(load_flags & LOAD_EDITS)
-					load_pluginset(file, 0);
-				else
-				if(load_flags & LOAD_AUTOMATION)
-				{
-					if(current_plugin < plugins.total)
-					{
-						Plugin *plugin = plugins.values[current_plugin];
-						plugin->load(file);
-						current_plugin++;
-					}
-				}
-			}
+				load_pluginset(file, 0);
 		}
 	}while(!result);
 }

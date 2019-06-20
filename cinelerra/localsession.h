@@ -63,7 +63,7 @@ public:
 	void copy_from(LocalSession *that);
 	void copy(LocalSession *that, ptstime start, ptstime end);
 	void save_xml(FileXML *file);
-	void load_xml(FileXML *file, unsigned long load_flags);
+	void load_xml(FileXML *file);
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
 // Set clip title from path

@@ -41,7 +41,7 @@ public:
 
 	void reset_instance();
 	Tracks& operator=(Tracks &tracks);
-	void load(FileXML *xml, int &track_offset, uint32_t load_flags);
+	void load(FileXML *xml);
 	void init_shared_pointers();
 
 	void move_effect(Plugin *plugin,

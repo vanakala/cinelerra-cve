@@ -337,7 +337,7 @@ void Render::run()
 				EDL *edl = new EDL(0);
 				EDLSession *session = new EDLSession();
 				file->read_from_file(job->edl_path);
-				edl->load_xml(file, LOAD_ALL, session);
+				edl->load_xml(file, session);
 
 				File assetfile;
 				for(int i = 0; i < edl->assets->total; i++)

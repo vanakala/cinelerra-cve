@@ -441,7 +441,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			file->read_from_file(job->edl_path);
 
 			current_edl = new EDL(0);
-			current_edl->load_xml(file, LOAD_ALL, 0);
+			current_edl->load_xml(file, 0);
 
 // Create test packages
 			packages->create_packages(mwindow,
