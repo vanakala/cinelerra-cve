@@ -384,9 +384,8 @@ void Track::insert_track(Track *track,
 
 	insert_plugin(track, position, length, overwrite);
 
-	automation->insert_track(track->automation, 
-		position,
-		length);
+	automation->insert_track(track->automation, position,
+		length, overwrite);
 }
 
 // Called by insert_track
