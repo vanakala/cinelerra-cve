@@ -37,6 +37,8 @@ MainCursor::MainCursor(MWindow *mwindow, MWindowGUI *gui)
 	visible = 0;
 	active = 0;
 	playing_back = 0;
+	cursor_lock.title = "MainCursor::lock";
+	cursor_lock.recursive = 1;
 }
 
 void MainCursor::focus_out_event()
@@ -73,11 +75,13 @@ void MainCursor::repeat_event(int duration)
 // Only flash a single sample selection
 	if(selectionstart == selectionend)
 	{
+		cursor_lock.lock("MainCursor::repeat_event");
 		if(!playing_back || (playing_back && !visible))
 		{
 			draw(1);
 			flash();
 		}
+		cursor_lock.unlock();
 	}
 }
 
@@ -101,13 +105,13 @@ void MainCursor::draw(int do_plugintoggles)
 			pixel2 = gui->canvas->get_w() + 10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
 	}
-
+	visible = !visible;
 	gui->canvas->set_color(WHITE);
 	gui->canvas->set_inverse();
 	gui->canvas->draw_box(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
 	gui->canvas->set_opaque();
-	if(do_plugintoggles) gui->canvas->refresh_plugintoggles();
-	visible = !visible;
+	if(do_plugintoggles)
+		gui->canvas->refresh_plugintoggles();
 }
 
 // Draw the cursor in a new location
@@ -116,6 +120,7 @@ void MainCursor::update()
 	int old_pixel1 = pixel1;
 	int old_pixel2 = pixel2;
 
+	cursor_lock.lock("MainCursor::update");
 	if(visible)
 	{
 		hide(0);
@@ -128,6 +133,7 @@ void MainCursor::update()
 			old_pixel2 - old_pixel1 + 1, 
 			gui->canvas->get_h());
 	flash();
+	cursor_lock.unlock();
 }
 
 void MainCursor::flash()
@@ -137,20 +143,28 @@ void MainCursor::flash()
 
 void MainCursor::hide(int do_plugintoggles)
 {
-	if(visible) draw(do_plugintoggles);
+	cursor_lock.lock("MainCursor::hide");
+	if(visible)
+		draw(do_plugintoggles);
+	cursor_lock.unlock();
 }
 
 void MainCursor::show(int do_plugintoggles)
 {
-	if(!visible) draw(do_plugintoggles);
+	cursor_lock.lock("MainCursor::show");
+	if(!visible)
+		draw(do_plugintoggles);
+	cursor_lock.unlock();
 }
 
 // Constitutively redraw the cursor after it is overwritten by a draw
 void MainCursor::restore(int do_plugintoggles)
 {
+	cursor_lock.lock("MainCursor::restore");
 	if(visible)
 	{
 		draw(do_plugintoggles);
 		visible = 1;
 	}
+	cursor_lock.unlock();
 }

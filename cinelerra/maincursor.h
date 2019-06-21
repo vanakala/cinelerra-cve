@@ -25,6 +25,7 @@
 #include "datatype.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "mutex.h"
 
 class MainCursor
 {
@@ -49,6 +50,8 @@ public:
 	int pixel2, pixel1;
 	int active;
 	int playing_back;
+private:
+	Mutex cursor_lock;
 };
 
 #endif
