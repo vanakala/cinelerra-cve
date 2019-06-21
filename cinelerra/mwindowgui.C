@@ -206,7 +206,7 @@ void MWindowGUI::show()
 		edlsession->frame_rate));
 	mainclock->update(0);
 
-	cursor = new MainCursor(mwindow, this);
+	cursor = new MainCursor(this);
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 

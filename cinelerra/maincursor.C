@@ -25,14 +25,12 @@
 #include "edlsession.h"
 #include "localsession.h"
 #include "maincursor.h"
-#include "mwindow.h"
 #include "mwindowgui.h"
 #include "trackcanvas.h"
 
 
-MainCursor::MainCursor(MWindow *mwindow, MWindowGUI *gui)
+MainCursor::MainCursor(MWindowGUI *gui)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	visible = 0;
 	active = 0;
@@ -73,7 +71,7 @@ void MainCursor::repeat_event(int duration)
 	if(duration != BC_WindowBase::get_resources()->blink_rate) return;
 
 // Only flash a single sample selection
-	if(selectionstart == selectionend)
+	if(pixel1 == pixel2)
 	{
 		cursor_lock.lock("MainCursor::repeat_event");
 		if(!playing_back || (playing_back && !visible))
@@ -88,6 +86,7 @@ void MainCursor::repeat_event(int duration)
 void MainCursor::draw(int do_plugintoggles)
 {
 	ptstime view_start;
+	ptstime selectionstart, selectionend;
 
 	if(!visible)
 	{

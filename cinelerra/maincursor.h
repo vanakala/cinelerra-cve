@@ -23,14 +23,13 @@
 #define MAINCURSOR_H
 
 #include "datatype.h"
-#include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "mutex.h"
 
 class MainCursor
 {
 public:
-	MainCursor(MWindow *mwindow, MWindowGUI *gui);
+	MainCursor(MWindowGUI *gui);
 
 	void repeat_event(int duration);
 	void draw(int flash);
@@ -43,14 +42,14 @@ public:
 	void update();
 	void focus_out_event();
 
-	MWindow *mwindow;
-	MWindowGUI *gui;
-	int visible;
-	ptstime selectionstart, selectionend;
-	int pixel2, pixel1;
-	int active;
 	int playing_back;
+
 private:
+	MWindowGUI *gui;
+	int pixel1;
+	int pixel2;
+	int visible;
+	int active;
 	Mutex cursor_lock;
 };
 
