@@ -873,27 +873,33 @@ void Track::clear_plugins(ptstime start, ptstime end)
 	for(int i = 0; i < plugins.total; i++)
 	{
 		Plugin *plugin = plugins.values[i];
-		ptstime pts = plugin->get_pts();
+		ptstime pl_pts = plugin->get_pts();
 		ptstime pl_end = plugin->end_pts();
 
-		if(start > pl_end)
+		if(start > pl_end) // plugin before selection
 			continue;
-		if(end < pts)
-			plugin->shift(end - start);
-		else if(end < pl_end && end >= pts)
-		{
-			plugin->keyframes->clear_after(end);
-			plugin->set_length(end - start);
-		}
-		else if(start <= pts && end < pl_end)
-		{
-			plugin->set_length(end - pts);
-			plugin->shift(end - pts);
-		}
-		else // start < pts && end > pl_end
+		if(end < pl_pts)      // plugin after selection
+			plugin->shift(start - end);
+		else if(start <= pl_pts && pl_end <= end) // plugin in selection
 		{
 			plugins.remove_object(plugin);
 			i--;
+		}
+		else if(start > pl_pts && end < pl_end) // selection in plugin
+		{
+			plugin->keyframes->clear(start, end, 1);
+			plugin->set_length(plugin->get_length() - end + start);
+		}
+		else if(end >= pl_end && start > pl_pts) // plugin end in selection
+		{
+			plugin->keyframes->clear_after(start);
+			plugin->set_length(start - pl_pts);
+		}
+		else if(start <= pl_pts && end < pl_end) // plugin start in selection
+		{
+			plugin->keyframes->clear(pl_pts, end, 1);
+			plugin->set_length(pl_end - end);
+			plugin->shift(start - pl_pts);
 		}
 	}
 }
