@@ -57,7 +57,7 @@ Module::~Module()
 {
 	if(attachments)
 	{
-		for(int i = 0; i < track->plugins.total; i++)
+		for(int i = 0; i < total_attachments; i++)
 		{
 			if(attachments[i])
 			{
