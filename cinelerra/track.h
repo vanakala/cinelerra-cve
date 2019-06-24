@@ -92,6 +92,7 @@ public:
 	void remove_plugin(Plugin *plugin);
 	void remove_asset(Asset *asset);
 	void detach_transition(Plugin *transition);
+	void cleanup();
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value

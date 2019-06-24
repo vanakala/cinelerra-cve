@@ -99,6 +99,8 @@ public:
 	void create_new_tracks(Asset *asset);
 // Create new tracks and insert tracks
 	void create_new_tracks(Tracks *tracks);
+// Cleanup over all tracks
+	void cleanup();
 
 	EDL *edl;
 

@@ -1131,3 +1131,21 @@ int Track::identical(ptstime sample1, ptstime sample2)
 		return 1;
 	return 0;
 }
+
+void Track::cleanup()
+{
+	// Remove orphaned shared plugins
+	for(int i = 0; i < this->plugins.total; i++)
+	{
+		Plugin *current_plugin = plugins.values[i];
+
+		if((current_plugin->plugin_type == PLUGIN_SHAREDPLUGIN &&
+				!current_plugin->shared_plugin) ||
+			(current_plugin->plugin_type == PLUGIN_SHAREDMODULE &&
+				!current_plugin->shared_track))
+		{
+			plugins.remove_object(current_plugin);
+			i--;
+		}
+	}
+}

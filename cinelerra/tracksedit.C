@@ -46,6 +46,7 @@ void Tracks::clear(ptstime start, ptstime end)
 		if(current_track->record)
 			current_track->clear(start, end);
 	}
+	cleanup();
 }
 
 void Tracks::clear_automation(ptstime selectionstart, ptstime selectionend)
@@ -279,6 +280,7 @@ void Tracks::concatenate_tracks()
 		if(data_type == TRACK_AUDIO)
 			data_type = TRACK_VIDEO;
 	}
+	cleanup();
 }
 
 void Tracks::delete_all_tracks()

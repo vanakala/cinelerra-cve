@@ -743,3 +743,9 @@ int Tracks::totalpixels()
 
 	return result;
 }
+
+void Tracks::cleanup()
+{
+	for(Track* current = first; current; current = NEXT)
+		current->cleanup();
+}
