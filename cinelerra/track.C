@@ -401,7 +401,11 @@ void Track::insert_plugin(Track *track, ptstime position,
 	end = position + duration;
 
 	if(overwrite)
-		clear_plugins(position, end);
+	{
+// Do not clear plugins, if only effects are pasted
+		if(track->tracks->edl)
+			clear_plugins(position, end);
+	}
 	else
 		shift_effects(position, duration);
 
