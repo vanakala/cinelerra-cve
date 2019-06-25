@@ -49,7 +49,7 @@ public:
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
-	int is_synthesis(ptstime position);
+	int is_synthesis();
 
 	void copy(Plugin *plugin, ptstime start, ptstime end);
 	void copy_from(Plugin *plugin);

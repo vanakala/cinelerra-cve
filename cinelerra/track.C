@@ -149,26 +149,22 @@ void Track::equivalent_output(Track *track, ptstime *result)
 		*result = result2;
 }
 
-
 int Track::is_synthesis(ptstime position)
 {
-	int is_synthesis = 0;
 	for(int i = 0; i < plugins.total; i++)
 	{
-		Plugin *plugin = get_current_plugin(position, i, 0);
+		Plugin *plugin = plugins.values[i];
 
-		if(plugin)
-		{
+		if(plugin->get_pts() > position || plugin->end_pts() < position)
+			continue;
+
 // Assume data from a shared track is synthesized
-			if(plugin->plugin_type == PLUGIN_SHAREDMODULE) 
-				is_synthesis = 1;
-			else
-				is_synthesis = plugin->is_synthesis(position);
-			if(is_synthesis)
-				break;
-		}
+		if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
+			return 1;
+		if(plugin->is_synthesis())
+			return 1;
 	}
-	return is_synthesis;
+	return 0;
 }
 
 void Track::copy_from(Track *track)

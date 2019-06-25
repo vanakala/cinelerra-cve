@@ -209,7 +209,7 @@ void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
 		pts, result);
 }
 
-int Plugin::is_synthesis(ptstime postime)
+int Plugin::is_synthesis()
 {
 	if(plugin_server)
 	{
@@ -221,13 +221,13 @@ int Plugin::is_synthesis(ptstime postime)
 // Dereference real plugin and descend another level
 		case PLUGIN_SHAREDPLUGIN:
 			if(shared_plugin)
-				return shared_plugin->is_synthesis(postime);
+				return shared_plugin->is_synthesis();
 			break;
 
 // Dereference the real track and descend
 		case PLUGIN_SHAREDMODULE:
 			if(shared_track)
-				return shared_track->is_synthesis(postime);
+				return shared_track->is_synthesis(pts);
 			break;
 		}
 	}
