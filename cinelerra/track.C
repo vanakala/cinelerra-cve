@@ -209,24 +209,36 @@ int Track::vertical_span(Theme *theme)
 ptstime Track::get_length()
 {
 	ptstime total_length = 0;
-	ptstime length = 0;
-	Plugin *plugin;
+	ptstime length;
 
 // Test edits
 	if(edits->last)
 		total_length = edits->last->get_pts();
+// Test synthesis effects
+	if((length = get_effects_length(1)) > total_length)
+		total_length = length;
+	return total_length;
+}
+
+ptstime Track::get_effects_length(int is_synthesis)
+{
+	ptstime total_length = 0;
+	ptstime length;
+	Plugin *plugin;
 
 // Test plugins
 	for(int i = 0; i < plugins.total; i++)
 	{
 		plugin = plugins.values[i];
 		length = plugin->end_pts();
-		if(length > total_length)
-			total_length = length;
+		if(!is_synthesis || plugin->is_synthesis())
+		{
+			if(length > total_length)
+				total_length = length;
+		}
 	}
-// Paste automation has no edits, may have no plugins
-// Test then automation
-	if(!edl)
+// Test automation
+	if(!is_synthesis)
 	{
 		length = automation->get_length();
 		if(length > total_length)
