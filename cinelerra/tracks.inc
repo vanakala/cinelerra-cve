@@ -24,4 +24,8 @@
 
 class Tracks;
 
+// Tracks modification options
+#define TRACKS_OVERWRITE 1  // overwite dst
+#define TRACKS_EFFECTS   2  // src contains only effects
+
 #endif

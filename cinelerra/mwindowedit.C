@@ -924,7 +924,7 @@ void MWindow::paste_effects(int operation)
 		tracks.load_effects(&file, operation);
 		master_edl->tracks->append_tracks(&tracks,
 			master_edl->local_session->get_selectionstart(),
-			0, 1); // overwrite
+			0, TRACKS_OVERWRITE | TRACKS_EFFECTS);
 		save_backup();
 		undo->update_undo(_("paste effects"), LOAD_AUTOMATION);
 		delete [] string;
@@ -970,7 +970,7 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 		if(current_position < 0)
 			current_position = master_edl->local_session->get_selectionstart();
 		pasted_length = master_edl->tracks->append_tracks(new_edl->tracks,
-			current_position, first_track, overwrite);
+			current_position, first_track, overwrite ? TRACKS_OVERWRITE : 0);
 		master_edl->local_session->set_selection(current_position + pasted_length);
 		break;
 	}

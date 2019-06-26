@@ -368,13 +368,14 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 }
 
 ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
-	Track *first_track, int overwrite)
+	Track *first_track, int options)
 {
 	Track *master = 0;
 	ptstime alength = 0;
 	ptstime start = 0;
 	ptstime dur, pasted_length;
 	Track *new_track;
+	int overwrite = options & TRACKS_OVERWRITE;
 
 	// Determine the start and length
 	// If master track is part of the operation, the length
@@ -400,7 +401,23 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				if(current->master)
 				{
 					master = current;
-					alength = new_track->get_length();
+					if(options & TRACKS_EFFECTS)
+					{
+						alength = new_track->get_effects_length(1);
+
+						if(alength < EPSILON)
+						{
+							alength = new_track->get_effects_length(0);
+							if(alength + paste_at > dur)
+							{
+								alength = dur - paste_at;
+								if(alength < 0)
+									alength = 0;
+							}
+						}
+					}
+					else
+						alength = new_track->get_length();
 				}
 			}
 		}
@@ -428,7 +445,22 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				if(current->master)
 				{
 					master = current;
-					alength = new_track->get_length();
+					if(options & TRACKS_EFFECTS)
+					{
+						alength = new_track->get_effects_length(1);
+						if(alength < EPSILON)
+						{
+							alength = new_track->get_effects_length(0);
+							if(alength + paste_at > dur)
+							{
+								alength = dur - paste_at;
+								if(alength < 0)
+									alength = 0;
+							}
+						}
+					}
+					else
+						alength = new_track->get_length();
 				}
 			}
 		}
@@ -453,7 +485,6 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 		if(!master)
 			alength = dur - start;
 	}
-
 	pasted_length  = 0;
 
 	start = master_edl->align_to_frame(start);
@@ -478,7 +509,12 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					break;
 			if(!new_track)
 				break;
-			dur = new_track->get_length();
+
+			if(options & TRACKS_EFFECTS)
+				dur = new_track->get_effects_length(0);
+			else
+				dur = new_track->get_length();
+
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
 			new_track = new_track->next;
@@ -502,7 +538,12 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					break;
 			if(!new_track)
 				break;
-			dur = new_track->get_length();
+
+			if(options & TRACKS_EFFECTS)
+				dur = new_track->get_effects_length(0);
+			else
+				dur = new_track->get_length();
+
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
 			new_track = new_track->next;
