@@ -137,7 +137,9 @@ void Autos::insert_track(Autos *automation,
 	else
 		insert(start, start + length);
 
-	for(Auto *current = automation->first; current; current = NEXT)
+	for(Auto *current = automation->first;
+		current && current->pos_time < length;
+		current = NEXT)
 	{
 // fill new auto with values from current (template), interpolate values if possible
 		Auto *new_auto = insert_auto(start + current->pos_time, current);
