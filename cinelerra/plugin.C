@@ -30,10 +30,12 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "pluginserver.h"
+#include "preferences.inc"
 #include "track.h"
 #include "tracks.h"
 #include "virtualnode.h"
 
+extern Preferences *preferences_global;
 
 Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 {
@@ -288,6 +290,15 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	this->plugin_type = plugin_type;
 	if(guideframe)
 		guideframe->clear();
+
+	while(keyframes->last && keyframes->last != keyframes->first)
+		delete keyframes->last;
+
+	if(server && !server->open_plugin(1, preferences_global, 0, 0))
+	{
+		server->save_data(keyframes->get_first());
+		server->close_plugin();
+	}
 }
 
 KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
