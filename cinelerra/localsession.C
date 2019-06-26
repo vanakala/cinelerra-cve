@@ -78,6 +78,7 @@ void LocalSession::reset_instance()
 	clip_title[0] = 0;
 	clip_notes[0] = 0;
 	selectionstart = selectionend = 0;
+	preview_start = preview_end = 0;
 	in_point = out_point = -1;
 	view_start_pts = 0;
 	track_start = 0;
@@ -288,8 +289,6 @@ void LocalSession::load_defaults(BC_Hash *defaults)
 	loop_playback = defaults->get("LOOP_PLAYBACK", 0);
 	loop_start = defaults->get("LOOP_START", (ptstime)0);
 	loop_end = defaults->get("LOOP_END", (ptstime)0);
-	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
-	selectionend = defaults->get("SELECTIONEND", selectionend);
 // For backwards compatibility
 	int64_t zoom_sample = defaults->get("ZOOM_SAMPLE", (int64_t)0);
 	if(zoom_sample)
@@ -322,8 +321,8 @@ void LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("LOOP_PLAYBACK", loop_playback);
 	defaults->update("LOOP_START", loop_start);
 	defaults->update("LOOP_END", loop_end);
-	defaults->update("SELECTIONSTART", selectionstart);
-	defaults->update("SELECTIONEND", selectionend);
+	defaults->delete_key("SELECTIONSTART");
+	defaults->delete_key("SELECTIONEND");
 	defaults->update("TRACK_START", track_start);
 	defaults->delete_key("VIEW_START");
 	defaults->update("VIEW_START_PTS", view_start_pts);
