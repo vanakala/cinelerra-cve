@@ -273,8 +273,7 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 		current = append_auto();
 		if(templ)
 			current->copy_from(templ);
-		current->pos_time = position;
-		return current;
+		current->pos_time = base_pts;
 	}
 // Test for existence
 	for(current = first;
@@ -293,6 +292,8 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 		{
 			insert_after(current, result = new_auto());
 			current = result;
+			if(templ)
+				current->copy_from(templ);
 			current->pos_time = position;
 // interpolate if possible, else copy from template
 			result->interpolate_from(0, 0, position, templ);
