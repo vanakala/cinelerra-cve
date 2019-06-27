@@ -467,11 +467,10 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 		if(dur > start)
 			start = dur;
 	}
-
 	if(paste_at < 0)
 	{
 		// If master is part of operation we append to master
-		// If master does not paticipate, append to the longest participating track
+		// If master does not participate, append to the longest participating track
 		if(master)
 			start = master->get_length();
 		else
@@ -481,8 +480,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 	{
 		dur = length();
 		start = MIN(paste_at, dur);
-
-		if(!master)
+		if(!master || alength < EPSILON)
 			alength = dur - start;
 	}
 	pasted_length  = 0;
