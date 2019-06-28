@@ -88,7 +88,6 @@ void RGB601Main::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/RGB601");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void RGB601Main::read_data(KeyFrame *keyframe)

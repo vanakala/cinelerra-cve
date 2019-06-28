@@ -728,7 +728,6 @@ void Paramlist::save_list(FileXML *file)
 	file->tag.set_title(string);
 	file->append_tag();
 	file->append_newline();
-	file->terminate_string();
 }
 
 void Paramlist::load_list(FileXML *file)

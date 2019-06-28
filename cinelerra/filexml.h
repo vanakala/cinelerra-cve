@@ -84,7 +84,6 @@ public:
 	~FileXML();
 
 	void dump();
-	void terminate_string();         // append the terminal 0
 	void append_newline();       // append a newline to string
 	void append_tag();           // append tag object
 	void append_text(const char *text);

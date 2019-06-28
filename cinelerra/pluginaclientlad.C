@@ -567,7 +567,6 @@ void PluginAClientLAD::save_data(KeyFrame *keyframe)
 	}
 
 	output.append_tag();
-	output.terminate_string();
 }
 
 void PluginAClientLAD::read_data(KeyFrame *keyframe)

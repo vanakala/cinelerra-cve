@@ -552,7 +552,6 @@ void ZoomBlurMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/ZOOMBLUR");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ZoomBlurMain::read_data(KeyFrame *keyframe)

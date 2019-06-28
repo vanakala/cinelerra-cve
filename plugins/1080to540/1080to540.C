@@ -245,7 +245,6 @@ void _1080to540Main::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/1080TO540");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void _1080to540Main::read_data(KeyFrame *keyframe)

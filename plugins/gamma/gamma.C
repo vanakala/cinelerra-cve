@@ -519,7 +519,6 @@ void GammaMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/GAMMA");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void GammaMain::read_data(KeyFrame *keyframe)

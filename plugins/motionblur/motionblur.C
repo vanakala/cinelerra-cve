@@ -431,7 +431,6 @@ void MotionBlurMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/MOTIONBLUR");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void MotionBlurMain::read_data(KeyFrame *keyframe)

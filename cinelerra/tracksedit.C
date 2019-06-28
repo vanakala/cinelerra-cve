@@ -120,7 +120,6 @@ void Tracks::automation_xml(FileXML *file)
 	file->tag.set_title("/AUTO_CLIPBOARD");
 	file->append_tag();
 	file->append_newline();
-	file->terminate_string();
 }
 
 int Tracks::delete_tracks(void)

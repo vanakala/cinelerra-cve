@@ -151,8 +151,6 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TRANSLATE");
 	output.append_tag();
-
-	output.terminate_string();
 // data is now in *text
 }
 

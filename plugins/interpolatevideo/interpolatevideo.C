@@ -458,7 +458,6 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/INTERPOLATEVIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void InterpolateVideo::read_data(KeyFrame *keyframe)

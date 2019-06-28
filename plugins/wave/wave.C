@@ -356,7 +356,6 @@ void WaveEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/WAVE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void WaveEffect::read_data(KeyFrame *keyframe)

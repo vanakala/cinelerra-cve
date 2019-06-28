@@ -514,7 +514,6 @@ void FrameField::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/FRAME_FIELD");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void FrameField::read_data(KeyFrame *keyframe)

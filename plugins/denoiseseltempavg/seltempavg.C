@@ -961,7 +961,6 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/SELECTIVE_TEMPORAL_AVERAGE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void SelTempAvgMain::read_data(KeyFrame *keyframe)

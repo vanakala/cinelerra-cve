@@ -60,15 +60,9 @@ void FileXML::dump()
 	printf("FileXML::dump:\n%s\n", string);
 }
 
-void FileXML::terminate_string()
-{
-	append_text("", 1);
-}
-
 void FileXML::rewind()
 {
-	terminate_string();
-	length = strlen(string);
+	length = position;
 	position = 0;
 }
 
@@ -91,7 +85,7 @@ void FileXML::append_text(const char *text)
 
 void FileXML::append_text(const char *text, int len)
 {
-	while(position + len > available)
+	while(position + len + 1 > available)
 	{
 		reallocate_string(available * 2);
 	}
@@ -100,6 +94,7 @@ void FileXML::append_text(const char *text, int len)
 	{
 		string[position] = text[i];
 	}
+	string[position] = 0;
 }
 
 void FileXML::encode_text(char *text)

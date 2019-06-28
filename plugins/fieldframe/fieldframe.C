@@ -245,7 +245,6 @@ void FieldFrame::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/FIELD_FRAME");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void FieldFrame::read_data(KeyFrame *keyframe)

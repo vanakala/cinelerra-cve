@@ -195,7 +195,6 @@ void DelayVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/DELAYVIDEO");
 	output.append_tag();
 	output.append_newline();
-	output.terminate_string();
 }
 
 void DelayVideo::read_data(KeyFrame *keyframe)

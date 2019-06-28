@@ -125,7 +125,6 @@ void Synth::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("/SYNTH");
 	output.append_tag();
-	output.terminate_string();
 // data is now in *text
 }
 

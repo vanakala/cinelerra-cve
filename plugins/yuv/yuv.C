@@ -232,7 +232,6 @@ void YUVEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/YUV");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void YUVEffect::read_data(KeyFrame *keyframe)

@@ -520,7 +520,6 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/ROTATE");
 	output.append_tag();
-	output.terminate_string();
 // data is now in *text
 }
 

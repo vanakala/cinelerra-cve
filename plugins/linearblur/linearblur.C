@@ -527,7 +527,6 @@ void LinearBlurMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/LINEARBLUR");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void LinearBlurMain::read_data(KeyFrame *keyframe)

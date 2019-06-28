@@ -120,7 +120,6 @@ void MainUndo::capture_state()
 {
 	FileXML file;
 	master_edl->save_xml(&file, "", 0, 0);
-	file.terminate_string();
 	delete [] data_after;
 	data_after = new char[strlen(file.string)+1];
 	strcpy(data_after, file.string);

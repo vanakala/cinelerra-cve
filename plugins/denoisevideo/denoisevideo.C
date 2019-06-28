@@ -328,7 +328,6 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DENOISE_VIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void DenoiseVideo::read_data(KeyFrame *keyframe)

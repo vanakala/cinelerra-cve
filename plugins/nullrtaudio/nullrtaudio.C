@@ -133,7 +133,6 @@ void NRTAudio::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/NRTAUDIO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void NRTAudio::read_data(KeyFrame *keyframe)

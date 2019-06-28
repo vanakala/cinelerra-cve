@@ -287,8 +287,6 @@ void Reverb::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/REVERB");
 	output.append_tag();
 	output.append_newline();
-
-	output.terminate_string();
 }
 
 void Reverb::read_data(KeyFrame *keyframe)

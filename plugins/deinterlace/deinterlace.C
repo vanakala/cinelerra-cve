@@ -606,7 +606,6 @@ void DeInterlaceMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DEINTERLACE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void DeInterlaceMain::read_data(KeyFrame *keyframe)

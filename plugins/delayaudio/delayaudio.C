@@ -95,7 +95,6 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/DELAYAUDIO");
 	output.append_tag();
 	output.append_newline();
-	output.terminate_string();
 }
 
 void DelayAudio::process_realtime(AFrame *input, AFrame *output)

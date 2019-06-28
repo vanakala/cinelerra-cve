@@ -356,7 +356,6 @@ void WhirlEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/WHIRL");
 	output.append_tag();
-	output.terminate_string();
 // data is now in *text
 }
 

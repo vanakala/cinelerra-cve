@@ -293,8 +293,6 @@ void EDL::copy_assets(ptstime start,
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
-// Called recursively by copy for clips, thus the string can't be terminated.
-// The string is not terminated in this call.
 void EDL::save_xml(FileXML *file, const char *output_path,
 	int is_clip, int is_vwindow, int to_clipboard)
 {

@@ -118,7 +118,6 @@ void BandWipeMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/BANDWIPE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void BandWipeMain::read_data(KeyFrame *keyframe)

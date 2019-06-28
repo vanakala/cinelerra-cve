@@ -991,7 +991,6 @@ void Asset::write_params(FileXML *file)
 			file->append_newline();
 		}
 	}
-	file->terminate_string();
 }
 
 void Asset::read_params(FileXML *file)

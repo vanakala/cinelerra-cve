@@ -1743,7 +1743,6 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/TITLE");
 	output.append_tag();
 	output.append_newline();
-	output.terminate_string();
 }
 
 void TitleMain::read_data(KeyFrame *keyframe)

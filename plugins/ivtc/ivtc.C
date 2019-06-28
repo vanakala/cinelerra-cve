@@ -112,7 +112,6 @@ void IVTCMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/IVTC");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void IVTCMain::read_data(KeyFrame *keyframe)

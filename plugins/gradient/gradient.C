@@ -686,7 +686,6 @@ void GradientMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/GRADIENT");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void GradientMain::read_data(KeyFrame *keyframe)

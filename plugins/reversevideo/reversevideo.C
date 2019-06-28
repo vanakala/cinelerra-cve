@@ -247,7 +247,6 @@ void ReverseVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/REVERSEVIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ReverseVideo::read_data(KeyFrame *keyframe)

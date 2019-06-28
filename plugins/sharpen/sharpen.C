@@ -211,7 +211,6 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/SHARPNESS");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void SharpenMain::read_data(KeyFrame *keyframe)

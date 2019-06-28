@@ -289,7 +289,6 @@ void ShapeWipeMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/SHAPEWIPE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ShapeWipeMain::read_data(KeyFrame *keyframe)

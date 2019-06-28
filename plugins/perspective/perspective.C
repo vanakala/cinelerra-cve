@@ -596,7 +596,6 @@ void PerspectiveMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/PERSPECTIVE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void PerspectiveMain::read_data(KeyFrame *keyframe)

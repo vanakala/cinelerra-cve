@@ -220,7 +220,6 @@ void BlurMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/BLUR");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void BlurMain::read_data(KeyFrame *keyframe)

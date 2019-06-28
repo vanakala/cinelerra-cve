@@ -287,7 +287,6 @@ void OilEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/OIL_PAINTING");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void OilEffect::read_data(KeyFrame *keyframe)

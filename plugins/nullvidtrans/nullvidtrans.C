@@ -128,7 +128,6 @@ void NVTransition::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/NVTRANSITION");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void NVTransition::read_data(KeyFrame *keyframe)

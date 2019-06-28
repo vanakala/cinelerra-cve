@@ -234,7 +234,6 @@ void InvertVideoEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/INVERTVIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void InvertVideoEffect::read_data(KeyFrame *keyframe)

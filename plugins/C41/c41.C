@@ -767,7 +767,6 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/C41");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void C41Effect::read_data(KeyFrame *keyframe)

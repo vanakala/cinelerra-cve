@@ -128,7 +128,6 @@ void NATransition::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/NATRANSITION");
 	output.append_tag();
-	output.terminate_string();
 }
 
 /*

@@ -115,7 +115,6 @@ void UnsharpMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/UNSHARP");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void UnsharpMain::read_data(KeyFrame *keyframe)

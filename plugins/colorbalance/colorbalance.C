@@ -579,7 +579,6 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/COLORBALANCE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ColorBalanceMain::read_data(KeyFrame *keyframe)

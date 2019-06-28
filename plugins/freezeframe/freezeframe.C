@@ -162,7 +162,6 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/FREEZEFRAME");
 	output.append_tag();
-	output.terminate_string();
 // data is now in *text
 }
 

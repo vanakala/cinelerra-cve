@@ -133,7 +133,6 @@ void NRTVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/NRTVIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void NRTVideo::read_data(KeyFrame *keyframe)

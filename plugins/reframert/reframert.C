@@ -436,7 +436,6 @@ void ReframeRT::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/REFRAMERT");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ReframeRT::read_data(KeyFrame *keyframe)

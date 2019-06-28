@@ -702,7 +702,6 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 	file.append_tag();
 	file.tag.set_title("/VIDEOSCOPE");
 	file.append_tag();
-	file.terminate_string();
 }
 
 void VideoScopeEffect::read_data(KeyFrame *keyframe)

@@ -352,7 +352,6 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/MOTION");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void MotionMain::read_data(KeyFrame *keyframe)

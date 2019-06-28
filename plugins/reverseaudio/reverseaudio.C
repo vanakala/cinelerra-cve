@@ -270,7 +270,6 @@ void ReverseAudio::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/REVERSEAUDIO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ReverseAudio::read_data(KeyFrame *keyframe)

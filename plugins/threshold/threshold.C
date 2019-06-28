@@ -191,7 +191,6 @@ void ThresholdMain::save_data(KeyFrame *keyframe)
 	file.append_tag();
 	file.tag.set_title("/THRESHOLD");
 	file.append_tag();
-	file.terminate_string();
 }
 
 void ThresholdMain::read_data(KeyFrame *keyframe)

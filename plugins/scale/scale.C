@@ -121,7 +121,6 @@ void ScaleMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/SCALE");
 	output.append_tag();
-	output.terminate_string();
 // data is now in *text
 }
 

@@ -916,7 +916,6 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TIME_AVERAGE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void TimeAvgMain::read_data(KeyFrame *keyframe)

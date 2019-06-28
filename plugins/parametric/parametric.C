@@ -549,7 +549,6 @@ void ParametricEQ::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("/PARAMETRICEQ");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void ParametricEQ::reconfigure()

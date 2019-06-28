@@ -146,8 +146,6 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 		output.append_tag();
 		output.append_newline();
 	}
-
-	output.terminate_string();
 }
 
 void CompressorEffect::load_defaults()

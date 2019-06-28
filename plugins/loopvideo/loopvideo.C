@@ -229,7 +229,6 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/LOOPVIDEO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void LoopVideo::read_data(KeyFrame *keyframe)

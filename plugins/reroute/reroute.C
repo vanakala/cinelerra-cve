@@ -499,7 +499,6 @@ void Reroute::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/REROUTE");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void Reroute::read_data(KeyFrame *keyframe)

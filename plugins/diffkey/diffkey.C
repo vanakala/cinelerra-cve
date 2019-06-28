@@ -333,7 +333,6 @@ void DiffKey::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DIFFKEY");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void DiffKey::read_data(KeyFrame *keyframe)

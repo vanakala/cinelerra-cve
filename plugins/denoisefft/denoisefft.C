@@ -284,8 +284,6 @@ void DenoiseFFTEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/DENOISEFFT");
 	output.append_tag();
 	output.append_newline();
-
-	output.terminate_string();
 }
 
 void DenoiseFFTEffect::load_defaults()

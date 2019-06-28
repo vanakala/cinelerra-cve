@@ -682,7 +682,6 @@ void Overlay::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/OVERLAY");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void Overlay::read_data(KeyFrame *keyframe)

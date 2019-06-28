@@ -257,7 +257,6 @@ void LoopAudio::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/LOOPAUDIO");
 	output.append_tag();
-	output.terminate_string();
 }
 
 void LoopAudio::read_data(KeyFrame *keyframe)
