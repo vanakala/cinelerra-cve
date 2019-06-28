@@ -197,13 +197,12 @@ void MWindowGUI::show()
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
 	statusbar->show();
 
-	add_subwindow(mainclock = new MainClock(mwindow, 
+	add_subwindow(mainclock = new MainClock(
 		mwindow->theme->mclock_x,
 		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
-	mainclock->set_frame_offset( (double) 
-		(edlsession->get_frame_offset() /
-		edlsession->frame_rate));
+	mainclock->set_frame_offset(
+		edlsession->get_frame_offset());
 	mainclock->update(0);
 
 	cursor = new MainCursor(this);

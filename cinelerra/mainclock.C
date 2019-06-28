@@ -19,37 +19,28 @@
  * 
  */
 
-#include "edl.h"
 #include "edlsession.h"
 #include "fonts.h"
 #include "mainclock.h"
-#include "mwindow.h"
-#include "theme.h"
-#include "units.h"
 
-MainClock::MainClock(MWindow *mwindow, int x, int y, int w)
+MainClock::MainClock(int x, int y, int w)
  : BC_Title(x,
- 		y,
-		"", 
-		MEDIUM_7SEGMENT,
-		BLACK,
-		0,
-		w)
+	y,
+	(const char *)0,
+	MEDIUM_7SEGMENT,
+	BLACK,
+	0,
+	w)
 {
-	this->mwindow = mwindow;
 	position_offset = 0;
 }
 
-MainClock::~MainClock()
-{
-}
-
-void MainClock::set_frame_offset(double value)
+void MainClock::set_frame_offset(ptstime value)
 {
 	position_offset = value;
 }
 
-void MainClock::update(double position)
+void MainClock::update(ptstime position)
 {
 	char string[BCTEXTLEN];
 
@@ -59,8 +50,3 @@ void MainClock::update(double position)
 
 	BC_Title::update(string);
 }
-
-
-
-
-

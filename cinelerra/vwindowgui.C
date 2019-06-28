@@ -95,8 +95,8 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 		mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);
 
-	add_subwindow(clock = new MainClock(mwindow,
-		mwindow->theme->vtime_x, 
+	add_subwindow(clock = new MainClock(
+		mwindow->theme->vtime_x,
 		mwindow->theme->vtime_y,
 		mwindow->theme->vtime_w));
 

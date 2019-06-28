@@ -23,20 +23,17 @@
 #define MAINCLOCK_H
 
 #include "bctitle.h"
-#include "mwindow.inc"
-#include "mwindowgui.inc"
+#include "datatype.h"
 
 class MainClock : public BC_Title
 {
 public:
-	MainClock(MWindow *mwindow, int x, int y, int w);
-	~MainClock();
-	
-	void set_frame_offset(double value);
-	void update(double position);
-	
-	MWindow *mwindow;
-	double position_offset;
+	MainClock(int x, int y, int w);
+
+	void set_frame_offset(ptstime value);
+	void update(ptstime position);
+
+	ptstime position_offset;
 };
 
 
