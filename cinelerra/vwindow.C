@@ -118,9 +118,10 @@ void VWindow::change_source(EDL *edl)
 
 	gui->canvas->clear_canvas();
 
+	vwindow_edl->reset_instance();
+
 	if(edl)
 	{
-		vwindow_edl->reset_instance();
 		vwindow_edl->copy_all(edl);
 		vwindow_edl->id = edl->id;
 		if(edl->this_edlsession)
@@ -132,31 +133,43 @@ void VWindow::change_source(EDL *edl)
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
+	{
 		gui->change_source(0);
+		gui->clock->update(0);
+		gui->canvas->release_refresh_frame();
+		gui->canvas->draw_refresh();
+	}
 }
 
 void VWindow::remove_source(Asset *asset)
 {
-	if(asset && vwindow_edl->assets->total)
+	if(!asset)
 	{
-		int found = 0;
+		change_source((EDL*)0);
+		return;
+	}
 
+	if(vwindow_edl->assets->total)
+	{
 		for(int i = 0; i < vwindow_edl->assets->total; i++)
 		{
 			if(vwindow_edl->assets->values[i] == asset)
 			{
-				found = 1;
+				vwindow_edl->assets->remove(asset);
 				break;
 			}
 		}
-		if(!found)
-			return;
 	}
-	vwindow_edl->id = vwindow_edl->next_id();
-	gui->change_source(0);
-	gui->clock->update(0);
-	gui->canvas->release_refresh_frame();
-	gui->canvas->draw_refresh();
+	if(vwindow_edl->assets->total)
+		vwindow_edl->id = vwindow_edl->next_id();
+	else
+	{
+		vwindow_edl->reset_instance();
+		gui->change_source(0);
+		gui->clock->update(0);
+		gui->canvas->release_refresh_frame();
+		gui->canvas->draw_refresh();
+	}
 }
 
 void VWindow::goto_start()
