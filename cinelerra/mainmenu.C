@@ -534,7 +534,7 @@ int PasteEffects::handle_event()
 }
 
 PasteAutos::PasteAutos()
- : BC_MenuItem(_("Paste automation"))
+ : BC_MenuItem(_("Paste keyframes"))
 {
 }
 
