@@ -834,7 +834,9 @@ void Edits::cleanup()
 			current->set_pts(0);
 		while(current->next)
 		{
-			if(!current->asset && !current->next->asset)
+			if(fabs(current->length()) < EPSILON)
+				remove(current->next);
+			else if(!current->asset && !current->next->asset)
 				remove(current->next);
 			else if(current->asset == current->next->asset &&
 					PTSEQU(current->get_source_pts() + current->length(), current->next->get_source_pts()))
