@@ -25,7 +25,9 @@
 
 #include "bctimer.inc"
 #include "linklist.h"
+#include "filexml.inc"
 #include "mwindow.inc"
+#include "undostackitem.h"
 
 #include <stdint.h>
 
@@ -73,6 +75,31 @@ private:
 	bool ignore_push(const char *description, uint32_t load_flags, void* creator);
 
 	friend class MainUndoStackItem;
+};
+
+
+class MainUndoStackItem : public UndoStackItem
+{
+public:
+	MainUndoStackItem(MainUndo* undo, const char* description,
+		uint32_t load_flags, void* creator);
+	virtual ~MainUndoStackItem();
+
+	void set_data_before(const char *data);
+	virtual void undo();
+	virtual int get_size();
+
+private:
+// type of modification
+	unsigned long load_flags;
+
+// data before the modification for undos
+	char *data_before;
+
+	MainUndo *main_undo;
+
+// loads undo from the stringfile to the project
+	void load_from_undo(FileXML *file, uint32_t load_flags);
 };
 
 #endif

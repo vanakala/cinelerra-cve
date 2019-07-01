@@ -30,7 +30,6 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "undostackitem.h"
 #include "tracks.h"
 #include <string.h>
 
@@ -38,31 +37,6 @@
 #define UNDOMINLEVELS 5
 // Limits the bytes of memory used by the undo stack
 #define UNDOMEMORY 50000000
-
-
-class MainUndoStackItem : public UndoStackItem
-{
-public:
-	MainUndoStackItem(MainUndo* undo, const char* description,
-			uint32_t load_flags, void* creator);
-	virtual ~MainUndoStackItem();
-
-	void set_data_before(const char *data);
-	virtual void undo();
-	virtual int get_size();
-
-private:
-// type of modification
-	unsigned long load_flags;
-
-// data before the modification for undos
-	char *data_before;
-
-	MainUndo *main_undo;
-
-// loads undo from the stringfile to the project
-	void load_from_undo(FileXML *file, uint32_t load_flags);
-};
 
 
 MainUndo::MainUndo(MWindow *mwindow)
