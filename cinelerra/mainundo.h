@@ -58,8 +58,8 @@ public:
 // Used in undo and redo to reset the creators in all the records.
 	void reset_creators();
 
-	int undo();
-	int redo();
+	void undo();
+	void redo();
 
 private:
 	List<UndoStackItem> undo_stack;

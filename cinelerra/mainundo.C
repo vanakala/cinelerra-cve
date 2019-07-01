@@ -19,10 +19,9 @@
  * 
  */
 
-#include "asset.h"
 #include "bctimer.h"
 #include "edl.h"
-#include "edlsession.h"
+#include "edlsession.inc"
 #include "filexml.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
@@ -30,7 +29,6 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "tracks.h"
 #include <string.h>
 
 // Minimum number of undoable operations on the undo stack
@@ -38,9 +36,10 @@
 // Limits the bytes of memory used by the undo stack
 #define UNDOMEMORY 50000000
 
+extern EDLSession *edlsession;
 
 MainUndo::MainUndo(MWindow *mwindow)
-{ 
+{
 	this->mwindow = mwindow;
 	new_entry = 0;
 	data_after = 0;
@@ -132,12 +131,7 @@ void MainUndo::push_state(const char *description, uint32_t load_flags, void* cr
 	mainsession->changes_made = 1;
 }
 
-
-
-
-
-
-int MainUndo::undo()
+void MainUndo::undo()
 {
 	UndoStackItem* current_entry = undo_stack.last;
 
@@ -159,15 +153,13 @@ int MainUndo::undo()
 				mwindow->gui->mainmenu->undo->update_caption("");
 		}
 	}
-
 	reset_creators();
-	return 0;
 }
 
-int MainUndo::redo()
+void MainUndo::redo()
 {
 	UndoStackItem* current_entry = redo_stack.last;
-	
+
 	if(current_entry)
 	{
 // move item to undo_stack
@@ -179,7 +171,7 @@ int MainUndo::redo()
 		if(mwindow->gui)
 		{
 			mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
-			
+
 			if(redo_stack.last)
 				mwindow->gui->mainmenu->redo->update_caption(redo_stack.last->description);
 			else
@@ -187,7 +179,6 @@ int MainUndo::redo()
 		}
 	}
 	reset_creators();
-	return 0;
 }
 
 // enforces that the undo stack does not exceed a size of UNDOMEMORY
@@ -213,9 +204,6 @@ void MainUndo::prune_undo()
 		undo_stack.remove(undo_stack.first);
 	}
 }
-
-
-
 
 
 MainUndoStackItem::MainUndoStackItem(MainUndo* main_undo, const char* description,
@@ -269,7 +257,6 @@ void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 	}
 	mwindow->mainindexes->start_build();
 }
-
 
 void MainUndo::reset_creators()
 {
