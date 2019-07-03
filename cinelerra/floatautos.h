@@ -63,6 +63,7 @@ public:
 	Auto* append_auto();
 	Auto* new_auto();
 	void copy_values(Autos *autos);
+	size_t get_size();
 	void dump(int ident = 0);
 
 	float default_value;

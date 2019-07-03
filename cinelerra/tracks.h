@@ -101,6 +101,8 @@ public:
 	void create_new_tracks(Tracks *tracks);
 // Cleanup over all tracks
 	void cleanup();
+// Number of bytes used
+	size_t get_size();
 
 	EDL *edl;
 

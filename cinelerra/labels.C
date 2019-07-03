@@ -435,6 +435,14 @@ Label* Labels::label_of(ptstime position)
 	return 0;
 }
 
+size_t Labels::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(Label *current = first; current; current = NEXT)
+		size += current->get_size();
+	return size;
+}
 
 Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
  : ListItem<Label>()
@@ -446,4 +454,9 @@ Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
 		strcpy(this->textstr, textstr);
 	else
 		this->textstr[0] = 0;
+}
+
+size_t Label::get_size()
+{
+	return sizeof(*this);
 }

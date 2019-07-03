@@ -41,6 +41,8 @@ public:
 		double *y,
 		double *z,
 		ptstime position);
+// Size of data in bytes
+	size_t get_size();
 };
 
 #endif

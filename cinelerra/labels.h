@@ -39,6 +39,8 @@ class Label : public ListItem<Label>
 public:
 	Label(EDL *edl, Labels *labels, ptstime position, const char *textstr);
 
+	size_t get_size();
+
 	EDL *edl;
 	Labels *labels;
 	char textstr[BCTEXTLEN];
@@ -79,6 +81,8 @@ public:
 	void clear(ptstime start, ptstime end, int follow = 1);
 	void paste_silence(ptstime start, ptstime end);
 	void optimize();  // delete duplicates
+	size_t get_size();
+
 // Get nearest labels or 0 if start or end of timeline
 	Label* prev_label(ptstime position);
 	Label* next_label(ptstime position);

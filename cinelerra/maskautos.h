@@ -53,6 +53,7 @@ public:
 
 	int get_mode();
 	void set_mode(int new_mode);
+	size_t get_size();
 private:
 	int mode;
 };

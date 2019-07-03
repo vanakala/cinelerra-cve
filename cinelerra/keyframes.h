@@ -42,6 +42,8 @@ public:
 	void save_xml(FileXML *file);
 	// Returns first keyframe, creates if does not exist
 	KeyFrame *get_first();
+	// Number of bytes used
+	size_t get_size();
 	void dump(int indent = 0);
 
 private:

@@ -38,6 +38,7 @@ public:
 	void save_xml(FileXML *file);
 	void copy(Auto *that, ptstime start, ptstime end);
 	void copy_from(Auto *that);
+	size_t get_size();
 	void dump(int indent = 0);
 	void rechannel();
 

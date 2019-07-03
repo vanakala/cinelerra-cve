@@ -788,3 +788,12 @@ void Tracks::cleanup()
 	for(Track* current = first; current; current = NEXT)
 		current->cleanup();
 }
+
+size_t Tracks::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(Track* current = first; current; current = NEXT)
+		size += current->get_size();
+	return size;
+}

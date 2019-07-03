@@ -69,6 +69,8 @@ public:
 	void insert_transition(PluginServer *server);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);
+// Returns size of data in bytes
+	size_t get_size();
 
 // Media edit information
 // Channel or layer of source

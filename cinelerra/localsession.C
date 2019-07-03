@@ -444,6 +444,11 @@ int LocalSession::outpoint_valid()
 	return out_point >= 0;
 }
 
+size_t LocalSession::get_size()
+{
+	return sizeof(*this);
+}
+
 void LocalSession::dump(int indent)
 {
 	printf("%*sLocalsession %p dump:\n", indent, "", this);

@@ -40,6 +40,7 @@ public:
 		PanAuto* &previous,
 		PanAuto* &next);
 	void copy_values(Autos *autos);
+	size_t get_size();
 	void dump(int indent = 0);
 
 	float default_values[MAXCHANNELS];

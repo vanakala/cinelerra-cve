@@ -1012,3 +1012,14 @@ const char *EDL::handle_name(int handle)
 	}
 	return "Unknown handlle";
 }
+
+size_t EDL::get_size()
+{
+	size_t size = sizeof(*this);
+
+	if(tracks)
+		size += tracks->get_size();
+	size += labels->get_size();
+	size += local_session->get_size();
+	return size;
+}

@@ -415,6 +415,11 @@ void FloatAuto::load(FileXML *file)
 
 }
 
+size_t FloatAuto::get_size()
+{
+	return sizeof(*this);
+}
+
 void FloatAuto::dump(int ident)
 {
 	const char *s;

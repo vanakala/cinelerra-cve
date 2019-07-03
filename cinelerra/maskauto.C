@@ -59,6 +59,11 @@ int MaskPoint::operator==(MaskPoint& ptr)
 		EQUIV(control_y2, ptr.control_y2);
 }
 
+size_t MaskPoint::get_size()
+{
+	return sizeof(*this);
+}
+
 SubMask::SubMask(MaskAuto *keyframe)
 {
 	this->keyframe = keyframe;
@@ -177,6 +182,15 @@ void SubMask::save_xml(FileXML *file)
 		file->append_tag();
 		file->append_newline();
 	}
+}
+
+size_t SubMask::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(int i = 0; i < points.total; i++)
+		size += points.values[i]->get_size();
+	return size;
 }
 
 void SubMask::dump(int indent)
@@ -400,6 +414,14 @@ void MaskAuto::copy(Auto *src, ptstime start, ptstime end)
 
 	for(int i = 0; i < that->masks.total; i++)
 		masks.values[i]->copy_from(*that->masks.values[i]);
+}
+
+size_t MaskAuto::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(int i = 0; i < masks.total; i++)
+		size += masks.values[i]->get_size();
 }
 
 void MaskAuto::dump(int indent)

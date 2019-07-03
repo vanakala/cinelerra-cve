@@ -55,6 +55,7 @@ public:
 	void repeat_event(Canvas *canvas);
 	int draw(Canvas *canvas, EDL *edl, ptstime pts);
 	int has_repeater_period();
+	size_t get_size();
 	void dump(int indent = 0);
 
 private:
@@ -88,6 +89,7 @@ public:
 	void activate_repeater();
 	void stop_repeater();
 	void repeat_event(int period);
+	size_t get_size();
 	void dump(int indent = 0);
 private:
 	BC_WindowBase *repeater_window;

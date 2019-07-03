@@ -286,6 +286,15 @@ ptstime Automation::get_length()
 	return last_pts;
 }
 
+size_t Automation::get_size()
+{
+	size_t size = 0;
+
+	if(autos[AUTOMATION_MUTE])
+		size += ((IntAutos*)autos[AUTOMATION_MUTE])->get_size();
+	return size;
+}
+
 void Automation::dump(int indent)
 {
 	printf("%*sAutomation %p dump:\n", indent, "", this);

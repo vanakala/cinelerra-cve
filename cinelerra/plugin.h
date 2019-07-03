@@ -102,6 +102,7 @@ public:
 
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();
+	size_t get_size();
 
 	int id;
 

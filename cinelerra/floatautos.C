@@ -343,6 +343,15 @@ void FloatAutos::copy_values(Autos *autos)
 	default_value = ((FloatAutos*)autos)->default_value;
 }
 
+size_t FloatAutos::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(FloatAuto* current = (FloatAuto*)first; current; current = (FloatAuto*)NEXT)
+		size += current->get_size();
+	return size;
+}
+
 void FloatAutos::dump(int ident)
 {
 	printf("%*sFloatAutos %p dump(%d): base %.3f default %.3f\n", ident, "", this,

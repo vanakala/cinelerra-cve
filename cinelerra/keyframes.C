@@ -66,6 +66,15 @@ KeyFrame *KeyFrames::get_first()
 	return (KeyFrame *)first;
 }
 
+size_t KeyFrames::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(KeyFrame* current = (KeyFrame*)first; current; current = (KeyFrame*)NEXT)
+		size += current->get_size();
+	return size;
+}
+
 void KeyFrames::dump(int indent)
 {
 	printf("%*sKeyFrames %p dump(%d): base %.3f\n", indent, " ", this, total(), base_pts);

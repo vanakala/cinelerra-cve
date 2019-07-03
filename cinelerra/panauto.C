@@ -104,6 +104,11 @@ void PanAuto::copy_from(Auto *that)
 	this->handle_y = pan_auto->handle_y;
 }
 
+size_t PanAuto::get_size()
+{
+	return sizeof(*this);
+}
+
 void PanAuto::dump(int indent)
 {
 	printf("%*sPanAuto %p: %.3f handles: %d %d\n",

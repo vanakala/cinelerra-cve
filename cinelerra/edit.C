@@ -350,3 +350,12 @@ ptstime Edit::source_end_pts()
 		return source_pts + next->project_pts - project_pts;
 	return 0;
 }
+
+size_t Edit::get_size()
+{
+	size_t size = sizeof(*this);
+
+	if(transition)
+		size += transition->get_size();
+	return size;
+}

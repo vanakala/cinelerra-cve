@@ -20,7 +20,9 @@
  */
 
 #include "asset.h"
+#include "aautomation.h"
 #include "automation.h"
+#include "vautomation.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
@@ -1160,4 +1162,28 @@ void Track::cleanup()
 			i--;
 		}
 	}
+}
+
+size_t Track::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *current_plugin = plugins.values[i];
+
+		size += current_plugin->get_size();
+	}
+	size += edits->get_size();
+
+	switch(data_type)
+	{
+	case TRACK_AUDIO:
+		size += ((AAutomation*)automation)->get_size();
+		break;
+	case TRACK_VIDEO:
+		size += ((VAutomation*)automation)->get_size();
+		break;
+	}
+	return size;
 }

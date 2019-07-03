@@ -92,6 +92,11 @@ int KeyFrame::operator==(KeyFrame &that)
 	return identical(&that);
 }
 
+size_t KeyFrame::get_size()
+{
+	return sizeof(*this);
+}
+
 void KeyFrame::dump(int indent)
 {
 	printf("%*sKeyFrame %p: pos_time %.3f\n", indent, "", this, pos_time);

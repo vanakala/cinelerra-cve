@@ -37,3 +37,15 @@ AAutomation::AAutomation(EDL *edl, Track *track)
 	autos[AUTOMATION_PAN]->autoidx = AUTOMATION_PAN;
 	autos[AUTOMATION_PAN]->autogrouptype = -1;
 }
+
+size_t AAutomation::get_size()
+{
+	size_t size = sizeof(*this);
+
+	if(autos[AUTOMATION_FADE])
+		size += ((FloatAutos*)autos[AUTOMATION_FADE])->get_size();
+	if(autos[AUTOMATION_PAN])
+		size += ((PanAutos*)autos[AUTOMATION_PAN])->get_size();
+	size += Automation::get_size();
+	return size;
+}

@@ -786,6 +786,11 @@ void EDLSession::ptstotext(char *string, ptstime pts)
 		frames_per_foot);
 }
 
+size_t EDLSession::get_size()
+{
+	return sizeof(*this);
+}
+
 void EDLSession::dump(int indent)
 {
 	printf("%*sEDLSession %p dump\n", indent, "", this);

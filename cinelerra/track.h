@@ -210,6 +210,8 @@ public:
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
 	int playable_edit(ptstime position);
+// Number of bytes used
+	size_t get_size();
 
 // Dimensions of this track if video
 	int track_w, track_h;

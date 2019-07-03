@@ -30,6 +30,8 @@ class AAutomation : public Automation
 {
 public:
 	AAutomation(EDL *edl, Track *track);
+
+	size_t get_size();
 };
 
 #endif

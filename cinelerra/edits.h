@@ -97,6 +97,9 @@ public:
 // ================================== file operations
 
 	void load(FileXML *xml);
+// Returns the size of data in bytes
+	size_t get_size();
+
 private:
 	ptstime load_edit(FileXML *xml, ptstime project_time);
 };

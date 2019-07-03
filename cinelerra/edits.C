@@ -881,6 +881,16 @@ void Edits::shift_edits(Edit *edit, ptstime diff)
 		edit->shift(diff);
 }
 
+size_t Edits::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(Edit *edit = first; edit; edit = edit->next)
+		size += edit->get_size();
+tracemsg("size %zu", size);
+	return size;
+}
+
 void Edits::dump(int indent)
 {
 	Edit *edit;

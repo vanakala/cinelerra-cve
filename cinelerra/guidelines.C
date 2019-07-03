@@ -335,6 +335,13 @@ int GuideFrame::has_repeater_period()
 	return 0;
 }
 
+size_t GuideFrame::get_size()
+{
+	size_t size = sizeof(*this);
+
+	size += allocated * sizeof(uint16_t);
+}
+
 void GuideFrame::dump(int indent)
 {
 	uint16_t *p;
@@ -487,6 +494,15 @@ void GuideLines::repeat_event(int duration)
 		canvas->get_canvas()->flash();
 		canvas->unlock_canvas();
 	}
+}
+
+size_t GuideLines::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(GuideFrame *current = first; current; current = current->next)
+		size += current->get_size();
+	return size;
 }
 
 void GuideLines::dump(int indent)

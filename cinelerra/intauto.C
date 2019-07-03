@@ -85,6 +85,11 @@ int IntAuto::percentage_to_value(float percentage)
 	return percentage > .5;
 }
 
+size_t IntAuto::get_size()
+{
+	return sizeof(*this);
+}
+
 void IntAuto::dump(int indent)
 {
 	printf("%*sIntaAuto %p: pos_time: %.3f value: %d\n", indent, "",

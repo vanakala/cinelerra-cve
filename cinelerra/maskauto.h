@@ -33,6 +33,7 @@ class MaskPoint
 public:
 	MaskPoint();
 
+	size_t get_size();
 	int operator==(MaskPoint& ptr);
 	MaskPoint& operator=(MaskPoint& ptr);
 
@@ -53,6 +54,7 @@ public:
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file);
 	void save_xml(FileXML *file);
+	size_t get_size();
 	void dump(int indent = 0);
 
 	ArrayList<MaskPoint*> points;
@@ -76,6 +78,7 @@ public:
 	void interpolate_values(ptstime pts, int *new_value, int *new_feather);
 	void copy_from(MaskAuto *src);
 
+	size_t get_size();
 	void dump(int indent = 0);
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);

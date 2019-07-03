@@ -106,6 +106,15 @@ void MaskAutos::copy_values(Autos *autos)
 	mode = ((MaskAutos*)autos)->mode;
 }
 
+size_t MaskAutos::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(Auto* current = first; current; current = NEXT)
+		size += ((MaskAuto*)current)->get_size();
+	return size;
+}
+
 void MaskAutos::dump(int indent)
 {
 	printf("%*sMaskAutos %p dump(%d): base %.3f mode %d\n", indent, " ", 

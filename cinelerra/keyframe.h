@@ -45,6 +45,7 @@ public:
 	int operator==(KeyFrame &that);
 	void dump(int indent = 0);
 	int identical(KeyFrame *src);
+	size_t get_size();
 
 	char data[MESSAGESIZE];
 };

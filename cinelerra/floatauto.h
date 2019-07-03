@@ -53,6 +53,7 @@ public:
 	float get_value() { return this->value; }
 	void set_value(float newval);
 	void add_value(float increment);
+	size_t get_size();
 
 	tgnt_mode tangent_mode;
 	void change_tangent_mode(tgnt_mode); // recalculates tangents as well

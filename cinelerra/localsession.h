@@ -72,6 +72,7 @@ public:
 	void synchronize_params(LocalSession *that);
 
 	void boundaries();
+	size_t get_size();
 	void dump(int indent = 0);
 
 	EDL *edl;

@@ -117,6 +117,7 @@ public:
 		ptstime end,
 		int autogrouptype);
 	ptstime get_length();
+	virtual size_t get_size();
 
 	void dump(int indent = 0);
 

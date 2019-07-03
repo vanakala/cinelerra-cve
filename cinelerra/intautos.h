@@ -41,6 +41,7 @@ public:
 		ptstime end);
 	int get_value(ptstime position);
 	void copy_values(Autos *autos);
+	size_t get_size();
 	void dump(int indent = 0);
 
 	int default_value;

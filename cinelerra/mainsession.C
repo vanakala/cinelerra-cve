@@ -295,3 +295,8 @@ void MainSession::save_defaults(BC_Hash *defaults)
 
 	defaults->update("CURRENT_TIP", current_tip);
 }
+
+size_t MainSession::get_size()
+{
+	return sizeof(*this);
+}

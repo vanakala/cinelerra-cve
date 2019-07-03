@@ -140,6 +140,15 @@ void IntAutos::copy_values(Autos *autos)
 	default_value = ((IntAutos*)autos)->default_value;
 }
 
+size_t IntAutos::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(IntAuto *current = (IntAuto*)first; current; current = (IntAuto*)NEXT)
+		size += current->get_size();
+	return size;
+}
+
 void IntAutos::dump(int indent)
 {
 	printf("%*sIntautos %p dump(%d): base %.3f default %d\n", indent, "", this, 

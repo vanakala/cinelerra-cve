@@ -89,6 +89,15 @@ void PanAutos::copy_values(Autos *autos)
 	memcpy(default_values, pas->default_values, sizeof(default_values));
 }
 
+size_t PanAutos::get_size()
+{
+	size_t size = sizeof(*this);
+
+	for(Auto* current = first; current; current = NEXT)
+		size += ((PanAuto*)current)->get_size();
+	return size;
+}
+
 void PanAutos::dump(int indent)
 {
 	printf("%*sPanAutos %p dump(%d): base %.3f handles: %d, %d\n", indent, " ", this, 

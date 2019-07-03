@@ -621,6 +621,16 @@ ptstime Plugin::plugin_change_duration(ptstime start, ptstime length)
 	return length;
 }
 
+size_t Plugin::get_size()
+{
+	size_t size = sizeof(*this);
+
+	size += keyframes->get_size();
+	if(guideframe)
+		size += guideframe->get_size();
+	return size;
+}
+
 void Plugin::dump(int indent)
 {
 	const char *s;

@@ -73,6 +73,8 @@ public:
 
 // Convert pts to text in current formet
 	void ptstotext(char *string, ptstime pts);
+// Size in bytes
+	size_t get_size();
 
 // Audio
 	int achannel_positions[MAXCHANNELS];

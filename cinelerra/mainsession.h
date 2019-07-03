@@ -49,6 +49,7 @@ public:
 	void save_defaults(BC_Hash *defaults);
 	void default_window_positions();
 	void boundaries();
+	size_t get_size();
 
 // For drag and drop events
 

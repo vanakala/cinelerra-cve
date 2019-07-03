@@ -196,6 +196,8 @@ public:
 	void check_master_track();
 // Name of the handle
 	static const char *handle_name(int handle);
+// Size of allocated memory
+	size_t get_size();
 
 // Media files
 // Shared between all EDLs

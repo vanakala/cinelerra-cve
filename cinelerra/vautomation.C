@@ -99,3 +99,29 @@ void VAutomation::get_camera(double *x,
 		before,
 		after);
 }
+
+size_t VAutomation::get_size()
+{
+	size_t size = sizeof(*this);
+
+	if(autos[AUTOMATION_FADE])
+		size += ((FloatAutos*)autos[AUTOMATION_FADE])->get_size();
+	if(autos[AUTOMATION_MODE])
+		size += ((IntAutos*)autos[AUTOMATION_MODE])->get_size();
+	if(autos[AUTOMATION_MASK])
+		size += ((MaskAutos*)autos[AUTOMATION_MASK])->get_size();
+	if(autos[AUTOMATION_CAMERA_X])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_size();
+	if(autos[AUTOMATION_CAMERA_Y])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_X])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_Y])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_size();
+	if(autos[AUTOMATION_CAMERA_Z])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_Z])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_size();
+	size += Automation::get_size();
+	return size;
+}
