@@ -79,9 +79,8 @@ int New::handle_event()
 
 void New::create_new_edl()
 {
-	new_edl = new EDL(0);
 	new_edlsession = new EDLSession();
-	new_edl->load_defaults(mwindow->defaults, new_edlsession);
+	new_edlsession->load_defaults(mwindow->defaults);
 }
 
 void New::create_new_project()
@@ -107,22 +106,21 @@ void New::create_new_project()
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
 	new_edlsession->boundaries();
-	new_edl->create_default_tracks();
-
+	new_edlsession->save_defaults(mwindow->defaults);
 	mwindow->set_filename(0);
 	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
 	mwindow->hide_plugins();
-	delete master_edl;
 	assetlist_global.delete_all();
-	master_edl = new_edl;
-	delete edlsession;
-	edlsession = new_edlsession;
+	master_edl->reset_instance();
+	edlsession->copy(new_edlsession);
+	master_edl->create_default_tracks();
 	mwindow->save_defaults();
 
 // Load file sequence
 	mwindow->update_project(LOADMODE_REPLACE);
 	mainsession->changes_made = 0;
+	delete new_edlsession;
 }
 
 NewThread::NewThread(MWindow *mwindow, New *new_project)
@@ -156,19 +154,8 @@ void NewThread::run()
 	nwindow = 0;
 	window_lock->unlock();
 
-
-	if(result)
-	{
-// Aborted
-		delete new_project->new_edl;
-		delete new_project->new_edlsession;
-	}
-	else
-	{
-		new_project->new_edl->save_defaults(mwindow->defaults, new_project->new_edlsession);
-		mwindow->defaults->save();
+	if(!result)
 		new_project->create_new_project();
-	}
 }
 
 
@@ -188,7 +175,6 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	this->mwindow = mwindow;
 	this->new_thread = new_thread;
-	this->new_edl = new_thread->new_project->new_edl;
 	this->new_edlsession = new_thread->new_project->new_edlsession;
 
 	x = 10;
@@ -346,14 +332,14 @@ NewATracksTumbler::NewATracksTumbler(NewWindow *nwindow, int x, int y)
 void NewATracksTumbler::handle_up_event()
 {
 	nwindow->new_edlsession->audio_tracks++;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }
 
 void NewATracksTumbler::handle_down_event()
 {
 	nwindow->new_edlsession->audio_tracks--;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }
 
@@ -380,14 +366,14 @@ NewAChannelsTumbler::NewAChannelsTumbler(NewWindow *nwindow, int x, int y)
 void NewAChannelsTumbler::handle_up_event()
 {
 	nwindow->new_edlsession->audio_channels++;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }
 
 void NewAChannelsTumbler::handle_down_event()
 {
 	nwindow->new_edlsession->audio_channels--;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }
 
@@ -413,13 +399,13 @@ NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
 void NewVTracksTumbler::handle_up_event()
 {
 	nwindow->new_edlsession->video_tracks++;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }
 
 void NewVTracksTumbler::handle_down_event()
 {
 	nwindow->new_edlsession->video_tracks--;
-	nwindow->new_edl->boundaries();
+	nwindow->new_edlsession->boundaries();
 	nwindow->update();
 }

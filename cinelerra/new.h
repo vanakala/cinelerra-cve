@@ -45,7 +45,6 @@ public:
 
 	MWindow *mwindow;
 	NewThread *thread;
-	EDL *new_edl;
 	EDLSession *new_edlsession;
 
 private:
@@ -79,7 +78,6 @@ public:
 
 	MWindow *mwindow;
 	NewThread *new_thread;
-	EDL *new_edl;
 	EDLSession *new_edlsession;
 	BC_TextBox *atracks;
 	BC_TextBox *achannels;
