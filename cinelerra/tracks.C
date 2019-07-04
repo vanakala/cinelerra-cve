@@ -586,7 +586,7 @@ void Tracks::create_new_tracks(Asset *asset)
 	for(int i = 0; i < vtracks; i++)
 	{
 		new_track = add_video_track(0, 0);
-		len = asset->video_duration;
+		len = asset->total_length_framealigned(edlsession->frame_rate);
 		if(len > master_length)
 			len = master_length;
 		new_track->insert_asset(asset, len, 0, i);
@@ -595,7 +595,7 @@ void Tracks::create_new_tracks(Asset *asset)
 	for(int i = 0; i < atracks; i++)
 	{
 		new_track = add_audio_track(0, 0);
-		len = asset->audio_duration;
+		len = asset->total_length_framealigned(edlsession->frame_rate);
 		if(len > master_length)
 			len = master_length;
 		new_track->insert_asset(asset, len, 0, i);
