@@ -23,13 +23,11 @@
 #include "bcsignals.h"
 #include "bctitle.h"
 #include "clip.h"
-#include "cplayback.h"
 #include "cwindow.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
-#include "levelwindow.h"
 #include "mainerror.h"
 #include "mainundo.h"
 #include "mainmenu.h"
@@ -38,11 +36,9 @@
 #include "mwindowgui.h"
 #include "new.h"
 #include "mainsession.h"
-#include "patchbay.h"
 #include "preferences.h"
 #include "selection.h"
 #include "theme.h"
-#include "vplayback.h"
 #include "vwindow.h"
 
 
@@ -85,8 +81,9 @@ void New::create_new_edl()
 
 void New::create_new_project()
 {
-	mwindow->cwindow->playback_engine->send_command(STOP);
-	mwindow->vwindow->playback_engine->send_command(STOP);
+	if(mwindow->cwindow->stop_playback() || mwindow->vwindow->stop_playback())
+		return;
+
 	mwindow->vwindow->remove_source();
 
 	mwindow->reset_caches();

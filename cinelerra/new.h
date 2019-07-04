@@ -23,7 +23,6 @@
 #define NEW_H
 
 #include "edl.inc"
-#include "file.inc"
 #include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
