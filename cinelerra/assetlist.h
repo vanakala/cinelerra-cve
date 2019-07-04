@@ -28,8 +28,6 @@
 #include "filexml.inc"
 #include "linklist.h"
 
-extern AssetList assetlist_global;
-
 class AssetList : public List<Asset>
 {
 public:

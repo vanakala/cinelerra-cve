@@ -23,6 +23,7 @@
 #define MAINSESSION_INC
 
 class MainSession;
+extern MainSession *mainsession;
 
 // Current operation in main window
 enum

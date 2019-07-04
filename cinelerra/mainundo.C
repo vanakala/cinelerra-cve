@@ -36,8 +36,6 @@
 // Limits the bytes of memory used by the undo stack
 #define UNDOMEMORY 50000000
 
-extern EDLSession *edlsession;
-
 MainUndo::MainUndo(MWindow *mwindow)
 {
 	this->mwindow = mwindow;

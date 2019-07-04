@@ -24,15 +24,12 @@
 #include "colors.h"
 #include "edlsession.h"
 #include "guidelines.h"
-#include "mwindow.h"
 #include "vframe.h"
 
 #include <string.h>
 
 #define GUIDELINE_UNIT 128
 #define GUIDELINE_PERIOD 250
-
-extern MWindow *mwindow_global;
 
 GuideFrame::GuideFrame(ptstime start, ptstime end, Canvas *canvas)
  : ListItem<GuideFrame>()

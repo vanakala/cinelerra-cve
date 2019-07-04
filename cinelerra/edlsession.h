@@ -32,8 +32,6 @@
 #include "filexml.inc"
 #include "playbackconfig.inc"
 
-extern EDLSession *edlsession;
-
 // Session shared between all clips
 class EDLSession
 {

@@ -27,7 +27,6 @@
 #include "filexml.inc"
 #include "cliplist.inc"
 
-extern ClipList cliplist_global;
 
 class ClipList : public ArrayList<EDL*>
 {

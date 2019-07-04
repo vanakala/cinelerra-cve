@@ -23,5 +23,6 @@
 #define PLUGINDB_INC
 
 class PluginDB;
+extern PluginDB plugindb;
 
 #endif

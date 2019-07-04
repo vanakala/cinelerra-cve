@@ -29,7 +29,6 @@
 #include "pluginserver.inc"
 #include "splashgui.inc"
 
-extern PluginDB plugindb;
 
 class PluginDB : ArrayList<PluginServer*>
 {

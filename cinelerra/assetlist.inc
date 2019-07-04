@@ -23,5 +23,6 @@
 #define ASSETLIST_INC
 
 class AssetList;
+extern AssetList assetlist_global;
 
 #endif

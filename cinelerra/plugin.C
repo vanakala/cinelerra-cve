@@ -35,7 +35,6 @@
 #include "tracks.h"
 #include "virtualnode.h"
 
-extern Preferences *preferences_global;
 
 Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 {

@@ -35,6 +35,8 @@
 #define PASTE_AUTOS   2
 #define PASTE_PLUGINS 3
 #define PASTE_ALL     4
+
 class MWindow;
+extern MWindow *mwindow_global;
 
 #endif

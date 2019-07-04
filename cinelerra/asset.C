@@ -43,8 +43,6 @@
 #include <inttypes.h>
 #include <string.h>
 
-extern MWindow *mwindow_global;
-
 const char encparamtag[] = "EncParam";
 const char decfmt_tag[] = "Decoding";
 const char stream_tag[] = "Stream";

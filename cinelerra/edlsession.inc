@@ -23,5 +23,6 @@
 #define EDLSESSION_INC
 
 class EDLSession;
+extern EDLSession *edlsession;
 
 #endif

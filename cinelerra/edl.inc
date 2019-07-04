@@ -24,6 +24,10 @@
 
 class EDL;
 
+extern EDL *master_edl;
+extern EDL *vwindow_edl;
+extern EDL *render_edl;
+
 // Load flags for undo
 #define LOAD_ALL        0xffffffff
 #define LOAD_EDITS      0x00000001

@@ -22,7 +22,7 @@
 #ifndef THEME_INC
 #define THEME_INC
 
-
 class Theme;
+extern Theme *theme_global;
 
 #endif

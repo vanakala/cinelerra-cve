@@ -23,5 +23,6 @@
 #define CLIPLIST_INC
 
 class ClipList;
+extern ClipList cliplist_global;
 
 #endif
