@@ -710,27 +710,24 @@ void Track::automation_xml(FileXML *file)
 
 	automation->save_xml(file);
 
-	if(edlsession->auto_conf->plugins_visible)
+	file->tag.set_title("PLUGINSETS");
+	file->append_tag();
+	file->append_newline();
+
+	for(int i = 0; i < plugins.total; i++)
 	{
-		file->tag.set_title("PLUGINSETS");
+// For historical reasons we have pluginsets
+		file->tag.set_title("PLUGINSET");
 		file->append_tag();
 		file->append_newline();
-
-		for(int i = 0; i < plugins.total; i++)
-		{
-// For historical reasons we have pluginsets
-			file->tag.set_title("PLUGINSET");
-			file->append_tag();
-			file->append_newline();
-			plugins.values[i]->save_xml(file);
-			file->tag.set_title("/PLUGINSET");
-			file->append_tag();
-			file->append_newline();
-		}
-		file->tag.set_title("/PLUGINSETS");
+		plugins.values[i]->save_xml(file);
+		file->tag.set_title("/PLUGINSET");
 		file->append_tag();
 		file->append_newline();
 	}
+	file->tag.set_title("/PLUGINSETS");
+	file->append_tag();
+	file->append_newline();
 
 	file->tag.set_title("/TRACK");
 	file->append_tag();
