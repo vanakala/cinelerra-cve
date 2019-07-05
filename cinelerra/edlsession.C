@@ -45,37 +45,62 @@ EDLSession::EDLSession()
 {
 	playback_cursor_visible = 0;
 	aconfig_duplex = new AudioOutConfig(1);
-	test_playback_edits = 1;
 	brender_start = 0.0;
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
 	awindow_folder = AW_MEDIA_FOLDER;
-	strcpy(default_atransition, "");
-	strcpy(default_vtransition, "");
+	strcpy(default_atransition, "Crossfade");
+	strcpy(default_vtransition, "Dissolve");
 	strcpy(plugin_configuration_directory, BCASTDIR);
 	default_transition_length = 1.0;
 	folderlist_format = ASSETS_TEXT;
-	frame_rate = 25; // just has to be something by default
+	frame_rate = 25;
+	actual_frame_rate = -1;
 	labels_follow_edits = 1;
-	audio_tracks = -10;	// these insane values let us crash early if something is forgotten to be set
-	audio_channels = -10;
-	video_tracks = -10;
-	video_channels = -10;
-	sample_rate = -10;
-	frame_rate = -10;
-	frames_per_foot = -10;
+	audio_tracks = 2;
+	audio_channels = 2;
+	video_tracks = 1;
+	sample_rate = 48000;
+	frames_per_foot = 16;
 	meter_over_delay = OVER_DELAY;
 	meter_peak_delay = PEAK_DELAY;
-	min_meter_db = -1000;
-	max_meter_db = -1000;
-	output_w = -1000;
-	output_h = -1000;
-	video_write_length = -1000;
+	min_meter_db = -85;
+	max_meter_db = 6;
+	output_w = 720;
+	output_h = 576;
 	sample_aspect_ratio = 1;
-	color_model = -100;
+	color_model = BC_AYUV16161616;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
-	record_speed = 24;
+	for(int i = 0; i < ASSET_COLUMNS; i++)
+		asset_columns[i] = 100;
+	crop_x1 = crop_y1 = 0;
+	crop_x2 = 320;
+	crop_y2 = 240;
+	ruler_x1 = ruler_y1 = ruler_x2 = ruler_y2 = 0;
+	cwindow_mask = 0;
+	cwindow_xscroll = 0;
+	cwindow_yscroll = 0;
+	cwindow_zoom = 1;
+	assetlist_format = ASSETS_ICONS;
+	edit_handle_mode[0] = MOVE_ALL_EDITS;
+	edit_handle_mode[1] = MOVE_ONE_EDIT;
+	edit_handle_mode[2] = MOVE_NO_EDITS;
+	editing_mode = EDITING_IBEAM;
+	cursor_on_frames = 1;
+	cwindow_meter = 1;
+	cwindow_scrollbars = 0;
+	auto_keyframes = 0;
+	safe_regions = 1;
+	si_useduration = 1;
+	si_duration = 3;
+	show_assets = 1;
+	show_titles = 1;
+	time_format = TIME_HMSF;
+	video_every_frame = 0;
+	view_follows_playback = 1;
+	vwindow_meter = 1;
+	vwindow_zoom = 1;
 	tool_window = 0;
 	show_avlibsmsgs = 0;
 	experimental_codecs = 1;
@@ -87,7 +112,28 @@ EDLSession::EDLSession()
 	defaults_loaded = 0;
 	automatic_backups = 1;
 	backup_interval = 60;
+// Default channel positions
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		int default_position = i * 30;
 
+		if(i == 0)
+			default_position = 180;
+		else
+		if(i == 1)
+			default_position = 0;
+		else
+		if(default_position == 90)
+			default_position = 300;
+		else
+		if(default_position == 0)
+			default_position = 330;
+
+		achannel_positions[i] = default_position;
+	}
+
+	for(int i = 0; i < 4; i++)
+		timecode_offset[i] = 0;
 }
 
 EDLSession::~EDLSession()
@@ -108,9 +154,7 @@ char* EDLSession::get_cwindow_display()
 int EDLSession::need_rerender(EDLSession *ptr)
 {
 	return (video_every_frame != ptr->video_every_frame) ||
-		(playback_software_position != ptr->playback_software_position) ||
-		(test_playback_edits != ptr->test_playback_edits) ||
-		(playback_buffer != ptr->playback_buffer);
+		(playback_software_position != ptr->playback_software_position);
 }
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -148,25 +192,11 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
-		int default_position = i * 30;
-
-		if(i == 0)
-			default_position = 180;
-		else
-		if(i == 1)
-			default_position = 0;
-		else
-		if(default_position == 90)
-			default_position = 300;
-		else
-		if(default_position == 0)
-			default_position = 330;
-
-		achannel_positions[i] = defaults->get(string, default_position);
+		achannel_positions[i] = defaults->get(string, achannel_positions[i]);
 	}
 	aconfig_duplex->load_defaults(defaults);
-	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
-	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
+	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", actual_frame_rate);
+	assetlist_format = defaults->get("ASSETLIST_FORMAT", assetlist_format);
 	aspect_w = aspect_h = 1.0;
 	aspect_w = defaults->get("ASPECTW", aspect_w);
 	aspect_h = defaults->get("ASPECTH", aspect_h);
@@ -175,101 +205,75 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		sprintf(string, "ASSET_COLUMN%d", i);
-		asset_columns[i] = defaults->get(string, 100);
+		asset_columns[i] = defaults->get(string, asset_columns[i]);
 	}
 	audio_channels = defaults->get("ACHANNELS", audio_channels);
 	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 	auto_conf->load_defaults(defaults);
-	brender_start = defaults->get("BRENDER_START", brender_start);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
 	strcpy(string, AInterlaceModeSelection::xml_text(interlace_mode));
 	interlace_mode = AInterlaceModeSelection::xml_value(defaults->get("INTERLACE_MODE", string));
-	crop_x1 = defaults->get("CROP_X1", 0);
-	crop_x2 = defaults->get("CROP_X2", 320);
-	crop_y1 = defaults->get("CROP_Y1", 0);
-	crop_y2 = defaults->get("CROP_Y2", 240);
-	ruler_x1 = defaults->get("RULER_X1", 0.0);
-	ruler_x2 = defaults->get("RULER_X2", 0.0);
-	ruler_y1 = defaults->get("RULER_Y1", 0.0);
-	ruler_y2 = defaults->get("RULER_Y2", 0.0);
+	crop_x1 = defaults->get("CROP_X1", crop_x1);
+	crop_x2 = defaults->get("CROP_X2", crop_x2);
+	crop_y1 = defaults->get("CROP_Y1", crop_y1);
+	crop_y2 = defaults->get("CROP_Y2", crop_y2);
+	ruler_x1 = defaults->get("RULER_X1", ruler_x1);
+	ruler_x2 = defaults->get("RULER_X2", ruler_x2);
+	ruler_y1 = defaults->get("RULER_Y1", ruler_y1);
+	ruler_y2 = defaults->get("RULER_Y2", ruler_y2);
 	awindow_folder = defaults->get("AWINDOW_FOLDER", awindow_folder);
-	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 1);
-	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
-	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
-	cwindow_meter = defaults->get("CWINDOW_METER", 1);
-	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", 0);
-	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
-	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
-	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (double)1);
-	sprintf(default_atransition, "Crossfade");
+	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", cursor_on_frames);
+	cwindow_meter = defaults->get("CWINDOW_METER", cwindow_meter);
+	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", cwindow_scrollbars);
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
-	sprintf(default_vtransition, "Dissolve");
 	defaults->get("DEFAULT_VTRANSITION", default_vtransition);
-	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", (double)1);
-	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_ALL_EDITS);
-	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", MOVE_ONE_EDIT);
-	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", MOVE_NO_EDITS);
-	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
-	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
-	folderlist_format = defaults->get("FOLDERLIST_FORMAT", ASSETS_TEXT);
+	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", default_transition_length);
+	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", edit_handle_mode[0]);
+	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
+	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", edit_handle_mode[2]);
+	editing_mode = defaults->get("EDITING_MODE", editing_mode);
+	folderlist_format = defaults->get("FOLDERLIST_FORMAT", folderlist_format);
 	frame_rate = defaults->get("FRAMERATE", frame_rate);
-	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
+	frames_per_foot = defaults->get("FRAMES_PER_FOOT", frames_per_foot);
 	BC_Resources::interpolation_method = defaults->get("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
-	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", 1);
-	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
-	min_meter_db = defaults->get("MIN_METER_DB", -85);
-	max_meter_db = defaults->get("MAX_METER_DB", 6);
+	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", labels_follow_edits);
+	auto_keyframes = defaults->get("AUTO_KEYFRAMES", auto_keyframes);
+	min_meter_db = defaults->get("MIN_METER_DB", min_meter_db);
+	max_meter_db = defaults->get("MAX_METER_DB", max_meter_db);
 	output_w = defaults->get("OUTPUTW", output_w);
 	output_h = defaults->get("OUTPUTH", output_h);
 	if(!EQUIV(aspect_ratio, 1.0))
 		sample_aspect_ratio = aspect_ratio * output_h / output_w;
 	sample_aspect_ratio = defaults->get("SAMPLEASPECT", sample_aspect_ratio);
-	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
-	delete playback_config;
-	playback_config = new PlaybackConfig;
 	playback_config->load_defaults(defaults);
-	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
-	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
-	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
-	safe_regions = defaults->get("SAFE_REGIONS", 1);
+	safe_regions = defaults->get("SAFE_REGIONS", safe_regions);
 	sample_rate = defaults->get("SAMPLERATE", sample_rate);
-	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
-	si_useduration = defaults->get("SI_USEDURATION",1);
-	si_duration = defaults->get("SI_DURATION",3);
-	show_avlibsmsgs = defaults->get("SHOW_AVLIBSMSGS", 0);
-	experimental_codecs = defaults->get("EXPERIMENTAL_CODECS", 1);
-	encoders_menu = defaults->get("ENCODERS_MENU", 0);
-	show_assets = defaults->get("SHOW_ASSETS", 1);
-	show_titles = defaults->get("SHOW_TITLES", 1);
-	time_format = defaults->get("TIME_FORMAT", TIME_HMSF);
+	si_useduration = defaults->get("SI_USEDURATION", si_useduration);
+	si_duration = defaults->get("SI_DURATION", si_duration);
+	show_avlibsmsgs = defaults->get("SHOW_AVLIBSMSGS", show_avlibsmsgs);
+	experimental_codecs = defaults->get("EXPERIMENTAL_CODECS", experimental_codecs);
+	encoders_menu = defaults->get("ENCODERS_MENU", encoders_menu);
+	show_assets = defaults->get("SHOW_ASSETS", show_assets);
+	show_titles = defaults->get("SHOW_TITLES", show_titles);
+	time_format = defaults->get("TIME_FORMAT", time_format);
 	for(int i = 0; i < 4; i++)
 	{
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
-		timecode_offset[i] = defaults->get(string, 0);
+		timecode_offset[i] = defaults->get(string, timecode_offset[i]);
 	}
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		int default_position = i * output_w;
-		sprintf(string, "VCHANNEL_X_%d", i);
-		vchannel_x[i] = defaults->get(string, default_position);
-		sprintf(string, "VCHANNEL_Y_%d", i);
-		vchannel_y[i] = defaults->get(string, 0);
-	}
-	video_channels = defaults->get("VCHANNELS", video_channels);
-	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", 0);
+	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", video_every_frame);
 	video_tracks = defaults->get("VTRACKS", video_tracks);
-	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
-	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
-	vwindow_meter = defaults->get("VWINDOW_METER", 1);
+	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
+	vwindow_meter = defaults->get("VWINDOW_METER", vwindow_meter);
 	defaults->get("METADATA_AUTHOR", metadata_author);
 	defaults->get("METADATA_TITLE", metadata_title);
 	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
 	automatic_backups = defaults->get("AUTOMATIC_BACKUPS", automatic_backups);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
 
-	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
+	vwindow_zoom = defaults->get("VWINDOW_ZOOM", vwindow_zoom);
 	boundaries();
 }
 
@@ -299,7 +303,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ASPECTRATIO");
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->delete_key("AUTOS_FOLLOW_EDITS");
-	defaults->update("BRENDER_START", brender_start);
+	defaults->delete_key("BRENDER_START");
 	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
 	defaults->update("INTERLACE_MODE", AInterlaceModeSelection::xml_text(interlace_mode));
 	defaults->update("CROP_X1", crop_x1);
@@ -313,14 +317,14 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("CURRENT_FOLDER");
 	defaults->update("AWINDOW_FOLDER", awindow_folder);
 	defaults->update("CURSOR_ON_FRAMES", cursor_on_frames);
-	defaults->update("CWINDOW_DEST", cwindow_dest);
-	defaults->update("CWINDOW_MASK", cwindow_mask);
+	defaults->delete_key("CWINDOW_DEST");
+	defaults->delete_key("CWINDOW_MASK");
 	defaults->update("CWINDOW_METER", cwindow_meter);
 	defaults->delete_key("CWINDOW_OPERATION");
 	defaults->update("CWINDOW_SCROLLBARS", cwindow_scrollbars);
-	defaults->update("CWINDOW_XSCROLL", cwindow_xscroll);
-	defaults->update("CWINDOW_YSCROLL", cwindow_yscroll);
-	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
+	defaults->delete_key("CWINDOW_XSCROLL");
+	defaults->delete_key("CWINDOW_YSCROLL");
+	defaults->delete_key("CWINDOW_ZOOM");
 	defaults->update("DEFAULT_ATRANSITION", default_atransition);
 	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
@@ -328,7 +332,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
 	defaults->update("EDIT_HANDLE_MODE2", edit_handle_mode[2]);
 	defaults->update("EDITING_MODE", editing_mode);
-	defaults->update("ENABLE_DUPLEX", enable_duplex);
+	defaults->delete_key("ENABLE_DUPLEX");
 	defaults->update("FOLDERLIST_FORMAT", folderlist_format);
 	defaults->update("FRAMERATE", frame_rate);
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
@@ -342,16 +346,15 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("MPEG4_DEBLOCK");
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
-	defaults->update("PLAYBACK_BUFFER", playback_buffer);
+	defaults->delete_key("PLAYBACK_BUFFER");
 	defaults->delete_key("PLAYBACK_PRELOAD");
 	defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
 	playback_config->save_defaults(defaults);
-	defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
-	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
-	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
+	defaults->delete_key("RECORD_SOFTWARE_POSITION");
+	defaults->delete_key("RECORD_SYNC_DRIVES");
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
-	defaults->update("SCRUB_SPEED", scrub_speed);
+	defaults->delete_key("SCRUB_SPEED");
 	defaults->update("SI_USEDURATION",si_useduration);
 	defaults->update("SI_DURATION",si_duration);
 	defaults->update("SHOW_AVLIBSMSGS", show_avlibsmsgs);
@@ -368,18 +371,13 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	}
 	defaults->delete_key("NUDGE_FORMAT");
 	defaults->delete_key("TOOL_WINDOW");
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		sprintf(string, "VCHANNEL_X_%d", i);
-		defaults->update(string, vchannel_x[i]);
-		sprintf(string, "VCHANNEL_Y_%d", i);
-		defaults->update(string, vchannel_y[i]);
-	}
-	defaults->update("VCHANNELS", video_channels);
+	defaults->delete_keys_prefix("VCHANNEL_X_");
+	defaults->delete_keys_prefix("VCHANNEL_Y_");
+	defaults->delete_key("VCHANNELS");
 	defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
 	defaults->delete_key("VIDEO_ASYNCHRONOUS");
 	defaults->update("VTRACKS", video_tracks);
-	defaults->update("VIDEO_WRITE_LENGTH", video_write_length);
+	defaults->delete_key("VIDEO_WRITE_LENGTH");
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
@@ -400,11 +398,9 @@ void EDLSession::boundaries()
 	Workarounds::clamp(audio_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(audio_channels, 1, MAXCHANNELS - 1);
 	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
-	Workarounds::clamp(video_channels, 1, MAXCHANNELS - 1);
 	Workarounds::clamp(min_meter_db, -80, -20);
 	Workarounds::clamp(max_meter_db, 0, 10);
 	Workarounds::clamp(frames_per_foot, 1, 32);
-	Workarounds::clamp(video_write_length, 1, 1000);
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
@@ -436,15 +432,6 @@ void EDLSession::load_video_config(FileXML *file)
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
 	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE"));
-	video_channels = file->tag.get_property("CHANNELS", video_channels);
-	for(int i = 0; i < video_channels; i++)
-	{
-		int default_position = i * output_w;
-		sprintf(string, "VCHANNEL_X_%d", i);
-		vchannel_x[i] = file->tag.get_property(string, default_position);
-		sprintf(string, "VCHANNEL_Y_%d", i);
-		vchannel_y[i] = file->tag.get_property(string, 0);
-	}
 
 	frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 	frames_per_foot = file->tag.get_property("FRAMES_PER_FOOT", frames_per_foot);
@@ -505,7 +492,6 @@ void EDLSession::load_xml(FileXML *file)
 		awindow_folder = AWindowGUI::folder_number(string);
 	awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
 	cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
-	cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
 	cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
 	cwindow_meter = file->tag.get_property("CWINDOW_METER", cwindow_meter);
 	cwindow_operation = file->tag.get_property("CWINDOW_OPERATION", cwindow_operation);
@@ -563,7 +549,6 @@ void EDLSession::save_xml(FileXML *file)
 
 	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("CURSOR_ON_FRAMES", cursor_on_frames);
-	file->tag.set_property("CWINDOW_DEST", cwindow_dest);
 	file->tag.set_property("CWINDOW_MASK", cwindow_mask);
 	file->tag.set_property("CWINDOW_METER", cwindow_meter);
 	file->tag.set_property("CWINDOW_OPERATION", cwindow_operation);
@@ -580,7 +565,6 @@ void EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
 	file->tag.set_property("SHOW_ASSETS", show_assets);
 	file->tag.set_property("SHOW_TITLES", show_titles);
-	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
 	for(int i = 0; i < 4; i++)
 	{
@@ -611,16 +595,6 @@ void EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("COLORMODEL", ColorModels::name(color_model));
 	file->tag.set_property("INTERLACE_MODE",
 		AInterlaceModeSelection::xml_text(interlace_mode));
-	file->tag.set_property("CHANNELS", video_channels);
-
-	for(int i = 0; i < video_channels; i++)
-	{
-		sprintf(string, "VCHANNEL_X_%d", i);
-		file->tag.set_property(string, vchannel_x[i]);
-		sprintf(string, "VCHANNEL_Y_%d", i);
-		file->tag.set_property(string, vchannel_y[i]);
-	}
-
 	file->tag.set_property("FRAMERATE", frame_rate);
 	file->tag.set_property("FRAMES_PER_FOOT", frames_per_foot);
 	file->tag.set_property("OUTPUTW", output_w);
@@ -685,7 +659,6 @@ void EDLSession::copy(EDLSession *session)
 	ruler_y2 = session->ruler_y2;
 	awindow_folder = session->awindow_folder;
 	cursor_on_frames = session->cursor_on_frames;
-	cwindow_dest = session->cwindow_dest;
 	cwindow_mask = session->cwindow_mask;
 	cwindow_meter = session->cwindow_meter;
 	cwindow_operation = session->cwindow_operation;
@@ -700,7 +673,6 @@ void EDLSession::copy(EDLSession *session)
 	edit_handle_mode[1] = session->edit_handle_mode[1];
 	edit_handle_mode[2] = session->edit_handle_mode[2];
 	editing_mode = session->editing_mode;
-	enable_duplex = session->enable_duplex;
 	folderlist_format = session->folderlist_format;
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
@@ -710,18 +682,13 @@ void EDLSession::copy(EDLSession *session)
 	max_meter_db = session->max_meter_db;
 	output_w = session->output_w;
 	output_h = session->output_h;
-	playback_buffer = session->playback_buffer;
 	delete playback_config;
 	playback_config = new PlaybackConfig;
 	playback_config->copy_from(session->playback_config);
 	playback_cursor_visible = session->playback_cursor_visible;
 	playback_software_position = session->playback_software_position;
-	record_software_position = session->record_software_position;
-	record_sync_drives = session->record_sync_drives;
-	record_write_length = session->record_write_length;
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
-	scrub_speed = session->scrub_speed;
 	si_useduration = session->si_useduration;
 	si_duration = session->si_duration;
 	show_avlibsmsgs = session->show_avlibsmsgs;
@@ -729,22 +696,14 @@ void EDLSession::copy(EDLSession *session)
 	encoders_menu = session->encoders_menu;
 	show_assets = session->show_assets;
 	show_titles = session->show_titles;
-	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;
 	for(int i = 0; i < 4; i++)
 	{
 		timecode_offset[i] = session->timecode_offset[i];
 	}
 	tool_window = session->tool_window;
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		vchannel_x[i] = session->vchannel_x[i];
-		vchannel_y[i] = session->vchannel_y[i];
-	}
-	video_channels = session->video_channels;
 	video_every_frame = session->video_every_frame;
 	video_tracks = session->video_tracks;
-	video_write_length = session->video_write_length;
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;

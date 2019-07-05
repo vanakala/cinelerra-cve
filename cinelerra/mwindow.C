@@ -1683,10 +1683,9 @@ void MWindow::show_program_status()
 		printf(" Audio channels %d tracks %d samplerate %d\n",
 			edlsession->audio_channels, edlsession->audio_tracks,
 			edlsession->sample_rate);
-		printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
+		printf( " Video [%d,%d] tracks %d framerate %.2f '%s'\n",
 			edlsession->output_w,
 			edlsession->output_h,
-			edlsession->video_channels,
 			edlsession->video_tracks,
 			edlsession->frame_rate,
 			ColorModels::name(edlsession->color_model));

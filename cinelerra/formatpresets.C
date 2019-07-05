@@ -189,7 +189,6 @@ void FormatPresets::fill_preset_defaults(const char *preset, EDLSession *session
 			session->audio_channels = fpr->audio_channels;
 			session->audio_tracks = fpr->audio_tracks;
 			session->sample_rate = fpr->sample_rate;
-			session->video_channels = fpr->video_channels;
 			session->video_tracks = fpr->video_tracks;
 			session->frame_rate = fpr->frame_rate;
 			session->output_w = fpr->output_w;

@@ -110,8 +110,6 @@ public:
 	int awindow_folder;
 // align cursor on frame boundaries
 	int cursor_on_frames;
-// Destination item for CWindow
-	int cwindow_dest;
 // Current submask being edited in CWindow
 	int cwindow_mask;
 // Use the cwindow or not
@@ -133,7 +131,6 @@ public:
 	int edit_handle_mode[3];
 // Editing mode
 	int editing_mode;
-	int enable_duplex;
 // AWindow format
 	int folderlist_format;
 	double frame_rate;
@@ -146,21 +143,11 @@ public:
 	int max_meter_db;
 	int output_w;
 	int output_h;
-	int playback_buffer;
 	int playback_cursor_visible;
 	int playback_software_position;
-// Use software to calculate record position
-	int record_software_position;
-// Sync the drives during recording
-	int record_sync_drives;
-// Speed of meters
-	int record_speed;
-// Samples to write to disk at a time
-	int record_write_length;
 // Show title and action safe regions in CWindow
 	int safe_regions;
 	int sample_rate;
-	float scrub_speed;
 // Load files as a duration
 	int si_useduration;
 	float si_duration;
@@ -168,23 +155,15 @@ public:
 	int show_assets;
 // Show titles in resources
 	int show_titles;
-// Test for data before rendering a track
-	int test_playback_edits;
 // Format to display times in
 	int time_format;
 // Offset for timecode
 	int timecode_offset[4];
 // Show tool window in CWindow
 	int tool_window;
-// Location of video outs
-	int vchannel_x[MAXCHANNELS];
-	int vchannel_y[MAXCHANNELS];
-	int video_channels;
 // play every frame
 	int video_every_frame;
 	int video_tracks;
-// number of frames to write to disk at a time during video recording.
-	int video_write_length;
 	int view_follows_playback;
 // show avlibs messages on console
 	int show_avlibsmsgs;
