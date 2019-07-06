@@ -87,7 +87,7 @@ public:
 
 	void set_data_before(const char *data);
 	virtual void undo();
-	virtual int get_size();
+	virtual size_t get_size();
 
 private:
 // type of modification

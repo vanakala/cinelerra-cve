@@ -183,7 +183,7 @@ void MainUndo::redo()
 // except that it always has at least UNDOMINLEVELS entries
 void MainUndo::prune_undo()
 {
-	int size = 0;
+	size_t size = 0;
 	int levels = 0;
 
 	UndoStackItem* i = undo_stack.last;
@@ -239,9 +239,13 @@ void MainUndoStackItem::undo()
 	load_from_undo(&file, load_flags);
 }
 
-int MainUndoStackItem::get_size()
+size_t MainUndoStackItem::get_size()
 {
-	return data_before ? strlen(data_before) : 0;
+	size_t size = sizeof(*this);
+
+	if(data_before)
+		size += strlen(data_before);
+	return size;
 }
 
 // Here the master EDL loads 
