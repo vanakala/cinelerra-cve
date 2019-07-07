@@ -226,7 +226,9 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		char *plugin_title = plugin_locations.values[i]->plugin_server->title;
 		char string[BCTEXTLEN];
 
-		sprintf(string, "%s: %s", track_title, _(plugin_title));
+		strcpy(string, track_title);
+		strcat(string, ": ");
+		strcat(string, _(plugin_title));
 		shared_data.append(new BC_ListBoxItem(string));
 	}
 	for(int i = 0; i < module_locations.total; i++)
