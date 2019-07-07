@@ -259,6 +259,35 @@ void FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 // if end tag is reached, position is left on the < of the end tag
 }
 
+size_t FileXML::text_length_until(const char *tag_end)
+{
+	int pos = position;
+	int test_pos1, test_pos2;
+
+	while(pos < length)
+	{
+		pos++;
+
+		if(pos < length && string[pos] == left_delimiter)
+		{
+			int found = 1;
+
+			for(test_pos1 = 0, test_pos2 = pos + 1;
+				test_pos2 < length &&
+				tag_end[test_pos1];)
+			{
+				if(tag_end[test_pos1++] != string[test_pos2++])
+				{
+					found = 0;
+					break;
+				}
+			}
+			if(found)
+				break;
+		}
+	}
+	return pos - position;
+}
 
 int FileXML::write_to_file(const char *filename)
 {

@@ -96,6 +96,7 @@ public:
 	char* read_text();         // read text, put it in *output, and return it
 	void read_text_until(const char *tag_end,
 		char *output, int max_len);     // store text in output until the tag is reached
+	size_t text_length_until(const char *tag_end); // length of text up to tag_end
 	int read_tag();          // read next tag from file, ignoring any text, and put it in tag
 	// return 1 on failure
 
