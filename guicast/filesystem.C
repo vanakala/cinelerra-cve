@@ -571,15 +571,21 @@ void FileSystem::parse_directories(char *new_dir)
 		if(!is_root_dir(current_dir))
 		{
 // current directory is not root
-			if(current_dir[strlen(current_dir) - 1] == '/')
-// current_dir already has ending /
-				sprintf(string, "%s%s", current_dir, new_dir);
-			else
+			strcpy(string, current_dir);
+			int len = strlen(current_dir);
+			if(current_dir[len - 1] != '/')
+			{
 // need ending /
-				sprintf(string, "%s/%s", current_dir, new_dir);
+				string[len++] = '/';
+				string[len] = 0;
+			}
+			strcpy(&string[len], new_dir);
 		}
 		else
-			sprintf(string, "%s%s", current_dir, new_dir);
+		{
+			strcpy(string, current_dir);
+			strcat(string, new_dir);
+		}
 
 		strcpy(new_dir, string);
 	}
