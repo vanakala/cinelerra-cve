@@ -353,7 +353,7 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 		track;
 		track = track->next)
 	{
-		char tmp[10];
+		char tmp[16];
 		sprintf(tmp, "%i\n", serial+1);
 
 		BC_ListBoxItem *listitem = new BC_ListBoxItem(tmp);
