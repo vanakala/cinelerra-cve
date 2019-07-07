@@ -135,10 +135,6 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-
-// Store data
 	output.tag.set_title("TRANSLATE");
 	output.tag.set_property("IN_X", config.in_x);
 	output.tag.set_property("IN_Y", config.in_y);
@@ -151,14 +147,14 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TRANSLATE");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void TranslateMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 

@@ -279,21 +279,20 @@ void OilEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("OIL_PAINTING");
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("USE_INTENSITY", config.use_intensity);
 	output.append_tag();
 	output.tag.set_title("/OIL_PAINTING");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void OilEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 

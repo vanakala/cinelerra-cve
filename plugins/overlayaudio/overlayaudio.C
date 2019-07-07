@@ -221,7 +221,8 @@ PLUGIN_CLASS_METHODS
 void OverlayAudio::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	while(!result)
@@ -241,14 +242,13 @@ void OverlayAudio::read_data(KeyFrame *keyframe)
 void OverlayAudio::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("OUTPUT", config.output_track);
 	output.append_tag();
 	output.tag.set_title("/OVERLAY");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void OverlayAudio::load_defaults()

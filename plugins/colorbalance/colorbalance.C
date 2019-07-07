@@ -568,8 +568,6 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("COLORBALANCE");
 	output.tag.set_property("CYAN", config.cyan);
 	output.tag.set_property("MAGENTA",  config.magenta);
@@ -579,13 +577,14 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/COLORBALANCE");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void ColorBalanceMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

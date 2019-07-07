@@ -251,9 +251,10 @@ PLUGIN_CLASS_METHODS
 void TimeStretch::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
 	int result = 0;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
 	while(!result)
 	{
 		result = input.read_tag();
@@ -271,7 +272,6 @@ void TimeStretch::read_data(KeyFrame *keyframe)
 void TimeStretch::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("TIMESTRETCH");
 	output.tag.set_property("SCALE", config.scale);
@@ -279,6 +279,7 @@ void TimeStretch::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/TIMESTRETCH");
 	output.append_tag();
 	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void TimeStretch::load_defaults()

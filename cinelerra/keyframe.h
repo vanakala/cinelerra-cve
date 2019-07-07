@@ -22,8 +22,6 @@
 #ifndef KEYFRAME_H
 #define KEYFRAME_H
 
-#define MESSAGESIZE 4096
-
 #include "auto.h"
 #include "filexml.inc"
 #include "keyframes.inc"
@@ -35,8 +33,12 @@ class KeyFrame : public Auto
 public:
 	KeyFrame();
 	KeyFrame(EDL *edl, KeyFrames *autos);
+	~KeyFrame();
 
 	void load(FileXML *file);
+	char *get_data();
+	size_t data_size();
+	void set_data(const char *string);
 	void save_xml(FileXML *file);
 	void copy(Auto *that, ptstime start, ptstime end);
 	void copy_from(Auto *that);
@@ -47,7 +49,8 @@ public:
 	int identical(KeyFrame *src);
 	size_t get_size();
 
-	char data[MESSAGESIZE];
+private:
+	char *data;
 };
 
 #endif

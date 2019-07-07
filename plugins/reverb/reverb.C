@@ -271,9 +271,6 @@ void Reverb::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause xml file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-
 	output.tag.set_title("REVERB");
 	output.tag.set_property("LEVELINIT", config.level_init);
 	output.tag.set_property("DELAY_INIT", config.delay_init);
@@ -286,15 +283,15 @@ void Reverb::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/REVERB");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void Reverb::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-// cause xml file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 	int result = 0;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	result = input.read_tag();
 

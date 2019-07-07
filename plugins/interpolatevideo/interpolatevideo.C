@@ -450,21 +450,20 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("INTERPOLATEVIDEO");
 	output.tag.set_property("INPUT_RATE", config.input_rate);
 	output.tag.set_property("USE_KEYFRAMES", config.use_keyframes);
 	output.append_tag();
 	output.tag.set_title("/INTERPOLATEVIDEO");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void InterpolateVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

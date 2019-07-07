@@ -28,18 +28,66 @@
 KeyFrame::KeyFrame()
  : Auto()
 {
-	data[0] = 0;
+	data = 0;
 }
 
 KeyFrame::KeyFrame(EDL *edl, KeyFrames *autos)
  : Auto(edl, (Autos*)autos)
 {
-	data[0] = 0;
+	data = 0;
+}
+
+KeyFrame::~KeyFrame()
+{
+	free(data);
 }
 
 void KeyFrame::load(FileXML *file)
 {
-	file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
+	size_t txt_size;
+
+	free(data);
+	data = 0;
+
+	if(txt_size = file->text_length_until("/KEYFRAME"))
+	{
+		data = (char*)malloc(txt_size + 1);
+		file->read_text_until("/KEYFRAME", data, txt_size + 1);
+	}
+}
+
+char *KeyFrame::get_data()
+{
+	return data;
+}
+
+size_t KeyFrame::data_size()
+{
+	if(data)
+		return strlen(data);
+	return 0;
+}
+
+void KeyFrame::set_data(const char *string)
+{
+	if(string && string[0])
+	{
+		if(data)
+		{
+			if(strcmp(string, data))
+			{
+				free(data);
+				data = strdup(string);
+			}
+		}
+		else
+			data = strdup(string);
+	}
+	else
+	{
+		free(data);
+		data = 0;
+	}
 }
 
 void KeyFrame::save_xml(FileXML *file)
@@ -59,8 +107,13 @@ void KeyFrame::copy(Auto *src, ptstime start, ptstime end)
 {
 	KeyFrame *that = (KeyFrame*)src;
 
+	if(this == that)
+		return;
+
 	pos_time = that->pos_time - start;
-	strcpy(data, that->data);
+	if(data)
+		free(data);
+	data = strdup(that->data);
 }
 
 void KeyFrame::copy_from(Auto *that)
@@ -70,9 +123,13 @@ void KeyFrame::copy_from(Auto *that)
 
 void KeyFrame::copy_from(KeyFrame *that)
 {
+	if(this == that)
+		return;
+
 	Auto::copy_from(that);
-	KeyFrame *keyframe = (KeyFrame*)that;
-	strcpy(data, keyframe->data);
+	if(data)
+		free(data);
+	data = strdup(that->data);
 }
 
 int KeyFrame::identical(KeyFrame *src)
@@ -94,12 +151,16 @@ int KeyFrame::operator==(KeyFrame &that)
 
 size_t KeyFrame::get_size()
 {
-	return sizeof(*this);
+	size_t size = sizeof(*this);
+
+	if(data)
+		size += strlen(data);
+	return size;
 }
 
 void KeyFrame::dump(int indent)
 {
 	printf("%*sKeyFrame %p: pos_time %.3f\n", indent, "", this, pos_time);
-	if(data[0])
+	if(data)
 		printf("%*sdata: %s\n", indent + 2, "", data);
 }

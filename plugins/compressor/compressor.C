@@ -91,9 +91,10 @@ PLUGIN_CLASS_METHODS
 void CompressorEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
 	int result = 0;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
 	config.levels.remove_all();
 	while(!result)
 	{
@@ -124,7 +125,6 @@ void CompressorEffect::read_data(KeyFrame *keyframe)
 void CompressorEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("COMPRESSOR");
 	output.tag.set_property("TRIGGER", config.trigger);
@@ -146,6 +146,8 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 		output.append_tag();
 		output.append_newline();
 	}
+	keyframe->set_data(output.string);
+
 }
 
 void CompressorEffect::load_defaults()

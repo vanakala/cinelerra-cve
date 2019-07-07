@@ -67,9 +67,10 @@ void DelayAudio::save_defaults()
 void DelayAudio::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
 	int result = 0;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
 	while(!result)
 	{
 		result = input.read_tag();
@@ -87,14 +88,14 @@ void DelayAudio::read_data(KeyFrame *keyframe)
 void DelayAudio::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("DELAYAUDIO");
 	output.tag.set_property("LENGTH", (double)config.length);
 	output.append_tag();
 	output.tag.set_title("/DELAYAUDIO");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
+
 }
 
 void DelayAudio::process_realtime(AFrame *input, AFrame *output)

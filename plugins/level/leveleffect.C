@@ -122,7 +122,8 @@ PLUGIN_CLASS_METHODS
 void SoundLevelEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	while(!result)
@@ -142,7 +143,6 @@ void SoundLevelEffect::read_data(KeyFrame *keyframe)
 void SoundLevelEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("SOUNDLEVEL");
 	output.tag.set_property("DURATION", config.duration);
@@ -150,6 +150,7 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/SOUNDLEVEL");
 	output.append_tag();
 	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void SoundLevelEffect::load_defaults()

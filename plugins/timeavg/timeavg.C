@@ -906,8 +906,6 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TIME_AVERAGE");
 	output.tag.set_property("DURATION", config.duration);
 	output.tag.set_property("MODE", config.mode);
@@ -916,6 +914,7 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TIME_AVERAGE");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void TimeAvgMain::read_data(KeyFrame *keyframe)
@@ -923,7 +922,7 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 	FileXML input;
 	int frames;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

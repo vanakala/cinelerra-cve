@@ -187,20 +187,21 @@ void DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 void DelayVideo::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("DELAYVIDEO");
 	output.tag.set_property("LENGTH", (double)config.length);
 	output.append_tag();
 	output.tag.set_title("/DELAYVIDEO");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
+
 }
 
 void DelayVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

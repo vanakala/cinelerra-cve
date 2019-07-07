@@ -71,8 +71,8 @@ void Synth::load_defaults()
 void Synth::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-// cause htal file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0, current_osc = 0, total_oscillators = 0;
 	while(!result)
@@ -107,8 +107,6 @@ void Synth::read_data(KeyFrame *keyframe)
 void Synth::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-// cause htal file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("SYNTH");
 	output.tag.set_property("WETNESS", config.wetness);
@@ -125,7 +123,7 @@ void Synth::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("/SYNTH");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void Synth::save_defaults()

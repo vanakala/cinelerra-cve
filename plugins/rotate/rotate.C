@@ -510,8 +510,6 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("ROTATE");
 	output.tag.set_property("ANGLE", (float)config.angle);
 	output.tag.set_property("PIVOT_X", (float)config.pivot_x);
@@ -520,14 +518,14 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/ROTATE");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void RotateEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

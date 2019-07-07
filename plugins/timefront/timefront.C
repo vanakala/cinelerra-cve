@@ -1239,10 +1239,7 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TIMEFRONT");
-
 	output.tag.set_property("ANGLE", config.angle);
 	output.tag.set_property("IN_RADIUS", config.in_radius);
 	output.tag.set_property("OUT_RADIUS", config.out_radius);
@@ -1257,6 +1254,7 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TIMEFRONT");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void TimeFrontMain::read_data(KeyFrame *keyframe)
@@ -1264,7 +1262,7 @@ void TimeFrontMain::read_data(KeyFrame *keyframe)
 	FileXML input;
 	int frame_range;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

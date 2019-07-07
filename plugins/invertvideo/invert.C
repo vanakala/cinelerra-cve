@@ -225,7 +225,7 @@ void InvertVideoEffect::save_defaults()
 void InvertVideoEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("INVERTVIDEO");
 	output.tag.set_property("R", config.r);
 	output.tag.set_property("G", config.g);
@@ -234,12 +234,15 @@ void InvertVideoEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/INVERTVIDEO");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void InvertVideoEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("INVERTVIDEO"))

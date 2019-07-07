@@ -316,8 +316,6 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("DENOISE_VIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("THRESHOLD", config.threshold);
@@ -328,13 +326,14 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DENOISE_VIDEO");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void DenoiseVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 

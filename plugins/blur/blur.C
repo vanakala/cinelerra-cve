@@ -208,7 +208,6 @@ void BlurMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("BLUR");
 	output.tag.set_property("VERTICAL", config.vertical);
 	output.tag.set_property("HORIZONTAL", config.horizontal);
@@ -220,13 +219,14 @@ void BlurMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/BLUR");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void BlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

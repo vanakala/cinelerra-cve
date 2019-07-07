@@ -127,19 +127,20 @@ void NRTVideo::save_defaults()
 void NRTVideo::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("NRTVIDEO");
 	output.tag.set_property("ONOFF", config.onoff);
 	output.append_tag();
 	output.tag.set_title("/NRTVIDEO");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void NRTVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

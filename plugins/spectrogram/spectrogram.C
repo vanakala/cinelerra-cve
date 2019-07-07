@@ -248,7 +248,8 @@ int Spectrogram::load_configuration()
 void Spectrogram::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	while(!result)
@@ -268,7 +269,6 @@ void Spectrogram::read_data(KeyFrame *keyframe)
 void Spectrogram::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("SPECTROGRAM");
 	output.tag.set_property("LEVEL", (double)config.level);
@@ -276,6 +276,7 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/SPECTROGRAM");
 	output.append_tag();
 	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void Spectrogram::load_defaults()

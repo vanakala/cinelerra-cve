@@ -694,7 +694,7 @@ void VideoScopeEffect::save_defaults()
 void VideoScopeEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML file;
-	file.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	file.tag.set_title("VIDEOSCOPE");
 	file.tag.set_property("SHOW_SRGB_LIMITS", config.show_srgb_limits);
 	file.tag.set_property("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
@@ -702,12 +702,14 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 	file.append_tag();
 	file.tag.set_title("/VIDEOSCOPE");
 	file.append_tag();
+	keyframe->set_data(file.string);
 }
 
 void VideoScopeEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML file;
-	file.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	file.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!file.read_tag())
 	{

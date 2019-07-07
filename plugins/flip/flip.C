@@ -183,8 +183,6 @@ void FlipMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("FLIP");
 	output.append_tag();
 	if(config.flip_vertical)
@@ -204,14 +202,14 @@ void FlipMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/FLIP");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void FlipMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	config.flip_vertical = config.flip_horizontal = 0;

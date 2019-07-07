@@ -588,7 +588,7 @@ void HueEffect::save_defaults()
 void HueEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("HUESATURATION");
 	output.tag.set_property("HUE", config.hue);
 	output.tag.set_property("SATURATION", config.saturation);
@@ -596,12 +596,14 @@ void HueEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/HUESATURATION");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void HueEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

@@ -346,9 +346,6 @@ void WhirlEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-
 	output.tag.set_title("WHIRL");
 	output.tag.set_property("ANGLE", config.angle);
 	output.tag.set_property("PINCH", config.pinch);
@@ -356,14 +353,14 @@ void WhirlEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/WHIRL");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void WhirlEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 

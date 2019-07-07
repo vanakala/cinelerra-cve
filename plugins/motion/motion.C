@@ -318,10 +318,7 @@ void MotionMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("MOTION");
-
 	output.tag.set_property("BLOCK_COUNT", config.block_count);
 	output.tag.set_property("GLOBAL_POSITIONS", config.global_positions);
 	output.tag.set_property("ROTATE_POSITIONS", config.rotate_positions);
@@ -352,13 +349,14 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/MOTION");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void MotionMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

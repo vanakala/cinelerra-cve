@@ -182,8 +182,6 @@ void SwapMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("SWAPCHANNELS");
 	output.tag.set_property("RED", config.red);
 	output.tag.set_property("GREEN", config.green);
@@ -193,14 +191,14 @@ void SwapMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/SWAPCHANNELS");
 	output.append_tag();
 	output.append_newline();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void SwapMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

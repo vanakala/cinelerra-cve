@@ -1061,7 +1061,7 @@ void ChromaKeyHSV::save_defaults()
 void ChromaKeyHSV::save_data(KeyFrame * keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("CHROMAKEY_HSV");
 	output.tag.set_property("RED", config.red);
 	output.tag.set_property("GREEN", config.green);
@@ -1080,13 +1080,14 @@ void ChromaKeyHSV::save_data(KeyFrame * keyframe)
 	output.append_tag();
 	output.tag.set_title("/CHROMAKEY_HSV");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

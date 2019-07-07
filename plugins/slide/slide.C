@@ -194,20 +194,21 @@ void SlideMain::save_defaults()
 void SlideMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("SLIDE");
 	output.tag.set_property("MOTION_DIRECTION", motion_direction);
 	output.tag.set_property("DIRECTION", direction);
 	output.append_tag();
 	output.tag.set_title("/SLIDE");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void SlideMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+        input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

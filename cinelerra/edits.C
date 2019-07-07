@@ -887,7 +887,6 @@ size_t Edits::get_size()
 
 	for(Edit *edit = first; edit; edit = edit->next)
 		size += edit->get_size();
-tracemsg("size %zu", size);
 	return size;
 }
 

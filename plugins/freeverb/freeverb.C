@@ -401,7 +401,8 @@ PLUGIN_CLASS_METHODS
 void FreeverbEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	while(!result)
@@ -427,7 +428,6 @@ void FreeverbEffect::read_data(KeyFrame *keyframe)
 void FreeverbEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("FREEVERB");
 	output.tag.set_property("GAIN", config.gain);
@@ -440,7 +440,7 @@ void FreeverbEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/FREEVERB");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void FreeverbEffect::load_defaults()

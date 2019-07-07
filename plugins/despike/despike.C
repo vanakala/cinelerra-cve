@@ -97,9 +97,6 @@ void Despike::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause xml file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-
 	output.tag.set_title("DESPIKE");
 	output.tag.set_property("LEVEL", config.level);
 	output.tag.set_property("SLOPE", config.slope);
@@ -107,13 +104,14 @@ void Despike::save_data(KeyFrame *keyframe)
 	output.tag.set_title("/DESPIKE");
 	output.append_tag();
 	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void Despike::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-// cause xml file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 	int result = 0;
 
 	result = input.read_tag();

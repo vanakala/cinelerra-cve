@@ -935,8 +935,6 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("SELECTIVE_TEMPORAL_AVERAGE");
 	output.tag.set_property("DURATION", config.duration);
 	output.tag.set_property("METHOD", config.method);
@@ -961,6 +959,7 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/SELECTIVE_TEMPORAL_AVERAGE");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void SelTempAvgMain::read_data(KeyFrame *keyframe)
@@ -968,7 +967,7 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 	FileXML input;
 	framenum frames;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{
@@ -1007,7 +1006,7 @@ int SelTempAvgMain::nextkeyframeisoffsetrestart(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

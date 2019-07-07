@@ -227,8 +227,6 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-	// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("BLUEBANANA");
 
 	output.tag.set_property("ACTIVE", config.active);
@@ -295,7 +293,7 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("/BLUEBANANA");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void BluebananaMain::read_data(KeyFrame *keyframe)
@@ -303,7 +301,7 @@ void BluebananaMain::read_data(KeyFrame *keyframe)
 	FileXML input;
 	int result = 0;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!result)
 	{

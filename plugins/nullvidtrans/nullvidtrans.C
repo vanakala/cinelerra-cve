@@ -122,19 +122,20 @@ void NVTransition::save_defaults()
 void NVTransition::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("NVTRANSITION");
 	output.tag.set_property("ONOFF", onoff);
 	output.append_tag();
 	output.tag.set_title("/NVTRANSITION");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void NVTransition::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

@@ -1714,7 +1714,6 @@ void TitleMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TITLE");
 	output.tag.set_property("FONT", config.font);
 	output.tag.set_property("ENCODING", config.encoding);
@@ -1742,14 +1741,14 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.encode_text(config.text);
 	output.tag.set_title("/TITLE");
 	output.append_tag();
-	output.append_newline();
+	keyframe->set_data(output.string);
 }
 
 void TitleMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int new_interlace = 0;
 	int new_horizontal = 0;

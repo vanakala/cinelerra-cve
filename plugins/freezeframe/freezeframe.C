@@ -143,7 +143,6 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("FREEZEFRAME");
 	output.append_tag();
 	if(config.enabled)
@@ -162,14 +161,14 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/FREEZEFRAME");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void FreezeFrameMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	config.enabled = 0;
 	config.line_double = 0;

@@ -491,21 +491,21 @@ void Reroute::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// write configuration data as XML text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("REROUTE");
 	output.tag.set_property("OPERATION", config.operation);
 	output.tag.set_property("OUTPUT_TRACK", config.output_track);
 	output.append_tag();
 	output.tag.set_title("/REROUTE");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void Reroute::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 	int result = 0;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

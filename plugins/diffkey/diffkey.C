@@ -325,7 +325,7 @@ void DiffKey::save_defaults()
 void DiffKey::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+
 	output.tag.set_title("DIFFKEY");
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("SLOPE", config.slope);
@@ -333,13 +333,14 @@ void DiffKey::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DIFFKEY");
 	output.append_tag();
+	keyframe->set_data(output.string);
 }
 
 void DiffKey::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{

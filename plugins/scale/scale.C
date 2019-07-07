@@ -103,9 +103,6 @@ void ScaleMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-
 // Store data
 	output.tag.set_title("SCALE");
 	output.tag.set_property("WIDTH", config.w);
@@ -121,14 +118,14 @@ void ScaleMain::save_data(KeyFrame *keyframe)
 	}
 	output.tag.set_title("/SCALE");
 	output.append_tag();
-// data is now in *text
+	keyframe->set_data(output.string);
 }
 
 void ScaleMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	int result = 0;
 	config.constrain = 0;
