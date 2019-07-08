@@ -395,6 +395,9 @@ void EDL::rechannel()
 
 void EDL::synchronize_params(EDL *edl)
 {
+	if(edl == this)
+		return;
+
 	local_session->synchronize_params(edl->local_session);
 	for(Track *this_track = tracks->first, *that_track = edl->tracks->first; 
 		this_track && that_track; 

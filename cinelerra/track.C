@@ -642,6 +642,9 @@ Plugin* Track::get_current_transition(ptstime position)
 
 void Track::synchronize_params(Track *track)
 {
+	if(track == this)
+		return;
+
 	for(Edit *this_edit = edits->first, *that_edit = track->edits->first;
 		this_edit && that_edit;
 		this_edit = this_edit->next, that_edit = that_edit->next)

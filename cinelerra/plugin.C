@@ -164,6 +164,9 @@ void Plugin::copy_keyframes(Plugin *plugin)
 
 void Plugin::synchronize_params(Plugin *plugin)
 {
+	if(plugin == this)
+		return;
+
 	this->show = plugin->show;
 	this->on = plugin->on;
 	plugin_server = plugin->plugin_server;
