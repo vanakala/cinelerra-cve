@@ -226,6 +226,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", cursor_on_frames);
 	cwindow_meter = defaults->get("CWINDOW_METER", cwindow_meter);
 	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", cwindow_scrollbars);
+	cwindow_zoom = defaults->get("CWINDOW_ZOOM", cwindow_zoom);
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
 	defaults->get("DEFAULT_VTRANSITION", default_vtransition);
 	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", default_transition_length);
@@ -324,7 +325,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("CWINDOW_SCROLLBARS", cwindow_scrollbars);
 	defaults->delete_key("CWINDOW_XSCROLL");
 	defaults->delete_key("CWINDOW_YSCROLL");
-	defaults->delete_key("CWINDOW_ZOOM");
+	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
 	defaults->update("DEFAULT_ATRANSITION", default_atransition);
 	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
