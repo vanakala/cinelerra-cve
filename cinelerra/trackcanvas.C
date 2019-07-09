@@ -644,7 +644,9 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
-	if(gui->cursor && hide_cursor) gui->cursor->hide();
+	if(gui->cursor && hide_cursor)
+		gui->cursor->hide();
+
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
 	draw_resources(mode);
 	draw_overlays();
@@ -3110,7 +3112,6 @@ void TrackCanvas::draw_overlays()
 		new_cursor, 
 		update_cursor,
 		rerender);
-
 // Selection cursor
 	if(gui->cursor) gui->cursor->restore(1);
 
@@ -3535,9 +3536,7 @@ int TrackCanvas::cursor_motion_event()
 			master_edl->local_session->set_selectionend(position);
 // Don't que the CWindow
 		}
-
-		gui->cursor->hide(0);
-		gui->cursor->draw(1);
+		gui->cursor->update();
 		flash();
 		result = 1;
 		update_clock = 1;
@@ -4530,8 +4529,7 @@ SET_TRACE
 		if(update_cursor)
 		{
 			gui->timebar->update_highlights();
-			gui->cursor->hide();
-			gui->cursor->show();
+			gui->cursor->update();
 			gui->zoombar->update();
 			flash();
 			result = 1;

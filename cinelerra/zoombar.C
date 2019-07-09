@@ -21,6 +21,7 @@
 
 #include "automation.h"
 #include "bcmenuitem.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -278,8 +279,7 @@ void ZoomBar::set_selection(int which_one)
 		master_edl->align_to_frame(end_position));
 
 	mwindow->gui->timebar->update_highlights();
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->show();
+	mwindow->gui->cursor->update();
 	update();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->canvas->flash();

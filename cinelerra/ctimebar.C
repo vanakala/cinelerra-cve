@@ -98,8 +98,7 @@ void CTimeBar::select_label(ptstime position)
 
 // Que the CWindow
 	mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
-	mwindow->gui->cursor->hide(0);
-	mwindow->gui->cursor->draw(1);
+	mwindow->gui->cursor->update();
 	mwindow->gui->update(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	mwindow->update_plugin_guis();
 }

@@ -465,8 +465,7 @@ void MWindow::next_label(int shift_down)
 		else
 		{
 			gui->timebar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->cursor->update();
 			gui->zoombar->update();
 			gui->canvas->flash(1);
 		}
@@ -505,8 +504,7 @@ void MWindow::prev_label(int shift_down)
 // Don't scroll the display
 		{
 			gui->timebar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->cursor->update();
 			gui->zoombar->update();
 			gui->canvas->flash(1);
 		}
@@ -557,8 +555,7 @@ void MWindow::next_edit_handle(int shift_down)
 		else
 		{
 			gui->timebar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->cursor->update();
 			gui->zoombar->update();
 			gui->canvas->flash(1);
 		}
@@ -613,8 +610,7 @@ void MWindow::prev_edit_handle(int shift_down)
 // Don't scroll the display
 		{
 			gui->timebar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->cursor->update();
 			gui->zoombar->update();
 			gui->canvas->flash(1);
 		}

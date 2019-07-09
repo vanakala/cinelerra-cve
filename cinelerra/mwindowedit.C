@@ -90,7 +90,7 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	gui->get_scrollbars();
 	gui->canvas->draw();
 	gui->patchbay->update();
-	gui->cursor->draw(1);
+	gui->cursor->restore(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
@@ -105,7 +105,7 @@ void MWindow::add_video_track_entry(Track *dst)
 	gui->get_scrollbars();
 	gui->canvas->draw();
 	gui->patchbay->update();
-	gui->cursor->draw(1);
+	gui->cursor->restore(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
@@ -1393,8 +1393,7 @@ void MWindow::select_point(ptstime position)
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	update_plugin_guis();
 	gui->patchbay->update();
-	gui->cursor->hide(0);
-	gui->cursor->draw(1);
+	gui->cursor->update();
 	gui->mainclock->update(master_edl->local_session->get_selectionstart(1));
 	gui->zoombar->update();
 	gui->canvas->flash();
