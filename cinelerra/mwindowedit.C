@@ -210,6 +210,9 @@ void MWindow::clear(int clear_handle)
 
 void MWindow::straighten_automation()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->straighten_automation(
 		master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend());
