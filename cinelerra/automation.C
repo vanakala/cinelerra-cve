@@ -216,12 +216,11 @@ void Automation::clear_after(ptstime pts)
 }
 
 void Automation::straighten(ptstime start,
-	ptstime end,
-	AutoConf *autoconf)
+	ptstime end)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && (!autoconf || autoconf->auto_visible[i]))
+		if(autos[i] && edlsession->auto_conf->auto_visible[i])
 			autos[i]->straighten(start, end);
 	}
 }

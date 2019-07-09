@@ -102,9 +102,7 @@ public:
 		AutoConf *autoconf, 
 		int shift_autos);
 	void clear_after(ptstime pts);
-	void straighten(ptstime start, 
-		ptstime end,
-		AutoConf *autoconf);
+	void straighten(ptstime start, ptstime end);
 	void paste_silence(ptstime start, ptstime end);
 	void insert_track(Automation *automation, 
 		ptstime start,

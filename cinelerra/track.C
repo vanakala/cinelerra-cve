@@ -775,7 +775,7 @@ void Track::clear_automation(ptstime selectionstart,
 
 void Track::straighten_automation(ptstime selectionstart, ptstime selectionend)
 {
-	automation->straighten(selectionstart, selectionend, edlsession->auto_conf);
+	automation->straighten(selectionstart, selectionend);
 }
 
 
