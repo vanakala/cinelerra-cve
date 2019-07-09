@@ -227,6 +227,9 @@ void MWindow::straighten_automation()
 
 void MWindow::clear_automation()
 {
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->clear_automation(
 		master_edl->local_session->get_selectionstart(),
 		master_edl->local_session->get_selectionend());
