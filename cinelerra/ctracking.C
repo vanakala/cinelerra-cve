@@ -86,14 +86,17 @@ void CTracking::stop_playback()
 int CTracking::update_scroll(ptstime position)
 {
 	int updated_scroll = 0;
+	ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
+	ptstime view_end = master_edl->local_session->view_start_pts +
+		seconds_per_pixel * mwindow->gui->canvas->get_w();
+	ptstime view_start = master_edl->local_session->view_start_pts;
 
-	if(edlsession->view_follows_playback)
+	if(edlsession->view_follows_playback && (view_start > 0 ||
+		master_edl->total_length() > view_end))
 	{
-		ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
-		ptstime half_canvas = seconds_per_pixel * 
-			mwindow->gui->canvas->get_w() / 2;
-		ptstime midpoint = master_edl->local_session->view_start_pts +
-			half_canvas;
+		ptstime half_canvas = seconds_per_pixel *
+			mwindow->gui->canvas->get_w()/ 2;
+		ptstime midpoint = view_start + half_canvas;
 
 		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD)
 		{
