@@ -334,7 +334,7 @@ AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int AmpZoomPanel::handle_event()
 {
-	mwindow->zoom_amp((int64_t)get_value());
+	mwindow->zoom_amp(get_value());
 	return 1;
 }
 
@@ -359,7 +359,7 @@ TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 
 int TrackZoomPanel::handle_event()
 {
-	mwindow->zoom_track((int64_t)get_value());
+	mwindow->zoom_track(get_value());
 	zoombar->amp_zoom->update(master_edl->local_session->zoom_y);
 	return 1;
 }

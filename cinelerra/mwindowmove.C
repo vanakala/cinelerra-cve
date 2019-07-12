@@ -289,7 +289,7 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 	gui->canvas->flash();
 }
 
-void MWindow::zoom_amp(int64_t zoom_amp)
+void MWindow::zoom_amp(int zoom_amp)
 {
 	master_edl->local_session->zoom_y = zoom_amp;
 	gui->canvas->draw();
@@ -297,11 +297,11 @@ void MWindow::zoom_amp(int64_t zoom_amp)
 	gui->canvas->flash(1);
 }
 
-void MWindow::zoom_track(int64_t zoom_track)
+void MWindow::zoom_track(int zoom_track)
 {
-	master_edl->local_session->zoom_y = (int64_t)((float)master_edl->local_session->zoom_y *
-		zoom_track / 
-		master_edl->local_session->zoom_track);
+	master_edl->local_session->zoom_y =
+		round((double)master_edl->local_session->zoom_y *
+		zoom_track / master_edl->local_session->zoom_track);
 	CLAMP(master_edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
 	master_edl->local_session->zoom_track = zoom_track;
 	trackmovement(master_edl->local_session->track_start);

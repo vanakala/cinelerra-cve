@@ -459,7 +459,7 @@ void LocalSession::dump(int indent)
 		track_start, view_start_pts, preview_start, preview_end);
 	printf("%*sloop_playback %d %.3f..%.3f\n", indent, "",
 		loop_playback, loop_start, loop_end);
-	printf("%*szoom_time %.3f zoom_y %" PRId64 " zoom_track %" PRId64 " showautotype %d\n",  indent, "",
+	printf("%*szoom_time %.3f zoom_y %d zoom_track %d showautotype %d\n",  indent, "",
 		zoom_time, zoom_y, zoom_track, zoombar_showautotype);
 	printf("%*seye dropper red %.3f green %.3f blue %.3f\n", indent, "",
 		red, green, blue);

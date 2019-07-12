@@ -164,8 +164,8 @@ public:
 	void expand_sample(void);
 	void zoom_in_sample(void);
 	void zoom_time(ptstime zoom);
-	void zoom_amp(int64_t zoom_amp);
-	void zoom_track(int64_t zoom_track);
+	void zoom_amp(int zoom_amp);
+	void zoom_track(int zoom_track);
 	int fit_sample();
 	void move_left(int distance = 0);
 	void move_right(int distance = 0);

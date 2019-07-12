@@ -94,9 +94,9 @@ public:
 // Zooming of the timeline. Length of media per pixel
 	ptstime zoom_time;
 // Amplitude zoom
-	int64_t zoom_y;
+	int zoom_y;
 // Track zoom
-	int64_t zoom_track;
+	int zoom_track;
 // Vertical automation scale
 	float automation_mins[6];
 	float automation_maxs[6];
