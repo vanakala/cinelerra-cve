@@ -87,18 +87,18 @@ int CTracking::update_scroll(ptstime position)
 {
 	int updated_scroll = 0;
 	ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
-	ptstime view_end = master_edl->local_session->view_start_pts +
-		seconds_per_pixel * mwindow->gui->canvas->get_w();
 	ptstime view_start = master_edl->local_session->view_start_pts;
+	ptstime view_end = view_start +
+		seconds_per_pixel * mwindow->gui->canvas->get_w();
 
-	if(edlsession->view_follows_playback && (view_start > 0 ||
-		master_edl->total_length() > view_end))
+	if(edlsession->view_follows_playback)
 	{
 		ptstime half_canvas = seconds_per_pixel *
 			mwindow->gui->canvas->get_w()/ 2;
 		ptstime midpoint = view_start + half_canvas;
 
-		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD)
+		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD &&
+			master_edl->total_length() > view_end)
 		{
 			ptstime left_boundary = midpoint + SCROLL_THRESHOLD * half_canvas;
 			ptstime right_boundary = midpoint + half_canvas;
@@ -115,7 +115,7 @@ int CTracking::update_scroll(ptstime position)
 				}
 			}
 		}
-		else
+		else if(view_start > 0)
 		{
 			ptstime right_boundary = midpoint - SCROLL_THRESHOLD * half_canvas;
 			ptstime left_boundary = midpoint - half_canvas;

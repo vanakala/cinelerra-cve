@@ -32,24 +32,26 @@ public:
 	MainCursor(MWindowGUI *gui);
 
 	void repeat_event(int duration);
-	void draw(int flash);
-	void hide(int do_plugintoggles = 1);
-	void flash();
+	void hide();
 	void activate();
 	void deactivate();
-	void show(int do_plugintoggles = 1);
-	void restore(int do_plugintoggles);
+	void invisible();
+	void show();
 	void update();
 	void focus_out_event();
 
 	int playing_back;
 
 private:
+	void draw(int do_plugintoggles);
+	void flash();
+
 	MWindowGUI *gui;
 	int pixel1;
 	int pixel2;
 	int visible;
 	int active;
+	int enabled;
 	Mutex cursor_lock;
 };
 

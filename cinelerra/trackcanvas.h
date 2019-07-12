@@ -226,7 +226,7 @@ public:
 // Draw everything to synchronize with the view.
 // modebits - WUPD_CANVREDRAW causes all resource pixmaps to be redrawn from scratch
 //          - WUPD_CANVPICIGN causes resource pixmaps to ignore picon thread
-	void draw(int mode = 0, int hide_cursor = 1);
+	void draw(int mode = 0);
 
 // Draw resources during index building
 	void draw_indexes(Asset *asset);

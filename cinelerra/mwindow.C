@@ -172,7 +172,6 @@ MWindow::MWindow(const char *config_path)
 	gui->mainmenu->update_toggles();
 	gui->patchbay->update();
 	gui->canvas->draw();
-	gui->cursor->draw(1);
 	gui->show_window();
 	gui->raise_window();
 

@@ -188,6 +188,8 @@ void MWindowGUI::show()
 
 	get_scrollbars();
 
+	cursor = new MainCursor(this);
+
 	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
 	canvas->show();
 
@@ -204,8 +206,6 @@ void MWindowGUI::show()
 	mainclock->set_frame_offset(
 		edlsession->get_frame_offset());
 	mainclock->update(0);
-
-	cursor = new MainCursor(this);
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 
@@ -259,7 +259,6 @@ void MWindowGUI::update(int options)
 	if(options & WUPD_CANVAS)
 	{
 		this->canvas->draw(options & WUPD_CANVAS);
-		this->cursor->show();
 		this->canvas->flash();
 // Activate causes the menubar to deactivate.  Don't want this for
 // picon thread.

@@ -181,7 +181,7 @@ public:
 	void next_edit_handle(int shift_down);
 	void prev_edit_handle(int shift_down);
 	void trackmovement(int track_start);
-	void samplemovement(ptstime view_start);     // view_start is seconds
+	void samplemovement(ptstime view_start, int force_redraw = 0);
 	void select_all(void);
 	void goto_start(void);
 	void goto_end(void);

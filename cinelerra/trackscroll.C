@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
@@ -74,7 +75,6 @@ int TrackScroll::handle_event()
 	master_edl->local_session->track_start = get_value();
 	master_edl->tracks->update_y_pixels(mwindow->theme);
 	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash(1);
 	return 1;

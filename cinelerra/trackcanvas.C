@@ -131,7 +131,7 @@ void TrackCanvas::show()
 
 void TrackCanvas::resize_event()
 {
-	draw(0, 0);
+	draw();
 	flash();
 }
 
@@ -241,7 +241,9 @@ void TrackCanvas::drag_motion()
 
 	if(redraw)
 	{
+		gui->cursor->hide();
 		draw_overlays();
+		gui->cursor->show();
 		flash();
 	}
 }
@@ -632,24 +634,22 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	return position;
 }
 
-void TrackCanvas::draw(int mode, int hide_cursor)
+void TrackCanvas::draw(int mode)
 {
 // Swap pixmap layers
+	canvas_lock->lock("TrackCanvas::draw");
 	if(get_w() != background_pixmap->get_w() ||
 		get_h() != background_pixmap->get_h())
 	{
 		delete background_pixmap;
 		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
 	}
-
-// Cursor disappears after resize when this is called.
-// Cursor doesn't redraw after editing when this isn't called.
-	if(gui->cursor && hide_cursor)
-		gui->cursor->hide();
-
+	gui->cursor->invisible();
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
 	draw_resources(mode);
 	draw_overlays();
+	gui->cursor->show();
+	canvas_lock->unlock();
 }
 
 void TrackCanvas::update_cursor()
@@ -681,10 +681,11 @@ void TrackCanvas::draw_indexes(Asset *asset)
 	if(asset->index_zoom > master_edl->local_session->zoom_time *
 			edlsession->sample_rate)
 		return;
-
+	gui->cursor->hide();
 	draw_resources(WUPD_INDEXES, asset);
 	draw_overlays();
 	flash(1);
+	gui->cursor->show();
 }
 
 void TrackCanvas::draw_resources(int mode, 
@@ -3112,8 +3113,6 @@ void TrackCanvas::draw_overlays()
 		new_cursor, 
 		update_cursor,
 		rerender);
-// Selection cursor
-	if(gui->cursor) gui->cursor->restore(1);
 
 // Handle dragging
 	draw_drag_handle();
@@ -3652,11 +3651,12 @@ int TrackCanvas::cursor_motion_event()
 			(cursor_x < get_w() && cursor_x >= 0 && cursor_y < get_h() && cursor_y >= 0))
 			stop_dragscroll();
 	}
-
 	if(update_overlay)
 	{
+		gui->cursor->hide();
 		draw_overlays();
 		flash();
+		gui->cursor->show();
 	}
 
 	return result;
@@ -3841,8 +3841,10 @@ int TrackCanvas::button_release_event()
 		cursor_motion_event();
 	if(update_overlay)
 	{
+		gui->cursor->hide();
 		draw_overlays();
 		flash();
+		gui->cursor->show();
 	}
 	if(redraw)
 	{
@@ -4522,8 +4524,10 @@ int TrackCanvas::button_press_event()
 SET_TRACE
 		if(update_overlay)
 		{
+			gui->cursor->hide();
 			draw_overlays();
 			flash();
+			gui->cursor->show();
 		}
 SET_TRACE
 		if(update_cursor)

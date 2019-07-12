@@ -35,14 +35,21 @@ MainCursor::MainCursor(MWindowGUI *gui)
 	visible = 0;
 	active = 0;
 	playing_back = 0;
+	enabled = 0;
+	pixel1 = 0;
+	pixel2 = 0;
 	cursor_lock.title = "MainCursor::lock";
-	cursor_lock.recursive = 1;
 }
 
 void MainCursor::focus_out_event()
 {
-	show();
-	flash();
+	cursor_lock.lock("MainCursor::focus_out_event");
+	if(enabled && !visible)
+	{
+		draw(1);
+		flash();
+	}
+	cursor_lock.unlock();
 }
 
 void MainCursor::activate()
@@ -60,15 +67,21 @@ void MainCursor::deactivate()
 	{
 		active = 0;
 		gui->unset_repeat(BC_WindowBase::get_resources()->blink_rate);
-		show();
-		flash();
+		cursor_lock.lock("MainCursor::deactvate");
+		if(enabled && !visible)
+		{
+			draw(1);
+			flash();
+		}
+		cursor_lock.unlock();
 	}
 }
 
 void MainCursor::repeat_event(int duration)
 {
-	if(!active || !gui->get_has_focus()) return;
-	if(duration != BC_WindowBase::get_resources()->blink_rate) return;
+	if(!enabled || !active || !gui->get_has_focus() ||
+			duration != BC_WindowBase::get_resources()->blink_rate)
+		return;
 
 // Only flash a single sample selection
 	if(pixel1 == pixel2)
@@ -116,22 +129,15 @@ void MainCursor::draw(int do_plugintoggles)
 // Draw the cursor in a new location
 void MainCursor::update()
 {
-	int old_pixel1 = pixel1;
-	int old_pixel2 = pixel2;
-
 	cursor_lock.lock("MainCursor::update");
-	if(visible)
+	if(enabled)
 	{
-		hide(0);
-	}
+		if(visible)
+			draw(0);
 
-	show(1);
-	if(old_pixel1 != pixel1 || old_pixel2 != pixel2)
-		gui->canvas->flash(old_pixel1, 
-			0, 
-			old_pixel2 - old_pixel1 + 1, 
-			gui->canvas->get_h());
-	flash();
+		draw(1);
+		flash();
+	}
 	cursor_lock.unlock();
 }
 
@@ -140,30 +146,40 @@ void MainCursor::flash()
 	gui->canvas->flash(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
 }
 
-void MainCursor::hide(int do_plugintoggles)
+void MainCursor::invisible()
+{
+	cursor_lock.lock("MainCursor::invisible");
+	visible = 0;
+	enabled = 0;
+	cursor_lock.unlock();
+}
+
+void MainCursor::hide()
 {
 	cursor_lock.lock("MainCursor::hide");
-	if(visible)
-		draw(do_plugintoggles);
+	if(enabled)
+	{
+		if(visible)
+		{
+			draw(1);
+			flash();
+		}
+		enabled = 0;
+	}
 	cursor_lock.unlock();
 }
 
-void MainCursor::show(int do_plugintoggles)
+void MainCursor::show()
 {
 	cursor_lock.lock("MainCursor::show");
-	if(!visible)
-		draw(do_plugintoggles);
-	cursor_lock.unlock();
-}
-
-// Constitutively redraw the cursor after it is overwritten by a draw
-void MainCursor::restore(int do_plugintoggles)
-{
-	cursor_lock.lock("MainCursor::restore");
-	if(visible)
+	if(!enabled)
 	{
-		draw(do_plugintoggles);
-		visible = 1;
+		if(!visible)
+		{
+			draw(1);
+			flash();
+		}
+		enabled = 1;
 	}
 	cursor_lock.unlock();
 }

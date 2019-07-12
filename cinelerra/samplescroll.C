@@ -94,10 +94,7 @@ int SampleScroll::handle_event()
 	lock->lock("handle_event");
 	master_edl->local_session->view_start_pts = get_value() *
 		master_edl->local_session->zoom_time;
-
 	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw(1);
-
 	mwindow->gui->canvas->flash();
 	mwindow->gui->patchbay->update();
 	mwindow->gui->timebar->update();

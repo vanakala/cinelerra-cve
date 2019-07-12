@@ -292,7 +292,7 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 void MWindow::zoom_amp(int64_t zoom_amp)
 {
 	master_edl->local_session->zoom_y = zoom_amp;
-	gui->canvas->draw(0, 0);
+	gui->canvas->draw();
 	gui->patchbay->update();
 	gui->canvas->flash(1);
 }
@@ -314,7 +314,7 @@ void MWindow::trackmovement(int track_start)
 		master_edl->local_session->track_start = 0;
 	gui->get_scrollbars();
 	master_edl->tracks->update_y_pixels(theme);
-	gui->canvas->draw(0, 0);
+	gui->canvas->draw();
 	gui->patchbay->update();
 	gui->canvas->flash(1);
 }
@@ -361,9 +361,10 @@ void MWindow::goto_end(void)
 
 	samplemovement(new_view_start);
 
+	gui->cursor->hide();
 	update_plugin_guis();
 	gui->patchbay->update();
-	gui->cursor->update();
+	gui->cursor->show();
 	gui->canvas->activate();
 	gui->zoombar->update();
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
@@ -384,9 +385,10 @@ void MWindow::goto_start(void)
 
 	samplemovement(new_view_start);
 
+	gui->cursor->hide();
 	update_plugin_guis();
 	gui->patchbay->update();
-	gui->cursor->update();
+	gui->cursor->show();
 	gui->canvas->activate();
 	gui->zoombar->update();
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
