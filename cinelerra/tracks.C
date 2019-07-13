@@ -149,15 +149,7 @@ void Tracks::copy_from(Tracks *tracks)
 	delete_all_tracks();
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
-		switch(current->data_type)
-		{
-		case TRACK_AUDIO: 
-			new_track = add_audio_track(0, 0); 
-			break;
-		case TRACK_VIDEO: 
-			new_track = add_video_track(0, 0); 
-			break;
-		}
+		new_track = add_track(current->data_type, 0, 0);
 		new_track->copy_from(current);
 	}
 }
@@ -179,10 +171,9 @@ void Tracks::load(FileXML *xml)
 	xml->tag.get_property("TYPE", string);
 
 	if(!strcmp(string, "VIDEO"))
-		add_video_track(0, 0);
+		track = add_track(TRACK_VIDEO, 0, 0);
 	else
-		add_audio_track(0, 0);    // default to audio
-	track = last;
+		track = add_track(TRACK_AUDIO, 0, 0);    // default to audio
 
 	if(track)
 		track->load(xml);
@@ -194,58 +185,59 @@ void Tracks::init_shared_pointers()
 		current->init_shared_pointers();
 }
 
-Track* Tracks::add_audio_track(int above, Track *dst_track)
+Track* Tracks::add_track(int track_type, int above, Track *dst_track)
 {
-	ATrack* new_track = new ATrack(edl, this);
+	Track* new_track = new VTrack(edl, this);
 
-	if(!dst_track)
-		dst_track = (above ? first : last);
-
-	if(above)
-		insert_before(dst_track, (Track*)new_track);
-	else
-		insert_after(dst_track, (Track*)new_track);
-
-	new_track->set_default_title();
-
-	int current_pan = 0;
-
-	for(Track *current = first; 
-		current != (Track*)new_track; 
-		current = NEXT)
+	switch(track_type)
 	{
-		if(current->data_type == TRACK_AUDIO) current_pan++;
-		if(current_pan >= edlsession->audio_channels) current_pan = 0;
+	case TRACK_VIDEO:
+		new_track = new VTrack(edl, this);
+		break;
+
+	case TRACK_AUDIO:
+		new_track = new ATrack(edl, this);
+		break;
 	}
 
-	PanAutos* pan_autos = 
-		(PanAutos*)new_track->automation->autos[AUTOMATION_PAN];
-
-	pan_autos->default_values[current_pan] = 1.0;
-
-	BC_Pan::calculate_stick_position(edlsession->audio_channels,
-		edlsession->achannel_positions,
-		pan_autos->default_values,
-		MAX_PAN,
-		PAN_RADIUS,
-		pan_autos->default_handle_x,
-		pan_autos->default_handle_y);
-	return new_track;
-}
-
-Track* Tracks::add_video_track(int above, Track *dst_track)
-{
-	VTrack* new_track = new VTrack(edl, this);
-
 	if(!dst_track)
 		dst_track = (above ? first : last);
 
 	if(above)
-		insert_before(dst_track, (Track*)new_track);
+		insert_before(dst_track, new_track);
 	else
-		insert_after(dst_track, (Track*)new_track);
+		insert_after(dst_track, new_track);
 
 	new_track->set_default_title();
+
+	if(track_type == TRACK_AUDIO)
+	{
+		int current_pan = 0;
+
+		for(Track *current = first;
+			current != (Track*)new_track;
+			current = NEXT)
+		{
+			if(current->data_type == TRACK_AUDIO)
+				current_pan++;
+			if(current_pan >= edlsession->audio_channels)
+				current_pan = 0;
+		}
+
+		PanAutos* pan_autos =
+			(PanAutos*)new_track->automation->autos[AUTOMATION_PAN];
+
+		pan_autos->default_values[current_pan] = 1.0;
+
+		BC_Pan::calculate_stick_position(edlsession->audio_channels,
+			edlsession->achannel_positions,
+			pan_autos->default_values,
+			MAX_PAN,
+			PAN_RADIUS,
+			pan_autos->default_handle_x,
+			pan_autos->default_handle_y);
+	}
+
 	return new_track;
 }
 
@@ -585,7 +577,7 @@ void Tracks::create_new_tracks(Asset *asset)
 
 	for(int i = 0; i < vtracks; i++)
 	{
-		new_track = add_video_track(0, 0);
+		new_track = add_track(TRACK_VIDEO, 0, 0);
 		len = asset->total_length_framealigned(edlsession->frame_rate);
 		if(len > master_length)
 			len = master_length;
@@ -594,7 +586,7 @@ void Tracks::create_new_tracks(Asset *asset)
 
 	for(int i = 0; i < atracks; i++)
 	{
-		new_track = add_audio_track(0, 0);
+		new_track = add_track(TRACK_AUDIO, 0, 0);
 		len = asset->total_length_framealigned(edlsession->frame_rate);
 		if(len > master_length)
 			len = master_length;
@@ -616,15 +608,7 @@ void Tracks::create_new_tracks(Tracks *tracks)
 
 	for(Track *track = tracks->first; track; track = track->next)
 	{
-		switch(track->data_type)
-		{
-		case TRACK_VIDEO:
-			new_track = add_video_track(0, 0);
-			break;
-		case TRACK_AUDIO:
-			new_track = add_audio_track(0, 0);
-			break;
-		}
+		new_track = add_track(track->data_type, 0, 0);
 		len = track->get_length();
 		if(len > master_length)
 			len = master_length;

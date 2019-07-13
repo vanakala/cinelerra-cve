@@ -80,10 +80,13 @@
 #include <string.h>
 
 
-void MWindow::add_audio_track_entry(int above, Track *dst)
+void MWindow::add_track(int track_type, int above, Track *dst)
 {
-	add_audio_track(above, dst);
-	save_backup();
+	if(cwindow->stop_playback())
+		return;
+
+	master_edl->tracks->add_track(track_type, above, dst);
+	master_edl->tracks->update_y_pixels(theme);
 	undo->update_undo(_("add track"), LOAD_ALL);
 
 	restart_brender();
@@ -93,34 +96,6 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
-}
-
-void MWindow::add_video_track_entry(Track *dst)
-{
-	add_video_track(1, dst);
-	undo->update_undo(_("add track"), LOAD_ALL);
-
-	restart_brender();
-	gui->get_scrollbars();
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->canvas->flash();
-	gui->canvas->activate();
-	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
-	save_backup();
-}
-
-void MWindow::add_audio_track(int above, Track *dst)
-{
-	master_edl->tracks->add_audio_track(above, dst);
-	master_edl->tracks->update_y_pixels(theme);
-	save_backup();
-}
-
-void MWindow::add_video_track(int above, Track *dst)
-{
-	master_edl->tracks->add_video_track(above, dst);
-	master_edl->tracks->update_y_pixels(theme);
 	save_backup();
 }
 

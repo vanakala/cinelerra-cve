@@ -53,6 +53,7 @@ public:
 	void load_pluginset(FileXML *file, ptstime start);
 	void init_shared_pointers();
 	virtual void save_header(FileXML *file) {};
+	virtual void set_default_title() {};
 	void equivalent_output(Track *track, ptstime *result);
 
 	virtual void copy_from(Track *track);

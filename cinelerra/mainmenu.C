@@ -700,7 +700,7 @@ AddAudioTrack::AddAudioTrack(MWindow *mwindow)
 
 int AddAudioTrack::handle_event()
 {
-	mwindow->add_audio_track_entry(0, 0);
+	mwindow->add_track(TRACK_AUDIO);
 	return 1;
 }
 
@@ -753,7 +753,7 @@ AddVideoTrack::AddVideoTrack(MWindow *mwindow)
 
 int AddVideoTrack::handle_event()
 {
-	mwindow->add_video_track_entry();
+	mwindow->add_track(TRACK_VIDEO, 1);
 	return 1;
 }
 

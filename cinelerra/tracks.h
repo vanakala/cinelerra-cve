@@ -81,8 +81,7 @@ public:
 
 	void translate_projector(float offset_x, float offset_y);
 // add a track
-	Track* add_audio_track(int above, Track *dst_track);
-	Track* add_video_track(int above, Track *dst_track);
+	Track* add_track(int track_type, int above, Track *dst_track);
 // delete any track
 	void delete_track(Track* track);
 // detach shared effects referencing track or plugin

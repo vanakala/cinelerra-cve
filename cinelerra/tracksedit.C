@@ -307,20 +307,7 @@ void Tracks::copy(Tracks *tracks, ptstime start, ptstime end,
 		if(src_tracks && src_tracks->number_of(current) < 0)
 			continue;
 
-		switch(current->data_type)
-		{
-		case TRACK_VIDEO:
-			new_track = add_video_track(0, 0);
-			break;
-
-		case TRACK_AUDIO:
-			new_track = add_audio_track(0, 0);
-			break;
-
-		default:
-			new_track = 0;
-			break;
-		}
+		new_track = add_track(current->data_type, 0, 0);
 
 		if(new_track)
 			new_track->copy(current, start, end);
@@ -428,10 +415,10 @@ void Tracks::load_effects(FileXML *file, int operation)
 			file->tag.get_property("TYPE", string);
 
 			if(!strcmp(string, "VIDEO"))
-				current = add_video_track(0, 0);
+				current = add_track(TRACK_VIDEO, 0, 0);
 
 			if(!strcmp(string, "AUDIO"))
-				current = add_audio_track(0, 0);
+				current = add_track(TRACK_AUDIO, 0, 0);
 
 			current->load_effects(file, operation);
 		}

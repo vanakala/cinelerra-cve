@@ -117,10 +117,10 @@ void EDL::boundaries()
 void EDL::create_default_tracks()
 {
 	for(int i = 0; i < edlsession->video_tracks; i++)
-		tracks->add_video_track(0, 0);
+		tracks->add_track(TRACK_VIDEO, 0, 0);
 
 	for(int i = 0; i < edlsession->audio_tracks; i++)
-		tracks->add_audio_track(0, 0);
+		tracks->add_track(TRACK_AUDIO, 0, 0);
 // Set master track
 	if(first_track())
 		first_track()->master = 1;
@@ -812,7 +812,7 @@ void EDL::init_edl()
 		edlsession->video_tracks += new_asset->layers;
 
 		for(int k = 0; k < new_asset->layers; k++)
-			tracks->add_video_track(0, 0);
+			tracks->add_track(TRACK_VIDEO, 0, 0);
 	}
 
 	if(new_asset->audio_data)
@@ -820,7 +820,7 @@ void EDL::init_edl()
 		edlsession->audio_tracks += new_asset->channels;
 
 		for(int k = 0; k < new_asset->channels; k++)
-			tracks->add_audio_track(0, 0);
+			tracks->add_track(TRACK_AUDIO, 0, 0);
 	}
 	insert_asset(new_asset, 0);
 
