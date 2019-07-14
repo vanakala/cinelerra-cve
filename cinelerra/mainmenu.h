@@ -370,16 +370,6 @@ public:
 };
 
 
-class DeleteVideoTrack : public BC_MenuItem
-{
-public:
-	DeleteVideoTrack(MWindow *mwindow);
-
-	int handle_event();
-
-	MWindow *mwindow;
-};
-
 class DefaultVTransition : public BC_MenuItem
 {
 public:

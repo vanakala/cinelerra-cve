@@ -757,19 +757,6 @@ int AddVideoTrack::handle_event()
 	return 1;
 }
 
-
-DeleteVideoTrack::DeleteVideoTrack(MWindow *mwindow)
- : BC_MenuItem(_("Delete track"))
-{
-	this->mwindow = mwindow;
-}
-
-int DeleteVideoTrack::handle_event()
-{
-	return 1;
-}
-
-
 DefaultVTransition::DefaultVTransition(MWindow *mwindow)
  : BC_MenuItem(_("Default Transition"), "Shift-U", 'U')
 {
