@@ -261,7 +261,7 @@ void BC_MenuPopup::activate_menu(int x,
 		if(this->y + this->h > top_h) this->y -= this->h + h; // Bottom justify
 // Avoid top of menu going out of screen
 		if(this->y < 0)
-			this->y = 2;
+			this->y = 20;
 	}
 	else
 	{
