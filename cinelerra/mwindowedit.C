@@ -1383,6 +1383,10 @@ void MWindow::map_audio(int pattern)
 {
 	int current_channel = 0;
 	int current_track = 0;
+
+	if(cwindow->stop_playback())
+		return;
+
 	for(Track *current = master_edl->first_track(); current; current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO && 
