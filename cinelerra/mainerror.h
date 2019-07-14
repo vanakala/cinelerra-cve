@@ -111,7 +111,7 @@ public:
 		int confirm,
 		int x = (int)BC_INFINITY,
 		int y = (int)BC_INFINITY,
-		int w = 400,
+		int w = 600,
 		int h = 120);
 };
 
