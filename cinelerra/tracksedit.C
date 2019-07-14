@@ -331,10 +331,9 @@ void Tracks::move_track_down(Track *track)
 	swap(track, next_track);
 }
 
-int Tracks::move_tracks_up()
+void Tracks::move_tracks_up()
 {
 	Track *track, *next_track;
-	int result = 0;
 
 	for(track = first;
 		track; 
@@ -345,20 +344,14 @@ int Tracks::move_tracks_up()
 		if(track->record)
 		{
 			if(track->previous)
-			{
 				swap(track->previous, track);
-				result = 1;
-			}
 		}
 	}
-
-	return result;
 }
 
-int Tracks::move_tracks_down()
+void Tracks::move_tracks_down()
 {
 	Track *track, *previous_track;
-	int result = 0;
 
 	for(track = last;
 		track; 
@@ -369,14 +362,9 @@ int Tracks::move_tracks_down()
 		if(track->record)
 		{
 			if(track->next)
-			{
 				swap(track, track->next);
-				result = 1;
-			}
 		}
 	}
-
-	return result;
 }
 
 void Tracks::paste_audio_transition(PluginServer *server)

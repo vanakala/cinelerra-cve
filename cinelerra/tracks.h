@@ -62,8 +62,8 @@ public:
 	void equivalent_output(Tracks *tracks, ptstime *result);
 	void move_track_up(Track *track);        // move recordable tracks up
 	void move_track_down(Track *track);      // move recordable tracks down
-	int move_tracks_up();                    // move recordable tracks up
-	int move_tracks_down();                  // move recordable tracks down
+	void move_tracks_up();                    // move recordable tracks up
+	void move_tracks_down();                  // move recordable tracks down
 	void paste_audio_transition(PluginServer *server);
 	void paste_video_transition(PluginServer *server, int first_track = 0);
 
