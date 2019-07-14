@@ -44,7 +44,7 @@ int ConfirmSave::test_file(const char *path)
 	int result = 0;
 
 	if(access(path, F_OK) == 0)
-		result = confirmbox(_("File %s exists. Overwrite?"), path);
+		result = confirmbox(_("File %s exists.\nOverwrite?"), path);
 	return result;
 }
 
