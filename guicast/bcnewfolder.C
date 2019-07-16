@@ -78,8 +78,10 @@ BC_NewFolderThread::~BC_NewFolderThread()
 
 void BC_NewFolderThread::run()
 {
-	int x = filebox->get_abs_cursor_x(1);
-	int y = filebox->get_abs_cursor_y(1);
+	int x, y;
+
+	filebox->get_abs_cursor_pos(&x, &y);
+
 	change_lock->lock("BC_NewFolderThread::run 1");
 	window = new BC_NewFolder(x, 
 		y,

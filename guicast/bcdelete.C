@@ -111,8 +111,9 @@ void BC_DeleteThread::handle_done_event(int result)
 
 BC_Window* BC_DeleteThread::new_gui()
 {
-	int x = filebox->get_abs_cursor_x(1);
-	int y = filebox->get_abs_cursor_y(1);
+	int x, y;
+
+	filebox->get_abs_cursor_pos(&x, &y);
 	BC_DeleteFile *result = new BC_DeleteFile(filebox, x, y);
 	return result;
 }
