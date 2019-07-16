@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "bcdragwindow.h"
 #include "bcpixmap.h"
+#include "bcresources.h"
 
 #include "vframe.h"
 #include <unistd.h>
@@ -39,12 +40,15 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	0,
 	pixmap)
 {
+	int cx, cy;
+
 	init_x = icon_x;
 	init_y = icon_y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
-	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
-	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
+	BC_Resources::get_abs_cursor(&cx, &cy);
+	icon_offset_x = init_x - cx;
+	icon_offset_y = init_y - cy;
 	do_animation = 1;
 }
 
@@ -62,13 +66,16 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	0,
 	prepare_frame(frame, parent_window))
 {
+	int cx, cy;
+
 	delete temp_frame;  // created in prepare_frame inside constructor
 	init_x = icon_x;
 	init_y = icon_y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
-	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
-	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
+	BC_Resources::get_abs_cursor(&cx, &cy);
+	icon_offset_x = init_x - cx;
+	icon_offset_y = init_y - cy;
 	do_animation = 1;
 }
 
@@ -114,8 +121,11 @@ int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
 
 int BC_DragWindow::cursor_motion_event()
 {
-	reposition_window(get_abs_cursor_x(0) + icon_offset_x, 
-		get_abs_cursor_y(0) + icon_offset_y, 
+	int cx, cy;
+
+	BC_Resources::get_abs_cursor(&cx, &cy);
+	reposition_window(cx + icon_offset_x,
+		cy + icon_offset_y,
 		get_w(), 
 		get_h());
 	flush();

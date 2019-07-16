@@ -3435,6 +3435,10 @@ int BC_ListBox::cursor_motion_event()
 
 int BC_ListBox::drag_start_event()
 {
+	int cx, cy;
+
+	BC_Resources::get_abs_cursor(&cx, &cy);
+
 	switch(current_operation)
 	{
 	case SELECT:
@@ -3454,21 +3458,21 @@ int BC_ListBox::drag_start_event()
 				{
 					drag_popup = new BC_DragWindow(this, 
 						item_return->icon_vframe, 
-						get_abs_cursor_x(0) - item_return->icon_vframe->get_w() / 2,
-						get_abs_cursor_y(0) - item_return->icon_vframe->get_h() / 2);
+						cx - item_return->icon_vframe->get_w() / 2,
+						cy - item_return->icon_vframe->get_h() / 2);
 				}
 				else
 // this probably works not!
 				if (item_return->icon)
 					drag_popup = new BC_DragWindow(this, 
 						item_return->icon, 
-						get_abs_cursor_x(0) - item_return->icon->get_w() / 2,
-						get_abs_cursor_y(0) - item_return->icon->get_h() / 2);
+						cx - item_return->icon->get_w() / 2,
+						cy - item_return->icon->get_h() / 2);
 				else
 					drag_popup = new BC_DragWindow(this, 
 						drag_icon_vframe, 
-						get_abs_cursor_x(0) - drag_icon_vframe->get_w() / 2,
-						get_abs_cursor_y(0) - drag_icon_vframe->get_h() / 2);
+						cx - drag_icon_vframe->get_w() / 2,
+						cy - drag_icon_vframe->get_h() / 2);
 				current_operation = DRAG_ITEM;
 				return 1;
 			}
@@ -3480,8 +3484,8 @@ int BC_ListBox::drag_start_event()
 		{
 			drag_popup = new BC_DragWindow(this, 
 				drag_column_icon_vframe, 
-				get_abs_cursor_x(0) - drag_column_icon_vframe->get_w() / 2,
-				get_abs_cursor_y(0) - drag_column_icon_vframe->get_h() / 2);
+				cx - drag_column_icon_vframe->get_w() / 2,
+				cy - drag_column_icon_vframe->get_h() / 2);
 			dragged_title = highlighted_title;
 			current_operation = COLUMN_DRAG;
 			draw_titles(1);

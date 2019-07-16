@@ -273,8 +273,11 @@ void BC_PopupMenu::activate_menu(int init_releases)
 		top_level->lock_window("BC_PopupMenu::activate_menu");
 		if(!use_coords)
 		{
-			x = top_level->get_abs_cursor_x(0) - get_w();
-			y = top_level->get_abs_cursor_y(0) - get_h();
+			int cx, cy;
+
+			BC_Resources::get_abs_cursor(&cx, &cy);
+			x = cx - get_w();
+			y = cy - get_h();
 			button_press_x = top_level->cursor_x;
 			button_press_y = top_level->cursor_y;
 		}
