@@ -75,8 +75,7 @@ int BrowseButton::handle_event()
 		return 1;
 	}
 
-	x = parent_window->get_abs_cursor_x(0);
-	y = parent_window->get_abs_cursor_y(0);
+	BC_Resources::get_abs_cursor(&x, &y);
 	startup_lock->lock("BrowseButton::handle_event 1");
 	Thread::start();
 
