@@ -237,9 +237,12 @@ void FileEXR::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
+	int cx, cy;
+
 	if(options & SUPPORTS_VIDEO)
 	{
-		EXRConfigVideo *window = new EXRConfigVideo(parent_window, asset);
+		parent_window->get_abs_cursor_pos(&cx, &cy);
+		EXRConfigVideo *window = new EXRConfigVideo(parent_window, asset, cx, cy);
 		format_window = window;
 		window->run_window();
 		delete window;
@@ -487,10 +490,11 @@ EXRUnit::~EXRUnit()
 }
 
 
-EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset,
+	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Video Compression")),
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
+	absx,
+	absy,
 	300,
 	BC_OKButton::calculate_h() + 100)
 {

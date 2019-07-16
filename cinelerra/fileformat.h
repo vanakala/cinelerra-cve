@@ -40,7 +40,7 @@ class FileFormatBits;
 class FileFormat : public BC_Window
 {
 public:
-	FileFormat(Asset *asset, const char *string2);
+	FileFormat(Asset *asset, const char *string2, int absx, int absy);
 	~FileFormat();
 
 	Asset *asset;

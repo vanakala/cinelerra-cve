@@ -29,8 +29,8 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mtimebar.h"
 #include "mwindowgui.h"
+#include "mtimebar.h"
 #include "theme.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
@@ -57,9 +57,12 @@ void LabelEdit::edit_label(Label *label)
 
 void LabelEdit::run()
 {
+	int cx, cy;
+
 	if(label)
 	{
-		LabelEditWindow *window = new LabelEditWindow(mwindow, this);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
+		LabelEditWindow *window = new LabelEditWindow(mwindow, this, cx, cy);
 		if(!window->run_window())
 		{
 			strcpy(label->textstr, window->textbox->get_utf8text());
@@ -73,10 +76,10 @@ void LabelEdit::run()
 }
 
 
-LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
+LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Label Info")),
-	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
+	absx - 400 / 2,
+	absy - 350 / 2,
 	400, 
 	350,
 	400,

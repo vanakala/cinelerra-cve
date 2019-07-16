@@ -54,7 +54,7 @@ public:
 class ManualGotoWindow : public BC_Window
 {
 public:
-	ManualGotoWindow(MWindow *mwindow, ManualGoto *thread);
+	ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int absx, int absy);
 
 	void activate();
 	ptstime get_entered_position_sec();

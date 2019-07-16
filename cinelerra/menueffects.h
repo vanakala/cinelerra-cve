@@ -109,7 +109,7 @@ class MenuEffectWindow : public BC_Window
 public:
 	MenuEffectWindow(MWindow *mwindow, 
 		MenuEffectThread *menueffects, 
-		ArrayList<BC_ListBoxItem*> *plugin_list, 
+		ArrayList<BC_ListBoxItem*> *plugin_list, int absx, int absy,
 		Asset *asset);
 	virtual ~MenuEffectWindow();
 
@@ -172,7 +172,7 @@ class MenuEffectPromptCancel;
 class MenuEffectPrompt : public BC_Window
 {
 public:
-	MenuEffectPrompt(MWindow *mwindow);
+	MenuEffectPrompt(MWindow *mwindow, int absx, int absy);
 
 	static int calculate_w(BC_WindowBase *gui);
 	static int calculate_h(BC_WindowBase *gui);

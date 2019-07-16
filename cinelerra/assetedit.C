@@ -79,11 +79,14 @@ void AssetEdit::set_asset(Asset *asset)
 
 void AssetEdit::run()
 {
+	int absx, absy;
+
 	if(asset)
 	{
 		new_asset = new Asset(asset->path);
 		*new_asset = *asset;
-		window = new AssetEditWindow(mwindow, this);
+		mwindow->get_abs_cursor_pos(&absx, &absy);
+		window = new AssetEditWindow(mwindow, this, absx, absy);
 		window->raise_window();
 
 		if(!window->run_window())
@@ -134,10 +137,11 @@ void AssetEdit::run()
 }
 
 
-AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
+AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
+	int abs_x, int abs_y)
  : BC_Window(MWindow::create_title(N_("Asset Info")),
-	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
-	mwindow->gui->get_abs_cursor_y(1) - 400 / 2,
+	abs_x - 400 / 2,
+	abs_y - 400 / 2,
 	400,
 	400,
 	400,

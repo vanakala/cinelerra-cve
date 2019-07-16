@@ -30,7 +30,6 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "mainerror.h"
@@ -71,6 +70,8 @@ void ClipEdit::create_clip(EDL *clip)
 
 void ClipEdit::run()
 {
+	int cx, cy;
+
 	if(clip)
 	{
 		EDL *original = clip;
@@ -80,8 +81,8 @@ void ClipEdit::run()
 			clip->copy_all(original);
 			clip->copy_session(original);
 		}
-
-		ClipEditWindow *window = new ClipEditWindow(mwindow, this);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
+		ClipEditWindow *window = new ClipEditWindow(mwindow, this, cx, cy);
 
 		int  name_ok_or_cancel = 0;
 		int result;
@@ -145,10 +146,10 @@ void ClipEdit::run()
 }
 
 
-ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
+ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Clip Info")),
-	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
+	absx - 400 / 2,
+	absy - 350 / 2,
 	400, 
 	350,
 	400,

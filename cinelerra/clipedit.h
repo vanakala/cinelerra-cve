@@ -54,7 +54,7 @@ public:
 class ClipEditWindow : public BC_Window
 {
 public:
-	ClipEditWindow(MWindow *mwindow, ClipEdit *thread);
+	ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int absy);
 
 // Use this copy of the pointer in ClipEdit since multiple windows are possible	
 	EDL *clip;

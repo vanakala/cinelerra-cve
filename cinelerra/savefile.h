@@ -66,7 +66,7 @@ public:
 class SaveFileWindow : public BC_FileBox
 {
 public:
-	SaveFileWindow(MWindow *mwindow, char *init_directory);
+	SaveFileWindow(MWindow *mwindow, int absx, int absy, char *init_directory);
 
 	MWindow *mwindow;
 };

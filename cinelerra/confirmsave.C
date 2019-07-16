@@ -29,7 +29,6 @@
 #include "mainerror.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "theme.h"
 
 #include <unistd.h>
@@ -53,6 +52,7 @@ int ConfirmSave::test_files(MWindow *mwindow,
 {
 	ArrayList<BC_ListBoxItem*> list;
 	int result = 0;
+	int cx, cy;
 
 	for(int i = 0; i < paths->total; i++)
 	{
@@ -67,7 +67,8 @@ int ConfirmSave::test_files(MWindow *mwindow,
 	{
 		if(mwindow)
 		{
-			ConfirmSaveWindow window(mwindow, &list);
+			mwindow->get_abs_cursor_pos(&cx, &cy);
+			ConfirmSaveWindow window(mwindow, &list, cx, cy);
 			window.raise_window();
 			result = window.run_window();
 		}
@@ -94,10 +95,10 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
-	ArrayList<BC_ListBoxItem*> *list)
+	ArrayList<BC_ListBoxItem*> *list, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Files Exist")),
-		mwindow->gui->get_abs_cursor_x(1) - 160, 
-		mwindow->gui->get_abs_cursor_y(1) - 120, 
+		absx - 160,
+		absy - 120,
 		mainsession->ewindow_w,
 		mainsession->ewindow_h,
 		50, 50)

@@ -36,7 +36,6 @@
 #include "keys.h"
 #include "maincursor.h"
 #include "cwindow.h"
-#include "mwindowgui.h"
 #include "edlsession.h"
 #include "units.h"
 #include "theme.h"
@@ -75,8 +74,10 @@ void ManualGoto::open_window()
 void ManualGoto::run()
 {
 	int result;
+	int cx, cy;
 
-	window = new ManualGotoWindow(mwindow, this);
+	mwindow->get_abs_cursor_pos(&cx, &cy);
+	window = new ManualGotoWindow(mwindow, this, cx, cy);
 	result = window->run_window();
 
 	if (result == 0) // ok button or return pressed
@@ -147,10 +148,10 @@ void ManualGoto::run()
 }
 
 
-ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
+ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Goto position")),
-	mwindow->gui->get_abs_cursor_x(1) - 250 / 2,
-	mwindow->gui->get_abs_cursor_y(1) - 80 / 2,
+	absx - 250 / 2,
+	absy - 80 / 2,
 	250, 
 	80,
 	250,

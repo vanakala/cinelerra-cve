@@ -47,7 +47,8 @@ public:
 class ConfirmSaveWindow : public BC_Window
 {
 public:
-	ConfirmSaveWindow(MWindow *mwindow, ArrayList<BC_ListBoxItem*> *list);
+	ConfirmSaveWindow(MWindow *mwindow, ArrayList<BC_ListBoxItem*> *list,
+		int absx, int absy);
 
 	void resize_event(int w, int h);
 

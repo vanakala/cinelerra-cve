@@ -353,16 +353,19 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 		BC_WindowBase* &format_window,
 		int options)
 {
+	int cx, cy;
+
 	if(options & SUPPORTS_AUDIO)
 	{
+		parent_window->get_abs_cursor_pos(&cx, &cy);
 		if(asset->format == FILE_AU)
 		{
-			FBConfig *window = new FBConfig(parent_window, options);
+			FBConfig *window = new FBConfig(parent_window, options, cx, cy);
 			format_window = window;
 		}
 		else
 		{
-			SndFileConfig *window = new SndFileConfig(parent_window, asset);
+			SndFileConfig *window = new SndFileConfig(parent_window, asset, cx, cy);
 			format_window = window;
 		}
 		format_window->run_window();
@@ -370,10 +373,11 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
+SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset,
+	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Audio Compression")),
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
+	absx,
+	absy,
 	250,
 	250)
 {

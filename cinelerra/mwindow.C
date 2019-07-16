@@ -759,6 +759,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			{
 				char string[BCTEXTLEN];
 				FileSystem fs;
+				int cx, cy;
+
 				fs.extract_name(string, new_asset->path);
 
 				strcat(string, _("'s format couldn't be determined."));
@@ -772,7 +774,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				new_asset->header = defaults->get("HEADER", 0);
 				new_asset->nb_streams = 0;
 
-				FileFormat fwindow(new_asset, string);
+				get_abs_cursor_pos(&cx, &cy);
+				FileFormat fwindow(new_asset, string, cx, cy);
 				result = fwindow.run_window();
 				if(!result)
 				{

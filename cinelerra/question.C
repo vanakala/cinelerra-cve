@@ -33,10 +33,11 @@
 #define WIDTH 375
 #define HEIGHT 160
 
-QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, const char *string)
+QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, int absx, int absy,
+	const char *string)
  : BC_Window(MWindow::create_title(N_("Question")),
-	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
-	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2, 
+	absx - WIDTH / 2,
+	absy - HEIGHT / 2,
 	WIDTH, 
 	HEIGHT)
 {

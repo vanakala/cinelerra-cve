@@ -44,15 +44,19 @@ TransitionLengthThread::TransitionLengthThread(MWindow *mwindow, TransitionPopup
 
 void TransitionLengthThread::run()
 {
-	TransitionLengthDialog window(mwindow, popup->transition);
+	int cx, cy;
+
+	mwindow->get_abs_cursor_pos(&cx, &cy);
+	TransitionLengthDialog window(mwindow, popup->transition, cx, cy);
 	window.run_window();
 }
 
 
-TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Plugin *transition)
+TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Plugin *transition,
+	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Transition length")),
-		mwindow->gui->get_abs_cursor_x(1) - 150,
-		mwindow->gui->get_abs_cursor_y(1) - 50,
+		absx - 150,
+		absy - 50,
 		300,
 		100,
 		-1,

@@ -83,7 +83,7 @@ public:
 class EXRConfigVideo : public BC_Window
 {
 public:
-	EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset, int absx, int absy);
 
 	Asset *asset;
 };

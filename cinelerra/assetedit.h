@@ -64,7 +64,7 @@ public:
 class AssetEditWindow : public BC_Window
 {
 public:
-	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit);
+	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit, int absx, int absy);
 	~AssetEditWindow();
 
 	Asset *asset;

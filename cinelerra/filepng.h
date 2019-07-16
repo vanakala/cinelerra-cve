@@ -62,7 +62,7 @@ public:
 class PNGConfigVideo : public BC_Window
 {
 public:
-	PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset, int absx, int absy);
 
 	Asset *asset;
 };

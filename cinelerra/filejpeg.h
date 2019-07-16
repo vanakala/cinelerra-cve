@@ -63,7 +63,7 @@ public:
 class JPEGConfigVideo : public BC_Window
 {
 public:
-	JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, int absx, int absy);
 };
 
 #endif

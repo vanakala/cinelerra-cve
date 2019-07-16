@@ -68,7 +68,7 @@ class LoadFileWindow : public BC_FileBox
 {
 public:
 	LoadFileWindow(MWindow *mwindow, 
-		LoadFileThread *thread,
+		LoadFileThread *thread, int absx, int absy,
 		char *init_directory);
 	~LoadFileWindow();
 

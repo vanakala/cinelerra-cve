@@ -75,6 +75,7 @@ void LoadFileThread::run()
 	FileSystem fs;
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
+	int cx, cy;
 	char default_path[BCTEXTLEN];
 
 	strcpy(default_path, "~");
@@ -82,7 +83,8 @@ void LoadFileThread::run()
 	load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	{
-		LoadFileWindow window(mwindow, this, default_path);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
+		LoadFileWindow window(mwindow, this, cx, cy, default_path);
 		result = window.run_window();
 
 		if ((!result) && (load_mode == LOADMODE_REPLACE)) {
@@ -140,10 +142,10 @@ void LoadFileThread::run()
 
 
 LoadFileWindow::LoadFileWindow(MWindow *mwindow, 
-	LoadFileThread *thread,
+	LoadFileThread *thread, int absx, int absy,
 	char *init_directory)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
-		mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
+ : BC_FileBox(absx,
+		absy - BC_WindowBase::get_resources()->filebox_h / 2,
 		init_directory, 
 		MWindow::create_title(N_("Load")),
 		_("Select files to load:"), 

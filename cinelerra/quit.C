@@ -61,6 +61,8 @@ int Quit::handle_event()
 void Quit::run()
 {
 	int result = 0;
+	int cx, cy;
+
 // Test execution conditions
 	if(mwindow->render->running())
 	{
@@ -70,7 +72,8 @@ void Quit::run()
 
 // Quit
 	{
-		QuestionWindow confirm(mwindow, 1,
+		mwindow->get_abs_cursor_pos(&cx, &cx);
+		QuestionWindow confirm(mwindow, 1, cx, cy,
 			_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
 		result = confirm.run_window();
 	}

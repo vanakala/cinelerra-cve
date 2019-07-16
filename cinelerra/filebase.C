@@ -57,10 +57,10 @@ int FileBase::match4(const char *in, const char *out)
 		return 0;
 }
 
-FBConfig::FBConfig(BC_WindowBase *parent_window, int type)
+FBConfig::FBConfig(BC_WindowBase *parent_window, int type, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Compression options")),
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
+	absx,
+	absy,
 	350,
 	100)
 {

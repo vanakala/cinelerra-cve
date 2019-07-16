@@ -50,7 +50,7 @@ public:
 class LabelEditWindow : public BC_Window
 {
 public:
-	LabelEditWindow(MWindow *mwindow, LabelEdit *thread);
+	LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int absx, int absy);
 
 // Use this copy of the pointer in LabelEdit since multiple windows are possible
 	Label *label;

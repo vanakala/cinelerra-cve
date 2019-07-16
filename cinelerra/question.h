@@ -29,7 +29,8 @@
 class QuestionWindow : public BC_Window
 {
 public:
-	QuestionWindow(MWindow *mwindow, int use_cancel, const char *string);
+	QuestionWindow(MWindow *mwindow, int use_cancel,
+		int absx, int absy, const char *string);
 
 	MWindow *mwindow;
 };

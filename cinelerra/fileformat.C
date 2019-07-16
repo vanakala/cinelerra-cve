@@ -24,16 +24,15 @@
 #include "fileformat.h"
 #include "language.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "selection.h"
 #include "theme.h"
 #include "new.h"
 
 
-FileFormat::FileFormat(Asset *asset, const char *string2)
+FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("File Format")),
-		mwindow_global->gui->get_abs_cursor_x(1),
-		mwindow_global->gui->get_abs_cursor_y(1),
+		absx,
+		absy,
 		375, 
 		300, 
 		375, 

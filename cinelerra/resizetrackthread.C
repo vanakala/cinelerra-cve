@@ -63,10 +63,11 @@ void ResizeTrackThread::start_window(Track *track, int track_number)
 
 void ResizeTrackThread::run()
 {
+	int cx, cy;
+
+	mwindow->get_abs_cursor_pos(&cx, &cy);
 	ResizeTrackWindow *window = this->window = 
-		new ResizeTrackWindow(this,
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
+		new ResizeTrackWindow(this, cx, cy);
 	int result = window->run_window();
 	this->window = 0;
 	delete window;

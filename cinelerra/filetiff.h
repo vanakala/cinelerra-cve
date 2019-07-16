@@ -93,7 +93,8 @@ public:
 class TIFFConfigVideo : public  BC_Window
 {
 public:
-	TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	TIFFConfigVideo(BC_WindowBase *parent_window,
+		Asset *asset, int absx, int absy);
 
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);

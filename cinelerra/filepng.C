@@ -71,9 +71,12 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
+	int cx, cy;
+
 	if(options & SUPPORTS_VIDEO)
 	{
-		PNGConfigVideo *window = new PNGConfigVideo(parent_window, asset);
+		parent_window->get_abs_cursor_pos(&cx, &cy);
+		PNGConfigVideo *window = new PNGConfigVideo(parent_window, asset, cx, cy);
 		format_window = window;
 		window->run_window();
 		delete window;
@@ -341,10 +344,11 @@ PNGUnit::~PNGUnit()
 }
 
 
-PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
+	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Video Compression")),
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
+	absx,
+	absy,
 	200,
 	100)
 {

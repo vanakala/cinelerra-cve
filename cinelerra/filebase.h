@@ -90,7 +90,7 @@ protected:
 class FBConfig: public BC_Window
 {
 public:
-	FBConfig(BC_WindowBase *parent_window, int type);
+	FBConfig(BC_WindowBase *parent_window, int type, int absx, int absy);
 };
 
 #endif

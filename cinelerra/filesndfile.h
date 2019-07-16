@@ -87,7 +87,7 @@ public:
 class SndFileConfig : public BC_Window
 {
 public:
-	SndFileConfig(BC_WindowBase *parent_window, Asset *asset);
+	SndFileConfig(BC_WindowBase *parent_window, Asset *asset, int absx, int absy);
 
 	SndFileHILO *hilo;
 	SndFileLOHI *lohi;

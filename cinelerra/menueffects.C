@@ -222,10 +222,13 @@ void MenuEffectThread::run()
 
 // find out which effect to run and get output file
 	int plugin_number;
+	int cx, cy;
 
+	mwindow->get_abs_cursor_pos(&cx, &cy);
 	MenuEffectWindow window(mwindow,
 		this,
 		need_plugin ? &plugin_list : 0,
+		cx, cy,
 		default_asset);
 	result = window.run_window();
 	plugin_number = window.result;
@@ -314,8 +317,10 @@ void MenuEffectThread::run()
 // no get_parameters
 		if(plugin->realtime)
 		{
+			int cx, cy;
+			mwindow->get_abs_cursor_pos(&cx, &cy);
 // Open a prompt GUI
-			MenuEffectPrompt prompt(mwindow);
+			MenuEffectPrompt prompt(mwindow, cx, cy);
 // Open the plugin GUI
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(&plugin_data);
@@ -529,11 +534,11 @@ int MenuEffectItem::handle_event()
 
 MenuEffectWindow::MenuEffectWindow(MWindow *mwindow, 
 	MenuEffectThread *menueffects, 
-	ArrayList<BC_ListBoxItem*> *plugin_list, 
+	ArrayList<BC_ListBoxItem*> *plugin_list, int absx, int absy,
 	Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render effect")),
-		mwindow->gui->get_abs_cursor_x(1),
-		mwindow->gui->get_abs_cursor_y(1) - mainsession->menueffect_h / 2,
+		absx,
+		absy - mainsession->menueffect_h / 2,
 		mainsession->menueffect_w,
 		mainsession->menueffect_h,
 		580,
@@ -695,10 +700,10 @@ int MenuEffectWindowList::handle_event()
 
 #define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
 
-MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
+MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Effect Prompt")),
-		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
-		mwindow->gui->get_abs_cursor_y(1) - 300,
+		absx - 260 / 2,
+		absy - 300,
 		MenuEffectPrompt::calculate_w(mwindow->gui), 
 		MenuEffectPrompt::calculate_h(mwindow->gui), 
 		MenuEffectPrompt::calculate_w(mwindow->gui),

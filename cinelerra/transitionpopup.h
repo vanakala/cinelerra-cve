@@ -51,7 +51,8 @@ public:
 class TransitionLengthDialog : public BC_Window
 {
 public:
-	TransitionLengthDialog(MWindow *mwindow, Plugin *transition);
+	TransitionLengthDialog(MWindow *mwindow, Plugin *transition,
+		int absx, int absy);
 
 	MWindow *mwindow;
 	Plugin *transition;

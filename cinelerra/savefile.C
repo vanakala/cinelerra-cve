@@ -124,6 +124,7 @@ void SaveAs::run()
 // ======================================= get path from user
 	int result;
 	char directory[1024], filename[1024];
+	int cx, cy;
 	strcpy(directory, "~");
 	mwindow->defaults->get("DIRECTORY", directory);
 
@@ -131,7 +132,8 @@ void SaveAs::run()
 	do{
 		SaveFileWindow *window;
 
-		window = new SaveFileWindow(mwindow, directory);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
+		window = new SaveFileWindow(mwindow, cx, cy, directory);
 		result = window->run_window();
 		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
 		strcpy(filename, window->get_submitted_path());
@@ -173,9 +175,10 @@ void SaveAs::run()
 }
 
 
-SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
-	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
+SaveFileWindow::SaveFileWindow(MWindow *mwindow, int absx, int absy,
+	char *init_directory)
+ : BC_FileBox(absx,
+	absy - BC_WindowBase::get_resources()->filebox_h / 2,
 	init_directory, 
 	MWindow::create_title(N_("Save")),
 	_("Enter a filename to save as"))
