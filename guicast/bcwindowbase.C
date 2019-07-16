@@ -2838,6 +2838,13 @@ int BC_WindowBase::get_abs_cursor_y(int lock_window)
 	return abs_y;
 }
 
+void BC_WindowBase::get_abs_cursor_pos(int *abs_x, int *abs_y)
+{
+	lock_window("BC_WindowBase::get_abs_cursor");
+	BC_Resources::get_abs_cursor(abs_x, abs_y);
+	unlock_window();
+}
+
 int BC_WindowBase::match_window(Window win) 
 {
 	if (this->win == win) return 1;

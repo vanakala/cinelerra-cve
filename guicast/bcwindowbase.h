@@ -230,6 +230,7 @@ public:
 // Get current position
 	int get_abs_cursor_x(int lock_window);
 	int get_abs_cursor_y(int lock_window);
+	void get_abs_cursor_pos(int *abs_x, int *abs_y);
 	int get_relative_cursor_x();
 	int get_relative_cursor_y();
 // Return 1 if cursor is over an unobscured part of this window.
