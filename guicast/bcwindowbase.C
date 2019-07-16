@@ -2798,46 +2798,6 @@ int BC_WindowBase::get_relative_cursor_y()
 	return y;
 }
 
-int BC_WindowBase::get_abs_cursor_x(int lock_window)
-{
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_x");
-	XQueryPointer(top_level->display, 
-		top_level->win, 
-		&temp_win, 
-		&temp_win,
-		&abs_x, 
-		&abs_y, 
-		&win_x, 
-		&win_y, 
-		&temp_mask);
-	if(lock_window) this->unlock_window();
-	return abs_x;
-}
-
-int BC_WindowBase::get_abs_cursor_y(int lock_window)
-{
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_y");
-	XQueryPointer(top_level->display, 
-		top_level->win, 
-		&temp_win, 
-		&temp_win,
-		&abs_x,
-		&abs_y, 
-		&win_x, 
-		&win_y, 
-		&temp_mask);
-	if(lock_window) this->unlock_window();
-	return abs_y;
-}
-
 void BC_WindowBase::get_abs_cursor_pos(int *abs_x, int *abs_y)
 {
 	lock_window("BC_WindowBase::get_abs_cursor");
