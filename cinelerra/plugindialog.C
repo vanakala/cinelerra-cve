@@ -107,10 +107,13 @@ void PluginDialogThread::start_window(Track *track,
 void PluginDialogThread::run()
 {
 	int result = 0;
+	int x, y;
 
 	plugin_type = 0;
-	int x = mwindow->gui->get_abs_cursor_x(1) - mainsession->plugindialog_w / 2;
-	int y = mwindow->gui->get_abs_cursor_y(1) - mainsession->plugindialog_h / 2;
+
+	mwindow->get_abs_cursor_pos(&x, &y);
+	x -= mainsession->plugindialog_w / 2;
+	y -= mainsession->plugindialog_h / 2;
 
 	window_lock->lock("PluginDialogThread::run 1");
 	window = new PluginDialog(mwindow, this, window_title, x, y);

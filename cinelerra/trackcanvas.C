@@ -4109,10 +4109,12 @@ int TrackCanvas::do_edits(int cursor_x,
 							master_edl->local_session->zoom_time +
 							master_edl->local_session->view_start_pts;
 
+						int cx, cy;
+						BC_Resources::get_abs_cursor(&cx, &cy);
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->get_image("clip_icon"), 
-							get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2);
+							cx - mwindow->theme->get_image("clip_icon")->get_w() / 2,
+							cy - mwindow->theme->get_image("clip_icon")->get_h() / 2);
 
 						result = 1;
 					}
@@ -4188,6 +4190,8 @@ int TrackCanvas::do_plugins(int cursor_x,
 		{
 			if(edlsession->editing_mode == EDITING_ARROW)
 			{
+				int cx, cy;
+
 				if(plugin->track->data_type == TRACK_AUDIO)
 					mainsession->current_operation = DRAG_AEFFECT_COPY;
 				else
@@ -4206,20 +4210,22 @@ int TrackCanvas::do_plugins(int cursor_x,
 					{
 						VFrame *frame = server->picon;
 
+						BC_Resources::get_abs_cursor(&cx, &cy);
 						drag_popup = new BC_DragWindow(gui, 
 							frame, 
-							get_abs_cursor_x(0) - frame->get_w() / 2,
-							get_abs_cursor_y(0) - frame->get_h() / 2);
+							cx - frame->get_w() / 2,
+							cy - frame->get_h() / 2);
 					}
 					break;
 				}
 
 				case PLUGIN_SHAREDPLUGIN:
 				case PLUGIN_SHAREDMODULE:
+					BC_Resources::get_abs_cursor(&cx, &cy);
 					drag_popup = new BC_DragWindow(gui, 
 						mwindow->theme->get_image("clip_icon"), 
-						get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-						get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2);
+						cx - mwindow->theme->get_image("clip_icon")->get_w() / 2,
+						cy - mwindow->theme->get_image("clip_icon")->get_h() / 2);
 					break;
 				}
 				result = 1;

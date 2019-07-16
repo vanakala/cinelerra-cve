@@ -225,6 +225,8 @@ MainProgressBar* MainProgress::start_progress(const char *text,
 	int64_t total_length,
 	int use_window)
 {
+	int cx, cy;
+
 	MainProgressBar *result = 0;
 
 // Default to main window
@@ -242,10 +244,9 @@ MainProgressBar* MainProgress::start_progress(const char *text,
 	{
 		result = new MainProgressBar(mwindow, this);
 		progress_bars.append(result);
-		result->progress_box = new BC_ProgressBox(gui->get_abs_cursor_x(1), 
-			gui->get_abs_cursor_y(1), 
-			text, 
-			total_length);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
+		result->progress_box = new BC_ProgressBox(cx, cy,
+			text, total_length);
 	}
 
 	result->length = total_length;

@@ -93,6 +93,8 @@ SetFormatThread::~SetFormatThread()
 
 void SetFormatThread::run()
 {
+	int x, y;
+
 	orig_dimension[0] = dimension[0] = edlsession->output_w;
 	orig_dimension[1] = dimension[1] = edlsession->output_h;
 	ratio[0] = ratio[1] = 1;
@@ -100,9 +102,9 @@ void SetFormatThread::run()
 	new_edlsession = new EDLSession();
 	new_edlsession->copy(edlsession);
 
-// This locks mwindow, so it must be done outside window_lock
-	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
-	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->theme->setformat_h / 2;
+	mwindow->get_abs_cursor_pos(&x, &y);
+	x -= mwindow->theme->setformat_w / 2;
+	y -= mwindow->theme->setformat_h / 2;
 
 	window_lock->lock("SetFormatThread::run 1");
 	window = new SetFormatWindow(mwindow, this, x, y);
