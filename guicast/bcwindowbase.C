@@ -2740,64 +2740,6 @@ BC_Clipboard* BC_WindowBase::get_clipboard()
 	return top_level->clipboard;
 }
 
-int BC_WindowBase::get_relative_cursor_x()
-{
-	int abs_x, abs_y, x, y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	lock_window("BC_WindowBase::get_relative_cursor_x");
-	XQueryPointer(top_level->display, 
-			top_level->win,
-			&temp_win,
-			&temp_win,
-			&abs_x,
-			&abs_y,
-			&win_x,
-			&win_y,
-			&temp_mask);
-
-	XTranslateCoordinates(top_level->display, 
-			top_level->rootwin, 
-			win, 
-			abs_x, 
-			abs_y, 
-			&x, 
-			&y, 
-			&temp_win);
-	unlock_window();
-	return x;
-}
-
-int BC_WindowBase::get_relative_cursor_y()
-{
-	int abs_x, abs_y, x, y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	lock_window("BC_WindowBase::get_relative_cursor_y");
-	XQueryPointer(top_level->display, 
-			top_level->win,
-			&temp_win,
-			&temp_win,
-			&abs_x,
-			&abs_y,
-			&win_x,
-			&win_y,
-			&temp_mask);
-
-	XTranslateCoordinates(top_level->display, 
-			top_level->rootwin, 
-			win, 
-			abs_x, 
-			abs_y, 
-			&x, 
-			&y, 
-			&temp_win);
-	unlock_window();
-	return y;
-}
-
 void BC_WindowBase::get_relative_cursor_pos(int *rel_x, int *rel_y)
 {
 	int abs_x, abs_y, win_x, win_y;

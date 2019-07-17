@@ -229,8 +229,6 @@ public:
 	int get_root_h(int lock_display);
 // Get current position
 	void get_abs_cursor_pos(int *abs_x, int *abs_y);
-	int get_relative_cursor_x();
-	int get_relative_cursor_y();
 	void get_relative_cursor_pos(int *rel_x, int *rel_y);
 // Return 1 if cursor is over an unobscured part of this window.
 // An argument is provided for excluding a drag popup
