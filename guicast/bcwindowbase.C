@@ -2742,30 +2742,19 @@ BC_Clipboard* BC_WindowBase::get_clipboard()
 
 void BC_WindowBase::get_relative_cursor_pos(int *rel_x, int *rel_y)
 {
-	int abs_x, abs_y, win_x, win_y;
+	int abs_x, abs_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
-	lock_window("BC_WindowBase::get_relative_cursor_pos");
 	XQueryPointer(top_level->display,
-			top_level->win,
+			win,
 			&temp_win,
 			&temp_win,
 			&abs_x,
 			&abs_y,
-			&win_x,
-			&win_y,
-			&temp_mask);
-
-	XTranslateCoordinates(top_level->display,
-			top_level->rootwin,
-			win,
-			abs_x,
-			abs_y,
 			rel_x,
 			rel_y,
-			&temp_win);
-	unlock_window();
+			&temp_mask);
 }
 
 void BC_WindowBase::get_abs_cursor_pos(int *abs_x, int *abs_y)
