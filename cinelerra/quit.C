@@ -72,7 +72,7 @@ void Quit::run()
 
 // Quit
 	{
-		mwindow->get_abs_cursor_pos(&cx, &cx);
+		mwindow->get_abs_cursor_pos(&cx, &cy);
 		QuestionWindow confirm(mwindow, 1, cx, cy,
 			_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
 		result = confirm.run_window();
