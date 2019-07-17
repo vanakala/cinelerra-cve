@@ -137,12 +137,13 @@ void TrackCanvas::resize_event()
 
 void TrackCanvas::drag_motion()
 {
-	int cursor_x = get_relative_cursor_x();
-	int cursor_y = get_relative_cursor_y();
+	int cursor_x, cursor_y;
 	Track *over_track = 0;
 	Edit *over_edit = 0;
 	Plugin *over_plugin = 0;
 	int redraw = 0;
+
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
 
 	if(drag_popup)
 	{
@@ -514,8 +515,10 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	Edit *moved_edit, ptstime moved_edit_length)
 {
 	*is_insertion = 0;
+	int cursor_x, cursor_y;
+
 // get the canvas/track position
-	int cursor_x = get_relative_cursor_x();
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
 	ptstime pos = cursor_x * master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
 

@@ -601,7 +601,11 @@ void TimeBar::repeat_event(int duration)
 
 	int distance = 0;
 	int x_movement = 0;
-	int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+	int relative_cursor_x, relative_cursor_y;
+
+	mwindow->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
+		&relative_cursor_y);
+
 	if(current_operation == TIMEBAR_DRAG)
 	{
 		if(relative_cursor_x >= mwindow->gui->canvas->get_w())
@@ -627,7 +631,7 @@ void TimeBar::repeat_event(int duration)
 
 int TimeBar::cursor_motion_event()
 {
-	int relative_cursor_x;
+	int relative_cursor_x, relative_cursor_y;
 	int result = 0;
 	int redraw = 0;
 
@@ -635,7 +639,8 @@ int TimeBar::cursor_motion_event()
 	{
 	case TIMEBAR_DRAG:
 		update_cursor();
-		relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+		mwindow->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
+			&relative_cursor_y);
 		if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
 			relative_cursor_x < 0)
 		{

@@ -476,8 +476,9 @@ int MWindowGUI::keypress_event()
 
 		case TAB:
 		case LEFTTAB:
-			int cursor_x = canvas->get_relative_cursor_x();
-			int cursor_y = canvas->get_relative_cursor_y();
+			int cursor_x, cursor_y;
+
+			canvas->get_relative_cursor_pos(&cursor_x, &cursor_y);
 
 			if(get_keypress() == TAB)
 			{

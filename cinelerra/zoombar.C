@@ -464,6 +464,8 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, const
 
 int ZoomTextBox::button_press_event()
 {
+	int cursor_x, cursor_y;
+
 	if (!(get_buttonpress() == 4 || get_buttonpress() == 5)) {
 		BC_TextBox::button_press_event();
 		return 0;
@@ -471,7 +473,8 @@ int ZoomTextBox::button_press_event()
 	if (!is_event_win()) return 0;
 
 	int changemax = 1;
-	if (get_relative_cursor_x() < get_w()/2)
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
+	if(cursor_x < get_w()/2)
 		changemax = 0;
 
 	// increment

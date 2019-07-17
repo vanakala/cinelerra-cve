@@ -264,13 +264,14 @@ int VWindowGUI::cursor_motion_event()
 
 void VWindowGUI::drag_motion()
 {
+	int cursor_x, cursor_y;
+
 	if(get_hidden()) return;
 	if(mainsession->current_operation != DRAG_ASSET) return;
 
 	int old_status = mainsession->vcanvas_highlighted;
 
-	int cursor_x = get_relative_cursor_x();
-	int cursor_y = get_relative_cursor_y();
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
 
 	mainsession->vcanvas_highlighted = (get_cursor_over_window() &&
 		cursor_x >= canvas->x &&

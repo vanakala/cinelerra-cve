@@ -463,8 +463,9 @@ void CWindowGUI::drag_motion()
 		mainsession->current_operation == DRAG_VEFFECT)
 	{
 		int old_status = mainsession->ccanvas_highlighted;
-		int cursor_x = get_relative_cursor_x();
-		int cursor_y = get_relative_cursor_y();
+		int cursor_x, cursor_y;
+
+		get_relative_cursor_pos(&cursor_x, &cursor_y);
 
 		mainsession->ccanvas_highlighted = get_cursor_over_window() &&
 			cursor_x >= canvas->x &&

@@ -126,10 +126,10 @@ void PatchBay::resize_event()
 
 Track *PatchBay::is_over_track()     // called from mwindow
 {
-	int cursor_x = get_relative_cursor_x();
-	int cursor_y = get_relative_cursor_y();
+	int cursor_x, cursor_y;
 	Track *over_track = 0;
 
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
 	if(get_cursor_over_window() &&
 		cursor_x >= 0 && 
 		cursor_y >= 0 && 
@@ -154,9 +154,10 @@ Track *PatchBay::is_over_track()     // called from mwindow
 
 int PatchBay::cursor_motion_event()
 {
-	int cursor_x = get_relative_cursor_x();
-	int cursor_y = get_relative_cursor_y();
+	int cursor_x, cursor_y;
 	int update_gui = 0;
+
+	get_relative_cursor_pos(&cursor_x, &cursor_y);
 
 	if(drag_operation != Tracks::NONE)
 	{

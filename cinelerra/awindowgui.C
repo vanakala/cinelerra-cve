@@ -870,9 +870,12 @@ int AWindowDivider::cursor_motion_event()
 {
 	if(mainsession->current_operation == DRAG_PARTITION)
 	{
-		mainsession->afolders_w = gui->get_relative_cursor_x();
+		int cy;
+
+		gui->get_relative_cursor_pos(&mainsession->afolders_w, &cy);
 		mwindow->theme->get_awindow_sizes(gui);
 		gui->reposition_objects();
+		return 1;
 	}
 	return 0;
 }
