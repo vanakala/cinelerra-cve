@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
 #include "clipedit.h"
@@ -266,18 +267,22 @@ void VWindowGUI::drag_motion()
 {
 	int cursor_x, cursor_y;
 
-	if(get_hidden()) return;
-	if(mainsession->current_operation != DRAG_ASSET) return;
+	if(get_hidden() || mainsession->current_operation != DRAG_ASSET)
+		return;
 
 	int old_status = mainsession->vcanvas_highlighted;
 
-	get_relative_cursor_pos(&cursor_x, &cursor_y);
-
-	mainsession->vcanvas_highlighted = (get_cursor_over_window() &&
-		cursor_x >= canvas->x &&
-		cursor_x < canvas->x + canvas->w &&
-		cursor_y >= canvas->y &&
-		cursor_y < canvas->y + canvas->h);
+	if(get_cursor_over_window())
+	{
+		get_relative_cursor_pos(&cursor_x, &cursor_y);
+		mainsession->vcanvas_highlighted =
+			cursor_x >= canvas->x &&
+			cursor_x < canvas->x + canvas->w &&
+			cursor_y >= canvas->y &&
+			cursor_y < canvas->y + canvas->h;
+	}
+	else
+		mainsession->vcanvas_highlighted = 0;
 
 	if(old_status != mainsession->vcanvas_highlighted)
 		canvas->draw_refresh();
