@@ -2777,27 +2777,24 @@ int BC_WindowBase::match_window(Window win)
 	return 0;
 }
 
-int BC_WindowBase::get_cursor_over_window()
+int BC_WindowBase::get_cursor_over_window(int *rel_x, int *rel_y)
 {
-	if(top_level != this)
-		return top_level->get_cursor_over_window();
-
-	int abs_x, abs_y, win_x, win_y;
+	int abs_x, abs_y;
 	unsigned int temp_mask;
 	Window temp_win1, temp_win2;
 
-	if(!XQueryPointer(display,
+	if(!XQueryPointer(top_level->display,
 			win,
 			&temp_win1,
 			&temp_win2,
 			&abs_x,
 			&abs_y,
-			&win_x,
-			&win_y,
+			rel_x,
+			rel_y,
 			&temp_mask))
 		return 0;
 
-	return match_window(temp_win2);
+	return !temp_win2 || match_window(temp_win2);
 }
 
 int BC_WindowBase::relative_cursor_x(BC_WindowBase *pov)

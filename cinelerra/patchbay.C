@@ -129,8 +129,7 @@ Track *PatchBay::is_over_track()     // called from mwindow
 	int cursor_x, cursor_y;
 	Track *over_track = 0;
 
-	get_relative_cursor_pos(&cursor_x, &cursor_y);
-	if(get_cursor_over_window() &&
+	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
 		cursor_x >= 0 && 
 		cursor_y >= 0 && 
 		cursor_x < get_w() && 

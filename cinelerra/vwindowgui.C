@@ -272,9 +272,8 @@ void VWindowGUI::drag_motion()
 
 	int old_status = mainsession->vcanvas_highlighted;
 
-	if(get_cursor_over_window())
+	if(get_cursor_over_window(&cursor_x, &cursor_y))
 	{
-		get_relative_cursor_pos(&cursor_x, &cursor_y);
 		mainsession->vcanvas_highlighted =
 			cursor_x >= canvas->x &&
 			cursor_x < canvas->x + canvas->w &&

@@ -143,8 +143,6 @@ void TrackCanvas::drag_motion()
 	Plugin *over_plugin = 0;
 	int redraw = 0;
 
-	get_relative_cursor_pos(&cursor_x, &cursor_y);
-
 	if(drag_popup)
 	{
 		drag_popup->cursor_motion_event();
@@ -154,7 +152,7 @@ void TrackCanvas::drag_motion()
 	if (!mainsession->current_operation)
 		return;
 
-	if(get_cursor_over_window() &&
+	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
 		cursor_x >= 0 && 
 		cursor_y >= 0 && 
 		cursor_x < get_w() && 
