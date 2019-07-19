@@ -911,7 +911,6 @@ void TrackCanvas::draw_paste_destination()
 		EDL *clip = 0;
 		int draw_box = 0;
 
-		canvas_lock->lock("TrackCanvas::draw_paste_destination");
 		if(mainsession->current_operation == DRAG_ASSET &&
 			mainsession->drag_assets->total)
 			asset = mainsession->drag_assets->values[0];
@@ -1094,7 +1093,6 @@ void TrackCanvas::draw_paste_destination()
 				}
 			}
 		}
-		canvas_lock->unlock();
 	}
 }
 
