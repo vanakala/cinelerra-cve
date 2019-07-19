@@ -47,6 +47,8 @@ int Quit::handle_event()
 	if(mainsession->changes_made ||
 		mwindow->render->in_progress) 
 	{
+		if(running())
+			return 0;
 		start();
 	}
 	else 
