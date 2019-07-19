@@ -210,6 +210,8 @@ void TrackCanvas::drag_motion()
 			}
 		}
 	}
+	else
+		return;
 
 	if (!over_track) 	// check for pastes from patchbay
 		over_track = mwindow->gui->patchbay->is_over_track();
