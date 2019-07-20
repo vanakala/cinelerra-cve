@@ -363,6 +363,7 @@ private:
 	double selection_midpoint1, selection_midpoint2;        // division between current ends
 	int region_selected;	// 1 if region selected
 	Mutex *canvas_lock;
+	Mutex *overlays_lock;
 };
 
 #endif

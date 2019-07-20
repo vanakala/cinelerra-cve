@@ -99,6 +99,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	resource_timer = new Timer;
 	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
 	canvas_lock = new Mutex("TrackCanvas::canvas_lock");
+	overlays_lock = new Mutex("TrackCanvas::overlays_lock");
 	resource_thread = new ResourceThread(mwindow);
 }
 
@@ -3083,6 +3084,7 @@ void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
 
+	overlays_lock->lock("TrackCanvas::draw_overlays");
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
 		0, 
@@ -3117,6 +3119,7 @@ void TrackCanvas::draw_overlays()
 
 // Handle dragging
 	draw_drag_handle();
+	overlays_lock->unlock();
 }
 
 void TrackCanvas::activate()
