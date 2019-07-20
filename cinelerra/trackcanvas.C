@@ -4531,7 +4531,7 @@ int TrackCanvas::button_press_event()
 			mwindow->update_plugin_guis();
 			gui->patchbay->update();
 		}
-SET_TRACE
+
 		if(update_overlay)
 		{
 			gui->cursor->hide();
@@ -4539,7 +4539,7 @@ SET_TRACE
 			flash();
 			gui->cursor->show();
 		}
-SET_TRACE
+
 		if(update_cursor)
 		{
 			gui->timebar->update_highlights();
@@ -4548,7 +4548,6 @@ SET_TRACE
 			flash();
 			result = 1;
 		}
-SET_TRACE
 	}
 	return result;
 }

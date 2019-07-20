@@ -622,7 +622,7 @@ void Canvas::stop_fullscreen()
 void Canvas::create_canvas()
 {
 	int video_on = 0;
-SET_TRACE
+
 	lock_canvas("Canvas::create_canvas");
 
 	if(!get_fullscreen())

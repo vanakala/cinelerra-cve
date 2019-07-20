@@ -297,7 +297,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 
 	this->mwindow = mwindow;
 	this->awindow = awindow;
-SET_TRACE
+
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
 

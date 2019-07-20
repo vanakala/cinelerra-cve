@@ -998,7 +998,6 @@ void MaskEngine::do_mask(VFrame *output,
 
 void MaskEngine::init_packages()
 {
-SET_TRACE
 	int division = ((float)output->get_h() / (get_total_packages()) + 0.5);
 	if(division < 1) division = 1;
 
