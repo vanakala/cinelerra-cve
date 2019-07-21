@@ -44,7 +44,7 @@ FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
 
 	this->asset = asset;
 
-	set_icon(mwindow_global->theme->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 
 	add_subwindow(new BC_Title(x, y, string2));
 	y += 20;

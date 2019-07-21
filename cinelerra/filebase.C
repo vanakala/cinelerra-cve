@@ -25,7 +25,6 @@
 #include "filebase.h"
 #include "language.h"
 #include "mwindow.h"
-#include "theme.h"
 
 #include <stdlib.h>
 
@@ -64,7 +63,7 @@ FBConfig::FBConfig(BC_WindowBase *parent_window, int type, int absx, int absy)
 	350,
 	100)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 	if(type & SUPPORTS_AUDIO)
 		add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
 	else

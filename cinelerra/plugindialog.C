@@ -203,7 +203,7 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	inoutthru = 0;
 
 	mwindow->theme->get_plugindialog_sizes();
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
 	plugindb.fill_plugindb(thread->data_type == TRACK_AUDIO,

@@ -32,7 +32,6 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
-#include "theme.h"
 
 #include <setjmp.h>
 
@@ -403,7 +402,7 @@ JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 {
 	int x = 10, y = 10;
 
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 
 	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	add_subwindow(new BC_ISlider(x + 80, 

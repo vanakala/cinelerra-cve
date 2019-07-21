@@ -28,7 +28,6 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.h"
-#include "theme.h"
 #include "vframe.h"
 #include "mainerror.h"
 
@@ -537,7 +536,7 @@ TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 {
 	int x = 10, y = 10;
 
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 	this->asset = asset;
 
 	add_subwindow(new BC_Title(x, y, "Colorspace:"));

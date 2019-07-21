@@ -28,7 +28,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "ruler.h"
-#include "theme.h"
 #include "thread.h"
 
 Ruler::Ruler(MWindow *mwindow)
@@ -69,7 +68,7 @@ RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
 	WINDOW_SPLASH) // splash
 {
 	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	width = 0;
 	height = 0;
 	resize = 0;

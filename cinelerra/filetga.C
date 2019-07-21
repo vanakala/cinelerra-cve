@@ -25,7 +25,6 @@
 #include "filetga.h"
 #include "mwindow.h"
 #include "language.h"
-#include "theme.h"
 #include "vframe.h"
 #include "mainerror.h"
 
@@ -791,7 +790,7 @@ TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset, int absx, int a
 {
 	int x = 10, y = 10;
 
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 	this->asset = asset;
 
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB_RLE)));

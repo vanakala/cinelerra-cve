@@ -57,7 +57,7 @@ void ManualGoto::open_window()
 	{
 		position = master_edl->local_session->get_selectionstart(1) +
 			edlsession->get_frame_offset();
-		icon_image = mwindow->theme->get_image("mwindow_icon");
+		icon_image = mwindow->get_window_icon();
 	}
 	else
 	{

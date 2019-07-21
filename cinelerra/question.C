@@ -27,7 +27,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "question.h"
-#include "theme.h"
 
 
 #define WIDTH 375
@@ -50,7 +49,7 @@ QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, int absx, int a
 	int x, y;
 
 	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	btext = MainError::StringBreaker(MEDIUMFONT, string, get_w() - 30, this);
 	add_subwindow(new BC_Title(get_w() / 2, 10, btext, MEDIUMFONT,

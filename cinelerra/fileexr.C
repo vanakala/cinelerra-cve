@@ -43,7 +43,6 @@
 #include <ImfRgbaFile.h>
 #include <ImfRgbaYca.h>
 #include <ImfVersion.h>
-#include "theme.h"
 #include "vframe.h"
 
 
@@ -500,7 +499,7 @@ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 {
 	int x = 10, y = 10;
 
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 	this->asset = asset;
 
 	add_subwindow(new EXRUseAlpha(this, x, y));

@@ -30,7 +30,6 @@
 #include "mainerror.h"
 #include "mwindow.h"
 #include "selection.h"
-#include "theme.h"
 
 
 FileSndFile::FileSndFile(Asset *asset, File *file)
@@ -384,7 +383,7 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset,
 	int x = 10, y = 10;
 
 	this->asset = asset;
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 
 	switch(asset->format)
 	{

@@ -144,7 +144,7 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip()));
 	y = get_h() - 30;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	BC_CheckBox *checkbox; 
 	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));

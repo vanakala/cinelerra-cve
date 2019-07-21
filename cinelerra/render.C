@@ -54,7 +54,6 @@
 #include "preferences.h"
 #include "renderfarm.h"
 #include "render.h"
-#include "theme.h"
 #include "timebar.h"
 #include "transportcommand.h"
 #include "units.h"
@@ -867,7 +866,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	this->render = render;
 	this->asset = asset;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	add_subwindow(new BC_Title(x, 
 		y, 
 		(char*)((render->strategy & RENDER_FILE_PER_LABEL) ?

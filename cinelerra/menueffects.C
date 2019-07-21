@@ -554,7 +554,7 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	this->plugin_list = plugin_list; 
 	this->asset = asset;
 	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
 // only add the list if needed
@@ -715,7 +715,7 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow, int absx, int absy)
 	int x = 10, y = 10;
 	BC_Title *title;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

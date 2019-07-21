@@ -45,7 +45,7 @@ LevelWindowGUI::LevelWindowGUI(MWindow *mwindow)
 	1)
 {
 	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	mwindow->theme->draw_lwindow_bg(this);
 	panel = new MeterPanel(mwindow,
 		this,

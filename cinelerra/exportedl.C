@@ -40,7 +40,6 @@
 #include "exportedl.h"
 #include "plugin.h"
 #include "track.h"
-#include "theme.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -313,7 +312,7 @@ ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportE
 	this->mwindow = mwindow;
 	this->exportasset = exportasset;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	add_subwindow(new BC_Title(x, 
 			y,
 			_("Select a file to export to:")));

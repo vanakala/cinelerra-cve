@@ -30,7 +30,6 @@
 #include "mainsession.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "theme.h"
 
 #include <string.h>
 #include <stdarg.h>
@@ -56,7 +55,7 @@ MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
 	x = y = 10;
@@ -336,7 +335,7 @@ MainErrorBox::MainErrorBox(MWindow *mwindow,
 {
 	wchar_t *btext;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	if(title)
 		set_title(title);

@@ -82,7 +82,7 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int x = 10, y = 10;
 
 	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
 		add_tool(toggles[i] = new GWindowToggle(mwindow,

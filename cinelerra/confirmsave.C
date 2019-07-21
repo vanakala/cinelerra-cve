@@ -29,7 +29,6 @@
 #include "mainerror.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "theme.h"
 
 #include <unistd.h>
 
@@ -107,7 +106,7 @@ ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow,
 	this->list = list;
 	int x = 10, y = 10;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	add_subwindow(title = new BC_Title(x, 
 		y, 

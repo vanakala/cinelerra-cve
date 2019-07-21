@@ -239,7 +239,7 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	mwindow->theme->draw_setformat_bg(this);
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	x = 10;
 	y = mwindow->theme->setformat_y1;

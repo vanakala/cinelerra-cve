@@ -344,7 +344,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	dialog = 0;
 	category = 0;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	mwindow->theme->draw_preferences_bg(this);
 	flash();
 

@@ -27,7 +27,6 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.h"
-#include "theme.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
@@ -354,7 +353,7 @@ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 {
 	int x = 10, y = 10;
 
-	set_icon(theme_global->get_image("mwindow_icon"));
+	set_icon(mwindow_global->get_window_icon());
 	this->asset = asset;
 	add_subwindow(new PNGUseAlpha(this, x, y));
 	add_subwindow(new BC_OKButton(this));

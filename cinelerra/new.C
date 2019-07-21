@@ -178,7 +178,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	y = 10;
 	BC_TextBox *textbox;
 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 	mwindow->theme->draw_new_bg(this);
 
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));

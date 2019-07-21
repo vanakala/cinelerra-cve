@@ -184,5 +184,5 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, int absx, int absy,
 	_("Enter a filename to save as"))
 { 
 	this->mwindow = mwindow; 
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 }

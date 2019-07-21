@@ -165,7 +165,7 @@ void MWindowGUI::get_scrollbars()
 
 void MWindowGUI::show()
 {
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(mwindow->get_window_icon());
 
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
 
