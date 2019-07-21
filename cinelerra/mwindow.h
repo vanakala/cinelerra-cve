@@ -72,6 +72,7 @@
 #include "tracking.inc"
 #include "tracks.inc"
 #include "transportcommand.inc"
+#include "vframe.inc"
 #include "vwindow.inc"
 #include "wavecache.inc"
 
@@ -347,6 +348,8 @@ public:
 	int stop_composer();             // stop composer playback
 	// Get absolute cursor position
 	void get_abs_cursor_pos(int *abs_x, int *abs_y);
+	// Get icon for window
+	VFrame *get_window_icon();
 	SplashGUI *splash_window;
 	GLThread *glthread;
 

@@ -1680,6 +1680,11 @@ void MWindow::reset_meters()
 	gui->patchbay->reset_meters();
 }
 
+VFrame *MWindow::get_window_icon()
+{
+	return theme->get_image("mwindow_icon");
+}
+
 void MWindow::show_program_status()
 {
 	size_t mc, cc, vc;
