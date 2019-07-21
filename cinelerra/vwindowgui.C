@@ -69,7 +69,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	this->vwindow = vwindow;
 	loaded_title[0] = 0;
 
-	set_icon(mwindow->theme->get_image("vwindow_icon"));
+	set_icon(vwindow->get_window_icon());
 
 	mwindow->theme->get_vwindow_sizes(this);
 	mwindow->theme->draw_vwindow_bg(this);

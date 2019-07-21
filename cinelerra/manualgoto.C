@@ -38,7 +38,6 @@
 #include "cwindow.h"
 #include "edlsession.h"
 #include "units.h"
-#include "theme.h"
 
 #include <ctype.h>
 
@@ -62,7 +61,7 @@ void ManualGoto::open_window()
 	else
 	{
 		position = vwindow_edl->local_session->get_selectionstart(1);
-		icon_image = mwindow->theme->get_image("vwindow_icon");
+		icon_image = mwindow->vwindow->get_window_icon();
 	}
 
 	if(!running())

@@ -59,6 +59,7 @@ public:
 	void goto_end();
 	void update(int options);
 	int stop_playback();
+	VFrame *get_window_icon();
 
 	EDLSession *vedlsession;
 	VTracking *playback_cursor;

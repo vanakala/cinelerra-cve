@@ -32,6 +32,7 @@
 #include "mainclock.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "theme.h"
 #include "transportcommand.inc"
 #include "vplayback.h"
 #include "vtimebar.h"
@@ -262,4 +263,9 @@ int VWindow::stop_playback()
 		usleep(50000);
 
 	return playback_engine->is_playing_back;
+}
+
+VFrame *VWindow::get_window_icon()
+{
+	return theme_global->get_image("vwindow_icon");
 }
