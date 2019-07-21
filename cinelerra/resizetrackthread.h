@@ -24,6 +24,7 @@
 
 #include "mutex.inc"
 #include "mwindow.inc"
+#include "resizetrackthread.inc"
 #include "selection.h"
 #include "track.inc"
 
@@ -33,23 +34,20 @@ class ResizeTrackWindow;
 class ResizeTrackThread : public Thread
 {
 public:
-	ResizeTrackThread(MWindow *mwindow, int track_number);
+	ResizeTrackThread();
 	~ResizeTrackThread();
 
-	void start_window(Track *track, int track_number);
+	void start_window(Track *track);
+private:
 	void run();
 
+public:
 	ResizeTrackWindow *window;
-	MWindow *mwindow;
-	int track_number;
+	Track *track;
 	int w, h;
 	int w1, h1;
 	double w_scale, h_scale;
 };
-
-
-
-class ResizeTrackWindow;
 
 class ResizeTrackScaleW : public BC_TextBox
 {
@@ -58,7 +56,9 @@ public:
 		ResizeTrackThread *thread,
 		int x,
 		int y);
+
 	int handle_event();
+private:
 	ResizeTrackWindow *gui;
 	ResizeTrackThread *thread;
 };
@@ -70,7 +70,9 @@ public:
 		ResizeTrackThread *thread,
 		int x,
 		int y);
+
 	int handle_event();
+private:
 	ResizeTrackWindow *gui;
 	ResizeTrackThread *thread;
 };
@@ -85,7 +87,7 @@ public:
 
 	void update(int changed_scale,
 		int changed_size);
-
+private:
 	ResizeTrackThread *thread;
 	FrameSizeSelection *framesize_selection;
 	ResizeTrackScaleW *w_scale;

@@ -19,28 +19,19 @@
  * 
  */
 
-#include "bcresources.h"
+#include "bcbutton.h"
 #include "bctitle.h"
-#include "edl.h"
 #include "edlsession.h"
 #include "language.h"
 #include "mainerror.h"
-#include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
-#include "new.h"
 #include "resizetrackthread.h"
 #include "selection.h"
-#include "theme.h"
 #include "track.h"
-#include "tracks.h"
-#include "vframe.h"
 
-ResizeTrackThread::ResizeTrackThread(MWindow *mwindow, int track_number)
+ResizeTrackThread::ResizeTrackThread()
  : Thread()
 {
-	this->mwindow = mwindow;
-	this->track_number = track_number;
 	window = 0;
 }
 
@@ -52,9 +43,9 @@ ResizeTrackThread::~ResizeTrackThread()
 	Thread::join();
 }
 
-void ResizeTrackThread::start_window(Track *track, int track_number)
+void ResizeTrackThread::start_window(Track *track)
 {
-	this->track_number = track_number;
+	this->track = track;
 	w1 = w = track->track_w;
 	h1 = h = track->track_h;
 	w_scale = h_scale = 1;
@@ -65,30 +56,17 @@ void ResizeTrackThread::run()
 {
 	int cx, cy;
 
-	mwindow->get_abs_cursor_pos(&cx, &cy);
-	ResizeTrackWindow *window = this->window = 
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	ResizeTrackWindow *window = this->window =
 		new ResizeTrackWindow(this, cx, cy);
 	int result = window->run_window();
 	this->window = 0;
 	delete window;
 
-	if(!result)
+	if(!result && track)
 	{
-		Track *track = master_edl->tracks->get_item_number(track_number);
-
-		if(track)
-		{
-			FrameSizeSelection::limits(&w, &h);
-			mwindow->resize_track(track, w, h);
-		}
-	}
-
-	if(((w % 4) || 
-		(h % 4)) && 
-		edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
-	{
-		errormsg(_("This track's dimensions are not multiples of 4 so\n"
-			"it can't be rendered by OpenGL."));
+		FrameSizeSelection::limits(&w, &h);
+		mwindow_global->resize_track(track, w, h);
 	}
 }
 
@@ -100,11 +78,11 @@ ResizeTrackWindow::ResizeTrackWindow(ResizeTrackThread *thread,
 	int y)
  : BC_Window(MWindow::create_title(N_("Resize Track")),
 		x - 350 / 2,
-		y - get_resources()->ok_images[0]->get_h() + 100 / 2,
+		y - BC_OKButton::calculate_h() + 100 / 2,
 		350,
-		get_resources()->ok_images[0]->get_h() + 100,
+		BC_OKButton::calculate_h() + 100,
 		350,
-		get_resources()->ok_images[0]->get_h() + 100,
+		BC_OKButton::calculate_h() + 100,
 		0,
 		0,
 		1)
@@ -115,6 +93,7 @@ ResizeTrackWindow::ResizeTrackWindow(ResizeTrackThread *thread,
 
 	x = 10, y = 10;
 
+	set_icon(mwindow_global->get_window_icon());
 	add_subwindow(new BC_Title(x, y, _("Size:")));
 	x += TRWIN_BOXLEFT;
 
@@ -152,8 +131,8 @@ void ResizeTrackWindow::update(int changed_scale,
 {
 	if(changed_scale)
 	{
-		thread->w = (int)(thread->w1 * thread->w_scale);
-		thread->h = (int)(thread->h1 * thread->h_scale);
+		thread->w = round(thread->w1 * thread->w_scale);
+		thread->h = round(thread->h1 * thread->h_scale);
 		framesize_selection->update(thread->w, thread->h);
 	}
 	else
@@ -193,6 +172,7 @@ ResizeTrackScaleH::ResizeTrackScaleH(ResizeTrackWindow *gui,
 	this->gui = gui;
 	this->thread = thread;
 }
+
 int ResizeTrackScaleH::handle_event()
 {
 	thread->h_scale = atof(get_text());

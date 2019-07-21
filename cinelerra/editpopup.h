@@ -68,11 +68,10 @@ public:
 class EditPopupResize : public BC_MenuItem
 {
 public:
-	EditPopupResize(MWindow *mwindow, EditPopup *popup);
+	EditPopupResize(EditPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	EditPopup *popup;
 	ResizeTrackThread *dialog_thread;
 };

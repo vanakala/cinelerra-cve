@@ -57,7 +57,7 @@ void EditPopup::update(Track *track, Edit *edit)
 
 	if(track->data_type == TRACK_VIDEO && !resize_option)
 	{
-		add_item(resize_option = new EditPopupResize(mwindow, this));
+		add_item(resize_option = new EditPopupResize(this));
 		add_item(matchsize_option = new EditPopupMatchSize(mwindow, this));
 	}
 	else
@@ -121,19 +121,22 @@ int EditMoveTrackDown::handle_event()
 }
 
 
-EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
+EditPopupResize::EditPopupResize(EditPopup *popup)
  : BC_MenuItem(_("Resize track..."))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new ResizeTrackThread(mwindow, 
-		popup->track->number_of());
+	dialog_thread = new ResizeTrackThread();
 }
 
 int EditPopupResize::handle_event()
 {
-	dialog_thread->start_window(popup->track,
-		popup->track->number_of());
+	if(dialog_thread->running())
+	{
+		if(dialog_thread->window)
+			dialog_thread->window->raise_window();
+	}
+	else
+		dialog_thread->start_window(popup->track);
 	return 1;
 }
 

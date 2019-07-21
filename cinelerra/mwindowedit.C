@@ -1092,6 +1092,8 @@ void MWindow::redo_entry()
 
 void MWindow::resize_track(Track *track, int w, int h)
 {
+	if(cwindow->stop_playback())
+		return;
 // We have to move all maskpoints so they do not move in relation to image areas
 	((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->translate_masks(
 		(w - track->track_w) / 2, 
