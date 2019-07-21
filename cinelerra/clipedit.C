@@ -33,7 +33,6 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "mainerror.h"
-#include "theme.h"
 
 
 ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
@@ -168,7 +167,7 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int
 	this->clip = thread->clip;
 	this->create_it = thread->create_it;
 
-	set_icon(mwindow->theme->get_image("awindow_icon"));
+	set_icon(mwindow->awindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
 	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));

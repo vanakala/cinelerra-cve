@@ -29,6 +29,7 @@
 #include "labeledit.inc"
 #include "mwindow.inc"
 #include "thread.h"
+#include "vframe.inc"
 
 class AWindow : public Thread
 {
@@ -37,6 +38,7 @@ public:
 	~AWindow();
 
 	void run();
+	VFrame *get_window_icon();
 
 	AWindowGUI *gui;
 	AssetEdit *asset_edit;

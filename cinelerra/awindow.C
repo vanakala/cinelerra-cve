@@ -25,6 +25,7 @@
 #include "bcsignals.h"
 #include "clipedit.h"
 #include "labeledit.h"
+#include "theme.h"
 
 
 AWindow::AWindow(MWindow *mwindow) : Thread()
@@ -47,4 +48,9 @@ AWindow::~AWindow()
 void AWindow::run()
 {
 	gui->run_window();
+}
+
+VFrame *AWindow::get_window_icon()
+{
+	return theme_global->get_image("awindow_icon");
 }

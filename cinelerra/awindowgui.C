@@ -301,7 +301,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
 
-	set_icon(mwindow->theme->get_image("awindow_icon"));
+	set_icon(awindow->get_window_icon());
 	file_icon = new BC_Pixmap(this, 
 		BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN],
 		PIXMAP_ALPHA);

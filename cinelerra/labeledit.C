@@ -95,7 +95,7 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int absx, 
 
 	this->mwindow = mwindow;
 	this->label = thread->label;
-	set_icon(mwindow->theme->get_image("awindow_icon"));
+	set_icon(mwindow->awindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new LabelEditComments(this, 

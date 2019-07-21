@@ -167,7 +167,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 	this->asset_edit = asset_edit;
 	this->asset = asset_edit->new_asset;
 
-	set_icon(mwindow->theme->get_image("awindow_icon"));
+	set_icon(mwindow->awindow->get_window_icon());
 	add_subwindow(path_text = new AssetEditPathText(this, x0, y, 300));
 	win = add_subwindow(new AssetEditPath(mwindow,
 		this, 
