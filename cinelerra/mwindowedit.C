@@ -598,6 +598,9 @@ void MWindow::finish_modify_handles()
 
 void MWindow::match_output_size(Track *track)
 {
+	if(cwindow->stop_playback())
+		return;
+
 	track->track_w = edlsession->output_w;
 	track->track_h = edlsession->output_h;
 	save_backup();
