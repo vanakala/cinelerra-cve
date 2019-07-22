@@ -126,6 +126,8 @@ PluginPopupOn::PluginPopupOn(MWindow *mwindow, PluginPopup *popup)
 
 int PluginPopupOn::handle_event()
 {
+	if(mwindow->stop_composer())
+		return 0;
 	popup->plugin->on = !get_checked();
 	mwindow->gui->update(WUPD_CANVINCR);
 	mwindow->restart_brender();
