@@ -661,8 +661,10 @@ void MWindow::move_effect(Plugin *plugin,
 
 void MWindow::move_plugin_up(Plugin *plugin)
 {
-	plugin->track->move_plugin_up(plugin);
+	if(cwindow->stop_playback())
+		return;
 
+	plugin->track->move_plugin_up(plugin);
 	save_backup();
 	undo->update_undo(_("move effect up"), LOAD_ALL);
 	restart_brender();
@@ -672,8 +674,10 @@ void MWindow::move_plugin_up(Plugin *plugin)
 
 void MWindow::move_plugin_down(Plugin *plugin)
 {
-	plugin->track->move_plugin_down(plugin);
+	if(cwindow->stop_playback())
+		return;
 
+	plugin->track->move_plugin_down(plugin);
 	save_backup();
 	undo->update_undo(_("move effect down"), LOAD_ALL);
 	restart_brender();
