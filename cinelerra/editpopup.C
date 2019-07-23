@@ -19,41 +19,35 @@
  * 
  */
 
-#include "edit.h"
 #include "editpopup.h"
 #include "language.h"
-#include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "plugindialog.h"
 #include "resizetrackthread.h"
 #include "track.h"
-#include "trackcanvas.h"
-
 
 #include <string.h>
 
-EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
+EditPopup::EditPopup()
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	add_item(new EditAttachEffect(mwindow, this));
-	add_item(new EditMoveTrackUp(mwindow, this));
-	add_item(new EditMoveTrackDown(mwindow, this));
-	add_item(new EditPopupDeleteTrack(mwindow, this));
-	add_item(new EditPopupAddTrack(mwindow, this));
+	add_item(new EditAttachEffect(this));
+	add_item(new EditMoveTrackUp(this));
+	add_item(new EditMoveTrackDown(this));
+	add_item(new EditPopupDeleteTrack(this));
+	add_item(new EditPopupAddTrack(this));
 	resize_option = new EditPopupResize(this);
-	matchsize_option = new EditPopupMatchSize(mwindow, this);
+	matchsize_option = new EditPopupMatchSize(this);
+	have_video = 0;
 }
 
 EditPopup::~EditPopup()
 {
-	if(track->data_type == TRACK_AUDIO)
+	if(!have_video)
 	{
 // These are deleted by window if they are subwindows
 		delete resize_option;
@@ -61,31 +55,34 @@ EditPopup::~EditPopup()
 	}
 }
 
-void EditPopup::update(Track *track, Edit *edit)
+void EditPopup::update(Track *track)
 {
-	this->edit = edit;
 	this->track = track;
 
 	if(track->data_type == TRACK_VIDEO)
 	{
-		add_item(resize_option);
-		add_item(matchsize_option);
+		if(!have_video)
+		{
+			add_item(resize_option);
+			add_item(matchsize_option);
+			have_video = 1;
+		}
 	}
 	else
 	if(track->data_type == TRACK_AUDIO)
 	{
 		remove_item(resize_option);
 		remove_item(matchsize_option);
+		have_video = 0;
 	}
 }
 
 
-EditAttachEffect::EditAttachEffect(MWindow *mwindow, EditPopup *popup)
+EditAttachEffect::EditAttachEffect(EditPopup *popup)
  : BC_MenuItem(_("Attach effect..."))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(mwindow);
+	dialog_thread = new PluginDialogThread(mwindow_global);
 }
 
 EditAttachEffect::~EditAttachEffect()
@@ -95,37 +92,34 @@ EditAttachEffect::~EditAttachEffect()
 
 int EditAttachEffect::handle_event()
 {
-	dialog_thread->start_window(popup->track,
-		0, 
+	dialog_thread->start_window(popup->track, 0,
 		MWindow::create_title(N_("Attach Effect")));
 	return 1;
 }
 
 
-EditMoveTrackUp::EditMoveTrackUp(MWindow *mwindow, EditPopup *popup)
+EditMoveTrackUp::EditMoveTrackUp(EditPopup *popup)
  : BC_MenuItem(_("Move up"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int EditMoveTrackUp::handle_event()
 {
-	mwindow->move_track_up(popup->track);
+	mwindow_global->move_track_up(popup->track);
 	return 1;
 }
 
 
-EditMoveTrackDown::EditMoveTrackDown(MWindow *mwindow, EditPopup *popup)
+EditMoveTrackDown::EditMoveTrackDown(EditPopup *popup)
  : BC_MenuItem(_("Move down"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int EditMoveTrackDown::handle_event()
 {
-	mwindow->move_track_down(popup->track);
+	mwindow_global->move_track_down(popup->track);
 	return 1;
 }
 
@@ -150,43 +144,40 @@ int EditPopupResize::handle_event()
 }
 
 
-EditPopupMatchSize::EditPopupMatchSize(MWindow *mwindow, EditPopup *popup)
+EditPopupMatchSize::EditPopupMatchSize(EditPopup *popup)
  : BC_MenuItem(_("Match output size"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int EditPopupMatchSize::handle_event()
 {
-	mwindow->match_output_size(popup->track);
+	mwindow_global->match_output_size(popup->track);
 	return 1;
 }
 
 
-EditPopupDeleteTrack::EditPopupDeleteTrack(MWindow *mwindow, EditPopup *popup)
+EditPopupDeleteTrack::EditPopupDeleteTrack(EditPopup *popup)
  : BC_MenuItem(_("Delete track"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int EditPopupDeleteTrack::handle_event()
 {
-	mwindow->delete_track(popup->track);
+	mwindow_global->delete_track(popup->track);
 	return 1;
 }
 
 
-EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
+EditPopupAddTrack::EditPopupAddTrack(EditPopup *popup)
  : BC_MenuItem(_("Add track"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int EditPopupAddTrack::handle_event()
 {
-	mwindow->add_track(popup->track->data_type, 1, popup->track);
+	mwindow_global->add_track(popup->track->data_type, 1, popup->track);
 	return 1;
 }

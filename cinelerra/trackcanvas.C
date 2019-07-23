@@ -125,7 +125,7 @@ void TrackCanvas::show()
 	modekeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->modekeyframe_data, PIXMAP_ALPHA);
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
-	add_subwindow(edit_menu = new EditPopup(mwindow, gui));
+	add_subwindow(edit_menu = new EditPopup());
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, gui));
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, gui));
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, gui));
@@ -4039,7 +4039,7 @@ int TrackCanvas::do_tracks(int cursor_x,
 			cursor_y >= track_y && 
 			cursor_y < track_y + track_h)
 		{
-			edit_menu->update(track, 0);
+			edit_menu->update(track);
 			edit_menu->activate_menu();
 			result = 1;
 		}
