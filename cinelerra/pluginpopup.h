@@ -39,6 +39,7 @@ class PluginPopup : public BC_PopupMenu
 {
 public:
 	PluginPopup(MWindow *mwindow, MWindowGUI *gui);
+	~PluginPopup();
 
 	void update(Plugin *plugin);
 

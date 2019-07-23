@@ -42,16 +42,26 @@ PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
 	this->gui = gui;
 	add_item(change = new PluginPopupChange(mwindow, this));
 	add_item(detach = new PluginPopupDetach(mwindow, this));
-	add_item(show = new PluginPopupShow(mwindow, this));
+	show = new PluginPopupShow(mwindow, this);
 	add_item(on = new PluginPopupOn(mwindow, this));
 	add_item(new PluginPopupUp(mwindow, this));
 	add_item(new PluginPopupDown(mwindow, this));
+}
+
+PluginPopup::~PluginPopup()
+{
+	if(plugin->plugin_type == PLUGIN_STANDALONE)
+		delete show;
 }
 
 void PluginPopup::update(Plugin *plugin)
 {
 	on->set_checked(plugin->on);
 	show->set_checked(plugin->show);
+	if(plugin->plugin_type == PLUGIN_STANDALONE)
+		add_item(show);
+	else
+		remove_item(show);
 	this->plugin = plugin;
 }
 
