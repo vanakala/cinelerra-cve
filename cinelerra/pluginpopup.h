@@ -30,7 +30,6 @@ class PluginPopupShow;
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
 #include "mwindow.inc"
-#include "mwindowgui.inc"
 #include "plugin.inc"
 #include "plugindialog.inc"
 
@@ -38,32 +37,30 @@ class PluginPopupShow;
 class PluginPopup : public BC_PopupMenu
 {
 public:
-	PluginPopup(MWindow *mwindow, MWindowGUI *gui);
+	PluginPopup();
 	~PluginPopup();
 
 	void update(Plugin *plugin);
 
-	MWindow *mwindow;
-	MWindowGUI *gui;
 // Acquired through the update command as the plugin currently being operated on
 	Plugin *plugin;
-
+private:
 	PluginPopupChange *change;
 	PluginPopupDetach *detach;
 	PluginPopupShow *show;
 	PluginPopupOn *on;
+	int have_show;
 };
 
 
 class PluginPopupChange : public BC_MenuItem
 {
 public:
-	PluginPopupChange(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupChange(PluginPopup *popup);
 	~PluginPopupChange();
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 	PluginDialogThread *dialog_thread;
 };
@@ -72,11 +69,10 @@ public:
 class PluginPopupDetach : public BC_MenuItem
 {
 public:
-	PluginPopupDetach(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupDetach(PluginPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 };
 
@@ -84,11 +80,10 @@ public:
 class PluginPopupShow : public BC_MenuItem
 {
 public:
-	PluginPopupShow(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupShow(PluginPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 };
 
@@ -96,11 +91,10 @@ public:
 class PluginPopupOn : public BC_MenuItem
 {
 public:
-	PluginPopupOn(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupOn(PluginPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 };
 
@@ -108,11 +102,10 @@ public:
 class PluginPopupUp : public BC_MenuItem
 {
 public:
-	PluginPopupUp(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupUp(PluginPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 };
 
@@ -120,11 +113,10 @@ public:
 class PluginPopupDown : public BC_MenuItem
 {
 public:
-	PluginPopupDown(MWindow *mwindow, PluginPopup *popup);
+	PluginPopupDown(PluginPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	PluginPopup *popup;
 };
 

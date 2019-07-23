@@ -31,26 +31,25 @@
 #include "track.h"
 
 
-PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
+PluginPopup::PluginPopup()
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	add_item(change = new PluginPopupChange(mwindow, this));
-	add_item(detach = new PluginPopupDetach(mwindow, this));
-	show = new PluginPopupShow(mwindow, this);
-	add_item(on = new PluginPopupOn(mwindow, this));
-	add_item(new PluginPopupUp(mwindow, this));
-	add_item(new PluginPopupDown(mwindow, this));
+	add_item(change = new PluginPopupChange(this));
+	add_item(detach = new PluginPopupDetach(this));
+	show = new PluginPopupShow(this);
+	add_item(on = new PluginPopupOn(this));
+	add_item(new PluginPopupUp(this));
+	add_item(new PluginPopupDown(this));
+	have_show = 0;
 }
 
 PluginPopup::~PluginPopup()
 {
-	if(plugin->plugin_type == PLUGIN_STANDALONE)
+	if(!have_show)
 		delete show;
 }
 
@@ -59,19 +58,27 @@ void PluginPopup::update(Plugin *plugin)
 	on->set_checked(plugin->on);
 	show->set_checked(plugin->show);
 	if(plugin->plugin_type == PLUGIN_STANDALONE)
-		add_item(show);
+	{
+		if(!have_show)
+		{
+			add_item(show);
+			have_show = 1;
+		}
+	}
 	else
+	{
 		remove_item(show);
+		have_show = 0;
+	}
 	this->plugin = plugin;
 }
 
 
-PluginPopupChange::PluginPopupChange(MWindow *mwindow, PluginPopup *popup)
+PluginPopupChange::PluginPopupChange(PluginPopup *popup)
  : BC_MenuItem(_("Change..."))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(mwindow);
+	dialog_thread = new PluginDialogThread(mwindow_global);
 }
 
 PluginPopupChange::~PluginPopupChange()
@@ -88,87 +95,83 @@ int PluginPopupChange::handle_event()
 }
 
 
-PluginPopupDetach::PluginPopupDetach(MWindow *mwindow, PluginPopup *popup)
+PluginPopupDetach::PluginPopupDetach(PluginPopup *popup)
  : BC_MenuItem(_("Detach"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int PluginPopupDetach::handle_event()
 {
-	mwindow->stop_composer();
-	mwindow->hide_plugin(popup->plugin, 1);
+	if(mwindow_global->stop_composer())
+		return 0;
+	mwindow_global->hide_plugin(popup->plugin, 1);
 	popup->plugin->track->remove_plugin(popup->plugin);
-	mwindow->save_backup();
-	mwindow->undo->update_undo(_("detach effect"), LOAD_ALL);
-	mwindow->gui->update(WUPD_CANVINCR);
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow_global->save_backup();
+	mwindow_global->undo->update_undo(_("detach effect"), LOAD_ALL);
+	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->restart_brender();
+	mwindow_global->sync_parameters(CHANGE_EDL);
 	return 1;
 }
 
 
-PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
+PluginPopupShow::PluginPopupShow(PluginPopup *popup)
  : BC_MenuItem(_("Parameters"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int PluginPopupShow::handle_event()
 {
 	if(!get_checked())
-		mwindow->show_plugin(popup->plugin);
+		mwindow_global->show_plugin(popup->plugin);
 	else
-		mwindow->hide_plugin(popup->plugin, 1);
-	mwindow->gui->update(WUPD_CANVINCR);
+		mwindow_global->hide_plugin(popup->plugin, 1);
+	mwindow_global->gui->update(WUPD_CANVINCR);
 	return 1;
 }
 
 
-PluginPopupOn::PluginPopupOn(MWindow *mwindow, PluginPopup *popup)
+PluginPopupOn::PluginPopupOn(PluginPopup *popup)
  : BC_MenuItem(_("On"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int PluginPopupOn::handle_event()
 {
-	if(mwindow->stop_composer())
+	if(mwindow_global->stop_composer())
 		return 0;
 	popup->plugin->on = !get_checked();
-	mwindow->gui->update(WUPD_CANVINCR);
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->restart_brender();
+	mwindow_global->sync_parameters(CHANGE_EDL);
 	return 1;
 }
 
 
-PluginPopupUp::PluginPopupUp(MWindow *mwindow, PluginPopup *popup)
+PluginPopupUp::PluginPopupUp(PluginPopup *popup)
  : BC_MenuItem(_("Move up"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int PluginPopupUp::handle_event()
 {
-	mwindow->move_plugin_up(popup->plugin);
+	mwindow_global->move_plugin_up(popup->plugin);
 	return 1;
 }
 
 
-PluginPopupDown::PluginPopupDown(MWindow *mwindow, PluginPopup *popup)
+PluginPopupDown::PluginPopupDown(PluginPopup *popup)
  : BC_MenuItem(_("Move down"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int PluginPopupDown::handle_event()
 {
-	mwindow->move_plugin_down(popup->plugin);
+	mwindow_global->move_plugin_down(popup->plugin);
 	return 1;
 }
