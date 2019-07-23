@@ -26,11 +26,9 @@
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
-#include "editpopup.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
-#include "keyframepopup.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -44,14 +42,12 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "patchbay.h"
-#include "pluginpopup.h"
 #include "samplescroll.h"
 #include "statusbar.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "trackscroll.h"
 #include "tracks.h"
-#include "transitionpopup.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
 #include "zoombar.h"
@@ -83,10 +79,6 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	patchbay = 0;
 	timebar = 0;
 	mainclock = 0;
-	edit_menu = 0;
-	plugin_menu = 0;
-	keyframe_menu = 0;
-	transition_menu = 0;
 }
 
 MWindowGUI::~MWindowGUI()
@@ -100,10 +92,6 @@ MWindowGUI::~MWindowGUI()
 	delete patchbay;
 	delete timebar;
 	delete mainclock;
-	delete edit_menu;
-	delete plugin_menu;
-	delete keyframe_menu;
-	delete transition_menu;
 }
 
 void MWindowGUI::get_scrollbars()
@@ -206,14 +194,6 @@ void MWindowGUI::show()
 	mainclock->set_frame_offset(
 		edlsession->get_frame_offset());
 	mainclock->update(0);
-
-	add_subwindow(edit_menu = new EditPopup(mwindow, this));
-
-	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
-
-	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
-
-	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 
 	canvas->activate();
 }

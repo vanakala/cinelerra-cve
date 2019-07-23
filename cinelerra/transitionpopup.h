@@ -29,6 +29,7 @@
 #include "mwindowgui.inc"
 #include "plugin.inc"
 #include "thread.h"
+#include "transitionpopup.inc"
 
 class TransitionPopupOn;
 class TransitionPopupShow;

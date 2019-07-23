@@ -25,8 +25,6 @@
 #include "bcwindow.h"
 #include "colors.h"
 #include "datatype.h"
-#include "editpopup.inc"
-#include "keyframepopup.inc"
 #include "mbuttons.inc"
 #include "mainclock.inc"
 #include "maincursor.inc"
@@ -34,13 +32,11 @@
 #include "mtimebar.inc"
 #include "mwindow.inc"
 #include "patchbay.inc"
-#include "pluginpopup.inc"
 #include "zoombar.inc"
 #include "samplescroll.inc"
 #include "statusbar.inc"
 #include "trackcanvas.inc"
 #include "trackscroll.inc"
-#include "transitionpopup.inc"
 
 
 class MWindowGUI : public BC_Window
@@ -89,12 +85,6 @@ public:
 	static int visible(int x1, int x2, int view_x1, int view_x2);
 
 	MWindow *mwindow;
-
-// Popup menus
-	EditPopup *edit_menu;
-	PluginPopup *plugin_menu;
-	KeyframePopup *keyframe_menu;
-	TransitionPopup *transition_menu;
 
 	MainClock *mainclock;
 	MButtons *mbuttons;

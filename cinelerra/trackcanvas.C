@@ -125,6 +125,10 @@ void TrackCanvas::show()
 	modekeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->modekeyframe_data, PIXMAP_ALPHA);
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
+	add_subwindow(edit_menu = new EditPopup(mwindow, gui));
+	add_subwindow(plugin_menu = new PluginPopup(mwindow, gui));
+	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, gui));
+	add_subwindow(transition_menu = new TransitionPopup(mwindow, gui));
 	draw();
 	update_cursor();
 	flash();
@@ -1761,8 +1765,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						}
 						else
 						{
-							gui->keyframe_menu->update(automation, autos, auto_keyframe);
-							gui->keyframe_menu->activate_menu();
+							keyframe_menu->update(automation, autos, auto_keyframe);
+							keyframe_menu->activate_menu();
 							rerender = 1; // the position changes
 						}
 						if(buttonpress == 1 && ctrl_down() &&
@@ -1795,8 +1799,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			} else
 			if (result && (buttonpress == 3))
 			{
-				gui->keyframe_menu->update(plugin, keyframe);
-				gui->keyframe_menu->activate_menu();
+				keyframe_menu->update(plugin, keyframe);
+				keyframe_menu->activate_menu();
 				rerender = 1; // the position changes
 			}
 		}
@@ -4035,8 +4039,8 @@ int TrackCanvas::do_tracks(int cursor_x,
 			cursor_y >= track_y && 
 			cursor_y < track_y + track_h)
 		{
-			gui->edit_menu->update(track, 0);
-			gui->edit_menu->activate_menu();
+			edit_menu->update(track, 0);
+			edit_menu->activate_menu();
 			result = 1;
 		}
 	}
@@ -4173,8 +4177,8 @@ int TrackCanvas::do_plugins(int cursor_x,
 		{
 			if(get_buttonpress() == 3)
 			{
-				gui->plugin_menu->update(plugin);
-				gui->plugin_menu->activate_menu();
+				plugin_menu->update(plugin);
+				plugin_menu->activate_menu();
 				result = 1;
 			} 
 			else
@@ -4291,8 +4295,8 @@ int TrackCanvas::do_transitions(int cursor_x,
 		else
 		if(get_buttonpress() == 3)
 		{
-			gui->transition_menu->update(transition);
-			gui->transition_menu->activate_menu();
+			transition_menu->update(transition);
+			transition_menu->activate_menu();
 		}
 	}
 	return result;

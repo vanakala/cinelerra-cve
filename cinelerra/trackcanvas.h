@@ -27,19 +27,23 @@
 #include "autos.inc"
 #include "bcsubwindow.h"
 #include "bctimer.inc"
-#include "mutex.inc"
 #include "edit.inc"
+#include "editpopup.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "keyframe.inc"
+#include "keyframepopup.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "mutex.inc"
 #include "resourcethread.inc"
 #include "plugin.inc"
+#include "pluginpopup.inc"
 #include "plugintoggles.inc"
 #include "resourcepixmap.inc"
 #include "track.inc"
 #include "tracks.inc"
+#include "transitionpopup.inc"
 #include "keyframe.inc"
 #include "floatauto.inc"
 
@@ -364,6 +368,12 @@ private:
 	int region_selected;	// 1 if region selected
 	Mutex *canvas_lock;
 	Mutex *overlays_lock;
+
+// Popup menus
+	EditPopup *edit_menu;
+	PluginPopup *plugin_menu;
+	KeyframePopup *keyframe_menu;
+	TransitionPopup *transition_menu;
 };
 
 #endif

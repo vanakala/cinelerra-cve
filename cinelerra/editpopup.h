@@ -27,6 +27,7 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "edit.inc"
+#include "editpopup.inc"
 #include "plugindialog.inc"
 #include "resizetrackthread.inc"
 
