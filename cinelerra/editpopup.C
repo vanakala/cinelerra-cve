@@ -47,7 +47,18 @@ EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
 	add_item(new EditMoveTrackDown(mwindow, this));
 	add_item(new EditPopupDeleteTrack(mwindow, this));
 	add_item(new EditPopupAddTrack(mwindow, this));
-	resize_option = 0;
+	resize_option = new EditPopupResize(this);
+	matchsize_option = new EditPopupMatchSize(mwindow, this);
+}
+
+EditPopup::~EditPopup()
+{
+	if(track->data_type == TRACK_AUDIO)
+	{
+// These are deleted by window if they are subwindows
+		delete resize_option;
+		delete matchsize_option;
+	}
 }
 
 void EditPopup::update(Track *track, Edit *edit)
@@ -55,18 +66,16 @@ void EditPopup::update(Track *track, Edit *edit)
 	this->edit = edit;
 	this->track = track;
 
-	if(track->data_type == TRACK_VIDEO && !resize_option)
+	if(track->data_type == TRACK_VIDEO)
 	{
-		add_item(resize_option = new EditPopupResize(this));
-		add_item(matchsize_option = new EditPopupMatchSize(mwindow, this));
+		add_item(resize_option);
+		add_item(matchsize_option);
 	}
 	else
-	if(track->data_type == TRACK_AUDIO && resize_option)
+	if(track->data_type == TRACK_AUDIO)
 	{
 		remove_item(resize_option);
 		remove_item(matchsize_option);
-		resize_option = 0;
-		matchsize_option = 0;
 	}
 }
 

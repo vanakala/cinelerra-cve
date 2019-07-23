@@ -43,6 +43,7 @@ class EditPopup : public BC_PopupMenu
 {
 public:
 	EditPopup(MWindow *mwindow, MWindowGUI *gui);
+	~EditPopup();
 
 	void update(Track *track, Edit *edit);
 
