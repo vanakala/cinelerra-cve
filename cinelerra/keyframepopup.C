@@ -35,17 +35,14 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "track.h"
-#include "bcwindowbase.h"
 
-KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
+KeyframePopup::KeyframePopup()
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
 	key_delete = 0;
 	delete_active = 0;
 	key_copy = 0;
@@ -54,15 +51,15 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	tan_free = 0;
 	tangent_mode_displayed = false;
 
-	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
-	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
+	add_item(key_copy = new KeyframePopupCopy(this));
+	add_item(key_delete = new KeyframePopupDelete(this));
 	delete_active = 1;
 
 	hline = new BC_MenuItem("-");
-	tan_smooth = new KeyframePopupTangentMode(mwindow, this, TGNT_SMOOTH);
-	tan_linear = new KeyframePopupTangentMode(mwindow, this, TGNT_LINEAR);
-	tan_free_t = new KeyframePopupTangentMode(mwindow, this, TGNT_TFREE);
-	tan_free = new KeyframePopupTangentMode(mwindow, this, TGNT_FREE);
+	tan_smooth = new KeyframePopupTangentMode(this, TGNT_SMOOTH);
+	tan_linear = new KeyframePopupTangentMode(this, TGNT_LINEAR);
+	tan_free_t = new KeyframePopupTangentMode(this, TGNT_TFREE);
+	tan_free = new KeyframePopupTangentMode(this, TGNT_FREE);
 }
 
 KeyframePopup::~KeyframePopup()
@@ -141,7 +138,7 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 
 	if(!PTSEQU(current_position, new_position))
 	{
-		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR |
+		mwindow_global->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	}
 }
@@ -178,31 +175,29 @@ void KeyframePopup::handle_tangent_mode(Autos *autos, Auto *auto_keyframe)
 }
 
 
-KeyframePopupDelete::KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup)
+KeyframePopupDelete::KeyframePopupDelete(KeyframePopup *popup)
  : BC_MenuItem(_("Delete keyframe"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int KeyframePopupDelete::handle_event()
 {
 	delete popup->keyframe_auto;
-	mwindow->save_backup();
-	mwindow->undo->update_undo(_("delete keyframe"), LOAD_ALL);
+	mwindow_global->save_backup();
+	mwindow_global->undo->update_undo(_("delete keyframe"), LOAD_ALL);
 
-	mwindow->gui->update(WUPD_CANVINCR);
-	mwindow->update_plugin_guis();
-	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->update_plugin_guis();
+	mwindow_global->restart_brender();
+	mwindow_global->sync_parameters(CHANGE_EDL);
 	return 1;
 }
 
 
-KeyframePopupCopy::KeyframePopupCopy(MWindow *mwindow, KeyframePopup *popup)
+KeyframePopupCopy::KeyframePopupCopy(KeyframePopup *popup)
  : BC_MenuItem(_("Copy keyframe"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
@@ -212,18 +207,16 @@ int KeyframePopupCopy::handle_event()
 //	we want to copy just keyframe under cursor, NOT all keyframes at this frame
 //	- very hard to do, so this is good approximation for now...
 
-	mwindow->copy_effects();
+	mwindow_global->copy_effects();
 	return 1;
 }
 
 
-KeyframePopupTangentMode::KeyframePopupTangentMode(MWindow *mwindow,
-	KeyframePopup *popup,
+KeyframePopupTangentMode::KeyframePopupTangentMode(KeyframePopup *popup,
 	tgnt_mode tangent_mode)
  : BC_MenuItem(get_labeltext(tangent_mode))
 {
 	this->tangent_mode = tangent_mode;
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
@@ -258,14 +251,14 @@ int KeyframePopupTangentMode::handle_event()
 
 		// if we switched to some "auto" mode, this may imply a
 		// real change to parameters, so this needs to be undoable...
-		mwindow->save_backup();
-		mwindow->undo->update_undo(_("change keyframe tangent mode"), LOAD_ALL);
+		mwindow_global->save_backup();
+		mwindow_global->undo->update_undo(_("change keyframe tangent mode"), LOAD_ALL);
 
-		mwindow->gui->update(WUPD_CANVINCR);
-		mwindow->cwindow->update(WUPD_TOOLWIN);
-		mwindow->update_plugin_guis();
-		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_EDL);
+		mwindow_global->gui->update(WUPD_CANVINCR);
+		mwindow_global->cwindow->update(WUPD_TOOLWIN);
+		mwindow_global->update_plugin_guis();
+		mwindow_global->restart_brender();
+		mwindow_global->sync_parameters(CHANGE_EDL);
 	}
 	return 1;
 }

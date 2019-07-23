@@ -26,7 +26,6 @@
 #include "bcmenuitem.h"
 #include "floatauto.inc"
 #include "mwindow.inc"
-#include "mwindowgui.inc"
 #include "plugin.inc"
 #include "keyframe.inc"
 #include "automation.h" 
@@ -40,17 +39,15 @@ class KeyframePopupTangentMode;
 class KeyframePopup : public BC_PopupMenu
 {
 public:
-	KeyframePopup(MWindow *mwindow, MWindowGUI *gui);
+	KeyframePopup();
 	~KeyframePopup();
 
 	void update(Plugin *plugin, KeyFrame *keyframe);
 	void update(Automation *automation, Autos *autos, Auto *auto_keyframe);
 
-	MWindow *mwindow;
-	MWindowGUI *gui;
-
 // Acquired through the update command as the plugin currently being operated on
 	Plugin *keyframe_plugin;
+
 	Autos *keyframe_autos;
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
@@ -71,36 +68,33 @@ private:
 class KeyframePopupDelete : public BC_MenuItem
 {
 public:
-	KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup);
+	KeyframePopupDelete(KeyframePopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	KeyframePopup *popup;
 };
 
 class KeyframePopupCopy : public BC_MenuItem
 {
 public:
-	KeyframePopupCopy(MWindow *mwindow, KeyframePopup *popup);
+	KeyframePopupCopy(KeyframePopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	KeyframePopup *popup;
 };
 
 class KeyframePopupTangentMode : public BC_MenuItem
 {
 public:
-	KeyframePopupTangentMode(MWindow *mwindow, KeyframePopup *popup, tgnt_mode tangent_mode);
+	KeyframePopupTangentMode(KeyframePopup *popup, tgnt_mode tangent_mode);
 
 	friend class KeyframePopup;
 
 	int handle_event();
 
 private:
-	MWindow *mwindow;
 	KeyframePopup *popup;
 	tgnt_mode tangent_mode;
 	const char* get_labeltext(tgnt_mode);

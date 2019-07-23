@@ -127,7 +127,7 @@ void TrackCanvas::show()
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
 	add_subwindow(edit_menu = new EditPopup());
 	add_subwindow(plugin_menu = new PluginPopup());
-	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, gui));
+	add_subwindow(keyframe_menu = new KeyframePopup());
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, gui));
 	draw();
 	update_cursor();
