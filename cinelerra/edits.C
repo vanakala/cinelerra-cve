@@ -31,6 +31,7 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "plugin.h"
+#include "plugindb.h"
 #include "track.h"
 
 
@@ -331,11 +332,14 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 			if(file->tag.title_is("TRANSITION"))
 			{
 				ptstime length_time = 0;
+				PluginServer *server = 0;
 				char plugin_name[BCTEXTLEN];
 
-				current->transition = new Plugin(edl,
-					track, 0);
+				plugin_name[0] = 0;
 				file->tag.get_property("TITLE", plugin_name);
+				server = plugindb.get_pluginserver(plugin_name,
+					track->data_type);
+				current->transition = new Plugin(edl, track, server);
 				current->transition->plugin_type = PLUGIN_TRANSITION;
 				posnum length = file->tag.get_property("LENGTH", 0);
 				if(length)
