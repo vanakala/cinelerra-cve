@@ -27,9 +27,11 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "keyframes.h"
 #include "localsession.h"
 #include "plugin.h"
 #include "pluginserver.h"
+#include "preferences.inc"
 #include "tracks.h"
 #include "vtrack.h"
 
@@ -417,8 +419,17 @@ void Tracks::load_effects(FileXML *file, int operation)
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
-	dest_edit->insert_transition(server);
+	Plugin *transition;
+
+	transition = dest_edit->insert_transition(server);
+
+	if(server && !server->open_plugin(1, preferences_global, 0, 0))
+	{
+		server->save_data(transition->keyframes->get_first());
+		server->close_plugin();
+	}
 }
+
 
 void Tracks::paste_video_transition(PluginServer *server, int first_track)
 {

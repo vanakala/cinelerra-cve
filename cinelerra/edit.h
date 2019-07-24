@@ -66,7 +66,7 @@ public:
 // Shift in time
 	virtual void shift(ptstime difference);
 	void shift_source(ptstime difference);
-	void insert_transition(PluginServer *server);
+	Plugin *insert_transition(PluginServer *server);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);
 // Returns size of data in bytes

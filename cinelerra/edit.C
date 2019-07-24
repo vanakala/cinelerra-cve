@@ -135,13 +135,14 @@ ptstime Edit::get_source_length()
 	return 0;
 }
 
-void Edit::insert_transition(PluginServer *server)
+Plugin *Edit::insert_transition(PluginServer *server)
 {
 	transition = new Plugin(edl,
 		track,
 		server);
 	transition->plugin_type = PLUGIN_TRANSITION;
 	transition->set_length(edlsession->default_transition_length);
+	return transition;
 }
 
 int Edit::silence(void)
