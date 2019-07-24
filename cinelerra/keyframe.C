@@ -96,7 +96,8 @@ void KeyFrame::save_xml(FileXML *file)
 	file->tag.set_property("POSTIME", pos_time);
 	file->append_tag();
 
-	file->append_text(data);
+	if(data)
+		file->append_text(data);
 
 	file->tag.set_title("/KEYFRAME");
 	file->append_tag();
