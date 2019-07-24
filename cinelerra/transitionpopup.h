@@ -40,11 +40,10 @@ class TransitionLengthText;
 class TransitionLengthThread : public Thread
 {
 public:
-	TransitionLengthThread(MWindow *mwindow, TransitionPopup *popup);
+	TransitionLengthThread(TransitionPopup *popup);
 
 	void run();
-
-	MWindow *mwindow;
+private:
 	TransitionPopup *popup;
 };
 
@@ -52,23 +51,23 @@ public:
 class TransitionLengthDialog : public BC_Window
 {
 public:
-	TransitionLengthDialog(MWindow *mwindow, Plugin *transition,
+	TransitionLengthDialog(Plugin *transition,
 		int absx, int absy);
 
-	MWindow *mwindow;
 	Plugin *transition;
+private:
 	TransitionLengthText *text;
 };
 
 class TransitionLengthText : public BC_TumbleTextBox
 {
 public:
-	TransitionLengthText(MWindow *mwindow, 
-		TransitionLengthDialog *gui,
+	TransitionLengthText(TransitionLengthDialog *gui,
 		int x,
 		int y);
+
 	int handle_event();
-	MWindow *mwindow;
+private:
 	TransitionLengthDialog *gui;
 };
 
@@ -76,17 +75,13 @@ public:
 class TransitionPopup : public BC_PopupMenu
 {
 public:
-	TransitionPopup(MWindow *mwindow, MWindowGUI *gui);
+	TransitionPopup();
 	~TransitionPopup();
 
 	void update(Plugin *transition);
 
 // Acquired through the update command as the plugin currently being operated on
 	Plugin *transition;
-
-// Set when the user clicks a transition.
-	MWindow *mwindow;
-	MWindowGUI *gui;
 
 // Needed for loading updates
 	TransitionPopupOn *on;
@@ -99,40 +94,40 @@ public:
 class TransitionPopupDetach : public BC_MenuItem
 {
 public:
-	TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup);
+	TransitionPopupDetach(TransitionPopup *popup);
 
 	int handle_event();
-	MWindow *mwindow;
+private:
 	TransitionPopup *popup;
 };
 
 class TransitionPopupShow : public BC_MenuItem
 {
 public:
-	TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup);
+	TransitionPopupShow(TransitionPopup *popup);
 
 	int handle_event();
-	MWindow *mwindow;
+private:
 	TransitionPopup *popup;
 };
 
 class TransitionPopupOn : public BC_MenuItem
 {
 public:
-	TransitionPopupOn(MWindow *mwindow, TransitionPopup *popup);
+	TransitionPopupOn(TransitionPopup *popup);
 
 	int handle_event();
-	MWindow *mwindow;
+private:
 	TransitionPopup *popup;
 };
 
 class TransitionPopupLength : public BC_MenuItem
 {
 public:
-	TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup);
+	TransitionPopupLength(TransitionPopup *popup);
 
 	int handle_event();
-	MWindow *mwindow;
+private:
 	TransitionPopup *popup;
 };
 

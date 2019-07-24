@@ -128,7 +128,7 @@ void TrackCanvas::show()
 	add_subwindow(edit_menu = new EditPopup());
 	add_subwindow(plugin_menu = new PluginPopup());
 	add_subwindow(keyframe_menu = new KeyframePopup());
-	add_subwindow(transition_menu = new TransitionPopup(mwindow, gui));
+	add_subwindow(transition_menu = new TransitionPopup());
 	draw();
 	update_cursor();
 	flash();

@@ -23,7 +23,6 @@
 #include "bcbutton.h"
 #include "clip.h"
 #include "cinelerra.h"
-#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -31,14 +30,12 @@
 #include "mwindowgui.h"
 #include "plugin.h"
 #include "track.h"
-#include "tracks.h"
 #include "transitionpopup.h"
 
 
-TransitionLengthThread::TransitionLengthThread(MWindow *mwindow, TransitionPopup *popup)
+TransitionLengthThread::TransitionLengthThread(TransitionPopup *popup)
  : Thread()
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
@@ -46,13 +43,13 @@ void TransitionLengthThread::run()
 {
 	int cx, cy;
 
-	mwindow->get_abs_cursor_pos(&cx, &cy);
-	TransitionLengthDialog window(mwindow, popup->transition, cx, cy);
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	TransitionLengthDialog window(popup->transition, cx, cy);
 	window.run_window();
 }
 
 
-TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Plugin *transition,
+TransitionLengthDialog::TransitionLengthDialog(Plugin *transition,
 	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Transition length")),
 		absx - 150,
@@ -65,17 +62,15 @@ TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Plugin *transit
 		0,
 		1)
 {
-	this->mwindow = mwindow;
 	this->transition = transition;
 	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
-	text = new TransitionLengthText(mwindow, this, 100, 10);
+	text = new TransitionLengthText(this, 100, 10);
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 }
 
-TransitionLengthText::TransitionLengthText(MWindow *mwindow, 
-	TransitionLengthDialog *gui,
-	int x, 
+TransitionLengthText::TransitionLengthText(TransitionLengthDialog *gui,
+	int x,
 	int y)
  : BC_TumbleTextBox(gui, 
 	gui->transition->get_length(),
@@ -85,7 +80,6 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	y,
 	100)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
@@ -96,29 +90,27 @@ int TransitionLengthText::handle_event()
 	{
 		gui->transition->set_length(result);
 		if(gui->transition->track->data_type == TRACK_VIDEO) 
-			mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
+			mwindow_global->restart_brender();
+		mwindow_global->sync_parameters(CHANGE_PARAMS);
 		edlsession->default_transition_length = result;
-		mwindow->gui->update(WUPD_CANVINCR);
+		mwindow_global->gui->update(WUPD_CANVINCR);
 	}
 	return 1;
 }
 
 
-TransitionPopup::TransitionPopup(MWindow *mwindow, MWindowGUI *gui)
+TransitionPopup::TransitionPopup()
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	length_thread = new TransitionLengthThread(mwindow, this);
-	add_item(show = new TransitionPopupShow(mwindow, this));
-	add_item(on = new TransitionPopupOn(mwindow, this));
-	add_item(length = new TransitionPopupLength(mwindow, this));
-	add_item(detach = new TransitionPopupDetach(mwindow, this));
+	length_thread = new TransitionLengthThread(this);
+	add_item(show = new TransitionPopupShow(this));
+	add_item(on = new TransitionPopupOn(this));
+	add_item(length = new TransitionPopupLength(this));
+	add_item(detach = new TransitionPopupDetach(this));
 }
 
 TransitionPopup::~TransitionPopup()
@@ -137,53 +129,49 @@ void TransitionPopup::update(Plugin *transition)
 }
 
 
-TransitionPopupDetach::TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup)
+TransitionPopupDetach::TransitionPopupDetach(TransitionPopup *popup)
  : BC_MenuItem(_("Detach"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int TransitionPopupDetach::handle_event()
 {
-	mwindow->detach_transition(popup->transition);
+	mwindow_global->detach_transition(popup->transition);
 	return 1;
 }
 
 
-TransitionPopupOn::TransitionPopupOn(MWindow *mwindow, TransitionPopup *popup)
+TransitionPopupOn::TransitionPopupOn(TransitionPopup *popup)
  : BC_MenuItem(_("On"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int TransitionPopupOn::handle_event()
 {
 	popup->transition->on = !get_checked();
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow_global->sync_parameters(CHANGE_EDL);
 	return 1;
 }
 
 
-TransitionPopupShow::TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup)
+TransitionPopupShow::TransitionPopupShow(TransitionPopup *popup)
  : BC_MenuItem(_("Parameters"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int TransitionPopupShow::handle_event()
 {
-	mwindow->show_plugin(popup->transition);
+	mwindow_global->show_plugin(popup->transition);
 	return 1;
 }
 
 
-TransitionPopupLength::TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup)
+TransitionPopupLength::TransitionPopupLength(TransitionPopup *popup)
  : BC_MenuItem(_("Length"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
