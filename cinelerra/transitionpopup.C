@@ -63,6 +63,7 @@ TransitionLengthDialog::TransitionLengthDialog(Plugin *transition,
 		1)
 {
 	this->transition = transition;
+	set_icon(mwindow_global->get_window_icon());
 	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
 	text = new TransitionLengthText(this, 100, 10);
 	add_subwindow(new BC_OKButton(this));
