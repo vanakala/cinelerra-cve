@@ -19,21 +19,14 @@
  * 
  */
 
-#include "atrack.h"
 #include "automation.h"
 #include "bcsignals.h"
-#include "edit.h"
-#include "edits.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "filexml.h"
-#include "keyframes.h"
 #include "localsession.h"
 #include "plugin.h"
-#include "pluginserver.h"
-#include "preferences.inc"
+#include "track.h"
 #include "tracks.h"
-#include "vtrack.h"
 
 #include <string.h>
 
@@ -369,23 +362,6 @@ void Tracks::move_tracks_down()
 	}
 }
 
-void Tracks::paste_audio_transition(PluginServer *server)
-{
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_AUDIO &&
-			current->record)
-		{
-			ptstime position = 
-				edl->local_session->get_selectionstart();
-			Edit *current_edit = current->edits->editof(position, 0);
-
-			if(current_edit)
-				paste_transition(server, current_edit);
-		}
-	}
-}
-
 void Tracks::load_effects(FileXML *file, int operation)
 {
 	Track *current;
@@ -415,40 +391,6 @@ void Tracks::load_effects(FileXML *file, int operation)
 	}while(!file->read_tag());
 
 	init_shared_pointers();
-}
-
-void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
-{
-	Plugin *transition;
-
-	transition = dest_edit->insert_transition(server);
-
-	if(server && !server->open_plugin(1, preferences_global, 0, 0))
-	{
-		server->save_data(transition->keyframes->get_first());
-		server->close_plugin();
-	}
-}
-
-
-void Tracks::paste_video_transition(PluginServer *server, int first_track)
-{
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO &&
-			current->record)
-		{
-			ptstime position = 
-				edl->local_session->get_selectionstart();
-			Edit *current_edit = current->edits->editof(position, 
-				0);
-			if(current_edit)
-			{
-				paste_transition(server, current_edit);
-			}
-			if(first_track) break;
-		}
-	}
 }
 
 void Tracks::paste_silence(ptstime start, ptstime end)

@@ -64,10 +64,7 @@ public:
 	void move_track_down(Track *track);      // move recordable tracks down
 	void move_tracks_up();                    // move recordable tracks up
 	void move_tracks_down();                  // move recordable tracks down
-	void paste_audio_transition(PluginServer *server);
-	void paste_video_transition(PluginServer *server, int first_track = 0);
 
-	void paste_transition(PluginServer *server, Edit *dest_edit);
 // Return the numbers of tracks with the play patch enabled
 	int playable_tracks_of(int type);
 // Return number of tracks with the record patch enabled
