@@ -167,7 +167,10 @@ TransitionPopupOn::TransitionPopupOn(TransitionPopup *popup)
 
 int TransitionPopupOn::handle_event()
 {
+	if(mwindow_global->stop_composer())
+		return 0;
 	popup->transition->on = !get_checked();
+	mwindow_global->restart_brender();
 	mwindow_global->sync_parameters(CHANGE_EDL);
 	return 1;
 }
