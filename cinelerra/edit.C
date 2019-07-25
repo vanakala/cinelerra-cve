@@ -28,6 +28,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "keyframe.h"
 #include "localsession.h"
 #include "plugin.h"
 #include "mainsession.h"
@@ -137,11 +138,18 @@ ptstime Edit::get_source_length()
 
 Plugin *Edit::insert_transition(PluginServer *server)
 {
-	transition = new Plugin(edl,
-		track,
-		server);
-	transition->plugin_type = PLUGIN_TRANSITION;
-	transition->set_length(edlsession->default_transition_length);
+	if(!transition)
+	{
+		transition = new Plugin(edl,
+			track,
+			server);
+		transition->plugin_type = PLUGIN_TRANSITION;
+		transition->set_length(edlsession->default_transition_length);
+	}
+	else
+		transition->first_keyframe()->set_data(0);
+
+	transition->plugin_server = server;
 	return transition;
 }
 
