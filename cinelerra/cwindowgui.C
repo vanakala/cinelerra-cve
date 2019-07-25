@@ -540,9 +540,8 @@ int CWindowGUI::drag_stop()
 
 	if(mainsession->current_operation == DRAG_VTRANSITION)
 	{
-		Track *affected_track = cwindow->calculate_affected_track();
-
-		mwindow->paste_transition_cwindow(affected_track);
+		mwindow->paste_transition(TRACK_VIDEO,
+			mainsession->drag_pluginservers->values[0]);
 		mainsession->current_operation = NO_OPERATION;
 	}
 

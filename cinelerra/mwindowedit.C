@@ -1015,12 +1015,16 @@ void MWindow::paste_transition()
 {
 // Only the first transition gets dropped.
 	PluginServer *server = mainsession->drag_pluginservers->values[0];
+
+	if(cwindow->stop_playback())
+		return;
+
 	if(server->audio)
 		strcpy(edlsession->default_atransition, server->title);
 	else
 		strcpy(edlsession->default_vtransition, server->title);
 
-	master_edl->tracks->paste_transition(server, mainsession->edit_highlighted);
+	insert_transition(server, mainsession->edit_highlighted);
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
@@ -1028,53 +1032,72 @@ void MWindow::paste_transition()
 	sync_parameters(CHANGE_ALL);
 }
 
-void MWindow::paste_transition_cwindow(Track *dest_track)
+void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
 {
-	PluginServer *server = mainsession->drag_pluginservers->values[0];
-	master_edl->tracks->paste_video_transition(server, 1);
-	save_backup();
-	undo->update_undo(_("transition"), LOAD_EDITS);
-	restart_brender();
-	gui->update(WUPD_CANVINCR);
-	sync_parameters(CHANGE_ALL);
+	Plugin *transition;
+
+	transition = dst_edit->insert_transition(server);
+
+	if(server && !server->open_plugin(1, preferences_global, 0, 0))
+	{
+		server->save_data(transition->keyframes->get_first());
+		server->close_plugin();
+	}
 }
 
-void MWindow::paste_audio_transition()
+void MWindow::paste_transition(int data_type, PluginServer *server, int firstonly)
 {
-	PluginServer *server = plugindb.get_pluginserver(edlsession->default_atransition,
-		TRACK_AUDIO);
+	const char *name = 0;
+	ptstime position = master_edl->local_session->get_selectionstart();
+
 	if(!server)
 	{
-		gui->show_message(_("No default transition '%s' found."),
-			edlsession->default_atransition);
-		return;
+		switch(data_type)
+		{
+		case TRACK_AUDIO:
+			name = edlsession->default_atransition;
+			break;
+		case TRACK_VIDEO:
+			name = edlsession->default_vtransition;
+			break;
+		}
+		if(name)
+			server = plugindb.get_pluginserver(name, data_type);
+
+		if(!server)
+		{
+			gui->show_message(_("No default transition '%s' found."),
+				name);
+			return;
+		}
 	}
 
-	master_edl->tracks->paste_audio_transition(server);
+	if(cwindow->stop_playback())
+		return;
+
+	for(Track *track = master_edl->tracks->first; track;
+		track = track->next)
+	{
+		if(track->data_type == data_type &&
+			track->record)
+		{
+			Edit *edit = track->editof(position);
+
+			if(edit)
+				insert_transition(server, edit);
+
+			if(firstonly)
+				break;
+		}
+	}
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
 	sync_parameters(CHANGE_ALL);
-	gui->update(WUPD_CANVINCR);
-}
 
-void MWindow::paste_video_transition()
-{
-	PluginServer *server = plugindb.get_pluginserver(edlsession->default_vtransition,
-		TRACK_VIDEO);
-	if(!server)
-	{
-		gui->show_message(_("No default transition '%s' found."),
-			edlsession->default_vtransition);
-		return;
-	}
+	if(data_type == TRACK_VIDEO)
+		restart_brender();
 
-	master_edl->tracks->paste_video_transition(server);
-	save_backup();
-	undo->update_undo(_("transition"), LOAD_EDITS);
-
-	sync_parameters(CHANGE_ALL);
-	restart_brender();
 	gui->update(WUPD_CANVINCR);
 }
 

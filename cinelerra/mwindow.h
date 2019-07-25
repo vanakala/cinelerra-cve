@@ -301,9 +301,8 @@ public:
 	void paste_silence();
 
 	void paste_transition();
-	void paste_transition_cwindow(Track *dest_track);
-	void paste_audio_transition();
-	void paste_video_transition();
+	void insert_transition(PluginServer *server, Edit *dst_edit);
+	void paste_transition(int data_type, PluginServer *server = 0, int firstonly = 0);
 	void rebuild_indices();
 // Asset removal from caches
 	void reset_caches();
