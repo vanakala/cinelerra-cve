@@ -760,6 +760,6 @@ void EDLSession::dump(int indent)
 	printf("%*svideo: tracks %d framerate %.2f output %dx%d SAR %.3f '%s'\n",
 		indent, "", video_tracks, frame_rate, output_w, output_h, sample_aspect_ratio,
 		ColorModels::name(color_model));
-	printf("%*sdefault transitions: audio '%s' video '%s'\n", indent, "",
-		default_atransition, default_vtransition);
+	printf("%*sdefault transitions: audio '%s' video '%s' length %.2f\n", indent, "",
+		default_atransition, default_vtransition, default_transition_length);
 }
