@@ -82,13 +82,14 @@ public:
 
 // Acquired through the update command as the plugin currently being operated on
 	Plugin *transition;
-
+	TransitionLengthThread *length_thread;
+private:
 // Needed for loading updates
 	TransitionPopupOn *on;
 	TransitionPopupShow *show;
 	TransitionPopupDetach *detach;
 	TransitionPopupLength *length;
-	TransitionLengthThread *length_thread;
+	int has_gui;
 };
 
 class TransitionPopupDetach : public BC_MenuItem

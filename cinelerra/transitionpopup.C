@@ -107,20 +107,36 @@ TransitionPopup::TransitionPopup()
 		0)
 {
 	length_thread = new TransitionLengthThread(this);
-	add_item(show = new TransitionPopupShow(this));
+	show = new TransitionPopupShow(this);
 	add_item(on = new TransitionPopupOn(this));
 	add_item(length = new TransitionPopupLength(this));
 	add_item(detach = new TransitionPopupDetach(this));
+	has_gui = 0;
 }
 
 TransitionPopup::~TransitionPopup()
 {
 	delete length_thread;
+	if(!has_gui)
+		delete show;
 }
 
 void TransitionPopup::update(Plugin *transition)
 {
 	this->transition = transition;
+	if(transition->plugin_server->uses_gui)
+	{
+		if(!has_gui)
+		{
+			add_item(show);
+			has_gui = 1;
+		}
+	}
+	else
+	{
+		remove_item(show);
+		has_gui = 0;
+	}
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
 	char len_text[50];
