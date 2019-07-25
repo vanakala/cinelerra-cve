@@ -197,6 +197,8 @@ TransitionPopupLength::TransitionPopupLength(TransitionPopup *popup)
 
 int TransitionPopupLength::handle_event()
 {
+	if(mwindow_global->stop_composer())
+		return 0;
 	popup->length_thread->start();
 	return 1;
 }
