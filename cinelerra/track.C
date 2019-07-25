@@ -1164,6 +1164,11 @@ void Track::cleanup()
 	}
 }
 
+Edit *Track::editof(ptstime postime, int use_nudge)
+{
+	return edits->editof(postime, use_nudge);
+}
+
 size_t Track::get_size()
 {
 	size_t size = sizeof(*this);
