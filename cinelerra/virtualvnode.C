@@ -23,7 +23,6 @@
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "clip.h"
-#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "fadeengine.h"
@@ -113,8 +112,8 @@ VFrame *VirtualVNode::read_data()
 	Edit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = parent_node->track->edits->editof(
-			output_temp->get_pts(), 0);
+		parent_edit = parent_node->track->editof(
+			output_temp->get_pts());
 	}
 
 // This is a plugin on parent module with a preceeding effect.

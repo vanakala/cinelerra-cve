@@ -26,7 +26,6 @@
 #include "atrack.h"
 #include "automation.h"
 #include "bcsignals.h"
-#include "edits.h"
 #include "clip.h"
 #include "floatautos.h"
 #include "levelhist.h"
@@ -95,8 +94,7 @@ int VirtualANode::read_data(AFrame *aframe)
 	Edit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = parent_node->track->edits->editof(aframe->pts,
-			0);
+		parent_edit = parent_node->track->editof(aframe->pts);
 	}
 
 // This is a plugin on parent module with a preceeding effect.

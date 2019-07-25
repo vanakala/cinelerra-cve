@@ -23,6 +23,7 @@
 #define VMODULE_H
 
 #include "datatype.h"
+#include "edit.inc"
 #include "floatautos.inc"
 #include "module.h"
 #include "overlayframe.inc"

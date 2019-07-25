@@ -26,7 +26,7 @@
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
-#include "edits.h"
+#include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
@@ -239,7 +239,7 @@ VFrame *VModule::import_frame(VFrame *output,
 VFrame *VModule::render(VFrame *output)
 {
 	update_transition(output->get_pts());
-	Edit* current_edit = track->edits->editof(output->get_pts(), 0);
+	Edit* current_edit = track->editof(output->get_pts());
 	Edit* previous_edit = 0;
 
 	if(!current_edit)
