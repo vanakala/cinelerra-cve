@@ -266,8 +266,6 @@ size_t FileXML::text_length_until(const char *tag_end)
 
 	while(pos < length)
 	{
-		pos++;
-
 		if(pos < length && string[pos] == left_delimiter)
 		{
 			int found = 1;
@@ -285,6 +283,7 @@ size_t FileXML::text_length_until(const char *tag_end)
 			if(found)
 				break;
 		}
+		pos++;
 	}
 	return pos - position;
 }
