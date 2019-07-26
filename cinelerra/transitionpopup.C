@@ -170,6 +170,11 @@ TransitionPopupOn::TransitionPopupOn(TransitionPopup *popup)
 
 int TransitionPopupOn::handle_event()
 {
+	if(!popup->transition->plugin_server)
+	{
+		popup->transition->on = 0;
+		return 0;
+	}
 	if(mwindow_global->stop_composer())
 		return 0;
 	popup->transition->on = !get_checked();

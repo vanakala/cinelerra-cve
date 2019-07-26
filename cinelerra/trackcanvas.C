@@ -1583,15 +1583,11 @@ void TrackCanvas::draw_transitions()
 				{
 					PluginServer *server = edit->transition->plugin_server;
 
-					draw_vframe(server->picon, 
-						x, 
-						y, 
-						w, 
-						h, 
-						0, 
-						0, 
-						server->picon->get_w(), 
-						server->picon->get_h());
+					if(server)
+						draw_vframe(server->picon,
+							x, y, w, h, 0, 0,
+							server->picon->get_w(),
+							server->picon->get_h());
 				}
 				if(MWindowGUI::visible(strip_x, strip_x + strip_w, 0, get_w()) &&
 					MWindowGUI::visible(strip_y, strip_y + h, 0, get_h()))

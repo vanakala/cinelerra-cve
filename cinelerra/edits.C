@@ -349,6 +349,8 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 				current->transition->on = !file->tag.get_property("OFF", 0);
 				current->transition->set_length(length_time);
 				current->transition->load(file);
+				if(!server)
+					current->transition->on = 0;
 			}
 			else
 			if(file->tag.title_is("/EDIT"))

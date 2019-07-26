@@ -234,6 +234,9 @@ void Module::update_transition(ptstime current_position)
 {
 	transition = track->get_current_transition(current_position);
 
+	if(transition && !transition->plugin_server)
+		return;
+
 // For situations where we had a transition but not anymore, 
 // keep the server open.
 // Maybe the same transition will follow and we won't need to reinit.
