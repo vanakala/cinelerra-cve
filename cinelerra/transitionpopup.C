@@ -31,6 +31,7 @@
 #include "plugin.h"
 #include "track.h"
 #include "transitionpopup.h"
+#include "mainundo.h"
 
 
 TransitionLengthThread::TransitionLengthThread(TransitionPopup *popup)
@@ -82,6 +83,7 @@ TransitionLengthText::TransitionLengthText(TransitionLengthDialog *gui,
 	100)
 {
 	this->gui = gui;
+	set_increment(0.1f);
 }
 
 int TransitionLengthText::handle_event()
@@ -94,6 +96,7 @@ int TransitionLengthText::handle_event()
 			mwindow_global->restart_brender();
 		mwindow_global->sync_parameters(CHANGE_PARAMS);
 		edlsession->default_transition_length = result;
+		mwindow_global->undo->update_undo(_("transition"), LOAD_EDITS);
 		mwindow_global->gui->update(WUPD_CANVINCR);
 	}
 	return 1;
