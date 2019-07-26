@@ -141,6 +141,11 @@ PluginPopupOn::PluginPopupOn(PluginPopup *popup)
 
 int PluginPopupOn::handle_event()
 {
+	if(!popup->plugin->plugin_server)
+	{
+		popup->plugin->on = 0;
+		return 0;
+	}
 	if(mwindow_global->stop_composer())
 		return 0;
 	popup->plugin->on = !get_checked();

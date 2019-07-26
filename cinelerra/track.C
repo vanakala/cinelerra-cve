@@ -345,6 +345,8 @@ void Track::load_pluginset(FileXML *file, ptstime start)
 				plugin->set_length(length);
 				plugin->on = !file->tag.get_property("OFF", 0);
 				plugin->load(file, start);
+				if(!server)
+					plugin->on = 0;
 				// got length - ignore next plugin pts
 				if(length > 0)
 					plugin = 0;

@@ -54,7 +54,10 @@ void PluginOn::update(int x, int y, Plugin *plugin)
 
 int PluginOn::handle_event()
 {
-	plugin->on = get_value();
+	if(plugin->plugin_server)
+		plugin->on = get_value();
+	else
+		plugin->on = 0;
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;
