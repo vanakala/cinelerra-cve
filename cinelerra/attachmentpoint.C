@@ -139,12 +139,12 @@ int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 	else
 	if(!plugin->on)
 	{
-		errorbox("AttachmentPoint::attach_virtual_plugin attempt to attach plugin when off");
+		errorbox("AttachmentPoint::attach_virtual_plugin: Attempt to attach plugin when off");
 	}
 	else
 	if(!plugin_server)
 	{
-		errorbox("AttachmentPoint::attach_virtual_plugin attempt to attach when no plugin_server.");
+		errorbox("AttachmentPoint::attach_virtual_plugin: Attempt to attach when no plugin_server.");
 	}
 
 	return buffer_number;
