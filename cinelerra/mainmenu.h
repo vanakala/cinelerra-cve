@@ -40,7 +40,7 @@ class Undo;
 #include "bchash.inc"
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
-#include "bcrecentlist.h"
+#include "bcrecentlist.inc"
 #include "loadfile.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

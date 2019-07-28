@@ -19,26 +19,21 @@
  * 
  */
 
+#include "autoconf.h"
+#include "automation.inc"
 #include "batchrender.h"
 #include "bcsignals.h"
-#include "cache.h"
 #include "clipedit.h"
-#include "cplayback.h"
-#include "cwindow.h"
-#include "cwindowgui.h"
 #include "bchash.h"
 #include "bclistboxitem.h"
 #include "bcmenu.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
-#include "filexml.h"
 #include "keys.h"
 #include "language.h"
-#include "levelwindow.h"
 #include "loadfile.h"
 #include "localsession.h"
-#include "mainclock.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mainundo.h"
@@ -47,8 +42,6 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "new.h"
-#include "patchbay.h"
-#include "playbackengine.h"
 #include "plugindb.h"
 #include "preferences.h"
 #include "preferencesthread.h"
@@ -56,11 +49,7 @@
 #include "render.h"
 #include "savefile.h"
 #include "setformat.h"
-#include "timebar.h"
-#include "trackcanvas.h"
-#include "tracks.h"
 #include "viewmenu.h"
-#include "zoombar.h"
 #include "exportedl.h"
 
 #include <string.h>
@@ -136,7 +125,6 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	audiomenu->add_item(new MapAudio1(mwindow));
 	audiomenu->add_item(new MapAudio2(mwindow));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
-
 	add_menu(videomenu = new BC_Menu(_("Video")));
 	videomenu->add_item(new AddVideoTrack(mwindow));
 	videomenu->add_item(new DefaultVTransition(mwindow));
