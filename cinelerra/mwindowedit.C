@@ -1290,7 +1290,7 @@ void MWindow::to_clip()
 	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
 
 	new_edl->local_session->set_selection(0);
-	awindow->clip_edit->create_clip(new_edl);
+	clip_edit->create_clip(new_edl);
 	save_backup();
 }
 

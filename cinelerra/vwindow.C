@@ -52,7 +52,6 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 // Start command loop
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new VTracking(mwindow, this);
-	clip_edit = new ClipEdit();
 	vedlsession = new EDLSession();
 }
 
@@ -60,7 +59,6 @@ VWindow::~VWindow()
 {
 	delete playback_engine;
 	delete playback_cursor;
-	delete clip_edit;
 	delete vedlsession;
 }
 

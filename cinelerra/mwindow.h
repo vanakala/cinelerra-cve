@@ -30,6 +30,7 @@
 #include "bcwindowbase.inc"
 #include "brender.inc"
 #include "cache.inc"
+#include "clipedit.inc"
 #include "cwindow.inc"
 #include "bchash.inc"
 #include "datatype.h"
@@ -455,6 +456,7 @@ public:
 
 	void clean_indexes();
 	SigHandler *sighandler;
+	ClipEdit *clip_edit;
 private:
 	time_t last_backup_time;
 };

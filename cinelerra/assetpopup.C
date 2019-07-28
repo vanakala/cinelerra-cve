@@ -135,7 +135,7 @@ int AssetPopupInfo::handle_event()
 	else
 	if(mainsession->drag_clips->total)
 	{
-		popup->gui->awindow->clip_edit->edit_clip(
+		mwindow->clip_edit->edit_clip(
 			mainsession->drag_clips->values[0]);
 	}
 	return 1;

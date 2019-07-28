@@ -32,6 +32,7 @@
 #include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"
+#include "clipedit.h"
 #include "cliplist.h"
 #include "colormodels.h"
 #include "cplayback.h"
@@ -157,6 +158,7 @@ MWindow::MWindow(const char *config_path)
 	init_exportedl();
 	mainprogress = new MainProgress(this, gui);
 	undo = new MainUndo(this);
+	clip_edit = new ClipEdit();
 
 	plugin_guis = new ArrayList<PluginServer*>;
 	removed_guis = new ArrayList<PluginServer*>;
@@ -199,6 +201,7 @@ MWindow::~MWindow()
 	delete frame_cache;
 	if(gui) delete gui;
 	delete undo;
+	delete clip_edit;
 	delete preferences;
 	delete defaults;
 	delete render;

@@ -451,10 +451,10 @@ void VWindowEditing::to_clip()
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"),
 		mainsession->clip_number++);
 	edlsession->ptstotext(string, end - start);
-	sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
+	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from:\n%s"), string, vwindow->gui->loaded_title);
 
 	new_edl->local_session->set_selection(0);
-	vwindow->clip_edit->create_clip(new_edl);
+	mwindow_global->clip_edit->create_clip(new_edl);
 }
 
 

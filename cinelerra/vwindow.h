@@ -23,7 +23,6 @@
 #define VWINDOW_H
 
 #include "asset.inc"
-#include "clipedit.inc"
 #include "edl.inc"
 #include "edlsession.inc"
 #include "mwindow.inc"
@@ -68,7 +67,6 @@ public:
 	VWindow *vwindow;
 	VWindowGUI *gui;
 	VPlayback *playback_engine;
-	ClipEdit *clip_edit;
 };
 
 #endif

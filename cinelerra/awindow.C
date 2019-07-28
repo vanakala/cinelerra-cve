@@ -23,7 +23,6 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bcsignals.h"
-#include "clipedit.h"
 #include "labeledit.h"
 #include "theme.h"
 
@@ -33,14 +32,12 @@ AWindow::AWindow(MWindow *mwindow) : Thread()
 	gui = new AWindowGUI(mwindow, this);
 	gui->async_update_assets();
 	asset_edit = new AssetEdit(mwindow);
-	clip_edit = new ClipEdit();
 	label_edit = new LabelEdit(mwindow, this, 0);
 }
 
 AWindow::~AWindow()
 {
 	delete asset_edit;
-	delete clip_edit;
 	delete label_edit;
 	delete gui;
 }
