@@ -70,17 +70,19 @@ void ClipList::save_xml(FileXML *file, const char *output_path)
 	if(!total)
 		return;
 
-	file->tag.set_title("CLIP_EDL");
-	file->append_tag();
-	file->append_newline();
-
 	for(int i = 0; i < total; i++)
+	{
+		file->tag.set_title("CLIP_EDL");
+		file->append_tag();
+		file->append_newline();
+
 		values[i]->save_xml(file,
 			output_path, 1, 0);
 
-	file->tag.set_title("/CLIP_EDL");
-	file->append_tag();
-	file->append_newline();
+		file->tag.set_title("/CLIP_EDL");
+		file->append_tag();
+		file->append_newline();
+	}
 }
 
 void ClipList::dump(int indent)
