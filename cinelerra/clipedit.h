@@ -22,46 +22,41 @@
 #ifndef CLIPEDIT_H
 #define CLIPEDIT_H
 
-#include "awindow.inc"
 #include "bctextbox.h"
-#include "bcbutton.h"
 #include "bcwindow.h"
 #include "edl.inc"
-#include "mwindow.inc"
+#include "localsession.inc"
 #include "thread.h"
-#include "vwindow.inc"
 
-
+// Multiple windows of ClipEdit can be opened
 class ClipEdit : public Thread
 {
 public:
-	ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow);
+	ClipEdit();
 
+// Modifies clip title and notes
+	void edit_clip(EDL *edl);
+// edl will be inserted to ClipList or deleted
+	void create_clip(EDL *edl);
+
+private:
 	void run();
-	void edit_clip(EDL *clip);
-	void create_clip(EDL *clip);
-
-// If it is being created or edited
-	MWindow *mwindow;
-	AWindow *awindow;
-	VWindow *vwindow;
-
-	EDL *clip;
-	int create_it;
+	LocalSession *session;
+	EDL *edl;
 };
 
 
 class ClipEditWindow : public BC_Window
 {
 public:
-	ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int absy);
+	ClipEditWindow(LocalSession *session, EDL *edl,
+		int absx, int absy);
 
-// Use this copy of the pointer in ClipEdit since multiple windows are possible	
-	EDL *clip;
-	int create_it;
-	MWindow *mwindow;
-	ClipEdit *thread;
+	char clip_title[BCTEXTLEN];
+	char clip_notes[BCTEXTLEN];
 	BC_TextBox *titlebox;
+	EDL *edl;
+	LocalSession *session;
 };
 
 
@@ -70,6 +65,7 @@ class ClipEditTitle : public BC_TextBox
 public:
 	ClipEditTitle(ClipEditWindow *window, int x, int y, int w);
 
+private:
 	int handle_event();
 
 	ClipEditWindow *window;
@@ -81,6 +77,7 @@ class ClipEditComments : public BC_TextBox
 public:
 	ClipEditComments(ClipEditWindow *window, int x, int y, int w, int rows);
 
+private:
 	int handle_event();
 
 	ClipEditWindow *window;

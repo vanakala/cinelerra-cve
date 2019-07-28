@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bcbutton.h"
 #include "cliplist.h"
 #include "clipedit.h"
 #include "bctitle.h"
@@ -30,122 +31,62 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "vwindow.h"
-#include "vwindowgui.h"
-#include "mainerror.h"
+
+#include <string.h>
 
 
-ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
+ClipEdit::ClipEdit()
  : Thread()
 {
-	this->mwindow = mwindow;
-	this->awindow = awindow;
-	this->vwindow = vwindow;
-	this->clip = 0;
-	this->create_it = 0;
+	session = 0;
+	edl = 0;
 }
 
-void ClipEdit::edit_clip(EDL *clip)
+void ClipEdit::edit_clip(EDL *edl)
 {
-// Allow more than one window so we don't have to delete the clip in handle_event
-	if(clip)
-	{
-		this->clip = clip;
-		this->create_it = 0;
-		Thread::start();
-	}
+	if(session)
+		return;
+	session = edl->local_session;
+	Thread::start();
 }
 
-void ClipEdit::create_clip(EDL *clip)
+void ClipEdit::create_clip(EDL *edl)
 {
-// Allow more than one window so we don't have to delete the clip in handle_event
-	if(clip)
-	{
-		this->clip = clip;
-		this->create_it = 1;
-		Thread::start();
-	}
+	if(session)
+		return;
+	this->session = edl->local_session;
+	this->edl = edl;
+	Thread::start();
 }
 
 void ClipEdit::run()
 {
 	int cx, cy;
+	int result = 1;
 
-	if(clip)
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	ClipEditWindow *window = new ClipEditWindow(session, edl, cx, cy);
+
+	edl = 0;
+	session = 0;
+
+	if(!window->run_window())
 	{
-		EDL *original = clip;
-		if(!create_it)
-		{
-			clip = new EDL(1);
-			clip->copy_all(original);
-			clip->copy_session(original);
-		}
-		mwindow->get_abs_cursor_pos(&cx, &cy);
-		ClipEditWindow *window = new ClipEditWindow(mwindow, this, cx, cy);
+		strcpy(window->session->clip_title, window->clip_title);
+		strcpy(window->session->clip_notes, window->clip_notes);
 
-		int  name_ok_or_cancel = 0;
-		int result;
-		while (!name_ok_or_cancel)
-		{ 
-			result = window->run_window();
-			if (result)
-				name_ok_or_cancel = 1;
-			else
-			{
-				// Check if clip name is unique
-				name_ok_or_cancel = 1;
-				for (int i = 0; i < cliplist_global.total; i++)
-				{
-					if (!strcasecmp(clip->local_session->clip_title,
-						cliplist_global.values[i]->local_session->clip_title) &&
-						(create_it || strcasecmp(clip->local_session->clip_title,
-						original->local_session->clip_title)))
-					
-						name_ok_or_cancel = 0;
-				}
-				if (!name_ok_or_cancel)
-				{
-					errorbox(_("A clip with that name already exists."));
-					window->titlebox->activate();
-				}
-			}
-		}
+		if(window->edl)
+			cliplist_global.add_clip(window->edl);
 
-		if(!result)
-		{
-// Add to cliplist
-			if(create_it)
-				cliplist_global.add_clip(clip);
-
-// Copy clip to existing clip in EDL
-			if(!create_it)
-			{
-				original->copy_session(clip);
-				delete clip;
-			}
-
-			mwindow->awindow->gui->async_update_assets();
-
-		}
-		else
-		{
-			if(create_it)
-			{
-				delete clip;
-				mainsession->clip_number--;
-			}
-		}
-
-// For creating new clips, the original was copied in add_clip.
-// For editing old clips, the original was transferred to another variable.
-		delete window;
-		clip = 0;
-		create_it = 0;
+		mwindow_global->awindow->gui->async_update_assets();
 	}
+	else
+		delete window->edl;
+	delete window;
 }
 
 
-ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int absy)
+ClipEditWindow::ClipEditWindow(LocalSession *session, EDL *edl, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Clip Info")),
 	absx - 400 / 2,
 	absy - 350 / 2,
@@ -162,12 +103,13 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int
 	BC_TextBox *textbox;
 	BC_Title *title;
 
-	this->mwindow = mwindow;
-	this->thread = thread;
-	this->clip = thread->clip;
-	this->create_it = thread->create_it;
+	this->edl = edl;
+	this->session = session;
 
-	set_icon(mwindow->awindow->get_window_icon());
+	strcpy(clip_title, session->clip_title);
+	strcpy(clip_notes, session->clip_notes);
+
+	set_icon(mwindow_global->awindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
 	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
@@ -178,12 +120,9 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int
 	y += titlebox->get_h() + 10;
 	add_subwindow(title = new BC_Title(x1, y, _("Comments:")));
 	y += title->get_h() + 5;
-	add_subwindow(textbox = new ClipEditComments(this, 
-		x1, 
-		y, 
-		get_w() - x1 * 2, 
-		BC_TextBox::pixels_to_rows(this, 
-			MEDIUMFONT, 
+	add_subwindow(textbox = new ClipEditComments(this,
+		x1, y, get_w() - x1 * 2,
+		BC_TextBox::pixels_to_rows(this, MEDIUMFONT,
 			get_h() - 10 - BC_OKButton::calculate_h() - y)));
 
 	add_subwindow(new BC_OKButton(this));
@@ -194,26 +133,26 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread, int absx, int
 
 
 ClipEditTitle::ClipEditTitle(ClipEditWindow *window, int x, int y, int w)
- : BC_TextBox(x, y, w, 1, window->clip->local_session->clip_title)
+ : BC_TextBox(x, y, w, 1, window->clip_title)
 {
 	this->window = window;
 }
 
 int ClipEditTitle::handle_event()
 {
-	strcpy(window->clip->local_session->clip_title, get_text());
+	strcpy(window->clip_title, get_text());
 	return 1;
 }
 
 
 ClipEditComments::ClipEditComments(ClipEditWindow *window, int x, int y, int w, int rows)
- : BC_TextBox(x, y, w, rows, window->clip->local_session->clip_notes)
+ : BC_TextBox(x, y, w, rows, window->clip_notes)
 {
 	this->window = window;
 }
 
 int ClipEditComments::handle_event()
 {
-	strcpy(window->clip->local_session->clip_notes, get_text());
+	strcpy(window->clip_notes, get_text());
 	return 1;
 }
