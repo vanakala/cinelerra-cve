@@ -315,6 +315,14 @@ public:
 	MWindow *mwindow;
 };
 
+class EditNotes : public BC_MenuItem
+{
+public:
+	EditNotes();
+
+	int handle_event();
+};
+
 // ======================================== audio
 
 class AddAudioTrack : public BC_MenuItem

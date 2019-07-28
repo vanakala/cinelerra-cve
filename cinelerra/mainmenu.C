@@ -22,6 +22,7 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "clipedit.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -117,6 +118,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	editmenu->add_item(new SelectAll(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
 	editmenu->add_item(new ClearLabels(mwindow));
+	editmenu->add_item(new EditNotes());
 
 	BC_Menu *menu;
 	add_menu(menu = new BC_Menu(_("Effects")));
@@ -689,6 +691,17 @@ int TrimSelection::handle_event()
 	return 1;
 }
 
+
+EditNotes::EditNotes()
+ : BC_MenuItem(_("Edit EDL info"))
+{
+}
+
+int EditNotes::handle_event()
+{
+	mwindow_global->clip_edit->edit_clip(master_edl);
+	return 1;
+}
 
 // ============================================= audio
 
