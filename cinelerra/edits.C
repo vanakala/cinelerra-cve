@@ -834,6 +834,8 @@ void Edits::cleanup()
 {
 	for(Edit *current = first; current; current = current->next)
 	{
+		if(fabs(current->length()) < EPSILON)
+			current->asset = 0;
 		if(!current->asset)
 			current->set_source_pts(0);
 		if(current == first)
@@ -841,7 +843,11 @@ void Edits::cleanup()
 		while(current->next)
 		{
 			if(fabs(current->length()) < EPSILON)
-				remove(current->next);
+			{
+				Edit *next = current->next;
+				remove(current);
+				current = next;
+			}
 			else if(!current->asset && !current->next->asset)
 				remove(current->next);
 			else if(current->asset == current->next->asset &&
