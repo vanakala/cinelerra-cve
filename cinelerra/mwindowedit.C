@@ -621,8 +621,11 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	EDL edl(0);
 	ptstime start, end;
 	ArrayList<Track*> tracks;
+	ptstime orig_selection = master_edl->local_session->get_selectionstart();
 
 	if(!edits->total)
+		return;
+	if(cwindow->stop_playback())
 		return;
 
 	start = edits->values[0]->get_pts();
@@ -631,8 +634,10 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	for(int i = 0; i < edits->total; i++)
 		tracks.append(edits->values[i]->track);
 	edl.copy(master_edl, start, end, &tracks);
-	paste_edl(&edl, LOADMODE_PASTE, track, position, behaviour);
 	master_edl->clear(start, end, edlsession->labels_follow_edits);
+	paste_edl(&edl, LOADMODE_PASTE, track, position, behaviour);
+	master_edl->local_session->set_selection(orig_selection);
+	master_edl->local_session->preview_end = master_edl->total_length();
 	save_backup();
 	undo->update_undo(_("move edit"), LOAD_ALL);
 
