@@ -183,6 +183,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime,
 		dest_edit->copy_from(source_edit);
 		dest_edit->set_pts(postime + source_edit->get_pts());
 	}
+	cleanup();
 }
 
 Edit* Edits::split_edit(ptstime postime, int force)
@@ -475,6 +476,7 @@ void Edits::copy(Edits *edits, ptstime start, ptstime end)
 		if(PTSEQU(current_edit->get_pts(), end))
 			break;
 	}
+	cleanup();
 }
 
 void Edits::clear(ptstime start, ptstime end)
