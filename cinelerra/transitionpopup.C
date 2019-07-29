@@ -128,7 +128,7 @@ TransitionPopup::~TransitionPopup()
 void TransitionPopup::update(Plugin *transition)
 {
 	this->transition = transition;
-	if(transition->plugin_server->uses_gui)
+	if(transition->plugin_server && transition->plugin_server->uses_gui)
 	{
 		if(!has_gui)
 		{
