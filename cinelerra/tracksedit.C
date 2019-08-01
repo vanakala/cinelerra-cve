@@ -147,34 +147,49 @@ void Tracks::move_effect(Plugin *plugin,
 	ptstime dest_postime)
 {
 	Track *source_track = plugin->track;
-	Plugin *result = 0;
-// Insert on an existing plugin set
-	if(!dest_track)
-	{
-		int i = plugin->get_number();
-		int j;
 
-		if(i > 0)
-			j = i - 1;
-		else
-			j = i + 1;
-		source_track->xchg_plugins(source_track->plugins.values[i],
-			source_track->plugins.values[j]);
+// Insert on an existing plugin set
+	if(source_track != dest_track)
+	{
+		source_track->plugins.remove(plugin);
+		dest_track->plugins.append(plugin);
+		plugin->track = dest_track;
+// Remove shared plugin if it is on same track
+		for(int i = 0; i < dest_track->plugins.total; i++)
+		{
+			if(dest_track->plugins.values[i]->shared_plugin == plugin)
+			{
+				dest_track->remove_plugin(dest_track->plugins.values[i]);
+				break;
+			}
+		}
+	}
+	if(dest_track->master &&  plugin->plugin_server &&
+				plugin->plugin_server->synthesis)
+	{
+		if(dest_postime > length())
+			dest_postime = length();
 	}
 	else
-// Create a new plugin set
 	{
-		result = dest_track->insert_effect(0,
-				dest_postime,
-				plugin->get_length(),
-				plugin->plugin_type,
-				plugin->shared_plugin,
-				plugin->shared_track);
+		ptstime max_start = length() - plugin->get_length();
 
-		result->copy_from(plugin);
-		result->shift(dest_postime - plugin->get_pts());
-// Delete old plugin
-		source_track->remove_plugin(plugin);
+		if(dest_postime > max_start)
+			dest_postime = max_start;
+	}
+	plugin->shift(dest_postime - plugin->get_pts());
+
+	for(Track *track = first; track; track = track->next)
+	{
+		if(track == dest_track)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *current = track->plugins.values[i];
+
+			if(current->shared_plugin == plugin)
+				current->shift(dest_postime - current->get_pts());
+		}
 	}
 }
 

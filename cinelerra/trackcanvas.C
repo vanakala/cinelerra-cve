@@ -240,7 +240,9 @@ void TrackCanvas::drag_motion()
 	}
 
 	if(mainsession->current_operation == DRAG_ASSET ||
-			mainsession->current_operation == DRAG_EDIT)
+			mainsession->current_operation == DRAG_EDIT ||
+			mainsession->current_operation == DRAG_AEFFECT_COPY ||
+			mainsession->current_operation == DRAG_VEFFECT_COPY)
 	{
 		redraw = 1;
 	}
@@ -345,35 +347,21 @@ int TrackCanvas::drag_stop()
 				(mainsession->current_operation == DRAG_VEFFECT_COPY &&
 				mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
-			mainsession->current_operation = NO_OPERATION;
+			int cursor_x, cursor_y;
 
-// Insert shared plugin in source
-// Move source to different location
-			if(mainsession->plugin_highlighted)
-			{
-				mwindow->move_effect(mainsession->drag_plugin,
-					0,
-					mainsession->plugin_highlighted->get_pts());
-				result = 1;
-			}
-			else
-// Move to a new plugin set between two edits
-			if(mainsession->edit_highlighted)
-			{
-				mwindow->move_effect(mainsession->drag_plugin,
-					mainsession->track_highlighted,
-					mainsession->edit_highlighted->get_pts());
-				result = 1;
-			}
-			else
-// Move to a new plugin set
-			if(mainsession->track_highlighted)
-			{
-				mwindow->move_effect(mainsession->drag_plugin,
-					mainsession->track_highlighted,
-					0);
-				result = 1;
-			}
+			mainsession->current_operation = NO_OPERATION;
+			get_relative_cursor_pos(&cursor_x, &cursor_y);
+
+			ptstime drop_pos = cursor_x *
+				master_edl->local_session->zoom_time +
+				master_edl->local_session->view_start_pts;
+			drop_pos -= mainsession->drag_plugin->get_length() / 2;
+			if(drop_pos < 0)
+				drop_pos = 0;
+			mwindow->move_effect(mainsession->drag_plugin,
+				mainsession->track_highlighted,
+				drop_pos);
+			result = 1;
 		}
 		break;
 
@@ -1341,37 +1329,41 @@ void TrackCanvas::draw_highlighting()
 			(mainsession->current_operation == DRAG_VEFFECT_COPY &&
 				mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
-// Put it before another plugin
-			if(mainsession->plugin_highlighted)
-				plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
+			int cursor_x, cursor_y;
+			get_relative_cursor_pos(&cursor_x, &cursor_y);
+// Plugin on src track
+			if(mainsession->drag_plugin->track == mainsession->track_highlighted)
+			{
+				int tx, ty, tw, th;
+
+				track_dimensions(mainsession->track_highlighted, tx, ty, tw, th);
+				plugin_dimensions(mainsession->drag_plugin, x, y, w, h);
+				x = cursor_x - w / 2;
+				if(x + w > tx + tw)
+					x = tx + tw - w;
+				if(x < 0)
+					x = 0;
+			}
 			else
 			if(mainsession->track_highlighted)
 			{
-				track_dimensions(mainsession->track_highlighted, x, y, w, h);
+// Plugin on another track
+				int tx, ty, tw, th;
 
-// Put it in a new plugin set determined by an edit boundary
-				if(mainsession->edit_highlighted)
-				{
-					int temp_y, temp_h;
-					edit_dimensions(mainsession->edit_highlighted->track,
-						mainsession->edit_highlighted->get_pts(),
-						mainsession->edit_highlighted->end_pts(),
-						x,
-						temp_y,
-						w,
-						temp_h);
-				}
-// Put it in a new plugin set at the start of the track
+				track_dimensions(mainsession->track_highlighted, tx, y, tw, h);
+				plugin_dimensions(mainsession->drag_plugin, x, y, w, h);
+
+				x = cursor_x - w / 2;
+				if(x + w > tx + tw)
+					x = tx + tw - w;
+				if(x < 0)
+					x = 0;
+
 			}
-
-			w = (int)(mainsession->drag_plugin->get_length() /
-				master_edl->local_session->zoom_time);
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-				MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
-					draw_box = 1;
-			}
+					MWindowGUI::visible(y, y + h, 0, get_h()))
+				draw_box = 1;
 		}
 		break;
 
