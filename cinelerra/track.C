@@ -480,31 +480,6 @@ Plugin* Track::insert_effect(PluginServer *server,
 	return plugin;
 }
 
-void Track::xchg_plugins(Plugin *plugin1, Plugin *plugin2)
-{
-	int si1, si2;
-
-	if(plugin1 == plugin2)
-		return;
-
-	si1 = si2 = -1;
-
-	for(int i = 0; i < plugins.total; i++)
-	{
-		if(plugins.values[i] == plugin1)
-			si1 = i;
-		if(plugins.values[i] == plugin2)
-			si2 = i;
-	}
-
-	if(si1 >= 0 && si2 >= 0)
-	{
-		Plugin *temp = plugins.values[si1];
-		plugins.values[si1] = plugins.values[si2];
-		plugins.values[si2] = temp;
-	}
-}
-
 void Track::move_plugin_up(Plugin *plugin)
 {
 	for(int i = 0; i < this->plugins.total; i++)

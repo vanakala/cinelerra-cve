@@ -90,7 +90,6 @@ public:
 	void insert_track(Track *track, ptstime length,
 		ptstime position, int overwrite = 0);
 
-	void xchg_plugins(Plugin *plugin1, Plugin *plugin2);
 	void move_plugin_up(Plugin *plugin);
 	void move_plugin_down(Plugin *plugin);
 	void remove_plugin(Plugin *plugin);
