@@ -96,6 +96,8 @@ public:
 	void remove_asset(Asset *asset);
 	void detach_transition(Plugin *transition);
 	void cleanup();
+	// Maximum possible plugin start pts on track
+	ptstime plugin_max_start(Plugin *plugin);
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value

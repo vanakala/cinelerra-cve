@@ -1141,6 +1141,15 @@ void Track::cleanup()
 	}
 }
 
+ptstime Track::plugin_max_start(Plugin *plugin)
+{
+	if(master && plugin->plugin_server &&
+			plugin->plugin_server->synthesis)
+		return get_length();
+	else
+		return tracks->length() - plugin->get_length();
+}
+
 Edit *Track::editof(ptstime postime, int use_nudge)
 {
 	return edits->editof(postime, use_nudge);
