@@ -164,19 +164,12 @@ void Tracks::move_effect(Plugin *plugin,
 			}
 		}
 	}
-	if(dest_track->master &&  plugin->plugin_server &&
-				plugin->plugin_server->synthesis)
-	{
-		if(dest_postime > length())
-			dest_postime = length();
-	}
-	else
-	{
-		ptstime max_start = length() - plugin->get_length();
 
-		if(dest_postime > max_start)
-			dest_postime = max_start;
-	}
+	ptstime max_start = dest_track->plugin_max_start(plugin);
+
+	if(dest_postime > max_start)
+		dest_postime = max_start;
+
 	plugin->shift(dest_postime - plugin->get_pts());
 
 	for(Track *track = first; track; track = track->next)

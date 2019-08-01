@@ -1334,13 +1334,14 @@ void TrackCanvas::draw_highlighting()
 // Plugin on src track
 			if(mainsession->drag_plugin->track == mainsession->track_highlighted)
 			{
-				int tx, ty, tw, th;
-
-				track_dimensions(mainsession->track_highlighted, tx, ty, tw, th);
 				plugin_dimensions(mainsession->drag_plugin, x, y, w, h);
 				x = cursor_x - w / 2;
-				if(x + w > tx + tw)
-					x = tx + tw - w;
+				int x_max = round(mainsession->track_highlighted->plugin_max_start(
+						mainsession->drag_plugin) /
+					master_edl->local_session->zoom_time);
+
+				if(x > x_max)
+					x = x_max;
 				if(x < 0)
 					x = 0;
 			}
@@ -1351,14 +1352,17 @@ void TrackCanvas::draw_highlighting()
 				int tx, ty, tw, th;
 
 				track_dimensions(mainsession->track_highlighted, tx, y, tw, h);
-				plugin_dimensions(mainsession->drag_plugin, x, y, w, h);
+				plugin_dimensions(mainsession->drag_plugin, x, ty, w, th);
 
 				x = cursor_x - w / 2;
-				if(x + w > tx + tw)
-					x = tx + tw - w;
+				int x_max = round(mainsession->track_highlighted->plugin_max_start(
+						mainsession->drag_plugin) /
+					master_edl->local_session->zoom_time);
+
+				if(x > x_max)
+					x = x_max;
 				if(x < 0)
 					x = 0;
-
 			}
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
