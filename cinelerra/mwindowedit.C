@@ -653,6 +653,9 @@ void MWindow::move_effect(Plugin *plugin,
 	ptstime dest_position)
 {
 
+	if(cwindow->stop_playback())
+		return;
+
 	master_edl->tracks->move_effect(plugin,
 		dest_track, 
 		dest_position);
