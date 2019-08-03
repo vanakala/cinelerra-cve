@@ -751,7 +751,17 @@ void EDL::get_shared_plugins(Track *source,
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
-					plugin_locations->append(plugin);
+					for(int j = 0; j < source->plugins.total; j++)
+					{
+						// Already shared on this track?
+						if(source->plugins.values[j]->shared_plugin == plugin)
+						{
+							plugin = 0;
+							break;
+						}
+					}
+					if(plugin)
+						plugin_locations->append(plugin);
 				}
 			}
 		}
