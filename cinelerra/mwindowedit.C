@@ -547,6 +547,19 @@ void MWindow::insert_effect(const char *title,
 		start, length,
 		plugin_type,
 		shared_plugin, shared_track);
+// Adjust plugin length
+	ptstime max_start = track->plugin_max_start(new_plugin);
+	if(start > max_start)
+	{
+		ptstime new_length = length - (start - max_start);
+
+		if(new_length < EPSILON)
+		{
+			track->remove_plugin(new_plugin);
+			return;
+		}
+		new_plugin->set_length(new_length);
+	}
 
 	if(server && !(result = server->open_plugin(1, preferences, 0, 0)))
 	{
