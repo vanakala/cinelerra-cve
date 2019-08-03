@@ -2797,34 +2797,6 @@ int BC_WindowBase::get_cursor_over_window(int *rel_x, int *rel_y)
 	return !temp_win2 || match_window(temp_win2);
 }
 
-int BC_WindowBase::relative_cursor_x(BC_WindowBase *pov)
-{
-	int x, y;
-	Window tempwin;
-
-	translate_coordinates(top_level->event_win, 
-		pov->win,
-		top_level->cursor_x,
-		top_level->cursor_y,
-		&x,
-		&y);
-	return x;
-}
-
-int BC_WindowBase::relative_cursor_y(BC_WindowBase *pov)
-{
-	int x, y;
-	Window tempwin;
-
-	translate_coordinates(top_level->event_win, 
-		pov->win,
-		top_level->cursor_x,
-		top_level->cursor_y,
-		&x,
-		&y);
-	return y;
-}
-
 int BC_WindowBase::get_drag_x()
 {
 	return top_level->drag_x;

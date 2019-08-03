@@ -250,8 +250,6 @@ public:
 // Cursor position of drag start
 	int get_drag_x();
 	int get_drag_y();
-	int relative_cursor_x(BC_WindowBase *pov);
-	int relative_cursor_y(BC_WindowBase *pov);
 	int alt_down();
 	int shift_down();
 	int ctrl_down();
