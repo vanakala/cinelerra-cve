@@ -276,13 +276,17 @@ void MWindow::copy_effects()
 	FileXML file;
 	Tracks tracks(0);
 
-	tracks.copy(master_edl->tracks, master_edl->local_session->get_selectionstart(),
-		master_edl->local_session->get_selectionend());
-	tracks.automation_xml(&file);
+	if(master_edl->local_session->get_selectionstart() <
+		master_edl->local_session->get_selectionend() - EPSILON)
+	{
+		tracks.copy(master_edl->tracks, master_edl->local_session->get_selectionstart(),
+			master_edl->local_session->get_selectionend());
+		tracks.automation_xml(&file);
 
-	gui->get_clipboard()->to_clipboard(file.string, 
-		strlen(file.string), 
-		SECONDARY_SELECTION);
+		gui->get_clipboard()->to_clipboard(file.string,
+			strlen(file.string),
+			SECONDARY_SELECTION);
+	}
 }
 
 // Uses cropping coordinates in edl session to crop and translate video.
@@ -351,20 +355,24 @@ void MWindow::cut()
 
 void MWindow::cut_effects()
 {
-	copy_effects();
+	if(master_edl->local_session->get_selectionstart() <
+		master_edl->local_session->get_selectionend() - EPSILON)
+	{
+		copy_effects();
 
-	master_edl->tracks->clear_automation(master_edl->local_session->get_selectionstart(),
-		master_edl->local_session->get_selectionend());
-	save_backup();
-	undo->update_undo(_("cut keyframes"), LOAD_AUTOMATION); 
+		master_edl->tracks->clear_automation(master_edl->local_session->get_selectionstart(),
+			master_edl->local_session->get_selectionend());
+		save_backup();
+		undo->update_undo(_("cut keyframes"), LOAD_AUTOMATION);
 
-	restart_brender();
-	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
-	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
-	cwindow->update(WUPD_POSITION);
+		restart_brender();
+		update_plugin_guis();
+		gui->canvas->draw_overlays();
+		gui->canvas->flash();
+		sync_parameters(CHANGE_PARAMS);
+		gui->patchbay->update();
+		cwindow->update(WUPD_POSITION);
+	}
 }
 
 void MWindow::delete_inpoint()
