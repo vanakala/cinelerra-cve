@@ -25,6 +25,8 @@
 #include "arraylist.h"
 #include "asset.inc"
 #include "audiodevice.inc"
+#include "auto.inc"
+#include "autos.inc"
 #include "awindow.inc"
 #include "batchrender.inc"
 #include "bcwindowbase.inc"
@@ -332,6 +334,7 @@ public:
 	void cut_effects();
 	void copy_effects();
 	void paste_effects(int operation);
+	void copy_keyframes(Autos *autos, Auto *keyframe, Plugin *plugin);
 	void clear_automation();
 	void straighten_automation();
 

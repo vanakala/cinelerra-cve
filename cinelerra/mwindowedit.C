@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assetlist.h"
+#include "autos.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcclipboard.h"
@@ -287,6 +288,35 @@ void MWindow::copy_effects()
 			strlen(file.string),
 			SECONDARY_SELECTION);
 	}
+}
+
+void MWindow::copy_keyframes(Autos *autos, Auto *keyframe, Plugin *plugin)
+{
+	FileXML file;
+
+	file.tag.set_title("CLIPBOARD_AUTO");
+
+	if(autos)
+	{
+		file.tag.set_property("TYPE", "Auto");
+		file.tag.set_property("TITLE", Automation::name(autos->autoidx));
+	}
+	else if(plugin)
+	{
+		if(!plugin->plugin_server)
+			return;
+		file.tag.set_property("TYPE", "KeyFrame");
+		file.tag.set_property("TITLE", plugin->plugin_server->title);
+	}
+	file.append_tag();
+	file.append_newline();
+	keyframe->save_xml(&file);
+	file.tag.set_title("/CLIPBOARD_AUTO");
+	file.append_tag();
+	file.append_newline();
+	gui->get_clipboard()->to_clipboard(file.string,
+		strlen(file.string),
+		SECONDARY_SELECTION);
 }
 
 // Uses cropping coordinates in edl session to crop and translate video.

@@ -203,11 +203,8 @@ KeyframePopupCopy::KeyframePopupCopy(KeyframePopup *popup)
 
 int KeyframePopupCopy::handle_event()
 {
-//	FIXME:
-//	we want to copy just keyframe under cursor, NOT all keyframes at this frame
-//	- very hard to do, so this is good approximation for now...
-
-	mwindow_global->copy_effects();
+	mwindow_global->copy_keyframes(popup->keyframe_autos,
+		popup->keyframe_auto, popup->keyframe_plugin);
 	return 1;
 }
 
