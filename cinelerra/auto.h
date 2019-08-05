@@ -56,8 +56,6 @@ public:
 	EDL *edl;
 	Autos *autos;
 	ptstime pos_time;
-// Units native to the track
-	int is_default;
 };
 
 #endif

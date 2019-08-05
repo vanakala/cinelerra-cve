@@ -32,7 +32,6 @@ Auto::Auto()
 	this->autos = 0;
 	pos_time = 0;
 	skip = 0;
-	is_default = 0;
 }
 
 Auto::Auto(EDL *edl, Autos *autos)
@@ -42,7 +41,6 @@ Auto::Auto(EDL *edl, Autos *autos)
 	this->autos = autos;
 	pos_time = 0;
 	skip = 0;
-	is_default = 0;
 }
 
 Auto& Auto::operator=(Auto& that)
