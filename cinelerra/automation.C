@@ -60,7 +60,7 @@ struct automation_def Automation::automation_tbl[] =
 	{ N_("Projector X"), "PROJECTOR_X", "SHOW_PROJECTOR_X",
 		0, AUTOGROUPTYPE_X, AUTOMATION_TYPE_FLOAT,
 		RED, DRAG_PROJECTOR_X, DRAG_PROJECTOR_X },
-	{ _("Projector Y"), "PROJECTOR_Y", "SHOW_PROJECTOR_Y",
+	{ N_("Projector Y"), "PROJECTOR_Y", "SHOW_PROJECTOR_Y",
 		0, AUTOGROUPTYPE_Y, AUTOMATION_TYPE_FLOAT,
 		GREEN, DRAG_PROJECTOR_Y, DRAG_PROJECTOR_Y },
 	{ N_("Projector Z"), "PROJECTOR_Z", "SHOW_PROJECTOR_Z",
@@ -292,6 +292,21 @@ size_t Automation::get_size()
 	if(autos[AUTOMATION_MUTE])
 		size += ((IntAutos*)autos[AUTOMATION_MUTE])->get_size();
 	return size;
+}
+
+const char *Automation::name(int index)
+{
+	if(index >= 0 && index < AUTOMATION_TOTAL)
+		return automation_tbl[index].name;
+	return 0;
+}
+
+int Automation::index(const char *name)
+{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+		if(!strcmp(automation_tbl[i].name, name))
+			return i;
+	return -1;
 }
 
 void Automation::dump(int indent)

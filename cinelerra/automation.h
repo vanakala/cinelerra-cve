@@ -116,6 +116,8 @@ public:
 		int autogrouptype);
 	ptstime get_length();
 	virtual size_t get_size();
+	static const char *name(int index);
+	static int index(const char *name);
 
 	void dump(int indent = 0);
 
