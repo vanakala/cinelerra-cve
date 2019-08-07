@@ -51,8 +51,10 @@ public:
 
 	void run();
 
-	Load *load;
 	int load_mode;
+	LoadFileWindow *window;
+private:
+	Load *load;
 };
 
 class NewTimeline;

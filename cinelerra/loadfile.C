@@ -50,6 +50,8 @@ int Load::handle_event()
 {
 	if(!thread->running())
 		thread->start();
+	else if(thread->window)
+		thread->window->raise_window();
 	return 1;
 }
 
@@ -68,6 +70,7 @@ void LoadFileThread::run()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	int cx, cy;
+	LoadFileWindow *win;
 	char default_path[BCTEXTLEN];
 
 	strcpy(default_path, "~");
@@ -75,8 +78,8 @@ void LoadFileThread::run()
 	load_mode = mwindow_global->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	mwindow_global->get_abs_cursor_pos(&cx, &cy);
-	LoadFileWindow window(this, cx, cy, default_path);
-	result = window.run_window();
+	win = window = new LoadFileWindow(this, cx, cy, default_path);
+	result = window->run_window();
 
 // Collect all selected files
 	if(!result)
@@ -84,7 +87,7 @@ void LoadFileThread::run()
 		char *in_path, *out_path;
 		int i = 0;
 
-		while((in_path = window.get_path(i)))
+		while((in_path = window->get_path(i)))
 		{
 			int j;
 			for(j = 0; j < path_list.total; j++)
@@ -103,8 +106,11 @@ void LoadFileThread::run()
 	}
 
 	mwindow_global->defaults->update("DEFAULT_LOADPATH",
-		window.get_submitted_path());
+		window->get_submitted_path());
 	mwindow_global->defaults->update("LOAD_MODE", load_mode);
+
+	window = 0;
+	delete win;
 
 // No file selected
 	if(path_list.total == 0 || result == 1)
