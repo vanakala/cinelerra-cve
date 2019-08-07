@@ -71,7 +71,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	filemenu->add_item(new_project = new New(mwindow));
 
 // file loaders
-	filemenu->add_item(load_file = new Load(mwindow, this));
+	filemenu->add_item(load_file = new Load(this));
 
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
@@ -89,7 +89,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	filemenu->add_item(new DumpEDL(mwindow));
 	filemenu->add_item(new DumpPlugins(mwindow));
 	filemenu->add_item(new ShowStatus(mwindow));
-	filemenu->add_item(new LoadBackup(mwindow));
+	filemenu->add_item(new LoadBackup());
 	filemenu->add_item(new SaveBackup(mwindow));
 
 	BC_Menu *editmenu;
@@ -260,7 +260,7 @@ void MainMenu::init_loads(BC_Hash *defaults)
 	{
 		char *path = recent_load->items.values[i]->get_text();
 
-		filemenu->add_item(load[i] = new LoadPrevious(mwindow));
+		filemenu->add_item(load[i] = new LoadPrevious());
 		dir.extract_name(filename, path, 0);
 		load[i]->set_text(filename);
 		load[i]->set_path(path);
@@ -390,7 +390,7 @@ void MainMenu::add_load(const char *new_path)
 	if (new_total > total_loads) {
 		// just create a new item if there is room for it
 		int i = new_total - 1;
-		load[i] = new LoadPrevious(mwindow);
+		load[i] = new LoadPrevious();
 		dir.extract_name(filename, new_path, 0);
 		load[i]->set_text(filename);
 		load[i]->set_path(new_path);

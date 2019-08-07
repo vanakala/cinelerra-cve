@@ -27,7 +27,6 @@
 #include "bctoggle.h"
 #include "loadmode.inc"
 #include "mainmenu.inc"
-#include "mwindow.inc"
 #include "thread.h"
 
 class LoadFileThread;
@@ -36,12 +35,11 @@ class LoadFileWindow;
 class Load : public BC_MenuItem
 {
 public:
-	Load(MWindow *mwindow, MainMenu *mainmenu);
+	Load(MainMenu *mainmenu);
 	~Load();
 
 	int handle_event();
 
-	MWindow *mwindow;
 	MainMenu *mainmenu;
 	LoadFileThread *thread;
 };
@@ -49,11 +47,10 @@ public:
 class LoadFileThread : public Thread
 {
 public:
-	LoadFileThread(MWindow *mwindow, Load *menuitem);
+	LoadFileThread(Load *menuitem);
 
 	void run();
 
-	MWindow *mwindow;
 	Load *load;
 	int load_mode;
 };
@@ -67,8 +64,8 @@ class ResourcesOnly;
 class LoadFileWindow : public BC_FileBox
 {
 public:
-	LoadFileWindow(MWindow *mwindow, 
-		LoadFileThread *thread, int absx, int absy,
+	LoadFileWindow(LoadFileThread *thread,
+		int absx, int absy,
 		char *init_directory);
 	~LoadFileWindow();
 
@@ -76,7 +73,6 @@ public:
 
 	LoadFileThread *thread;
 	LoadMode *loadmode;
-	MWindow *mwindow;
 	NewTimeline *newtimeline;
 	NewConcatenate *newconcatenate;
 	AppendNewTracks *newtracks;
@@ -88,7 +84,9 @@ class NewTimeline : public BC_Radial
 {
 public:
 	NewTimeline(int x, int y, LoadFileWindow *window);
+
 	int handle_event();
+private:
 	LoadFileWindow *window;
 };
 
@@ -96,7 +94,9 @@ class NewConcatenate : public BC_Radial
 {
 public:
 	NewConcatenate(int x, int y, LoadFileWindow *window);
+
 	int handle_event();
+private:
 	LoadFileWindow *window;
 };
 
@@ -104,7 +104,9 @@ class AppendNewTracks : public BC_Radial
 {
 public:
 	AppendNewTracks(int x, int y, LoadFileWindow *window);
+
 	int handle_event();
+private:
 	LoadFileWindow *window;
 };
 
@@ -112,7 +114,9 @@ class EndofTracks : public BC_Radial
 {
 public:
 	EndofTracks(int x, int y, LoadFileWindow *window);
+
 	int handle_event();
+private:
 	LoadFileWindow *window;
 };
 
@@ -120,7 +124,9 @@ class ResourcesOnly : public BC_Radial
 {
 public:
 	ResourcesOnly(int x, int y, LoadFileWindow *window);
+
 	int handle_event();
+private:
 	LoadFileWindow *window;
 };
 
@@ -128,23 +134,21 @@ public:
 class LoadPrevious : public BC_MenuItem
 {
 public:
-	LoadPrevious(MWindow *mwindow);
+	LoadPrevious();
 
 	int handle_event();
 	int set_path(const char *path);
-
-	MWindow *mwindow;
-	Load *loadfile;
-	char path[1024];
+private:
+	char path[BCTEXTLEN];
 };
 
 
 class LoadBackup : public BC_MenuItem
 {
 public:
-	LoadBackup(MWindow *mwindow);
+	LoadBackup();
+
 	int handle_event();
-	MWindow *mwindow;
 };
 
 #endif

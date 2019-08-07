@@ -21,14 +21,10 @@
 
 #include "bchash.h"
 #include "bcresources.h"
-#include "edl.h"
-#include "file.h"
 #include "filesystem.h"
-#include "indexfile.h"
 #include "language.h"
 #include "loadfile.h"
 #include "loadmode.h"
-#include "localsession.h"
 #include "mainmenu.h"
 #include "mainundo.h"
 #include "mainsession.h"
@@ -38,12 +34,11 @@
 
 #include <string.h>
 
-Load::Load(MWindow *mwindow, MainMenu *mainmenu)
+Load::Load(MainMenu *mainmenu)
  : BC_MenuItem(_("Load files..."), "o", 'o')
 { 
-	this->mwindow = mwindow;
 	this->mainmenu = mainmenu;
-	thread = new LoadFileThread(mwindow, this);
+	thread = new LoadFileThread(this);
 }
 
 Load::~Load()
@@ -54,17 +49,14 @@ Load::~Load()
 int Load::handle_event() 
 {
 	if(!thread->running())
-	{
 		thread->start();
-	}
 	return 1;
 }
 
 
-LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
+LoadFileThread::LoadFileThread(Load *load)
  : Thread()
 {
-	this->mwindow = mwindow;
 	this->load = load;
 }
 
@@ -79,60 +71,53 @@ void LoadFileThread::run()
 	char default_path[BCTEXTLEN];
 
 	strcpy(default_path, "~");
-	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
-	load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
+	mwindow_global->defaults->get("DEFAULT_LOADPATH", default_path);
+	load_mode = mwindow_global->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
-	{
-		mwindow->get_abs_cursor_pos(&cx, &cy);
-		LoadFileWindow window(mwindow, this, cx, cy, default_path);
-		result = window.run_window();
-
-		if ((!result) && (load_mode == LOADMODE_REPLACE)) {
-			mwindow->set_filename(window.get_path(0));
-		}
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	LoadFileWindow window(this, cx, cy, default_path);
+	result = window.run_window();
 
 // Collect all selected files
-		if(!result)
+	if(!result)
+	{
+		char *in_path, *out_path;
+		int i = 0;
+
+		while((in_path = window.get_path(i)))
 		{
-			char *in_path, *out_path;
-			int i = 0;
-
-			while((in_path = window.get_path(i)))
+			int j;
+			for(j = 0; j < path_list.total; j++)
 			{
-				int j;
-				for(j = 0; j < path_list.total; j++)
-				{
-					if(!strcmp(in_path, path_list.values[j])) break;
-				}
-				
-				if(j == path_list.total)
-				{
-					path_list.append(out_path = new char[strlen(in_path) + 1]);
-					strcpy(out_path, in_path);
-				}
-				i++;
+				if(!strcmp(in_path, path_list.values[j]))
+					break;
 			}
-		}
 
-		mwindow->defaults->update("DEFAULT_LOADPATH", 
-			window.get_submitted_path());
-		mwindow->defaults->update("LOAD_MODE", load_mode);
+			if(j == path_list.total)
+			{
+				path_list.append(out_path = new char[strlen(in_path) + 1]);
+				strcpy(out_path, in_path);
+			}
+			i++;
+		}
 	}
+
+	mwindow_global->defaults->update("DEFAULT_LOADPATH",
+		window.get_submitted_path());
+	mwindow_global->defaults->update("LOAD_MODE", load_mode);
 
 // No file selected
 	if(path_list.total == 0 || result == 1)
-	{
 		return;
-	}
 
-	mwindow->interrupt_indexes();
-	mwindow->load_filenames(&path_list, load_mode);
-	mwindow->gui->mainmenu->add_load(path_list.values[0]);
+	mwindow_global->interrupt_indexes();
+	mwindow_global->load_filenames(&path_list, load_mode);
+	mwindow_global->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
-	mwindow->save_backup();
+	mwindow_global->save_backup();
 
-	mwindow->restart_brender();
+	mwindow_global->restart_brender();
 
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 		mainsession->changes_made = 0;
@@ -141,8 +126,7 @@ void LoadFileThread::run()
 }
 
 
-LoadFileWindow::LoadFileWindow(MWindow *mwindow, 
-	LoadFileThread *thread, int absx, int absy,
+LoadFileWindow::LoadFileWindow(LoadFileThread *thread, int absx, int absy,
 	char *init_directory)
  : BC_FileBox(absx,
 		absy - BC_WindowBase::get_resources()->filebox_h / 2,
@@ -152,14 +136,13 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
 		0,
 		0,
 		1,
-		mwindow->theme->loadfile_pad)
+		mwindow_global->theme->loadfile_pad)
 {
 	int x = get_w() / 2 - 200;
 	int y = get_cancel_button()->get_y() - 50;
 
 	this->thread = thread;
-	this->mwindow = mwindow; 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 	loadmode = new LoadMode(this, x, y, &thread->load_mode, 0);
 }
 
@@ -276,11 +259,9 @@ int ResourcesOnly::handle_event()
 }
 
 
-LoadPrevious::LoadPrevious(MWindow *mwindow)
+LoadPrevious::LoadPrevious()
  : BC_MenuItem("")
 { 
-	this->mwindow = mwindow;
-	this->loadfile = loadfile; 
 }
 
 int LoadPrevious::handle_event()
@@ -288,17 +269,15 @@ int LoadPrevious::handle_event()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char *out_path;
-	int load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
-	mwindow->load_filenames(&path_list, LOADMODE_REPLACE);
-	mwindow->gui->mainmenu->add_load(path_list.values[0]);
+	mwindow_global->load_filenames(&path_list, LOADMODE_REPLACE);
+	mwindow_global->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
-	mwindow->defaults->update("LOAD_MODE", load_mode);
-	mwindow->undo->update_undo(_("load previous"), LOAD_ALL);
-	mwindow->save_backup();
+	mwindow_global->undo->update_undo(_("load previous"), LOAD_ALL);
+	mwindow_global->save_backup();
 	mainsession->changes_made = 0;
 	return 1;
 }
@@ -309,10 +288,9 @@ int LoadPrevious::set_path(const char *path)
 }
 
 
-LoadBackup::LoadBackup(MWindow *mwindow)
+LoadBackup::LoadBackup()
  : BC_MenuItem(_("Load backup"))
 {
-	this->mwindow = mwindow;
 }
 
 int LoadBackup::handle_event()
@@ -328,14 +306,10 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 
-	mwindow->load_filenames(&path_list, LOADMODE_REPLACE);
-	master_edl->local_session->clip_title[0] = 0;
-// This is unique to backups since the path of the backup is different than the
-// path of the project.
-	mwindow->set_filename(master_edl->project_path);
+	mwindow_global->load_filenames(&path_list, LOADMODE_REPLACE);
 	path_list.remove_all_objects();
-	mwindow->undo->update_undo(_("load backup"), LOAD_ALL, 0, 0);
-	mwindow->save_backup();
+	mwindow_global->undo->update_undo(_("load backup"), LOAD_ALL, 0, 0);
+	mwindow_global->save_backup();
 // We deliberately mark the project changed, because the backup is most likely
 // not identical to the project file that it refers to.
 	mainsession->changes_made = 1;
