@@ -189,9 +189,11 @@ void BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
 	{
 		length[clipboard_num] = len;
 		this->data[clipboard_num] = new char[len + 1];
-		memcpy(this->data[clipboard_num], data, len);
-		this->data[clipboard_num][len] = 0;
 	}
+
+	memcpy(this->data[clipboard_num], data, len);
+	this->data[clipboard_num][len] = 0;
+
 	XSetSelectionOwner(out_display, 
 		(clipboard_num == PRIMARY_SELECTION) ? primary : secondary, 
 		out_win, 
