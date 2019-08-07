@@ -44,19 +44,24 @@ PluginPopup::PluginPopup()
 	add_item(on = new PluginPopupOn(this));
 	add_item(new PluginPopupUp(this));
 	add_item(new PluginPopupDown(this));
+	pastekeyframe = new PluginPopupPasteKeyFrame(this);
 	have_show = 0;
+	have_keyframe = 0;
 }
 
 PluginPopup::~PluginPopup()
 {
 	if(!have_show)
 		delete show;
+	if(have_keyframe)
+		delete pastekeyframe;
 }
 
 void PluginPopup::update(Plugin *plugin)
 {
 	on->set_checked(plugin->on);
 	show->set_checked(plugin->show);
+	this->plugin = plugin;
 	if(plugin->plugin_type == PLUGIN_STANDALONE)
 	{
 		if(!have_show)
@@ -70,7 +75,20 @@ void PluginPopup::update(Plugin *plugin)
 		remove_item(show);
 		have_show = 0;
 	}
-	this->plugin = plugin;
+	if(plugin->plugin_type == PLUGIN_STANDALONE &&
+		mwindow_global->can_paste_keyframe(plugin->track, plugin))
+	{
+		if(!have_keyframe)
+		{
+			add_item(pastekeyframe);
+			have_keyframe = 1;
+		}
+	}
+	else
+	{
+		remove_item(pastekeyframe);
+		have_keyframe = 0;
+	}
 }
 
 
@@ -179,4 +197,15 @@ int PluginPopupDown::handle_event()
 {
 	mwindow_global->move_plugin_down(popup->plugin);
 	return 1;
+}
+
+PluginPopupPasteKeyFrame::PluginPopupPasteKeyFrame(PluginPopup *popup)
+ : BC_MenuItem(_("Paste keyframe"))
+{
+	this->popup = popup;
+}
+
+int PluginPopupPasteKeyFrame::handle_event()
+{
+	mwindow_global->paste_keyframe(popup->plugin->track, popup->plugin);
 }

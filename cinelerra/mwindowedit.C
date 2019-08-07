@@ -319,6 +319,133 @@ void MWindow::copy_keyframes(Autos *autos, Auto *keyframe, Plugin *plugin)
 		SECONDARY_SELECTION);
 }
 
+void MWindow::paste_keyframe(Track *track, Plugin *plugin)
+{
+	int len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	ptstime position = master_edl->local_session->get_selectionstart(1);
+
+	if(len)
+	{
+		FileXML file;
+		char *string = new char[len + 1];
+
+		gui->get_clipboard()->from_clipboard(string,
+			len, SECONDARY_SELECTION);
+
+		file.read_from_string(string);
+		delete string;
+
+		if(!file.read_tag() && file.tag.title_is("CLIPBOARD_AUTO"))
+		{
+			char *type, *title;
+			Auto *new_auto;
+
+			if(cwindow->stop_playback())
+				return;
+
+			if(!(type = file.tag.get_property("TYPE")))
+				return;
+
+			if(!(title = file.tag.get_property("TITLE")))
+				return;
+
+			if(!plugin && !strcmp(type, "Auto"))
+			{
+				int id;
+
+				if((id = Automation::index(title)) < 0)
+					return;
+
+				if(!track->automation || !track->automation->autos[id] ||
+						!edlsession->auto_conf->auto_visible[id])
+					return;
+
+				if(file.read_tag() || !file.tag.title_is("AUTO"))
+					return;
+
+				new_auto = track->automation->autos[id]->insert_auto(position);
+			}
+			else if(plugin && !strcmp(type, "KeyFrame") &&
+					edlsession->auto_conf->plugins_visible)
+			{
+				if(!plugin->plugin_server ||
+						strcmp(plugin->plugin_server->title, title))
+					return;
+
+				new_auto = plugin->keyframes->insert_auto(position);
+			}
+			if(new_auto)
+			{
+				new_auto->load(&file);
+				save_backup();
+				undo->update_undo(_("paste keyframe"), LOAD_ALL);
+
+				gui->update(WUPD_CANVINCR);
+				update_plugin_guis();
+				restart_brender();
+				sync_parameters(CHANGE_EDL);
+			}
+		}
+	}
+}
+
+int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
+{
+	int len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	ptstime position = master_edl->local_session->get_selectionstart(1);
+
+	if(len)
+	{
+		FileXML file;
+		char *string = new char[len + 1];
+
+		gui->get_clipboard()->from_clipboard(string,
+			len, SECONDARY_SELECTION);
+
+		file.read_from_string(string);
+		delete string;
+
+		if(!file.read_tag() && file.tag.title_is("CLIPBOARD_AUTO"))
+		{
+			char *type, *title;
+			Auto *new_auto;
+
+			if(!(type = file.tag.get_property("TYPE")))
+				return 0;
+
+			if(!(title = file.tag.get_property("TITLE")))
+				return 0;
+
+			if(!plugin && !strcmp(type, "Auto"))
+			{
+				int id;
+
+				if(plugin)
+					return 0;
+
+				if((id = Automation::index(title)) < 0)
+					return 0;
+
+				if(!track->automation || !track->automation->autos[id] ||
+						!edlsession->auto_conf->auto_visible[id])
+					return 0;
+				return 1;
+			}
+			else if(plugin && !strcmp(type, "KeyFrame"))
+			{
+				if(!plugin->plugin_server ||
+						strcmp(plugin->plugin_server->title, title) ||
+						!edlsession->auto_conf->plugins_visible)
+					return 0;
+				if(plugin->get_pts() > position || plugin->end_pts() < position)
+					return 0;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 // Uses cropping coordinates in edl session to crop and translate video.
 // We modify the projector since camera automation depends on the track size.
 void MWindow::crop_video()

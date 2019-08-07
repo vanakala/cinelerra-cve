@@ -42,7 +42,9 @@ EditPopup::EditPopup()
 	add_item(new EditPopupAddTrack(this));
 	resize_option = new EditPopupResize(this);
 	matchsize_option = new EditPopupMatchSize(this);
+	pastekeyframe = new EditPopupPasteKeyFrame(this);
 	have_video = 0;
+	have_keyframe = 0;
 }
 
 EditPopup::~EditPopup()
@@ -53,6 +55,8 @@ EditPopup::~EditPopup()
 		delete resize_option;
 		delete matchsize_option;
 	}
+	if(have_keyframe)
+		delete pastekeyframe;
 }
 
 void EditPopup::update(Track *track)
@@ -75,8 +79,20 @@ void EditPopup::update(Track *track)
 		remove_item(matchsize_option);
 		have_video = 0;
 	}
+	if(mwindow_global->can_paste_keyframe(track, 0))
+	{
+		if(!have_keyframe)
+		{
+			add_item(pastekeyframe);
+			have_keyframe = 1;
+		}
+	}
+	else
+	{
+		remove_item(pastekeyframe);
+		have_keyframe = 0;
+	}
 }
-
 
 EditAttachEffect::EditAttachEffect(EditPopup *popup)
  : BC_MenuItem(_("Attach effect..."))
@@ -180,4 +196,15 @@ int EditPopupAddTrack::handle_event()
 {
 	mwindow_global->add_track(popup->track->data_type, 1, popup->track);
 	return 1;
+}
+
+EditPopupPasteKeyFrame::EditPopupPasteKeyFrame(EditPopup *popup)
+ : BC_MenuItem(_("Paste keyframe"))
+{
+	this->popup = popup;
+}
+
+int EditPopupPasteKeyFrame::handle_event()
+{
+	mwindow_global->paste_keyframe(popup->track, 0);
 }

@@ -335,6 +335,8 @@ public:
 	void copy_effects();
 	void paste_effects(int operation);
 	void copy_keyframes(Autos *autos, Auto *keyframe, Plugin *plugin);
+	void paste_keyframe(Track *track, Plugin *plugin);
+	int can_paste_keyframe(Track *track, Plugin *plugin);
 	void clear_automation();
 	void straighten_automation();
 
