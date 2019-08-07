@@ -32,6 +32,7 @@
 #include "edlsession.h"
 #include "language.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mainerror.h"
 #include "mainprogress.h"
 #include "mainundo.h"
@@ -847,7 +848,9 @@ void PluginServer::sync_parameters()
 	mwindow->sync_parameters();
 	if(edlsession->auto_conf->plugins_visible)
 	{
+		mwindow->gui->cursor->hide();
 		mwindow->gui->canvas->draw_overlays();
+		mwindow->gui->cursor->show();
 		mwindow->gui->canvas->flash();
 	}
 }
