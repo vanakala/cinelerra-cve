@@ -355,6 +355,8 @@ public:
 	void get_abs_cursor_pos(int *abs_x, int *abs_y);
 	// Get icon for window
 	VFrame *get_window_icon();
+	// Draw trackcanvas overlays
+	void draw_canvas_overlays();
 	SplashGUI *splash_window;
 	GLThread *glthread;
 

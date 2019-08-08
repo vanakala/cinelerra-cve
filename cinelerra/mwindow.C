@@ -569,8 +569,7 @@ void MWindow::set_brender_start()
 {
 	edlsession->brender_start = master_edl->local_session->get_selectionstart();
 	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 }
 
 void MWindow::load_filenames(ArrayList<char*> *filenames,
@@ -1029,8 +1028,7 @@ void MWindow::toggle_loop_playback()
 	set_loop_boundaries();
 	save_backup();
 
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 	sync_parameters(CHANGE_PARAMS);
 }
 
@@ -1686,6 +1684,14 @@ void MWindow::reset_meters()
 VFrame *MWindow::get_window_icon()
 {
 	return theme->get_image("mwindow_icon");
+}
+
+void MWindow::draw_canvas_overlays()
+{
+	gui->cursor->hide();
+	gui->canvas->draw_overlays();
+	gui->cursor->show();
+	gui->canvas->flash();
 }
 
 void MWindow::show_program_status()
