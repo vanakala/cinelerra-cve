@@ -623,6 +623,11 @@ ptstime Plugin::plugin_change_duration(ptstime start, ptstime length)
 	return length;
 }
 
+void Plugin::clear_keyframes()
+{
+	keyframes->clear_all();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);

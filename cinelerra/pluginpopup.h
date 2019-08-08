@@ -133,4 +133,12 @@ private:
 	PluginPopup *popup;
 };
 
+class PluginPopupClearKeyFrames : public BC_MenuItem
+{
+public:
+	PluginPopupClearKeyFrames(PluginPopup *popup);
+	int handle_event();
+private:
+	PluginPopup *popup;
+};
 #endif

@@ -40,6 +40,7 @@ PluginPopup::PluginPopup()
 {
 	add_item(change = new PluginPopupChange(this));
 	add_item(detach = new PluginPopupDetach(this));
+	add_item(new PluginPopupClearKeyFrames(this));
 	show = new PluginPopupShow(this);
 	add_item(on = new PluginPopupOn(this));
 	add_item(new PluginPopupUp(this));
@@ -208,4 +209,17 @@ PluginPopupPasteKeyFrame::PluginPopupPasteKeyFrame(PluginPopup *popup)
 int PluginPopupPasteKeyFrame::handle_event()
 {
 	mwindow_global->paste_keyframe(popup->plugin->track, popup->plugin);
+	return 1;
+}
+
+PluginPopupClearKeyFrames::PluginPopupClearKeyFrames(PluginPopup *popup)
+ : BC_MenuItem(_("Clear keyframes"))
+{
+	this->popup = popup;
+}
+
+int PluginPopupClearKeyFrames::handle_event()
+{
+	mwindow_global->clear_keyframes(popup->plugin);
+	return 1;
 }

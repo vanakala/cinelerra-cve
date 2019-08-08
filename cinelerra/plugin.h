@@ -90,6 +90,8 @@ public:
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
 	void calculate_title(char *string, int use_nudge);
+// Remove all keyframes
+	void clear_keyframes();
 
 // Position, length
 	ptstime get_pts();

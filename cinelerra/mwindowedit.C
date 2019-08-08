@@ -444,6 +444,23 @@ int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
 	return 0;
 }
 
+void MWindow::clear_keyframes(Plugin *plugin)
+{
+	if(edlsession->auto_conf->plugins_visible)
+	{
+		if(cwindow->stop_playback())
+			return;
+		plugin->clear_keyframes();
+		save_backup();
+		undo->update_undo(_("paste keyframe"), LOAD_ALL);
+
+		gui->update(WUPD_CANVINCR);
+		update_plugin_guis();
+		restart_brender();
+		sync_parameters(CHANGE_EDL);
+	}
+}
+
 // Uses cropping coordinates in edl session to crop and translate video.
 // We modify the projector since camera automation depends on the track size.
 void MWindow::crop_video()
