@@ -33,12 +33,10 @@
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "patchbay.h"
 #include "theme.h"
-#include "trackcanvas.h"
 
 
 APatchGUI::APatchGUI(MWindow *mwindow, 
@@ -281,10 +279,7 @@ int AFadePatch::handle_event()
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 	return 1;
 }
 
@@ -335,10 +330,7 @@ int APanPatch::handle_event()
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 	if(need_undo && edlsession->auto_conf->auto_visible[AUTOMATION_PAN])
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 	return 1;
 }
 

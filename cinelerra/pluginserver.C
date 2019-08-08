@@ -38,7 +38,6 @@
 #include "mainundo.h"
 #include "menueffects.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginaclient.h"
@@ -48,7 +47,6 @@
 #include "preferences.h"
 #include "tmpframecache.h"
 #include "track.h"
-#include "trackcanvas.h"
 #include "vframe.h"
 #include "videodevice.h"
 #include "virtualanode.h"
@@ -846,13 +844,9 @@ void PluginServer::sync_parameters()
 {
 	if(video) mwindow->restart_brender();
 	mwindow->sync_parameters();
+
 	if(edlsession->auto_conf->plugins_visible)
-	{
-		mwindow->gui->cursor->hide();
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->cursor->show();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 }
 
 const char *PluginServer::plugin_conf_dir()

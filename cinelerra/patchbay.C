@@ -40,7 +40,6 @@
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
-#include "trackcanvas.h"
 #include "vpatchgui.h"
 #include <string.h>
 
@@ -235,10 +234,8 @@ int PatchBay::cursor_motion_event()
 								mwindow->sync_parameters(CHANGE_PARAMS);
 
 								if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
-								{
-									mwindow->gui->canvas->draw_overlays();
-									mwindow->gui->canvas->flash();
-								}
+									mwindow->draw_canvas_overlays();
+
 								update_gui = 1;
 							}
 							break;

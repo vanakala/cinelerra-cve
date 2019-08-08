@@ -384,9 +384,8 @@ void AutoZoom::handle_up_event()
 	mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
-	mwindow->gui->canvas->draw_overlays();
+	mwindow->draw_canvas_overlays();
 	mwindow->gui->patchbay->update();
-	mwindow->gui->canvas->flash();
 }
 
 void AutoZoom::handle_down_event()
@@ -394,9 +393,8 @@ void AutoZoom::handle_down_event()
 	mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
-	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->patchbay->update();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 }
 
 
@@ -486,9 +484,8 @@ int ZoomTextBox::button_press_event()
 		mwindow->change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, changemax);
 
 	mwindow->gui->zoombar->update_autozoom();
-	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->patchbay->update();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	return 1;
 }
 
@@ -505,9 +502,8 @@ int ZoomTextBox::handle_event()
 			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype] = min;
 			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype] = max;
 			mwindow->gui->zoombar->update_autozoom();
-			mwindow->gui->canvas->draw_overlays();
 			mwindow->gui->patchbay->update();
-			mwindow->gui->canvas->flash();
+			mwindow->draw_canvas_overlays();
 		}
 	}
 	// TODO: Make the text turn red when it's a bad range..

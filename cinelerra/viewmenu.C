@@ -30,7 +30,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "viewmenu.h"
-#include "trackcanvas.h"
 
 
 ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
@@ -77,8 +76,7 @@ int ShowTransitions::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->transitions_visible = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
@@ -99,8 +97,7 @@ int ShowAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->auto_visible[subscript] = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
@@ -121,8 +118,7 @@ int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->plugins_visible = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }

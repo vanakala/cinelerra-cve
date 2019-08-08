@@ -44,7 +44,6 @@
 #include "mwindowgui.h"
 #include "theme.h"
 #include "track.h"
-#include "trackcanvas.h"
 #include "transportcommand.h"
 
 
@@ -646,8 +645,7 @@ void CWindowCamProjGUI::update_preview()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 }
 

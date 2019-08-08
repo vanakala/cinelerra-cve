@@ -32,11 +32,9 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "overlayframe.inc"
 #include "patchbay.h"
 #include "theme.h"
-#include "trackcanvas.h"
 #include "vpatchgui.h"
 #include "vtrack.h"
 
@@ -220,11 +218,10 @@ int VFadePatch::handle_event()
 
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
+
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
+
 	return 1;
 }
 
@@ -283,10 +280,7 @@ int VModePatch::handle_event()
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_MODE])
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 	mainsession->changes_made = 1;
 	return 1;
 }

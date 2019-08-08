@@ -37,7 +37,6 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "mainsession.h"
-#include "trackcanvas.h"
 #include "transportcommand.h"
 #include "vrender.h"
 

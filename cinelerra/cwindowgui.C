@@ -2506,10 +2506,7 @@ int CWindowCanvas::cursor_motion_event()
 	}
 
 	if(redraw_canvas)
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 
 	if(rerender)
 	{

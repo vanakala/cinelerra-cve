@@ -185,8 +185,7 @@ void MWindow::fit_autos(int doall)
 	gui->zoombar->update();
 
 // Draw
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 }
 
 void MWindow::change_currentautorange(int autogrouptype, int increment, int changemax)
@@ -266,9 +265,8 @@ void MWindow::expand_autos(int changeall, int domin, int domax)
 		if(domax) change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, 1);
 	}
 	gui->zoombar->update_autozoom();
-	gui->canvas->draw_overlays();
 	gui->patchbay->update();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 }
 
 void MWindow::shrink_autos(int changeall, int domin, int domax)
@@ -284,9 +282,8 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 		if(domax) change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, 1);
 	}
 	gui->zoombar->update_autozoom();
-	gui->canvas->draw_overlays();
 	gui->patchbay->update();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 }
 
 void MWindow::zoom_amp(int zoom_amp)

@@ -41,7 +41,6 @@
 #include "playbackengine.h"
 #include "theme.h"
 #include "timebar.h"
-#include "trackcanvas.h"
 #include "zoombar.h"
 #include "manualgoto.h"
 

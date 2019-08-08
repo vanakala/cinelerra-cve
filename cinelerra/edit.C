@@ -32,7 +32,6 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "mainsession.h"
-#include "trackcanvas.h"
 #include "tracks.h"
 #include <string.h>
 

@@ -32,7 +32,6 @@
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "trackcanvas.h"
 #include "theme.h"
 
 
@@ -191,10 +190,7 @@ int GWindowToggle::handle_event()
 
 // Update stuff in MWindow
 	if(toggleinf.isauto)
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 	else
 	{
 		switch(toggleinf.ref)
@@ -207,8 +203,7 @@ int GWindowToggle::handle_event()
 
 			case NONAUTOTOGGLES_TRANSITIONS:
 			case NONAUTOTOGGLES_PLUGIN_AUTOS:
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
+				mwindow->draw_canvas_overlays();
 				break;
 		}
 	}

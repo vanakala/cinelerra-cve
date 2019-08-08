@@ -195,8 +195,7 @@ void MWindow::straighten_automation()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
 	cwindow->update(WUPD_POSITION);
@@ -215,8 +214,7 @@ void MWindow::clear_automation()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	draw_canvas_overlays();
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
 	cwindow->update(WUPD_POSITION);
@@ -524,8 +522,7 @@ void MWindow::cut_effects()
 
 		restart_brender();
 		update_plugin_guis();
-		gui->canvas->draw_overlays();
-		gui->canvas->flash();
+		draw_canvas_overlays();
 		sync_parameters(CHANGE_PARAMS);
 		gui->patchbay->update();
 		cwindow->update(WUPD_POSITION);

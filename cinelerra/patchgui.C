@@ -39,7 +39,6 @@
 #include "playbackengine.h"
 #include "theme.h"
 #include "track.h"
-#include "trackcanvas.h"
 #include "tracks.h"
 #include "vframe.h"
 
@@ -505,10 +504,7 @@ int MutePatch::handle_event()
 	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 	return 1;
 }
 
@@ -595,8 +591,7 @@ int TitlePatch::handle_event()
 {
 	strcpy(patch->track->title, get_utf8text());
 	mwindow->update_plugin_titles();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->draw_canvas_overlays();
 	mwindow->undo->update_undo(_("track title"), LOAD_PATCHES);
 	return 1;
 }

@@ -53,7 +53,6 @@
 #include "question.h"
 #include "selection.h"
 #include "theme.h"
-#include "trackcanvas.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 
@@ -264,10 +263,7 @@ void PreferencesThread::apply_settings()
 	}
 
 	if(redraw_overlays)
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+		mwindow->draw_canvas_overlays();
 
 	if(redraw_times)
 	{

@@ -40,7 +40,6 @@
 #include "preferences.h"
 #include "theme.h"
 #include "track.h"
-#include "trackcanvas.h"
 #include "transportcommand.h"
 #include "mwindow.h"
 
@@ -120,10 +119,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 		{
 			if(created) *created = 1;
 			if(redraw)
-			{
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
-			}
+				mwindow->draw_canvas_overlays();
 		}
 	}
 	else
