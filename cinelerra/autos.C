@@ -307,14 +307,16 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 
 void Autos::clear_all()
 {
-	Auto *current_, *current;
+	Auto *next, *current;
 
-	for(current = first; current; current = current_)
+	if(first)
 	{
-		current_ = NEXT;
-		remove(current);
+		for(current = first->next; current; current = next)
+		{
+			next = NEXT;
+			remove(current);
+		}
 	}
-	append_auto();
 }
 
 void Autos::insert(ptstime start, ptstime end)
