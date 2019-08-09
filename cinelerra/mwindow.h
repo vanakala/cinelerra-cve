@@ -280,6 +280,7 @@ public:
 		Track *shared_track = 0);
 
 	void match_output_size(Track *track);
+	void match_asset_size(Track *track);
 // Move edit to new position
 	void move_edits(ArrayList<Edit*> *edits,
 		Track *track,

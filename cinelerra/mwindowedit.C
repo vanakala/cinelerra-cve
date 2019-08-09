@@ -808,6 +808,32 @@ void MWindow::match_output_size(Track *track)
 	sync_parameters(CHANGE_EDL);
 }
 
+void MWindow::match_asset_size(Track *track)
+{
+	int w, h;
+
+	w = h = 0;
+	track->get_source_dimensions(
+		master_edl->local_session->get_selectionstart(1),
+		w, h);
+
+	if(w >= MIN_FRAME_WIDTH && h >= MIN_FRAME_WIDTH &&
+		w <= MAX_FRAME_WIDTH && h <= MAX_FRAME_HEIGHT)
+	{
+		if(cwindow->stop_playback())
+			return;
+
+		track->track_w = w;
+		track->track_h = h;
+
+		save_backup();
+		undo->update_undo(_("match input size"), LOAD_ALL);
+
+		restart_brender();
+		sync_parameters(CHANGE_EDL);
+	}
+}
+
 void MWindow::move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
 		ptstime position,

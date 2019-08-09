@@ -38,6 +38,7 @@ class EditPopupTitleWindow;
 class EditPopupTitleButton;
 class EditPopupTitleButtonRes;
 class EditPopupPasteKeyFrame;
+class EditPopupMatchAssetSize;
 
 class EditPopup : public BC_PopupMenu
 {
@@ -53,6 +54,7 @@ private:
 	EditPopupResize *resize_option;
 	EditPopupMatchSize *matchsize_option;
 	EditPopupPasteKeyFrame *pastekeyframe;
+	EditPopupMatchAssetSize *assetsize;
 	int have_video;
 	int have_keyframe;
 };
@@ -142,4 +144,15 @@ public:
 private:
 	EditPopup *popup;
 };
+
+class EditPopupMatchAssetSize : public BC_MenuItem
+{
+public:
+	EditPopupMatchAssetSize(EditPopup *popup);
+
+	int handle_event();
+private:
+	EditPopup *popup;
+};
+
 #endif

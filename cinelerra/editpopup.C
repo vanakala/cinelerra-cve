@@ -43,6 +43,7 @@ EditPopup::EditPopup()
 	resize_option = new EditPopupResize(this);
 	matchsize_option = new EditPopupMatchSize(this);
 	pastekeyframe = new EditPopupPasteKeyFrame(this);
+	assetsize = new EditPopupMatchAssetSize(this);
 	have_video = 0;
 	have_keyframe = 0;
 }
@@ -54,6 +55,7 @@ EditPopup::~EditPopup()
 // These are deleted by window if they are subwindows
 		delete resize_option;
 		delete matchsize_option;
+		delete assetsize;
 	}
 	if(have_keyframe)
 		delete pastekeyframe;
@@ -69,6 +71,7 @@ void EditPopup::update(Track *track)
 		{
 			add_item(resize_option);
 			add_item(matchsize_option);
+			add_item(assetsize);
 			have_video = 1;
 		}
 	}
@@ -77,6 +80,7 @@ void EditPopup::update(Track *track)
 	{
 		remove_item(resize_option);
 		remove_item(matchsize_option);
+		remove_item(assetsize);
 		have_video = 0;
 	}
 	if(mwindow_global->can_paste_keyframe(track, 0))
@@ -207,4 +211,17 @@ EditPopupPasteKeyFrame::EditPopupPasteKeyFrame(EditPopup *popup)
 int EditPopupPasteKeyFrame::handle_event()
 {
 	mwindow_global->paste_keyframe(popup->track, 0);
+	return 1;
+}
+
+EditPopupMatchAssetSize::EditPopupMatchAssetSize(EditPopup *popup)
+ : BC_MenuItem(_("Match input size"))
+{
+	this->popup = popup;
+}
+
+int EditPopupMatchAssetSize::handle_event()
+{
+	mwindow_global->match_asset_size(popup->track);
+	return 1;
 }
