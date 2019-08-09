@@ -19,6 +19,7 @@
  * 
  */
 
+#include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
 #include "awindow.h"
@@ -43,14 +44,24 @@ AssetPopup::AssetPopup(AWindow *awindow, AWindowGUI *gui)
 {
 	this->gui = gui;
 	add_item(format = new AssetListFormat(gui));
-	add_item(info = new AssetPopupInfo(awindow));
+	add_item(info = new AssetPopupInfo(awindow, this));
 	add_item(new AssetPopupSort(gui));
 	add_item(index = new AssetPopupBuildIndex());
-	add_item(view = new AssetPopupView());
+	add_item(view = new AssetPopupView(this));
 	add_item(new AssetPopupPaste(this));
 	add_item(new AssetPopupProjectRemove());
-	add_item(matchsize = new AssetMatchSize(this));
-	add_item(matchrate = new AssetMatchRate(this));
+	matchsize = new AssetMatchSize(this);
+	matchrate = new AssetMatchRate(this);
+	show_size = 0;
+	show_rate = 0;
+}
+
+AssetPopup::~AssetPopup()
+{
+	if(!show_size)
+		delete matchsize;
+	if(!show_rate)
+		delete matchrate;
 }
 
 void AssetPopup::paste_assets()
@@ -62,56 +73,59 @@ void AssetPopup::paste_assets()
 		0);   // do not overwrite
 }
 
-void AssetPopup::match_size()
+void AssetPopup::update(Asset *asset, EDL *edl)
 {
-// Collect items into the drag vectors for temporary storage
-	gui->collect_assets();
-	mwindow_global->asset_to_size();
-}
+	current_asset = asset;
+	current_edl = edl;
 
-void AssetPopup::match_rate()
-{
-// Collect items into the drag vectors for temporary storage
-	gui->collect_assets();
-	mwindow_global->asset_to_rate();
-}
-
-void AssetPopup::update(int options)
-{
-	if(options & ASSETPOP_MATCHSIZE)
+	if(asset && asset->video_data &&
+		asset->width >= MIN_FRAME_WIDTH &&
+		asset->height >= MIN_FRAME_HEIGHT &&
+		asset->width <= MAX_FRAME_WIDTH &&
+		asset->height <= MAX_FRAME_HEIGHT)
 	{
-		if(!matchsize)
-			add_item(matchsize = new AssetMatchSize(this));
+		if(!show_size)
+		{
+			add_item(matchsize);
+			show_size = 1;
+		}
 	}
-	else if(matchsize)
+	else
 	{
 		remove_item(matchsize);
-		matchsize = 0;
+		show_size = 0;
 	}
-	if(options & ASSETPOP_MATCHRATE)
+
+	if(asset && asset->video_data &&
+		asset->frame_rate >= MIN_FRAME_RATE &&
+		asset->frame_rate <= MAX_FRAME_RATE)
 	{
-		if(!matchrate)
-			add_item(matchrate = new AssetMatchRate(this));
+		if(!show_rate)
+		{
+			add_item(matchrate);
+			show_rate = 1;
+		}
 	}
-	else if(matchrate)
+	else
 	{
 		remove_item(matchrate);
-		matchrate = 0;
+		show_rate = 0;
 	}
+
 	format->update();
-	gui->collect_assets();
 }
 
 
-AssetPopupInfo::AssetPopupInfo(AWindow *awindow)
+AssetPopupInfo::AssetPopupInfo(AWindow *awindow, AssetPopup *popup)
  : BC_MenuItem(_("Info..."))
 {
 	this->awindow = awindow;
+	this->popup = popup;
 }
 
 int AssetPopupInfo::handle_event()
 {
-	if(mainsession->drag_assets->total)
+	if(popup->current_asset)
 	{
 		if(awindow->asset_edit->running() &&
 			awindow->asset_edit->window)
@@ -122,14 +136,14 @@ int AssetPopupInfo::handle_event()
 		else
 		{
 			awindow->asset_edit->edit_asset(
-				mainsession->drag_assets->values[0]);
+				popup->current_asset);
 		}
 	}
 	else
-	if(mainsession->drag_clips->total)
+	if(popup->current_edl)
 	{
 		mwindow_global->clip_edit->edit_clip(
-			mainsession->drag_clips->values[0]);
+			popup->current_edl);
 	}
 	return 1;
 }
@@ -160,20 +174,21 @@ int AssetPopupSort::handle_event()
 }
 
 
-AssetPopupView::AssetPopupView()
+AssetPopupView::AssetPopupView(AssetPopup *popup)
  : BC_MenuItem(_("View"))
 {
+	this->popup = popup;
 }
 
 int AssetPopupView::handle_event()
 {
-	if(mainsession->drag_assets->total)
+	if(popup->current_asset)
 		mwindow_global->vwindow->change_source(
-			mainsession->drag_assets->values[0]);
+			popup->current_asset);
 	else
-	if(mainsession->drag_clips->total)
+	if(popup->current_edl)
 		mwindow_global->vwindow->change_source(
-			mainsession->drag_clips->values[0]);
+			popup->current_edl);
 	return 1;
 }
 
@@ -199,7 +214,7 @@ AssetMatchSize::AssetMatchSize(AssetPopup *popup)
 
 int AssetMatchSize::handle_event()
 {
-	popup->match_size();
+	mwindow_global->asset_to_size(popup->current_asset);
 	return 1;
 }
 
@@ -212,7 +227,7 @@ AssetMatchRate::AssetMatchRate(AssetPopup *popup)
 
 int AssetMatchRate::handle_event()
 {
-	popup->match_rate();
+	mwindow_global->asset_to_rate(popup->current_asset);
 	return 1;
 }
 

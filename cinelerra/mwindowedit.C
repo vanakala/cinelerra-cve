@@ -100,16 +100,18 @@ void MWindow::add_track(int track_type, int above, Track *dst)
 	save_backup();
 }
 
-void MWindow::asset_to_size()
+void MWindow::asset_to_size(Asset *asset)
 {
-	if(mainsession->drag_assets->total &&
-		mainsession->drag_assets->values[0]->video_data)
+	if(asset && asset->video_data)
 	{
 		int w, h;
 
+		if(cwindow->stop_playback())
+			return;
+
 // Get w and h
-		w = mainsession->drag_assets->values[0]->width;
-		h = mainsession->drag_assets->values[0]->height;
+		w = asset->width;
+		h = asset->height;
 
 		edlsession->output_w = w;
 		edlsession->output_h = h;
@@ -122,8 +124,7 @@ void MWindow::asset_to_size()
 				"it can't be rendered by OpenGL."));
 		}
 
-		edlsession->sample_aspect_ratio =
-			mainsession->drag_assets->values[0]->sample_aspect_ratio;
+		edlsession->sample_aspect_ratio = asset->sample_aspect_ratio;
 		AspectRatioSelection::limits(&edlsession->sample_aspect_ratio);
 		save_backup();
 
@@ -133,15 +134,17 @@ void MWindow::asset_to_size()
 	}
 }
 
-void MWindow::asset_to_rate()
+void MWindow::asset_to_rate(Asset *asset)
 {
-	if(mainsession->drag_assets->total &&
-		mainsession->drag_assets->values[0]->video_data)
+	if(asset && asset->video_data)
 	{
-		if(EQUIV(edlsession->frame_rate, mainsession->drag_assets->values[0]->frame_rate))
+		if(EQUIV(edlsession->frame_rate, asset->frame_rate))
 			return;
 
-		edlsession->frame_rate = mainsession->drag_assets->values[0]->frame_rate;
+		if(cwindow->stop_playback())
+			return;
+
+		edlsession->frame_rate = asset->frame_rate;
 
 		save_backup();
 

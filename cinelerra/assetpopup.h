@@ -40,12 +40,13 @@ class AssetPopup : public BC_PopupMenu
 {
 public:
 	AssetPopup(AWindow *window, AWindowGUI *gui);
+	~AssetPopup();
 
-// Set mainsession with the current selections
-	void update(int options);
+	void update(Asset *asset, EDL *edl);
 	void paste_assets();
-	void match_size();
-	void match_rate();
+
+	Asset *current_asset;
+	EDL *current_edl;
 private:
 	AWindowGUI *gui;
 
@@ -55,17 +56,20 @@ private:
 	AssetListFormat *format;
 	AssetMatchRate *matchrate;
 	AssetMatchSize *matchsize;
+	int show_size;
+	int show_rate;
 };
 
 
 class AssetPopupInfo : public BC_MenuItem
 {
 public:
-	AssetPopupInfo(AWindow *awindow);
+	AssetPopupInfo(AWindow *awindow, AssetPopup *popup);
 
 	int handle_event();
 private:
 	AWindow *awindow;
+	AssetPopup *popup;
 };
 
 
@@ -92,9 +96,11 @@ public:
 class AssetPopupView : public BC_MenuItem
 {
 public:
-	AssetPopupView();
+	AssetPopupView(AssetPopup *popup);
 
 	int handle_event();
+private:
+	AssetPopup *popup;
 };
 
 

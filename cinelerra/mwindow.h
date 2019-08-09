@@ -229,8 +229,8 @@ public:
 	void add_track(int TRACK_TYPE, int above = 0, Track *dst = 0);
 	void add_clip_to_edl(EDL *edl);
 
-	void asset_to_size();
-	void asset_to_rate();
+	void asset_to_size(Asset *asset);
+	void asset_to_rate(Asset *asset);
 
 // Entry point for clear operations.
 	void clear_entry();

@@ -1015,22 +1015,13 @@ void AWindowAssets::selection_changed()
 		else
 		{
 			Asset *asset;
+			EDL *edl;
 
 			if(asset = ((AssetPicon*)get_selection(0, 0))->asset)
-			{
-				int o;
-
-				if(asset->frame_rate >= MIN_FRAME_RATE &&
-						asset->frame_rate <= MAX_FRAME_RATE)
-					o = ASSETPOP_MATCHRATE;
-				else
-					o = 0;
-				o |= ASSETPOP_MATCHSIZE;
-				gui->asset_menu->update(o);
-			}
+				gui->asset_menu->update(asset, 0);
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
-				gui->asset_menu->update(0);
+				gui->asset_menu->update(0, edl);
 			gui->asset_menu->activate_menu();
 		}
 
