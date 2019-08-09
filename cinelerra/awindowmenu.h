@@ -23,21 +23,17 @@
 #define AWINDOWMENU_H
 
 #include "awindowgui.inc"
-#include "edl.inc"
-#include "mwindow.inc"
 
 class AssetListFormat;
 
 class AssetListMenu : public BC_PopupMenu
 {
 public:
-	AssetListMenu(MWindow *mwindow, AWindowGUI *gui);
+	AssetListMenu(AWindowGUI *gui);
 
 	void update_titles();
-
+private:
 	AssetListFormat *format;
-
-	MWindow *mwindow;
 	AWindowGUI *gui;
 };
 
@@ -45,46 +41,45 @@ public:
 class AssetListFormat : public BC_MenuItem
 {
 public:
-	AssetListFormat(MWindow *mwindow);
+	AssetListFormat(AWindowGUI *gui);
 
 	void update();
 	int handle_event();
-	MWindow *mwindow;
+private:
+	AWindowGUI *gui;
 };
 
 
 class AssetListSort : public BC_MenuItem
 {
 public:
-	AssetListSort(MWindow *mwindow);
+	AssetListSort(AWindowGUI *gui);
 
 	void update();
 	int handle_event();
-	MWindow *mwindow;
+private:
+	AWindowGUI *gui;
 };
 
 class FolderListFormat : public BC_MenuItem
 {
 public:
-	FolderListFormat(MWindow *mwindow, FolderListMenu *menu);
+	FolderListFormat(AWindowGUI *gui, FolderListMenu *menu);
 
 	int handle_event();
-	MWindow *mwindow;
+private:
+	AWindowGUI *gui;
 	FolderListMenu *menu;
 };
 
 class FolderListMenu : public BC_PopupMenu
 {
 public:
-	FolderListMenu(MWindow *mwindow, AWindowGUI *gui);
+	FolderListMenu(AWindowGUI *gui);
 
 	void update_titles();
-
+private:
 	FolderListFormat *format;
-
-	MWindow *mwindow;
-	AWindowGUI *gui;
 };
-
 
 #endif

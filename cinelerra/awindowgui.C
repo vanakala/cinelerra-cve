@@ -384,9 +384,9 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 
-	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
+	add_subwindow(assetlist_menu = new AssetListMenu(this));
 
-	add_subwindow(folderlist_menu = new FolderListMenu(mwindow, this));
+	add_subwindow(folderlist_menu = new FolderListMenu(this));
 
 	create_custom_xatoms();
 }

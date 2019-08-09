@@ -19,26 +19,22 @@
  * 
  */
 
-#include "awindow.h"
 #include "awindowgui.h"
 #include "awindowmenu.h"
-#include "edl.h"
 #include "edlsession.h"
 #include "language.h"
-#include "mwindow.h"
 
 
-AssetListMenu::AssetListMenu(MWindow *mwindow, AWindowGUI *gui)
+AssetListMenu::AssetListMenu(AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
-	add_item(format = new AssetListFormat(mwindow));
-	add_item(new AssetListSort(mwindow));
+	add_item(format = new AssetListFormat(gui));
+	add_item(new AssetListSort(gui));
 	update_titles();
 }
 
@@ -48,10 +44,10 @@ void AssetListMenu::update_titles()
 }
 
 
-AssetListFormat::AssetListFormat(MWindow *mwindow)
+AssetListFormat::AssetListFormat(AWindowGUI *gui)
  : BC_MenuItem("")
 {
-	this->mwindow = mwindow;
+	this->gui = gui;
 }
 
 void AssetListFormat::update()
@@ -72,7 +68,7 @@ int AssetListFormat::handle_event()
 		break;
 	}
 
-	mwindow->awindow->gui->asset_list->update_format(
+	gui->asset_list->update_format(
 		edlsession->assetlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0,
 		1);
@@ -81,29 +77,27 @@ int AssetListFormat::handle_event()
 }
 
 
-AssetListSort::AssetListSort(MWindow *mwindow)
+AssetListSort::AssetListSort(AWindowGUI *gui)
  : BC_MenuItem(_("Sort items"))
 {
-	this->mwindow = mwindow;
+	this->gui = gui;
 }
 
 int AssetListSort::handle_event()
 {
-	mwindow->awindow->gui->sort_assets();
+	gui->sort_assets();
 	return 1;
 }
 
 
-FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
+FolderListMenu::FolderListMenu(AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
-	add_item(format = new FolderListFormat(mwindow, this));
+	add_item(format = new FolderListFormat(gui, this));
 	update_titles();
 }
 
@@ -114,10 +108,10 @@ void FolderListMenu::update_titles()
 }
 
 
-FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
+FolderListFormat::FolderListFormat(AWindowGUI *gui, FolderListMenu *menu)
  : BC_MenuItem("")
 {
-	this->mwindow = mwindow;
+	this->gui = gui;
 	this->menu = menu;
 }
 
@@ -133,7 +127,7 @@ int FolderListFormat::handle_event()
 		break;
 	}
 
-	mwindow->awindow->gui->folder_list->update_format(
+	gui->folder_list->update_format(
 		edlsession->folderlist_format == ASSETS_ICONS ?
 			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0, 1);
 	menu->update_titles();
