@@ -380,7 +380,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	x = mwindow->theme->abuttons_x;
 	y = mwindow->theme->abuttons_y;
 
-	add_subwindow(asset_menu = new AssetPopup(mwindow, this));
+	add_subwindow(asset_menu = new AssetPopup(awindow, this));
 
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 

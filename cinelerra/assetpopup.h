@@ -39,15 +39,14 @@ class AssetMatchSize;
 class AssetPopup : public BC_PopupMenu
 {
 public:
-	AssetPopup(MWindow *mwindow, AWindowGUI *gui);
+	AssetPopup(AWindow *window, AWindowGUI *gui);
 
 // Set mainsession with the current selections
 	void update(int options);
 	void paste_assets();
 	void match_size();
 	void match_rate();
-
-	MWindow *mwindow;
+private:
 	AWindowGUI *gui;
 
 	AssetPopupInfo *info;
@@ -62,59 +61,50 @@ public:
 class AssetPopupInfo : public BC_MenuItem
 {
 public:
-	AssetPopupInfo(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupInfo(AWindow *awindow);
 
 	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
+private:
+	AWindow *awindow;
 };
 
 
 class AssetPopupSort : public BC_MenuItem
 {
 public:
-	AssetPopupSort(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupSort(AWindowGUI *gui);
 
 	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
+private:
+	AWindowGUI *gui;
 };
 
 
 class AssetPopupBuildIndex : public BC_MenuItem
 {
 public:
-	AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupBuildIndex();
 
 	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
 };
 
 
 class AssetPopupView : public BC_MenuItem
 {
 public:
-	AssetPopupView(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupView();
 
 	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
 };
 
 
 class AssetPopupPaste : public BC_MenuItem
 {
 public:
-	AssetPopupPaste(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupPaste(AssetPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	AssetPopup *popup;
 };
 
@@ -122,13 +112,13 @@ public:
 class AssetMatchSize : public BC_MenuItem
 {
 public:
-	AssetMatchSize(MWindow *mwindow, AssetPopup *popup);
+	AssetMatchSize(AssetPopup *popup);
 
 	int handle_event();
-
-	MWindow *mwindow;
+private:
 	AssetPopup *popup;
 };
+
 
 class AssetMatchRate : public BC_MenuItem
 {
@@ -136,7 +126,7 @@ public:
 	AssetMatchRate(AssetPopup *popup);
 
 	int handle_event();
-
+private:
 	AssetPopup *popup;
 };
 
@@ -144,12 +134,9 @@ public:
 class AssetPopupProjectRemove : public BC_MenuItem
 {
 public:
-	AssetPopupProjectRemove(MWindow *mwindow, AssetPopup *popup);
+	AssetPopupProjectRemove();
 
 	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
 };
 
 #endif

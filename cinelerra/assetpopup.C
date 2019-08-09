@@ -25,37 +25,31 @@
 #include "awindowgui.h"
 #include "awindowmenu.h"
 #include "clipedit.h"
-#include "cwindow.h"
-#include "cwindowgui.h"
 #include "edl.h"
 #include "mainerror.h"
 #include "language.h"
 #include "localsession.h"
-#include "mainindexes.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "vwindow.h"
-#include "vwindowgui.h"
 
 
-AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
+AssetPopup::AssetPopup(AWindow *awindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	add_item(format = new AssetListFormat(gui));
-	add_item(info = new AssetPopupInfo(mwindow, this));
-	add_item(new AssetPopupSort(mwindow, this));
-	add_item(index = new AssetPopupBuildIndex(mwindow, this));
-	add_item(view = new AssetPopupView(mwindow, this));
-	add_item(new AssetPopupPaste(mwindow, this));
-	add_item(new AssetPopupProjectRemove(mwindow, this));
-	add_item(matchsize = new AssetMatchSize(mwindow, this));
+	add_item(info = new AssetPopupInfo(awindow));
+	add_item(new AssetPopupSort(gui));
+	add_item(index = new AssetPopupBuildIndex());
+	add_item(view = new AssetPopupView());
+	add_item(new AssetPopupPaste(this));
+	add_item(new AssetPopupProjectRemove());
+	add_item(matchsize = new AssetMatchSize(this));
 	add_item(matchrate = new AssetMatchRate(this));
 }
 
@@ -63,7 +57,7 @@ void AssetPopup::paste_assets()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->paste_assets(master_edl->local_session->get_selectionstart(1),
+	mwindow_global->paste_assets(master_edl->local_session->get_selectionstart(1),
 		master_edl->first_track(),
 		0);   // do not overwrite
 }
@@ -72,14 +66,14 @@ void AssetPopup::match_size()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->asset_to_size();
+	mwindow_global->asset_to_size();
 }
 
 void AssetPopup::match_rate()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->asset_to_rate();
+	mwindow_global->asset_to_rate();
 }
 
 void AssetPopup::update(int options)
@@ -87,7 +81,7 @@ void AssetPopup::update(int options)
 	if(options & ASSETPOP_MATCHSIZE)
 	{
 		if(!matchsize)
-			add_item(matchsize = new AssetMatchSize(mwindow, this));
+			add_item(matchsize = new AssetMatchSize(this));
 	}
 	else if(matchsize)
 	{
@@ -109,91 +103,84 @@ void AssetPopup::update(int options)
 }
 
 
-AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
+AssetPopupInfo::AssetPopupInfo(AWindow *awindow)
  : BC_MenuItem(_("Info..."))
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
+	this->awindow = awindow;
 }
 
 int AssetPopupInfo::handle_event()
 {
 	if(mainsession->drag_assets->total)
 	{
-		if(mwindow->awindow->asset_edit->running() && 
-			mwindow->awindow->asset_edit->window)
+		if(awindow->asset_edit->running() &&
+			awindow->asset_edit->window)
 		{
-			mwindow->awindow->asset_edit->window->raise_window();
-			mwindow->awindow->asset_edit->window->flush();
+			awindow->asset_edit->window->raise_window();
+			awindow->asset_edit->window->flush();
 		}
 		else
 		{
-			mwindow->awindow->asset_edit->edit_asset(
+			awindow->asset_edit->edit_asset(
 				mainsession->drag_assets->values[0]);
 		}
 	}
 	else
 	if(mainsession->drag_clips->total)
 	{
-		mwindow->clip_edit->edit_clip(
+		mwindow_global->clip_edit->edit_clip(
 			mainsession->drag_clips->values[0]);
 	}
 	return 1;
 }
 
 
-AssetPopupBuildIndex::AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup)
+AssetPopupBuildIndex::AssetPopupBuildIndex()
  : BC_MenuItem(_("Rebuild index"))
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
 }
 
 int AssetPopupBuildIndex::handle_event()
 {
-	mwindow->rebuild_indices();
+	mwindow_global->rebuild_indices();
 	return 1;
 }
 
 
-AssetPopupSort::AssetPopupSort(MWindow *mwindow, AssetPopup *popup)
+AssetPopupSort::AssetPopupSort(AWindowGUI *gui)
  : BC_MenuItem(_("Sort items"))
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
+	this->gui = gui;
 }
 
 int AssetPopupSort::handle_event()
 {
-	mwindow->awindow->gui->sort_assets();
+	gui->sort_assets();
 	return 1;
 }
 
 
-AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
+AssetPopupView::AssetPopupView()
  : BC_MenuItem(_("View"))
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
 }
 
 int AssetPopupView::handle_event()
 {
 	if(mainsession->drag_assets->total)
-		mwindow->vwindow->change_source(
+		mwindow_global->vwindow->change_source(
 			mainsession->drag_assets->values[0]);
 	else
 	if(mainsession->drag_clips->total)
-		mwindow->vwindow->change_source(
+		mwindow_global->vwindow->change_source(
 			mainsession->drag_clips->values[0]);
 	return 1;
 }
 
 
-AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
+AssetPopupPaste::AssetPopupPaste(AssetPopup *popup)
  : BC_MenuItem(_("Paste"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
@@ -204,10 +191,9 @@ int AssetPopupPaste::handle_event()
 }
 
 
-AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
+AssetMatchSize::AssetMatchSize(AssetPopup *popup)
  : BC_MenuItem(_("Match project size"))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
@@ -231,16 +217,14 @@ int AssetMatchRate::handle_event()
 }
 
 
-AssetPopupProjectRemove::AssetPopupProjectRemove(MWindow *mwindow, AssetPopup *popup)
+AssetPopupProjectRemove::AssetPopupProjectRemove()
  : BC_MenuItem(_("Remove from project"))
 {
-	this->mwindow = mwindow;
-	this->popup = popup;
 }
 
 int AssetPopupProjectRemove::handle_event()
 {
-	mwindow->remove_assets_from_project(1);
+	mwindow_global->remove_assets_from_project(1);
 	return 1;
 }
 
