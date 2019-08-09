@@ -96,7 +96,6 @@ public:
 	void start();
 	void run();
 
-	int run_script(FileXML *script);
 	int new_project();
 	int delete_project(int flash = 1);
 

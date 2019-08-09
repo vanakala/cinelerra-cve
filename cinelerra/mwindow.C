@@ -1516,35 +1516,6 @@ void MWindow::save_defaults()
 	defaults->save();
 }
 
-int MWindow::run_script(FileXML *script)
-{
-	int result = 0, result2 = 0;
-	while(!result && !result2)
-	{
-		result = script->read_tag();
-		if(!result)
-		{
-			if(script->tag.title_is("new_project"))
-			{
-			}
-			else
-			if(script->tag.title_is("record"))
-			{
-// Run record as a thread.  It is a terminal command.
-				;
-// Will read the complete scipt file without letting record read it if not
-// terminated.
-				result2 = 1;
-			}
-			else
-			{
-				errorbox("Unrecognized command: '%s' in script",script->tag.get_title() );
-			}
-		}
-	}
-	return result2;
-}
-
 // ================================= synchronization
 
 void MWindow::interrupt_indexes()
