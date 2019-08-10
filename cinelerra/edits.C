@@ -561,43 +561,36 @@ void Edits::clear_handle(ptstime start,
 	Edit *current_edit;
 
 	distance = 0.0; // if nothing is found, distance is 0!
-	for(current_edit = first; 
-		current_edit && current_edit->next; 
+	for(current_edit = first;
+		current_edit && current_edit->next;
 		current_edit = current_edit->next)
 	{
-		if(current_edit->asset && 
-			current_edit->next->asset)
+		if(current_edit->asset && current_edit->next->asset &&
+			current_edit->asset == current_edit->next->asset)
 		{
-
-			if(current_edit->asset->equivalent(*current_edit->next->asset, 0))
-			{
-
 // Got two consecutive edits in same source
-				if(edl->equivalent(current_edit->next->get_pts(),
-					start))
-				{
+			if(edl->equivalent(current_edit->next->get_pts(),
+				start))
+			{
 // handle selected
-					ptstime length = -current_edit->length();
-					current_edit->next->set_pts(current_edit->next->get_pts() - current_edit->get_source_pts() +
-						current_edit->get_pts());
-					length += current_edit->length();
-
+				ptstime length =
+					current_edit->next->get_source_pts() -
+					current_edit->get_source_pts() -
+					current_edit->length();
+				delete current_edit->next;
 // Lengthen automation
-					track->automation->paste_silence(current_edit->next->get_pts(),
-						current_edit->next->get_pts() + length);
-
+				track->automation->paste_silence(start,
+					start + length);
 // Lengthen effects
-					track->shift_effects(current_edit->next->get_pts(),
-						length);
+				track->shift_effects(start,
+					length);
 
-					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
-					{
-						current_edit->shift(length);
-					}
+				for(current_edit = current_edit->next; current_edit;
+						current_edit = current_edit->next)
+					current_edit->shift(length);
 
-					distance = length;
-					break;
-				}
+				distance = length;
+				break;
 			}
 		}
 	}
