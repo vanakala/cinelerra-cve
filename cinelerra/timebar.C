@@ -221,33 +221,51 @@ void TimeBar::update_labels()
 
 void TimeBar::update_highlights()
 {
+
+	ptstime selections[4];
+
+	master_edl->local_session->get_selections(selections);
+
 	for(int i = 0; i < labels.total; i++)
 	{
 		LabelGUI *label = labels.values[i];
 		if(master_edl->equivalent(label->position,
-					master_edl->local_session->get_selectionstart(1)) ||
+					selections[0]) ||
 				master_edl->equivalent(label->position,
-					master_edl->local_session->get_selectionend(1)))
-			if(!label->get_value()) label->update(1);
+					selections[1]))
+			label->update(1);
 		else
-			if(label->get_value()) label->update(0);
+			label->update(0);
 	}
 
-	if(master_edl->equivalent(master_edl->local_session->get_inpoint(),
-				master_edl->local_session->get_selectionstart(1)) ||
-			master_edl->equivalent(master_edl->local_session->get_inpoint(),
-				master_edl->local_session->get_selectionend(1)))
-		if(in_point) in_point->update(1);
-	else
-		if(in_point) in_point->update(0);
-
-	if(master_edl->equivalent(master_edl->local_session->get_outpoint(),
-				master_edl->local_session->get_selectionstart(1)) ||
-			master_edl->equivalent(master_edl->local_session->get_outpoint(),
-				master_edl->local_session->get_selectionend(1)))
-		if(out_point) out_point->update(1);
-	else
-		if(out_point) out_point->update(0);
+	if(selections[2] >= 0)
+	{
+		if(master_edl->equivalent(selections[2], selections[0]) ||
+			master_edl->equivalent(selections[2], selections[1]))
+		{
+			if(in_point)
+				in_point->update(1);
+		}
+		else
+		{
+			if(in_point)
+				in_point->update(0);
+		}
+	}
+	if(selections[3] >= 0)
+	{
+		if(master_edl->equivalent(selections[3], selections[0]) ||
+			master_edl->equivalent(selections[3], selections[1]))
+		{
+			if(out_point)
+				out_point->update(1);
+		}
+		else
+		{
+			if(out_point)
+				out_point->update(0);
+		}
+	}
 }
 
 void TimeBar::update_points()
