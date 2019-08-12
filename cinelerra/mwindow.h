@@ -239,7 +239,6 @@ public:
 // Called by paste, record, menueffects, render, and CWindow drop.
 	void clear(int clear_handle);
 	void clear_labels();
-	void clear_labels(ptstime start, ptstime end);
 	void concatenate_tracks();
 	void copy();
 	void copy(ptstime start, ptstime end);

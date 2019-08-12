@@ -229,18 +229,13 @@ void MWindow::clear_automation()
 
 void MWindow::clear_labels()
 {
-	clear_labels(master_edl->local_session->get_selectionstart(),
-		master_edl->local_session->get_selectionend());
+	master_edl->labels->clear(master_edl->local_session->get_selectionstart(),
+		master_edl->local_session->get_selectionend(), 0);
 	undo->update_undo(_("clear labels"), LOAD_TIMEBAR);
 
 	gui->timebar->update();
 	cwindow->update(WUPD_TIMEBAR);
 	save_backup();
-}
-
-void MWindow::clear_labels(ptstime start, ptstime end)
-{
-	master_edl->labels->clear(start, end, 0);
 }
 
 void MWindow::concatenate_tracks()
