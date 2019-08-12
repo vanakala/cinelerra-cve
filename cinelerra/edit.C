@@ -36,6 +36,7 @@
 #include <string.h>
 
 Edit::Edit(EDL *edl, Track *track)
+ : ListItem<Edit>()
 {
 	edits = 0;
 	source_pts = 0;
@@ -50,6 +51,7 @@ Edit::Edit(EDL *edl, Track *track)
 }
 
 Edit::Edit(EDL *edl, Edits *edits)
+ : ListItem<Edit>()
 {
 	track = 0;
 	source_pts = 0;
