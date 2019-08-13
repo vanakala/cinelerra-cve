@@ -137,7 +137,11 @@ int KeyFrame::identical(KeyFrame *src)
 {
 	if(!src)
 		return 0;
-	return !strcasecmp(src->data, data);
+	if(this == src)
+		return 1;
+	if(data && this->data)
+		!strcmp(src->data, data);
+	return !data && !this->data;
 }
 
 int KeyFrame::operator==(Auto &that)
