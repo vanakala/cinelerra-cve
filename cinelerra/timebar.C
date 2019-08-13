@@ -203,12 +203,7 @@ void TimeBar::update_labels()
 					labels.values[output]->set_tooltip(current->textstr, 1);
 					labels.values[output]->label = current;
 				}
-
-				if(PTSEQU(edl->local_session->get_selectionstart(1), current->position))
-					labels.values[output]->update(1);
-				else
-				if(labels.values[output]->get_value())
-					labels.values[output]->update(0);
+				update_highlight(labels.values[output], current->position);
 				output++;
 			}
 		}
@@ -219,9 +214,17 @@ void TimeBar::update_labels()
 		labels.remove_object();
 }
 
+void TimeBar::update_highlight(BC_Toggle *toggle, ptstime position)
+{
+	if(master_edl->equivalent(position,
+			get_edl()->local_session->get_selectionstart(1)))
+		toggle->update(1);
+	else
+		toggle->update(0);
+}
+
 void TimeBar::update_highlights()
 {
-
 	ptstime selections[4];
 
 	master_edl->local_session->get_selections(selections);
@@ -307,6 +310,8 @@ void TimeBar::update_points()
 			edl->local_session->get_inpoint()));
 		in_point->set_cursor(ARROW_CURSOR);
 	}
+	if(in_point)
+		update_highlight(in_point, in_point->position);
 
 	if(edl) pixel = position_to_pixel(edl->local_session->get_outpoint());
 
@@ -339,7 +344,10 @@ void TimeBar::update_points()
 			this, pixel,
 			edl->local_session->get_outpoint()));
 		out_point->set_cursor(ARROW_CURSOR);
+		update_highlight(out_point, out_point->position);
 	}
+	if(out_point)
+		update_highlight(out_point, out_point->position);
 }
 
 void TimeBar::update()

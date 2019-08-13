@@ -123,6 +123,8 @@ public:
 
 	void update_labels();
 	void update_points();
+// Update highlight of current widget
+	void update_highlight(BC_Toggle *toggle, ptstime position);
 // Make sure widgets are highlighted according to selection status
 	void update_highlights();
 // Update highlight cursor during a drag
