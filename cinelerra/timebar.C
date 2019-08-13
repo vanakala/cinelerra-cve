@@ -350,11 +350,14 @@ void TimeBar::update_points()
 		update_highlight(out_point, out_point->position);
 }
 
-void TimeBar::update()
+void TimeBar::update(int fast)
 {
 	draw_time();
-	update_labels();
-	update_points();
+	if(!fast)
+	{
+		update_labels();
+		update_points();
+	}
 	flash();
 }
 

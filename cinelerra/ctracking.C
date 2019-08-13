@@ -141,13 +141,15 @@ int CTracking::update_scroll(ptstime position)
 void CTracking::update_tracker(ptstime position)
 {
 	int updated_scroll;
+	int single_frame;
 
 	master_edl->local_session->set_selection(position);
+	single_frame = get_playback_engine()->command->single_frame();
 // Update cwindow slider
 	cwindow->gui->slider->update(position);
 
 // This is going to boost the latency but we need to update the timebar
-	cwindow->gui->timebar->update();
+	cwindow->gui->timebar->update(!single_frame);
 
 // Update mwindow cursor
 	updated_scroll = update_scroll(position);
@@ -159,7 +161,7 @@ void CTracking::update_tracker(ptstime position)
 	{
 		mwindow->gui->cursor->update();
 		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
-		if(get_playback_engine()->command->single_frame())
+		if(single_frame)
 			mwindow->gui->timebar->update_highlights();
 		mwindow->gui->canvas->flash(1);
 	}
