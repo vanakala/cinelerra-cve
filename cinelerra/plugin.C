@@ -240,6 +240,8 @@ int Plugin::is_synthesis()
 
 int Plugin::identical(Plugin *that)
 {
+	if(this == that)
+		return 1;
 // Test type
 	if(plugin_type != that->plugin_type) return 0;
 
