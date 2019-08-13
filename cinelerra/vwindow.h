@@ -51,8 +51,6 @@ public:
 		int update_slider = 0);
 	void set_inpoint();
 	void set_outpoint();
-	void clear_inpoint();
-	void clear_outpoint();
 	void copy();
 	void goto_start();
 	void goto_end();

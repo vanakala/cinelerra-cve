@@ -353,16 +353,6 @@ void EditPanel::set_outpoint()
 	mwindow->set_outpoint();
 }
 
-void EditPanel::clear_inpoint()
-{
-	mwindow->delete_inpoint();
-}
-
-void EditPanel::clear_outpoint()
-{
-	mwindow->delete_outpoint();
-}
-
 void EditPanel::to_clip()
 {
 	mwindow->to_clip();

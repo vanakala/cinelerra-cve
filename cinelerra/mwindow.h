@@ -249,9 +249,6 @@ public:
 // Compose standard window title
 	static char *create_title(const char *name);
 
-	void delete_inpoint();
-	void delete_outpoint();
-
 	void delete_track();
 	void delete_track(Track *track);
 	void delete_tracks();

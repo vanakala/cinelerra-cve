@@ -129,8 +129,6 @@ public:
 	void overwrite_selection();
 	void set_inpoint();
 	void set_outpoint();
-	void clear_inpoint();
-	void clear_outpoint();
 	void to_clip();
 	void toggle_label();
 	void prev_label();

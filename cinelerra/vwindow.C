@@ -223,18 +223,6 @@ void VWindow::set_outpoint()
 	gui->timebar->update();
 }
 
-void VWindow::clear_inpoint()
-{
-	vwindow_edl->local_session->unset_inpoint();
-	gui->timebar->update();
-}
-
-void VWindow::clear_outpoint()
-{
-	vwindow_edl->local_session->unset_outpoint();
-	gui->timebar->update();
-}
-
 void VWindow::copy()
 {
 	ptstime start = vwindow_edl->local_session->get_selectionstart();

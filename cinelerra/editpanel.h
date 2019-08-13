@@ -297,8 +297,6 @@ public:
 	virtual void overwrite_selection() {};
 	virtual void set_inpoint();
 	virtual void set_outpoint();
-	virtual void clear_inpoint();
-	virtual void clear_outpoint();
 	virtual void to_clip();
 	virtual void toggle_label();
 	virtual void prev_label();

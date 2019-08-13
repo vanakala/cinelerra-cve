@@ -424,16 +424,6 @@ void VWindowEditing::set_outpoint()
 	vwindow->set_outpoint();
 }
 
-void VWindowEditing::clear_inpoint()
-{
-	vwindow->clear_inpoint();
-}
-
-void VWindowEditing::clear_outpoint()
-{
-	vwindow->clear_outpoint();
-}
-
 void VWindowEditing::to_clip()
 {
 	EDL *new_edl = new EDL(0);

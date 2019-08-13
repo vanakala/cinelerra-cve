@@ -548,18 +548,6 @@ void MWindow::cut_effects()
 	}
 }
 
-void MWindow::delete_inpoint()
-{
-	master_edl->local_session->unset_inpoint();
-	save_backup();
-}
-
-void MWindow::delete_outpoint()
-{
-	master_edl->local_session->unset_outpoint();
-	save_backup();
-}
-
 void MWindow::delete_track()
 {
 	if(cwindow->stop_playback())
