@@ -46,12 +46,6 @@
 #include "zoombar.h"
 
 
-void MWindow::update_plugins()
-{
-// Show plugins which are visible and hide plugins which aren't
-// Update plugin pointers in plugin servers
-}
-
 void MWindow::expand_sample(void)
 {
 	if(gui)
