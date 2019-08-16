@@ -1534,9 +1534,6 @@ void MWindow::next_time_format()
 		edlsession->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:
-		edlsession->time_format = TIME_SAMPLES_HEX;
-		break;
-	case TIME_SAMPLES_HEX: 
 		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
@@ -1567,9 +1564,6 @@ void MWindow::prev_time_format()
 		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		edlsession->time_format = TIME_SAMPLES_HEX;
-		break;
-	case TIME_SAMPLES_HEX:
 		edlsession->time_format = TIME_SAMPLES;
 		break;
 	case TIME_SAMPLES:

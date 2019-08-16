@@ -82,11 +82,6 @@ void InterfacePrefs::show()
 		x, 
 		y));
 	y += 20;
-	add_subwindow(hex = new TimeFormatHex(this,
-		pwindow->thread->this_edlsession->time_format == TIME_SAMPLES_HEX,
-		x, 
-		y));
-	y += 20;
 	add_subwindow(frames = new TimeFormatFrames(this,
 		pwindow->thread->this_edlsession->time_format == TIME_FRAMES,
 		x, 
@@ -229,7 +224,6 @@ void InterfacePrefs::update(int new_value)
 	hms->update(new_value == TIME_HMS);
 	hmsf->update(new_value == TIME_HMSF);
 	samples->update(new_value == TIME_SAMPLES);
-	hex->update(new_value == TIME_SAMPLES_HEX);
 	frames->update(new_value == TIME_FRAMES);
 	feet->update(new_value == TIME_FEET_FRAMES);
 	seconds->update(new_value == TIME_SECONDS);
@@ -241,7 +235,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete hmsf;
 	delete samples;
 	delete frames;
-	delete hex;
 	delete feet;
 	delete min_db;
 	delete max_db;
@@ -355,18 +348,6 @@ int TimeFormatFrames::handle_event()
 	return 1;
 }
 
-
-TimeFormatHex::TimeFormatHex(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hex Samples"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatHex::handle_event()
-{
-	tfwindow->update(TIME_SAMPLES_HEX);
-	return 1;
-}
 
 TimeFormatSeconds::TimeFormatSeconds(InterfacePrefs *tfwindow, int value, int x, int y)
  : BC_Radial(x, y, value, _("Use Seconds"))

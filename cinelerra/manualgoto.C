@@ -196,7 +196,6 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int abs
 		timehdrs[1] = _("msec");
 		break;
 	case TIME_SAMPLES:
-	case TIME_SAMPLES_HEX:
 		timehdrs[0] = _("Audio samples");
 		break;
 	case TIME_FRAMES:

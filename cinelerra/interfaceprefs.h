@@ -62,7 +62,6 @@ public:
 	TimeFormatHMS *hms;
 	TimeFormatHMSF *hmsf;
 	TimeFormatSamples *samples;
-	TimeFormatHex *hex;
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
@@ -143,17 +142,6 @@ class TimeFormatFrames : public BC_Radial
 {
 public:
 	TimeFormatFrames(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatHex : public BC_Radial
-{
-public:
-	TimeFormatHex(InterfacePrefs *tfwindow, int value, int x, int y);
 
 	int handle_event();
 
