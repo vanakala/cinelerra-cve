@@ -592,7 +592,7 @@ int TimeBar::button_press_event()
 			if(get_buttonpress() == 1)
 				mwindow->next_time_format();
 			else
-			if(get_buttonpress() == 2)
+			if(get_buttonpress() == 3)
 				mwindow->prev_time_format();
 			return 1;
 		}
