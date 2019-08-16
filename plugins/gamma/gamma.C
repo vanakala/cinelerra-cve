@@ -29,7 +29,6 @@
 #include "language.h"
 #include "picon_png.h"
 #include "tmpframecache.h"
-#include "workarounds.h"
 
 
 #include <stdio.h>

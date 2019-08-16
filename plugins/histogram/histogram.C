@@ -40,7 +40,6 @@
 #include "loadbalance.h"
 #include "tmpframecache.h"
 #include "vframe.h"
-#include "workarounds.h"
 #include "picon_png.h"
 
 #include "aggregated.h"

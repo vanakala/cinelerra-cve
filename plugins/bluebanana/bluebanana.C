@@ -35,7 +35,6 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "vframe.h"
-#include "workarounds.h"
 
 class BluebananaMain;
 class BluebananaEngine;

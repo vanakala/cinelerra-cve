@@ -63,8 +63,7 @@ libguicastcve_la_SOURCES = \
 	thread.C \
 	tmpframecache.C \
 	units.C \
-	vframe.C \
-	workarounds.C
+	vframe.C
 
 noinst_HEADERS = \
 	arraylist.h \
@@ -184,7 +183,6 @@ noinst_HEADERS = \
 	units.h \
 	vframe.h \
 	vframe.inc \
-	workarounds.h \
 	condition.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
