@@ -19,8 +19,7 @@
  * 
  */
 
-#include "awindow.h"
-#include "awindowgui.h"
+#include "bcsignals.h"
 #include "bctitle.h"
 #include "cinelerra.h"
 #include "manualgoto.h"
@@ -28,13 +27,11 @@
 #include "fonts.h"
 #include "language.h"
 #include "localsession.h"
-#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "keys.h"
-#include "maincursor.h"
 #include "cwindow.h"
 #include "edlsession.h"
 #include "units.h"
@@ -79,17 +76,18 @@ void ManualGoto::run()
 	window = new ManualGotoWindow(mwindow, this, cx, cy);
 	result = window->run_window();
 
-	if (result == 0) // ok button or return pressed
+	if(result == 0) // ok button or return pressed
 	{
 		ptstime new_position = window->get_entered_position_sec();
 		char modifier = window->signtitle->get_text()[0];
-		if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
-			(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
+
+		if((masterwindow == (BC_WindowBase*)mwindow->cwindow->gui)||
+			(masterwindow == (BC_WindowBase*)mwindow->gui->mbuttons))
 		{
 			// mwindow/cwindow update
 
 			ptstime current_position = master_edl->local_session->get_selectionstart(1);
-			switch (modifier)
+			switch(modifier)
 			{
 			case '+':
 				new_position += current_position;
@@ -102,24 +100,25 @@ void ManualGoto::run()
 			}
 			new_position = master_edl->align_to_frame(new_position) -
 				edlsession->get_frame_offset();
-			if (new_position < 0) 
+			if(new_position < 0)
 				new_position = 0;
-			if (!PTSEQU(current_position, new_position))
+			if(!PTSEQU(current_position, new_position))
 			{
 				master_edl->local_session->set_selection(new_position);
 				mwindow->find_cursor();
 				mwindow->gui->update(WUPD_SCROLLBARS |
-				WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
-				WUPD_PATCHBAY | WUPD_CLOCK);
+					WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
+					WUPD_PATCHBAY | WUPD_CLOCK);
 				mwindow->cwindow->update(WUPD_POSITION);
 			}
-		} else
-		if(masterwindow == (BC_WindowBase *)mwindow->vwindow->gui)
+		}
+		else if(masterwindow == (BC_WindowBase*)mwindow->vwindow->gui)
 		{
 			// vwindow update
 			VWindow *vwindow = mwindow->vwindow;
 			ptstime current_position = vwindow_edl->local_session->get_selectionstart(1);
-			switch (modifier)
+
+			switch(modifier)
 			{
 			case '+':
 				new_position += current_position;
@@ -132,10 +131,11 @@ void ManualGoto::run()
 			}
 			if(new_position > vwindow_edl->total_length())
 				new_position = vwindow_edl->total_length();
-			if (new_position < 0)
+			if(new_position < 0)
 				new_position = 0;
 			new_position = vwindow_edl->align_to_frame(new_position);
-			if (!PTSEQU(current_position, new_position))
+
+			if(!PTSEQU(current_position, new_position))
 			{
 				vwindow_edl->local_session->set_selection(new_position);
 				vwindow->update_position(CHANGE_NONE, 0, 1);
@@ -151,67 +151,105 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int abs
  : BC_Window(MWindow::create_title(N_("Goto position")),
 	absx - 250 / 2,
 	absy - 80 / 2,
-	250, 
-	80,
-	250,
-	80,
+	350,
+	120,
+	350,
+	120,
 	0,
 	0,
 	1)
 {
-	int x = 76, y = 5;
-	int x1 = x;
-	const char *htxt;
-	int i, j, l, max;
+#define TOP_MARGIN 8
+#define INTERVAL 8
+	int xpos, y, margin, signw;
+	int boxrel, hdrw;
+	char *timehdrs[NUM_TIMEPARTS];
+	int boxw[NUM_TIMEPARTS];
+	int boxpos[NUM_TIMEPARTS];
+	int hdrpos[NUM_TIMEPARTS];
 
 	this->mwindow = mwindow;
 	this->thread = thread;
 	numboxes = 0;
 
+	for(int i = 0; i < NUM_TIMEPARTS; i++)
+		timehdrs[i] = 0;
+
 	timeformat = edlsession->time_format;
+
+	timehdrs[0] = _("hour");
+	timehdrs[1] = _("min");
+	timehdrs[2] = _("sec");
 
 	switch(timeformat)
 	{
 	case TIME_HMS:
 	case TIME_HMS2:
 	case TIME_HMS3:
-		htxt = _("hour  min   sec     msec");
+		timehdrs[3] = _("msec");
 		break;
 	case TIME_HMSF:
-		htxt = _("hour  min   sec  frames");
+		timehdrs[3] = _("frames");
 		break;
-	case TIME_SECONDS:
-		htxt = _("  sec         msec");
+	case TIME_SECONDS:  // sec msec
+		timehdrs[0] = _("sec");
+		timehdrs[1] = _("msec");
 		break;
 	case TIME_SAMPLES:
 	case TIME_SAMPLES_HEX:
-		htxt = _("   Audio samples");
-		timeformat = TIME_SAMPLES;
+		timehdrs[0] = _("Audio samples");
 		break;
 	case TIME_FRAMES:
-		htxt = _("   Frames");
+		timehdrs[0] = _("Frames");
 		break;
 	case TIME_FEET_FRAMES:
-		htxt = _("   Feet frames");
+		timehdrs[0] = _("Feet");
+		timehdrs[1] = _("frames");
 		break;
 	}
+	xpos = 0;
 	edlsession->ptstotext(timestring, (ptstime)0);
 	numboxes = split_timestr(timestring);
+	for(int i = 0; i < numboxes; i++)
+	{
+		boxw[i] = get_text_width(MEDIUMFONT, timeparts[i]) + 12;
+		hdrw = get_text_width(SMALLFONT, timehdrs[i]);
+		boxrel = (hdrw - boxw[i]) / 2;
 
+		if(boxrel > 0)
+		{
+			hdrpos[i] = xpos;
+			boxpos[i] = xpos + boxrel;
+			xpos += hdrw;
+		}
+		else
+		{
+			hdrpos[i] = xpos - boxrel;
+			boxpos[i] = xpos;
+			xpos += boxw[i];
+		}
+		xpos += INTERVAL;
+	}
+	signw = get_text_width(LARGEFONT, "=");
+	margin = (get_w() - xpos - signw) / 2;
+	// Increase the sixe of the only box
+	if(numboxes == 1)
+		boxw[0] += 4;
 	set_icon(thread->icon_image);
 
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x1 - 2, y, htxt, SMALLFONT));
-	y += title->get_h() + 3;
-	add_subwindow(signtitle = new BC_Title(x1 - 17, y, "=", LARGEFONT));
-	for(i = 0; i < numboxes; i++)
+	y = 0;
+	for(int i = 0; i < numboxes; i++)
 	{
-		l = strlen(timeparts[i]);
-		add_subwindow(boxes[i] = new ManualGotoNumber(this, 
-			x1, y, 9 * l + 6, l));
-		x1 += boxes[i]->get_w() + 4;
+		BC_Title *title;
+		add_subwindow(title = new BC_Title(hdrpos[i] + margin, TOP_MARGIN, timehdrs[i]));
+		if(!y)
+		{
+			y = TOP_MARGIN + title->get_h();
+			add_subwindow(signtitle = new BC_Title(margin - signw - INTERVAL, y, "=", LARGEFONT));
+		}
+		add_subwindow(boxes[i] = new ManualGotoNumber(this, boxpos[i] + margin, y,
+			boxw[i], strlen(timeparts[i])));
 	}
-
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 
@@ -225,7 +263,8 @@ ptstime ManualGotoWindow::get_entered_position_sec()
 	int i;
 	char *p = timestring;
 
-	for(i = 0; i < numboxes; i++){
+	for(i = 0; i < numboxes; i++)
+	{
 		strcpy(p, boxes[i]->get_text());
 		while(*p) p++;
 		*p++ = '.';
@@ -245,12 +284,13 @@ int ManualGotoWindow::split_timestr(char *timestr)
 	p = timestr;
 
 	timeparts[0] = 0;
-	for (n = 0; n < 4; n++)
+	for(n = 0; n < 4; n++)
 	{
 		if(*p == 0)
 			break;
 		timeparts[n] = p;
-		while(isdigit(*p)) p++;
+		while(isdigit(*p))
+			p++;
 		if(*p)
 			*p++ = 0;
 	}
@@ -314,8 +354,6 @@ void ManualGotoNumber::activate()
 
 void ManualGotoNumber::reshape_update(char *numstr)
 {
-	char format_text[10];
-	char text[BCTEXTLEN];
 	if (numstr == 0)
 		numstr = get_text();
 	update(numstr);
@@ -327,44 +365,47 @@ int ManualGotoNumber::keypress_event()
 	int in_textlen = strlen(get_text());
 	int key = get_keypress();
 
-	if (key == '+') 
+	if(key == '+')
 	{
 		window->signtitle->update("+");
 		return 1;
 	}
-	if (key == '-')
+	if(key == '-')
 	{
 		window->signtitle->update("-");
 		return 1;
 	}
-	if (key == '=') 
+	if(key == '=')
 	{
 		window->signtitle->update("=");
 		return 1;
 	}
-	
+
 	int ok_key = 0;
-	if ((key >= '0' && key <='9') ||
-		(key == ESC) ||  (key == RETURN) ||
-		(key == TAB) ||  (key == LEFTTAB) ||
-		(key == '.') ||
-		(key == LEFT) || (key == RIGHT) ||
-		(key == UP) ||   (key == DOWN) ||
-		(key == PGUP) || (key == PGDN) ||
-		(key == END) ||  (key == HOME) ||
-		(key == BACKSPACE) || (key == DELETE) ||
-		(ctrl_down() && (key == 'v' || key == 'V' || key == 'c' || key == 'C' || key == 'x' || key == 'X')))
+
+	if((key >= '0' && key <='9') ||
+			(key == ESC) ||  (key == RETURN) ||
+			(key == TAB) ||  (key == LEFTTAB) ||
+			(key == '.') ||
+			(key == LEFT) || (key == RIGHT) ||
+			(key == UP) ||   (key == DOWN) ||
+			(key == PGUP) || (key == PGDN) ||
+			(key == END) ||  (key == HOME) ||
+			(key == BACKSPACE) || (key == DELETE) ||
+			(ctrl_down() && (key == 'v' || key == 'V' ||
+				key == 'c' || key == 'C' || key == 'x' || key == 'X')))
 		ok_key = 1;
 
 	if (in_textlen >= chars && key >= '0' && key <= '9' && !select_whole_text(0))
 		ok_key = 0;
 
-	if (!ok_key) return 1;
+	if(!ok_key)
+		return 1;
 
 // treat dot as tab - for use from numerical keypad
-	if (key == '.') 
-	{ 
-		cycle_textboxes(1); 
+	if(key == '.')
+	{
+		cycle_textboxes(1);
 		return 1; 
 	};
 
@@ -372,7 +413,7 @@ int ManualGotoNumber::keypress_event()
 	int out_textlen = strlen(get_text());
 
 // automatic cycle when we enter two numbers
-	if (key != TAB && out_textlen == chars && get_ibeam_letter() == chars) 
+	if(key != TAB && out_textlen == chars && get_ibeam_letter() == chars)
 		cycle_textboxes(1);
 	return result;
 }

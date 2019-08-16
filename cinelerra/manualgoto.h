@@ -22,16 +22,17 @@
 #ifndef MANUALGOTO_H
 #define MANUALGOTO_H
 
-#include "awindow.inc"
 #include "bctextbox.h"
-#include "edl.inc"
+#include "bcwindow.h"
+#include "datatype.h"
 #include "mwindow.inc"
 #include "thread.h"
 #include "vwindow.inc"
-#include "editpanel.inc"
 
 class ManualGotoWindow;
 class ManualGotoNumber;
+
+#define NUM_TIMEPARTS 5
 
 class ManualGoto : public Thread
 {
@@ -63,13 +64,13 @@ public:
 
 // Use this copy of the pointer in ManualGoto since multiple windows are possible
 	BC_Title *signtitle;
-	ManualGotoNumber *boxes[5];
+	ManualGotoNumber *boxes[NUM_TIMEPARTS];
 	int numboxes;
 	MWindow *mwindow;
 	ManualGoto *thread;
 	int timeformat;
 	char timestring[64];
-	char *timeparts[5];
+	char *timeparts[NUM_TIMEPARTS];
 };
 
 
