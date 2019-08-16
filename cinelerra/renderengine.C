@@ -38,8 +38,6 @@
 #include "transportcommand.h"
 #include "videodevice.h"
 #include "vrender.h"
-#include "workarounds.h"
-
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,

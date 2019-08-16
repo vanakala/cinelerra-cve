@@ -37,7 +37,6 @@
 #include "playbackconfig.h"
 #include "preferences.inc"
 #include "selection.h"
-#include "workarounds.h"
 
 int EDLSession::current_id = 0;
 
@@ -396,32 +395,32 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 
 void EDLSession::boundaries()
 {
-	Workarounds::clamp(audio_tracks, 0, (int)BC_INFINITY);
-	Workarounds::clamp(audio_channels, 1, MAXCHANNELS - 1);
-	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
-	Workarounds::clamp(min_meter_db, -80, -20);
-	Workarounds::clamp(max_meter_db, 0, 10);
-	Workarounds::clamp(frames_per_foot, 1, 32);
+	CLAMP(audio_tracks, 0, BC_INFINITY);
+	CLAMP(audio_channels, 1, MAXCHANNELS - 1);
+	CLAMP(video_tracks, 0, BC_INFINITY);
+	CLAMP(min_meter_db, -80, -20);
+	CLAMP(max_meter_db, 0, 10);
+	CLAMP(frames_per_foot, 1, 32);
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
 	AspectRatioSelection::limits(&sample_aspect_ratio);
 
-	Workarounds::clamp(crop_x1, 0, output_w);
-	Workarounds::clamp(crop_x2, 0, output_w);
-	Workarounds::clamp(crop_y1, 0, output_h);
-	Workarounds::clamp(crop_y2, 0, output_h);
+	CLAMP(crop_x1, 0, output_w);
+	CLAMP(crop_x2, 0, output_w);
+	CLAMP(crop_y1, 0, output_h);
+	CLAMP(crop_y2, 0, output_h);
 
-	Workarounds::clamp(ruler_x1, 0.0, output_w);
-	Workarounds::clamp(ruler_x2, 0.0, output_w);
-	Workarounds::clamp(ruler_y1, 0.0, output_h);
-	Workarounds::clamp(ruler_y2, 0.0, output_h);
+	CLAMP(ruler_x1, 0.0, output_w);
+	CLAMP(ruler_x2, 0.0, output_w);
+	CLAMP(ruler_y1, 0.0, output_h);
+	CLAMP(ruler_y2, 0.0, output_h);
 
 	if(brender_start < 0)
 		brender_start = 0.0;
-	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
+	CLAMP(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 
-	backup_interval = CLIP(backup_interval, 0, 3600);
+	CLAMP(backup_interval, 0, 3600);
 }
 
 void EDLSession::load_video_config(FileXML *file)
