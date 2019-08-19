@@ -30,6 +30,7 @@
 #include "cpanel.h"
 #include "cplayback.h"
 #include "colormodels.inc"
+#include "cropauto.h"
 #include "cropautos.h"
 #include "ctimebar.h"
 #include "cursors.h"
@@ -1818,18 +1819,39 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 {
 	int result = 0;
 	int handle_selected = -1;
-	double x1 = edlsession->crop_x1;
-	double y1 = edlsession->crop_y1;
-	double x2 = edlsession->crop_x2;
-	double y2 = edlsession->crop_y2;
+	double x1, y1, x2, y2;
 	double cursor_x = get_cursor_x();
 	double cursor_y = get_cursor_y();
-	double canvas_x1 = x1;
-	double canvas_y1 = y1;
-	double canvas_x2 = x2;
-	double canvas_y2 = y2;
+	double canvas_x1, canvas_y1, canvas_x2, canvas_y2;
 	double canvas_cursor_x = cursor_x;
 	double canvas_cursor_y = cursor_y;
+	Track *track;
+	int created_auto;
+	int top, left, right, bottom;
+	CropAuto *crop_auto;
+	CropAutos *crop_autos;
+
+	track = gui->cwindow->calculate_affected_track();
+	if(!track)
+		return 0;
+
+	crop_autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
+	crop_autos->get_values(master_edl->local_session->get_selectionstart(1),
+		&left, &right, &top, &bottom);
+	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(
+		crop_autos, 1, &created_auto);
+	if(created_auto)
+	{
+		crop_auto->left = left;
+		crop_auto->right = right;
+		crop_auto->top = top;
+		crop_auto->right = bottom;
+	}
+
+	canvas_x1 = x1 = left;
+	canvas_x2 = x2 = right;
+	canvas_y1 = y1 = top;
+	canvas_y2 = y2 = bottom;
 
 	canvas_to_output(master_edl, cursor_x, cursor_y);
 // Use screen normalized coordinates for hot spot tests.
@@ -1903,10 +1925,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		{
 			x2 = x1 = cursor_x;
 			y2 = y1 = cursor_y;
-			edlsession->crop_x1 = round(x1);
-			edlsession->crop_y1 = round(y1);
-			edlsession->crop_x2 = round(x2);
-			edlsession->crop_y2 = round(y2);
+			crop_auto->left = round(x1);
+			crop_auto->top = round(y1);
+			crop_auto->right = round(x2);
+			crop_auto->bottom = round(y2);
 			redraw = 1;
 		}
 	}
@@ -1919,10 +1941,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		x2 = cursor_x - gui->x_origin + gui->crop_origin_x2;
 		y2 = cursor_y - gui->y_origin + gui->crop_origin_y2;
 
-		edlsession->crop_x1 = round(x1);
-		edlsession->crop_y1 = round(y1);
-		edlsession->crop_x2 = round(x2);
-		edlsession->crop_y2 = round(y2);
+		crop_auto->left = round(x1);
+		crop_auto->top = round(y1);
+		crop_auto->right = round(x2);
+		crop_auto->bottom = round(y2);
 		result = 1;
 		redraw = 1;
 	}
@@ -1985,17 +2007,17 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			break;
 		}
 
-		if(!EQUIV(edlsession->crop_x1, x1) ||
-			!EQUIV(edlsession->crop_x2, x2) ||
-			!EQUIV(edlsession->crop_y1, y1) ||
-			!EQUIV(edlsession->crop_y2, y2))
+		if(!EQUIV(crop_auto->left, x1) ||
+			!EQUIV(crop_auto->right, x2) ||
+			!EQUIV(crop_auto->top, y1) ||
+			!EQUIV(crop_auto->bottom, y2))
 		{
-			if (x1 > x2) 
+			if(x1 > x2)
 			{
 				double tmp = x1;
 				x1 = x2;
 				x2 = tmp;
-				switch (gui->crop_handle) 
+				switch(gui->crop_handle)
 				{
 				case 0:
 					gui->crop_handle = 1;
@@ -2013,12 +2035,12 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 					break;
 				}
 			}
-			if (y1 > y2) 
+			if(y1 > y2)
 			{
 				double tmp = y1;
 				y1 = y2;
 				y2 = tmp;
-				switch (gui->crop_handle) 
+				switch(gui->crop_handle)
 				{
 				case 0:
 					gui->crop_handle = 2;
@@ -2037,10 +2059,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 				}
 			}
 
-			edlsession->crop_x1 = round(x1);
-			edlsession->crop_y1 = round(y1);
-			edlsession->crop_x2 = round(x2);
-			edlsession->crop_y2 = round(y2);
+			crop_auto->left = round(x1);
+			crop_auto->top = round(y1);
+			crop_auto->right = round(x2);
+			crop_auto->bottom = round(y2);
 			result = 1;
 			redraw = 1;
 		}
@@ -2073,10 +2095,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 
 	if(redraw)
 	{
-		CLAMP(edlsession->crop_x1, 0, edlsession->output_w);
-		CLAMP(edlsession->crop_x2, 0, edlsession->output_w);
-		CLAMP(edlsession->crop_y1, 0, edlsession->output_h);
-		CLAMP(edlsession->crop_y2, 0, edlsession->output_h);
+		CLAMP(crop_auto->left, 0, track->track_w);
+		CLAMP(crop_auto->right, 0, track->track_w);
+		CLAMP(crop_auto->top, 0, track->track_h);
+		CLAMP(crop_auto->bottom, 0, track->track_h);
 	}
 	return result;
 }
