@@ -77,7 +77,10 @@ struct automation_def Automation::automation_tbl[] =
 		0, DRAG_MODE, DRAG_MODE_PRE },
 	{ N_("Mask"), "MASKAUTOS", "SHOW_MASK",
 		0, -1, AUTOMATION_TYPE_MASK,
-		0, DRAG_MASK_PRE, DRAG_MASK }
+		0, DRAG_MASK_PRE, DRAG_MASK },
+	{ N_("Crop"), "CROPAUTOS", "SHOW_CROP",
+		0, -1, AUTOMATION_TYPE_CROP,
+		0, DRAG_CROP, DRAG_CROP }
 };
 
 Automation::Automation(EDL *edl, Track *track)

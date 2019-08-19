@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "colors.h"
+#include "cropautos.h"
 #include "edl.inc"
 #include "floatauto.h"
 #include "floatautos.h"
@@ -45,6 +46,7 @@ VAutomation::VAutomation(EDL *edl, Track *track)
 	autos[AUTOMATION_PROJECTOR_Y] = new FloatAutos(edl, track, 0.0);
 	autos[AUTOMATION_CAMERA_Z] = new FloatAutos(edl, track, 1.0);
 	autos[AUTOMATION_PROJECTOR_Z] = new FloatAutos(edl, track, 1.0);
+	autos[AUTOMATION_CROP] = new CropAutos(edl, track);
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 		if (autos[i]) 
@@ -122,6 +124,8 @@ size_t VAutomation::get_size()
 		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_size();
 	if(autos[AUTOMATION_PROJECTOR_Z])
 		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_size();
+	if(autos[AUTOMATION_CROP])
+		size += ((CropAutos*)autos[AUTOMATION_CROP])->get_size();
 	size += Automation::get_size();
 	return size;
 }
