@@ -34,6 +34,7 @@ PNGS = \
 	cpanel_hi.png \
 	cpanel_up.png \
 	crop.png \
+	cropkeyframe.png \
 	cut.png \
 	cwindow_active.png \
 	cwindow_inactive.png \

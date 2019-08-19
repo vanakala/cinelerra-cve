@@ -158,6 +158,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	viewmenu->add_item(pan_automation = new ShowAutomation(mwindow, _("Pan"), "6", AUTOMATION_PAN));
 	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "7"));
 	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Mask"), "8", AUTOMATION_MASK));
+	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Crop"), "9", AUTOMATION_CROP));
 	viewmenu->add_item(camera_x = new ShowAutomation(mwindow, _("Camera X"), "", AUTOMATION_CAMERA_X));
 	viewmenu->add_item(camera_y = new ShowAutomation(mwindow, _("Camera Y"), "", AUTOMATION_CAMERA_Y));
 	viewmenu->add_item(camera_z = new ShowAutomation(mwindow, _("Camera Z"), "", AUTOMATION_CAMERA_Z));

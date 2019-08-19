@@ -321,6 +321,7 @@ public:
 	BC_Pixmap *modekeyframe_pixmap;
 	BC_Pixmap *pankeyframe_pixmap;
 	BC_Pixmap *maskkeyframe_pixmap;
+	BC_Pixmap *cropkeyframe_pixmap;
 
 	int active;
 // Currently in a drag scroll operation

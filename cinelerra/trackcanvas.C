@@ -125,6 +125,7 @@ void TrackCanvas::show()
 	modekeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->modekeyframe_data, PIXMAP_ALPHA);
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
+	cropkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->cropkeyframe_data, PIXMAP_ALPHA);
 	add_subwindow(edit_menu = new EditPopup());
 	add_subwindow(plugin_menu = new PluginPopup());
 	add_subwindow(keyframe_menu = new KeyframePopup());
@@ -1705,6 +1706,14 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						cursor_x, cursor_y,
 						draw, buttonpress,
 						maskkeyframe_pixmap,
+						auto_keyframe);
+					break;
+
+				case AUTOMATION_CROP:
+					result = do_autos(track, autos,
+						cursor_x, cursor_y,
+						draw, buttonpress,
+						cropkeyframe_pixmap,
 						auto_keyframe);
 					break;
 

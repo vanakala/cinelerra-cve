@@ -43,6 +43,7 @@ column_up.png \
 copy.png \
 cpanel_bg.png \
 crop.png \
+cropkeyframe.png \
 cut.png \
 cwindow_active.png \
 cwindow_inactive.png \

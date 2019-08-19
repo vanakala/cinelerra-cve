@@ -855,6 +855,7 @@ void BlondTheme::build_overlays()
 	maskkeyframe_data = new VFrame(get_image_data("maskkeyframe.png"));
 	modekeyframe_data = new VFrame(get_image_data("modekeyframe.png"));
 	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
+	cropkeyframe_data = new VFrame(get_image_data("cropkeyframe.png"));
 }
 
 void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)

@@ -30,6 +30,7 @@
 #include "cpanel.h"
 #include "cplayback.h"
 #include "colormodels.inc"
+#include "cropautos.h"
 #include "ctimebar.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -2082,13 +2083,23 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 
 void CWindowCanvas::draw_crop()
 {
-	get_canvas()->set_inverse();
-	get_canvas()->set_color(WHITE);
+	Track *track = gui->cwindow->calculate_affected_track();
+	CropAutos *crop_autos;
+	ptstime position;
+	int left, right, top, bottom;
 
-	double x1 = edlsession->crop_x1;
-	double y1 = edlsession->crop_y1;
-	double x2 = edlsession->crop_x2;
-	double y2 = edlsession->crop_y2;
+	if(!track)
+		return;
+
+	crop_autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
+	position = master_edl->local_session->get_selectionstart(1);
+
+	crop_autos->get_values(position, &left, &right, &top, &bottom);
+
+	double x1 = left;
+	double y1 = top;
+	double x2 = right;
+	double y2 = bottom;
 
 	output_to_canvas(master_edl, x1, y1);
 	output_to_canvas(master_edl, x2, y2);
@@ -2097,6 +2108,9 @@ void CWindowCanvas::draw_crop()
 	int iy1 = round(y1);
 	int ix2 = round(x2);
 	int iy2 = round(y2);
+
+	get_canvas()->set_inverse();
+	get_canvas()->set_color(WHITE);
 
 	if(ix2 - ix1 && iy2 - iy1)
 		get_canvas()->draw_rectangle(ix1, iy1,
