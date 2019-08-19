@@ -25,7 +25,8 @@
 #include "clip.h"
 #include "condition.h"
 #include "cpanel.h"
-#include "cplayback.h"
+#include "cropauto.h"
+#include "cropautos.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "cwindowtool.h"
@@ -321,30 +322,6 @@ int CWindowCoord::handle_event()
 }
 
 
-CWindowCropOK::CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Do it"))
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-
-int CWindowCropOK::handle_event()
-{
-	mwindow->crop_video();
-	return 1;
-}
-
-int CWindowCropOK::keypress_event()
-{
-	if(get_keypress() == 0xd) 
-	{
-		handle_event();
-		return 1;
-	}
-	return 0;
-}
-
-
 CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
 	thread,
@@ -364,7 +341,6 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 	add_subwindow(title = new BC_Title(x, y, _("W:")));
 	column1 = MAX(column1, title->get_w());
 	y += pad;
-	add_subwindow(new CWindowCropOK(mwindow, this, x, y));
 
 	x += column1 + 5;
 	y = 10;
@@ -400,26 +376,31 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 int CWindowCropGUI::handle_event()
 {
 	int new_x1, new_y1;
+	CropAuto *keyframe;
+	Track *track;
+
+	if(!(keyframe = get_keyframe(1)))
+		return 0;
+
 	new_x1 = atol(x1->get_text());
 	new_y1 = atol(y1->get_text());
-	if(new_x1 != edlsession->crop_x1)
+
+	if(new_x1 != keyframe->left)
 	{
-		edlsession->crop_x2 = new_x1 +
-			edlsession->crop_x2 -
-			edlsession->crop_x1;
-		edlsession->crop_x1 = new_x1;
+		keyframe->right = new_x1 + keyframe->right -
+			keyframe->left;
+		keyframe->left = new_x1;
 	}
-	if(new_y1 != edlsession->crop_y1)
+	if(new_y1 != keyframe->top)
 	{
-		edlsession->crop_y2 = new_y1 +
-			edlsession->crop_y2 -
-			edlsession->crop_y1;
-		edlsession->crop_y1 = atol(y1->get_text());
+		keyframe->bottom = new_y1 + keyframe->bottom -
+			keyframe->top;
+		keyframe->top = new_y1;
 	}
-	edlsession->crop_x2 = atol(width->get_text()) +
-		edlsession->crop_x1;
-	edlsession->crop_y2 = atol(height->get_text()) +
-		edlsession->crop_y1;
+	keyframe->right = atol(width->get_text()) +
+		keyframe->left;
+	keyframe->bottom = atol(height->get_text()) +
+		keyframe->top;
 	update();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
@@ -427,14 +408,47 @@ int CWindowCropGUI::handle_event()
 
 void CWindowCropGUI::update()
 {
-	x1->update(edlsession->crop_x1);
-	y1->update(edlsession->crop_y1);
-	width->update(edlsession->crop_x2 -
-		edlsession->crop_x1);
-	height->update(edlsession->crop_y2 -
-		edlsession->crop_y1);
+	get_keyframe(0);
+	x1->update(left);
+	y1->update(top);
+	width->update(right - left);
+	height->update(bottom - top);
 }
 
+CropAuto *CWindowCropGUI::get_keyframe(int create_it)
+{
+	Track *track;
+	CropAuto *keyframe;
+	CropAutos *autos;
+
+	ptstime pos = master_edl->local_session->get_selectionstart(1);
+
+	track = mwindow->cwindow->calculate_affected_track();
+
+	if(track)
+	{
+		autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
+		keyframe = (CropAuto*)mwindow->cwindow->calculate_affected_auto(
+			(Autos*)autos, create_it);
+	}
+	else
+		return 0;
+
+	if(keyframe)
+	{
+		if(edlsession->auto_keyframes &&
+				!PTSEQU(pos, keyframe->pos_time))
+			autos->get_values(pos, &left, &right, &top, &bottom);
+		else
+		{
+			top = keyframe->top;
+			bottom = keyframe->bottom;
+			left = keyframe->left;
+			right = keyframe->right;
+		}
+	}
+	return keyframe;
+}
 
 CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 

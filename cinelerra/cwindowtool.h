@@ -23,6 +23,7 @@
 #define CWINDOWTOOL_H
 
 #include "condition.inc"
+#include "cropauto.inc"
 #include "cwindowgui.inc"
 #include "floatauto.inc"
 #include "maskauto.inc"
@@ -112,17 +113,6 @@ public:
 	CWindowToolGUI *gui;
 };
 
-class CWindowCropOK : public BC_GenericButton
-{
-public:
-	CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-
-// Perform the cropping operation
-	int handle_event();
-	int keypress_event();
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
-};
 
 class CWindowCropGUI : public CWindowToolGUI
 {
@@ -132,7 +122,14 @@ public:
 	void update();
 // Update the gui
 	int handle_event();
+	CropAuto *get_keyframe(int create_it);
+
 	CWindowCoord *x1, *y1, *width, *height;
+
+	int top;
+	int left;
+	int right;
+	int bottom;
 };
 
 class CWindowMaskMode : public BC_PopupMenu
