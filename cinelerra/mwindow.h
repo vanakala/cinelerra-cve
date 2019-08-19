@@ -192,7 +192,6 @@ public:
 	void zoom_in_y(void);
 	void expand_t(void);
 	void zoom_in_t(void);
-	void crop_video();
 // Call after every edit operation
 	void save_backup(int is_manual = 0);
 	void show_plugin(Plugin *plugin);

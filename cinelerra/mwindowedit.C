@@ -463,49 +463,6 @@ void MWindow::clear_keyframes(Plugin *plugin)
 	}
 }
 
-// Uses cropping coordinates in edl session to crop and translate video.
-// We modify the projector since camera automation depends on the track size.
-void MWindow::crop_video()
-{
-// Clamp EDL crop region
-	if(edlsession->crop_x1 > edlsession->crop_x2)
-	{
-		edlsession->crop_x1 ^= edlsession->crop_x2;
-		edlsession->crop_x2 ^= edlsession->crop_x1;
-		edlsession->crop_x1 ^= edlsession->crop_x2;
-	}
-	if(edlsession->crop_y1 > edlsession->crop_y2)
-	{
-		edlsession->crop_y1 ^= edlsession->crop_y2;
-		edlsession->crop_y2 ^= edlsession->crop_y1;
-		edlsession->crop_y1 ^= edlsession->crop_y2;
-	}
-
-	float old_projector_x = (float)edlsession->output_w / 2;
-	float old_projector_y = (float)edlsession->output_h / 2;
-	float new_projector_x = (float)(edlsession->crop_x1 +
-		edlsession->crop_x2) / 2;
-	float new_projector_y = (float)(edlsession->crop_y1 +
-		edlsession->crop_y2) / 2;
-	float projector_offset_x = -(new_projector_x - old_projector_x);
-	float projector_offset_y = -(new_projector_y - old_projector_y);
-
-	master_edl->tracks->translate_projector(projector_offset_x, projector_offset_y);
-
-	edlsession->output_w = edlsession->crop_x2 - edlsession->crop_x1;
-	edlsession->output_h = edlsession->crop_y2 - edlsession->crop_y1;
-	edlsession->crop_x1 = 0;
-	edlsession->crop_y1 = 0;
-	edlsession->crop_x2 = edlsession->output_w;
-	edlsession->crop_y2 = edlsession->output_h;
-
-	undo->update_undo(_("crop"), LOAD_ALL);
-
-	restart_brender();
-	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_ALL);
-	save_backup();
-}
-
 void MWindow::cut()
 {
 	ptstime start = master_edl->local_session->get_selectionstart();
