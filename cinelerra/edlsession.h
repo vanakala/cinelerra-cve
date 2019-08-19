@@ -101,8 +101,6 @@ public:
 	int color_model;
 // Interlace Mode for entire project
 	int interlace_mode;
-// Coords for cropping operation
-	int crop_x1, crop_x2, crop_y1, crop_y2;
 // Ruler points relative to the output frame.
 	double ruler_x1, ruler_y1;
 	double ruler_x2, ruler_y2;

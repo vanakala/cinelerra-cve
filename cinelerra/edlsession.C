@@ -73,9 +73,6 @@ EDLSession::EDLSession()
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 		asset_columns[i] = 100;
-	crop_x1 = crop_y1 = 0;
-	crop_x2 = 320;
-	crop_y2 = 240;
 	ruler_x1 = ruler_y1 = ruler_x2 = ruler_y2 = 0;
 	cwindow_mask = 0;
 	cwindow_xscroll = 0;
@@ -213,10 +210,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
 	strcpy(string, AInterlaceModeSelection::xml_text(interlace_mode));
 	interlace_mode = AInterlaceModeSelection::xml_value(defaults->get("INTERLACE_MODE", string));
-	crop_x1 = defaults->get("CROP_X1", crop_x1);
-	crop_x2 = defaults->get("CROP_X2", crop_x2);
-	crop_y1 = defaults->get("CROP_Y1", crop_y1);
-	crop_y2 = defaults->get("CROP_Y2", crop_y2);
 	ruler_x1 = defaults->get("RULER_X1", ruler_x1);
 	ruler_x2 = defaults->get("RULER_X2", ruler_x2);
 	ruler_y1 = defaults->get("RULER_Y1", ruler_y1);
@@ -306,10 +299,10 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("BRENDER_START");
 	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
 	defaults->update("INTERLACE_MODE", AInterlaceModeSelection::xml_text(interlace_mode));
-	defaults->update("CROP_X1", crop_x1);
-	defaults->update("CROP_X2", crop_x2);
-	defaults->update("CROP_Y1", crop_y1);
-	defaults->update("CROP_Y2", crop_y2);
+	defaults->delete_key("CROP_X1");
+	defaults->delete_key("CROP_X2");
+	defaults->delete_key("CROP_Y1");
+	defaults->delete_key("CROP_Y2");
 	defaults->update("RULER_X1", ruler_x1);
 	defaults->update("RULER_X2", ruler_x2);
 	defaults->update("RULER_Y1", ruler_y1);
@@ -406,11 +399,6 @@ void EDLSession::boundaries()
 	FrameSizeSelection::limits(&output_w, &output_h);
 	AspectRatioSelection::limits(&sample_aspect_ratio);
 
-	CLAMP(crop_x1, 0, output_w);
-	CLAMP(crop_x2, 0, output_w);
-	CLAMP(crop_y1, 0, output_h);
-	CLAMP(crop_y2, 0, output_h);
-
 	CLAMP(ruler_x1, 0.0, output_w);
 	CLAMP(ruler_x2, 0.0, output_w);
 	CLAMP(ruler_y1, 0.0, output_h);
@@ -476,10 +464,6 @@ void EDLSession::load_xml(FileXML *file)
 	auto_conf->load_xml(file);
 	auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
 	brender_start = file->tag.get_property("BRENDER_START", brender_start);
-	crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
-	crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
-	crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
-	crop_y2 = file->tag.get_property("CROP_Y2", crop_y2);
 
 	ruler_x1 = file->tag.get_property("RULER_X1", ruler_x1);
 	ruler_y1 = file->tag.get_property("RULER_Y1", ruler_y1);
@@ -537,10 +521,6 @@ void EDLSession::save_xml(FileXML *file)
 	auto_conf->save_xml(file);
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
 	file->tag.set_property("BRENDER_START", brender_start);
-	file->tag.set_property("CROP_X1", crop_x1);
-	file->tag.set_property("CROP_Y1", crop_y1);
-	file->tag.set_property("CROP_X2", crop_x2);
-	file->tag.set_property("CROP_Y2", crop_y2);
 
 	file->tag.set_property("RULER_X1", ruler_x1);
 	file->tag.set_property("RULER_Y1", ruler_y1);
@@ -649,10 +629,6 @@ void EDLSession::copy(EDLSession *session)
 	brender_start = session->brender_start;
 	color_model = session->color_model;
 	interlace_mode = session->interlace_mode;
-	crop_x1 = session->crop_x1;
-	crop_y1 = session->crop_y1;
-	crop_x2 = session->crop_x2;
-	crop_y2 = session->crop_y2;
 	ruler_x1 = session->ruler_x1;
 	ruler_y1 = session->ruler_y1;
 	ruler_x2 = session->ruler_x2;
