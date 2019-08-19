@@ -344,13 +344,9 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	x += column1 + 5;
 	y = 10;
-	x1 = new CWindowCoord(this, x, y, edlsession->crop_x1);
+	x1 = new CWindowCoord(this, x, y, 0);
 	y += pad;
-	width = new CWindowCoord(this,
-		x, 
-		y, 
-		edlsession->crop_x2 -
-			edlsession->crop_x1);
+	width = new CWindowCoord(this, x, y, 0);
 
 	x += x1->get_w() + 10;
 	y = 10;
@@ -364,13 +360,10 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 
 	y = 10;
 	x += column2 + 5;
-	y1 = new CWindowCoord(this, x, y, edlsession->crop_y1);
+	y1 = new CWindowCoord(this, x, y, 0);
 	y += pad;
-	height = new CWindowCoord(this,
-		x, 
-		y, 
-		edlsession->crop_y2 -
-			edlsession->crop_y1);
+	height = new CWindowCoord(this, x, y, 0);
+	update();
 }
 
 int CWindowCropGUI::handle_event()
