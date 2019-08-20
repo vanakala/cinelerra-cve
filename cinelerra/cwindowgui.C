@@ -1845,7 +1845,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		crop_auto->left = left;
 		crop_auto->right = right;
 		crop_auto->top = top;
-		crop_auto->right = bottom;
+		crop_auto->bottom = bottom;
 	}
 
 	canvas_x1 = x1 = left;
@@ -2090,8 +2090,6 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	}
 	else
 		set_cursor(ARROW_CURSOR);
-
-#define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 
 	if(redraw)
 	{
