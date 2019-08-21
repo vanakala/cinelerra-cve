@@ -47,11 +47,9 @@ public:
 	virtual ptstime length(void);
 	ptstime end_pts(void);
 	virtual void copy_from(Edit *edit);
-	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet
 	virtual void equivalent_output(Edit *edit, ptstime *result);
-	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
 // Shift plugin keyframes

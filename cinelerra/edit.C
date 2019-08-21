@@ -233,27 +233,6 @@ void Edit::synchronize_params(Edit *edit)
 	copy_from(edit);
 }
 
-
-// Comparison for ResourcePixmap drawing
-int Edit::identical(Edit &edit)
-{
-	ptstime len = this->length();
-	ptstime elen = edit.length();
-
-	int result = (this->asset == edit.asset &&
-		PTSEQU(this->source_pts, edit.source_pts) &&
-		PTSEQU(this->project_pts, edit.project_pts) &&
-		PTSEQU(len, elen) &&
-		this->transition == edit.transition &&
-		this->channel == edit.channel);
-	return result;
-}
-
-int Edit::operator==(Edit &edit)
-{
-	return identical(edit);
-}
-
 double Edit::picon_w(void)
 {
 	if(asset && asset->width && asset->height)
