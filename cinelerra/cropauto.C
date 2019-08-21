@@ -37,6 +37,7 @@ CropAuto::CropAuto(EDL *edl, CropAutos *autos)
 	}
 	else
 		right = bottom = 0;
+	apply_before_plugins = 0;
 }
 
 int CropAuto::identical(CropAuto *that)
@@ -44,7 +45,8 @@ int CropAuto::identical(CropAuto *that)
 	if(this == that)
 		return 1;
 	return that->left == left && that->right == right &&
-		that->top == top && that->bottom == bottom;
+		that->top == top && that->bottom == bottom &&
+		that->apply_before_plugins == apply_before_plugins;
 }
 
 void CropAuto::load(FileXML *file)
@@ -53,6 +55,8 @@ void CropAuto::load(FileXML *file)
 	right = file->tag.get_property("RIGHT", right);
 	top = file->tag.get_property("TOP", top);
 	bottom = file->tag.get_property("BOTTOM", bottom);
+	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS",
+		apply_before_plugins);
 }
 
 void CropAuto::save_xml(FileXML *file)
@@ -63,6 +67,7 @@ void CropAuto::save_xml(FileXML *file)
 	file->tag.set_property("RIGHT", right);
 	file->tag.set_property("TOP", top);
 	file->tag.set_property("BOTTOM", bottom);
+	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	file->append_tag();
 	file->tag.set_title("/AUTO");
 	file->append_tag();
@@ -78,6 +83,7 @@ void CropAuto::copy(Auto *src, ptstime start, ptstime end)
 	right = that->right;
 	top = that->top;
 	bottom = that->bottom;
+	apply_before_plugins = that->apply_before_plugins;
 }
 
 void CropAuto::copy_from(Auto *that)
@@ -92,6 +98,7 @@ void CropAuto::copy_from(CropAuto *that)
 	right = that->right;
 	top = that->top;
 	bottom = that->bottom;
+	apply_before_plugins = that->apply_before_plugins;
 }
 
 size_t CropAuto::get_size()
@@ -101,6 +108,7 @@ size_t CropAuto::get_size()
 
 void CropAuto::dump(int indent)
 {
-	printf("%*sCropAuto %p: pos_time: %.3f (%d,%d),(%d,%d)\n", indent, "",
-		this, pos_time, left, top, right, bottom);
+	printf("%*sCropAuto %p: pos_time: %.3f (%d,%d),(%d,%d) before %d\n",
+		indent, "", this, pos_time, left, top, right, bottom,
+		apply_before_plugins);
 }

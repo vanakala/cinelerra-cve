@@ -321,6 +321,26 @@ int CWindowCoord::handle_event()
 	return 1;
 }
 
+CWindowCropBeforePlugins::CWindowCropBeforePlugins(CWindowCropGUI *gui,
+	int x, int y)
+ : BC_CheckBox(x, y, 1, _("Apply crop before plugins"))
+{
+	this->gui = gui;
+}
+
+int CWindowCropBeforePlugins::handle_event()
+{
+	CropAuto *keyframe;
+
+	if(!(keyframe = gui->get_keyframe(0)))
+		return 0;
+
+	keyframe->apply_before_plugins = get_value();
+	gui->mwindow->restart_brender();
+	gui->mwindow->sync_parameters(CHANGE_PARAMS);
+	gui->mwindow->cwindow->gui->canvas->draw_refresh();
+	return 1;
+}
 
 CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
@@ -341,6 +361,8 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 	add_subwindow(title = new BC_Title(x, y, _("W:")));
 	column1 = MAX(column1, title->get_w());
 	y += pad;
+	add_subwindow(apply = new CWindowCropBeforePlugins(this,
+		x, y));
 
 	x += column1 + 5;
 	y = 10;
@@ -357,7 +379,6 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 	add_subwindow(title = new BC_Title(x, y, _("H:")));
 	column2 = MAX(column2, title->get_w());
 	y += pad;
-
 	y = 10;
 	x += column2 + 5;
 	y1 = new CWindowCoord(this, x, y, 0);
@@ -395,6 +416,8 @@ int CWindowCropGUI::handle_event()
 	keyframe->bottom = atol(height->get_text()) +
 		keyframe->top;
 	update();
+	mwindow->restart_brender();
+	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
 }
@@ -406,6 +429,7 @@ void CWindowCropGUI::update()
 	y1->update(top);
 	width->update(right - left);
 	height->update(bottom - top);
+	apply->update(before_plugins);
 }
 
 CropAuto *CWindowCropGUI::get_keyframe(int create_it)
@@ -439,6 +463,7 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 			left = keyframe->left;
 			right = keyframe->right;
 		}
+		before_plugins = keyframe->apply_before_plugins;
 	}
 	return keyframe;
 }

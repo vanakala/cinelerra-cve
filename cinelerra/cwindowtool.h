@@ -31,6 +31,7 @@
 
 class CWindowToolGUI;
 class CWindowCoord;
+class CWindowCropBeforePlugins;
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -125,12 +126,25 @@ public:
 	CropAuto *get_keyframe(int create_it);
 
 	CWindowCoord *x1, *y1, *width, *height;
+	CWindowCropBeforePlugins *apply;
 
 	int top;
 	int left;
 	int right;
 	int bottom;
+	int before_plugins;
 };
+
+class CWindowCropBeforePlugins : public BC_CheckBox
+{
+public:
+	CWindowCropBeforePlugins(CWindowCropGUI *gui, int x, int y);
+
+	int handle_event();
+
+	CWindowCropGUI *gui;
+};
+
 
 class CWindowMaskMode : public BC_PopupMenu
 {

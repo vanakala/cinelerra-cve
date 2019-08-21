@@ -47,6 +47,7 @@ public:
 	int right;
 	int top;
 	int bottom;
+	int apply_before_plugins;
 };
 
 #endif
