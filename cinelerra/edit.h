@@ -42,31 +42,27 @@ class Edit : public ListItem<Edit>
 public:
 	Edit(EDL *edl, Edits *edits);
 	Edit(EDL *edl, Track *track);
-	virtual ~Edit();
+	~Edit();
 
-	virtual ptstime length(void);
+	ptstime length(void);
 	ptstime end_pts(void);
-	virtual void copy_from(Edit *edit);
-	virtual Edit& operator=(Edit& edit);
+	void copy_from(Edit *edit);
+	Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet
-	virtual void equivalent_output(Edit *edit, ptstime *result);
+	void equivalent_output(Edit *edit, ptstime *result);
 // When inherited by a plugin need to resample keyframes
-	virtual void synchronize_params(Edit *edit);
-// Shift plugin keyframes
-	virtual void shift_keyframes(ptstime difference) {};
-// Remove plugin keyframes after position
-	virtual void remove_keyframes_after(ptstime pts) {};
+	void synchronize_params(Edit *edit);
 // Get size of frame to draw on timeline
 	double picon_w(void);
 	int picon_h(void);
 
 	void save_xml(FileXML *xml, const char *output_path, int streamno);
 // Shift in time
-	virtual void shift(ptstime difference);
+	void shift(ptstime difference);
 	void shift_source(ptstime difference);
 	Plugin *insert_transition(PluginServer *server);
 // Determine if silence depending on existance of asset or plugin title
-	virtual int silence(void);
+	int silence(void);
 // Returns size of data in bytes
 	size_t get_size();
 

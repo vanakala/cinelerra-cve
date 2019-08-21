@@ -773,9 +773,6 @@ void Edits::move_edits(Edit *current_edit, ptstime newposition)
 			}
 
 			current_edit->set_pts(newposition);
-			current_edit->shift_keyframes(cut_length);
-			if(current_edit->previous)
-				current_edit->previous->remove_keyframes_after(newposition);
 		}
 		else
 		{
@@ -789,15 +786,10 @@ void Edits::move_edits(Edit *current_edit, ptstime newposition)
 			}
 			current_edit->set_pts(newposition);
 			cut_length = newposition - oldposition;
-			current_edit->shift_keyframes(cut_length);
-			current_edit->remove_keyframes_after(current_edit->end_pts());
 		}
 
 		for(ed = current_edit->next; ed; ed = ed->next)
-		{
 			ed->shift(cut_length);
-			ed->shift_keyframes(cut_length);
-		}
 	}
 }
 
