@@ -22,6 +22,7 @@
 #ifndef VIRTUALVNODE_H
 #define VIRTUALVNODE_H
 
+#include "cropengine.inc"
 #include "datatype.h"
 #include "fadeengine.inc"
 #include "maskengine.inc"
@@ -71,6 +72,7 @@ private:
 	VRender *vrender;
 	FadeEngine *fader;
 	MaskEngine *masker;
+	CropEngine *cropper;
 };
 
 

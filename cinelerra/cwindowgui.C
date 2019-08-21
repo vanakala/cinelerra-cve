@@ -1815,9 +1815,10 @@ void CWindowCanvas::reset_projector()
 	reset_keyframe(0);
 }
 
-int CWindowCanvas::test_crop(int button_press, int &redraw)
+int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 {
 	int result = 0;
+	int do_redraw = *redraw;
 	int handle_selected = -1;
 	double x1, y1, x2, y2;
 	double cursor_x = get_cursor_x();
@@ -1929,7 +1930,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			crop_auto->top = round(y1);
 			crop_auto->right = round(x2);
 			crop_auto->bottom = round(y2);
-			redraw = 1;
+			do_redraw = 1;
 		}
 	}
 	else
@@ -1946,7 +1947,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		crop_auto->right = round(x2);
 		crop_auto->bottom = round(y2);
 		result = 1;
-		redraw = 1;
+		do_redraw = 1;
 	}
 	else
 // Update dragging
@@ -2064,7 +2065,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			crop_auto->right = round(x2);
 			crop_auto->bottom = round(y2);
 			result = 1;
-			redraw = 1;
+			do_redraw = 1;
 		}
 	}
 	else
@@ -2091,12 +2092,15 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	else
 		set_cursor(ARROW_CURSOR);
 
-	if(redraw)
+	if(do_redraw)
 	{
 		CLAMP(crop_auto->left, 0, track->track_w);
 		CLAMP(crop_auto->right, 0, track->track_w);
 		CLAMP(crop_auto->top, 0, track->track_h);
 		CLAMP(crop_auto->bottom, 0, track->track_h);
+		*redraw = do_redraw;
+		if(rerender)
+			*rerender = 1;
 	}
 	return result;
 }
@@ -2442,7 +2446,7 @@ int CWindowCanvas::cursor_enter_event()
 		set_cursor(MOVE_CURSOR);
 		break;
 	case CWINDOW_CROP:
-		test_crop(0, redraw);
+		test_crop(0, &redraw);
 		break;
 	case CWINDOW_PROTECT:
 		set_cursor(ARROW_CURSOR);
@@ -2500,7 +2504,7 @@ int CWindowCanvas::cursor_motion_event()
 		break;
 
 	case CWINDOW_CROP:
-		result = test_crop(0, redraw);
+		result = test_crop(0, &redraw, &rerender);
 		break;
 
 	case CWINDOW_MASK:
@@ -2521,7 +2525,7 @@ int CWindowCanvas::cursor_motion_event()
 		switch(edlsession->cwindow_operation)
 		{
 		case CWINDOW_CROP:
-			result = test_crop(0, redraw);
+			result = test_crop(0, &redraw, &rerender);
 			break;
 
 		case CWINDOW_RULER:
@@ -2598,7 +2602,7 @@ int CWindowCanvas::button_press_event()
 			break;
 
 		case CWINDOW_CROP:
-			result = test_crop(1, redraw);
+			result = test_crop(1, &redraw, &rerender);
 			break;
 
 		case CWINDOW_MASK:

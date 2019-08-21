@@ -23,6 +23,7 @@
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "clip.h"
+#include "cropengine.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "fadeengine.h"
@@ -66,12 +67,14 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 	vrender = ((VirtualVConsole*)vconsole)->vrender;
 	fader = 0;
 	masker = 0;
+	cropper = 0;
 }
 
 VirtualVNode::~VirtualVNode()
 {
 	delete fader;
 	delete masker;
+	delete cropper;
 }
 
 VirtualNode* VirtualVNode::create_module(Plugin *real_plugin, 
@@ -182,6 +185,13 @@ void VirtualVNode::render_as_module()
 	render_fade(track->automation->autos[AUTOMATION_FADE]);
 
 	render_mask();
+
+	if(!cropper)
+		cropper = new CropEngine();
+
+	((VirtualVConsole*)vconsole)->output_temp = cropper->do_crop(
+		track->automation->autos[AUTOMATION_CROP],
+		((VirtualVConsole*)vconsole)->output_temp, 0);
 
 // overlay on the final output
 // Get mute status

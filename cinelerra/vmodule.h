@@ -22,6 +22,7 @@
 #ifndef VMODULE_H
 #define VMODULE_H
 
+#include "cropengine.inc"
 #include "datatype.h"
 #include "edit.inc"
 #include "floatautos.inc"
@@ -56,6 +57,7 @@ private:
 // Engine for transferring from file to buffer_in
 	OverlayFrame *overlay_temp;
 	MaskEngine *masker;
+	CropEngine *cropper;
 };
 
 #endif

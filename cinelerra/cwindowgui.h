@@ -248,7 +248,7 @@ public:
 	int button_release_event();
 	int get_fullscreen();
 	void set_fullscreen(int value);
-	int test_crop(int button_press, int &redraw);
+	int test_crop(int button_press, int *redraw, int *rerender = 0);
 	int test_bezier(int button_press, 
 		int &redraw,
 		int &redraw_canvas,

@@ -26,6 +26,7 @@
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
+#include "cropengine.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -62,12 +63,14 @@ VModule::VModule(RenderEngine *renderengine,
 		masker = new MaskEngine(renderengine->preferences->processors);
 	else
 		masker = new MaskEngine(plugin_array->mwindow->preferences->processors);
+	cropper = new CropEngine();
 }
 
 VModule::~VModule()
 {
 	if(overlay_temp) delete overlay_temp;
 	delete masker;
+	delete cropper;
 }
 
 AttachmentPoint* VModule::new_attachment(Plugin *plugin)
@@ -283,5 +286,8 @@ VFrame *VModule::render(VFrame *output)
 	masker->do_mask(output, 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		1);      // we are calling before plugins
+
+	output = cropper->do_crop(track->automation->autos[AUTOMATION_CROP],
+		output, 1);
 	return output;
 }
