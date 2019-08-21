@@ -23,6 +23,7 @@
 #define CROPAUTOS_H
 
 #include "autos.h"
+#include "cropauto.inc"
 #include "cropautos.inc"
 #include "edl.inc"
 #include "track.inc"
@@ -34,7 +35,7 @@ public:
 
 	Auto* new_auto();
 	int automation_is_constant(ptstime start, ptstime end);
-	void get_values(ptstime position, int *left, int *right,
+	CropAuto *get_values(ptstime position, int *left, int *right,
 		int *top, int *bottom);
 	size_t get_size();
 	void dump(int indent = 0);

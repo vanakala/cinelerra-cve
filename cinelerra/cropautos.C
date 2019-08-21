@@ -66,7 +66,7 @@ int CropAutos::automation_is_constant(ptstime start, ptstime end)
 	return 1;
 }
 
-void CropAutos::get_values(ptstime position, int *left, int *right,
+CropAuto *CropAutos::get_values(ptstime position, int *left, int *right,
 	int *top, int *bottom)
 {
 	CropAuto *before = 0, *after = 0;
@@ -86,7 +86,7 @@ void CropAutos::get_values(ptstime position, int *left, int *right,
 			*right = MAX_FRAME_WIDTH;
 			*bottom = MAX_FRAME_HEIGHT;
 		}
-		return;
+		return 0;
 	}
 
 	get_neighbors(position, position, (Auto**)&before, (Auto**)&after);
@@ -97,7 +97,7 @@ void CropAutos::get_values(ptstime position, int *left, int *right,
 		*right = before->right;
 		*top = before->top;
 		*bottom = before->bottom;
-		return;
+		return before;
 	}
 	frac1 = (position - before->pos_time) /
 		(after->pos_time - before->pos_time);
@@ -107,6 +107,7 @@ void CropAutos::get_values(ptstime position, int *left, int *right,
 	*left = round(before->left * frac2 + after->left * frac1);
 	*right = round(before->right * frac2 + after->right * frac1);
 	*bottom = round(before->bottom * frac2 + after->bottom * frac1);
+	return before;
 }
 
 size_t CropAutos::get_size()
