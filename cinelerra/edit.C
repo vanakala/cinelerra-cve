@@ -165,6 +165,9 @@ int Edit::silence(void)
 
 void Edit::copy_from(Edit *edit)
 {
+	if(edit == this)
+		return;
+
 	if(edl)
 		edl->update_assets(edit->asset);
 	this->asset = edit->asset;
