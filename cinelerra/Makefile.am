@@ -90,6 +90,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    cplayback.C \
 		    cropauto.C \
 		    cropautos.C \
+		    cropengine.C \
 		    ctimebar.C \
 		    ctracking.C \
 		    cwindow.C \
@@ -328,6 +329,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cplayback.h \
 		 cropauto.h \
 		 cropautos.h \
+		 cropengine.h \
 		 ctimebar.h \
 		 ctracking.h \
 		 cwindowgui.h \
