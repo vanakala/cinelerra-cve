@@ -243,6 +243,9 @@ int MaskAuto::operator==(MaskAuto &that)
 
 int MaskAuto::identical(MaskAuto *src)
 {
+	if(src == this)
+		return 1;
+
 	if(value != src->value ||
 		feather != src->feather ||
 		masks.total != src->masks.total ||
