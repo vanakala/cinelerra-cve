@@ -843,23 +843,9 @@ void VFrame::set_transparent()
 
 int VFrame::pts_in_frame_source(ptstime pts, ptstime accuracy)
 {
-	ptstime te = this->source_pts + this->duration;
-	ptstime qe = pts + accuracy;
-	ptstime limit = 0.5 * accuracy;
-
-	if(qe < this->pts || pts > te)
+	if(pts < source_pts - accuracy || pts > source_pts + duration)
 		return 0;
-
-	if((this->pts <= pts && qe < te) || pts <= this->pts && qe > te)
-		return 1;
-
-	if(pts < this->pts && qe < te && (this->pts - pts) < limit)
-		return 1;
-
-	if(pts > this->pts && qe > te && (te - pts) > limit)
-		return 1;
-
-	return 0;
+	return 1;
 }
 
 int VFrame::pts_in_frame(ptstime pts, ptstime accuracy)
