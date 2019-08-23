@@ -214,14 +214,14 @@ CacheItemBase* CacheBase::get_item(ptstime postime)
 	while(current_item && current_item->postime < postime)
 		current_item = current_item->next;
 	if(!current_item) current_item = last;
-	while(current_item && current_item->postime >= postime)
+	while(current_item && current_item->postime + current_item->duration >= postime)
 		current_item = current_item->previous;
 	if(!current_item)
 		current_item = first;
 	else
 	if(current_item->next)
 		current_item = current_item->next;
-	if(!current_item || !PTSEQU(current_item->postime, postime)) return 0;
+	if(!current_item) return 0;
 	return current_item;
 }
 
