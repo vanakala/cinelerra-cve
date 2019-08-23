@@ -55,16 +55,18 @@ size_t FrameCacheItem::get_size()
 
 void FrameCacheItem::dump(int indent)
 {
-	printf("FrameCacheItem %p: layer %d data %p\n", this, layer, data);
+	printf("%*sFrameCacheItem %p: layer %d data %p\n", indent, "",
+		this, layer, data);
 	CacheItemBase::dump(indent);
 	if(data)
-		data->dump();
+		data->dump(indent);
 }
 
 
 FrameCache::FrameCache()
  : CacheBase()
 {
+	this->accuracy = 0.004;
 }
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
@@ -116,8 +118,7 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 	return 0;
 }
 
-// Puts frame in cache if enough space exists and the frame doesn't already
-// exist.
+// Puts frame in cache if the frame doesn't already exist.
 void FrameCache::put_frame(VFrame *frame, 
 	int use_copy,
 	Asset *asset)
@@ -175,7 +176,8 @@ int FrameCache::frame_exists(VFrame *format,
 	ptstime postime = format->get_source_pts();
 
 	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
-	while(item && item->postime <= postime && item->postime + item->duration > postime)
+
+	while(item && item->data->pts_in_frame_source(postime))
 	{
 		if(format->get_layer() == item->layer &&
 			format->equivalent(item->data) &&

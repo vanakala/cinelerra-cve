@@ -91,6 +91,8 @@ private:
 		int h,
 		FrameCacheItem **item_return,
 		int asset_id);
+
+	ptstime accuracy;
 };
 
 #endif
