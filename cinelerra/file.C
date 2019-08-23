@@ -648,7 +648,7 @@ int File::get_frame(VFrame *frame)
 			use_cache = 1;
 		}
 // Test cache
-		if(use_cache && frame_cache->get_frame(frame))
+		if(frame_cache->get_frame(frame))
 		{
 			frame->set_pts(rqpts);
 			adjust_times(frame, rqpts, srcrqpts);
@@ -692,8 +692,7 @@ int File::get_frame(VFrame *frame)
 			frame->set_frame_number(0);
 		}
 
-		if(use_cache)
-			frame_cache->put_frame(frame, 1);
+		frame_cache->put_frame(frame, 1);
 		adjust_times(frame, rqpts, srcrqpts);
 		return 0;
 	}
