@@ -84,7 +84,6 @@ void File::reset_parameters()
 	temp_frame = 0;
 	resample = 0;
 	resample_float = 0;
-	use_cache = 0;
 }
 
 void File::raise_window()
@@ -212,11 +211,6 @@ void File::get_options(FormatTools *format, int options)
 void File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 	this->cpus = cpus;
-}
-
-void File::set_cache_frames(int value)
-{
-	use_cache = value;
 }
 
 int File::purge_cache()
@@ -643,10 +637,7 @@ int File::get_frame(VFrame *frame)
 		srcrqpts = frame->get_source_pts();
 		rqpts = frame->get_pts();
 		if(asset->single_image)
-		{
 			frame->set_source_pts(0);
-			use_cache = 1;
-		}
 // Test cache
 		if(frame_cache->get_frame(frame))
 		{

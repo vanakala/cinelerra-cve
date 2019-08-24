@@ -61,10 +61,6 @@ public:
 // ===================================== start here
 	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
 
-// Enable or disable frame caching.  Must be tied to file to know when 
-// to delete the file object.  Otherwise we'd delete just the cached frames
-// while the list of open files grew.
-	void set_cache_frames(int value);
 // Delete oldest frame from cache.  Return 0 if successful.  Return 1 if 
 // nothing to delete.
 	int purge_cache();
@@ -171,8 +167,6 @@ private:
 	Mutex *format_completion;
 	FrameCache *frame_cache;
 	int writing;
-// Copy read frames to the cache
-	int use_cache;
 };
 
 #endif

@@ -108,8 +108,6 @@ VFrame *VRender::process_buffer(VFrame *buffer)
 
 void VRender::process_buffer(ptstime input_postime)
 {
-	int use_cache = renderengine->command->single_frame();
-
 // Get output buffer from device
 	if(renderengine->command->realtime)
 		video_out = renderengine->video->new_output_buffer(
@@ -125,10 +123,8 @@ void VRender::process_buffer(ptstime input_postime)
 		if(file)
 		{
 // Cache single frames only
-			if(use_cache) file->set_cache_frames(1);
 			video_out->set_source_pts(current_postime);
 			file->get_frame(video_out);
-			if(use_cache) file->set_cache_frames(0);
 			video_out->set_pts(video_out->get_source_pts());
 			renderengine->get_vcache()->check_in(asset);
 		}
