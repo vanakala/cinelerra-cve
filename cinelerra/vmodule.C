@@ -115,114 +115,12 @@ VFrame *VModule::import_frame(VFrame *output,
 
 			// if we hit the end of stream, freeze at last frame
 			ptstime max_pts = current_edit->asset->video_duration;
-			if (src_pts > max_pts) 
+			if(src_pts > max_pts)
 				src_pts = max_pts;
-			int use_cache = renderengine && 
-				renderengine->command->single_frame();
+
 			output->set_source_pts(src_pts);
 			output->set_layer(current_edit->channel);
-
-			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
-				output->get_pts(),
-				&in_x1,
-				&in_y1,
-				&in_w1,
-				&in_h1,
-				&out_x1,
-				&out_y1,
-				&out_w1,
-				&out_h1);
-			// Determine the interlacing method to use.
-			int interlace_fixmethod = InterlaceFixSelection::automode2(
-				edlsession->interlace_mode,
-				current_edit->asset->interlace_autofixoption,
-				current_edit->asset->interlace_mode,
-				current_edit->asset->interlace_fixmethod);
-
-			// Compensate for the said interlacing...
-			switch(interlace_fixmethod)
-			{
-			case BC_ILACE_FIXMETHOD_NONE:
-				break;
-			case BC_ILACE_FIXMETHOD_UPONE:
-				out_y1--;
-				break;
-			case BC_ILACE_FIXMETHOD_DOWNONE:
-				out_y1++;
-				break;
-			default:
-				break;
-			}
-// file -> temp -> output
-			if(in_x1 != 0 || in_y1 != 0 ||
-				in_w1 != track->track_w ||
-				in_h1 != track->track_h ||
-				out_x1 != 0 || out_y1 != 0 ||
-				out_w1 != track->track_w ||
-				out_h1 != track->track_h ||
-				in_w1 != current_edit->asset->width ||
-				in_h1 != current_edit->asset->height)
-			{
-// Get temporary input buffer
-				VFrame *input_temp = BC_Resources::tmpframes.get_tmpframe(
-					current_edit->asset->width,
-					current_edit->asset->height,
-					edlsession->color_model);
-				input_temp->copy_pts(output);
-// file -> temp
-// Cache for single frame only
-				if(use_cache) source->set_cache_frames(1);
-				source->get_frame(input_temp);
-				if(use_cache) source->set_cache_frames(0);
-
-// Find an overlayer object to perform the camera transformation
-				OverlayFrame *overlayer = 0;
-
-// Realtime playback
-				if(commonrender)
-				{
-					VRender *vrender = (VRender*)commonrender;
-					overlayer = vrender->overlayer;
-				}
-				else
-// Menu effect
-				{
-					if(!plugin_array)
-						printf("VModule::import_frame neither plugin_array nor commonrender is defined.\n");
-					if(!overlay_temp)
-					{
-						overlay_temp = new OverlayFrame(plugin_array->mwindow->preferences->processors);
-					}
-
-					overlayer = overlay_temp;
-				}
-
-				output->clear_frame();
-
-				overlayer->overlay(output,
-					input_temp,
-					in_x1,
-					in_y1,
-					in_x1 + in_w1,
-					in_y1 + in_h1,
-					out_x1,
-					out_y1,
-					out_x1 + out_w1,
-					out_y1 + out_h1,
-					1,
-					TRANSFER_REPLACE,
-					BC_Resources::interpolation_method);
-				output->copy_pts(input_temp);
-				BC_Resources::tmpframes.release_frame(input_temp);
-			}
-			else
-// file -> output
-			{
-// Cache single frames only
-				if(use_cache) source->set_cache_frames(1);
-				source->get_frame(output);
-				if(use_cache) source->set_cache_frames(0);
-			}
+			source->get_frame(output);
 
 			get_cache()->check_in(current_edit->asset);
 		}
