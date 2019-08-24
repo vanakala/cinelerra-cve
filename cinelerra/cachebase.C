@@ -189,24 +189,6 @@ void CacheBase::put_item(CacheItemBase *item)
 		insert_before(current_item, item);
 }
 
-// Get first item from list with matching position or 0 if none found.
-CacheItemBase* CacheBase::get_item(posnum position)
-{
-	if(!current_item) current_item = first;
-	while(current_item && current_item->position < position)
-		current_item = current_item->next;
-	if(!current_item) current_item = last;
-	while(current_item && current_item->position >= position)
-		current_item = current_item->previous;
-	if(!current_item)
-		current_item = first;
-	else
-	if(current_item->next)
-		current_item = current_item->next;
-	if(!current_item || current_item->position != position) return 0;
-	return current_item;
-}
-
 // Get first item from list with matching postime or 0 if none found.
 CacheItemBase* CacheBase::get_item(ptstime postime)
 {

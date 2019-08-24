@@ -78,7 +78,6 @@ public:
 	void put_item(CacheItemBase *item);
 
 // Get first item from list with matching position or 0 if none found.
-	CacheItemBase* get_item(posnum position);
 	CacheItemBase* get_item(ptstime postime);
 
 // Called when done with the item returned by get_.
