@@ -310,8 +310,7 @@ void FrameField::process_frame(VFrame *frame)
 		return;
 	}
 
-	int row_size = VFrame::calculate_bytes_per_pixel(frame->get_color_model()) * 
-		frame->get_w();
+	int row_size = frame->get_bytes_per_line();
 	int start_row;
 
 // Even field
