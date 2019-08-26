@@ -61,9 +61,6 @@ public:
 // ===================================== start here
 	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
 
-// Delete oldest frame from cache.  Return 0 if successful.  Return 1 if 
-// nothing to delete.
-	int purge_cache();
 // Detect image list
 	int is_imagelist(int format);
 
@@ -106,9 +103,6 @@ public:
 // Get a pointer to a buffer to write to.
 	AFrame** get_audio_buffer();
 	VFrame*** get_video_buffer();
-
-// Used by ResourcePixmap to directly access the cache.
-	FrameCache* get_frame_cache();
 
 // Schedule a buffer for writing on the thread.
 // thread calls write_samples
@@ -162,11 +156,12 @@ public:
 private:
 	void reset_parameters();
 	int get_this_frame(framenum pos, VFrame *frame, int is_thread = 0);
+
 	int getting_options;
 	BC_WindowBase *format_window;
 	Mutex *format_completion;
-	FrameCache *frame_cache;
 	int writing;
+	VFrame *last_frame;
 };
 
 #endif

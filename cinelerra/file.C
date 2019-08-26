@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "aframe.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "byteorder.h"
 #include "cache.inc"
 #include "condition.h"
@@ -44,6 +45,7 @@
 #include "mutex.h"
 #include "pluginserver.h"
 #include "resample.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 
 File::File()
@@ -52,7 +54,6 @@ File::File()
 	asset = 0;
 	format_completion = new Mutex("File::format_completion");
 	write_lock = new Condition(1, "File::write_lock");
-	frame_cache = new FrameCache;
 	reset_parameters();
 }
 
@@ -70,7 +71,7 @@ File::~File()
 	close_file(0);
 	delete format_completion;
 	delete write_lock;
-	if(frame_cache) delete frame_cache;
+	BC_Resources::tmpframes.release_frame(last_frame);
 }
 
 void File::reset_parameters()
@@ -84,6 +85,7 @@ void File::reset_parameters()
 	temp_frame = 0;
 	resample = 0;
 	resample_float = 0;
+	last_frame = 0;
 }
 
 void File::raise_window()
@@ -211,11 +213,6 @@ void File::get_options(FormatTools *format, int options)
 void File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 	this->cpus = cpus;
-}
-
-int File::purge_cache()
-{
-	return frame_cache->delete_oldest();
 }
 
 int File::is_imagelist(int format)
@@ -639,11 +636,18 @@ int File::get_frame(VFrame *frame)
 		if(asset->single_image)
 			frame->set_source_pts(0);
 // Test cache
-		if(frame_cache->get_frame(frame))
+		if(last_frame && last_frame->pts_in_frame_source(rqpts, 0.004))
 		{
-			frame->set_pts(rqpts);
-			adjust_times(frame, rqpts, srcrqpts);
-			return 0;
+			if(frame->equivalent(last_frame))
+			{
+				frame->copy_from(last_frame);
+				frame->copy_pts(last_frame);
+				frame->set_pts(rqpts);
+				adjust_times(frame, rqpts, srcrqpts);
+				return 0;
+			}
+			BC_Resources::tmpframes.release_frame(last_frame);
+			last_frame = 0;
 		}
 // Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&
@@ -683,7 +687,19 @@ int File::get_frame(VFrame *frame)
 			frame->set_frame_number(0);
 		}
 
-		frame_cache->put_frame(frame, 1);
+		if(last_frame && !last_frame->equivalent(frame))
+		{
+			BC_Resources::tmpframes.release_frame(last_frame);
+			last_frame = 0;
+		}
+		if(!last_frame)
+		{
+			last_frame = BC_Resources::tmpframes.get_tmpframe(
+				frame->get_w(), frame->get_h(),
+				frame->get_color_model());
+		}
+		last_frame->copy_from(frame);
+		last_frame->copy_pts(frame);
 		adjust_times(frame, rqpts, srcrqpts);
 		return 0;
 	}
@@ -767,12 +783,7 @@ size_t File::get_memory_usage()
 	size_t result = 0;
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
-	result += frame_cache->get_memory_usage();
+	if(last_frame) result += last_frame->get_data_size();
 	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
 	return result;
-}
-
-FrameCache* File::get_frame_cache()
-{
-	return frame_cache;
 }

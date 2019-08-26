@@ -257,7 +257,7 @@ int CICache::delete_oldest()
 	{
 // Got the oldest file.  Try requesting cache purge.
 
-		if(!oldest->file || oldest->file->purge_cache())
+		if(!oldest->file)
 		{
 
 // Delete the file if cache already empty and not checked out.
