@@ -154,11 +154,6 @@ public:
 	size_t get_data_size();
 	void flip_vert(void);
 
-// Convenience storage.
-// Returns -1 if not set.
-	int get_field2_offset();
-	int set_field2_offset(int value);
-
 // Debugging functions
 	void dump(int indent = 0, int minmax = 0);
 // Dump bitmamps to named file
@@ -204,8 +199,6 @@ private:
 // Status of the frame: bits from vframe.inc
 	int status;
 
-// Convenience storage
-	int field2_offset;
 // Data is pointing to someone else's buffer.
 	int shared;
 // If not set by user, is calculated from color_model

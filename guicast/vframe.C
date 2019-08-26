@@ -127,7 +127,6 @@ int VFrame::params_match(int w, int h, int color_model)
 
 void VFrame::reset_parameters()
 {
-	field2_offset = -1;
 	shared = 0;
 	bytes_per_line = 0;
 	data = 0;
@@ -158,17 +157,6 @@ void VFrame::clear_objects()
 // Delete row pointers
 	delete [] rows;
 	rows = 0;
-}
-
-int VFrame::get_field2_offset()
-{
-	return field2_offset;
-}
-
-int VFrame::set_field2_offset(int value)
-{
-	this->field2_offset = value;
-	return 0;
 }
 
 int VFrame::get_bytes_per_line()
