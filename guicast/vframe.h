@@ -160,12 +160,6 @@ public:
 	int get_field2_offset();
 	int set_field2_offset(int value);
 
-// Overlay src onto this with blending and translation of input.
-// Source and this must have alpha
-	void overlay(VFrame *src, 
-		int out_x1, 
-		int out_y1);
-
 // Debugging functions
 	void dump(int indent = 0, int minmax = 0);
 // Dump bitmamps to named file

@@ -592,51 +592,6 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 	}
 }
 
-
-#define OVERLAY(type, max, components) \
-{ \
-	int in_w = src->get_w(); \
-	int in_h = src->get_h(); \
- \
-	for(int i = 0; i < in_h; i++) \
-	{ \
-		if(i + out_y1 >= 0 && i + out_y1 < h) \
-		{ \
-			type *src_row = (type*)get_row_ptr(i); \
-			type *dst_row = (type*)get_row_ptr(i + out_y1) + out_x1 * components; \
- \
-			for(int j = 0; j < in_w; j++) \
-			{ \
-				if(j + out_x1 >= 0 && j + out_x1 < w) \
-				{ \
-					int opacity = src_row[3]; \
-					int transparency = max - src_row[3]; \
-					dst_row[0] = (transparency * dst_row[0] + opacity * src_row[0]) / max; \
-					dst_row[1] = (transparency * dst_row[1] + opacity * src_row[1]) / max; \
-					dst_row[2] = (transparency * dst_row[2] + opacity * src_row[2]) / max; \
-					dst_row[3] = MAX(dst_row[3], src_row[3]); \
-				} \
- \
-				dst_row += components; \
-				src_row += components; \
-			} \
-		} \
-	} \
-}
-
-
-void VFrame::overlay(VFrame *src, 
-		int out_x1, 
-		int out_y1)
-{
-	switch(get_color_model())
-	{
-	case BC_RGBA8888:
-		OVERLAY(unsigned char, 0xff, 4);
-		break;
-	}
-}
-
 int VFrame::get_bytes_per_pixel(void)
 {
 	return bytes_per_pixel;
