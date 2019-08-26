@@ -713,16 +713,6 @@ int VFrame::get_h(void)
 	return h;
 }
 
-int VFrame::get_w_fixed(void)
-{
-	return w - 1;
-}
-
-int VFrame::get_h_fixed(void)
-{
-	return h - 1;
-}
-
 unsigned char* VFrame::get_y(void)
 {
 	return y;

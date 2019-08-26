@@ -138,8 +138,6 @@ public:
 	unsigned char* get_v(void);
 	int get_w(void);
 	int get_h(void);
-	int get_w_fixed(void);
-	int get_h_fixed(void);
 	static void get_scale_tables(int *column_table, int *row_table, 
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2);

@@ -354,16 +354,6 @@ int BC_Pixmap::get_h()
 	return h;
 }
 
-int BC_Pixmap::get_w_fixed()
-{
-	return w - 1;
-}
-
-int BC_Pixmap::get_h_fixed()
-{
-	return h - 1;
-}
-
 Pixmap BC_Pixmap::get_pixmap()
 {
 	return opaque_pixmap;

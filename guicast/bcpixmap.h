@@ -82,8 +82,6 @@ public:
 			int src_y = 0);
 	int get_w();
 	int get_h();
-	int get_w_fixed();
-	int get_h_fixed();
 	Pixmap get_pixmap();
 	Pixmap get_alpha();
 	int use_alpha();
