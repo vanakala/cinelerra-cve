@@ -171,11 +171,6 @@ int VFrame::set_field2_offset(int value)
 	return 0;
 }
 
-int VFrame::calculate_bytes_per_pixel(int color_model)
-{
-	return ColorModels::calculate_pixelsize(color_model);
-}
-
 int VFrame::get_bytes_per_line()
 {
 	return bytes_per_line;
@@ -251,7 +246,7 @@ void VFrame::allocate_data(unsigned char *data,
 	this->w = w;
 	this->h = h;
 	this->color_model = color_model;
-	this->bytes_per_pixel = calculate_bytes_per_pixel(color_model);
+	this->bytes_per_pixel = ColorModels::calculate_pixelsize(color_model);
 	this->y_offset = this->u_offset = this->v_offset = 0;
 
 	if(bytes_per_line >= 0)
@@ -1032,7 +1027,7 @@ void VFrame::dump_file(const char *filename)
 	{
 		for(i = 0; i < h; i++)
 			fwrite(get_row_ptr(i), w,
-				calculate_bytes_per_pixel(color_model), fp);
+				ColorModels::calculate_pixelsize(color_model), fp);
 		fclose(fp);
 	}
 	return;

@@ -146,7 +146,6 @@ public:
 	double get_pixel_aspect();
 	void set_pixel_aspect(double aspect);
 
-	static int calculate_bytes_per_pixel(int colormodel);
 	static size_t calculate_data_size(int w, 
 		int h, 
 		int bytes_per_line = -1, 
