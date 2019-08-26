@@ -637,31 +637,6 @@ void VFrame::overlay(VFrame *src,
 	}
 }
 
-
-void VFrame::get_scale_tables(int *column_table, int *row_table, 
-			int in_x1, int in_y1, int in_x2, int in_y2,
-			int out_x1, int out_y1, int out_x2, int out_y2)
-{
-	int y_out, i;
-	float w_in = in_x2 - in_x1;
-	float h_in = in_y2 - in_y1;
-	int w_out = out_x2 - out_x1;
-	int h_out = out_y2 - out_y1;
-
-	float hscale = w_in / w_out;
-	float vscale = h_in / h_out;
-
-	for(i = 0; i < w_out; i++)
-	{
-		column_table[i] = (int)(hscale * i);
-	}
-
-	for(i = 0; i < h_out; i++)
-	{
-		row_table[i] = (int)(vscale * i) + in_y1;
-	}
-}
-
 int VFrame::get_bytes_per_pixel(void)
 {
 	return bytes_per_pixel;
