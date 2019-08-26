@@ -106,9 +106,9 @@ VFrame::~VFrame()
 
 int VFrame::equivalent(VFrame *src)
 {
-	return (src->get_color_model() == get_color_model() &&
-		src->get_w() == get_w() &&
-		src->get_h() == get_h() &&
+	return (src->get_color_model() == color_model &&
+		src->get_w() == w &&
+		src->get_h() == h &&
 		src->bytes_per_line == bytes_per_line);
 }
 
