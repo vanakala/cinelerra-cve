@@ -2543,6 +2543,12 @@ int BC_WindowBase::get_y()
 	return y;
 }
 
+void BC_WindowBase::get_dimensions(int *width, int *height)
+{
+	*width = w;
+	*height = h;
+}
+
 int BC_WindowBase::get_root_w(int ignore_dualhead, int lock_display)
 {
 	if(lock_display) lock_window("BC_WindowBase::get_root_w");

@@ -225,6 +225,7 @@ public:
 	virtual int get_h();
 	virtual int get_x();
 	virtual int get_y();
+	void get_dimensions(int *width, int *height);
 	int get_root_w(int ignore_dualhead = 0, int lock_display = 0);
 	int get_root_h(int lock_display);
 // Get current position
