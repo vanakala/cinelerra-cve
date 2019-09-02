@@ -175,7 +175,7 @@ public:
 // Gets whatever video surface is enabled
 	BC_WindowBase* get_canvas();
 // Clear the canvas
-	void clear_canvas();
+	void clear_canvas(int do_flash = 0);
 
 // The owner of the canvas
 	BC_WindowBase *subwindow;

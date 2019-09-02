@@ -134,13 +134,14 @@ BC_WindowBase* Canvas::get_canvas()
 		return canvas_subwindow;
 }
 
-void Canvas::clear_canvas()
+void Canvas::clear_canvas(int do_flash)
 {
 	BC_WindowBase *cur_canvas = get_canvas();
 
 	cur_canvas->set_color(BLACK);
 	cur_canvas->draw_box(0, 0, cur_canvas->get_w(), cur_canvas->get_h());
-	cur_canvas->flash();
+	if(do_flash)
+		cur_canvas->flash();
 }
 
 // Get dimensions given a zoom
