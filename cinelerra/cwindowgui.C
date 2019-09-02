@@ -2365,8 +2365,24 @@ int CWindowCanvas::test_bezier(int button_press,
 void CWindowCanvas::test_zoom(int &redraw)
 {
 	double zoom = get_zoom();
-	double x;
-	double y;
+	int x, y, w, h, max;
+	int fw, fh;
+	int current_index;
+	int mousebutton = get_buttonpress();
+	BC_WindowBase *cur_canvas = get_canvas();
+
+// Filter mouse buttons
+	switch(mousebutton)
+	{
+	case 1:
+	case 4:
+	case 5:
+		break;
+	default:
+		return;
+	}
+
+	cur_canvas->get_dimensions(&w, &h);
 
 	if(!edlsession->cwindow_scrollbars)
 	{
@@ -2377,25 +2393,17 @@ void CWindowCanvas::test_zoom(int &redraw)
 	}
 	else
 	{
-		x = get_cursor_x();
-		y = get_cursor_y();
-		canvas_to_output(master_edl,
-				x, 
-				y);
-
+		cur_canvas->get_relative_cursor_pos(&x, &y);
 // Find current zoom in table
-		int current_index = 0;
 		for(current_index = 0 ; current_index < total_zooms; current_index++)
-			if(EQUIV(my_zoom_table[current_index], zoom)) break;
-
+			if(EQUIV(my_zoom_table[current_index], zoom))
+				break;
 // Zoom out
-		if(get_buttonpress() == 5 ||
-			gui->ctrl_down() || 
-			gui->shift_down())
+		if(mousebutton == 5)
 		{
 			current_index--;
 		}
-		else
+		else if(mousebutton == 4)
 // Zoom in
 		{
 			current_index++;
@@ -2404,17 +2412,32 @@ void CWindowCanvas::test_zoom(int &redraw)
 		zoom = my_zoom_table[current_index];
 	}
 
-	x = x - w / zoom / 2;
-	y = y - h / zoom / 2;
+	calculate_sizes(master_edl, edlsession->output_w,
+		edlsession->output_h, zoom, fw, fh);
 
-	update_zoom(round(x),
-			round(y),
-			zoom);
+	x = round((double)x * fw / w) - w / 2;
+	y = round((double)y * fh / h) - h / 2;
+
+	max = fw  - w;
+	if(max > 0 && x > max)
+		x = max;
+	if(x < 0)
+		x = 0;
+	max = fh  - h;
+	if(max > 0 && y > max)
+		y = max;
+	if(y < 0)
+		y = 0;
+
+	update_zoom(x, y, zoom);
 	reposition_window(master_edl,
-			mwindow->theme->ccanvas_x,
-			mwindow->theme->ccanvas_y,
-			mwindow->theme->ccanvas_w,
-			mwindow->theme->ccanvas_h);
+		mwindow->theme->ccanvas_x,
+		mwindow->theme->ccanvas_y,
+		mwindow->theme->ccanvas_w,
+		mwindow->theme->ccanvas_h);
+	update_scrollbars();
+
+	clear_canvas();
 	redraw = 1;
 
 	gui->zoom_panel->update(zoom);
