@@ -544,8 +544,7 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 	int canvas_w, canvas_h;
 	int new_w, new_h;
 
-	calculate_sizes(vwindow_edl,
-		edlsession->output_w,
+	calculate_sizes(edlsession->output_w,
 		edlsession->output_h,
 		percentage,
 		canvas_w,

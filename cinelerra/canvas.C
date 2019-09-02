@@ -145,26 +145,21 @@ void Canvas::clear_canvas(int do_flash)
 }
 
 // Get dimensions given a zoom
-void Canvas::calculate_sizes(EDL *edl,
-	int output_w, 
-	int output_h, 
-	double zoom,
-	int &w, 
-	int &h)
+void Canvas::calculate_sizes(int output_w, int output_h,
+	double zoom, int &w, int &h)
 {
-	double aspect = sample_aspect_ratio() *
-		edlsession->output_w / edlsession->output_h;
+	double aspect = sample_aspect_ratio();
 	// Horizontal stretch
-	if((double)output_w / output_h <= aspect)
+	if(aspect >= 1)
 	{
-		w = output_h * aspect * zoom;
-		h = output_h * zoom;
+		w = round(output_w * aspect * zoom);
+		h = round(output_h * zoom);
 	}
 	else
 	// Vertical stretch
 	{
-		h = output_w / aspect * zoom;
-		w = output_w * zoom;
+		h = round(output_h * zoom);
+		w = round(output_w / aspect * zoom);
 	}
 }
 

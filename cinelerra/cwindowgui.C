@@ -2412,7 +2412,7 @@ void CWindowCanvas::test_zoom(int &redraw)
 		zoom = my_zoom_table[current_index];
 	}
 
-	calculate_sizes(master_edl, edlsession->output_w,
+	calculate_sizes(edlsession->output_w,
 		edlsession->output_h, zoom, fw, fh);
 
 	x = round((double)x * fw / w) - w / 2;
@@ -2693,15 +2693,14 @@ int CWindowCanvas::button_release_event()
 void CWindowCanvas::zoom_resize_window(double percentage)
 {
 	int canvas_w, canvas_h;
+	int new_w, new_h;
 
-	calculate_sizes(master_edl,
-		edlsession->output_w,
+	calculate_sizes(edlsession->output_w,
 		edlsession->output_h,
 		percentage,
 		canvas_w,
 		canvas_h);
 
-	int new_w, new_h;
 	new_w = canvas_w + (gui->get_w() - mwindow->theme->ccanvas_w);
 	new_h = canvas_h + (gui->get_h() - mwindow->theme->ccanvas_h);
 	gui->resize_window(new_w, new_h);

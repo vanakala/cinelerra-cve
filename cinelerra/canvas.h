@@ -59,12 +59,8 @@ public:
 
 	void release_refresh_frame();
 // Get dimensions given a zoom
-	void calculate_sizes(EDL *edl,
-		int output_w, 
-		int output_h, 
-		double zoom,
-		int &w, 
-		int &h);
+	void calculate_sizes(int output_w, int output_h,
+		double zoom, int &w, int &h);
 // Lock access to the canvas pointer.
 // Must be called before get_canvas or locking the canvas.
 	void lock_canvas(const char *location);
