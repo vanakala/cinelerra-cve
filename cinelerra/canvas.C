@@ -418,18 +418,16 @@ int Canvas::scrollbars_exist()
 
 int Canvas::get_output_w(EDL *edl)
 {
-	if(edl)
-		return edlsession->output_w;
-	else
-		return 0;
+	if(edl->this_edlsession)
+		return edl->this_edlsession->output_w;
+	return edlsession->output_w;
 }
 
 int Canvas::get_output_h(EDL *edl)
 {
-	if(edl)
-		return edlsession->output_h;
-	else
-		return 0;
+	if(edl->this_edlsession)
+		return edl->this_edlsession->output_h;
+	return edlsession->output_h;
 }
 
 void Canvas::get_scrollbars(EDL *edl, 
