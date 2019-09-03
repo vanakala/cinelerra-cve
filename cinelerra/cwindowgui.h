@@ -267,7 +267,6 @@ public:
 	void draw_crop();
 	void calculate_origin();
 	void toggle_controls();
-	int get_cwindow_controls();
 	double sample_aspect_ratio();
 
 	MWindow *mwindow;

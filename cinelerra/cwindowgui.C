@@ -2713,11 +2713,6 @@ void CWindowCanvas::toggle_controls()
 	gui->resize_event(gui->get_w(), gui->get_h());
 }
 
-int CWindowCanvas::get_cwindow_controls()
-{
-	return mainsession->cwindow_controls;
-}
-
 double CWindowCanvas::sample_aspect_ratio()
 {
 	if(edlsession->sample_aspect_ratio)

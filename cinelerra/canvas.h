@@ -356,7 +356,9 @@ class CanvasToggleControls : public BC_MenuItem
 public:
 	CanvasToggleControls(Canvas *canvas);
 	int handle_event();
-	static char* calculate_text(int cwindow_controls);
+
+private:
+	static const char* calculate_text();
 	Canvas *canvas;
 };
 

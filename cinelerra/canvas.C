@@ -945,20 +945,20 @@ int CanvasPopupResetProjector::handle_event()
 
 
 CanvasToggleControls::CanvasToggleControls(Canvas *canvas)
- : BC_MenuItem(calculate_text(canvas->get_cwindow_controls()))
+ : BC_MenuItem(calculate_text())
 {
 	this->canvas = canvas;
 }
 int CanvasToggleControls::handle_event()
 {
 	canvas->toggle_controls();
-	set_text(calculate_text(canvas->get_cwindow_controls()));
+	set_text(calculate_text());
 	return 1;
 }
 
-char* CanvasToggleControls::calculate_text(int cwindow_controls)
+const char* CanvasToggleControls::calculate_text()
 {
-	if(!cwindow_controls) 
+	if(!mainsession->cwindow_controls)
 		return _("Show controls");
 	else
 		return _("Hide controls");
