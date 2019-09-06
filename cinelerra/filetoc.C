@@ -327,14 +327,16 @@ int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
 		stream_item *new_itms = new stream_item[new_alloc];
 		memcpy(new_itms, items,
 			items_allocated * sizeof(stream_item));
-		delete items;
+		delete [] items;
 		items = new_itms;
 		items_allocated = new_alloc;
 	}
 	// keep indexes in order
 	for(itmx = max_items - 1; itmx >= 0 && items[itmx].index > index; itmx--);
+	itmx++;
 	if(itmx < max_items - 1)
 	{
+		// Not good if we need to reorder here
 		for(int i = max_items; i > itmx; i--)
 			items[i] = items[i - 1];
 		items[itmx].index = index;
