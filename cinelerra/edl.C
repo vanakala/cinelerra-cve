@@ -625,12 +625,22 @@ int EDL::get_tracks_height(Theme *theme)
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(double &w, double &h)
 {
-	w = edlsession->output_w * edlsession->sample_aspect_ratio;
-	h = edlsession->output_h;
+	if(this_edlsession)
+	{
+		w = this_edlsession->output_w * this_edlsession->sample_aspect_ratio;
+		h = this_edlsession->output_h;
+	}
+	else
+	{
+		w = edlsession->output_w * edlsession->sample_aspect_ratio;
+		h = edlsession->output_h;
+	}
 }
 
 double EDL::get_sample_aspect_ratio()
 {
+	if(this_edlsession)
+		return this_edlsession->sample_aspect_ratio;
 	return edlsession->sample_aspect_ratio;
 }
 
