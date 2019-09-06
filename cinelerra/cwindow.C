@@ -213,10 +213,6 @@ void CWindow::update(int options)
 	else
 		gui->zoom_panel->update(edlsession->cwindow_zoom);
 
-	gui->canvas->update_zoom(edlsession->cwindow_xscroll,
-			edlsession->cwindow_yscroll,
-			edlsession->cwindow_zoom);
-
 	if(options & WUPD_ACHANNELS)
 		gui->resize_event(mainsession->cwindow_w,
 			mainsession->cwindow_h);
