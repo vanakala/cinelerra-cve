@@ -2412,21 +2412,24 @@ void CWindowCanvas::test_zoom(int &redraw)
 		zoom = my_zoom_table[current_index];
 	}
 
-	calculate_sizes(edlsession->output_w,
-		edlsession->output_h, zoom, fw, fh);
+	fw = edlsession->output_w;
+	fh = edlsession->output_h;
 
 	x = round((double)x * fw / w) - w / 2;
 	y = round((double)y * fh / h) - h / 2;
 
-	max = fw  - w;
+	w = round(w / zoom / sample_aspect_ratio());
+	h = round(h / zoom);
+
+	max = fw - w;
 	if(max > 0 && x > max)
 		x = max;
-	if(x < 0)
+	if(x < 0 || max < 0)
 		x = 0;
-	max = fh  - h;
+	max = fh - h;
 	if(max > 0 && y > max)
 		y = max;
-	if(y < 0)
+	if(y < 0 || max < 0)
 		y = 0;
 
 	update_zoom(x, y, zoom);
