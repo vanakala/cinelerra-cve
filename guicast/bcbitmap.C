@@ -80,6 +80,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	base_left = 0;
 	base_top = 0;
 	completion_used = 0;
+	reset_completion();
 
 	if(w == 0 || h == 0)
 		return;
@@ -252,7 +253,7 @@ void BC_Bitmap::delete_data()
 		if(use_shm)
 		{
 			if(completion_used)
-				parent_window->reset_completion();
+				parent_window->unregister_completion(this);
 
 			if(xv_image[0])
 			{
@@ -334,7 +335,7 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 		{
 			if(completion_used)
 			{
-				unsigned long offs = parent_window->get_completion_offset();
+				unsigned long offs = get_completion_offset();
 
 				if(offs != ULONG_MAX)
 					busyflag[offs / data_size] = 0;
@@ -345,6 +346,14 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 					return;
 				}
 			}
+			else
+			{
+				parent_window->register_completion(this);
+				completion_used = 1;
+			}
+			busyflag[current_ringbuffer] = 1;
+			set_completion_drawable(pixmap);
+
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -363,9 +372,6 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;
 
-			parent_window->set_completion_drawable(pixmap);
-			completion_used = 1;
-			busyflag[current_ringbuffer] = 1;
 		}
 		else
 		{
@@ -617,6 +623,61 @@ int BC_Bitmap::get_color_model()
 {
 	return color_model; 
 }
+
+void BC_Bitmap::reset_completion()
+{
+	for(int i = 0; i < BITMAP_RING; i++)
+		completion_offsets[i] = ULONG_MAX;
+	completion_read = 0;
+	completion_write = 0;
+	completion_drawable = 0;
+}
+
+unsigned long BC_Bitmap::get_completion_offset()
+{
+	unsigned long offs;
+
+	if(completion_read >= BITMAP_RING)
+		completion_read = 0;
+	offs = completion_offsets[completion_read];
+	completion_offsets[completion_read] = ULONG_MAX;
+
+	if(offs != ULONG_MAX)
+		completion_read++;
+
+	return offs;
+}
+
+void BC_Bitmap::set_completion_drawable(Drawable drawable)
+{
+	for(int i = 0; i < BITMAP_RING; i++)
+	{
+		if(pixmaps[i] == drawable)
+			return;
+	}
+	pixmaps[completion_drawable] = drawable;
+
+	if(++completion_drawable >= BITMAP_RING)
+		completion_drawable = 0;
+}
+
+int BC_Bitmap::completion_event(XEvent *event)
+{
+	XShmCompletionEvent *ev = (XShmCompletionEvent*)event;
+
+	for(int i = 0; i < BITMAP_RING; i++)
+	{
+		if(pixmaps[i] == ev->drawable)
+		{
+			if(completion_write >= BITMAP_RING)
+				completion_write = 0;
+			completion_offsets[completion_write++] = ev->offset;
+			return 1;
+		}
+	}
+	return 0;
+}
+
 
 void BC_Bitmap::dump(int minmax)
 {

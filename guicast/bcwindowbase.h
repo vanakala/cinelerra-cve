@@ -161,7 +161,6 @@ public:
 	virtual int drag_start_event() { return 0; };
 	virtual void drag_motion_event() {};
 	virtual void drag_stop_event() {};
-	virtual int completion_event(XEvent *event);
 
 	virtual int uses_text() { return 0; };
 // Only if opengl is enabled
@@ -185,10 +184,6 @@ public:
 // Shouldn't deference a pointer to delete a window if a parent is 
 // currently being deleted.  This returns 1 if any parent is being deleted.
 	int get_deleting();
-// Completion functions
-	void set_completion_drawable(Drawable drawable);
-	void reset_completion();
-	unsigned long get_completion_offset();
 
 //============================= OpenGL functions ===============================
 // OpenGL functions must be called from inside a GLThread command.
@@ -503,6 +498,11 @@ public:
 	void scale_vm(int vm);
 	void restore_vm();
 #endif
+// Completition event managemet
+// Bitmaps register for Completition event
+	int register_completion(BC_Bitmap *bitmap);
+	void unregister_completion(BC_Bitmap *bitmap);
+	void reset_completion();
 
 	int test_keypress;
 	VFrame *icon_vframe;
@@ -776,13 +776,9 @@ private:
 	wchar_t wide_buffer[BCTEXTLEN];
 
 // Completion event
-#define COMPLETION_MAX 8
 	int completion_event_type;
-	int completion_read;
-	int completion_write;
-	int completion_drawable;
-	Drawable completion_drawables[COMPLETION_MAX];
-	unsigned long completion_offsets[COMPLETION_MAX];
+#define COMPLETITION_BITMAPS 4
+	BC_Bitmap *completition_bitmap[COMPLETITION_BITMAPS];
 
 protected:
 	int resize_wide_text(int length);

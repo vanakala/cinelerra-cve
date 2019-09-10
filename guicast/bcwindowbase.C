@@ -1061,18 +1061,63 @@ void BC_WindowBase::dispatch_focus_out()
 	focus_out_event();
 }
 
+int BC_WindowBase::register_completion(BC_Bitmap *bitmap)
+{
+	if(top_level != this)
+		return top_level->register_completion(bitmap);
+
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(completition_bitmap[i] == bitmap)
+			return 0;
+	}
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(!completition_bitmap[i])
+		{
+			completition_bitmap[i] = bitmap;
+			return 0;
+		}
+	}
+	// No free slot
+	return 0;
+}
+
+void BC_WindowBase::unregister_completion(BC_Bitmap *bitmap)
+{
+	if(top_level != this)
+	{
+		top_level->unregister_completion(bitmap);
+		return;
+	}
+
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(completition_bitmap[i] == bitmap)
+			completition_bitmap[i] = 0;
+	}
+}
+
+void BC_WindowBase::reset_completion()
+{
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+		completition_bitmap[i] = 0;
+}
+
 int BC_WindowBase::dispatch_completion(XEvent *event)
 {
 	int result = 0;
 
-	for(int i = 0; subwindows && i < subwindows->total; i++)
-	{
-		if(result = subwindows->values[i]->dispatch_completion(event))
-			break;
-	}
+	if(top_level != this)
+		return top_level->dispatch_completion(event);
 
-	if(!result)
-		result = completion_event(event);
+	lock_window("BC_WindowBase::completion_event");
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(completition_bitmap[i])
+			result += completition_bitmap[i]->completion_event(event);
+	}
+	unlock_window();
 	return result;
 }
 

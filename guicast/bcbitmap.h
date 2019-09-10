@@ -101,6 +101,8 @@ public:
 	long get_u_offset();
 	long get_v_offset();
 
+	int completion_event(XEvent *event);
+
 	void dump(int minmax = 0);
 
 private:
@@ -108,6 +110,11 @@ private:
 	void allocate_data();
 	void delete_data();
 	int get_default_depth();
+
+// Completion functions
+	void reset_completion();
+	unsigned long get_completion_offset();
+	void set_completion_drawable(Drawable drawable);
 
 	int ring_buffers, current_ringbuffer;
 	int w, h;
@@ -147,6 +154,12 @@ private:
 	int completion_used;
 	unsigned int data_size;
 	char busyflag[BITMAP_RING];
+	int completion_read;
+	int completion_write;
+	int completion_drawable;
+	Drawable pixmaps[BITMAP_RING];
+	unsigned long completion_offsets[BITMAP_RING];
+
 };
 
 #endif
