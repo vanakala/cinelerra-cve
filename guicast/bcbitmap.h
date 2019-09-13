@@ -35,6 +35,10 @@
 
 #define BITMAP_RING 4
 
+// drain frames function
+#define BITMAP_DRAIN_HIDE 1
+#define BITMAP_DRAIN_SHOW 2
+
 class BC_Bitmap
 {
 public:
@@ -102,6 +106,7 @@ public:
 	long get_v_offset();
 
 	int completion_event(XEvent *event);
+	void completion_drain(int action, BC_WindowBase *window);
 
 	void dump(int minmax = 0);
 
@@ -115,6 +120,7 @@ private:
 	void reset_completion();
 	unsigned long get_completion_offset();
 	void set_completion_drawable(Drawable drawable);
+	void drain_buffer();
 
 	int ring_buffers, current_ringbuffer;
 	int w, h;
@@ -152,6 +158,8 @@ private:
 	XShmSegmentInfo shm_info;
 // Completion
 	int completion_used;
+	int drain_action;
+	BC_WindowBase *drain_window;
 	unsigned int data_size;
 	char busyflag[BITMAP_RING];
 	int completion_read;

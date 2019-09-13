@@ -80,6 +80,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	base_left = 0;
 	base_top = 0;
 	completion_used = 0;
+	drain_action = 0;
 	reset_completion();
 
 	if(w == 0 || h == 0)
@@ -253,7 +254,10 @@ void BC_Bitmap::delete_data()
 		if(use_shm)
 		{
 			if(completion_used)
+			{
 				parent_window->unregister_completion(this);
+				completion_used = 0;
+			}
 
 			if(xv_image[0])
 			{
@@ -339,6 +343,13 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 
 				if(offs != ULONG_MAX)
 					busyflag[offs / data_size] = 0;
+
+				if(drain_action)
+				{
+					drain_buffer();
+					top_level->unlock_window();
+					return;
+				}
 
 				if(busyflag[current_ringbuffer])
 				{
@@ -678,6 +689,37 @@ int BC_Bitmap::completion_event(XEvent *event)
 	return 0;
 }
 
+void BC_Bitmap::completion_drain(int action, BC_WindowBase *window)
+{
+	if(completion_used)
+	{
+		drain_action = action;
+		drain_window = window;
+	}
+}
+
+void BC_Bitmap::drain_buffer()
+{
+	for(int i = 0; i < BITMAP_RING; i++)
+	{
+		if(busyflag[i])
+			return;
+	}
+
+	switch(drain_action)
+	{
+	case BITMAP_DRAIN_HIDE:
+		XUnmapWindow(top_level->display, drain_window->win);
+		drain_window->hidden = 1;
+		break;
+	case BITMAP_DRAIN_SHOW:
+		XMapWindow(top_level->display, drain_window->win);
+		drain_window->hidden = 0;
+		break;
+	}
+	drain_action = 0;
+	XFlush(top_level->display);
+}
 
 void BC_Bitmap::dump(int minmax)
 {

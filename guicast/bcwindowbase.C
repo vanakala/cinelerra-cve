@@ -1080,7 +1080,7 @@ int BC_WindowBase::register_completion(BC_Bitmap *bitmap)
 		}
 	}
 	// No free slot
-	return 0;
+	return 1;
 }
 
 void BC_WindowBase::unregister_completion(BC_Bitmap *bitmap)
@@ -2385,18 +2385,50 @@ int BC_WindowBase::accel_cmodels(int *cmodels, int len)
 	return num;
 }
 
-void BC_WindowBase::show_window(int flush) 
+void BC_WindowBase::show_window(int flush)
 {
-	XMapWindow(top_level->display, win); 
-	if(flush) XFlush(top_level->display);
-	hidden = 0;
+	int completion = 0;
+
+	top_level->lock_window("BC_WindowBase::show_window");
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(top_level->completition_bitmap[i])
+		{
+			top_level->completition_bitmap[i]->completion_drain(BITMAP_DRAIN_SHOW, this);
+			completion = 1;
+		}
+	}
+	if(!completion)
+	{
+		XMapWindow(top_level->display, win);
+		if(flush)
+			XFlush(top_level->display);
+		hidden = 0;
+	}
+	top_level->unlock_window();
 }
 
-void BC_WindowBase::hide_window(int flush) 
+void BC_WindowBase::hide_window(int flush)
 {
-	XUnmapWindow(top_level->display, win); 
-	if(flush) XFlush(top_level->display);
-	hidden = 1;
+	int completion = 0;
+
+	top_level->lock_window("BC_WindowBase::hide_window");
+	for(int i = 0; i < COMPLETITION_BITMAPS; i++)
+	{
+		if(top_level->completition_bitmap[i])
+		{
+			top_level->completition_bitmap[i]->completion_drain(BITMAP_DRAIN_HIDE, this);
+			completion = 1;
+		}
+	}
+	if(!completion)
+	{
+		XUnmapWindow(top_level->display, win);
+		if(flush)
+			XFlush(top_level->display);
+		hidden = 1;
+	}
+	top_level->unlock_window();
 }
 
 BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
