@@ -31,12 +31,9 @@
 #define BC_WG_Rows 25
 #define BC_WG_Cols 10
 
-
-
-
-class BC_WidgetGrid : public BC_RelocatableWidget {
-public:  
-//	BC_WidgetGrid();
+class BC_WidgetGrid : public BC_RelocatableWidget
+{
+public:
 	BC_WidgetGrid(int x, int y, int x_r, int y_b, int colgaps, int rowgaps);
 
 	BC_RelocatableWidget * add(BC_RelocatableWidget *h, int row, int column);
@@ -64,29 +61,32 @@ public:
 	void set_minw(int c, int w);
 	void setw_position(int row,int column,int x, int y);
 
-	enum {
+	enum
+	{
 		VALIGN_TOP,
 		VALIGN_CENTER,
 		VALIGN_BOTTOM
 	};
 
-	enum {
+	enum
+	{
 		HALIGN_LEFT,
 		HALIGN_CENTER,
 		HALIGN_RIGHT
 	};
 
-	enum {
+	enum
+	{
 		BC_WT_NONE,
 		BC_WT_RelocatableWidget
 	};
 
 private:
-	int            widget_types[BC_WG_Rows][BC_WG_Cols];
-	int            widget_valign[BC_WG_Rows][BC_WG_Cols];
-	int            widget_halign[BC_WG_Rows][BC_WG_Cols];
-	int            widget_colspan[BC_WG_Rows][BC_WG_Cols];
-	int            widget_rowspan[BC_WG_Rows][BC_WG_Cols];
+	int widget_types[BC_WG_Rows][BC_WG_Cols];
+	int widget_valign[BC_WG_Rows][BC_WG_Cols];
+	int widget_halign[BC_WG_Rows][BC_WG_Cols];
+	int widget_colspan[BC_WG_Rows][BC_WG_Cols];
+	int widget_rowspan[BC_WG_Rows][BC_WG_Cols];
 
 	// array of pointers:
 	BC_RelocatableWidget *widget_widgs[BC_WG_Rows][BC_WG_Cols];
@@ -99,8 +99,8 @@ private:
 
 	int minw[BC_WG_Cols];
 	int minh[BC_WG_Rows];
-	
-	int x_l,x_r,y_t,y_b; // left, right, top,bottom margins.
+
+	int x_l, x_r, y_t, y_b; // left, right, top,bottom margins.
 };
 
 
@@ -108,11 +108,6 @@ class BC_WidgetGridList : public ArrayList<BC_WidgetGrid*>
 {
 public:
 	BC_WidgetGridList();
-	~BC_WidgetGridList();
-
-
-private:
-	
 };
 
 #endif
