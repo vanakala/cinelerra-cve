@@ -45,7 +45,7 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window,
 		w, 
 		h, 
 		color_model, 
-		use_shm ? parent_window->get_resources()->use_shm : 0);
+		use_shm);
 }
 
 BC_Bitmap::~BC_Bitmap()
