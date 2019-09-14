@@ -625,10 +625,6 @@ void Canvas::create_canvas()
 		{
 			video_on = canvas_fullscreen->get_video_on();
 			canvas_fullscreen->stop_video();
-		}
-
-		if(canvas_fullscreen)
-		{
 			canvas_fullscreen->hide_window();
 		}
 
@@ -661,9 +657,13 @@ void Canvas::create_canvas()
 		}
 	}
 
-	clear_canvas();
-	if(!video_on) draw_refresh();
-	if(video_on) get_canvas()->start_video();
+	if(!video_on)
+	{
+		clear_canvas(0);
+		draw_refresh();
+	}
+	else
+		get_canvas()->start_video();
 	unlock_canvas();
 }
 
