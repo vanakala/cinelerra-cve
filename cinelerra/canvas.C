@@ -603,6 +603,7 @@ void Canvas::stop_video()
 
 void Canvas::start_fullscreen()
 {
+	zoom_auto();
 	set_fullscreen(1);
 	create_canvas();
 }
@@ -838,7 +839,6 @@ CanvasFullScreenPopup::CanvasFullScreenPopup(Canvas *canvas)
 		"", 
 		0)
 {
-	if(canvas->cwindowgui) add_item(new CanvasPopupAuto(canvas));
 	add_item(new CanvasSubWindowItem(canvas));
 }
 
