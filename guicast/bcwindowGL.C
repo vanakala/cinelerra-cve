@@ -32,7 +32,7 @@ int BC_WindowBase::enable_opengl()
 {
 #ifdef HAVE_GL
 	top_level->sync_display();
-	if(get_resources()->get_glthread()->initialize(top_level->display, win, top_level->screen))
+	if(resources.get_glthread()->initialize(top_level->display, win, top_level->screen))
 	{
 		fputs("BC_WindowBase::enable_opengl: Failed to initalize GLThread\n", stdout);
 			return 1;

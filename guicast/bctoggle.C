@@ -54,7 +54,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 	if(color >= 0)
 		this->color = color;
 	else
-		this->color = get_resources()->default_text_color;
+		this->color = resources.default_text_color;
 	select_drag = 0;
 	enabled = 1;
 	underline = -1;
@@ -107,7 +107,6 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 	int *text_h, 
 	const char *caption)
 {
-	BC_Resources *resources = get_resources();
 	VFrame *frame = images[0];
 	*w = frame->get_w();
 	*h = frame->get_h();
@@ -123,10 +122,10 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 		*text_w = gui->get_text_width(MEDIUMFONT, caption);
 		*text_h = gui->get_text_height(MEDIUMFONT);
 
-		if(resources->toggle_highlight_bg)
+		if(resources.toggle_highlight_bg)
 		{
-			*text_w += resources->toggle_text_margin * 2;
-			*text_h = MAX(*text_h, resources->toggle_highlight_bg->get_h());
+			*text_w += resources.toggle_text_margin * 2;
+			*text_h = MAX(*text_h, resources.toggle_highlight_bg->get_h());
 		}
 
 		if(*text_h > *h)
@@ -161,11 +160,10 @@ void BC_Toggle::set_images(VFrame **data)
 	}
 	if(has_caption())
 	{
-		BC_Resources *resources = get_resources();
-		if(resources->toggle_highlight_bg)
+		if(resources.toggle_highlight_bg)
 		{
 			bg_image = new BC_Pixmap(top_level,
-				resources->toggle_highlight_bg,
+				resources.toggle_highlight_bg,
 				PIXMAP_ALPHA);
 		}
 	}
@@ -183,8 +181,6 @@ void BC_Toggle::set_select_drag(int value)
 
 void BC_Toggle::draw_face()
 {
-	BC_Resources *resources = get_resources();
-
 	top_level->lock_window("BC_Toggle::draw_face");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	if(has_caption())
@@ -223,14 +219,14 @@ void BC_Toggle::draw_face()
 		else
 			set_color(MEGREY);
 		set_font(font);
-		draw_text(text_x + resources->toggle_text_margin, 
+		draw_text(text_x + resources.toggle_text_margin,
 			text_line, 
 			caption);
 
 // Draw underline
 		if(underline >= 0)
 		{
-			int x = text_x + resources->toggle_text_margin;
+			int x = text_x + resources.toggle_text_margin;
 			int y = text_line + 1;
 			int x1 = get_text_width(current_font, caption, underline) + x;
 			int x2 = get_text_width(current_font, caption, underline + 1) + x;
@@ -263,7 +259,7 @@ void BC_Toggle::set_status(int value)
 
 void BC_Toggle::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay &&
+	if(duration == resources.tooltip_delay &&
 		tooltip_wtext &&
 		(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_CHECKEDHI) &&
 		!tooltip_done)

@@ -84,7 +84,7 @@ BC_WindowBase::~BC_WindowBase()
 		lock_events("BC_WindowBase::~BC_WindowBase");
 		unlock_events();
 	}
-	get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
+	resources.create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
 	is_deleting = 1;
 
 	hide_tooltip();
@@ -129,10 +129,10 @@ BC_WindowBase::~BC_WindowBase()
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	if(temp_bitmap) delete temp_bitmap;
-	get_resources()->create_window_lock->unlock();
+	resources.create_window_lock->unlock();
 
 	if(have_gl_context)
-		get_resources()->get_glthread()->delete_window(top_level->display,
+		resources.get_glthread()->delete_window(top_level->display,
 			top_level->screen);
 
 	if(window_type == MAIN_WINDOW) 
@@ -282,9 +282,9 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	int vm;
 #endif
 
-	id = get_resources()->get_id();
+	id = resources.get_id();
 
-	get_resources()->create_window_lock->lock("BC_WindowBase::create_window");
+	resources.create_window_lock->lock("BC_WindowBase::create_window");
 
 	if(parent_window) top_level = parent_window->top_level;
 
@@ -342,8 +342,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_colors();
 // get the resources
 		if(resources.use_shm < 0) resources.initialize_display(this);
-		x_correction = get_resources()->get_left_border();
-		y_correction = get_resources()->get_top_border();
+		x_correction = resources.get_left_border();
+		y_correction = resources.get_top_border();
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
 
@@ -524,10 +524,10 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // Set up options for main window
 	if(window_type == MAIN_WINDOW)
 	{
-		if(get_resources()->bg_image && !bg_pixmap && bg_color < 0)
+		if(resources.bg_image && !bg_pixmap && bg_color < 0)
 		{
 			this->bg_pixmap = new BC_Pixmap(this, 
-				get_resources()->bg_image, 
+				resources.bg_image,
 				PIXMAP_OPAQUE);
 		}
 
@@ -548,7 +548,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_window_shape();
 		if(!hidden) show_window();
 	}
-	get_resources()->create_window_lock->unlock();
+	resources.create_window_lock->unlock();
 }
 
 Display* BC_WindowBase::init_display(const char *display_name)
@@ -588,7 +588,7 @@ int BC_WindowBase::run_window()
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
 	{
-		set_repeat(get_resources()->tooltip_delay);
+		set_repeat(resources.tooltip_delay);
 	}
 
 // Start common events
@@ -719,10 +719,10 @@ void BC_WindowBase::dispatch_event()
 		drag_x = cursor_x;
 		drag_y = cursor_y;
 		drag_win = event_win;
-		drag_x1 = cursor_x - get_resources()->drag_radius;
-		drag_x2 = cursor_x + get_resources()->drag_radius;
-		drag_y1 = cursor_y - get_resources()->drag_radius;
-		drag_y2 = cursor_y + get_resources()->drag_radius;
+		drag_x1 = cursor_x - resources.drag_radius;
+		drag_x2 = cursor_x + resources.drag_radius;
+		drag_y1 = cursor_y - resources.drag_radius;
+		drag_y2 = cursor_y + resources.drag_radius;
 
 		if(button_time2 - button_time1 < resources.double_click)
 		{
@@ -1329,7 +1329,7 @@ void BC_WindowBase::show_tooltip(int w, int h)
 {
 	Window tempwin;
 
-	if(!tooltip_on && get_resources()->tooltips_enabled)
+	if(!tooltip_on && resources.tooltips_enabled)
 	{
 		int x, y, rootw, rooth;
 
@@ -1350,7 +1350,7 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 		if(w < 0)
 		{
-			get_resources()->get_root_size(&rootw, &rooth);
+			resources.get_root_size(&rootw, &rooth);
 			w = TOOLTIP_MAX;
 			if(rootw - x < TOOLTIP_MAX)
 			{
@@ -1377,7 +1377,7 @@ void BC_WindowBase::show_tooltip(int w, int h)
 					y,
 					w, 
 					h, 
-					get_resources()->tooltip_bg_color);
+					resources.tooltip_bg_color);
 
 		draw_tooltip();
 		tooltip_popup->set_font(MEDIUMFONT);
@@ -2158,7 +2158,7 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_xft_struct(font))
 	{
 		XGlyphInfo extents;
-		if(get_resources()->locale_utf8)
+		if(resources.locale_utf8)
 		{
 			XftTextExtentsUtf8(top_level->display,
 				get_xft_struct(font),
@@ -2178,7 +2178,7 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	}
 	else
 	if(font == MEDIUM_7SEGMENT)
-		return get_resources()->medium_7segment[0]->get_w() * length;
+		return resources.medium_7segment[0]->get_w() * length;
 	return 0;
 }
 
@@ -2255,7 +2255,7 @@ int BC_WindowBase::get_text_ascent(int font)
 	XftFont *fstruct;
 
 	if(font == MEDIUM_7SEGMENT)
-		return get_resources()->medium_7segment[0]->get_h();
+		return resources.medium_7segment[0]->get_h();
 
 	if(fstruct = get_xft_struct(font))
 		return fstruct->ascent;
@@ -2312,7 +2312,7 @@ int BC_WindowBase::accel_available(int color_model, int w, int h)
 	if(window_type != MAIN_WINDOW) 
 		return top_level->accel_available(color_model, w, h);
 
-	if(!get_resources()->use_xvideo) return 0;
+	if(!resources.use_xvideo) return 0;
 
 // Only local server is fast enough.
 	if(!resources.use_shm) return 0;
@@ -2358,7 +2358,7 @@ int BC_WindowBase::accel_cmodels(int *cmodels, int len)
 	if(window_type != MAIN_WINDOW) 
 		return top_level->accel_cmodels(cmodels, len);
 
-	if(!get_resources()->use_xvideo) return 0;
+	if(!resources.use_xvideo) return 0;
 
 // Only local server is fast enough.
 	if(!resources.use_shm) return 0;
@@ -2990,7 +2990,7 @@ void BC_WindowBase::resize_window(int w, int h)
 	}
 
 	draw_background(0, 0, w, h);
-	if(top_level == this && get_resources()->recursive_resizing)
+	if(top_level == this && resources.recursive_resizing)
 		resize_history.append(new BC_ResizeCall(w, h));
 }
 
@@ -3065,7 +3065,7 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 
 void BC_WindowBase::set_tooltips(int tooltips_enabled)
 {
-	get_resources()->tooltips_enabled = tooltips_enabled;
+	resources.tooltips_enabled = tooltips_enabled;
 }
 
 void BC_WindowBase::raise_window(int do_flush)
@@ -3181,33 +3181,33 @@ int BC_WindowBase::set_h(int h)
 
 void BC_WindowBase::load_defaults(BC_Hash *defaults)
 {
-	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
+
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 	{
 		sprintf(string, "FILEBOX_HISTORY%d", i);
-		resources->filebox_history[i][0] = 0;
-		defaults->get(string, resources->filebox_history[i]);
+		resources.filebox_history[i][0] = 0;
+		defaults->get(string, resources.filebox_history[i]);
 	}
-	resources->filebox_mode = defaults->get("FILEBOX_MODE", get_resources()->filebox_mode);
-	resources->filebox_w = defaults->get("FILEBOX_W", get_resources()->filebox_w);
-	resources->filebox_h = defaults->get("FILEBOX_H", get_resources()->filebox_h);
-	defaults->get("FILEBOX_FILTER", resources->filebox_filter);
+	resources.filebox_mode = defaults->get("FILEBOX_MODE", resources.filebox_mode);
+	resources.filebox_w = defaults->get("FILEBOX_W", resources.filebox_w);
+	resources.filebox_h = defaults->get("FILEBOX_H", resources.filebox_h);
+	defaults->get("FILEBOX_FILTER", resources.filebox_filter);
 }
 
 void BC_WindowBase::save_defaults(BC_Hash *defaults)
 {
-	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
+
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 	{
 		sprintf(string, "FILEBOX_HISTORY%d", i);
-		defaults->update(string, resources->filebox_history[i]);
+		defaults->update(string, resources.filebox_history[i]);
 	}
-	defaults->update("FILEBOX_MODE", resources->filebox_mode);
-	defaults->update("FILEBOX_W", resources->filebox_w);
-	defaults->update("FILEBOX_H", resources->filebox_h);
-	defaults->update("FILEBOX_FILTER", resources->filebox_filter);
+	defaults->update("FILEBOX_MODE", resources.filebox_mode);
+	defaults->update("FILEBOX_W", resources.filebox_w);
+	defaults->update("FILEBOX_H", resources.filebox_h);
+	defaults->update("FILEBOX_FILTER", resources.filebox_filter);
 }
 
 

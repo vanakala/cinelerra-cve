@@ -78,7 +78,7 @@ void BC_ProgressBar::set_images()
 	for(int i = 0; i < 2; i++)
 	{
 		images[i] = new BC_Pixmap(parent_window, 
-			get_resources()->progress_images[i], 
+			resources.progress_images[i],
 			PIXMAP_ALPHA);
 	}
 }
@@ -103,7 +103,7 @@ void BC_ProgressBar::draw(int force)
 		if(do_text)
 		{
 			set_font(MEDIUMFONT);
-			set_color(get_resources()->progress_text);     // draw decimal percentage
+			set_color(resources.progress_text);     // draw decimal percentage
 			sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}

@@ -47,14 +47,14 @@ BC_Pot::~BC_Pot()
 
 int BC_Pot::calculate_h()
 {
-	return BC_WindowBase::get_resources()->pot_images[0]->get_h();
+	return resources.pot_images[0]->get_h();
 }
 
 void BC_Pot::initialize()
 {
 	if(!data)
 	{
-		data = get_resources()->pot_images;
+		data = resources.pot_images;
 	}
 
 	status = POT_UP;
@@ -92,7 +92,7 @@ void BC_Pot::draw()
 	top_level->lock_window("BC_Pot::draw");
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_pixmap(images[status]);
-	set_color(get_resources()->pot_needle_color);
+	set_color(resources.pot_needle_color);
 
 	angle_to_coords(x1, y1, x2, y2, percentage_to_angle(get_percentage()));
 	draw_line(x1, y1, x2, y2);
@@ -113,19 +113,18 @@ float BC_Pot::angle_to_percentage(float angle)
 
 void BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 {
-	BC_Resources *resources = get_resources();
-	x1 = resources->pot_x1;
-	y1 = resources->pot_y1;
+	x1 = resources.pot_x1;
+	y1 = resources.pot_y1;
 	if(status == POT_DN)
 	{
-		x1 += resources->pot_offset;
-		y1 += resources->pot_offset;
+		x1 += resources.pot_offset;
+		y1 += resources.pot_offset;
 	}
 
 	while(angle < 0) angle += 360;
 
-	x2 = (int)(cos(angle / 360 * (2 * M_PI)) * resources->pot_r + x1);
-	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * resources->pot_r + y1);
+	x2 = (int)(cos(angle / 360 * (2 * M_PI)) * resources.pot_r + x1);
+	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * resources.pot_r + y1);
 }
 
 float BC_Pot::coords_to_angle(int x2, int y2)
@@ -133,8 +132,8 @@ float BC_Pot::coords_to_angle(int x2, int y2)
 	int x1, y1, x, y;
 	float angle;
 
-	x1 = get_resources()->pot_x1;
-	y1 = get_resources()->pot_y1;
+	x1 = resources.pot_x1;
+	y1 = resources.pot_y1;
 	if(status == POT_DN)
 	{
 		x1 += 2;
@@ -194,13 +193,13 @@ void BC_Pot::show_value_tooltip()
 
 void BC_Pot::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay)
+	if(duration == resources.tooltip_delay)
 	{
 		if(tooltip_on)
 		{
 			if(keypress_tooltip_timer > 0)
 			{
-				keypress_tooltip_timer -= get_resources()->tooltip_delay;
+				keypress_tooltip_timer -= resources.tooltip_delay;
 			}
 			else
 			if(status != POT_HIGH && status != POT_DN)

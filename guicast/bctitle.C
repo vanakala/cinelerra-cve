@@ -38,7 +38,7 @@ BC_Title::BC_Title(int x,
 {
 	this->font = font;
 	if(color < 0) 
-		this->color = get_resources()->default_text_color;
+		this->color = resources.default_text_color;
 	else
 		this->color = color;
 	this->centered = centered;
@@ -61,7 +61,7 @@ BC_Title::BC_Title(int x,
 {
 	this->font = font;
 	if(color < 0)
-		this->color = get_resources()->default_text_color;
+		this->color = resources.default_text_color;
 	else
 		this->color = color;
 	this->centered = centered;
@@ -81,7 +81,7 @@ BC_Title::BC_Title(int x,
 {
 	this->font = font;
 	if(color < 0)
-		this->color = get_resources()->default_text_color;
+		this->color = resources.default_text_color;
 	else
 		this->color = color;
 	this->centered = centered;
@@ -202,7 +202,7 @@ void BC_Title::draw()
 	if(font == MEDIUM_7SEGMENT)
 	{
 	//leave it up to the theme to decide if we need a background or not.
-		if (top_level->get_resources()->draw_clock_background)
+		if(resources.draw_clock_background)
 		{
 			BC_WindowBase::set_color(BLACK);
 			draw_box(0, 0, w, h);

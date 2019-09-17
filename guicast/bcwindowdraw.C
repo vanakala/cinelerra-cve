@@ -122,73 +122,73 @@ void BC_WindowBase::draw_text(int x,
 			switch(text[i])
 			{
 			case '0':
-				image = get_resources()->medium_7segment[0];
+				image = resources.medium_7segment[0];
 				break;
 			case '1':
-				image = get_resources()->medium_7segment[1];
+				image = resources.medium_7segment[1];
 				break;
 			case '2':
-				image = get_resources()->medium_7segment[2];
+				image = resources.medium_7segment[2];
 				break;
 			case '3':
-				image = get_resources()->medium_7segment[3];
+				image = resources.medium_7segment[3];
 				break;
 			case '4':
-				image = get_resources()->medium_7segment[4];
+				image = resources.medium_7segment[4];
 				break;
 			case '5':
-				image = get_resources()->medium_7segment[5];
+				image = resources.medium_7segment[5];
 				break;
 			case '6':
-				image = get_resources()->medium_7segment[6];
+				image = resources.medium_7segment[6];
 				break;
 			case '7':
-				image = get_resources()->medium_7segment[7];
+				image = resources.medium_7segment[7];
 				break;
 			case '8':
-				image = get_resources()->medium_7segment[8];
+				image = resources.medium_7segment[8];
 				break;
 			case '9':
-				image = get_resources()->medium_7segment[9];
+				image = resources.medium_7segment[9];
 				break;
 			case ':':
-				image = get_resources()->medium_7segment[10];
+				image = resources.medium_7segment[10];
 				break;
 			case '.':
-				image = get_resources()->medium_7segment[11];
+				image = resources.medium_7segment[11];
 				break;
 			case 'a':
 			case 'A':
-				image = get_resources()->medium_7segment[12];
+				image = resources.medium_7segment[12];
 				break;
 			case 'b':
 			case 'B':
-				image = get_resources()->medium_7segment[13];
+				image = resources.medium_7segment[13];
 				break;
 			case 'c':
 			case 'C':
-				image = get_resources()->medium_7segment[14];
+				image = resources.medium_7segment[14];
 				break;
 			case 'd':
 			case 'D':
-				image = get_resources()->medium_7segment[15];
+				image = resources.medium_7segment[15];
 				break;
 			case 'e':
 			case 'E':
-				image = get_resources()->medium_7segment[16];
+				image = resources.medium_7segment[16];
 				break;
 			case 'f':
 			case 'F':
-				image = get_resources()->medium_7segment[17];
+				image = resources.medium_7segment[17];
 				break;
 			case ' ':
-				image = get_resources()->medium_7segment[18];
+				image = resources.medium_7segment[18];
 				break;
 			case '-':
-				image = get_resources()->medium_7segment[19];
+				image = resources.medium_7segment[19];
 				break;
 			default:
-				image = get_resources()->medium_7segment[18];
+				image = resources.medium_7segment[18];
 				break;
 			}
 
@@ -593,17 +593,17 @@ void BC_WindowBase::draw_colored_box(int x, int y, int w, int h, int down, int h
 	{
 		if(highlighted)
 			draw_3d_box(x, y, w, h, 
-				top_level->get_resources()->button_light, 
-				top_level->get_resources()->button_highlighted, 
-				top_level->get_resources()->button_highlighted, 
-				top_level->get_resources()->button_shadow,
+				resources.button_light,
+				resources.button_highlighted,
+				resources.button_highlighted,
+				resources.button_shadow,
 				BLACK);
 		else
 			draw_3d_box(x, y, w, h, 
-				top_level->get_resources()->button_light, 
-				top_level->get_resources()->button_up, 
-				top_level->get_resources()->button_up, 
-				top_level->get_resources()->button_shadow,
+				resources.button_light,
+				resources.button_up,
+				resources.button_up,
+				resources.button_shadow,
 				BLACK);
 	}
 	else
@@ -611,18 +611,18 @@ void BC_WindowBase::draw_colored_box(int x, int y, int w, int h, int down, int h
 // need highlighting for toggles
 		if(highlighted)
 			draw_3d_box(x, y, w, h, 
-				top_level->get_resources()->button_shadow, 
-				BLACK, 
-				top_level->get_resources()->button_up, 
-				top_level->get_resources()->button_up,
-				top_level->get_resources()->button_light);
+				resources.button_shadow,
+				BLACK,
+				resources.button_up,
+				resources.button_up,
+				resources.button_light);
 		else
 			draw_3d_box(x, y, w, h, 
-				top_level->get_resources()->button_shadow, 
-				BLACK, 
-				top_level->get_resources()->button_down, 
-				top_level->get_resources()->button_down,
-				top_level->get_resources()->button_light);
+				resources.button_shadow,
+				BLACK,
+				resources.button_down,
+				resources.button_down,
+				resources.button_light);
 	}
 }
 
@@ -644,14 +644,14 @@ void BC_WindowBase::draw_border(const char *text, int x, int y, int w, int h)
 		draw_text(x + left_indent, y + get_text_height(MEDIUMFONT) / 2, text);
 	}
 
-	set_color(top_level->get_resources()->button_shadow);
+	set_color(resources.button_shadow);
 	draw_line(x, y, x + left_indent - 5, y);
 	draw_line(x, y, x, uy);
 	draw_line(x + left_indent + 5 + get_text_width(MEDIUMFONT, text), y, ux, y);
 	draw_line(x, y, x, uy);
 	draw_line(ux, ly, ux, uy);
 	draw_line(lx, uy, ux, uy);
-	set_color(top_level->get_resources()->button_light);
+	set_color(resources.button_light);
 	draw_line(lx, ly, x + left_indent - 5 - 1, ly);
 	draw_line(lx, ly, lx, uy - 1);
 	draw_line(x + left_indent + 5 + get_text_width(MEDIUMFONT, text), ly, ux - 1, ly);
@@ -1081,7 +1081,7 @@ void BC_WindowBase::draw_tooltip()
 		int w = tooltip_popup->get_w(), h = tooltip_popup->get_h();
 
 		top_level->lock_window("BC_WindowBase::draw_tooltip");
-		tooltip_popup->set_color(get_resources()->tooltip_bg_color);
+		tooltip_popup->set_color(resources.tooltip_bg_color);
 		tooltip_popup->draw_box(0, 0, w, h);
 		tooltip_popup->set_color(BLACK);
 		tooltip_popup->draw_rectangle(0, 0, w, h);

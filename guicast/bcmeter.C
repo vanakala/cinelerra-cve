@@ -71,12 +71,12 @@ BC_Meter::~BC_Meter()
 
 int BC_Meter::get_title_w()
 {
-	return get_resources()->meter_title_w;
+	return resources.meter_title_w;
 }
 
 int BC_Meter::get_meter_w()
 {
-	return get_resources()->ymeter_images[0]->get_w() + 2;
+	return resources.ymeter_images[0]->get_w() + 2;
 }
 
 
@@ -96,14 +96,14 @@ void BC_Meter::initialize()
 
 	if(orientation == METER_VERT)
 	{
-		set_images(get_resources()->ymeter_images);
+		set_images(resources.ymeter_images);
 		h = pixels;
 		w = images[0]->get_w();
 		if(use_titles) w += get_title_w();
 	}
 	else
 	{
-		set_images(get_resources()->xmeter_images);
+		set_images(resources.xmeter_images);
 		h = images[0]->get_h();
 		w = pixels;
 		if(use_titles) h += get_title_w();
@@ -263,7 +263,7 @@ void BC_Meter::draw_titles()
 	if(!use_titles) return;
 
 	top_level->lock_window("BC_Meter::draw_titles");
-	set_font(get_resources()->meter_font);
+	set_font(resources.meter_font);
 
 	if(orientation == METER_HORIZ)
 	{
@@ -294,7 +294,7 @@ void BC_Meter::draw_titles()
 			else
 				title_y += get_text_ascent(SMALLFONT_3D) / 2;
 
-			set_color(get_resources()->meter_font_color);
+			set_color(resources.meter_font_color);
 			draw_text(0, 
 				title_y,
 				db_titles.values[i]);
@@ -304,9 +304,9 @@ void BC_Meter::draw_titles()
 		{
 // Tick marks
 			int tick_y = pixels - tick_pixels.values[i] - METER_MARGIN;
-			set_color(get_resources()->meter_font_color);
+			set_color(resources.meter_font_color);
 			draw_line(get_title_w() - 10 - 1, tick_y, get_title_w() - 1, tick_y);
-			if(get_resources()->meter_3d)
+			if(resources.meter_3d)
 			{
 				set_color(BLACK);
 				draw_line(get_title_w() - 10, tick_y + 1, get_title_w(), tick_y + 1);
@@ -320,7 +320,7 @@ void BC_Meter::draw_titles()
 
 int BC_Meter::region_pixel(int region)
 {
-	VFrame **reference_images = get_resources()->xmeter_images;
+	VFrame **reference_images = resources.xmeter_images;
 
 	return region * reference_images[0]->get_w() / 4;
 }
@@ -330,7 +330,7 @@ int BC_Meter::region_pixels(int region)
 	int x1;
 	int x2;
 	int result;
-	VFrame **reference_images = get_resources()->xmeter_images;
+	VFrame **reference_images = resources.xmeter_images;
 
 	x1 = region * reference_images[0]->get_w() / 4;
 	x2 = (region + 1) * reference_images[0]->get_w() / 4;
@@ -343,7 +343,7 @@ int BC_Meter::region_pixels(int region)
 
 void BC_Meter::draw_face()
 {
-	VFrame **reference_images = get_resources()->xmeter_images;
+	VFrame **reference_images = resources.xmeter_images;
 	int level_pixel = level_to_pixel(level);
 	int peak_pixel2 = level_to_pixel(peak);
 	int peak_pixel1 = peak_pixel2 - 2;

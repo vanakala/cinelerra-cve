@@ -109,16 +109,16 @@ void BC_FileBoxListBox::selection_changed()
 int BC_FileBoxListBox::column_resize_event()
 {
 	for(int i = 0; i < filebox->columns; i++)
-		BC_WindowBase::get_resources()->filebox_columnwidth[i] = 
-			filebox->column_width[i] = 
+		resources.filebox_columnwidth[i] =
+			filebox->column_width[i] =
 			get_column_width(i);
 	return 1;
 }
 
 int BC_FileBoxListBox::sort_order_event()
 {
-	get_resources()->filebox_sortcolumn = filebox->sort_column = get_sort_column();
-	get_resources()->filebox_sortorder = filebox->sort_order = get_sort_order();
+	resources.filebox_sortcolumn = filebox->sort_column = get_sort_column();
+	resources.filebox_sortorder = filebox->sort_order = get_sort_order();
 	filebox->refresh();
 	return 1;
 }
@@ -133,7 +133,7 @@ int BC_FileBoxListBox::evaluate_query(int list_item, char *string)
 {
 	ArrayList<BC_ListBoxItem*> *column = 
 		&filebox->list_column[filebox->column_of_type(FILEBOX_NAME)];
-	return(column->values[list_item]->get_color() != get_resources()->directory_color && 
+	return(column->values[list_item]->get_color() != resources.directory_color &&
 		strcmp(string, column->values[list_item]->get_text()) <= 0);
 }
 

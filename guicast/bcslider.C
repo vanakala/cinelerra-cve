@@ -76,8 +76,8 @@ void BC_Slider::initialize()
 	if(!images)
 	{
 		this->images = vertical ? 
-			BC_WindowBase::get_resources()->vertical_slider_data : 
-			BC_WindowBase::get_resources()->horizontal_slider_data;
+			resources.vertical_slider_data :
+			resources.horizontal_slider_data;
 	}
 
 	set_images(images);
@@ -104,11 +104,11 @@ int BC_Slider::get_span(int vertical)
 {
 	if(vertical)
 	{
-		return BC_WindowBase::get_resources()->vertical_slider_data[0]->get_w();
+		return resources.vertical_slider_data[0]->get_w();
 	}
 	else
 	{
-		return BC_WindowBase::get_resources()->horizontal_slider_data[0]->get_h();
+		return resources.horizontal_slider_data[0]->get_h();
 	}
 }
 
@@ -177,13 +177,13 @@ void BC_Slider::show_value_tooltip()
 
 void BC_Slider::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay)
+	if(duration == resources.tooltip_delay)
 	{
 		if(tooltip_on)
 		{
 			if(keypress_tooltip_timer > 0)
 			{
-				keypress_tooltip_timer -= get_resources()->tooltip_delay;
+				keypress_tooltip_timer -= resources.tooltip_delay;
 			}
 			else
 			if(status != SLIDER_HI && status != SLIDER_DN)

@@ -50,9 +50,9 @@ BC_ScrollBar::BC_ScrollBar(int x,
 		this->data = data;
 	else
 	if(orientation == SCROLL_HORIZ)
-		this->data = BC_WindowBase::get_resources()->hscroll_data;
+		this->data = resources.hscroll_data;
 	else
-		this->data = BC_WindowBase::get_resources()->vscroll_data;
+		this->data = resources.vscroll_data;
 
 	handle_pixel = 0;
 	handle_pixels = 0;
@@ -106,10 +106,10 @@ int BC_ScrollBar::get_span(int orientation)
 	switch(orientation)
 	{
 	case SCROLL_HORIZ:
-		return BC_WindowBase::get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
+		return resources.hscroll_data[SCROLL_HANDLE_UP]->get_h();
 
 	case SCROLL_VERT:
-		return BC_WindowBase::get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
+		return resources.vscroll_data[SCROLL_HANDLE_UP]->get_w();
 	}
 	return 0;
 }
@@ -303,8 +303,8 @@ void BC_ScrollBar::get_handle_dimensions()
 			total_pixels + 
 			.5);
 
-		if(handle_pixels < get_resources()->scroll_minhandle)
-			handle_pixels = get_resources()->scroll_minhandle;
+		if(handle_pixels < resources.scroll_minhandle)
+			handle_pixels = resources.scroll_minhandle;
 
 
 		handle_pixel = (int64_t)((double)position / 
@@ -313,10 +313,10 @@ void BC_ScrollBar::get_handle_dimensions()
 			get_arrow_pixels();
 
 // Handle pixels is beyond minimum right position.  Clamp it.
-		if(handle_pixel > pixels - get_arrow_pixels() - get_resources()->scroll_minhandle)
+		if(handle_pixel > pixels - get_arrow_pixels() - resources.scroll_minhandle)
 		{
-			handle_pixel = pixels - get_arrow_pixels() - get_resources()->scroll_minhandle;
-			handle_pixels = get_resources()->scroll_minhandle;
+			handle_pixel = pixels - get_arrow_pixels() - resources.scroll_minhandle;
+			handle_pixels = resources.scroll_minhandle;
 		}
 // Shrink handle_pixels until it fits inside scrollbar
 		if(handle_pixel > pixels - get_arrow_pixels() - handle_pixels)
@@ -328,7 +328,8 @@ void BC_ScrollBar::get_handle_dimensions()
 			handle_pixels = handle_pixel + handle_pixels - get_arrow_pixels();
 			handle_pixel = get_arrow_pixels();
 		}
-		if(handle_pixels < get_resources()->scroll_minhandle) handle_pixels = get_resources()->scroll_minhandle;
+		if(handle_pixels < resources.scroll_minhandle)
+			handle_pixels = resources.scroll_minhandle;
 	}
 	else
 	{
@@ -417,14 +418,14 @@ int BC_ScrollBar::button_press_event()
 		if(get_buttonpress() == 4)
 		{
 			selection_status = SCROLL_BACKARROW;
-			repeat_event(top_level->get_resources()->scroll_repeat);
+			repeat_event(resources.scroll_repeat);
 		}
 		else
 		if(get_buttonpress() == 5)
 		{
 			selection_status = SCROLL_FWDARROW;
 			repeat_count = 0;
-			repeat_event(top_level->get_resources()->scroll_repeat);
+			repeat_event(resources.scroll_repeat);
 		}
 		else
 		{
@@ -440,9 +441,9 @@ int BC_ScrollBar::button_press_event()
 			else
 			if(selection_status)
 			{
-				top_level->set_repeat(top_level->get_resources()->scroll_repeat);
+				top_level->set_repeat(resources.scroll_repeat);
 				repeat_count = 0;
-				repeat_event(top_level->get_resources()->scroll_repeat);
+				repeat_event(resources.scroll_repeat);
 				draw();
 			}
 		}
@@ -453,7 +454,7 @@ int BC_ScrollBar::button_press_event()
 
 void BC_ScrollBar::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->scroll_repeat && 
+	if(duration == resources.scroll_repeat &&
 		selection_status)
 	{
 		repeat_count++;
@@ -491,7 +492,7 @@ int BC_ScrollBar::button_release_event()
 	if(selection_status)
 	{
 		if(selection_status != SCROLL_HANDLE)
-			top_level->unset_repeat(top_level->get_resources()->scroll_repeat);
+			top_level->unset_repeat(resources.scroll_repeat);
 
 		selection_status = 0;
 		draw();

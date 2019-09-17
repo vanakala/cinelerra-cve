@@ -54,7 +54,7 @@ void BC_Tumbler::initialize()
 	if(data)
 		set_images(data);
 	else
-		set_images(get_resources()->tumble_data);
+		set_images(resources.tumble_data);
 	w = images[TUMBLE_UP]->get_w();
 	h = images[TUMBLE_UP]->get_h();
 
@@ -106,7 +106,7 @@ void BC_Tumbler::draw_face()
 
 void BC_Tumbler::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay)
+	if(duration == resources.tooltip_delay)
 	{
 		if(tooltip_wtext &&
 			status == TUMBLE_UPHI &&
@@ -118,7 +118,7 @@ void BC_Tumbler::repeat_event(int duration)
 		}
 	}
 	else
-	if(duration == top_level->get_resources()->tumble_duration)
+	if(duration == resources.tumble_duration)
 	{
 		repeat_count++;
 		if(repeat_count == 2) return;
@@ -194,9 +194,9 @@ int BC_Tumbler::button_press_event()
 			draw_face();
 			flush();
 
-			top_level->set_repeat(top_level->get_resources()->tumble_duration);
+			top_level->set_repeat(resources.tumble_duration);
 			repeat_count = 0;
-			repeat_event(top_level->get_resources()->tumble_duration);
+			repeat_event(resources.tumble_duration);
 		}
 		return 1;
 	}
@@ -210,7 +210,7 @@ int BC_Tumbler::button_release_event()
 	{
 		if(status == TUMBLEBOTTOM_DN || status == TUMBLETOP_DN)
 		{
-			top_level->unset_repeat(top_level->get_resources()->tumble_duration);
+			top_level->unset_repeat(resources.tumble_duration);
 			if(cursor_inside())
 				status = TUMBLE_UPHI;
 			else

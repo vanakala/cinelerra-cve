@@ -60,26 +60,26 @@ BC_MenuBar::~BC_MenuBar()
 void BC_MenuBar::initialize()
 {
 	int x, w;
-	BC_Resources *resources = get_resources();
 // Initialize dimensions
 	h = calculate_height(this);
-	bg_color = resources->menu_up;
+	bg_color = resources.menu_up;
 
-	if(resources->menu_bar_bg) menu_bar_bg = new BC_Pixmap(this,
-		resources->menu_bar_bg);
+	if(resources.menu_bar_bg)
+		menu_bar_bg = new BC_Pixmap(this,
+			resources.menu_bar_bg);
 
-	if(resources->menu_title_bg)
+	if(resources.menu_title_bg)
 	{
 		for(int i = 0; i < 3; i++)
 			menu_title_bg[i] = new BC_Pixmap(this,
-				resources->menu_title_bg[i]);
+				resources.menu_title_bg[i]);
 	}
 
 // Create the subwindow
 	BC_SubWindow::initialize();
 
-	if(resources->menu_bg) 
-		set_background(resources->menu_bg);
+	if(resources.menu_bg)
+		set_background(resources.menu_bg);
 	draw_face();
 
 	for(int i = 0; i < menu_titles.total; i++)
@@ -98,8 +98,8 @@ void BC_MenuBar::initialize()
 
 int BC_MenuBar::calculate_height(BC_WindowBase *window)
 {
-	if(get_resources()->menu_bar_bg)
-		return get_resources()->menu_bar_bg->get_h();
+	if(resources.menu_bar_bg)
+		return resources.menu_bar_bg->get_h();
 	else
 		return window->get_text_height(MEDIUMFONT) + 8;
 }
@@ -269,11 +269,11 @@ void BC_MenuBar::draw_face()
 
 		lx = 1;  ly = 1;
 		ux = w - 1;  uy = h - 1;
-		set_color(top_level->get_resources()->menu_light);
+		set_color(resources.menu_light);
 		draw_line(0, 0, 0, uy);
 		draw_line(0, 0, ux, 0);
 
-		set_color(top_level->get_resources()->menu_shadow);
+		set_color(resources.menu_shadow);
 		draw_line(ux, ly, ux, uy);
 		draw_line(lx, uy, ux, uy);
 		set_color(BLACK);

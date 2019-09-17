@@ -238,15 +238,14 @@ void BC_TextBox::initialize()
 // Create the subwindow
 	BC_SubWindow::initialize();
 
-	BC_Resources *resources = get_resources();
 	if(has_border)
 	{
-		back_color = resources->text_background;
-		high_color = resources->text_background_hi;
+		back_color = resources.text_background;
+		high_color = resources.text_background_hi;
 	}
 	else 
 	{
-		high_color = resources->text_background_noborder_hi;
+		high_color = resources.text_background_noborder_hi;
 		back_color = bg_color;
 	}
 
@@ -517,8 +516,6 @@ void BC_TextBox::reposition_window(int x, int y, int w, int rows)
 
 void BC_TextBox::draw_border()
 {
-	BC_Resources *resources = get_resources();
-
 	top_level->lock_window("BC_TextBox::draw_border");
 // Clear margins
 	set_color(background_color);
@@ -529,16 +526,16 @@ void BC_TextBox::draw_border()
 	{
 		if(highlighted)
 			draw_3d_border(0, 0, w, h,
-				resources->button_shadow, 
-				resources->button_uphighlighted,
-				resources->button_highlighted,
-				resources->button_light);
+				resources.button_shadow,
+				resources.button_uphighlighted,
+				resources.button_highlighted,
+				resources.button_light);
 		else
 			draw_3d_border(0, 0, w, h, 
-				resources->text_border1, 
-				resources->text_border2,
-				resources->text_border3,
-				resources->text_border4);
+				resources.text_border1,
+				resources.text_border2,
+				resources.text_border3,
+				resources.text_border4);
 	}
 	top_level->unlock_window();
 }
@@ -564,13 +561,12 @@ void BC_TextBox::draw()
 	int highlight_x1, highlight_x2;
 	int need_ibeam = 1;
 	wchar_t *wtext_row;
-	BC_Resources *resources = get_resources();
 
 	top_level->lock_window("BC_TextBox::draw");
 // Background
 	if(has_border)
 	{
-		background_color = resources->text_background;
+		background_color = resources.text_background;
 	}
 	else
 	{
@@ -610,9 +606,9 @@ void BC_TextBox::draw()
 				highlight_letter2 > row_begin && highlight_letter1 < row_end)
 			{
 				if(active && enabled && get_has_focus())
-					set_color(resources->text_highlight);
+					set_color(resources.text_highlight);
 				else
-					set_color(resources->text_inactive_highlight);
+					set_color(resources.text_inactive_highlight);
 
 				if(highlight_letter1 >= row_begin && highlight_letter1 < row_end)
 					highlight_x1 = positions[highlight_letter1];
@@ -631,7 +627,7 @@ void BC_TextBox::draw()
 			}
 // Draw text over highlight
 			if(enabled || defaultcolor)
-				set_color(resources->text_default);
+				set_color(resources.text_default);
 			else
 				set_color(MEGREY);
 			draw_wtext(text_x, k + text_ascent, wtext_row,
@@ -820,19 +816,19 @@ void BC_TextBox::activate()
 	top_level->active_subwindow = this;
 	active = 1;
 	draw();
-	top_level->set_repeat(top_level->get_resources()->blink_rate);
+	top_level->set_repeat(resources.blink_rate);
 }
 
 void BC_TextBox::deactivate()
 {
 	active = 0;
-	top_level->unset_repeat(top_level->get_resources()->blink_rate);
+	top_level->unset_repeat(resources.blink_rate);
 	draw();
 }
 
 void BC_TextBox::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay &&
+	if(duration == resources.tooltip_delay &&
 		tooltip_wtext &&
 		highlighted)
 	{
@@ -840,7 +836,7 @@ void BC_TextBox::repeat_event(int duration)
 		tooltip_done = 1;
 	}
 
-	if(duration == top_level->get_resources()->blink_rate && 
+	if(duration == resources.blink_rate && 
 		active &&
 		get_has_focus())
 	{
@@ -1814,7 +1810,7 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui)
  : BC_TextBox(gui->x, 
 	gui->y, 
-	gui->w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
+	gui->w - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w(),
 	gui->rows,
 	gui->default_text,
 	gui->default_wtext)
@@ -1850,7 +1846,7 @@ void BC_ScrollTextBoxText::motion_event()
 BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
  : BC_ScrollBar(gui->x + 
 			gui->w - 
-			get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
+			resources.vscroll_data[SCROLL_HANDLE_UP]->get_w(),
 		gui->y, 
 		SCROLL_VERT, 
 		BC_TextBox::calculate_row_h(gui->rows, 
@@ -1899,7 +1895,7 @@ int BC_PopupTextBoxText::handle_event()
 BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
  : BC_ListBox(x,
 	y,
-	popup->text_w + BC_WindowBase::get_resources()->listbox_button[0]->get_w(),
+	popup->text_w + resources.listbox_button[0]->get_w(),
 	popup->list_h,
 	popup->list_items,
 	LISTBOX_POPUP | LISTBOX_SHRINK)

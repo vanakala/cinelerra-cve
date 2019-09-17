@@ -53,7 +53,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	if(margin >= 0)
 		this->margin = margin;
 	else
-		this->margin = BC_WindowBase::get_resources()->popupmenu_margin;
+		this->margin = resources.popupmenu_margin;
 
 	use_title = options & POPUPMENU_USE_TITLE;
 	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
@@ -129,10 +129,10 @@ void BC_PopupMenu::initialize()
 		if(data)
 			set_images(data);
 		else
-		if(BC_WindowBase::get_resources()->popupmenu_images)
-			set_images(BC_WindowBase::get_resources()->popupmenu_images);
+		if(resources.popupmenu_images)
+			set_images(resources.popupmenu_images);
 		else
-			set_images(BC_WindowBase::get_resources()->generic_button_images);
+			set_images(resources.generic_button_images);
 	}
 	else
 // Move outside window if no title
@@ -158,7 +158,6 @@ void BC_PopupMenu::initialize()
 
 void BC_PopupMenu::set_images(VFrame **data)
 {
-	BC_Resources *resources = get_resources();
 	for(int i = 0; i < 3; i++)
 	{
 		if(images[i]) delete images[i];
@@ -168,11 +167,11 @@ void BC_PopupMenu::set_images(VFrame **data)
 	if(w_argument > 0)
 		w = w_argument + 
 			margin +
-			resources->popupmenu_triangle_margin;
+			resources.popupmenu_triangle_margin;
 	else
 		w = get_text_width(MEDIUMFONT, text) + 
 			margin +
-			resources->popupmenu_triangle_margin;
+			resources.popupmenu_triangle_margin;
 
 	h = images[BUTTON_UP]->get_h();
 }
@@ -182,10 +181,10 @@ int BC_PopupMenu::calculate_h(VFrame **data)
 	if(data)
 		;
 	else
-	if(BC_WindowBase::get_resources()->popupmenu_images)
-		data = BC_WindowBase::get_resources()->popupmenu_images;
+	if(resources.popupmenu_images)
+		data = resources.popupmenu_images;
 	else
-		data = BC_WindowBase::get_resources()->generic_button_images;
+		data = resources.generic_button_images;
 
 	return data[BUTTON_UP]->get_h();
 }
@@ -213,12 +212,11 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 void BC_PopupMenu::draw_title()
 {
 	if(!use_title) return;
-	BC_Resources *resources = get_resources();
 
 	top_level->lock_window("BC_PopupMenu::draw_title");
 // Background
 	draw_top_background(parent_window, 0, 0, w, h);
-	set_color(get_resources()->popup_title_text);
+	set_color(resources.popup_title_text);
 	draw_3segmenth(0, 0, w, images[status]);
 
 // Overlay text
@@ -229,7 +227,7 @@ void BC_PopupMenu::draw_title()
 	{
 		set_font(MEDIUMFONT);
 		BC_WindowBase::draw_center_text(
-			(get_w() - margin * 2 - resources->popupmenu_triangle_margin) / 2 + margin + offset, 
+			(get_w() - margin * 2 - resources.popupmenu_triangle_margin) / 2 + margin + offset,
 			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2) + offset, 
 			text);
 	}
@@ -237,11 +235,11 @@ void BC_PopupMenu::draw_title()
 	if(icon)
 	{
 		draw_pixmap(icon,
-			(get_w() - margin * 2 - resources->popupmenu_triangle_margin) / 2 + margin + offset - icon->get_w() / 2 ,
+			(get_w() - margin * 2 - resources.popupmenu_triangle_margin) / 2 + margin + offset - icon->get_w() / 2,
 			get_h() / 2 - icon->get_h() / 2 + offset);
 	}
 
-	draw_triangle_down_flat(get_w() - margin - resources->popupmenu_triangle_margin, 
+	draw_triangle_down_flat(get_w() - margin - resources.popupmenu_triangle_margin,
 		get_h() / 2 - TRIANGLE_H / 2, 
 		TRIANGLE_W, TRIANGLE_H);
 
@@ -330,7 +328,7 @@ void BC_PopupMenu::focus_out_event()
 
 void BC_PopupMenu::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay &&
+	if(duration == resources.tooltip_delay &&
 		tooltip_wtext &&
 		status == BUTTON_HI &&
 		!tooltip_done)

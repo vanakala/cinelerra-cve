@@ -42,7 +42,7 @@ void BC_Bar::initialize()
 	if(data)
 		set_image(data);
 	else
-		set_image(get_resources()->bar_data);
+		set_image(resources.bar_data);
 
 // Create the subwindow
 	BC_SubWindow::initialize();

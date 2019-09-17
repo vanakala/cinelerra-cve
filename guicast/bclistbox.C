@@ -517,7 +517,7 @@ void BC_ListBox::initialize()
 		for(int i = 0; i < 4; i++)
 		{
 			button_images[i] = new BC_Pixmap(parent_window, 
-				BC_WindowBase::get_resources()->listbox_button[i], 
+				resources.listbox_button[i],
 				PIXMAP_ALPHA);
 		}
 		w = button_images[0]->get_w();
@@ -535,34 +535,32 @@ void BC_ListBox::initialize()
 	for(int i = 0; i < 3; i++)
 	{
 		column_bg[i] = new BC_Pixmap(parent_window,
-			get_resources()->listbox_column[i],
+			resources.listbox_column[i],
 			PIXMAP_ALPHA);
 	}
 	for(int i = 0; i < 5; i++)
 	{
 		toggle_images[i] = new BC_Pixmap(parent_window,
-			get_resources()->listbox_expand[i],
+			resources.listbox_expand[i],
 			PIXMAP_ALPHA);
 	}
 
-	column_sort_up = new BC_Pixmap(parent_window, 
-		BC_WindowBase::get_resources()->listbox_up, 
-		PIXMAP_ALPHA);
-	column_sort_dn = new BC_Pixmap(parent_window, 
-		BC_WindowBase::get_resources()->listbox_dn, 
-		PIXMAP_ALPHA);
+	column_sort_up = new BC_Pixmap(parent_window,
+		resources.listbox_up, PIXMAP_ALPHA);
+	column_sort_dn = new BC_Pixmap(parent_window,
+		resources.listbox_dn, PIXMAP_ALPHA);
 
-	drag_icon_vframe = get_resources()->type_to_icon[ICON_UNKNOWN];
-	drag_column_icon_vframe = get_resources()->type_to_icon[ICON_COLUMN];
+	drag_icon_vframe = resources.type_to_icon[ICON_UNKNOWN];
+	drag_column_icon_vframe = resources.type_to_icon[ICON_COLUMN];
 
 	BC_SubWindow::initialize();
 
 	init_column_width();
 	shrink_height();
 
-	if(top_level->get_resources()->listbox_bg)
+	if(resources.listbox_bg)
 		bg_pixmap = new BC_Pixmap(this, 
-			get_resources()->listbox_bg, 
+			resources.listbox_bg,
 			PIXMAP_OPAQUE);
 
 	draw_button();
@@ -1112,11 +1110,10 @@ int BC_ListBox::get_h()
 int BC_ListBox::get_yscroll_x()
 {
 	if(is_popup)
-		return popup_w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
+		return popup_w - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w();
 	else
-		return get_x() + 
-			popup_w - 
-			get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
+		return get_x() + popup_w -
+			resources.vscroll_data[SCROLL_HANDLE_UP]->get_w();
 }
 
 int BC_ListBox::get_yscroll_y()
@@ -1130,8 +1127,7 @@ int BC_ListBox::get_yscroll_y()
 int BC_ListBox::get_yscroll_height()
 {
 	return popup_h - (need_xscroll ? 
-		get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h() : 
-		0);
+		resources.hscroll_data[SCROLL_HANDLE_UP]->get_h() : 0);
 }
 
 int BC_ListBox::get_xscroll_x()
@@ -1146,18 +1142,16 @@ int BC_ListBox::get_xscroll_y()
 {
 	if(is_popup)
 		return popup_h - 
-			get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
+			resources.hscroll_data[SCROLL_HANDLE_UP]->get_h();
 	else
-		return get_y() + 
-			popup_h - 
-			get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
+		return get_y() + popup_h -
+			resources.hscroll_data[SCROLL_HANDLE_UP]->get_h();
 }
 
 int BC_ListBox::get_xscroll_width()
 {
 	return popup_w - (need_yscroll ? 
-		get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w() : 
-		0);
+		resources.vscroll_data[SCROLL_HANDLE_UP]->get_w() : 0);
 }
 
 int BC_ListBox::get_column_offset(int column)
@@ -1258,15 +1252,14 @@ int BC_ListBox::get_item_highlight(ArrayList<BC_ListBoxItem*> *data,
 	int column, 
 	int item)
 {
-	BC_Resources *resources = get_resources();
 	if(data[column].values[item]->selected)
-		return resources->listbox_selected;
+		return resources.listbox_selected;
 	else
 	if(highlighted_item >= 0 &&
 		highlighted_ptr == data[master_column].values[item])
-		return resources->listbox_highlighted;
+		return resources.listbox_highlighted;
 	else
-		return resources->listbox_inactive;
+		return resources.listbox_inactive;
 }
 
 int BC_ListBox::get_item_color(ArrayList<BC_ListBoxItem*> *data, 
@@ -1274,7 +1267,7 @@ int BC_ListBox::get_item_color(ArrayList<BC_ListBoxItem*> *data,
 	int item)
 {
 	int color = data[column].values[item]->color;
-	if(color == -1) color = get_resources()->listbox_text;
+	if(color == -1) color = resources.listbox_text;
 	if(get_item_highlight(data, column, item) == color)
 		return BLACK;
 	else
@@ -1759,10 +1752,8 @@ void BC_ListBox::get_scrollbars()
 		if(w_needed > view_w)
 		{
 			need_xscroll = 1;
-			view_h = popup_h - 
-				title_h - 
-				get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h() - 
-				4;
+			view_h = popup_h - title_h -
+				resources.hscroll_data[SCROLL_HANDLE_UP]->get_h() - 4;
 		}
 		else
 		{
@@ -1773,8 +1764,7 @@ void BC_ListBox::get_scrollbars()
 		{
 			need_yscroll = 1;
 			view_w = popup_w - 
-				get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w() - 
-				4;
+				resources.vscroll_data[SCROLL_HANDLE_UP]->get_w() - 4;
 		}
 		else
 		{
@@ -1785,8 +1775,8 @@ void BC_ListBox::get_scrollbars()
 // Update subwindow size
 	int new_w = popup_w;
 	int new_h = popup_h;
-	if(need_xscroll) new_h -= get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
-	if(need_yscroll) new_w -= get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
+	if(need_xscroll) new_h -= resources.hscroll_data[SCROLL_HANDLE_UP]->get_h();
+	if(need_yscroll) new_w -= resources.vscroll_data[SCROLL_HANDLE_UP]->get_w();
 
 	if(!is_popup)
 		if(new_w != BC_WindowBase::get_w() || new_h != BC_WindowBase::get_h())
@@ -2009,7 +1999,7 @@ int BC_ListBox::select_rectangle(ArrayList<BC_ListBoxItem*> *data,
 			{
 				if(x2 >= 0 && 
 					x1 < (yscrollbar ? 
-						gui->get_w() - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w() : 
+						gui->get_w() - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w() :
 						gui->get_w()) &&
 					y2 > 0 && 
 					y1 < gui->get_h() &&
@@ -2242,7 +2232,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 // Cursor is inside items rectangle
 		if(cursor_x >= 0 && 
 			cursor_x < (yscrollbar ? 
-				gui->get_w() - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w() : 
+				gui->get_w() - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w() :
 				gui->get_w()) &&
 // Only clamp y if we're not in a SELECT operation.
 			(current_operation == BC_ListBox::SELECT ||
@@ -2288,19 +2278,19 @@ void BC_ListBox::repeat_event(int duration)
 	{
 // Repeat out of bounds selection
 	case SELECT_RECT:
-		if(duration == get_resources()->scroll_repeat)
+		if(duration == resources.scroll_repeat)
 			rectangle_scroll_event();
 		break;
 
 	case SELECT:
-		if(duration == get_resources()->scroll_repeat)
+		if(duration == resources.scroll_repeat)
 			select_scroll_event();
 		break;
 
 	case NO_OPERATION:
 // Show tooltip
 		if(button_highlighted &&
-			duration == get_resources()->tooltip_delay &&
+			duration == resources.tooltip_delay &&
 			tooltip_wtext &&
 			is_popup &&
 			!tooltip_done)
@@ -2897,7 +2887,7 @@ int BC_ListBox::button_release_event()
 // Release item selection
 	case BUTTON_DOWN_SELECT:
 	case SELECT:
-		unset_repeat(get_resources()->scroll_repeat);
+		unset_repeat(resources.scroll_repeat);
 		current_operation = NO_OPERATION;
 		translate_coordinates(top_level->event_win,
 			gui->win,
@@ -2939,7 +2929,7 @@ int BC_ListBox::button_release_event()
 		break;
 
 	case SELECT_RECT:
-		unset_repeat(get_resources()->scroll_repeat);
+		unset_repeat(resources.scroll_repeat);
 		if(data)
 		{
 // Demote selections from rectangle selection
@@ -3057,7 +3047,7 @@ int BC_ListBox::test_column_divisions(int cursor_x, int cursor_y, int &new_curso
 		{
 			if(cursor_x >= -xposition + get_column_offset(i) - 5 &&
 				cursor_x <  -xposition + get_column_offset(i) + 
-					get_resources()->listbox_title_hotspot)
+					resources.listbox_title_hotspot)
 			{
 				highlighted_item = -1;
 				highlighted_ptr = 0;
@@ -3167,7 +3157,7 @@ int BC_ListBox::cursor_motion_event()
 		{
 			if(test_drag_scroll(get_cursor_x(), get_cursor_y()))
 			{
-				set_repeat(get_resources()->scroll_repeat);
+				set_repeat(resources.scroll_repeat);
 			}
 
 			int old_x1 = MIN(rect_x1, rect_x2);
@@ -3229,7 +3219,7 @@ int BC_ListBox::cursor_motion_event()
 			if(test_drag_scroll(get_cursor_x(), 
 					get_cursor_y()))
 			{
-				set_repeat(get_resources()->scroll_repeat);
+				set_repeat(resources.scroll_repeat);
 			}
 
 			highlighted_item = selection_number = get_cursor_item(data, 
@@ -3634,11 +3624,11 @@ void BC_ListBox::translation_event()
 		int new_x = gui->get_x() + 
 			(top_level->last_translate_x - 
 				top_level->prev_x - 
-				top_level->get_resources()->get_left_border());
+				resources.get_left_border());
 		int new_y = gui->get_y() + 
 			(top_level->last_translate_y - 
 				top_level->prev_y -
-				top_level->get_resources()->get_top_border());
+				resources.get_top_border());
 
 		gui->reposition_window(new_x, new_y);
 	}
@@ -3862,13 +3852,13 @@ void BC_ListBox::draw_background()
 {
 	top_level->lock_window("BC_ListBox::draw_background");
 // White background pixmap
-	set_color(top_level->get_resources()->listbox_inactive);
+	set_color(resources.listbox_inactive);
 	draw_box(0, 0, bg_surface->get_w(), bg_surface->get_h(), bg_surface);
 
 // Optional heroine pixmap
 	if(bg_pixmap)
 		bg_surface->draw_pixmap(bg_pixmap,
-			bg_surface->get_w() - top_level->get_resources()->listbox_bg->get_w(),
+			bg_surface->get_w() - resources.listbox_bg->get_w(),
 			0);
 	top_level->unlock_window();
 }
@@ -3910,8 +3900,6 @@ void BC_ListBox::draw_items(int flash)
 {
 	if(gui)
 	{
-		BC_Resources *resources = get_resources();
-
 // Calculate items width 
 		calculate_item_coords();
 
@@ -3940,7 +3928,7 @@ void BC_ListBox::draw_items(int flash)
 					get_icon_mask(item, icon_x, icon_y, icon_w, icon_h);
 					get_text_mask(item, text_x, text_y, text_w, text_h);
 
-					if(item_color != resources->listbox_inactive)
+					if(item_color != resources.listbox_inactive)
 					{
 						gui->set_color(BLACK);
 						gui->draw_rectangle(icon_x, icon_y, icon_w, icon_h);
@@ -4009,10 +3997,10 @@ void BC_ListBox::draw_items(int flash)
 		if(xscrollbar && yscrollbar && is_popup)
 		{
 			gui->draw_top_background(parent_window, 
-				popup_w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
-				popup_h - get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h(), 
-				get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(),
-				get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h());
+				popup_w - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w(),
+				popup_h - resources.hscroll_data[SCROLL_HANDLE_UP]->get_h(),
+				resources.vscroll_data[SCROLL_HANDLE_UP]->get_w(),
+				resources.hscroll_data[SCROLL_HANDLE_UP]->get_h());
 		}
 
 // Draw borders
@@ -4035,7 +4023,6 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 {
 	if(!data) return;
 
-	BC_Resources *resources = get_resources();
 	top_level->lock_window("BC_ListBox::draw_text_recursive");
 	set_font(labelfont);
 	int subindent = 0;
@@ -4047,7 +4034,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 		{
 			if(data[column].values[i]->get_sublist())
 			{
-				subindent = BC_WindowBase::get_resources()->listbox_expand[0]->get_w();
+				subindent = resources.listbox_expand[0]->get_w();
 				break;
 			}
 		}
@@ -4070,7 +4057,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 			if(x + column_width > view_w + LISTBOX_BORDER * 2)
 				column_width = view_w + LISTBOX_BORDER * 2 - x;
 
-			if(row_color != resources->listbox_inactive)
+			if(row_color != resources.listbox_inactive)
 			{
 				gui->set_color(row_color);
 				gui->draw_box(x, 
@@ -4143,19 +4130,18 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 
 void BC_ListBox::draw_border(int flash)
 {
-	BC_Resources *resources = top_level->get_resources();
 	gui->draw_3d_border(0, 
 		0, 
 		view_w + LISTBOX_BORDER * 2, 
 		view_h + title_h + LISTBOX_BORDER * 2, 
-		resources->listbox_border1, 
+		resources.listbox_border1,
 		list_highlighted ? 
-			resources->listbox_border2_hi : 
-			resources->listbox_border2, 
+			resources.listbox_border2_hi :
+			resources.listbox_border2,
 		list_highlighted ? 
-			resources->listbox_border3_hi : 
-			resources->listbox_border3, 
-		resources->listbox_border4);
+			resources.listbox_border3_hi :
+			resources.listbox_border3,
+		resources.listbox_border4);
 
 	if(flash)
 		gui->flash(1);
@@ -4207,9 +4193,9 @@ void BC_ListBox::draw_titles(int flash)
 				get_column_offset(i) + 
 				LISTBOX_MARGIN + 
 				LISTBOX_BORDER;
-			x += get_resources()->listbox_title_margin;
+			x += resources.listbox_title_margin;
 
-			gui->set_color(get_resources()->listbox_title_color);
+			gui->set_color(resources.listbox_title_color);
 			gui->draw_text(x, 
 				LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(labelfont),
 				_(column_titles[i]));

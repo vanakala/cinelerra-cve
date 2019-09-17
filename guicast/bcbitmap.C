@@ -64,7 +64,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->w = w;
 	this->h = h;
 	this->color_model = color_model;
-	this->use_shm = use_shm ? parent_window->get_resources()->use_shm : 0;
+	this->use_shm = use_shm ? parent_window->resources.use_shm : 0;
 	for(int i = 0; i < BITMAP_RING; i++)
 	{
 		ximage[i] = 0;

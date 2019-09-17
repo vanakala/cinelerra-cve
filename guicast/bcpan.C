@@ -89,16 +89,16 @@ BC_Pan::~BC_Pan()
 
 void BC_Pan::initialize()
 {
-	set_images(get_resources()->pan_data);
+	set_images(resources.pan_data);
 
 	BC_SubWindow::initialize();
 	temp_channel = new VFrame(0, 
-		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
-		get_resources()->pan_data[PAN_CHANNEL]->get_h(),
-		get_resources()->pan_data[PAN_CHANNEL]->get_color_model());
+		resources.pan_data[PAN_CHANNEL]->get_w(),
+		resources.pan_data[PAN_CHANNEL]->get_h(),
+		resources.pan_data[PAN_CHANNEL]->get_color_model());
 	rotater = new RotateFrame(1,
-		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
-		get_resources()->pan_data[PAN_CHANNEL]->get_h());
+		resources.pan_data[PAN_CHANNEL]->get_w(),
+		resources.pan_data[PAN_CHANNEL]->get_h());
 	draw();
 }
 
@@ -176,7 +176,7 @@ int BC_Pan::button_release_event()
 
 void BC_Pan::repeat_event(int duration)
 {
-	if(duration == top_level->get_resources()->tooltip_delay &&
+	if(duration == resources.tooltip_delay &&
 		tooltip_wtext &&
 		highlighted &&
 		!active &&
@@ -285,9 +285,9 @@ void BC_Pan::draw_popup()
 	popup->draw_background(0, 0, popup->get_w(), popup->get_h());
 
 	float scale = (float)(popup->get_w() - 
-		get_resources()->pan_data[PAN_CHANNEL]->get_w()) / 
+		resources.pan_data[PAN_CHANNEL]->get_w()) /
 		(virtual_r * 2);
-	set_color(get_resources()->pan_text_color);
+	set_color(resources.pan_text_color);
 	set_font(SMALLFONT);
 
 	for(int i = 0; i < total_values; i++)
@@ -298,7 +298,7 @@ void BC_Pan::draw_popup()
 		rotate_angle = -rotate_angle;
 		while(rotate_angle < 0) rotate_angle += 360;
 		rotater->rotate(temp_channel, 
-			get_resources()->pan_data[PAN_CHANNEL], 
+			resources.pan_data[PAN_CHANNEL],
 			rotate_angle);
 		BC_Pixmap *temp_pixmap = new BC_Pixmap(popup, 
 			temp_channel, 
