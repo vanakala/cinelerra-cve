@@ -521,19 +521,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // Create pixmap for all windows
 	pixmap = new BC_Pixmap(this, this->w, this->h);
 
-// Set up options for main window
-	if(window_type == MAIN_WINDOW)
-	{
-		if(resources.bg_image && !bg_pixmap && bg_color < 0)
-		{
-			this->bg_pixmap = new BC_Pixmap(this, 
-				resources.bg_image,
-				PIXMAP_OPAQUE);
-		}
-
-		if(!hidden) show_window();
-
-	}
+	if(window_type == MAIN_WINDOW && !hidden)
+		show_window();
 
 	draw_background(0, 0, this->w, this->h);
 	flash();

@@ -45,7 +45,6 @@
 #include <fontconfig/fcfreetype.h>
 #include <unistd.h>
 
-VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
 int BC_Resources::locale_utf8 = 0;

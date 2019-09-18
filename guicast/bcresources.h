@@ -154,7 +154,6 @@ public:
 	int toggle_text_margin;
 
 // Background images
-	static VFrame *bg_image;
 	static VFrame *menu_bg;
 
 // Buttons
