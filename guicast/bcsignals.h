@@ -133,7 +133,8 @@ public:
 	static int reset_catch();
 	// Compare pointers
 	static int is_listed(void *srcptr, void **dstptrs, int count);
-
+	// Dump GC - debugging helper
+	static void dumpGC(Display *dpy, GC gc, int indent = 0);
 	static BC_Signals *global_signals;
 
 	static int catch_X_errors;

@@ -685,3 +685,39 @@ int BC_Signals::is_listed(void *srcptr, void **dstptrs, int count)
 	}
 	return 0;
 }
+
+void BC_Signals::dumpGC(Display *dpy, GC gc, int indent)
+{
+	XGCValues values;
+	unsigned long valuemask;
+
+	valuemask = GCFunction | GCPlaneMask | GCForeground | GCBackground |
+		GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle |
+		GCFillStyle | GCFillRule | GCTile | GCStipple |
+		GCTileStipXOrigin | GCTileStipYOrigin | GCFont |
+		GCSubwindowMode | GCGraphicsExposures | GCClipXOrigin |
+		GCClipYOrigin | GCDashOffset | GCArcMode;
+
+	if(XGetGCValues(dpy, gc, valuemask, &values))
+	{
+		printf("%*sGC dump:\n", indent, "");
+		indent += 2;
+		printf("%*sFunction %d plane mask %#lx foreground #%#lx background %#lx\n", indent, "",
+			values.function, values.plane_mask, values.foreground, values.background);
+		printf("%*sline_width %d line_style %d cap_style %d join_style %d\n", indent, "",
+			values.line_width, values.line_style, values.cap_style,
+			values.join_style);
+		printf("%*sfill_style %d fill_rule %d arc_mode %d tile %#lx stipple %#lx\n", indent, "",
+			values.fill_style, values.fill_rule, values.arc_mode,
+			values.tile, values.stipple);
+		printf("%*sts_origin (%d,%d) font #%lx subwindow_mode %d graphics_exposures %d\n",
+			indent, "",
+			values.ts_x_origin, values.ts_y_origin, values.font,
+			values.subwindow_mode, values.graphics_exposures);
+		printf("%*sclip_origin (%d,%d) dash_offset %d\n", indent, "",
+			values.clip_x_origin, values.clip_y_origin,
+			values.dash_offset);
+	}
+	else
+		printf("GC dump FAIL\n");
+}
