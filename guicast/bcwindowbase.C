@@ -468,7 +468,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
-		attr.background_pixel = top_level->get_color(bg_color);
+		attr.background_pixel = top_level->get_color(this->bg_color);
 		attr.colormap = top_level->cmap;
 		if(top_level->is_hourglass)
 			attr.cursor = top_level->get_cursor_struct(HOURGLASS_CURSOR);
@@ -1986,7 +1986,7 @@ void BC_WindowBase::set_current_color(int color)
 		current_color = color;
 	XSetForeground(top_level->display, 
 		top_level->gc, 
-		top_level->get_color(color));
+		get_color(color));
 }
 
 void BC_WindowBase::set_opaque()
