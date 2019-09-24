@@ -731,6 +731,7 @@ void BC_Signals::dumpGC(Display *dpy, GC gc, int indent)
 {
 	XGCValues values;
 	unsigned long valuemask;
+	const char *fname;
 
 	valuemask = GCFunction | GCPlaneMask | GCForeground | GCBackground |
 		GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle |
@@ -741,10 +742,66 @@ void BC_Signals::dumpGC(Display *dpy, GC gc, int indent)
 
 	if(XGetGCValues(dpy, gc, valuemask, &values))
 	{
+		switch(values.function)
+		{
+		case GXclear:
+			fname = "GXclear";
+			break;
+		case GXand:
+			fname = "GXand";
+			break;
+		case GXandReverse:
+			fname = "GXandReverse";
+			break;
+		case GXcopy:
+			fname = "GXcopy";
+			break;
+		case GXandInverted:
+			fname = "GXandInverted";
+			break;
+		case GXnoop:
+			fname = "GXnoop";
+			break;
+		case GXxor:
+			fname = "GXxor";
+			break;
+		case GXor:
+			fname = "GXor";
+			break;
+		case GXnor:
+			fname = "GXnor";
+			break;
+		case GXequiv:
+			fname = "GXequiv";
+			break;
+		case GXinvert:
+			fname = "GXinvert";
+			break;
+		case GXorReverse:
+			fname = "GXorReverse";
+			break;
+		case GXcopyInverted:
+			fname = "GXcopyInverted";
+			break;
+		case GXorInverted:
+			fname = "GXorInverted";
+			break;
+		case GXnand:
+			fname = "GXnand";
+			break;
+		case GXset:
+			fname = "GXset";
+			break;
+		default:
+			fname = "Unknown";
+			break;
+		}
 		printf("%*sGC dump:\n", indent, "");
 		indent += 2;
-		printf("%*sFunction %d plane mask %#lx foreground #%#lx background %#lx\n", indent, "",
-			values.function, values.plane_mask, values.foreground, values.background);
+		printf("%*sFunction %s(%d) plane mask %#lx \n", indent, "",
+			fname, values.function, values.plane_mask);
+		printf("%*sforeground #%#lx background %#lx\n", indent, "",
+			values.foreground, values.background);
 		printf("%*sline_width %d line_style %d cap_style %d join_style %d\n", indent, "",
 			values.line_width, values.line_style, values.cap_style,
 			values.join_style);
