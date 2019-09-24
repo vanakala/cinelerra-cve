@@ -26,6 +26,7 @@
 #include "bcbar.h"
 #include "bcprogressbox.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bctitle.h"
 #include "cache.h"
 #include "cinelerra.h"
@@ -554,7 +555,8 @@ AssetEditConfigButton::AssetEditConfigButton(int x, int y, Paramlist *params)
  : BC_Button(x, y, theme_global->get_image_set("wrench"))
 {
 	list = params;
-	thread = new ParamlistThread(&list, _("Decoder options"));
+	thread = new ParamlistThread(&list, _("Decoder options"),
+		mwindow_global->awindow->get_window_icon());
 }
 
 AssetEditConfigButton::~AssetEditConfigButton()

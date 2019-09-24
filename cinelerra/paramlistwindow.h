@@ -123,13 +123,15 @@ private:
 class ParamlistWindow : public BC_Window
 {
 public:
-	ParamlistWindow(Paramlist *params, const char *winname);
+	ParamlistWindow(Paramlist *params, const char *winname,
+		VFrame *window_icon = 0);
 };
 
 class ParamlistThread : public Thread
 {
 public:
-	ParamlistThread(Paramlist **paramp, const char *name);
+	ParamlistThread(Paramlist **paramp, const char *name,
+		VFrame *window_icon = 0);
 	~ParamlistThread();
 
 	void run();
@@ -144,6 +146,7 @@ public:
 private:
 	char window_title[BCTEXTLEN];
 	Paramlist **paramp;
+	VFrame *window_icon;
 	Mutex *window_lock;
 };
 

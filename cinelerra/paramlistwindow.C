@@ -260,7 +260,8 @@ int ParamWindowScroll::handle_event()
 }
 
 
-ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname)
+ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname,
+    VFrame *window_icon)
  : BC_Window(winname,
 	200,
 	100,
@@ -268,6 +269,9 @@ ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname)
 	200)
 {
 	ParamlistSubWindow *listwin;
+
+	if(window_icon)
+		set_icon(window_icon);
 
 	add_subwindow(listwin = new ParamlistSubWindow(0, 10, PARAMLIST_WIN_MAXH, params));
 	listwin->draw_list();
@@ -287,11 +291,13 @@ ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname)
 	add_subwindow(new BC_CancelButton(this));
 }
 
-ParamlistThread::ParamlistThread(Paramlist **paramp, const char *name)
+ParamlistThread::ParamlistThread(Paramlist **paramp, const char *name,
+	VFrame *window_icon)
  : Thread()
 {
 	strcpy(window_title, name);
 	this->paramp = paramp;
+	this->window_icon = window_icon;
 	window = 0;
 	win_result = 1;
 	window_lock = new Mutex("ParamlistThread::window_lock");
@@ -306,7 +312,7 @@ void ParamlistThread::run()
 {
 	window_lock->lock("ParamlistThread::run");
 	win_result = 1;
-	window = new ParamlistWindow(*paramp, window_title);
+	window = new ParamlistWindow(*paramp, window_title, window_icon);
 	win_result = window->run_window();
 	delete window;
 	window = 0;
