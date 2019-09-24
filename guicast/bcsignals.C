@@ -36,6 +36,8 @@
 BC_Signals* BC_Signals::global_signals = 0;
 int BC_Signals::catch_X_errors = 0;
 int BC_Signals::X_errors = 0;
+int BC_Signals::pointer_count = 0;
+void *BC_Signals::pointer_list[POINTER_LIST_LEN];
 static int signal_done = 0;
 static int table_id = 0;
 
@@ -673,14 +675,53 @@ void BC_Signals::unset_all_locks(void *ptr)
 	pthread_mutex_unlock(&lock);
 }
 
-int BC_Signals::is_listed(void *srcptr, void **dstptrs, int count)
+void BC_Signals::add_pointer_list(void *srcptr)
 {
-	if(!dstptrs || !srcptr)
+	if(!srcptr)
+		return;
+
+	for(int i = 0; i < pointer_count; i++)
+	{
+		if(srcptr == pointer_list[i])
+			return;
+
+		if(!pointer_list[i])
+		{
+			pointer_list[i] = srcptr;
+			return;
+		}
+	}
+	if(pointer_count >= POINTER_LIST_LEN)
+	{
+		puts("No space for %p in pointer_list\n");
+		return;
+	}
+	pointer_list[pointer_count++] = srcptr;
+}
+
+void BC_Signals::remove_pointer_list(void *srcptr)
+{
+	if(!srcptr)
+		return;
+
+	for(int i = 0; i < pointer_count; i++)
+	{
+		if(srcptr == pointer_list[i])
+		{
+			pointer_list[i] = 0;
+			return;
+		}
+	}
+}
+
+int BC_Signals::is_listed(void *srcptr)
+{
+	if(!srcptr)
 		return 0;
 
-	for(int i = 0; i < count; i++)
+	for(int i = 0; i < pointer_count; i++)
 	{
-		if(srcptr == dstptrs[i])
+		if(srcptr == pointer_list[i])
 			return 1;
 	}
 	return 0;

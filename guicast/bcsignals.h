@@ -32,6 +32,7 @@
 // debugging.
 #define ENABLE_TRACE
 #define TRACE_LOCKS
+#define POINTER_LIST_LEN 16
 
 class BC_Signals
 {
@@ -131,14 +132,18 @@ public:
 	// Do not abort on X errors
 	static int set_catch_errors();
 	static int reset_catch();
-	// Compare pointers
-	static int is_listed(void *srcptr, void **dstptrs, int count);
+	// Pointer list
+	static void add_pointer_list(void *srcptr);
+	static void remove_pointer_list(void *srcptr);
+	static int is_listed(void *srcptr);
 	// Dump GC - debugging helper
 	static void dumpGC(Display *dpy, GC gc, int indent = 0);
 	static BC_Signals *global_signals;
 
 	static int catch_X_errors;
 	static int X_errors;
+	static int pointer_count;
+	static void *pointer_list[];
 };
 
 
