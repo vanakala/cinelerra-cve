@@ -1733,7 +1733,7 @@ void BC_WindowBase::allocate_color_table()
 
 void BC_WindowBase::init_window_shape()
 {
-	if(bg_pixmap && bg_pixmap->use_alpha()) 
+	if(bg_pixmap && bg_pixmap->get_alpha())
 	{
 		XShapeCombineMask(top_level->display,
 			this->win,
