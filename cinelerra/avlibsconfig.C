@@ -87,8 +87,10 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 
 	sprintf(string, _("'%s' options"),
 		ContainerSelection::container_to_text(asset->format));
-	codecthread = new ParamlistThread(&codecopts, _("Codec options"));
-	privthread = new ParamlistThread(&codec_private, _("Codec private options"));
+	codecthread = new ParamlistThread(&codecopts, _("Codec options"),
+		mwindow_global->get_window_icon());
+	privthread = new ParamlistThread(&codec_private, _("Codec private options"),
+		mwindow_global->get_window_icon());
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
 
