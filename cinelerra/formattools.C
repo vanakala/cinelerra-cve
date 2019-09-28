@@ -248,7 +248,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 		y += fparams_button->get_h() + 10;
 		asset->get_format_params(support);
 		fparams_thread = new ParamlistThread(&asset->encoder_parameters[ASSET_FMT_IX],
-			_("Format options"));
+			_("Format options"), mwindow_global->get_window_icon());
 	}
 	enable_supported();
 	x = init_x;
