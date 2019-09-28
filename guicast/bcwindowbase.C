@@ -3044,6 +3044,7 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 	{
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, this->w, this->h);
+		draw_background(0, 0, this->w, this->h);
 // Propagate to menubar
 		for(int i = 0; subwindows && i < subwindows->total; i++)
 		{
