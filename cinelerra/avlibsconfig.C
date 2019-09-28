@@ -72,6 +72,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 	this->asset = asset;
 	this->codecs = codecs;
 
+	set_icon(mwindow_global->get_window_icon());
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 	{
 		errormsg(_("AVLibs does not support '%s'"),
