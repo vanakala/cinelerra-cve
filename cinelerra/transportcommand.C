@@ -127,11 +127,14 @@ float TransportCommand::get_speed()
 
 void TransportCommand::set_playback_range(int use_inout)
 {
+	ptstime totlen;
+
 	if(!edl)
 	{
 		start_position = end_position = playbackstart = 0;
 		return;
 	}
+	totlen = edl->total_length();
 
 	switch(command)
 	{
@@ -186,6 +189,15 @@ void TransportCommand::set_playback_range(int use_inout)
 		if(edl->local_session->outpoint_valid())
 			end_position = edl->local_session->get_outpoint();
 	}
+
+	if(end_position > totlen)
+		end_position = totlen;
+	if(start_position > totlen)
+		start_position = totlen;
+	if(end_position < 0)
+		end_position = 0;
+	if(start_position < 0)
+		start_position = 0;
 
 	switch(get_direction())
 	{
