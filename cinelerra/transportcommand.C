@@ -199,15 +199,6 @@ void TransportCommand::set_playback_range(int use_inout)
 	}
 }
 
-void TransportCommand::playback_range_adjust_inout()
-{
-	if(edl->local_session->inpoint_valid() ||
-		edl->local_session->outpoint_valid())
-	{
-		playback_range_inout();
-	}
-}
-
 void TransportCommand::playback_range_inout()
 {
 	if(edl->local_session->inpoint_valid())

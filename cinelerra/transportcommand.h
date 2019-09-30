@@ -42,8 +42,6 @@ public:
 // Get the range to play back from the EDL
 	void set_playback_range(int use_inout = 0);
 
-// Adjust playback range with in/out points for rendering
-	void playback_range_adjust_inout();
 // Set playback range to in/out points for rendering
 	void playback_range_inout();
 // Set playback range to whole project for rendering
