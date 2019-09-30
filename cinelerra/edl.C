@@ -457,7 +457,14 @@ void EDL::set_inpoint(ptstime position)
 	}
 	else
 	{
-		local_session->set_inpoint(align_to_frame(position));
+		ptstime total_len = total_length();
+
+		position = align_to_frame(position);
+		if(position < 0)
+			position = 0;
+		if(position > total_len)
+			position = total_len;
+		local_session->set_inpoint(position);
 		if(local_session->get_outpoint() <= local_session->get_inpoint()) 
 			local_session->unset_outpoint();
 	}
@@ -472,7 +479,14 @@ void EDL::set_outpoint(ptstime position)
 	}
 	else
 	{
-		local_session->set_outpoint(align_to_frame(position));
+		ptstime total_len = total_length();
+
+		position = align_to_frame(position);
+		if(position < 0)
+			position = 0;
+		if(position > total_len)
+			position = total_len;
+		local_session->set_outpoint(position);
 		if(local_session->get_inpoint() >= local_session->get_outpoint()) 
 			local_session->unset_inpoint();
 	}
