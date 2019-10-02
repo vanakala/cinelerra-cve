@@ -98,6 +98,11 @@ void MiscPrefs::show()
 	x += win->get_w() + 10;
 	y += 3;
 	add_subwindow(new BC_Title(x, y, _("seconds")));
+
+	y += 35;
+	x = mwindow->theme->preferencesoptions_x;
+	add_subwindow(new ToggleButton(x, y, _("Shrink tracks of invisible plugins"),
+		&pwindow->thread->this_edlsession->shrink_plugin_tracks));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)

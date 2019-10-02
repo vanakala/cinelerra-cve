@@ -108,6 +108,7 @@ EDLSession::EDLSession()
 	defaults_loaded = 0;
 	automatic_backups = 1;
 	backup_interval = 60;
+	shrink_plugin_tracks = 0;
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -264,6 +265,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	defaults->get("METADATA_TITLE", metadata_title);
 	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
 	automatic_backups = defaults->get("AUTOMATIC_BACKUPS", automatic_backups);
+	shrink_plugin_tracks = defaults->get("SHRINK_TRACKS", shrink_plugin_tracks);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
 
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", vwindow_zoom);
@@ -380,7 +382,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("DECODE_SUBTITLES");
 	defaults->update("AUTOMATIC_BACKUPS", automatic_backups);
 	defaults->update("BACKUP_INTERVAL", backup_interval);
-
+	defaults->update("SHRINK_TRACKS", shrink_plugin_tracks);
 }
 
 // GCC 3.0 fails to compile
@@ -688,6 +690,7 @@ void EDLSession::copy(EDLSession *session)
 	strcpy(metadata_copyright, session->metadata_copyright);
 	automatic_backups = session->automatic_backups;
 	backup_interval = session->backup_interval;
+	shrink_plugin_tracks = session->shrink_plugin_tracks;
 }
 
 ptstime EDLSession::get_frame_offset()

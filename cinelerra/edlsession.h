@@ -185,6 +185,8 @@ public:
 	int automatic_backups;
 // Interval of automatic backups (seconds)
 	int backup_interval;
+// Shrink plugin tracks
+	int shrink_plugin_tracks;
 
 private:
 	int defaults_loaded;
