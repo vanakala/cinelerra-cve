@@ -1095,14 +1095,16 @@ void TrackCanvas::draw_paste_destination()
 void TrackCanvas::plugin_dimensions(Plugin *plugin, 
 	int &x, int &y, int &w, int &h)
 {
+	int number;
+
 	x = round((plugin->get_pts() - master_edl->local_session->view_start_pts) /
 		master_edl->local_session->zoom_time);
 	w = round(plugin->get_length() /
 		master_edl->local_session->zoom_time);
-	y = plugin->track->y_pixel + 
-			master_edl->local_session->zoom_track +
-			plugin->get_number() *
-			mwindow->theme->get_image("plugin_bg_data")->get_h();
+	y = plugin->track->y_pixel +
+		master_edl->local_session->zoom_track;
+	if((number = plugin->track->get_canvas_number(plugin)) >= 0)
+		y += number * mwindow->theme->get_image("plugin_bg_data")->get_h();
 	if(edlsession->show_titles)
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	h = mwindow->theme->get_image("plugin_bg_data")->get_h();

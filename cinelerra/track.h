@@ -63,6 +63,7 @@ public:
 
 // Get number of pixels to display
 	virtual int vertical_span(Theme *theme);
+	int get_canvas_number(Plugin *plugin);
 
 // Get length of track in seconds
 	ptstime get_length();

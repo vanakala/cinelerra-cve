@@ -33,6 +33,7 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "localsession.h"
+#include "mwindow.h"
 #include "plugin.h"
 #include "plugindb.h"
 #include "theme.h"
@@ -194,11 +195,30 @@ Track& Track::operator=(Track& track)
 
 int Track::vertical_span(Theme *theme)
 {
-	int result = 0;
+	int result;
+	int number;
+
 	if(expand_view)
-		result = edl->local_session->zoom_track + 
-			plugins.total *
+	{
+		if(edlsession->shrink_plugin_tracks)
+		{
+			ptstime start = master_edl->local_session->view_start_pts;
+			ptstime end = start + mwindow_global->trackcanvas_visible();
+
+			number = 0;
+			for(int i = 0; i < plugins.total; i++)
+			{
+				if(plugins.values[i]->active_in(start, end))
+					number++;
+			}
+		}
+		else
+			number = plugins.total;
+
+		result = edl->local_session->zoom_track +
+			number *
 			theme->get_image("plugin_bg_data")->get_h();
+	}
 	else
 		result = edl->local_session->zoom_track;
 
@@ -206,6 +226,31 @@ int Track::vertical_span(Theme *theme)
 		result += theme->get_image("title_bg_data")->get_h();
 
 	return result;
+}
+
+int Track::get_canvas_number(Plugin *plugin)
+{
+	int number = -1;
+
+	if(edlsession->shrink_plugin_tracks)
+	{
+		ptstime start = master_edl->local_session->view_start_pts;
+		ptstime end = start + mwindow_global->trackcanvas_visible();
+
+		number = 0;
+		for(int i = 0; i < plugins.total; i++)
+		{
+			if(plugins.values[i]->active_in(start, end))
+			{
+				if(plugins.values[i] == plugin)
+					return number;
+				number++;
+			}
+		}
+	}
+	else
+		number = plugins.number_of(plugin);
+	return number;
 }
 
 ptstime Track::get_length()
