@@ -46,6 +46,14 @@
 #define MAXCHANNELS 16
 #define MAX_CHANNELS 16
 
+// Maximum number of tracks
+#define MAX_AUDIO_TRACKS 256
+#define MAX_VIDEO_TRACKS 256
+
+// Minimum and maximum of audio meters
+#define MIN_AUDIO_METER_DB (-85)
+#define MAX_AUDIO_METER_DB 10
+
 // Frame size limits
 #define MIN_FRAME_HEIGHT 16
 #define MAX_FRAME_HEIGHT 4096

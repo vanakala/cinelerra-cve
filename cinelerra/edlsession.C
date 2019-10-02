@@ -64,8 +64,8 @@ EDLSession::EDLSession()
 	frames_per_foot = 16;
 	meter_over_delay = OVER_DELAY;
 	meter_peak_delay = PEAK_DELAY;
-	min_meter_db = -85;
-	max_meter_db = 6;
+	min_meter_db = MIN_AUDIO_METER_DB;
+	max_meter_db = MAX_AUDIO_METER_DB;
 	output_w = 720;
 	output_h = 576;
 	sample_aspect_ratio = 1;
@@ -385,16 +385,13 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SHRINK_TRACKS", shrink_plugin_tracks);
 }
 
-// GCC 3.0 fails to compile
-#define BC_INFINITY 65536
-
 void EDLSession::boundaries()
 {
-	CLAMP(audio_tracks, 0, BC_INFINITY);
+	CLAMP(audio_tracks, 0, MAX_AUDIO_TRACKS);
 	CLAMP(audio_channels, 1, MAXCHANNELS - 1);
-	CLAMP(video_tracks, 0, BC_INFINITY);
-	CLAMP(min_meter_db, -80, -20);
-	CLAMP(max_meter_db, 0, 10);
+	CLAMP(video_tracks, 0, MAX_AUDIO_TRACKS);
+	CLAMP(min_meter_db, MIN_AUDIO_METER_DB, -20);
+	CLAMP(max_meter_db, 0, MAX_AUDIO_METER_DB);
 	CLAMP(frames_per_foot, 1, 32);
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
