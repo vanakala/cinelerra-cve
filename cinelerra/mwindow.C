@@ -1659,6 +1659,11 @@ void MWindow::draw_canvas_overlays()
 	gui->canvas->flash();
 }
 
+ptstime MWindow::trackcanvas_visible()
+{
+	return gui->canvas->time_visible();
+}
+
 void MWindow::show_program_status()
 {
 	size_t mc, cc, vc;

@@ -352,6 +352,9 @@ public:
 	VFrame *get_window_icon();
 	// Draw trackcanvas overlays
 	void draw_canvas_overlays();
+	// Length of visible trackcanvas
+	ptstime trackcanvas_visible();
+
 	SplashGUI *splash_window;
 	GLThread *glthread;
 
