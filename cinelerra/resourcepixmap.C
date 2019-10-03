@@ -457,8 +457,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-	File *source = mwindow->audio_cache->check_out(edit->asset,
-		master_edl);
+	File *source = mwindow->audio_cache->check_out(edit->asset);
 
 	if(!source)
 	{

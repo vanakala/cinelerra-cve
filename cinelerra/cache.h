@@ -28,15 +28,11 @@
 // Actual caching is done in the File object
 // the CICache keeps files open while rendering.
 
-// Since the CICache outlives EDLs it must copy every parameter given to it.
-
 // Files given as arguments must outlive the cache.
 
-#include "arraylist.h"
 #include "asset.inc"
 #include "cache.inc"
 #include "condition.inc"
-#include "edl.inc"
 #include "file.inc"
 #include "garbage.h"
 #include "linklist.h"
@@ -49,7 +45,7 @@
 class CICacheItem : public ListItem<CICacheItem>, public GarbageObject
 {
 public:
-	CICacheItem(CICache *cache, EDL *edl, Asset *asset);
+	CICacheItem(CICache *cache, Asset *asset);
 	CICacheItem();
 	~CICacheItem();
 
@@ -58,7 +54,7 @@ public:
 	File *file;
 // Number of last get or put operation involving this object.
 	int age;
-	Asset *asset;     // Copy of asset.  CICache should outlive EDLs.
+	Asset *asset;
 	int checked_out;
 private:
 	CICache *cache;
@@ -68,7 +64,7 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(Preferences *preferences, int open_mode);
+	CICache(int open_mode);
 	~CICache();
 
 	friend class CICacheItem;
@@ -76,7 +72,7 @@ public:
 // open it, lock it and add it to the cache if it isn't here already
 // If it's already checked out, the value of block causes it to wait
 // until it's checked in.
-	File* check_out(Asset *asset, EDL *edl, int block = 1);
+	File* check_out(Asset *asset, int block = 1);
 
 // unlock a file from the cache
 	void check_in(Asset *asset);
@@ -110,11 +106,7 @@ private:
 // use a seperate mutex for checkouts and checkins
 	Mutex *total_lock;
 	Condition *check_out_lock;
-// Copy of EDL
-	EDL *edl;
-	Preferences *preferences;
 	int open_mode;
 };
-
 
 #endif

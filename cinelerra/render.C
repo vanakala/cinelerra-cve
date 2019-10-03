@@ -521,8 +521,8 @@ int Render::render(int test_overwrite,
 	packages = new PackageDispatcher;
 
 // Create caches
-	audio_cache = new CICache(preferences, FILE_OPEN_AUDIO);
-	video_cache = new CICache(preferences, FILE_OPEN_VIDEO);
+	audio_cache = new CICache(FILE_OPEN_AUDIO);
+	video_cache = new CICache(FILE_OPEN_VIDEO);
 
 	default_asset->frame_rate = edlsession->frame_rate;
 	default_asset->sample_rate = edlsession->sample_rate;

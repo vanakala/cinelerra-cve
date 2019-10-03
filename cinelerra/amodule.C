@@ -150,8 +150,7 @@ int AModule::render(AFrame *aframe)
 				File *source;
 				get_cache()->age();
 
-				if(!(source = get_cache()->check_out(playable_edit->asset,
-					get_edl())))
+				if(!(source = get_cache()->check_out(playable_edit->asset)))
 				{
 // couldn't open source file / skip the edit
 					result = 1;
@@ -199,8 +198,7 @@ int AModule::render(AFrame *aframe)
 						File *source;
 						get_cache()->age();
 						if(!(source = get_cache()->check_out(
-							previous_edit->asset,
-							get_edl())))
+							previous_edit->asset)))
 						{
 // couldn't open source file / skip the edit
 							result = 1;

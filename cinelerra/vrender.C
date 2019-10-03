@@ -118,8 +118,8 @@ void VRender::process_buffer(ptstime input_postime)
 	if(renderengine->brender_available(current_postime))
 	{
 		Asset *asset = renderengine->preferences->brender_asset;
-		File *file = renderengine->get_vcache()->check_out(asset,
-			renderengine->edl);
+		File *file = renderengine->get_vcache()->check_out(asset);
+
 		if(file)
 		{
 // Cache single frames only

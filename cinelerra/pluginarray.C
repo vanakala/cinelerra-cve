@@ -80,7 +80,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 		open_mode = 0;
 		break;
 	}
-	cache = new CICache(mwindow->preferences, open_mode);
+	cache = new CICache(open_mode);
 	buffer_size = get_bufsize();
 	get_recordable_tracks();
 	create_modules();

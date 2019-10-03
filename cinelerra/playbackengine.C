@@ -133,9 +133,9 @@ void PlaybackEngine::create_cache()
 	if(video_cache) delete video_cache;
 	video_cache = 0;
 	if(!audio_cache) 
-		audio_cache = new CICache(preferences, FILE_OPEN_AUDIO);
+		audio_cache = new CICache(FILE_OPEN_AUDIO);
 	if(!video_cache) 
-		video_cache = new CICache(preferences, FILE_OPEN_VIDEO);
+		video_cache = new CICache(FILE_OPEN_VIDEO);
 }
 
 void PlaybackEngine::perform_change()

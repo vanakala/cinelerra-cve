@@ -180,7 +180,7 @@ void AssetPicon::init_object()
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-				File *file = mwindow->video_cache->check_out(asset, master_edl);
+				File *file = mwindow->video_cache->check_out(asset);
 
 				if(file)
 				{

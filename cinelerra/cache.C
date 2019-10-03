@@ -26,15 +26,12 @@
 #include "datatype.h"
 #include "edl.h"
 #include "file.h"
-#include "filesystem.h"
 #include "mutex.h"
 #include "preferences.h"
 
-// edl came from a command which won't exist anymore
-CICache::CICache(Preferences *preferences, int open_mode)
+CICache::CICache(int open_mode)
  : List<CICacheItem>()
 {
-	this->preferences = preferences;
 	this->open_mode = open_mode;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
@@ -52,9 +49,7 @@ CICache::~CICache()
 	delete total_lock;
 }
 
-
-
-File* CICache::check_out(Asset *asset, EDL *edl, int block)
+File* CICache::check_out(Asset *asset, int block)
 {
 	CICacheItem *current, *new_item = 0;
 
@@ -88,7 +83,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 		else
 		{
 // Create new item
-			new_item = append(new CICacheItem(this, edl, asset));
+			new_item = append(new CICacheItem(this, asset));
 
 			if(new_item->file)
 			{
@@ -195,14 +190,14 @@ void CICache::age()
 	{
 		memory_usage = get_memory_usage(1);
 
-		if(memory_usage > preferences->cache_size)
+		if(memory_usage > preferences_global->cache_size)
 		{
 			result = delete_oldest();
 		}
 		prev_memory_usage = memory_usage;
 		memory_usage = get_memory_usage(0);
 	}while(prev_memory_usage != memory_usage &&
-		memory_usage > preferences->cache_size && !result);
+		memory_usage > preferences_global->cache_size && !result);
 }
 
 size_t CICache::get_memory_usage(int use_lock)
@@ -298,7 +293,7 @@ CICacheItem::CICacheItem()
 }
 
 
-CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
+CICacheItem::CICacheItem(CICache *cache, Asset *asset)
  : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
 {
 	int result = 0;
@@ -309,7 +304,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	checked_out = 0;
 
 	file = new File;
-	file->set_processors(cache->preferences->processors);
+	file->set_processors(preferences_global->processors);
 	if(result = file->open_file(this->asset, FILE_OPEN_READ | cache->open_mode))
 	{
 		delete file;

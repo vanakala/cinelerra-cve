@@ -244,8 +244,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		item->picon_h,
 		item->asset->id)))
 	{
-		File *source = mwindow->video_cache->check_out(item->asset,
-			master_edl);
+		File *source = mwindow->video_cache->check_out(item->asset);
 		if(!source)
 			return;
 
@@ -336,8 +335,8 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				sample < aframe->position + aframe->length))
 			{
 // Load new buffer
-				File *source = mwindow->audio_cache->check_out(item->asset,
-					master_edl);
+				File *source = mwindow->audio_cache->check_out(item->asset);
+
 				if(!source)
 					return;
 
