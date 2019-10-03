@@ -290,7 +290,6 @@ void PLUGIN_CLASS::update_gui() \
 { \
 	if(thread) \
 	{ \
-		force_update(); \
 		if(load_configuration()) \
 			thread->window->update(); \
 	} \

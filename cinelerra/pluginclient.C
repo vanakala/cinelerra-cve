@@ -131,7 +131,6 @@ void PluginClient::get_project_dimensions(int *width, int *height)
 void PluginClient::update_display_title()
 {
 	server->generate_display_title(gui_string);
-	set_string();
 }
 
 char* PluginClient::get_gui_string()
@@ -142,12 +141,6 @@ char* PluginClient::get_gui_string()
 char* PluginClient::get_path()
 {
 	return server->path;
-}
-
-void PluginClient::set_string_client(const char *string)
-{
-	strcpy(gui_string, string);
-	set_string();
 }
 
 int PluginClient::get_interpolation_type()
@@ -267,13 +260,6 @@ void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 void PluginClient::get_projector(double *x, double *y, double *z, ptstime postime)
 {
 	server->get_projector(x, y, z, postime);
-}
-
-EDLSession* PluginClient::get_edlsession()
-{
-	if(edlsession)
-		return edlsession;
-	return 0;
 }
 
 int PluginClient::gui_open()

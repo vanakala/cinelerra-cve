@@ -46,14 +46,6 @@ extern "C"
 extern PluginClient* new_plugin(PluginServer *server);
 }
 
-class PluginClientAuto
-{
-public:
-	float position;
-	float intercept;
-	float slope;
-};
-
 class PluginClient
 {
 public:
@@ -89,8 +81,7 @@ public:
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
-// Set the string identifying the plugin to modules and patches.
-	virtual void set_string() {};
+
 // cause the plugin to show the gui
 	virtual void show_gui() {};
 	virtual void hide_gui() {};
@@ -103,7 +94,6 @@ public:
 	virtual void update_gui() {};
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
-	virtual void force_update() {};
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
@@ -138,9 +128,6 @@ public:
 // they can run.
 	int gui_open();
 
-// Get the EDL Session.  May return 0 if the server has no edl.
-	EDLSession* get_edlsession();
-
 // Plugin must call this before performing OpenGL operations.
 // Returns 1 if the user supports opengl buffers.
 	int get_use_opengl();
@@ -155,14 +142,6 @@ public:
 	float get_red();
 	float get_green();
 	float get_blue();
-
-// Operations for file handlers
-	virtual int open_file() { return 0; };
-	virtual int get_audio_parameters() { return 0; };
-	virtual int get_video_parameters() { return 0; };
-	virtual int check_header(const char *path) { return 0; };
-	virtual int open_file(const char *path, int wr, int rd) { return 1; };
-	virtual int close_file() { return 0; };
 
 // All plugins define these.
 // load default settings for the plugin
@@ -199,12 +178,6 @@ public:
 
 // Realtime operations.
 	void plugin_init_realtime(int total_in_buffers);
-
-// communication convenience routines for the base class
-	int save_data_client();
-	int load_data_client();
-	void set_string_client(const char *string);  // set the string identifying the plugin
-	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // Called by plugin server to render the GUI with rendered data.
 	void plugin_render_gui(void *data);

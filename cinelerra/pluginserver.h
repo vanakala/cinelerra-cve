@@ -143,8 +143,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// set the string that appears on the plugin title
-	void set_string(const char *string);
 // give the buffers and prepare processing realtime data
 	void init_realtime(int total_in_buffers);
 

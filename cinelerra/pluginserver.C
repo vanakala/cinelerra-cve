@@ -699,12 +699,6 @@ void PluginServer::update_title()
 	client->update_display_title();
 }
 
-void PluginServer::set_string(const char *string)
-{
-	if(plugin_open)
-		client->set_string_client(string);
-}
-
 int PluginServer::gui_open()
 {
 	if(attachmentpoint) return attachmentpoint->gui_open();
