@@ -22,29 +22,18 @@
 #include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"
-#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
-#include "mbuttons.h"
 #include "mutex.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
-#include "patchbay.h"
-#include "tracking.h"
 #include "playbackengine.h"
-#include "playtransport.h"
-#include "preferences.h"
 #include "renderengine.h"
-#include "mainsession.h"
 #include "transportcommand.h"
-#include "vrender.h"
 
 
-PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
+PlaybackEngine::PlaybackEngine(Canvas *output)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
 	this->output = output;
 	is_playing_back = 0;
 	tracking_position = 0;
@@ -56,11 +45,9 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	playback_lock = new Condition(0, "PlaybackEngine::playback_lock");
 	cmds_lock = new Mutex("PlaybackEngine::cmds_lock");
 	render_engine = 0;
-	preferences = new Preferences;
 	command = new TransportCommand;
 	used_cmds = 0;
 	memset(cmds, 0, sizeof(cmds));
-	preferences->copy_from(mwindow->preferences);
 
 	done = 0;
 	Thread::start();
@@ -73,7 +60,6 @@ PlaybackEngine::~PlaybackEngine()
 	send_command(STOP);
 
 	Thread::join();
-	delete preferences;
 	delete command;
 	for(int i = 0; i < MAX_COMMAND_QUEUE; i++)
 		if(cmds[i])
@@ -96,7 +82,7 @@ void PlaybackEngine::create_render_engine()
 	delete_render_engine();
 
 	render_engine = new RenderEngine(this,
-		preferences, 
+		preferences_global,
 		command, 
 		output);
 }

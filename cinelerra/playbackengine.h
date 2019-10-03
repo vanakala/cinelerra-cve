@@ -30,10 +30,8 @@
 #include "datatype.h"
 #include "bchash.inc"
 #include "edl.inc"
-#include "mwindow.inc"
 #include "mutex.inc"
 #include "tracking.inc"
-#include "preferences.inc"
 #include "renderengine.inc"
 #include "thread.h"
 #include "bctimer.h"
@@ -44,7 +42,7 @@
 class PlaybackEngine : public Thread
 {
 public:
-	PlaybackEngine(MWindow *mwindow, Canvas *output);
+	PlaybackEngine(Canvas *output);
 	virtual ~PlaybackEngine();
 
 	void create_render_engine();
@@ -86,10 +84,7 @@ public:
 // Wait until thread has started
 	Condition *start_lock;
 
-	MWindow *mwindow;
 	Canvas *output;
-// Copy of main preferences
-	Preferences *preferences;
 // Currently executing command
 	TransportCommand *command;
 // Render engine

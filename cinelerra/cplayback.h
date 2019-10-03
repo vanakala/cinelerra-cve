@@ -29,7 +29,7 @@
 class CPlayback : public PlaybackEngine
 {
 public:
-	CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output);
+	CPlayback(CWindow *cwindow, Canvas *output);
 
 	void init_cursor();
 	void stop_cursor();

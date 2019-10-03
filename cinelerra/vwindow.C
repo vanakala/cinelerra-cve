@@ -47,7 +47,7 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 
 	gui = new VWindowGUI(mwindow, this);
 
-	playback_engine = new VPlayback(mwindow, this, gui->canvas);
+	playback_engine = new VPlayback(this, gui->canvas);
 
 // Start command loop
 	gui->transport->set_engine(playback_engine);

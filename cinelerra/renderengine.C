@@ -67,10 +67,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 // The EDL contained in later commands is ignored.
 	audio_cache = 0;
 	video_cache = 0;
-	if(playback_engine && playback_engine->mwindow)
-		mwindow = playback_engine->mwindow;
-	else
-		mwindow = 0;
+	mwindow = mwindow_global;
 
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
@@ -336,7 +333,7 @@ void RenderEngine::start_render_threads()
 void RenderEngine::update_framerate(float framerate)
 {
 	edlsession->actual_frame_rate = framerate;
-	playback_engine->mwindow->preferences_thread->update_framerate();
+	mwindow_global->preferences_thread->update_framerate();
 }
 
 void RenderEngine::update_playstatistics(int frames, int late, int delay)
@@ -344,7 +341,7 @@ void RenderEngine::update_playstatistics(int frames, int late, int delay)
 	edlsession->frame_count = frames;
 	edlsession->frames_late = late;
 	edlsession->avg_delay = delay;
-	playback_engine->mwindow->preferences_thread->update_playstatistics();
+	mwindow_global->preferences_thread->update_playstatistics();
 }
 
 void RenderEngine::wait_render_threads()

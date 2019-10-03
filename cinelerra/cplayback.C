@@ -23,7 +23,6 @@
 #include "cplayback.h"
 #include "ctracking.h"
 #include "cwindow.h"
-#include "cwindowgui.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playtransport.h"
@@ -31,15 +30,15 @@
 
 // Playback engine for composite window
 
-CPlayback::CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output)
- : PlaybackEngine(mwindow, output)
+CPlayback::CPlayback(CWindow *cwindow, Canvas *output)
+ : PlaybackEngine(output)
 {
 	this->cwindow = cwindow;
 }
 
 void CPlayback::init_cursor()
 {
-	mwindow->gui->canvas->deactivate();
+	mwindow_global->gui->canvas->deactivate();
 	cwindow->playback_cursor->start_playback(get_tracking_position());
 }
 
@@ -48,11 +47,10 @@ void CPlayback::stop_cursor()
 	cwindow->playback_cursor->stop_playback();
 
 	if(is_playing_back)
-		mwindow->gui->canvas->activate();
+		mwindow_global->gui->canvas->activate();
 }
-
 
 int CPlayback::brender_available(ptstime position)
 {
-	return mwindow->brender_available(position);
+	return mwindow_global->brender_available(position);
 }

@@ -28,12 +28,11 @@
 class VPlayback : public PlaybackEngine
 {
 public:
-	VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output);
+	VPlayback(VWindow *vwindow, Canvas *output);
 
 	void init_cursor();
 	void stop_cursor();
-	void goto_start();
-	void goto_end();
+
 	VWindow *vwindow;
 };
 

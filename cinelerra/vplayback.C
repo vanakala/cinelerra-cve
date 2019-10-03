@@ -19,16 +19,14 @@
  * 
  */
 
-#include "playtransport.h"
 #include "vplayback.h"
 #include "vtracking.h"
 #include "vwindow.h"
-#include "vwindowgui.h"
 
 // Playback engine for viewer
 
-VPlayback::VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output)
- : PlaybackEngine(mwindow, output)
+VPlayback::VPlayback(VWindow *vwindow, Canvas *output)
+ : PlaybackEngine(output)
 {
 	this->vwindow = vwindow;
 }

@@ -55,7 +55,7 @@ CWindow::CWindow(MWindow *mwindow)
 
 	gui = new CWindowGUI(mwindow, this);
 
-	playback_engine = new CPlayback(mwindow, this, gui->canvas);
+	playback_engine = new CPlayback(this, gui->canvas);
 
 // Start command loop
 	gui->transport->set_engine(playback_engine);

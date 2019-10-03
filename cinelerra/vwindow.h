@@ -27,6 +27,7 @@
 #include "edlsession.inc"
 #include "mwindow.inc"
 #include "thread.h"
+#include "vframe.inc"
 #include "vplayback.inc"
 #include "vtracking.inc"
 #include "vwindowgui.inc"
