@@ -405,7 +405,7 @@ void MWindow::init_theme()
 	theme = 0;
 
 	PluginServer *plugin = plugindb.get_theme(preferences->theme);
-	plugin->open_plugin(0, preferences, 0, 0);
+	plugin->open_plugin(0, 0, 0);
 	theme = plugin->new_theme();
 	theme->mwindow = this;
 	plugin->close_plugin();
@@ -416,7 +416,7 @@ void MWindow::init_theme()
 		// Theme load fails, try default
 		strcpy(preferences->theme, DEFAULT_THEME);
 		plugindb.get_theme(preferences->theme);
-		plugin->open_plugin(0, preferences, 0, 0);
+		plugin->open_plugin(0, 0, 0);
 		theme = plugin->new_theme();
 		theme->mwindow = this;
 		plugin->close_plugin();
@@ -1166,8 +1166,7 @@ void MWindow::show_plugin(Plugin *plugin)
 		{
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
-			gui->set_mwindow(this);
-			gui->open_plugin(0, preferences, master_edl, plugin);
+			gui->open_plugin(0, master_edl, plugin);
 			gui->show_gui();
 			plugin->show = 1;
 		}

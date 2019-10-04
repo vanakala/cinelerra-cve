@@ -57,7 +57,7 @@ void PluginClient::plugin_init_realtime(int total_in_buffers)
 // get parameters depending on video or audio
 	init_realtime_parameters();
 
-	smp = server->preferences->processors - 1;
+	smp = preferences_global->processors - 1;
 
 	this->total_in_buffers = total_in_buffers;
 }
@@ -150,9 +150,6 @@ int PluginClient::get_interpolation_type()
 
 float PluginClient::get_red()
 {
-	if(server->mwindow)
-		return master_edl->local_session->red;
-	else
 	if(server->edl)
 		return server->edl->local_session->red;
 	else
@@ -161,9 +158,6 @@ float PluginClient::get_red()
 
 float PluginClient::get_green()
 {
-	if(server->mwindow)
-		return master_edl->local_session->green;
-	else
 	if(server->edl)
 		return server->edl->local_session->green;
 	else
@@ -172,9 +166,6 @@ float PluginClient::get_green()
 
 float PluginClient::get_blue()
 {
-	if(server->mwindow)
-		return master_edl->local_session->blue;
-	else
 	if(server->edl)
 		return server->edl->local_session->blue;
 	else
@@ -219,8 +210,8 @@ void PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();
 	save_data(keyframe);
-	if(server->mwindow)
-		server->mwindow->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
+	if(mwindow_global)
+		mwindow_global->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
 	server->sync_parameters();
 }
 

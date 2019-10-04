@@ -80,14 +80,12 @@ PluginServer::PluginServer(PluginServer &that)
 	attachment = that.attachment;
 	realtime = that.realtime;
 	multichannel = that.multichannel;
-	preferences = that.preferences;
 	synthesis = that.synthesis;
 	apiversion = that.apiversion;
 	audio = that.audio;
 	video = that.video;
 	theme = that.theme;
 	uses_gui = that.uses_gui;
-	mwindow = that.mwindow;
 	keyframe = that.keyframe;
 	plugin_fd = that.plugin_fd;
 	new_plugin = that.new_plugin;
@@ -112,14 +110,12 @@ PluginServer::~PluginServer()
 // Done only once at creation
 int PluginServer::reset_parameters()
 {
-	mwindow = 0;
 	keyframe = 0;
 	prompt = 0;
 	cleanup_plugin();
 	plugin_fd = 0;
 	plugin = 0;
 	edl = 0;
-	preferences = 0;
 	title = 0;
 	path = 0;
 	audio = video = theme = 0;
@@ -154,11 +150,6 @@ int PluginServer::cleanup_plugin()
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
-}
-
-void PluginServer::set_mwindow(MWindow *mwindow)
-{
-	this->mwindow = mwindow;
 }
 
 void PluginServer::set_attachmentpoint(AttachmentPoint *attachmentpoint)
@@ -200,7 +191,6 @@ void PluginServer::generate_display_title(char *string)
 
 // Open plugin for signal processing
 int PluginServer::open_plugin(int master, 
-	Preferences *preferences,
 	EDL *edl, 
 	Plugin *plugin,
 	int lad_index)
@@ -210,7 +200,6 @@ int PluginServer::open_plugin(int master,
 	if(plugin_open)
 		return PLUGINSERVER_OK;
 
-	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
 
@@ -338,7 +327,7 @@ void PluginServer::client_side_close()
 {
 // Last command executed in client thread
 	if(plugin)
-		mwindow->hide_plugin(plugin, 1);
+		mwindow_global->hide_plugin(plugin, 1);
 	else
 	if(prompt)
 		prompt->set_done(1);
@@ -477,8 +466,8 @@ void PluginServer::send_render_gui(void *data)
 
 void PluginServer::get_gui_data()
 {
-	if(mwindow)
-		mwindow->get_gui_data(this);
+	if(mwindow_global)
+		mwindow_global->get_gui_data(this);
 }
 
 void PluginServer::clear_msgs()
@@ -494,7 +483,7 @@ void PluginServer::render_gui(void *data)
 
 MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 {
-	MainProgressBar *result = mwindow->mainprogress->start_progress(string, length);
+	MainProgressBar *result = mwindow_global->mainprogress->start_progress(string, length);
 	return result;
 }
 
@@ -666,7 +655,7 @@ void PluginServer::raise_window()
 void PluginServer::show_gui()
 {
 	if(!plugin_open) return;
-	client->smp = preferences->processors - 1;
+	client->smp = preferences_global->processors - 1;
 	if(plugin)
 	{
 		client->total_len_pts = plugin->get_length();
@@ -736,18 +725,11 @@ int PluginServer::get_samplerate()
 double PluginServer::get_framerate()
 {
 	if(!plugin_open) return 0;
+
 	if(video)
-	{
 		return client->get_framerate();
-	}
-	else
-	if(mwindow)
-		return edlsession->frame_rate;
-	else 
-	{
-		errorbox("PluginServer::get_framerate video and mwindow == NULL");
-		return 1;
-	}
+
+	return edlsession->frame_rate;
 }
 
 int PluginServer::get_project_samplerate()
@@ -829,18 +811,19 @@ Theme* PluginServer::new_theme()
 
 Theme* PluginServer::get_theme()
 {
-	if(mwindow) return mwindow->theme;
+	if(mwindow_global)
+		return mwindow_global->theme;
 	return 0;
 }
 
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
-	if(video) mwindow->restart_brender();
-	mwindow->sync_parameters();
+	if(video) mwindow_global->restart_brender();
+	mwindow_global->sync_parameters();
 
 	if(edlsession->auto_conf->plugins_visible)
-		mwindow->draw_canvas_overlays();
+		mwindow_global->draw_canvas_overlays();
 }
 
 const char *PluginServer::plugin_conf_dir()

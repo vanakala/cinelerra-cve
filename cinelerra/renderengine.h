@@ -33,6 +33,7 @@ class RenderEngine;
 #include "condition.inc"
 #include "mutex.inc"
 #include "playbackengine.inc"
+#include "playbackconfig.inc"
 #include "pluginserver.inc"
 #include "thread.h"
 #include "transportcommand.inc"

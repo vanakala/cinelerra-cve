@@ -298,7 +298,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	while(keyframes->last && keyframes->last != keyframes->first)
 		delete keyframes->last;
 
-	if(server && !server->open_plugin(1, preferences_global, 0, 0))
+	if(server && !server->open_plugin(1, 0, 0))
 	{
 		server->save_data(keyframes->get_first());
 		server->close_plugin();

@@ -34,12 +34,10 @@
 #include "mainprogress.inc"
 #include "menueffects.inc"
 #include "module.inc"
-#include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
-#include "preferences.inc"
 #include "theme.inc"
 #include "track.inc"
 #include "vframe.inc"
@@ -76,7 +74,6 @@ public:
 #define PLUGINSERVER_NOT_RECOGNIZED 1
 #define PLUGINSERVER_OK 0
 	int open_plugin(int master, 
-		Preferences *preferences,
 		EDL *edl, 
 		Plugin *plugin,
 		int lad_index = -1);
@@ -198,9 +195,6 @@ public:
 	double get_project_framerate();         // get framerate of project data before processing
 // get project width and height
 	void get_project_dimensions(int *width, int *height);
-// Used by PluginArray and MenuEffects to get user parameters and progress bar.
-// Set pointer to mwindow for opening GUI and reconfiguring EDL.
-	void set_mwindow(MWindow *mwindow);
 // Used in VirtualConsole
 // Set pointer to AttachmentPoint to render GUI.
 	void set_attachmentpoint(AttachmentPoint *attachmentpoint);
@@ -258,7 +252,6 @@ public:
 // attachment point.
 	ArrayList<VirtualNode*> *nodes;
 	AttachmentPoint *attachmentpoint;
-	MWindow *mwindow;
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
 	AttachmentPoint *attachment;
@@ -267,7 +260,6 @@ public:
 
 // Storage of session parameters
 	EDL *edl;
-	Preferences *preferences;
 	MenuEffectPrompt *prompt;
 	int gui_on;
 

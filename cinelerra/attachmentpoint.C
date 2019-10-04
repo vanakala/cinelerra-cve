@@ -72,7 +72,6 @@ void AttachmentPoint::render_init()
 					plugin_servers.append(new_server = new PluginServer(*plugin_server));
 					new_server->set_attachmentpoint(this);
 					plugin_servers.values[i]->open_plugin(0, 
-						preferences_global,
 						renderengine->edl, 
 						plugin);
 					plugin_servers.values[i]->init_realtime(
