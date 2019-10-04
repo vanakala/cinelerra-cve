@@ -258,13 +258,16 @@ const char* TransportCommand::commandstr(int cmd)
 }
 
 // Debug
-void TransportCommand::dump_command()
+void TransportCommand::dump(int indent)
 {
 	const char *tps;
 	char b[64];
 
-	printf("=== Command dump: '%s' (realtime=%d)\n", commandstr(), realtime);
-	printf("    playback %.3f; positions start=%.3f, end=%.3f\n", playbackstart, start_position, end_position);
+	printf("%*sTransportCommand dump: '%s' (realtime=%d)\n", indent, "",
+		commandstr(), realtime);
+	indent += 2;
+	printf("%*splayback %.3f; positions start=%.3f, end=%.3f\n", indent, "",
+		playbackstart, start_position, end_position);
 	if(change_type == CHANGE_ALL)
 		tps = " All";
 	else if(change_type == CHANGE_NONE)
@@ -278,6 +281,6 @@ void TransportCommand::dump_command()
 			strcat(b, " PAR");
 		tps = b;
 	}
-	printf("    change_type:%s, edl: %p\n", tps, edl);
+	printf("%*schange_type:%s, edl: %p\n",  indent, "", tps, edl);
 }
 
