@@ -173,10 +173,7 @@ void PackageRenderer::create_engine()
 
 	aconfig->set_fragment_size(audio_read_length);
 
-	render_engine = new RenderEngine(0,
-		preferences,
-		command,
-		0);
+	render_engine = new RenderEngine(0, command, 0);
 
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);

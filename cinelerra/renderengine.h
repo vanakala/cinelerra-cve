@@ -32,10 +32,8 @@ class RenderEngine;
 #include "canvas.inc"
 #include "condition.inc"
 #include "mutex.inc"
-#include "mwindow.inc"
 #include "playbackengine.inc"
 #include "pluginserver.inc"
-#include "preferences.inc"
 #include "thread.h"
 #include "transportcommand.inc"
 #include "videodevice.inc"
@@ -45,7 +43,6 @@ class RenderEngine : public Thread
 {
 public:
 	RenderEngine(PlaybackEngine *playback_engine,
-		Preferences *preferences, 
 		TransportCommand *command, 
 		Canvas *output);
 	~RenderEngine();
@@ -94,8 +91,6 @@ public:
 	PlaybackConfig *config;
 // Defined only for the master render engine
 	PlaybackEngine *playback_engine;
-// Copy of preferences
-	Preferences *preferences;
 // Canvas if being used for CWindow
 	Canvas *output;
 
@@ -125,14 +120,6 @@ public:
 
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;
-
-// constructing with an audio device forces output buffer allocation
-// constructing without an audio device puts in one buffer at a time mode
-	RenderEngine(MWindow *mwindow, 
-		AudioDevice *audio = 0, 
-		VideoDevice *video = 0,
-		PlaybackEngine *playbackengine = 0);
-	MWindow *mwindow;
 
 private:
 	void reset_sync_postime(void);

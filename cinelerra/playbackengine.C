@@ -82,9 +82,7 @@ void PlaybackEngine::create_render_engine()
 	delete_render_engine();
 
 	render_engine = new RenderEngine(this,
-		preferences_global,
-		command, 
-		output);
+		command, output);
 }
 
 void PlaybackEngine::delete_render_engine()

@@ -233,7 +233,7 @@ void VirtualVNode::render_fade(Autos *autos)
 	if(!EQUIV(intercept / 100, 1))
 	{
 		if(!fader)
-			fader = new FadeEngine(renderengine->preferences->processors);
+			fader = new FadeEngine(preferences_global->processors);
 		fader->do_fade(output, output, intercept / 100);
 		// Colormodels with alpha - only alpha is modified
 		if(ColorModels::has_alpha(output->get_color_model()))
@@ -278,7 +278,7 @@ void VirtualVNode::render_mask()
 	}
 
 	if(!masker)
-		masker = new MaskEngine(renderengine->preferences->processors);
+		masker = new MaskEngine(preferences_global->processors);
 
 	masker->do_mask(output, keyframe_set, 0);
 	// Colormodels with alpha - only alpha is modified

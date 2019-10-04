@@ -59,10 +59,7 @@ VModule::VModule(RenderEngine *renderengine,
 {
 	data_type = TRACK_VIDEO;
 	overlay_temp = 0;
-	if (renderengine)
-		masker = new MaskEngine(renderengine->preferences->processors);
-	else
-		masker = new MaskEngine(plugin_array->mwindow->preferences->processors);
+	masker = new MaskEngine(preferences_global->processors);
 	cropper = new CropEngine();
 }
 

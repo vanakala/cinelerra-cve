@@ -56,7 +56,7 @@ VRender::VRender(RenderEngine *renderengine)
  : CommonRender(renderengine)
 {
 	data_type = TRACK_VIDEO;
-	overlayer = new OverlayFrame(renderengine->preferences->processors);
+	overlayer = new OverlayFrame(preferences_global->processors);
 }
 
 VRender::~VRender()
@@ -117,7 +117,7 @@ void VRender::process_buffer(ptstime input_postime)
 		edlsession->frame_rate;
 	if(renderengine->brender_available(current_postime))
 	{
-		Asset *asset = renderengine->preferences->brender_asset;
+		Asset *asset = preferences_global->brender_asset;
 		File *file = renderengine->get_vcache()->check_out(asset);
 
 		if(file)

@@ -72,7 +72,7 @@ void AttachmentPoint::render_init()
 					plugin_servers.append(new_server = new PluginServer(*plugin_server));
 					new_server->set_attachmentpoint(this);
 					plugin_servers.values[i]->open_plugin(0, 
-						renderengine->preferences,
+						preferences_global,
 						renderengine->edl, 
 						plugin);
 					plugin_servers.values[i]->init_realtime(
@@ -175,20 +175,20 @@ int AttachmentPoint::singlechannel()
 
 void AttachmentPoint::render_gui(void *data)
 {
-	if(renderengine && renderengine->mwindow)
-		renderengine->mwindow->render_plugin_gui(data, plugin);
+	if(mwindow_global)
+		mwindow_global->render_plugin_gui(data, plugin);
 }
 
 void AttachmentPoint::clear_msgs()
 {
-	if(plugin && renderengine && renderengine->mwindow)
-		renderengine->mwindow->clear_msgs(plugin);
+	if(plugin && mwindow_global)
+		mwindow_global->clear_msgs(plugin);
 }
 
 int AttachmentPoint::gui_open()
 {
-	if(renderengine && renderengine->mwindow)
-		return renderengine->mwindow->plugin_gui_open(plugin);
+	if(mwindow_global)
+		return mwindow_global->plugin_gui_open(plugin);
 	return 0;
 }
 

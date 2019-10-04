@@ -266,7 +266,7 @@ void Module::update_transition(ptstime current_position)
 			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
-				renderengine->preferences, 
+				preferences_global,
 				get_edl(), 
 				transition);
 			transition_server->init_realtime(1);

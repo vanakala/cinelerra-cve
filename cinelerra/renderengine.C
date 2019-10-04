@@ -34,14 +34,12 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "renderengine.h"
-#include "mainsession.h"
 #include "transportcommand.h"
 #include "videodevice.h"
 #include "vrender.h"
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
-	Preferences *preferences, 
 	TransportCommand *command,
 	Canvas *output)
  : Thread(THREAD_SYNCHRONOUS)
@@ -56,18 +54,14 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_audio = 0;
 	do_video = 0;
 	interrupted = 0;
-	actual_frame_rate = 0;
 	audio_playing = 0;
-	this->preferences = new Preferences;
 	this->command = new TransportCommand;
-	this->preferences->copy_from(preferences);
 	this->command->copy_from(command);
 	edl = command->get_edl();
 // EDL only changed in construction.
 // The EDL contained in later commands is ignored.
 	audio_cache = 0;
 	video_cache = 0;
-	mwindow = mwindow_global;
 
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
@@ -83,7 +77,6 @@ RenderEngine::~RenderEngine()
 {
 	close_output();
 	delete command;
-	delete preferences;
 	if(arender) delete arender;
 	if(vrender) delete vrender;
 	if(audio) delete audio;
@@ -108,12 +101,12 @@ int RenderEngine::arm_command(TransportCommand *command)
 
 // Fix background rendering asset to use current dimensions and ignore
 // headers.
-	preferences->brender_asset->frame_rate = edlsession->frame_rate;
-	preferences->brender_asset->width = edlsession->output_w;
-	preferences->brender_asset->height = edlsession->output_h;
-	preferences->brender_asset->use_header = 0;
-	preferences->brender_asset->layers = 1;
-	preferences->brender_asset->video_data = 1;
+	preferences_global->brender_asset->frame_rate = edlsession->frame_rate;
+	preferences_global->brender_asset->width = edlsession->output_w;
+	preferences_global->brender_asset->height = edlsession->output_h;
+	preferences_global->brender_asset->use_header = 0;
+	preferences_global->brender_asset->layers = 1;
+	preferences_global->brender_asset->video_data = 1;
 
 	done = 0;
 	interrupted = 0;
