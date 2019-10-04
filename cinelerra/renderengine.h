@@ -44,7 +44,6 @@ class RenderEngine : public Thread
 {
 public:
 	RenderEngine(PlaybackEngine *playback_engine,
-		TransportCommand *command, 
 		Canvas *output);
 	~RenderEngine();
 

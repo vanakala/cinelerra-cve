@@ -40,7 +40,6 @@
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
-	TransportCommand *command,
 	Canvas *output)
  : Thread(THREAD_SYNCHRONOUS)
 {
@@ -55,11 +54,9 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_video = 0;
 	interrupted = 0;
 	audio_playing = 0;
+	edl = 0;
 	this->command = new TransportCommand;
-	this->command->copy_from(command);
-	edl = command->get_edl();
-// EDL only changed in construction.
-// The EDL contained in later commands is ignored.
+
 	audio_cache = 0;
 	video_cache = 0;
 
@@ -96,6 +93,9 @@ int RenderEngine::arm_command(TransportCommand *command)
 // be locked here as well as in the calling routine.
 
 	input_lock->lock("RenderEngine::arm_command");
+
+	if(command->change_type & CHANGE_EDL)
+		edl = command->get_edl();
 
 	this->command->copy_from(command);
 
