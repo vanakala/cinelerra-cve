@@ -316,8 +316,11 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 	if(new_edl)
 	{
 		new_cmd->set_edl(new_edl);
+		options |= CHANGE_EDL;
 		new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 	}
+	else
+		options &= ~CHANGE_EDL;
 
 	// Drop previous CURRENT_FRAMEs
 	if(new_cmd->command == CURRENT_FRAME && used_cmds > 1)
