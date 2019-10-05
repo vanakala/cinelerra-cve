@@ -185,7 +185,7 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 // Don't clip input length if only rendering 1 frame.
 	if(len <= track_unit) return result;
 
-	int direction = renderengine->command->get_direction();
+	int direction = renderengine->command.get_direction();
 // GCC 3.2 requires this or optimization error results.
 	ptstime longest_duration1;
 	ptstime longest_duration2;

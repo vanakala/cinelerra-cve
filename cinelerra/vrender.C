@@ -109,7 +109,7 @@ VFrame *VRender::process_buffer(VFrame *buffer)
 void VRender::process_buffer(ptstime input_postime)
 {
 // Get output buffer from device
-	if(renderengine->command->realtime)
+	if(renderengine->command.realtime)
 		video_out = renderengine->video->new_output_buffer(
 			edlsession->color_model);
 	input_postime = round(input_postime *
@@ -144,7 +144,7 @@ void VRender::run()
 // Number of frames before next reconfigure
 	ptstime current_input_duration;
 	ptstime len_pts = edlsession->frame_duration();
-	int direction = renderengine->command->get_direction();
+	int direction = renderengine->command.get_direction();
 // Statistics
 	frame_count = 0;
 	sum_dly = 0;
@@ -170,7 +170,7 @@ void VRender::run()
 		current_postime = video_out->get_pts();
 
 		if(last_playback || renderengine->video->interrupt 
-				|| renderengine->command->single_frame())
+				|| renderengine->command.single_frame())
 		{
 			flash_output();
 			current_input_duration = video_out->get_duration();
@@ -187,7 +187,7 @@ void VRender::run()
 			}
 // Determine the delay until the frame needs to be shown.
 			current_pts = renderengine->sync_postime() *
-				renderengine->command->get_speed();
+				renderengine->command.get_speed();
 // earliest time by which the frame needs to be shown.
 			start_pts = current_postime;
 			if((len_pts = video_out->get_duration()) < EPSILON)
@@ -249,7 +249,7 @@ void VRender::run()
 				project_len_pts);
 		}
 
-		if(renderengine->command->realtime &&
+		if(renderengine->command.realtime &&
 			!renderengine->video->interrupt)
 		{
 // Calculate the framerate counter
@@ -289,7 +289,7 @@ int VRender::start_playback()
 {
 // start reading input and sending to vrenderthread
 // use a thread only if there's a video device
-	if(renderengine->command->realtime)
+	if(renderengine->command.realtime)
 	{
 		start();
 	}

@@ -74,7 +74,7 @@ void CommonRender::arm_command()
 {
 	ptstime temp_length = fromunits(1);
 
-	current_postime = renderengine->command->playbackstart;
+	current_postime = renderengine->command.playbackstart;
 
 	init_output_buffers();
 
@@ -169,7 +169,7 @@ void CommonRender::build_virtual_console()
 
 void CommonRender::start_command()
 {
-	if(renderengine->command->realtime)
+	if(renderengine->command.realtime)
 	{
 		Thread::start();
 		start_lock->lock("CommonRender::start_command");
@@ -197,15 +197,15 @@ void CommonRender::delete_vconsole()
 
 void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_duration)
 {
-	if(renderengine->command->single_frame())
+	if(renderengine->command.single_frame())
 	{
 		last_playback = 1;
 		return;
 	}
 
-	ptstime start_position = renderengine->command->start_position;
-	ptstime end_position = renderengine->command->end_position;
-	int direction = renderengine->command->get_direction();
+	ptstime start_position = renderengine->command.start_position;
+	ptstime end_position = renderengine->command.end_position;
+	int direction = renderengine->command.get_direction();
 
 // test absolute boundaries if no loop
 	if(!renderengine->edl->local_session->loop_playback)
@@ -232,7 +232,7 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 // test against loop boundaries
 	{
 		ptstime loop_pts;
-		if(renderengine->command->get_direction() == PLAY_FORWARD)
+		if(renderengine->command.get_direction() == PLAY_FORWARD)
 		{
 			loop_pts = renderengine->edl->local_session->loop_end;
 
@@ -274,7 +274,7 @@ int CommonRender::advance_position(ptstime current_pts, ptstime current_render_d
 	int result = 0;
 
 // advance the playback position
-	if(renderengine->command->get_direction() == PLAY_REVERSE)
+	if(renderengine->command.get_direction() == PLAY_REVERSE)
 		current_postime = current_pts - current_render_duration;
 	else
 		current_postime = current_pts + current_render_duration;
@@ -284,7 +284,7 @@ int CommonRender::advance_position(ptstime current_pts, ptstime current_render_d
 	{
 		ptstime loop_end = renderengine->edl->local_session->loop_end;
 		ptstime loop_start = renderengine->edl->local_session->loop_start;
-		if(renderengine->command->get_direction() == PLAY_REVERSE)
+		if(renderengine->command.get_direction() == PLAY_REVERSE)
 		{
 			if(current_postime <= loop_start)
 			{

@@ -166,7 +166,7 @@ void VirtualANode::render_as_module(AFrame **audio_out,
 	render_fade(output_temp,
 			track->automation->autos[AUTOMATION_FADE]);
 
-	if(real_module && renderengine->command->realtime)
+	if(real_module && renderengine->command.realtime)
 		((AModule*)real_module)->module_levels->fill(&output_temp);
 
 	for(int j = 0; j < MAX_CHANNELS; j++)

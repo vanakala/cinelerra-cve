@@ -84,7 +84,7 @@ Module* ARender::new_module(Track *track)
 
 void ARender::init_output_buffers()
 {
-	if(renderengine->command->realtime)
+	if(renderengine->command.realtime)
 	{
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
@@ -202,7 +202,7 @@ void ARender::run()
 			reconfigure = vconsole->test_reconfigure(current_input_duration,
 				last_playback);
 			if(duration - current_input_duration > EPSILON && 
-				renderengine->command->get_direction() == PLAY_REVERSE)
+				renderengine->command.get_direction() == PLAY_REVERSE)
 			{
 // Reverse playback: play end of buffer
 				current_postime += current_input_duration;
@@ -231,16 +231,16 @@ void ARender::run()
 		send_last_buffer();
 		last_pts = current_postime;
 	}
-	if(renderengine->command->realtime) wait_device_completion();
+	if(renderengine->command.realtime) wait_device_completion();
 
 	if(interrupt)
 	{
 		last_pts = renderengine->audio->current_postime() *
-			renderengine->command->get_speed();
-		if(renderengine->command->get_direction() == PLAY_FORWARD) 
-			last_pts += renderengine->command->playbackstart;
+			renderengine->command.get_speed();
+		if(renderengine->command.get_direction() == PLAY_FORWARD)
+			last_pts += renderengine->command.playbackstart;
 		else
-			last_pts = renderengine->command->playbackstart - last_pts;
+			last_pts = renderengine->command.playbackstart - last_pts;
 	}
 
 	renderengine->stop_tracking(last_pts, TRACK_AUDIO);

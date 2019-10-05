@@ -36,7 +36,7 @@ class RenderEngine;
 #include "playbackconfig.inc"
 #include "pluginserver.inc"
 #include "thread.h"
-#include "transportcommand.inc"
+#include "transportcommand.h"
 #include "videodevice.inc"
 #include "vrender.inc"
 
@@ -84,7 +84,7 @@ public:
 	void wait_another(const char *location, int type);
 
 // Copy of command
-	TransportCommand *command;
+	TransportCommand command;
 // EDL to be used by renderengine since not all commands involve an EDL change
 	EDL *edl;
 // Pointer to playback config for one head

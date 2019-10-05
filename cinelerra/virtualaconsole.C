@@ -132,11 +132,11 @@ int VirtualAConsole::process_buffer(int len,
 	}
 
 // get peaks and limit volume in the fragment
-	if(renderengine->command->realtime)
+	if(renderengine->command.realtime)
 		arender->output_levels->fill(arender->audio_out);
 
 // Pack channels, fix speed and send to device.
-	if(renderengine->command->realtime && !interrupt)
+	if(renderengine->command.realtime && !interrupt)
 	{
 // speed parameters
 // length compensated for speed
@@ -147,8 +147,8 @@ int VirtualAConsole::process_buffer(int len,
 		double *audio_buf[MAX_CHANNELS];
 		double **in_process;
 		int audio_channels = edlsession->audio_channels;
-		int direction = renderengine->command->get_direction();
-		float speed = renderengine->command->get_speed();
+		int direction = renderengine->command.get_direction();
+		float speed = renderengine->command.get_speed();
 
 		if(!EQUIV(speed, 1))
 		{

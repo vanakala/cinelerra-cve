@@ -55,7 +55,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	interrupted = 0;
 	audio_playing = 0;
 	edl = 0;
-	this->command = new TransportCommand;
 
 	audio_cache = 0;
 	video_cache = 0;
@@ -73,7 +72,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 RenderEngine::~RenderEngine()
 {
 	close_output();
-	delete command;
 	if(arender) delete arender;
 	if(vrender) delete vrender;
 	if(audio) delete audio;
@@ -86,7 +84,7 @@ RenderEngine::~RenderEngine()
 	delete config;
 }
 
-int RenderEngine::arm_command(TransportCommand *command)
+int RenderEngine::arm_command(TransportCommand *new_command)
 {
 // Prevent this renderengine from accepting another command until finished.
 // Since the renderengine is often deleted after the input_lock command it must
@@ -94,10 +92,10 @@ int RenderEngine::arm_command(TransportCommand *command)
 
 	input_lock->lock("RenderEngine::arm_command");
 
-	if(command->change_type & CHANGE_EDL)
-		edl = command->get_edl();
+	if(new_command->change_type & CHANGE_EDL)
+		edl = new_command->get_edl();
 
-	this->command->copy_from(command);
+	command.copy_from(new_command);
 
 // Fix background rendering asset to use current dimensions and ignore
 // headers.
@@ -115,9 +113,9 @@ int RenderEngine::arm_command(TransportCommand *command)
 	this->config->copy_from(edlsession->playback_config);
 	VideoOutConfig *vconfig = this->config->vconfig;
 	AudioOutConfig *aconfig = this->config->aconfig;
-	if(command->realtime)
+	if(command.realtime)
 	{
-		if(command->single_frame() && vconfig->driver != PLAYBACK_X11_GL)
+		if(command.single_frame() && vconfig->driver != PLAYBACK_X11_GL)
 		{
 			vconfig->driver = PLAYBACK_X11;
 		}
@@ -144,7 +142,7 @@ void RenderEngine::get_duty()
 	do_audio = 0;
 	do_video = 0;
 
-	if(!command->single_frame() &&
+	if(!command.single_frame() &&
 		edl->playable_tracks_of(TRACK_AUDIO) &&
 		edlsession->audio_channels)
 	{
@@ -219,7 +217,7 @@ void RenderEngine::set_vcache(CICache *cache)
 
 void RenderEngine::open_output()
 {
-	if(command->realtime)
+	if(command.realtime)
 	{
 // Allocate devices
 		if(do_audio)
@@ -259,7 +257,7 @@ void RenderEngine::open_output()
 				get_output_w(),
 				get_output_h(),
 				output,
-				command->single_frame());
+				command.single_frame());
 		}
 	}
 }
@@ -277,14 +275,14 @@ void RenderEngine::reset_sync_postime(void)
 ptstime RenderEngine::sync_postime(void)
 {
 	if(audio_playing)
-		return audio->current_postime(command->get_speed());
+		return audio->current_postime(command.get_speed());
 
 	return (ptstime)timer.get_difference() / 1000;
 }
 
 void RenderEngine::start_command()
 {
-	if(command->realtime)
+	if(command.realtime)
 	{
 		interrupt_lock->lock("RenderEngine::start_command");
 		start_lock->lock("RenderEngine::start_command 1");

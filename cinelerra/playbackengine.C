@@ -196,8 +196,8 @@ ptstime PlaybackEngine::get_tracking_position()
 	if(render_engine && tracking_active)
 	{
 		ptstime tpts = render_engine->sync_postime() *
-			render_engine->command->get_speed();
-		if(render_engine->command->get_direction() == PLAY_FORWARD)
+			render_engine->command.get_speed();
+		if(render_engine->command.get_direction() == PLAY_FORWARD)
 			tpts += tracking_start;
 		else
 			tpts = tracking_start - tpts;
