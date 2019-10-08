@@ -127,15 +127,6 @@ void PlaybackEngine::perform_change()
 		create_cache();
 	if(command->change_type & CHANGE_EDL)
 		create_render_engine();
-	if(render_engine && (command->change_type & (CHANGE_PARAMS | CHANGE_EDL)) == CHANGE_PARAMS)
-			render_engine->edl->synchronize_params(command->get_edl());
-}
-
-void PlaybackEngine::sync_parameters(EDL *edl)
-{
-// TODO: lock out render engine from keyframe deletions
-	command->get_edl()->synchronize_params(edl);
-	if(render_engine) render_engine->edl->synchronize_params(edl);
 }
 
 void PlaybackEngine::interrupt_playback(int wait_tracking)

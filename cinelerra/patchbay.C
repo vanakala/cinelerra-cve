@@ -178,7 +178,7 @@ int PatchBay::cursor_motion_event()
 						{
 							track->play = new_status;
 							mwindow->restart_brender();
-							mwindow->sync_parameters(CHANGE_EDL);
+							mwindow->sync_parameters();
 							update_gui = 1;
 						}
 						break;
@@ -231,7 +231,7 @@ int PatchBay::cursor_motion_event()
 								mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
 								mwindow->restart_brender();
-								mwindow->sync_parameters(CHANGE_PARAMS);
+								mwindow->sync_parameters();
 
 								if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
 									mwindow->draw_canvas_overlays();

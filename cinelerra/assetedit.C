@@ -127,7 +127,7 @@ void AssetEdit::run()
 				mwindow->vwindow->change_source();
 
 				mwindow->restart_brender();
-				mwindow->sync_parameters(CHANGE_ALL);
+				mwindow->sync_parameters();
 			}
 		}
 

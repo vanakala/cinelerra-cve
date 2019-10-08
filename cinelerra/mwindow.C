@@ -1029,7 +1029,7 @@ void MWindow::toggle_loop_playback()
 	save_backup();
 
 	draw_canvas_overlays();
-	sync_parameters(CHANGE_PARAMS);
+	sync_parameters();
 }
 
 void MWindow::set_titles(int value)
@@ -1073,32 +1073,11 @@ void MWindow::set_labels_follow_edits(int value)
 	gui->flush();
 }
 
-void MWindow::sync_parameters(int change_type)
+void MWindow::sync_parameters()
 {
-// Sync engines which are playing back
-	if(cwindow->playback_engine->is_playing_back)
-	{
-		if(change_type & CHANGE_PARAMS)
-		{
-// TODO: block keyframes until synchronization is done
-			cwindow->playback_engine->sync_parameters(master_edl);
-		}
-		else
-// Stop and restart
-		{
-			int command = cwindow->playback_engine->command->command;
-			cwindow->playback_engine->send_command(STOP);
-
-// Waiting for tracking to finish would make the restart position more
-// accurate but it can't lock the window to stop tracking for some reason.
-// Not waiting for tracking gives a faster response but restart position is
-// only as accurate as the last tracking update.
-
-			cwindow->playback_engine->send_command(command, master_edl, change_type);
-		}
-	}
-	else
-		cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, change_type);
+	if(!cwindow->playback_engine->is_playing_back)
+		cwindow->playback_engine->send_command(CURRENT_FRAME,
+			master_edl);
 }
 
 void MWindow::age_caches()
@@ -1444,9 +1423,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 		WUPD_ZOOMBAR | WUPD_CLOCK);
 
 	awindow->gui->async_update_assets();
-
-// Removes from playback here
-	sync_parameters(CHANGE_ALL);
+	sync_parameters();
 }
 
 int MWindow::stop_composer()

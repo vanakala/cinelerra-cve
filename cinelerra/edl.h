@@ -82,9 +82,6 @@ public:
 	void copy_session(EDL *edl, EDLSession *session = 0);
 	void copy_all(EDL *edl);
 
-// Copy pan and fade settings from edl
-	void synchronize_params(EDL *edl);
-
 // Determine if the positions are equivalent if they're within half a frame
 // of each other.
 	int equivalent(double position1, double position2);

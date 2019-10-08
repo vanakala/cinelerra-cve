@@ -662,26 +662,6 @@ Plugin* Track::get_current_transition(ptstime position)
 	return result;
 }
 
-void Track::synchronize_params(Track *track)
-{
-	if(track == this)
-		return;
-
-	for(Edit *this_edit = edits->first, *that_edit = track->edits->first;
-		this_edit && that_edit;
-		this_edit = this_edit->next, that_edit = that_edit->next)
-	{
-		this_edit->synchronize_params(that_edit);
-	}
-
-	for(int i = 0; i < plugins.total && i < track->plugins.total; i++)
-		plugins.values[i]->synchronize_params(plugins.values[i]);
-
-	automation->copy_from(track->automation);
-	this->nudge = track->nudge;
-}
-
-
 void Track::dump(int indent)
 {
 	const char *tp;

@@ -170,7 +170,7 @@ void PluginDialogThread::run()
 			mwindow->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
 			mwindow->restart_brender();
 			mwindow->update_plugin_states();
-			mwindow->sync_parameters(CHANGE_EDL);
+			mwindow->sync_parameters();
 			mwindow->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_PATCHBAY);
 		}

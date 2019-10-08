@@ -3634,7 +3634,7 @@ int TrackCanvas::cursor_motion_event()
 	if(rerender)
 	{
 		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->sync_parameters();
 		mwindow->update_plugin_guis();
 		mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update faders

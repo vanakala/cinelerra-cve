@@ -59,7 +59,7 @@ int PluginOn::handle_event()
 	else
 		plugin->on = 0;
 	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow->sync_parameters();
 	return 1;
 }
 

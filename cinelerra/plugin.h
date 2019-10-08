@@ -58,7 +58,6 @@ public:
 // Called by render_gui.  Only need the track, position,
 // to determine a corresponding GUI.
 	int identical_location(Plugin *that);
-	void synchronize_params(Plugin *edit);
 // Shift plugin keyframes
 	void shift_keyframes(ptstime difference);
 // Remove keyframes after pts

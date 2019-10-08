@@ -217,7 +217,7 @@ int VFadePatch::handle_event()
 	patch->change_source = 0;
 
 	mwindow->restart_brender();
-	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->sync_parameters();
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
 		mwindow->draw_canvas_overlays();
@@ -277,7 +277,7 @@ int VModePatch::handle_event()
 
 	mwindow->undo->update_undo(_("mode"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
-	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->sync_parameters();
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_MODE])
 		mwindow->draw_canvas_overlays();

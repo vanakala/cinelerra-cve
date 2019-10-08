@@ -231,11 +231,6 @@ Edit& Edit::operator=(Edit& edit)
 	return *this;
 }
 
-void Edit::synchronize_params(Edit *edit)
-{
-	copy_from(edit);
-}
-
 double Edit::picon_w(void)
 {
 	if(asset && asset->width && asset->height)

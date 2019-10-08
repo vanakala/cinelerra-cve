@@ -58,8 +58,6 @@ public:
 
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
-// Synchronize playback numbers
-	void synchronize_params(Track *track);
 
 // Get number of pixels to display
 	virtual int vertical_span(Theme *theme);

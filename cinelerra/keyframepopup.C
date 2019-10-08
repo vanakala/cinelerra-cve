@@ -190,7 +190,7 @@ int KeyframePopupDelete::handle_event()
 	mwindow_global->gui->update(WUPD_CANVINCR);
 	mwindow_global->update_plugin_guis();
 	mwindow_global->restart_brender();
-	mwindow_global->sync_parameters(CHANGE_EDL);
+	mwindow_global->sync_parameters();
 	return 1;
 }
 
@@ -255,7 +255,7 @@ int KeyframePopupTangentMode::handle_event()
 		mwindow_global->cwindow->update(WUPD_TOOLWIN);
 		mwindow_global->update_plugin_guis();
 		mwindow_global->restart_brender();
-		mwindow_global->sync_parameters(CHANGE_EDL);
+		mwindow_global->sync_parameters();
 	}
 	return 1;
 }

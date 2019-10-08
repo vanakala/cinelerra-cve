@@ -528,7 +528,7 @@ int CWindowGUI::drag_stop()
 			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 				WUPD_ZOOMBAR | WUPD_CLOCK);
 			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
-			mwindow->sync_parameters(LOAD_ALL);
+			mwindow->sync_parameters();
 		}
 	}
 
@@ -1800,7 +1800,7 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 		y_keyframe->set_value(0);
 		z_keyframe->set_value(1);
 
-		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->sync_parameters();
 		gui->update_tool();
 	}
 }
@@ -2575,7 +2575,7 @@ int CWindowCanvas::cursor_motion_event()
 	if(rerender)
 	{
 		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->sync_parameters();
 		if(!redraw) gui->update_tool();
 	}
 	return result;
@@ -2652,7 +2652,6 @@ int CWindowCanvas::button_press_event()
 	if(rerender)
 	{
 		mwindow->restart_brender();
-		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl);
 		if(!redraw) gui->update_tool();
 	}

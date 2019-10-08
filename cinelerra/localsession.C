@@ -192,18 +192,6 @@ void LocalSession::save_xml(FileXML *file)
 	file->append_newline();
 }
 
-void LocalSession::synchronize_params(LocalSession *that)
-{
-	loop_playback = that->loop_playback;
-	loop_start = that->loop_start;
-	loop_end = that->loop_end;
-	preview_start = that->preview_start;
-	preview_end = that->preview_end;
-	red = that->red;
-	green = that->green;
-	blue = that->blue;
-}
-
 void LocalSession::load_xml(FileXML *file)
 {
 	file->tag.get_property("CLIP_TITLE", clip_title);

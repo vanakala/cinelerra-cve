@@ -162,19 +162,6 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::synchronize_params(Plugin *plugin)
-{
-	if(plugin == this)
-		return;
-
-	this->show = plugin->show;
-	this->on = plugin->on;
-	plugin_server = plugin->plugin_server;
-	copy_keyframes(plugin);
-	if(!PTSEQU(keyframes->base_pts, pts))
-		shift_keyframes(pts - keyframes->base_pts);
-}
-
 void Plugin::shift_keyframes(ptstime difference)
 {
 	keyframes->shift_all(difference);

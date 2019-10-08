@@ -50,8 +50,6 @@ public:
 	Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet
 	void equivalent_output(Edit *edit, ptstime *result);
-// When inherited by a plugin need to resample keyframes
-	void synchronize_params(Edit *edit);
 // Get size of frame to draw on timeline
 	double picon_w(void);
 	int picon_h(void);

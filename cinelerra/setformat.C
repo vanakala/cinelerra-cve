@@ -171,7 +171,7 @@ void SetFormatThread::apply_changes()
 	}
 
 // Flash frame
-	mwindow->sync_parameters(CHANGE_ALL);
+	mwindow->sync_parameters();
 }
 
 void SetFormatThread::update()

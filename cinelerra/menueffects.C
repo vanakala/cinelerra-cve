@@ -509,7 +509,7 @@ void MenuEffectThread::run()
 		mwindow->update_plugin_guis();
 		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-		mwindow->sync_parameters(CHANGE_ALL);
+		mwindow->sync_parameters();
 	}
 
 	path_list.remove_all_objects();

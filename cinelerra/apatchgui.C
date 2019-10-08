@@ -276,7 +276,7 @@ int AFadePatch::handle_event()
 		patch->patchbay->synchronize_faders(change, TRACK_AUDIO, patch->track);
 	patch->change_source = 0;
 
-	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->sync_parameters();
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
 		mwindow->draw_canvas_overlays();
@@ -327,7 +327,7 @@ int APanPatch::handle_event()
 
 	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
-	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->sync_parameters();
 
 	if(need_undo && edlsession->auto_conf->auto_visible[AUTOMATION_PAN])
 		mwindow->draw_canvas_overlays();

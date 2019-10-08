@@ -68,8 +68,6 @@ public:
 	void save_defaults(BC_Hash *defaults);
 // Set clip title from path
 	void set_clip_title(const char *path);
-// Used to copy parameters that affect rendering.
-	void synchronize_params(LocalSession *that);
 
 	void boundaries();
 	size_t get_size();
