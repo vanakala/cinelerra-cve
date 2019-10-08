@@ -126,7 +126,6 @@ void AssetEdit::run()
 				mwindow->awindow->gui->async_update_assets();
 				mwindow->vwindow->change_source();
 
-				mwindow->restart_brender();
 				mwindow->sync_parameters();
 			}
 		}

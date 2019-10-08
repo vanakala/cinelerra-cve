@@ -524,7 +524,6 @@ int CWindowGUI::drag_stop()
 			mainsession->drag_clips->total)
 		{
 			mwindow->save_backup();
-			mwindow->restart_brender();
 			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 				WUPD_ZOOMBAR | WUPD_CLOCK);
 			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
@@ -2574,7 +2573,6 @@ int CWindowCanvas::cursor_motion_event()
 
 	if(rerender)
 	{
-		mwindow->restart_brender();
 		mwindow->sync_parameters();
 		if(!redraw) gui->update_tool();
 	}

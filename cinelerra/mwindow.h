@@ -319,7 +319,7 @@ public:
 	void trim_selection();
 // Synchronize EDL settings with all playback engines depending on current 
 // operation.  Doesn't redraw anything.
-	void sync_parameters();
+	void sync_parameters(int brender_restart = 1);
 	void to_clip();
 	void toggle_label();
 	void undo_entry();

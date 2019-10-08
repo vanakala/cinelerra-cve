@@ -216,7 +216,6 @@ int VFadePatch::handle_event()
 
 	patch->change_source = 0;
 
-	mwindow->restart_brender();
 	mwindow->sync_parameters();
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])

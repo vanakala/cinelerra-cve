@@ -92,9 +92,8 @@ int TransitionLengthText::handle_event()
 	if(!EQUIV(result, gui->transition->get_length()))
 	{
 		gui->transition->set_length(result);
-		if(gui->transition->track->data_type == TRACK_VIDEO) 
-			mwindow_global->restart_brender();
-		mwindow_global->sync_parameters();
+		mwindow_global->sync_parameters(
+			gui->transition->track->data_type == TRACK_VIDEO);
 		edlsession->default_transition_length = result;
 		mwindow_global->undo->update_undo(_("transition"), LOAD_EDITS);
 		mwindow_global->gui->update(WUPD_CANVINCR);
@@ -178,7 +177,6 @@ int TransitionPopupOn::handle_event()
 	if(mwindow_global->stop_composer())
 		return 0;
 	popup->transition->on = !get_checked();
-	mwindow_global->restart_brender();
 	mwindow_global->sync_parameters();
 	return 1;
 }

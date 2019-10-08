@@ -129,7 +129,6 @@ void MWindow::asset_to_size(Asset *asset)
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);
-		restart_brender();
 		sync_parameters();
 	}
 }
@@ -149,7 +148,6 @@ void MWindow::asset_to_rate(Asset *asset)
 		save_backup();
 
 		undo->update_undo(_("asset to rate"), LOAD_ALL);
-		restart_brender();
 		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		sync_parameters();
@@ -200,7 +198,6 @@ void MWindow::straighten_automation()
 	save_backup();
 	undo->update_undo(_("straighten curves"), LOAD_AUTOMATION); 
 
-	restart_brender();
 	update_plugin_guis();
 	draw_canvas_overlays();
 	sync_parameters();
@@ -219,7 +216,6 @@ void MWindow::clear_automation()
 	save_backup();
 	undo->update_undo(_("clear keyframes"), LOAD_AUTOMATION); 
 
-	restart_brender();
 	update_plugin_guis();
 	draw_canvas_overlays();
 	sync_parameters();
@@ -382,7 +378,6 @@ void MWindow::paste_keyframe(Track *track, Plugin *plugin)
 
 				gui->update(WUPD_CANVINCR);
 				update_plugin_guis();
-				restart_brender();
 				sync_parameters();
 			}
 		}
@@ -458,7 +453,6 @@ void MWindow::clear_keyframes(Plugin *plugin)
 
 		gui->update(WUPD_CANVINCR);
 		update_plugin_guis();
-		restart_brender();
 		sync_parameters();
 	}
 }
@@ -496,7 +490,6 @@ void MWindow::cut_effects()
 		save_backup();
 		undo->update_undo(_("cut keyframes"), LOAD_AUTOMATION);
 
-		restart_brender();
 		update_plugin_guis();
 		draw_canvas_overlays();
 		sync_parameters();
@@ -554,9 +547,8 @@ void MWindow::detach_transition(Plugin *transition)
 	save_backup();
 	undo->update_undo(_("detach transition"), LOAD_ALL);
 
-	if(is_video) restart_brender();
 	gui->update(WUPD_CANVINCR);
-	sync_parameters();
+	sync_parameters(is_video);
 }
 
 
@@ -595,7 +587,6 @@ void MWindow::insert_effects_canvas(ptstime start,
 
 	save_backup();
 	undo->update_undo(_("insert effect"), LOAD_EDITS | LOAD_PATCHES);
-	restart_brender();
 	sync_parameters();
 // GUI updated in TrackCanvas, after current_operations are reset
 }
@@ -628,7 +619,6 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 
 	save_backup();
 	undo->update_undo(_("insert effect"), LOAD_EDITS | LOAD_PATCHES);
-	restart_brender();
 	sync_parameters();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 }
@@ -730,7 +720,6 @@ void MWindow::finish_modify_handles()
 
 	save_backup();
 	undo->update_undo(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
-	restart_brender();
 	sync_parameters();
 	update_plugin_guis();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
@@ -748,7 +737,6 @@ void MWindow::match_output_size(Track *track)
 	save_backup();
 	undo->update_undo(_("match output size"), LOAD_ALL);
 
-	restart_brender();
 	sync_parameters();
 }
 
@@ -773,7 +761,6 @@ void MWindow::match_asset_size(Track *track)
 		save_backup();
 		undo->update_undo(_("match input size"), LOAD_ALL);
 
-		restart_brender();
 		sync_parameters();
 	}
 }
@@ -843,7 +830,6 @@ void MWindow::move_plugin_up(Plugin *plugin)
 	plugin->track->move_plugin_up(plugin);
 	save_backup();
 	undo->update_undo(_("move effect up"), LOAD_ALL);
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
 	sync_parameters();
 }
@@ -856,7 +842,6 @@ void MWindow::move_plugin_down(Plugin *plugin)
 	plugin->track->move_plugin_down(plugin);
 	save_backup();
 	undo->update_undo(_("move effect down"), LOAD_ALL);
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
 	sync_parameters();
 }
@@ -870,7 +855,6 @@ void MWindow::move_track_down(Track *track)
 	save_backup();
 	undo->update_undo(_("move track down"), LOAD_ALL);
 
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
@@ -885,7 +869,6 @@ void MWindow::move_tracks_down()
 	save_backup();
 	undo->update_undo(_("move tracks down"), LOAD_ALL);
 
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
@@ -899,7 +882,6 @@ void MWindow::move_track_up(Track *track)
 	master_edl->tracks->move_track_up(track);
 	save_backup();
 	undo->update_undo(_("move track up"), LOAD_ALL);
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
@@ -913,7 +895,6 @@ void MWindow::move_tracks_up()
 	master_edl->tracks->move_tracks_up();
 	save_backup();
 	undo->update_undo(_("move tracks up"), LOAD_ALL);
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 }
@@ -966,7 +947,6 @@ void MWindow::overwrite(EDL *source)
 	save_backup();
 	undo->update_undo(_("overwrite"), LOAD_EDITS);
 
-	restart_brender();
 	update_plugin_guis();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
@@ -1002,7 +982,6 @@ void MWindow::paste()
 		save_backup();
 		undo->update_undo(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
 
-		restart_brender();
 		update_plugin_guis();
 		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_CLOCK);
@@ -1039,7 +1018,6 @@ void MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 	save_backup();
 
 	undo->update_undo(_("paste assets"), LOAD_EDITS);
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR | WUPD_CLOCK |
 		WUPD_ZOOMBAR);
 	sync_parameters();
@@ -1090,7 +1068,6 @@ void MWindow::paste_effects(int operation)
 		undo->update_undo(_("paste effects"), LOAD_AUTOMATION);
 		delete [] string;
 
-		restart_brender();
 		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
 		update_plugin_guis();
 		sync_parameters();
@@ -1204,8 +1181,7 @@ void MWindow::paste_transition()
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
-	if(server->video) restart_brender();
-	sync_parameters();
+	sync_parameters(server->video);
 }
 
 void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
@@ -1269,10 +1245,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
-	sync_parameters();
-
-	if(data_type == TRACK_VIDEO)
-		restart_brender();
+	sync_parameters(data_type == TRACK_VIDEO);
 
 	gui->update(WUPD_CANVINCR);
 }
@@ -1309,7 +1282,6 @@ void MWindow::resize_track(Track *track, int w, int h)
 	undo->update_undo(_("resize track"), LOAD_ALL);
 	save_backup();
 
-	restart_brender();
 	sync_parameters();
 }
 
@@ -1435,7 +1407,6 @@ void MWindow::splice(EDL *source)
 	save_backup();
 	undo->update_undo(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
 	update_plugin_guis();
-	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
 	sync_parameters();
@@ -1657,6 +1628,6 @@ void MWindow::map_audio(int pattern)
 	}
 	undo->update_undo(pattern == MWindow::AUDIO_1_TO_1 ? _("map 1:1") : _("map 5.1:2"),
 		LOAD_AUTOMATION, 0);
-	sync_parameters();
+	sync_parameters(0);
 	gui->update(WUPD_CANVINCR | WUPD_PATCHBAY);
 }

@@ -1029,7 +1029,7 @@ void MWindow::toggle_loop_playback()
 	save_backup();
 
 	draw_canvas_overlays();
-	sync_parameters();
+	sync_parameters(0);
 }
 
 void MWindow::set_titles(int value)
@@ -1073,11 +1073,13 @@ void MWindow::set_labels_follow_edits(int value)
 	gui->flush();
 }
 
-void MWindow::sync_parameters()
+void MWindow::sync_parameters(int brender_restart)
 {
 	if(!cwindow->playback_engine->is_playing_back)
 		cwindow->playback_engine->send_command(CURRENT_FRAME,
 			master_edl);
+	if(brender_restart)
+		restart_brender();
 }
 
 void MWindow::age_caches()
@@ -1417,7 +1419,6 @@ void MWindow::remove_assets_from_project(int push_undo)
 	assetlist_global.remove_assets(mainsession->drag_assets);
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
-	restart_brender();
 
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);

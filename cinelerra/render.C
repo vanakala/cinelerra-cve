@@ -666,7 +666,7 @@ int Render::render(int test_overwrite,
 			mwindow->update_plugin_guis();
 			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-			mwindow->sync_parameters();
+			mwindow->sync_parameters(0);
 		}
 		else
 			mwindow->cwindow->update(WUPD_POSITION);

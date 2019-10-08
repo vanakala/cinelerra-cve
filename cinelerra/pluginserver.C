@@ -819,8 +819,7 @@ Theme* PluginServer::get_theme()
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
-	if(video) mwindow_global->restart_brender();
-	mwindow_global->sync_parameters();
+	mwindow_global->sync_parameters(video);
 
 	if(edlsession->auto_conf->plugins_visible)
 		mwindow_global->draw_canvas_overlays();

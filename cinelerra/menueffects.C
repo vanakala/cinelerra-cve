@@ -505,7 +505,6 @@ void MenuEffectThread::run()
 		mwindow->save_backup();
 		mwindow->undo->update_undo(title, LOAD_ALL);
 
-		mwindow->restart_brender();
 		mwindow->update_plugin_guis();
 		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);

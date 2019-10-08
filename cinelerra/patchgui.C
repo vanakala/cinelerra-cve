@@ -282,13 +282,11 @@ void PatchGUI::toggle_behavior(int type,
 	switch(type)
 	{
 	case Tracks::PLAY:
-		mwindow->restart_brender();
 		mwindow->sync_parameters();
 		mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
 		break;
 
 	case Tracks::MUTE:
-		mwindow->restart_brender();
 		mwindow->sync_parameters();
 		mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
 		break;
@@ -628,9 +626,7 @@ void NudgePatch::set_value(ptstime value)
 
 	mwindow->undo->update_undo(_("nudge"), LOAD_AUTOMATION, this);
 
-	if(patch->track->data_type == TRACK_VIDEO)
-		mwindow->restart_brender();
-	mwindow->sync_parameters();
+	mwindow->sync_parameters(patch->track->data_type == TRACK_VIDEO);
 
 	mainsession->changes_made = 1;
 }

@@ -168,7 +168,6 @@ void PluginDialogThread::run()
 
 			mwindow->save_backup();
 			mwindow->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
-			mwindow->restart_brender();
 			mwindow->update_plugin_states();
 			mwindow->sync_parameters();
 			mwindow->gui->update(WUPD_SCROLLBARS |

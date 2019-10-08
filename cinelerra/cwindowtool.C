@@ -336,7 +336,6 @@ int CWindowCropBeforePlugins::handle_event()
 		return 0;
 
 	keyframe->apply_before_plugins = get_value();
-	gui->mwindow->restart_brender();
 	gui->mwindow->sync_parameters();
 	gui->mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
@@ -416,7 +415,6 @@ int CWindowCropGUI::handle_event()
 	keyframe->bottom = atol(height->get_text()) +
 		keyframe->top;
 	update();
-	mwindow->restart_brender();
 	mwindow->sync_parameters();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	return 1;
@@ -674,7 +672,6 @@ CWindowCamProjGUI::~CWindowCamProjGUI()
 
 void CWindowCamProjGUI::update_preview()
 {
-	mwindow->restart_brender();
 	mwindow->sync_parameters();
 
 	mwindow->draw_canvas_overlays();
@@ -1439,7 +1436,6 @@ int CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::update_preview()
 {
-	mwindow->restart_brender();
 	mwindow->sync_parameters();
 	mwindow->cwindow->gui->canvas->draw_refresh();
 }

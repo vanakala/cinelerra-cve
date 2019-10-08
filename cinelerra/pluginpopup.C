@@ -129,7 +129,6 @@ int PluginPopupDetach::handle_event()
 	mwindow_global->save_backup();
 	mwindow_global->undo->update_undo(_("detach effect"), LOAD_ALL);
 	mwindow_global->gui->update(WUPD_CANVINCR);
-	mwindow_global->restart_brender();
 	mwindow_global->sync_parameters();
 	return 1;
 }
@@ -169,7 +168,6 @@ int PluginPopupOn::handle_event()
 		return 0;
 	popup->plugin->on = !get_checked();
 	mwindow_global->gui->update(WUPD_CANVINCR);
-	mwindow_global->restart_brender();
 	mwindow_global->sync_parameters();
 	return 1;
 }

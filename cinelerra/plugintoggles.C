@@ -58,7 +58,6 @@ int PluginOn::handle_event()
 		plugin->on = get_value();
 	else
 		plugin->on = 0;
-	mwindow->restart_brender();
 	mwindow->sync_parameters();
 	return 1;
 }

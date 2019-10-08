@@ -281,7 +281,7 @@ void ZoomBar::set_selection(int which_one)
 	mwindow->gui->timebar->update_highlights();
 	mwindow->gui->cursor->update();
 	update();
-	mwindow->sync_parameters();
+	mwindow->sync_parameters(0);
 	mwindow->gui->canvas->flash();
 }
 
