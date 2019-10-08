@@ -129,7 +129,7 @@ void TransportCommand::set_playback_range(int use_inout)
 {
 	ptstime totlen;
 
-	if(!edl)
+	if(!edl || command == STOP)
 	{
 		start_position = end_position = playbackstart = 0;
 		return;
@@ -147,10 +147,12 @@ void TransportCommand::set_playback_range(int use_inout)
 		else
 			end_position = edl->local_session->get_selectionend(1);
 // this prevents a crash if start position is after the loop when playing forwards
-		if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)
+		if(edl->local_session->loop_playback &&
+				start_position > edl->local_session->loop_end)
 		{
 			start_position = edl->local_session->loop_start;
 		}
+		playbackstart = start_position;
 		break;
 
 	case SLOW_REWIND:
@@ -162,24 +164,33 @@ void TransportCommand::set_playback_range(int use_inout)
 		else
 			start_position = edl->local_session->get_selectionstart(1);
 // this prevents a crash if start position is before the loop when playing backwards
-		if (edl->local_session->loop_playback && end_position > edl->local_session->loop_end)
+		if(edl->local_session->loop_playback &&
+				end_position > edl->local_session->loop_end)
 		{
 			end_position = edl->local_session->loop_end;
 		}
+		playbackstart = end_position;
 		break;
 
 	case CURRENT_FRAME:
+		start_position = edl->local_session->get_selectionstart(1);
+		end_position = start_position +
+			1.0 / edlsession->frame_rate;
+		playbackstart = start_position;
+		break;
 	case SINGLE_FRAME_FWD:
 		start_position = edl->local_session->get_selectionstart(1);
-		end_position = start_position + 
+		end_position = start_position +
 			1.0 / edlsession->frame_rate;
+		playbackstart = end_position;
 		break;
 
 	case SINGLE_FRAME_REWIND:
 		start_position = edl->local_session->get_selectionend(1);
-		end_position = start_position - 
+		end_position = start_position -
 			1.0 / edlsession->frame_rate;
-			break;
+		playbackstart = end_position;
+		break;
 	}
 
 	if(use_inout)
@@ -198,17 +209,10 @@ void TransportCommand::set_playback_range(int use_inout)
 		end_position = 0;
 	if(start_position < 0)
 		start_position = 0;
-
-	switch(get_direction())
-	{
-	case PLAY_FORWARD:
-		playbackstart = start_position;
-		break;
-
-	case PLAY_REVERSE:
-		playbackstart = end_position;
-		break;
-	}
+	if(playbackstart > totlen)
+		playbackstart = totlen;
+	if(playbackstart < 0)
+		playbackstart = 0;
 }
 
 void TransportCommand::playback_range_inout()
@@ -263,8 +267,8 @@ void TransportCommand::dump(int indent)
 	const char *tps;
 	char b[64];
 
-	printf("%*sTransportCommand dump: '%s' (realtime=%d)\n", indent, "",
-		commandstr(), realtime);
+	printf("%*sTransportCommand %p dump: '%s' %s\n", indent, "",
+		this, commandstr(), realtime ? "rt" : "--");
 	indent += 2;
 	printf("%*splayback %.3f; positions start=%.3f, end=%.3f\n", indent, "",
 		playbackstart, start_position, end_position);

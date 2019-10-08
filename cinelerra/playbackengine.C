@@ -256,15 +256,6 @@ void PlaybackEngine::run()
 
 		default:
 			is_playing_back = 1;
-			double frame_len = 1.0 / edlsession->frame_rate;
-
-			if(command->command == SINGLE_FRAME_FWD)
-				command->playbackstart = get_tracking_position() + frame_len;
-			if(command->command == SINGLE_FRAME_REWIND)
-				command->playbackstart = get_tracking_position() - frame_len;
-			if(command->playbackstart < 0.0)
-				command->playbackstart = 0.0;
-
 			perform_change();
 			arm_render_engine();
 
@@ -317,10 +308,11 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 	{
 		new_cmd->set_edl(new_edl);
 		options |= CHANGE_EDL;
-		new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 	}
 	else
 		options &= ~CHANGE_EDL;
+
+	new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 
 	// Drop previous CURRENT_FRAMEs
 	if(new_cmd->command == CURRENT_FRAME && used_cmds > 1)
