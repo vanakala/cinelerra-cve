@@ -54,8 +54,6 @@ public:
 	void wait_render_threads();
 	void interrupt_playback();
 	void stop_tracking(ptstime position, int type);
-	int get_output_w();
-	int get_output_h();
 	int brender_available(ptstime position);
 
 	CICache* get_acache();

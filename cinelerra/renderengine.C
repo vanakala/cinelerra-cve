@@ -168,17 +168,6 @@ void RenderEngine::create_render_threads()
 	}
 }
 
-
-int RenderEngine::get_output_w()
-{
-	return edlsession->output_w;
-}
-
-int RenderEngine::get_output_h()
-{
-	return edlsession->output_h;
-}
-
 int RenderEngine::brender_available(ptstime position)
 {
 	if(playback_engine)
@@ -254,8 +243,8 @@ void RenderEngine::open_output()
 		if(do_video)
 		{
 			video->open_output(config->vconfig,
-				get_output_w(),
-				get_output_h(),
+				edl->this_edlsession->output_w,
+				edl->this_edlsession->output_h,
 				output,
 				command.single_frame());
 		}
