@@ -75,10 +75,6 @@ PlaybackEngine::~PlaybackEngine()
 
 void PlaybackEngine::create_render_engine()
 {
-// Fix playback configurations
-	int current_vchannel = 0;
-	int current_achannel = 0;
-
 	delete_render_engine();
 
 	render_engine = new RenderEngine(this, output);
