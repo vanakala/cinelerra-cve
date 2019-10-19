@@ -52,7 +52,7 @@ void VideoRender::run()
 	ptstime current_pts;
 	ptstime start_pts, end_pts;
 	ptstime current_input_duration;
-	ptstime duration = edlsession->frame_duration();
+	ptstime duration = edl->this_edlsession->frame_duration();
 
 // Statistics
 	frame_count = 0;
@@ -84,7 +84,7 @@ void VideoRender::run()
 // earliest time when the frame can be shown
 		start_pts = render_pts;
 		if((duration = frame->get_duration()) < EPSILON)
-			duration = edlsession->frame_duration();
+			duration = edl->this_edlsession->frame_duration();
 // latest time when the frame can be shown
 		end_pts = start_pts + duration;
 
@@ -104,7 +104,7 @@ void VideoRender::run()
 				flash_output();
 			late_frame++;
 
-			if(edlsession->video_every_frame)
+			if(edl->this_edlsession->video_every_frame)
 				current_input_duration = duration;
 			else
 // Duration to skip
@@ -133,7 +133,7 @@ void VideoRender::run()
 			!renderengine->video->interrupt)
 		{
 			framerate_counter++;
-			if(framerate_counter >= edlsession->frame_rate)
+			if(framerate_counter >= edl->this_edlsession->frame_rate)
 			{
 				renderengine->update_framerate((float)framerate_counter /
 					((float)framerate_timer.get_difference() / 1000));
