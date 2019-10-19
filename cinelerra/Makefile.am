@@ -211,6 +211,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
 		    render.C \
+		    renderbase.C \
 		    renderengine.C \
 		    renderfarm.C \
 		    renderfarmclient.C \
@@ -234,6 +235,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    track.C \
 		    trackcanvas.C \
 		    tracking.C \
+		    trackrender.C \
 		    tracks.C \
 		    trackscroll.C \
 		    tracksedit.C \
@@ -246,6 +248,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vdeviceprefs.C \
 		    vdevicex11.C \
 		    videodevice.C \
+		    videorender.C \
 		    viewmenu.C \
 		    virtualaconsole.C \
 		    virtualanode.C \
@@ -261,6 +264,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vtimebar.C \
 		    vtrack.C \
 		    vtracking.C \
+		    vtrackrender.C \
 		    vwindow.C \
 		    vwindowgui.C \
 		    wavecache.C \
@@ -454,6 +458,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 renderfarmclient.h \
 		 renderfarm.h \
 		 render.h \
+		 renderbase.h \
 		 resample.h \
 		 renderprofiles.h \
 		 resizetrackthread.h \
@@ -474,6 +479,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 trackcanvas.h \
 		 track.h \
 		 tracking.h \
+		 trackrender.h \
 		 trackscroll.h \
 		 tracks.h \
 		 transitionpopup.h \
@@ -485,6 +491,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vdeviceprefs.h \
 		 vdevicex11.h \
 		 videodevice.h \
+		 videorender.h \
 		 viewmenu.h \
 		 virtualaconsole.h \
 		 virtualanode.h \
@@ -500,6 +507,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vtimebar.h \
 		 vtrack.h \
 		 vtracking.h \
+		 vtrackrender.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 wavecache.h \

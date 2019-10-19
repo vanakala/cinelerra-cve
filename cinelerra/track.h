@@ -38,6 +38,7 @@
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "theme.inc"
+#include "trackrender.inc"
 #include "tracks.inc"
 
 #include <stdint.h>
@@ -138,6 +139,8 @@ public:
 	Edits *edits;
 	ArrayList<Plugin*> plugins;
 	Automation *automation;
+
+	TrackRender *renderer;
 
 // Vertical offset from top of timeline
 	int y_pixel;

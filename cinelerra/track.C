@@ -56,6 +56,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	play = 1;
 	nudge = 0;
 	master = 0;
+	renderer = 0;
 	track_w = edlsession->output_w;
 	track_h = edlsession->output_h;
 	one_unit = (ptstime) 1 / 48000;
@@ -77,6 +78,7 @@ Track::~Track()
 	}
 	delete automation;
 	delete edits;
+	delete renderer;
 	plugins.remove_all_objects();
 }
 
