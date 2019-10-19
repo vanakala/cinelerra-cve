@@ -130,16 +130,13 @@ void VideoRender::run()
 			render_pts += current_input_duration;
 
 		if(renderengine->command.realtime &&
-			!renderengine->video->interrupt)
+			!renderengine->video->interrupt &&
+			framerate_counter >= edl->this_edlsession->frame_rate)
 		{
-			framerate_counter++;
-			if(framerate_counter >= edl->this_edlsession->frame_rate)
-			{
-				renderengine->update_framerate((float)framerate_counter /
-					((float)framerate_timer.get_difference() / 1000));
-				framerate_counter = 0;
-				framerate_timer.update();
-			}
+			renderengine->update_framerate((float)framerate_counter /
+				((float)framerate_timer.get_difference() / 1000));
+			framerate_counter = 0;
+			framerate_timer.update();
 		}
 	}
 	renderengine->stop_tracking(flashed_pts, TRACK_VIDEO);
@@ -212,6 +209,7 @@ void VideoRender::flash_output()
 	if(PTSEQU(frame->get_pts(), flashed_pts))
 		return;
 	frame_count++;
+	framerate_counter++;
 	flashed_pts = frame->get_pts();
 	renderengine->video->write_buffer(frame, edl);
 }
