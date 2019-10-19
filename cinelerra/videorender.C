@@ -144,6 +144,10 @@ void VideoRender::run()
 	}
 	renderengine->stop_tracking(flashed_pts, TRACK_VIDEO);
 	renderengine->render_start_lock->unlock();
+
+	if(frame_count)
+		renderengine->update_playstatistics(frame_count, late_frame,
+			(int)(sum_delay / frame_count));
 }
 
 void VideoRender::get_frame(ptstime pts)
