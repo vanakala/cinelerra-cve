@@ -41,6 +41,7 @@ void TransportCommand::reset()
 	start_position = 0;
 	end_position = 0;
 	realtime = 0;
+	loop_playback = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
 	command = COMMAND_NONE;
@@ -56,15 +57,16 @@ void TransportCommand::set_edl(EDL *edl)
 	this->edl = edl;
 }
 
-void TransportCommand::copy_from(TransportCommand *command)
+void TransportCommand::copy_from(TransportCommand *cmd)
 {
-	this->command = command->command;
-	this->change_type = command->change_type;
-	this->edl = command->edl;
-	this->start_position = command->start_position;
-	this->end_position = command->end_position;
-	this->playbackstart = command->playbackstart;
-	this->realtime = command->realtime;
+	command = cmd->command;
+	change_type = cmd->change_type;
+	edl = cmd->edl;
+	start_position = cmd->start_position;
+	end_position = cmd->end_position;
+	playbackstart = cmd->playbackstart;
+	realtime = cmd->realtime;
+	loop_playback = cmd->loop_playback;
 }
 
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
@@ -135,22 +137,27 @@ void TransportCommand::set_playback_range(int use_inout)
 		return;
 	}
 	totlen = edl->total_length();
+	loop_playback = 0;
 
 	switch(command)
 	{
 	case SLOW_FWD:
 	case FAST_FWD:
 	case NORMAL_FWD:
-		start_position = edl->local_session->get_selectionstart(1);
-		if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-			end_position = edl->total_length();
-		else
-			end_position = edl->local_session->get_selectionend(1);
-// this prevents a crash if start position is after the loop when playing forwards
-		if(edl->local_session->loop_playback &&
-				start_position > edl->local_session->loop_end)
+		if(edl->local_session->loop_playback)
 		{
 			start_position = edl->local_session->loop_start;
+			end_position = edl->local_session->loop_end;
+			loop_playback = 1;
+		}
+		else
+		{
+			start_position = edl->local_session->get_selectionstart(1);
+			if(EQUIV(edl->local_session->get_selectionend(1),
+					edl->local_session->get_selectionstart(1)))
+				end_position = totlen;
+			else
+				end_position = edl->local_session->get_selectionend(1);
 		}
 		playbackstart = start_position;
 		break;
@@ -158,16 +165,19 @@ void TransportCommand::set_playback_range(int use_inout)
 	case SLOW_REWIND:
 	case FAST_REWIND:
 	case NORMAL_REWIND:
-		end_position = edl->local_session->get_selectionend(1);
-		if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-			start_position = 0;
-		else
-			start_position = edl->local_session->get_selectionstart(1);
-// this prevents a crash if start position is before the loop when playing backwards
-		if(edl->local_session->loop_playback &&
-				end_position > edl->local_session->loop_end)
+		if(edl->local_session->loop_playback)
 		{
+			start_position = edl->local_session->loop_start;
 			end_position = edl->local_session->loop_end;
+			loop_playback = 1;
+		}
+		else
+		{
+			end_position = edl->local_session->get_selectionend(1);
+			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
+				start_position = 0;
+			else
+				start_position = edl->local_session->get_selectionstart(1);
 		}
 		playbackstart = end_position;
 		break;
@@ -270,8 +280,8 @@ void TransportCommand::dump(int indent)
 	printf("%*sTransportCommand %p dump: '%s' %s\n", indent, "",
 		this, commandstr(), realtime ? "rt" : "--");
 	indent += 2;
-	printf("%*splayback %.3f; positions start=%.3f, end=%.3f\n", indent, "",
-		playbackstart, start_position, end_position);
+	printf("%*splayback %.3f; positions start=%.3f, end=%.3f loop %d\n", indent, "",
+		playbackstart, start_position, end_position, loop_playback);
 	if(change_type == CHANGE_ALL)
 		tps = " All";
 	else if(change_type == CHANGE_NONE)

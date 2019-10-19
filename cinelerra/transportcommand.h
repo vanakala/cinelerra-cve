@@ -63,6 +63,8 @@ public:
 	ptstime playbackstart;
 // Send output to device
 	int realtime;
+// Loop playback
+	int loop_playback;
 private:
 // Pointer to current edl
 	EDL *edl;
