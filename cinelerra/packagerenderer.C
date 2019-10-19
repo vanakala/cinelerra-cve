@@ -51,7 +51,11 @@
 #include "transportcommand.h"
 #include "vframe.h"
 #include "videodevice.h"
+#ifdef NEW_RENDERER
+#include "videorender.h"
+#else
 #include "vrender.h"
+#endif
 
 
 RenderPackage::RenderPackage()

@@ -38,6 +38,7 @@ class RenderEngine;
 #include "thread.h"
 #include "transportcommand.h"
 #include "videodevice.inc"
+#include "videorender.inc"
 #include "vrender.inc"
 
 class RenderEngine : public Thread
@@ -106,7 +107,11 @@ public:
 	AudioDevice *audio;
 	VideoDevice *video;
 	ARender *arender;
+#ifdef NEW_RENDERER
+	VideoRender *vrender;
+#else
 	VRender *vrender;
+#endif
 	int do_audio;
 	int do_video;
 	float actual_frame_rate;

@@ -36,7 +36,11 @@
 #include "renderengine.h"
 #include "transportcommand.h"
 #include "videodevice.h"
+#ifdef NEW_RENDERER
+#include "videorender.h"
+#else
 #include "vrender.h"
+#endif
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
@@ -73,7 +77,11 @@ RenderEngine::~RenderEngine()
 {
 	close_output();
 	if(arender) delete arender;
+#ifdef NEW_RENDERER
 	if(vrender) delete vrender;
+#else
+	delete vrender;
+#endif
 	if(audio) delete audio;
 	if(video) delete video;
 	delete input_lock;
@@ -159,7 +167,11 @@ void RenderEngine::create_render_threads()
 {
 	if(do_video && !vrender)
 	{
+#ifdef NEW_RENDERER
+		vrender = new VideoRender(this, edl);
+#else
 		vrender = new VRender(this);
+#endif
 	}
 
 	if(do_audio && !arender)

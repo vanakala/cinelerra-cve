@@ -25,4 +25,6 @@
 
 class RenderEngine;
 
+//#define NEW_RENDERER
+
 #endif
