@@ -178,8 +178,16 @@ void PlaybackEngine::stop_tracking(ptstime position)
 		command->command = STOP;
 }
 
+#ifdef NEW_RENDERER
+void PlaybackEngine::set_tracking_position(ptstime pts)
+{
+	tracking_position = pts;
+}
+#endif
+
 ptstime PlaybackEngine::get_tracking_position()
 {
+#ifndef NEW_RENDERER
 	if(render_engine && tracking_active)
 	{
 		ptstime tpts = render_engine->sync_postime() *
@@ -190,6 +198,7 @@ ptstime PlaybackEngine::get_tracking_position()
 			tpts = tracking_start - tpts;
 		tracking_position = tpts;
 	}
+#endif
 	return tracking_position;
 }
 
