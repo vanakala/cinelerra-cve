@@ -37,6 +37,9 @@ public:
 	void arm_command();
 	void start_command();
 	virtual void run();
+// advance playback position
+// returns NZ when next frame must be flashed
+	int advance_position(ptstime duration);
 
 protected:
 	RenderEngine *renderengine;
@@ -45,6 +48,8 @@ protected:
 	ptstime render_start;
 	ptstime render_end;
 	int render_direction;
+	int render_loop;
+	int last_playback;
 	Condition *start_lock;
 };
 

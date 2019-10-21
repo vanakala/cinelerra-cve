@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "condition.h"
 #include "edl.h"
 #include "renderbase.h"
@@ -41,6 +42,8 @@ void RenderBase::arm_command()
 	render_start = renderengine->command.start_position;
 	render_end = renderengine->command.end_position;
 	render_direction = renderengine->command.get_direction();
+	render_loop = renderengine->command.loop_playback;
+	last_playback = 0;
 }
 
 void RenderBase::start_command()
@@ -50,6 +53,39 @@ void RenderBase::start_command()
 		Thread::start();
 		start_lock->lock("RenderBase::start_command");
 	}
+}
+
+int RenderBase::advance_position(ptstime duration)
+{
+	last_playback = 0;
+	if(render_direction == PLAY_FORWARD)
+	{
+		if(render_pts + duration > render_end - FRAME_ACCURACY)
+		{
+			duration = render_end - render_pts;
+			last_playback = 1;
+		}
+		render_pts += duration;
+	}
+	else
+	{
+		if(render_pts - duration <= render_start - FRAME_ACCURACY)
+		{
+			duration = render_pts - render_start;
+			last_playback = 1;
+		}
+		render_pts -= duration;
+	}
+	if(last_playback && render_loop)
+	{
+		last_playback = 0;
+		if(render_direction == PLAY_FORWARD)
+			render_pts = render_start;
+		else
+			render_pts = render_end;
+		return 1;
+	}
+	return 0;
 }
 
 void RenderBase::run()
