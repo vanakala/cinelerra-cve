@@ -35,6 +35,7 @@ class RenderEngine;
 #include "playbackengine.inc"
 #include "playbackconfig.inc"
 #include "pluginserver.inc"
+#include "renderengine.inc"
 #include "thread.h"
 #include "transportcommand.h"
 #include "videodevice.inc"
@@ -55,6 +56,9 @@ public:
 	void wait_render_threads();
 	void interrupt_playback();
 	void stop_tracking(ptstime position, int type);
+#ifdef NEW_RENDERER
+	void set_tracking_position(ptstime pts, int type);
+#endif
 	int brender_available(ptstime position);
 
 	CICache* get_acache();

@@ -376,6 +376,19 @@ void RenderEngine::stop_tracking(ptstime position, int type)
 		playback_engine->stop_tracking(position);
 }
 
+#ifdef NEW_RENDERER
+void RenderEngine::set_tracking_position(ptstime pts, int type)
+{
+	if(type == TRACK_AUDIO)
+	{
+		if(do_video)
+			return;
+	}
+	if(playback_engine)
+		playback_engine->set_tracking_position(pts);
+}
+#endif
+
 void RenderEngine::close_output()
 {
 	if(audio)
