@@ -73,27 +73,26 @@ void VideoRender::run()
 			current_input_duration = frame->get_duration();
 			break;
 		}
+		current_pts = renderengine->sync_postime() *
+			renderengine->command.get_speed();
 		if(first_frame)
 		{
 			flash_output();
 			renderengine->wait_another("VideoRender::run", TRACK_VIDEO);
-			init_pts = render_pts;
+			init_pts = render_pts - current_pts;
 		}
-		current_pts = renderengine->sync_postime() *
-			renderengine->command.get_speed();
 // earliest time when the frame can be shown
 		start_pts = render_pts;
 		if((duration = frame->get_duration()) < EPSILON)
 			duration = edl->this_edlsession->frame_duration();
 // latest time when the frame can be shown
 		end_pts = start_pts + duration;
-
 		if(render_direction == PLAY_REVERSE)
 		{
 			ptstime t = start_pts;
 			start_pts = -end_pts;
 			end_pts = -t;
-			current_pts -=  init_pts;
+			current_pts -= init_pts;
 		} else
 			current_pts += init_pts;
 
@@ -123,11 +122,7 @@ void VideoRender::run()
 			}
 			flash_output();
 		}
-		first_frame = 0;
-		if(render_direction == PLAY_REVERSE)
-			render_pts -= current_input_duration;
-		else
-			render_pts += current_input_duration;
+		first_frame = advance_position(current_input_duration);
 
 		if(renderengine->command.realtime &&
 			!renderengine->video->interrupt &&
@@ -154,6 +149,7 @@ void VideoRender::get_frame(ptstime pts)
 			edl->this_edlsession->color_model);
 	pts = round(pts * edl->this_edlsession->frame_rate) /
 		edl->this_edlsession->frame_rate;
+
 	if(renderengine->brender_available(pts))
 	{
 		if(!brender_file)
@@ -212,4 +208,5 @@ void VideoRender::flash_output()
 	framerate_counter++;
 	flashed_pts = frame->get_pts();
 	renderengine->video->write_buffer(frame, edl);
+	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
