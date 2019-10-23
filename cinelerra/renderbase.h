@@ -49,6 +49,8 @@ protected:
 	ptstime render_end;
 	int render_direction;
 	int render_loop;
+	int render_single;
+	int render_realtime;
 	int last_playback;
 	Condition *start_lock;
 };

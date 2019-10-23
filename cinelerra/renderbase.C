@@ -43,12 +43,14 @@ void RenderBase::arm_command()
 	render_end = renderengine->command.end_position;
 	render_direction = renderengine->command.get_direction();
 	render_loop = renderengine->command.loop_playback;
+	render_single = renderengine->command.single_frame();
+	render_realtime = renderengine->command.realtime;
 	last_playback = 0;
 }
 
 void RenderBase::start_command()
 {
-	if(renderengine->command.realtime)
+	if(render_realtime)
 	{
 		Thread::start();
 		start_lock->lock("RenderBase::start_command");
