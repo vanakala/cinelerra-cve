@@ -53,6 +53,7 @@ private:
 	Timer framerate_timer;
 
 	ptstime flashed_pts;
+	ptstime flashed_duration;
 
 	File *brender_file;
 	VFrame *frame;

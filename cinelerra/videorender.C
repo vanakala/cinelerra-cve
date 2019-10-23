@@ -38,6 +38,8 @@ VideoRender::VideoRender(RenderEngine *renderengine, EDL *edl)
 {
 	brender_file = 0;
 	frame = 0;
+	flashed_pts = -1;
+	flashed_duration = 0;
 }
 
 VideoRender::~VideoRender()
@@ -62,15 +64,14 @@ void VideoRender::run()
 	framerate_timer.update();
 
 	start_lock->unlock();
-	while(render_pts >= render_start && render_pts < render_end)
+	while(1)
 	{
 		get_frame(render_pts);
 
-		if(renderengine->video->interrupt ||
-			renderengine->command.single_frame())
+		if(renderengine->video->interrupt || last_playback ||
+			render_single)
 		{
 			flash_output();
-			current_input_duration = frame->get_duration();
 			break;
 		}
 		current_pts = renderengine->sync_postime() *
@@ -124,8 +125,7 @@ void VideoRender::run()
 		}
 		first_frame = advance_position(current_input_duration);
 
-		if(renderengine->command.realtime &&
-			!renderengine->video->interrupt &&
+		if(!renderengine->video->interrupt &&
 			framerate_counter >= edl->this_edlsession->frame_rate)
 		{
 			renderengine->update_framerate((float)framerate_counter /
@@ -144,11 +144,9 @@ void VideoRender::run()
 
 void VideoRender::get_frame(ptstime pts)
 {
-	if(renderengine->command.realtime)
+	if(!frame)
 		frame = renderengine->video->new_output_buffer(
 			edl->this_edlsession->color_model);
-	pts = round(pts * edl->this_edlsession->frame_rate) /
-		edl->this_edlsession->frame_rate;
 
 	if(renderengine->brender_available(pts))
 	{
@@ -202,11 +200,19 @@ VFrame *VideoRender::process_buffer(VFrame *buffer)
 
 void VideoRender::flash_output()
 {
-	if(PTSEQU(frame->get_pts(), flashed_pts))
+	ptstime pts = frame->get_pts();
+
+// Do not flash frames that are too short
+	if(!last_playback && !render_single && frame->get_duration() < FRAME_ACCURACY)
 		return;
+// Do not flash the same frame
+	if(flashed_pts <= pts - FRAME_ACCURACY && pts < flashed_pts + flashed_duration + FRAME_ACCURACY)
+		return;
+
 	frame_count++;
 	framerate_counter++;
 	flashed_pts = frame->get_pts();
+	flashed_duration = frame->get_duration();
 	renderengine->video->write_buffer(frame, edl);
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
