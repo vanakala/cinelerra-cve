@@ -67,12 +67,9 @@ int PlayableTracks::is_playable(Track *current_track,
 
 	if(current_track->data_type != data_type) result = 0;
 
-// Track is off screen and not bounced to other modules
-
 	if(result)
 	{
-		if(!current_track->plugin_used(position) &&
-			!current_track->is_playable(position))
+		if(!current_track->plugin_used(position))
 			result = 0;
 	}
 

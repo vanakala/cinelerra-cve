@@ -123,10 +123,6 @@ public:
 	int is_synthesis(ptstime position);
 
 // Used by PlayableTracks::is_playable
-// Returns 1 if the track is in the output boundaries.
-	virtual int is_playable(ptstime position);
-
-// Used by PlayableTracks::is_playable
 	int plugin_used(ptstime position);
 
 	void copy_settings(Track *track);

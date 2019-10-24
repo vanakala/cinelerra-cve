@@ -1101,11 +1101,6 @@ ptstime Track::edit_change_duration(ptstime input_position,
 		return input_length;
 }
 
-int Track::is_playable(ptstime position)
-{
-	return 1;
-}
-
 int Track::plugin_used(ptstime position)
 {
 	for(int i = 0; i < this->plugins.total; i++)
