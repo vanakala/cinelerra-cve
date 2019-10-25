@@ -118,8 +118,12 @@ void VideoRender::run()
 			{
 				int64_t delay_time =
 					(int64_t)((start_pts - current_pts) * 1000);
-				Timer::delay(delay_time);
-				sum_delay += delay_time;
+
+				if(delay_time > (int64_t)(FRAME_ACCURACY * 1000))
+				{
+					Timer::delay(delay_time);
+					sum_delay += delay_time;
+				}
 			}
 			flash_output();
 		}
@@ -206,9 +210,8 @@ void VideoRender::flash_output()
 	if(!last_playback && !render_single && frame->get_duration() < FRAME_ACCURACY)
 		return;
 // Do not flash the same frame
-	if(flashed_pts <= pts - FRAME_ACCURACY && pts < flashed_pts + flashed_duration + FRAME_ACCURACY)
+	if(flashed_pts <= pts && pts < flashed_pts + flashed_duration)
 		return;
-
 	frame_count++;
 	framerate_counter++;
 	flashed_pts = frame->get_pts();
