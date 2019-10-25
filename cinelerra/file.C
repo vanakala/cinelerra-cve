@@ -633,10 +633,12 @@ int File::get_frame(VFrame *frame)
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 		srcrqpts = frame->get_source_pts();
 		rqpts = frame->get_pts();
+
 		if(asset->single_image)
 			frame->set_source_pts(0);
 // Test cache
-		if(last_frame && last_frame->pts_in_frame_source(rqpts, 0.004))
+		if(last_frame && last_frame->pts_in_frame_source(srcrqpts, FRAME_ACCURACY) &&
+			last_frame->next_source_pts() - srcrqpts > FRAME_ACCURACY)
 		{
 			if(frame->equivalent(last_frame))
 			{
