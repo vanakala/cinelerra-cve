@@ -37,6 +37,7 @@ public:
 
 protected:
 	File *media_file(Edit *edit);
+	int is_playable(ptstime pts, Edit *edit);
 
 private:
 	File *file;

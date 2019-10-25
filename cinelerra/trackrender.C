@@ -20,8 +20,10 @@
  */
 
 #include "asset.h"
+#include "automation.h"
 #include "edit.h"
 #include "file.h"
+#include "intautos.h"
 #include "mainerror.h"
 #include "track.h"
 #include "trackrender.h"
@@ -62,5 +64,19 @@ File *TrackRender::media_file(Edit *edit)
 		}
 		return file;
 	}
+	return 0;
+}
+
+int TrackRender::is_playable(ptstime pts, Edit *edit)
+{
+	if(!track->play)
+		return 0;
+
+	if(!edit)
+		edit = track->editof(pts);
+
+	if(edit->asset || edit->transition || track->is_synthesis(pts))
+		return !((IntAutos *)track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
+
 	return 0;
 }
