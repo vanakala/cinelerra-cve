@@ -20,6 +20,8 @@
  */
 
 #include "edit.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "file.h"
 #include "track.h"
 #include "vtrackrender.h"
@@ -37,14 +39,18 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 	Edit *edit = track->editof(pts);
 	File *file = media_file(edit);
 
-	if(file)
+	frame->set_layer(edit->channel);
+
+	if(is_playable(pts, edit) && file)
 	{
 		src_pts = pts - edit->get_pts() + edit->get_source_pts();
 		frame->set_source_pts(src_pts);
-		frame->set_layer(edit->channel);
 		file->get_frame(frame);
 	}
 	else
+	{
 		frame->clear_frame();
+		frame->set_duration(track->edl->this_edlsession->frame_duration());
+	}
 	return frame;
 }
