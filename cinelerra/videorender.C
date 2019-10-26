@@ -94,6 +94,7 @@ void VideoRender::run()
 			start_pts = -end_pts;
 			end_pts = -t;
 			current_pts -= init_pts;
+			duration = edl->this_edlsession->frame_duration();
 		} else
 			current_pts += init_pts;
 
