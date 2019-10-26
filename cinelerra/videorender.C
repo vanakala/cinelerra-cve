@@ -206,17 +206,18 @@ VFrame *VideoRender::process_buffer(VFrame *buffer)
 void VideoRender::flash_output()
 {
 	ptstime pts = frame->get_pts();
+	ptstime duration = frame->get_duration();
 
 // Do not flash frames that are too short
-	if(!last_playback && !render_single && frame->get_duration() < FRAME_ACCURACY)
+	if(!last_playback && !render_single && duration < FRAME_ACCURACY)
 		return;
 // Do not flash the same frame
 	if(flashed_pts <= pts && pts < flashed_pts + flashed_duration)
 		return;
 	frame_count++;
 	framerate_counter++;
-	flashed_pts = frame->get_pts();
-	flashed_duration = frame->get_duration();
+	flashed_pts = pts;
+	flashed_duration = duration;
 	renderengine->video->write_buffer(frame, edl);
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
