@@ -67,12 +67,6 @@ int PlayableTracks::is_playable(Track *current_track,
 
 	if(current_track->data_type != data_type) result = 0;
 
-	if(result)
-	{
-		if(!current_track->plugin_used(position))
-			result = 0;
-	}
-
 // Test play patch
 	if(!current_track->play)
 	{
