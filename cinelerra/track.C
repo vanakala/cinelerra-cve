@@ -1101,20 +1101,6 @@ ptstime Track::edit_change_duration(ptstime input_position,
 		return input_length;
 }
 
-int Track::plugin_used(ptstime position)
-{
-	for(int i = 0; i < this->plugins.total; i++)
-	{
-		Plugin *current_plugin = plugins.values[i];
-
-		if(current_plugin->get_pts() <= position &&
-				current_plugin->end_pts() > position &&
-				current_plugin->on)
-			return 1;
-	}
-	return 0;
-}
-
 void Track::detach_transition(Plugin *transition)
 {
 	for(Edit *current = edits->first; current; current = current->next)

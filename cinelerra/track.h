@@ -122,9 +122,6 @@ public:
 // Used by PlayableTracks::is_playable.
 	int is_synthesis(ptstime position);
 
-// Used by PlayableTracks::is_playable
-	int plugin_used(ptstime position);
-
 	void copy_settings(Track *track);
 	void shift_keyframes(ptstime position, ptstime length);
 	void shift_effects(ptstime position, ptstime length);
