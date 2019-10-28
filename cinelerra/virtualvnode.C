@@ -234,7 +234,7 @@ void VirtualVNode::render_fade(Autos *autos)
 	{
 		if(!fader)
 			fader = new FadeEngine(preferences_global->processors);
-		fader->do_fade(output, output, intercept / 100);
+		fader->do_fade(output, intercept / 100);
 		// Colormodels with alpha - only alpha is modified
 		if(ColorModels::has_alpha(output->get_color_model()))
 			output->set_transparent();
