@@ -149,9 +149,8 @@ void VideoRender::run()
 
 void VideoRender::get_frame(ptstime pts)
 {
-	if(!frame)
-		frame = renderengine->video->new_output_buffer(
-			edl->this_edlsession->color_model);
+	frame = renderengine->video->new_output_buffer(
+		edl->this_edlsession->color_model);
 
 	if(renderengine->brender_available(pts))
 	{
