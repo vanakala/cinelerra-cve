@@ -22,6 +22,7 @@
 #ifndef VTRACKRENDER_H
 #define VTRACKRENDER_H
 
+#include "fadeengine.inc"
 #include "track.inc"
 #include "trackrender.h"
 #include "vframe.inc"
@@ -31,9 +32,13 @@ class VTrackRender : public TrackRender
 {
 public:
 	VTrackRender(Track *track);
+	~VTrackRender();
 
 	VFrame *get_frame(VFrame *frame);
+private:
+	void render_fade(VFrame *frame);
 
+	FadeEngine *fader;
 };
 
 #endif

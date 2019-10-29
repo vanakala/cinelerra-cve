@@ -19,10 +19,15 @@
  * 
  */
 
+#include "automation.h"
+#include "clip.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "fadeengine.h"
 #include "file.h"
+#include "floatautos.h"
+#include "preferences.h"
 #include "track.h"
 #include "vtrackrender.h"
 #include "vframe.h"
@@ -30,6 +35,12 @@
 VTrackRender::VTrackRender(Track *track)
  : TrackRender(track)
 {
+	fader = 0;
+}
+
+VTrackRender::~VTrackRender()
+{
+	delete fader;
 }
 
 VFrame *VTrackRender::get_frame(VFrame *frame)
@@ -46,6 +57,7 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		src_pts = pts - edit->get_pts() + edit->get_source_pts();
 		frame->set_source_pts(src_pts);
 		file->get_frame(frame);
+		render_fade(frame);
 	}
 	else
 	{
@@ -53,4 +65,24 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		frame->set_duration(track->edl->this_edlsession->frame_duration());
 	}
 	return frame;
+}
+
+void VTrackRender::render_fade(VFrame *frame)
+{
+	double value;
+	FloatAuto *prev, *next;
+
+	prev = next = 0;
+	value = ((FloatAutos*)track->automation->autos[AUTOMATION_FADE])->get_value(frame->get_pts(), prev, next);
+
+	CLAMP(value, 0, 100);
+
+	value /= 100;
+
+	if(!EQUIV(value, 1.0))
+	{
+		if(!fader)
+			fader = new FadeEngine(preferences_global->processors);
+		fader->do_fade(frame, value);
+	}
 }

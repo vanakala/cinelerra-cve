@@ -32,6 +32,7 @@ class TrackRender
 {
 public:
 	TrackRender(Track *track);
+	virtual ~TrackRender() {};
 
 	Track *track;
 
