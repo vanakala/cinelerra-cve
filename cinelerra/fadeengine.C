@@ -44,30 +44,74 @@ FadeUnit::FadeUnit(FadeEngine *server)
 	temp_type transparency = (temp_type)(max - opacity); \
 	temp_type product = (temp_type) (chroma_zero * transparency); \
  \
-	for(int i = row1; i < row2; i++) \
+	if(fade_colors) \
 	{ \
-		type *row = (type*)frame->get_row_ptr(i); \
- \
-		for(int j = 0; j < width; j++, row += components) \
+		if(alpha_pos) \
 		{ \
-			if(components == 3) \
+			for(int i = row1; i < row2; i++) \
 			{ \
-				row[0] =  \
-					(type)((temp_type)row[0] * opacity / max); \
-				row[1] =  \
-					(type)(((temp_type)row[1] * opacity +  \
-						product) / max); \
-				row[2] =  \
-					(type)(((temp_type)row[2] * opacity +  \
-						product) / max); \
+				type *row = (type*)frame->get_row_ptr(i); \
+ \
+				for(int j = 0; j < width; j++, row += components) \
+				{ \
+					row[0] =  \
+						(type)((temp_type)row[0] * opacity / max); \
+					row[1] =  \
+						(type)(((temp_type)row[1] * opacity +  \
+							product) / max); \
+					row[2] =  \
+						(type)(((temp_type)row[2] * opacity +  \
+							product) / max); \
+				} \
 			} \
-			else \
+		} \
+		else \
+		{ \
+			for(int i = row1; i < row2; i++) \
 			{ \
-				if(row[alpha_pos] == max) \
-					row[alpha_pos] = opacity; \
+				type *row = (type*)frame->get_row_ptr(i); \
+ \
+				for(int j = 0; j < width; j++, row += components) \
+				{ \
+					row[1] =  \
+						(type)((temp_type)row[1] * opacity / max); \
+					row[2] =  \
+						(type)(((temp_type)row[2] * opacity +  \
+							product) / max); \
+					row[3] =  \
+						(type)(((temp_type)row[3] * opacity +  \
+							product) / max); \
+				} \
+			} \
+		} \
+	} \
+	else \
+	{ \
+		for(int i = row1; i < row2; i++) \
+		{ \
+			type *row = (type*)frame->get_row_ptr(i); \
+ \
+			for(int j = 0; j < width; j++, row += components) \
+			{ \
+				if(components == 3) \
+				{ \
+					row[0] =  \
+						(type)((temp_type)row[0] * opacity / max); \
+					row[1] =  \
+						(type)(((temp_type)row[1] * opacity +  \
+							product) / max); \
+					row[2] =  \
+						(type)(((temp_type)row[2] * opacity +  \
+							product) / max); \
+				} \
 				else \
-					row[alpha_pos] = \
-						(type)((temp_type)row[alpha_pos] * opacity / max); \
+				{ \
+					if(row[alpha_pos] == max) \
+						row[alpha_pos] = opacity; \
+					else \
+						row[alpha_pos] = \
+							(type)((temp_type)row[alpha_pos] * opacity / max); \
+				} \
 			} \
 		} \
 	} \
@@ -78,6 +122,7 @@ void FadeUnit::process_package(LoadPackage *package)
 	FadePackage *pkg = (FadePackage*)package;
 	VFrame *frame = engine->frame;
 	float alpha = engine->alpha;
+	int fade_colors = engine->fade_colors;
 	int row1 = pkg->out_row1;
 	int row2 = pkg->out_row2;
 	int width = frame->get_w();
@@ -128,10 +173,11 @@ FadeEngine::FadeEngine(int cpus)
 {
 }
 
-void FadeEngine::do_fade(VFrame *frame, double alpha)
+void FadeEngine::do_fade(VFrame *frame, double alpha, int fade_colors)
 {
 	this->frame = frame;
 	this->alpha = alpha;
+	this->fade_colors;
 
 // Sanity
 	if(!EQUIV(alpha, 1.0))

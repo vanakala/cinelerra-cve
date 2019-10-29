@@ -54,7 +54,7 @@ public:
 
 // the input pointer is never different than the output pointer in any
 // of the callers
-	void do_fade(VFrame *frame, double alpha);
+	void do_fade(VFrame *frame, double alpha, int fade_colors = 0);
 
 	void init_packages();
 	LoadClient* new_client();
@@ -62,6 +62,7 @@ public:
 
 	VFrame *frame;
 	double alpha;
+	int fade_colors;
 };
 
 #endif
