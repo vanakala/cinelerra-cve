@@ -27,6 +27,9 @@
 #include "fadeengine.h"
 #include "file.h"
 #include "floatautos.h"
+#include "maskauto.h"
+#include "maskautos.h"
+#include "maskengine.h"
 #include "preferences.h"
 #include "track.h"
 #include "vtrackrender.h"
@@ -58,6 +61,7 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		frame->set_source_pts(src_pts);
 		file->get_frame(frame);
 		render_fade(frame);
+		render_mask(frame);
 	}
 	else
 	{
@@ -85,4 +89,41 @@ void VTrackRender::render_fade(VFrame *frame)
 			fader = new FadeEngine(preferences_global->processors);
 		fader->do_fade(frame, value);
 	}
+}
+
+void VTrackRender::render_mask(VFrame *frame)
+{
+	int total_points = 0;
+	Auto *current = 0;
+	MaskAutos *keyframe_set =
+		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(frame->get_pts(),
+		current);
+
+	if(!keyframe)
+		return;
+
+	for(int i = 0; i < keyframe->masks.total; i++)
+	{
+		int submask_points = keyframe->get_submask(i)->points.total;
+
+		if(submask_points > 1)
+			total_points += submask_points;
+	}
+
+// Ignore masks that are not relevant
+	if(total_points <= 2 || (keyframe->value == 0 &&
+			keyframe_set->get_mode() == MASK_SUBTRACT_ALPHA))
+		return;
+
+// Fake certain masks
+	if(keyframe->value == 0 && keyframe_set->get_mode() == MASK_MULTIPLY_ALPHA)
+	{
+		frame->clear_frame();
+		return;
+	}
+	if(!masker)
+		masker = new MaskEngine(preferences_global->processors);
+
+	masker->do_mask(frame, keyframe_set, 0);
 }

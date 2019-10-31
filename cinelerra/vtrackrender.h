@@ -23,6 +23,7 @@
 #define VTRACKRENDER_H
 
 #include "fadeengine.inc"
+#include "maskengine.inc"
 #include "track.inc"
 #include "trackrender.h"
 #include "vframe.inc"
@@ -37,8 +38,10 @@ public:
 	VFrame *get_frame(VFrame *frame);
 private:
 	void render_fade(VFrame *frame);
+	void render_mask(VFrame *frame);
 
 	FadeEngine *fader;
+	MaskEngine *masker;
 };
 
 #endif
