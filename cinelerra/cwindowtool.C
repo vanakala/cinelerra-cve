@@ -1050,6 +1050,8 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 	this->gui = gui;
 	add_item(new BC_MenuItem(mode_to_text(MASK_MULTIPLY_ALPHA)));
 	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_ALPHA)));
+	add_item(new BC_MenuItem(mode_to_text(MASK_MULTIPLY_COLOR)));
+	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_COLOR)));
 }
 
 const char* CWindowMaskMode::mode_to_text(int mode)
@@ -1058,11 +1060,15 @@ const char* CWindowMaskMode::mode_to_text(int mode)
 	{
 		case MASK_MULTIPLY_ALPHA:
 			return _("Multiply alpha");
-			break;
 
 		case MASK_SUBTRACT_ALPHA:
 			return _("Subtract alpha");
-			break;
+
+		case MASK_MULTIPLY_COLOR:
+			return _("Hide surrounding");
+
+		case MASK_SUBTRACT_COLOR:
+			return _("Display surrounding");
 	}
 
 	return _("Subtract alpha");
@@ -1075,6 +1081,12 @@ int CWindowMaskMode::text_to_mode(const char *text)
 	else
 	if(!strcasecmp(text, _("Subtract alpha")))
 		return MASK_SUBTRACT_ALPHA;
+	else
+	if(!strcasecmp(text, _("Hide surrounding")))
+		return MASK_MULTIPLY_COLOR;
+	else
+	if(!strcasecmp(text, _("Display surrounding")))
+		return MASK_SUBTRACT_COLOR;
 
 	return MASK_SUBTRACT_ALPHA;
 }

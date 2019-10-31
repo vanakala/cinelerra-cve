@@ -698,6 +698,35 @@ void MaskUnit::process_package(LoadPackage *package)
 	} \
 }
 
+#define APPLY_MASK_SUBTRACT_COLORS(type, max, components, do_yuv) \
+{ \
+	type chroma_offset = (max + 1) / 2; \
+	for(int i = start_row; i < end_row; i++) \
+	{ \
+		type *output_row = (type*)engine->output->get_row_ptr(i); \
+		type *mask_row = (type*)engine->mask->get_row_ptr(i); \
+ \
+		if(components == 4 && !alpha_pos) \
+			output_row++; \
+ \
+		for(int j  = 0; j < mask_w; j++) \
+		{ \
+			output_row[0] = output_row[0] * (max - *mask_row) / max; \
+ \
+			output_row[1] = output_row[1] * (max - *mask_row) / max; \
+			output_row[2] = output_row[2] * (max - *mask_row) / max; \
+ \
+			if(do_yuv) \
+			{ \
+				output_row[1] += chroma_offset * *mask_row / max; \
+				output_row[2] += chroma_offset * *mask_row / max; \
+			} \
+			output_row += components; \
+			mask_row += 1; \
+		} \
+	} \
+}
+
 #define APPLY_MASK_MULTIPLY_ALPHA(type, max, components, do_yuv) \
 { \
 	type chroma_offset = (max + 1) / 2; \
@@ -713,7 +742,7 @@ void MaskUnit::process_package(LoadPackage *package)
 				*output_row = *output_row * *mask_row / max; \
 			else \
 			{ \
-				output_row[0] = output_row[3] * *mask_row / max; \
+				output_row[0] = output_row[0] * *mask_row / max; \
  \
 				output_row[1] = output_row[1] * *mask_row / max; \
 				output_row[2] = output_row[2] * *mask_row / max; \
@@ -730,7 +759,37 @@ void MaskUnit::process_package(LoadPackage *package)
 	} \
 }
 
+#define APPLY_MASK_MULTIPLY_COLORS(type, max, components, do_yuv) \
+{ \
+	type chroma_offset = (max + 1) / 2; \
+	for(int i = ptr->row1; i < ptr->row2; i++) \
+	{ \
+		type *output_row = (type*)engine->output->get_row_ptr(i); \
+		type *mask_row = (type*)engine->mask->get_row_ptr(i); \
+ \
+		if(components == 4 && !alpha_pos) \
+			output_row++; \
+ \
+		for(int j = mask_w; j != 0;  j--) \
+		{ \
+			output_row[0] = output_row[0] * *mask_row / max; \
+ \
+			output_row[1] = output_row[1] * *mask_row / max; \
+			output_row[2] = output_row[2] * *mask_row / max; \
+ \
+			if(do_yuv) \
+			{ \
+				output_row[1] += chroma_offset * (max - *mask_row) / max; \
+				output_row[2] += chroma_offset * (max - *mask_row) / max; \
+			} \
+			output_row += components; \
+			mask_row += 1; \
+		} \
+	} \
+}
+
 	int mask_w = engine->mask->get_w();
+
 	switch(engine->mode)
 	{
 	case MASK_MULTIPLY_ALPHA:
@@ -801,6 +860,86 @@ void MaskUnit::process_package(LoadPackage *package)
 			break;
 		case BC_RGBA_FLOAT:
 			APPLY_MASK_SUBTRACT_ALPHA(float, 1.0f, 4, 0);
+			break;
+		}
+		break;
+
+	case MASK_MULTIPLY_COLOR:
+		switch(engine->output->get_color_model())
+		{
+		case BC_RGB888:
+			APPLY_MASK_MULTIPLY_COLORS(unsigned char, 0xff, 3, 0);
+			break;
+		case BC_YUV888:
+			APPLY_MASK_MULTIPLY_COLORS(unsigned char, 0xff, 3, 1);
+			break;
+		case BC_YUVA8888:
+			APPLY_MASK_MULTIPLY_COLORS(unsigned char, 0xff, 4, 1);
+			break;
+		case BC_RGBA8888:
+			APPLY_MASK_MULTIPLY_COLORS(unsigned char, 0xff, 4, 0);
+			break;
+		case BC_RGB161616:
+			APPLY_MASK_MULTIPLY_COLORS(uint16_t, 0xffff, 3, 0);
+			break;
+		case BC_YUV161616:
+			APPLY_MASK_MULTIPLY_COLORS(uint16_t, 0xffff, 3, 1);
+			break;
+		case BC_YUVA16161616:
+			APPLY_MASK_MULTIPLY_COLORS(uint16_t, 0xffff, 4, 1);
+			break;
+		case BC_RGBA16161616:
+			APPLY_MASK_MULTIPLY_COLORS(uint16_t, 0xffff, 4, 0);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
+			APPLY_MASK_MULTIPLY_COLORS(uint16_t, 0xffff, 4, 1);
+			break;
+		case BC_RGB_FLOAT:
+			APPLY_MASK_MULTIPLY_COLORS(float, 1.0f, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			APPLY_MASK_MULTIPLY_COLORS(float, 1.0f, 4, 1);
+			break;
+		}
+		break;
+
+	case MASK_SUBTRACT_COLOR:
+		switch(engine->output->get_color_model())
+		{
+		case BC_RGB888:
+			APPLY_MASK_SUBTRACT_COLORS(unsigned char, 0xff, 3, 0);
+			break;
+		case BC_YUV888:
+			APPLY_MASK_SUBTRACT_COLORS(unsigned char, 0xff, 3, 1);
+			break;
+		case BC_YUVA8888:
+			APPLY_MASK_SUBTRACT_COLORS(unsigned char, 0xff, 4, 1);
+			break;
+		case BC_RGBA8888:
+			APPLY_MASK_SUBTRACT_COLORS(unsigned char, 0xff, 4, 0);
+			break;
+		case BC_RGB161616:
+			APPLY_MASK_SUBTRACT_COLORS(uint16_t, 0xffff, 3, 0);
+			break;
+		case BC_YUV161616:
+			APPLY_MASK_SUBTRACT_COLORS(uint16_t, 0xffff, 3, 1);
+			break;
+		case BC_YUVA16161616:
+			APPLY_MASK_SUBTRACT_COLORS(uint16_t, 0xffff, 4, 1);
+			break;
+		case BC_RGBA16161616:
+			APPLY_MASK_SUBTRACT_COLORS(uint16_t, 0xffff, 4, 0);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
+			APPLY_MASK_SUBTRACT_COLORS(uint16_t, 0xffff, 4, 1);
+			break;
+		case BC_RGB_FLOAT:
+			APPLY_MASK_SUBTRACT_COLORS(float, 1.0f, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			APPLY_MASK_SUBTRACT_COLORS(float, 1.0f, 4, 1);
 			break;
 		}
 		break;
@@ -875,14 +1014,15 @@ void MaskEngine::do_mask(VFrame *output,
 	keyframe->interpolate_values(start_pts, &new_value, &new_feather);
 
 // Ignore certain masks
-	if(total_points < 2 || 
-		(new_value == 0 && cur_mode == MASK_SUBTRACT_ALPHA))
+	if(total_points < 2 || (new_value == 0 &&
+		(cur_mode == MASK_SUBTRACT_ALPHA || cur_mode == MASK_SUBTRACT_COLOR)))
 	{
 		return;
 	}
 
 // Fake certain masks
-	if(new_value == 0 && cur_mode == MASK_MULTIPLY_ALPHA)
+	if(new_value == 0 &&
+		(cur_mode == MASK_MULTIPLY_ALPHA || cur_mode == MASK_MULTIPLY_COLOR))
 	{
 		output->clear_frame();
 		return;
