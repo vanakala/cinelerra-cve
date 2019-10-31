@@ -54,6 +54,8 @@ struct cm_names ColorModels::color_model_names[] =
 	{ BC_YUV422, N_("YUV422") },
 	{ BC_COMPRESSED, N_("Compressed") },
 	{ BC_A8, N_("A-8") },
+	{ BC_A_FLOAT, N_("A-FLOAT") },
+	{ BC_A16, N_("A-16") },
 	{ -1, 0 }
 };
 
