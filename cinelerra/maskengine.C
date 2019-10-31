@@ -353,8 +353,8 @@ void MaskUnit::process_package(LoadPackage *package)
 		int oversampled_package_w = mask_w * OVERSAMPLE;
 		int oversampled_package_h = (ptr->row2 - ptr->row1) * OVERSAMPLE;
 
-		int local_first_nonempty_rowspan = SHRT_MIN;
-		int local_last_nonempty_rowspan = SHRT_MIN;
+		int local_first_nonempty_rowspan = mask_h;
+		int local_last_nonempty_rowspan = 0;
 
 		if(!row_spans || row_spans_h != mask_h * OVERSAMPLE)
 		{
@@ -490,9 +490,10 @@ void MaskUnit::process_package(LoadPackage *package)
 					continue; /* no work for us here */
 				else 
 				{  // if we have engaged first nonempty rowspan... remember it to speed up mask applying
-					if(local_first_nonempty_rowspan < 0 || i < local_first_nonempty_rowspan)
+					if(i < local_first_nonempty_rowspan)
 						local_first_nonempty_rowspan = i;
-					if(i > local_last_nonempty_rowspan) local_last_nonempty_rowspan = i;
+					if(i > local_last_nonempty_rowspan)
+						local_last_nonempty_rowspan = i;
 				}
 				// we have some pixels to fill, do coverage calculation for span
 
@@ -1002,9 +1003,10 @@ void MaskEngine::init_packages()
 	if(division < 1) division = 1;
 
 	stage1_finished_count = 0;
-	if (recalculate) {
-		last_nonempty_rowspan = SHRT_MIN;
-		first_nonempty_rowspan = SHRT_MAX;
+	if(recalculate)
+	{
+		last_nonempty_rowspan = 0;
+		first_nonempty_rowspan = output->get_h();
 	}
 
 	for(int i = 0; i < get_total_packages(); i++)
