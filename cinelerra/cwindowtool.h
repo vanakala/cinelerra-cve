@@ -33,6 +33,12 @@ class CWindowToolGUI;
 class CWindowCoord;
 class CWindowCropBeforePlugins;
 
+struct tool_names
+{
+	const char *text;
+	int value;
+};
+
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
 {
@@ -152,9 +158,11 @@ public:
 	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
 
 	int handle_event();
-	static const char* mode_to_text(int mode);
-	int text_to_mode(const char *text);
+	static const char *name(int mode);
+	static int mode(const char *text);
 
+private:
+	static struct tool_names modenames[];
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };

@@ -47,6 +47,14 @@
 #include "track.h"
 #include "transportcommand.h"
 
+struct tool_names CWindowMaskMode::modenames[] =
+{
+	{ N_("Multiply alpha"), MASK_MULTIPLY_ALPHA },
+	{ N_("Subtract alpha"), MASK_SUBTRACT_ALPHA },
+	{ N_("Hide surrounding"), MASK_MULTIPLY_COLOR },
+	{ N_("Display surrounding"), MASK_SUBTRACT_COLOR },
+	{ 0, 0 }
+};
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
  : Thread()
@@ -1048,46 +1056,29 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	add_item(new BC_MenuItem(mode_to_text(MASK_MULTIPLY_ALPHA)));
-	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_ALPHA)));
-	add_item(new BC_MenuItem(mode_to_text(MASK_MULTIPLY_COLOR)));
-	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_COLOR)));
+	add_item(new BC_MenuItem(name(MASK_MULTIPLY_ALPHA)));
+	add_item(new BC_MenuItem(name(MASK_SUBTRACT_ALPHA)));
+	add_item(new BC_MenuItem(name(MASK_MULTIPLY_COLOR)));
+	add_item(new BC_MenuItem(name(MASK_SUBTRACT_COLOR)));
 }
 
-const char* CWindowMaskMode::mode_to_text(int mode)
+const char* CWindowMaskMode::name(int mode)
 {
-	switch(mode)
+	for(int i = 0; modenames[i].text; i++)
 	{
-		case MASK_MULTIPLY_ALPHA:
-			return _("Multiply alpha");
-
-		case MASK_SUBTRACT_ALPHA:
-			return _("Subtract alpha");
-
-		case MASK_MULTIPLY_COLOR:
-			return _("Hide surrounding");
-
-		case MASK_SUBTRACT_COLOR:
-			return _("Display surrounding");
+		if(modenames[i].value == mode)
+			return _(modenames[i].text);
 	}
-
-	return _("Subtract alpha");
+	return modenames[0].text;
 }
 
-int CWindowMaskMode::text_to_mode(const char *text)
+int CWindowMaskMode::mode(const char *text)
 {
-	if(!strcasecmp(text, _("Multiply alpha")))
-		return MASK_MULTIPLY_ALPHA;
-	else
-	if(!strcasecmp(text, _("Subtract alpha")))
-		return MASK_SUBTRACT_ALPHA;
-	else
-	if(!strcasecmp(text, _("Hide surrounding")))
-		return MASK_MULTIPLY_COLOR;
-	else
-	if(!strcasecmp(text, _("Display surrounding")))
-		return MASK_SUBTRACT_COLOR;
-
+	for(int i = 0; modenames[i].text; i++)
+	{
+		if(strcmp(_(modenames[i].text), text) == 0)
+			return modenames[i].value;
+	}
 	return MASK_SUBTRACT_ALPHA;
 }
 
@@ -1104,7 +1095,7 @@ int CWindowMaskMode::handle_event()
 		0);
 
 	if(track)
-		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(text_to_mode(get_text()));
+		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(mode(get_text()));
 
 	gui->update_preview();
 	return 1;
@@ -1402,7 +1393,7 @@ void CWindowMaskGUI::update()
 
 	if(track)
 		mode->set_text(
-			CWindowMaskMode::mode_to_text(((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->get_mode()));
+			CWindowMaskMode::name(((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->get_mode()));
 
 	if(!keyframe)
 		return;
