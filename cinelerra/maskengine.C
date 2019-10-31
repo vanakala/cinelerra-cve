@@ -1021,8 +1021,7 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 // Fake certain masks
-	if(new_value == 0 &&
-		(cur_mode == MASK_MULTIPLY_ALPHA || cur_mode == MASK_MULTIPLY_COLOR))
+	if(new_value == 0 && cur_mode == MASK_MULTIPLY_COLOR)
 	{
 		output->clear_frame();
 		return;

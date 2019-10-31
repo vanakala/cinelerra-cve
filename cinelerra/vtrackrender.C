@@ -113,11 +113,13 @@ void VTrackRender::render_mask(VFrame *frame)
 
 // Ignore masks that are not relevant
 	if(total_points <= 2 || (keyframe->value == 0 &&
-			keyframe_set->get_mode() == MASK_SUBTRACT_ALPHA))
+			(keyframe_set->get_mode() == MASK_SUBTRACT_ALPHA ||
+			keyframe_set->get_mode() == MASK_SUBTRACT_COLOR)))
 		return;
 
 // Fake certain masks
-	if(keyframe->value == 0 && keyframe_set->get_mode() == MASK_MULTIPLY_ALPHA)
+	if(keyframe->value == 0 &&
+		keyframe_set->get_mode() == MASK_MULTIPLY_COLOR)
 	{
 		frame->clear_frame();
 		return;
