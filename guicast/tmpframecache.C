@@ -103,6 +103,14 @@ VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
 	return elem->frame;
 }
 
+VFrame *TmpFrameCache::clone_frame(VFrame *frame)
+{
+	if(!frame)
+		return 0;
+
+	return get_tmpframe(frame->get_w(), frame->get_h(), frame->get_color_model());
+}
+
 void TmpFrameCache::release_frame(VFrame *tmp_frame)
 {
 	if(!tmp_frame)
