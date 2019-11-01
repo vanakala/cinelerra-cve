@@ -22,6 +22,7 @@
 #ifndef VTRACKRENDER_H
 #define VTRACKRENDER_H
 
+#include "cropengine.inc"
 #include "fadeengine.inc"
 #include "maskengine.inc"
 #include "track.inc"
@@ -39,9 +40,11 @@ public:
 private:
 	void render_fade(VFrame *frame);
 	void render_mask(VFrame *frame);
+	void render_crop(VFrame *frame);
 
 	FadeEngine *fader;
 	MaskEngine *masker;
+	CropEngine *cropper;
 };
 
 #endif

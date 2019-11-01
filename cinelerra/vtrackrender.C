@@ -21,6 +21,8 @@
 
 #include "automation.h"
 #include "clip.h"
+#include "cropautos.h"
+#include "cropengine.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -62,6 +64,7 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		file->get_frame(frame);
 		render_fade(frame);
 		render_mask(frame);
+		render_crop(frame);
 	}
 	else
 	{
@@ -128,4 +131,24 @@ void VTrackRender::render_mask(VFrame *frame)
 		masker = new MaskEngine(preferences_global->processors);
 
 	masker->do_mask(frame, keyframe_set, 0);
+}
+
+void VTrackRender::render_crop(VFrame *frame)
+{
+	int left, right, top, bottom;
+	CropAutos *cropautos = (CropAutos *)track->automation->autos[AUTOMATION_CROP];
+
+	if(!cropautos->first)
+		return;
+
+	cropautos->get_values(frame->get_pts(),
+		&left, &right, &top, &bottom);
+
+	if(left == 0 && top == 0 && right >= frame->get_w() && bottom >= frame->get_h())
+		return;
+
+	if(!cropper)
+		cropper = new CropEngine();
+
+	frame = cropper->do_crop(cropautos, frame, 0);
 }
