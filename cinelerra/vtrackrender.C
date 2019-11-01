@@ -20,6 +20,7 @@
  */
 
 #include "automation.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "cropautos.h"
 #include "cropengine.h"
@@ -29,11 +30,16 @@
 #include "fadeengine.h"
 #include "file.h"
 #include "floatautos.h"
+#include "intauto.h"
+#include "intautos.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "maskengine.h"
+#include "overlayframe.h"
 #include "preferences.h"
+#include "tmpframecache.h"
 #include "track.h"
+#include "vtrack.h"
 #include "vtrackrender.h"
 #include "vframe.h"
 
@@ -41,11 +47,17 @@ VTrackRender::VTrackRender(Track *track)
  : TrackRender(track)
 {
 	fader = 0;
+	masker = 0;
+	cropper = 0;
+	overlayer = 0;
 }
 
 VTrackRender::~VTrackRender()
 {
 	delete fader;
+	delete masker;
+	delete cropper;
+	delete overlayer;
 }
 
 VFrame *VTrackRender::get_frame(VFrame *frame)
@@ -65,6 +77,7 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		render_fade(frame);
 		render_mask(frame);
 		render_crop(frame);
+		frame = render_projector(frame);
 	}
 	else
 	{
@@ -151,4 +164,55 @@ void VTrackRender::render_crop(VFrame *frame)
 		cropper = new CropEngine();
 
 	frame = cropper->do_crop(cropautos, frame, 0);
+}
+
+VFrame *VTrackRender::render_projector(VFrame *frame)
+{
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
+	int mode;
+	IntAuto *mode_keyframe;
+	VFrame *dstframe;
+
+	((VTrack*)track)->calculate_output_transfer(frame->get_pts(),
+		&in_x1, &in_y1, &in_x2, &in_y2,
+		&out_x1, &out_y1, &out_x2, &out_y2);
+
+	in_x2 += in_x1;
+	in_y2 += in_y1;
+	out_x2 += out_x1;
+	out_y2 += out_y1;
+
+	if(out_x2 > out_x1 && out_y2 > out_y1 &&
+		in_x2 > in_x1 && in_y2 > in_y1)
+	{
+		mode_keyframe = 0;
+
+		mode_keyframe =
+			(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
+				frame->get_pts(),
+				(Auto* &)mode_keyframe);
+
+		if(mode_keyframe)
+			mode = mode_keyframe->value;
+		else
+			mode = TRANSFER_NORMAL;
+
+		if(mode == TRANSFER_NORMAL && in_x1 == out_x1 && in_x2 == out_x2 &&
+				in_y1 == out_y1 && in_y2 == out_y2)
+			return frame;
+
+		if(!overlayer)
+			overlayer = new OverlayFrame(preferences_global->processors);
+
+		dstframe = BC_Resources::tmpframes.clone_frame(frame);
+		dstframe->clear_frame();
+		overlayer->overlay(dstframe, frame,
+			in_x1, in_y1, in_x2, in_y2,
+			out_x1, out_y1, out_x2, out_y2,
+			1, mode, BC_Resources::interpolation_method);
+		BC_Resources::tmpframes.release_frame(frame);
+		return dstframe;
+	}
+	return frame;
 }

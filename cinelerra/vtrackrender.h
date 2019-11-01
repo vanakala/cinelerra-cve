@@ -25,6 +25,7 @@
 #include "cropengine.inc"
 #include "fadeengine.inc"
 #include "maskengine.inc"
+#include "overlayframe.inc"
 #include "track.inc"
 #include "trackrender.h"
 #include "vframe.inc"
@@ -41,10 +42,12 @@ private:
 	void render_fade(VFrame *frame);
 	void render_mask(VFrame *frame);
 	void render_crop(VFrame *frame);
+	VFrame *render_projector(VFrame *frame);
 
 	FadeEngine *fader;
 	MaskEngine *masker;
 	CropEngine *cropper;
+	OverlayFrame *overlayer;
 };
 
 #endif
