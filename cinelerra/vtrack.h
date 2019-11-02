@@ -38,10 +38,6 @@ public:
 	posnum to_units(ptstime position, int round = 0);
 	ptstime from_units(posnum position);
 
-	void calculate_input_transfer(Asset *asset, ptstime position,
-		int *in_x, int *in_y, int *in_w, int *in_h,
-		int *out_x, int *out_y, int *out_w, int *out_h);
-
 	void calculate_output_transfer(ptstime position,
 		int *in_x, int *in_y, int *in_w, int *in_h,
 		int *out_x, int *out_y, int *out_w, int *out_h);
