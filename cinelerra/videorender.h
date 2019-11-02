@@ -27,7 +27,6 @@
 #include "file.inc"
 #include "renderbase.h"
 #include "renderengine.inc"
-#include "bctimer.h"
 #include "videorender.inc"
 #include "vframe.inc"
 
