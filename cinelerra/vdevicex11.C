@@ -68,7 +68,7 @@ VDeviceX11::~VDeviceX11()
 		else
 			output->stop_single();
 
-		if(output_frame)
+		if(output_frame && output_frame != output->refresh_frame)
 		{
 			BC_Resources::tmpframes.release_frame(output->refresh_frame);
 			output->refresh_frame = output_frame;
