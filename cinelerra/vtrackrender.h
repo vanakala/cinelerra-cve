@@ -47,6 +47,9 @@ private:
 	void calculate_input_transfer(ptstime position,
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
+	void calculate_output_transfer(VFrame *output,
+		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
+		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
 
 	FadeEngine *fader;
 	MaskEngine *masker;

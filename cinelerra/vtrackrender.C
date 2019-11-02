@@ -1,6 +1,7 @@
 
 /*
  * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
  * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -175,14 +176,9 @@ VFrame *VTrackRender::render_projector(VFrame *frame)
 	IntAuto *mode_keyframe;
 	VFrame *dstframe;
 
-	((VTrack*)track)->calculate_output_transfer(frame->get_pts(),
+	calculate_output_transfer(frame,
 		&in_x1, &in_y1, &in_x2, &in_y2,
 		&out_x1, &out_y1, &out_x2, &out_y2);
-
-	in_x2 += in_x1;
-	in_y2 += in_y1;
-	out_x2 += out_x1;
-	out_y2 += out_y1;
 
 	if(out_x2 > out_x1 && out_y2 > out_y1 &&
 		in_x2 > in_x1 && in_y2 > in_y1)
@@ -259,7 +255,7 @@ void VTrackRender::calculate_input_transfer(ptstime position,
 	double camera_y = track->track_h / 2;
 	double dtrackw = track->track_w;
 	double dtrackh = track->track_h;
-	double x[3], y[3];
+	double x[4], y[4];
 
 // get camera center in track
 	track->automation->get_camera(&auto_x, &auto_y, &auto_z, position);
@@ -312,4 +308,63 @@ void VTrackRender::calculate_input_transfer(ptstime position,
 	*in_y1 = round(y[0]);
 	*in_x2 = round(x[1]);
 	*in_y2 = round(y[1]);
+}
+
+void VTrackRender::calculate_output_transfer(VFrame *output,
+	int *in_x1, int *in_y1, int *in_x2, int *in_y2,
+	int *out_x1, int *out_y1, int *out_x2, int *out_y2)
+{
+	double center_x, center_y, center_z;
+	double x[4], y[4];
+	double outw = output->get_w();
+	double outh = output->get_h();
+	double trackw = track->track_w;
+	double trackh = track->track_h;
+
+	x[0] = 0;
+	y[0] = 0;
+	x[1] = trackw;
+	y[1] = trackh;
+
+	track->automation->get_projector(&center_x, &center_y,
+		&center_z, output->get_pts());
+
+	center_x += outw / 2;
+	center_y += outh / 2;
+
+	x[2] = center_x - (trackw / 2) * center_z;
+	y[2] = center_y - (trackh / 2) * center_z;
+	x[3] = x[2] + trackw * center_z;
+	y[3] = y[2] + trackh * center_z;
+
+// Clip to boundaries of output
+	if(x[2] < 0)
+	{
+		x[0] -= (x[2] - 0) / center_z;
+		x[2] = 0;
+	}
+	if(y[2] < 0)
+	{
+		y[0] -= (y[2] - 0) / center_z;
+		y[2] = 0;
+	}
+	if(x[3] > outw)
+	{
+		x[1] -= (x[3] - outw) / center_z;
+		x[3] = outw;
+	}
+	if(y[3] > outh)
+	{
+		y[1] -= (y[3] - outh) / center_z;
+		y[3] = outh;
+	}
+
+	*in_x1 = round(x[0]);
+	*in_y1 = round(y[0]);
+	*in_x2 = round(x[1]);
+	*in_y2 = round(y[1]);
+	*out_x1 = round(x[2]);
+	*out_y1 = round(y[2]);
+	*out_x2 = round(x[3]);
+	*out_y2 = round(y[3]);
 }
