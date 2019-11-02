@@ -74,6 +74,7 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		src_pts = pts - edit->get_pts() + edit->get_source_pts();
 		frame->set_source_pts(src_pts);
 		file->get_frame(frame);
+		frame = render_camera(frame);
 		render_fade(frame);
 		render_mask(frame);
 		render_crop(frame);
@@ -211,8 +212,104 @@ VFrame *VTrackRender::render_projector(VFrame *frame)
 			in_x1, in_y1, in_x2, in_y2,
 			out_x1, out_y1, out_x2, out_y2,
 			1, mode, BC_Resources::interpolation_method);
+		dstframe->copy_pts(frame);
 		BC_Resources::tmpframes.release_frame(frame);
 		return dstframe;
 	}
 	return frame;
+}
+
+VFrame *VTrackRender::render_camera(VFrame *frame)
+{
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
+	VFrame *dstframe;
+
+	calculate_input_transfer(frame->get_pts(),
+		&in_x1, &in_y1, &in_x2, &in_y2,
+		&out_x1, &out_y1, &out_x2, &out_y2);
+
+	if(in_x1 != 0 || in_y1 != 0 ||
+		in_x1 != out_x1 || in_y1 != out_y1 ||
+		in_x2 != out_x2 || in_y2 != out_y2)
+	{
+		if(!overlayer)
+			overlayer = new OverlayFrame(preferences_global->processors);
+
+		dstframe = BC_Resources::tmpframes.clone_frame(frame);
+		dstframe->clear_frame();
+		overlayer->overlay(dstframe, frame,
+			in_x1, in_y1, in_x2, in_y2,
+			out_x1, out_y1, out_x2, out_y2,
+			1, TRANSFER_REPLACE, BC_Resources::interpolation_method);
+		dstframe->copy_pts(frame);
+		BC_Resources::tmpframes.release_frame(frame);
+		return dstframe;
+	}
+	return frame;
+}
+
+void VTrackRender::calculate_input_transfer(ptstime position,
+	int *in_x1, int *in_y1, int *in_x2, int *in_y2,
+	int *out_x1, int *out_y1, int *out_x2, int *out_y2)
+{
+	double auto_x, auto_y, auto_z;
+	double camera_z = 1;
+	double camera_x = track->track_w / 2;
+	double camera_y = track->track_h / 2;
+	double dtrackw = track->track_w;
+	double dtrackh = track->track_h;
+	double x[3], y[3];
+
+// get camera center in track
+	track->automation->get_camera(&auto_x, &auto_y, &auto_z, position);
+	camera_z *= auto_z;
+	camera_x += auto_x;
+	camera_y += auto_y;
+
+// get camera coords
+	x[0] = camera_x - dtrackw / 2 / camera_z;
+	y[0] = camera_y - dtrackh / 2 / camera_z;
+	x[1] = x[0] + dtrackw / camera_z;
+	y[1] = y[0] + dtrackh / camera_z;
+
+// get coords on camera
+	x[2] = 0;
+	y[2] = 0;
+	x[3] = dtrackw;
+	y[3] = dtrackh;
+
+// crop coords on camera
+	if(x[0] < 0)
+	{
+		x[2] -= x[0] * camera_z;
+		x[0] = 0;
+	}
+
+	if(y[0] < 0)
+	{
+		y[2] -= y[0] * camera_z;
+		y[0] = 0;
+	}
+	if(x[1] > dtrackw)
+	{
+		x[3] -= (x[1] - dtrackw) * camera_z;
+		x[1] = dtrackw;
+	}
+	if(y[1] > dtrackh)
+	{
+		y[3] -= (y[1] - dtrackh) * camera_z;
+		y[1] = dtrackh;
+	}
+
+// get output bounding box
+	*out_x1 = round(x[2]);
+	*out_y1 = round(y[2]);
+	*out_x2 = round(x[3]);
+	*out_y2 = round(y[3]);
+
+	*in_x1 = round(x[0]);
+	*in_y1 = round(y[0]);
+	*in_x2 = round(x[1]);
+	*in_y2 = round(y[1]);
 }
