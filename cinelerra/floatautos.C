@@ -178,9 +178,9 @@ int FloatAutos::automation_is_constant(ptstime start,
 	return 1;
 }
 
-float FloatAutos::get_value(ptstime position, 
-	FloatAuto* &previous,
-	FloatAuto* &next)
+float FloatAutos::get_value(ptstime position,
+	FloatAuto* previous,
+	FloatAuto* next)
 {
 // Calculate bezier equation at position
 
@@ -314,17 +314,14 @@ void FloatAutos::get_extents(float *min,
 	}
 
 // Test joining regions
-	FloatAuto *prev = 0;
-	FloatAuto *next = 0;
 	ptstime step = MAX(track->one_unit, edl->local_session->zoom_time);
 
 	for(ptstime position = start;
 		position < end;
 		position += step)
 	{
-		float value = get_value(position,
-			prev,
-			next);
+		float value = get_value(position);
+
 		if(*coords_undefined)
 		{
 			*min = *max = value;

@@ -217,13 +217,9 @@ void VirtualVNode::render_as_module()
 void VirtualVNode::render_fade(Autos *autos)
 {
 	double intercept;
-	FloatAuto *previous = 0;
-	FloatAuto *next = 0;
 	VFrame *output = ((VirtualVConsole*)vconsole)->output_temp;
 
-	intercept = ((FloatAutos*)autos)->get_value(output->get_pts(),
-		previous,
-		next);
+	intercept = ((FloatAutos*)autos)->get_value(output->get_pts());
 
 	CLAMP(intercept, 0, 100);
 

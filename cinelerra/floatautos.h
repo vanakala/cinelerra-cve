@@ -41,11 +41,10 @@ public:
 		ptstime length,
 		double &constant);
 
-// Get value at a specific point.  This needs previous and next stores
-// because it is used for every pixel in the drawing function.
+// Get value at a specific point.
 	float get_value(ptstime position,
-		FloatAuto* &previous,
-		FloatAuto* &next);
+		FloatAuto* previous = 0,
+		FloatAuto* next = 0);
 
 // Helper: just calc the bezier function without doing any lookup of nodes
 	static float calculate_bezier(FloatAuto *previous, FloatAuto *next,

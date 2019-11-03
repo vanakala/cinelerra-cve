@@ -2227,8 +2227,6 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	x1 = MAX(0, x1);
 
 	int prev_y;
-// Call by reference fails for some reason here
-	FloatAuto *previous1 = previous, *next1 = next;
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
 	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
 	double automation_range = automation_max - automation_min;
@@ -2236,7 +2234,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	for(int x = x1; x < x2; x++)
 	{
 		ptstime timpos = view_start + (x / xzoom);
-		float value = autos->get_value(timpos, previous1, next1);
+		float value = autos->get_value(timpos, previous, next);
 		AUTOMATIONCLAMPS(value, autogrouptype);
 
 		int y = center_pixel + 
@@ -2274,9 +2272,8 @@ void TrackCanvas::synchronize_autos(float change,
 			{
 				FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
 				ptstime position = fauto->pos_time;
-				FloatAuto *previous = 0, *next = 0;
 
-				float init_value = fade_autos->get_value(fauto->pos_time, previous, next);
+				float init_value = fade_autos->get_value(fauto->pos_time);
 				FloatAuto *keyframe;
 				keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
 

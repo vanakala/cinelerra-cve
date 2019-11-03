@@ -61,22 +61,9 @@ void VAutomation::get_projector(double *x,
 	double *z,
 	ptstime position)
 {
-	FloatAuto *before, *after;
-	before = 0;
-	after = 0;
-	*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position,
-		before,
-		after);
-	before = 0;
-	after = 0;
-	*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position,
-		before,
-		after);
-	before = 0;
-	after = 0;
-	*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position,
-		before,
-		after);
+	*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position);
+	*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position);
+	*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position);
 }
 
 void VAutomation::get_camera(double *x,
@@ -84,22 +71,9 @@ void VAutomation::get_camera(double *x,
 	double *z,
 	ptstime position)
 {
-	FloatAuto *before, *after;
-	before = 0;
-	after = 0;
-	*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position,
-		before,
-		after);
-	before = 0;
-	after = 0;
-	*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position,
-		before,
-		after);
-	before = 0;
-	after = 0;
-	*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position,
-		before,
-		after);
+	*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position);
+	*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position);
+	*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position);
 }
 
 size_t VAutomation::get_size()

@@ -92,10 +92,9 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 void VTrackRender::render_fade(VFrame *frame)
 {
 	double value;
-	FloatAuto *prev, *next;
 
-	prev = next = 0;
-	value = ((FloatAutos*)track->automation->autos[AUTOMATION_FADE])->get_value(frame->get_pts(), prev, next);
+	value = ((FloatAutos*)track->automation->autos[AUTOMATION_FADE])->get_value(
+		frame->get_pts());
 
 	CLAMP(value, 0, 100);
 

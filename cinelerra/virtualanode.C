@@ -226,9 +226,6 @@ void VirtualANode::render_as_module(AFrame **audio_out,
 void VirtualANode::render_fade(AFrame *aframe, Autos *autos)
 {
 	double value, fade_value;
-	FloatAuto *previous = 0;
-	FloatAuto *next = 0;
-
 	ptstime input_postime = aframe->pts;
 	ptstime len_pts = aframe->duration;
 	int len = aframe->length;
@@ -252,9 +249,9 @@ void VirtualANode::render_fade(AFrame *aframe, Autos *autos)
 	{
 		for(int i = 0; i < len; i++)
 		{
-			fade_value = ((FloatAutos*)autos)->get_value(input_postime + (ptstime)i / aframe->samplerate,
-				previous,
-				next);
+			fade_value = ((FloatAutos*)autos)->get_value(
+				input_postime + (ptstime)i / aframe->samplerate);
+
 			if(fade_value <= INFINITYGAIN)
 				value = 0;
 			else
