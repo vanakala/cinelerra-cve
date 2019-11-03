@@ -91,8 +91,7 @@ int IntAutos::get_automation_constant(ptstime start, ptstime end)
 
 int IntAutos::get_value(ptstime position)
 {
-	Auto *a = 0;
-	IntAuto *current = (IntAuto *)get_prev_auto(position, a);
+	IntAuto *current = (IntAuto *)get_prev_auto(position);
 
 	if(current)
 		return current->value;

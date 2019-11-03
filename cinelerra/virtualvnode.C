@@ -247,10 +247,7 @@ void VirtualVNode::render_mask()
 	MaskAutos *keyframe_set = 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
-	Auto *current = 0;
-
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output->get_pts(),
-		current);
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output->get_pts());
 
 	if(!keyframe)
 		return;
@@ -312,11 +309,9 @@ VFrame *VirtualVNode::render_projector()
 	if(out_x2 > out_x1 && out_y2 > out_y1 &&
 		in_x2 > in_x1 && in_y2 > in_y1)
 	{
-		IntAuto *mode_keyframe = 0;
-		mode_keyframe =
+		IntAuto *mode_keyframe =
 			(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-				input->get_pts(),
-				(Auto* &)mode_keyframe);
+				input->get_pts());
 
 		if(mode_keyframe)
 			mode = mode_keyframe->value;

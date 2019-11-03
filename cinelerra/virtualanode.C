@@ -336,12 +336,8 @@ void VirtualANode::get_pan_automation(double &slope,
 		return;
 	}
 
-	PanAuto *prev_keyframe = 0;
-	PanAuto *next_keyframe = 0;
-	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_postime,
-		(Auto* &)prev_keyframe);
-	next_keyframe = (PanAuto*)autos->get_next_auto(input_postime,
-		(Auto* &)next_keyframe);
+	PanAuto *prev_keyframe = (PanAuto*)autos->get_prev_auto(input_postime);
+	PanAuto *next_keyframe = (PanAuto*)autos->get_next_auto(input_postime);
 
 	if(next_keyframe->pos_time > prev_keyframe->pos_time)
 	{

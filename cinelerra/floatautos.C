@@ -185,8 +185,8 @@ float FloatAutos::get_value(ptstime position,
 // Calculate bezier equation at position
 
 // prev and next will be used to shorten the search, if given
-	previous = (FloatAuto*)get_prev_auto(position, (Auto* &)previous);
-	next = (FloatAuto*)get_next_auto(position, (Auto* &)next);
+	previous = (FloatAuto*)get_prev_auto(position, (Auto*)previous);
+	next = (FloatAuto*)get_next_auto(position, (Auto*)next);
 
 // Constant
 	if(!next && !previous)

@@ -59,8 +59,8 @@ void PanAutos::get_handle(int &handle_x,
 		handle_y = default_handle_y;
 		return;
 	}
-	previous = (PanAuto*)get_prev_auto(position, (Auto* &)previous);
-	next = (PanAuto*)get_next_auto(position, (Auto* &)next);
+	previous = (PanAuto*)get_prev_auto(position, (Auto*)previous);
+	next = (PanAuto*)get_next_auto(position, (Auto*)next);
 
 // Constant
 	if(previous->handle_x == next->handle_x &&

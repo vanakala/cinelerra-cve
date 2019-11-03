@@ -126,9 +126,7 @@ void MaskAutos::dump(int indent)
 
 int MaskAutos::mask_exists(ptstime position)
 {
-	Auto *current = 0;
-
-	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, current);
+	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position);
 
 	for(int i = 0; i < keyframe->masks.total; i++)
 	{

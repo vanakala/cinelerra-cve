@@ -213,12 +213,10 @@ int PatchBay::cursor_motion_event()
 					case Tracks::MUTE:
 						{
 							IntAuto *current = 0;
-							Auto *keyframe = 0;
 							ptstime position = master_edl->local_session->get_selectionstart(1);
 							Autos *mute_autos = track->automation->autos[AUTOMATION_MUTE];
 
-							current = (IntAuto*)mute_autos->get_prev_auto(PLAY_FORWARD, 
-								keyframe);
+							current = (IntAuto*)mute_autos->get_prev_auto(position);
 
 							if(current->value != new_status)
 							{

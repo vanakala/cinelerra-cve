@@ -112,11 +112,9 @@ void VTrackRender::render_fade(VFrame *frame)
 void VTrackRender::render_mask(VFrame *frame)
 {
 	int total_points = 0;
-	Auto *current = 0;
 	MaskAutos *keyframe_set =
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(frame->get_pts(),
-		current);
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(frame->get_pts());
 
 	if(!keyframe)
 		return;
@@ -183,12 +181,9 @@ VFrame *VTrackRender::render_projector(VFrame *frame)
 	if(out_x2 > out_x1 && out_y2 > out_y1 &&
 		in_x2 > in_x1 && in_y2 > in_y1)
 	{
-		mode_keyframe = 0;
-
 		mode_keyframe =
 			(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-				frame->get_pts(),
-				(Auto* &)mode_keyframe);
+				frame->get_pts());
 
 		if(mode_keyframe)
 			mode = mode_keyframe->value;

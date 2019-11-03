@@ -239,13 +239,8 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 				ptstime &fragment_len, 
 				Autos *autos)
 {
-	IntAuto *prev_keyframe = 0;
-	IntAuto *next_keyframe = 0;
-
-	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, 
-		(Auto* &)prev_keyframe);
-	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, 
-		(Auto* &)next_keyframe);
+	IntAuto *prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position);
+	IntAuto *next_keyframe = (IntAuto*)autos->get_next_auto(input_position);
 
 	if(!prev_keyframe && !next_keyframe)
 	{

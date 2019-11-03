@@ -149,7 +149,7 @@ void Autos::insert_track(Autos *automation,
 }
 
 Auto* Autos::get_prev_auto(ptstime position,
-	Auto* &current)
+	Auto* current)
 {
 // Get on or before position
 // Try existing result
@@ -172,7 +172,7 @@ Auto* Autos::get_prev_auto(ptstime position,
 	return current;
 }
 
-Auto* Autos::get_prev_auto(Auto* &current)
+Auto* Autos::get_prev_auto(Auto* current)
 {
 	ptstime position = edl->local_session->get_selectionstart(1);
 
@@ -238,7 +238,7 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	return result;
 }
 
-Auto* Autos::get_next_auto(ptstime position, Auto* &current)
+Auto* Autos::get_next_auto(ptstime position, Auto* current)
 {
 	if(current)
 	{
@@ -409,7 +409,7 @@ void Autos::copy(Autos *autos, ptstime start, ptstime end)
 	if(!first && autos->first)
 	{
 		prev_auto = 0;
-		autos->get_prev_auto(start, prev_auto);
+		prev_auto = autos->get_prev_auto(start, prev_auto);
 		new_auto = append_auto();
 		new_auto->copy_from(prev_auto);
 		new_auto->pos_time = 0;

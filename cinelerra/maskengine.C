@@ -989,14 +989,12 @@ void MaskEngine::do_mask(VFrame *output,
 	MaskAutos *keyframe_set, 
 	int before_plugins)
 {
-	Auto *current = 0;
 	ptstime start_pts = output->get_pts();
 	int new_value;
 	int new_feather;
 	int cur_mode = keyframe_set->get_mode();
 
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts,
-		current);
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts);
 
 	if(!keyframe)
 		return;
