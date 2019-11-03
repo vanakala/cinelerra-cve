@@ -38,6 +38,7 @@
 #include "plugindb.h"
 #include "theme.h"
 #include "track.h"
+#include "trackrender.h"
 #include "tracks.h"
 #include "vframe.h"
 #include <string.h>
