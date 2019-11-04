@@ -150,26 +150,17 @@ int PluginClient::get_interpolation_type()
 
 float PluginClient::get_red()
 {
-	if(server->edl)
-		return server->edl->local_session->red;
-	else
-		return 0;
+	return master_edl->local_session->red;
 }
 
 float PluginClient::get_green()
 {
-	if(server->edl)
-		return server->edl->local_session->green;
-	else
-		return 0;
+	return master_edl->local_session->green;
 }
 
 float PluginClient::get_blue()
 {
-	if(server->edl)
-		return server->edl->local_session->blue;
-	else
-		return 0;
+	return master_edl->local_session->blue;
 }
 
 int PluginClient::get_use_opengl()

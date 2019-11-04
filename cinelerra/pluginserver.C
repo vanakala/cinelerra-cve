@@ -115,7 +115,6 @@ int PluginServer::reset_parameters()
 	cleanup_plugin();
 	plugin_fd = 0;
 	plugin = 0;
-	edl = 0;
 	title = 0;
 	path = 0;
 	audio = video = theme = 0;
@@ -191,7 +190,6 @@ void PluginServer::generate_display_title(char *string)
 
 // Open plugin for signal processing
 int PluginServer::open_plugin(int master, 
-	EDL *edl, 
 	Plugin *plugin,
 	int lad_index)
 {
@@ -201,7 +199,6 @@ int PluginServer::open_plugin(int master,
 		return PLUGINSERVER_OK;
 
 	this->plugin = plugin;
-	this->edl = edl;
 
 	if(!plugin_fd)
 	{

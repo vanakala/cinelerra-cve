@@ -85,7 +85,7 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 // Try to query the plugin
 				fs->complete_path(path);
 				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, 0, 0);
+				int result = new_plugin->open_plugin(1, 0);
 
 				if(!result)
 				{
@@ -105,7 +105,7 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 					{
 						new_plugin = new PluginServer(path);
 						result = new_plugin->open_plugin(1,
-							0, 0, id);
+							0, id);
 						id++;
 						if(!result)
 						{

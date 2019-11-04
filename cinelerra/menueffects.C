@@ -324,7 +324,7 @@ void MenuEffectThread::run()
 // Open the plugin GUI
 			plugin->set_keyframe(&plugin_data);
 			plugin->set_prompt(&prompt);
-			plugin->open_plugin(0, master_edl, 0);
+			plugin->open_plugin(0, 0);
 // Must set parameters since there is no plugin object to draw from.
 			plugin->get_parameters(total_start,
 				total_end,
@@ -343,7 +343,7 @@ void MenuEffectThread::run()
 		else
 // ============================non realtime plugin 
 		{
-			plugin->open_plugin(0, master_edl, 0, -1);
+			plugin->open_plugin(0, 0, -1);
 			plugin->update_title();
 			result = plugin->get_parameters(total_start,
 				total_end,

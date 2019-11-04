@@ -74,7 +74,6 @@ public:
 #define PLUGINSERVER_NOT_RECOGNIZED 1
 #define PLUGINSERVER_OK 0
 	int open_plugin(int master, 
-		EDL *edl, 
 		Plugin *plugin,
 		int lad_index = -1);
 // close the plugin
@@ -259,7 +258,6 @@ public:
 	Plugin *plugin;
 
 // Storage of session parameters
-	EDL *edl;
 	MenuEffectPrompt *prompt;
 	int gui_on;
 

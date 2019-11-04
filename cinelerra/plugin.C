@@ -53,6 +53,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	plugin_server = server;
 	shared_track_id = shared_plugin_id = -1;
 	shared_track_num = shared_plugin_num = -1;
+	active_server = 0;
 }
 
 Plugin::~Plugin()
@@ -285,7 +286,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	while(keyframes->last && keyframes->last != keyframes->first)
 		delete keyframes->last;
 
-	if(server && !server->open_plugin(1, 0, 0))
+	if(server && !server->open_plugin(1, 0))
 	{
 		server->save_data(keyframes->get_first());
 		server->close_plugin();
