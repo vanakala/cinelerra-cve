@@ -27,6 +27,7 @@
 #include "file.inc"
 #include "track.inc"
 #include "trackrender.inc"
+#include "vframe.inc"
 
 class TrackRender
 {
@@ -34,6 +35,7 @@ public:
 	TrackRender(Track *track);
 	virtual ~TrackRender() {};
 
+	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
 	Track *track;
 
 protected:

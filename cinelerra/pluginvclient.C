@@ -23,8 +23,12 @@
 #include "edlsession.h"
 #include "bcresources.h"
 #include "cinelerra.h"
+#include "plugin.h"
+#include "track.h"
+#include "trackrender.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
+#include "renderengine.inc"
 #include "vframe.h"
 
 #include <string.h>
@@ -139,7 +143,11 @@ VFrame* PluginVClient::get_output(int channel)
 
 void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
 {
+#ifdef NEW_RENDERER
+	server->plugin->track->renderer->get_vframe(buffer);
+#else
 	server->get_vframe(buffer, use_opengl);
+#endif
 }
 
 double PluginVClient::get_project_framerate()

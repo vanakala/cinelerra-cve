@@ -73,6 +73,7 @@ Plugin::~Plugin()
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
 	delete guideframe;
+	delete active_server;
 }
 
 int Plugin::silence()
@@ -670,8 +671,8 @@ void Plugin::dump(int indent)
 		printf(" shared_track_id: %d", shared_track_id);
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
-	printf("\n%*sproject_pts %.3f length %.3f id %d\n", indent, "",
-		pts, duration, id);
+	printf("\n%*sproject_pts %.3f length %.3f id %d active_server %p\n", indent, "",
+		pts, duration, id, active_server);
 
 	keyframes->dump(indent);
 }

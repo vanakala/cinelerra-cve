@@ -121,6 +121,8 @@ public:
 	GuideFrame *guideframe;
 // Server
 	PluginServer *plugin_server;
+// Active server
+	PluginServer *active_server;
 
 private:
 	int shared_track_num;

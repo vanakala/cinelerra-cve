@@ -37,6 +37,8 @@
 #include "maskautos.h"
 #include "maskengine.h"
 #include "overlayframe.h"
+#include "plugin.h"
+#include "pluginserver.h"
 #include "preferences.h"
 #include "tmpframecache.h"
 #include "track.h"
@@ -51,6 +53,7 @@ VTrackRender::VTrackRender(Track *track)
 	masker = 0;
 	cropper = 0;
 	overlayer = 0;
+	current_edit = 0;
 }
 
 VTrackRender::~VTrackRender()
@@ -66,16 +69,14 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 	ptstime pts = frame->get_pts();
 	ptstime src_pts;
 	Edit *edit = track->editof(pts);
-	File *file = media_file(edit);
 
 	frame->set_layer(edit->channel);
 
-	if(is_playable(pts, edit) && file)
+	if(is_playable(pts, edit) && media_file(edit))
 	{
 		src_pts = pts - edit->get_pts() + edit->get_source_pts();
 		frame->set_source_pts(src_pts);
-		file->get_frame(frame);
-		frame = render_camera(frame);
+		frame = render_plugins(frame, edit);
 		render_fade(frame);
 		render_mask(frame);
 		render_crop(frame);
@@ -361,4 +362,81 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	*out_y1 = round(y[2]);
 	*out_x2 = round(x[3]);
 	*out_y2 = round(y[3]);
+}
+
+VFrame *VTrackRender::render_plugins(VFrame *frame, Edit *edit)
+{
+	Plugin *plugin;
+	ptstime start = frame->get_pts();
+	ptstime end = start + frame->get_duration();
+	VFrame *tmpframe = 0;
+
+	current_edit = edit;
+	for(int i = 0; i < track->plugins.total; i++)
+	{
+		plugin = track->plugins.values[i];
+
+		if(plugin->on && plugin->active_in(start, end))
+		{
+			if(tmpframe = execute_plugin(plugin, frame))
+				frame = tmpframe;
+		}
+	}
+	if(!tmpframe)
+	{
+// No plugins executed
+		File *file = media_file(edit);
+
+		if(file)
+		{
+			file->get_frame(frame);
+			frame = render_camera(frame);
+		}
+		else
+			frame->clear_frame();
+	}
+	return frame;
+}
+
+VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
+{
+	if(plugin->plugin_server)
+	{
+		if(plugin->plugin_server->multichannel)
+			puts("Multchannel plugin is not ready");
+		else
+		{
+			if(!plugin->active_server)
+			{
+				plugin->active_server = new PluginServer(*plugin->plugin_server);
+				plugin->active_server->open_plugin(0, plugin);
+				plugin->active_server->init_realtime(1);
+			}
+			plugin->active_server->process_buffer(&frame, plugin->get_length());
+			return frame;
+		}
+	}
+	return 0;
+}
+
+VFrame *VTrackRender::get_vframe(VFrame *buffer)
+{
+// This is called by plugin
+// We have to put frame into buffer, because plugins to
+// not accept new buffer yet
+	File *file = media_file(current_edit);
+
+	if(file)
+	{
+		VFrame *frame = BC_Resources::tmpframes.clone_frame(buffer);
+
+		frame->copy_pts(buffer);
+		file->get_frame(frame);
+		frame = render_camera(frame);
+		buffer->copy_from(frame, 1);
+		BC_Resources::tmpframes.release_frame(frame);
+	}
+	else
+		buffer->clear_frame();
+	return buffer;
 }

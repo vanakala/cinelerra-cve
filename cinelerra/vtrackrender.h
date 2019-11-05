@@ -23,9 +23,11 @@
 #define VTRACKRENDER_H
 
 #include "cropengine.inc"
+#include "edit.inc"
 #include "fadeengine.inc"
 #include "maskengine.inc"
 #include "overlayframe.inc"
+#include "plugin.inc"
 #include "track.inc"
 #include "trackrender.h"
 #include "vframe.inc"
@@ -38,6 +40,7 @@ public:
 	~VTrackRender();
 
 	VFrame *get_frame(VFrame *frame);
+	VFrame *get_vframe(VFrame *buffer);
 private:
 	void render_fade(VFrame *frame);
 	void render_mask(VFrame *frame);
@@ -50,11 +53,14 @@ private:
 	void calculate_output_transfer(VFrame *output,
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
+	VFrame *render_plugins(VFrame *frame, Edit *edit);
+	VFrame *execute_plugin(Plugin *plugin, VFrame *frame);
 
 	FadeEngine *fader;
 	MaskEngine *masker;
 	CropEngine *cropper;
 	OverlayFrame *overlayer;
+	Edit *current_edit;
 };
 
 #endif

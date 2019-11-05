@@ -21,12 +21,15 @@
 
 #include "asset.h"
 #include "automation.h"
+#include "bcresources.h"
 #include "edit.h"
 #include "file.h"
 #include "intautos.h"
 #include "mainerror.h"
+#include "tmpframecache.h"
 #include "track.h"
 #include "trackrender.h"
+#include "vframe.h"
 
 TrackRender::TrackRender(Track *track)
 {
