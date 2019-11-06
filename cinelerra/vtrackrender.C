@@ -78,8 +78,8 @@ VFrame *VTrackRender::get_frame(VFrame *frame)
 		frame->set_source_pts(src_pts);
 		frame = render_plugins(frame, edit);
 		render_fade(frame);
-		render_mask(frame);
-		render_crop(frame);
+		render_mask(frame, 0);
+		render_crop(frame, 0);
 		frame = render_projector(frame);
 	}
 	else
@@ -109,7 +109,7 @@ void VTrackRender::render_fade(VFrame *frame)
 	}
 }
 
-void VTrackRender::render_mask(VFrame *frame)
+void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 {
 	int total_points = 0;
 	MaskAutos *keyframe_set =
@@ -143,10 +143,10 @@ void VTrackRender::render_mask(VFrame *frame)
 	if(!masker)
 		masker = new MaskEngine(preferences_global->processors);
 
-	masker->do_mask(frame, keyframe_set, 0);
+	masker->do_mask(frame, keyframe_set, before_plugins);
 }
 
-void VTrackRender::render_crop(VFrame *frame)
+void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 {
 	int left, right, top, bottom;
 	CropAutos *cropautos = (CropAutos *)track->automation->autos[AUTOMATION_CROP];
@@ -163,7 +163,7 @@ void VTrackRender::render_crop(VFrame *frame)
 	if(!cropper)
 		cropper = new CropEngine();
 
-	frame = cropper->do_crop(cropautos, frame, 0);
+	frame = cropper->do_crop(cropautos, frame, before_plugins);
 }
 
 VFrame *VTrackRender::render_projector(VFrame *frame)
@@ -391,6 +391,8 @@ VFrame *VTrackRender::render_plugins(VFrame *frame, Edit *edit)
 		{
 			file->get_frame(frame);
 			frame = render_camera(frame);
+			render_mask(frame, 1);
+			render_crop(frame, 1);
 		}
 		else
 			frame->clear_frame();
@@ -433,6 +435,8 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 		frame->copy_pts(buffer);
 		file->get_frame(frame);
 		frame = render_camera(frame);
+		render_mask(frame, 1);
+		render_crop(frame, 1);
 		buffer->copy_from(frame, 1);
 		BC_Resources::tmpframes.release_frame(frame);
 	}

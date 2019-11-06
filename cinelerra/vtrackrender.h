@@ -43,8 +43,8 @@ public:
 	VFrame *get_vframe(VFrame *buffer);
 private:
 	void render_fade(VFrame *frame);
-	void render_mask(VFrame *frame);
-	void render_crop(VFrame *frame);
+	void render_mask(VFrame *frame, int before_plugins);
+	void render_crop(VFrame *frame, int before_plugins);
 	VFrame *render_projector(VFrame *frame);
 	VFrame *render_camera(VFrame *frame);
 	void calculate_input_transfer(ptstime position,
