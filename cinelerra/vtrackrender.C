@@ -64,29 +64,54 @@ VTrackRender::~VTrackRender()
 	delete overlayer;
 }
 
-VFrame *VTrackRender::get_frame(VFrame *frame)
+VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 {
-	ptstime pts = frame->get_pts();
+	ptstime pts = vframe->get_pts();
 	ptstime src_pts;
+	File *file = media_file(edit, filenum);
+
+	if(!file)
+	{
+		vframe->set_duration(track->edl->this_edlsession->frame_duration());
+		vframe->clear_frame();
+		return 0;
+	}
+
+	src_pts = pts - edit->get_pts() + edit->get_source_pts();
+	vframe->set_source_pts(src_pts);
+	vframe->set_layer(edit->channel);
+	file->get_frame(vframe);
+	pts = align_to_frame(pts);
+	vframe->set_pts(pts);
+	vframe->set_duration(track->edl->this_edlsession->frame_duration());
+	return vframe;
+}
+
+VFrame *VTrackRender::get_frame(VFrame *output)
+{
+	VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
+		track->track_w, track->track_h,
+		edlsession->color_model);
+	ptstime pts = align_to_frame(output->get_pts());
 	Edit *edit = track->editof(pts);
 
-	frame->set_layer(edit->channel);
-
-	if(is_playable(pts, edit) && media_file(edit))
+	frame->set_pts(pts);
+	if(is_playable(pts, edit))
 	{
-		src_pts = pts - edit->get_pts() + edit->get_source_pts();
-		frame->set_source_pts(src_pts);
+		read_vframe(frame, edit);
+		frame = render_transition(frame, edit);
+		frame = render_camera(frame);
+		render_mask(frame, 1);
+		render_crop(frame, 1);
 		frame = render_plugins(frame, edit);
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
-		frame = render_projector(frame);
+		frame = render_projector(output, frame);
 	}
 	else
-	{
-		frame->clear_frame();
-		frame->set_duration(track->edl->this_edlsession->frame_duration());
-	}
+		read_vframe(frame, 0);
+
 	return frame;
 }
 
@@ -166,15 +191,14 @@ void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 	frame = cropper->do_crop(cropautos, frame, before_plugins);
 }
 
-VFrame *VTrackRender::render_projector(VFrame *frame)
+VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 {
 	int in_x1, in_y1, in_x2, in_y2;
 	int out_x1, out_y1, out_x2, out_y2;
 	int mode;
 	IntAuto *mode_keyframe;
-	VFrame *dstframe;
 
-	calculate_output_transfer(frame,
+	calculate_output_transfer(output,
 		&in_x1, &in_y1, &in_x2, &in_y2,
 		&out_x1, &out_y1, &out_x2, &out_y2);
 
@@ -192,20 +216,20 @@ VFrame *VTrackRender::render_projector(VFrame *frame)
 
 		if(mode == TRANSFER_NORMAL && in_x1 == out_x1 && in_x2 == out_x2 &&
 				in_y1 == out_y1 && in_y2 == out_y2)
+		{
+			BC_Resources::tmpframes.release_frame(output);
 			return frame;
+		}
 
 		if(!overlayer)
 			overlayer = new OverlayFrame(preferences_global->processors);
 
-		dstframe = BC_Resources::tmpframes.clone_frame(frame);
-		dstframe->clear_frame();
-		overlayer->overlay(dstframe, frame,
+		overlayer->overlay(output, frame,
 			in_x1, in_y1, in_x2, in_y2,
 			out_x1, out_y1, out_x2, out_y2,
 			1, mode, BC_Resources::interpolation_method);
-		dstframe->copy_pts(frame);
 		BC_Resources::tmpframes.release_frame(frame);
-		return dstframe;
+		return output;
 	}
 	return frame;
 }
@@ -364,13 +388,14 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	*out_y2 = round(y[3]);
 }
 
-VFrame *VTrackRender::render_plugins(VFrame *frame, Edit *edit)
+VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 {
 	Plugin *plugin;
-	ptstime start = frame->get_pts();
-	ptstime end = start + frame->get_duration();
-	VFrame *tmpframe = 0;
+	ptstime start = input->get_pts();
+	ptstime end = start + input->get_duration();
+	VFrame *tmpframe;
 
+	current_frame = input;
 	current_edit = edit;
 	for(int i = 0; i < track->plugins.total; i++)
 	{
@@ -378,26 +403,11 @@ VFrame *VTrackRender::render_plugins(VFrame *frame, Edit *edit)
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			if(tmpframe = execute_plugin(plugin, frame))
-				frame = tmpframe;
+			if(tmpframe = execute_plugin(plugin, current_frame))
+				current_frame = tmpframe;
 		}
 	}
-	if(!tmpframe)
-	{
-// No plugins executed
-		File *file = media_file(edit);
-
-		if(file)
-		{
-			file->get_frame(frame);
-			frame = render_camera(frame);
-			render_mask(frame, 1);
-			render_crop(frame, 1);
-		}
-		else
-			frame->clear_frame();
-	}
-	return frame;
+	return current_frame;
 }
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
@@ -425,22 +435,64 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 {
 // This is called by plugin
 // We have to put frame into buffer, because plugins to
-// not accept new buffer yet
-	File *file = media_file(current_edit);
+// not accept tmpframes yet
+	ptstime current_pts = current_frame->get_pts();
+	ptstime buffer_pts = buffer->get_pts();
 
-	if(file)
-	{
-		VFrame *frame = BC_Resources::tmpframes.clone_frame(buffer);
-
-		frame->copy_pts(buffer);
-		file->get_frame(frame);
-		frame = render_camera(frame);
-		render_mask(frame, 1);
-		render_crop(frame, 1);
-		buffer->copy_from(frame, 1);
-		BC_Resources::tmpframes.release_frame(frame);
-	}
+	if(PTSEQU(current_pts, buffer_pts))
+		buffer->copy_from(current_frame, 1);
 	else
-		buffer->clear_frame();
+	{
+		Edit *edit = track->editof(buffer_pts);
+
+		read_vframe(buffer, edit, 2);
+		if(edit->transition && edit->transition->plugin_server &&
+			edit->transition->on || need_camera(buffer_pts))
+		{
+			VFrame *frame = BC_Resources::tmpframes.clone_frame(buffer);
+			frame->copy_from(buffer, 1);
+			frame = render_transition(frame, edit);
+			frame = render_camera(frame);
+			buffer->copy_from(frame, 1);
+			BC_Resources::tmpframes.release_frame(frame);
+		}
+		render_mask(buffer, 1);
+		render_crop(buffer, 1);
+	}
 	return buffer;
+}
+
+VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
+{
+	VFrame *tmpframe;
+	Edit *prev;
+	Plugin *transition = edit->transition;
+
+	if(!transition || !transition->plugin_server || !transition->on ||
+			transition->get_length() < frame->get_pts() - edit->get_pts())
+		return frame;
+
+	if(!transition->active_server)
+	{
+		transition->active_server = new PluginServer(*transition->plugin_server);
+		transition->active_server->open_plugin(0, transition);
+		transition->active_server->init_realtime(1);
+	}
+	tmpframe = BC_Resources::tmpframes.clone_frame(frame);
+	tmpframe->copy_pts(frame);
+	prev = edit->previous;
+	read_vframe(tmpframe, prev, 1);
+	transition->active_server->process_transition(frame, tmpframe,
+		frame->get_pts() - edit->get_pts(), transition->get_length());
+	BC_Resources::tmpframes.release_frame(frame);
+	return tmpframe;
+}
+
+int VTrackRender::need_camera(ptstime pts)
+{
+	double auto_x, auto_y, auto_z;
+
+	track->automation->get_camera(&auto_x, &auto_y, &auto_z, pts);
+
+	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
 }

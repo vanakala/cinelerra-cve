@@ -39,13 +39,14 @@ public:
 	VTrackRender(Track *track);
 	~VTrackRender();
 
-	VFrame *get_frame(VFrame *frame);
+	VFrame *get_frame(VFrame *output);
 	VFrame *get_vframe(VFrame *buffer);
 private:
+	VFrame *read_vframe(VFrame *vframe, Edit *edit, int filenum = 0);
 	void render_fade(VFrame *frame);
 	void render_mask(VFrame *frame, int before_plugins);
 	void render_crop(VFrame *frame, int before_plugins);
-	VFrame *render_projector(VFrame *frame);
+	VFrame *render_projector(VFrame *output, VFrame *frame);
 	VFrame *render_camera(VFrame *frame);
 	void calculate_input_transfer(ptstime position,
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
@@ -55,12 +56,15 @@ private:
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
 	VFrame *render_plugins(VFrame *frame, Edit *edit);
 	VFrame *execute_plugin(Plugin *plugin, VFrame *frame);
+	VFrame *render_transition(VFrame *frame, Edit *edit);
+	int need_camera(ptstime pts);
 
 	FadeEngine *fader;
 	MaskEngine *masker;
 	CropEngine *cropper;
 	OverlayFrame *overlayer;
 	Edit *current_edit;
+	VFrame *current_frame;
 };
 
 #endif
