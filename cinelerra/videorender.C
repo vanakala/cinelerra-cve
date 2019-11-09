@@ -180,6 +180,7 @@ void VideoRender::process_frame(ptstime pts)
 {
 	VTrackRender *trender;
 
+	frame->clear_frame();
 	frame->set_pts(pts);
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
