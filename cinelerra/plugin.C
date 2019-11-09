@@ -117,6 +117,7 @@ void Plugin::copy_from(Plugin *plugin)
 	shared_track_id = plugin->shared_track_id;
 	shared_plugin_id = plugin->shared_plugin_id;
 	id = plugin->id;
+	active_server = 0;
 
 	copy_keyframes(plugin);
 }
@@ -286,6 +287,9 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 
 	while(keyframes->last && keyframes->last != keyframes->first)
 		delete keyframes->last;
+
+	delete active_server;
+	active_server = 0;
 
 	if(server && !server->open_plugin(1, 0))
 	{
