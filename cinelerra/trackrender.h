@@ -29,21 +29,24 @@
 #include "trackrender.inc"
 #include "vframe.inc"
 
+#define TRACKRENDER_FILES_MAX 4
+
 class TrackRender
 {
 public:
 	TrackRender(Track *track);
-	virtual ~TrackRender() {};
+	virtual ~TrackRender();
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
 	Track *track;
 
 protected:
-	File *media_file(Edit *edit);
+	File *media_file(Edit *edit, int filenum);
 	int is_playable(ptstime pts, Edit *edit);
+	ptstime align_to_frame(ptstime position);
 
 private:
-	File *file;
+	File *trackfiles[TRACKRENDER_FILES_MAX];
 };
 
 #endif

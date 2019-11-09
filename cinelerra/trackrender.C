@@ -23,6 +23,7 @@
 #include "automation.h"
 #include "bcresources.h"
 #include "edit.h"
+#include "edlsession.h"
 #include "file.h"
 #include "intautos.h"
 #include "mainerror.h"
@@ -34,12 +35,21 @@
 TrackRender::TrackRender(Track *track)
 {
 	this->track = track;
-	file = 0;
+
+	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
+		trackfiles[i] = 0;
 }
 
-File *TrackRender::media_file(Edit *edit)
+TrackRender::~TrackRender()
+{
+	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
+		delete trackfiles[i];
+}
+
+File *TrackRender::media_file(Edit *edit, int filenum)
 {
 	int media_type;
+	File *file = trackfiles[filenum];
 
 	if(edit && edit->asset)
 	{
@@ -48,7 +58,8 @@ File *TrackRender::media_file(Edit *edit)
 			if(file)
 				file->close_file();
 			else
-				file = new File();
+				trackfiles[filenum] = file = new File();
+
 			switch(edit->track->data_type)
 			{
 			case TRACK_AUDIO:
@@ -62,6 +73,8 @@ File *TrackRender::media_file(Edit *edit)
 			{
 				errormsg("TrackRender::media_file: Failed to open media %s\n",
 					edit->asset->path);
+				delete file;
+				trackfiles[filenum] = 0;
 				return 0;
 			}
 		}
@@ -72,14 +85,16 @@ File *TrackRender::media_file(Edit *edit)
 
 int TrackRender::is_playable(ptstime pts, Edit *edit)
 {
-	if(!track->play)
+	if(!edit || !track->play)
 		return 0;
-
-	if(!edit)
-		edit = track->editof(pts);
 
 	if(edit->asset || edit->transition || track->is_synthesis(pts))
 		return !((IntAutos *)track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
 
 	return 0;
+}
+
+ptstime TrackRender::align_to_frame(ptstime position)
+{
+	return round(position * edlsession->frame_rate) / edlsession->frame_rate;
 }
