@@ -89,15 +89,15 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 
 VFrame *VTrackRender::get_frame(VFrame *output)
 {
-	VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
-		track->track_w, track->track_h,
-		edlsession->color_model);
 	ptstime pts = align_to_frame(output->get_pts());
 	Edit *edit = track->editof(pts);
 
-	frame->set_pts(pts);
 	if(is_playable(pts, edit))
 	{
+		VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
+			track->track_w, track->track_h,
+			edlsession->color_model);
+		frame->set_pts(pts);
 		read_vframe(frame, edit);
 		frame = render_transition(frame, edit);
 		frame = render_camera(frame);
@@ -108,11 +108,9 @@ VFrame *VTrackRender::get_frame(VFrame *output)
 		render_mask(frame, 0);
 		render_crop(frame, 0);
 		frame = render_projector(output, frame);
+		return frame;
 	}
-	else
-		read_vframe(frame, 0);
-
-	return frame;
+	return output;
 }
 
 void VTrackRender::render_fade(VFrame *frame)
