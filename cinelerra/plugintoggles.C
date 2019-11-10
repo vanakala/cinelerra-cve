@@ -54,10 +54,7 @@ void PluginOn::update(int x, int y, Plugin *plugin)
 
 int PluginOn::handle_event()
 {
-	if(plugin->plugin_server)
-		plugin->on = get_value();
-	else
-		plugin->on = 0;
+	plugin->on = get_value();
 	mwindow->sync_parameters();
 	return 1;
 }
