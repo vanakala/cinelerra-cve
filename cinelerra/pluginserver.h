@@ -93,7 +93,6 @@ public:
 // Get keyframes for configuration.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
-	KeyFrame* first_keyframe();
 // get camera and projector positions
 	void get_camera(double *x, double *y, double *z,
 			ptstime postime);

@@ -111,11 +111,9 @@ public:
 // Used by plugins which need to know where they are.
 	char* get_path();
 
-// Return keyframe objects.  The position in the resulting object 
-// is relative to the EDL.
+// Return keyframe objects.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
-	KeyFrame* first_keyframe();
 // get current camera and projector position
 	void get_camera(double *x, double *y, double *z, ptstime postime);
 	void get_projector(double *x, double *y, double *z, ptstime postime);

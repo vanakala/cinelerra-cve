@@ -765,14 +765,6 @@ KeyFrame* PluginServer::next_keyframe_pts(ptstime postime)
 	return keyframe;
 }
 
-KeyFrame* PluginServer::first_keyframe()
-{
-	if(plugin)
-		return plugin->first_keyframe();
-	else
-		return keyframe;
-}
-
 KeyFrame* PluginServer::get_keyframe()
 {
 	if(plugin)
