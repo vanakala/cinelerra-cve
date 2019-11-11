@@ -32,6 +32,7 @@
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "renderengine.inc"
 #include <string.h>
 
 PluginClient::PluginClient(PluginServer *server)
@@ -226,12 +227,32 @@ void PluginClient::abort_plugin(const char *fmt, ...)
 
 KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
 {
+#ifdef NEW_RENDERER
+	if(server->plugin)
+	{
+		if(server->plugin->shared_plugin)
+			return server->plugin->shared_plugin->get_prev_keyframe(pts);
+		return server->plugin->get_prev_keyframe(pts);
+	}
+	return server->keyframe;
+#else
 	return server->prev_keyframe_pts(pts);
+#endif
 }
 
 KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 {
+#ifdef NEW_RENDERER
+	if(server->plugin)
+	{
+		if(server->plugin->shared_plugin)
+			return server->plugin->shared_plugin->get_next_keyframe(pts);
+		return server->plugin->get_next_keyframe(pts);
+	}
+	return server->keyframe;
+#else
 	return server->next_keyframe_pts(pts);
+#endif
 }
 
 KeyFrame* PluginClient::first_keyframe()

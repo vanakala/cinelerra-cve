@@ -410,15 +410,20 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 {
-	if(plugin->plugin_server)
+	PluginServer *server = plugin->plugin_server;
+
+	if(!server && plugin->shared_plugin)
+		server = plugin->shared_plugin->plugin_server;
+
+	if(server)
 	{
-		if(plugin->plugin_server->multichannel)
+		if(server->multichannel)
 			puts("Multchannel plugin is not ready");
 		else
 		{
 			if(!plugin->active_server)
 			{
-				plugin->active_server = new PluginServer(*plugin->plugin_server);
+				plugin->active_server = new PluginServer(*server);
 				plugin->active_server->open_plugin(0, plugin, this);
 				plugin->active_server->init_realtime(1);
 			}
