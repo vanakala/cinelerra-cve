@@ -40,6 +40,7 @@
 #include "pluginserver.inc"
 #include "theme.inc"
 #include "track.inc"
+#include "trackrender.inc"
 #include "vframe.inc"
 #include "videodevice.inc"
 #include "virtualnode.inc"
@@ -73,9 +74,8 @@ public:
 #define PLUGINSERVER_IS_LAD 2
 #define PLUGINSERVER_NOT_RECOGNIZED 1
 #define PLUGINSERVER_OK 0
-	int open_plugin(int master, 
-		Plugin *plugin,
-		int lad_index = -1);
+	int open_plugin(int master, Plugin *plugin,
+		TrackRender *renderer, int lad_index = -1);
 // close the plugin
 	void close_plugin();
 // Dynamic loading

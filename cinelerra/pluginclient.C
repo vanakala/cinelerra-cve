@@ -111,6 +111,11 @@ void PluginClient::set_interactive()
 	interactive = 1;
 }
 
+void PluginClient::set_renderer(TrackRender *renderer)
+{
+	this->renderer = renderer;
+}
+
 // close event from client side
 void PluginClient::client_side_close()
 {

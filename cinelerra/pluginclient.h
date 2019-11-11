@@ -39,6 +39,7 @@ class PluginClient;
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"
+#include "trackrender.inc"
 #include "vframe.h"
 
 extern "C"
@@ -186,6 +187,8 @@ public:
 	void send_render_gui(void *data);
 // Called by gui when it is ready to get data
 	void get_gui_data();
+// Sets the current trackrender (needed by get_?frame)
+	void set_renderer(TrackRender *renderer);
 
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
@@ -210,6 +213,9 @@ public:
 // Total number of processors available - 1
 	int smp;
 	PluginServer *server;
+
+protected:
+	TrackRender *renderer;
 };
 
 #endif

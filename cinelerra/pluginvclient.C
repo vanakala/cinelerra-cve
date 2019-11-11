@@ -144,7 +144,8 @@ VFrame* PluginVClient::get_output(int channel)
 void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
 {
 #ifdef NEW_RENDERER
-	server->plugin->track->renderer->get_vframe(buffer);
+	if(renderer)
+		renderer->get_vframe(buffer);
 #else
 	server->get_vframe(buffer, use_opengl);
 #endif

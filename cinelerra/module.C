@@ -265,7 +265,7 @@ void Module::update_transition(ptstime current_position)
 		{
 			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0, transition);
+			transition_server->open_plugin(0, transition, 0);
 			transition_server->init_realtime(1);
 		}
 		else
@@ -273,7 +273,7 @@ void Module::update_transition(ptstime current_position)
 		{
 			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0, transition);
+			transition_server->open_plugin(0, transition, 0);
 			transition_server->init_realtime(1);
 		}
 	}

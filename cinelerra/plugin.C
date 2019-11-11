@@ -291,7 +291,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	delete active_server;
 	active_server = 0;
 
-	if(server && !server->open_plugin(1, 0))
+	if(server && !server->open_plugin(1, 0, 0))
 	{
 		server->save_data(keyframes->get_first());
 		server->close_plugin();

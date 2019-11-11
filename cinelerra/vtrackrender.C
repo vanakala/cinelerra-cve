@@ -419,7 +419,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 			if(!plugin->active_server)
 			{
 				plugin->active_server = new PluginServer(*plugin->plugin_server);
-				plugin->active_server->open_plugin(0, plugin);
+				plugin->active_server->open_plugin(0, plugin, this);
 				plugin->active_server->init_realtime(1);
 			}
 			plugin->active_server->process_buffer(&frame, plugin->get_length());
@@ -473,7 +473,7 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 	if(!transition->active_server)
 	{
 		transition->active_server = new PluginServer(*transition->plugin_server);
-		transition->active_server->open_plugin(0, transition);
+		transition->active_server->open_plugin(0, transition, this);
 		transition->active_server->init_realtime(1);
 	}
 	tmpframe = BC_Resources::tmpframes.clone_frame(frame);

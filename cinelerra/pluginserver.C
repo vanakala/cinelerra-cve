@@ -189,9 +189,8 @@ void PluginServer::generate_display_title(char *string)
 }
 
 // Open plugin for signal processing
-int PluginServer::open_plugin(int master, 
-	Plugin *plugin,
-	int lad_index)
+int PluginServer::open_plugin(int master, Plugin *plugin,
+	TrackRender *renderer, int lad_index)
 {
 	int res;
 
@@ -230,6 +229,7 @@ int PluginServer::open_plugin(int master,
 	apiversion = client->has_pts_api();
 	transition = client->is_transition();
 	set_title(client->plugin_title());
+	client->set_renderer(renderer);
 
 // Check API version
 	if((audio || video) && !apiversion)

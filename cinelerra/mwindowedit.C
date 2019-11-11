@@ -677,7 +677,7 @@ void MWindow::insert_effect(const char *title,
 		new_plugin->set_length(new_length);
 	}
 
-	if(server && !(result = server->open_plugin(1, 0)))
+	if(server && !(result = server->open_plugin(1, 0, 0)))
 	{
 		server->save_data(new_plugin->keyframes->get_first());
 		server->close_plugin();
@@ -1190,7 +1190,7 @@ void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
 
 	transition = dst_edit->insert_transition(server);
 
-	if(server && !server->open_plugin(1, 0))
+	if(server && !server->open_plugin(1, 0, 0))
 	{
 		server->save_data(transition->keyframes->get_first());
 		server->close_plugin();
