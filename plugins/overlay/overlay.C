@@ -19,144 +19,17 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_MULTICHANNEL
-#define PLUGIN_IS_SYNTHESIS
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("Overlay")
-#define PLUGIN_CLASS Overlay
-#define PLUGIN_CONFIG_CLASS OverlayConfig
-#define PLUGIN_THREAD_CLASS OverlayThread
-#define PLUGIN_GUI_CLASS OverlayWindow
-
-#define GL_GLEXT_PROTOTYPES
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
 #include "bctitle.h"
-#include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
+#include "overlay.h"
 #include "overlayframe.h"
 #include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "vframe.h"
-
-#include <string.h>
-#include <stdint.h>
-
-
-class OverlayConfig
-{
-public:
-	OverlayConfig();
-
-
-	static const char* mode_to_text(int mode);
-	int mode;
-
-	static const char* direction_to_text(int direction);
-	int direction;
-	enum
-	{
-		BOTTOM_FIRST,
-		TOP_FIRST
-	};
-
-	static const char* output_to_text(int output_layer);
-	int output_layer;
-	enum
-	{
-		TOP,
-		BOTTOM
-	};
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class OverlayMode : public BC_PopupMenu
-{
-public:
-	OverlayMode(Overlay *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Overlay *plugin;
-};
-
-class OverlayDirection : public BC_PopupMenu
-{
-public:
-	OverlayDirection(Overlay *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Overlay *plugin;
-};
-
-class OverlayOutput : public BC_PopupMenu
-{
-public:
-	OverlayOutput(Overlay *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Overlay *plugin;
-};
-
-
-class OverlayWindow : public PluginWindow
-{
-public:
-	OverlayWindow(Overlay *plugin, int x, int y);
-	~OverlayWindow();
-
-	void update();
-
-	OverlayMode *mode;
-	OverlayDirection *direction;
-	OverlayOutput *output;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class Overlay : public PluginVClient
-{
-public:
-	Overlay(PluginServer *server);
-	~Overlay();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame **frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	OverlayFrame *overlayer;
-	VFrame *temp;
-	int current_layer;
-	int output_layer;
-// Inclusive layer numbers
-	int input_layer1;
-	int input_layer2;
-};
-
 
 OverlayConfig::OverlayConfig()
 {
@@ -251,10 +124,6 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 		y));
 	output->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-OverlayWindow::~OverlayWindow()
-{
 }
 
 void OverlayWindow::update()
