@@ -101,8 +101,6 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
 	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
 
-// get parameters depending on video or audio
-	virtual void init_realtime_parameters() {};
 // release objects which are required after playback stops
 	virtual void render_stop() {};
 	char* get_gui_string();

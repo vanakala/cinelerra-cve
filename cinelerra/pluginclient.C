@@ -55,9 +55,6 @@ PluginClient::~PluginClient()
 // For realtime plugins initialize buffers
 void PluginClient::plugin_init_realtime(int total_in_buffers)
 {
-// get parameters depending on video or audio
-	init_realtime_parameters();
-
 	smp = preferences_global->processors - 1;
 
 	this->total_in_buffers = total_in_buffers;
