@@ -29,6 +29,7 @@
 #include "mainerror.h"
 #include "tmpframecache.h"
 #include "track.h"
+#include "tracks.h"
 #include "trackrender.h"
 #include "vframe.h"
 
@@ -97,4 +98,9 @@ int TrackRender::is_playable(ptstime pts, Edit *edit)
 ptstime TrackRender::align_to_frame(ptstime position)
 {
 	return round(position * edlsession->frame_rate) / edlsession->frame_rate;
+}
+
+Track *TrackRender::get_track_number(int number)
+{
+	return track->tracks->get_item_number(number);
 }

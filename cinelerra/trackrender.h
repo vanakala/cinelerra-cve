@@ -38,6 +38,8 @@ public:
 	virtual ~TrackRender();
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
+	Track *get_track_number(int number);
+
 	Track *track;
 
 protected:
