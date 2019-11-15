@@ -24,6 +24,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "track.h"
@@ -185,15 +186,16 @@ void VideoRender::process_frame(ptstime pts)
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
+		if(track->data_type != TRACK_VIDEO || track->renderer)
+			continue;
+		track->renderer = new VTrackRender(track, this);
+	}
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
 		if(track->data_type != TRACK_VIDEO)
 			continue;
-		trender = (VTrackRender *)track->renderer;
-		if(!trender)
-		{
-			trender = new VTrackRender(track);
-			track->renderer = trender;
-		}
-		frame = trender->get_frame(frame);
+		frame = ((VTrackRender *)track->renderer)->get_frame(frame);
 	}
 }
 
@@ -221,4 +223,38 @@ void VideoRender::flash_output()
 	flashed_duration = duration;
 	renderengine->video->write_buffer(frame, edl);
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
+}
+
+// Assume changes of edl clear plugin frames
+void VideoRender::allocate_vframes(Plugin *plugin)
+{
+	VFrame *frame;
+	Track *current = plugin->track;
+
+	if(plugin->frames.total > 0)
+		return;
+	// Current track is the track of multitrack plugin
+	plugin->frames.append(frame = new VFrame(0, current->track_w,
+		current->track_h, edl->this_edlsession->color_model));
+	frame->set_layer(current->number_of());
+
+	// Add frames for other tracks starting from the first
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_VIDEO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+				track->plugins.values[i]->on)
+			{
+				frame = new VFrame(0, track->track_w,
+					track->track_h,
+					edl->this_edlsession->color_model);
+				plugin->frames.append(frame);
+				frame->set_layer(track->number_of());
+			}
+		}
+	}
+	plugin->active_server->init_realtime(plugin->frames.total);
 }

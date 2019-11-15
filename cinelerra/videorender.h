@@ -38,6 +38,7 @@ public:
 
 	void run();
 	VFrame *process_buffer(VFrame *buffer);
+	void allocate_vframes(Plugin *plugin);
 
 private:
 	void process_frame(ptstime pts);
