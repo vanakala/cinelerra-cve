@@ -45,6 +45,7 @@
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "preferences.h"
+#include "renderengine.inc"
 #include "tmpframecache.h"
 #include "track.h"
 #include "vframe.h"
@@ -401,7 +402,9 @@ void PluginServer::process_buffer(VFrame **frame,
 	{
 		vclient->input[i] = frame[i];
 		vclient->output[i] = frame[i];
+#ifndef NEW_RENDERER
 		frame[i]->set_layer(i);
+#endif
 	}
 	if(plugin)
 	{

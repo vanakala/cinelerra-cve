@@ -42,11 +42,12 @@
 #include "preferences.h"
 #include "tmpframecache.h"
 #include "track.h"
+#include "videorender.h"
 #include "vtrack.h"
 #include "vtrackrender.h"
 #include "vframe.h"
 
-VTrackRender::VTrackRender(Track *track)
+VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
  : TrackRender(track)
 {
 	fader = 0;
@@ -54,6 +55,7 @@ VTrackRender::VTrackRender(Track *track)
 	cropper = 0;
 	overlayer = 0;
 	current_edit = 0;
+	videorender = vrender;
 }
 
 VTrackRender::~VTrackRender()
@@ -79,7 +81,6 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 
 	src_pts = pts - edit->get_pts() + edit->get_source_pts();
 	vframe->set_source_pts(src_pts);
-	vframe->set_layer(edit->channel);
 	file->get_frame(vframe);
 	pts = align_to_frame(pts);
 	vframe->set_pts(pts);
@@ -405,20 +406,44 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 				current_frame = tmpframe;
 		}
 	}
-	return current_frame;
+	tmpframe = current_frame;
+	current_frame = 0;
+	return tmpframe;
 }
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 {
 	PluginServer *server = plugin->plugin_server;
+	int layer;
 
 	if(!server && plugin->shared_plugin)
-		server = plugin->shared_plugin->plugin_server;
+	{
+		if(!plugin->shared_plugin->plugin_server->multichannel)
+			server = plugin->shared_plugin->plugin_server;
+	}
 
 	if(server)
 	{
-		if(server->multichannel)
-			puts("Multchannel plugin is not ready");
+		if(server->multichannel && !plugin->shared_plugin)
+		{
+			if(!plugin->active_server)
+			{
+				plugin->active_server = new PluginServer(*server);
+				plugin->active_server->open_plugin(0, plugin, this);
+			}
+			videorender->allocate_vframes(plugin);
+
+			for(int i = 0; i < plugin->frames.total; i++)
+			{
+				VFrame *current = plugin->frames.values[i];
+				layer = current->get_layer();
+				current->copy_pts(frame);
+				current->set_layer(layer);
+			}
+			plugin->active_server->process_buffer(plugin->frames.values,
+				plugin->get_length());
+			frame->copy_from(plugin->frames.values[0]);
+		}
 		else
 		{
 			if(!plugin->active_server)
@@ -439,10 +464,10 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 // This is called by plugin
 // We have to put frame into buffer, because plugins to
 // not accept tmpframes yet
-	ptstime current_pts = current_frame->get_pts();
 	ptstime buffer_pts = buffer->get_pts();
+	int layer = buffer->get_layer();
 
-	if(PTSEQU(current_pts, buffer_pts))
+	if(current_frame && PTSEQU(current_frame->get_pts(), buffer_pts))
 		buffer->copy_from(current_frame, 1);
 	else
 	{
@@ -462,6 +487,7 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 		render_mask(buffer, 1);
 		render_crop(buffer, 1);
 	}
+	buffer->set_layer(layer);
 	return buffer;
 }
 

@@ -145,7 +145,15 @@ void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
 {
 #ifdef NEW_RENDERER
 	if(renderer)
-		renderer->get_vframe(buffer);
+	{
+		if(server->multichannel)
+		{
+			Track *current = renderer->get_track_number(buffer->get_layer());
+			TrackRender *trender = current->renderer;
+			trender->get_vframe(buffer);
+		} else
+			renderer->get_vframe(buffer);
+	}
 #else
 	server->get_vframe(buffer, use_opengl);
 #endif

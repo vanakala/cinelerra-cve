@@ -29,6 +29,7 @@
 #include "overlayframe.inc"
 #include "plugin.inc"
 #include "track.inc"
+#include "videorender.inc"
 #include "trackrender.h"
 #include "vframe.inc"
 #include "vtrackrender.inc"
@@ -36,7 +37,7 @@
 class VTrackRender : public TrackRender
 {
 public:
-	VTrackRender(Track *track);
+	VTrackRender(Track *track, VideoRender *vrender);
 	~VTrackRender();
 
 	VFrame *get_frame(VFrame *output);
@@ -59,6 +60,7 @@ private:
 	VFrame *render_transition(VFrame *frame, Edit *edit);
 	int need_camera(ptstime pts);
 
+	VideoRender *videorender;
 	FadeEngine *fader;
 	MaskEngine *masker;
 	CropEngine *cropper;
