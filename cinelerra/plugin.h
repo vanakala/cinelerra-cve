@@ -104,6 +104,7 @@ public:
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();
 	size_t get_size();
+	void reset_frames();
 
 	int id;
 
@@ -123,6 +124,8 @@ public:
 	PluginServer *plugin_server;
 // Active server
 	PluginServer *active_server;
+// Frames for multichannel plugin
+	ArrayList<VFrame*> frames;
 
 private:
 	int shared_track_num;

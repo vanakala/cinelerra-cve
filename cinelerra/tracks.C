@@ -57,6 +57,14 @@ void Tracks::reset_instance()
 	delete_all_tracks();
 }
 
+void Tracks::reset_plugins()
+{
+	for(Track *track = first; track; track = track->next)
+	{
+		track->reset_plugin_frames();
+	}
+}
+
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
 	if(playable_tracks_of(TRACK_VIDEO) != tracks->playable_tracks_of(TRACK_VIDEO))

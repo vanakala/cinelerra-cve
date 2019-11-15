@@ -210,6 +210,8 @@ public:
 	int playable_edit(ptstime position);
 // Number of bytes used
 	size_t get_size();
+// Delete frames from plugins
+	void reset_plugin_frames();
 
 // Dimensions of this track if video
 	int track_w, track_h;

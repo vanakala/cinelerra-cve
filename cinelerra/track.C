@@ -77,6 +77,7 @@ Track::~Track()
 				plugin->shared_track = 0;
 		}
 	}
+	tracks->reset_plugins();
 	delete automation;
 	delete edits;
 	delete renderer;
@@ -393,7 +394,7 @@ void Track::load_pluginset(FileXML *file, ptstime start)
 				plugin->set_length(length);
 				plugin->on = !file->tag.get_property("OFF", 0);
 				plugin->load(file, start);
-				if(!server)
+				if(!server && type == PLUGIN_STANDALONE)
 					plugin->on = 0;
 				// got length - ignore next plugin pts
 				if(length > 0)
@@ -1162,6 +1163,12 @@ ptstime Track::plugin_max_start(Plugin *plugin)
 Edit *Track::editof(ptstime postime, int use_nudge)
 {
 	return edits->editof(postime, use_nudge);
+}
+
+void Track::reset_plugin_frames()
+{
+	for(int i = 0; i < plugins.total; i++)
+		plugins.values[i]->reset_frames();
 }
 
 size_t Track::get_size()

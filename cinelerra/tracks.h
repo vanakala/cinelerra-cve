@@ -40,6 +40,7 @@ public:
 	~Tracks();
 
 	void reset_instance();
+	void reset_plugins();
 	Tracks& operator=(Tracks &tracks);
 	void load(FileXML *xml);
 	void init_shared_pointers();

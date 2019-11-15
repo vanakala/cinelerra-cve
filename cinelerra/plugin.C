@@ -34,6 +34,7 @@
 #include "track.h"
 #include "tracks.h"
 #include "virtualnode.h"
+#include "vframe.h"
 
 
 Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
@@ -72,6 +73,8 @@ Plugin::~Plugin()
 	}
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
+	reset_frames();
+	track->tracks->reset_plugins();
 	delete guideframe;
 	delete active_server;
 }
@@ -290,6 +293,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 
 	delete active_server;
 	active_server = 0;
+	reset_frames();
 
 	if(server && !server->open_plugin(0, 0, 0))
 	{
@@ -623,6 +627,11 @@ void Plugin::clear_keyframes()
 	keyframes->clear_all();
 }
 
+void Plugin::reset_frames()
+{
+	frames.remove_all_objects();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);
@@ -677,6 +686,13 @@ void Plugin::dump(int indent)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
 	printf("\n%*sproject_pts %.3f length %.3f id %d active_server %p\n", indent, "",
 		pts, duration, id, active_server);
+	if(frames.total)
+	{
+		printf("%*sFrames:", indent, "");
+		for(int i = 0; i < frames.total; i++)
+			printf(" %p", frames.values[i]);
+		putchar('\n');
+	}
 
 	keyframes->dump(indent);
 }
