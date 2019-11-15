@@ -34,8 +34,6 @@
 OverlayConfig::OverlayConfig()
 {
 	mode = TRANSFER_NORMAL;
-	direction = OverlayConfig::BOTTOM_FIRST;
-	output_layer = OverlayConfig::TOP;
 }
 
 const char* OverlayConfig::mode_to_text(int mode)
@@ -68,41 +66,18 @@ const char* OverlayConfig::mode_to_text(int mode)
 	}
 }
 
-const char* OverlayConfig::direction_to_text(int direction)
-{
-	switch(direction)
-	{
-	case OverlayConfig::BOTTOM_FIRST:
-		return _("Bottom first");
-	case OverlayConfig::TOP_FIRST:
-		return _("Top first");
-	}
-	return "";
-}
-
-const char* OverlayConfig::output_to_text(int output_layer)
-{
-	switch(output_layer)
-	{
-	case OverlayConfig::TOP:
-		return _("Top");
-	case OverlayConfig::BOTTOM:
-		return _("Bottom");
-	}
-	return "";
-}
-
 
 OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	300, 
-	160)
+	70)
 {
 	BC_Title *title;
 
-	x = y = 10;
+	x = 10;
+	y = 20;
 
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new OverlayMode(plugin, 
@@ -110,27 +85,12 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 		y));
 	mode->create_objects();
 
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y, _("Layer order:")));
-	add_subwindow(direction = new OverlayDirection(plugin, 
-		x + title->get_w() + 5, 
-		y));
-	direction->create_objects();
-
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y, _("Output layer:")));
-	add_subwindow(output = new OverlayOutput(plugin, 
-		x + title->get_w() + 5, 
-		y));
-	output->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void OverlayWindow::update()
 {
 	mode->set_text(OverlayConfig::mode_to_text(plugin->config.mode));
-	direction->set_text(OverlayConfig::direction_to_text(plugin->config.direction));
-	output->set_text(OverlayConfig::output_to_text(plugin->config.output_layer));
 }
 
 
@@ -169,89 +129,6 @@ int OverlayMode::handle_event()
 	return 1;
 }
 
-
-OverlayDirection::OverlayDirection(Overlay *plugin,
-	int x, 
-	int y)
- : BC_PopupMenu(x,
-	y,
-	150,
-	OverlayConfig::direction_to_text(plugin->config.direction),
-	1)
-{
-	this->plugin = plugin;
-}
-
-void OverlayDirection::create_objects()
-{
-	add_item(new BC_MenuItem(
-		OverlayConfig::direction_to_text(
-			OverlayConfig::TOP_FIRST)));
-	add_item(new BC_MenuItem(
-		OverlayConfig::direction_to_text(
-			OverlayConfig::BOTTOM_FIRST)));
-}
-
-int OverlayDirection::handle_event()
-{
-	char *text = get_text();
-
-	if(!strcmp(text, 
-		OverlayConfig::direction_to_text(
-			OverlayConfig::TOP_FIRST)))
-		plugin->config.direction = OverlayConfig::TOP_FIRST;
-	else
-	if(!strcmp(text, 
-		OverlayConfig::direction_to_text(
-			OverlayConfig::BOTTOM_FIRST)))
-		plugin->config.direction = OverlayConfig::BOTTOM_FIRST;
-
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-OverlayOutput::OverlayOutput(Overlay *plugin,
-	int x, 
-	int y)
- : BC_PopupMenu(x,
-	y,
-	100,
-	OverlayConfig::output_to_text(plugin->config.output_layer),
-	1)
-{
-	this->plugin = plugin;
-}
-
-void OverlayOutput::create_objects()
-{
-	add_item(new BC_MenuItem(
-		OverlayConfig::output_to_text(
-			OverlayConfig::TOP)));
-	add_item(new BC_MenuItem(
-		OverlayConfig::output_to_text(
-			OverlayConfig::BOTTOM)));
-}
-
-int OverlayOutput::handle_event()
-{
-	char *text = get_text();
-
-	if(!strcmp(text, 
-		OverlayConfig::output_to_text(
-			OverlayConfig::TOP)))
-		plugin->config.output_layer = OverlayConfig::TOP;
-	else
-	if(!strcmp(text, 
-		OverlayConfig::output_to_text(
-			OverlayConfig::BOTTOM)))
-		plugin->config.output_layer = OverlayConfig::BOTTOM;
-
-	plugin->send_configure_change();
-	return 1;
-}
-
-
 PLUGIN_THREAD_METHODS
 
 REGISTER_PLUGIN
@@ -261,15 +138,13 @@ Overlay::Overlay(PluginServer *server)
  : PluginVClient(server)
 {
 	overlayer = 0;
-	temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 Overlay::~Overlay()
 {
-	if(overlayer) delete overlayer;
-	if(temp) delete temp;
+	delete overlayer;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -277,79 +152,38 @@ PLUGIN_CLASS_METHODS
 
 void Overlay::process_frame(VFrame **frame)
 {
-	int step;
 	VFrame *output;
+	int total_buffers = get_total_buffers();
 
 	load_configuration();
-
-	if(!temp) temp = new VFrame(0,
-		frame[0]->get_w(),
-		frame[0]->get_h(),
-		frame[0]->get_color_model(),
-		-1);
 
 	if(!overlayer)
 		overlayer = new OverlayFrame(get_project_smp() + 1);
 
-	if(config.direction == OverlayConfig::BOTTOM_FIRST)
-	{
-		input_layer1 = get_total_buffers() - 1;
-		input_layer2 = -1;
-		step = -1;
-	}
-	else
-	{
-		input_layer1 = 0;
-		input_layer2 = get_total_buffers();
-		step = 1;
-	}
-
-	if(config.output_layer == OverlayConfig::TOP)
-	{
-		output_layer = 0;
-	}
-	else
-	{
-		output_layer = get_total_buffers() - 1;
-	}
-
 // Direct copy the first layer
-	output = frame[output_layer];
-	output->set_layer(input_layer1);
-	get_frame(output, get_use_opengl());
+	output = frame[0];
+	get_frame(output);
 
-	if(get_total_buffers() == 1) return;
+	if(total_buffers < 2)
+		return;
 
-	temp->copy_pts(output);
-	current_layer = input_layer1;
-	if(get_use_opengl()) 
-		run_opengl();
-
-	for(int i = input_layer1 + step; i != input_layer2; i += step)
+	for(int i = 1; i < total_buffers; i++)
 	{
-		temp->set_layer(i);
-		get_frame(temp, get_use_opengl());
+		get_frame(frame[i]);
 
-		if(get_use_opengl()) 
-		{
-			current_layer = i;
-			run_opengl();
-		}
-		else
-// Call the opengl handler once for each layer
-			overlayer->overlay(output,
-				temp,
-				0,
-				0,
-				output->get_w(),
-				output->get_h(),
-				0,
-				0,
-				output->get_w(),
-				output->get_h(),
-				1,
-				config.mode,
-				NEAREST_NEIGHBOR);
+		overlayer->overlay(output,
+			frame[i],
+			0,
+			0,
+			output->get_w(),
+			output->get_h(),
+			0,
+			0,
+			output->get_w(),
+			output->get_h(),
+			1,
+			config.mode,
+			NEAREST_NEIGHBOR);
 	}
 }
 
@@ -397,10 +231,10 @@ void Overlay::handle_opengl()
 		"	if(src_color.g == 0.0) result_color.g = 1.0;\n"
 		"	if(src_color.b == 0.0) result_color.b = 1.0;\n";
 
-
+/* FIXIT
 	VFrame *src = temp;
 	VFrame *dst = get_output(output_layer);
-/* FIXIT
+
 	dst->enable_opengl();
 	dst->init_screen();
 
@@ -526,15 +360,13 @@ void Overlay::load_defaults()
 	defaults = load_defaults_file("overlay.rc");
 
 	config.mode = defaults->get("MODE", config.mode);
-	config.direction = defaults->get("DIRECTION", config.direction);
-	config.output_layer = defaults->get("OUTPUT_LAYER", config.output_layer);
 }
 
 void Overlay::save_defaults()
 {
 	defaults->update("MODE", config.mode);
-	defaults->update("DIRECTION", config.direction);
-	defaults->update("OUTPUT_LAYER", config.output_layer);
+	defaults->delete_key("DIRECTION");
+	defaults->delete_key("OUTPUT_LAYER");
 	defaults->save();
 }
 
@@ -544,8 +376,6 @@ void Overlay::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("MODE", config.mode);
-	output.tag.set_property("DIRECTION", config.direction);
-	output.tag.set_property("OUTPUT_LAYER", config.output_layer);
 	output.append_tag();
 	output.tag.set_title("/OVERLAY");
 	output.append_tag();
@@ -563,8 +393,6 @@ void Overlay::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("OVERLAY"))
 		{
 			config.mode = input.tag.get_property("MODE", config.mode);
-			config.direction = input.tag.get_property("DIRECTION", config.direction);
-			config.output_layer = input.tag.get_property("OUTPUT_LAYER", config.output_layer);
 		}
 	}
 }

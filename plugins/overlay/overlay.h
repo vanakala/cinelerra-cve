@@ -51,21 +51,6 @@ public:
 	static const char* mode_to_text(int mode);
 	int mode;
 
-	static const char* direction_to_text(int direction);
-	int direction;
-	enum
-	{
-		BOTTOM_FIRST,
-		TOP_FIRST
-	};
-
-	static const char* output_to_text(int output_layer);
-	int output_layer;
-	enum
-	{
-		TOP,
-		BOTTOM
-	};
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -74,28 +59,6 @@ class OverlayMode : public BC_PopupMenu
 {
 public:
 	OverlayMode(Overlay *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Overlay *plugin;
-};
-
-class OverlayDirection : public BC_PopupMenu
-{
-public:
-	OverlayDirection(Overlay *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Overlay *plugin;
-};
-
-class OverlayOutput : public BC_PopupMenu
-{
-public:
-	OverlayOutput(Overlay *plugin,
 		int x, 
 		int y);
 	void create_objects();
@@ -112,8 +75,6 @@ public:
 	void update();
 
 	OverlayMode *mode;
-	OverlayDirection *direction;
-	OverlayOutput *output;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
@@ -137,10 +98,4 @@ public:
 	void handle_opengl();
 
 	OverlayFrame *overlayer;
-	VFrame *temp;
-	int current_layer;
-	int output_layer;
-// Inclusive layer numbers
-	int input_layer1;
-	int input_layer2;
 };
