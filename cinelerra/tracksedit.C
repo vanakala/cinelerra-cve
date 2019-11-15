@@ -324,6 +324,7 @@ void Tracks::move_track_up(Track *track)
 	if(!next_track) next_track = last;
 
 	swap(track, next_track);
+	reset_plugins();
 }
 
 void Tracks::move_track_down(Track *track)
@@ -332,6 +333,7 @@ void Tracks::move_track_down(Track *track)
 	if(!next_track) next_track = first;
 
 	swap(track, next_track);
+	reset_plugins();
 }
 
 void Tracks::move_tracks_up()
@@ -350,6 +352,7 @@ void Tracks::move_tracks_up()
 				swap(track->previous, track);
 		}
 	}
+	reset_plugins();
 }
 
 void Tracks::move_tracks_down()
@@ -368,6 +371,7 @@ void Tracks::move_tracks_down()
 				swap(track, track->next);
 		}
 	}
+	reset_plugins();
 }
 
 void Tracks::load_effects(FileXML *file, int operation)

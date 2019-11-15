@@ -63,6 +63,8 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	one_unit = (ptstime) 1 / 48000;
 	edits = new Edits(edl, this);
 	id = EDL::next_id();
+	if(tracks)
+		tracks->reset_plugins();
 }
 
 Track::~Track()
@@ -77,11 +79,11 @@ Track::~Track()
 				plugin->shared_track = 0;
 		}
 	}
+	plugins.remove_all_objects();
 	tracks->reset_plugins();
 	delete automation;
 	delete edits;
 	delete renderer;
-	plugins.remove_all_objects();
 }
 
 void Track::copy_settings(Track *track)
