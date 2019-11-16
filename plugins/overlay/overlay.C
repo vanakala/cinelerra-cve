@@ -36,37 +36,6 @@ OverlayConfig::OverlayConfig()
 	mode = TRANSFER_NORMAL;
 }
 
-const char* OverlayConfig::mode_to_text(int mode)
-{
-	switch(mode)
-	{
-	case TRANSFER_NORMAL:
-		return _("Normal");
-
-	case TRANSFER_REPLACE:
-		return _("Replace");
-
-	case TRANSFER_ADDITION:
-		return _("Addition");
-
-	case TRANSFER_SUBTRACT:
-		return _("Subtract");
-
-	case TRANSFER_MULTIPLY:
-		return _("Multiply");
-
-	case TRANSFER_DIVIDE:
-		return _("Divide");
-
-	case TRANSFER_MAX:
-		return _("Max");
-
-	default:
-		return _("Normal");
-	}
-}
-
-
 OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
@@ -90,7 +59,7 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 
 void OverlayWindow::update()
 {
-	mode->set_text(OverlayConfig::mode_to_text(plugin->config.mode));
+	mode->set_text(_(OverlayFrame::transfer_name(plugin->config.mode)));
 }
 
 
@@ -100,7 +69,7 @@ OverlayMode::OverlayMode(Overlay *plugin,
  : BC_PopupMenu(x,
 	y,
 	150,
-	OverlayConfig::mode_to_text(plugin->config.mode),
+	_(OverlayFrame::transfer_name(plugin->config.mode)),
 	1)
 {
 	this->plugin = plugin;
@@ -109,21 +78,14 @@ OverlayMode::OverlayMode(Overlay *plugin,
 void OverlayMode::create_objects()
 {
 	for(int i = 0; i < TRANSFER_TYPES; i++)
-		add_item(new BC_MenuItem(OverlayConfig::mode_to_text(i)));
+		add_item(new BC_MenuItem(_(OverlayFrame::transfer_name(i))));
 }
 
 int OverlayMode::handle_event()
 {
 	char *text = get_text();
 
-	for(int i = 0; i < TRANSFER_TYPES; i++)
-	{
-		if(!strcmp(text, OverlayConfig::mode_to_text(i)))
-		{
-			plugin->config.mode = i;
-			break;
-		}
-	}
+	plugin->config.mode = OverlayFrame::transfer_mode(text);
 
 	plugin->send_configure_change();
 	return 1;

@@ -32,7 +32,7 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "overlayframe.inc"
+#include "overlayframe.h"
 #include "patchbay.h"
 #include "theme.h"
 #include "vpatchgui.h"
@@ -245,13 +245,13 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 	this->mode = get_keyframe_value(mwindow, patch);
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
 	set_tooltip(_("Overlay mode"));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_SUBTRACT), TRANSFER_SUBTRACT));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MULTIPLY), TRANSFER_MULTIPLY));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_NORMAL)), TRANSFER_NORMAL));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_ADDITION)), TRANSFER_ADDITION));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_SUBTRACT)), TRANSFER_SUBTRACT));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_MULTIPLY)), TRANSFER_MULTIPLY));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_DIVIDE)), TRANSFER_DIVIDE));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_REPLACE)), TRANSFER_REPLACE));
+	add_item(new VModePatchItem(this, _(OverlayFrame::transfer_name(TRANSFER_MAX)), TRANSFER_MAX));
 }
 
 int VModePatch::handle_event()
@@ -295,38 +295,6 @@ void VModePatch::update(int mode)
 		VModePatchItem *item = (VModePatchItem*)get_item(i);
 		item->set_checked(item->mode == mode);
 	}
-}
-
-
-const char* VModePatch::mode_to_text(int mode)
-{
-	switch(mode)
-	{
-	case TRANSFER_NORMAL:
-		return _("Normal");
-
-	case TRANSFER_REPLACE:
-		return _("Replace");
-
-	case TRANSFER_ADDITION:
-		return _("Addition");
-
-	case TRANSFER_SUBTRACT:
-		return _("Subtract");
-
-	case TRANSFER_MULTIPLY:
-		return _("Multiply");
-
-	case TRANSFER_DIVIDE:
-		return _("Divide");
-
-	case TRANSFER_MAX:
-		return _("Max");
-
-	default:
-		return _("Normal");
-	}
-	return "";
 }
 
 VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)

@@ -29,10 +29,23 @@
 
 #include "bcsignals.h"
 #include "clip.h"
+#include "language.h"
 #include "mutex.h"
 #include "overlayframe.h"
 #include "units.h"
 #include "vframe.h"
+
+struct transfers OverlayFrame::transfer_names[] =
+{
+	{ N_("Normal"), TRANSFER_NORMAL },
+	{ N_("Replace"), TRANSFER_REPLACE },
+	{ N_("Addition"), TRANSFER_ADDITION },
+	{ N_("Subtract"), TRANSFER_SUBTRACT },
+	{ N_("Multiply"), TRANSFER_MULTIPLY },
+	{ N_("Divide"), TRANSFER_DIVIDE },
+	{ N_("Max"), TRANSFER_MAX },
+	{ 0, 0 }
+};
 
 // Easy abstraction of the float and int types.  Most of these are never used
 // but GCC expects them.
@@ -480,6 +493,23 @@ int OverlayFrame::overlay(VFrame *output,
 	return 0;
 }
 
+const char *OverlayFrame::transfer_name(int transfer)
+{
+	for(int i = 0; transfer_names[i].text; i++)
+		if(transfer_names[i].value == transfer)
+			return transfer_names[i].text;
+
+	return transfer_names[0].text;
+}
+
+int OverlayFrame::transfer_mode(const char *text)
+{
+	for(int i = 0; transfer_names[i].text; i++)
+		if(strcmp(_(transfer_names[i].text), text) == 0)
+			return transfer_names[i].value;
+
+	return TRANSFER_NORMAL;
+}
 
 // Verification:
 

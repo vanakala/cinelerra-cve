@@ -31,6 +31,12 @@
 #define BICUBIC 2
 #define LANCZOS 3
 
+struct transfers
+{
+	const char *text;
+	int value;
+};
+
 class OverlayKernel
 {
 public:
@@ -189,7 +195,7 @@ class OverlayFrame
 {
 public:
 	OverlayFrame(int cpus = 1);
-	virtual ~OverlayFrame();
+	~OverlayFrame();
 
 	int overlay(VFrame *output,
 		VFrame *input,
@@ -205,6 +211,9 @@ public:
 		int mode,
 		int interpolation_type);
 
+	static const char *transfer_name(int transfer);
+	static int transfer_mode(const char *text);
+
 	DirectEngine *direct_engine;
 	NNEngine *nn_engine;
 	SampleEngine *sample_engine;
@@ -212,6 +221,8 @@ public:
 	VFrame *temp_frame;
 	int cpus;
 	OverlayKernel *kernel[4];
+private:
+	static struct transfers transfer_names[];
 };
 
 #endif
