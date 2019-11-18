@@ -55,6 +55,7 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	cropper = 0;
 	overlayer = 0;
 	current_edit = 0;
+	run_projector = 0;
 	videorender = vrender;
 }
 
@@ -95,6 +96,7 @@ VFrame *VTrackRender::get_frame(VFrame *output)
 
 	if(is_playable(pts, edit))
 	{
+		run_projector = 0;
 		VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
 			track->track_w, track->track_h,
 			edlsession->color_model);
@@ -130,6 +132,7 @@ void VTrackRender::render_fade(VFrame *frame)
 		if(!fader)
 			fader = new FadeEngine(preferences_global->processors);
 		fader->do_fade(frame, value);
+		run_projector = 1;
 	}
 }
 
@@ -168,6 +171,7 @@ void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 		masker = new MaskEngine(preferences_global->processors);
 
 	masker->do_mask(frame, keyframe_set, before_plugins);
+	run_projector = 1;
 }
 
 void VTrackRender::render_crop(VFrame *frame, int before_plugins)
@@ -212,8 +216,8 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 			mode = mode_keyframe->value;
 		else
 			mode = TRANSFER_NORMAL;
-
-		if(mode == TRANSFER_NORMAL && in_x1 == out_x1 && in_x2 == out_x2 &&
+		if(!run_projector && mode == TRANSFER_NORMAL &&
+				in_x1 == out_x1 && in_x2 == out_x2 &&
 				in_y1 == out_y1 && in_y2 == out_y2)
 		{
 			BC_Resources::tmpframes.release_frame(output);
