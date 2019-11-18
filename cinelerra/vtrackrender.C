@@ -406,6 +406,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
+			current_frame->set_layer(track->number_of());
 			if(tmpframe = execute_plugin(plugin, current_frame))
 				current_frame = tmpframe;
 		}
