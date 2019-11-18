@@ -62,6 +62,14 @@ FadeUnit::FadeUnit(FadeEngine *server)
 					row[2] =  \
 						(type)(((temp_type)row[2] * opacity +  \
 							product) / max); \
+					if(components == 4) \
+					{ \
+						if(row[3] == max) \
+							row[3] = opacity; \
+						else \
+							row[3] = \
+								(type)((temp_type)row[3] * opacity / max); \
+					} \
 				} \
 			} \
 		} \
@@ -73,6 +81,11 @@ FadeUnit::FadeUnit(FadeEngine *server)
  \
 				for(int j = 0; j < width; j++, row += components) \
 				{ \
+					if(row[0] == max) \
+						row[0] = opacity; \
+					else \
+						row[0] = \
+							(type)((temp_type)row[0] * opacity / max); \
 					row[1] =  \
 						(type)((temp_type)row[1] * opacity / max); \
 					row[2] =  \
