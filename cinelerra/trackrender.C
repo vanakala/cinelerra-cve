@@ -35,7 +35,9 @@
 
 TrackRender::TrackRender(Track *track)
 {
-	this->track = track;
+	media_track = track;
+	plugins_track = track;
+	autos_track = track;
 
 	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
 		trackfiles[i] = 0;
@@ -86,11 +88,11 @@ File *TrackRender::media_file(Edit *edit, int filenum)
 
 int TrackRender::is_playable(ptstime pts, Edit *edit)
 {
-	if(!edit || !track->play)
+	if(!edit || !media_track->play)
 		return 0;
 
-	if(edit->asset || edit->transition || track->is_synthesis(pts))
-		return !((IntAutos *)track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
+	if(edit->asset || edit->transition || media_track->is_synthesis(pts))
+		return !((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
 
 	return 0;
 }
@@ -102,5 +104,11 @@ ptstime TrackRender::align_to_frame(ptstime position)
 
 Track *TrackRender::get_track_number(int number)
 {
-	return track->tracks->get_item_number(number);
+	return media_track->tracks->get_item_number(number);
+}
+
+void TrackRender::set_effects_track(Track *track)
+{
+	plugins_track = track;
+	autos_track = track;
 }

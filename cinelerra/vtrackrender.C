@@ -75,7 +75,7 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 
 	if(!file)
 	{
-		vframe->set_duration(track->edl->this_edlsession->frame_duration());
+		vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
 		vframe->clear_frame();
 		return 0;
 	}
@@ -85,20 +85,20 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 	file->get_frame(vframe);
 	pts = align_to_frame(pts);
 	vframe->set_pts(pts);
-	vframe->set_duration(track->edl->this_edlsession->frame_duration());
+	vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
 	return vframe;
 }
 
 VFrame *VTrackRender::get_frame(VFrame *output)
 {
 	ptstime pts = align_to_frame(output->get_pts());
-	Edit *edit = track->editof(pts);
+	Edit *edit = media_track->editof(pts);
 
 	if(is_playable(pts, edit))
 	{
 		run_projector = 0;
 		VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
-			track->track_w, track->track_h,
+			media_track->track_w, media_track->track_h,
 			edlsession->color_model);
 		frame->set_pts(pts);
 		read_vframe(frame, edit);
@@ -120,7 +120,7 @@ void VTrackRender::render_fade(VFrame *frame)
 {
 	double value;
 
-	value = ((FloatAutos*)track->automation->autos[AUTOMATION_FADE])->get_value(
+	value = ((FloatAutos*)autos_track->automation->autos[AUTOMATION_FADE])->get_value(
 		frame->get_pts());
 
 	CLAMP(value, 0, 100);
@@ -140,7 +140,7 @@ void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 {
 	int total_points = 0;
 	MaskAutos *keyframe_set =
-		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+		(MaskAutos*)autos_track->automation->autos[AUTOMATION_MASK];
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(frame->get_pts());
 
 	if(!keyframe)
@@ -177,7 +177,7 @@ void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 {
 	int left, right, top, bottom;
-	CropAutos *cropautos = (CropAutos *)track->automation->autos[AUTOMATION_CROP];
+	CropAutos *cropautos = (CropAutos *)autos_track->automation->autos[AUTOMATION_CROP];
 
 	if(!cropautos->first)
 		return;
@@ -200,8 +200,14 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 	int out_x1, out_y1, out_x2, out_y2;
 	int mode;
 	IntAuto *mode_keyframe;
+	VFrame *outframe;
 
-	calculate_output_transfer(output,
+	if(output)
+		outframe = output;
+	else
+		outframe = frame;
+
+	calculate_output_transfer(outframe,
 		&in_x1, &in_y1, &in_x2, &in_y2,
 		&out_x1, &out_y1, &out_x2, &out_y2);
 
@@ -209,7 +215,7 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 		in_x2 > in_x1 && in_y2 > in_y1)
 	{
 		mode_keyframe =
-			(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
+			(IntAuto*)autos_track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
 				frame->get_pts());
 
 		if(mode_keyframe)
@@ -222,6 +228,13 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 		{
 			BC_Resources::tmpframes.release_frame(output);
 			return frame;
+		}
+
+		if(!output)
+		{
+			output = BC_Resources::tmpframes.clone_frame(frame);
+			output->clear_frame();
+			output->copy_pts(frame);
 		}
 
 		if(!overlayer)
@@ -273,14 +286,14 @@ void VTrackRender::calculate_input_transfer(ptstime position,
 {
 	double auto_x, auto_y, auto_z;
 	double camera_z = 1;
-	double camera_x = track->track_w / 2;
-	double camera_y = track->track_h / 2;
-	double dtrackw = track->track_w;
-	double dtrackh = track->track_h;
+	double camera_x = autos_track->track_w / 2;
+	double camera_y = autos_track->track_h / 2;
+	double dtrackw = autos_track->track_w;
+	double dtrackh = autos_track->track_h;
 	double x[4], y[4];
 
 // get camera center in track
-	track->automation->get_camera(&auto_x, &auto_y, &auto_z, position);
+	autos_track->automation->get_camera(&auto_x, &auto_y, &auto_z, position);
 	camera_z *= auto_z;
 	camera_x += auto_x;
 	camera_y += auto_y;
@@ -340,15 +353,15 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	double x[4], y[4];
 	double outw = output->get_w();
 	double outh = output->get_h();
-	double trackw = track->track_w;
-	double trackh = track->track_h;
+	double trackw = autos_track->track_w;
+	double trackh = autos_track->track_h;
 
 	x[0] = 0;
 	y[0] = 0;
 	x[1] = trackw;
 	y[1] = trackh;
 
-	track->automation->get_projector(&center_x, &center_y,
+	autos_track->automation->get_projector(&center_x, &center_y,
 		&center_z, output->get_pts());
 
 	center_x += outw / 2;
@@ -400,13 +413,13 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 
 	current_frame = input;
 	current_edit = edit;
-	for(int i = 0; i < track->plugins.total; i++)
+	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
-		plugin = track->plugins.values[i];
+		plugin = plugins_track->plugins.values[i];
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			current_frame->set_layer(track->number_of());
+			current_frame->set_layer(media_track->number_of());
 			if(tmpframe = execute_plugin(plugin, current_frame))
 				current_frame = tmpframe;
 		}
@@ -420,45 +433,69 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 {
 	PluginServer *server = plugin->plugin_server;
 	int layer;
+	VFrame *output;
 
-	if(!server && plugin->shared_plugin)
+	switch(plugin->plugin_type)
 	{
-		if(!plugin->shared_plugin->plugin_server->multichannel)
-			server = plugin->shared_plugin->plugin_server;
-	}
+	case PLUGIN_NONE:
+		break;
 
-	if(server)
-	{
-		if(server->multichannel && !plugin->shared_plugin)
+	case PLUGIN_SHAREDMODULE:
+		if(!plugin->shared_track)
+			break;
+		set_effects_track(plugin->shared_track);
+		frame = render_camera(frame);
+		render_mask(frame, 1);
+		render_crop(frame, 1);
+		frame = render_plugins(frame, current_edit);
+		render_fade(frame);
+		render_mask(frame, 0);
+		render_crop(frame, 0);
+		frame = render_projector(0, frame);
+		set_effects_track(media_track);
+		return frame;
+
+	case PLUGIN_SHAREDPLUGIN:
+		if(!server && plugin->shared_plugin)
 		{
-			if(!plugin->active_server)
-			{
-				plugin->active_server = new PluginServer(*server);
-				plugin->active_server->open_plugin(0, plugin, this);
-			}
-			videorender->allocate_vframes(plugin);
-
-			for(int i = 0; i < plugin->frames.total; i++)
-			{
-				VFrame *current = plugin->frames.values[i];
-				layer = current->get_layer();
-				current->copy_pts(frame);
-				current->set_layer(layer);
-			}
-			plugin->active_server->process_buffer(plugin->frames.values,
-				plugin->get_length());
-			frame->copy_from(plugin->frames.values[0]);
+			if(!plugin->shared_plugin->plugin_server->multichannel)
+				server = plugin->shared_plugin->plugin_server;
 		}
-		else
+		// Fall through
+	case PLUGIN_STANDALONE:
+		if(server)
 		{
-			if(!plugin->active_server)
+			if(server->multichannel && !plugin->shared_plugin)
 			{
-				plugin->active_server = new PluginServer(*server);
-				plugin->active_server->open_plugin(0, plugin, this);
-				plugin->active_server->init_realtime(1);
+				if(!plugin->active_server)
+				{
+					plugin->active_server = new PluginServer(*server);
+					plugin->active_server->open_plugin(0, plugin, this);
+				}
+				videorender->allocate_vframes(plugin);
+
+				for(int i = 0; i < plugin->frames.total; i++)
+				{
+					VFrame *current = plugin->frames.values[i];
+					layer = current->get_layer();
+					current->copy_pts(frame);
+					current->set_layer(layer);
+				}
+				plugin->active_server->process_buffer(plugin->frames.values,
+					plugin->get_length());
+				frame->copy_from(plugin->frames.values[0]);
 			}
-			plugin->active_server->process_buffer(&frame, plugin->get_length());
-			return frame;
+			else
+			{
+				if(!plugin->active_server)
+				{
+					plugin->active_server = new PluginServer(*server);
+					plugin->active_server->open_plugin(0, plugin, this);
+					plugin->active_server->init_realtime(1);
+				}
+				plugin->active_server->process_buffer(&frame, plugin->get_length());
+				return frame;
+			}
 		}
 	}
 	return 0;
@@ -476,7 +513,7 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 		buffer->copy_from(current_frame, 1);
 	else
 	{
-		Edit *edit = track->editof(buffer_pts);
+		Edit *edit = media_track->editof(buffer_pts);
 
 		read_vframe(buffer, edit, 2);
 		if(edit->transition && edit->transition->plugin_server &&
@@ -526,7 +563,7 @@ int VTrackRender::need_camera(ptstime pts)
 {
 	double auto_x, auto_y, auto_z;
 
-	track->automation->get_camera(&auto_x, &auto_y, &auto_z, pts);
+	autos_track->automation->get_camera(&auto_x, &auto_y, &auto_z, pts);
 
 	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
 }

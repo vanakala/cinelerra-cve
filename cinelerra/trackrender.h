@@ -39,13 +39,17 @@ public:
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
 	Track *get_track_number(int number);
+	void set_effects_track(Track *track);
 
-	Track *track;
+	Track *media_track;
 
 protected:
 	File *media_file(Edit *edit, int filenum);
 	int is_playable(ptstime pts, Edit *edit);
 	ptstime align_to_frame(ptstime position);
+
+	Track *plugins_track;
+	Track *autos_track;
 
 private:
 	File *trackfiles[TRACKRENDER_FILES_MAX];
