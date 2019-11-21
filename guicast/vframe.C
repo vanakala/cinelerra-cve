@@ -61,6 +61,7 @@ VFrame::VFrame(VFrame &frame)
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
 	copy_pts(&frame);
+	status = frame.get_status();
 }
 
 VFrame::VFrame(unsigned char *data, 
@@ -513,6 +514,7 @@ void VFrame::clear_frame(void)
 		memset(data, 0, calculate_data_size(w, h, bytes_per_line, color_model));
 		break;
 	}
+	status = 0;
 }
 
 void VFrame::flip_vert(void)
@@ -537,6 +539,7 @@ void VFrame::transfer_from(VFrame *frame)
 		frame->get_color_model(), color_model,
 		frame->get_bytes_per_line(),
 		bytes_per_line);
+	status = frame->get_status();
 }
 
 void VFrame::copy_from(VFrame *frame, int do_copy_pts)
@@ -573,6 +576,7 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 			bytes, frame->color_model));
 		break;
 	}
+	status = frame->get_status();
 }
 
 int VFrame::get_bytes_per_pixel(void)
