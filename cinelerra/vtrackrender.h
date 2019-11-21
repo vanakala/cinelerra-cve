@@ -59,7 +59,6 @@ private:
 	VFrame *execute_plugin(Plugin *plugin, VFrame *frame);
 	VFrame *render_transition(VFrame *frame, Edit *edit);
 	int need_camera(ptstime pts);
-	int run_projector;
 
 	VideoRender *videorender;
 	FadeEngine *fader;
