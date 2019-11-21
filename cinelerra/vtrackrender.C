@@ -504,8 +504,8 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 VFrame *VTrackRender::get_vframe(VFrame *buffer)
 {
 // This is called by plugin
-// We have to put frame into buffer, because plugins to
-// not accept tmpframes yet
+// We have to copy frame into buffer, because plugins
+// do not accept tmpframes yet
 	ptstime buffer_pts = buffer->get_pts();
 	int layer = buffer->get_layer();
 
