@@ -33,7 +33,7 @@ RenderBase::RenderBase(RenderEngine *renderengine, EDL *edl)
 {
 	this->renderengine = renderengine;
 	this->edl = edl;
-	start_lock = new Condition(0, "CommonRender::start_lock");
+	start_lock = new Condition(0, "RenderBase::start_lock");
 }
 
 void RenderBase::arm_command()
