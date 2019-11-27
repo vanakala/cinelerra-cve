@@ -289,14 +289,15 @@ ptstime AFrame::set_pts(ptstime t)
 	return pts;
 }
 
-void AFrame::dump(int dumpdata)
+void AFrame::dump(int indent, int dumpdata)
 {
 	double avg, min, max;
 
-	printf("AFrame::dump: %p\n", this);
-	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %" PRId64 "\n",
+	printf("%*sAFrame::dump: %p\n", indent, "", this);
+	indent += 2;
+	printf("%*spts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %" PRId64 "\n", indent, "",
 		pts, duration, length, source_pts, source_duration, source_length, channel, samplerate, position);
-	printf("    buffer %p float_buffer %p buffer_length %d shared %d float_data %d\n",
+	printf("%*sbuffer %p float_buffer %p buffer_length %d shared %d float_data %d\n", indent, "",
 		buffer, float_buffer, buffer_length, shared, float_data);
 	if(dumpdata && length > 0)
 	{
@@ -325,7 +326,7 @@ void AFrame::dump(int dumpdata)
 					max = float_buffer[i];
 			}
 		}
-		printf("    buffer vals avg %.4f min %.3f max %.3f\n", 
+		printf("%*sbuffer vals avg %.4f min %.3f max %.3f\n", indent, "",
 			avg/length, min, max);
 	}
 }

@@ -84,7 +84,7 @@ public:
 // Set frame pts rounded to sample
 	ptstime set_pts(ptstime t);
 
-	void dump(int dumpdata = 0);
+	void dump(int indent, int dumpdata = 0);
 
 // Buffer start in source
 	ptstime source_pts;
