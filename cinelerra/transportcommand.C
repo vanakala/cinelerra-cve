@@ -105,7 +105,7 @@ int TransportCommand::get_direction()
 	}
 }
 
-float TransportCommand::get_speed()
+double TransportCommand::get_speed()
 {
 	switch(command)
 	{

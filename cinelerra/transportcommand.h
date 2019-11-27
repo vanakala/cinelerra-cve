@@ -36,7 +36,7 @@ public:
 	void reset();
 // Get the direction based on the command
 	int get_direction();
-	float get_speed();
+	double get_speed();
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
