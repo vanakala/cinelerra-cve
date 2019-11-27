@@ -60,12 +60,14 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    assetlist.C \
 		    assetpopup.C \
 		    atrack.C \
+		    atrackrender.C \
 		    attachmentpoint.C \
 		    audioalsa.C \
 		    audiodevice.C \
 		    audioesound.C \
 		    audioodevice.C \
 		    audiooss.C \
+		    audiorender.C \
 		    auto.C \
 		    autoconf.C \
 		    automation.C \
@@ -303,11 +305,13 @@ noinst_HEADERS = aattachmentpoint.h \
 		 assetedit.h \
 		 assetpopup.h \
 		 atrack.h \
+		 atrackrender.h \
 		 attachmentpoint.h \
 		 audioalsa.h \
 		 audiodevice.h \
 		 audioesound.h \
 		 audiooss.h \
+		 audiorender.h \
 		 autoconf.h \
 		 auto.h \
 		 automation.h \

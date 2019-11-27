@@ -19,43 +19,40 @@
  * 
  */
 
-#ifndef RENDERBASE_H
-#define RENDERBASE_H
+#ifndef AUDIORENDER_H
+#define AUDIORENDER_H
 
-#include "condition.inc"
+#include "aframe.inc"
+#include "cinelerra.h"
 #include "edl.inc"
-#include "renderbase.inc"
-#include "renderengine.h"
-#include "thread.h"
-#include "trackrender.inc"
+#include "file.inc"
+#include "levelhist.inc"
+#include "renderbase.h"
+#include "renderengine.inc"
 
-class RenderBase : public Thread
+class AudioRender : public RenderBase
 {
 public:
-	RenderBase(RenderEngine *renderengine, EDL *edl);
+	AudioRender(RenderEngine *renderengine, EDL *edl);
+	~AudioRender();
 
-	void arm_command();
-	void start_command();
-	virtual void run();
-// advance playback position
-// returns NZ when next frame must be flashed
-	int advance_position(ptstime duration);
+	void run();
+	int process_buffer(AFrame **buffer_out);
+	int get_output_levels(double *levels, ptstime pts);
+	int get_track_levels(double *levels, ptstime pts);
 
-protected:
-	virtual void init_frames() {};
+private:
+	void init_frames();
+	ptstime calculate_render_duration();
+	void get_aframes(ptstime pts, ptstime input_duration);
+	void process_frames();
 
-	RenderEngine *renderengine;
-	EDL *edl;
-	ptstime render_pts;
-	ptstime render_start;
-	ptstime render_end;
-	int render_direction;
-	int render_loop;
-	int render_single;
-	int render_realtime;
-	int last_playback;
-	double render_speed;
-	Condition *start_lock;
+	LevelHistory *output_levels;
+	// output buffers for audio device
+	AFrame *audio_out[MAXCHANNELS];
+	int out_channels;
+	double *audio_out_packed[MAXCHANNELS];
+	int packed_buffer_len;
 };
 
 #endif

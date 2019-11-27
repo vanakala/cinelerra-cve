@@ -26,6 +26,7 @@
 class RenderEngine;
 
 #include "arender.inc"
+#include "audiorender.inc"
 #include "bctimer.h"
 #include "audiodevice.inc"
 #include "cache.inc"
@@ -108,7 +109,11 @@ public:
 	int done;
 	AudioDevice *audio;
 	VideoDevice *video;
+#ifdef NEW_ARENDERER
+	AudioRender *arender;
+#else
 	ARender *arender;
+#endif
 #ifdef NEW_RENDERER
 	VideoRender *vrender;
 #else

@@ -20,7 +20,6 @@
  */
 
 #include "amodule.h"
-#include "arender.h"
 #include "asset.h"
 #include "audiodevice.h"
 #include "bcsignals.h"
@@ -36,6 +35,11 @@
 #include "renderengine.h"
 #include "transportcommand.h"
 #include "videodevice.h"
+#ifdef NEW_ARENDERER
+#include "audiorender.h"
+#else
+#include "arender.h"
+#endif
 #ifdef NEW_RENDERER
 #include "videorender.h"
 #else
@@ -176,7 +180,11 @@ void RenderEngine::create_render_threads()
 
 	if(do_audio && !arender)
 	{
+#ifdef NEW_ARENDERER
+		arender = new AudioRender(this, edl);
+#else
 		arender = new ARender(this);
+#endif
 	}
 }
 
@@ -378,7 +386,7 @@ void RenderEngine::stop_tracking(ptstime position, int type)
 
 void RenderEngine::set_tracking_position(ptstime pts, int type)
 {
-#ifdef NEW_RENDERER
+#if defined(NEW_RENDERER) || defined(NEW_ARENDERER)
 	if(type == TRACK_AUDIO)
 	{
 		if(do_video)
@@ -402,7 +410,11 @@ int RenderEngine::get_output_levels(double *levels, ptstime pts)
 {
 	if(do_audio)
 	{
+#ifdef NEW_ARENDERER
+		return arender->get_output_levels(levels, pts);
+#else
 		return arender->output_levels->get_levels(levels, pts);
+#endif
 	}
 	return 0;
 }
@@ -413,9 +425,13 @@ int RenderEngine::get_module_levels(double *levels, ptstime pts)
 
 	if(do_audio)
 	{
+#ifdef NEW_ARENDERER
+		return arender->get_track_levels(levels, pts);
+#else
 		for(i = 0; i < arender->total_modules; i++)
 			((AModule*)arender->modules[i])->module_levels->get_levels(&levels[i], pts);
 		return i;
+#endif
 	}
 	return 0;
 }

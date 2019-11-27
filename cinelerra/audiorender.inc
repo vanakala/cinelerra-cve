@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,9 @@
  * 
  */
 
-#ifndef RENDERENGINE_INC
-#define RENDERENGINE_INC
+#ifndef AUDIORENDER_INC
+#define AUDIORENDER_INC
 
-
-class RenderEngine;
-
-//#define NEW_RENDERER
-//#define NEW_ARENDERER
+class AudioRender;
 
 #endif

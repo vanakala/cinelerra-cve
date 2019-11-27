@@ -45,7 +45,9 @@ void RenderBase::arm_command()
 	render_loop = renderengine->command.loop_playback;
 	render_single = renderengine->command.single_frame();
 	render_realtime = renderengine->command.realtime;
+	render_speed = renderengine->command.get_speed();
 	last_playback = 0;
+	init_frames();
 }
 
 void RenderBase::start_command()

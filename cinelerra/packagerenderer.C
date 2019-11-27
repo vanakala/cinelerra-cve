@@ -20,7 +20,6 @@
  */
 
 #include "aframe.h"
-#include "arender.h"
 #include "asset.h"
 #include "auto.h"
 #include "bcsignals.h"
@@ -51,6 +50,11 @@
 #include "transportcommand.h"
 #include "vframe.h"
 #include "videodevice.h"
+#ifdef NEW_ARENDERER
+#include "audiorender.h"
+#else
+#include "arender.h"
+#endif
 #ifdef NEW_RENDERER
 #include "videorender.h"
 #else

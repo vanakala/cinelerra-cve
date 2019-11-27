@@ -178,7 +178,7 @@ void PlaybackEngine::stop_tracking(ptstime position)
 		command->command = STOP;
 }
 
-#ifdef NEW_RENDERER
+#if defined(NEW_RENDERER) || defined(NEW_ARENDERER)
 void PlaybackEngine::set_tracking_position(ptstime pts)
 {
 	tracking_position = pts;

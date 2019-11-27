@@ -19,43 +19,37 @@
  * 
  */
 
-#ifndef RENDERBASE_H
-#define RENDERBASE_H
+#ifndef ATRACKRENDER_H
+#define ATRACKRENDER_H
 
-#include "condition.inc"
-#include "edl.inc"
-#include "renderbase.inc"
-#include "renderengine.h"
-#include "thread.h"
-#include "trackrender.inc"
+#include "aframe.inc"
+#include "atrackrender.inc"
+#include "cinelerra.h"
+#include "edit.inc"
+#include "levelhist.inc"
+#include "plugin.inc"
+#include "track.inc"
+#include "audiorender.inc"
+#include "trackrender.h"
 
-class RenderBase : public Thread
+class ATrackRender : public TrackRender
 {
 public:
-	RenderBase(RenderEngine *renderengine, EDL *edl);
+	ATrackRender(Track *track, AudioRender *vrender);
+	~ATrackRender();
 
-	void arm_command();
-	void start_command();
-	virtual void run();
-// advance playback position
-// returns NZ when next frame must be flashed
-	int advance_position(ptstime duration);
+	AFrame **get_aframes(AFrame **output, int out_channels);
+	AFrame *get_aframe(AFrame *buffer);
 
-protected:
-	virtual void init_frames() {};
+	LevelHistory *module_levels;
+private:
+	AFrame *read_aframe(AFrame *aframe, Edit *edit, int filenum);
 
-	RenderEngine *renderengine;
-	EDL *edl;
-	ptstime render_pts;
-	ptstime render_start;
-	ptstime render_end;
-	int render_direction;
-	int render_loop;
-	int render_single;
-	int render_realtime;
-	int last_playback;
-	double render_speed;
-	Condition *start_lock;
+	AudioRender *arender;
+	Edit *current_edit;
+	AFrame *current_frame;
+	int num_frames;
+	AFrame *aframes[MAXCHANNELS];
 };
 
 #endif
