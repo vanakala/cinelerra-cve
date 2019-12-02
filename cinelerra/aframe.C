@@ -180,6 +180,15 @@ void AFrame::set_filled(int length)
 	duration = (ptstime)length / samplerate;
 }
 
+void AFrame::set_filled(ptstime duration)
+{
+	int length = to_samples(duration);
+
+	check_buffer(length);
+	this->length = length;
+	this->duration = duration;
+}
+
 void AFrame::extend_buffer(int length)
 {
 	if(!shared && buffer_length < length)
