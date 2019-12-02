@@ -47,9 +47,7 @@ private:
 
 	AudioRender *arender;
 	Edit *current_edit;
-	AFrame *current_frame;
-	int num_frames;
-	AFrame *aframes[MAXCHANNELS];
+	AFrame *track_frame;
 };
 
 #endif

@@ -20,6 +20,7 @@
  */
 
 #include "aframe.h"
+#include "asset.h"
 #include "atrackrender.h"
 #include "audiodevice.h"
 #include "audiorender.h"
@@ -27,9 +28,11 @@
 #include "clip.h"
 #include "condition.h"
 #include "edl.h"
+#include "edit.h"
 #include "edlsession.h"
-#include "file.inc"
+#include "file.h"
 #include "levelhist.h"
+#include "mainerror.h"
 #include "renderbase.h"
 #include "renderengine.inc"
 #include "track.h"
@@ -56,6 +59,7 @@ AudioRender::~AudioRender()
 		delete audio_out[i];
 		delete [] audio_out_packed[i];
 	}
+	input_frames.remove_all_objects();
 }
 
 void AudioRender::init_frames()
@@ -63,22 +67,23 @@ void AudioRender::init_frames()
 	if(render_realtime)
 	{
 		out_channels = edl->this_edlsession->audio_channels;
+		out_length = renderengine->fragment_len;
+		out_samplerate = edl->this_edlsession->sample_rate;
+
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 			if(i < edl->this_edlsession->audio_channels)
 			{
 				if(audio_out[i])
-					audio_out[i]->check_buffer(renderengine->fragment_len);
+					audio_out[i]->check_buffer(out_length);
 				else
-					audio_out[i] = new AFrame(renderengine->fragment_len);
-				audio_out[i]->samplerate = edl->this_edlsession->sample_rate;
+					audio_out[i] = new AFrame(out_length);
+				audio_out[i]->samplerate = out_samplerate;
 				audio_out[i]->channel = i;
 			}
 		}
 	}
-	output_levels->reset(renderengine->fragment_len,
-		edl->this_edlsession->sample_rate,
-		edl->this_edlsession->audio_channels);
+	output_levels->reset(out_length, out_samplerate, out_channels);
 }
 
 int AudioRender::process_buffer(AFrame **buffer_out)
@@ -116,7 +121,7 @@ ptstime AudioRender::calculate_render_duration()
 
 void AudioRender::run()
 {
-	ptstime input_duration;
+	ptstime input_duration = 0;
 	int first_buffer = 1;
 	int real_output_len;
 	double sample;
@@ -238,7 +243,7 @@ void AudioRender::run()
 				TRACK_AUDIO);
 			first_buffer = 0;
 		}
-		if(renderengine->audio->get_interrupted() || last_playback)
+		if(renderengine->audio->get_interrupted())
 			break;
 		if(last_playback)
 		{
@@ -246,6 +251,7 @@ void AudioRender::run()
 			break;
 		}
 	}
+	renderengine->audio->wait_for_completion();
 	renderengine->stop_tracking(render_pts, TRACK_AUDIO);
 	renderengine->render_start_lock->unlock();
 }
@@ -304,4 +310,84 @@ int AudioRender::get_track_levels(double *levels, ptstime pts)
 		}
 	}
 	return i;
+}
+
+AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
+	Edit *edit, int filenum)
+{
+	int channels;
+	int last_file;
+	File *file;
+	int channel = edit->channel;
+	Asset *asset = edit->asset;
+
+	for(int i = 0; i < input_frames.total; i++)
+	{
+		InFrame *infile = input_frames.values[i];
+
+		if(infile->file->asset == asset && infile->aframe.channel == channel &&
+			infile->filenum == filenum)
+		{
+			if(PTSEQU(infile->aframe.pts, pts) &&
+					PTSEQU(infile->aframe.duration, duration))
+				return &infile->aframe;
+		}
+	}
+
+	for(int i = 0; i < input_frames.total; i++)
+	{
+		InFrame *infile = input_frames.values[i];
+
+		if(infile->file->asset == asset && infile->filenum == filenum)
+		{
+			int channels = asset->channels;
+
+			for(int j = 0; j < channels; j++)
+			{
+				AFrame *aframe = &input_frames.values[i + j]->aframe;
+
+				aframe->check_buffer(out_length);
+				aframe->samplerate = out_samplerate;
+				aframe->reset_buffer();
+				aframe->set_fill_request(pts, duration);
+				aframe->source_pts = pts - edit->get_pts() +
+					edit->get_source_pts();
+				infile->file->get_samples(aframe);
+			}
+			return &input_frames.values[i + channel]->aframe;
+		}
+	}
+
+	channels = edit->asset->channels;
+	last_file = input_frames.total;
+	file = new File();
+
+	if(file->open_file(edit->asset, FILE_OPEN_READ | FILE_OPEN_AUDIO))
+	{
+		errormsg("AudioRender::get_file_frame:Failed to open media %s",
+			asset->path);
+		delete file;
+		return 0;
+	}
+
+	for(int j = 0; j < channels; j++)
+	{
+		InFrame *infile = new InFrame(file, j, out_length, filenum);
+
+		infile->aframe.set_fill_request(pts, duration);
+		infile->aframe.channel = j;
+		infile->aframe.source_pts = pts - edit->get_pts() +
+			edit->get_source_pts();
+		file->get_samples(&infile->aframe);
+		input_frames.append(infile);
+	}
+	return &input_frames.values[last_file + channel]->aframe;
+}
+
+InFrame::InFrame(File *file, int channel, int out_length, int filenum)
+{
+	this->file = file;
+	this->filenum = filenum;
+	aframe.check_buffer(out_length);
+	aframe.channel = channel;
 }

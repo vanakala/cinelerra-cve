@@ -28,80 +28,59 @@
 #include "levelhist.h"
 #include "plugin.inc"
 #include "track.h"
-#include "audiorender.inc"
+#include "audiorender.h"
 
 ATrackRender::ATrackRender(Track *track, AudioRender *audiorender)
  : TrackRender(track)
 {
 	arender = audiorender;
-	num_frames = 0;
-	for(int i =  0; i < MAXCHANNELS; i++)
-		aframes[i] = 0;
 	module_levels = new LevelHistory();
 }
 
 ATrackRender::~ATrackRender()
 {
-	for(int i =  0; i < MAXCHANNELS; i++)
-		delete aframes[i];
 	delete module_levels;
 }
 
 AFrame *ATrackRender::read_aframe(AFrame *aframe, Edit *edit, int filenum)
 {
-	ptstime pts = aframe->pts;
-	ptstime duration = aframe->get_source_duration();
 	ptstime sample_error = 0.8 / aframe->samplerate;
+	AFrame *result;
 
-	File *file = media_file(edit, filenum);
-
-	if(!file)
+	if(!(result = arender->get_file_frame(aframe->pts, aframe->source_duration,
+		edit, filenum)))
 	{
-		aframe->clear_buffer();
-		aframe->set_filled_length();
+		if(!track_frame)
+			track_frame = new AFrame(aframe->buffer_length);
+		else
+			track_frame->check_buffer(aframe->buffer_length);
+		track_frame->copy_pts(aframe);
+		track_frame->clear_buffer();
+		track_frame->set_filled(aframe->source_duration);
+		track_frame->channel = edit->channel;
 		return 0;
 	}
 
-	aframe->source_length = 0;
-	aframe->source_pts = pts - edit->get_pts() + edit->get_source_pts();
-	file->get_samples(aframe);
-	return aframe;
+	return result;
 }
 
 AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 {
+	AFrame *aframe;
 	ptstime pts = output[0]->pts;
-	ptstime duration = output[0]->source_duration;
 	Edit *edit = media_track->editof(pts);
-	int channels, buflen;
 
 	if(is_playable(pts, edit))
 	{
-		channels = edit->asset->channels;
-		buflen = output[0]->buffer_length;
-
-		if(num_frames < channels)
+		aframe = read_aframe(output[0], edit, 0);
+		for(int i = 0; i < out_channels; i++)
 		{
-			for(int i = 0; i < channels; i++)
+			if(output[i]->channel == aframe->channel)
 			{
-				if(i < num_frames)
-					aframes[i]->check_buffer(buflen);
-				else
-					aframes[i] = new AFrame(buflen);
-				aframes[i]->channel = i;
+				output[i]->copy(aframe);
+				break;
 			}
-			num_frames = channels;
 		}
-// siin tuleb kontrollida edit-i, plugina, autot
-		for(int i = 0; i < num_frames; i++)
-		{
-			aframes[i]->reset_buffer();
-			aframes[i]->set_fill_request(pts, duration);
-			read_aframe(aframes[i], edit, 0);
-		}
-
-		for(int i = 0; i < out_channels && i < num_frames; i++)
-			output[i]->copy(aframes[i]);
 	}
 	return output;
 }

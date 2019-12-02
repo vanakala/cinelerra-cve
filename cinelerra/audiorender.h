@@ -22,13 +22,24 @@
 #ifndef AUDIORENDER_H
 #define AUDIORENDER_H
 
-#include "aframe.inc"
+#include "aframe.h"
+#include "arraylist.h"
 #include "cinelerra.h"
 #include "edl.inc"
 #include "file.inc"
 #include "levelhist.inc"
 #include "renderbase.h"
 #include "renderengine.inc"
+
+class InFrame
+{
+public:
+	InFrame(File *file, int channel, int out_length, int filenum);
+
+	File *file;
+	int filenum;
+	AFrame aframe;
+};
 
 class AudioRender : public RenderBase
 {
@@ -40,6 +51,8 @@ public:
 	int process_buffer(AFrame **buffer_out);
 	int get_output_levels(double *levels, ptstime pts);
 	int get_track_levels(double *levels, ptstime pts);
+	AFrame *get_file_frame(ptstime pts, ptstime duration,
+		Edit *edit, int filenum);
 
 private:
 	void init_frames();
@@ -51,8 +64,11 @@ private:
 	// output buffers for audio device
 	AFrame *audio_out[MAXCHANNELS];
 	int out_channels;
+	int out_length;
+	int out_samplerate;
 	double *audio_out_packed[MAXCHANNELS];
 	int packed_buffer_len;
+	ArrayList<InFrame*> input_frames;
 };
 
 #endif
