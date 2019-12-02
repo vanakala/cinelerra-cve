@@ -73,6 +73,9 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 	if(is_playable(pts, edit))
 	{
 		aframe = read_aframe(output[0], edit, 0);
+		if(!aframe)
+			aframe = track_frame;
+		module_levels->fill(&aframe);
 		for(int i = 0; i < out_channels; i++)
 		{
 			if(output[i]->channel == aframe->channel)
