@@ -233,7 +233,6 @@ void AudioRender::run()
 				in_process = audio_buf;
 			}
 		}
-		renderengine->set_tracking_position(render_pts, TRACK_AUDIO);
 		advance_position(input_duration);
 		renderengine->audio->write_buffer(in_process, real_output_len);
 
@@ -252,7 +251,7 @@ void AudioRender::run()
 		}
 	}
 	renderengine->audio->wait_for_completion();
-	renderengine->stop_tracking(render_pts, TRACK_AUDIO);
+	renderengine->stop_tracking(-1, TRACK_AUDIO);
 	renderengine->render_start_lock->unlock();
 }
 

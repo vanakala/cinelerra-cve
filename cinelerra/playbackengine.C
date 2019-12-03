@@ -187,8 +187,11 @@ void PlaybackEngine::set_tracking_position(ptstime pts)
 
 ptstime PlaybackEngine::get_tracking_position()
 {
-#ifndef NEW_RENDERER
+#if defined(NEW_RENDERER) || defined(NEW_ARENDERER)
+	if(render_engine && tracking_active && !render_engine->do_video)
+#else
 	if(render_engine && tracking_active)
+#endif
 	{
 		ptstime tpts = render_engine->sync_postime() *
 			render_engine->command.get_speed();
@@ -198,7 +201,6 @@ ptstime PlaybackEngine::get_tracking_position()
 			tpts = tracking_start - tpts;
 		tracking_position = tpts;
 	}
-#endif
 	return tracking_position;
 }
 
