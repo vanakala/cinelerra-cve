@@ -31,6 +31,8 @@
 #include "editpopup.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
+#include "intauto.inc"
+#include "intautos.inc"
 #include "keyframe.inc"
 #include "keyframepopup.inc"
 #include "mwindow.inc"
@@ -167,10 +169,10 @@ public:
 		int color,
 		Auto * &auto_instance);
 	int do_toggle_autos(Track *track, 
-		Autos *autos, 
-		int cursor_x, 
-		int cursor_y, 
-		int draw, 
+		IntAutos *autos,
+		int cursor_x,
+		int cursor_y,
+		int draw,
 		int buttonpress,
 		int color,
 		Auto * &auto_instance);

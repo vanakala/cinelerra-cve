@@ -1735,7 +1735,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 
 					case AUTOMATION_TYPE_INT:
 						result = do_toggle_autos(track, 
-							autos,
+							(IntAutos*)autos,
 							cursor_x,
 							cursor_y,
 							draw, 
@@ -2754,7 +2754,7 @@ int TrackCanvas::do_float_autos(Track *track,
 }
 
 int TrackCanvas::do_toggle_autos(Track *track, 
-		Autos *autos, 
+		IntAutos *autos,
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
@@ -2768,45 +2768,45 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	double yscale;
 	int center_pixel;
 	double xzoom;
-	double ax, ay, ax2, ay2;
+	int ax, ay, ax2, ay2;
 	int empty = autos->first == autos->last;
 
 	auto_instance = 0;
 
-	calculate_viewport(track, 
+	calculate_viewport(track,
 		view_start,
 		view_end,
 		yscale,
 		xzoom,
 		center_pixel);
 
-	double high = -yscale * 0.8 / 2;
-	double low = yscale * 0.8 / 2;
+	int high = round(-yscale * 0.8 / 2);
+	int low = round(yscale * 0.8 / 2);
 
 // Get first auto before start
-	Auto *current;
-	for(current = autos->last; current && 
-		current->pos_time >= view_start; 
-		current = PREVIOUS);
+	IntAuto *current;
+	for(current = (IntAuto*)autos->last; current &&
+		current->pos_time >= view_start;
+		current = (IntAuto*)current->previous);
 
 	if(current)
 	{
 		ax = 0;
-		ay = ((IntAuto*)current)->value > 0 ? high : low;
-		current = NEXT;
+		ay = current->value ? high : low;
+		current = (IntAuto*)current->next;
 	}
 	else
 	{
-		current = autos->first;
+		current = (IntAuto*)autos->first;
 		if(current)
 		{
 			ax = 0;
-			ay = ((IntAuto*)current)->value > 0 ? high : low;
+			ay = current->value ? high : low;
 		}
 		else
 		{
 			ax = 0;
-			ay = yscale;
+			ay = autos->default_value ? high : low;
 		}
 	}
 
@@ -2814,8 +2814,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	{
 		if(current)
 		{
-			ax2 = (current->pos_time - view_start) * xzoom;
-			ay2 = ((IntAuto*)current)->value > 0 ? high : low;
+			ax2 = round((current->pos_time - view_start) * xzoom);
+			ay2 = current->value ? high : low;
 		}
 		else
 		{
@@ -2823,19 +2823,20 @@ int TrackCanvas::do_toggle_autos(Track *track,
 			ay2 = ay;
 		}
 
-		if(ax2 > get_w()) ax2 = get_w();
+		if(ax2 > get_w())
+			ax2 = get_w();
 
-		if(current && !result) 
+		if(current && !result)
 		{
 			if(!draw)
 			{
 				if(track->record)
 				{
 					result = test_auto(current,
-						(int)ax2,
-						(int)ay2,
-						(int)center_pixel,
-						(int)yscale,
+						ax2,
+						ay2,
+						center_pixel,
+						round(yscale),
 						cursor_x,
 						cursor_y,
 						buttonpress);
@@ -2845,13 +2846,11 @@ int TrackCanvas::do_toggle_autos(Track *track,
 			}
 			else
 			if(!empty)
-				draw_auto(current,
-					(int)ax2,
-					(int)ay2,
-					(int)center_pixel,
-					(int)yscale,
+				draw_auto(current, ax2, ay2,
+					center_pixel,
+					round(yscale),
 					color);
-			current = NEXT;
+			current = (IntAuto*)current->next;
 		}
 
 		if(!draw)
@@ -2860,24 +2859,18 @@ int TrackCanvas::do_toggle_autos(Track *track,
 			{
 				if(track->record && buttonpress != 3)
 				{
-					result = test_toggleline(autos, 
-						center_pixel, 
-						(int)ax, 
-						(int)ay, 
-						(int)ax2, 
-						(int)ay2,
-						cursor_x, 
-						cursor_y, 
+					result = test_toggleline(autos,
+						center_pixel,
+						ax, ay,
+						ax2, ay2,
+						cursor_x, cursor_y,
 						buttonpress);
 				}
 			}
 		}
 		else
-			draw_toggleline(center_pixel, 
-				(int)ax, 
-				(int)ay, 
-				(int)ax2, 
-				(int)ay2,
+			draw_toggleline(center_pixel,
+				ax, ay, ax2, ay2,
 				color);
 
 		ax = ax2;
@@ -2893,22 +2886,15 @@ int TrackCanvas::do_toggle_autos(Track *track,
 			if(track->record && buttonpress != 3)
 			{
 				result = test_toggleline(autos,
-					center_pixel, 
-					(int)ax, 
-					(int)ay, 
-					(int)ax2, 
-					(int)ay2,
-					cursor_x, 
-					cursor_y, 
+					center_pixel,
+					ax, ay, ax2, ay2,
+					cursor_x, cursor_y,
 					buttonpress);
 			}
 		}
 		else
-			draw_toggleline(center_pixel, 
-				(int)ax, 
-				(int)ay, 
-				(int)ax2, 
-				(int)ay2,
+			draw_toggleline(center_pixel,
+				ax, ay, ax2, ay2,
 				color);
 	}
 	return result;
