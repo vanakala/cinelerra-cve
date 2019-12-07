@@ -22,6 +22,7 @@
 #include "aframe.h"
 #include "asset.h"
 #include "atrackrender.h"
+#include "autos.h"
 #include "audiodevice.h"
 #include "audiorender.h"
 #include "bcsignals.h"
@@ -31,8 +32,10 @@
 #include "edit.h"
 #include "edlsession.h"
 #include "file.h"
+#include "keyframe.h"
 #include "levelhist.h"
 #include "mainerror.h"
+#include "plugin.h"
 #include "renderbase.h"
 #include "renderengine.inc"
 #include "track.h"
@@ -64,26 +67,34 @@ AudioRender::~AudioRender()
 
 void AudioRender::init_frames()
 {
-	if(render_realtime)
-	{
-		out_channels = edl->this_edlsession->audio_channels;
-		out_length = renderengine->fragment_len;
-		out_samplerate = edl->this_edlsession->sample_rate;
+	out_channels = edl->this_edlsession->audio_channels;
+	out_length = renderengine->fragment_len;
+	out_samplerate = edl->this_edlsession->sample_rate;
 
-		for(int i = 0; i < MAXCHANNELS; i++)
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		if(i < edl->this_edlsession->audio_channels)
 		{
-			if(i < edl->this_edlsession->audio_channels)
-			{
-				if(audio_out[i])
-					audio_out[i]->check_buffer(out_length);
-				else
-					audio_out[i] = new AFrame(out_length);
-				audio_out[i]->samplerate = out_samplerate;
-				audio_out[i]->channel = i;
-			}
+			if(audio_out[i])
+				audio_out[i]->check_buffer(out_length);
+			else
+				audio_out[i] = new AFrame(out_length);
+			audio_out[i]->samplerate = out_samplerate;
+			audio_out[i]->channel = i;
 		}
 	}
 	output_levels->reset(out_length, out_samplerate, out_channels);
+	sample_duration = audio_out[0]->to_duration(1);
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
+		if(track->data_type != TRACK_AUDIO || track->renderer)
+			continue;
+		track->renderer = new ATrackRender(track, this);
+		((ATrackRender*)track->renderer)->module_levels->reset(
+			renderengine->fragment_len,
+			edl->this_edlsession->sample_rate, 1);
+	}
 }
 
 int AudioRender::process_buffer(AFrame **buffer_out)
@@ -104,19 +115,114 @@ int AudioRender::process_buffer(AFrame **buffer_out)
 
 ptstime AudioRender::calculate_render_duration()
 {
+	Autos *autos;
+	Auto *autom;
+	Edit *edit;
+	ArrayList<Plugin*> *plugins;
+	KeyFrame *keyframe;
 	ptstime render_duration = audio_out[0]->to_duration(renderengine->fragment_len);
+	ptstime start_pts = render_pts;
+	ptstime end_pts;
 
 	if(render_direction == PLAY_FORWARD)
 	{
-		if(render_pts + render_duration >= render_end)
-			render_duration = render_end - render_pts;
+		end_pts = start_pts + render_duration;
+		if(end_pts >= render_end)
+			end_pts = render_end;
+		// start_pts .. end_pts
+		for(Track *track = edl->tracks->first; track; track = track->next)
+		{
+			if(!track->renderer || track->data_type != TRACK_AUDIO)
+				continue;
+			if(edit = track->renderer->media_track->editof(start_pts))
+			{
+				if(edit->end_pts() < end_pts && edit->end_pts() > start_pts)
+					end_pts = edit->end_pts();
+			}
+			for(int i = 0; i < AUTOMATION_TOTAL; i++)
+			{
+				if(!(autos = track->renderer->autos_track->automation->autos[i]))
+					continue;
+				if(!(autom = autos->nearest_after(start_pts)))
+					continue;
+				if(autom->pos_time < end_pts && autom->pos_time > start_pts)
+					end_pts = autom->pos_time;
+			}
+			plugins = &track->renderer->plugins_track->plugins;
+			for(int i = 0; i < plugins->total; i++)
+			{
+				Plugin *plugin = plugins->values[i];
+
+				if(plugin->active_in(start_pts, end_pts))
+				{
+					// Plugin starts in frame
+					if(plugin->get_pts() > start_pts)
+						end_pts = plugin->get_pts();
+					// Plugin ends in frame
+					else if(plugin->end_pts() < end_pts)
+						end_pts = plugin->end_pts();
+					// Check keyframes
+					if(keyframe = plugin->get_next_keyframe(start_pts))
+					{
+						if(keyframe->pos_time > start_pts &&
+								keyframe->pos_time < end_pts)
+							end_pts = keyframe->pos_time;
+					}
+				}
+			}
+		}
 	}
 	else
 	{
-		if(render_pts - render_duration <= render_start)
-			render_duration = render_pts - render_start;
+		end_pts = start_pts - render_duration;
+		// end_pts .. start_pts
+		if(end_pts <= render_start)
+			end_pts = render_start;
+
+		for(Track *track = edl->tracks->first; track; track = track->next)
+		{
+			if(!track->renderer || track->data_type != TRACK_AUDIO)
+				continue;
+			if(edit = track->renderer->media_track->editof(start_pts))
+			{
+				if(edit->get_pts() > end_pts && edit->get_pts() < start_pts)
+					end_pts = edit->get_pts();
+			}
+			for(int i = 0; i < AUTOMATION_TOTAL; i++)
+			{
+				if(!(autos = track->renderer->autos_track->automation->autos[i]))
+					continue;
+				if(!(autom = autos->nearest_before(start_pts)))
+					continue;
+				if(autom->pos_time > end_pts && autom->pos_time < start_pts)
+					end_pts = autom->pos_time;
+			}
+
+			plugins = &track->renderer->plugins_track->plugins;
+			for(int i = 0; i < plugins->total; i++)
+			{
+				Plugin *plugin = plugins->values[i];
+
+				if(plugin->active_in(end_pts, start_pts))
+				{
+					// Plugin starts in frame
+					if(plugin->get_pts() > end_pts)
+						end_pts = plugin->get_pts();
+					// Plugin ends in frame
+					else if(plugin->end_pts() > end_pts)
+						end_pts = plugin->end_pts();
+					// Check keyframes
+					if(keyframe = plugin->get_prev_keyframe(start_pts))
+					{
+						if(keyframe->pos_time > end_pts &&
+								keyframe->pos_time < start_pts)
+							end_pts = keyframe->pos_time;
+					}
+				}
+			}
+		}
 	}
-	return render_duration;
+	return fabs(end_pts - start_pts);
 }
 
 void AudioRender::run()
@@ -133,108 +239,113 @@ void AudioRender::run()
 
 	while(1)
 	{
-		// rehkendada palju vaja on (up to plugin/auto/edit)
 		input_duration = calculate_render_duration();
 
-		get_aframes(render_pts, input_duration);
-
-		output_levels->fill(audio_out);
-
-		if(!EQUIV(render_speed, 1))
+		if(input_duration > sample_duration)
 		{
-			int rqlen = round(
-				(double) audio_out[0]->to_samples(input_duration) /
-				render_speed);
+			get_aframes(render_pts, input_duration);
 
-			if(rqlen > packed_buffer_len)
+			output_levels->fill(audio_out);
+
+			if(!EQUIV(render_speed, 1))
 			{
-				for(int i = 0; i < MAX_CHANNELS; i++)
+				int rqlen = round(
+					(double) audio_out[0]->to_samples(input_duration) /
+					render_speed);
+
+				if(rqlen > packed_buffer_len)
 				{
-					delete [] audio_out_packed[i];
-					audio_out_packed[i] = 0;
-				}
-				for(int i = 0; i < audio_channels; i++)
-					audio_out_packed[i] = new double[rqlen];
-				packed_buffer_len = rqlen;
-			}
-			in_process = audio_out_packed;
-		}
-		for(int i = 0; i < audio_channels; i++)
-		{
-			int in, out;
-			double *current_buffer, *orig_buffer;
-			int out_length = audio_out[0]->length;
-
-			orig_buffer = audio_buf[i] = audio_out[i]->buffer;
-			current_buffer = audio_out_packed[i];
-
-			if(render_speed > 1)
-			{
-				int interpolate_len = round(render_speed);
-				real_output_len = out_length / interpolate_len;
-
-				if(render_direction == PLAY_FORWARD)
-				{
-					for(in = 0, out = 0; in < out_length;)
+					for(int i = 0; i < MAX_CHANNELS; i++)
 					{
-						sample = 0;
-						for(int k = 0; k < interpolate_len; k++)
-							sample += orig_buffer[in++];
-						current_buffer[out++] = sample / render_speed;
+						delete [] audio_out_packed[i];
+						audio_out_packed[i] = 0;
+					}
+					for(int i = 0; i < audio_channels; i++)
+						audio_out_packed[i] = new double[rqlen];
+					packed_buffer_len = rqlen;
+				}
+				in_process = audio_out_packed;
+			}
+			for(int i = 0; i < audio_channels; i++)
+			{
+				int in, out;
+				double *current_buffer, *orig_buffer;
+				int out_length = audio_out[0]->length;
+
+				orig_buffer = audio_buf[i] = audio_out[i]->buffer;
+				current_buffer = audio_out_packed[i];
+
+				if(render_speed > 1)
+				{
+					int interpolate_len = round(render_speed);
+					real_output_len = out_length / interpolate_len;
+
+					if(render_direction == PLAY_FORWARD)
+					{
+						for(in = 0, out = 0; in < out_length;)
+						{
+							sample = 0;
+							for(int k = 0; k < interpolate_len; k++)
+								sample += orig_buffer[in++];
+							current_buffer[out++] = sample / render_speed;
+						}
+					}
+					else
+					{
+						for(in = out_length - 1, out = 0; in >= 0; )
+						{
+							sample = 0;
+							for(int k = 0; k < interpolate_len; k++)
+								sample += orig_buffer[in--];
+							current_buffer[out++] = sample;
+						}
+					}
+				}
+				else if(render_speed < 1)
+				{
+					int interpolate_len = (int)(1.0 / render_speed);
+
+					real_output_len = out_length * interpolate_len;
+					if(render_direction == PLAY_FORWARD)
+					{
+						for(in = 0, out = 0; in < out_length;)
+						{
+							for(int k = 0; k < interpolate_len; k++)
+								current_buffer[out++] = orig_buffer[in];
+							in++;
+						}
+					}
+					else
+					{
+						for(in = out_length - 1, out = 0; in >= 0;)
+						{
+							for(int k = 0; k < interpolate_len; k++)
+								current_buffer[out++] = orig_buffer[in];
+							in--;
+						}
 					}
 				}
 				else
 				{
-					for(in = out_length - 1, out = 0; in >= 0; )
+					if(render_direction == PLAY_REVERSE)
 					{
-						sample = 0;
-						for(int k = 0; k < interpolate_len; k++)
-							sample += orig_buffer[in--];
-						current_buffer[out++] = sample;
+						for(int s = 0, e = out_length - 1; e > s; e--, s++)
+						{
+							sample = orig_buffer[s];
+							orig_buffer[s] = orig_buffer[e];
+							orig_buffer[e] = sample;
+						}
 					}
+					real_output_len = out_length;
+					in_process = audio_buf;
 				}
 			}
-			else if(render_speed < 1)
-			{
-				int interpolate_len = (int)(1.0 / render_speed);
-
-				real_output_len = out_length * interpolate_len;
-				if(render_direction == PLAY_FORWARD)
-				{
-					for(in = 0, out = 0; in < out_length;)
-					{
-						for(int k = 0; k < interpolate_len; k++)
-							current_buffer[out++] = orig_buffer[in];
-						in++;
-					}
-				}
-				else
-				{
-					for(in = out_length - 1, out = 0; in >= 0;)
-					{
-						for(int k = 0; k < interpolate_len; k++)
-							current_buffer[out++] = orig_buffer[in];
-						in--;
-					}
-				}
-			}
-			else
-			{
-				if(render_direction == PLAY_REVERSE)
-				{
-					for(int s = 0, e = out_length - 1; e > s; e--, s++)
-					{
-						sample = orig_buffer[s];
-						orig_buffer[s] = orig_buffer[e];
-						orig_buffer[e] = sample;
-					}
-				}
-				real_output_len = out_length;
-				in_process = audio_buf;
-			}
+			renderengine->audio->write_buffer(in_process, real_output_len);
 		}
+		else
+			input_duration = sample_duration;
+
 		advance_position(input_duration);
-		renderengine->audio->write_buffer(in_process, real_output_len);
 
 		if(first_buffer)
 		{
@@ -270,16 +381,6 @@ void AudioRender::get_aframes(ptstime pts, ptstime input_duration)
 void AudioRender::process_frames()
 {
 	ATrackRender *trender;
-
-	for(Track *track = edl->tracks->last; track; track = track->previous)
-	{
-		if(track->data_type != TRACK_AUDIO || track->renderer)
-			continue;
-		track->renderer = new ATrackRender(track, this);
-		((ATrackRender*)track->renderer)->module_levels->reset(
-			renderengine->fragment_len,
-			edl->this_edlsession->sample_rate, 1);
-	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{

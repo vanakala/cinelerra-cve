@@ -66,6 +66,7 @@ private:
 	int out_channels;
 	int out_length;
 	int out_samplerate;
+	ptstime sample_duration;
 	double *audio_out_packed[MAXCHANNELS];
 	int packed_buffer_len;
 	ArrayList<InFrame*> input_frames;

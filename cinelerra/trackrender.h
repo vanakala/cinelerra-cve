@@ -33,6 +33,7 @@
 
 class TrackRender
 {
+	friend class AudioRender;
 public:
 	TrackRender(Track *track);
 	virtual ~TrackRender();
