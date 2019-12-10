@@ -123,6 +123,17 @@ void AFrame::clear_buffer(void)
 		memset(&float_buffer[length], 0, (buffer_length - length) * sizeof(float));
 }
 
+void AFrame::clear_frame(ptstime pts, ptstime duration)
+{
+	set_filled(duration);
+	set_pts(pts);
+
+	if(buffer)
+		memset(buffer, 0, length * sizeof(double));
+	if(float_buffer)
+		memset(float_buffer, 0, length * sizeof(float));
+}
+
 void AFrame::reset_buffer(void)
 {
 	pts = 0;

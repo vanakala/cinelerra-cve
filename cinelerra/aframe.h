@@ -36,6 +36,8 @@ public:
 
 // Clears unused part of buffer
 	void clear_buffer(void);
+// Make empty frame with start and duration
+	void clear_frame(ptstime pts, ptstime duration);
 // Reallocates buffer to size at least length
 	void check_buffer(int length);
 // Makes frame empty
