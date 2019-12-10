@@ -44,6 +44,7 @@ public:
 	LevelHistory *module_levels;
 private:
 	AFrame *read_aframe(AFrame *aframe, Edit *edit, int filenum);
+	void render_pan(AFrame **output, int out_channels, AFrame *track_frame);
 
 	AudioRender *arender;
 	Edit *current_edit;

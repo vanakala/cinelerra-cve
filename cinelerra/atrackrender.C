@@ -22,10 +22,14 @@
 #include "aframe.h"
 #include "asset.h"
 #include "atrackrender.h"
+#include "automation.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "edit.h"
 #include "file.h"
 #include "levelhist.h"
+#include "panauto.h"
+#include "panautos.h"
 #include "plugin.inc"
 #include "track.h"
 #include "audiorender.h"
@@ -54,9 +58,7 @@ AFrame *ATrackRender::read_aframe(AFrame *aframe, Edit *edit, int filenum)
 			track_frame = new AFrame(aframe->buffer_length);
 		else
 			track_frame->check_buffer(aframe->buffer_length);
-		track_frame->copy_pts(aframe);
-		track_frame->clear_buffer();
-		track_frame->set_filled(aframe->source_duration);
+		track_frame->clear_frame(aframe->pts, aframe->source_duration);
 		track_frame->channel = edit->channel;
 		return 0;
 	}
@@ -76,18 +78,60 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 		if(!aframe)
 			aframe = track_frame;
 		module_levels->fill(&aframe);
-		for(int i = 0; i < out_channels; i++)
-		{
-			if(output[i]->channel == aframe->channel)
-			{
-				output[i]->copy(aframe);
-				break;
-			}
-		}
+		render_pan(output, out_channels, aframe);
 	}
 	return output;
 }
 
 AFrame *ATrackRender::get_aframe(AFrame *buffer)
 {
+}
+
+void ATrackRender::render_pan(AFrame **output, int out_channels,
+	AFrame *aframe)
+{
+	double intercept;
+	double slope = 0;
+	PanAutos *panautos = (PanAutos*)autos_track->automation->autos[AUTOMATION_PAN];
+	ptstime pts = aframe->pts;
+
+	for(int i = 0; i < out_channels; i++)
+	{
+		int slope_length = aframe->length;
+		ptstime slope_step = aframe->to_duration(1);
+		ptstime val = 0;
+
+		if(!panautos->first)
+			intercept = panautos->default_values[i];
+		else
+		{
+			PanAuto *prev = (PanAuto*)panautos->get_prev_auto(aframe->pts);
+			PanAuto *next = (PanAuto*)panautos->get_next_auto(aframe->pts, prev);
+
+			if(prev && next && prev != next)
+			{
+				slope = (next->values[i] - prev->values[i]) /
+					(next->pos_time - prev->pos_time);
+				intercept = (pts - prev->pos_time) * slope +
+					prev->values[i];
+			}
+			else
+				intercept = prev->values[i];
+		}
+
+		if(!EQUIV(slope, 0))
+		{
+			for(int j = 0; j < slope_length; j++)
+			{
+				output[i]->buffer[j] += aframe->buffer[j] *
+					(slope * val + intercept);
+				val += slope_step;
+			}
+		}
+		else if(!EQUIV(intercept, 0))
+		{
+			for(int j = 0; j < slope_length; j++)
+				output[i]->buffer[j] += aframe->buffer[j] * intercept;
+		}
+	}
 }
