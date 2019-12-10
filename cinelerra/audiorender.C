@@ -373,6 +373,7 @@ void AudioRender::get_aframes(ptstime pts, ptstime input_duration)
 	for(int i = 0; i < out_channels; i++)
 	{
 		audio_out[i]->init_aframe(pts, input_len);
+		audio_out[i]->clear_frame(pts, input_duration);
 		audio_out[i]->source_duration = input_duration;
 	}
 	process_frames();
