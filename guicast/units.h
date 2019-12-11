@@ -60,10 +60,10 @@ class DB
 public:
 	DB();
 	virtual ~DB() {};
-	static float fromdb(float db);
+	static double fromdb(double db);
 
 // convert db to power using a formula
-	static float todb(float power);
+	static double todb(double power);
 
 	inline DB& operator++() { if(db < MAXGAIN) db += 0.1; return *this; };
 	inline DB& operator--() { if(db > INFINITYGAIN) db -= 0.1; return *this; };
@@ -72,7 +72,7 @@ public:
 	inline int operator==(DB &newdb) { return db == newdb.db; };
 	inline int operator==(int newdb) { return db == newdb; };
 
-	float db;
+	double db;
 };
 
 // Third octave frequency table

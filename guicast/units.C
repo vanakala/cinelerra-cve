@@ -34,20 +34,21 @@ DB::DB()
 	db = 0;
 }
 
-float DB::fromdb(float db)
+double DB::fromdb(double db)
 {
-	return pow(10, db / 20);
+	return pow(10.0, db / 20.0);
 }
 
 // set db to the power given using a formula
-float DB::todb(float power)
+double DB::todb(double power)
 {
-	float db;
-	if(power == 0) 
+	double db;
+
+	if(power == 0)
 		db = -100;
 	else 
 	{
-		db = (float)(20 * log10(power));
+		db = 20.0 * log10(power);
 		if(db < -100) db = -100;
 	}
 	return db;
