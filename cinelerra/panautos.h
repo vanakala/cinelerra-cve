@@ -43,7 +43,7 @@ public:
 	size_t get_size();
 	void dump(int indent = 0);
 
-	float default_values[MAXCHANNELS];
+	double default_values[MAXCHANNELS];
 	int default_handle_x;
 	int default_handle_y;
 };

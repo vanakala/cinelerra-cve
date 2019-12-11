@@ -67,7 +67,7 @@ class APanPatch : public BC_Pan
 {
 public:
 	APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y,
-		int handle_x, int handle_y, float *values);
+		int handle_x, int handle_y, double *values);
 
 	int handle_event();
 	MWindow *mwindow;

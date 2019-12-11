@@ -51,12 +51,12 @@ public:
 	BC_Pan(int x, 
 		int y, 
 		int virtual_r, 
-		float maxvalue, 
+		double maxvalue,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
 		int stick_y, 
-		float *values);
+		double *values);
 	virtual ~BC_Pan();
 
 	void initialize();
@@ -73,35 +73,35 @@ public:
 // update values from stick position
 	void stick_to_values();
 // Generic conversion from stick to values for channel changes with no GUI
-	static void stick_to_values(float *values,
+	static void stick_to_values(double *values,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
 		int stick_y,
 		int virtual_r,
-		float maxvalue);
+		double maxvalue);
 	int get_total_values();
-	float get_value(int channel);
+	double get_value(int channel);
 	int get_stick_x();
 	int get_stick_y();
 	void set_images(VFrame **data);
 	static void calculate_stick_position(int total_values, 
 		int *value_positions, 
-		float *values, 
-		float maxvalue, 
+		double *values,
+		double maxvalue,
 		int virtual_r,
 		int &stick_x,
 		int &stick_y);
 	static void rdtoxy(int &x, int &y, int a, int virtual_r);
 	void activate(int popup_x = -1, int popup_y = -1);
 	void deactivate();
-	float* get_values();
+	double *get_values();
 
 private:
 	void draw();
 	void draw_popup();
 // update values from stick position
-	static float distance(int x1, int x2, int y1, int y2);
+	static double distance(int x1, int x2, int y1, int y2);
 // get x and y positions of channels
 	static void get_channel_positions(int *value_x, 
 		int *value_y, 
@@ -110,7 +110,7 @@ private:
 		int total_values);
 
 	int virtual_r;
-	float maxvalue;
+	double maxvalue;
 	int total_values;
 	int *value_positions;
 	int stick_x;
@@ -119,7 +119,7 @@ private:
 	int x_origin, y_origin;
 // Stick origin on button press
 	int stick_x_origin, stick_y_origin;
-	float *values;
+	double *values;
 	int highlighted;
 // virtual x and y positions
 	int *value_x, *value_y;

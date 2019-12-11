@@ -29,7 +29,7 @@
 PanAuto::PanAuto(EDL *edl, PanAutos *autos)
  : Auto(edl, (Autos*)autos)
 {
-	memset(values, 0, MAXCHANNELS * sizeof(float));
+	memset(values, 0, MAXCHANNELS * sizeof(double));
 	handle_x = handle_y = 0;
 }
 
@@ -54,7 +54,7 @@ void PanAuto::rechannel()
 
 void PanAuto::load(FileXML *file)
 {
-	memset(values, 0, MAXCHANNELS * sizeof(float));
+	memset(values, 0, MAXCHANNELS * sizeof(double));
 	handle_x = file->tag.get_property("HANDLE_X", handle_x);
 	handle_y = file->tag.get_property("HANDLE_Y", handle_y);
 	for(int i = 0; i < edlsession->audio_channels; i++)
@@ -99,7 +99,7 @@ void PanAuto::copy_from(Auto *that)
 	Auto::copy_from(that);
 
 	PanAuto *pan_auto = (PanAuto*)that;
-	memcpy(this->values, pan_auto->values, MAXCHANNELS * sizeof(float));
+	memcpy(this->values, pan_auto->values, MAXCHANNELS * sizeof(double));
 	this->handle_x = pan_auto->handle_x;
 	this->handle_y = pan_auto->handle_y;
 }

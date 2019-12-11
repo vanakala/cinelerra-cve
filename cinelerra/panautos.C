@@ -31,7 +31,7 @@ PanAutos::PanAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_PAN;
-	memset(default_values, 0, MAXCHANNELS * sizeof(float));
+	memset(default_values, 0, MAXCHANNELS * sizeof(double));
 	default_handle_x = 0;
 	default_handle_y = 0;
 }
@@ -39,7 +39,7 @@ PanAutos::PanAutos(EDL *edl, Track *track)
 Auto* PanAutos::new_auto()
 {
 	PanAuto* r = new PanAuto(edl, this);
-	memcpy(r->values, default_values, MAXCHANNELS * sizeof(float));
+	memcpy(r->values, default_values, MAXCHANNELS * sizeof(double));
 	r->handle_x = default_handle_x;
 	r->handle_y = default_handle_y;
 	return r;

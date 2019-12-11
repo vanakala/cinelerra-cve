@@ -192,7 +192,7 @@ int APatchGUI::update(int x, int y)
 		PanAuto *previous = 0, *next = 0;
 		PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 		ptstime position = master_edl->local_session->get_selectionstart(1);
-		float *values;
+		double *values;
 
 		ptr->get_handle(handle_x, handle_y,
 			position, previous, next);
@@ -296,7 +296,7 @@ float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 
 
 APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y, 
-    int handle_x, int handle_y, float *values)
+    int handle_x, int handle_y, double *values)
  : BC_Pan(x,
 		y, 
 		PAN_RADIUS, 
@@ -323,7 +323,7 @@ int APanPatch::handle_event()
 
 	current->handle_x = get_stick_x();
 	current->handle_y = get_stick_y();
-	memcpy(current->values, get_values(), sizeof(float) * edlsession->audio_channels);
+	memcpy(current->values, get_values(), sizeof(double) * edlsession->audio_channels);
 
 	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 

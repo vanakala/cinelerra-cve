@@ -36,19 +36,19 @@
 BC_Pan::BC_Pan(int x, 
 		int y, 
 		int virtual_r, 
-		float maxvalue, 
+		double maxvalue,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
 		int stick_y,
-		float *values)
+		double *values)
  : BC_SubWindow(x, y, -1, -1, -1)
 {
 	this->virtual_r = virtual_r;
 	this->maxvalue = maxvalue;
 	this->total_values = total_values;
-	this->values = new float[total_values];
-	memcpy(this->values, values, sizeof(float) * total_values);
+	this->values = new double[total_values];
+	memcpy(this->values, values, sizeof(double) * total_values);
 	this->value_positions = new int[total_values];
 	memcpy(this->value_positions, value_positions, sizeof(int) * total_values);
 	this->value_x = new int[total_values];
@@ -279,12 +279,12 @@ void BC_Pan::update(int x, int y)
 void BC_Pan::draw_popup()
 {
 	int x1, y1;
-	float rotate_angle;
+	double rotate_angle;
 
 	top_level->lock_window("BC_Pan::draw_popup");
 	popup->draw_background(0, 0, popup->get_w(), popup->get_h());
 
-	float scale = (float)(popup->get_w() - 
+	double scale = (double)(popup->get_w() -
 		resources.pan_data[PAN_CHANNEL]->get_w()) /
 		(virtual_r * 2);
 	set_color(resources.pan_text_color);
@@ -292,8 +292,8 @@ void BC_Pan::draw_popup()
 
 	for(int i = 0; i < total_values; i++)
 	{
-		x1 = (int)(value_x[i] * scale);
-		y1 = (int)(value_y[i] * scale);
+		x1 = round(value_x[i] * scale);
+		y1 = round(value_y[i] * scale);
 		rotate_angle = value_positions[i];
 		rotate_angle = -rotate_angle;
 		while(rotate_angle < 0) rotate_angle += 360;
@@ -307,13 +307,13 @@ void BC_Pan::draw_popup()
 		delete temp_pixmap;
 
 		char string[BCTEXTLEN];
-		float value = values[i] + 0.005;
+		double value = values[i] + 0.005;
 		sprintf(string, "%.1f", value);
 		popup->draw_text(x1, y1 + get_text_height(SMALLFONT), string);
 	}
 	
-	x1 = (int)(stick_x * scale);
-	y1 = (int)(stick_y * scale);
+	x1 = round(stick_x * scale);
+	y1 = round(stick_y * scale);
 	popup->draw_pixmap(images[PAN_STICK], x1, y1);
 	popup->flash();
 	top_level->unlock_window();
@@ -336,13 +336,13 @@ void BC_Pan::draw()
 
 // draw channels
 	int x1, y1, x2, y2, w, h, j;
-	float scale = (float)(get_w() - PICON_W) / (virtual_r * 2);
+	double scale = (double)(get_w() - PICON_W) / (virtual_r * 2);
 	set_color(RED);
 
 	for(int i = 0; i < total_values; i++)
 	{
-		x1 = (int)(value_x[i] * scale);
-		y1 = (int)(value_y[i] * scale);
+		x1 = round(value_x[i] * scale);
+		y1 = round(value_y[i] * scale);
 		CLAMP(x1, 0, get_w() - PICON_W);
 		CLAMP(y1, 0, get_h() - PICON_H);
 		draw_pixmap(images[PAN_CHANNEL_SMALL], x1, y1);
@@ -373,16 +373,16 @@ void BC_Pan::stick_to_values()
 		maxvalue);
 }
 
-void BC_Pan::stick_to_values(float *values,
+void BC_Pan::stick_to_values(double *values,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
 		int stick_y,
 		int virtual_r,
-		float maxvalue)
+		double maxvalue)
 {
 // find shortest distance to a channel
-	float shortest = 2 * virtual_r, test_distance;
+	double shortest = 2 * virtual_r, test_distance;
 	int i;
 	int *value_x = new int[total_values];
 	int *value_y = new int[total_values];
@@ -413,10 +413,10 @@ void BC_Pan::stick_to_values(float *values,
 		for(i = 0; i < total_values; i++)
 		{
 			values[i] = shortest;
-			values[i] -= (float)(distance(stick_x, 
-				value_x[i], 
-				stick_y, 
-				value_y[i]) - shortest);
+			values[i] -= distance(stick_x,
+				value_x[i],
+				stick_y,
+				value_y[i]) - shortest;
 			if(values[i] < 0) values[i] = 0;
 			values[i] = values[i] / shortest * maxvalue;
 		}
@@ -432,7 +432,7 @@ void BC_Pan::stick_to_values(float *values,
 }
 
 
-float BC_Pan::distance(int x1, int x2, int y1, int y2)
+double BC_Pan::distance(int x1, int x2, int y1, int y2)
 {
 	return hypot(x2 - x1, y2 - y1);
 }
@@ -444,7 +444,7 @@ void BC_Pan::change_channels(int new_channels, int *value_positions)
 	delete value_x;
 	delete value_y;
 
-	values = new float[new_channels];
+	values = new double[new_channels];
 	this->value_positions = new int[new_channels];
 	value_x = new int[new_channels];
 	value_y = new int[new_channels];
@@ -479,7 +479,7 @@ int BC_Pan::get_total_values()
 	return total_values;
 }
 
-float BC_Pan::get_value(int channel)
+double BC_Pan::get_value(int channel)
 {
 	return values[channel];
 }
@@ -494,25 +494,25 @@ int BC_Pan::get_stick_y()
 	return stick_y; 
 }
 
-float* BC_Pan::get_values()
+double* BC_Pan::get_values()
 {
 	return values;
 }
 
 void BC_Pan::rdtoxy(int &x, int &y, int a, int virtual_r)
 {
-	float radians = (float)a / 360 * 2 * M_PI;
+	double radians = (double)a / 360 * 2 * M_PI;
 
-	y = (int)(sin(radians) * virtual_r);
-	x = (int)(cos(radians) * virtual_r);
+	y = round(sin(radians) * virtual_r);
+	x = round(cos(radians) * virtual_r);
 	x += virtual_r;
 	y = virtual_r - y;
 }
 
 void BC_Pan::calculate_stick_position(int total_values, 
 	int *value_positions, 
-	float *values, 
-	float maxvalue, 
+	double *values,
+	double maxvalue,
 	int virtual_r,
 	int &stick_x,
 	int &stick_y)
@@ -545,7 +545,7 @@ void BC_Pan::calculate_stick_position(int total_values,
 	{
 
 // use highest value as location of stick
-		float highest_value = 0;
+		double highest_value = 0;
 		int angle = 0;
 		int i, j;
 

@@ -42,7 +42,7 @@ public:
 	void dump(int indent = 0);
 	void rechannel();
 
-	float values[MAXCHANNELS];
+	double values[MAXCHANNELS];
 	int handle_x;
 	int handle_y;
 };
