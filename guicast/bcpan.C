@@ -287,7 +287,7 @@ void BC_Pan::draw_popup()
 	double scale = (double)(popup->get_w() -
 		resources.pan_data[PAN_CHANNEL]->get_w()) /
 		(virtual_r * 2);
-	set_color(resources.pan_text_color);
+	popup->set_color(resources.pan_text_color);
 	set_font(SMALLFONT);
 
 	for(int i = 0; i < total_values; i++)
