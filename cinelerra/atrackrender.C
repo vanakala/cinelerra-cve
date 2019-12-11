@@ -22,17 +22,19 @@
 #include "aframe.h"
 #include "asset.h"
 #include "atrackrender.h"
+#include "audiorender.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
 #include "file.h"
+#include "floatautos.h"
 #include "levelhist.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "plugin.inc"
 #include "track.h"
-#include "audiorender.h"
+#include "units.h"
 
 ATrackRender::ATrackRender(Track *track, AudioRender *audiorender)
  : TrackRender(track)
@@ -77,6 +79,7 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 		aframe = read_aframe(output[0], edit, 0);
 		if(!aframe)
 			aframe = track_frame;
+		render_fade(aframe);
 		module_levels->fill(&aframe);
 		render_pan(output, out_channels, aframe);
 	}
@@ -132,6 +135,43 @@ void ATrackRender::render_pan(AFrame **output, int out_channels,
 		{
 			for(int j = 0; j < slope_length; j++)
 				output[i]->buffer[j] += aframe->buffer[j] * intercept;
+		}
+	}
+}
+
+void ATrackRender::render_fade(AFrame *aframe)
+{
+	FloatAutos *fadeautos = (FloatAutos*)autos_track->automation->autos[AUTOMATION_FADE];
+	ptstime pts = aframe->pts;
+	int framelen = aframe->length;
+	double fade_value, value;
+
+	if(fadeautos->automation_is_constant(pts, aframe->duration, fade_value))
+	{
+		if(EQUIV(fade_value, 0))
+			return;
+		if(fade_value <= INFINITYGAIN)
+			value = 0;
+		else
+			value = DB::fromdb(fade_value);
+
+		for(int i = 0; i < framelen; i++)
+			aframe->buffer[i] *= value;
+	}
+	else
+	{
+		double step = 1.0 / aframe->samplerate;
+
+		for(int i = 0; i < framelen; i++)
+		{
+			fade_value = fadeautos->get_value(pts);
+			pts += step;
+
+			if(fade_value <= INFINITYGAIN)
+				value = 0;
+			else
+				value = DB::fromdb(fade_value);
+			aframe->buffer[i] *= value;
 		}
 	}
 }
