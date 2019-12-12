@@ -32,7 +32,8 @@
 #include "levelhist.h"
 #include "panauto.h"
 #include "panautos.h"
-#include "plugin.inc"
+#include "plugin.h"
+#include "pluginserver.h"
 #include "track.h"
 #include "units.h"
 
@@ -41,11 +42,13 @@ ATrackRender::ATrackRender(Track *track, AudioRender *audiorender)
 {
 	arender = audiorender;
 	module_levels = new LevelHistory();
+	track_frame = 0;
 }
 
 ATrackRender::~ATrackRender()
 {
 	delete module_levels;
+	delete track_frame;
 }
 
 AFrame *ATrackRender::read_aframe(AFrame *aframe, Edit *edit, int filenum)
@@ -60,8 +63,8 @@ AFrame *ATrackRender::read_aframe(AFrame *aframe, Edit *edit, int filenum)
 			track_frame = new AFrame(aframe->buffer_length);
 		else
 			track_frame->check_buffer(aframe->buffer_length);
+		track_frame->copy_pts(aframe);
 		track_frame->clear_frame(aframe->pts, aframe->source_duration);
-		track_frame->channel = edit->channel;
 		return 0;
 	}
 
@@ -80,6 +83,7 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 		if(!aframe)
 			aframe = track_frame;
 		render_fade(aframe);
+		render_transition(aframe, edit);
 		module_levels->fill(&aframe);
 		render_pan(output, out_channels, aframe);
 	}
@@ -174,4 +178,28 @@ void ATrackRender::render_fade(AFrame *aframe)
 			aframe->buffer[i] *= value;
 		}
 	}
+}
+
+void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
+{
+	Plugin *transition = edit->transition;
+	AFrame *tmpframe;
+	Edit *prev = edit->previous;
+
+	if(!transition || !transition->plugin_server || !transition->on ||
+			transition->get_length() < aframe->pts - edit->get_pts())
+		return;
+
+	if(!transition->active_server)
+	{
+		transition->active_server = new PluginServer(*transition->plugin_server);
+		transition->active_server->open_plugin(0, transition, this);
+		transition->active_server->init_realtime(1);
+	}
+
+	if(!(tmpframe = read_aframe(aframe, prev, 1)))
+		tmpframe = track_frame;
+
+	transition->active_server->process_transition(tmpframe, aframe,
+		aframe->pts - edit->get_pts(), transition->get_length());
 }

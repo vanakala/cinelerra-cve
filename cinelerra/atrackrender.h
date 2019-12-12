@@ -46,6 +46,7 @@ private:
 	AFrame *read_aframe(AFrame *aframe, Edit *edit, int filenum);
 	void render_pan(AFrame **output, int out_channels, AFrame *track_frame);
 	void render_fade(AFrame *aframe);
+	void render_transition(AFrame *aframe, Edit *edit);
 
 	AudioRender *arender;
 	Edit *current_edit;

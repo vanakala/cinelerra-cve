@@ -419,8 +419,14 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	int channels;
 	int last_file;
 	File *file;
-	int channel = edit->channel;
-	Asset *asset = edit->asset;
+	int channel;
+	Asset *asset;
+
+	if(!edit)
+		return 0;
+
+	channel = edit->channel;
+	asset = edit->asset;
 
 	for(int i = 0; i < input_frames.total; i++)
 	{
