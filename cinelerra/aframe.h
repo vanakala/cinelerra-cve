@@ -87,6 +87,10 @@ public:
 // Set frame pts rounded to sample
 	ptstime set_pts(ptstime t);
 
+// Track number
+	void set_track(int number);
+	int get_track();
+
 	void dump(int indent, int dumpdata = 0);
 
 // Buffer start in source
@@ -112,6 +116,7 @@ public:
 	int buffer_length;
 
 private:
+	int trackno;
 	int shared;
 	int float_data;
 };
