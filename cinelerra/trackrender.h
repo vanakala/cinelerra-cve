@@ -39,6 +39,7 @@ public:
 	virtual ~TrackRender();
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
+	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
 	Track *get_track_number(int number);
 	void set_effects_track(Track *track);
 

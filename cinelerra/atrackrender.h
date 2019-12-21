@@ -47,10 +47,13 @@ private:
 	void render_pan(AFrame **output, int out_channels, AFrame *track_frame);
 	void render_fade(AFrame *aframe);
 	void render_transition(AFrame *aframe, Edit *edit);
+	void render_plugins(AFrame *aframe, Edit *edit);
+	AFrame *execute_plugin(Plugin *plugin, AFrame *aframe);
 
 	AudioRender *arender;
 	Edit *current_edit;
 	AFrame *track_frame;
+	AFrame *current_aframe;
 };
 
 #endif

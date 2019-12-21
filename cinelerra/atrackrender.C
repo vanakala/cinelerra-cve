@@ -84,6 +84,7 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 			aframe = track_frame;
 		render_fade(aframe);
 		render_transition(aframe, edit);
+		render_plugins(aframe, edit);
 		module_levels->fill(&aframe);
 		render_pan(output, out_channels, aframe);
 	}
@@ -92,6 +93,19 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 
 AFrame *ATrackRender::get_aframe(AFrame *buffer)
 {
+// Called by plugin
+	ptstime buffer_pts = buffer->pts;
+	ptstime buffer_duration = buffer->source_duration;
+
+	if(current_aframe && PTSEQU(current_aframe->pts, buffer_pts))
+		buffer->copy(current_aframe);
+	else
+	{
+		Edit *edit = media_track->editof(buffer_pts);
+
+		read_aframe(buffer, edit, 2);
+	}
+	return buffer;
 }
 
 void ATrackRender::render_pan(AFrame **output, int out_channels,
@@ -202,4 +216,70 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 
 	transition->active_server->process_transition(tmpframe, aframe,
 		aframe->pts - edit->get_pts(), transition->get_length());
+}
+
+void ATrackRender::render_plugins(AFrame *aframe, Edit *edit)
+{
+	Plugin *plugin;
+	ptstime start = aframe->pts;
+	ptstime end = start + aframe->duration;
+	AFrame *tmpframe;
+
+	current_aframe = aframe;
+	current_edit = edit;
+
+	for(int i = 0; i < plugins_track->plugins.total; i++)
+	{
+		plugin = plugins_track->plugins.values[i];
+
+		if(plugin->on && plugin->active_in(start, end))
+		{
+			current_aframe->set_track(media_track->number_of());
+			if(tmpframe = execute_plugin(plugin, current_aframe))
+				current_aframe = tmpframe;
+		}
+	}
+	current_aframe = 0;
+}
+
+AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
+{
+	PluginServer *server = plugin->plugin_server;
+
+	switch(plugin->plugin_type)
+	{
+	case PLUGIN_NONE:
+		break;
+
+	case PLUGIN_SHAREDMODULE:
+		// not ready
+		break;
+
+	case PLUGIN_SHAREDPLUGIN:
+		// not ready
+		break;
+
+	case PLUGIN_STANDALONE:
+		if(server)
+		{
+			if(server->multichannel && !plugin->shared_plugin)
+			{
+				// not ready
+				break;
+			}
+			else
+			{
+				if(!plugin->active_server)
+				{
+					plugin->active_server = new PluginServer(*server);
+					plugin->active_server->open_plugin(0, plugin, this);
+					plugin->active_server->init_realtime(1);
+				}
+				plugin->active_server->process_buffer(&aframe, plugin->get_length());
+				return aframe;
+			}
+		}
+		break;
+	}
+	return 0;
 }

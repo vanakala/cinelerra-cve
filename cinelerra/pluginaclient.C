@@ -24,6 +24,9 @@
 #include "edlsession.h"
 #include "pluginaclient.h"
 #include "pluginserver.h"
+#include "renderengine.inc"
+#include "track.h"
+#include "trackrender.h"
 
 #include <string.h>
 
@@ -78,6 +81,13 @@ int PluginAClient::plugin_process_loop(AFrame **aframes)
 
 void PluginAClient::get_frame(AFrame *frame)
 {
+#ifdef NEW_ARENDERER
+	if(renderer)
+	{
+		Track *current = renderer->get_track_number(frame->get_track());
+		current->renderer->get_aframe(frame);
+	}
+#endif
 	server->get_aframe(frame);
 }
 
