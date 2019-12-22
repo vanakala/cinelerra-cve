@@ -38,6 +38,7 @@
 #include "pluginaclientlad.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
+#include "renderengine.inc"
 #include "theme.inc"
 #include "track.inc"
 #include "trackrender.inc"
@@ -181,10 +182,13 @@ public:
 	int process_loop(AFrame **buffers);
 	void stop_loop();
 
+#ifndef NEW_RENDERER
 // Called by client to read data
 	void get_vframe(VFrame *buffer, int use_opengl);
+#endif
+#ifndef NEW_ARENDERER
 	void get_aframe(AFrame *aframe);
-
+#endif
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);
 	int get_samplerate();      // get samplerate produced by plugin

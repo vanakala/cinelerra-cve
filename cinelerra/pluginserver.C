@@ -589,6 +589,7 @@ void PluginServer::stop_loop()
 		client->plugin_stop_loop();
 }
 
+#ifndef NEW_RENDERER
 void PluginServer::get_vframe(VFrame *buffer,
 	int use_opengl)
 {
@@ -623,7 +624,9 @@ void PluginServer::get_vframe(VFrame *buffer,
 			channel);
 	}
 }
+#endif
 
+#ifndef NEW_ARENDERER
 void PluginServer::get_aframe(AFrame *aframe)
 {
 	if(!multichannel)
@@ -645,6 +648,7 @@ void PluginServer::get_aframe(AFrame *aframe)
 		aframe->duration = round((ptstime)aframe->length / aframe->samplerate);
 	}
 }
+#endif
 
 void PluginServer::raise_window()
 {
