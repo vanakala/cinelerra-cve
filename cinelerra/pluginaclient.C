@@ -87,8 +87,11 @@ void PluginAClient::get_frame(AFrame *frame)
 		Track *current = renderer->get_track_number(frame->get_track());
 		current->renderer->get_aframe(frame);
 	}
-#endif
+	else
+		frame->clear_frame(frame->pts, frame->source_duration);
+#else
 	server->get_aframe(frame);
+#endif
 }
 
 int PluginAClient::get_project_samplerate()
