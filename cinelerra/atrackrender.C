@@ -96,8 +96,10 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 // Called by plugin
 	ptstime buffer_pts = buffer->pts;
 	ptstime buffer_duration = buffer->source_duration;
+	int channel = buffer->channel;
 
-	if(current_aframe && PTSEQU(current_aframe->pts, buffer_pts))
+	if(current_aframe && current_aframe->channel == channel &&
+			PTSEQU(current_aframe->pts, buffer_pts))
 		buffer->copy(current_aframe);
 	else
 	{
@@ -256,9 +258,12 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		break;
 
 	case PLUGIN_SHAREDPLUGIN:
-		// not ready
-		break;
-
+		if(!server && plugin->shared_plugin)
+		{
+			if(!plugin->shared_plugin->plugin_server->multichannel)
+				server = plugin->shared_plugin->plugin_server;
+		}
+		// Fall through
 	case PLUGIN_STANDALONE:
 		if(server)
 		{
