@@ -67,7 +67,11 @@ Plugin::~Plugin()
 			for(int i = 0; i < current->plugins.total; i++)
 			{
 				if(current->plugins.values[i]->shared_plugin == this)
+				{
 					current->plugins.values[i]->shared_plugin = 0;
+					delete current->plugins.values[i]->active_server;
+					current->plugins.values[i]->active_server = 0;
+				}
 			}
 		}
 	}
@@ -294,6 +298,22 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	delete active_server;
 	active_server = 0;
 	reset_frames();
+
+	if(plugin_type != PLUGIN_TRANSITION)
+	{
+		for(Track *current = track->tracks->first; current;
+			current = current->next)
+		{
+			for(int i = 0; i < current->plugins.total; i++)
+			{
+				if(current->plugins.values[i]->shared_plugin == this)
+				{
+					delete current->plugins.values[i]->active_server;
+					current->plugins.values[i]->active_server = 0;
+				}
+			}
+		}
+	}
 
 	if(server && !server->open_plugin(0, 0, 0))
 	{
