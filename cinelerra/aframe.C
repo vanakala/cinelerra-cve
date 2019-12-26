@@ -282,6 +282,7 @@ void AFrame::set_fill_request(ptstime pts, ptstime duration)
 	reset_buffer();
 	this->source_pts = this->pts = pts;
 	source_duration = duration;
+	source_length = to_samples(duration);
 }
 
 void AFrame::set_fill_request(ptstime pts, int length)
@@ -289,6 +290,7 @@ void AFrame::set_fill_request(ptstime pts, int length)
 	reset_buffer();
 	this->source_pts = this->pts = pts;
 	source_length = length;
+	source_duration = to_duration(length);
 }
 
 void AFrame::set_fill_request(samplenum position, int length)
@@ -296,6 +298,7 @@ void AFrame::set_fill_request(samplenum position, int length)
 	reset_buffer();
 	this->source_pts = this->pts = to_duration(position);
 	source_length = length;
+	source_duration = to_duration(length);
 }
 
 int AFrame::ptsequ(ptstime t1, ptstime t2)
