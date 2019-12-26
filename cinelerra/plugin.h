@@ -127,7 +127,7 @@ public:
 // Active server
 	PluginServer *active_server;
 // Frames for multichannel plugin
-	ArrayList<VFrame*> frames;
+	ArrayList<VFrame*> vframes;
 	ArrayList<AFrame*> aframes;
 
 private:

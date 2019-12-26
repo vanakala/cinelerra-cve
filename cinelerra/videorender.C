@@ -231,10 +231,10 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 	VFrame *frame;
 	Track *current = plugin->track;
 
-	if(plugin->frames.total > 0)
+	if(plugin->vframes.total > 0)
 		return;
 	// Current track is the track of multitrack plugin
-	plugin->frames.append(frame = new VFrame(0, current->track_w,
+	plugin->vframes.append(frame = new VFrame(0, current->track_w,
 		current->track_h, edl->this_edlsession->color_model));
 	frame->set_layer(current->number_of());
 
@@ -251,10 +251,10 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 				frame = new VFrame(0, track->track_w,
 					track->track_h,
 					edl->this_edlsession->color_model);
-				plugin->frames.append(frame);
+				plugin->vframes.append(frame);
 				frame->set_layer(track->number_of());
 			}
 		}
 	}
-	plugin->active_server->init_realtime(plugin->frames.total);
+	plugin->active_server->init_realtime(plugin->vframes.total);
 }

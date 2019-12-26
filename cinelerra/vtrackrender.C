@@ -474,16 +474,16 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 				}
 				videorender->allocate_vframes(plugin);
 
-				for(int i = 0; i < plugin->frames.total; i++)
+				for(int i = 0; i < plugin->vframes.total; i++)
 				{
-					VFrame *current = plugin->frames.values[i];
+					VFrame *current = plugin->vframes.values[i];
 					layer = current->get_layer();
 					current->copy_pts(frame);
 					current->set_layer(layer);
 				}
-				plugin->active_server->process_buffer(plugin->frames.values,
+				plugin->active_server->process_buffer(plugin->vframes.values,
 					plugin->get_length());
-				frame->copy_from(plugin->frames.values[0]);
+				frame->copy_from(plugin->vframes.values[0]);
 			}
 			else
 			{

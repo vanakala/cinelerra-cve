@@ -649,7 +649,7 @@ void Plugin::clear_keyframes()
 
 void Plugin::reset_frames()
 {
-	frames.remove_all_objects();
+	vframes.remove_all_objects();
 	aframes.remove_all_objects();
 }
 
@@ -707,11 +707,11 @@ void Plugin::dump(int indent)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
 	printf("\n%*sproject_pts %.3f length %.3f id %d active_server %p\n", indent, "",
 		pts, duration, id, active_server);
-	if(frames.total)
+	if(vframes.total)
 	{
 		printf("%*sFrames:", indent, "");
-		for(int i = 0; i < frames.total; i++)
-			printf(" %p", frames.values[i]);
+		for(int i = 0; i < vframes.total; i++)
+			printf(" %p", vframes.values[i]);
 		putchar('\n');
 	}
 	if(aframes.total)
