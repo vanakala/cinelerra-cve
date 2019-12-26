@@ -105,7 +105,8 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 	{
 		Edit *edit = media_track->editof(buffer_pts);
 
-		read_aframe(buffer, edit, 2);
+		AFrame *aframe = read_aframe(buffer, edit, 2);
+		buffer->copy(aframe);
 	}
 	return buffer;
 }
@@ -269,8 +270,28 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		{
 			if(server->multichannel && !plugin->shared_plugin)
 			{
-				// not ready
-				break;
+				if(!plugin->active_server)
+				{
+					plugin->active_server = new PluginServer(*server);
+					plugin->active_server->open_plugin(0, plugin, this);
+				}
+				arender->allocate_aframes(plugin);
+
+				for(int i = 0; i < plugin->aframes.total; i++)
+				{
+					AFrame *current = plugin->aframes.values[i];
+					current->set_fill_request(aframe->pts, aframe->duration);
+					current->copy_pts(aframe);
+					if(i > 0)
+					{
+						Edit *edit = get_track_number(current->get_track())->editof(aframe->pts);
+						if(edit)
+							current->channel = edit->channel;
+					}
+				}
+				plugin->active_server->process_buffer(plugin->aframes.values,
+					plugin->get_length());
+				aframe->copy(plugin->aframes.values[0]);
 			}
 			else
 			{
