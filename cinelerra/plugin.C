@@ -650,6 +650,7 @@ void Plugin::clear_keyframes()
 void Plugin::reset_frames()
 {
 	frames.remove_all_objects();
+	aframes.remove_all_objects();
 }
 
 size_t Plugin::get_size()
@@ -711,6 +712,13 @@ void Plugin::dump(int indent)
 		printf("%*sFrames:", indent, "");
 		for(int i = 0; i < frames.total; i++)
 			printf(" %p", frames.values[i]);
+		putchar('\n');
+	}
+	if(aframes.total)
+	{
+		printf("%*sAFrames:", indent, "");
+		for(int i = 0; i < aframes.total; i++)
+			printf(" %p", aframes.values[i]);
 		putchar('\n');
 	}
 

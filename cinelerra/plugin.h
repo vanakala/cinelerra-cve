@@ -22,6 +22,7 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#include "aframe.inc"
 #include "edl.inc"
 #include "filexml.inc"
 #include "guidelines.h"
@@ -33,6 +34,7 @@
 #include "pluginserver.inc"
 #include "track.inc"
 #include "virtualnode.inc"
+#include "vframe.inc"
 
 class PluginOnToggle;
 
@@ -126,6 +128,7 @@ public:
 	PluginServer *active_server;
 // Frames for multichannel plugin
 	ArrayList<VFrame*> frames;
+	ArrayList<AFrame*> aframes;
 
 private:
 	int shared_track_num;

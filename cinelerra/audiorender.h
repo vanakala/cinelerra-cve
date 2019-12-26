@@ -53,6 +53,7 @@ public:
 	int get_track_levels(double *levels, ptstime pts);
 	AFrame *get_file_frame(ptstime pts, ptstime duration,
 		Edit *edit, int filenum);
+	void allocate_aframes(Plugin *plugin);
 
 private:
 	void init_frames();

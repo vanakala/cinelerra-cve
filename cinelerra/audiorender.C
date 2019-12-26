@@ -491,6 +491,37 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	return &input_frames.values[last_file + channel]->aframe;
 }
 
+void AudioRender::allocate_aframes(Plugin *plugin)
+{
+	AFrame *frame;
+	Track *current = plugin->track;
+
+	if(plugin->aframes.total > 0)
+		return;
+	// Current track is the track of multitrack plugin
+	plugin->aframes.append(frame = new AFrame(out_length));
+	frame->set_track(current->number_of());
+
+	// Add frames for other tracks starting from the first
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_AUDIO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+				track->plugins.values[i]->on)
+			{
+				frame = new AFrame(out_length);
+				plugin->aframes.append(frame);
+				frame->set_track(track->number_of());
+			}
+		}
+	}
+	plugin->active_server->init_realtime(plugin->aframes.total);
+}
+
+
 InFrame::InFrame(File *file, int channel, int out_length, int filenum)
 {
 	this->file = file;
