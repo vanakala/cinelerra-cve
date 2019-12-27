@@ -33,7 +33,6 @@
 #include "edlsession.h"
 #include "file.h"
 #include "keyframe.h"
-#include "levelhist.h"
 #include "mainerror.h"
 #include "plugin.h"
 #include "renderbase.h"
@@ -44,8 +43,6 @@
 AudioRender::AudioRender(RenderEngine *renderengine, EDL *edl)
  : RenderBase(renderengine, edl)
 {
-	output_levels = new LevelHistory();
-
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		audio_out[i] = 0;
@@ -56,7 +53,6 @@ AudioRender::AudioRender(RenderEngine *renderengine, EDL *edl)
 
 AudioRender::~AudioRender()
 {
-	delete output_levels;
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		delete audio_out[i];
@@ -83,7 +79,7 @@ void AudioRender::init_frames()
 			audio_out[i]->channel = i;
 		}
 	}
-	output_levels->reset(out_length, out_samplerate, out_channels);
+	output_levels.reset(out_length, out_samplerate, out_channels);
 	sample_duration = audio_out[0]->to_duration(1);
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
@@ -91,7 +87,7 @@ void AudioRender::init_frames()
 		if(track->data_type != TRACK_AUDIO || track->renderer)
 			continue;
 		track->renderer = new ATrackRender(track, this);
-		((ATrackRender*)track->renderer)->module_levels->reset(
+		((ATrackRender*)track->renderer)->module_levels.reset(
 			renderengine->fragment_len,
 			edl->this_edlsession->sample_rate, 1);
 	}
@@ -245,7 +241,7 @@ void AudioRender::run()
 		{
 			get_aframes(render_pts, input_duration);
 
-			output_levels->fill(audio_out);
+			output_levels.fill(audio_out);
 
 			if(!EQUIV(render_speed, 1))
 			{
@@ -393,7 +389,7 @@ void AudioRender::process_frames()
 
 int AudioRender::get_output_levels(double *levels, ptstime pts)
 {
-	return output_levels->get_levels(levels, pts);
+	return output_levels.get_levels(levels, pts);
 }
 
 int AudioRender::get_track_levels(double *levels, ptstime pts)
@@ -406,7 +402,7 @@ int AudioRender::get_track_levels(double *levels, ptstime pts)
 			continue;
 		if(track->renderer)
 		{
-			((ATrackRender*)track->renderer)->module_levels->get_levels(
+			((ATrackRender*)track->renderer)->module_levels.get_levels(
 				&levels[i++], pts);
 		}
 	}

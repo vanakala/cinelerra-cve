@@ -29,7 +29,6 @@
 #include "edit.h"
 #include "file.h"
 #include "floatautos.h"
-#include "levelhist.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "plugin.h"
@@ -41,13 +40,12 @@ ATrackRender::ATrackRender(Track *track, AudioRender *audiorender)
  : TrackRender(track)
 {
 	arender = audiorender;
-	module_levels = new LevelHistory();
 	track_frame = 0;
+	current_aframe = 0;
 }
 
 ATrackRender::~ATrackRender()
 {
-	delete module_levels;
 	delete track_frame;
 }
 
@@ -85,7 +83,7 @@ AFrame **ATrackRender::get_aframes(AFrame **output, int out_channels)
 		render_fade(aframe);
 		render_transition(aframe, edit);
 		render_plugins(aframe, edit);
-		module_levels->fill(&aframe);
+		module_levels.fill(&aframe);
 		render_pan(output, out_channels, aframe);
 	}
 	return output;

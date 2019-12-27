@@ -26,7 +26,7 @@
 #include "atrackrender.inc"
 #include "cinelerra.h"
 #include "edit.inc"
-#include "levelhist.inc"
+#include "levelhist.h"
 #include "plugin.inc"
 #include "track.inc"
 #include "audiorender.inc"
@@ -41,7 +41,7 @@ public:
 	AFrame **get_aframes(AFrame **output, int out_channels);
 	AFrame *get_aframe(AFrame *buffer);
 
-	LevelHistory *module_levels;
+	LevelHistory module_levels;
 private:
 	AFrame *read_aframe(AFrame *aframe, Edit *edit, int filenum);
 	void render_pan(AFrame **output, int out_channels, AFrame *track_frame);

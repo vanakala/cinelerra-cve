@@ -27,7 +27,7 @@
 #include "cinelerra.h"
 #include "edl.inc"
 #include "file.inc"
-#include "levelhist.inc"
+#include "levelhist.h"
 #include "renderbase.h"
 #include "renderengine.inc"
 
@@ -61,7 +61,7 @@ private:
 	void get_aframes(ptstime pts, ptstime input_duration);
 	void process_frames();
 
-	LevelHistory *output_levels;
+	LevelHistory output_levels;
 	// output buffers for audio device
 	AFrame *audio_out[MAXCHANNELS];
 	int out_channels;
