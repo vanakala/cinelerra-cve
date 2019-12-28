@@ -253,8 +253,14 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		break;
 
 	case PLUGIN_SHAREDMODULE:
-		// not ready
-		break;
+		if(!plugin->shared_track)
+			break;
+		set_effects_track(plugin->shared_track);
+		render_fade(aframe);
+		render_transition(aframe, current_edit);
+		render_plugins(aframe, current_edit);
+		set_effects_track(media_track);
+		return aframe;
 
 	case PLUGIN_SHAREDPLUGIN:
 		if(!server && plugin->shared_plugin)
