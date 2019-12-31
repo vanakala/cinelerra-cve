@@ -104,7 +104,11 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 		Edit *edit = media_track->editof(buffer_pts);
 
 		AFrame *aframe = read_aframe(buffer, edit, 2);
+		if(!aframe)
+			aframe = track_frame;
 		buffer->copy(aframe);
+		render_fade(buffer);
+		render_transition(buffer, edit);
 	}
 	return buffer;
 }
