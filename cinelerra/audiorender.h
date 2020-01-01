@@ -35,10 +35,11 @@ class InFrame
 {
 public:
 	InFrame(File *file, int channel, int out_length, int filenum);
+	~InFrame();
 
 	File *file;
 	int filenum;
-	AFrame aframe;
+	AFrame *aframe;
 };
 
 class AudioRender : public RenderBase

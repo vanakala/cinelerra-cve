@@ -21,6 +21,7 @@
 
 #include "arraylist.h"
 #include "assetlist.h"
+#include "atmpframecache.h"
 #include "cliplist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
@@ -62,6 +63,7 @@ EDL *render_edl;
 MainSession *mainsession;
 EDLSession *edlsession;
 PluginDB plugindb;
+ATmpFrameCache audio_frames;
 
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 
