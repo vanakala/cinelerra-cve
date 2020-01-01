@@ -329,6 +329,15 @@ int AFrame::get_track()
 	return trackno;
 }
 
+size_t AFrame::get_data_size()
+{
+	if(shared)
+		return 0;
+	if(float_data)
+		return buffer_length * sizeof(float);
+	return buffer_length * sizeof(double);
+}
+
 void AFrame::dump(int indent, int dumpdata)
 {
 	double avg, min, max;

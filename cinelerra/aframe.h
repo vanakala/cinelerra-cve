@@ -90,6 +90,8 @@ public:
 // Track number
 	void set_track(int number);
 	int get_track();
+// Data size of the object
+	size_t get_data_size();
 
 	void dump(int indent, int dumpdata = 0);
 
