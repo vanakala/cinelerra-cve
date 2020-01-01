@@ -59,6 +59,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    assetedit.C \
 		    assetlist.C \
 		    assetpopup.C \
+		    atmpframecache.C \
 		    atrack.C \
 		    atrackrender.C \
 		    attachmentpoint.C \
@@ -304,6 +305,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 assetlist.h \
 		 assetedit.h \
 		 assetpopup.h \
+		 atmpframecache.h \
 		 atrack.h \
 		 atrackrender.h \
 		 attachmentpoint.h \
