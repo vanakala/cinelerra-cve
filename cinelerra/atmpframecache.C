@@ -120,6 +120,7 @@ AFrame *ATmpFrameCache::clone_frame(AFrame *frame)
 
 	aframe = get_tmpframe(frame->buffer_length);
 	aframe->samplerate = frame->samplerate;
+	aframe->channel = frame->channel;
 	// Make frame empty
 	aframe->duration = 0;
 	aframe->length = 0;
