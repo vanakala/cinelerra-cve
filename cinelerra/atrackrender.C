@@ -50,12 +50,6 @@ ATrackRender::~ATrackRender()
 	audio_frames.release_frame(track_frame);
 }
 
-AFrame *ATrackRender::read_aframe(AFrame *aframe, Edit *edit, int filenum)
-{
-	return arender->get_file_frame(aframe->pts, aframe->source_duration,
-		edit, filenum);
-}
-
 void ATrackRender::get_aframes(AFrame **output, int out_channels)
 {
 	AFrame *aframe;
@@ -64,7 +58,8 @@ void ATrackRender::get_aframes(AFrame **output, int out_channels)
 
 	if(is_playable(pts, edit))
 	{
-		if(aframe = read_aframe(output[0], edit, 0))
+		if(aframe = arender->get_file_frame(output[0]->pts,
+			output[0]->source_duration, edit, 0))
 		{
 			render_fade(aframe);
 			render_transition(aframe, edit);
@@ -90,8 +85,8 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 	{
 		Edit *edit = media_track->editof(buffer_pts);
 
-		aframe = read_aframe(buffer, edit, 2);
-		if(aframe)
+		if(aframe = arender->get_file_frame(buffer->pts,
+			buffer->source_duration, edit, 2))
 		{
 			buffer->copy(aframe);
 			render_fade(buffer);
@@ -215,7 +210,8 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 		transition->active_server->init_realtime(1);
 	}
 
-	if(!(tmpframe = read_aframe(aframe, prev, 1)))
+	if(!(tmpframe = arender->get_file_frame(aframe->pts,
+		aframe->source_duration, prev, 1)))
 	{
 		tmpframe = audio_frames.clone_frame(aframe);
 		tmpframe->clear_frame(aframe->pts, aframe->source_duration);
