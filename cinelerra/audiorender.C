@@ -386,6 +386,13 @@ void AudioRender::process_frames()
 			continue;
 		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels);
 	}
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
+		if(track->data_type != TRACK_AUDIO)
+			continue;
+		((ATrackRender*)track->renderer)->render_pan(audio_out, out_channels);
+	}
 }
 
 int AudioRender::get_output_levels(double *levels, ptstime pts)
@@ -418,6 +425,7 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	File *file;
 	int channel;
 	Asset *asset;
+	AFrame *cur;
 
 	if(!edit)
 		return 0;
@@ -429,12 +437,14 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	{
 		InFrame *infile = input_frames.values[i];
 
-		if(infile->file->asset == asset && infile->aframe->channel == channel &&
+		if(infile->file->asset == asset && infile->channel == channel &&
 			infile->filenum == filenum)
 		{
-			if(PTSEQU(infile->aframe->pts, pts) &&
-					PTSEQU(infile->aframe->duration, duration))
-				return infile->aframe;
+			AFrame *cur = infile->get_aframe(channel);
+
+			if(PTSEQU(cur->pts, pts) &&
+					PTSEQU(cur->duration, duration))
+				return infile->handover_aframe();
 		}
 	}
 
@@ -448,9 +458,8 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 
 			for(int j = 0; j < channels; j++)
 			{
-				AFrame *aframe = input_frames.values[i + j]->aframe;
+				AFrame *aframe = input_frames.values[i + j]->get_aframe(j);
 
-				aframe->check_buffer(out_length);
 				aframe->samplerate = out_samplerate;
 				aframe->reset_buffer();
 				aframe->set_fill_request(pts, duration);
@@ -458,7 +467,7 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 					edit->get_source_pts();
 				infile->file->get_samples(aframe);
 			}
-			return input_frames.values[i + channel]->aframe;
+			return input_frames.values[i + channel]->handover_aframe();
 		}
 	}
 
@@ -476,16 +485,17 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 
 	for(int j = 0; j < channels; j++)
 	{
-		InFrame *infile = new InFrame(file, j, out_length, filenum);
+		InFrame *infile = new InFrame(file, out_length, filenum);
 
-		infile->aframe->set_fill_request(pts, duration);
-		infile->aframe->samplerate = out_samplerate;
-		infile->aframe->source_pts = pts - edit->get_pts() +
+		cur = infile->get_aframe(j);
+		cur->set_fill_request(pts, duration);
+		cur->samplerate = out_samplerate;
+		cur->source_pts = pts - edit->get_pts() +
 			edit->get_source_pts();
-		file->get_samples(infile->aframe);
+		file->get_samples(cur);
 		input_frames.append(infile);
 	}
-	return input_frames.values[last_file + channel]->aframe;
+	return input_frames.values[last_file + channel]->handover_aframe();
 }
 
 void AudioRender::allocate_aframes(Plugin *plugin)
@@ -518,16 +528,35 @@ void AudioRender::allocate_aframes(Plugin *plugin)
 	plugin->active_server->init_realtime(plugin->aframes.total);
 }
 
-
-InFrame::InFrame(File *file, int channel, int out_length, int filenum)
+InFrame::InFrame(File *file, int out_length, int filenum)
 {
 	this->file = file;
 	this->filenum = filenum;
-	aframe = audio_frames.get_tmpframe(out_length);
-	aframe->channel = channel;
+	this->out_length = out_length;
+	channel = -1;
+	aframe = 0;
 }
 
 InFrame::~InFrame()
 {
 	audio_frames.release_frame(aframe);
+}
+
+AFrame *InFrame::get_aframe(int chnl)
+{
+	if(!aframe)
+	{
+		aframe = audio_frames.get_tmpframe(out_length);
+		aframe->channel = channel = chnl;
+	}
+	return aframe;
+}
+
+AFrame *InFrame::handover_aframe()
+{
+	AFrame *cur = aframe;
+
+	aframe = 0;
+	channel = -1;
+	return cur;
 }

@@ -34,11 +34,17 @@
 class InFrame
 {
 public:
-	InFrame(File *file, int channel, int out_length, int filenum);
+	InFrame(File *file, int out_length, int filenum);
 	~InFrame();
+
+	AFrame *get_aframe(int channel);
+	AFrame *handover_aframe();
 
 	File *file;
 	int filenum;
+	int channel;
+private:
+	int out_length;
 	AFrame *aframe;
 };
 

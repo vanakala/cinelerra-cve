@@ -38,13 +38,13 @@ public:
 	ATrackRender(Track *track, AudioRender *vrender);
 	~ATrackRender();
 
-	AFrame **get_aframes(AFrame **output, int out_channels);
+	void get_aframes(AFrame **output, int out_channels);
 	AFrame *get_aframe(AFrame *buffer);
+	void render_pan(AFrame **output, int out_channels);
 
 	LevelHistory module_levels;
 private:
 	AFrame *read_aframe(AFrame *aframe, Edit *edit, int filenum);
-	void render_pan(AFrame **output, int out_channels, AFrame *track_frame);
 	void render_fade(AFrame *aframe);
 	void render_transition(AFrame *aframe, Edit *edit);
 	void render_plugins(AFrame *aframe, Edit *edit);
