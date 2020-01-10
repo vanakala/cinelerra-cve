@@ -384,7 +384,21 @@ void AudioRender::process_frames()
 	{
 		if(track->data_type != TRACK_AUDIO)
 			continue;
-		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels);
+		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_NORMAL);
+	}
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
+		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
+			continue;
+		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_SHARED);
+	}
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
+		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
+			continue;
+		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_FORCE);
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
@@ -526,6 +540,17 @@ void AudioRender::allocate_aframes(Plugin *plugin)
 		}
 	}
 	plugin->active_server->init_realtime(plugin->aframes.total);
+}
+
+void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer)
+{
+	for(int i = 1; i < aframes->total; i++)
+	{
+		AFrame *aframe = aframes->values[i];
+		Track *track = renderer->get_track_number(aframe->get_track());
+
+		track->renderer->copy_track_aframe(aframe);
+	}
 }
 
 InFrame::InFrame(File *file, int out_length, int filenum)

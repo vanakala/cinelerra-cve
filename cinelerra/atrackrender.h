@@ -35,24 +35,24 @@
 class ATrackRender : public TrackRender
 {
 public:
-	ATrackRender(Track *track, AudioRender *vrender);
+	ATrackRender(Track *track, AudioRender *arender);
 	~ATrackRender();
 
-	void get_aframes(AFrame **output, int out_channels);
+	void get_aframes(AFrame **output, int out_channels, int rstp);
 	AFrame *get_aframe(AFrame *buffer);
 	void render_pan(AFrame **output, int out_channels);
+	void copy_track_aframe(AFrame *aframe);
 
 	LevelHistory module_levels;
 private:
 	void render_fade(AFrame *aframe);
 	void render_transition(AFrame *aframe, Edit *edit);
-	void render_plugins(AFrame *aframe, Edit *edit);
-	AFrame *execute_plugin(Plugin *plugin, AFrame *aframe);
+	void render_plugins(AFrame *aframe, Edit *edit, int rstep);
+	AFrame *execute_plugin(Plugin *plugin, AFrame *aframe, int rstep);
 
 	AudioRender *arender;
 	Edit *current_edit;
 	AFrame *track_frame;
-	AFrame *current_aframe;
 };
 
 #endif

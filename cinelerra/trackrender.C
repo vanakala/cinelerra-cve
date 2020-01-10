@@ -38,6 +38,7 @@ TrackRender::TrackRender(Track *track)
 	media_track = track;
 	plugins_track = track;
 	autos_track = track;
+	next_plugin = 0;
 
 	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
 		trackfiles[i] = 0;
@@ -111,4 +112,9 @@ void TrackRender::set_effects_track(Track *track)
 {
 	plugins_track = track;
 	autos_track = track;
+}
+
+int TrackRender::track_ready()
+{
+	return !next_plugin;
 }

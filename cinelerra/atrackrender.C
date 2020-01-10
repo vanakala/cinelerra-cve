@@ -42,7 +42,6 @@ ATrackRender::ATrackRender(Track *track, AudioRender *audiorender)
 {
 	arender = audiorender;
 	track_frame = 0;
-	current_aframe = 0;
 }
 
 ATrackRender::~ATrackRender()
@@ -50,7 +49,7 @@ ATrackRender::~ATrackRender()
 	audio_frames.release_frame(track_frame);
 }
 
-void ATrackRender::get_aframes(AFrame **output, int out_channels)
+void ATrackRender::get_aframes(AFrame **output, int out_channels, int rstep)
 {
 	AFrame *aframe;
 	ptstime pts = output[0]->pts;
@@ -58,12 +57,28 @@ void ATrackRender::get_aframes(AFrame **output, int out_channels)
 
 	if(is_playable(pts, edit))
 	{
-		if(aframe = arender->get_file_frame(output[0]->pts,
-			output[0]->source_duration, edit, 0))
+		if(rstep == RSTEP_NORMAL)
 		{
-			render_fade(aframe);
-			render_transition(aframe, edit);
-			render_plugins(aframe, edit);
+			if(aframe = arender->get_file_frame(output[0]->pts,
+				output[0]->source_duration, edit, 0))
+			{
+				render_fade(aframe);
+				render_transition(aframe, edit);
+				render_plugins(aframe, edit, rstep);
+			}
+		}
+		else
+		{
+			if(next_plugin)
+			{
+				render_plugins(track_frame, edit, rstep);
+				aframe = track_frame;
+			}
+			else
+				return;
+		}
+		if(!next_plugin)
+		{
 			module_levels.fill(&aframe);
 			track_frame = aframe;
 		}
@@ -78,9 +93,9 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 	ptstime buffer_duration = buffer->source_duration;
 	int channel = buffer->channel;
 
-	if(current_aframe && current_aframe->channel == channel &&
-			PTSEQU(current_aframe->pts, buffer_pts))
-		buffer->copy(current_aframe);
+	if(track_frame && track_frame->channel == channel &&
+			PTSEQU(track_frame->pts, buffer_pts))
+		buffer->copy(track_frame);
 	else
 	{
 		Edit *edit = media_track->editof(buffer_pts);
@@ -222,29 +237,41 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	audio_frames.release_frame(tmpframe);
 }
 
-void ATrackRender::render_plugins(AFrame *aframe, Edit *edit)
+void ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 {
 	Plugin *plugin;
+	AFrame *tmp;
 	ptstime start = aframe->pts;
 	ptstime end = start + aframe->duration;
 
-	current_aframe = aframe;
+	track_frame = aframe;
 	current_edit = edit;
-
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
 		plugin = plugins_track->plugins.values[i];
+		if(next_plugin)
+		{
+			if(next_plugin != plugin)
+				continue;
+			next_plugin = 0;
+		}
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			current_aframe->set_track(media_track->number_of());
-			current_aframe = execute_plugin(plugin, current_aframe);
+			track_frame->set_track(media_track->number_of());
+			if(tmp = execute_plugin(plugin, track_frame, rstep))
+				track_frame = tmp;
+			else
+			{
+				track_frame = aframe;
+				next_plugin = plugin;
+				break;
+			}
 		}
 	}
-	current_aframe = 0;
 }
 
-AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
+AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 {
 	PluginServer *server = plugin->plugin_server;
 
@@ -259,7 +286,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		set_effects_track(plugin->shared_track);
 		render_fade(aframe);
 		render_transition(aframe, current_edit);
-		render_plugins(aframe, current_edit);
+		render_plugins(aframe, current_edit, rstep);
 		set_effects_track(media_track);
 		break;
 
@@ -268,6 +295,8 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		{
 			if(!plugin->shared_plugin->plugin_server->multichannel)
 				server = plugin->shared_plugin->plugin_server;
+			else if(rstep != RSTEP_NORMAL)
+				return 0;
 		}
 		// Fall through
 	case PLUGIN_STANDALONE:
@@ -275,6 +304,8 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		{
 			if(server->multichannel && !plugin->shared_plugin)
 			{
+				if(rstep == RSTEP_NORMAL)
+					return 0;
 				if(!plugin->active_server)
 				{
 					plugin->active_server = new PluginServer(*server);
@@ -297,6 +328,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 				plugin->active_server->process_buffer(plugin->aframes.values,
 					plugin->get_length());
 				aframe->copy(plugin->aframes.values[0]);
+				arender->copy_aframes(&plugin->aframes, this);
 			}
 			else
 			{
@@ -312,4 +344,11 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe)
 		break;
 	}
 	return aframe;
+}
+
+void ATrackRender::copy_track_aframe(AFrame *aframe)
+{
+	if(!track_frame)
+		track_frame = audio_frames.clone_frame(aframe);
+	track_frame->copy(aframe);
 }

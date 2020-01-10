@@ -23,6 +23,7 @@
 #define AUDIORENDER_H
 
 #include "aframe.h"
+#include "atrackrender.inc"
 #include "arraylist.h"
 #include "cinelerra.h"
 #include "edl.inc"
@@ -61,6 +62,7 @@ public:
 	AFrame *get_file_frame(ptstime pts, ptstime duration,
 		Edit *edit, int filenum);
 	void allocate_aframes(Plugin *plugin);
+	void copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer);
 
 private:
 	void init_frames();

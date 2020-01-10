@@ -25,6 +25,7 @@
 #include "asset.inc"
 #include "edit.inc"
 #include "file.inc"
+#include "plugin.inc"
 #include "track.inc"
 #include "trackrender.inc"
 #include "vframe.inc"
@@ -40,8 +41,10 @@ public:
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
 	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
+	virtual void copy_track_aframe(AFrame *buffer) {};
 	Track *get_track_number(int number);
 	void set_effects_track(Track *track);
+	int track_ready();
 
 	Track *media_track;
 
@@ -52,6 +55,7 @@ protected:
 
 	Track *plugins_track;
 	Track *autos_track;
+	Plugin *next_plugin;
 
 private:
 	File *trackfiles[TRACKRENDER_FILES_MAX];
