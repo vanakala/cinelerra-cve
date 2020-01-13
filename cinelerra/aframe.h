@@ -53,8 +53,6 @@ public:
 // Mark frame filled to length
 	void set_filled(int length);
 	void set_filled(ptstime duration);
-// Increase buffer size (keeps data in buffer)
-	void extend_buffer(int length);
 
 // Samples/duration conversions
 	samplenum to_samples(ptstime duration);

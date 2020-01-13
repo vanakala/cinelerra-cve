@@ -210,31 +210,6 @@ void AFrame::set_filled(ptstime duration)
 	this->duration = duration;
 }
 
-void AFrame::extend_buffer(int length)
-{
-	if(!shared && buffer_length < length)
-	{
-		if(buffer_length)
-		{
-			if(float_data)
-			{
-				float *oldbuf = float_buffer;
-				float_buffer = new float[length];
-				if(this->length)
-					memcpy(float_buffer, oldbuf, this->length * sizeof(float));
-				delete [] oldbuf;
-			} else {
-				double *oldbuf = buffer;
-				buffer = new double[length];
-				if(this->length)
-					memcpy(buffer, oldbuf, this->length * sizeof(double));
-				delete [] oldbuf;
-			}
-		}
-		buffer_length = length;
-	}
-}
-
 samplenum AFrame::to_samples(ptstime duration)
 {
 	return round(duration * samplerate);
