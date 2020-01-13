@@ -160,6 +160,9 @@ void AFrame::copy_pts(AFrame *that)
 		return;
 
 	pts = that->pts;
+	source_pts = that->source_pts;
+	source_duration = that->source_duration;
+	source_length = that->source_length;
 	length = 0;
 	duration = 0;
 	samplerate = that->samplerate;
