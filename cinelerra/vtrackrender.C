@@ -56,6 +56,7 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	overlayer = 0;
 	current_edit = 0;
 	videorender = vrender;
+	track_frame = 0;
 }
 
 VTrackRender::~VTrackRender()
@@ -64,9 +65,10 @@ VTrackRender::~VTrackRender()
 	delete masker;
 	delete cropper;
 	delete overlayer;
+	BC_Resources::tmpframes.release_frame(track_frame);
 }
 
-VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
+void VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 {
 	ptstime pts = vframe->get_pts();
 	ptstime src_pts;
@@ -76,7 +78,6 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 	{
 		vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
 		vframe->clear_frame();
-		return 0;
 	}
 
 	src_pts = pts - edit->get_pts() + edit->get_source_pts();
@@ -85,34 +86,30 @@ VFrame *VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 	pts = align_to_frame(pts);
 	vframe->set_pts(pts);
 	vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
-	return vframe;
 }
 
-VFrame *VTrackRender::get_frame(VFrame *output)
+void VTrackRender::process_vframe(ptstime pts)
 {
-	ptstime pts = align_to_frame(output->get_pts());
 	Edit *edit = media_track->editof(pts);
 
+	pts = align_to_frame(pts);
 	if(is_playable(pts, edit))
 	{
-		VFrame *frame = BC_Resources::tmpframes.get_tmpframe(
+		track_frame = BC_Resources::tmpframes.get_tmpframe(
 			media_track->track_w, media_track->track_h,
 			edlsession->color_model);
-		frame->set_pts(pts);
-		frame->clear_status();
-		read_vframe(frame, edit);
-		frame = render_transition(frame, edit);
-		frame = render_camera(frame);
-		render_mask(frame, 1);
-		render_crop(frame, 1);
-		frame = render_plugins(frame, edit);
-		render_fade(frame);
-		render_mask(frame, 0);
-		render_crop(frame, 0);
-		frame = render_projector(output, frame);
-		return frame;
+		track_frame->set_pts(pts);
+		track_frame->clear_status();
+		read_vframe(track_frame, edit);
+		track_frame = render_transition(track_frame, edit);
+		track_frame = render_camera(track_frame);
+		render_mask(track_frame, 1);
+		render_crop(track_frame, 1);
+		track_frame = render_plugins(track_frame, edit);
+		render_fade(track_frame);
+		render_mask(track_frame, 0);
+		render_crop(track_frame, 0);
 	}
-	return output;
 }
 
 void VTrackRender::render_fade(VFrame *frame)
@@ -193,7 +190,7 @@ void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 	frame = cropper->do_crop(cropautos, frame, before_plugins);
 }
 
-VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
+VFrame *VTrackRender::render_projector(VFrame *output)
 {
 	int in_x1, in_y1, in_x2, in_y2;
 	int out_x1, out_y1, out_x2, out_y2;
@@ -201,10 +198,13 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 	IntAuto *mode_keyframe;
 	VFrame *outframe;
 
+	if(!track_frame)
+		return output;
+
 	if(output)
 		outframe = output;
 	else
-		outframe = frame;
+		outframe = track_frame;
 
 	calculate_output_transfer(outframe,
 		&in_x1, &in_y1, &in_x2, &in_y2,
@@ -215,39 +215,45 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame *frame)
 	{
 		mode_keyframe =
 			(IntAuto*)autos_track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-				frame->get_pts());
+				track_frame->get_pts());
 
 		if(mode_keyframe)
 			mode = mode_keyframe->value;
 		else
 			mode = TRANSFER_NORMAL;
-		if(!(frame->get_status() & VFRAME_TRANSPARENT) &&
+		if(!(track_frame->get_status() & VFRAME_TRANSPARENT) &&
 				mode == TRANSFER_NORMAL &&
 				in_x1 == out_x1 && in_x2 == out_x2 &&
 				in_y1 == out_y1 && in_y2 == out_y2)
 		{
 			BC_Resources::tmpframes.release_frame(output);
-			return frame;
+			outframe = track_frame;
+			track_frame = 0;
+			return outframe;
 		}
 
 		if(!output)
 		{
-			output = BC_Resources::tmpframes.clone_frame(frame);
+			output = BC_Resources::tmpframes.clone_frame(track_frame);
 			output->clear_frame();
-			output->copy_pts(frame);
+			output->copy_pts(track_frame);
 		}
 
 		if(!overlayer)
 			overlayer = new OverlayFrame(preferences_global->processors);
 
-		overlayer->overlay(output, frame,
+		overlayer->overlay(output, track_frame,
 			in_x1, in_y1, in_x2, in_y2,
 			out_x1, out_y1, out_x2, out_y2,
 			1, mode, BC_Resources::interpolation_method);
-		BC_Resources::tmpframes.release_frame(frame);
+		BC_Resources::tmpframes.release_frame(track_frame);
+		track_frame = 0;
 		return output;
 	}
-	return frame;
+	BC_Resources::tmpframes.release_frame(output);
+	outframe = track_frame;
+	track_frame = 0;
+	return outframe;
 }
 
 VFrame *VTrackRender::render_camera(VFrame *frame)
@@ -411,7 +417,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 	ptstime end = start + input->get_duration();
 	VFrame *tmpframe;
 
-	current_frame = input;
+	track_frame = input;
 	current_edit = edit;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
@@ -419,14 +425,12 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			current_frame->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, current_frame))
-				current_frame = tmpframe;
+			track_frame->set_layer(media_track->number_of());
+			if(tmpframe = execute_plugin(plugin, track_frame))
+				track_frame = tmpframe;
 		}
 	}
-	tmpframe = current_frame;
-	current_frame = 0;
-	return tmpframe;
+	return track_frame;
 }
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
@@ -451,7 +455,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
-		frame = render_projector(0, frame);
+		frame = render_projector(0);
 		set_effects_track(media_track);
 		return frame;
 
@@ -509,8 +513,8 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 	ptstime buffer_pts = buffer->get_pts();
 	int layer = buffer->get_layer();
 
-	if(current_frame && PTSEQU(current_frame->get_pts(), buffer_pts))
-		buffer->copy_from(current_frame, 1);
+	if(track_frame && PTSEQU(track_frame->get_pts(), buffer_pts))
+		buffer->copy_from(track_frame, 1);
 	else
 	{
 		Edit *edit = media_track->editof(buffer_pts);

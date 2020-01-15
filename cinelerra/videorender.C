@@ -195,7 +195,14 @@ void VideoRender::process_frame(ptstime pts)
 	{
 		if(track->data_type != TRACK_VIDEO)
 			continue;
-		frame = ((VTrackRender *)track->renderer)->get_frame(frame);
+		((VTrackRender *)track->renderer)->process_vframe(pts);
+	}
+
+	for(Track *track = edl->tracks->last; track; track = track->previous)
+	{
+		if(track->data_type != TRACK_VIDEO)
+			continue;
+		frame = ((VTrackRender *)track->renderer)->render_projector(frame);
 	}
 }
 
