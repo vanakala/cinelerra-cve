@@ -22,6 +22,7 @@
 #ifndef TRACKRENDER_H
 #define TRACKRENDER_H
 
+#include "aframe.inc"
 #include "asset.inc"
 #include "edit.inc"
 #include "file.inc"
@@ -42,6 +43,7 @@ public:
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
 	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
 	virtual void copy_track_aframe(AFrame *buffer) {};
+	virtual void copy_track_vframe(VFrame *buffer) {};
 	Track *get_track_number(int number);
 	void set_effects_track(Track *track);
 	int track_ready();

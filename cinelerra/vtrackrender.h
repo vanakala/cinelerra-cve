@@ -42,6 +42,7 @@ public:
 
 	void process_vframe(ptstime pts);
 	VFrame *get_vframe(VFrame *buffer);
+	void copy_track_vframe(VFrame *vframe);
 	VFrame *render_projector(VFrame *output);
 
 private:

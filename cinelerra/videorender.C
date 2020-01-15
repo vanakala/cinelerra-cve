@@ -265,3 +265,14 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 	}
 	plugin->active_server->init_realtime(plugin->vframes.total);
 }
+
+void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)
+{
+	for(int i = 1; i < vframes->total; i++)
+	{
+		VFrame *vframe = vframes->values[i];
+		Track *track = renderer->get_track_number(vframe->get_layer());
+
+		track->renderer->copy_track_vframe(vframe);
+	}
+}

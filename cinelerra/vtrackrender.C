@@ -571,3 +571,10 @@ int VTrackRender::need_camera(ptstime pts)
 
 	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
 }
+
+void VTrackRender::copy_track_vframe(VFrame *vframe)
+{
+	if(!track_frame)
+		track_frame = BC_Resources::tmpframes.clone_frame(vframe);
+	track_frame->copy_from(vframe);
+}

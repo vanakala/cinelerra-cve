@@ -22,6 +22,7 @@
 #ifndef VIDEORENDER_H
 #define VIDEORENDER_H
 
+#include "arraylist.h"
 #include "bctimer.h"
 #include "edl.inc"
 #include "file.inc"
@@ -29,6 +30,7 @@
 #include "renderengine.inc"
 #include "videorender.inc"
 #include "vframe.inc"
+#include "vtrackrender.inc"
 
 class VideoRender : public RenderBase
 {
@@ -39,6 +41,7 @@ public:
 	void run();
 	VFrame *process_buffer(VFrame *buffer);
 	void allocate_vframes(Plugin *plugin);
+	void copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer);
 
 private:
 	void process_frame(ptstime pts);
