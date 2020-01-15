@@ -38,7 +38,7 @@ public:
 	ATrackRender(Track *track, AudioRender *arender);
 	~ATrackRender();
 
-	void get_aframes(AFrame **output, int out_channels, int rstp);
+	void process_aframes(AFrame **output, int out_channels, int rstp);
 	AFrame *get_aframe(AFrame *buffer);
 	void render_pan(AFrame **output, int out_channels);
 	void copy_track_aframe(AFrame *aframe);

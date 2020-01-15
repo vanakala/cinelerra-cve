@@ -384,21 +384,21 @@ void AudioRender::process_frames()
 	{
 		if(track->data_type != TRACK_AUDIO)
 			continue;
-		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_NORMAL);
+		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_NORMAL);
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
 		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
 			continue;
-		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_SHARED);
+		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_SHARED);
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
 		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
 			continue;
-		((ATrackRender*)track->renderer)->get_aframes(audio_out, out_channels, RSTEP_FORCE);
+		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_FORCE);
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)

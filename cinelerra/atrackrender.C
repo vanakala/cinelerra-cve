@@ -49,7 +49,7 @@ ATrackRender::~ATrackRender()
 	audio_frames.release_frame(track_frame);
 }
 
-void ATrackRender::get_aframes(AFrame **output, int out_channels, int rstep)
+void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 {
 	AFrame *aframe;
 	ptstime pts = output[0]->pts;
