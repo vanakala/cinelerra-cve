@@ -36,6 +36,7 @@
 class TrackRender
 {
 	friend class AudioRender;
+	friend class VideoRender;
 public:
 	TrackRender(Track *track);
 	virtual ~TrackRender();
@@ -47,17 +48,19 @@ public:
 	Track *get_track_number(int number);
 	void set_effects_track(Track *track);
 	int track_ready();
+	int is_muted(ptstime pts);
 
 	Track *media_track;
+	Plugin *next_plugin;
 
 protected:
 	File *media_file(Edit *edit, int filenum);
 	int is_playable(ptstime pts, Edit *edit);
 	ptstime align_to_frame(ptstime position);
+	void dump(int indent);
 
 	Track *plugins_track;
 	Track *autos_track;
-	Plugin *next_plugin;
 
 private:
 	File *trackfiles[TRACKRENDER_FILES_MAX];

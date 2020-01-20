@@ -98,6 +98,11 @@ int TrackRender::is_playable(ptstime pts, Edit *edit)
 	return 0;
 }
 
+int TrackRender::is_muted(ptstime pts)
+{
+	return ((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
+}
+
 ptstime TrackRender::align_to_frame(ptstime position)
 {
 	return round(position * edlsession->frame_rate) / edlsession->frame_rate;
@@ -117,4 +122,19 @@ void TrackRender::set_effects_track(Track *track)
 int TrackRender::track_ready()
 {
 	return !next_plugin;
+}
+
+void TrackRender::dump(int indent)
+{
+	int tfs = 0;
+
+	printf("%*smedia track %p plugins_track %p autos_track %p\n", indent, "",
+		media_track, plugins_track, autos_track);
+
+	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
+		if(trackfiles[i])
+			tfs++;
+
+	printf("%*snext_plugin %p; %d trackfile(s)\n", indent, "",
+		next_plugin, tfs);
 }
