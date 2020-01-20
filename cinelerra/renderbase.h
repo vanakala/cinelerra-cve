@@ -24,6 +24,7 @@
 
 #include "condition.inc"
 #include "edl.inc"
+#include "plugin.inc"
 #include "renderbase.inc"
 #include "renderengine.h"
 #include "thread.h"
@@ -40,6 +41,8 @@ public:
 // advance playback position
 // returns NZ when next frame must be flashed
 	int advance_position(ptstime duration);
+// Check that shared plugin is ready for rendering
+	int is_shared_ready(Plugin *plugin, ptstime pts);
 
 protected:
 	virtual void init_frames() {};

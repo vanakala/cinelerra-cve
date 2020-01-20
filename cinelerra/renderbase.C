@@ -22,9 +22,12 @@
 #include "bcsignals.h"
 #include "condition.h"
 #include "edl.h"
+#include "plugin.h"
 #include "renderbase.h"
 #include "renderengine.h"
 #include "thread.h"
+#include "track.h"
+#include "tracks.h"
 #include "trackrender.h"
 #include "transportcommand.h"
 
@@ -95,4 +98,32 @@ int RenderBase::advance_position(ptstime duration)
 void RenderBase::run()
 {
 	start_lock->unlock();
+}
+
+int RenderBase::is_shared_ready(Plugin *plugin, ptstime pts)
+{
+	int pcount, ncount;
+
+	pcount = ncount = 0;
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_VIDEO || track->renderer->is_muted(pts))
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *current = track->plugins.values[i];
+
+			if(current->plugin_type == PLUGIN_SHAREDPLUGIN &&
+				current->shared_plugin == plugin &&
+				current->on)
+			{
+				pcount++;
+
+				if(track->renderer && track->renderer->next_plugin &&
+						track->renderer->next_plugin->shared_plugin == plugin)
+					ncount++;
+			}
+		}
+	}
+	return pcount == ncount;
 }
