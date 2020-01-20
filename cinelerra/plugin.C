@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "bcsignals.h"
 #include "datatype.h"
 #include "edl.h"
@@ -298,9 +299,16 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	delete active_server;
 	active_server = 0;
 	reset_frames();
+	if(plugin_type != PLUGIN_SHAREDPLUGIN)
+		this->shared_plugin = 0;
+	if(plugin_type != PLUGIN_SHAREDMODULE)
+		this->shared_track = 0;
 
 	if(plugin_type != PLUGIN_TRANSITION)
 	{
+		if(plugin_type != PLUGIN_STANDALONE)
+			plugin_server = 0;
+
 		for(Track *current = track->tracks->first; current;
 			current = current->next)
 		{
@@ -315,7 +323,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 		}
 	}
 
-	if(server && !server->open_plugin(0, 0, 0))
+	if(plugin_server && !plugin_server->open_plugin(0, 0, 0))
 	{
 		server->save_data(keyframes->get_first());
 		server->close_plugin();
