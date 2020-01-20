@@ -180,6 +180,7 @@ void VideoRender::get_frame(ptstime pts)
 void VideoRender::process_frame(ptstime pts)
 {
 	VTrackRender *trender;
+	int found;
 
 	frame->clear_frame();
 	frame->set_pts(pts);
@@ -195,7 +196,21 @@ void VideoRender::process_frame(ptstime pts)
 	{
 		if(track->data_type != TRACK_VIDEO)
 			continue;
-		((VTrackRender *)track->renderer)->process_vframe(pts);
+		((VTrackRender*)track->renderer)->process_vframe(pts, RSTEP_NORMAL);
+	}
+
+	for(;;)
+	{
+		found = 0;
+		for(Track *track = edl->tracks->last; track; track = track->previous)
+		{
+			if(track->data_type != TRACK_VIDEO || track->renderer->track_ready())
+				continue;
+			((VTrackRender*)track->renderer)->process_vframe(pts, RSTEP_SHARED);
+			found = 1;
+		}
+		if(!found)
+			break;
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)

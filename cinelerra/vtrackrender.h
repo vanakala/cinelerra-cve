@@ -40,10 +40,11 @@ public:
 	VTrackRender(Track *track, VideoRender *vrender);
 	~VTrackRender();
 
-	void process_vframe(ptstime pts);
+	void process_vframe(ptstime pts, int rstep);
 	VFrame *get_vframe(VFrame *buffer);
 	void copy_track_vframe(VFrame *vframe);
 	VFrame *render_projector(VFrame *output);
+	void dump(int indent);
 
 private:
 	void read_vframe(VFrame *vframe, Edit *edit, int filenum = 0);
@@ -57,8 +58,8 @@ private:
 	void calculate_output_transfer(VFrame *output,
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
-	VFrame *render_plugins(VFrame *frame, Edit *edit);
-	VFrame *execute_plugin(Plugin *plugin, VFrame *frame);
+	VFrame *render_plugins(VFrame *frame, Edit *edit, int rstep);
+	VFrame *execute_plugin(Plugin *plugin, VFrame *frame, int rstep);
 	VFrame *render_transition(VFrame *frame, Edit *edit);
 	int need_camera(ptstime pts);
 

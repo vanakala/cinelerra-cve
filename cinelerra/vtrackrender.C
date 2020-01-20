@@ -88,27 +88,38 @@ void VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 	vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
 }
 
-void VTrackRender::process_vframe(ptstime pts)
+void VTrackRender::process_vframe(ptstime pts, int rstep)
 {
 	Edit *edit = media_track->editof(pts);
 
 	pts = align_to_frame(pts);
 	if(is_playable(pts, edit))
 	{
-		track_frame = BC_Resources::tmpframes.get_tmpframe(
-			media_track->track_w, media_track->track_h,
-			edlsession->color_model);
-		track_frame->set_pts(pts);
-		track_frame->clear_status();
-		read_vframe(track_frame, edit);
-		track_frame = render_transition(track_frame, edit);
-		track_frame = render_camera(track_frame);
-		render_mask(track_frame, 1);
-		render_crop(track_frame, 1);
-		track_frame = render_plugins(track_frame, edit);
-		render_fade(track_frame);
-		render_mask(track_frame, 0);
-		render_crop(track_frame, 0);
+		if(rstep == RSTEP_NORMAL)
+		{
+			track_frame = BC_Resources::tmpframes.get_tmpframe(
+				media_track->track_w, media_track->track_h,
+				edlsession->color_model);
+			track_frame->set_pts(pts);
+			track_frame->clear_status();
+			read_vframe(track_frame, edit);
+			track_frame = render_transition(track_frame, edit);
+			track_frame = render_camera(track_frame);
+			render_mask(track_frame, 1);
+			render_crop(track_frame, 1);
+			track_frame = render_plugins(track_frame, edit, rstep);
+		}
+		else
+		{
+			if(next_plugin)
+				track_frame = render_plugins(track_frame, edit, rstep);
+		}
+		if(!next_plugin)
+		{
+			render_fade(track_frame);
+			render_mask(track_frame, 0);
+			render_crop(track_frame, 0);
+		}
 	}
 }
 
@@ -410,7 +421,7 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	*out_y2 = round(y[3]);
 }
 
-VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
+VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 {
 	Plugin *plugin;
 	ptstime start = input->get_pts();
@@ -423,17 +434,28 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 	{
 		plugin = plugins_track->plugins.values[i];
 
+		if(next_plugin)
+		{
+			if(next_plugin != plugin)
+				continue;
+		}
+
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			track_frame->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, track_frame))
+			if(tmpframe = execute_plugin(plugin, track_frame, rstep))
 				track_frame = tmpframe;
+			else
+			{
+				next_plugin = plugin;
+				break;
+			}
 		}
 	}
 	return track_frame;
 }
 
-VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
+VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 {
 	PluginServer *server = plugin->plugin_server;
 	int layer;
@@ -451,7 +473,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 		frame = render_camera(frame);
 		render_mask(frame, 1);
 		render_crop(frame, 1);
-		frame = render_plugins(frame, current_edit);
+		frame = render_plugins(frame, current_edit, rstep);
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
@@ -464,6 +486,11 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 		{
 			if(!plugin->shared_plugin->plugin_server->multichannel)
 				server = plugin->shared_plugin->plugin_server;
+			else
+			{
+				if(rstep == RSTEP_NORMAL)
+					return 0;
+			}
 		}
 		// Fall through
 	case PLUGIN_STANDALONE:
@@ -471,6 +498,8 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 		{
 			if(server->multichannel && !plugin->shared_plugin)
 			{
+				if(!videorender->is_shared_ready(plugin, frame->get_pts()))
+					return 0;
 				if(!plugin->active_server)
 				{
 					plugin->active_server = new PluginServer(*server);
@@ -484,10 +513,14 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 					layer = current->get_layer();
 					current->copy_pts(frame);
 					current->set_layer(layer);
+					get_track_number(
+						current->get_layer())->renderer->next_plugin = 0;
 				}
 				plugin->active_server->process_buffer(plugin->vframes.values,
 					plugin->get_length());
 				frame->copy_from(plugin->vframes.values[0]);
+				videorender->copy_vframes(&plugin->vframes, this);
+				next_plugin = 0;
 			}
 			else
 			{
@@ -501,8 +534,9 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame)
 				return frame;
 			}
 		}
+		break;
 	}
-	return 0;
+	return frame;
 }
 
 VFrame *VTrackRender::get_vframe(VFrame *buffer)
@@ -574,7 +608,19 @@ int VTrackRender::need_camera(ptstime pts)
 
 void VTrackRender::copy_track_vframe(VFrame *vframe)
 {
-	if(!track_frame)
-		track_frame = BC_Resources::tmpframes.clone_frame(vframe);
-	track_frame->copy_from(vframe);
+	if(!is_muted(vframe->get_pts()))
+	{
+		if(!track_frame)
+			track_frame = BC_Resources::tmpframes.clone_frame(vframe);
+		track_frame->copy_from(vframe);
+	}
+}
+
+void VTrackRender::dump(int indent)
+{
+	printf("%*sVTrackRender %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*strack_frame %p current_edit %p videorender %p\n", indent, "",
+		track_frame, current_edit, videorender);
+	TrackRender::dump(indent);
 }
