@@ -195,7 +195,7 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	1)
 {
 	int use_default = 1;
-	int module_number;
+	char string[BCTEXTLEN];
 
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -221,12 +221,16 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 
 // Construct listbox items
 	for(int i = 0; i < local_plugindb.total; i++)
-		standalone_data.append(new BC_ListBoxItem(_(local_plugindb.values[i]->title)));
+	{
+		strcpy(string, _(local_plugindb.values[i]->title));
+		if(local_plugindb.values[i]->multichannel)
+			strcat(string, " (m)");
+		standalone_data.append(new BC_ListBoxItem(string));
+	}
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
 		char *track_title = plugin_locations.values[i]->track->title;
 		char *plugin_title = plugin_locations.values[i]->plugin_server->title;
-		char string[BCTEXTLEN];
 
 		strcpy(string, track_title);
 		strcat(string, ": ");
