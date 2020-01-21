@@ -326,7 +326,9 @@ void PluginDialog::attach_new(int number)
 	if(number > -1 && number < standalone_data.total) 
 	{
 		strcpy(thread->plugin_title, local_plugindb.values[number]->title);
-		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
+		thread->plugin_type = PLUGIN_STANDALONE;
+		thread->shared_plugin = 0;
+		thread->shared_track = 0;
 	}
 }
 
@@ -334,8 +336,9 @@ void PluginDialog::attach_shared(int number)
 {
 	if(number > -1 && number < shared_data.total) 
 	{
-		thread->plugin_type = PLUGIN_SHAREDPLUGIN;         // type is shared plugin
-		thread->shared_plugin = plugin_locations.values[number]; // copy location
+		thread->plugin_type = PLUGIN_SHAREDPLUGIN;
+		thread->shared_plugin = plugin_locations.values[number];
+		thread->shared_track = 0;
 	}
 }
 
@@ -343,8 +346,9 @@ void PluginDialog::attach_module(int number)
 {
 	if(number > -1 && number < module_data.total) 
 	{
-		thread->plugin_type = PLUGIN_SHAREDMODULE;         // type is module
-		thread->shared_track = module_locations.values[number]; // copy location
+		thread->plugin_type = PLUGIN_SHAREDMODULE;
+		thread->shared_track = module_locations.values[number];
+		thread->shared_plugin = 0;
 	}
 }
 
