@@ -97,7 +97,7 @@ PluginPopupChange::PluginPopupChange(PluginPopup *popup)
  : BC_MenuItem(_("Change..."))
 {
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(mwindow_global);
+	dialog_thread = new PluginDialogThread(1);
 }
 
 PluginPopupChange::~PluginPopupChange()

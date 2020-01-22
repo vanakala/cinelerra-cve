@@ -40,10 +40,10 @@
 #include "track.h"
 
 
-PluginDialogThread::PluginDialogThread(MWindow *mwindow)
+PluginDialogThread::PluginDialogThread(int change)
  : Thread()
 {
-	this->mwindow = mwindow;
+	change_plugin = change;
 	window = 0;
 	plugin = 0;
 	Thread::set_synchronous(0);
@@ -111,12 +111,12 @@ void PluginDialogThread::run()
 
 	plugin_type = 0;
 
-	mwindow->get_abs_cursor_pos(&x, &y);
+	mwindow_global->get_abs_cursor_pos(&x, &y);
 	x -= mainsession->plugindialog_w / 2;
 	y -= mainsession->plugindialog_h / 2;
 
 	window_lock->lock("PluginDialogThread::run 1");
-	window = new PluginDialog(mwindow, this, window_title, x, y);
+	window = new PluginDialog(this, window_title, x, y);
 	window_lock->unlock();
 
 	result = window->run_window();
@@ -160,7 +160,7 @@ void PluginDialogThread::run()
 	{
 		if(plugin_type)
 		{
-			if(mwindow->stop_composer())
+			if(mwindow_global->stop_composer())
 				return;
 			if(plugin)
 			{
@@ -172,16 +172,16 @@ void PluginDialogThread::run()
 			}
 			else
 			{
-				mwindow->insert_effect(plugin_title,
+				mwindow_global->insert_effect(plugin_title,
 					track, 0, 0, plugin_type,
 					shared_plugin, shared_track);
 			}
 
-			mwindow->save_backup();
-			mwindow->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
-			mwindow->update_plugin_states();
-			mwindow->sync_parameters();
-			mwindow->gui->update(WUPD_SCROLLBARS |
+			mwindow_global->save_backup();
+			mwindow_global->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
+			mwindow_global->update_plugin_states();
+			mwindow_global->sync_parameters();
+			mwindow_global->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_PATCHBAY);
 		}
 	}
@@ -189,8 +189,7 @@ void PluginDialogThread::run()
 }
 
 
-PluginDialog::PluginDialog(MWindow *mwindow, 
-	PluginDialogThread *thread, 
+PluginDialog::PluginDialog(PluginDialogThread *thread,
 	const char *window_title,
 	int x,
 	int y)
@@ -208,12 +207,11 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	int use_default = 1;
 	char string[BCTEXTLEN];
 
-	this->mwindow = mwindow;
 	this->thread = thread;
 	inoutthru = 0;
 
-	mwindow->theme->get_plugindialog_sizes();
-	set_icon(mwindow->get_window_icon());
+	theme_global->get_plugindialog_sizes();
+	set_icon(mwindow_global->get_window_icon());
 
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
 	plugindb.fill_plugindb(thread->data_type == TRACK_AUDIO,
@@ -252,35 +250,36 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 		module_data.append(new BC_ListBoxItem(module_locations.values[i]->title));
 
 // Create widgets
-	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x, 
-		mwindow->theme->plugindialog_new_y - 20, 
+	add_subwindow(standalone_title = new BC_Title(
+		theme_global->plugindialog_new_x,
+		theme_global->plugindialog_new_y - 20,
 		_("Plugins:")));
 	add_subwindow(standalone_list = new PluginDialogNew(this, 
 		&standalone_data, 
-		mwindow->theme->plugindialog_new_x, 
-		mwindow->theme->plugindialog_new_y,
-		mwindow->theme->plugindialog_new_w,
-		mwindow->theme->plugindialog_new_h));
+		theme_global->plugindialog_new_x,
+		theme_global->plugindialog_new_y,
+		theme_global->plugindialog_new_w,
+		theme_global->plugindialog_new_h));
 
-	add_subwindow(shared_title = new BC_Title(mwindow->theme->plugindialog_shared_x, 
-		mwindow->theme->plugindialog_shared_y - 20, 
+	add_subwindow(shared_title = new BC_Title(theme_global->plugindialog_shared_x,
+		theme_global->plugindialog_shared_y - 20,
 		_("Shared effects:")));
 	add_subwindow(shared_list = new PluginDialogShared(this, 
 		&shared_data, 
-		mwindow->theme->plugindialog_shared_x, 
-		mwindow->theme->plugindialog_shared_y,
-		mwindow->theme->plugindialog_shared_w,
-		mwindow->theme->plugindialog_shared_h));
+		theme_global->plugindialog_shared_x,
+		theme_global->plugindialog_shared_y,
+		theme_global->plugindialog_shared_w,
+		theme_global->plugindialog_shared_h));
 
-	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x, 
-		mwindow->theme->plugindialog_module_y - 20, 
+	add_subwindow(module_title = new BC_Title(theme_global->plugindialog_module_x,
+		theme_global->plugindialog_module_y - 20,
 		_("Shared tracks:")));
 	add_subwindow(module_list = new PluginDialogModules(this, 
 		&module_data, 
-		mwindow->theme->plugindialog_module_x, 
-		mwindow->theme->plugindialog_module_y,
-		mwindow->theme->plugindialog_module_w,
-		mwindow->theme->plugindialog_module_h));
+		theme_global->plugindialog_module_x,
+		theme_global->plugindialog_module_y,
+		theme_global->plugindialog_module_w,
+		theme_global->plugindialog_module_h));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -307,28 +306,28 @@ void PluginDialog::resize_event(int w, int h)
 {
 	mainsession->plugindialog_w = w;
 	mainsession->plugindialog_h = h;
-	mwindow->theme->get_plugindialog_sizes();
+	theme_global->get_plugindialog_sizes();
 
-	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x, 
-		mwindow->theme->plugindialog_new_y - 20);
-	standalone_list->reposition_window(mwindow->theme->plugindialog_new_x, 
-		mwindow->theme->plugindialog_new_y,
-		mwindow->theme->plugindialog_new_w,
-		mwindow->theme->plugindialog_new_h);
+	standalone_title->reposition_window(theme_global->plugindialog_new_x,
+		theme_global->plugindialog_new_y - 20);
+	standalone_list->reposition_window(theme_global->plugindialog_new_x,
+		theme_global->plugindialog_new_y,
+		theme_global->plugindialog_new_w,
+		theme_global->plugindialog_new_h);
 
-	shared_title->reposition_window(mwindow->theme->plugindialog_shared_x, 
-		mwindow->theme->plugindialog_shared_y - 20);
-	shared_list->reposition_window(mwindow->theme->plugindialog_shared_x, 
-		mwindow->theme->plugindialog_shared_y,
-		mwindow->theme->plugindialog_shared_w,
-		mwindow->theme->plugindialog_shared_h);
+	shared_title->reposition_window(theme_global->plugindialog_shared_x,
+		theme_global->plugindialog_shared_y - 20);
+	shared_list->reposition_window(theme_global->plugindialog_shared_x,
+		theme_global->plugindialog_shared_y,
+		theme_global->plugindialog_shared_w,
+		theme_global->plugindialog_shared_h);
 
-	module_title->reposition_window(mwindow->theme->plugindialog_module_x, 
-		mwindow->theme->plugindialog_module_y - 20);
-	module_list->reposition_window(mwindow->theme->plugindialog_module_x, 
-		mwindow->theme->plugindialog_module_y,
-		mwindow->theme->plugindialog_module_w,
-		mwindow->theme->plugindialog_module_h);
+	module_title->reposition_window(theme_global->plugindialog_module_x,
+		theme_global->plugindialog_module_y - 20);
+	module_list->reposition_window(theme_global->plugindialog_module_x,
+		theme_global->plugindialog_module_y,
+		theme_global->plugindialog_module_w,
+		theme_global->plugindialog_module_h);
 	flush();
 }
 

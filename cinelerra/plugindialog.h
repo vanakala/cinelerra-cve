@@ -43,7 +43,7 @@ class PluginDialog;
 class PluginDialogThread : public Thread
 {
 public:
-	PluginDialogThread(MWindow *mwindow);
+	PluginDialogThread(int change);
 	~PluginDialogThread();
 
 // Set up parameters for a transition menu.
@@ -52,7 +52,6 @@ public:
 		const char *title);
 	void run();
 
-	MWindow *mwindow;
 	Track *track;
 	int data_type;
 	Plugin *transition;
@@ -70,6 +69,9 @@ public:
 	Plugin *shared_plugin;
 	Track *shared_track;
 
+// Changing plugin
+	int change_plugin;
+
 // Title of attached plugin if new
 	char plugin_title[BCTEXTLEN];
 };
@@ -77,8 +79,7 @@ public:
 class PluginDialog : public BC_Window
 {
 public:
-	PluginDialog(MWindow *mwindow, 
-		PluginDialogThread *thread, 
+	PluginDialog(PluginDialogThread *thread,
 		const char *title,
 		int x,
 		int y);
@@ -110,7 +111,6 @@ public:
 
 	int inoutthru;         // flag for button slide
 	int new_value;         // value for button slide
-	MWindow *mwindow;
 };
 
 
