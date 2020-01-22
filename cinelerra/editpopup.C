@@ -102,7 +102,7 @@ EditAttachEffect::EditAttachEffect(EditPopup *popup)
  : BC_MenuItem(_("Attach effect..."))
 {
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(0);
+	dialog_thread = new PluginDialogThread();
 }
 
 EditAttachEffect::~EditAttachEffect()
@@ -112,8 +112,7 @@ EditAttachEffect::~EditAttachEffect()
 
 int EditAttachEffect::handle_event()
 {
-	dialog_thread->start_window(popup->track, 0,
-		MWindow::create_title(N_("Attach Effect")));
+	dialog_thread->start_window(popup->track);
 	return 1;
 }
 

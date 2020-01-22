@@ -40,10 +40,9 @@
 #include "track.h"
 
 
-PluginDialogThread::PluginDialogThread(int change)
+PluginDialogThread::PluginDialogThread()
  : Thread()
 {
-	change_plugin = change;
 	window = 0;
 	plugin = 0;
 	Thread::set_synchronous(0);
@@ -64,8 +63,7 @@ PluginDialogThread::~PluginDialogThread()
 }
 
 void PluginDialogThread::start_window(Track *track,
-	Plugin *plugin, 
-	const char *title)
+	Plugin *plugin)
 {
 	if(Thread::running())
 	{
@@ -98,7 +96,6 @@ void PluginDialogThread::start_window(Track *track,
 			this->plugin_type = PLUGIN_NONE;
 		}
 
-		strcpy(this->window_title, title);
 		completion->lock("PluginDialogThread::start_window");
 		Thread::start();
 	}
@@ -116,7 +113,9 @@ void PluginDialogThread::run()
 	y -= mainsession->plugindialog_h / 2;
 
 	window_lock->lock("PluginDialogThread::run 1");
-	window = new PluginDialog(this, window_title, x, y);
+	window = new PluginDialog(this,
+		MWindow::create_title(plugin ? N_("Change Effect") :
+			N_("Attach Effect")), x, y);
 	window_lock->unlock();
 
 	result = window->run_window();

@@ -97,7 +97,7 @@ PluginPopupChange::PluginPopupChange(PluginPopup *popup)
  : BC_MenuItem(_("Change..."))
 {
 	this->popup = popup;
-	dialog_thread = new PluginDialogThread(1);
+	dialog_thread = new PluginDialogThread();
 }
 
 PluginPopupChange::~PluginPopupChange()
@@ -108,8 +108,7 @@ PluginPopupChange::~PluginPopupChange()
 int PluginPopupChange::handle_event()
 {
 	dialog_thread->start_window(popup->plugin->track,
-		popup->plugin,
-		MWindow::create_title(N_("Change Effect")));
+		popup->plugin);
 	return 1;
 }
 

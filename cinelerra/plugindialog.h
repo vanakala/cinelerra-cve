@@ -43,13 +43,11 @@ class PluginDialog;
 class PluginDialogThread : public Thread
 {
 public:
-	PluginDialogThread(int change);
+	PluginDialogThread();
 	~PluginDialogThread();
 
 // Set up parameters for a transition menu.
-	void start_window(Track *track,
-		Plugin *plugin, 
-		const char *title);
+	void start_window(Track *track, Plugin *plugin = 0);
 	void run();
 
 	Track *track;
@@ -61,16 +59,12 @@ public:
 	Plugin *plugin;
 	Condition *completion;
 	Mutex *window_lock;
-	char window_title[BCTEXTLEN];
 
 // type of attached plugin
 	int plugin_type;    // constants defined in plugin.inc
 
 	Plugin *shared_plugin;
 	Track *shared_track;
-
-// Changing plugin
-	int change_plugin;
 
 // Title of attached plugin if new
 	char plugin_title[BCTEXTLEN];
