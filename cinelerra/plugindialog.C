@@ -123,19 +123,30 @@ void PluginDialogThread::run()
 
 	window_lock->lock("PluginDialogThread::run 2");
 
-	if(window->selected_available >= 0)
+	if(window->selected_available >= 0 &&
+		window->selected_available < window->local_plugindb.total)
 	{
-		window->attach_new(window->selected_available);
+		strcpy(plugin_title,
+			window->local_plugindb.values[window->selected_available]->title);
+		plugin_type = PLUGIN_STANDALONE;
+		shared_plugin = 0;
+		shared_track = 0;
 	}
 	else
-	if(window->selected_shared >= 0)
+	if(window->selected_shared >= 0 &&
+		window->selected_shared < window->plugin_locations.total)
 	{
-		window->attach_shared(window->selected_shared);
+		plugin_type = PLUGIN_SHAREDPLUGIN;
+		shared_plugin = window->plugin_locations.values[window->selected_shared];
+		shared_track = 0;
 	}
 	else
-	if(window->selected_modules >= 0)
+	if(window->selected_modules >= 0 &&
+		window->selected_modules < window->module_locations.total)
 	{
-		window->attach_module(window->selected_modules);
+		plugin_type = PLUGIN_SHAREDMODULE;
+		shared_track = window->module_locations.values[window->selected_modules];
+		shared_plugin = 0;
 	}
 
 	delete window;
@@ -319,37 +330,6 @@ void PluginDialog::resize_event(int w, int h)
 		mwindow->theme->plugindialog_module_w,
 		mwindow->theme->plugindialog_module_h);
 	flush();
-}
-
-void PluginDialog::attach_new(int number)
-{
-	if(number > -1 && number < standalone_data.total) 
-	{
-		strcpy(thread->plugin_title, local_plugindb.values[number]->title);
-		thread->plugin_type = PLUGIN_STANDALONE;
-		thread->shared_plugin = 0;
-		thread->shared_track = 0;
-	}
-}
-
-void PluginDialog::attach_shared(int number)
-{
-	if(number > -1 && number < shared_data.total) 
-	{
-		thread->plugin_type = PLUGIN_SHAREDPLUGIN;
-		thread->shared_plugin = plugin_locations.values[number];
-		thread->shared_track = 0;
-	}
-}
-
-void PluginDialog::attach_module(int number)
-{
-	if(number > -1 && number < module_data.total) 
-	{
-		thread->plugin_type = PLUGIN_SHAREDMODULE;
-		thread->shared_track = module_locations.values[number];
-		thread->shared_plugin = 0;
-	}
 }
 
 

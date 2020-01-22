@@ -84,9 +84,6 @@ public:
 		int y);
 	~PluginDialog();
 
-	void attach_new(int number);
-	void attach_shared(int number);
-	void attach_module(int number);
 	void resize_event(int w, int h);
 
 	BC_Title *standalone_title;
