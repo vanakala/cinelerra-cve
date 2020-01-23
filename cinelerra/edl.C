@@ -759,10 +759,20 @@ void EDL::get_shared_plugins(Track *source,
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
+					ptstime plugin_start = plugin->get_pts();
+					ptstime plugin_end = plugin->end_pts();
+
 					for(int j = 0; j < source->plugins.total; j++)
 					{
-						// Already shared on this track?
-						if(source->plugins.values[j]->shared_plugin == plugin)
+						Plugin *current = source->plugins.values[j];
+
+						// Shared plugin on this track?
+						if(current->shared_plugin &&
+							(current->shared_plugin == plugin ||
+							(plugin->plugin_server->multichannel &&
+							current->shared_plugin->plugin_server->multichannel &&
+							current->get_pts() < plugin_end &&
+							current->end_pts() > plugin_start)))
 						{
 							plugin = 0;
 							break;
