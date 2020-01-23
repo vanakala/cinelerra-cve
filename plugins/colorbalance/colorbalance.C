@@ -81,13 +81,13 @@ void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev,
 	this->lock_params = prev.lock_params;
 }
 
-
 ColorBalanceEngine::ColorBalanceEngine(ColorBalanceMain *plugin)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->plugin = plugin;
 	last_frame = 0;
-	set_synchronous(1);
+	input_lock.title = "ColorBalanceEngine::input_lock";
+	output_lock.title = "ColorBalanceEngine::output_lock";
 }
 
 ColorBalanceEngine::~ColorBalanceEngine()
