@@ -236,6 +236,7 @@ void DiffKey::process_frame(VFrame **frame)
 
 	top_frame = frame[0];
 	bottom_frame = frame[1];
+	top_frame->set_transparent();
 
 	if(get_use_opengl())
 	{
