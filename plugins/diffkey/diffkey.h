@@ -93,7 +93,6 @@ class DiffKeyGUI : public PluginWindow
 {
 public:
 	DiffKeyGUI(DiffKey *plugin, int x, int y);
-	~DiffKeyGUI();
 
 	void update();
 
@@ -122,7 +121,6 @@ class DiffKeyClient : public LoadClient
 {
 public:
 	DiffKeyClient(DiffKeyEngine *engine);
-	~DiffKeyClient();
 
 	void process_package(LoadPackage *pkg);
 	DiffKeyEngine *engine;

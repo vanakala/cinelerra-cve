@@ -141,10 +141,6 @@ DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-DiffKeyGUI::~DiffKeyGUI()
-{
-}
-
 void DiffKeyGUI::update()
 {
 	threshold->update(plugin->config.threshold);
@@ -236,7 +232,7 @@ void DiffKey::process_frame(VFrame **frame)
 
 // Read frames from 2 layers
 	get_frame(frame[0], get_use_opengl());
-	get_frame(frame[1],get_use_opengl());
+	get_frame(frame[1], get_use_opengl());
 
 	top_frame = frame[0];
 	bottom_frame = frame[1];
@@ -402,9 +398,6 @@ DiffKeyClient::DiffKeyClient(DiffKeyEngine *engine)
 	this->engine = engine;
 }
 
-DiffKeyClient::~DiffKeyClient()
-{
-}
 
 void DiffKeyClient::process_package(LoadPackage *ptr)
 {
