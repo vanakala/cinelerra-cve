@@ -19,150 +19,20 @@
  * 
  */
 
-#ifndef DIFFKEY_H
-#define DIFFKEY_H
-
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_MULTICHANNEL
-
-#define PLUGIN_TITLE N_("Difference key")
-#define PLUGIN_CLASS DiffKey
-#define PLUGIN_CONFIG_CLASS DiffKeyConfig
-#define PLUGIN_THREAD_CLASS DiffKeyThread
-#define PLUGIN_GUI_CLASS DiffKeyGUI
-
 #define GL_GLEXT_PROTOTYPES
 
-#include "pluginmacros.h"
-
+#include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "colorspaces.h"
-#include "bchash.h"
+#include "diffkey.h"
 #include "filexml.h"
 #include "language.h"
-#include "loadbalance.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "picon_png.h"
 
 #include <string.h>
-
-class DiffKeyConfig
-{
-public:
-	DiffKeyConfig();
-	void copy_from(DiffKeyConfig &src);
-	int equivalent(DiffKeyConfig &src);
-	void interpolate(DiffKeyConfig &prev, 
-		DiffKeyConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	float threshold;
-	float slope;
-	int do_value;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class DiffKeyThreshold : public BC_FSlider
-{
-public:
-	DiffKeyThreshold(DiffKey *plugin, int x, int y);
-	int handle_event();
-	DiffKey *plugin;
-};
-
-class DiffKeySlope : public BC_FSlider
-{
-public:
-	DiffKeySlope(DiffKey *plugin, int x, int y);
-	int handle_event();
-	DiffKey *plugin;
-};
-
-class DiffKeyDoValue : public BC_CheckBox
-{
-public:
-	DiffKeyDoValue(DiffKey *plugin, int x, int y);
-	int handle_event();
-	DiffKey *plugin;
-};
-
-
-class DiffKeyGUI : public PluginWindow
-{
-public:
-	DiffKeyGUI(DiffKey *plugin, int x, int y);
-	~DiffKeyGUI();
-
-	void update();
-
-	DiffKeyThreshold *threshold;
-	DiffKeySlope *slope;
-	DiffKeyDoValue *do_value;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class DiffKeyEngine : public LoadServer
-{
-public:
-	DiffKeyEngine(DiffKey *plugin);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	DiffKey *plugin;
-};
-
-
-class DiffKeyClient : public LoadClient
-{
-public:
-	DiffKeyClient(DiffKeyEngine *engine);
-	~DiffKeyClient();
-
-	void process_package(LoadPackage *pkg);
-	DiffKeyEngine *engine;
-};
-
-class DiffKeyPackage : public LoadPackage
-{
-public:
-	DiffKeyPackage();
-	int row1;
-	int row2;
-};
-
-
-class DiffKey : public PluginVClient
-{
-public:
-	DiffKey(PluginServer *server);
-	~DiffKey();
-
-	void process_frame(VFrame **frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS
-
-	DiffKeyEngine *engine;
-	VFrame *top_frame;
-	VFrame *bottom_frame;
-};
-
 
 REGISTER_PLUGIN
 
@@ -763,5 +633,3 @@ DiffKeyPackage::DiffKeyPackage()
  : LoadPackage()
 {
 }
-
-#endif
