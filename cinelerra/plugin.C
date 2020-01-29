@@ -328,6 +328,9 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 		plugin_server->save_data(keyframes->get_first());
 		plugin_server->close_plugin();
 	}
+
+	if(plugin_type != PLUGIN_TRANSITION)
+		track->tracks->cleanup_plugins();
 }
 
 KeyFrame* Plugin::get_prev_keyframe(ptstime postime)

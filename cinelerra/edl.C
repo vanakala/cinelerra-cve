@@ -227,6 +227,7 @@ void EDL::load_xml(FileXML *file, EDLSession *session)
 	tracks->init_shared_pointers();
 	check_master_track();
 	boundaries();
+	tracks->cleanup_plugins();
 }
 
 

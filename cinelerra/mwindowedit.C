@@ -682,6 +682,7 @@ void MWindow::insert_effect(const char *title,
 		server->save_data(new_plugin->keyframes->get_first());
 		server->close_plugin();
 	}
+	track->tracks->cleanup_plugins();
 }
 
 void MWindow::modify_edithandles(void)
