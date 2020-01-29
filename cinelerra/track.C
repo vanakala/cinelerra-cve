@@ -416,7 +416,7 @@ void Track::load_pluginset(FileXML *file, ptstime start)
 void Track::init_shared_pointers()
 {
 	for(int i = 0; i < plugins.total; i++)
-		plugins.values[0]->init_shared_pointers();
+		plugins.values[i]->init_shared_pointers();
 }
 
 void Track::insert_asset(Asset *asset,
