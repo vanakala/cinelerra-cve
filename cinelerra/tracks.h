@@ -98,6 +98,8 @@ public:
 	void create_new_tracks(Tracks *tracks);
 // Cleanup over all tracks
 	void cleanup();
+// Clenup of multichannel shared plugins
+	void cleanup_plugins();
 // Number of bytes used
 	size_t get_size();
 

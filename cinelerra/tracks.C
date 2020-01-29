@@ -781,6 +781,73 @@ void Tracks::cleanup()
 		current->cleanup();
 }
 
+void Tracks::cleanup_plugins()
+{
+	for(Track *track = first; track; track = track->next)
+	{
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *plugin = track->plugins.values[i];
+			Track *cur;
+			Plugin *slave;
+			int found;
+
+			if(plugin->plugin_type != PLUGIN_STANDALONE ||
+					!plugin->plugin_server ||
+					!plugin->plugin_server->multichannel)
+				continue;
+
+			ptstime start = plugin->get_pts();
+			ptstime end = plugin->end_pts();
+
+			for(cur = first; cur; cur = cur->next)
+			{
+				found = 0;
+				for(int j = 0; j < cur->plugins.total; j++)
+				{
+					slave = cur->plugins.values[j];
+
+					if(slave->plugin_type == PLUGIN_SHAREDPLUGIN &&
+						slave->shared_plugin == plugin)
+					{
+					// Force slave pts equivalent of masters
+						slave->set_pts(start);
+						slave->set_end(end);
+						found = 1;
+						break;
+					}
+				}
+				if(found)
+				{
+				// Remove all other shared plugin slaves active same time
+					for(int j = 0; j < cur->plugins.total; j++)
+					{
+						Plugin *curplugin = cur->plugins.values[j];
+
+						if(curplugin->plugin_type == PLUGIN_SHAREDPLUGIN &&
+							curplugin->shared_plugin &&
+							curplugin->shared_plugin != plugin &&
+							curplugin->shared_plugin->plugin_server &&
+							curplugin->shared_plugin->plugin_server->multichannel)
+						{
+							ptstime cur_start = curplugin->get_pts();
+							ptstime cur_end = curplugin->end_pts();
+
+							if(cur_start < end && cur_end > start)
+							{
+								// Remove shared slave that overlaps
+								// with current plugin
+								cur->plugins.remove_object(curplugin);
+								j--;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 size_t Tracks::get_size()
 {
 	size_t size = sizeof(*this);
