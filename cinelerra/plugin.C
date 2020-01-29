@@ -293,7 +293,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	if(guideframe)
 		guideframe->clear();
 
-	while(keyframes->last && keyframes->last != keyframes->first)
+	while(keyframes->last)
 		delete keyframes->last;
 
 	delete active_server;
