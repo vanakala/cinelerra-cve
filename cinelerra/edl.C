@@ -744,7 +744,7 @@ int EDL::next_id()
 	return result;
 }
 
-void EDL::get_shared_plugins(Track *source, 
+void EDL::get_shared_plugins(Track *source, ptstime position,
 	ArrayList<Plugin*> *plugin_locations)
 {
 	for(Track *track = tracks->first; track; track = track->next)
@@ -754,10 +754,9 @@ void EDL::get_shared_plugins(Track *source,
 		{
 			for(int i = 0; i < track->plugins.total; i++)
 			{
-				Plugin *plugin = track->get_current_plugin(
-					local_session->get_selectionstart(1), 
-					i, 
-					0);
+				Plugin *plugin = track->get_current_plugin(position,
+					i, 0);
+
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
 					ptstime plugin_start = plugin->get_pts();

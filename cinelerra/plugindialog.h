@@ -62,6 +62,8 @@ public:
 
 // type of attached plugin
 	int plugin_type;    // constants defined in plugin.inc
+// Cursor position on trackcanvas
+	ptstime plugin_pos;
 
 	Plugin *shared_plugin;
 	Track *shared_track;

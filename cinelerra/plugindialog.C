@@ -27,6 +27,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "language.h"
+#include "localsession.h"
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -38,6 +39,7 @@
 #include "pluginserver.h"
 #include "theme.h"
 #include "track.h"
+#include "trackcanvas.h"
 
 
 PluginDialogThread::PluginDialogThread()
@@ -104,13 +106,19 @@ void PluginDialogThread::start_window(Track *track,
 void PluginDialogThread::run()
 {
 	int result = 0;
-	int x, y;
+	int x, y, rx, ry;
 
 	plugin_type = 0;
 
 	mwindow_global->get_abs_cursor_pos(&x, &y);
 	x -= mainsession->plugindialog_w / 2;
 	y -= mainsession->plugindialog_h / 2;
+
+	mwindow_global->gui->canvas->get_relative_cursor_pos(&rx, &ry);
+	if(rx > 0 && rx < mwindow_global->gui->canvas->get_w())
+		plugin_pos = rx * master_edl->local_session->zoom_time;
+	else
+		plugin_pos = master_edl->local_session->get_selectionstart(1);
 
 	window_lock->lock("PluginDialogThread::run 1");
 	window = new PluginDialog(this,
@@ -221,7 +229,7 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 		0,
 		local_plugindb);
 
-	master_edl->get_shared_plugins(thread->track,
+	master_edl->get_shared_plugins(thread->track, thread->plugin_pos,
 		&plugin_locations);
 
 	master_edl->get_shared_tracks(thread->track,
