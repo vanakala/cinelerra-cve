@@ -204,6 +204,8 @@ public:
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
 	int playable_edit(ptstime position);
+// Does track have multichannel plugin
+	int has_multichannel_plugin();
 // Number of bytes used
 	size_t get_size();
 // Delete frames from plugins

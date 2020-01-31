@@ -1162,6 +1162,18 @@ void Track::reset_plugin_frames()
 		plugins.values[i]->reset_frames();
 }
 
+int Track::has_multichannel_plugin()
+{
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+
+		if(!plugin->plugin_server || plugin->plugin_server->multichannel)
+			return 1;
+	}
+	return 0;
+}
+
 size_t Track::get_size()
 {
 	size_t size = sizeof(*this);
