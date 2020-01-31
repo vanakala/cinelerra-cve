@@ -3764,7 +3764,7 @@ int TrackCanvas::button_release_event()
 		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
-		end_edithandle_selection();
+		mwindow->modify_edithandles();
 		break;
 
 	case DRAG_EDITHANDLE1:
@@ -3777,7 +3777,7 @@ int TrackCanvas::button_release_event()
 		mainsession->current_operation = NO_OPERATION;
 		drag_scroll = 0;
 		result = 1;
-		end_pluginhandle_selection();
+		mwindow->modify_pluginhandles();
 		break;
 
 	case DRAG_PLUGINHANDLE1:
@@ -4576,16 +4576,6 @@ int TrackCanvas::start_selection(ptstime position)
 		rerender = 1;
 	}
 	return rerender;
-}
-
-void TrackCanvas::end_edithandle_selection()
-{
-	mwindow->modify_edithandles();
-}
-
-void TrackCanvas::end_pluginhandle_selection()
-{
-	mwindow->modify_pluginhandles();
 }
 
 ptstime TrackCanvas::time_visible(void)
