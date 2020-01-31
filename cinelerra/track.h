@@ -190,10 +190,6 @@ public:
 		ptstime newposition,
 		int currentend, 
 		int handle_mode);
-	void modify_pluginhandles(ptstime oldposition,
-		ptstime newposition,
-		int currentend, 
-		int handle_mode);
 
 // Absolute number of this track
 	int number_of();

@@ -478,25 +478,6 @@ void Tracks::modify_edithandles(ptstime oldposition,
 	}
 }
 
-void Tracks::modify_pluginhandles(ptstime oldposition,
-	ptstime newposition,
-	int currentend, 
-	int handle_mode)
-{
-	Track *current;
-
-	for(current = first; current; current = NEXT)
-	{
-		if(current->record)
-		{
-			current->modify_pluginhandles(oldposition, 
-				newposition, 
-				currentend, 
-				handle_mode);
-		}
-	}
-}
-
 Track *Tracks::master()
 {
 	for(Track *current = first; current; current = NEXT)

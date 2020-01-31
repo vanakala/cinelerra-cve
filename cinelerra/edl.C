@@ -542,11 +542,7 @@ void EDL::modify_pluginhandles(ptstime oldposition,
 	int currentend, 
 	int handle_mode)
 {
-	ptstime newpos = adjust_position(oldposition, newposition, currentend,
-		handle_mode);
-	tracks->modify_pluginhandles(oldposition, 
-		newpos,
-		currentend, 
+	adjust_position(oldposition, newposition, currentend,
 		handle_mode);
 	optimize();
 }

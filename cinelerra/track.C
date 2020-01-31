@@ -962,16 +962,23 @@ ptstime Track::adjust_position(ptstime oldposition, ptstime newposition,
 {
 	ptstime newpos = edits->adjust_position(oldposition, newposition,
 		currentend, handle_mode);
+
 	for(int i = 0; i < plugins.total; i++)
 	{
 		Plugin *plugin = plugins.values[i];
 
 		if(edl->equivalent(plugin->get_pts(), oldposition) &&
 				newpos < plugin->end_pts())
+		{
+			plugin->shift_keyframes(newpos - plugin->get_pts());
 			plugin->set_pts(newpos);
+		}
 		else if(edl->equivalent(plugin->end_pts(), oldposition) &&
 				newpos > plugin->get_pts())
-			plugin->set_length(newpos -plugin->get_pts());
+		{
+			plugin->set_length(newpos - plugin->get_pts());
+			plugin->remove_keyframes_after(newpos);
+		}
 	}
 	return newpos;
 }
@@ -982,24 +989,6 @@ void Track::modify_edithandles(ptstime oldposition,
 	int handle_mode)
 {
 	edits->modify_handles(oldposition, newposition, currentend, handle_mode);
-}
-
-void Track::modify_pluginhandles(ptstime oldposition,
-	ptstime newposition,
-	int currentend, 
-	int handle_mode)
-{
-	for(int i = 0; i < plugins.total; i++)
-	{
-		Plugin *plugin = plugins.values[i];
-
-		if(edl->equivalent(plugin->get_pts(), oldposition) &&
-				newposition < plugin->end_pts())
-			plugin->set_pts(newposition);
-		else if(edl->equivalent(plugin->end_pts(), oldposition) &&
-				newposition > plugin->get_pts())
-			plugin->set_length(newposition - plugin->get_pts());
-	}
 }
 
 void Track::paste_silence(ptstime start, ptstime end)
