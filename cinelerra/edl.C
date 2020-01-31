@@ -784,10 +784,14 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 
 void EDL::get_shared_tracks(Track *track, ArrayList<Track*> *module_locations)
 {
+	if(track->has_multichannel_plugin())
+		return;
+
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
-		if(current != track && 
-				current->data_type == track->data_type)
+		if(current != track &&
+				current->data_type == track->data_type &&
+				!current->has_multichannel_plugin())
 			module_locations->append(current);
 	}
 }
