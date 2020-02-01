@@ -2,7 +2,7 @@ Cinelerra-CVE is a fork of Cinelerra-CV.
 This file contains information about Cinelerra-CVE 2.3.5
 The sources are available at https://github.com/vanakala/cinelerra-cve
 
-This file describes status of Cinelerra-CVE as of Jan 6, 2019
+This file describes status of Cinelerra-CVE as of Feb 1, 2020
 
 Contents.
 
@@ -90,15 +90,24 @@ Changes of this fork:
 - improved Russian translations (thanks to Igor Vladimirsky aka igor_ubuntu)
 - new GuideLines system for plugins
 - support of aspect ratio
+- optimized EDL internal manipulation
+    (EDL structures are now permanent - never removed)
+- rewrited Crop feature - it is now a normal keyframeable effect
+    (only 16bit color models are supported)
+- multichannel plugins get (m) after their name in plugin dialog
+- implemented master track idea
+- internally only full range colors are used
+- trimming should be fixed, a lot of other bugs are fixed
+- automatic backup is configurable, can be turned off
+- plugins are loaded when used - 120k memory is freed
+- reel name is replaced with EDL info - user can give edl a name
+    and write a short description
 
 Known problems (todo list)
-- optimize playback and EDL manipulation
+- optimize playback
 - use internally only 16bit per color colormodels
 - restore OpenGL support of playback and hopefully rendering
 - new API of plugins and macros need some documentation
-- trimming does not work as described in manual or as expected,
-    occasionally crashes
-- reel name must be read from project
 
 Bug reporting.
 I am very interested in reports of crashes and hangs.
