@@ -783,6 +783,8 @@ void Tracks::cleanup()
 
 void Tracks::cleanup_plugins()
 {
+	int have_shared_track = 0;
+
 	for(Track *track = first; track; track = track->next)
 	{
 		for(int i = 0; i < track->plugins.total; i++)
@@ -791,6 +793,9 @@ void Tracks::cleanup_plugins()
 			Track *cur;
 			Plugin *slave;
 			int found;
+
+			if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
+				have_shared_track = 1;
 
 			if(plugin->plugin_type != PLUGIN_STANDALONE ||
 					!plugin->plugin_server ||
@@ -841,6 +846,35 @@ void Tracks::cleanup_plugins()
 								j--;
 							}
 						}
+					}
+				}
+			}
+		}
+	}
+	if(have_shared_track)
+	{
+		for(Track *track = first; track; track = track->next)
+		{
+			for(int i = 0; i < track->plugins.total; i++)
+			{
+				Plugin *plugin = track->plugins.values[i];
+
+				if(plugin->plugin_type != PLUGIN_SHAREDMODULE)
+					continue;
+
+				for(int j = 0; j < track->plugins.total; j++)
+				{
+					Plugin *cur = track->plugins.values[i];
+
+					if(cur->plugin_type == PLUGIN_SHAREDPLUGIN &&
+						cur->shared_plugin &&
+						cur->shared_plugin->plugin_server &&
+						cur->shared_plugin->plugin_server->multichannel)
+					{
+						// Can't have shared plugins on shared track
+						track->plugins.remove_object(plugin);
+						i--;
+						break;
 					}
 				}
 			}
