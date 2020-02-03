@@ -29,7 +29,5 @@ class TrackRender;
 #define RSTEP_NORMAL 0
 // Render shared plugins
 #define RSTEP_SHARED 1
-// Render all
-#define RSTEP_FORCE  2
 
 #endif

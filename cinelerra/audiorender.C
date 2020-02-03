@@ -379,26 +379,29 @@ void AudioRender::get_aframes(ptstime pts, ptstime input_duration)
 void AudioRender::process_frames()
 {
 	ATrackRender *trender;
+	int found;
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
 		if(track->data_type != TRACK_AUDIO)
 			continue;
-		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_NORMAL);
+		((ATrackRender*)track->renderer)->process_aframes(audio_out,
+				out_channels, RSTEP_NORMAL);
 	}
 
-	for(Track *track = edl->tracks->last; track; track = track->previous)
+	for(;;)
 	{
-		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
-			continue;
-		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_SHARED);
-	}
-
-	for(Track *track = edl->tracks->last; track; track = track->previous)
-	{
-		if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
-			continue;
-		((ATrackRender*)track->renderer)->process_aframes(audio_out, out_channels, RSTEP_FORCE);
+		found = 0;
+		for(Track *track = edl->tracks->last; track; track = track->previous)
+		{
+			if(track->data_type != TRACK_AUDIO || track->renderer->track_ready())
+				continue;
+			((ATrackRender*)track->renderer)->process_aframes(audio_out,
+					out_channels, RSTEP_SHARED);
+			found = 1;
+		}
+		if(!found)
+			break;
 	}
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)

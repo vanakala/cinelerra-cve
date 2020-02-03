@@ -295,8 +295,11 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 		{
 			if(!plugin->shared_plugin->plugin_server->multichannel)
 				server = plugin->shared_plugin->plugin_server;
-			else if(rstep != RSTEP_NORMAL)
-				return 0;
+			else
+			{
+				if(rstep == RSTEP_NORMAL)
+					return 0;
+			}
 		}
 		// Fall through
 	case PLUGIN_STANDALONE:
@@ -304,7 +307,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 		{
 			if(server->multichannel && !plugin->shared_plugin)
 			{
-				if(rstep == RSTEP_NORMAL)
+				if(!arender->is_shared_ready(plugin, aframe->pts))
 					return 0;
 				if(!plugin->active_server)
 				{
@@ -320,9 +323,11 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 					current->copy_pts(aframe);
 					if(i > 0)
 					{
-						Edit *edit = get_track_number(current->get_track())->editof(aframe->pts);
+						Track *pltrack = get_track_number(current->get_track());
+						Edit *edit = pltrack->editof(aframe->pts);
 						if(edit)
 							current->channel = edit->channel;
+						pltrack->renderer->next_plugin = 0;
 					}
 				}
 				plugin->active_server->process_buffer(plugin->aframes.values,
@@ -348,7 +353,10 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 
 void ATrackRender::copy_track_aframe(AFrame *aframe)
 {
-	if(!track_frame)
-		track_frame = audio_frames.clone_frame(aframe);
-	track_frame->copy(aframe);
+	if(!is_muted(aframe->pts))
+	{
+		if(!track_frame)
+			track_frame = audio_frames.clone_frame(aframe);
+		track_frame->copy(aframe);
+	}
 }
