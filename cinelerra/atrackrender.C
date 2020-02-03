@@ -360,3 +360,12 @@ void ATrackRender::copy_track_aframe(AFrame *aframe)
 		track_frame->copy(aframe);
 	}
 }
+
+void ATrackRender::dump(int indent)
+{
+	printf("%*sATrackRender %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*strack_frame %p current_edit %p audiorender %p\n", indent, "",
+		track_frame, current_edit, arender);
+	TrackRender::dump(indent);
+}

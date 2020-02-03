@@ -42,6 +42,7 @@ public:
 	AFrame *get_aframe(AFrame *buffer);
 	void render_pan(AFrame **output, int out_channels);
 	void copy_track_aframe(AFrame *aframe);
+	void dump(int indent);
 
 	LevelHistory module_levels;
 private:
