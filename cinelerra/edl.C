@@ -758,6 +758,12 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 					ptstime plugin_start = plugin->get_pts();
 					ptstime plugin_end = plugin->end_pts();
 
+					if(!plugin->plugin_server)
+						continue;
+					if(plugin->plugin_server->multichannel &&
+							track->has_shared_track())
+						continue;
+
 					for(int j = 0; j < source->plugins.total; j++)
 					{
 						Plugin *current = source->plugins.values[j];

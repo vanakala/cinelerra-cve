@@ -1174,6 +1174,18 @@ int Track::has_multichannel_plugin()
 	return 0;
 }
 
+int Track::has_shared_track()
+{
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *plugin = plugins.values[i];
+
+		if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
+			return 1;
+	}
+	return 0;
+}
+
 size_t Track::get_size()
 {
 	size_t size = sizeof(*this);

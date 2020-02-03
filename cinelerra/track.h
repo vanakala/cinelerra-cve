@@ -206,6 +206,8 @@ public:
 	int playable_edit(ptstime position);
 // Does track have multichannel plugin
 	int has_multichannel_plugin();
+// Does current track have shared track
+	int has_shared_track();
 // Number of bytes used
 	size_t get_size();
 // Delete frames from plugins
