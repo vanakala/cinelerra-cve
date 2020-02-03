@@ -103,11 +103,12 @@ void RenderBase::run()
 int RenderBase::is_shared_ready(Plugin *plugin, ptstime pts)
 {
 	int pcount, ncount;
+	int plugin_type = plugin->track->data_type;
 
 	pcount = ncount = 0;
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_VIDEO || track->renderer->is_muted(pts))
+		if(track->data_type != plugin_type || track->renderer->is_muted(pts))
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
