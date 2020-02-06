@@ -157,7 +157,8 @@ public:
 
 	void get_shared_plugins(Track *source, ptstime position,
 		ArrayList<Plugin*> *plugin_locations);
-	void get_shared_tracks(Track *track, ArrayList<Track*> *module_locations);
+	void get_shared_tracks(Track *track, ptstime start, ptstime end,
+		ArrayList<Track*> *module_locations);
 
 	int get_tracks_height(Theme *theme);
 

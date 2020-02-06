@@ -105,7 +105,7 @@ void PluginDialogThread::start_window(Track *track,
 
 void PluginDialogThread::run()
 {
-	int result = 0;
+	int result;
 	int x, y, rx, ry;
 
 	plugin_type = 0;
@@ -114,12 +114,16 @@ void PluginDialogThread::run()
 	x -= mainsession->plugindialog_w / 2;
 	y -= mainsession->plugindialog_h / 2;
 
+	master_edl->local_session->get_selections(selections);
+
 	mwindow_global->gui->canvas->get_relative_cursor_pos(&rx, &ry);
 	if(rx > 0 && rx < mwindow_global->gui->canvas->get_w())
-		plugin_pos = rx * master_edl->local_session->zoom_time;
-	else
-		plugin_pos = master_edl->local_session->get_selectionstart(1);
+	{
+		ptstime cursor_pts = rx * master_edl->local_session->zoom_time;
 
+		if(cursor_pts < selections[0] || cursor_pts > selections[1])
+			selections[0] = selections[1] = cursor_pts;
+	}
 	window_lock->lock("PluginDialogThread::run 1");
 	window = new PluginDialog(this,
 		MWindow::create_title(plugin ? N_("Change Effect") :
@@ -180,7 +184,9 @@ void PluginDialogThread::run()
 			else
 			{
 				mwindow_global->insert_effect(plugin_title,
-					track, 0, 0, plugin_type,
+					track, selections[0],
+					selections[1] - selections[0],
+					plugin_type,
 					shared_plugin, shared_track);
 			}
 
@@ -228,12 +234,11 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 		0,
 		0,
 		local_plugindb);
-
-	master_edl->get_shared_plugins(thread->track, thread->plugin_pos,
+	master_edl->get_shared_plugins(thread->track, thread->selections[0],
 		&plugin_locations);
 
-	master_edl->get_shared_tracks(thread->track,
-		&module_locations);
+	master_edl->get_shared_tracks(thread->track, thread->selections[0],
+		thread->selections[1], &module_locations);
 
 // Construct listbox items
 	for(int i = 0; i < local_plugindb.total; i++)

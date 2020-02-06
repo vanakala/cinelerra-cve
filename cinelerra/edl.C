@@ -761,7 +761,8 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 					if(!plugin->plugin_server)
 						continue;
 					if(plugin->plugin_server->multichannel &&
-							track->has_shared_track())
+							track->get_shared_track(
+								plugin_start, plugin_end))
 						continue;
 
 					for(int j = 0; j < source->plugins.total; j++)
@@ -788,16 +789,19 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 	}
 }
 
-void EDL::get_shared_tracks(Track *track, ArrayList<Track*> *module_locations)
+void EDL::get_shared_tracks(Track *track, ptstime start, ptstime end,
+	ArrayList<Track*> *module_locations)
 {
-	if(track->has_multichannel_plugin())
+	if(track->get_shared_multichannel(start, end) ||
+			track->get_shared_track(start, end))
 		return;
 
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
 		if(current != track &&
 				current->data_type == track->data_type &&
-				!current->has_multichannel_plugin())
+				!current->get_shared_multichannel(start, end) &&
+				!current->get_shared_track(start, end))
 			module_locations->append(current);
 	}
 }

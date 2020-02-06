@@ -1162,26 +1162,43 @@ void Track::reset_plugin_frames()
 		plugins.values[i]->reset_frames();
 }
 
-int Track::has_multichannel_plugin()
+Plugin *Track::get_shared_multichannel(ptstime start, ptstime end)
 {
-	for(int i = 0; i < plugins.total; i++)
+	if(PTSEQU(start, end))
 	{
-		Plugin *plugin = plugins.values[i];
+		start = 0;
+		end = get_length();
+	}
 
-		if(!plugin->plugin_server || plugin->plugin_server->multichannel)
-			return 1;
+	for(int j = 0; j < plugins.total; j++)
+	{
+		Plugin *plugin = plugins.values[j];
+
+		if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN &&
+				plugin->shared_plugin &&
+				plugin->shared_plugin->plugin_server &&
+				plugin->shared_plugin->plugin_server->multichannel &&
+				plugin->get_pts() < end && plugin->end_pts() > start)
+			return plugin;
 	}
 	return 0;
 }
 
-int Track::has_shared_track()
+Plugin *Track::get_shared_track(ptstime start, ptstime end)
 {
+	if(PTSEQU(start, end))
+	{
+		start = 0;
+		end = get_length();
+	}
+
 	for(int i = 0; i < plugins.total; i++)
 	{
 		Plugin *plugin = plugins.values[i];
 
-		if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
-			return 1;
+		if(plugin->plugin_type == PLUGIN_SHAREDMODULE &&
+				plugin->get_pts() < end && plugin->end_pts() > start)
+			return plugin;
 	}
 	return 0;
 }
