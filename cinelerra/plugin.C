@@ -378,22 +378,26 @@ KeyFrame* Plugin::first_keyframe()
 
 KeyFrame* Plugin::get_keyframe()
 {
-// Search for keyframe on or before selection
-	KeyFrame *result = 
-		get_prev_keyframe(edl->local_session->get_selectionstart(1));
+	ptstime selpos = edl->local_session->get_selectionstart(1);
+	KeyFrame *result = get_prev_keyframe(selpos);
 
+	if(selpos < pts)
+		selpos = pts;
+	if(!result)
+		result = (KeyFrame*)keyframes->insert_auto(pts);
 // Return nearest keyframe if not in automatic keyframe generation
 	if(!edlsession->auto_keyframes)
 		return result;
 	else
+	{
+		if(selpos > end_pts())
+			selpos = end_pts();
 // Return new keyframe
-	if(!PTSEQU(result->pos_time, edl->local_session->get_selectionstart(1)))
-		return (KeyFrame*)keyframes->insert_auto(edl->local_session->get_selectionstart(1));
-	else
+		if(!PTSEQU(result->pos_time, selpos))
+			return (KeyFrame*)keyframes->insert_auto(selpos);
+	}
 // Return existing keyframe
-		return result;
-
-	return 0;
+	return result;
 }
 
 void Plugin::save_xml(FileXML *file)
