@@ -235,7 +235,7 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 		0,
 		local_plugindb);
 	master_edl->get_shared_plugins(thread->track, thread->selections[0],
-		&plugin_locations);
+		thread->selections[1], &plugin_locations);
 
 	master_edl->get_shared_tracks(thread->track, thread->selections[0],
 		thread->selections[1], &module_locations);

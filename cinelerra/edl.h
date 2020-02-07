@@ -155,7 +155,7 @@ public:
 // Insert the clip at a point in the EDL
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
 
-	void get_shared_plugins(Track *source, ptstime position,
+	void get_shared_plugins(Track *source, ptstime startpos, ptstime endpos,
 		ArrayList<Plugin*> *plugin_locations);
 	void get_shared_tracks(Track *track, ptstime start, ptstime end,
 		ArrayList<Track*> *module_locations);

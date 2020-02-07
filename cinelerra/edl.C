@@ -740,7 +740,7 @@ int EDL::next_id()
 	return result;
 }
 
-void EDL::get_shared_plugins(Track *source, ptstime position,
+void EDL::get_shared_plugins(Track *source, ptstime startpos, ptstime endpos,
 	ArrayList<Plugin*> *plugin_locations)
 {
 	for(Track *track = tracks->first; track; track = track->next)
@@ -750,8 +750,11 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 		{
 			for(int i = 0; i < track->plugins.total; i++)
 			{
-				Plugin *plugin = track->get_current_plugin(position,
-					i, 0);
+				Plugin *plugin = track->plugins.values[i];
+
+				if(plugin->get_pts() > endpos ||
+						plugin->end_pts() < startpos)
+					continue;
 
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
@@ -764,18 +767,16 @@ void EDL::get_shared_plugins(Track *source, ptstime position,
 							track->get_shared_track(
 								plugin_start, plugin_end))
 						continue;
+					if(track->get_shared_multichannel(plugin_start, plugin_end))
+						continue;
 
 					for(int j = 0; j < source->plugins.total; j++)
 					{
 						Plugin *current = source->plugins.values[j];
 
-						// Shared plugin on this track?
-						if(current->shared_plugin &&
-							(current->shared_plugin == plugin ||
-							(plugin->plugin_server->multichannel &&
-							current->shared_plugin->plugin_server->multichannel &&
-							current->get_pts() < plugin_end &&
-							current->end_pts() > plugin_start)))
+						// Plugin already shared?
+						if(current->plugin_type == PLUGIN_SHAREDPLUGIN &&
+							current->shared_plugin == plugin)
 						{
 							plugin = 0;
 							break;
