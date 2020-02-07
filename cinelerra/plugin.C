@@ -130,25 +130,10 @@ void Plugin::copy_from(Plugin *plugin)
 	copy_keyframes(plugin);
 }
 
-ptstime Plugin::get_pts()
-{
-	return pts;
-}
-
-ptstime Plugin::end_pts()
-{
-	return pts + duration;
-}
-
 void Plugin::set_pts(ptstime pts)
 {
 	this->pts = pts;
 	this->keyframes->base_pts = pts;
-}
-
-ptstime Plugin::get_length()
-{
-	return duration;
 }
 
 void Plugin::set_length(ptstime length)

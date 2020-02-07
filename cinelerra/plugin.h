@@ -86,7 +86,6 @@ public:
 	KeyFrame* get_next_keyframe(ptstime postime);
 	KeyFrame* first_keyframe();
 // Get keyframes for editing with automatic creation if enabled.
-// The direction is always assumed to be forward.
 	virtual KeyFrame* get_keyframe();
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
@@ -95,9 +94,9 @@ public:
 	void clear_keyframes();
 
 // Position, length
-	ptstime get_pts();
-	ptstime get_length();
-	ptstime end_pts();
+	inline ptstime get_pts() { return pts; };
+	inline ptstime get_length() { return duration; };
+	inline ptstime end_pts() { return pts + duration; };
 	void set_pts(ptstime pts);
 	void set_length(ptstime length);
 	void set_end(ptstime end);
