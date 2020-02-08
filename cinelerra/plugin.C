@@ -28,7 +28,6 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "language.h"
-#include "localsession.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "preferences.inc"
@@ -322,14 +321,6 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 {
 	KeyFrame *current = 0;
 
-	if(!keyframes->first)
-		return (KeyFrame*)keyframes->insert_auto(0);
-
-// This doesn't work because edl->selectionstart doesn't change during
-// playback at the same rate as PluginClient::source_position.
-	if(postime < 0)
-		postime = edl->local_session->get_selectionstart(1);
-
 // Get keyframe on or before current position
 	for(current = (KeyFrame*)keyframes->last;
 			current;
@@ -346,14 +337,6 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 {
 	KeyFrame *current;
-
-	if(!keyframes->first)
-		return (KeyFrame*)keyframes->insert_auto(0);
-
-// This doesn't work for playback because edl->selectionstart doesn't 
-// change during playback at the same rate as PluginClient::source_position.
-	if(postime < 0)
-		postime = edl->local_session->get_selectionstart(1);
 
 // Get keyframe after current position
 	for(current = (KeyFrame*)keyframes->first;
