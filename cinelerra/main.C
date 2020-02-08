@@ -55,6 +55,7 @@
 MWindow *mwindow_global;
 Theme *theme_global;
 Preferences *preferences_global;
+Preferences *render_preferences;
 AssetList assetlist_global;
 ClipList cliplist_global;
 EDL *master_edl;

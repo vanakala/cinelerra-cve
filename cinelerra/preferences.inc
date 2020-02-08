@@ -32,5 +32,5 @@ class PlaybackConfig;
 class AudioOutConfig;
 class VideoOutConfig;
 extern Preferences *preferences_global;
-
+extern Preferences *render_preferences;
 #endif
