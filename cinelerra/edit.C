@@ -148,7 +148,7 @@ Plugin *Edit::insert_transition(PluginServer *server)
 		transition->set_length(edlsession->default_transition_length);
 	}
 	else
-		transition->first_keyframe()->set_data(0);
+		transition->get_keyframe(0)->set_data(0);
 
 	transition->plugin_server = server;
 	return transition;

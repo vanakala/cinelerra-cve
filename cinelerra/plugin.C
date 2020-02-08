@@ -369,13 +369,6 @@ KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 	return current;
 }
 
-KeyFrame* Plugin::first_keyframe()
-{
-	if(!keyframes->first)
-		return (KeyFrame*)keyframes->insert_auto(0);
-	return (KeyFrame*)keyframes->first;
-}
-
 KeyFrame* Plugin::get_keyframe(ptstime selpos)
 {
 	KeyFrame *result = get_prev_keyframe(selpos);

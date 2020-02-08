@@ -84,7 +84,6 @@ public:
 // Called by PluginClient sequence to get rendering parameters
 	KeyFrame* get_prev_keyframe(ptstime postime);
 	KeyFrame* get_next_keyframe(ptstime postime);
-	KeyFrame* first_keyframe();
 // Get keyframes for editing with automatic creation if enabled.
 	KeyFrame* get_keyframe(ptstime selpos);
 	int silence();
