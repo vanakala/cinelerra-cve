@@ -185,7 +185,6 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	rendering_job = -1;
 	is_rendering = 0;
 	boot_defaults = 0;
-	preferences = 0;
 	gui = 0;
 	render = 0;
 	profile_end = 0;
@@ -200,7 +199,6 @@ BatchRenderThread::BatchRenderThread()
 	rendering_job = -1;
 	is_rendering = 0;
 	boot_defaults = 0;
-	preferences = 0;
 	render = 0;
 	gui = 0;
 	profile_end = 0;
@@ -210,7 +208,6 @@ BatchRenderThread::BatchRenderThread()
 BatchRenderThread::~BatchRenderThread()
 {
 	delete boot_defaults;
-	delete preferences;
 	delete render;
 }
 
@@ -228,7 +225,7 @@ BC_Window* BatchRenderThread::new_gui()
 	current_end = 0.0;
 
 	load_defaults(mwindow->defaults);
-	load_jobs(mwindow->preferences);
+	load_jobs(render_preferences);
 	gui = new BatchRenderGUI(mwindow,
 		this,
 		mainsession->batchrender_x,
@@ -471,15 +468,15 @@ void BatchRenderThread::start_rendering(char *config_path)
 // Initialize stuff which MWindow does.
 	MWindow::init_defaults(boot_defaults, config_path);
 	load_defaults(boot_defaults);
-	preferences = new Preferences;
-	preferences->load_defaults(boot_defaults);
-	preferences_global = preferences;
+	render_preferences = new Preferences;
+	render_preferences->load_defaults(boot_defaults);
+	preferences_global = render_preferences;
 	plugindb.init_plugins(0);
-	strcpy(string, preferences->global_plugin_dir);
+	strcpy(string, render_preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 
-	load_jobs(preferences);
+	load_jobs(render_preferences);
 	save_jobs();
 	save_defaults(boot_defaults);
 
@@ -489,16 +486,15 @@ void BatchRenderThread::start_rendering(char *config_path)
 // Predict all destination paths
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths,
-		preferences);
+		render_preferences);
 
 	int result = ConfirmSave::test_files(0, &paths);
 	paths.remove_all_objects();
 
 // Abort on any existing file because it's so hard to set this up.
 	if(result) return;
-	render = new Render(0);
-	render->start_batches(&jobs, 
-		preferences);
+	render = new Render();
+	render->run_batches(&jobs);
 }
 
 void BatchRenderThread::start_rendering()

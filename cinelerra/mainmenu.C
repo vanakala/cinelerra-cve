@@ -81,7 +81,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	save->set_saveas(saveas);
 	saveas->set_mainmenu(this);
 
-	filemenu->add_item(render = new RenderItem(mwindow));
+	filemenu->add_item(render = new RenderItem());
 	filemenu->add_item(new ExportEDLItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));

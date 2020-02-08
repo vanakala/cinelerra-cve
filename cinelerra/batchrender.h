@@ -114,7 +114,6 @@ public:
 	ArrayList<BatchRenderJob*> jobs;
 
 	BC_Hash *boot_defaults;
-	Preferences *preferences;
 	Render *render;
 
 	BatchRenderGUI *gui;

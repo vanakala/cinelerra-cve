@@ -48,21 +48,20 @@
 class RenderItem : public BC_MenuItem
 {
 public:
-	RenderItem(MWindow *mwindow);
+	RenderItem();
+
 	int handle_event();
-	MWindow *mwindow;
 };
 
 
 class RenderProgress : public Thread
 {
 public:
-	RenderProgress(MWindow *mwindow, Render *render);
+	RenderProgress(Render *render);
 	~RenderProgress();
 
 	void run();
 
-	MWindow *mwindow;
 	Render *render;
 
 	framenum last_value;
@@ -89,7 +88,7 @@ class RenderWindow;
 class Render : public Thread
 {
 public:
-	Render(MWindow *mwindow);
+	Render();
 	~Render();
 
 // Start dialogue box and render interactively.
@@ -98,8 +97,7 @@ public:
 // A new thread is created and the rendering is interactive.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // The batches are processed in the foreground in non interactive mode.
-	void start_batches(ArrayList<BatchRenderJob*> *jobs,
-		Preferences *preferences);
+	void run_batches(ArrayList<BatchRenderJob*> *jobs);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 	void run();
@@ -154,12 +152,9 @@ public:
 	VFrame *compressed_output;
 	MainProgressBar *progress;
 	RenderProgress *render_progress;
-	MWindow *mwindow;
 	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
-// Copy of mwindow preferences
-	Preferences *preferences;
 	int strategy;
 	int range_type;
 // Total selection to render in seconds
@@ -221,7 +216,7 @@ public:
 class RenderWindow : public BC_Window
 {
 public:
-	RenderWindow(MWindow *mwindow, Render *render, Asset *asset);
+	RenderWindow(Render *render, Asset *asset);
 	~RenderWindow();
 
 	void update_range_type(int range_type);
@@ -236,7 +231,6 @@ public:
 	LoadMode *loadmode;
 	FormatTools *format_tools;
 
-	MWindow *mwindow;
 	Render *render;
 	Asset *asset;
 };

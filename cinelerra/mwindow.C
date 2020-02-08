@@ -499,7 +499,7 @@ void MWindow::init_signals()
 
 void MWindow::init_render()
 {
-	render = new Render(this);
+	render = new Render();
 	batch_render = new BatchRenderThread(this);
 }
 

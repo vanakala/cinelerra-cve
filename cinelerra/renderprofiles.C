@@ -107,7 +107,7 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		create_profile(RENDERCONFIG_DFLT);
 
 	strcpy(string, RENDERCONFIG_DFLT);
-	rwindow->mwindow->defaults->get("RENDERPROFILE", string);
+	mwindow_global->defaults->get("RENDERPROFILE", string);
 	select_profile(string);
 }
 

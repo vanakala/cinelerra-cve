@@ -64,24 +64,22 @@
 #include <string.h>
 
 
-RenderItem::RenderItem(MWindow *mwindow)
+RenderItem::RenderItem()
  : BC_MenuItem(_("Render..."), "Shift+R", 'R')
 {
-	this->mwindow = mwindow;
 	set_shift(1);
 }
 
 int RenderItem::handle_event() 
 {
-	mwindow->render->start_interactive();
+	mwindow_global->render->start_interactive();
 	return 1;
 }
 
 
-RenderProgress::RenderProgress(MWindow *mwindow, Render *render)
+RenderProgress::RenderProgress(Render *render)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
 	this->render = render;
 	last_value = 0;
 }
@@ -178,13 +176,11 @@ int MainPackageRenderer::progress_cancelled()
 }
 
 
-Render::Render(MWindow *mwindow)
+Render::Render()
  : Thread()
 {
-	this->mwindow = mwindow;
 	in_progress = 0;
 	progress = 0;
-	preferences = 0;
 	elapsed_time = 0.0;
 	render_window = 0;
 	package_lock = new Mutex("Render::package_lock");
@@ -201,7 +197,6 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
-	if(preferences) delete preferences;
 	delete progress_timer;
 }
 
@@ -239,17 +234,14 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 		errorbox("Already rendering");
 }
 
-void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	Preferences *preferences)
+void Render::run_batches(ArrayList<BatchRenderJob*> *jobs)
 {
 	mode = Render::BATCH;
 	batch_cancelled = 0;
 	this->jobs = jobs;
-	this->preferences = preferences;
 
 	completion->reset();
 	run();
-	this->preferences = 0;
 }
 
 void Render::stop_operation()
@@ -276,7 +268,7 @@ void Render::run()
 		render_edl->copy_all(master_edl);
 		check_asset(render_edl, *asset);
 // Get format from user
-		render_window = new RenderWindow(mwindow, this, asset);
+		render_window = new RenderWindow(this, asset);
 		result = render_window->run_window();
 		if(!result)
 		{
@@ -292,11 +284,11 @@ void Render::run()
 			{
 				asset->init_streams();
 				save_defaults(asset);
-				mwindow->save_defaults();
+				mwindow_global->save_defaults();
 
-				if(!preferences)
-					preferences = new Preferences;
-				preferences->copy_from(mwindow->preferences);
+				if(!render_preferences)
+					render_preferences = new Preferences;
+				render_preferences->copy_from(preferences_global);
 
 				if(asset->single_image)
 					range_type = RANGE_SINGLEFRAME;
@@ -320,12 +312,12 @@ void Render::run()
 
 			if(job->enabled)
 			{
-				if(mwindow)
+				if(mwindow_global)
 				{
-					mwindow->batch_render->update_active(i);
-					if(!preferences)
-						preferences = new Preferences;
-					preferences->copy_from(mwindow->preferences);
+					mwindow_global->batch_render->update_active(i);
+					if(!render_preferences)
+						render_preferences = new Preferences;
+					render_preferences->copy_from(preferences_global);
 				}
 				else
 				{
@@ -362,8 +354,8 @@ void Render::run()
 
 				if(!result)
 				{
-					if(mwindow)
-						mwindow->batch_render->update_done(i, 1, elapsed_time);
+					if(mwindow_global)
+						mwindow_global->batch_render->update_done(i, 1, elapsed_time);
 					else
 					{
 						char string[BCTEXTLEN];
@@ -377,18 +369,18 @@ void Render::run()
 				}
 				else
 				{
-					if(mwindow)
-						mwindow->batch_render->update_active(-1);
+					if(mwindow_global)
+						mwindow_global->batch_render->update_active(-1);
 					else
 						printf("Render::run: failed\n");
 				}
 			}
 		}
 
-		if(mwindow)
+		if(mwindow_global)
 		{
-			mwindow->batch_render->update_active(-1);
-			mwindow->batch_render->update_done(-1, 0, 0);
+			mwindow_global->batch_render->update_active(-1);
+			mwindow_global->batch_render->update_done(-1, 0, 0);
 		}
 	}
 }
@@ -451,11 +443,11 @@ void Render::start_progress()
 	progress_max = packages->get_progress_max();
 	progress_timer->update();
 	last_eta = 0;
-	if(mwindow)
+	if(mwindow_global)
 	{
-		progress = mwindow->mainprogress->start_progress(_("Rendering..."), 
-			progress_max);
-		render_progress = new RenderProgress(mwindow, this);
+		progress = mwindow_global->mainprogress->start_progress(
+			_("Rendering..."), progress_max);
+		render_progress = new RenderProgress(this);
 		render_progress->start();
 	}
 }
@@ -471,8 +463,8 @@ void Render::stop_progress()
 		progress->stop_progress();
 		delete progress;
 
-		mwindow->gui->show_message(_("Rendering took %s"), string);
-		mwindow->gui->stop_hourglass();
+		mwindow_global->gui->show_message(_("Rendering took %s"), string);
+		mwindow_global->gui->stop_hourglass();
 	}
 	progress = 0;
 }
@@ -545,14 +537,15 @@ int Render::render(int test_overwrite,
 	if(!result)
 	{
 // Stop background rendering
-		if(mwindow) mwindow->stop_brender();
+		if(mwindow_global)
+			mwindow_global->stop_brender();
 
 		fs.complete_path(default_asset->path);
-		strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
+		strategy = Render::fix_strategy(strategy, render_preferences->use_renderfarm);
 
-		result = packages->create_packages(mwindow,
+		result = packages->create_packages(mwindow_global,
 			command->get_edl(),
-			preferences,
+			render_preferences,
 			strategy, 
 			default_asset, 
 			total_start, 
@@ -566,10 +559,10 @@ int Render::render(int test_overwrite,
 	if(!result)
 	{
 // Start dispatching external jobs
-		if(mwindow)
+		if(mwindow_global)
 		{
-			mwindow->gui->show_message(_("Starting render farm"));
-			mwindow->gui->start_hourglass();
+			mwindow_global->gui->show_message(_("Starting render farm"));
+			mwindow_global->gui->start_hourglass();
 		}
 		else
 		{
@@ -578,7 +571,7 @@ int Render::render(int test_overwrite,
 		if(strategy & RENDER_FARM)
 		{
 			farm_server = new RenderFarmServer(packages,
-				preferences, 
+				render_preferences,
 				1,
 				&result,
 				&total_rendered,
@@ -590,8 +583,8 @@ int Render::render(int test_overwrite,
 
 			if(result)
 			{
-				if(mwindow)
-					mwindow->gui->stop_hourglass();
+				if(mwindow_global)
+					mwindow_global->gui->stop_hourglass();
 				errormsg(_("Failed to start render farm"));
 			}
 		}
@@ -603,9 +596,9 @@ int Render::render(int test_overwrite,
 // Perform local rendering
 			start_progress();
 			MainPackageRenderer package_renderer(this);
-			result = package_renderer.initialize(mwindow,
-				command->get_edl(),   // Copy of master EDL
-				preferences, 
+			result = package_renderer.initialize(mwindow_global,
+				command->get_edl(),
+				render_preferences,
 				default_asset);
 
 			while(!result)
@@ -646,7 +639,7 @@ int Render::render(int test_overwrite,
 		stop_progress();
 	}
 
-	if(!result && mwindow && mode != Render::BATCH)
+	if(!result && mwindow_global && mode != Render::BATCH)
 	{
 // Paste all packages into timeline if desired
 		if(load_mode != LOADMODE_NOTHING)
@@ -656,29 +649,29 @@ int Render::render(int test_overwrite,
 			packages->get_package_paths(&path_list);
 
 			if(load_mode == LOADMODE_PASTE)
-				mwindow->clear(0);
-			mwindow->load_filenames(&path_list, load_mode);
+				mwindow_global->clear(0);
+			mwindow_global->load_filenames(&path_list, load_mode);
 
 			path_list.remove_all_objects();
 
-			mwindow->save_backup();
-			mwindow->undo->update_undo(_("render"), LOAD_ALL);
-			mwindow->update_plugin_guis();
-			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
-			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-			mwindow->sync_parameters(0);
+			mwindow_global->save_backup();
+			mwindow_global->undo->update_undo(_("render"), LOAD_ALL);
+			mwindow_global->update_plugin_guis();
+			mwindow_global->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
+				WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
+			mwindow_global->sync_parameters(0);
 		}
 		else
-			mwindow->cwindow->update(WUPD_POSITION);
+			mwindow_global->cwindow->update(WUPD_POSITION);
 	}
 
 // Disable hourglass
-	if(mwindow)
-		mwindow->gui->stop_hourglass();
+	if(mwindow_global)
+		mwindow_global->gui->stop_hourglass();
 
 // Need to restart because brender always stops before render.
-	if(mwindow)
-		mwindow->restart_brender();
+	if(mwindow_global)
+		mwindow_global->restart_brender();
 	if(farm_server) delete farm_server;
 	delete command;
 	delete audio_cache;
@@ -770,21 +763,19 @@ void Render::load_defaults(Asset *asset)
 	char string[BCTEXTLEN];
 	char *p;
 
-	strategy = mwindow->defaults->get("RENDER_STRATEGY", 0);
-	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
-	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
+	strategy = mwindow_global->defaults->get("RENDER_STRATEGY", 0);
+	load_mode = mwindow_global->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
+	range_type = mwindow_global->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
 	strcpy(string, RENDERCONFIG_DFLT);
-	mwindow->defaults->get("RENDERPROFILE", string);
+	mwindow_global->defaults->get("RENDERPROFILE", string);
 	edlsession->configuration_path(RENDERCONFIG_DIR,
 		asset->renderprofile_path);
 	p = &asset->renderprofile_path[strlen(asset->renderprofile_path)];
 	*p++ = '/';
 	strcpy(p, string);
 
-	asset->load_defaults(mwindow->defaults,
-		"RENDER_",
-		ASSET_ALL);
+	asset->load_defaults(mwindow_global->defaults, "RENDER_", ASSET_ALL);
 	load_profile(asset);
 }
 
@@ -840,18 +831,18 @@ void Render::save_defaults(Asset *asset)
 		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
 	}
 	// Delete old defaults
-	mwindow->defaults->delete_key("RENDER_STRATEGY");
-	mwindow->defaults->delete_key("RENDER_LOADMODE");
-	mwindow->defaults->delete_key("RENDER_RANGE_TYPE");
+	mwindow_global->defaults->delete_key("RENDER_STRATEGY");
+	mwindow_global->defaults->delete_key("RENDER_LOADMODE");
+	mwindow_global->defaults->delete_key("RENDER_RANGE_TYPE");
 }
 
 #define WIDTH 410
 #define HEIGHT 500
 
-RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
+RenderWindow::RenderWindow(Render *render, Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render")),
-	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
+	mwindow_global->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
+	mwindow_global->gui->get_root_h(1) / 2 - HEIGHT / 2,
 	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,
@@ -862,11 +853,10 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 {
 	int x = 5, y = 5;
 
-	this->mwindow = mwindow;
 	this->render = render;
 	this->asset = asset;
 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 	add_subwindow(new BC_Title(x, 
 		y, 
 		(char*)((render->strategy & RENDER_FILE_PER_LABEL) ?
@@ -874,7 +864,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 			_("Select a file to render to:"))));
 	y += 25;
 
-	format_tools = new FormatTools(mwindow,
+	format_tools = new FormatTools(mwindow_global,
 		this,
 		asset,
 		x,
@@ -905,7 +895,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	y += 30;
 	x = 5;
 
-	renderprofile = new RenderProfile(mwindow, this, x, y);
+	renderprofile = new RenderProfile(mwindow_global, this, x, y);
 
 	y += 70;
 	loadmode = new LoadMode(this, x, y, &render->load_mode, 1);
