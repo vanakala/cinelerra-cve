@@ -71,23 +71,21 @@ static int list_widths[] =
 };
 
 
-BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
+BatchRenderMenuItem::BatchRenderMenuItem()
  : BC_MenuItem(_("Batch Render..."), "Shift-B", 'B')
 {
 	set_shift(1); 
-	this->mwindow = mwindow;
 }
 
 int BatchRenderMenuItem::handle_event()
 {
-	mwindow->batch_render->start();
+	mwindow_global->batch_render->start();
 	return 1;
 }
 
 
-BatchRenderJob::BatchRenderJob(Preferences *preferences, int jobnum)
+BatchRenderJob::BatchRenderJob(int jobnum)
 {
-	this->preferences = preferences;
 	this->jobnum = jobnum;
 	asset = new Asset;
 	edl_path[0] = 0;
@@ -164,7 +162,7 @@ void BatchRenderJob::save()
 
 void BatchRenderJob::fix_strategy()
 {
-	strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
+	strategy = Render::fix_strategy(strategy, render_preferences->use_renderfarm);
 }
 
 void BatchRenderJob::dump(int indent)
@@ -177,24 +175,9 @@ void BatchRenderJob::dump(int indent)
 	asset->dump(indent + 2);
 }
 
-BatchRenderThread::BatchRenderThread(MWindow *mwindow)
- : BC_DialogThread()
-{
-	this->mwindow = mwindow;
-	current_job = -1;
-	rendering_job = -1;
-	is_rendering = 0;
-	boot_defaults = 0;
-	gui = 0;
-	render = 0;
-	profile_end = 0;
-	profile_path[0] = 0;
-}
-
 BatchRenderThread::BatchRenderThread()
  : BC_DialogThread()
 {
-	mwindow = 0;
 	current_job = -1;
 	rendering_job = -1;
 	is_rendering = 0;
@@ -215,7 +198,7 @@ void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
 	save_jobs();
-	save_defaults(mwindow->defaults);
+	save_defaults(mwindow_global->defaults);
 	jobs.remove_all_objects();
 }
 
@@ -224,10 +207,9 @@ BC_Window* BatchRenderThread::new_gui()
 	current_start = 0.0;
 	current_end = 0.0;
 
-	load_defaults(mwindow->defaults);
-	load_jobs(render_preferences);
-	gui = new BatchRenderGUI(mwindow,
-		this,
+	load_defaults(mwindow_global->defaults);
+	load_jobs();
+	gui = new BatchRenderGUI(this,
 		mainsession->batchrender_x,
 		mainsession->batchrender_y,
 		mainsession->batchrender_w,
@@ -237,7 +219,7 @@ BC_Window* BatchRenderThread::new_gui()
 	return gui;
 }
 
-void BatchRenderThread::load_jobs(Preferences *preferences)
+void BatchRenderThread::load_jobs()
 {
 	DIR *dir;
 	FileXML file;
@@ -266,7 +248,7 @@ void BatchRenderThread::load_jobs(Preferences *preferences)
 			if(jnum > 0 && *ne == 0 && !stat(profile_path, &stb) &&
 					S_ISDIR(stb.st_mode))
 			{
-				job = merge_jobs(jnum, preferences);
+				job = merge_jobs(jnum);
 				job->load(profile_path);
 			}
 		}
@@ -276,19 +258,19 @@ void BatchRenderThread::load_jobs(Preferences *preferences)
 	}
 }
 
-BatchRenderJob *BatchRenderThread::merge_jobs(int jnum, Preferences *preferences)
+BatchRenderJob *BatchRenderThread::merge_jobs(int jnum)
 {
 	BatchRenderJob *job = 0;
 	for(int i = 0; i < jobs.total; i++)
 	{
 		if(jobs.values[i]->jobnum > jnum)
 		{
-			jobs.insert(job = new BatchRenderJob(preferences, jnum), i);
+			jobs.insert(job = new BatchRenderJob(jnum), i);
 			break;
 		}
 	}
 	if(!job)
-		jobs.append(job = new BatchRenderJob(preferences, jnum));
+		jobs.append(job = new BatchRenderJob(jnum));
 	return job;
 }
 
@@ -329,8 +311,8 @@ void BatchRenderThread::save_defaults(BC_Hash *defaults)
 	}
 	// Remove old defaults
 	defaults->delete_key("DEFAULT_BATCHLOADPATH");
-	if(mwindow)
-		mwindow->save_defaults();
+	if(mwindow_global)
+		mwindow_global->save_defaults();
 	else
 		defaults->save();
 }
@@ -340,7 +322,7 @@ BatchRenderJob *BatchRenderThread::new_job()
 	char string[32];
 	Paramlist *plp;
 	BatchRenderJob *curjob;
-	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, jobs.total + 1);
+	BatchRenderJob *job = new BatchRenderJob(jobs.total + 1);
 
 	if(current_job >= 0)
 	{
@@ -404,7 +386,7 @@ int BatchRenderThread::test_edl_files()
 			if(!fd)
 			{
 				errorbox(_("EDL '%s' is not found."), basename(jobs.values[i]->edl_path));
-				if(mwindow)
+				if(mwindow_global)
 				{
 					gui->new_batch->enable();
 					gui->delete_batch->enable();
@@ -422,8 +404,7 @@ int BatchRenderThread::test_edl_files()
 	return 0;
 }
 
-void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
-	Preferences *preferences)
+void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths)
 {
 	EDL *current_edl;
 
@@ -441,9 +422,9 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 			current_edl->load_xml(file, 0);
 
 // Create test packages
-			packages->create_packages(mwindow,
+			packages->create_packages(mwindow_global,
 				current_edl,
-				preferences,
+				render_preferences,
 				job->strategy, 
 				job->asset, 
 				0,
@@ -476,7 +457,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 
-	load_jobs(render_preferences);
+	load_jobs();
 	save_jobs();
 	save_defaults(boot_defaults);
 
@@ -485,8 +466,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 
 // Predict all destination paths
 	ArrayList<char*> paths;
-	calculate_dest_paths(&paths,
-		render_preferences);
+	calculate_dest_paths(&paths);
 
 	int result = ConfirmSave::test_files(0, &paths);
 	paths.remove_all_objects();
@@ -505,7 +485,7 @@ void BatchRenderThread::start_rendering()
 	is_rendering = 1;
 	path[0] = 0;
 	save_jobs();
-	save_defaults(mwindow->defaults);
+	save_defaults(mwindow_global->defaults);
 	gui->new_batch->disable();
 	gui->delete_batch->disable();
 
@@ -514,11 +494,10 @@ void BatchRenderThread::start_rendering()
 
 // Predict all destination paths
 	ArrayList<char*> paths;
-	calculate_dest_paths(&paths,
-		mwindow->preferences);
+	calculate_dest_paths(&paths);
 
 // Test destination files for overwrite
-	int result = ConfirmSave::test_files(mwindow, &paths);
+	int result = ConfirmSave::test_files(mwindow_global, &paths);
 	paths.remove_all_objects();
 
 // User cancelled
@@ -529,13 +508,13 @@ void BatchRenderThread::start_rendering()
 		gui->delete_batch->enable();
 		return;
 	}
-	mwindow->render->start_batches(&jobs);
+	mwindow_global->render->start_batches(&jobs);
 }
 
 void BatchRenderThread::stop_rendering()
 {
 	if(!is_rendering) return;
-	mwindow->render->stop_operation();
+	mwindow_global->render->stop_operation();
 	is_rendering = 0;
 }
 
@@ -588,8 +567,7 @@ void BatchRenderThread::move_batch(int src, int dst)
 }
 
 
-BatchRenderGUI::BatchRenderGUI(MWindow *mwindow, 
-	BatchRenderThread *thread,
+BatchRenderGUI::BatchRenderGUI(BatchRenderThread *thread,
 	int x,
 	int y,
 	int w,
@@ -605,25 +583,23 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	0, 
 	1)
 {
-	this->mwindow = mwindow;
 	this->thread = thread;
 
-	mwindow->theme->get_batchrender_sizes(this, get_w(), get_h());
+	theme_global->get_batchrender_sizes(this, get_w(), get_h());
 
-	x = mwindow->theme->batchrender_x1;
+	x = theme_global->batchrender_x1;
 	y = 5;
-	int x1 = mwindow->theme->batchrender_x1;
-	int x2 = mwindow->theme->batchrender_x2;
-	int x3 = mwindow->theme->batchrender_x3;
+	int x1 = theme_global->batchrender_x1;
+	int x2 = theme_global->batchrender_x2;
+	int x3 = theme_global->batchrender_x3;
 	int y1 = y;
 	int y2;
 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 // output file
 	add_subwindow(output_path_title = new BC_Title(x1, y, _("Output path:")));
 	y += 20;
-	format_tools = new BatchFormat(mwindow,
-					this, 
+	format_tools = new BatchFormat(this,
 					thread->get_current_asset(),
 					x,
 					y,
@@ -652,7 +628,7 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 
 	x += edl_path_text->get_w();
 	add_subwindow(edl_path_browse = new BrowseButton(
-		mwindow,
+		mwindow_global,
 		this,
 		edl_path_text, 
 		x, 
@@ -716,13 +692,13 @@ void BatchRenderGUI::resize_event(int w, int h)
 {
 	mainsession->batchrender_w = w;
 	mainsession->batchrender_h = h;
-	mwindow->theme->get_batchrender_sizes(this, w, h);
+	theme_global->get_batchrender_sizes(this, w, h);
 
-	int x = mwindow->theme->batchrender_x1;
+	int x = theme_global->batchrender_x1;
 	int y = 5;
-	int x1 = mwindow->theme->batchrender_x1;
-	int x2 = mwindow->theme->batchrender_x2;
-	int x3 = mwindow->theme->batchrender_x3;
+	int x1 = theme_global->batchrender_x1;
+	int x2 = theme_global->batchrender_x2;
+	int x3 = theme_global->batchrender_x3;
 	int y1 = y;
 	int y2;
 
@@ -849,8 +825,7 @@ void BatchRenderGUI::change_job()
 }
 
 
-BatchFormat::BatchFormat(MWindow *mwindow,
-			BatchRenderGUI *gui,
+BatchFormat::BatchFormat(BatchRenderGUI *gui,
 			Asset *asset,
 			int &init_x,
 			int &init_y,
@@ -858,11 +833,10 @@ BatchFormat::BatchFormat(MWindow *mwindow,
 			int checkbox,
 			int details,
 			int *strategy)
- : FormatTools(mwindow, gui, asset, init_x, init_y, support, checkbox, details,
+ : FormatTools(mwindow_global, gui, asset, init_x, init_y, support, checkbox, details,
 	strategy)
 {
 	this->gui = gui;
-	this->mwindow = mwindow;
 }
 
 int BatchFormat::handle_event()

@@ -31,7 +31,6 @@
 #include "formattools.h"
 #include "mwindow.inc"
 #include "pluginserver.inc"
-#include "preferences.inc"
 #include "render.inc"
 
 #define BATCHRENDER_COLUMNS 4
@@ -40,16 +39,16 @@
 class BatchRenderMenuItem : public BC_MenuItem
 {
 public:
-	BatchRenderMenuItem(MWindow *mwindow);
+	BatchRenderMenuItem();
+
 	int handle_event();
-	MWindow *mwindow;
 };
 
 
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(Preferences *preferences, int jobnum);
+	BatchRenderJob(int jobnum);
 	~BatchRenderJob();
 
 	void copy_from(BatchRenderJob *src);
@@ -67,14 +66,12 @@ public:
 	int jobnum;
 // Amount of time elapsed in last render operation
 	double elapsed;
-	Preferences *preferences;
 };
 
 
 class BatchRenderThread : public BC_DialogThread
 {
 public:
-	BatchRenderThread(MWindow *mwindow);
 	BatchRenderThread();
 	~BatchRenderThread();
 
@@ -82,16 +79,15 @@ public:
 	BC_Window* new_gui();
 
 	int test_edl_files();
-	void calculate_dest_paths(ArrayList<char*> *paths,
-		Preferences *preferences);
+	void calculate_dest_paths(ArrayList<char*> *paths);
 
 // Load batch rendering jobs
-	void load_jobs(Preferences *preferences);
+	void load_jobs();
 // Not applicable to western civilizations
 	void save_jobs();
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
-	BatchRenderJob *merge_jobs(int jnum, Preferences *preferences);
+	BatchRenderJob *merge_jobs(int jnum);
 	BatchRenderJob *new_job();
 	void delete_job();
 // Conditionally returns the job or the default job based on current_job
@@ -108,7 +104,6 @@ public:
 	void update_done(int number, int create_list, double elapsed_time);
 	void move_batch(int src, int dst);
 
-	MWindow *mwindow;
 	double current_start;
 	double current_end;
 	ArrayList<BatchRenderJob*> jobs;
@@ -222,8 +217,7 @@ public:
 class BatchFormat : public FormatTools
 {
 public:
-	BatchFormat(MWindow *mwindow,
-			BatchRenderGUI *gui,
+	BatchFormat(BatchRenderGUI *gui,
 			Asset *asset,
 			int &init_x,
 			int &init_y,
@@ -235,15 +229,13 @@ public:
 	int handle_event();
 
 	BatchRenderGUI *gui;
-	MWindow *mwindow;
 };
 
 
 class BatchRenderGUI : public BC_Window
 {
 public:
-	BatchRenderGUI(MWindow *mwindow, 
-		BatchRenderThread *thread,
+	BatchRenderGUI(BatchRenderThread *thread,
 		int x,
 		int y,
 		int w,
@@ -258,7 +250,6 @@ public:
 
 	ArrayList<BC_ListBoxItem*> list_columns[BATCHRENDER_COLUMNS];
 
-	MWindow *mwindow;
 	BatchRenderThread *thread;
 	BC_Title *output_path_title;
 	BatchFormat *format_tools;
