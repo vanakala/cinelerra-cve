@@ -376,9 +376,8 @@ KeyFrame* Plugin::first_keyframe()
 	return (KeyFrame*)keyframes->first;
 }
 
-KeyFrame* Plugin::get_keyframe()
+KeyFrame* Plugin::get_keyframe(ptstime selpos)
 {
-	ptstime selpos = edl->local_session->get_selectionstart(1);
 	KeyFrame *result = get_prev_keyframe(selpos);
 
 	if(selpos < pts)

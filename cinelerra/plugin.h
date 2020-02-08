@@ -86,7 +86,7 @@ public:
 	KeyFrame* get_next_keyframe(ptstime postime);
 	KeyFrame* first_keyframe();
 // Get keyframes for editing with automatic creation if enabled.
-	KeyFrame* get_keyframe();
+	KeyFrame* get_keyframe(ptstime selpos);
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
 	void calculate_title(char *string, int use_nudge);

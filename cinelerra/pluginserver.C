@@ -775,7 +775,7 @@ KeyFrame* PluginServer::next_keyframe_pts(ptstime postime)
 KeyFrame* PluginServer::get_keyframe()
 {
 	if(plugin)
-		return plugin->get_keyframe();
+		return plugin->get_keyframe(master_edl->local_session->get_selectionstart(1));
 	else
 		return keyframe;
 }
