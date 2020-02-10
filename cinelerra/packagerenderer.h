@@ -72,9 +72,8 @@ public:
 	~PackageRenderer();
 
 // Initialize stuff which is reused between packages
-	int initialize(MWindow *mwindow,
-		EDL *edl, 
-		Preferences *preferences, 
+	int initialize(EDL *edl,
+		Preferences *preferences,
 		Asset *default_asset);
 
 // Aborts and returns 1 if an error is encountered.
@@ -114,7 +113,6 @@ public:
 	VFrame ***video_output;
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
-	MWindow *mwindow;
 	CICache *audio_cache;
 	CICache *video_cache;
 	AudioOutConfig *aconfig;

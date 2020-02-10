@@ -114,14 +114,12 @@ PackageRenderer::~PackageRenderer()
 // PackageRenderer::initialize happens only once for every node when doing rendering session
 // This is not called for each package!
 
-int PackageRenderer::initialize(MWindow *mwindow,
-		EDL *edl, 
-		Preferences *preferences, 
-		Asset *default_asset)
+int PackageRenderer::initialize(EDL *edl,
+	Preferences *preferences,
+	Asset *default_asset)
 {
 	int result = 0;
 
-	this->mwindow = mwindow;
 	this->edl = edl;
 	this->preferences = preferences;
 	this->default_asset = default_asset;
@@ -165,11 +163,11 @@ int PackageRenderer::create_output()
 
 	result = file->open_file(asset, FILE_OPEN_WRITE);
 
-	if(mwindow)
+	if(mwindow_global)
 	{
 		if(result)
 			errormsg(_("Couldn't open output file %s"), asset->path);
-		mwindow->sighandler->push_file(file);
+		mwindow_global->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
 	return result;
@@ -228,13 +226,13 @@ void PackageRenderer::create_engine()
 			edlsession->color_model,
 			preferences->processors > 1 ? 2 : 1);
 
-		if(mwindow)
+		if(mwindow_global)
 		{
 			video_device = new VideoDevice;
 			video_device->open_output(vconfig,
 				edlsession->output_w,
 				edlsession->output_h,
-				mwindow->cwindow->gui->canvas,
+				mwindow_global->cwindow->gui->canvas,
 				0);
 		}
 	}
@@ -336,7 +334,7 @@ int PackageRenderer::do_video()
 			duration = 1.0 / asset->frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);
-			if(mwindow && video_device->output_visible())
+			if(mwindow_global && video_device->output_visible())
 			{
 // Vector for video device
 				VFrame *preview_output = video_device->new_output_buffer(
@@ -415,7 +413,7 @@ void PackageRenderer::stop_output()
 
 		video_write_position = 0;
 		if(!error) file->stop_video_thread();
-		if(mwindow)
+		if(mwindow_global)
 		{
 			video_device->close_all();
 			delete video_device;
@@ -425,8 +423,8 @@ void PackageRenderer::stop_output()
 
 void PackageRenderer::close_output()
 {
-	if(mwindow)
-		mwindow->sighandler->pull_file(file);
+	if(mwindow_global)
+		mwindow_global->sighandler->pull_file(file);
 	file->close_file();
 	delete file;
 	delete asset;

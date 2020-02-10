@@ -585,9 +585,8 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	result |= read_asset(socket_fd, default_asset);
 	result |= read_edl(socket_fd, edl, preferences);
 
-	package_renderer.initialize(0,
-			edl, 
-			preferences, 
+	package_renderer.initialize(edl,
+			preferences,
 			default_asset);
 
 // Read packages
