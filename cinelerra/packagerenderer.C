@@ -21,15 +21,11 @@
 
 #include "aframe.h"
 #include "asset.h"
-#include "auto.h"
 #include "bcsignals.h"
-#include "brender.h"
 #include "cache.h"
 #include "clip.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "edit.h"
-#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mainerror.h"
@@ -42,7 +38,6 @@
 #include "packagerenderer.h"
 #include "playabletracks.h"
 #include "playbackconfig.h"
-#include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
 #include "renderengine.h"
@@ -107,8 +102,6 @@ PackageRenderer::~PackageRenderer()
 	delete command;
 	delete audio_cache;
 	delete video_cache;
-	delete vconfig;
-	delete aconfig;
 }
 
 // PackageRenderer::initialize happens only once for every node when doing rendering session
@@ -142,10 +135,8 @@ int PackageRenderer::initialize(EDL *edl,
 	audio_cache = new CICache(FILE_OPEN_AUDIO);
 	video_cache = new CICache(FILE_OPEN_VIDEO);
 
-	PlaybackConfig *config = edlsession->playback_config;
-	aconfig = new AudioOutConfig(0);
-	vconfig = new VideoOutConfig;
-	vconfig->copy_from(config->vconfig);
+	aconfig = 0;
+	vconfig = 0;
 
 	return result;
 }
@@ -177,13 +168,15 @@ void PackageRenderer::create_engine()
 {
 	audio_read_length = edlsession->sample_rate / 4;
 
-	aconfig->set_fragment_size(audio_read_length);
-
 	render_engine = new RenderEngine(0, 0);
 
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
 	render_engine->arm_command(command);
+
+	aconfig = render_engine->config->aconfig;
+	vconfig = render_engine->config->vconfig;
+	aconfig->set_fragment_size(audio_read_length);
 
 	if(package->use_brender)
 	{
