@@ -266,6 +266,7 @@ void Render::run()
 		load_defaults(asset);
 		render_edl = new EDL(0);
 		render_edl->copy_all(master_edl);
+		render_edl->local_session->copy_from(master_edl->local_session);
 		if(master_edl->this_edlsession)
 		{
 			render_edl->this_edlsession = new EDLSession();
