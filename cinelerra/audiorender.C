@@ -102,10 +102,16 @@ int AudioRender::process_buffer(AFrame **buffer_out)
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		if(buffer_out[i])
-			audio_out[i] = buffer_out[i];
+		{
+			AFrame *cur_buf = buffer_out[i];
+
+			audio_out[i] = cur_buf;
+			audio_out[i]->clear_frame(cur_buf->pts, cur_buf->source_duration);
+		}
 		else
 			audio_out[i] = 0;
 	}
+	sample_duration = audio_out[0]->to_duration(1);
 	process_frames();
 	// Not ours, must not delete them
 	for(int i = 0; i < MAXCHANNELS; i++)
