@@ -172,11 +172,11 @@ void PackageRenderer::create_engine()
 
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
-	render_engine->arm_command(command);
 
 	aconfig = render_engine->config->aconfig;
 	vconfig = render_engine->config->vconfig;
 	aconfig->set_fragment_size(audio_read_length);
+	render_engine->arm_command(command);
 
 	if(package->use_brender)
 	{
@@ -257,7 +257,7 @@ int PackageRenderer::do_audio()
 				if(af)
 				{
 					af->init_aframe(audio_pts, audio_read_length);
-					af->source_length = audio_read_length;
+					af->set_fill_request(audio_pts, audio_read_length);
 					af->samplerate = default_asset->sample_rate;
 				}
 			}
@@ -291,7 +291,6 @@ int PackageRenderer::do_audio()
 			}
 			audio_preroll -= (ptstime)audio_read_length / default_asset->sample_rate;
 		}
-
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
 		result |= file->write_audio_buffer(output_length);
 	}
@@ -433,8 +432,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 	this->package = package;
 	brender_base = -1;
-// FIXME: The design that we only get EDL once does not give us neccessary flexiblity
-//  to do things the way they should be done
+
 	default_asset->video_data = package->video_do;
 	default_asset->audio_data = package->audio_do;
 	Render::check_asset(edl, *default_asset);
