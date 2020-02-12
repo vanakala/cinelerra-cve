@@ -68,20 +68,23 @@ void AudioRender::init_frames()
 	out_length = renderengine->fragment_len;
 	out_samplerate = edl->this_edlsession->sample_rate;
 
-	for(int i = 0; i < MAXCHANNELS; i++)
+	if(renderengine->playback_engine)
 	{
-		if(i < edl->this_edlsession->audio_channels)
+		for(int i = 0; i < MAXCHANNELS; i++)
 		{
-			if(audio_out[i])
-				audio_out[i]->check_buffer(out_length);
-			else
-				audio_out[i] = audio_frames.get_tmpframe(out_length);
-			audio_out[i]->samplerate = out_samplerate;
-			audio_out[i]->channel = i;
+			if(i < edl->this_edlsession->audio_channels)
+			{
+				if(audio_out[i])
+					audio_out[i]->check_buffer(out_length);
+				else
+					audio_out[i] = audio_frames.get_tmpframe(out_length);
+				audio_out[i]->samplerate = out_samplerate;
+				audio_out[i]->channel = i;
+			}
 		}
+		sample_duration = audio_out[0]->to_duration(1);
 	}
 	output_levels.reset(out_length, out_samplerate, out_channels);
-	sample_duration = audio_out[0]->to_duration(1);
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
@@ -346,7 +349,7 @@ void AudioRender::run()
 
 		if(first_buffer)
 		{
-			renderengine->wait_another("VirtualAConsole::process_buffer",
+			renderengine->wait_another("AudioRender::run",
 				TRACK_AUDIO);
 			first_buffer = 0;
 		}
