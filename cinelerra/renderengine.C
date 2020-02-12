@@ -56,6 +56,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	audio = 0;
 	video = 0;
 	config = new PlaybackConfig;
+	config->copy_from(edlsession->playback_config);
 	arender = 0;
 	vrender = 0;
 	do_audio = 0;
@@ -120,31 +121,24 @@ int RenderEngine::arm_command(TransportCommand *new_command)
 
 	done = 0;
 	interrupted = 0;
-
-// Retool configuration for this node
-	this->config->copy_from(edlsession->playback_config);
-	VideoOutConfig *vconfig = this->config->vconfig;
-	AudioOutConfig *aconfig = this->config->aconfig;
-	if(command.realtime)
+	if(playback_engine)
 	{
-		if(command.single_frame() && vconfig->driver != PLAYBACK_X11_GL)
+		if(command.realtime)
 		{
-			vconfig->driver = PLAYBACK_X11;
+			if(command.single_frame() && config->vconfig->driver != PLAYBACK_X11_GL)
+				config->vconfig->driver = PLAYBACK_X11;
 		}
+		else
+			config->vconfig->driver = PLAYBACK_X11;
 	}
-	else
-	{
-		vconfig->driver = PLAYBACK_X11;
-	}
-
 	get_duty();
 
 	if(do_audio)
 	{
-		fragment_len = aconfig->get_fragment_size(edlsession->sample_rate);
+		fragment_len = config->aconfig->get_fragment_size(edlsession->sample_rate);
 	}
-
-	open_output();
+	if(playback_engine)
+		open_output();
 	create_render_threads();
 	arm_render_threads();
 }
