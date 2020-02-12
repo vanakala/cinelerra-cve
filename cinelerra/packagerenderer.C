@@ -243,6 +243,7 @@ int PackageRenderer::do_audio()
 	AFrame *af;
 	ptstime buffer_duration;
 	int result;
+	int read_length = audio_read_length;
 
 // Do audio data
 	if(asset->audio_data)
@@ -268,12 +269,14 @@ int PackageRenderer::do_audio()
 // Call render engine
 		if(result = render_engine->arender->process_buffer(audio_output_ptr))
 			return result;
-
 // Fix buffers for preroll
-		int output_length = audio_read_length;
+		read_length = audio_output_ptr[0]->length;
+		int output_length = read_length;
+
 		if(audio_preroll > 0)
 		{
 			int preroll_len = round(audio_preroll * default_asset->sample_rate);
+
 			if(preroll_len >= output_length)
 				output_length = 0;
 			else
@@ -281,7 +284,8 @@ int PackageRenderer::do_audio()
 				output_length -= preroll_len;
 				for(int i = 0; i < MAX_CHANNELS; i++)
 				{
-					if(audio_output_ptr[i]){
+					if(audio_output_ptr[i])
+					{
 						for(int j = 0; j < output_length; j++)
 							audio_output_ptr[i]->buffer[j] = audio_output_ptr[i]->buffer[j + audio_read_length - output_length];
 						audio_output_ptr[i]->length = output_length;
@@ -289,12 +293,12 @@ int PackageRenderer::do_audio()
 					}
 				}
 			}
-			audio_preroll -= (ptstime)audio_read_length / default_asset->sample_rate;
+			audio_preroll -= (ptstime)read_length / default_asset->sample_rate;
 		}
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
 		result |= file->write_audio_buffer(output_length);
 	}
-	audio_pts += (ptstime)audio_read_length / default_asset->sample_rate;
+	audio_pts += (ptstime)read_length / default_asset->sample_rate;
 	return 0;
 }
 
