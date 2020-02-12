@@ -117,7 +117,6 @@ AFrame *ATrackRender::get_aframe(AFrame *buffer)
 void ATrackRender::render_pan(AFrame **output, int out_channels)
 {
 	double intercept;
-	double slope = 0;
 
 	if(!track_frame)
 		return;
@@ -132,6 +131,7 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 			int slope_length = track_frame->length;
 			ptstime slope_step = track_frame->to_duration(1);
 			ptstime val = 0;
+			double slope = 0;
 
 			if(!panautos->first)
 				intercept = panautos->default_values[i];
