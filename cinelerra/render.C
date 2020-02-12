@@ -266,6 +266,11 @@ void Render::run()
 		load_defaults(asset);
 		render_edl = new EDL(0);
 		render_edl->copy_all(master_edl);
+		if(master_edl->this_edlsession)
+		{
+			render_edl->this_edlsession = new EDLSession();
+			render_edl->this_edlsession->copy(master_edl->this_edlsession);
+		}
 		check_asset(render_edl, *asset);
 // Get format from user
 		render_window = new RenderWindow(this, asset);
@@ -300,6 +305,7 @@ void Render::run()
 		}
 
 		delete asset;
+		delete render_edl->this_edlsession;
 		delete render_edl;
 		render_edl = 0;
 	}
