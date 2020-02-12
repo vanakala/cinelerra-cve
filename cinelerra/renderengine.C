@@ -97,6 +97,11 @@ RenderEngine::~RenderEngine()
 	delete config;
 }
 
+void RenderEngine::copy_playbackconfig()
+{
+	config->copy_from(edlsession->playback_config);
+}
+
 int RenderEngine::arm_command(TransportCommand *new_command)
 {
 // Prevent this renderengine from accepting another command until finished.

@@ -69,6 +69,8 @@ public:
 	int get_module_levels(double *levels, ptstime pts);
 
 	void run();
+// Synchronizes Playcackconfig with edlsession
+	void copy_playbackconfig();
 // Sends the command sequence, compensating for network latency
 	int arm_command(TransportCommand *command);
 // Start the command
