@@ -89,7 +89,10 @@ void PlaybackEngine::delete_render_engine()
 void PlaybackEngine::arm_render_engine()
 {
 	if(render_engine)
+	{
+		render_engine->copy_playbackconfig();
 		render_engine->arm_command(command);
+	}
 }
 
 void PlaybackEngine::start_render_engine()
