@@ -207,6 +207,10 @@ BC_Window* BatchRenderThread::new_gui()
 	current_start = 0.0;
 	current_end = 0.0;
 
+	if(!render_preferences)
+		render_preferences = new Preferences;
+	render_preferences->copy_from(preferences_global);
+
 	load_defaults(mwindow_global->defaults);
 	load_jobs();
 	gui = new BatchRenderGUI(this,
