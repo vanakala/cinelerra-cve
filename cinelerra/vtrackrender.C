@@ -576,7 +576,6 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 	VFrame *tmpframe;
 	Edit *prev;
 	Plugin *transition = edit->transition;
-
 	if(!transition || !transition->plugin_server || !transition->on ||
 			transition->get_length() < frame->get_pts() - edit->get_pts())
 		return frame;
@@ -589,8 +588,10 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 	}
 	tmpframe = BC_Resources::tmpframes.clone_frame(frame);
 	tmpframe->copy_pts(frame);
-	prev = edit->previous;
-	read_vframe(tmpframe, prev, 1);
+	if(prev = edit->previous)
+		read_vframe(tmpframe, prev, 1);
+	else
+		tmpframe->clear_frame();
 	transition->active_server->process_transition(frame, tmpframe,
 		frame->get_pts() - edit->get_pts(), transition->get_length());
 	BC_Resources::tmpframes.release_frame(frame);
