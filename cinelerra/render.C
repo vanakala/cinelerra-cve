@@ -322,9 +322,6 @@ void Render::run()
 				if(mwindow_global)
 				{
 					mwindow_global->batch_render->update_active(i);
-					if(!render_preferences)
-						render_preferences = new Preferences;
-					render_preferences->copy_from(preferences_global);
 				}
 				else
 				{
