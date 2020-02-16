@@ -57,6 +57,7 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	current_edit = 0;
 	videorender = vrender;
 	track_frame = 0;
+	plugin_frame = 0;
 }
 
 VTrackRender::~VTrackRender()
@@ -101,7 +102,6 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 				media_track->track_w, media_track->track_h,
 				edlsession->color_model);
 			track_frame->set_pts(pts);
-			track_frame->clear_status();
 			read_vframe(track_frame, edit);
 			track_frame = render_transition(track_frame, edit);
 			track_frame = render_camera(track_frame);
@@ -201,23 +201,23 @@ void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 	frame = cropper->do_crop(cropautos, frame, before_plugins);
 }
 
-VFrame *VTrackRender::render_projector(VFrame *output)
+VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 {
 	int in_x1, in_y1, in_x2, in_y2;
 	int out_x1, out_y1, out_x2, out_y2;
 	int mode;
 	IntAuto *mode_keyframe;
-	VFrame *outframe;
 
-	if(!track_frame)
+	if(!input)
+		input = &track_frame;
+
+	if(!*input || *input == output)
+	{
+		*input = 0;
 		return output;
+	}
 
-	if(output)
-		outframe = output;
-	else
-		outframe = track_frame;
-
-	calculate_output_transfer(outframe,
+	calculate_output_transfer(output,
 		&in_x1, &in_y1, &in_x2, &in_y2,
 		&out_x1, &out_y1, &out_x2, &out_y2);
 
@@ -226,45 +226,39 @@ VFrame *VTrackRender::render_projector(VFrame *output)
 	{
 		mode_keyframe =
 			(IntAuto*)autos_track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-				track_frame->get_pts());
+				(*input)->get_pts());
 
 		if(mode_keyframe)
 			mode = mode_keyframe->value;
 		else
 			mode = TRANSFER_NORMAL;
-		if(!(track_frame->get_status() & VFRAME_TRANSPARENT) &&
+		if(!(*input)->is_transparent() &&
 				mode == TRANSFER_NORMAL &&
 				in_x1 == out_x1 && in_x2 == out_x2 &&
 				in_y1 == out_y1 && in_y2 == out_y2)
 		{
 			BC_Resources::tmpframes.release_frame(output);
-			outframe = track_frame;
-			track_frame = 0;
-			return outframe;
-		}
-
-		if(!output)
-		{
-			output = BC_Resources::tmpframes.clone_frame(track_frame);
-			output->clear_frame();
-			output->copy_pts(track_frame);
+			output = *input;
+			*input = 0;
+			return output;
 		}
 
 		if(!overlayer)
 			overlayer = new OverlayFrame(preferences_global->processors);
 
-		overlayer->overlay(output, track_frame,
+		overlayer->overlay(output, *input,
 			in_x1, in_y1, in_x2, in_y2,
 			out_x1, out_y1, out_x2, out_y2,
 			1, mode, BC_Resources::interpolation_method);
-		BC_Resources::tmpframes.release_frame(track_frame);
-		track_frame = 0;
+		output->merge_status(*input);
+		BC_Resources::tmpframes.release_frame(*input);
+		*input = 0;
 		return output;
 	}
 	BC_Resources::tmpframes.release_frame(output);
-	outframe = track_frame;
-	track_frame = 0;
-	return outframe;
+	output = *input;
+	*input = 0;
+	return output;
 }
 
 VFrame *VTrackRender::render_camera(VFrame *frame)
@@ -291,6 +285,7 @@ VFrame *VTrackRender::render_camera(VFrame *frame)
 			out_x1, out_y1, out_x2, out_y2,
 			1, TRANSFER_REPLACE, BC_Resources::interpolation_method);
 		dstframe->copy_pts(frame);
+		dstframe->merge_status(frame);
 		BC_Resources::tmpframes.release_frame(frame);
 		return dstframe;
 	}
@@ -428,7 +423,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 	ptstime end = start + input->get_duration();
 	VFrame *tmpframe;
 
-	track_frame = input;
+	plugin_frame = input;
 	current_edit = edit;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
@@ -443,8 +438,8 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			track_frame->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, track_frame, rstep))
-				track_frame = tmpframe;
+			if(tmpframe = execute_plugin(plugin, plugin_frame, rstep))
+				plugin_frame = tmpframe;
 			else
 			{
 				next_plugin = plugin;
@@ -452,7 +447,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 			}
 		}
 	}
-	return track_frame;
+	return plugin_frame;
 }
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
@@ -477,7 +472,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
-		frame = render_projector(0);
+		frame = render_projector(track_frame, &frame);
 		set_effects_track(media_track);
 		return frame;
 
@@ -547,8 +542,8 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 	ptstime buffer_pts = buffer->get_pts();
 	int layer = buffer->get_layer();
 
-	if(track_frame && PTSEQU(track_frame->get_pts(), buffer_pts))
-		buffer->copy_from(track_frame, 1);
+	if(plugin_frame && PTSEQU(plugin_frame->get_pts(), buffer_pts))
+		buffer->copy_from(plugin_frame, 1);
 	else
 	{
 		Edit *edit = media_track->editof(buffer_pts);
@@ -576,6 +571,7 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 	VFrame *tmpframe;
 	Edit *prev;
 	Plugin *transition = edit->transition;
+
 	if(!transition || !transition->plugin_server || !transition->on ||
 			transition->get_length() < frame->get_pts() - edit->get_pts())
 		return frame;
