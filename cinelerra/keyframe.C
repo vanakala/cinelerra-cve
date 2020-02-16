@@ -112,9 +112,10 @@ void KeyFrame::copy(Auto *src, ptstime start, ptstime end)
 		return;
 
 	pos_time = that->pos_time - start;
-	if(data)
-		free(data);
-	data = strdup(that->data);
+	free(data);
+	data = 0;
+	if(that->data)
+		data = strdup(that->data);
 }
 
 void KeyFrame::copy_from(Auto *that)
@@ -128,9 +129,10 @@ void KeyFrame::copy_from(KeyFrame *that)
 		return;
 
 	Auto::copy_from(that);
-	if(data)
-		free(data);
-	data = strdup(that->data);
+	free(data);
+	data = 0;
+	if(that->data)
+		data = strdup(that->data);
 }
 
 int KeyFrame::identical(KeyFrame *src)
@@ -140,7 +142,7 @@ int KeyFrame::identical(KeyFrame *src)
 	if(this == src)
 		return 1;
 	if(data && this->data)
-		!strcmp(src->data, data);
+		return !strcmp(src->data, data);
 	return !data && !this->data;
 }
 
