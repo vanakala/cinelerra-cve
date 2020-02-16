@@ -1467,7 +1467,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!error && got_it)
 	{
-		AVPixelFormat pix_fmt = ColorModels::color_model_to_pix_fmt(frame->get_color_model());
+		const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(decoder_context->pix_fmt);
 
 		convert_cmodel(avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
@@ -1475,6 +1475,9 @@ int FileAVlibs::read_frame(VFrame *frame)
 			av_q2d(stream->time_base) - pts_base);
 		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
 		frame->set_frame_number(round(frame->get_source_pts() * av_q2d(stream->avg_frame_rate)));
+		frame->clear_status();
+		if(pix_desc->flags & AV_PIX_FMT_FLAG_ALPHA)
+			frame->set_transparent();
 	}
 	avlibs_lock->unlock();
 
