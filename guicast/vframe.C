@@ -748,6 +748,16 @@ void VFrame::set_transparent()
 	status |= VFRAME_TRANSPARENT;
 }
 
+int VFrame::is_transparent()
+{
+	return status & VFRAME_TRANSPARENT;
+}
+
+void VFrame::merge_status(VFrame *that)
+{
+	status |= that->status;
+}
+
 int VFrame::pts_in_frame_source(ptstime pts, ptstime accuracy)
 {
 	if(pts < source_pts - accuracy || pts > source_pts + duration)
