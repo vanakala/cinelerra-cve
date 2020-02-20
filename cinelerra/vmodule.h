@@ -37,7 +37,6 @@ class VModule : public Module
 public:
 	VModule(RenderEngine *renderengine, 
 		CommonRender *commonrender, 
-		PluginArray *plugin_array,
 		Track *track);
 	virtual ~VModule();
 

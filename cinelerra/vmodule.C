@@ -35,7 +35,6 @@
 #include "mwindow.h"
 #include "overlayframe.h"
 #include "plugin.h"
-#include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "tmpframecache.h"
@@ -53,9 +52,8 @@
 
 VModule::VModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
-	PluginArray *plugin_array,
 	Track *track)
- : Module(renderengine, commonrender, plugin_array, track)
+ : Module(renderengine, commonrender, track)
 {
 	data_type = TRACK_VIDEO;
 	overlay_temp = 0;

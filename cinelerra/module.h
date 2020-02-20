@@ -30,7 +30,6 @@
 #include "filexml.inc"
 #include "module.inc"
 #include "plugin.inc"
-#include "pluginarray.inc"
 #include "pluginserver.inc"
 #include "renderengine.inc"
 #include "track.inc"
@@ -40,7 +39,6 @@ class Module
 public:
 	Module(RenderEngine *renderengine, 
 		CommonRender *commonrender, 
-		PluginArray *plugin_array,
 		Track *track);
 	virtual ~Module();
 
@@ -77,8 +75,6 @@ public:
 	CommonRender *commonrender;
 // Not available in menu effects
 	RenderEngine *renderengine;
-// Not available in realtime playback
-	PluginArray *plugin_array;
 	Track *track;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;

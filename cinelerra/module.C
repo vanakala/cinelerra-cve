@@ -29,20 +29,17 @@
 #include "mwindow.h"
 #include "patchbay.h"
 #include "plugin.h"
-#include "pluginarray.h"
 #include "pluginserver.h"
 #include "renderengine.h"
 #include "track.h"
 #include "tracks.h"
 
 Module::Module(RenderEngine *renderengine, 
-	CommonRender *commonrender, 
-	PluginArray *plugin_array,
+	CommonRender *commonrender,
 	Track *track)
 {
 	this->renderengine = renderengine;
 	this->commonrender = commonrender;
-	this->plugin_array = plugin_array;
 	this->track = track;
 	transition = 0;
 	transition_server = 0;
@@ -91,7 +88,6 @@ EDL* Module::get_edl()
 
 void Module::create_new_attachments()
 {
-// Not used in pluginarray
 	if(commonrender)
 	{
 		new_total_attachments = track->plugins.total;
@@ -120,7 +116,6 @@ void Module::create_new_attachments()
 
 void Module::swap_attachments()
 {
-// None of this is used in a pluginarray
 	for(int i = 0; 
 		i < new_total_attachments &&
 		i < total_attachments; 
@@ -262,14 +257,6 @@ void Module::update_transition(ptstime current_position)
 	if(transition && !transition_server)
 	{
 		if(renderengine)
-		{
-			PluginServer *plugin_server = transition->plugin_server;
-			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0, transition, 0);
-			transition_server->init_realtime(1);
-		}
-		else
-		if(plugin_array)
 		{
 			PluginServer *plugin_server = transition->plugin_server;
 			transition_server = new PluginServer(*plugin_server);

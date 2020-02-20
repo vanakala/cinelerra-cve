@@ -53,7 +53,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    affine.C \
 		    amodule.C \
 		    apatchgui.C \
-		    apluginarray.C \
 		    arender.C \
 		    asset.C \
 		    assetedit.C \
@@ -195,7 +194,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    playtransport.C \
 		    pluginaclient.C \
 		    pluginaclientlad.C \
-		    pluginarray.C \
 		    plugin.C \
 		    plugindb.C \
 		    pluginclient.C \
@@ -211,8 +209,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    preferencesthread.C \
 		    question.C \
 		    quit.C \
-		    recordableatracks.C \
-		    recordablevtracks.C \
 		    render.C \
 		    renderbase.C \
 		    renderengine.C \
@@ -262,7 +258,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vmodule.C \
 		    vpatchgui.C \
 		    vplayback.C \
-		    vpluginarray.C \
 		    vrender.C \
 		    vtimebar.C \
 		    vtrack.C \
@@ -299,7 +294,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 affine.h \
 		 amodule.h \
 		 apatchgui.h \
-		 apluginarray.h \
 		 arender.h \
 		 asset.h \
 		 assetlist.h \
@@ -441,7 +435,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 playtransport.h \
 		 pluginaclient.h \
 		 pluginaclientlad.h \
-		 pluginarray.h \
 		 pluginclient.h \
 		 plugindialog.h \
 		 pluginmacros.h \
@@ -458,8 +451,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 preferencesthread.h \
 		 question.h \
 		 quit.h \
-		 recordableatracks.h \
-		 recordablevtracks.h \
 		 renderengine.h \
 		 renderfarmclient.h \
 		 renderfarm.h \
@@ -508,7 +499,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vmodule.h \
 		 vpatchgui.h \
 		 vplayback.h \
-		 vpluginarray.h \
 		 vrender.h \
 		 vtimebar.h \
 		 vtrack.h \

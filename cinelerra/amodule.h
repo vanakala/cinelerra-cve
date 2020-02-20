@@ -35,9 +35,8 @@ class AModule : public Module
 {
 public:
 	AModule(RenderEngine *renderengine, 
-		CommonRender *commonrender, 
-		PluginArray *plugin_array,
-	Track *track);
+		CommonRender *commonrender,
+		Track *track);
 	virtual ~AModule();
 
 	void reset();

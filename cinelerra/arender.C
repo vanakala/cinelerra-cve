@@ -79,7 +79,7 @@ int ARender::get_total_tracks()
 
 Module* ARender::new_module(Track *track)
 {
-	return new AModule(renderengine, this, 0, track);
+	return new AModule(renderengine, this, track);
 }
 
 void ARender::init_output_buffers()

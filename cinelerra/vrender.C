@@ -77,7 +77,7 @@ int VRender::get_total_tracks()
 
 Module* VRender::new_module(Track *track)
 {
-	return new VModule(renderengine, this, 0, track);
+	return new VModule(renderengine, this, track);
 }
 
 int VRender::flash_output()

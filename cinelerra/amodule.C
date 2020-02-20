@@ -39,7 +39,6 @@
 #include "module.h"
 #include "mainerror.h"
 #include "plugin.h"
-#include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "mainsession.h"
@@ -49,9 +48,8 @@
 
 AModule::AModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
-	PluginArray *plugin_array,
 	Track *track)
- : Module(renderengine, commonrender, plugin_array, track)
+ : Module(renderengine, commonrender, track)
 {
 	data_type = TRACK_AUDIO;
 	module_levels = 0;
@@ -78,7 +76,7 @@ AttachmentPoint* AModule::new_attachment(Plugin *plugin)
 void AModule::reset()
 {
 	Module::reset();
-// Not needed in pluginarray
+
 	if(commonrender)
 		module_levels->reset(get_buffer_size(),
 			edlsession->sample_rate, 1);
@@ -88,8 +86,7 @@ int AModule::get_buffer_size()
 {
 	if(renderengine)
 		return renderengine->fragment_len;
-	else
-		return plugin_array->get_bufsize();
+	return 0;
 }
 
 CICache* AModule::get_cache()

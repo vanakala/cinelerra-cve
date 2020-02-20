@@ -28,7 +28,6 @@
 #include "loadmode.inc"
 #include "mainmenu.inc"
 #include "mwindow.inc"
-#include "pluginarray.inc"
 #include "pluginserver.inc"
 #include "thread.h"
 
@@ -57,9 +56,6 @@ public:
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
 	void get_derived_attributes(Asset *asset);
 	void save_derived_attributes(Asset *asset);
-	virtual PluginArray* create_plugin_array() { return 0; };
-	virtual ptstime one_unit() { return 0; };
-	virtual posnum to_units(ptstime position, int round) { return 0; };
 	virtual void fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 
