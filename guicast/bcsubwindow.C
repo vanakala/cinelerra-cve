@@ -37,6 +37,11 @@ BC_SubWindow::~BC_SubWindow()
 
 void BC_SubWindow::initialize()
 {
+	if(parent_window)
+		color_model = parent_window->color_model;
+	else
+		color_model = bg_color;
+
 	create_window(parent_window, 
 			"Sub Window", 
 			x, 
