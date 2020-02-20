@@ -83,6 +83,8 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 			track_frame = aframe;
 		}
 	}
+	else
+		next_plugin = 0;
 }
 
 AFrame *ATrackRender::get_aframe(AFrame *buffer)

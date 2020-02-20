@@ -121,6 +121,8 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 			render_crop(track_frame, 0);
 		}
 	}
+	else
+		next_plugin = 0;
 }
 
 void VTrackRender::render_fade(VFrame *frame)
