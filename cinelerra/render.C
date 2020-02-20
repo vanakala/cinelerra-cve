@@ -216,8 +216,23 @@ void Render::start_interactive()
 		if(render_window && !in_progress)
 			render_window->raise_window();
 		else
-			errorbox("Already rendering");
+			errorbox(_("Already rendering"));
 	}
+}
+
+void Render::run_menueffects(Asset *asset, EDL *edl,
+        int strategy, int range_type, int load_mode)
+{
+	int old_load_mode;
+
+	mode = Render::EFFECT;
+	old_load_mode = this->load_mode;
+	this->load_mode = load_mode;
+	this->jobs = 0;
+	batch_cancelled = 0;
+	completion->reset();
+	render(1, asset, edl, strategy, range_type);
+	this->load_mode = old_load_mode;
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)

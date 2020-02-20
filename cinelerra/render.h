@@ -100,6 +100,10 @@ public:
 	void run_batches(ArrayList<BatchRenderJob*> *jobs);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
+// Render menueffects
+	void run_menueffects(Asset *asset, EDL *edl,
+		int strategy, int range_type, int load_mode);
+
 	void run();
 
 // Render single job.  Used by run.
@@ -136,8 +140,10 @@ public:
 	int mode;
 	enum
 	{
+		NONE,
 		INTERACTIVE,
-		BATCH
+		BATCH,
+		EFFECT
 	};
 // When batch rendering is cancelled from the batch dialog
 	int batch_cancelled;
