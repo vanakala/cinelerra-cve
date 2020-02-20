@@ -23,7 +23,6 @@
 #define MENUEFFECTS_H
 
 #include "asset.inc"
-#include "browsebutton.h"
 #include "datatype.h"
 #include "formattools.h"
 #include "loadmode.inc"
@@ -34,52 +33,38 @@
 #include "thread.h"
 
 class MenuEffectThread;
+
 class MenuEffects : public BC_MenuItem
 {
 public:
-	MenuEffects(MWindow *mwindow);
+	MenuEffects();
 	virtual ~MenuEffects() {};
 
 	int handle_event();
 
-	MWindow *mwindow;
 	MenuEffectThread *thread;
-};
-
-
-
-class MenuEffectPacket
-{
-public:
-	MenuEffectPacket(const char *path, ptstime start, ptstime end);
-
-// Path of output without remote prefix
-	char path[BCTEXTLEN];
-
-	ptstime start;
-	ptstime end;
 };
 
 
 class MenuEffectThread : public Thread
 {
 public:
-	MenuEffectThread(MWindow *mwindow);
+	MenuEffectThread();
 	virtual ~MenuEffectThread() {};
 
 	void run();
 	int set_title(const char *text);  // set the effect to be run by a menuitem
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
-	void get_derived_attributes(Asset *asset, BC_Hash *defaults);
-	void save_derived_attributes(Asset *asset, BC_Hash *defaults);
+	void get_derived_attributes(Asset *asset);
+	void save_derived_attributes(Asset *asset);
 	virtual PluginArray* create_plugin_array() { return 0; };
 	virtual ptstime one_unit() { return 0; };
 	virtual posnum to_units(ptstime position, int round) { return 0; };
 	virtual void fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 
-	MWindow *mwindow;
 	int effect_type;
+	int track_type;
 	const char *def_prefix;
 	const char *profile_name;
 	char title[1024];
@@ -107,8 +92,7 @@ class MenuEffectWindowToTracks;
 class MenuEffectWindow : public BC_Window
 {
 public:
-	MenuEffectWindow(MWindow *mwindow, 
-		MenuEffectThread *menueffects, 
+	MenuEffectWindow(MenuEffectThread *menueffects,
 		ArrayList<BC_ListBoxItem*> *plugin_list, int absx, int absy,
 		Asset *asset);
 	virtual ~MenuEffectWindow();
@@ -121,7 +105,6 @@ public:
 	BC_Title *file_title;
 	FormatTools *format_tools;
 	MenuEffectThread *menueffects;
-	MWindow *mwindow;
 	ArrayList<BC_ListBoxItem*> *plugin_list;
 	Asset *asset;
 
@@ -172,7 +155,7 @@ class MenuEffectPromptCancel;
 class MenuEffectPrompt : public BC_Window
 {
 public:
-	MenuEffectPrompt(MWindow *mwindow, int absx, int absy);
+	MenuEffectPrompt(int absx, int absy);
 
 	static int calculate_w(BC_WindowBase *gui);
 	static int calculate_h(BC_WindowBase *gui);

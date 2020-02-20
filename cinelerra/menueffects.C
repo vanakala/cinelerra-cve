@@ -21,17 +21,17 @@
 
 #include "asset.h"
 #include "bctitle.h"
+#include "bclistboxitem.h"
 #include "cinelerra.h"
 #include "clip.h"
-#include "confirmsave.h"
 #include "datatype.h"
 #include "bchash.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mainerror.h"
 #include "file.h"
 #include "filexml.h"
-#include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
 #include "labels.h"
@@ -45,56 +45,54 @@
 #include "mwindowgui.h"
 #include "menueffects.h"
 #include "paramlist.h"
-#include "playbackengine.h"
-#include "pluginarray.h"
+#include "plugin.h"
 #include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
 #include "renderprofiles.h"
-#include "sighandler.h"
+#include "track.h"
+#include "tracks.h"
 #include "theme.h"
 
 
-
-MenuEffects::MenuEffects(MWindow *mwindow)
+MenuEffects::MenuEffects()
  : BC_MenuItem(_("Render effect..."))
 {
-	this->mwindow = mwindow;
 }
 
 int MenuEffects::handle_event()
 {
-	thread->set_title("");
+#if defined(NEW_RENDERER) || !defined(NEW_ARENDERER)
+	thread->set_title(0);
 	thread->start();
+#else
+	errorbox("Not ready");
+#endif
+	return 1;
 }
 
 
-MenuEffectPacket::MenuEffectPacket(const char *path, ptstime start, ptstime end)
+MenuEffectThread::MenuEffectThread()
 {
-	this->start = start;
-	this->end = end;
-	strcpy(this->path, path);
-}
-
-
-MenuEffectThread::MenuEffectThread(MWindow *mwindow)
-{
-	this->mwindow = mwindow;
 	title[0] = 0;
 }
 
 int MenuEffectThread::set_title(const char *title)
 {
-	strcpy(this->title, title);
+	if(title && title[0])
+		strcpy(this->title, title);
+	else
+		this->title[0] = 0;
 }
 
-void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuEffectThread::get_derived_attributes(Asset *asset)
 {
 	Paramlist *params;
 	FileXML file;
 	const char *pfname;
 	char path[BCTEXTLEN];
+	BC_Hash *defaults = mwindow_global->defaults;
 
 	edlsession->configuration_path(RENDERCONFIG_DIR, path);
 	RenderProfile::chk_profile_dir(path);
@@ -136,12 +134,13 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	}
 }
 
-void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuEffectThread::save_derived_attributes(Asset *asset)
 {
 	Paramlist params("ProfilData");
 	Param *pp;
 	FileXML file;
 	char path[BCTEXTLEN];
+	BC_Hash *defaults = mwindow_global->defaults;
 
 	asset->save_defaults(&params, ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 	params.append_param("loadmode", load_mode);
@@ -169,16 +168,11 @@ void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 void MenuEffectThread::run()
 {
 // get stuff from main window
-	BC_Hash *defaults = mwindow->defaults;
 	ArrayList<BC_ListBoxItem*> plugin_list;
 	ArrayList<PluginServer*> local_plugindb;
-	int i;
 	int result = 0;
 // Default configuration
 	Asset *default_asset = new Asset;
-// Output
-	ArrayList<char*> path_list;
-	path_list.set_array_delete();
 
 // check for recordable tracks
 	if(!get_recordable_tracks(default_asset))
@@ -197,8 +191,7 @@ void MenuEffectThread::run()
 	}
 
 // get default attributes for output file
-// used after completion
-	get_derived_attributes(default_asset, defaults);
+	get_derived_attributes(default_asset);
 
 // get plugin information
 	int need_plugin = !title[0];
@@ -207,8 +200,8 @@ void MenuEffectThread::run()
 	if(need_plugin)
 	{
 		plugindb.fill_plugindb(default_asset->audio_data,
-			default_asset->video_data, 
-			-1, 
+			default_asset->video_data,
+			-1,
 			0,
 			0,
 			0,
@@ -224,9 +217,8 @@ void MenuEffectThread::run()
 	int plugin_number;
 	int cx, cy;
 
-	mwindow->get_abs_cursor_pos(&cx, &cy);
-	MenuEffectWindow window(mwindow,
-		this,
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	MenuEffectWindow window(this,
 		need_plugin ? &plugin_list : 0,
 		cx, cy,
 		default_asset);
@@ -234,39 +226,24 @@ void MenuEffectThread::run()
 	plugin_number = window.result;
 
 // save defaults
-	save_derived_attributes(default_asset, defaults);
+	save_derived_attributes(default_asset);
 
 // get plugin server to use and delete the plugin list
 	PluginServer *plugin_server = 0;
-	PluginServer *plugin = 0;
+
 	if(need_plugin)
 	{
 		plugin_list.remove_all_objects();
+
 		if(plugin_number > -1)
-		{
 			plugin_server = local_plugindb.values[plugin_number];
-			strcpy(title, plugin_server->title);
-		}
 	}
 	else
-	{
-		int data_type = 0;
-
-		if(default_asset->audio_data)
-			data_type = TRACK_AUDIO;
-		else if(default_asset->video_data)
-			data_type = TRACK_VIDEO;
-
-		if(plugin_server = plugindb.get_pluginserver(title, data_type))
-			plugin_number = 0;
-	}
+		plugin_server = plugindb.get_pluginserver(title, track_type);
 
 // Update the  most recently used effects and copy the plugin server.
 	if(plugin_server)
-	{
-		plugin = new PluginServer(*plugin_server);
-		fix_menu(title);
-	}
+		fix_menu(plugin_server->title);
 
 	if(!result && !strlen(default_asset->path))
 	{
@@ -274,7 +251,7 @@ void MenuEffectThread::run()
 		errorbox(_("No output file specified."));
 	}
 
-	if(!result && plugin_number < 0)
+	if(!result && !plugin_server)
 	{
 		result = 1;        // no output path given
 		errorbox(_("No effect selected."));
@@ -286,6 +263,7 @@ void MenuEffectThread::run()
 // get selection to render
 // Range
 	ptstime total_start, total_end;
+	int range_type;
 
 	total_start = master_edl->local_session->get_selectionstart();
 
@@ -293,225 +271,156 @@ void MenuEffectThread::run()
 	{
 		total_end = master_edl->total_length();
 		total_start = 0;
+		range_type = RANGE_PROJECT;
 	}
 	else
-		total_end = master_edl->local_session->get_selectionend();
-
-// Trick boundaries in case of a non-realtime synthesis plugin
-	if(plugin && 
-		!plugin->realtime && 
-		PTSEQU(total_end, total_start)) total_end = total_start + one_unit();
-
-	ptstime total_length = total_end - total_start;
-
-	if(!result && total_length <= EPSILON)
 	{
-		result = 1;        // no output path given
+		total_end = master_edl->local_session->get_selectionend();
+		range_type = RANGE_SELECTION;
+	}
+
+	if(!result &&  (total_end - total_start) <= EPSILON)
+	{
+		result = 1;
 		errorbox(_("No selected range to process."));
 	}
 
 // ========================= get keyframe from user
 	if(!result)
 	{
+		PluginServer *active_server = new PluginServer(*plugin_server);
 // ========================= realtime plugin 
 // no get_parameters
-		if(plugin->realtime)
+		if(plugin_server->realtime)
 		{
 			int cx, cy;
-			mwindow->get_abs_cursor_pos(&cx, &cy);
+			mwindow_global->get_abs_cursor_pos(&cx, &cy);
 // Open a prompt GUI
-			MenuEffectPrompt prompt(mwindow, cx, cy);
+			MenuEffectPrompt prompt(cx, cy);
 // Open the plugin GUI
-			plugin->set_keyframe(&plugin_data);
-			plugin->set_prompt(&prompt);
-			plugin->open_plugin(0, 0, 0);
+			active_server->set_keyframe(&plugin_data);
+			active_server->set_prompt(&prompt);
+			active_server->open_plugin(0, 0, 0);
 // Must set parameters since there is no plugin object to draw from.
-			plugin->get_parameters(total_start,
-				total_end,
-				1);
-			plugin->show_gui();
+			active_server->get_parameters(total_start,
+				total_end, 1);
+			active_server->show_gui();
 
 // wait for user input
 			result = prompt.run_window();
 
 // Close plugin.
-			plugin->save_data(&plugin_data);
-			default_asset->sample_rate = edlsession->sample_rate;
-			default_asset->frame_rate = edlsession->frame_rate;
+			active_server->hide_gui();
+			active_server->save_data(&plugin_data);
 			realtime = 1;
 		}
 		else
 // ============================non realtime plugin 
 		{
-			plugin->open_plugin(0, 0, 0, -1);
-			plugin->update_title();
-			result = plugin->get_parameters(total_start,
+			active_server->open_plugin(0, 0, 0, -1);
+			active_server->update_title();
+			result = active_server->get_parameters(total_start,
 				total_end,
 				get_recordable_tracks(default_asset));
-// some plugins can change the sample rate and the frame rate
 
-			if(!result)
-			{
-				default_asset->sample_rate = plugin->get_samplerate();
-				default_asset->frame_rate = plugin->get_framerate();
-			}
 			realtime = 0;
 		}
-		if(plugin->audio)
+		delete active_server;
+
+		default_asset->sample_rate = edlsession->sample_rate;
+		default_asset->frame_rate = edlsession->frame_rate;
+		if(plugin_server->audio)
 			default_asset->audio_data = 1;
-		if(plugin->video)
+		if(plugin_server->video)
 			default_asset->video_data = 1;
-		delete plugin;
 
 // Should take from first recordable track
 		default_asset->width = edlsession->output_w;
 		default_asset->height = edlsession->output_h;
+		default_asset->sample_aspect_ratio =
+			edlsession->sample_aspect_ratio;
 		default_asset->init_streams();
 	}
 
-// Process the total length in fragments
-	ArrayList<MenuEffectPacket*> packets;
 	if(!result)
 	{
-		Label *current_label = master_edl->labels->first;
-		mwindow->stop_brender();
+		ptstime min_track_length = 100 * 3600; // 100 hours
 
-		int current_number;
-		int number_start;
-		int total_digits;
-		Render::get_starting_number(default_asset->path, 
-			current_number,
-			number_start, 
-			total_digits);
+		render_edl = new EDL(0);
+		render_edl->update_assets(master_edl);
+		render_edl->local_session->copy_from(master_edl->local_session);
 
-// Construct all packets for single overwrite confirmation
-		for(ptstime fragment_start = total_start, fragment_end;
-			fragment_start < total_end;
-			fragment_start = fragment_end)
+		if(master_edl->this_edlsession)
 		{
-// Get fragment end
-			if(strategy & RENDER_FILE_PER_LABEL)
+			render_edl->this_edlsession = new EDLSession();
+			render_edl->this_edlsession->copy(master_edl->this_edlsession);
+		}
+
+		for(Track *track = master_edl->first_track(); track; track = track->next)
+		{
+			if(track->data_type != track_type || !track->record)
+				continue;
+
+			Track *new_track = render_edl->tracks->add_track(track_type, 0, 0);
+
+			new_track->copy_settings(track);
+			new_track->edits->copy_from(track->edits);
+			new_track->automation->copy_from(track->automation);
+
+			ptstime track_dur = new_track->get_length();
+			if(track_dur < min_track_length)
+				min_track_length = track_dur;
+		}
+
+		Plugin *shared_master = 0;
+
+		for(Track *track = render_edl->first_track(); track; track = track->next)
+		{
+			ptstime max_pts = track->get_length();
+
+			if(max_pts > total_end)
+				max_pts = total_end;
+
+			if(max_pts < total_start)
+				continue;
+
+			if(!shared_master)
 			{
-				while(current_label  &&
-					current_label->position <= fragment_start)
-					current_label = current_label->next;
-				if(!current_label)
-					fragment_end = total_end;
-				else
-					fragment_end = current_label->position;
+				Plugin *new_plugin = track->insert_effect(plugin_server,
+					total_start, max_pts,
+					PLUGIN_STANDALONE, 0, 0);
+				KeyFrame *new_keyframe = new_plugin->get_keyframe(0);
+				new_keyframe->copy(&plugin_data, total_start, max_pts);
+				if(track == render_edl->first_track() &&
+						plugin_server->multichannel)
+				{
+					new_plugin->set_end(min_track_length);
+					shared_master = new_plugin;
+				}
 			}
 			else
+			if(total_start < min_track_length)
 			{
-				fragment_end = total_end;
-			}
-
-// Get path
-			char path[BCTEXTLEN];
-			if(strategy & RENDER_FILE_PER_LABEL)
-				Render::create_filename(path, 
-					default_asset->path, 
-					current_number,
-					total_digits,
-					number_start);
-			else
-				strcpy(path, default_asset->path);
-			current_number++;
-
-			MenuEffectPacket *packet = new MenuEffectPacket(path, 
-				fragment_start,
-				fragment_end);
-			packets.append(packet);
-		}
-
-// Test existence of files
-		ArrayList<char*> paths;
-		for(int i = 0; i < packets.total; i++)
-		{
-			paths.append(packets.values[i]->path);
-		}
-		result = ConfirmSave::test_files(mwindow, &paths);
-		paths.remove_all();
-	}
-
-	for(int current_packet = 0; 
-		current_packet < packets.total && !result; 
-		current_packet++)
-	{
-		Asset *asset = new Asset(*default_asset);
-		MenuEffectPacket *packet = packets.values[current_packet];
-		ptstime fragment_start = packet->start;
-		ptstime fragment_end = packet->end;
-		strcpy(asset->path, packet->path);
-
-		char *path = new char[strlen(asset->path) + 16];
-		strcpy(path, asset->path);
-		path_list.append(path);
-
-		File *file = new File;
-
-// Open the output file after getting the information because the sample rate
-// is needed here.
-		if(!result)
-		{
-// open output file in write mode
-			file->set_processors(mwindow->preferences->processors);
-
-			if(file->open_file(asset, FILE_OPEN_WRITE))
-			{
-// open failed
-				errorbox(_("Couldn't open %s"), asset->path);
-				result = 1;
-			}
-			else
-			{
-				mwindow->sighandler->push_file(file);
-				IndexFile::delete_index(mwindow->preferences, asset);
+				track->insert_effect(0, total_start, min_track_length,
+					PLUGIN_SHAREDPLUGIN, shared_master, 0);
 			}
 		}
 
-// run plugins
-		if(!result)
-		{
-			PluginArray *plugin_array;
-			plugin_array = create_plugin_array();
-			plugin_array->start_plugins(mwindow, 
-				master_edl,
-				plugin_server, 
-				&plugin_data,
-				fragment_start,
-				fragment_end,
-				file);
-			plugin_array->run_plugins();
+		if(!render_preferences)
+			render_preferences = new Preferences;
+		render_preferences->copy_from(preferences_global);
 
-			plugin_array->stop_plugins();
-			mwindow->sighandler->pull_file(file);
-			file->close_file();
-			delete plugin_array;
-		}
+		if(default_asset->single_image)
+			range_type = RANGE_SINGLEFRAME;
 
-		delete file;
-		delete asset;
+		mwindow_global->render->run_menueffects(default_asset, render_edl,
+			strategy, range_type, load_mode);
+
+		delete render_edl->this_edlsession;
+		delete render_edl;
+		render_edl = 0;
 	}
 
-	packets.remove_all_objects();
-
-// paste output to tracks
-	if(!result && load_mode != LOADMODE_NOTHING)
-	{
-		if(load_mode == LOADMODE_PASTE)
-			mwindow->clear(0);
-
-		mwindow->load_filenames(&path_list, load_mode);
-		mwindow->save_backup();
-		mwindow->undo->update_undo(title, LOAD_ALL);
-
-		mwindow->update_plugin_guis();
-		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
-			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-		mwindow->sync_parameters();
-	}
-
-	path_list.remove_all_objects();
 	delete default_asset;
 }
 
@@ -529,8 +438,7 @@ int MenuEffectItem::handle_event()
 }
 
 
-MenuEffectWindow::MenuEffectWindow(MWindow *mwindow, 
-	MenuEffectThread *menueffects, 
+MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 	ArrayList<BC_ListBoxItem*> *plugin_list, int absx, int absy,
 	Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render effect")),
@@ -550,47 +458,38 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	this->menueffects = menueffects; 
 	this->plugin_list = plugin_list; 
 	this->asset = asset;
-	this->mwindow = mwindow;
-	set_icon(mwindow->get_window_icon());
-	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
+	set_icon(mwindow_global->get_window_icon());
+	theme_global->get_menueffect_sizes(plugin_list ? 1 : 0);
 
 // only add the list if needed
 	if(plugin_list)
 	{
-		add_subwindow(list_title = new BC_Title(mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y, 
+		add_subwindow(list_title = new BC_Title(theme_global->menueffect_list_x,
+			theme_global->menueffect_list_y,
 			_("Select an effect")));
 		add_subwindow(list = new MenuEffectWindowList(this, 
-			mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y + list_title->get_h() + 5, 
-			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h - list_title->get_h() - 5,
+			theme_global->menueffect_list_x,
+			theme_global->menueffect_list_y + list_title->get_h() + 5,
+			theme_global->menueffect_list_w,
+			theme_global->menueffect_list_h - list_title->get_h() - 5,
 			plugin_list));
 	}
 
-	add_subwindow(file_title = new BC_Title(mwindow->theme->menueffect_file_x, 
-		mwindow->theme->menueffect_file_y, 
-		(char*)((menueffects->strategy & RENDER_FILE_PER_LABEL) ?
+	add_subwindow(file_title = new BC_Title(theme_global->menueffect_file_x,
+		theme_global->menueffect_file_y,
+		(menueffects->strategy & RENDER_FILE_PER_LABEL) ?
 			_("Select the first file to render to:") : 
-			_("Select a file to render to:"))));
+			_("Select a file to render to:")));
 
-	x = mwindow->theme->menueffect_tools_x;
-	y = mwindow->theme->menueffect_tools_y;
-	format_tools = new FormatTools(mwindow,
-					this, 
-					asset,
-					x,
-					y, 
-					asset->audio_data ? SUPPORTS_AUDIO : 0 | asset->video_data ? SUPPORTS_VIDEO : 0,
-					0,
-					SUPPORTS_VIDEO,
-					&menueffects->strategy);
+	x = theme_global->menueffect_tools_x;
+	y = theme_global->menueffect_tools_y;
+	format_tools = new FormatTools(mwindow_global,
+		this, asset, x, y,
+		asset->audio_data ? SUPPORTS_AUDIO : 0 | asset->video_data ? SUPPORTS_VIDEO : 0,
+		0, SUPPORTS_VIDEO,
+		&menueffects->strategy);
 
-	loadmode = new LoadMode(this,
-		x, 
-		y, 
-		&menueffects->load_mode, 
-		1);
+	loadmode = new LoadMode(this, x, y, &menueffects->load_mode, 1);
 
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));
@@ -607,22 +506,22 @@ void MenuEffectWindow::resize_event(int w, int h)
 {
 	mainsession->menueffect_w = w;
 	mainsession->menueffect_h = h;
-	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
+	theme_global->get_menueffect_sizes(plugin_list ? 1 : 0);
 
 	if(plugin_list)
 	{
-		list_title->reposition_window(mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y);
-		list->reposition_window(mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y + list_title->get_h() + 5, 
-			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h - list_title->get_h() - 5);
+		list_title->reposition_window(theme_global->menueffect_list_x,
+			theme_global->menueffect_list_y);
+		list->reposition_window(theme_global->menueffect_list_x,
+			theme_global->menueffect_list_y + list_title->get_h() + 5,
+			theme_global->menueffect_list_w,
+			theme_global->menueffect_list_h - list_title->get_h() - 5);
 	}
 
-	file_title->reposition_window(mwindow->theme->menueffect_file_x, 
-		mwindow->theme->menueffect_file_y);
-	int x = mwindow->theme->menueffect_tools_x;
-	int y = mwindow->theme->menueffect_tools_y;
+	file_title->reposition_window(theme_global->menueffect_file_x,
+		theme_global->menueffect_file_y);
+	int x = theme_global->menueffect_tools_x;
+	int y = theme_global->menueffect_tools_y;
 	format_tools->reposition_window(x, y);
 	loadmode->reposition_window(x, y);
 }
@@ -697,14 +596,14 @@ int MenuEffectWindowList::handle_event()
 
 #define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
 
-MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow, int absx, int absy)
+MenuEffectPrompt::MenuEffectPrompt(int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Effect Prompt")),
 		absx - 260 / 2,
 		absy - 300,
-		MenuEffectPrompt::calculate_w(mwindow->gui), 
-		MenuEffectPrompt::calculate_h(mwindow->gui), 
-		MenuEffectPrompt::calculate_w(mwindow->gui),
-		MenuEffectPrompt::calculate_h(mwindow->gui),
+		MenuEffectPrompt::calculate_w(mwindow_global->gui),
+		MenuEffectPrompt::calculate_h(mwindow_global->gui),
+		MenuEffectPrompt::calculate_w(mwindow_global->gui),
+		MenuEffectPrompt::calculate_h(mwindow_global->gui),
 		0,
 		0,
 		1)
@@ -712,7 +611,7 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow, int absx, int absy)
 	int x = 10, y = 10;
 	BC_Title *title;
 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -724,6 +623,7 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow, int absx, int absy)
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
 {
 	int w = BC_Title::calculate_w(gui, PROMPT_TEXT) + 10;
+
 	w = MAX(w, BC_OKButton::calculate_w() + BC_CancelButton::calculate_w() + 30);
 	return w;
 }
@@ -731,7 +631,7 @@ int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
 int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 {
 	int h = BC_Title::calculate_h(gui, PROMPT_TEXT);
+
 	h += BC_OKButton::calculate_h() + 30;
 	return h;
 }
-

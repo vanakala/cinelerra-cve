@@ -22,16 +22,13 @@
 #ifndef MENUAEFFECTS_H
 #define MENUAEFFECTS_H
 
-#include "asset.inc"
-#include "edl.inc"
-#include "mwindow.inc"
+#include "menuaeffects.inc"
 #include "menueffects.h"
-#include "pluginserver.inc"
 
 class MenuAEffects : public MenuEffects
 {
 public:
-	MenuAEffects(MWindow *mwindow);
+	MenuAEffects();
 	~MenuAEffects();
 };
 
@@ -39,12 +36,9 @@ public:
 class MenuAEffectThread : public MenuEffectThread
 {
 public:
-	MenuAEffectThread(MWindow *mwindow);
+	MenuAEffectThread();
 
 	int get_recordable_tracks(Asset *asset);
-	PluginArray* create_plugin_array();
-	ptstime one_unit();
-	posnum to_units(ptstime position, int round);
 	void fix_menu(const char *title);
 };
 

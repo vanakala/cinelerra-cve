@@ -24,4 +24,5 @@
 
 class MenuVEffects;
 class MenuVEffectItem;
+
 #endif

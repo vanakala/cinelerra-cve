@@ -124,11 +124,11 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	audiomenu->add_item(new DefaultATransition(mwindow));
 	audiomenu->add_item(new MapAudio1(mwindow));
 	audiomenu->add_item(new MapAudio2(mwindow));
-	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
+	audiomenu->add_item(aeffects = new MenuAEffects());
 	add_menu(videomenu = new BC_Menu(_("Video")));
 	videomenu->add_item(new AddVideoTrack(mwindow));
 	videomenu->add_item(new DefaultVTransition(mwindow));
-	videomenu->add_item(veffects = new MenuVEffects(mwindow));
+	videomenu->add_item(veffects = new MenuVEffects());
 
 	add_menu(trackmenu = new BC_Menu(_("Tracks")));
 	trackmenu->add_item(new MoveTracksUp(mwindow));

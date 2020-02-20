@@ -21,25 +21,19 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "apluginarray.h"
-#include "bchash.h"
 #include "edl.h"
-#include "edlsession.h"
-#include "file.h"
 #include "mainmenu.h"
-#include "mainsession.h"
+#include "menuaeffects.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "menuaeffects.h"
-#include "patchbay.h"
 #include "renderprofiles.inc"
 
 // ============================================= audio effects
 
-MenuAEffects::MenuAEffects(MWindow *mwindow)
- : MenuEffects(mwindow)
+MenuAEffects::MenuAEffects()
+ : MenuEffects()
 {
-	thread = new MenuAEffectThread(mwindow);
+	thread = new MenuAEffectThread();
 }
 
 MenuAEffects::~MenuAEffects()
@@ -48,10 +42,11 @@ MenuAEffects::~MenuAEffects()
 }
 
 
-MenuAEffectThread::MenuAEffectThread(MWindow *mwindow)
- : MenuEffectThread(mwindow)
+MenuAEffectThread::MenuAEffectThread()
+ : MenuEffectThread()
 {
 	effect_type = SUPPORTS_AUDIO;
+	track_type = TRACK_AUDIO;
 	def_prefix = "AEFFECT_";
 	profile_name = RENDERCONFIG_AEFFECT;
 }
@@ -62,29 +57,10 @@ int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 	return asset->channels;
 }
 
-PluginArray* MenuAEffectThread::create_plugin_array()
-{
-	return new APluginArray();
-}
-
-ptstime MenuAEffectThread::one_unit()
-{
-	return (ptstime)1 / edlsession->sample_rate;
-}
-
-posnum MenuAEffectThread::to_units(ptstime position, int round)
-{
-	if(round)
-		return Units::round(position * edlsession->sample_rate);
-	else
-		return (posnum)(position * edlsession->sample_rate);
-}
-
 void MenuAEffectThread::fix_menu(const char *title)
 {
-	mwindow->gui->mainmenu->add_aeffect(title); 
+	mwindow_global->gui->mainmenu->add_aeffect(title);
 }
-
 
 MenuAEffectItem::MenuAEffectItem(MenuAEffects *menueffect, const char *string)
  : MenuEffectItem(menueffect, string)

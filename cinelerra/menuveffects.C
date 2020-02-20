@@ -20,26 +20,19 @@
  */
 
 #include "asset.h"
-#include "bchash.h"
 #include "bcsignals.h"
 #include "edl.h"
-#include "edlsession.h"
-#include "file.h"
 #include "mainmenu.h"
-#include "mainsession.h"
+#include "menuveffects.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "menuveffects.h"
-#include "patchbay.h"
 #include "renderprofiles.inc"
-#include "units.h"
-#include "vpluginarray.h"
 
 
-MenuVEffects::MenuVEffects(MWindow *mwindow)
- : MenuEffects(mwindow)
+MenuVEffects::MenuVEffects()
+ : MenuEffects()
 {
-	thread = new MenuVEffectThread(mwindow);
+	thread = new MenuVEffectThread();
 }
 
 MenuVEffects::~MenuVEffects()
@@ -47,10 +40,11 @@ MenuVEffects::~MenuVEffects()
 	delete thread;
 }
 
-MenuVEffectThread::MenuVEffectThread(MWindow *mwindow)
- : MenuEffectThread(mwindow)
+MenuVEffectThread::MenuVEffectThread()
+ : MenuEffectThread()
 {
 	effect_type = SUPPORTS_VIDEO;
+	track_type = TRACK_VIDEO;
 	def_prefix = "VEFFECT_";
 	profile_name = RENDERCONFIG_VEFFECT;
 }
@@ -61,27 +55,9 @@ int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 	return asset->layers;
 }
 
-PluginArray* MenuVEffectThread::create_plugin_array()
-{
-	return new VPluginArray();
-}
-
-ptstime MenuVEffectThread::one_unit()
-{
-	return (ptstime)1 / edlsession->frame_rate;
-}
-
-posnum MenuVEffectThread::to_units(ptstime position, int round)
-{
-	if(round)
-		return Units::round(position * edlsession->frame_rate);
-	else
-		return (posnum)(position * edlsession->frame_rate);
-}
-
 void MenuVEffectThread::fix_menu(const char *title)
 {
-	mwindow->gui->mainmenu->add_veffect(title); 
+	mwindow_global->gui->mainmenu->add_veffect(title);
 }
 
 MenuVEffectItem::MenuVEffectItem(MenuVEffects *menueffect, const char *string)
