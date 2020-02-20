@@ -389,6 +389,7 @@ void AudioRender::process_frames()
 {
 	ATrackRender *trender;
 	int found;
+	int count = 0;
 
 	for(Track *track = edl->tracks->last; track; track = track->previous)
 	{
@@ -410,6 +411,8 @@ void AudioRender::process_frames()
 			found = 1;
 		}
 		if(!found)
+			break;
+		if(++count > 3)
 			break;
 	}
 

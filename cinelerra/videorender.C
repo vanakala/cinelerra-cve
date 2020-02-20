@@ -181,6 +181,7 @@ void VideoRender::process_frame(ptstime pts)
 {
 	VTrackRender *trender;
 	int found;
+	int count = 0;
 
 	frame->clear_frame();
 	frame->set_pts(pts);
@@ -210,6 +211,8 @@ void VideoRender::process_frame(ptstime pts)
 			found = 1;
 		}
 		if(!found)
+			break;
+		if(++count > 3)
 			break;
 	}
 
