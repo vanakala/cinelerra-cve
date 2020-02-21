@@ -348,6 +348,7 @@ void MenuEffectThread::run()
 
 		render_edl = new EDL(0);
 		render_edl->update_assets(master_edl);
+		render_edl->labels->copy_from(master_edl->labels);
 		render_edl->local_session->copy_from(master_edl->local_session);
 
 		if(master_edl->this_edlsession)
@@ -389,8 +390,10 @@ void MenuEffectThread::run()
 				Plugin *new_plugin = track->insert_effect(plugin_server,
 					total_start, max_pts,
 					PLUGIN_STANDALONE, 0, 0);
-				KeyFrame *new_keyframe = new_plugin->get_keyframe(0);
-				new_keyframe->copy(&plugin_data, total_start, max_pts);
+				KeyFrame *new_keyframe = new_plugin->get_keyframe(total_start);
+
+				new_keyframe->set_data(plugin_data.get_data());
+
 				if(track == render_edl->first_track() &&
 						plugin_server->multichannel)
 				{
@@ -413,6 +416,9 @@ void MenuEffectThread::run()
 		if(default_asset->single_image)
 			range_type = RANGE_SINGLEFRAME;
 
+		if(range_type == RANGE_SELECTION)
+			render_edl->local_session->set_selection(total_start, total_end);
+
 		mwindow_global->render->run_menueffects(default_asset, render_edl,
 			strategy, range_type, load_mode);
 
@@ -420,7 +426,6 @@ void MenuEffectThread::run()
 		delete render_edl;
 		render_edl = 0;
 	}
-
 	delete default_asset;
 }
 
@@ -477,9 +482,7 @@ MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 
 	add_subwindow(file_title = new BC_Title(theme_global->menueffect_file_x,
 		theme_global->menueffect_file_y,
-		(menueffects->strategy & RENDER_FILE_PER_LABEL) ?
-			_("Select the first file to render to:") : 
-			_("Select a file to render to:")));
+		_("Select a file to render to:")));
 
 	x = theme_global->menueffect_tools_x;
 	y = theme_global->menueffect_tools_y;
