@@ -50,7 +50,6 @@
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "paramlist.h"
-#include "playabletracks.h"
 #include "preferences.h"
 #include "renderfarm.h"
 #include "render.h"

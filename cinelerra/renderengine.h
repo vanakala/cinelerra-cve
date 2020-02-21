@@ -25,7 +25,6 @@
 
 class RenderEngine;
 
-#include "arender.inc"
 #include "audiorender.inc"
 #include "bctimer.h"
 #include "audiodevice.inc"
@@ -41,7 +40,6 @@ class RenderEngine;
 #include "transportcommand.h"
 #include "videodevice.inc"
 #include "videorender.inc"
-#include "vrender.inc"
 
 class RenderEngine : public Thread
 {
@@ -111,16 +109,8 @@ public:
 	int done;
 	AudioDevice *audio;
 	VideoDevice *video;
-#ifdef NEW_ARENDERER
 	AudioRender *arender;
-#else
-	ARender *arender;
-#endif
-#ifdef NEW_RENDERER
 	VideoRender *vrender;
-#else
-	VRender *vrender;
-#endif
 	int do_audio;
 	int do_video;
 	float actual_frame_rate;

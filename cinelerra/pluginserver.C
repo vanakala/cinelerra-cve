@@ -402,9 +402,6 @@ void PluginServer::process_buffer(VFrame **frame,
 	{
 		vclient->input[i] = frame[i];
 		vclient->output[i] = frame[i];
-#ifndef NEW_RENDERER
-		frame[i]->set_layer(i);
-#endif
 	}
 	if(plugin)
 	{
@@ -588,67 +585,6 @@ void PluginServer::stop_loop()
 	if(plugin_open)
 		client->plugin_stop_loop();
 }
-
-#ifndef NEW_RENDERER
-void PluginServer::get_vframe(VFrame *buffer,
-	int use_opengl)
-{
-	VFrame *frame;
-// Data source depends on whether we're part of a virtual console or a
-// plugin array.
-//     VirtualNode
-//     Module
-// If we're a VirtualNode, read_data in the virtual plugin node handles
-//     backward propogation and produces the data.
-// If we're a Module, render in the module produces the data.
-	if(!multichannel) buffer->set_layer(0);
-
-	int channel = buffer->get_layer();
-
-	if(nodes && nodes->total > channel)
-	{
-		// FIXIT: get rid of frame copy here
-		frame = ((VirtualVNode*)nodes->values[channel])->get_output_temp();
-		frame->copy_pts(buffer);
-		frame = ((VirtualVNode*)nodes->values[channel])->read_data();
-		buffer->copy_from(frame, 1);
-	}
-	else
-	if(modules && modules->total > channel)
-	{
-		((VModule*)modules->values[channel])->render(buffer);
-	}
-	else
-	{
-		errorbox("PluginServer::get_frame no object available for channel=%d",
-			channel);
-	}
-}
-#endif
-
-#ifndef NEW_ARENDERER
-void PluginServer::get_aframe(AFrame *aframe)
-{
-	if(!multichannel)
-		aframe->channel = 0;
-	if(nodes && nodes->total > aframe->channel)
-	{
-		((VirtualANode*)nodes->values[aframe->channel])->read_data(aframe);
-		return;
-	}
-	if(modules && modules->total > aframe->channel)
-	{
-		((AModule*)modules->values[aframe->channel])->render(aframe);
-		return;
-	}
-	aframe->clear_buffer();
-	if(aframe->buffer && aframe->source_length)
-	{
-		aframe->length = aframe->source_length;
-		aframe->duration = round((ptstime)aframe->length / aframe->samplerate);
-	}
-}
-#endif
 
 void PluginServer::raise_window()
 {

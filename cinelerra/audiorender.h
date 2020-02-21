@@ -27,6 +27,7 @@
 #include "arraylist.h"
 #include "cinelerra.h"
 #include "edl.inc"
+#include "edit.inc"
 #include "file.inc"
 #include "levelhist.h"
 #include "renderbase.h"

@@ -21,6 +21,7 @@
 
 #include "aframe.h"
 #include "asset.h"
+#include "audiorender.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
@@ -45,16 +46,7 @@
 #include "transportcommand.h"
 #include "vframe.h"
 #include "videodevice.h"
-#ifdef NEW_ARENDERER
-#include "audiorender.h"
-#else
-#include "arender.h"
-#endif
-#ifdef NEW_RENDERER
 #include "videorender.h"
-#else
-#include "vrender.h"
-#endif
 
 
 RenderPackage::RenderPackage()

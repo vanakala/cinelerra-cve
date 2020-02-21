@@ -22,10 +22,6 @@
 #ifndef RENDERENGINE_INC
 #define RENDERENGINE_INC
 
-
 class RenderEngine;
-
-//#define NEW_RENDERER
-//#define NEW_ARENDERER
 
 #endif

@@ -69,9 +69,7 @@ public:
 	void stop_tracking(ptstime position = -1);
 // The playback cursor calls this to calculate the current tracking position
 	ptstime get_tracking_position();
-#ifdef NEW_RENDERER
 	void set_tracking_position(ptstime pts);
-#endif
 	void send_command(int command, EDL *new_edl = 0, int options = 0);
 
 	void run();

@@ -19,9 +19,9 @@
  * 
  */
 
-#include "amodule.h"
 #include "asset.h"
 #include "audiodevice.h"
+#include "audiorender.h"
 #include "bcsignals.h"
 #include "condition.h"
 #include "edl.h"
@@ -35,16 +35,7 @@
 #include "renderengine.h"
 #include "transportcommand.h"
 #include "videodevice.h"
-#ifdef NEW_ARENDERER
-#include "audiorender.h"
-#else
-#include "arender.h"
-#endif
-#ifdef NEW_RENDERER
 #include "videorender.h"
-#else
-#include "vrender.h"
-#endif
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
@@ -81,12 +72,8 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 RenderEngine::~RenderEngine()
 {
 	close_output();
-	if(arender) delete arender;
-#ifdef NEW_RENDERER
-	if(vrender) delete vrender;
-#else
+	delete arender;
 	delete vrender;
-#endif
 	if(audio) delete audio;
 	if(video) delete video;
 	delete input_lock;
@@ -169,22 +156,10 @@ void RenderEngine::get_duty()
 void RenderEngine::create_render_threads()
 {
 	if(do_video && !vrender)
-	{
-#ifdef NEW_RENDERER
 		vrender = new VideoRender(this, edl);
-#else
-		vrender = new VRender(this);
-#endif
-	}
 
 	if(do_audio && !arender)
-	{
-#ifdef NEW_ARENDERER
 		arender = new AudioRender(this, edl);
-#else
-		arender = new ARender(this);
-#endif
-	}
 }
 
 int RenderEngine::brender_available(ptstime position)
@@ -385,7 +360,6 @@ void RenderEngine::stop_tracking(ptstime position, int type)
 
 void RenderEngine::set_tracking_position(ptstime pts, int type)
 {
-#if defined(NEW_RENDERER) || defined(NEW_ARENDERER)
 	if(type == TRACK_AUDIO)
 	{
 		if(do_video)
@@ -393,7 +367,6 @@ void RenderEngine::set_tracking_position(ptstime pts, int type)
 	}
 	if(playback_engine)
 		playback_engine->set_tracking_position(pts);
-#endif
 }
 
 void RenderEngine::close_output()
@@ -408,13 +381,7 @@ void RenderEngine::close_output()
 int RenderEngine::get_output_levels(double *levels, ptstime pts)
 {
 	if(do_audio)
-	{
-#ifdef NEW_ARENDERER
 		return arender->get_output_levels(levels, pts);
-#else
-		return arender->output_levels->get_levels(levels, pts);
-#endif
-	}
 	return 0;
 }
 
@@ -423,15 +390,7 @@ int RenderEngine::get_module_levels(double *levels, ptstime pts)
 	int i;
 
 	if(do_audio)
-	{
-#ifdef NEW_ARENDERER
 		return arender->get_track_levels(levels, pts);
-#else
-		for(i = 0; i < arender->total_modules; i++)
-			((AModule*)arender->modules[i])->module_levels->get_levels(&levels[i], pts);
-		return i;
-#endif
-	}
 	return 0;
 }
 

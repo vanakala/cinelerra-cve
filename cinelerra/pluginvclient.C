@@ -143,15 +143,11 @@ VFrame* PluginVClient::get_output(int channel)
 
 void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
 {
-#ifdef NEW_RENDERER
 	if(renderer)
 	{
 		Track *current = renderer->get_track_number(buffer->get_layer());
 		current->renderer->get_vframe(buffer);
 	}
-#else
-	server->get_vframe(buffer, use_opengl);
-#endif
 }
 
 double PluginVClient::get_project_framerate()

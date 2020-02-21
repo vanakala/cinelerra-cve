@@ -36,7 +36,6 @@
 #include "mwindow.inc"
 #include "packagedispatcher.inc"
 #include "packagerenderer.h"
-#include "playabletracks.inc"
 #include "preferences.inc"
 #include "render.inc"
 #include "track.inc"
@@ -158,7 +157,6 @@ public:
 	VFrame *compressed_output;
 	MainProgressBar *progress;
 	RenderProgress *render_progress;
-	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
 	int strategy;

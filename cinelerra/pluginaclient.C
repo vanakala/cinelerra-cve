@@ -81,7 +81,6 @@ int PluginAClient::plugin_process_loop(AFrame **aframes)
 
 void PluginAClient::get_frame(AFrame *frame)
 {
-#ifdef NEW_ARENDERER
 	if(renderer)
 	{
 		Track *current = renderer->get_track_number(frame->get_track());
@@ -89,9 +88,6 @@ void PluginAClient::get_frame(AFrame *frame)
 	}
 	else
 		frame->clear_frame(frame->pts, frame->source_duration);
-#else
-	server->get_aframe(frame);
-#endif
 }
 
 int PluginAClient::get_project_samplerate()

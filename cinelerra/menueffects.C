@@ -63,12 +63,8 @@ MenuEffects::MenuEffects()
 
 int MenuEffects::handle_event()
 {
-#if defined(NEW_RENDERER) || !defined(NEW_ARENDERER)
 	thread->set_title(0);
 	thread->start();
-#else
-	errorbox("Not ready");
-#endif
 	return 1;
 }
 
