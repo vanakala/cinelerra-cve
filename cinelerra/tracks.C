@@ -160,6 +160,7 @@ void Tracks::copy_from(Tracks *tracks)
 		new_track = add_track(current->data_type, 0, 0);
 		new_track->copy_from(current);
 	}
+	init_plugin_pointers_by_ids();
 }
 
 Tracks& Tracks::operator=(Tracks &tracks)
