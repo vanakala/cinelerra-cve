@@ -95,11 +95,6 @@ const char* PluginClient::plugin_title()
 	return N_("Untitled");
 }
 
-Theme* PluginClient::get_theme()
-{
-	return server->get_theme();
-}
-
 double PluginClient::get_framerate()
 {
 	return get_project_framerate();

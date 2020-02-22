@@ -67,8 +67,6 @@ public:
 	virtual const char* plugin_title();
 	virtual VFrame* new_picon() { return 0; };
 	virtual Theme* new_theme() { return 0; };
-// Get theme being used by Cinelerra currently.  Used by all plugins.
-	Theme* get_theme();
 
 // Give the framerate of the output for a non realtime plugin.
 // For realtime plugins give the requested framerate.

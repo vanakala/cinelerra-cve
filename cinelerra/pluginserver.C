@@ -641,13 +641,6 @@ Theme* PluginServer::new_theme()
 		return 0;
 }
 
-Theme* PluginServer::get_theme()
-{
-	if(mwindow_global)
-		return mwindow_global->theme;
-	return 0;
-}
-
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {

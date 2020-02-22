@@ -95,8 +95,6 @@ public:
 	KeyFrame* get_keyframe();
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
-// Get theme being used by Cinelerra currently.  Used by all plugins.
-	Theme* get_theme();
 
 // =============================== for realtime plugins
 // save configuration of plugin
