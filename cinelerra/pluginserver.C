@@ -412,7 +412,7 @@ void PluginServer::process_buffer(AFrame **buffer,
 	AFrame *aframe = buffer[0];
 
 	if(aframe->samplerate <= 0)
-		aframe->samplerate = aclient->project_sample_rate;
+		aframe->samplerate = aclient->get_project_samplerate();
 
 	aclient->source_pts = aframe->pts;
 	aclient->total_len_pts = total_len;

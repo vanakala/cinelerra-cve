@@ -154,7 +154,7 @@ void PitchFFT::signal_process_oversample(int reset)
 // expected phase difference between windows
 	double expected_phase_diff = 2.0 * M_PI / oversample; 
 // frequency per bin
-	double freq_per_bin = (double)plugin->PluginAClient::project_sample_rate / window_size;
+	double freq_per_bin = (double)PluginAClient::get_project_samplerate() / window_size;
 
 	for (int i = 0; i < window_size/2; i++) 
 	{

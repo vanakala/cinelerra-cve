@@ -33,28 +33,11 @@
 PluginAClient::PluginAClient(PluginServer *server)
  : PluginClient(server)
 {
-	if(edlsession)
-	{
-		project_sample_rate = edlsession->sample_rate;
-	}
-	else
-	{
-		project_sample_rate = 1;
-	}
-}
-
-PluginAClient::~PluginAClient()
-{
 }
 
 int PluginAClient::is_audio()
 {
 	return 1;
-}
-
-void PluginAClient::init_realtime_parameters()
-{
-	project_sample_rate = edlsession->sample_rate;
 }
 
 void PluginAClient::process_frame(AFrame **aframe)
@@ -92,5 +75,5 @@ void PluginAClient::get_frame(AFrame *frame)
 
 int PluginAClient::get_project_samplerate()
 {
-	return project_sample_rate;
+	return edlsession->sample_rate;
 }

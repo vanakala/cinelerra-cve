@@ -29,9 +29,7 @@ class PluginAClient : public PluginClient
 {
 public:
 	PluginAClient(PluginServer *server);
-	virtual ~PluginAClient();
-
-	void init_realtime_parameters();
+	virtual ~PluginAClient() {};
 
 	int is_audio();
 
@@ -51,11 +49,7 @@ public:
 // Called by plugin to read audio from previous entity
 	void get_frame(AFrame *frame);
 
-// Get the sample rate of the EDL
-	int get_project_samplerate();
-
-// sample rate of EDL.
-	int project_sample_rate;
+	static int get_project_samplerate();
 };
 
 #endif

@@ -179,7 +179,7 @@ void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
 		rms_accum += value * value;
 	}
 
-	if(accum_size > config.duration * PluginAClient::project_sample_rate)
+	if(accum_size > config.duration * get_project_samplerate())
 	{
 		rms_accum = sqrt(rms_accum / accum_size);
 		gui_args[0] = max_accum;
