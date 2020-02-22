@@ -45,15 +45,12 @@ SUBDIRS = data
 
 bin_PROGRAMS = cinelerracve
 
-cinelerracve_SOURCES = aattachmentpoint.C \
-		    aautomation.C \
+cinelerracve_SOURCES = aautomation.C \
 		    aboutprefs.C \
 		    adeviceprefs.C \
 		    aframe.C \
 		    affine.C \
-		    amodule.C \
 		    apatchgui.C \
-		    arender.C \
 		    asset.C \
 		    assetedit.C \
 		    assetlist.C \
@@ -61,7 +58,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    atmpframecache.C \
 		    atrack.C \
 		    atrackrender.C \
-		    attachmentpoint.C \
 		    audioalsa.C \
 		    audiodevice.C \
 		    audioesound.C \
@@ -85,7 +81,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    canvastools.C \
 		    clipedit.C \
 		    cliplist.C \
-		    commonrender.C \
 		    colorpicker.C \
 		    confirmsave.C \
 		    cpanel.C \
@@ -167,7 +162,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    menuveffects.C \
 		    meterpanel.C \
 		    miscprefs.C \
-		    module.C \
 		    mtimebar.C \
 		    mwindow.C \
 		    mwindowedit.C \
@@ -187,7 +181,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    performanceprefs.C \
 		    pipe.C \
 		    pipeconfig.C \
-		    playabletracks.C \
 		    playbackconfig.C \
 		    playbackengine.C \
 		    playbackprefs.C \
@@ -241,7 +234,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    transitionpopup.C \
 		    transportcommand.C \
 		    undostackitem.C \
-		    vattachmentpoint.C \
 		    vautomation.C \
 		    vdevicebase.C \
 		    vdeviceprefs.C \
@@ -249,16 +241,8 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    videodevice.C \
 		    videorender.C \
 		    viewmenu.C \
-		    virtualaconsole.C \
-		    virtualanode.C \
-		    virtualconsole.C \
-		    virtualnode.C \
-		    virtualvconsole.C \
-		    virtualvnode.C \
-		    vmodule.C \
 		    vpatchgui.C \
 		    vplayback.C \
-		    vrender.C \
 		    vtimebar.C \
 		    vtrack.C \
 		    vtracking.C \
@@ -286,15 +270,12 @@ AM_CXXFLAGS = \
 
 AM_LDFLAGS = -export-dynamic
 
-noinst_HEADERS = aattachmentpoint.h \
-		 aautomation.h \
+noinst_HEADERS = aautomation.h \
 		 aboutprefs.h \
 		 adeviceprefs.h \
 		 aframe.h \
 		 affine.h \
-		 amodule.h \
 		 apatchgui.h \
-		 arender.h \
 		 asset.h \
 		 assetlist.h \
 		 assetedit.h \
@@ -302,7 +283,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 atmpframecache.h \
 		 atrack.h \
 		 atrackrender.h \
-		 attachmentpoint.h \
 		 audioalsa.h \
 		 audiodevice.h \
 		 audioesound.h \
@@ -327,7 +307,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 clipedit.h \
 		 cliplist.h \
 		 colorpicker.h \
-		 commonrender.h \
 		 confirmsave.h \
 		 cpanel.h \
 		 cplayback.h \
@@ -409,7 +388,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 menuveffects.h \
 		 meterpanel.h \
 		 miscprefs.h \
-		 module.h \
 		 mtimebar.h \
 		 mwindowgui.h \
 		 mwindow.h \
@@ -428,7 +406,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 performanceprefs.h \
 		 pipe.h \
 		 pipeconfig.h \
-		 playabletracks.h \
 		 playbackconfig.h \
 		 playbackengine.h \
 		 playbackprefs.h \
@@ -482,7 +459,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 transitionpopup.h \
 		 transportcommand.h \
 		 undostackitem.h \
-		 vattachmentpoint.h \
 		 vautomation.h \
 		 vdevicebase.h \
 		 vdeviceprefs.h \
@@ -490,16 +466,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 videodevice.h \
 		 videorender.h \
 		 viewmenu.h \
-		 virtualaconsole.h \
-		 virtualanode.h \
-		 virtualconsole.h \
-		 virtualnode.h \
-		 virtualvconsole.h \
-		 virtualvnode.h \
-		 vmodule.h \
 		 vpatchgui.h \
 		 vplayback.h \
-		 vrender.h \
 		 vtimebar.h \
 		 vtrack.h \
 		 vtracking.h \

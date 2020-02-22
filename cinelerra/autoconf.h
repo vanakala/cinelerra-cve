@@ -25,7 +25,6 @@
 #include "automation.h"
 #include "bchash.inc"
 #include "filexml.inc"
-#include "module.inc"
 
 // Store what automation is visible.
 

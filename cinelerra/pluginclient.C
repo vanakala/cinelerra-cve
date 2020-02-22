@@ -49,7 +49,8 @@ PluginClient::PluginClient(PluginServer *server)
 
 PluginClient::~PluginClient()
 {
-	server->clear_msgs();
+	if(mwindow_global)
+		mwindow_global->clear_msgs(server->plugin);
 }
 
 // For realtime plugins initialize buffers
@@ -256,7 +257,8 @@ void PluginClient::get_projector(double *x, double *y, double *z, ptstime postim
 
 int PluginClient::gui_open()
 {
-	return server->gui_open();
+	if(mwindow_global)
+		mwindow_global->plugin_gui_open(server->plugin);
 }
 
 void PluginClient::plugin_render_gui(void *data)
@@ -266,7 +268,8 @@ void PluginClient::plugin_render_gui(void *data)
 
 void PluginClient::send_render_gui(void *data)
 {
-	server->send_render_gui(data);
+	if(mwindow_global)
+		mwindow_global->render_plugin_gui(data, server->plugin);
 }
 
 void PluginClient::get_gui_data()

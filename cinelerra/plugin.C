@@ -33,7 +33,6 @@
 #include "preferences.inc"
 #include "track.h"
 #include "tracks.h"
-#include "virtualnode.h"
 #include "vframe.h"
 
 

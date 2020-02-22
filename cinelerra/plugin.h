@@ -28,12 +28,10 @@
 #include "guidelines.h"
 #include "keyframe.inc"
 #include "keyframes.inc"
-#include "module.inc"
 #include "plugin.inc"
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
 #include "track.inc"
-#include "virtualnode.inc"
 #include "vframe.inc"
 
 class PluginOnToggle;

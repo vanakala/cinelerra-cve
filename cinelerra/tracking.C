@@ -19,7 +19,6 @@
  * 
  */
 
-#include "arender.h"
 #include "bcsignals.h"
 #include "condition.h"
 #include "cplayback.h"

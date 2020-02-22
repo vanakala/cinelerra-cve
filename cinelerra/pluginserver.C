@@ -22,8 +22,6 @@
 #include "pluginaclientlad.h"
 
 #include "aframe.h"
-#include "amodule.h"
-#include "attachmentpoint.h"
 #include "autoconf.h"
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -50,9 +48,6 @@
 #include "track.h"
 #include "vframe.h"
 #include "videodevice.h"
-#include "virtualanode.h"
-#include "virtualvnode.h"
-#include "vmodule.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -78,7 +73,6 @@ PluginServer::PluginServer(PluginServer &that)
 		strcpy(title, that.title);
 	}
 
-	attachment = that.attachment;
 	realtime = that.realtime;
 	multichannel = that.multichannel;
 	synthesis = that.synthesis;
@@ -103,8 +97,6 @@ PluginServer::~PluginServer()
 	close_plugin();
 	if(path) delete [] path;
 	if(title) delete [] title;
-	delete modules;
-	delete nodes;
 	if(picon) delete picon;
 }
 
@@ -129,9 +121,6 @@ int PluginServer::reset_parameters()
 	client = 0;
 	use_opengl = 0;
 	vdevice = 0;
-	attachmentpoint = 0;
-	modules = 0;
-	nodes = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
 	ladspa_index = -1;
@@ -150,11 +139,6 @@ int PluginServer::cleanup_plugin()
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
-}
-
-void PluginServer::set_attachmentpoint(AttachmentPoint *attachmentpoint)
-{
-	this->attachmentpoint = attachmentpoint;
 }
 
 void PluginServer::set_keyframe(KeyFrame *keyframe)
@@ -456,21 +440,10 @@ void PluginServer::process_buffer(AFrame **buffer,
 	}
 }
 
-void PluginServer::send_render_gui(void *data)
-{
-	if(attachmentpoint) attachmentpoint->render_gui(data);
-}
-
 void PluginServer::get_gui_data()
 {
 	if(mwindow_global)
 		mwindow_global->get_gui_data(this);
-}
-
-void PluginServer::clear_msgs()
-{
-	if(attachmentpoint)
-		attachmentpoint->clear_msgs();
 }
 
 void PluginServer::render_gui(void *data)
@@ -521,27 +494,6 @@ void PluginServer::set_interactive()
 {
 	if(plugin_open)
 		client->set_interactive();
-}
-
-void PluginServer::append_module(Module *module)
-{
-	if(!modules)
-		modules = new ArrayList<Module*>;
-
-	modules->append(module);
-}
-
-void PluginServer::append_node(VirtualNode *node)
-{
-	if(!nodes)
-		nodes = new ArrayList<VirtualNode*>;
-	nodes->append(node);
-}
-
-void PluginServer::reset_nodes()
-{
-	if(nodes)
-		nodes->remove_all();
 }
 
 int PluginServer::process_loop(VFrame **buffers)
@@ -626,12 +578,6 @@ void PluginServer::update_title()
 {
 	if(!plugin_open) return;
 	client->update_display_title();
-}
-
-int PluginServer::gui_open()
-{
-	if(attachmentpoint) return attachmentpoint->gui_open();
-	return 0;
 }
 
 void PluginServer::set_use_opengl(int value, VideoDevice *vdevice)

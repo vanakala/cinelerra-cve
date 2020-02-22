@@ -29,7 +29,6 @@
 #include "edl.inc"
 #include "file.inc"
 #include "mwindow.inc"
-#include "playabletracks.inc"
 #include "playbackconfig.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
@@ -117,7 +116,6 @@ public:
 	CICache *video_cache;
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
-	PlayableTracks *playable_tracks;
 	RenderEngine *render_engine;
 	RenderPackage *package;
 	TransportCommand *command;

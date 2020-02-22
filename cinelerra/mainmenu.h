@@ -46,7 +46,6 @@ class Undo;
 #include "mwindowgui.inc"
 #include "menuaeffects.inc"
 #include "menuveffects.inc"
-#include "module.inc"
 #include "new.inc"
 #include "plugindialog.inc"
 #include "quit.inc"

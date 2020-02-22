@@ -29,7 +29,6 @@
 #include "renderengine.h"
 #include "mainclock.h"
 #include "vplayback.h"
-#include "vrender.h"
 #include "vtimebar.h"
 #include "vtracking.h"
 #include "vwindow.h"

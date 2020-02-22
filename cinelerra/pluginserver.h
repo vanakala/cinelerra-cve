@@ -26,14 +26,12 @@
 
 #include "aframe.inc"
 #include "arraylist.h"
-#include "attachmentpoint.inc"
 #include "datatype.h"
 #include "edl.inc"
 #include "guidelines.inc"
 #include "keyframe.inc"
 #include "mainprogress.inc"
 #include "menueffects.inc"
-#include "module.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
 #include "pluginclient.inc"
@@ -44,7 +42,6 @@
 #include "trackrender.inc"
 #include "vframe.inc"
 #include "videodevice.inc"
-#include "virtualnode.inc"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -131,11 +128,6 @@ public:
 // Plugin must call this before performing OpenGL operations.
 	int get_use_opengl();
 
-// Called from plugin client
-// Returns 1 if a GUI is open so OpenGL routines can determine if
-// they can run.
-	int gui_open();
-
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
@@ -165,12 +157,8 @@ public:
 	void process_buffer(AFrame **buffer,
 		ptstime total_len);
 
-// Called by rendering client to cause the GUI to display something with the data.
-	void send_render_gui(void *data);
 // Called by client gui when it is ready to get data
 	void get_gui_data();
-// Clear messages belonging to this plugin
-	void clear_msgs();
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 
@@ -190,22 +178,12 @@ public:
 	double get_project_framerate();         // get framerate of project data before processing
 // get project width and height
 	void get_project_dimensions(int *width, int *height);
-// Used in VirtualConsole
-// Set pointer to AttachmentPoint to render GUI.
-	void set_attachmentpoint(AttachmentPoint *attachmentpoint);
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	void set_interactive();   // make this the master plugin for progress bars
 	MainProgressBar* start_progress(char *string, ptstime length);
-
-// add track to the list of affected tracks for a non realtime plugin
-	void append_module(Module *module);
-// add node for realtime plugin
-	void append_node(VirtualNode *node);
-// reset node table after virtual console reconfiguration
-	void reset_nodes();
 
 // Plugin configuration directory
 	const char *plugin_conf_dir();
@@ -240,16 +218,9 @@ public:
 	char *args[4];
 	int total_args;
 
-// Pointers to tracks affected by this plugin during a non realtime operation.
-// Allows read functions to read data.
-	ArrayList<Module*> *modules;
 // Used by realtime read functions to get data.  Corresponds to the buffer table in the
-// attachment point.
-	ArrayList<VirtualNode*> *nodes;
-	AttachmentPoint *attachmentpoint;
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
-	AttachmentPoint *attachment;
 // Storage of keyframes and GUI status
 	Plugin *plugin;
 

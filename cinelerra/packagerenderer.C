@@ -37,7 +37,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "packagerenderer.h"
-#include "playabletracks.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "render.h"
@@ -221,11 +220,6 @@ void PackageRenderer::create_engine()
 				0);
 		}
 	}
-
-	playable_tracks = new PlayableTracks(render_engine, 
-		video_pts,
-		TRACK_VIDEO,
-		1);
 }
 
 int PackageRenderer::do_audio()
@@ -380,7 +374,6 @@ int PackageRenderer::do_video()
 void PackageRenderer::stop_engine()
 {
 	delete render_engine;
-	delete playable_tracks;
 }
 
 void PackageRenderer::stop_output()
