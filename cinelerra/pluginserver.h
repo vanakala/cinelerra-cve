@@ -154,8 +154,6 @@ public:
 	void process_buffer(AFrame **buffer,
 		ptstime total_len);
 
-// Called by client gui when it is ready to get data
-	void get_gui_data();
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 

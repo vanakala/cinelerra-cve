@@ -274,5 +274,6 @@ void PluginClient::send_render_gui(void *data)
 
 void PluginClient::get_gui_data()
 {
-	server->get_gui_data();
+	if(mwindow_global)
+		mwindow_global->get_gui_data(server);
 }

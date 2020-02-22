@@ -437,12 +437,6 @@ void PluginServer::process_buffer(AFrame **buffer,
 	}
 }
 
-void PluginServer::get_gui_data()
-{
-	if(mwindow_global)
-		mwindow_global->get_gui_data(this);
-}
-
 void PluginServer::render_gui(void *data)
 {
 	if(client) client->plugin_render_gui(data);
