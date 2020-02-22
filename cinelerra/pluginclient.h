@@ -112,9 +112,8 @@ public:
 // Return keyframe objects.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
-// get current camera and projector position
+// get current camera position
 	void get_camera(double *x, double *y, double *z, ptstime postime);
-	void get_projector(double *x, double *y, double *z, ptstime postime);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.

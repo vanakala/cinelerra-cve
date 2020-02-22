@@ -88,10 +88,8 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 
-// get camera and projector positions
+// get camera and positions
 	void get_camera(double *x, double *y, double *z,
-			ptstime postime);
-	void get_projector(double *x, double *y, double *z,
 			ptstime postime);
 // Get interpolation used by EDL
 	int get_interpolation_type();

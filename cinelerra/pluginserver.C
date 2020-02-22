@@ -631,11 +631,6 @@ void PluginServer::get_camera(double *x, double *y, double *z, ptstime postime)
 	plugin->track->automation->get_camera(x, y, z, postime);
 }
 
-void PluginServer::get_projector(double *x, double *y, double *z, ptstime postime)
-{
-	plugin->track->automation->get_projector(x, y, z, postime);
-}
-
 int PluginServer::get_interpolation_type()
 {
 	return BC_Resources::interpolation_method;

@@ -250,11 +250,6 @@ void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 	server->get_camera(x, y, z, postime);
 }
 
-void PluginClient::get_projector(double *x, double *y, double *z, ptstime postime)
-{
-	server->get_projector(x, y, z, postime);
-}
-
 int PluginClient::gui_open()
 {
 	if(mwindow_global)
