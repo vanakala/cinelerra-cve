@@ -627,6 +627,11 @@ void Plugin::reset_frames()
 	aframes.remove_all_objects();
 }
 
+void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)
+{
+	track->automation->get_camera(x, y, z, postime);
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);

@@ -247,7 +247,7 @@ KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 
 void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 {
-	server->get_camera(x, y, z, postime);
+	server->plugin->get_camera(x, y, z, postime);
 }
 
 int PluginClient::gui_open()

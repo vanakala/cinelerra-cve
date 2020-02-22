@@ -626,11 +626,6 @@ KeyFrame* PluginServer::get_keyframe()
 		return keyframe;
 }
 
-void PluginServer::get_camera(double *x, double *y, double *z, ptstime postime)
-{
-	plugin->track->automation->get_camera(x, y, z, postime);
-}
-
 int PluginServer::get_interpolation_type()
 {
 	return BC_Resources::interpolation_method;

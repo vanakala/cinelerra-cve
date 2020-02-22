@@ -89,7 +89,8 @@ public:
 	void calculate_title(char *string, int use_nudge);
 // Remove all keyframes
 	void clear_keyframes();
-
+// Get camera coordinates at postion
+	void get_camera(double *x, double *y, double *z, ptstime postime);
 // Position, length
 	inline ptstime get_pts() { return pts; };
 	inline ptstime get_length() { return duration; };
