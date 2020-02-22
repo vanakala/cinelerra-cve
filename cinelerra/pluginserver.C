@@ -640,20 +640,6 @@ void PluginServer::save_data(KeyFrame *keyframe)
 	client->save_data(keyframe);
 }
 
-KeyFrame* PluginServer::prev_keyframe_pts(ptstime postime)
-{
-	if(plugin)
-		return plugin->get_prev_keyframe(postime);
-	return keyframe;
-}
-
-KeyFrame* PluginServer::next_keyframe_pts(ptstime postime)
-{
-	if(plugin)
-		return plugin->get_next_keyframe(postime);
-	return keyframe;
-}
-
 KeyFrame* PluginServer::get_keyframe()
 {
 	if(plugin)

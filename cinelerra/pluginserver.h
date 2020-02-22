@@ -88,9 +88,6 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 
-// Get keyframes for configuration.
-	KeyFrame* prev_keyframe_pts(ptstime postime);
-	KeyFrame* next_keyframe_pts(ptstime postime);
 // get camera and projector positions
 	void get_camera(double *x, double *y, double *z,
 			ptstime postime);
