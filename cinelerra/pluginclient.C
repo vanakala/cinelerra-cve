@@ -258,7 +258,8 @@ void PluginClient::get_projector(double *x, double *y, double *z, ptstime postim
 int PluginClient::gui_open()
 {
 	if(mwindow_global)
-		mwindow_global->plugin_gui_open(server->plugin);
+		return mwindow_global->plugin_gui_open(server->plugin);
+	return 0;
 }
 
 void PluginClient::plugin_render_gui(void *data)
