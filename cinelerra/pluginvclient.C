@@ -19,16 +19,16 @@
  * 
  */
 
-#include "edl.h"
 #include "edlsession.h"
 #include "bcresources.h"
 #include "cinelerra.h"
+#include "cwindow.h"
+#include "mwindow.h"
 #include "plugin.h"
-#include "track.h"
-#include "trackrender.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
-#include "renderengine.inc"
+#include "track.h"
+#include "trackrender.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -178,5 +178,11 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 
 GuideFrame *PluginVClient::get_guides()
 {
-	return server->get_plugin_guides();
+	if(!server->plugin->guideframe && mwindow_global)
+	{
+		ptstime start = server->plugin->get_pts();
+		ptstime end = start + server->plugin->get_length();
+		server->plugin->guideframe = mwindow_global->cwindow->new_guideframe(start, end);
+	}
+	return server->plugin->guideframe;
 }

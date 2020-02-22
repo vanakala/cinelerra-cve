@@ -178,9 +178,6 @@ public:
 // Plugin configuration directory
 	const char *plugin_conf_dir();
 
-// Create new GuideFrame
-	GuideFrame *get_plugin_guides();
-
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.
 
