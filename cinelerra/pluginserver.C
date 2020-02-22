@@ -129,13 +129,10 @@ int PluginServer::reset_parameters()
 #endif
 }
 
-
 // Done every time the plugin is opened or closed
 int PluginServer::cleanup_plugin()
 {
 	total_in_buffers = 0;
-	written_samples = 0;
-	written_frames = 0;
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
@@ -456,19 +453,6 @@ MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 	MainProgressBar *result = mwindow_global->mainprogress->start_progress(string, length);
 	return result;
 }
-
-samplenum PluginServer::get_written_samples()
-{
-	if(!plugin_open) return 0;
-	return written_samples;
-}
-
-framenum PluginServer::get_written_frames()
-{
-	if(!plugin_open) return 0;
-	return written_frames;
-}
-
 
 // ======================= Non-realtime plugin
 

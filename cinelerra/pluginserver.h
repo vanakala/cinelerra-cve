@@ -188,8 +188,6 @@ public:
 // Create new GuideFrame
 	GuideFrame *get_plugin_guides();
 
-	samplenum get_written_samples();   // after samples are written, get the number written
-	framenum get_written_frames();   // after frames are written, get the number written
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.
 
@@ -208,8 +206,6 @@ public:
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;
-	samplenum written_samples;
-	framenum written_frames;
 	char *path;           // location of plugin on disk
 	char *data_text;      // pointer to the data that was requested by a save_data command
 	char *args[4];
