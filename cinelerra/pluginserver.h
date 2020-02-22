@@ -175,9 +175,6 @@ public:
 	void set_interactive();   // make this the master plugin for progress bars
 	MainProgressBar* start_progress(char *string, ptstime length);
 
-// Plugin configuration directory
-	const char *plugin_conf_dir();
-
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.
 

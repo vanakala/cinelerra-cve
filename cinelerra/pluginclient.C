@@ -188,7 +188,7 @@ BC_Hash* PluginClient::load_defaults_file(const char *filename)
 	char *p;
 	BC_Hash *defaults;
 
-	strcpy(directory, server->plugin_conf_dir());
+	strcpy(directory, plugin_conf_dir());
 	p = directory + strlen(directory);
 	strcpy(p, filename);
 	defaults = new BC_Hash(directory);
@@ -198,7 +198,9 @@ BC_Hash* PluginClient::load_defaults_file(const char *filename)
 
 const char *PluginClient::plugin_conf_dir()
 {
-	return server->plugin_conf_dir();
+	if(edlsession)
+		return edlsession->plugin_configuration_directory;
+	return BCASTDIR;
 }
 
 void PluginClient::send_configure_change()

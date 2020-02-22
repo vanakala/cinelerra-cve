@@ -657,13 +657,6 @@ void PluginServer::sync_parameters()
 		mwindow_global->draw_canvas_overlays();
 }
 
-const char *PluginServer::plugin_conf_dir()
-{
-	if(edlsession)
-		return edlsession->plugin_configuration_directory;
-	return BCASTDIR;
-}
-
 void PluginServer::dump(int indent)
 {
 	printf("%*sPluginServer '%s' %s\n", indent, "", title, path);
