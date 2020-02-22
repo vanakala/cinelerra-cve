@@ -88,8 +88,6 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 
-// Get interpolation used by EDL
-	int get_interpolation_type();
 // Get or create keyframe for writing, depending on whether auto keyframes
 // is enabled.  Called by PluginClient::send_configure_change
 	KeyFrame* get_keyframe();
@@ -161,9 +159,7 @@ public:
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);
 	int get_samplerate();      // get samplerate produced by plugin
-	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
-	double get_project_framerate();         // get framerate of project data before processing
 // get project width and height
 	void get_project_dimensions(int *width, int *height);
 // Set pointer to a default keyframe when there is no plugin

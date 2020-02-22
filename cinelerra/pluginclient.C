@@ -21,6 +21,7 @@
 
 #include "bcsignals.h"
 #include "bchash.h"
+#include "bcresources.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -95,11 +96,6 @@ const char* PluginClient::plugin_title()
 	return N_("Untitled");
 }
 
-double PluginClient::get_framerate()
-{
-	return get_project_framerate();
-}
-
 void PluginClient::set_interactive()
 {
 	interactive = 1;
@@ -119,7 +115,7 @@ void PluginClient::client_side_close()
 
 double PluginClient::get_project_framerate()
 {
-	return server->get_project_framerate();
+	return edlsession->frame_rate;
 }
 
 void PluginClient::get_project_dimensions(int *width, int *height)
@@ -144,7 +140,7 @@ char* PluginClient::get_path()
 
 int PluginClient::get_interpolation_type()
 {
-	return server->get_interpolation_type();
+	return BC_Resources::interpolation_method;
 }
 
 float PluginClient::get_red()

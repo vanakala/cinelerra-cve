@@ -586,24 +586,9 @@ int PluginServer::get_samplerate()
 	return 0;
 }
 
-double PluginServer::get_framerate()
-{
-	if(!plugin_open) return 0;
-
-	if(video)
-		return client->get_framerate();
-
-	return edlsession->frame_rate;
-}
-
 int PluginServer::get_project_samplerate()
 {
 	return edlsession->sample_rate;
-}
-
-double PluginServer::get_project_framerate()
-{
-	return edlsession->frame_rate;
 }
 
 void PluginServer::get_project_dimensions(int *width, int *height)
@@ -624,11 +609,6 @@ KeyFrame* PluginServer::get_keyframe()
 		return plugin->get_keyframe(master_edl->local_session->get_selectionstart(1));
 	else
 		return keyframe;
-}
-
-int PluginServer::get_interpolation_type()
-{
-	return BC_Resources::interpolation_method;
 }
 
 Theme* PluginServer::new_theme()

@@ -68,10 +68,6 @@ public:
 	virtual VFrame* new_picon() { return 0; };
 	virtual Theme* new_theme() { return 0; };
 
-// Give the framerate of the output for a non realtime plugin.
-// For realtime plugins give the requested framerate.
-	virtual double get_framerate();
-
 // get information from user before non realtime processing
 	virtual int get_parameters() { return 0; };
 
