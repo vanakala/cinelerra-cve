@@ -966,7 +966,6 @@ void MotionMain::clamp_scan(int w,
 
 void MotionMain::draw_vectors()
 {
-	int w, h;
 	int global_x1, global_y1;
 	int global_x2, global_y2;
 	int block_x, block_y;
@@ -986,8 +985,6 @@ void MotionMain::draw_vectors()
 
 	if(!config.draw_vectors)
 		return;
-
-	get_project_dimensions(&w, &h);
 
 	if(config.global)
 	{
