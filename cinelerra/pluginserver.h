@@ -158,8 +158,6 @@ public:
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);
-	int get_samplerate();      // get samplerate produced by plugin
-	int get_project_samplerate();            // get samplerate of project data before processing
 // get project width and height
 	void get_project_dimensions(int *width, int *height);
 // Set pointer to a default keyframe when there is no plugin

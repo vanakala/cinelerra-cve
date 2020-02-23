@@ -579,18 +579,6 @@ void PluginServer::run_opengl(PluginClient *plugin_client)
 
 // ============================= queries
 
-int PluginServer::get_samplerate()
-{
-	if(plugin_open)
-		return get_project_samplerate();
-	return 0;
-}
-
-int PluginServer::get_project_samplerate()
-{
-	return edlsession->sample_rate;
-}
-
 void PluginServer::get_project_dimensions(int *width, int *height)
 {
 	*width = edlsession->output_w;
