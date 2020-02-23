@@ -579,12 +579,6 @@ void PluginServer::run_opengl(PluginClient *plugin_client)
 
 // ============================= queries
 
-void PluginServer::get_project_dimensions(int *width, int *height)
-{
-	*width = edlsession->output_w;
-	*height = edlsession->output_h;
-}
-
 void PluginServer::save_data(KeyFrame *keyframe)
 {
 	if(!plugin_open) return;

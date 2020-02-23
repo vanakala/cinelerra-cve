@@ -158,8 +158,6 @@ public:
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);
-// get project width and height
-	void get_project_dimensions(int *width, int *height);
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window

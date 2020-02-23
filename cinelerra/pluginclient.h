@@ -150,8 +150,6 @@ public:
 
 // get framerate of EDL
 	double get_project_framerate();
-// get project width and height
-	void get_project_dimensions(int *width, int *height);
 // Total number of processors - 1
 	int get_project_smp();
 
