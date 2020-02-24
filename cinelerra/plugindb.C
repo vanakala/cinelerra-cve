@@ -85,9 +85,9 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 // Try to query the plugin
 				fs->complete_path(path);
 				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, 0, 0);
+				PluginClient *client = new_plugin->open_plugin(0, 0, 1);
 
-				if(!result)
+				if(client)
 				{
 					append(new_plugin);
 					new_plugin->close_plugin();
@@ -96,7 +96,6 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 						splash_window->operation->update(_(new_plugin->title));
 				}
 				else
-				if(result == PLUGINSERVER_IS_LAD)
 				{
 					delete new_plugin;
 // Open LAD subplugins
@@ -104,10 +103,10 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 					do
 					{
 						new_plugin = new PluginServer(path);
-						result = new_plugin->open_plugin(1,
-							0, 0, id);
+						client = new_plugin->open_plugin(0, 0,
+							1, id);
 						id++;
-						if(!result)
+						if(client)
 						{
 							append(new_plugin);
 							new_plugin->close_plugin();
@@ -115,12 +114,9 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 							if(splash_window)
 								splash_window->operation->update(_(new_plugin->title));
 						}
-					}while(!result);
-				}
-				else
-				{
-// Plugin failed to open
-					delete new_plugin;
+						else
+							delete new_plugin;
+					}while(client);
 				}
 			}
 			if(splash_window)

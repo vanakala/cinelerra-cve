@@ -69,11 +69,8 @@ public:
 
 // open a plugin and wait for commands
 // Get information for plugindb if master.
-#define PLUGINSERVER_IS_LAD 2
-#define PLUGINSERVER_NOT_RECOGNIZED 1
-#define PLUGINSERVER_OK 0
-	int open_plugin(int master, Plugin *plugin,
-		TrackRender *renderer, int lad_index = -1);
+	PluginClient *open_plugin(Plugin *plugin,
+		TrackRender *renderer, int master = 0, int lad_index = -1);
 // close the plugin
 	void close_plugin();
 // Dynamic loading

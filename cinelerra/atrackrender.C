@@ -223,7 +223,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	if(!transition->active_server)
 	{
 		transition->active_server = new PluginServer(*transition->plugin_server);
-		transition->active_server->open_plugin(0, transition, this);
+		transition->active_server->open_plugin(transition, this);
 		transition->active_server->init_realtime(1);
 	}
 
@@ -314,7 +314,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 				if(!plugin->active_server)
 				{
 					plugin->active_server = new PluginServer(*server);
-					plugin->active_server->open_plugin(0, plugin, this);
+					plugin->active_server->open_plugin(plugin, this);
 				}
 				arender->allocate_aframes(plugin);
 
@@ -342,7 +342,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 				if(!plugin->active_server)
 				{
 					plugin->active_server = new PluginServer(*server);
-					plugin->active_server->open_plugin(0, plugin, this);
+					plugin->active_server->open_plugin(plugin, this);
 					plugin->active_server->init_realtime(1);
 				}
 				plugin->active_server->process_buffer(&aframe, plugin->get_length());

@@ -405,7 +405,7 @@ void MWindow::init_theme()
 	theme = 0;
 
 	PluginServer *plugin = plugindb.get_theme(preferences->theme);
-	plugin->open_plugin(0, 0, 0);
+	plugin->open_plugin(0, 0);
 	theme = plugin->new_theme();
 	theme->mwindow = this;
 	plugin->close_plugin();
@@ -416,7 +416,7 @@ void MWindow::init_theme()
 		// Theme load fails, try default
 		strcpy(preferences->theme, DEFAULT_THEME);
 		plugindb.get_theme(preferences->theme);
-		plugin->open_plugin(0, 0, 0);
+		plugin->open_plugin(0, 0);
 		theme = plugin->new_theme();
 		theme->mwindow = this;
 		plugin->close_plugin();
@@ -1131,7 +1131,6 @@ void MWindow::show_plugin(Plugin *plugin)
 	removed_guis->remove_all_objects();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-// Pointer comparison
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
 			plugin_guis->values[i]->raise_window();
@@ -1148,7 +1147,7 @@ void MWindow::show_plugin(Plugin *plugin)
 		{
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
-			gui->open_plugin(0, plugin, 0);
+			gui->open_plugin(plugin, 0);
 			gui->show_gui();
 			plugin->show = 1;
 		}

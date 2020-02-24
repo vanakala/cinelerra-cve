@@ -170,13 +170,11 @@ void PluginServer::generate_display_title(char *string)
 }
 
 // Open plugin for signal processing
-int PluginServer::open_plugin(int master, Plugin *plugin,
-	TrackRender *renderer, int lad_index)
+PluginClient *PluginServer::open_plugin(Plugin *plugin,
+	TrackRender *renderer, int master, int lad_index)
 {
-	int res;
-
 	if(plugin_open)
-		return PLUGINSERVER_OK;
+		return client;
 
 	this->plugin = plugin;
 
@@ -186,8 +184,8 @@ int PluginServer::open_plugin(int master, Plugin *plugin,
 		if(lad_index >= 0)
 			ladspa_index = lad_index;
 #endif
-		if((res = load_plugin()) != PLUGINSERVER_OK)
-			return res;
+		if(load_plugin())
+			return 0;
 	}
 
 #ifdef HAVE_LADSPA
@@ -219,7 +217,7 @@ int PluginServer::open_plugin(int master, Plugin *plugin,
 		dlclose(plugin_fd);
 		plugin_fd = 0;
 		fprintf(stderr, "Old version plugin: %s\n", path);
-		return PLUGINSERVER_NOT_RECOGNIZED;
+		return 0;
 	}
 
 	if(master)
@@ -228,7 +226,7 @@ int PluginServer::open_plugin(int master, Plugin *plugin,
 	}
 
 	plugin_open = 1;
-	return PLUGINSERVER_OK;
+	return client;
 }
 
 void PluginServer::close_plugin()
@@ -244,19 +242,17 @@ void PluginServer::close_plugin()
 int PluginServer::load_plugin()
 {
 	if(plugin_fd)
-		return PLUGINSERVER_OK;
+		return 0;
 
 	if(!(plugin_fd = dlopen(path, RTLD_NOW)))
 	{
 		fprintf(stderr, "open_plugin: %s\n", dlerror());
-		return PLUGINSERVER_NOT_RECOGNIZED;
+		return 1;
 	}
-
 #ifdef HAVE_LADSPA
 	if(!is_lad)
 #endif
 		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
-
 	if(!new_plugin)
 	{
 #ifdef HAVE_LADSPA
@@ -267,7 +263,7 @@ int PluginServer::load_plugin()
 			fprintf(stderr, "Unrecognized plugin: %s\n", path);
 			dlclose(plugin_fd);
 			plugin_fd = 0;
-			return PLUGINSERVER_NOT_RECOGNIZED;
+			return 1;
 		}
 		is_lad = 1;
 
@@ -279,17 +275,17 @@ int PluginServer::load_plugin()
 		{
 			dlclose(plugin_fd);
 			plugin_fd = 0;
-			return PLUGINSERVER_IS_LAD;
+			return 1;
 		}
 #else
 // Not a recognized plugin
 		fprintf(stderr, "Unrecognized plugin %s\n", path);
 		dlclose(plugin_fd);
 		plugin_fd = 0;
-		return PLUGINSERVER_NOT_RECOGNIZED;
+		return 1;
 #endif
 	}
-	return PLUGINSERVER_OK;
+	return 0;
 }
 
 void PluginServer::release_plugin()
