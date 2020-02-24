@@ -34,7 +34,6 @@
 #include "mainerror.h"
 #include "mainprogress.h"
 #include "mainundo.h"
-#include "menueffects.h"
 #include "mwindow.h"
 #include "playbackengine.h"
 #include "plugin.h"
@@ -302,22 +301,11 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::client_side_close()
-{
-// Last command executed in client thread
-	if(plugin)
-		mwindow_global->hide_plugin(plugin, 1);
-	else
-	if(prompt)
-		prompt->set_done(1);
-}
-
 void PluginServer::render_stop()
 {
 	if(client)
 		client->render_stop();
 }
-
 
 void PluginServer::init_realtime(int total_in_buffers)
 {

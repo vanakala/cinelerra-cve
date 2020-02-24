@@ -109,7 +109,6 @@ public:
 // Update GUI with keyframe settings
 	void update_gui();
 	void update_title();
-	void client_side_close();
 // Set to 1 before every process call if the user supports OpenGL buffers.
 // Also provides the driver location.
 	void set_use_opengl(int value, VideoDevice *vdevice);

@@ -308,6 +308,7 @@ void MenuEffectThread::run()
 // Close plugin.
 			active_server->hide_gui();
 			active_server->save_data(&plugin_data);
+			active_server->set_prompt(0);
 			realtime = 1;
 		}
 		else

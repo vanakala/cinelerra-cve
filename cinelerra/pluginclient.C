@@ -29,6 +29,7 @@
 #include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
+#include "menueffects.h"
 #include "plugin.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
@@ -110,7 +111,11 @@ void PluginClient::set_renderer(TrackRender *renderer)
 void PluginClient::client_side_close()
 {
 // Last command executed
-	server->client_side_close();
+	if(server->plugin)
+		mwindow_global->hide_plugin(server->plugin, 1);
+	else
+	if(server->prompt)
+		server->prompt->set_done(1);
 }
 
 double PluginClient::get_project_framerate()
