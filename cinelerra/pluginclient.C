@@ -19,6 +19,7 @@
  * 
  */
 
+#include "autoconf.h"
 #include "bcsignals.h"
 #include "bchash.h"
 #include "bcresources.h"
@@ -197,10 +198,15 @@ const char *PluginClient::plugin_conf_dir()
 void PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();
+
 	save_data(keyframe);
 	if(mwindow_global)
+	{
 		mwindow_global->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
-	server->sync_parameters();
+		mwindow_global->sync_parameters(server->video);
+		if(edlsession->auto_conf->plugins_visible)
+			mwindow_global->draw_canvas_overlays();
+	}
 }
 
 void PluginClient::abort_plugin(const char *fmt, ...)

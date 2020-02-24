@@ -95,9 +95,6 @@ public:
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
-// Update EDL and playback engines to reflect changes
-	void sync_parameters();
-
 // Raise the GUI
 	void raise_window();
 // cause the plugin to show the GUI
