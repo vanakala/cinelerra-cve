@@ -301,12 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::render_stop()
-{
-	if(client)
-		client->render_stop();
-}
-
 void PluginServer::init_realtime(int total_in_buffers)
 {
 	if(!plugin_open) return;

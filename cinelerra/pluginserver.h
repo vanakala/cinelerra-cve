@@ -81,8 +81,6 @@ public:
 	void release_plugin();
 
 	void dump(int indent = 0);
-// Release any objects which are required after playback stops.
-	void render_stop();
 // queries
 	void set_title(const char *string);
 // Generate title for display

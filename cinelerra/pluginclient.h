@@ -95,8 +95,6 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
 	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
 
-// release objects which are required after playback stops
-	virtual void render_stop() {};
 	char* get_gui_string();
 
 // Used by themes
