@@ -134,11 +134,6 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void IVTCMain::render_stop()
-{
-	previous_min = 0x4000000000000000LL;
-}
-
 // Pattern A B BC CD D
 void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {

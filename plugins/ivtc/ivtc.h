@@ -75,7 +75,6 @@ public:
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void render_stop();
 
 	void load_defaults();
 	void save_defaults();
