@@ -24,7 +24,6 @@
 
 #include "arraylist.h"
 #include "audiodevice.inc"
-#include "cache.inc"
 #include "canvas.inc"
 #include "condition.inc"
 #include "datatype.h"
@@ -50,7 +49,6 @@ public:
 	void arm_render_engine();
 	void start_render_engine();
 	void wait_render_engine();
-	void create_cache();
 	void perform_change();
 // Set wait_tracking for events that change the cursor location but
 // be sure to unlock the windows
@@ -74,8 +72,6 @@ public:
 
 	void run();
 
-// Maintain caches through console changes
-	CICache *audio_cache, *video_cache;
 // Maintain playback cursor on GUI
 	int tracking_active;
 // Block returns until tracking loop is finished

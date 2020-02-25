@@ -20,7 +20,6 @@
  */
 
 #include "bcsignals.h"
-#include "cache.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -38,8 +37,6 @@ PlaybackEngine::PlaybackEngine(Canvas *output)
 	is_playing_back = 0;
 	tracking_position = 0;
 	tracking_active = 0;
-	audio_cache = 0;
-	video_cache = 0;
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 	playback_lock = new Condition(0, "PlaybackEngine::playback_lock");
@@ -65,8 +62,6 @@ PlaybackEngine::~PlaybackEngine()
 		if(cmds[i])
 			delete cmds[i];
 	delete_render_engine();
-	delete audio_cache;
-	delete video_cache;
 	delete tracking_done;
 	delete start_lock;
 	delete cmds_lock;
@@ -108,22 +103,8 @@ void PlaybackEngine::wait_render_engine()
 	}
 }
 
-void PlaybackEngine::create_cache()
-{
-	if(audio_cache) delete audio_cache;
-	audio_cache = 0;
-	if(video_cache) delete video_cache;
-	video_cache = 0;
-	if(!audio_cache) 
-		audio_cache = new CICache(FILE_OPEN_AUDIO);
-	if(!video_cache) 
-		video_cache = new CICache(FILE_OPEN_VIDEO);
-}
-
 void PlaybackEngine::perform_change()
 {
-	if(command->change_type == CHANGE_ALL)
-		create_cache();
 	if(command->change_type & CHANGE_EDL)
 		create_render_engine();
 }

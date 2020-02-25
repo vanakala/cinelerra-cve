@@ -1369,14 +1369,6 @@ void MWindow::reset_caches()
 	wave_cache->remove_all();
 	audio_cache->remove_all();
 	video_cache->remove_all();
-	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
-		cwindow->playback_engine->audio_cache->remove_all();
-	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
-		cwindow->playback_engine->video_cache->remove_all();
-	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-		vwindow->playback_engine->audio_cache->remove_all();
-	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-		vwindow->playback_engine->video_cache->remove_all();
 	BC_Resources::tmpframes.delete_unused();
 }
 
@@ -1386,14 +1378,6 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 	wave_cache->remove_asset(asset);
 	audio_cache->delete_entry(asset);
 	video_cache->delete_entry(asset);
-	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
-		cwindow->playback_engine->audio_cache->delete_entry(asset);
-	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
-		cwindow->playback_engine->video_cache->delete_entry(asset);
-	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-		vwindow->playback_engine->audio_cache->delete_entry(asset);
-	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-		vwindow->playback_engine->video_cache->delete_entry(asset);
 }
 
 void MWindow::remove_assets_from_project(int push_undo)
@@ -1662,19 +1646,9 @@ void MWindow::show_program_status()
 		printf(" No edl\n");
 	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
 	mc = audio_cache->get_memory_usage(1);
-	vc = cc = 0;
-	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-		vc = vwindow->playback_engine->audio_cache->get_memory_usage(1);
-	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
-		cc = cwindow->playback_engine->audio_cache->get_memory_usage(1);
-	printf(" Audio cache %zu %zu %zu = %zu\n", mc, vc, cc, mc + vc + cc);
+	printf(" Audio cache %zu\n", mc);
 	mc = video_cache->get_memory_usage(1);
-	vc = cc = 0;
-	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-		vc = vwindow->playback_engine->video_cache->get_memory_usage(1);
-	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
-		vc = cwindow->playback_engine->video_cache->get_memory_usage(1);
-	printf(" Video cache %zu %zu %zu = %zu\n", mc, vc, cc, mc + vc + cc);
+	printf(" Video cache %zu\n", mc);
 	printf(" Frame cache %zu\n", frame_cache->get_memory_usage());
 	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
