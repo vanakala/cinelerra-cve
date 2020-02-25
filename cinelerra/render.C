@@ -25,7 +25,6 @@
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "bctitle.h"
-#include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"
 #include "condition.h"
@@ -530,10 +529,6 @@ int Render::render(int test_overwrite,
 	}
 	packages = new PackageDispatcher;
 
-// Create caches
-	audio_cache = new CICache(FILE_OPEN_AUDIO);
-	video_cache = new CICache(FILE_OPEN_VIDEO);
-
 	default_asset->frame_rate = edlsession->frame_rate;
 	default_asset->sample_rate = edlsession->sample_rate;
 
@@ -691,8 +686,6 @@ int Render::render(int test_overwrite,
 		mwindow_global->restart_brender();
 	if(farm_server) delete farm_server;
 	delete command;
-	delete audio_cache;
-	delete video_cache;
 // Must delete packages after server
 	delete packages;
 	in_progress = 0;

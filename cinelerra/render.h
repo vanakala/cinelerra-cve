@@ -27,7 +27,6 @@
 #include "batchrender.inc"
 #include "bcmenuitem.h"
 #include "browsebutton.h"
-#include "cache.inc"
 #include "condition.inc"
 #include "formattools.inc"
 #include "loadmode.inc"
@@ -153,7 +152,6 @@ public:
 // Background compression must be disabled when direct frame copying and reenabled afterwards
 	int direct_frame_copying;
 
-	CICache *audio_cache, *video_cache;
 	VFrame *compressed_output;
 	MainProgressBar *progress;
 	RenderProgress *render_progress;
