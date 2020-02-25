@@ -56,9 +56,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	audio_playing = 0;
 	edl = 0;
 
-	audio_cache = 0;
-	video_cache = 0;
-
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
 	output_lock = new Condition(1, "RenderEngine::output_lock");
@@ -170,32 +167,6 @@ int RenderEngine::brender_available(ptstime position)
 	}
 	else
 		return 0;
-}
-
-CICache* RenderEngine::get_acache()
-{
-	if(playback_engine)
-		return playback_engine->audio_cache;
-	else
-		return audio_cache;
-}
-
-CICache* RenderEngine::get_vcache()
-{
-	if(playback_engine)
-		return playback_engine->video_cache;
-	else
-		return video_cache;
-}
-
-void RenderEngine::set_acache(CICache *cache)
-{
-	this->audio_cache = cache;
-}
-
-void RenderEngine::set_vcache(CICache *cache)
-{
-	this->video_cache = cache;
 }
 
 void RenderEngine::open_output()

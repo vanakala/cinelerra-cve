@@ -28,7 +28,6 @@ class RenderEngine;
 #include "audiorender.inc"
 #include "bctimer.h"
 #include "audiodevice.inc"
-#include "cache.inc"
 #include "canvas.inc"
 #include "condition.inc"
 #include "mutex.inc"
@@ -58,10 +57,6 @@ public:
 	void set_tracking_position(ptstime pts, int type);
 	int brender_available(ptstime position);
 
-	CICache* get_acache();
-	CICache* get_vcache();
-	void set_acache(CICache *cache);
-	void set_vcache(CICache *cache);
 // Get levels for tracking
 	int get_output_levels(double *levels, ptstime pts);
 	int get_module_levels(double *levels, ptstime pts);
@@ -119,9 +114,6 @@ public:
 
 // Samples in audio buffer to process
 	int fragment_len;
-
-// CICaches for use if no playbackengine exists
-	CICache *audio_cache, *video_cache;
 
 private:
 	void reset_sync_postime(void);
