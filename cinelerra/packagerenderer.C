@@ -23,7 +23,6 @@
 #include "asset.h"
 #include "audiorender.h"
 #include "bcsignals.h"
-#include "cache.h"
 #include "clip.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -81,8 +80,6 @@ void RenderPackage::dump(int indent)
 PackageRenderer::PackageRenderer()
 {
 	command = 0;
-	audio_cache = 0;
-	video_cache = 0;
 	aconfig = 0;
 	vconfig = 0;
 	pkg_error[0] = 0;
@@ -91,8 +88,6 @@ PackageRenderer::PackageRenderer()
 PackageRenderer::~PackageRenderer()
 {
 	delete command;
-	delete audio_cache;
-	delete video_cache;
 }
 
 // PackageRenderer::initialize happens only once for every node when doing rendering session
@@ -122,9 +117,6 @@ int PackageRenderer::initialize(EDL *edl,
 		edlsession->sample_aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
 	default_asset->init_streams();
-
-	audio_cache = new CICache(FILE_OPEN_AUDIO);
-	video_cache = new CICache(FILE_OPEN_VIDEO);
 
 	aconfig = 0;
 	vconfig = 0;
@@ -160,9 +152,6 @@ void PackageRenderer::create_engine()
 	audio_read_length = edlsession->sample_rate / 4;
 
 	render_engine = new RenderEngine(0, 0);
-
-	render_engine->set_acache(audio_cache);
-	render_engine->set_vcache(video_cache);
 
 	aconfig = render_engine->config->aconfig;
 	vconfig = render_engine->config->vconfig;

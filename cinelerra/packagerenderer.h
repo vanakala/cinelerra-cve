@@ -23,7 +23,6 @@
 #define PACKAGERENDERER_H
 
 #include "bcwindowbase.inc"
-#include "cache.inc"
 #include "edit.inc"
 #include "datatype.h"
 #include "edl.inc"
@@ -112,8 +111,6 @@ public:
 	VFrame ***video_output;
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
-	CICache *audio_cache;
-	CICache *video_cache;
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
 	RenderEngine *render_engine;
