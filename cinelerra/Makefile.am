@@ -121,7 +121,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    formatpresets.C \
 		    formattools.C \
 		    framecache.C \
-		    garbage.C \
 		    guidelines.C \
 		    gwindow.C \
 		    gwindowgui.C \
@@ -347,7 +346,6 @@ noinst_HEADERS = aautomation.h \
 		 formatpresets.h \
 		 formattools.h \
 		 framecache.h \
-		 garbage.h \
 		 guidelines.h \
 		 gwindow.h \
 		 gwindowgui.h \

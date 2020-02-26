@@ -29,8 +29,6 @@
 #include "trackcanvas.inc"
 
 
-// Can't use garbage collection for GUI elements because they need to
-// lock the window for deletion.
 class ResourcePixmap : public BC_Pixmap
 {
 public:
