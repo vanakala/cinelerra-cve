@@ -760,14 +760,16 @@ void VFrame::merge_status(VFrame *that)
 
 int VFrame::pts_in_frame_source(ptstime pts, ptstime accuracy)
 {
-	if(pts < source_pts - accuracy || pts > source_pts + duration)
+	pts += accuracy;
+	if(pts < source_pts || pts > source_pts + duration)
 		return 0;
 	return 1;
 }
 
 int VFrame::pts_in_frame(ptstime pts, ptstime accuracy)
 {
-	if(pts < this->pts - accuracy || pts > this->pts + duration)
+	pts += accuracy;
+	if(pts < this->pts || pts > this->pts + duration)
 		return 0;
 	return 1;
 }
