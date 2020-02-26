@@ -40,11 +40,8 @@ CICache::CICache(int open_mode)
 CICache::~CICache()
 {
 	while(last)
-	{
-		CICacheItem *item = last;
-		remove_pointer(item);
-		Garbage::delete_object(item);
-	}
+		remove(last);
+
 	delete check_out_lock;
 	delete total_lock;
 }
@@ -75,7 +72,6 @@ File* CICache::check_out(Asset *asset, int block)
 // Return it
 				current->age = EDL::next_id();
 				current->checked_out = 1;
-				current->GarbageObject::add_user();
 				total_lock->unlock();
 				return current->file;
 			}
@@ -90,15 +86,13 @@ File* CICache::check_out(Asset *asset, int block)
 // opened successfully.
 				new_item->age = EDL::next_id();
 				new_item->checked_out = 1;
-				new_item->GarbageObject::add_user();
 				total_lock->unlock();
 				return new_item->file;
 			}
 // Failed to open
 			else
 			{
-				remove_pointer(new_item);
-				Garbage::delete_object(new_item);
+				remove(new_item);
 				total_lock->unlock();
 				return 0;
 			}
@@ -126,7 +120,6 @@ void CICache::check_in(Asset *asset)
 		if(current->asset == asset)
 		{
 			current->checked_out = 0;
-			current->GarbageObject::remove_user();
 // Pointer no longer valid here
 			break;
 		}
@@ -149,10 +142,7 @@ void CICache::remove_all()
 // Must not be checked out because we need the pointer to check back in.
 // Really need to give the user the CacheItem.
 		if(!current->checked_out)
-		{
-			remove_pointer(current);
-			Garbage::delete_object(current);
-		}
+			remove(current);
 	}
 	total_lock->unlock();
 }
@@ -168,8 +158,7 @@ void CICache::delete_entry(Asset *asset)
 		{
 			if(!current->checked_out)
 			{
-				remove_pointer(current);
-				Garbage::delete_object(current);
+				remove(current);
 				break;
 			}
 		}
@@ -258,8 +247,7 @@ int CICache::delete_oldest()
 // Delete the file if cache already empty and not checked out.
 			if(!oldest->checked_out)
 			{
-				remove_pointer(oldest);
-				Garbage::delete_object(oldest);
+				remove(oldest);
 			}
 		}
 
@@ -288,13 +276,13 @@ void CICache::dump(int indent)
 
 
 CICacheItem::CICacheItem()
-: ListItem<CICacheItem>(), GarbageObject("CICacheItem")
+: ListItem<CICacheItem>()
 {
 }
 
 
 CICacheItem::CICacheItem(CICache *cache, Asset *asset)
- : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
+ : ListItem<CICacheItem>()
 {
 	int result = 0;
 	age = EDL::next_id();

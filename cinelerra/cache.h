@@ -34,7 +34,6 @@
 #include "cache.inc"
 #include "condition.inc"
 #include "file.inc"
-#include "garbage.h"
 #include "linklist.h"
 #include "mutex.inc"
 #include "pluginserver.inc"
@@ -42,7 +41,7 @@
 
 #include <stdint.h>
 
-class CICacheItem : public ListItem<CICacheItem>, public GarbageObject
+class CICacheItem : public ListItem<CICacheItem>
 {
 public:
 	CICacheItem(CICache *cache, Asset *asset);
