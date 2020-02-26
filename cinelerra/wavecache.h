@@ -47,7 +47,7 @@ public:
 	WaveCache();
 
 // Returns the first item on or after the start argument or 0 if none found.
-	WaveCacheItem* get_wave(int asset_id,
+	WaveCacheItem* get_wave(Asset *asset,
 		int channel,
 		samplenum start,
 		samplenum end);

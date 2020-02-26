@@ -32,7 +32,7 @@ WaveCacheItem::WaveCacheItem()
 
 size_t WaveCacheItem::get_size()
 {
-	return sizeof(WaveCacheItem) + (path ? strlen(path) : 0);
+	return sizeof(WaveCacheItem);
 }
 
 
@@ -41,7 +41,7 @@ WaveCache::WaveCache()
 {
 }
 
-WaveCacheItem* WaveCache::get_wave(int asset_id,
+WaveCacheItem* WaveCache::get_wave(Asset *asset,
 	int channel,
 	samplenum start,
 	samplenum end)
@@ -53,7 +53,7 @@ WaveCacheItem* WaveCache::get_wave(int asset_id,
 	result = (WaveCacheItem*)get_item(start);
 	while(result && result->position == start)
 	{
-		if(result->asset_id == asset_id && 
+		if(result->asset == asset &&
 			result->channel == channel &&
 			result->end == end)
 		{
@@ -77,8 +77,7 @@ void WaveCache::put_wave(Asset *asset,
 {
 	lock->lock("WaveCache::put_wave");
 	WaveCacheItem *item = new WaveCacheItem;
-	item->asset_id = asset->id;
-	item->path = strdup(asset->path);
+	item->asset = asset;
 	item->channel = channel;
 	item->position = start;
 	item->end = end;

@@ -234,7 +234,7 @@ void ResourceThread::run()
 
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
-	VFrame *picon_frame = 0;
+	VFrame *picon_frame;
 
 	mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
 	if(!(picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
@@ -242,9 +242,10 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
-		item->asset->id)))
+		item->asset)))
 	{
 		File *source = mwindow->video_cache->check_out(item->asset);
+
 		if(!source)
 			return;
 
@@ -254,9 +255,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		source->get_frame(picon_frame);
 		picon_frame->set_source_pts(item->postime);
 		picon_frame->set_duration(item->duration);
-		mwindow->frame_cache->put_frame(picon_frame, 
-			0,
-			item->asset);
+		mwindow->frame_cache->put_frame(picon_frame, item->asset);
 		mwindow->video_cache->check_in(item->asset);
 	}
 
@@ -308,7 +307,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	double high;
 	double low;
 
-	if((wave_item = mwindow->wave_cache->get_wave(item->asset->id,
+	if((wave_item = mwindow->wave_cache->get_wave(item->asset,
 		item->channel,
 		item->start,
 		item->end)))

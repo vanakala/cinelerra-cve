@@ -39,25 +39,18 @@ class CacheItemBase : public ListItem<CacheItemBase>
 {
 public:
 	CacheItemBase();
-	virtual ~CacheItemBase();
+	virtual ~CacheItemBase() {};
 
 	virtual size_t get_size();
 	virtual void dump(int indent = 0);
 
-// asset_id - supplied by user if the cache is not part of a file.
-// Used for fast accesses.
-	int asset_id;
-// path is needed since the item may need to be deleted based on file.
-// Used for deletion.
-	char *path;
+// Pointer to asset
+	Asset *asset;
+// Position
+	ptstime position;
 
 // Number of last get or put operation involving this object.
 	int age;
-// Starting point of item in asset's native rate.
-	posnum position;
-// Starting time
-	ptstime postime;
-	ptstime duration;
 };
 
 

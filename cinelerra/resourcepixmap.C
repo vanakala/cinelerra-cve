@@ -546,7 +546,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					edlsession->sample_rate) +
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
-			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
+			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset,
 					edit->channel,
 					source_start,
 					source_end);
@@ -590,7 +590,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			x++;
 		}
 	}
-
 	mwindow->audio_cache->check_in(edit->asset);
 }
 
@@ -650,12 +649,12 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		ptstime source_pts = edit->get_source_pts() + picon_src;
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
-		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_pts,
+		if(picon_frame = mwindow->frame_cache->get_frame_ptr(source_pts,
 			edit->channel,
 			BC_RGB888,
 			picon_w,
 			picon_h,
-			edit->asset->id)) != 0)
+			edit->asset))
 		{
 			draw_vframe(picon_frame, 
 				x, 

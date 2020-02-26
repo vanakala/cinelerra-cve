@@ -35,8 +35,7 @@ FrameCacheItem::FrameCacheItem()
  : CacheItemBase()
 {
 	data = 0;
-	postime = 0;
-	duration = 0;
+	asset = 0;
 }
 
 FrameCacheItem::~FrameCacheItem()
@@ -46,17 +45,16 @@ FrameCacheItem::~FrameCacheItem()
 
 size_t FrameCacheItem::get_size()
 {
+	size_t size = sizeof(*this);
 	if(data)
-	{
-		return data->get_data_size() + (path ? strlen(path) : 0);
-	}
-	return 0;
+		size += data->get_data_size();
+	return size;
 }
 
 void FrameCacheItem::dump(int indent)
 {
-	printf("%*sFrameCacheItem %p: layer %d data %p\n", indent, "",
-		this, layer, data);
+	printf("%*sFrameCacheItem %p: data %p\n", indent, "",
+		this, data);
 	CacheItemBase::dump(indent);
 	if(data)
 		data->dump(indent);
@@ -66,30 +64,6 @@ void FrameCacheItem::dump(int indent)
 FrameCache::FrameCache()
  : CacheBase()
 {
-	this->accuracy = 0.004;
-}
-
-// Returns 1 if frame exists in cache and copies it to the frame argument.
-int FrameCache::get_frame(VFrame *frame, 
-	int asset_id)
-{
-	lock->lock("FrameCache::get_frame");
-	FrameCacheItem *result = 0;
-
-	if(frame_exists(frame,
-		&result,
-		asset_id))
-	{
-		if(result->data) 
-		{
-			frame->copy_from(result->data);
-		}
-		result->age = get_age();
-	}
-
-	lock->unlock();
-	if(result) return 1;
-	return 0;
 }
 
 VFrame* FrameCache::get_frame_ptr(ptstime postime,
@@ -97,21 +71,16 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 	int color_model,
 	int w,
 	int h,
-	int asset_id)
+	Asset *asset)
 {
 	lock->lock("FrameCache::get_frame_ptr");
-	FrameCacheItem *result = 0;
+	FrameCacheItem *item;
 
-	if(frame_exists(postime,
-		layer,
-		color_model,
-		w,
-		h,
-		&result,
-		asset_id))
+	if(item = frame_exists(postime, layer, color_model,
+		w, h, asset))
 	{
-		result->age = get_age();
-		return result->data;
+		item->age = get_age();
+		return item->data;
 	}
 
 	lock->unlock();
@@ -119,59 +88,32 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 }
 
 // Puts frame in cache if the frame doesn't already exist.
-void FrameCache::put_frame(VFrame *frame, 
-	int use_copy,
-	Asset *asset)
+VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset)
 {
 	lock->lock("FrameCache::put_frame");
-	FrameCacheItem *item = 0;
+	FrameCacheItem *item;
 
-	if(frame_exists(frame,
-		&item,
-		asset ? asset->id : -1))
+	if(item = frame_exists(frame, asset))
 	{
+		delete frame;
 		item->age = get_age();
-		lock->unlock();
-		return;
+		return item->data;
 	}
 
 	item = new FrameCacheItem;
 
-	if(use_copy)
-	{
-		item->data = new VFrame(*frame);
-	}
-	else
-	{
-		item->data = frame;
-	}
+	item->data = frame;
 
 // Copy metadata
-	item->postime = frame->get_source_pts();
-	item->position = frame->get_frame_number();
-	item->duration = frame->get_duration();
-	item->layer = frame->get_layer();
-
-	if(asset)
-	{
-		item->asset_id = asset->id;
-		item->path = strdup(asset->path);
-	}
-	else
-	{
-		item->asset_id = -1;
-	}
+	item->position = frame->get_source_pts();
+	item->asset = asset;
 	item->age = get_age();
 
 	put_item(item);
-
-	if(use_copy)
-		lock->unlock();
+	lock->unlock();
 }
 
-int FrameCache::frame_exists(VFrame *format,
-	FrameCacheItem **item_return,
-	int asset_id)
+FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset)
 {
 	ptstime postime = format->get_source_pts();
 
@@ -179,42 +121,35 @@ int FrameCache::frame_exists(VFrame *format,
 
 	while(item && item->data->pts_in_frame_source(postime))
 	{
-		if(format->get_layer() == item->layer &&
-			format->equivalent(item->data) &&
-			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
-		{
-			*item_return = item;
-			return 1;
-		}
-		else
-			item = (FrameCacheItem*)item->next;
+		if(format->get_layer() == item->data->get_layer() &&
+				format->equivalent(item->data) &&
+				asset == item->asset)
+			return item;
+
+		item = (FrameCacheItem*)item->next;
 	}
 	return 0;
 }
 
-int FrameCache::frame_exists(ptstime postime,
+FrameCacheItem  *FrameCache::frame_exists(ptstime postime,
 	int layer,
 	int color_model,
 	int w,
 	int h,
-	FrameCacheItem **item_return,
-	int asset_id)
+	Asset *asset)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
 
-	while(item && item->postime <= postime && item->postime + item->duration > postime)
+	while(item && item->data->pts_in_frame_source(postime))
 	{
-		if(layer == item->layer &&
-			color_model == item->data->get_color_model() &&
-			w == item->data->get_w() &&
-			h == item->data->get_h() &&
-			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
-		{
-			*item_return = item;
-			return 1;
-		}
-		else
-			item = (FrameCacheItem*)item->next;
+		if(layer == item->data->get_layer() &&
+				color_model == item->data->get_color_model() &&
+				w == item->data->get_w() &&
+				h == item->data->get_h() &&
+				asset == item->asset)
+			return item;
+
+		item = (FrameCacheItem*)item->next;
 	}
 	return 0;
 }

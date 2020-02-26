@@ -33,25 +33,19 @@ CacheItemBase::CacheItemBase()
  : ListItem<CacheItemBase>()
 {
 	age = 0;
-	asset_id = -1;
-	path = 0;
-}
-
-CacheItemBase::~CacheItemBase()
-{
-	if(path)
-		free(path);
+	asset = 0;
+	position = -1;
 }
 
 size_t CacheItemBase::get_size()
 {
-	return 0;
+	return sizeof(*this);
 }
 
 void CacheItemBase::dump(int indent)
 {
-	printf("%*spos %" PRId64 " pts %.3f duration %.3f size %zd age %d\n", indent, "",
-		position, postime, duration, get_size(), age);
+	printf("%*spts %.3f size %zd age %d asset %p\n", indent, "",
+		position, get_size(), age, asset);
 }
 
 
@@ -96,8 +90,7 @@ void CacheBase::remove_asset(Asset *asset)
 	lock->lock("CacheBase::remove_id");
 	for(current_item = first; current_item; )
 	{
-		if(current_item->path && !strcmp(current_item->path, asset->path) ||
-			current_item->asset_id == asset->id)
+		if(current_item->asset == asset)
 		{
 			CacheItemBase *next = current_item->next;
 			delete current_item;
@@ -143,7 +136,8 @@ int CacheBase::delete_oldest()
 	{
 // Too much data to debug if audio.
 		delete oldest_item;
-		if(current_item == oldest_item) current_item = 0;
+		if(current_item == oldest_item)
+			current_item = 0;
 		lock->unlock();
 		return 0;
 	}
@@ -169,13 +163,19 @@ size_t CacheBase::get_memory_usage()
 void CacheBase::put_item(CacheItemBase *item)
 {
 // Get first position >= item
-	if(!current_item) current_item = first;
+	if(!current_item)
+		current_item = first;
+
 	while(current_item && current_item->position < item->position)
 		current_item = current_item->next;
-	if(!current_item) current_item = last;
+
+	if(!current_item)
+		current_item = last;
+
 	while(current_item && current_item->position >= item->position)
 		current_item = current_item->previous;
-	if(!current_item) 
+
+	if(!current_item)
 		current_item = first;
 	else
 		current_item = current_item->next;
@@ -192,18 +192,21 @@ void CacheBase::put_item(CacheItemBase *item)
 // Get first item from list with matching postime or 0 if none found.
 CacheItemBase* CacheBase::get_item(ptstime postime)
 {
-	if(!current_item) current_item = first;
-	while(current_item && current_item->postime < postime)
-		current_item = current_item->next;
-	if(!current_item) current_item = last;
-	while(current_item && current_item->postime + current_item->duration >= postime)
-		current_item = current_item->previous;
 	if(!current_item)
 		current_item = first;
-	else
-	if(current_item->next)
+
+	while(current_item && current_item->position < postime)
 		current_item = current_item->next;
-	if(!current_item) return 0;
+
+	if(!current_item)
+		current_item = last;
+
+	while(current_item && current_item->position >= postime)
+		current_item = current_item->previous;
+
+	if(!current_item)
+		current_item = first;
+
 	return current_item;
 }
 
