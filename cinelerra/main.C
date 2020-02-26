@@ -30,7 +30,6 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "fileavlibs.h"
-#include "garbage.h"
 #include "hashcache.h"
 #include "language.h"
 #include "loadfile.inc"
@@ -94,7 +93,6 @@ int main(int argc, char *argv[])
 	int nice_value = 20;
 	config_path[0] = 0;
 	deamon_path[0] = 0;
-	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
 	if(!getuid() || !geteuid())
