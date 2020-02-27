@@ -818,11 +818,10 @@ ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
 
 	if(!result)
 	{
-		result = new ResourcePixmap(mwindow, 
-			resource_thread,
-			this, 
-			edit, 
-			pixmap_w, 
+		result = new ResourcePixmap(resource_thread,
+			this,
+			edit,
+			pixmap_w,
 			pixmap_h);
 		resource_pixmaps.append(result);
 	}

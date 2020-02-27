@@ -48,8 +48,7 @@
 #include "wavecache.h"
 
 
-ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
-	ResourceThread *resource_thread,
+ResourcePixmap::ResourcePixmap(ResourceThread *resource_thread,
 	TrackCanvas *canvas, 
 	Edit *edit, 
 	int w, 
@@ -65,7 +64,6 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	visible = 1;
 	zoom_time = 0;
 	aframe = 0;
-	this->mwindow = mwindow;
 	this->resource_thread = resource_thread;
 	this->canvas = canvas;
 	source_pts = edit->get_source_pts();
@@ -105,7 +103,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 	int y = 0;
 	if(edlsession->show_titles)
-		y += mwindow->theme->get_image("title_bg_data")->get_h();
+		y += theme_global->get_image("title_bg_data")->get_h();
 	Track *track = edit->edits->track;
 
 // If index can't be drawn, don't do anything.
@@ -113,7 +111,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	if(indexes_only)
 	{
 		int64_t index_zoom = 0;
-		IndexFile indexfile(mwindow);
+		IndexFile indexfile(mwindow_global);
 		if(!indexfile.open_index(edit->asset))
 		{
 			index_zoom = edit->asset->index_zoom;
@@ -334,7 +332,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Draw in new background
 	if(refresh_w > 0)
-		mwindow->theme->draw_resource_bg(canvas,
+		theme_global->draw_resource_bg(canvas,
 			this, 
 			edit_x,
 			edit_w,
@@ -394,7 +392,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 		w, 
 		total_x,
 		total_w,
-		mwindow->theme->get_image("title_bg_data"),
+		theme_global->get_image("title_bg_data"),
 		this);
 
 	if(total_x > -BC_INFINITY)
@@ -407,8 +405,8 @@ void ResourcePixmap::draw_title(Edit *edit,
 		sprintf(channel, " #%d", edit->channel + 1);
 		strcat(title, channel);
 
-		canvas->set_color(mwindow->theme->title_color);
-		canvas->set_font(mwindow->theme->title_font);
+		canvas->set_color(theme_global->title_color);
+		canvas->set_font(theme_global->title_font);
 
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
@@ -438,7 +436,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 	case INDEX_BUILDING:
 	case INDEX_READY:
 		{
-			IndexFile indexfile(mwindow);
+			IndexFile indexfile(mwindow_global);
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 
@@ -474,7 +472,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		edlsession->sample_rate);
 	int center_pixel = master_edl->local_session->zoom_track / 2;
 	if(edlsession->show_titles)
-		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+		center_pixel += theme_global->get_image("title_bg_data")->get_h();
 
 // Single sample zoom
 	if(round(master_edl->local_session->zoom_time *
@@ -503,7 +501,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		aframe->channel = edit->channel;
 		aframe->set_fill_request(source_start, total_source_samples);
 
-		canvas->set_color(mwindow->theme->audio_color);
+		canvas->set_color(theme_global->audio_color);
 
 		if(!source->get_samples(aframe))
 		{
@@ -533,7 +531,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		int y1;
 		int y2;
 
-		canvas->set_color(mwindow->theme->audio_color);
+		canvas->set_color(theme_global->audio_color);
 // Draw each pixel from the cache
 		while(x < w)
 		{
@@ -599,7 +597,7 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 {
 	int top_pixel = 0;
 	if(edlsession->show_titles)
-		top_pixel = mwindow->theme->get_image("title_bg_data")->get_h();
+		top_pixel = theme_global->get_image("title_bg_data")->get_h();
 	int center_pixel = master_edl->local_session->zoom_track / 2 + top_pixel;
 	int bottom_pixel = top_pixel + master_edl->local_session->zoom_track;
 	int y1 = (int)(center_pixel - 
@@ -608,7 +606,7 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 		high * master_edl->local_session->zoom_y / 2);
 	CLAMP(y1, top_pixel, bottom_pixel);
 	CLAMP(y2, top_pixel, bottom_pixel);
-	canvas->set_color(mwindow->theme->audio_color);
+	canvas->set_color(theme_global->audio_color);
 	canvas->draw_line(x, 
 		y1,
 		x,
@@ -636,7 +634,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int x = 0;
 	int y = 0;
 	if(edlsession->show_titles)
-		y += mwindow->theme->get_image("title_bg_data")->get_h();
+		y += theme_global->get_image("title_bg_data")->get_h();
 
 	double picons = ((double)(refresh_x + pixmap_x - edit_x) / picon_w);
 	double picount = trunc(picons);
