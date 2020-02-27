@@ -29,7 +29,6 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "brender.h"
-#include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"
 #include "clipedit.h"
@@ -99,7 +98,6 @@
 #include "vplayback.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
-#include "wavecache.h"
 #include "zoombar.h"
 #include "exportedl.h"
 #include "ntsczones.h"
@@ -147,7 +145,6 @@ MWindow::MWindow(const char *config_path)
 	init_levelwindow();
 	init_viewer();
 	init_ruler();
-	init_cache();
 	init_indexes();
 
 	init_gui();
@@ -196,9 +193,6 @@ MWindow::~MWindow()
 	exit(0);
 
 	delete mainprogress;
-	delete audio_cache;             // delete the cache after the assets
-	delete video_cache;             // delete the cache after the assets
-	delete frame_cache;
 	if(gui) delete gui;
 	delete undo;
 	delete clip_edit;
@@ -462,14 +456,6 @@ void MWindow::init_levelwindow()
 void MWindow::init_viewer()
 {
 	vwindow = new VWindow(this);
-}
-
-void MWindow::init_cache()
-{
-	audio_cache = new CICache(FILE_OPEN_AUDIO);
-	video_cache = new CICache(FILE_OPEN_VIDEO);
-	frame_cache = new FrameCache;
-	wave_cache = new WaveCache;
 }
 
 void MWindow::init_ruler()
@@ -1087,39 +1073,14 @@ void MWindow::age_caches()
 {
 	size_t prev_memory_usage;
 	size_t memory_usage;
-	int result = 0;
-	do
-	{
-		memory_usage = audio_cache->get_memory_usage(1) +
-			video_cache->get_memory_usage(1) +
-			frame_cache->get_memory_usage() +
-			wave_cache->get_memory_usage();
 
+	memory_usage = gui->canvas->get_cache_size();
+	do {
 		if(memory_usage > preferences->cache_size)
-		{
-			int target = 1;
-			int oldest1 = audio_cache->get_oldest();
-			int oldest2 = video_cache->get_oldest();
-			if(oldest2 < oldest1) target = 2;
-			int oldest3 = frame_cache->get_oldest();
-			if(oldest3 < oldest1 && oldest3 < oldest2) target = 3;
-			int oldest4 = wave_cache->get_oldest();
-			if(oldest4 < oldest3 && oldest4 < oldest2 && oldest4 < oldest1) target = 4;
-			switch(target)
-			{
-				case 1: audio_cache->delete_oldest(); break;
-				case 2: video_cache->delete_oldest(); break;
-				case 3: frame_cache->delete_oldest(); break;
-				case 4: wave_cache->delete_oldest(); break;
-			}
-		}
+			gui->canvas->cache_delete_oldest();
 		prev_memory_usage = memory_usage;
-		memory_usage = audio_cache->get_memory_usage(1) +
-			video_cache->get_memory_usage(1) +
-			frame_cache->get_memory_usage() +
-			wave_cache->get_memory_usage();
-	} while(!result && 
-		prev_memory_usage != memory_usage && 
+		memory_usage = gui->canvas->get_cache_size();
+	} while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences->cache_size);
 }
 
@@ -1365,19 +1326,13 @@ void MWindow::save_backup(int is_manual)
 
 void MWindow::reset_caches()
 {
-	frame_cache->remove_all();
-	wave_cache->remove_all();
-	audio_cache->remove_all();
-	video_cache->remove_all();
+	gui->canvas->reset_caches();
 	BC_Resources::tmpframes.delete_unused();
 }
 
 void MWindow::remove_asset_from_caches(Asset *asset)
 {
-	frame_cache->remove_asset(asset);
-	wave_cache->remove_asset(asset);
-	audio_cache->delete_entry(asset);
-	video_cache->delete_entry(asset);
+	gui->canvas->remove_asset_from_caches(asset);
 }
 
 void MWindow::remove_assets_from_project(int push_undo)
@@ -1644,13 +1599,9 @@ void MWindow::show_program_status()
 	}
 	else
 		printf(" No edl\n");
+
 	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
-	mc = audio_cache->get_memory_usage(1);
-	printf(" Audio cache %zu\n", mc);
-	mc = video_cache->get_memory_usage(1);
-	printf(" Video cache %zu\n", mc);
-	printf(" Frame cache %zu\n", frame_cache->get_memory_usage());
-	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
+	gui->canvas->show_cache_status(1);
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
 	printf(" Output device: %s\n",
 		VDriverMenu::driver_to_string(edlsession->playback_config->vconfig->driver));

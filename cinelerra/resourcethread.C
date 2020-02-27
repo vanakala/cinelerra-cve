@@ -101,6 +101,10 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 	prev_h = 0;
 	prev_l = 0;
 	operation_count = 0;
+	audio_cache = new CICache(FILE_OPEN_AUDIO);
+	video_cache = new CICache(FILE_OPEN_VIDEO);
+	frame_cache = new FrameCache;
+	wave_cache = new WaveCache;
 	Thread::start();
 }
 
@@ -109,6 +113,10 @@ ResourceThread::~ResourceThread()
 	delete draw_lock;
 	delete item_lock;
 	delete aframe;
+	delete audio_cache;
+	delete video_cache;
+	delete frame_cache;
+	delete wave_cache;
 }
 
 void ResourceThread::add_picon(ResourcePixmap *pixmap, 
@@ -237,14 +245,14 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	VFrame *picon_frame;
 
 	mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
-	if(!(picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
+	if(!(picon_frame = frame_cache->get_frame_ptr(item->postime,
 		item->layer,
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
 		item->asset)))
 	{
-		File *source = mwindow->video_cache->check_out(item->asset);
+		File *source = video_cache->check_out(item->asset);
 
 		if(!source)
 			return;
@@ -255,14 +263,14 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		source->get_frame(picon_frame);
 		picon_frame->set_source_pts(item->postime);
 		picon_frame->set_duration(item->duration);
-		mwindow->frame_cache->put_frame(picon_frame, item->asset);
-		mwindow->video_cache->check_in(item->asset);
+		frame_cache->put_frame(picon_frame, item->asset);
+		video_cache->check_in(item->asset);
 	}
 
 // Allow escape here
 	if(interrupted)
 	{
-		mwindow->frame_cache->unlock();
+		frame_cache->unlock();
 		return;
 	}
 
@@ -292,11 +300,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		}
 	}
 
-	mwindow->frame_cache->unlock();
+	frame_cache->unlock();
 	mwindow->gui->canvas->pixmaps_lock->unlock();
 
-	if(mwindow->frame_cache->total() > 32)
-		mwindow->frame_cache->delete_oldest();
+	if(frame_cache->total() > 32)
+		frame_cache->delete_oldest();
 }
 
 #define BUFFERSIZE 65536
@@ -307,14 +315,14 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	double high;
 	double low;
 
-	if((wave_item = mwindow->wave_cache->get_wave(item->asset,
+	if((wave_item = wave_cache->get_wave(item->asset,
 		item->channel,
 		item->start,
 		item->end)))
 	{
 		high = wave_item->high;
 		low = wave_item->low;
-		mwindow->wave_cache->unlock();
+		wave_cache->unlock();
 	}
 	else
 	{
@@ -334,7 +342,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				sample < aframe->position + aframe->length))
 			{
 // Load new buffer
-				File *source = mwindow->audio_cache->check_out(item->asset);
+				File *source = audio_cache->check_out(item->asset);
 
 				if(!source)
 					return;
@@ -354,7 +362,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 				source->get_samples(aframe);
 				audio_asset_id = item->asset->id;
-				mwindow->audio_cache->check_in(item->asset);
+				audio_cache->check_in(item->asset);
 			}
 
 			value = aframe->buffer[sample - aframe->position];
@@ -373,7 +381,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			}
 		}
 
-		mwindow->wave_cache->put_wave(item->asset,
+		wave_cache->put_wave(item->asset,
 			item->channel,
 			item->start,
 			item->end,
@@ -410,4 +418,46 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			item->pixmap->draw_wave(item->x, high, low);
 		}
 	}
+}
+
+size_t ResourceThread::get_cache_size()
+{
+	return audio_cache->get_memory_usage(1) +
+		video_cache->get_memory_usage(1) +
+		frame_cache->get_memory_usage() +
+		wave_cache->get_memory_usage();
+}
+
+void ResourceThread::cache_delete_oldest()
+{
+	audio_cache->delete_oldest();
+	video_cache->delete_oldest();
+	frame_cache->delete_oldest();
+	wave_cache->delete_oldest();
+}
+
+void ResourceThread::reset_caches()
+{
+	frame_cache->remove_all();
+	wave_cache->remove_all();
+	audio_cache->remove_all();
+	video_cache->remove_all();
+}
+
+void ResourceThread::remove_asset_from_caches(Asset *asset)
+{
+	frame_cache->remove_asset(asset);
+	wave_cache->remove_asset(asset);
+	audio_cache->delete_entry(asset);
+	video_cache->delete_entry(asset);
+}
+
+void ResourceThread::show_cache_status(int indent)
+{
+	printf("%*sAudio cache %zu\n", indent, "",
+		audio_cache->get_memory_usage(1));
+	printf("%*sVideo cache %zu\n", indent, "",
+		video_cache->get_memory_usage(1));
+	printf("%*sWave cache %zu\n", indent, "",
+		wave_cache->get_memory_usage());
 }

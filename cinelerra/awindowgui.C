@@ -180,9 +180,9 @@ void AssetPicon::init_object()
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-				File *file = mwindow->video_cache->check_out(asset);
+				File file;
 
-				if(file)
+				if(!file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_VIDEO))
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
 					icon_vframe = new VFrame(0, 
@@ -190,7 +190,7 @@ void AssetPicon::init_object()
 						pixmap_h, 
 						BC_RGB888);
 					icon_vframe->clear_pts();
-					file->get_frame(icon_vframe);
+					file.get_frame(icon_vframe);
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 					icon->draw_vframe(icon_vframe,
 						0, 
@@ -199,7 +199,6 @@ void AssetPicon::init_object()
 						pixmap_h,
 						0,
 						0);
-					mwindow->video_cache->check_in(asset);
 				}
 				else
 				{

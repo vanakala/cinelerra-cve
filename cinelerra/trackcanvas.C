@@ -819,6 +819,7 @@ ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
 	if(!result)
 	{
 		result = new ResourcePixmap(mwindow, 
+			resource_thread,
 			this, 
 			edit, 
 			pixmap_w, 
@@ -4582,4 +4583,29 @@ ptstime TrackCanvas::time_visible(void)
 {
 	return (ptstime)get_w() * 
 		master_edl->local_session->zoom_time;
+}
+
+size_t TrackCanvas::get_cache_size()
+{
+	return resource_thread->get_cache_size();
+}
+
+void TrackCanvas::cache_delete_oldest()
+{
+	return resource_thread->cache_delete_oldest();
+}
+
+void TrackCanvas::reset_caches()
+{
+	resource_thread->reset_caches();
+}
+
+void TrackCanvas::remove_asset_from_caches(Asset *asset)
+{
+	resource_thread->remove_asset_from_caches(asset);
+}
+
+void TrackCanvas::show_cache_status(int indent)
+{
+	resource_thread->show_cache_status(indent);
 }

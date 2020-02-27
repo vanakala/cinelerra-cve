@@ -361,12 +361,6 @@ public:
 // Main undo stack
 	MainUndo *undo;
 	BC_Hash *defaults;
-// CICaches for drawing timeline only
-	CICache *audio_cache, *video_cache;
-// Frame cache for drawing timeline only.
-// Cache drawing doesn't wait for file decoding.
-	FrameCache *frame_cache;
-	WaveCache *wave_cache;
 	Preferences *preferences;
 	PreferencesThread *preferences_thread;
 	Theme *theme;
@@ -454,7 +448,6 @@ public:
 	void init_levelwindow();
 	void init_viewer();
 	void init_ruler();
-	void init_cache();
 	void init_indexes();
 	void init_gui();
 	void init_playbackcursor();

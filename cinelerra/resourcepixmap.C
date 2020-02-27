@@ -49,6 +49,7 @@
 
 
 ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
+	ResourceThread *resource_thread,
 	TrackCanvas *canvas, 
 	Edit *edit, 
 	int w, 
@@ -65,6 +66,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	zoom_time = 0;
 	aframe = 0;
 	this->mwindow = mwindow;
+	this->resource_thread = resource_thread;
 	this->canvas = canvas;
 	source_pts = edit->get_source_pts();
 	data_type = edit->track->data_type;
@@ -457,7 +459,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-	File *source = mwindow->audio_cache->check_out(edit->asset);
+	File *source = resource_thread->audio_cache->check_out(edit->asset);
 
 	if(!source)
 	{
@@ -546,7 +548,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					edlsession->sample_rate) +
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
-			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset,
+			WaveCacheItem *item = resource_thread->wave_cache->get_wave(edit->asset,
 					edit->channel,
 					source_start,
 					source_end);
@@ -574,12 +576,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				prev_y1 = y1;
 				prev_y2 = y2;
 				first_pixel = 0;
-				mwindow->wave_cache->unlock();
+				resource_thread->wave_cache->unlock();
 			}
 			else
 			{
 				first_pixel = 1;
-				canvas->resource_thread->add_wave(this,
+				resource_thread->add_wave(this,
 					edit->asset,
 					x,
 					edit->channel,
@@ -590,7 +592,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			x++;
 		}
 	}
-	mwindow->audio_cache->check_in(edit->asset);
+	resource_thread->audio_cache->check_in(edit->asset);
 }
 
 void ResourcePixmap::draw_wave(int x, double high, double low)
@@ -649,7 +651,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		ptstime source_pts = edit->get_source_pts() + picon_src;
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
-		if(picon_frame = mwindow->frame_cache->get_frame_ptr(source_pts,
+		if(picon_frame = resource_thread->frame_cache->get_frame_ptr(source_pts,
 			edit->channel,
 			BC_RGB888,
 			picon_w,
@@ -663,7 +665,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 				picon_h, 
 				0, 
 				0);
-			mwindow->frame_cache->unlock();
+			resource_thread->frame_cache->unlock();
 		}
 		else
 		{

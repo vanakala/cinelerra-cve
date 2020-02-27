@@ -134,6 +134,12 @@ public:
 	void do_video(VResourceThreadItem *item);
 	void do_audio(AResourceThreadItem *item);
 
+	size_t get_cache_size();
+	void cache_delete_oldest();
+	void reset_caches();
+	void remove_asset_from_caches(Asset *asset);
+	void show_cache_status(int indent);
+
 	MWindow *mwindow;
 	Condition *draw_lock;
 	Mutex *item_lock;
@@ -150,6 +156,10 @@ public:
 	double prev_l;
 // Incremented after every start_draw to prevent overlapping operations
 	int operation_count;
+	CICache *audio_cache;
+	CICache *video_cache;
+	FrameCache *frame_cache;
+	WaveCache *wave_cache;
 };
 
 #endif

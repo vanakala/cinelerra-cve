@@ -312,6 +312,13 @@ public:
 // Display hourglass if timer expired
 	void test_timer();
 
+// Cache managing
+	size_t get_cache_size();
+	void cache_delete_oldest();
+	void reset_caches();
+	void remove_asset_from_caches(Asset *asset);
+	void show_cache_status(int indent);
+
 	MWindow *mwindow;
 	MWindowGUI *gui;
 	ArrayList<ResourcePixmap*> resource_pixmaps;

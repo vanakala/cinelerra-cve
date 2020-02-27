@@ -26,6 +26,7 @@
 #include "bcpixmap.h"
 #include "edit.inc"
 #include "mwindow.inc"
+#include "resourcethread.inc"
 #include "trackcanvas.inc"
 
 
@@ -33,6 +34,7 @@ class ResourcePixmap : public BC_Pixmap
 {
 public:
 	ResourcePixmap(MWindow *mwindow, 
+		ResourceThread *resource_thread,
 		TrackCanvas *canvas, 
 		Edit *edit, 
 		int w, 
@@ -69,6 +71,7 @@ public:
 	void dump();
 
 	MWindow *mwindow;
+	ResourceThread *resource_thread;
 	TrackCanvas *canvas;
 // Visible in entire track canvas
 	int visible;
