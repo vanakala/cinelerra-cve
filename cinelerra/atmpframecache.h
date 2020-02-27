@@ -52,7 +52,7 @@ public:
 	AFrame *get_tmpframe(int buflen);
 	AFrame *clone_frame(AFrame *frame);
 	void release_frame(AFrame *tmp_frame);
-	size_t get_size();
+	size_t get_size(int *total = 0, int *inuse = 0);
 	void delete_unused();
 	void dump(int indent = 0);
 private:

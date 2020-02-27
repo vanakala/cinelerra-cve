@@ -196,13 +196,23 @@ void ATmpFrameCache::delete_unused()
 	}
 }
 
-size_t ATmpFrameCache::get_size()
+size_t ATmpFrameCache::get_size(int *total, int *inuse)
 {
 	size_t res = 0;
+	int used = 0;
+	int count = 0;
 
 	for(ATmpFrameCacheElem *cur = first; cur; cur = cur->next)
+	{
+		count++;
+		if(cur->in_use)
+			used++;
 		res += cur->get_size();
-
+	}
+	if(inuse)
+		*inuse = used;
+	if(total)
+		*total = count;
 	return res / 1024;
 }
 

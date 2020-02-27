@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assetlist.h"
+#include "atmpframecache.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "batchrender.h"
@@ -1604,7 +1605,9 @@ void MWindow::show_program_status()
 	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
 	gui->canvas->show_cache_status(1);
 	mc = BC_Resources::tmpframes.get_size(&count, &inuse);
-	printf(" Tmpframes %d/%d %zuk\n", inuse, count, mc);
+	printf(" Video tmpframes %d/%d %zuk\n", inuse, count, mc);
+	mc = audio_frames.get_size(&count, &inuse);
+	printf(" Audio tmpframes %d/%d %zuk\n", inuse, count, mc);
 	printf(" Output device: %s\n",
 		VDriverMenu::driver_to_string(edlsession->playback_config->vconfig->driver));
 	if(edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
