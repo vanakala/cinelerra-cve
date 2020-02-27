@@ -179,13 +179,25 @@ void TmpFrameCache::delete_unused()
 	}
 }
 
-size_t TmpFrameCache::get_size()
+size_t TmpFrameCache::get_size(int *total, int *inuse)
 {
 	size_t res = 0;
+	int used, count;
+
+	used = 0;
+	count = 0;
 
 	for(TmpFrameCacheElem *cur = first; cur; cur = cur->next)
+	{
+		count++;
+		if(cur->in_use)
+			used++;
 		res += cur->get_size();
-
+	}
+	if(inuse)
+		*inuse = used;
+	if(total)
+		*total = count;
 	return res / 1024;
 }
 

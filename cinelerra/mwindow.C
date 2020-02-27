@@ -1582,7 +1582,8 @@ ptstime MWindow::trackcanvas_visible()
 
 void MWindow::show_program_status()
 {
-	size_t mc, cc, vc;
+	size_t mc;
+	int count, inuse;
 
 	printf("%s status:\n", version_name);
 	if(master_edl)
@@ -1602,7 +1603,8 @@ void MWindow::show_program_status()
 
 	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
 	gui->canvas->show_cache_status(1);
-	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
+	mc = BC_Resources::tmpframes.get_size(&count, &inuse);
+	printf(" Tmpframes %d/%d %zuk\n", inuse, count, mc);
 	printf(" Output device: %s\n",
 		VDriverMenu::driver_to_string(edlsession->playback_config->vconfig->driver));
 	if(edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
