@@ -34,7 +34,6 @@
 #include "arraylist.h"
 #include "condition.inc"
 #include "datatype.h"
-#include "mwindow.inc"
 #include "resourcepixmap.inc"
 #include "thread.h"
 #include "vframe.inc"
@@ -102,7 +101,7 @@ public:
 class ResourceThread : public Thread
 {
 public:
-	ResourceThread(MWindow *mwindow);
+	ResourceThread();
 	~ResourceThread();
 
 // reset - delete all picons.  Used for index building.
@@ -140,7 +139,6 @@ public:
 	void remove_asset_from_caches(Asset *asset);
 	void show_cache_status(int indent);
 
-	MWindow *mwindow;
 	Condition *draw_lock;
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;

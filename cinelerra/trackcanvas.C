@@ -100,7 +100,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
 	canvas_lock = new Mutex("TrackCanvas::canvas_lock");
 	overlays_lock = new Mutex("TrackCanvas::overlays_lock");
-	resource_thread = new ResourceThread(mwindow);
+	resource_thread = new ResourceThread();
 }
 
 TrackCanvas::~TrackCanvas()

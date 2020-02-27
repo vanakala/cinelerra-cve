@@ -90,9 +90,8 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 }
 
 
-ResourceThread::ResourceThread(MWindow *mwindow)
+ResourceThread::ResourceThread()
 {
-	this->mwindow = mwindow;
 	interrupted = 1;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
@@ -236,7 +235,7 @@ void ResourceThread::run()
 			delete item;
 		}
 		if(do_update)
-			mwindow->gui->update(WUPD_CANVPICIGN);
+			mwindow_global->gui->update(WUPD_CANVPICIGN);
 	}
 }
 
@@ -244,7 +243,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 {
 	VFrame *picon_frame;
 
-	mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
+	mwindow_global->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
 	if(!(picon_frame = frame_cache->get_frame_ptr(item->postime,
 		item->layer,
 		BC_RGB888,
@@ -280,9 +279,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	{
 		int exists = 0;
 
-		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < mwindow_global->gui->canvas->resource_pixmaps.total; i++)
 		{
-			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
 			{
 				exists = 1;
 				break;
@@ -301,7 +300,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	}
 
 	frame_cache->unlock();
-	mwindow->gui->canvas->pixmaps_lock->unlock();
+	mwindow_global->gui->canvas->pixmaps_lock->unlock();
 
 	if(frame_cache->total() > 32)
 		frame_cache->delete_oldest();
@@ -399,9 +398,9 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 // Test for pixmap existence first
 		int exists = 0;
-		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < mwindow_global->gui->canvas->resource_pixmaps.total; i++)
 		{
-			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
 				exists = 1;
 		}
 
