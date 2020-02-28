@@ -81,7 +81,7 @@ public:
 	int delete_oldest();
 
 // Calculate current size of cache in bytes
-	size_t get_memory_usage();
+	size_t get_memory_usage(int *total = 0);
 
 	void dump(int indent = 0);
 

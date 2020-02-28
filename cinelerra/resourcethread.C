@@ -421,8 +421,8 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 size_t ResourceThread::get_cache_size()
 {
-	return audio_cache->get_memory_usage() +
-		video_cache->get_memory_usage() +
+	return audio_cache->get_size() +
+		video_cache->get_size() +
 		frame_cache->get_memory_usage() +
 		wave_cache->get_memory_usage();
 }
@@ -453,10 +453,19 @@ void ResourceThread::remove_asset_from_caches(Asset *asset)
 
 void ResourceThread::show_cache_status(int indent)
 {
-	printf("%*sAudio cache %zu\n", indent, "",
-		audio_cache->get_memory_usage());
-	printf("%*sVideo cache %zu\n", indent, "",
-		video_cache->get_memory_usage());
-	printf("%*sWave cache %zu\n", indent, "",
-		wave_cache->get_memory_usage());
+	int count;
+	size_t size;
+
+	size = audio_cache->get_size(&count);
+	printf("%*sAudio cache %d %zu\n", indent, "",
+		count, size);
+	size = video_cache ->get_size(&count);
+	printf("%*sVideo cache %d %zu\n", indent, "",
+		count, size);
+	size = frame_cache->get_memory_usage(&count);
+	printf("%*sFrame cache %d %zu\n", indent, "",
+		count, size);
+	size = wave_cache->get_memory_usage(&count);
+	printf("%*sWave cache %d %zu\n", indent, "",
+		count, size);
 }

@@ -132,17 +132,20 @@ int CacheBase::delete_oldest()
 	return 1;
 }
 
-size_t CacheBase::get_memory_usage()
+size_t CacheBase::get_memory_usage(int *total)
 {
 	size_t result = 0;
+	int count = 0;
 
 	lock->lock("CacheBase::get_memory_usage");
 	for(CacheItemBase *current = first; current; current = NEXT)
 	{
 		result += current->get_size();
+		count++;
 	}
 	lock->unlock();
-
+	if(total)
+		*total = count;
 	return result;
 }
 

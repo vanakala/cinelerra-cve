@@ -83,8 +83,7 @@ public:
 // Remove all entries from the cache.
 	void remove_all();
 
-	size_t get_memory_usage();
-
+	size_t get_size(int *count = 0);
 // Called by age() and MWindow::age_caches
 // returns 1 if nothing was available to delete
 // 0 if successful
@@ -97,6 +96,7 @@ public:
 	void dump(int indent = 0);
 
 private:
+	size_t get_memory_usage();
 // to prevent one from checking the same asset out before it's checked in
 // yet without blocking the asset trying to get checked in
 // use a seperate mutex for checkouts and checkins

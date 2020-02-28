@@ -191,6 +191,18 @@ void CICache::age()
 	total_lock->unlock();
 }
 
+size_t CICache::get_size(int *count)
+{
+	size_t size;
+
+	total_lock->lock("CICache::get_size");
+	size = get_memory_usage();
+	if(count)
+		*count = total();
+	total_lock->unlock();
+	return size;
+}
+
 size_t CICache::get_memory_usage()
 {
 	CICacheItem *current;
