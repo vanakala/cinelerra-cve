@@ -103,20 +103,6 @@ void CacheBase::remove_asset(Asset *asset)
 	lock->unlock();
 }
 
-int CacheBase::get_oldest()
-{
-	int oldest = 0x7fffffff;
-
-	lock->lock("CacheBase::get_oldest");
-	for(CacheItemBase *current = first; current; current = NEXT)
-	{
-		if(current->age < oldest)
-			oldest = current->age;
-	}
-	lock->unlock();
-	return oldest;
-}
-
 int CacheBase::delete_oldest()
 {
 	int oldest = 0x7fffffff;

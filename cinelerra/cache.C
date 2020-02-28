@@ -204,23 +204,6 @@ size_t CICache::get_memory_usage()
 	return result;
 }
 
-int CICache::get_oldest()
-{
-	CICacheItem *current;
-	int oldest = 0x7fffffff;
-	total_lock->lock("CICache::get_oldest");
-	for(current = last; current; current = PREVIOUS)
-	{
-		if(current->age < oldest)
-		{
-			oldest = current->age;
-		}
-	}
-	total_lock->unlock();
-
-	return oldest;
-}
-
 int CICache::delete_oldest()
 {
 	CICacheItem *current;

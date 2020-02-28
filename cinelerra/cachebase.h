@@ -77,10 +77,6 @@ public:
 // Ignore if item was 0.
 	void unlock();
 
-// Get ID of oldest member.
-// Called by MWindow::age_caches.
-	int get_oldest();
-
 // Delete oldest item.  Return 0 if successful.  Return 1 if nothing to delete.
 	int delete_oldest();
 

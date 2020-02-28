@@ -83,9 +83,6 @@ public:
 // Remove all entries from the cache.
 	void remove_all();
 
-// Get ID of oldest member.
-// Called by MWindow::age_caches.
-	int get_oldest();
 	size_t get_memory_usage();
 
 // Called by age() and MWindow::age_caches
