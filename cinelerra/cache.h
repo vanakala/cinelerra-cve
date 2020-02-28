@@ -86,7 +86,7 @@ public:
 // Get ID of oldest member.
 // Called by MWindow::age_caches.
 	int get_oldest();
-	size_t get_memory_usage(int use_lock);
+	size_t get_memory_usage();
 
 // Called by age() and MWindow::age_caches
 // returns 1 if nothing was available to delete

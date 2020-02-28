@@ -174,32 +174,33 @@ void CICache::age()
 	size_t memory_usage;
 	int result = 0;
 
+	total_lock->lock("CICache::age");
 // delete old assets if memory usage is exceeded
 	do
 	{
-		memory_usage = get_memory_usage(1);
+		memory_usage = get_memory_usage();
 
 		if(memory_usage > preferences_global->cache_size)
 		{
 			result = delete_oldest();
 		}
 		prev_memory_usage = memory_usage;
-		memory_usage = get_memory_usage(0);
+		memory_usage = get_memory_usage();
 	}while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences_global->cache_size && !result);
+	total_lock->unlock();
 }
 
-size_t CICache::get_memory_usage(int use_lock)
+size_t CICache::get_memory_usage()
 {
 	CICacheItem *current;
 	size_t result = 0;
-	if(use_lock) total_lock->lock("CICache::get_memory_usage");
+
 	for(current = first; current; current = NEXT)
 	{
 		File *file = current->file;
 		if(file) result += file->get_memory_usage();
 	}
-	if(use_lock) total_lock->unlock();
 	return result;
 }
 
@@ -268,7 +269,7 @@ void CICache::dump(int indent)
 	CICacheItem *current;
 	total_lock->lock("CICache::dump");
 	printf("%*sCICache %p dump total size %zd\n", indent, "",
-		this, get_memory_usage(0));
+		this, get_memory_usage());
 	for(current = first; current; current = NEXT)
 		current->dump(indent + 2);
 	total_lock->unlock();
