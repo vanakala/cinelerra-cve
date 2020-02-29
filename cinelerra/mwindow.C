@@ -1329,6 +1329,7 @@ void MWindow::reset_caches()
 {
 	gui->canvas->reset_caches();
 	BC_Resources::tmpframes.delete_unused();
+	audio_frames.delete_unused();
 }
 
 void MWindow::remove_asset_from_caches(Asset *asset)
