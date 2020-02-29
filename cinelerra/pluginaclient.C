@@ -40,37 +40,12 @@ int PluginAClient::is_audio()
 	return 1;
 }
 
-void PluginAClient::process_frame(AFrame **aframe)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(aframe[i]);
-
-	process_realtime(aframe, aframe);
-}
-
-void PluginAClient::process_frame(AFrame *aframe)
-{
-	get_frame(aframe);
-	process_realtime(aframe, aframe);
-}
-
 int PluginAClient::plugin_process_loop(AFrame **aframes)
 {
 	if(is_multichannel())
 		return process_loop(aframes);
 	else
 		return process_loop(aframes[0]);
-}
-
-void PluginAClient::get_frame(AFrame *frame)
-{
-	if(renderer)
-	{
-		Track *current = renderer->get_track_number(frame->get_track());
-		current->renderer->get_aframe(frame);
-	}
-	else
-		frame->clear_frame(frame->pts, frame->source_duration);
 }
 
 int PluginAClient::get_project_samplerate()

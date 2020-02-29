@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "autoconf.h"
 #include "bcsignals.h"
 #include "bchash.h"
@@ -36,6 +37,8 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderengine.inc"
+#include "track.h"
+#include "trackrender.h"
 #include <string.h>
 
 PluginClient::PluginClient(PluginServer *server)
@@ -224,6 +227,109 @@ void PluginClient::process_transition(AFrame *input, AFrame *output,
 	source_pts = current_postime;
 	total_len_pts = total_len;
 	process_realtime(input, output);
+}
+
+void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
+{
+	double framerate;
+	ptstime duration = frame[0]->get_duration();
+
+	if(duration > EPSILON)
+		framerate = 1.0 / duration;
+	else
+		framerate = edlsession->frame_rate;
+
+	source_pts = frame[0]->get_pts();
+	total_len_pts = total_length;
+	frame_rate = framerate;
+
+	source_start_pts = server->plugin->get_pts();
+
+	if(server->apiversion)
+	{
+		if(server->multichannel)
+			process_frame(frame);
+		else
+			process_frame(frame[0]);
+	}
+	else
+		abort_plugin(_("Plugins with old API are not supported"));
+}
+
+void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
+{
+	AFrame *aframe = buffer[0];
+
+	if(aframe->samplerate <= 0)
+		aframe->samplerate = edlsession->sample_rate;
+
+	source_pts = aframe->pts;
+	total_len_pts = total_len;
+
+	source_start_pts = server->plugin->get_pts();
+
+	if(has_pts_api())
+	{
+		if(server->multichannel)
+		{
+			int fragment_size = aframe->fill_length();
+			for(int i = 1; i < total_in_buffers; i++)
+				buffer[i]->set_fill_request(source_pts,
+					fragment_size);
+
+			process_frame(buffer);
+		}
+		else
+			process_frame(buffer[0]);
+	}
+}
+
+void PluginClient::process_frame(AFrame **aframe)
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		get_frame(aframe[i]);
+
+	process_realtime(aframe, aframe);
+}
+
+void PluginClient::process_frame(AFrame *aframe)
+{
+	get_frame(aframe);
+	process_realtime(aframe, aframe);
+}
+
+void PluginClient::process_frame(VFrame **frame)
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		get_frame(frame[i], i);
+	if(is_multichannel())
+		process_realtime(frame, frame);
+}
+
+void PluginClient::process_frame(VFrame *frame)
+{
+	get_frame(frame, 0);
+	process_realtime(frame, frame);
+}
+
+void PluginClient::get_frame(AFrame *frame)
+{
+	if(renderer)
+	{
+		Track *current = renderer->get_track_number(frame->get_track());
+		current->renderer->get_aframe(frame);
+	}
+	else
+		frame->clear_frame(frame->pts, frame->source_duration);
+}
+
+void PluginClient::get_frame(VFrame *buffer, int use_opengl)
+{
+	if(renderer)
+	{
+		Track *current = renderer->get_track_number(buffer->get_layer());
+		current->renderer->get_vframe(buffer);
+	}
 }
 
 void PluginClient::abort_plugin(const char *fmt, ...)

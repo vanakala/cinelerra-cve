@@ -333,7 +333,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 						pltrack->renderer->next_plugin = 0;
 					}
 				}
-				plugin->active_server->process_buffer(plugin->aframes.values,
+				plugin->client->process_buffer(plugin->aframes.values,
 					plugin->get_length());
 				aframe->copy(plugin->aframes.values[0]);
 				arender->copy_aframes(&plugin->aframes, this);
@@ -346,7 +346,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 					plugin->active_server->open_plugin(plugin, this);
 					plugin->client->plugin_init_realtime(1);
 				}
-				plugin->active_server->process_buffer(&aframe, plugin->get_length());
+				plugin->client->process_buffer(&aframe, plugin->get_length());
 			}
 		}
 		break;

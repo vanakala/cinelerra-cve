@@ -94,20 +94,6 @@ void PluginVClient::init_realtime_parameters()
 	sample_aspect_ratio = edlsession->sample_aspect_ratio;
 }
 
-void PluginVClient::process_frame(VFrame **frame)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(frame[i], i);
-	if(is_multichannel())
-		process_realtime(frame, frame);
-}
-
-void PluginVClient::process_frame(VFrame *frame)
-{
-	get_frame(frame, 0);
-	process_realtime(frame, frame);
-}
-
 int PluginVClient::plugin_get_parameters()
 {
 	frame_rate = get_project_framerate();
@@ -139,15 +125,6 @@ VFrame* PluginVClient::get_input(int channel)
 VFrame* PluginVClient::get_output(int channel)
 {
 	return output[channel];
-}
-
-void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
-{
-	if(renderer)
-	{
-		Track *current = renderer->get_track_number(buffer->get_layer());
-		current->renderer->get_vframe(buffer);
-	}
 }
 
 double PluginVClient::get_project_framerate()

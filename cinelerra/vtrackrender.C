@@ -514,7 +514,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 					get_track_number(
 						current->get_layer())->renderer->next_plugin = 0;
 				}
-				plugin->active_server->process_buffer(plugin->vframes.values,
+				plugin->client->process_buffer(plugin->vframes.values,
 					plugin->get_length());
 				frame->copy_from(plugin->vframes.values[0]);
 				videorender->copy_vframes(&plugin->vframes, this);
@@ -528,7 +528,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 					PluginClient *client = plugin->active_server->open_plugin(plugin, this);
 					plugin->client->plugin_init_realtime(1);
 				}
-				plugin->active_server->process_buffer(&frame, plugin->get_length());
+				plugin->client->process_buffer(&frame, plugin->get_length());
 				return frame;
 			}
 		}

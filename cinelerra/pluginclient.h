@@ -106,6 +106,13 @@ public:
 	virtual void process_realtime(VFrame *input,
 		VFrame *output) {};
 
+// Process buffer using pull method.  By default this loads the input into the
+// frame and calls process_frame with input and output pointing to frame.
+	virtual void process_frame(AFrame *aframe);
+	virtual void process_frame(AFrame **aframe);
+	virtual void process_frame(VFrame **frame);
+	virtual void process_frame(VFrame *frame);
+
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
@@ -116,6 +123,15 @@ public:
 		ptstime current_postime, ptstime total_len);
 	void process_transition(AFrame *input, AFrame *output,
 		ptstime current_postime, ptstime total_len);
+
+// Process using pull method.
+// frame/buffer - video/audio fame to process
+// total_len - length of plugin
+	void process_buffer(VFrame **frame, ptstime total_len);
+	void process_buffer(AFrame **buffer, ptstime total_len);
+
+	void get_frame(AFrame *frame);
+	void get_frame(VFrame *buffer, int use_opengl = 0);
 
 	char* get_gui_string();
 
@@ -216,6 +232,8 @@ public:
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.
 	ptstime total_len_pts;
+
+	double frame_rate;
 
 // Total number of processors available - 1
 	int smp;

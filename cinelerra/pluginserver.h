@@ -110,14 +110,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// Process using pull method.
-// frame/buffer - video/audio fame to process
-// total_len - length of plugin
-	void process_buffer(VFrame **frame, 
-		ptstime total_len);
-	void process_buffer(AFrame **buffer,
-		ptstime total_len);
-
 // Called by MWindow to cause GUI to display
 	void render_gui(void *data);
 

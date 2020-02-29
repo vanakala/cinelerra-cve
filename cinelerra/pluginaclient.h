@@ -33,17 +33,9 @@ public:
 
 	int is_audio();
 
-// Process buffer using pull method.  By default this loads the input into the
-// frame and calls process_frame with input and output pointing to frame.
-	virtual void process_frame(AFrame *aframe);
-	virtual void process_frame(AFrame **aframe);
-
 	virtual int process_loop(AFrame *aframe) { return 1; };
 	virtual int process_loop(AFrame **aframes) { return 1; };
 	int plugin_process_loop(AFrame **buffers);
-
-// Called by plugin to read audio from previous entity
-	void get_frame(AFrame *frame);
 
 	static int get_project_samplerate();
 };

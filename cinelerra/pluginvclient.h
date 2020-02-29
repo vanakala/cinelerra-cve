@@ -45,17 +45,10 @@ public:
 	void init_realtime_parameters();
 	int is_video();
 
-// Process buffer using pull method.  By default this loads the input into *frame
-//     and calls process_realtime with input and output pointing to frame.
-	virtual void process_frame(VFrame **frame);
-	virtual void process_frame(VFrame *frame);
-
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
 	int plugin_process_loop(VFrame **buffers);
 	int plugin_get_parameters();
-
-	void get_frame(VFrame *buffer, int use_opengl = 0);
 
 // User calls this to request an opengl routine to be run synchronously.
 	void run_opengl();
@@ -103,7 +96,6 @@ public:
 // Retrieved by server to set output file format.
 // In realtime plugins, these are set before every process_buffer as the
 // requested rates.
-	double frame_rate;
 	int project_color_model;
 
 // Aspect ratio
