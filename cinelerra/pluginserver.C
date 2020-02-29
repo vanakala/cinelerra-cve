@@ -301,15 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::init_realtime(int total_in_buffers)
-{
-	if(!plugin_open) return;
-// initialize plugin
-// Call start_realtime
-	this->total_in_buffers = total_in_buffers;
-	client->plugin_init_realtime(total_in_buffers);
-}
-
 // Replaced by pull method but still needed for transitions
 void PluginServer::process_transition(VFrame *input,
 		VFrame *output, 

@@ -33,6 +33,7 @@
 #include "panauto.h"
 #include "panautos.h"
 #include "plugin.h"
+#include "pluginclient.h"
 #include "pluginserver.h"
 #include "track.h"
 #include "units.h"
@@ -224,7 +225,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	{
 		transition->active_server = new PluginServer(*transition->plugin_server);
 		transition->active_server->open_plugin(transition, this);
-		transition->active_server->init_realtime(1);
+		transition->client->plugin_init_realtime(1);
 	}
 
 	if(!(tmpframe = arender->get_file_frame(aframe->pts,
@@ -343,7 +344,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 				{
 					plugin->active_server = new PluginServer(*server);
 					plugin->active_server->open_plugin(plugin, this);
-					plugin->active_server->init_realtime(1);
+					plugin->client->plugin_init_realtime(1);
 				}
 				plugin->active_server->process_buffer(&aframe, plugin->get_length());
 			}

@@ -38,6 +38,7 @@
 #include "maskengine.h"
 #include "overlayframe.h"
 #include "plugin.h"
+#include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "tmpframecache.h"
@@ -525,7 +526,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 				{
 					plugin->active_server = new PluginServer(*server);
 					PluginClient *client = plugin->active_server->open_plugin(plugin, this);
-					plugin->active_server->init_realtime(1);
+					plugin->client->plugin_init_realtime(1);
 				}
 				plugin->active_server->process_buffer(&frame, plugin->get_length());
 				return frame;
@@ -582,7 +583,7 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 	{
 		transition->active_server = new PluginServer(*transition->plugin_server);
 		transition->active_server->open_plugin(transition, this);
-		transition->active_server->init_realtime(1);
+		transition->client->plugin_init_realtime(1);
 	}
 	tmpframe = BC_Resources::tmpframes.clone_frame(frame);
 	tmpframe->copy_pts(frame);

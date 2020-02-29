@@ -36,6 +36,7 @@
 #include "keyframe.h"
 #include "mainerror.h"
 #include "plugin.h"
+#include "pluginclient.h"
 #include "renderbase.h"
 #include "renderengine.inc"
 #include "track.h"
@@ -554,7 +555,7 @@ void AudioRender::allocate_aframes(Plugin *plugin)
 			}
 		}
 	}
-	plugin->active_server->init_realtime(plugin->aframes.total);
+	plugin->client->plugin_init_realtime(plugin->aframes.total);
 }
 
 void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer)

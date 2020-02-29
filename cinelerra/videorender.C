@@ -26,6 +26,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "plugin.h"
+#include "pluginclient.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "tmpframecache.h"
@@ -291,7 +292,7 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 			}
 		}
 	}
-	plugin->active_server->init_realtime(plugin->vframes.total);
+	plugin->client->plugin_init_realtime(plugin->vframes.total);
 }
 
 void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)

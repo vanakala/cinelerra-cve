@@ -60,7 +60,7 @@ PluginClient::~PluginClient()
 void PluginClient::plugin_init_realtime(int total_in_buffers)
 {
 	smp = preferences_global->processors - 1;
-
+	server->total_in_buffers = total_in_buffers;
 	this->total_in_buffers = total_in_buffers;
 }
 

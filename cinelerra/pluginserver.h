@@ -110,9 +110,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// give the buffers and prepare processing realtime data
-	void init_realtime(int total_in_buffers);
-
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
