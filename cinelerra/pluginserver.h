@@ -110,21 +110,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// process the data in the buffers
-// input - the current edit's data
-// output - the previous edit's data and the destination of the transition output
-// current_position - Position from start of the transition and 
-//     relative to the transition.
-// total_len - total len for transition
-	void process_transition(VFrame *input, 
-		VFrame *output, 
-		ptstime current_postime,
-		ptstime total_len);
-	void process_transition(AFrame *input, 
-		AFrame *output,
-		ptstime current_postime,
-		ptstime total_len);
-
 // Process using pull method.
 // frame/buffer - video/audio fame to process
 // total_len - length of plugin

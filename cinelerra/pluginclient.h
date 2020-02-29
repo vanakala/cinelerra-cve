@@ -95,6 +95,28 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
 	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
 
+// Multichannel buffer process for backwards compatibility
+	virtual void process_realtime(AFrame *input, AFrame *output) {};
+	virtual void process_realtime(AFrame **input, AFrame **output) {};
+
+// Multichannel buffer process for backwards compatibility
+	virtual void process_realtime(VFrame **input,
+		VFrame **output) {};
+// Single channel buffer process for backwards compatibility and transitions
+	virtual void process_realtime(VFrame *input,
+		VFrame *output) {};
+
+// process the data in the buffers
+// input - the current edit's data
+// output - the previous edit's data and the destination of the transition output
+// current_position - Position from start of the transition and
+//     relative to the transition.
+// total_len - total len for transition
+	void process_transition(VFrame *input, VFrame *output,
+		ptstime current_postime, ptstime total_len);
+	void process_transition(AFrame *input, AFrame *output,
+		ptstime current_postime, ptstime total_len);
+
 	char* get_gui_string();
 
 // Used by themes

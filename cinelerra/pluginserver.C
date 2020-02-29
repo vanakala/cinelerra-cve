@@ -301,41 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-// Replaced by pull method but still needed for transitions
-void PluginServer::process_transition(VFrame *input,
-		VFrame *output, 
-		ptstime current_postime,
-		ptstime total_len)
-{
-	if(!plugin_open) return;
-	PluginVClient *vclient = (PluginVClient*)client;
-
-	vclient->source_pts = current_postime;
-	vclient->total_len_pts = total_len;
-
-	vclient->input[0] = input;
-	vclient->output[0] = output;
-
-	vclient->process_realtime(input, output);
-	vclient->age_temp();
-	use_opengl = 0;
-}
-
-void PluginServer::process_transition(AFrame *input, 
-		AFrame *output,
-		ptstime current_postime,
-		ptstime total_len)
-{
-	if(!plugin_open) return;
-
-	PluginAClient *aclient = (PluginAClient*)client;
-	aclient->source_pts = current_postime;
-	aclient->total_len_pts = total_len;
-	if(aclient->has_pts_api())
-		aclient->process_realtime(input, output);
-}
-
-
 void PluginServer::process_buffer(VFrame **frame, 
 	ptstime total_length)
 {

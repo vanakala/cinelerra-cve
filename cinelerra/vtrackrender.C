@@ -591,7 +591,7 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 		read_vframe(tmpframe, prev, 1);
 	else
 		tmpframe->clear_frame();
-	transition->active_server->process_transition(frame, tmpframe,
+	transition->client->process_transition(frame, tmpframe,
 		frame->get_pts() - edit->get_pts(), transition->get_length());
 	BC_Resources::tmpframes.release_frame(frame);
 	return tmpframe;

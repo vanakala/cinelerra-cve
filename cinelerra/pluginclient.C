@@ -209,6 +209,23 @@ void PluginClient::send_configure_change()
 	}
 }
 
+void PluginClient::process_transition(VFrame *input, VFrame *output,
+	ptstime current_postime, ptstime total_len)
+{
+	source_pts = current_postime;
+	total_len_pts = total_len;
+
+	process_realtime(input, output);
+}
+
+void PluginClient::process_transition(AFrame *input, AFrame *output,
+	ptstime current_postime, ptstime total_len)
+{
+	source_pts = current_postime;
+	total_len_pts = total_len;
+	process_realtime(input, output);
+}
+
 void PluginClient::abort_plugin(const char *fmt, ...)
 {
 	va_list ap;

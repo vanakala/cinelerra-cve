@@ -45,13 +45,6 @@ public:
 	void init_realtime_parameters();
 	int is_video();
 
-// Multichannel buffer process for backwards compatibility
-	virtual void process_realtime(VFrame **input, 
-		VFrame **output) {};
-// Single channel buffer process for backwards compatibility and transitions
-	virtual void process_realtime(VFrame *input, 
-		VFrame *output) {};
-
 // Process buffer using pull method.  By default this loads the input into *frame
 //     and calls process_realtime with input and output pointing to frame.
 	virtual void process_frame(VFrame **frame);
