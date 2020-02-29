@@ -55,7 +55,7 @@ VideoDevice::~VideoDevice()
 }
 
 
-VDeviceBase* VideoDevice::get_output_base()
+VDeviceX11 *VideoDevice::get_output_base()
 {
 	return output_base;
 }
@@ -152,12 +152,6 @@ int VideoDevice::write_buffer(VFrame *output, EDL *edl)
 int VideoDevice::output_visible()
 {
 	if(output_base) return output_base->output_visible();
-	return 0;
-}
-
-BC_Bitmap* VideoDevice::get_bitmap()
-{
-	if(output_base) return output_base->get_bitmap();
 	return 0;
 }
 

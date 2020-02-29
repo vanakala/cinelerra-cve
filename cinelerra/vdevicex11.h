@@ -24,16 +24,17 @@
 
 #define MAX_XV_CMODELS 16
 
+#include "bcbitmap.inc"
 #include "canvas.inc"
 #include "edl.inc"
 #include "maskauto.inc"
 #include "maskautos.inc"
 #include "pluginclient.inc"
 #include "thread.h"
-#include "vdevicebase.h"
+#include "videodevice.inc"
 
 
-class VDeviceX11 : public VDeviceBase
+class VDeviceX11
 {
 public:
 	VDeviceX11(VideoDevice *device, Canvas *output);
@@ -56,15 +57,13 @@ private:
 
 // Canvas for output
 	Canvas *output;
-	int color_model;
+	VideoDevice *device;
 // Transfer coordinates from the output frame to the canvas 
 // for last frame rendered.
 // These stick the last frame to the display.
 // Must be floats to support OpenGL
 	double output_x1, output_y1, output_x2, output_y2;
 	double canvas_x1, canvas_y1, canvas_x2, canvas_y2;
-// Set when OpenGL rendering has cleared the frame buffer before write_buffer
-	int is_cleared;
 // XV accelerated colormodels
 	int accel_cmodel;
 	int num_xv_cmodels;

@@ -24,7 +24,6 @@
 
 #include "asset.inc"
 #include "audiodevice.inc"
-#include "bccapture.inc"
 #include "bctimer.h"
 #include "canvas.inc"
 #include "edl.inc"
@@ -32,7 +31,7 @@
 #include "mutex.inc"
 #include "preferences.inc"
 #include "thread.h"
-#include "vdevicebase.inc"
+#include "videodevice.inc"
 #include "vdevicex11.inc"
 
 
@@ -46,14 +45,12 @@ public:
 	void close_all();
 
 // Used for calling OpenGL functions
-	VDeviceBase* get_output_base();
+	VDeviceX11 *get_output_base();
 
 	static const char* drivertostr(int driver);
 
 // Specify the audio device opened concurrently with this video device
 	void set_adevice(AudioDevice *adevice);
-
-	BC_Bitmap* get_bitmap();
 
 // Used by all devices to cause fd's to be not copied in fork operations.
 	int set_cloexec_flag(int desc, int value);
@@ -98,7 +95,7 @@ public:
 // Single frame mode for playback
 	int single_frame;
 
-	VDeviceBase *output_base;
+	VDeviceX11 *output_base;
 	VideoOutConfig *out_config;
 	MWindow *mwindow;
 };

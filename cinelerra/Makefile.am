@@ -234,7 +234,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    transportcommand.C \
 		    undostackitem.C \
 		    vautomation.C \
-		    vdevicebase.C \
 		    vdeviceprefs.C \
 		    vdevicex11.C \
 		    videodevice.C \
@@ -458,7 +457,6 @@ noinst_HEADERS = aautomation.h \
 		 transportcommand.h \
 		 undostackitem.h \
 		 vautomation.h \
-		 vdevicebase.h \
 		 vdeviceprefs.h \
 		 vdevicex11.h \
 		 videodevice.h \

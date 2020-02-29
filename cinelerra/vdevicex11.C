@@ -38,7 +38,6 @@
 #include <unistd.h>
 
 VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
- : VDeviceBase(device)
 {
 	bitmap = 0;
 	output_x1 = 0;
@@ -49,10 +48,10 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	canvas_y1 = 0;
 	canvas_x2 = 0;
 	canvas_y2 = 0;
-	is_cleared = 0;
 	num_xv_cmodels = -1;
 	accel_cmodel = -1;
 	this->output = output;
+	this->device = device;
 }
 
 VDeviceX11::~VDeviceX11()
