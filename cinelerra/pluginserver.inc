@@ -24,6 +24,5 @@
 
 #define AFRAMES_IN_PLUGIN 32
 class PluginServer;
-class PluginGUIServer;
 
 #endif
