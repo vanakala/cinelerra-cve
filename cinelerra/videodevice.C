@@ -137,11 +137,10 @@ int VideoDevice::open_output(VideoOutConfig *config,
 		return 1;
 }
 
-VFrame *VideoDevice::new_output_buffer(int colormodel)
+void VideoDevice::new_output_buffer(int colormodel)
 {
-	if(output_base);
-		return output_base->new_output_buffer(colormodel);
-	return 0;
+	if(output_base)
+		output_base->new_output_buffer(colormodel);
 }
 
 void VideoDevice::interrupt_playback()

@@ -40,7 +40,6 @@
 VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
  : VDeviceBase(device)
 {
-	output_frame = 0;
 	bitmap = 0;
 	output_x1 = 0;
 	output_y1 = 0;
@@ -58,7 +57,7 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 
 VDeviceX11::~VDeviceX11()
 {
-	if(output && output_frame)
+	if(output)
 	{
 // Use our output frame buffer as the canvas's frame buffer.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
@@ -67,12 +66,6 @@ VDeviceX11::~VDeviceX11()
 			output->stop_video();
 		else
 			output->stop_single();
-
-		if(output_frame && output_frame != output->refresh_frame)
-		{
-			BC_Resources::tmpframes.release_frame(output->refresh_frame);
-			output->refresh_frame = output_frame;
-		}
 
 // Draw the first refresh with new frame.
 		output->draw_refresh();
@@ -151,7 +144,7 @@ int VDeviceX11::get_accel_colormodel(int colormodel)
 	return accel_cmodel;
 }
 
-VFrame *VDeviceX11::new_output_buffer(int colormodel)
+void VDeviceX11::new_output_buffer(int colormodel)
 {
 // Create new bitmap
 	if(device->out_config->driver == PLAYBACK_X11_XV  && !bitmap)
@@ -170,20 +163,15 @@ VFrame *VDeviceX11::new_output_buffer(int colormodel)
 				1);
 		}
 	}
-	if(!output_frame)
-	{
-// Intermediate frame
-		output_frame = BC_Resources::tmpframes.get_tmpframe(
-			device->out_w,
-			device->out_h,
-			colormodel);
-	}
-	return output_frame;
 }
 
 int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 {
-	output_frame = output_channels;
+	if(output_channels != output->refresh_frame)
+	{
+		BC_Resources::tmpframes.release_frame(output->refresh_frame);
+		output->refresh_frame = output_channels;
+	}
 // The reason for not drawing single frame is that it is _always_ drawn 
 // when drawing draw_refresh in cwindowgui and vwindowgui
 	if (device->single_frame)

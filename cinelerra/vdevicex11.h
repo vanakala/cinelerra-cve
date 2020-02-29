@@ -39,8 +39,7 @@ public:
 	VDeviceX11(VideoDevice *device, Canvas *output);
 	~VDeviceX11();
 
-// User always gets the colormodel requested
-	VFrame * new_output_buffer(int colormodel);
+	void new_output_buffer(int colormodel);
 
 	int open_output();
 	int output_visible();
@@ -56,8 +55,7 @@ private:
 
 // Bitmap to be written to device
 	BC_Bitmap *bitmap;
-// Wrapper for bitmap or intermediate buffer for user to write to
-	VFrame *output_frame;
+
 // Canvas for output
 	Canvas *output;
 	int color_model;

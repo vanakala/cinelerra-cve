@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -27,6 +28,7 @@
 #include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
+#include "tmpframecache.h"
 #include "track.h"
 #include "tracks.h"
 #include "videodevice.h"
@@ -151,7 +153,12 @@ void VideoRender::run()
 
 void VideoRender::get_frame(ptstime pts)
 {
-	frame = renderengine->video->new_output_buffer(
+	renderengine->video->new_output_buffer(
+		edl->this_edlsession->color_model);
+
+	frame = BC_Resources::tmpframes.get_tmpframe(
+		edl->this_edlsession->output_w,
+		edl->this_edlsession->output_h,
 		edl->this_edlsession->color_model);
 
 	if(renderengine->brender_available(pts))
@@ -238,10 +245,16 @@ void VideoRender::flash_output()
 
 // Do not flash frames that are too short
 	if(!last_playback && !render_single && duration < FRAME_ACCURACY)
+	{
+		BC_Resources::tmpframes.release_frame(frame);
 		return;
+	}
 // Do not flash the same frame
 	if(flashed_pts <= pts && pts < flashed_pts + flashed_duration)
+	{
+		BC_Resources::tmpframes.release_frame(frame);
 		return;
+	}
 	frame_count++;
 	framerate_counter++;
 	flashed_pts = pts;

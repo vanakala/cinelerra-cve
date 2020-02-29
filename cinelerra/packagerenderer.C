@@ -23,6 +23,7 @@
 #include "asset.h"
 #include "audiorender.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -41,6 +42,7 @@
 #include "render.h"
 #include "renderengine.h"
 #include "sighandler.h"
+#include "tmpframecache.h"
 #include "transportcommand.h"
 #include "vframe.h"
 #include "videodevice.h"
@@ -308,8 +310,9 @@ int PackageRenderer::do_video()
 			if(mwindow_global && video_device->output_visible())
 			{
 // Vector for video device
-				VFrame *preview_output = video_device->new_output_buffer(
-					edlsession->color_model);
+				video_device->new_output_buffer(edlsession->color_model);
+				VFrame *preview_output =
+					BC_Resources::tmpframes.clone_frame(video_output_ptr);
 
 				preview_output->copy_from(video_output_ptr);
 				video_device->write_buffer(preview_output, 
