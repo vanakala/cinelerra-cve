@@ -183,6 +183,8 @@ void ATmpFrameCache::delete_unused()
 {
 	ATmpFrameCacheElem *nxt;
 
+	listlock.lock("TmpFrameCache::delete_unused");
+
 	for(ATmpFrameCacheElem *cur = first; cur;)
 	{
 		if(!cur->in_use)
@@ -194,6 +196,7 @@ void ATmpFrameCache::delete_unused()
 		else
 			cur = cur->next;
 	}
+	listlock.unlock();
 }
 
 size_t ATmpFrameCache::get_size(int *total, int *inuse)
