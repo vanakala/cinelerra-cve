@@ -30,6 +30,7 @@
 #include "keyframes.inc"
 #include "plugin.inc"
 #include "pluginpopup.inc"
+#include "pluginclient.inc"
 #include "pluginserver.inc"
 #include "track.inc"
 #include "vframe.inc"
@@ -123,6 +124,8 @@ public:
 	PluginServer *plugin_server;
 // Active server
 	PluginServer *active_server;
+// Client
+	PluginClient *client;
 // Frames for multichannel plugin
 	ArrayList<VFrame*> vframes;
 	ArrayList<AFrame*> aframes;

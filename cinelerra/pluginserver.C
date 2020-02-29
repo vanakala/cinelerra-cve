@@ -219,6 +219,8 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 		fprintf(stderr, "Old version plugin: %s\n", path);
 		return 0;
 	}
+	if(plugin)
+		plugin->client = client;
 
 	if(master)
 	{
@@ -234,6 +236,8 @@ void PluginServer::close_plugin()
 	if(!plugin_open) return;
 
 	delete client;
+	if(plugin)
+		plugin->client = 0;
 	client = 0;
 	plugin_open = 0;
 	cleanup_plugin();
