@@ -62,13 +62,11 @@ public:
 	int open_output(VideoOutConfig *config,
 		int out_w,
 		int out_h,
+		int colormodel,
 		Canvas *output,
 		int single_frame);
 	void set_cpus(int cpus);
 	void interrupt_playback();
-// Get output buffer for playback using colormodel.
-// colormodel argument should be as close to best_colormodel as possible
-	void new_output_buffer(int colormodel);
 	int wait_for_startup();
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.

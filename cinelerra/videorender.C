@@ -153,9 +153,6 @@ void VideoRender::run()
 
 void VideoRender::get_frame(ptstime pts)
 {
-	renderengine->video->new_output_buffer(
-		edl->this_edlsession->color_model);
-
 	frame = BC_Resources::tmpframes.get_tmpframe(
 		edl->this_edlsession->output_w,
 		edl->this_edlsession->output_h,

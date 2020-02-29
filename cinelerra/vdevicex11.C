@@ -75,7 +75,7 @@ VDeviceX11::~VDeviceX11()
 	delete bitmap;
 }
 
-int VDeviceX11::open_output()
+int VDeviceX11::open_output(int colormodel)
 {
 	if(output)
 	{
@@ -88,6 +88,20 @@ int VDeviceX11::open_output()
 			output->start_video();
 		else
 			output->start_single();
+
+		if(device->out_config->driver == PLAYBACK_X11_XV  && !bitmap)
+		{
+// Try hardware accelerated
+			int accel_colormodel = get_accel_colormodel(colormodel);
+
+			if(accel_colormodel > BC_NOCOLOR &&
+				output->get_canvas()->accel_available(accel_colormodel,
+					device->out_w, device->out_h))
+			{
+				bitmap = new BC_Bitmap(output->get_canvas(),
+					0, 0, accel_colormodel, 1);
+			}
+		}
 	}
 	return 0;
 }
@@ -142,27 +156,6 @@ int VDeviceX11::get_accel_colormodel(int colormodel)
 		}
 	}
 	return accel_cmodel;
-}
-
-void VDeviceX11::new_output_buffer(int colormodel)
-{
-// Create new bitmap
-	if(device->out_config->driver == PLAYBACK_X11_XV  && !bitmap)
-	{
-// Try hardware accelerated
-		int accel_colormodel = get_accel_colormodel(colormodel);
-
-		if(accel_colormodel > BC_NOCOLOR &&
-			output->get_canvas()->accel_available(accel_colormodel,
-				device->out_w, device->out_h))
-		{
-			bitmap = new BC_Bitmap(output->get_canvas(),
-				0,
-				0,
-				accel_colormodel,
-				1);
-		}
-	}
 }
 
 int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)

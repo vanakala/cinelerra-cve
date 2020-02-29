@@ -34,10 +34,9 @@ public:
 	virtual ~VDeviceBase() {};
 
 	virtual int write_buffer(VFrame *output, EDL *edl) { return 1; };
-	virtual void new_output_buffer(int colormodel) {};
 // Extra work must sometimes be done in here to set up the device.
 
-	virtual int open_output() { return 1; };
+	virtual int open_output(int colormodel) { return 1; };
 	virtual int output_visible() { return 0; };
 	virtual BC_Bitmap* get_bitmap() { return 0; };
 

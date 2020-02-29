@@ -210,6 +210,7 @@ void RenderEngine::open_output()
 			video->open_output(config->vconfig,
 				edl->this_edlsession->output_w,
 				edl->this_edlsession->output_h,
+				edl->this_edlsession->color_model,
 				output,
 				command.single_frame());
 		}

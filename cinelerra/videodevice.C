@@ -106,6 +106,7 @@ void VideoDevice::set_adevice(AudioDevice *adevice)
 int VideoDevice::open_output(VideoOutConfig *config,
 			int out_w,
 			int out_h,
+			int colormodel,
 			Canvas *output,
 			int single_frame)
 {
@@ -125,7 +126,7 @@ int VideoDevice::open_output(VideoOutConfig *config,
 		break;
 	}
 
-	if(output_base->open_output())
+	if(output_base->open_output(colormodel))
 	{
 		delete output_base;
 		output_base = 0;
@@ -135,12 +136,6 @@ int VideoDevice::open_output(VideoOutConfig *config,
 		return 0;
 	else
 		return 1;
-}
-
-void VideoDevice::new_output_buffer(int colormodel)
-{
-	if(output_base)
-		output_base->new_output_buffer(colormodel);
 }
 
 void VideoDevice::interrupt_playback()

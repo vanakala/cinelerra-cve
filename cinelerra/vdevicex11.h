@@ -39,9 +39,7 @@ public:
 	VDeviceX11(VideoDevice *device, Canvas *output);
 	~VDeviceX11();
 
-	void new_output_buffer(int colormodel);
-
-	int open_output();
+	int open_output(int colormodel);
 	int output_visible();
 
 // After loading the bitmap with a picture, write it

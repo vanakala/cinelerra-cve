@@ -207,6 +207,7 @@ void PackageRenderer::create_engine()
 			video_device->open_output(vconfig,
 				edlsession->output_w,
 				edlsession->output_h,
+				edlsession->color_model,
 				mwindow_global->cwindow->gui->canvas,
 				0);
 		}
@@ -310,7 +311,6 @@ int PackageRenderer::do_video()
 			if(mwindow_global && video_device->output_visible())
 			{
 // Vector for video device
-				video_device->new_output_buffer(edlsession->color_model);
 				VFrame *preview_output =
 					BC_Resources::tmpframes.clone_frame(video_output_ptr);
 
