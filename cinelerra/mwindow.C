@@ -77,6 +77,7 @@
 #include "plugin.h"
 #include "plugindb.h"
 #include "pluginserver.h"
+#include "pluginclient.h"
 #include "preferences.h"
 #include "render.h"
 #include "ruler.h"
@@ -1181,7 +1182,7 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 	{
 		if(plugin_guis->values[i]->plugin->identical_location(plugin))
 		{
-			plugin_guis->values[i]->render_gui(data);
+			plugin_guis->values[i]->client->plugin_render_gui(data);
 			break;
 		}
 	}
@@ -1197,7 +1198,7 @@ void MWindow::get_gui_data(PluginServer *srv)
 		return;
 	plugin_gui_lock->lock("MWindow::get_gui_data");
 	if(msg = plugin_messages.find_msg(srv->plugin))
-		srv->render_gui(msg->data);
+		srv->client->plugin_render_gui(msg->data);
 	plugin_gui_lock->unlock();
 }
 

@@ -302,11 +302,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::render_gui(void *data)
-{
-	if(client) client->plugin_render_gui(data);
-}
-
 MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 {
 	MainProgressBar *result = mwindow_global->mainprogress->start_progress(string, length);

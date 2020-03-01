@@ -110,9 +110,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// Called by MWindow to cause GUI to display
-	void render_gui(void *data);
-
 // ============================ for non realtime plugins
 // start processing data in plugin
 	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
@@ -168,12 +165,13 @@ public:
 // Icon for Asset Window
 	VFrame *picon;
 
+// Base class created by client
+	PluginClient *client;
+
 private:
 	int reset_parameters();
 	int cleanup_plugin();
 
-// Base class created by client
-	PluginClient *client;
 // Handle from dlopen.  Plugins are opened once at startup and stored in the master
 // plugindb.
 	void *plugin_fd;
