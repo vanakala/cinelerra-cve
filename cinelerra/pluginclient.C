@@ -50,13 +50,14 @@ PluginClient::PluginClient(PluginServer *server)
 	source_pts = 0;
 	source_start_pts = 0;
 	total_len_pts = 0;
+	plugin = 0;
 	this->server = server;
 }
 
 PluginClient::~PluginClient()
 {
-	if(mwindow_global)
-		mwindow_global->clear_msgs(server->plugin);
+	if(mwindow_global && plugin)
+		mwindow_global->clear_msgs(plugin);
 }
 
 // For realtime plugins initialize buffers
@@ -115,8 +116,8 @@ void PluginClient::set_renderer(TrackRender *renderer)
 void PluginClient::client_side_close()
 {
 // Last command executed
-	if(server->plugin)
-		mwindow_global->hide_plugin(server->plugin, 1);
+	if(plugin)
+		mwindow_global->hide_plugin(plugin, 1);
 	else
 	if(server->prompt)
 		server->prompt->set_done(1);
@@ -243,7 +244,7 @@ void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
 	total_len_pts = total_length;
 	frame_rate = framerate;
 
-	source_start_pts = server->plugin->get_pts();
+	source_start_pts = plugin->get_pts();
 
 	if(server->apiversion)
 	{
@@ -266,7 +267,7 @@ void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
 	source_pts = aframe->pts;
 	total_len_pts = total_len;
 
-	source_start_pts = server->plugin->get_pts();
+	source_start_pts = plugin->get_pts();
 
 	if(has_pts_api())
 	{
@@ -342,40 +343,40 @@ void PluginClient::abort_plugin(const char *fmt, ...)
 	strcat(buffer, plugin_title());
 	MainError::va_MessageBox(buffer, fmt, ap);
 	va_end(ap);
-	server->plugin->on = 0;
+	plugin->on = 0;
 }
 
 KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
 {
-	if(server->plugin)
+	if(plugin)
 	{
-		if(server->plugin->shared_plugin)
-			return server->plugin->shared_plugin->get_prev_keyframe(pts);
-		return server->plugin->get_prev_keyframe(pts);
+		if(plugin->shared_plugin)
+			return plugin->shared_plugin->get_prev_keyframe(pts);
+		return plugin->get_prev_keyframe(pts);
 	}
 	return server->keyframe;
 }
 
 KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 {
-	if(server->plugin)
+	if(plugin)
 	{
-		if(server->plugin->shared_plugin)
-			return server->plugin->shared_plugin->get_next_keyframe(pts);
-		return server->plugin->get_next_keyframe(pts);
+		if(plugin->shared_plugin)
+			return plugin->shared_plugin->get_next_keyframe(pts);
+		return plugin->get_next_keyframe(pts);
 	}
 	return server->keyframe;
 }
 
 void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 {
-	server->plugin->get_camera(x, y, z, postime);
+	plugin->get_camera(x, y, z, postime);
 }
 
 int PluginClient::gui_open()
 {
 	if(mwindow_global)
-		return mwindow_global->plugin_gui_open(server->plugin);
+		return mwindow_global->plugin_gui_open(plugin);
 	return 0;
 }
 
@@ -387,7 +388,7 @@ void PluginClient::plugin_render_gui(void *data)
 void PluginClient::send_render_gui(void *data)
 {
 	if(mwindow_global)
-		mwindow_global->render_plugin_gui(data, server->plugin);
+		mwindow_global->render_plugin_gui(data, plugin);
 }
 
 void PluginClient::get_gui_data()

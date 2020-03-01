@@ -209,6 +209,7 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	transition = client->is_transition();
 	set_title(client->plugin_title());
 	client->set_renderer(renderer);
+	client->plugin = plugin;
 
 // Check API version
 	if((audio || video) && !apiversion)

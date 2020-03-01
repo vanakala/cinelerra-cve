@@ -36,6 +36,7 @@ class PluginClient;
 #include "edlsession.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
+#include "plugin.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"
@@ -238,6 +239,8 @@ public:
 // Total number of processors available - 1
 	int smp;
 	PluginServer *server;
+// Plugin of EDL
+	Plugin *plugin;
 
 protected:
 	TrackRender *renderer;
