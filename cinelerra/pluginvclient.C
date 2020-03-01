@@ -94,12 +94,6 @@ void PluginVClient::init_realtime_parameters()
 	sample_aspect_ratio = edlsession->sample_aspect_ratio;
 }
 
-int PluginVClient::plugin_get_parameters()
-{
-	frame_rate = get_project_framerate();
-	return PluginClient::plugin_get_parameters();
-}
-
 int PluginVClient::plugin_process_loop(VFrame **buffers)
 {
 	int result = 0;

@@ -308,26 +308,6 @@ MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 	return result;
 }
 
-// ======================= Non-realtime plugin
-
-int PluginServer::get_parameters(ptstime start, ptstime end, int channels)
-{
-	double rate;
-
-	if(!plugin_open) return 0;
-
-	if(video)
-		rate = edlsession->frame_rate;
-	else
-		rate = edlsession->sample_rate;
-	client->start_pts = start;
-	client->end_pts = end;
-	client->source_start_pts = start;
-	client->total_len_pts = end - start;
-	client->total_in_buffers = channels;
-	return client->plugin_get_parameters();
-}
-
 void PluginServer::set_interactive()
 {
 	if(plugin_open)

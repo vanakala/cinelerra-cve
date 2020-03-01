@@ -48,7 +48,6 @@ public:
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
 	int plugin_process_loop(VFrame **buffers);
-	int plugin_get_parameters();
 
 // User calls this to request an opengl routine to be run synchronously.
 	void run_opengl();

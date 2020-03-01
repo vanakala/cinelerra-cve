@@ -90,8 +90,13 @@ MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
 	return server->start_progress(string, length);
 }
 
-int PluginClient::plugin_get_parameters()
+int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)
 {
+	start_pts = source_start_pts = start;
+	end_pts = end;
+	total_len_pts = end - start;
+	total_in_buffers = channels;
+	frame_rate = edlsession->frame_rate;
 	return get_parameters();
 }
 

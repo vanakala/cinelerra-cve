@@ -190,7 +190,7 @@ public:
 // Total number of processors - 1
 	int get_project_smp();
 
-	virtual int plugin_get_parameters();
+	int plugin_get_parameters(ptstime start, ptstime end, int channels);
 	void set_interactive();
 
 // Load plugin defaults from file

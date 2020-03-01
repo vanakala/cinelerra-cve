@@ -46,6 +46,7 @@
 #include "menueffects.h"
 #include "paramlist.h"
 #include "plugin.h"
+#include "pluginclient.h"
 #include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -296,9 +297,9 @@ void MenuEffectThread::run()
 // Open the plugin GUI
 			active_server->set_keyframe(&plugin_data);
 			active_server->set_prompt(&prompt);
-			active_server->open_plugin(0, 0);
+			PluginClient *client = active_server->open_plugin(0, 0);
 // Must set parameters since there is no plugin object to draw from.
-			active_server->get_parameters(total_start,
+			client->plugin_get_parameters(total_start,
 				total_end, 1);
 			active_server->show_gui();
 
@@ -314,9 +315,9 @@ void MenuEffectThread::run()
 		else
 // ============================non realtime plugin 
 		{
-			active_server->open_plugin(0, 0);
+			PluginClient *client = active_server->open_plugin(0, 0);
 			active_server->update_title();
-			result = active_server->get_parameters(total_start,
+			result = client->plugin_get_parameters(total_start,
 				total_end,
 				get_recordable_tracks(default_asset));
 
