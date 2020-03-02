@@ -85,9 +85,6 @@ public:
 	~_720to480Main();
 	PLUGIN_CLASS_MEMBERS
 
-	void start_loop();
-	void stop_loop();
-
 	void load_defaults();
 	void save_defaults();
 	double get_framerate();

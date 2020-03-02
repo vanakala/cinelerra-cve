@@ -134,29 +134,6 @@ void _720to480Main::save_defaults()
 	defaults->save();
 }
 
-
-void _720to480Main::start_loop()
-{
-	if(PluginClient::interactive)
-	{
-		char string[BCTEXTLEN];
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
-			PluginClient::end_pts - PluginClient::start_pts);
-	}
-	input_pts = PluginClient::start_pts;
-}
-
-
-void _720to480Main::stop_loop()
-{
-	if(PluginClient::interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-}
-
 #define DST_H 240
 
 void _720to480Main::reduce_field(VFrame *output, VFrame *input, int dest_row)
@@ -244,9 +221,6 @@ int _720to480Main::process_loop(VFrame *output)
 	get_frame(temp);
 	reduce_field(output, temp, config.first_field == 0 ? 1 : 0);
 	input_pts = temp->next_pts();
-
-	if(PluginClient::interactive) 
-		result = progress->update(input_pts - PluginClient::start_pts);
 
 	if(input_pts >= PluginClient::end_pts) result = 1;
 
