@@ -34,7 +34,7 @@ class PluginClient;
 #include "bchash.h"
 #include "condition.h"
 #include "edlsession.inc"
-#include "keyframe.h"
+#include "keyframe.inc"
 #include "mainprogress.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
@@ -148,6 +148,10 @@ public:
 // Return keyframe objects.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
+
+	void set_keyframe(KeyFrame *keyframe);
+	KeyFrame *get_keyframe();
+
 // get current camera position
 	void get_camera(double *x, double *y, double *z, ptstime postime);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
@@ -241,6 +245,8 @@ public:
 	PluginServer *server;
 // Plugin of EDL
 	Plugin *plugin;
+// Keyframe when plugin is not avalilable
+	KeyFrame *keyframe;
 
 protected:
 	TrackRender *renderer;

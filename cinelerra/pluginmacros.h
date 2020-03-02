@@ -37,6 +37,7 @@
  * PLUGIN_GUI_CLASS class_name
  */
 #include "bcresources.h"
+#include "keyframe.h"
 
 class PLUGIN_CLASS;
 

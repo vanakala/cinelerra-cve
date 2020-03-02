@@ -79,7 +79,6 @@ PluginServer::PluginServer(PluginServer &that)
 	video = that.video;
 	theme = that.theme;
 	uses_gui = that.uses_gui;
-	keyframe = that.keyframe;
 	plugin_fd = that.plugin_fd;
 	new_plugin = that.new_plugin;
 #ifdef HAVE_LADSPA
@@ -101,7 +100,6 @@ PluginServer::~PluginServer()
 // Done only once at creation
 int PluginServer::reset_parameters()
 {
-	keyframe = 0;
 	prompt = 0;
 	cleanup_plugin();
 	plugin_fd = 0;
@@ -134,11 +132,6 @@ int PluginServer::cleanup_plugin()
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
-}
-
-void PluginServer::set_keyframe(KeyFrame *keyframe)
-{
-	this->keyframe = keyframe;
 }
 
 void PluginServer::set_prompt(MenuEffectPrompt *prompt)
@@ -299,16 +292,6 @@ void PluginServer::release_plugin()
 
 	dlclose(plugin_fd);
 	plugin_fd = 0;
-}
-
-// ============================= queries
-
-KeyFrame* PluginServer::get_keyframe()
-{
-	if(plugin)
-		return plugin->get_keyframe(master_edl->local_session->get_selectionstart(1));
-	else
-		return keyframe;
 }
 
 Theme* PluginServer::new_theme()

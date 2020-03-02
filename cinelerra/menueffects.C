@@ -295,9 +295,10 @@ void MenuEffectThread::run()
 // Open a prompt GUI
 			MenuEffectPrompt prompt(cx, cy);
 // Open the plugin GUI
-			active_server->set_keyframe(&plugin_data);
-			active_server->set_prompt(&prompt);
 			PluginClient *client = active_server->open_plugin(0, 0);
+
+			client->set_keyframe(&plugin_data);
+			active_server->set_prompt(&prompt);
 // Must set parameters since there is no plugin object to draw from.
 			client->plugin_get_parameters(total_start,
 				total_end, 1);

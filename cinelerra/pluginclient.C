@@ -51,6 +51,7 @@ PluginClient::PluginClient(PluginServer *server)
 	source_start_pts = 0;
 	total_len_pts = 0;
 	plugin = 0;
+	keyframe = 0;
 	this->server = server;
 }
 
@@ -184,7 +185,7 @@ const char *PluginClient::plugin_conf_dir()
 
 void PluginClient::send_configure_change()
 {
-	KeyFrame* keyframe = server->get_keyframe();
+	KeyFrame* keyframe = get_keyframe();
 
 	save_data(keyframe);
 	if(mwindow_global)
@@ -376,7 +377,7 @@ KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
 			return plugin->shared_plugin->get_prev_keyframe(pts);
 		return plugin->get_prev_keyframe(pts);
 	}
-	return server->keyframe;
+	return keyframe;
 }
 
 KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
@@ -387,7 +388,20 @@ KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 			return plugin->shared_plugin->get_next_keyframe(pts);
 		return plugin->get_next_keyframe(pts);
 	}
-	return server->keyframe;
+	return keyframe;
+}
+
+void PluginClient::set_keyframe(KeyFrame *keyframe)
+{
+	this->keyframe = keyframe;
+}
+
+KeyFrame* PluginClient::get_keyframe()
+{
+	if(plugin)
+		return plugin->get_keyframe(
+			master_edl->local_session->get_selectionstart(1));
+	return keyframe;
 }
 
 void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)

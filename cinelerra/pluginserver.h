@@ -29,7 +29,6 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "guidelines.inc"
-#include "keyframe.inc"
 #include "mainprogress.inc"
 #include "menueffects.inc"
 #include "plugin.inc"
@@ -83,15 +82,10 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 
-// Get or create keyframe for writing, depending on whether auto keyframes
-// is enabled.  Called by PluginClient::send_configure_change
-	KeyFrame* get_keyframe();
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
 
 // =============================== for realtime plugins
-// Set pointer to a default keyframe when there is no plugin
-	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 
@@ -119,8 +113,6 @@ public:
 	int total_args;
 
 // Used by realtime read functions to get data.  Corresponds to the buffer table in the
-// Pointer to keyframe when plugin is not available
-	KeyFrame *keyframe;
 // Storage of keyframes and GUI status
 	Plugin *plugin;
 
