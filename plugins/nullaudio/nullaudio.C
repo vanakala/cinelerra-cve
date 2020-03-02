@@ -107,27 +107,6 @@ void NullAudio::save_defaults()
 	defaults->save();
 }
 
-void NullAudio::start_loop()
-{
-	if(interactive)
-	{
-// Set up progress bar
-		char string[BCTEXTLEN];
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, end_pts - start_pts);
-	}
-	current_pts = start_pts;
-}
-
-void NullAudio::stop_loop()
-{
-	if(interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-}
-
 /*
  * Pull frame and apply modifications
  * multichannel plugin gets here arrays of pointers
@@ -151,8 +130,5 @@ int NullAudio::process_loop(AFrame *frame)
 
 	if(onoff)
 		memset(frame->buffer, 0, frame->length * sizeof(double));
-// Update progress bar
-	if(interactive)
-		progress->update(current_pts - start_pts);
 	return ((end_pts - current_pts) < EPSILON);
 }
