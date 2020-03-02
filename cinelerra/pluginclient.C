@@ -334,6 +334,19 @@ int PluginClient::plugin_process_loop(VFrame **buffers)
 		return process_loop(buffers[0]);
 }
 
+void PluginClient::plugin_show_gui()
+{
+	smp = preferences_global->processors - 1;
+	if(plugin)
+	{
+		total_len_pts = plugin->get_length();
+		source_start_pts = plugin->get_pts();
+	}
+	source_pts = master_edl->local_session->get_selectionstart(1);
+	update_display_title();
+	show_gui();
+}
+
 void PluginClient::abort_plugin(const char *fmt, ...)
 {
 	va_list ap;

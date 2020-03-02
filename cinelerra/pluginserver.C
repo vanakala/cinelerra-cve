@@ -301,20 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::show_gui()
-{
-	if(!plugin_open) return;
-	client->smp = preferences_global->processors - 1;
-	if(plugin)
-	{
-		client->total_len_pts = plugin->get_length();
-		client->source_start_pts = plugin->get_pts();
-	}
-	client->source_pts = master_edl->local_session->get_selectionstart(1);
-	client->update_display_title();
-	client->show_gui();
-}
-
 void PluginServer::hide_gui()
 {
 	if(!plugin_open) return;

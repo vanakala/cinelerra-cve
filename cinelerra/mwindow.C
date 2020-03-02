@@ -1110,8 +1110,8 @@ void MWindow::show_plugin(Plugin *plugin)
 		{
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
-			gui->open_plugin(plugin, 0);
-			gui->show_gui();
+			PluginClient *client = gui->open_plugin(plugin, 0);
+			client->plugin_show_gui();
 			plugin->show = 1;
 		}
 	}

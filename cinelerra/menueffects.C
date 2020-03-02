@@ -301,7 +301,7 @@ void MenuEffectThread::run()
 // Must set parameters since there is no plugin object to draw from.
 			client->plugin_get_parameters(total_start,
 				total_end, 1);
-			active_server->show_gui();
+			client->plugin_show_gui();
 
 // wait for user input
 			result = prompt.run_window();

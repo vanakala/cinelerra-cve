@@ -92,9 +92,7 @@ public:
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
-// cause the plugin to show the GUI
-// Called by MWindow::show_plugin
-	void show_gui();
+
 	void hide_gui();
 // Update GUI with keyframe settings
 	void update_gui();

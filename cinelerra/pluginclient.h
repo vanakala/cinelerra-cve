@@ -191,6 +191,8 @@ public:
 
 	int plugin_get_parameters(ptstime start, ptstime end, int channels);
 
+	void plugin_show_gui();
+
 // Load plugin defaults from file
 	BC_Hash* load_defaults_file(const char *filename);
 // Returns configuration directory of plugins
