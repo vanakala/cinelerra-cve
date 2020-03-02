@@ -86,9 +86,6 @@ public:
  */
 	PLUGIN_CLASS_MEMBERS
 
-	void start_loop();
-	void stop_loop();
-
 // Processing is here
 	int process_loop(VFrame *frame);
 

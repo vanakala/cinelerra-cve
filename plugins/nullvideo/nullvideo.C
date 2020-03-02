@@ -108,28 +108,6 @@ void NullVideo::save_defaults()
 	defaults->save();
 }
 
-void NullVideo::start_loop()
-{
-	if(interactive)
-	{
-// Set up progress bar
-		char string[BCTEXTLEN];
-
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, end_pts - start_pts);
-	}
-	current_pts = start_pts;
-}
-
-void NullVideo::stop_loop()
-{
-	if(interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-}
-
 /*
  * Pull frame and apply modifications
  * multichannel plugin gets here arrays of pointers
@@ -145,8 +123,6 @@ int NullVideo::process_loop(VFrame *frame)
 
 	if(onoff)
 		frame->clear_frame();
-// Update progress bar
-	if(interactive)
-		progress->update(current_pts - start_pts);
+
 	return current_pts >= end_pts;
 }
