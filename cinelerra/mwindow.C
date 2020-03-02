@@ -1130,7 +1130,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 		{
 			PluginServer *ptr = plugin_guis->values[i];
 			plugin_guis->remove(ptr);
-			ptr->hide_gui();
+			ptr->client->hide_gui();
 			removed_guis->append(ptr);
 			if(lock) plugin_gui_lock->unlock();
 			return;

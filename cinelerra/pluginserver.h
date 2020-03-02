@@ -93,7 +93,6 @@ public:
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
 
-	void hide_gui();
 // Update GUI with keyframe settings
 	void update_gui();
 	void update_title();

@@ -301,12 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::hide_gui()
-{
-	if(!plugin_open) return;
-	client->hide_gui();
-}
-
 void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
