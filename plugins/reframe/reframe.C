@@ -57,27 +57,6 @@ void ReFrame::save_defaults()
 	defaults->save();
 }
 
-void ReFrame::start_loop()
-{
-	if(PluginClient::interactive)
-	{
-		char string[BCTEXTLEN];
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
-			PluginClient::end_pts - PluginClient::start_pts);
-	}
-	current_pts = 0;
-}
-
-void ReFrame::stop_loop()
-{
-	if(PluginClient::interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-}
-
 int ReFrame::process_loop(VFrame *buffer)
 {
 	int result = 0;
@@ -88,9 +67,6 @@ int ReFrame::process_loop(VFrame *buffer)
 	get_frame(buffer);
 	buffer->set_pts(current_pts);
 	current_pts = buffer->next_pts();
-
-	if(PluginClient::interactive) 
-		result = progress->update(input_pts - PluginClient::start_pts);
 
 	if(input_pts >= PluginClient::end_pts) result = 1;
 

@@ -64,8 +64,6 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void start_loop();
-	void stop_loop();
 	int process_loop(VFrame *buffer);
 
 	double scale;
