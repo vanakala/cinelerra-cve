@@ -65,6 +65,7 @@
 #include "playbackengine.h"
 #include "plugin.h"
 #include "plugindb.h"
+#include "pluginclient.h"
 #include "samplescroll.h"
 #include "selection.h"
 #include "trackcanvas.h"
@@ -633,6 +634,7 @@ void MWindow::insert_effect(const char *title,
 {
 	PluginServer *server = 0;
 	Plugin *new_plugin;
+	PluginClient *client;
 
 	if(cwindow->stop_playback())
 		return;
@@ -676,9 +678,9 @@ void MWindow::insert_effect(const char *title,
 		new_plugin->set_length(new_length);
 	}
 
-	if(server && server->open_plugin(0, 0))
+	if(server && (client = server->open_plugin(0, 0)))
 	{
-		server->save_data(new_plugin->keyframes->get_first());
+		client->save_data(new_plugin->keyframes->get_first());
 		server->close_plugin();
 	}
 	track->tracks->cleanup_plugins();
@@ -1187,12 +1189,13 @@ void MWindow::paste_transition()
 void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
 {
 	Plugin *transition;
+	PluginClient *client;
 
 	transition = dst_edit->insert_transition(server);
 
-	if(server && server->open_plugin(0, 0))
+	if(server && (client = server->open_plugin(0, 0)))
 	{
-		server->save_data(transition->keyframes->get_first());
+		client->save_data(transition->keyframes->get_first());
 		server->close_plugin();
 	}
 }

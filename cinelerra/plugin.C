@@ -30,6 +30,7 @@
 #include "language.h"
 #include "plugin.h"
 #include "pluginserver.h"
+#include "pluginclient.h"
 #include "preferences.inc"
 #include "track.h"
 #include "tracks.h"
@@ -269,6 +270,8 @@ int Plugin::get_number()
 void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	Plugin *shared_plugin, Track *shared_track)
 {
+	PluginClient *client;
+
 	plugin_server = server;
 	this->shared_plugin = shared_plugin;
 	this->shared_track = shared_track;
@@ -306,9 +309,9 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 		}
 	}
 
-	if(plugin_server && plugin_server->open_plugin(0, 0))
+	if(plugin_server && (client = plugin_server->open_plugin(0, 0)))
 	{
-		plugin_server->save_data(keyframes->get_first());
+		client->save_data(keyframes->get_first());
 		plugin_server->close_plugin();
 	}
 

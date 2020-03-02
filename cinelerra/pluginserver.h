@@ -90,9 +90,6 @@ public:
 	Theme* new_theme();
 
 // =============================== for realtime plugins
-// save configuration of plugin
-	void save_data(KeyFrame *keyframe);
-
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window

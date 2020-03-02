@@ -303,12 +303,6 @@ void PluginServer::release_plugin()
 
 // ============================= queries
 
-void PluginServer::save_data(KeyFrame *keyframe)
-{
-	if(!plugin_open) return;
-	client->save_data(keyframe);
-}
-
 KeyFrame* PluginServer::get_keyframe()
 {
 	if(plugin)
