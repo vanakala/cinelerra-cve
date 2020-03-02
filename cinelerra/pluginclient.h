@@ -182,12 +182,6 @@ public:
 	virtual void save_defaults() {};
 	virtual int load_configuration() { return 0; }
 
-// Non realtime operations for signal processors.
-	virtual void plugin_start_loop(ptstime start,
-		ptstime end,
-		int total_buffers);
-	void plugin_stop_loop();
-
 	MainProgressBar* start_progress(char *string, ptstime length);
 
 // get framerate of EDL

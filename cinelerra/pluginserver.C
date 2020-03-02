@@ -301,32 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::start_loop(ptstime start,
-	ptstime end,
-	int buffer_size, 
-	int total_buffers)
-{
-	double rate;
-
-	if(!plugin_open) return;
-
-	if(video)
-		rate = edlsession->frame_rate;
-	else
-		rate = edlsession->sample_rate;
-	total_in_buffers = total_buffers;
-	if(client->has_pts_api())
-		client->plugin_start_loop(start, end, total_buffers);
-	else
-		client->abort_plugin(_("Plugins with old API are not supported"));
-}
-
-void PluginServer::stop_loop()
-{
-	if(plugin_open)
-		client->plugin_stop_loop();
-}
-
 void PluginServer::raise_window()
 {
 	if(!plugin_open) return;

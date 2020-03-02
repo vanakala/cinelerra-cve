@@ -68,23 +68,6 @@ void PluginClient::plugin_init_realtime(int total_in_buffers)
 	this->total_in_buffers = total_in_buffers;
 }
 
-void PluginClient::plugin_start_loop(ptstime start,
-	ptstime end,
-	int total_buffers)
-{
-	this->source_start_pts = start;
-	this->total_len_pts = end - start;
-	this->start_pts = start;
-	this->end_pts = end;
-	this->total_in_buffers = total_buffers;
-	start_loop();
-}
-
-void PluginClient::plugin_stop_loop()
-{
-	stop_loop();
-}
-
 MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
 {
 	return mwindow_global->mainprogress->start_progress(string, length);

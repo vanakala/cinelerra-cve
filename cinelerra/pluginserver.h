@@ -110,11 +110,6 @@ public:
 // Called by plugin client to request synchronous routine.
 	void run_opengl(PluginClient *plugin_client);
 
-// ============================ for non realtime plugins
-// start processing data in plugin
-	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
-	void stop_loop();
-
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
