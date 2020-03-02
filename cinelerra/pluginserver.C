@@ -32,7 +32,6 @@
 #include "localsession.h"
 #include "maincursor.h"
 #include "mainerror.h"
-#include "mainprogress.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "playbackengine.h"
@@ -300,12 +299,6 @@ void PluginServer::release_plugin()
 
 	dlclose(plugin_fd);
 	plugin_fd = 0;
-}
-
-MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
-{
-	MainProgressBar *result = mwindow_global->mainprogress->start_progress(string, length);
-	return result;
 }
 
 void PluginServer::set_interactive()

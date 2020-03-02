@@ -123,7 +123,6 @@ public:
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	void set_interactive();   // make this the master plugin for progress bars
-	MainProgressBar* start_progress(char *string, ptstime length);
 
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.

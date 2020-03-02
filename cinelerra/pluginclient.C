@@ -30,6 +30,7 @@
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainundo.h"
+#include "mainprogress.h"
 #include "mwindow.h"
 #include "menueffects.h"
 #include "plugin.h"
@@ -87,7 +88,7 @@ void PluginClient::plugin_stop_loop()
 
 MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
 {
-	return server->start_progress(string, length);
+	return mwindow_global->mainprogress->start_progress(string, length);
 }
 
 int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)
