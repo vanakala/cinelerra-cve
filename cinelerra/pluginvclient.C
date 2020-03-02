@@ -96,7 +96,6 @@ void PluginVClient::init_realtime_parameters()
 
 void PluginVClient::run_opengl()
 {
-	server->run_opengl(this);
 }
 
 VFrame* PluginVClient::get_input(int channel)

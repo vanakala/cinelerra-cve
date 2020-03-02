@@ -93,15 +93,6 @@ public:
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
 
-// Set to 1 before every process call if the user supports OpenGL buffers.
-// Also provides the driver location.
-	void set_use_opengl(int value, VideoDevice *vdevice);
-// Plugin must call this before performing OpenGL operations.
-	int get_use_opengl();
-
-// Called by plugin client to request synchronous routine.
-	void run_opengl(PluginClient *plugin_client);
-
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window

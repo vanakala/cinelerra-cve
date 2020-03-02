@@ -301,25 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::set_use_opengl(int value, VideoDevice *vdevice)
-{
-// Disable until opengl rewrite is ready
-//	this->use_opengl = value;
-	this->use_opengl = 0;
-	this->vdevice = vdevice;
-}
-
-int PluginServer::get_use_opengl()
-{
-	return use_opengl;
-}
-
-void PluginServer::run_opengl(PluginClient *plugin_client)
-{
-	// Should not happen
-	printf("PluginServer::run_opengl called\n");
-}
-
 // ============================= queries
 
 void PluginServer::save_data(KeyFrame *keyframe)

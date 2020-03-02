@@ -148,7 +148,7 @@ float PluginClient::get_blue()
 
 int PluginClient::get_use_opengl()
 {
-	return server->get_use_opengl();
+	return 0;
 }
 
 int PluginClient::get_total_buffers()
