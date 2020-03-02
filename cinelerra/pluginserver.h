@@ -93,7 +93,6 @@ public:
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
 
-	void update_title();
 // Set to 1 before every process call if the user supports OpenGL buffers.
 // Also provides the driver location.
 	void set_use_opengl(int value, VideoDevice *vdevice);

@@ -1250,7 +1250,7 @@ void MWindow::update_plugin_titles()
 {
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-		plugin_guis->values[i]->update_title();
+		plugin_guis->values[i]->client->update_display_title();
 	}
 }
 

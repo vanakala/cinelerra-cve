@@ -301,12 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::update_title()
-{
-	if(!plugin_open) return;
-	client->update_display_title();
-}
-
 void PluginServer::set_use_opengl(int value, VideoDevice *vdevice)
 {
 // Disable until opengl rewrite is ready

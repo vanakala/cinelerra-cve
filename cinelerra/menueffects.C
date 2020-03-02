@@ -316,7 +316,7 @@ void MenuEffectThread::run()
 // ============================non realtime plugin 
 		{
 			PluginClient *client = active_server->open_plugin(0, 0);
-			active_server->update_title();
+			client->update_display_title();
 			result = client->plugin_get_parameters(total_start,
 				total_end,
 				get_recordable_tracks(default_asset));
