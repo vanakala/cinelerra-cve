@@ -1154,7 +1154,7 @@ void MWindow::update_plugin_guis()
 
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-		plugin_guis->values[i]->update_gui();
+		plugin_guis->values[i]->client->plugin_update_gui();
 	}
 	plugin_gui_lock->unlock();
 }

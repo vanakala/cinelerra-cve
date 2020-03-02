@@ -347,6 +347,14 @@ void PluginClient::plugin_show_gui()
 	show_gui();
 }
 
+void PluginClient::plugin_update_gui()
+{
+	total_len_pts = plugin->get_length();
+	source_start_pts = plugin->get_pts();
+	source_pts = master_edl->local_session->get_selectionstart(1);
+	update_gui();
+}
+
 void PluginClient::abort_plugin(const char *fmt, ...)
 {
 	va_list ap;

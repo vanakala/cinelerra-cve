@@ -301,16 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::update_gui()
-{
-	if(!plugin_open || !plugin) return;
-
-	client->total_len_pts = plugin->get_length();
-	client->source_start_pts = plugin->get_pts();
-	client->source_pts = master_edl->local_session->get_selectionstart(1);
-	client->update_gui();
-}
-
 void PluginServer::update_title()
 {
 	if(!plugin_open) return;
