@@ -50,10 +50,7 @@ public:
 	float db_over;
 	int separate_tracks;
 
-// required for all non realtime/multichannel plugins
-	void start_loop();
 	int process_loop(AFrame **buffer);
-	void stop_loop();
 
 	void load_defaults();
 	void save_defaults();

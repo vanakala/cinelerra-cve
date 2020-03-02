@@ -40,6 +40,7 @@ NormalizeMain::NormalizeMain(PluginServer *server)
  : PluginAClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
+	memset(peak, 0, sizeof(double) * MAXCHANNELS);
 }
 
 NormalizeMain::~NormalizeMain()
@@ -63,20 +64,6 @@ void NormalizeMain::save_defaults()
 	defaults->update("SEPERATE_TRACKS", separate_tracks);
 	defaults->save();
 }
-
-void NormalizeMain::start_loop()
-{
-	char string[BCTEXTLEN];
-	sprintf(string, "%s...", plugin_title());
-
-	progress = start_progress(string, end_pts - start_pts);
-
-	writing = 0;
-	current_pts = start_pts;
-
-	memset(peak, 0, sizeof(double) * MAXCHANNELS);
-}
-
 
 int NormalizeMain::process_loop(AFrame **aframes)
 {
@@ -174,10 +161,4 @@ int NormalizeMain::process_loop(AFrame **aframes)
 		writing = 1;
 	}
 	return result;
-}
-
-void NormalizeMain::stop_loop()
-{
-	progress->stop_progress();
-	delete progress;
 }
