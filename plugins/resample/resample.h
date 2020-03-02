@@ -62,9 +62,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS;
 
-	void start_loop();
 	int process_loop(AFrame *buffer);
-	void stop_loop();
 	void load_defaults();
 	void save_defaults();
 

@@ -89,32 +89,6 @@ void ResampleEffect::save_defaults()
 	defaults->save();
 }
 
-void ResampleEffect::start_loop()
-{
-	if(interactive)
-	{
-		char string[BCTEXTLEN];
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, end_pts - start_pts);
-	}
-
-	current_pts = start_pts;
-	output_pts = start_pts;
-	total_written = 0;
-	predicted_total = 0;
-
-	resample = new Resample(0, 1);
-}
-
-void ResampleEffect::stop_loop()
-{
-	if(interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-}
-
 int ResampleEffect::process_loop(AFrame *aframe)
 {
 	int result = 0;
@@ -122,6 +96,9 @@ int ResampleEffect::process_loop(AFrame *aframe)
 
 // Length to read based on desired output size
 	int size = (int)(aframe->buffer_length * scale);
+
+	if(!resample)
+		resample = new Resample(0, 1);
 
 	if(!input_frame)
 		input_frame = new AFrame(size);
@@ -157,9 +134,6 @@ int ResampleEffect::process_loop(AFrame *aframe)
 
 		output_pts = aframe->pts + aframe->duration;
 	}
-
-	if(interactive)
-		result = progress->update(current_pts - start_pts);
 
 	return result;
 }
