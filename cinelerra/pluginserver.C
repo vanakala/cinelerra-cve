@@ -301,12 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::set_interactive()
-{
-	if(plugin_open)
-		client->set_interactive();
-}
-
 int PluginServer::process_loop(VFrame **buffers)
 {
 	if(!plugin_open) return 1;

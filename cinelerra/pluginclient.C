@@ -44,7 +44,6 @@
 
 PluginClient::PluginClient(PluginServer *server)
 {
-	interactive = 0;
 	show_initially = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
@@ -106,11 +105,6 @@ int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels
 const char* PluginClient::plugin_title() 
 {
 	return N_("Untitled");
-}
-
-void PluginClient::set_interactive()
-{
-	interactive = 1;
 }
 
 void PluginClient::set_renderer(TrackRender *renderer)

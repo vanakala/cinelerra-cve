@@ -122,7 +122,6 @@ public:
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
-	void set_interactive();   // make this the master plugin for progress bars
 
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.

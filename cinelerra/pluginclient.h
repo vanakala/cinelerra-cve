@@ -191,7 +191,6 @@ public:
 	int get_project_smp();
 
 	int plugin_get_parameters(ptstime start, ptstime end, int channels);
-	void set_interactive();
 
 // Load plugin defaults from file
 	BC_Hash* load_defaults_file(const char *filename);
@@ -220,7 +219,6 @@ public:
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
 	ptstime start_pts, end_pts;
-	int interactive;                // for the progress bar plugin
 	int success;
 	int total_in_buffers;           // total buffers allocated by the server
 
