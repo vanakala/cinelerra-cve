@@ -45,10 +45,6 @@ public:
 	void init_realtime_parameters();
 	int is_video();
 
-	virtual int process_loop(VFrame **buffers) { return 1; };
-	virtual int process_loop(VFrame *buffer) { return 1; };
-	int plugin_process_loop(VFrame **buffers);
-
 // User calls this to request an opengl routine to be run synchronously.
 	void run_opengl();
 

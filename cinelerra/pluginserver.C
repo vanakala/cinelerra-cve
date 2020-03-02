@@ -301,22 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-int PluginServer::process_loop(VFrame **buffers)
-{
-	if(!plugin_open) return 1;
-	return client->plugin_process_loop(buffers);
-}
-
-int PluginServer::process_loop(AFrame **buffers)
-{
-
-	if(!plugin_open) return 1;
-
-	if(client->has_pts_api())
-		return client->plugin_process_loop(buffers);
-	return 1;
-}
-
 void PluginServer::start_loop(ptstime start,
 	ptstime end,
 	int buffer_size, 

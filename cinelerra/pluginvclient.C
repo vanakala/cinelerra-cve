@@ -94,18 +94,6 @@ void PluginVClient::init_realtime_parameters()
 	sample_aspect_ratio = edlsession->sample_aspect_ratio;
 }
 
-int PluginVClient::plugin_process_loop(VFrame **buffers)
-{
-	int result = 0;
-
-	if(is_multichannel())
-		result = process_loop(buffers);
-	else
-		result = process_loop(buffers[0]);
-
-	return result;
-}
-
 void PluginVClient::run_opengl()
 {
 	server->run_opengl(this);

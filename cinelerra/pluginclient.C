@@ -333,6 +333,24 @@ void PluginClient::get_frame(VFrame *buffer, int use_opengl)
 	}
 }
 
+int PluginClient::plugin_process_loop(AFrame **aframes)
+{
+	if(is_multichannel())
+		return process_loop(aframes);
+	else
+		return process_loop(aframes[0]);
+}
+
+int PluginClient::plugin_process_loop(VFrame **buffers)
+{
+	int result = 0;
+
+	if(is_multichannel())
+		return process_loop(buffers);
+	else
+		return process_loop(buffers[0]);
+}
+
 void PluginClient::abort_plugin(const char *fmt, ...)
 {
 	va_list ap;

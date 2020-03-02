@@ -40,14 +40,6 @@ int PluginAClient::is_audio()
 	return 1;
 }
 
-int PluginAClient::plugin_process_loop(AFrame **aframes)
-{
-	if(is_multichannel())
-		return process_loop(aframes);
-	else
-		return process_loop(aframes[0]);
-}
-
 int PluginAClient::get_project_samplerate()
 {
 	return edlsession->sample_rate;

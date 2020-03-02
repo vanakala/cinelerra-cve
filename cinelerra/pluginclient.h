@@ -93,8 +93,13 @@ public:
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
-	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
-	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
+	int plugin_process_loop(VFrame **buffers);
+	int plugin_process_loop(AFrame **buffers);
+
+	virtual int process_loop(AFrame *aframe) { return 1; };
+	virtual int process_loop(AFrame **aframes) { return 1; };
+	virtual int process_loop(VFrame **buffers) { return 1; };
+	virtual int process_loop(VFrame *buffer) { return 1; };
 
 // Multichannel buffer process for backwards compatibility
 	virtual void process_realtime(AFrame *input, AFrame *output) {};

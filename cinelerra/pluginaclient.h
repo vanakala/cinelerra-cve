@@ -33,10 +33,6 @@ public:
 
 	int is_audio();
 
-	virtual int process_loop(AFrame *aframe) { return 1; };
-	virtual int process_loop(AFrame **aframes) { return 1; };
-	int plugin_process_loop(AFrame **buffers);
-
 	static int get_project_samplerate();
 };
 
