@@ -301,12 +301,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-void PluginServer::raise_window()
-{
-	if(!plugin_open) return;
-	client->raise_window();
-}
-
 void PluginServer::show_gui()
 {
 	if(!plugin_open) return;

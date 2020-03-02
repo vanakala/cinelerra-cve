@@ -92,8 +92,6 @@ public:
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);
-// Raise the GUI
-	void raise_window();
 // cause the plugin to show the GUI
 // Called by MWindow::show_plugin
 	void show_gui();

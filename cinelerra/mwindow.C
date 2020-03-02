@@ -1096,7 +1096,7 @@ void MWindow::show_plugin(Plugin *plugin)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
-			plugin_guis->values[i]->raise_window();
+			plugin_guis->values[i]->client->raise_window();
 			done = 1;
 			break;
 		}
