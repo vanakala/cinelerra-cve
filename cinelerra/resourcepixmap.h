@@ -22,6 +22,7 @@
 #ifndef RESOURCEPIXMAP_H
 #define RESOURCEPIXMAP_H
 
+#include "aframe.inc"
 #include "bctimer.inc"
 #include "bcpixmap.h"
 #include "edit.inc"

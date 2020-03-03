@@ -33,6 +33,8 @@
 #include "intautos.h"
 #include "track.h"
 
+#include <string.h>
+
 struct autogrouptype_def Automation::autogrouptypes[] =
 {
 	{ "AUTOGROUPTYPE_AUDIO_FADE_MAX", "AUTOGROUPTYPE_AUDIO_FADE_MIN", 0,},

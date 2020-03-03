@@ -27,6 +27,8 @@
 #include "localsession.h"
 #include "transportcommand.h"
 
+#include <string.h>
+
 TransportCommand::TransportCommand()
 {
 	edl = 0;

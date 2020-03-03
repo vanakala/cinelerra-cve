@@ -53,6 +53,7 @@
 #include "question.h"
 #include "selection.h"
 #include "theme.h"
+#include "videodevice.inc"
 #include "vwindow.h"
 #include "vwindowgui.h"
 

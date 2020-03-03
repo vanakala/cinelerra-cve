@@ -48,7 +48,7 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <unistd.h>
 #include <locale.h>
 
 MWindow *mwindow_global;

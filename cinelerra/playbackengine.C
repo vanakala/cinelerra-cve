@@ -29,6 +29,7 @@
 #include "renderengine.h"
 #include "transportcommand.h"
 
+#include <string.h>
 
 PlaybackEngine::PlaybackEngine(Canvas *output)
  : Thread(THREAD_SYNCHRONOUS)

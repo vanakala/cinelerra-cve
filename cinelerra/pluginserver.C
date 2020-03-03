@@ -21,32 +21,15 @@
 
 #include "pluginaclientlad.h"
 
-#include "aframe.h"
-#include "autoconf.h"
 #include "bcsignals.h"
-#include "bcresources.h"
-#include "cwindow.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "language.h"
-#include "localsession.h"
-#include "maincursor.h"
-#include "mainerror.h"
-#include "mainundo.h"
-#include "mwindow.h"
-#include "playbackengine.h"
 #include "plugin.h"
-#include "pluginaclient.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
-#include "pluginvclient.h"
-#include "preferences.h"
-#include "renderengine.inc"
-#include "tmpframecache.h"
-#include "track.h"
 #include "vframe.h"
-#include "videodevice.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
@@ -114,8 +97,6 @@ int PluginServer::reset_parameters()
 	transition = 0;
 	new_plugin = 0;
 	client = 0;
-	use_opengl = 0;
-	vdevice = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
 	ladspa_index = -1;
@@ -127,8 +108,6 @@ int PluginServer::reset_parameters()
 // Done every time the plugin is opened or closed
 int PluginServer::cleanup_plugin()
 {
-	total_in_buffers = 0;
-	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
 }

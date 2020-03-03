@@ -60,7 +60,7 @@
 
 #include <ctype.h>
 #include <string.h>
-
+#include <unistd.h>
 
 RenderItem::RenderItem()
  : BC_MenuItem(_("Render..."), "Shift+R", 'R')

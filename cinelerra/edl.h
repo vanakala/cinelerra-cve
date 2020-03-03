@@ -23,6 +23,7 @@
 #define EDL_H
 
 #include "asset.inc"
+#include "arraylist.h"
 #include "autoconf.inc"
 #include "bchash.inc"
 #include "edits.inc"
@@ -36,6 +37,7 @@
 #include "pluginserver.h"
 #include "preferences.inc"
 #include "theme.inc"
+#include "track.inc"
 #include "tracks.inc"
 
 

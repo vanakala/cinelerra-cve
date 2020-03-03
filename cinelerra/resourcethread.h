@@ -31,6 +31,7 @@
 // entire trackcanvas in the process.
 
 
+#include "aframe.inc"
 #include "arraylist.h"
 #include "condition.inc"
 #include "datatype.h"

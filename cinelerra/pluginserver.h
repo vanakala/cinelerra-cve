@@ -24,34 +24,18 @@
 
 // inherited by plugins
 
-#include "aframe.inc"
-#include "arraylist.h"
+#include "config.h"
 #include "datatype.h"
-#include "edl.inc"
-#include "guidelines.inc"
 #include "plugin.inc"
-#include "pluginaclientlad.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
-#include "renderengine.inc"
 #include "theme.inc"
-#include "track.inc"
 #include "trackrender.inc"
 #include "vframe.inc"
-#include "videodevice.inc"
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #ifdef HAVE_LADSPA
 #include <ladspa.h>
 #endif
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
-
 
 class PluginServer
 {
@@ -81,7 +65,6 @@ public:
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
 
-	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.
 
 // Specifies what type of plugin.
@@ -108,11 +91,6 @@ public:
 // Storage of keyframes and GUI status
 	Plugin *plugin;
 
-// Storage of session parameters
-	int gui_on;
-
-	VFrame *temp_frame;
-
 // Icon for Asset Window
 	VFrame *picon;
 
@@ -136,9 +114,6 @@ private:
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
 #endif
-	int use_opengl;
-// Driver for opengl calls.
-	VideoDevice *vdevice;
 };
 
 #endif

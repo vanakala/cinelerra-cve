@@ -45,6 +45,7 @@
 #include "selection.h"
 #include "setformat.h"
 #include "theme.h"
+#include "videodevice.inc"
 #include "vframe.h"
 #include "vwindow.h"
 

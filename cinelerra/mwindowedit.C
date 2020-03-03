@@ -73,6 +73,7 @@
 #include "tracks.h"
 #include "units.h"
 #include "undostackitem.h"
+#include "videodevice.inc"
 #include "vplayback.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
