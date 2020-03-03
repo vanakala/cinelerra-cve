@@ -51,6 +51,7 @@ PluginClient::PluginClient(PluginServer *server)
 	source_start_pts = 0;
 	total_len_pts = 0;
 	plugin = 0;
+	prompt = 0;
 	keyframe = 0;
 	this->server = server;
 }
@@ -103,9 +104,15 @@ void PluginClient::client_side_close()
 	if(plugin)
 		mwindow_global->hide_plugin(plugin, 1);
 	else
-	if(server->prompt)
-		server->prompt->set_done(1);
+	if(prompt)
+		prompt->set_done(1);
 }
+
+void PluginClient::set_prompt(MenuEffectPrompt *prompt)
+{
+	this->prompt = prompt;
+}
+
 
 double PluginClient::get_project_framerate()
 {

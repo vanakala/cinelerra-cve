@@ -100,7 +100,6 @@ PluginServer::~PluginServer()
 // Done only once at creation
 int PluginServer::reset_parameters()
 {
-	prompt = 0;
 	cleanup_plugin();
 	plugin_fd = 0;
 	plugin = 0;
@@ -132,11 +131,6 @@ int PluginServer::cleanup_plugin()
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
-}
-
-void PluginServer::set_prompt(MenuEffectPrompt *prompt)
-{
-	this->prompt = prompt;
 }
 
 void PluginServer::set_title(const char *string)

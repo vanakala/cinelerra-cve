@@ -36,6 +36,7 @@ class PluginClient;
 #include "edlsession.inc"
 #include "keyframe.inc"
 #include "mainprogress.inc"
+#include "menueffects.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
@@ -83,6 +84,8 @@ public:
 	virtual void hide_gui() {};
 // cause the plugin to hide the gui
 	void client_side_close();
+// Set pointer to menueffect window
+	void set_prompt(MenuEffectPrompt *prompt);
 	void update_display_title();
 
 // Raise the GUI
@@ -243,6 +246,7 @@ public:
 // Total number of processors available - 1
 	int smp;
 	PluginServer *server;
+	MenuEffectPrompt *prompt;
 // Plugin of EDL
 	Plugin *plugin;
 // Keyframe when plugin is not avalilable

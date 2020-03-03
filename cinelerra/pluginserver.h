@@ -29,8 +29,6 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "guidelines.inc"
-#include "mainprogress.inc"
-#include "menueffects.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
 #include "pluginclient.inc"
@@ -85,10 +83,6 @@ public:
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
 
-// =============================== for realtime plugins
-// Set pointer to menueffect window
-	void set_prompt(MenuEffectPrompt *prompt);
-
 	int total_in_buffers;
 	int plugin_open;                 // Whether or not the plugin is open.
 
@@ -117,7 +111,6 @@ public:
 	Plugin *plugin;
 
 // Storage of session parameters
-	MenuEffectPrompt *prompt;
 	int gui_on;
 
 	VFrame *temp_frame;

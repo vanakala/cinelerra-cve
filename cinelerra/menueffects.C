@@ -298,7 +298,7 @@ void MenuEffectThread::run()
 			PluginClient *client = active_server->open_plugin(0, 0);
 
 			client->set_keyframe(&plugin_data);
-			active_server->set_prompt(&prompt);
+			client->set_prompt(&prompt);
 // Must set parameters since there is no plugin object to draw from.
 			client->plugin_get_parameters(total_start,
 				total_end, 1);
@@ -310,7 +310,7 @@ void MenuEffectThread::run()
 // Close plugin.
 			client->hide_gui();
 			client->save_data(&plugin_data);
-			active_server->set_prompt(0);
+			client->set_prompt(0);
 			realtime = 1;
 		}
 		else
