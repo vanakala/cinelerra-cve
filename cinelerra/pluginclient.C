@@ -121,7 +121,21 @@ double PluginClient::get_project_framerate()
 
 void PluginClient::update_display_title()
 {
-	server->generate_display_title(gui_string);
+	char lbuf[BCTEXTLEN];
+	const char *s;
+
+	if(BC_Resources::locale_utf8)
+		strcpy(lbuf, _(server->title));
+	else
+		BC_Resources::encode(BC_Resources::encoding, 0,
+			_(server->title), lbuf, BCTEXTLEN);
+
+	if(plugin && plugin->track)
+		s = plugin->track->title;
+	else
+		s = PROGRAM_NAME;
+
+	sprintf(gui_string, "%.80s - %.80s", lbuf, s);
 }
 
 char* PluginClient::get_gui_string()

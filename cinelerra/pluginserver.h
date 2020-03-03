@@ -77,8 +77,6 @@ public:
 	void dump(int indent = 0);
 // queries
 	void set_title(const char *string);
-// Generate title for display
-	void generate_display_title(char *string);
 
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
