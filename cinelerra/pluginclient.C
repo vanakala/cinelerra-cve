@@ -250,15 +250,10 @@ void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
 
 	source_start_pts = plugin->get_pts();
 
-	if(server->apiversion)
-	{
-		if(server->multichannel)
-			process_frame(frame);
-		else
-			process_frame(frame[0]);
-	}
+	if(server->multichannel)
+		process_frame(frame);
 	else
-		abort_plugin(_("Plugins with old API are not supported"));
+		process_frame(frame[0]);
 }
 
 void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
@@ -273,20 +268,18 @@ void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
 
 	source_start_pts = plugin->get_pts();
 
-	if(has_pts_api())
+	if(server->multichannel)
 	{
-		if(server->multichannel)
-		{
-			int fragment_size = aframe->fill_length();
-			for(int i = 1; i < total_in_buffers; i++)
-				buffer[i]->set_fill_request(source_pts,
-					fragment_size);
+		int fragment_size = aframe->fill_length();
 
-			process_frame(buffer);
-		}
-		else
-			process_frame(buffer[0]);
+		for(int i = 1; i < total_in_buffers; i++)
+			buffer[i]->set_fill_request(source_pts,
+				fragment_size);
+
+		process_frame(buffer);
 	}
+	else
+		process_frame(buffer[0]);
 }
 
 void PluginClient::process_frame(AFrame **aframe)
