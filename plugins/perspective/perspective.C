@@ -889,6 +889,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 
 void PerspectiveMain::handle_opengl()
 {
+/* FIXIT
 #ifdef HAVE_GL
 	engine->set_opengl(1);
 	engine->process(get_output(),
@@ -906,4 +907,5 @@ void PerspectiveMain::handle_opengl()
 		config.forward);
 	engine->set_opengl(0);
 #endif
+	*/
 }
