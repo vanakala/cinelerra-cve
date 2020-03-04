@@ -255,6 +255,7 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 void ScaleMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
 	calculate_transfer(get_output(),
 		in_x1, 
@@ -265,7 +266,6 @@ void ScaleMain::handle_opengl()
 		out_x2, 
 		out_y1, 
 		out_y2);
-/* Pole
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
