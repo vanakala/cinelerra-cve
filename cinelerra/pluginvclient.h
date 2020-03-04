@@ -74,17 +74,6 @@ public:
 // Get guideframe of the plugin
 	GuideFrame *get_guides();
 
-// Frame rate of EDL
-	double project_frame_rate;
-// Local parameters set by non realtime plugin about the file to be generated.
-// Retrieved by server to set output file format.
-// In realtime plugins, these are set before every process_buffer as the
-// requested rates.
-	int project_color_model;
-
-// Aspect ratio
-	double sample_aspect_ratio;
-
 // Tempo
 	VFrame *temp;
 };

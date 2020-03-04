@@ -555,7 +555,7 @@ void AudioRender::allocate_aframes(Plugin *plugin)
 			}
 		}
 	}
-	plugin->client->plugin_init_realtime(plugin->aframes.total);
+	plugin->client->plugin_init(plugin->aframes.total);
 }
 
 void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer)

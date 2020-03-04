@@ -329,7 +329,7 @@ void InterpolateVideo::process_frame(VFrame *frame)
 	{
 
 // Fill border frames
-		fill_border(frame_rate, frame->get_pts());
+		fill_border(project_frame_rate, frame->get_pts());
 // Fraction of lowest frame in output
 		float highest_fraction = (frame->get_pts() - frames[0]->get_pts()) /
 			(frames[1]->get_pts() - frames[0]->get_pts());

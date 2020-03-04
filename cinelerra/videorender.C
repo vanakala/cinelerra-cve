@@ -292,7 +292,7 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 			}
 		}
 	}
-	plugin->client->plugin_init_realtime(plugin->vframes.total);
+	plugin->client->plugin_init(plugin->vframes.total);
 }
 
 void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)

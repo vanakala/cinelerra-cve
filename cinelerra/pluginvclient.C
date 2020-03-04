@@ -37,7 +37,6 @@ PluginVClient::PluginVClient(PluginServer *server)
  : PluginClient(server)
 {
 	temp = 0;
-	frame_rate = project_frame_rate = edlsession->frame_rate;
 }
 
 PluginVClient::~PluginVClient()
@@ -103,7 +102,7 @@ double PluginVClient::get_project_framerate()
 
 double PluginVClient::get_framerate()
 {
-	return frame_rate;
+	return project_frame_rate;
 }
 
 ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()

@@ -225,7 +225,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	{
 		transition->active_server = new PluginServer(*transition->plugin_server);
 		transition->active_server->open_plugin(transition, this);
-		transition->client->plugin_init_realtime(1);
+		transition->client->plugin_init(1);
 	}
 
 	if(!(tmpframe = arender->get_file_frame(aframe->pts,
@@ -344,7 +344,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 				{
 					plugin->active_server = new PluginServer(*server);
 					plugin->active_server->open_plugin(plugin, this);
-					plugin->client->plugin_init_realtime(1);
+					plugin->client->plugin_init(1);
 				}
 				plugin->client->process_buffer(&aframe, plugin->get_length());
 			}

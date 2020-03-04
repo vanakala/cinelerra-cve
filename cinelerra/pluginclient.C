@@ -62,11 +62,18 @@ PluginClient::~PluginClient()
 		mwindow_global->clear_msgs(plugin);
 }
 
-// For realtime plugins initialize buffers
-void PluginClient::plugin_init_realtime(int total_in_buffers)
+void PluginClient::plugin_init(int total_in_buffers)
 {
 	smp = preferences_global->processors - 1;
-	this->total_in_buffers = total_in_buffers;
+	total_in_buffers = total_in_buffers;
+	start_pts = source_start_pts = plugin->get_pts();
+	total_len_pts = plugin->get_length();
+	end_pts = source_start_pts + total_len_pts;
+	project_frame_rate = plugin->edl->this_edlsession->frame_rate;
+	project_color_model = plugin->edl->this_edlsession->color_model;
+	sample_aspect_ratio = plugin->edl->this_edlsession->sample_aspect_ratio;
+	samplerate = plugin->edl->this_edlsession->sample_rate;
+	init_plugin();
 }
 
 MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
@@ -80,7 +87,7 @@ int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels
 	end_pts = end;
 	total_len_pts = end - start;
 	total_in_buffers = channels;
-	frame_rate = edlsession->frame_rate;
+	project_frame_rate = edlsession->frame_rate;
 	return get_parameters();
 }
 
@@ -236,19 +243,8 @@ void PluginClient::process_transition(AFrame *input, AFrame *output,
 
 void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
 {
-	double framerate;
-	ptstime duration = frame[0]->get_duration();
-
-	if(duration > EPSILON)
-		framerate = 1.0 / duration;
-	else
-		framerate = edlsession->frame_rate;
-
 	source_pts = frame[0]->get_pts();
 	total_len_pts = total_length;
-	frame_rate = framerate;
-
-	source_start_pts = plugin->get_pts();
 
 	if(server->multichannel)
 		process_frame(frame);
@@ -265,8 +261,6 @@ void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
 
 	source_pts = aframe->pts;
 	total_len_pts = total_len;
-
-	source_start_pts = plugin->get_pts();
 
 	if(server->multichannel)
 	{

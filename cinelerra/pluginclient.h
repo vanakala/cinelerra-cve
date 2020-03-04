@@ -73,8 +73,7 @@ public:
 // get information from user before non realtime processing
 	virtual int get_parameters() { return 0; };
 
-	virtual void start_loop() {};
-	virtual void stop_loop() {};
+	virtual void init_plugin() {};
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
@@ -208,9 +207,8 @@ public:
 // Abort plugin with a message
 	void abort_plugin(const char *fmt, ...)
 		__attribute__ ((__format__(__printf__, 2, 3)));
-
-// Realtime operations.
-	void plugin_init_realtime(int total_in_buffers);
+// Initialize plugin
+	void plugin_init(int total_in_buffers);
 
 // Called by plugin server to render the GUI with rendered data.
 	void plugin_render_gui(void *data);
@@ -241,10 +239,14 @@ public:
 // it's the transition length.
 	ptstime total_len_pts;
 
-	double frame_rate;
+	double project_frame_rate;
+	double sample_aspect_ratio;
+	int project_color_model;
+	int samplerate;
 
 // Total number of processors available - 1
 	int smp;
+
 	PluginServer *server;
 	MenuEffectPrompt *prompt;
 // Plugin of EDL
