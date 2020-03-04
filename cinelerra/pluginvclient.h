@@ -52,12 +52,6 @@ public:
 // Overridden by the user with the commands to run synchronously.
 	virtual void handle_opengl() {};
 
-// Used by the opengl handlers to get the 
-// arguments to process_buffer.
-// For realtime plugins, they're identical for input and output.
-	VFrame* get_input(int channel = 0);
-	VFrame* get_output(int channel = 0);
-
 // Called by user to allocate the temporary for the current process_buffer.  
 // It may be deleted after the process_buffer to conserve memory.
 	VFrame* new_temp(int w, int h, int color_model);
@@ -79,11 +73,6 @@ public:
 	int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 // Get guideframe of the plugin
 	GuideFrame *get_guides();
-
-// ======================== Realtime buffer pointers ===========================
-// These are provided by the plugin server for the opengl handler.
-	VFrame *input[MAXCHANNELS];
-	VFrame *output[MAXCHANNELS];
 
 // Frame rate of EDL
 	double project_frame_rate;

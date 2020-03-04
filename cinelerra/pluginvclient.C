@@ -38,8 +38,6 @@ PluginVClient::PluginVClient(PluginServer *server)
 {
 	temp = 0;
 	frame_rate = project_frame_rate = edlsession->frame_rate;
-	memset(input, 0, sizeof(VFrame *) * MAXCHANNELS);
-	memset(output, 0, sizeof(VFrame *) * MAXCHANNELS);
 }
 
 PluginVClient::~PluginVClient()
@@ -96,16 +94,6 @@ void PluginVClient::init_realtime_parameters()
 
 void PluginVClient::run_opengl()
 {
-}
-
-VFrame* PluginVClient::get_input(int channel)
-{
-	return input[channel];
-}
-
-VFrame* PluginVClient::get_output(int channel)
-{
-	return output[channel];
 }
 
 double PluginVClient::get_project_framerate()
