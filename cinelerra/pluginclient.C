@@ -246,10 +246,15 @@ void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
 	source_pts = frame[0]->get_pts();
 	total_len_pts = total_length;
 
-	if(server->multichannel)
-		process_frame(frame);
+	if(!server->realtime)
+		plugin_process_loop(frame);
 	else
-		process_frame(frame[0]);
+	{
+		if(server->multichannel)
+			process_frame(frame);
+		else
+			process_frame(frame[0]);
+	}
 }
 
 void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
@@ -262,18 +267,23 @@ void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
 	source_pts = aframe->pts;
 	total_len_pts = total_len;
 
-	if(server->multichannel)
-	{
-		int fragment_size = aframe->fill_length();
-
-		for(int i = 1; i < total_in_buffers; i++)
-			buffer[i]->set_fill_request(source_pts,
-				fragment_size);
-
-		process_frame(buffer);
-	}
+	if(!server->realtime)
+		plugin_process_loop(buffer);
 	else
-		process_frame(buffer[0]);
+	{
+		if(server->multichannel)
+		{
+			int fragment_size = aframe->fill_length();
+
+			for(int i = 1; i < total_in_buffers; i++)
+				buffer[i]->set_fill_request(source_pts,
+					fragment_size);
+
+			process_frame(buffer);
+		}
+		else
+			process_frame(buffer[0]);
+	}
 }
 
 void PluginClient::process_frame(AFrame **aframe)
