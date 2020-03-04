@@ -134,6 +134,11 @@ void _720to480Main::save_defaults()
 	defaults->save();
 }
 
+void _720to480Main::init_plugin()
+{
+	input_pts = start_pts;
+}
+
 #define DST_H 240
 
 void _720to480Main::reduce_field(VFrame *output, VFrame *input, int dest_row)

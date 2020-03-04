@@ -88,6 +88,7 @@ public:
 	void load_defaults();
 	void save_defaults();
 	double get_framerate();
+	void init_plugin();
 	int process_loop(VFrame *output);
 
 	void reduce_field(VFrame *output, VFrame *input, int dest_row);
