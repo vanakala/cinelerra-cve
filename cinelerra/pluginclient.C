@@ -30,14 +30,12 @@
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainundo.h"
-#include "mainprogress.h"
 #include "mwindow.h"
 #include "menueffects.h"
 #include "plugin.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
-#include "renderengine.inc"
 #include "track.h"
 #include "trackrender.h"
 #include <string.h>
@@ -74,11 +72,6 @@ void PluginClient::plugin_init(int total_in_buffers)
 	sample_aspect_ratio = plugin->edl->this_edlsession->sample_aspect_ratio;
 	samplerate = plugin->edl->this_edlsession->sample_rate;
 	init_plugin();
-}
-
-MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
-{
-	return mwindow_global->mainprogress->start_progress(string, length);
 }
 
 int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)

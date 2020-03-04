@@ -35,7 +35,6 @@ class PluginClient;
 #include "condition.h"
 #include "edlsession.inc"
 #include "keyframe.inc"
-#include "mainprogress.inc"
 #include "menueffects.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
@@ -187,8 +186,6 @@ public:
 // save the current settings as defaults
 	virtual void save_defaults() {};
 	virtual int load_configuration() { return 0; }
-
-	MainProgressBar* start_progress(char *string, ptstime length);
 
 // get framerate of EDL
 	double get_project_framerate();

@@ -93,8 +93,6 @@ public:
 
 	void reduce_field(VFrame *output, VFrame *input, int dest_row);
 
-	MainProgressBar *progress;
-
 	VFrame *temp;
 	ptstime input_pts;
 };
