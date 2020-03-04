@@ -989,7 +989,7 @@ static float calculate_opacity(float mag,
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
 		type *gradient_row = (type*)plugin->gradient->get_row_ptr(i); \
-		type *out_row = (type*)plugin->get_output()->get_row_ptr(i); \
+		type *out_row = (type*)plugin->output->get_row_ptr(i); \
  \
 		switch(plugin->config.shape) \
 		{ \
@@ -1121,7 +1121,7 @@ void GradientUnit::process_package(LoadPackage *package)
 	void *b_table = 0;
 	void *a_table = 0;
 	int gradient_cmodel = plugin->gradient->get_color_model();
-	int output_cmodel = plugin->get_output()->get_color_model();
+	int output_cmodel = plugin->output->get_color_model();
 
 	if(in_radius > out_radius)
 	{
@@ -1286,7 +1286,7 @@ void GradientUnit::process_package(LoadPackage *package)
 		for(int i = pkg->y1; i < pkg->y2; i++)
 		{
 			uint16_t *gradient_row = (uint16_t*)plugin->gradient->get_row_ptr(i);
-			uint16_t *out_row = (uint16_t*)plugin->get_output()->get_row_ptr(i);
+			uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(i);
 
 			switch(plugin->config.shape)
 			{
