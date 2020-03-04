@@ -126,9 +126,9 @@ GuideFrame *PluginVClient::get_guides()
 {
 	if(!server->plugin->guideframe && mwindow_global)
 	{
-		ptstime start = server->plugin->get_pts();
-		ptstime end = start + server->plugin->get_length();
-		server->plugin->guideframe = mwindow_global->cwindow->new_guideframe(start, end);
+		ptstime start = plugin->get_pts();
+		ptstime end = plugin->get_length();
+		plugin->guideframe = mwindow_global->cwindow->new_guideframe(start, end);
 	}
-	return server->plugin->guideframe;
+	return plugin->guideframe;
 }
