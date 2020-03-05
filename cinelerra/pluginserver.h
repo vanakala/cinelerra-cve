@@ -53,7 +53,7 @@ public:
 	PluginClient *open_plugin(Plugin *plugin,
 		TrackRender *renderer, int master = 0, int lad_index = -1);
 // close the plugin
-	void close_plugin();
+	void close_plugin(PluginClient *client);
 // Dynamic loading
 	int load_plugin();
 	void release_plugin();
@@ -80,23 +80,12 @@ public:
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;
 	char *path;           // location of plugin on disk
-	char *data_text;      // pointer to the data that was requested by a save_data command
-	char *args[4];
-	int total_args;
-
-// Used by realtime read functions to get data.  Corresponds to the buffer table in the
-// Storage of keyframes and GUI status
-	Plugin *plugin;
 
 // Icon for Asset Window
 	VFrame *picon;
 
-// Base class created by client
-	PluginClient *client;
-
 private:
 	int reset_parameters();
-	int cleanup_plugin();
 
 // Handle from dlopen.  Plugins are opened once at startup and stored in the master
 // plugindb.

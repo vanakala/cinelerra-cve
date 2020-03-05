@@ -90,7 +90,7 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 				if(client)
 				{
 					append(new_plugin);
-					new_plugin->close_plugin();
+					new_plugin->close_plugin(client);
 					new_plugin->release_plugin();
 					if(splash_window)
 						splash_window->operation->update(_(new_plugin->title));
@@ -109,7 +109,7 @@ void PluginDB::init_plugin_path(FileSystem *fs,
 						if(client)
 						{
 							append(new_plugin);
-							new_plugin->close_plugin();
+							new_plugin->close_plugin(client);
 							new_plugin->release_plugin();
 							if(splash_window)
 								splash_window->operation->update(_(new_plugin->title));

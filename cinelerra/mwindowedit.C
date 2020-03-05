@@ -682,7 +682,7 @@ void MWindow::insert_effect(const char *title,
 	if(server && (client = server->open_plugin(0, 0)))
 	{
 		client->save_data(new_plugin->keyframes->get_first());
-		server->close_plugin();
+		server->close_plugin(client);
 	}
 	track->tracks->cleanup_plugins();
 }
@@ -1197,7 +1197,7 @@ void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
 	if(server && (client = server->open_plugin(0, 0)))
 	{
 		client->save_data(transition->keyframes->get_first());
-		server->close_plugin();
+		server->close_plugin(client);
 	}
 }
 

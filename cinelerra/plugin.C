@@ -312,7 +312,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	if(plugin_server && (client = plugin_server->open_plugin(0, 0)))
 	{
 		client->save_data(keyframes->get_first());
-		plugin_server->close_plugin();
+		plugin_server->close_plugin(client);
 	}
 
 	if(plugin_type != PLUGIN_TRANSITION)

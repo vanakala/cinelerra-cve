@@ -421,7 +421,7 @@ void MWindow::init_theme()
 	}
 
 	theme_global = theme = client->new_theme();
-	server->close_plugin();
+	server->close_plugin(client);
 	theme->mwindow = this;
 // Load images which may have been forgotten
 	theme->Theme::initialize();

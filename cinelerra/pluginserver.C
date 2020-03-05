@@ -74,18 +74,15 @@ PluginServer::PluginServer(PluginServer &that)
 
 PluginServer::~PluginServer()
 {
-	close_plugin();
-	if(path) delete [] path;
-	if(title) delete [] title;
-	if(picon) delete picon;
+	delete [] path;
+	delete [] title;
+	delete picon;
 }
 
 // Done only once at creation
 int PluginServer::reset_parameters()
 {
-	cleanup_plugin();
 	plugin_fd = 0;
-	plugin = 0;
 	title = 0;
 	path = 0;
 	audio = video = theme = 0;
@@ -96,20 +93,12 @@ int PluginServer::reset_parameters()
 	picon = 0;
 	transition = 0;
 	new_plugin = 0;
-	client = 0;
 #ifdef HAVE_LADSPA
 	is_lad = 0;
 	ladspa_index = -1;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
 #endif
-}
-
-// Done every time the plugin is opened or closed
-int PluginServer::cleanup_plugin()
-{
-	plugin = 0;
-	plugin_open = 0;
 }
 
 void PluginServer::set_title(const char *string)
@@ -123,10 +112,7 @@ void PluginServer::set_title(const char *string)
 PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	TrackRender *renderer, int master, int lad_index)
 {
-	if(plugin_open)
-		return client;
-
-	this->plugin = plugin;
+	PluginClient *client;
 
 	if(!plugin_fd)
 	{
@@ -178,20 +164,17 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 		picon = client->new_picon();
 	}
 
-	plugin_open = 1;
 	return client;
 }
 
-void PluginServer::close_plugin()
+void PluginServer::close_plugin(PluginClient *client)
 {
-	if(!plugin_open) return;
+	if(!client)
+		return;
 
+	if(client->plugin)
+		client->plugin->client = 0;
 	delete client;
-	if(plugin)
-		plugin->client = 0;
-	client = 0;
-	plugin_open = 0;
-	cleanup_plugin();
 }
 
 int PluginServer::load_plugin()
