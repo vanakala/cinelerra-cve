@@ -62,9 +62,6 @@ public:
 // queries
 	void set_title(const char *string);
 
-// Create new theme object.  Used by theme plugins.
-	Theme* new_theme();
-
 	int plugin_open;                 // Whether or not the plugin is open.
 
 // Specifies what type of plugin.

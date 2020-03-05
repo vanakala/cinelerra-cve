@@ -252,16 +252,6 @@ void PluginServer::release_plugin()
 	plugin_fd = 0;
 }
 
-Theme* PluginServer::new_theme()
-{
-	if(theme)
-	{
-		return client->new_theme();
-	}
-	else
-		return 0;
-}
-
 void PluginServer::dump(int indent)
 {
 	printf("%*sPluginServer '%s' %s\n", indent, "", title, path);
