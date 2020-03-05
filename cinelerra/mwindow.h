@@ -59,6 +59,7 @@
 #include "patchbay.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "pluginmsgs.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
@@ -208,10 +209,8 @@ public:
 // Clear stored messages of the plugin
 	void clear_msgs(Plugin *plugin);
 // Searches for stored data and sends it to plugin
-	void get_gui_data(PluginServer *srv);
-// Called from PluginVClient::process_buffer
-// Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if
-// they can run.
+	void get_gui_data(PluginClient *client);
+// Called from PluginClient::process_buffer
 	int plugin_gui_open(Plugin *plugin);
 
 
@@ -376,9 +375,9 @@ public:
 // ====================================== plugins ==============================
 
 // Currently visible plugins
-	ArrayList<PluginServer*> *plugin_guis;
+	ArrayList<PluginClient*> *plugin_guis;
 // Closed plugin guis ready to remove
-	ArrayList<PluginServer*> *removed_guis;
+	ArrayList<PluginClient*> *removed_guis;
 // Messges to deliver to plugins
 	PluginMsgs plugin_messages;
 

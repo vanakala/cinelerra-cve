@@ -159,8 +159,8 @@ MWindow::MWindow(const char *config_path)
 	undo = new MainUndo(this);
 	clip_edit = new ClipEdit();
 
-	plugin_guis = new ArrayList<PluginServer*>;
-	removed_guis = new ArrayList<PluginServer*>;
+	plugin_guis = new ArrayList<PluginClient*>;
+	removed_guis = new ArrayList<PluginClient*>;
 
 	if(mainsession->show_vwindow) vwindow->gui->show_window();
 	if(mainsession->show_cwindow) cwindow->gui->show_window();
@@ -1094,7 +1094,7 @@ void MWindow::show_plugin(Plugin *plugin)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
-			plugin_guis->values[i]->client->raise_window();
+			plugin_guis->values[i]->raise_window();
 			done = 1;
 			break;
 		}
@@ -1106,9 +1106,7 @@ void MWindow::show_plugin(Plugin *plugin)
 
 		if(server && server->uses_gui)
 		{
-			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
-// Needs mwindow to do GUI
-			PluginClient *client = gui->open_plugin(plugin, 0);
+			PluginClient *client = plugin_guis->append(server->open_plugin(plugin, 0));
 			client->plugin_show_gui();
 			plugin->show = 1;
 		}
@@ -1126,16 +1124,14 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
-			PluginServer *ptr = plugin_guis->values[i];
+			PluginClient *ptr = plugin_guis->values[i];
 			plugin_guis->remove(ptr);
-			ptr->client->hide_gui();
+			ptr->hide_gui();
 			removed_guis->append(ptr);
-			if(lock) plugin_gui_lock->unlock();
-			return;
+			break;
 		}
 	}
 	if(lock) plugin_gui_lock->unlock();
-
 }
 
 void MWindow::hide_plugins()
@@ -1152,7 +1148,7 @@ void MWindow::update_plugin_guis()
 
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-		plugin_guis->values[i]->client->plugin_update_gui();
+		plugin_guis->values[i]->plugin_update_gui();
 	}
 	plugin_gui_lock->unlock();
 }
@@ -1180,7 +1176,7 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 	{
 		if(plugin_guis->values[i]->plugin->identical_location(plugin))
 		{
-			plugin_guis->values[i]->client->plugin_render_gui(data);
+			plugin_guis->values[i]->plugin_render_gui(data);
 			break;
 		}
 	}
@@ -1188,15 +1184,13 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::get_gui_data(PluginServer *srv)
+void MWindow::get_gui_data(PluginClient *client)
 {
 	struct pluginmsg *msg;
 
-	if(!srv->plugin)
-		return;
 	plugin_gui_lock->lock("MWindow::get_gui_data");
-	if(msg = plugin_messages.find_msg(srv->plugin))
-		srv->client->plugin_render_gui(msg->data);
+	if(msg = plugin_messages.find_msg(client->plugin))
+		client->plugin_render_gui(msg->data);
 	plugin_gui_lock->unlock();
 }
 
@@ -1215,7 +1209,7 @@ void MWindow::update_plugin_states()
 		int result = 0;
 // Get a plugin GUI
 		Plugin *src_plugin = plugin_guis->values[i]->plugin;
-		PluginServer *src_plugingui = plugin_guis->values[i];
+		PluginClient *src_plugingui = plugin_guis->values[i];
 
 // Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
 		for(Track *track = master_edl->first_track();
@@ -1228,7 +1222,7 @@ void MWindow::update_plugin_states()
 				Plugin *plugin = track->plugins.values[j];
 
 				if(plugin == src_plugin &&
-						plugin->plugin_server == src_plugingui)
+						plugin->client == src_plugingui)
 					result = 1;
 			}
 		}
@@ -1240,15 +1234,15 @@ void MWindow::update_plugin_states()
 			i--;
 		}
 	}
-	removed_guis->remove_all_objects();
 	plugin_gui_lock->unlock();
+	removed_guis->remove_all_objects();
 }
 
 void MWindow::update_plugin_titles()
 {
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-		plugin_guis->values[i]->client->update_display_title();
+		plugin_guis->values[i]->update_display_title();
 	}
 }
 
