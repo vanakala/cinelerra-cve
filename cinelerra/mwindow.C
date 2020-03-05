@@ -398,39 +398,37 @@ void MWindow::init_tipwindow()
 
 void MWindow::init_theme()
 {
-	theme = 0;
+	PluginServer *server = plugindb.get_theme(preferences->theme);
+	PluginClient *client = 0;
 
-	PluginServer *plugin = plugindb.get_theme(preferences->theme);
-	plugin->open_plugin(0, 0);
-	theme = plugin->new_theme();
-	theme->mwindow = this;
-	plugin->close_plugin();
+	if(server->theme)
+		client = server->open_plugin(0, 0);
 
-	if(!theme)
+	if(!client)
 	{
 		errorbox(_("Can't find theme '%s'."), preferences->theme);
 		// Theme load fails, try default
 		strcpy(preferences->theme, DEFAULT_THEME);
-		plugindb.get_theme(preferences->theme);
-		plugin->open_plugin(0, 0);
-		theme = plugin->new_theme();
-		theme->mwindow = this;
-		plugin->close_plugin();
+		server = plugindb.get_theme(preferences->theme);
+		if(server->theme)
+			client = server->open_plugin(0, 0);
 	}
 
-	if(!theme)
+	if(!client)
 	{
 		errorbox(_("Cant load default theme '%s'."), preferences->theme);
 		exit(1);
 	}
 
+	theme_global = theme = client->new_theme();
+	server->close_plugin();
+	theme->mwindow = this;
 // Load images which may have been forgotten
 	theme->Theme::initialize();
 // Load user images
 	theme->initialize();
 
 	theme->check_used();
-	theme_global = theme;
 	master_edl->tracks->update_y_pixels(theme);
 }
 
