@@ -498,11 +498,9 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 			{
 				if(!videorender->is_shared_ready(plugin, frame->get_pts()))
 					return 0;
-				if(!plugin->active_server)
-				{
-					plugin->active_server = new PluginServer(*server);
-					plugin->active_server->open_plugin(plugin, this);
-				}
+				if(!plugin->client)
+					plugin->plugin_server->open_plugin(plugin, this);
+
 				videorender->allocate_vframes(plugin);
 
 				for(int i = 0; i < plugin->vframes.total; i++)
@@ -522,10 +520,9 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 			}
 			else
 			{
-				if(!plugin->active_server)
+				if(!plugin->client)
 				{
-					plugin->active_server = new PluginServer(*server);
-					PluginClient *client = plugin->active_server->open_plugin(plugin, this);
+					plugin->plugin_server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
 				plugin->client->process_buffer(&frame, plugin->get_length());
@@ -579,10 +576,9 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 			transition->get_length() < frame->get_pts() - edit->get_pts())
 		return frame;
 
-	if(!transition->active_server)
+	if(!transition->client)
 	{
-		transition->active_server = new PluginServer(*transition->plugin_server);
-		transition->active_server->open_plugin(transition, this);
+		transition->plugin_server->open_plugin(transition, this);
 		transition->client->plugin_init(1);
 	}
 	tmpframe = BC_Resources::tmpframes.clone_frame(frame);

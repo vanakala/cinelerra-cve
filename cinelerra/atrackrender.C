@@ -221,10 +221,9 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 			transition->get_length() < aframe->pts - edit->get_pts())
 		return;
 
-	if(!transition->active_server)
+	if(!transition->client)
 	{
-		transition->active_server = new PluginServer(*transition->plugin_server);
-		transition->active_server->open_plugin(transition, this);
+		transition->plugin_server->open_plugin(transition, this);
 		transition->client->plugin_init(1);
 	}
 
@@ -312,11 +311,8 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 			{
 				if(!arender->is_shared_ready(plugin, aframe->pts))
 					return 0;
-				if(!plugin->active_server)
-				{
-					plugin->active_server = new PluginServer(*server);
-					plugin->active_server->open_plugin(plugin, this);
-				}
+				if(!plugin->client)
+					plugin->plugin_server->open_plugin(plugin, this);
 				arender->allocate_aframes(plugin);
 
 				for(int i = 0; i < plugin->aframes.total; i++)
@@ -340,10 +336,9 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 			}
 			else
 			{
-				if(!plugin->active_server)
+				if(!plugin->client)
 				{
-					plugin->active_server = new PluginServer(*server);
-					plugin->active_server->open_plugin(plugin, this);
+					plugin->plugin_server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
 				plugin->client->process_buffer(&aframe, plugin->get_length());

@@ -122,8 +122,6 @@ public:
 	GuideFrame *guideframe;
 // Server
 	PluginServer *plugin_server;
-// Active server
-	PluginServer *active_server;
 // Client
 	PluginClient *client;
 // Frames for multichannel plugin

@@ -41,8 +41,7 @@ class PluginServer
 {
 public:
 	PluginServer(const char *path);
-	PluginServer(PluginServer &);
-	virtual ~PluginServer();
+	~PluginServer();
 
 	friend class PluginAClientLAD;
 	friend class PluginAClientConfig;

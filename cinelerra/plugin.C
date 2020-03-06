@@ -54,7 +54,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	plugin_server = server;
 	shared_track_id = shared_plugin_id = -1;
 	shared_track_num = shared_plugin_num = -1;
-	active_server = 0;
+	client = 0;
 }
 
 Plugin::~Plugin()
@@ -69,8 +69,8 @@ Plugin::~Plugin()
 				if(current->plugins.values[i]->shared_plugin == this)
 				{
 					current->plugins.values[i]->shared_plugin = 0;
-					delete current->plugins.values[i]->active_server;
-					current->plugins.values[i]->active_server = 0;
+					plugin_server->close_plugin(
+						current->plugins.values[i]->client);
 				}
 			}
 		}
@@ -80,7 +80,7 @@ Plugin::~Plugin()
 	reset_frames();
 	track->tracks->reset_plugins();
 	delete guideframe;
-	delete active_server;
+	plugin_server->close_plugin(client);
 }
 
 int Plugin::silence()
@@ -124,7 +124,7 @@ void Plugin::copy_from(Plugin *plugin)
 	shared_track_id = plugin->shared_track_id;
 	shared_plugin_id = plugin->shared_plugin_id;
 	id = plugin->id;
-	active_server = 0;
+	client = 0;
 
 	copy_keyframes(plugin);
 }
@@ -282,8 +282,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	while(keyframes->last)
 		delete keyframes->last;
 
-	delete active_server;
-	active_server = 0;
+	server->close_plugin(client);
 	reset_frames();
 	if(plugin_type != PLUGIN_SHAREDPLUGIN)
 		this->shared_plugin = 0;
@@ -301,10 +300,8 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 			for(int i = 0; i < current->plugins.total; i++)
 			{
 				if(current->plugins.values[i]->shared_plugin == this)
-				{
-					delete current->plugins.values[i]->active_server;
-					current->plugins.values[i]->active_server = 0;
-				}
+					plugin_server->close_plugin(
+						current->plugins.values[i]->client);
 			}
 		}
 	}
@@ -687,8 +684,8 @@ void Plugin::dump(int indent)
 		printf(" shared_track_id: %d", shared_track_id);
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
-	printf("\n%*sproject_pts %.3f length %.3f id %d active_server %p\n", indent, "",
-		pts, duration, id, active_server);
+	printf("\n%*sproject_pts %.3f length %.3f id %d client %p\n", indent, "",
+		pts, duration, id, client);
 	if(vframes.total)
 	{
 		printf("%*sFrames:", indent, "");

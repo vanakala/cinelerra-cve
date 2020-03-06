@@ -41,37 +41,6 @@ PluginServer::PluginServer(const char *path)
 	strcpy(this->path, path);
 }
 
-PluginServer::PluginServer(PluginServer &that)
-{
-	reset_parameters();
-
-	if(!that.plugin_fd)
-		that.load_plugin();
-
-	if(that.title)
-	{
-		title = new char[strlen(that.title) + 1];
-		strcpy(title, that.title);
-	}
-
-	realtime = that.realtime;
-	multichannel = that.multichannel;
-	synthesis = that.synthesis;
-	apiversion = that.apiversion;
-	audio = that.audio;
-	video = that.video;
-	theme = that.theme;
-	uses_gui = that.uses_gui;
-	plugin_fd = that.plugin_fd;
-	new_plugin = that.new_plugin;
-#ifdef HAVE_LADSPA
-	is_lad = that.is_lad;
-	ladspa_index = that.ladspa_index;
-	lad_descriptor = that.lad_descriptor;
-	lad_descriptor_function = that.lad_descriptor_function;
-#endif
-}
-
 PluginServer::~PluginServer()
 {
 	delete [] path;

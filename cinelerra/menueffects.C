@@ -285,7 +285,7 @@ void MenuEffectThread::run()
 // ========================= get keyframe from user
 	if(!result)
 	{
-		PluginServer *active_server = new PluginServer(*plugin_server);
+		PluginClient *client = plugin_server->open_plugin(0, 0);
 // ========================= realtime plugin 
 // no get_parameters
 		if(plugin_server->realtime)
@@ -294,8 +294,6 @@ void MenuEffectThread::run()
 			mwindow_global->get_abs_cursor_pos(&cx, &cy);
 // Open a prompt GUI
 			MenuEffectPrompt prompt(cx, cy);
-// Open the plugin GUI
-			PluginClient *client = active_server->open_plugin(0, 0);
 
 			client->set_keyframe(&plugin_data);
 			client->set_prompt(&prompt);
@@ -316,7 +314,6 @@ void MenuEffectThread::run()
 		else
 // ============================non realtime plugin 
 		{
-			PluginClient *client = active_server->open_plugin(0, 0);
 			client->update_display_title();
 			result = client->plugin_get_parameters(total_start,
 				total_end,
@@ -324,7 +321,7 @@ void MenuEffectThread::run()
 
 			realtime = 0;
 		}
-		delete active_server;
+		plugin_server->close_plugin(client);
 
 		default_asset->sample_rate = edlsession->sample_rate;
 		default_asset->frame_rate = edlsession->frame_rate;
