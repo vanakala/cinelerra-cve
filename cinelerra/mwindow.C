@@ -1196,9 +1196,7 @@ void MWindow::get_gui_data(PluginClient *client)
 
 void MWindow::clear_msgs(Plugin *plugin)
 {
-	plugin_gui_lock->lock("MWindow::clear_msgs");
 	plugin_messages.delete_msg(plugin);
-	plugin_gui_lock->unlock();
 }
 
 void MWindow::update_plugin_states()
@@ -1234,8 +1232,8 @@ void MWindow::update_plugin_states()
 			i--;
 		}
 	}
-	plugin_gui_lock->unlock();
 	removed_guis->remove_all_objects();
+	plugin_gui_lock->unlock();
 }
 
 void MWindow::update_plugin_titles()
