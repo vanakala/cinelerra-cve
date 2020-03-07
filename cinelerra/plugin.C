@@ -55,6 +55,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	shared_track_id = shared_plugin_id = -1;
 	shared_track_num = shared_plugin_num = -1;
 	client = 0;
+	gui_client = 0;
 }
 
 Plugin::~Plugin()
@@ -81,6 +82,7 @@ Plugin::~Plugin()
 	track->tracks->reset_plugins();
 	delete guideframe;
 	plugin_server->close_plugin(client);
+	plugin_server->close_plugin(gui_client);
 }
 
 int Plugin::silence()
@@ -125,6 +127,7 @@ void Plugin::copy_from(Plugin *plugin)
 	shared_plugin_id = plugin->shared_plugin_id;
 	id = plugin->id;
 	client = 0;
+	gui_client = 0;
 
 	copy_keyframes(plugin);
 }
