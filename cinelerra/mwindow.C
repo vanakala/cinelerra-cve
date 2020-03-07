@@ -1089,7 +1089,7 @@ void MWindow::show_plugin(Plugin *plugin)
 	int done = 0;
 
 	plugin_gui_lock->lock("MWindow::show_plugin");
-	removed_guis->remove_all_objects();
+	clear_removed_guis();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
@@ -1099,15 +1099,17 @@ void MWindow::show_plugin(Plugin *plugin)
 			break;
 		}
 	}
-
 	if(!done)
 	{
 		PluginServer *server = plugin->plugin_server;
 
 		if(server && server->uses_gui)
 		{
-			PluginClient *client = plugin_guis->append(server->open_plugin(plugin, 0));
-			client->plugin_show_gui();
+			PluginClient *mainclient = plugin->client;
+
+			plugin->gui_client = plugin_guis->append(server->open_plugin(plugin, 0));
+			plugin->client = mainclient;
+			plugin->gui_client->plugin_show_gui();
 			plugin->show = 1;
 		}
 	}
@@ -1137,8 +1139,8 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 void MWindow::hide_plugins()
 {
 	plugin_gui_lock->lock("MWindow::hide_plugins");
+	clear_removed_guis();
 	plugin_guis->remove_all_objects();
-	removed_guis->remove_all_objects();
 	plugin_gui_lock->unlock();
 }
 
@@ -1220,7 +1222,7 @@ void MWindow::update_plugin_states()
 				Plugin *plugin = track->plugins.values[j];
 
 				if(plugin == src_plugin &&
-						plugin->client == src_plugingui)
+						plugin->gui_client == src_plugingui)
 					result = 1;
 			}
 		}
@@ -1232,7 +1234,7 @@ void MWindow::update_plugin_states()
 			i--;
 		}
 	}
-	removed_guis->remove_all_objects();
+	clear_removed_guis();
 	plugin_gui_lock->unlock();
 }
 
@@ -1242,6 +1244,17 @@ void MWindow::update_plugin_titles()
 	{
 		plugin_guis->values[i]->update_display_title();
 	}
+}
+
+void MWindow::clear_removed_guis()
+{
+	for(int i = 0; i < removed_guis->total; i++)
+	{
+		PluginClient *client = removed_guis->values[i];
+
+		client->server->close_plugin(client);
+	}
+	removed_guis->remove_all();
 }
 
 // Reset everything after a load.
