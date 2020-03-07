@@ -27,7 +27,6 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
-#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mwindow.h"

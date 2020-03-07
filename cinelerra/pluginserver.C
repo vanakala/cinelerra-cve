@@ -22,7 +22,6 @@
 #include "pluginaclientlad.h"
 
 #include "bcsignals.h"
-#include "language.h"
 #include "plugin.h"
 #include "pluginclient.h"
 #include "pluginserver.h"

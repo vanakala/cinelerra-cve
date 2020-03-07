@@ -30,7 +30,6 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "keys.h"
-#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"

@@ -26,7 +26,6 @@
 #include "filexml.h"
 #include "indexfile.h"
 #include "indexthread.h"
-#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
