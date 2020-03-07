@@ -28,6 +28,7 @@
 
 #include "bcsignals.h"
 #include "filexml.h"
+#include "language.h"
 #include "mainerror.h"
 
 
@@ -299,7 +300,7 @@ int FileXML::write_to_file(const char *filename)
 // Position may have been rewound after storing so we use a strlen
 		if(!fwrite(string, strlen(string), 1, out) && strlen(string))
 		{
-			errormsg("Error while writing to \"%s\": %m\n",
+			errormsg(_("Error while writing to \"%s\": %m\n"),
 				filename);
 			fclose(out);
 			return 1;
@@ -307,7 +308,7 @@ int FileXML::write_to_file(const char *filename)
 	}
 	else
 	{
-		errormsg("Error while opening \"%s\" for writing. \n%m\n", filename);
+		errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), filename);
 		return 1;
 	}
 	fclose(out);
@@ -325,7 +326,7 @@ int FileXML::write_to_file(FILE *file)
 	}
 	else
 	{
-		errormsg("Error while writing to \"%s\": %m\n",
+		errormsg(_("Error while writing to \"%s\": %m\n"),
 			filename);
 		return 1;
 	}
@@ -358,7 +359,7 @@ int FileXML::read_from_file(const char *filename, int ignore_error)
 	else
 	{
 		if(!ignore_error) 
-			errormsg("Error while opening \"%s\" for reading. \n%m\n", filename);
+			errormsg(_("Error while opening \"%s\" for reading. \n%m\n"), filename);
 		return 1;
 	}
 	fclose(in);
