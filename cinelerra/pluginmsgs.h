@@ -39,7 +39,6 @@ public:
 
 	void add_msg(void *data, Plugin *plugin);
 	struct pluginmsg *get_msg(Plugin *plugin);
-	struct pluginmsg *find_msg(Plugin *plugin);
 	void delete_msg(Plugin *plugin);
 	void delete_msg(struct pluginmsg *msg);
 	void delete_all_msgs();

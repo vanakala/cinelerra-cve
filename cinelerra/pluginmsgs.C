@@ -88,19 +88,6 @@ struct pluginmsg *PluginMsgs::get_msg(Plugin *plugin)
 	return 0;
 }
 
-struct pluginmsg *PluginMsgs::find_msg(Plugin *plugin)
-{
-	for(int i = 0; i < store_size; i++)
-	{
-		if(msgstore[i].plugin)
-		{
-			if(plugin->identical_location(msgstore[i].plugin))
-				return &msgstore[i];
-		}
-	}
-	return 0;
-}
-
 void PluginMsgs::add_msg(void *data, Plugin *plugin)
 {
 	struct pluginmsg *slot = get_msg(plugin);
