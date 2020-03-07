@@ -255,16 +255,6 @@ int Plugin::identical(Plugin *that)
 			((KeyFrame*)that->keyframes->first)))));
 }
 
-int Plugin::identical_location(Plugin *that)
-{
-	if(track->number_of() == that->track->number_of() &&
-			get_number() == that->get_number() &&
-			PTSEQU(pts, that->get_pts()))
-		return 1;
-
-	return 0;
-}
-
 int Plugin::get_number()
 {
 	return track->plugins.number_of(this);

@@ -56,9 +56,7 @@ public:
 	void copy_from(Plugin *plugin);
 
 	int identical(Plugin *that);
-// Called by render_gui.  Only need the track, position,
-// to determine a corresponding GUI.
-	int identical_location(Plugin *that);
+
 // Shift plugin keyframes
 	void shift_keyframes(ptstime difference);
 // Remove keyframes after pts
