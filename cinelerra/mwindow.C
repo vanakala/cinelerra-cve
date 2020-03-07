@@ -1197,7 +1197,7 @@ void MWindow::get_gui_data(PluginClient *client)
 	struct pluginmsg *msg;
 
 	plugin_gui_lock->lock("MWindow::get_gui_data");
-	if(msg = plugin_messages.find_msg(client->plugin))
+	if(msg = plugin_messages.get_msg(client->plugin))
 		client->plugin_render_gui(msg->data);
 	plugin_gui_lock->unlock();
 }
