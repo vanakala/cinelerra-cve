@@ -1158,28 +1158,34 @@ void MWindow::update_plugin_guis()
 int MWindow::plugin_gui_open(Plugin *plugin)
 {
 	int result = 0;
-	plugin_gui_lock->lock("MWindow::plugin_gui_open");
-	for(int i = 0; i < plugin_guis->total; i++)
+	if(plugin->gui_client)
 	{
-		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		plugin_gui_lock->lock("MWindow::plugin_gui_open");
+		for(int i = 0; i < plugin_guis->total; i++)
 		{
-			result = 1;
-			break;
+			if(plugin_guis->values[i] == plugin->gui_client)
+			{
+				result = 1;
+				break;
+			}
 		}
+		plugin_gui_lock->unlock();
 	}
-	plugin_gui_lock->unlock();
 	return result;
 }
 
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 {
 	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	for(int i = 0; i < plugin_guis->total; i++)
+	if(plugin->gui_client)
 	{
-		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		for(int i = 0; i < plugin_guis->total; i++)
 		{
-			plugin_guis->values[i]->plugin_render_gui(data);
-			break;
+			if(plugin_guis->values[i] == plugin->gui_client)
+			{
+				plugin_guis->values[i]->plugin_render_gui(data);
+				break;
+			}
 		}
 	}
 	plugin_messages.add_msg(data, plugin);
