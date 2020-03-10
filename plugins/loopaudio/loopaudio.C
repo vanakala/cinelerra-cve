@@ -232,10 +232,9 @@ void LoopAudio::load_defaults()
 	samples = defaults->get("SAMPLES", samples);
 	if(samples > 0)
 	{
-		int rate = samplerate;
 // Check if we have reasonable samplerate
-		if(rate > 1)
-			config.duration = (ptstime)samples / samplerate;
+		if(project_sample_rate > 1)
+			config.duration = (ptstime)samples / project_sample_rate;
 	}
 	config.duration = defaults->get("DURATION", config.duration);
 }
@@ -271,7 +270,7 @@ void LoopAudio::read_data(KeyFrame *keyframe)
 		{
 			samples = input.tag.get_property("SAMPLES", samples);
 			if(samples > 0)
-				config.duration = (ptstime)samples / samplerate;
+				config.duration = (ptstime)samples / project_sample_rate;
 			config.duration = input.tag.get_property("DURATION", config.duration);
 		}
 	}

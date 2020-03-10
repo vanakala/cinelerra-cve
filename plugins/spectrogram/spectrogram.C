@@ -179,7 +179,7 @@ void Spectrogram::render_gui(void *data)
 	if(thread)
 	{
 		float *frame = (float*)data;
-		int niquist = samplerate;
+		int niquist = project_sample_rate;
 		BC_SubWindow *canvas = thread->window->canvas;
 		int h = canvas->get_h();
 		int input1 = HALF_WINDOW - 1;

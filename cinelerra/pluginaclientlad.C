@@ -268,7 +268,7 @@ PluginACLientFreq::PluginACLientFreq(PluginAClientLAD *plugin,
  : BC_QPot(x, 
 	y, 
 	translate_linear ?
-		(int)(*output * plugin->samplerate) :
+		(int)(*output * plugin->project_sample_rate) :
 		(int)*output)
 {
 	this->plugin = plugin;
@@ -279,7 +279,7 @@ PluginACLientFreq::PluginACLientFreq(PluginAClientLAD *plugin,
 int PluginACLientFreq::handle_event()
 {
 	*output = translate_linear ?
-		(float)get_value() / plugin->samplerate :
+		(float)get_value() / plugin->project_sample_rate :
 		get_value();
 	plugin->send_configure_change();
 	return 1;
@@ -669,7 +669,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 		delete_plugin();
 		lad_instance = server->lad_descriptor->instantiate(
 			server->lad_descriptor,
-			samplerate);
+			project_sample_rate);
 
 		int current_port = 0;
 		for(int i = 0; i < server->lad_descriptor->PortCount; i++)

@@ -401,7 +401,7 @@ void ParametricWindow::update_canvas()
 {
 	double scale = 1;
 	int y1 = canvas->get_h() / 2;
-	int niquist = plugin->samplerate / 2;
+	int niquist = plugin->project_sample_rate / 2;
 	int wetness = canvas->get_h() -
 		(int)((plugin->config.wetness - INFINITYGAIN) /
 			-INFINITYGAIN * 
@@ -571,7 +571,7 @@ void ParametricEQ::reconfigure()
 void ParametricEQ::calculate_envelope()
 {
 	double wetness = DB::fromdb(config.wetness);
-	int niquist = samplerate / 2;
+	int niquist = project_sample_rate / 2;
 
 	for(int i = 0; i < WINDOW_SIZE / 2; i++)
 	{

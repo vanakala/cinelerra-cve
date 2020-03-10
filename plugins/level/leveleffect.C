@@ -179,7 +179,7 @@ void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
 		rms_accum += value * value;
 	}
 
-	if(accum_size > config.duration * samplerate)
+	if(accum_size > config.duration * project_sample_rate)
 	{
 		rms_accum = sqrt(rms_accum / accum_size);
 		gui_args[0] = max_accum;

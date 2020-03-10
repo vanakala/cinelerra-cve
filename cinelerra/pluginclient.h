@@ -239,7 +239,7 @@ public:
 	double project_frame_rate;
 	double sample_aspect_ratio;
 	int project_color_model;
-	int samplerate;
+	int project_sample_rate;
 
 // Total number of processors available - 1
 	int smp;

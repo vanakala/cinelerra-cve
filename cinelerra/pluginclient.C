@@ -70,7 +70,7 @@ void PluginClient::plugin_init(int total_in_buffers)
 	project_frame_rate = plugin->edl->this_edlsession->frame_rate;
 	project_color_model = plugin->edl->this_edlsession->color_model;
 	sample_aspect_ratio = plugin->edl->this_edlsession->sample_aspect_ratio;
-	samplerate = plugin->edl->this_edlsession->sample_rate;
+	project_sample_rate = plugin->edl->this_edlsession->sample_rate;
 	init_plugin();
 }
 
