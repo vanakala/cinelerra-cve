@@ -59,10 +59,6 @@ public:
 	void age_temp();
 	VFrame* get_temp();
 
-// Frame rate relative to EDL
-	double get_project_framerate();
-// Frame rate requested
-	double get_framerate();
 // Get list of system fonts
 	ArrayList<BC_FontEntry*> *get_fontlist();
 // Find font entry

@@ -88,16 +88,6 @@ void PluginVClient::run_opengl()
 {
 }
 
-double PluginVClient::get_project_framerate()
-{
-	return project_frame_rate;
-}
-
-double PluginVClient::get_framerate()
-{
-	return project_frame_rate;
-}
-
 ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
 {
 	return BC_Resources::fontlist;

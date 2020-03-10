@@ -116,7 +116,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 // Reallocate history
 		if(history)
 		{
-			int new_num_frames = round(config.duration * get_project_framerate() * 2);
+			int new_num_frames = round(config.duration * project_frame_rate * 2);
 			if(max_num_frames != new_num_frames)
 			{
 				VFrame **history2;
@@ -162,7 +162,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 		else
 // Allocate history
 		{
-			max_num_frames = round(2 * config.duration * get_project_framerate());
+			max_num_frames = round(2 * config.duration * project_frame_rate);
 			history = new VFrame*[max_num_frames];
 			memset(history, 0, max_num_frames * sizeof(VFrame*));
 
@@ -254,7 +254,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 			prev_frame_pts = source_pts - config.duration;
 			prev_frame_pts = MAX(0, prev_frame_pts);
 			clear_accum(w, h, color_model);
-			max_denominator = round(config.duration * get_project_framerate());
+			max_denominator = round(config.duration * project_frame_rate);
 		} else
 			prev_frame_pts = source_pts;
 
@@ -874,7 +874,7 @@ void TimeAvgMain::load_defaults()
 
 	frames = defaults->get("FRAMES", 0);
 	if(frames)
-		config.duration = frames / get_project_framerate();
+		config.duration = frames / project_frame_rate;
 	config.duration = defaults->get("DURATION", config.duration);
 	config.mode = defaults->get("MODE", config.mode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
@@ -929,7 +929,7 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("TIME_AVERAGE"))
 		{
 			if((frames = input.tag.get_property("FRAMES", 0)) > 0)
-				config.duration = frames / get_project_framerate();
+				config.duration = frames / project_frame_rate;
 			config.duration = input.tag.get_property("DURATION", config.duration);
 			config.mode = input.tag.get_property("MODE", config.mode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);

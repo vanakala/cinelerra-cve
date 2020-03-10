@@ -147,7 +147,7 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 // Reallocate history
 		if(history)
 		{
-			int new_num_frames = round(2 * config.duration * get_project_framerate());
+			int new_num_frames = round(2 * config.duration * project_frame_rate);
 			if(max_num_frames != new_num_frames)
 			{
 				VFrame **history2;
@@ -193,7 +193,7 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 		else
 // Allocate history
 		{
-			max_num_frames = round(2 * config.duration * get_project_framerate());
+			max_num_frames = round(2 * config.duration * project_frame_rate);
 			history = new VFrame*[max_num_frames];
 			memset(history, 0, max_num_frames * sizeof(VFrame*));
 
@@ -280,7 +280,7 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 			prev_frame_pts = source_pts - config.duration;
 			prev_frame_pts = MAX(0, prev_frame_pts);
 			clear_accum(w, h, color_model);
-			max_denominator = round(config.duration * get_project_framerate());
+			max_denominator = round(config.duration * project_frame_rate);
 		} else
 			prev_frame_pts = source_pts;
 		if(!temp_frame)
@@ -830,7 +830,7 @@ void SelTempAvgMain::load_defaults()
 	// backward compatibility
 	frames = defaults->get("FRAMES", 0);
 	if(frames)
-		config.duration = frames / get_project_framerate();
+		config.duration = frames / project_frame_rate;
 	config.duration = defaults->get("DURATION", config.duration);
 	config.method = defaults->get("METHOD", config.method);
 	config.offsetmode = defaults->get("OFFSETMODE", config.offsetmode);
@@ -839,7 +839,7 @@ void SelTempAvgMain::load_defaults()
 	config.offset_restartmarker_keyframe = defaults->get("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
 	frames = defaults->get("OFFSETMODE_FIXED_VALUE", 0);
 	if(frames)
-		config.offset_fixed_pts = frames / get_project_framerate();
+		config.offset_fixed_pts = frames / project_frame_rate;
 	config.offset_fixed_pts = defaults->get("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 	config.gain = defaults->get("GAIN", config.gain);
 
@@ -975,7 +975,7 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 		{
 			frames = input.tag.get_property("FRAMES", 0);
 			if(frames)
-				config.duration = frames / get_project_framerate();
+				config.duration = frames / project_frame_rate;
 			config.duration = input.tag.get_property("DURATION", config.duration);
 			config.method = input.tag.get_property("METHOD", config.method);
 			config.offsetmode = input.tag.get_property("OFFSETMODE", config.offsetmode);
@@ -984,7 +984,7 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 			config.offset_restartmarker_keyframe = input.tag.get_property("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
 			frames = input.tag.get_property("OFFSETMODE_FIXED_VALUE", 0);
 			if(frames)
-				config.offset_fixed_pts = frames / get_project_framerate();
+				config.offset_fixed_pts = frames / project_frame_rate;
 			config.offset_fixed_pts = input.tag.get_property("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 			config.gain = input.tag.get_property("gain", config.gain);
 

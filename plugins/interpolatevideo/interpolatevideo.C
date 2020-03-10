@@ -398,7 +398,7 @@ int InterpolateVideo::load_configuration()
 // Use keyframes to determine range
 	if(config.use_keyframes)
 	{
-		active_input_rate = get_project_framerate();
+		active_input_rate = project_frame_rate;
 // Between keyframe and edge of range or no keyframes
 		if(PTSEQU(range_start_pts, range_end_pts))
 		{
