@@ -379,8 +379,8 @@ void Synth::reconfigure()
 		delete [] dsp_buffer;
 	}
 
-	waveform_length = PluginAClient::get_project_samplerate();
-	period = (float)PluginAClient::get_project_samplerate() / config.base_freq;
+	waveform_length = samplerate;
+	period = (float)samplerate / config.base_freq;
 	dsp_buffer = new double[waveform_length + 1];
 
 	samples_rendered = 0;     // do some calculations on the next process_realtime

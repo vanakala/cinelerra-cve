@@ -39,8 +39,3 @@ int PluginAClient::is_audio()
 {
 	return 1;
 }
-
-int PluginAClient::get_project_samplerate()
-{
-	return edlsession->sample_rate;
-}

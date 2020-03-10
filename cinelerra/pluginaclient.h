@@ -32,8 +32,6 @@ public:
 	virtual ~PluginAClient() {};
 
 	int is_audio();
-
-	static int get_project_samplerate();
 };
 
 #endif
