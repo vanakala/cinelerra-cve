@@ -84,13 +84,6 @@ VFrame* PluginVClient::get_temp()
 	return temp;
 }
 
-void PluginVClient::init_realtime_parameters()
-{
-	project_frame_rate = edlsession->frame_rate;
-	project_color_model = edlsession->color_model;
-	sample_aspect_ratio = edlsession->sample_aspect_ratio;
-}
-
 void PluginVClient::run_opengl()
 {
 }

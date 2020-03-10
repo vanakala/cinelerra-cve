@@ -42,7 +42,6 @@ public:
 	PluginVClient(PluginServer *server);
 	virtual ~PluginVClient();
 
-	void init_realtime_parameters();
 	int is_video();
 
 // User calls this to request an opengl routine to be run synchronously.
