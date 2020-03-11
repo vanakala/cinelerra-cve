@@ -19,19 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_MULTICHANNEL
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("Reroute")
-#define PLUGIN_CLASS Reroute
-#define PLUGIN_CONFIG_CLASS RerouteConfig
-#define PLUGIN_THREAD_CLASS RerouteThread
-#define PLUGIN_GUI_CLASS RerouteWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
@@ -44,94 +31,11 @@
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
+#include "reroute.h"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
-
-
-class RerouteConfig
-{
-public:
-	RerouteConfig();
-
-	static const char* operation_to_text(int operation);
-	int operation;
-	enum
-	{
-		REPLACE,
-		REPLACE_COMPONENTS,
-		REPLACE_ALPHA
-	};
-
-	static const char* output_to_text(int output_track);
-	int output_track;
-	enum
-	{
-		TOP,
-		BOTTOM
-	};
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class RerouteOperation : public BC_PopupMenu
-{
-public:
-	RerouteOperation(Reroute *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Reroute *plugin;
-};
-
-class RerouteOutput : public BC_PopupMenu
-{
-public:
-	RerouteOutput(Reroute *plugin,
-		int x, 
-		int y);
-	void create_objects();
-	int handle_event();
-	Reroute *plugin;
-};
-
-
-class RerouteWindow : public PluginWindow
-{
-public:
-	RerouteWindow(Reroute *plugin, int x, int y);
-	~RerouteWindow();
-
-	void update();
-
-	RerouteOperation *operation;
-	RerouteOutput *output;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class Reroute : public PluginVClient
-{
-public:
-	Reroute(PluginServer *server);
-	~Reroute();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame **frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	int output_track;
-	int input_track;
-};
 
 
 RerouteConfig::RerouteConfig()
@@ -192,10 +96,6 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 		y));
 	operation->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-RerouteWindow::~RerouteWindow()
-{
 }
 
 void RerouteWindow::update()
@@ -371,8 +271,8 @@ void Reroute::process_frame(VFrame **frame)
 		do_alpha = true; 
 		break;
 	case RerouteConfig::REPLACE_COMPONENTS:
-		do_components=true;
-		do_alpha=false;
+		do_components = true;
+		do_alpha = false;
 		break;
 	}
 
@@ -412,26 +312,26 @@ void Reroute::process_frame(VFrame **frame)
 	switch(source->get_color_model())
 	{
 	case BC_RGB_FLOAT:
-		px_type<float,3>::transfer(source,target, do_components,do_alpha);
+		px_type<float,3>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_RGBA_FLOAT:
-		px_type<float,4>::transfer(source,target, do_components,do_alpha);
+		px_type<float,4>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_RGB888:
 	case BC_YUV888:
-		px_type<unsigned char,3>::transfer(source,target, do_components,do_alpha);
+		px_type<unsigned char,3>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_RGBA8888:
 	case BC_YUVA8888:
-		px_type<unsigned char,4>::transfer(source,target, do_components,do_alpha);
+		px_type<unsigned char,4>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_RGB161616:
 	case BC_YUV161616:
-		px_type<uint16_t,3>::transfer(source,target, do_components,do_alpha);
+		px_type<uint16_t,3>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
-		px_type<uint16_t,4>::transfer(source,target, do_components,do_alpha);
+		px_type<uint16_t,4>::transfer(source, target, do_components, do_alpha);
 		break;
 	case BC_AYUV16161616:
 		{
@@ -467,6 +367,7 @@ void Reroute::process_frame(VFrame **frame)
 int Reroute::load_configuration()
 {
 	KeyFrame *prev_keyframe;
+
 	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 	return 1;
