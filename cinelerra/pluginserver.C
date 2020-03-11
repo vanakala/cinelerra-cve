@@ -109,7 +109,7 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	uses_gui = client->uses_gui();
 	multichannel = client->is_multichannel();
 	synthesis = client->is_synthesis();
-	apiversion = client->has_pts_api();
+	apiversion = client->api_version();
 	transition = client->is_transition();
 	set_title(client->plugin_title());
 	client->set_renderer(renderer);

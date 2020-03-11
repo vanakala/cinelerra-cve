@@ -110,7 +110,7 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
 	const char* plugin_title() { return PLUGIN_TITLE; }; \
-	int has_pts_api() { return 2; }; \
+	int api_version() { return 2; }; \
 	PLUGIN_CLASS_HAS_CONFIG_MEMBER \
 	PLUGIN_CLASS_TRANSITION_MEMBER \
 	PLUGIN_CLASS_REALTIME_MEMBER \

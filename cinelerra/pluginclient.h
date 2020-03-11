@@ -63,7 +63,7 @@ public:
 	virtual int is_multichannel() { return 0; };
 	virtual int is_synthesis() { return 0; };
 	virtual int is_transition() { return 0; };
-	virtual int has_pts_api() { return 0; };
+	virtual int api_version() { return 0; };
 // return the title of the plugin
 	virtual const char* plugin_title();
 	virtual VFrame* new_picon() { return 0; };
