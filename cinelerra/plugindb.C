@@ -307,6 +307,7 @@ int PluginDB::count()
 void PluginDB::dump(int indent, int data_type)
 {
 	int typ;
+	char max[4];
 
 	printf("%*sKnown plugins:\n", indent, "");
 	indent += 2;
@@ -329,10 +330,27 @@ void PluginDB::dump(int indent, int data_type)
 			typ = 'T';
 		else
 			typ = '-';
-		printf("%*s%c%c%c%c%c%c%d %s\n", indent, "",
+		if(server->multichannel_max)
+			sprintf(max, "%02d", server->multichannel_max);
+		else
+			strcpy(max, "--");
+		printf("%*s%c%c%c%c%c%c%02d%c%s %s\n", indent, "",
 			server->realtime ? 'R' : '-', typ,
 			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-',
 			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-',
-			server->apiversion, server->title);
-		}
+			server->apiversion, server->opengl_plugin ? 'L' : '-',
+			max, server->title);
+	}
+	putchar('\n');
+	printf("%*sLegend:\n", indent, "");
+	indent += 2;
+	printf("%*sR     - realtime\n", indent, "");
+	printf("%*sA/V/T - audio/video/theme\n", indent, "");
+	printf("%*sG     - has gui\n", indent, "");
+	printf("%*sM     - multichannel\n", indent, "");
+	printf("%*sS     - synthesis\n", indent, "");
+	printf("%*sT     - transition\n", indent, "");
+	printf("%*s##    - api version\n", indent, "");
+	printf("%*sL     - opengl support\n", indent, "");
+	printf("%*s##    - number of channels\n", indent, "");
 }

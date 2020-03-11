@@ -75,6 +75,10 @@ public:
 	int transition;
 // Plugin api version
 	int apiversion;
+// Plugin supports OpenGL
+	int opengl_plugin;
+// Maximum number channels supported by multichannel plugin
+	int multichannel_max;
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;

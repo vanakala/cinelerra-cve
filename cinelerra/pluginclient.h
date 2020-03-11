@@ -63,7 +63,15 @@ public:
 	virtual int is_multichannel() { return 0; };
 	virtual int is_synthesis() { return 0; };
 	virtual int is_transition() { return 0; };
+// API version:
+//   2 - plugin has pts support
+//   3 - plugin supports tmpframe, same instance can open gui
 	virtual int api_version() { return 0; };
+// plugin supporta OpenGL
+	virtual int has_opengl_support() { return 0; }
+// maximum number of channels supported by multichannel plugin
+//  0 - unlimited number
+	virtual int multi_max_channels() { return 0; }
 // return the title of the plugin
 	virtual const char* plugin_title();
 	virtual VFrame* new_picon() { return 0; };

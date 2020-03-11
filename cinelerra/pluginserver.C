@@ -111,12 +111,14 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	synthesis = client->is_synthesis();
 	apiversion = client->api_version();
 	transition = client->is_transition();
+	opengl_plugin = client->has_opengl_support();
+	multichannel_max = client->multi_max_channels();
 	set_title(client->plugin_title());
 	client->set_renderer(renderer);
 	client->plugin = plugin;
 
 // Check API version
-	if((audio || video) && !apiversion)
+	if((audio || video) && apiversion < 2)
 	{
 		delete client;
 		dlclose(plugin_fd);

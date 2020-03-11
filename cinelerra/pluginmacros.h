@@ -21,13 +21,15 @@
 #ifndef PLUGINMACROS_H
 #define PLUGINMACROS_H
 /*
- * Parameters:
+ * Properties of a plugin:
  * PLUGIN_IS_AUDIO
  * PLUGIN_IS_VIDEO
  * PLUGIN_IS_TRANSITION
  * PLUGIN_IS_REALTIME
  * PLUGIN_IS_MULTICHANNEL
  * PLUGIN_IS_SYNTHESIS
+ * PLUGIN_USES_TMPFRAME
+ * PLUGIN_USES_OPENGL
  * PLUGIN_CUSTOM_LOAD_CONFIGURATION
  * PLUGIN_CLASS class_name
  * PLUGIN_TITLE plugin_title
@@ -35,6 +37,7 @@
  * PLUGIN_CONFIG_CLASS class_name
  * PLUGIN_THREAD_CLASS class_name
  * PLUGIN_GUI_CLASS class_name
+ * PLUGIN_MAX_CHANNELS number
  */
 #include "bcresources.h"
 #include "keyframe.h"
@@ -107,10 +110,32 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_SYNTHESIS_MEMBER
 #endif // synthesis
 
+#ifdef PLUGIN_USES_TMPFRAME
+#define PLUGIN_CLASS_APIVERSION_MEMBER \
+	int api_version() { return 3; };
+#else
+#define PLUGIN_CLASS_APIVERSION_MEMBER \
+	int api_version() { return 2; };
+#endif
+
+#ifdef PLUGIN_USES_OPENGL
+#define PLUGIN_CLASS_USES_OPENGL_MEMBER \
+	int has_opengl_support() { return 1; };
+#else
+#define PLUGIN_CLASS_USES_OPENGL_MEMBER
+#endif
+
+#ifdef PLUGIN_MAX_CHANNELS
+#define PLUGIN_CLASS_MAX_CHANNELS_MEMBER \
+	int multi_max_channels() { return PLUGIN_MAX_CHANNELS; };
+#else
+#define PLUGIN_CLASS_MAX_CHANNELS_MEMBER
+#endif
+
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
 	const char* plugin_title() { return PLUGIN_TITLE; }; \
-	int api_version() { return 2; }; \
+	PLUGIN_CLASS_APIVERSION_MEMBER \
 	PLUGIN_CLASS_HAS_CONFIG_MEMBER \
 	PLUGIN_CLASS_TRANSITION_MEMBER \
 	PLUGIN_CLASS_REALTIME_MEMBER \
@@ -118,6 +143,8 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CLASS_USES_GUI_MEMBER \
 	PLUGIN_CLASS_MULTICHANNEL_MEMBER \
 	PLUGIN_CLASS_SYNTHESIS_MEMBER \
+	PLUGIN_CLASS_USES_OPENGL_MEMBER \
+	PLUGIN_CLASS_MAX_CHANNELS_MEMBER \
 	unsigned char *picon_data; \
 	BC_Hash *defaults;
 
