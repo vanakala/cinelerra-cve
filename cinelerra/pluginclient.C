@@ -63,7 +63,7 @@ PluginClient::~PluginClient()
 void PluginClient::plugin_init(int total_in_buffers)
 {
 	smp = preferences_global->processors - 1;
-	total_in_buffers = total_in_buffers;
+	this->total_in_buffers = total_in_buffers;
 	start_pts = source_start_pts = plugin->get_pts();
 	total_len_pts = plugin->get_length();
 	end_pts = source_start_pts + total_len_pts;
