@@ -195,8 +195,6 @@ public:
 	virtual void save_defaults() {};
 	virtual int load_configuration() { return 0; }
 
-// get framerate of EDL
-	double get_project_framerate();
 // Total number of processors - 1
 	int get_project_smp();
 

@@ -112,12 +112,6 @@ void PluginClient::set_prompt(MenuEffectPrompt *prompt)
 	this->prompt = prompt;
 }
 
-
-double PluginClient::get_project_framerate()
-{
-	return edlsession->frame_rate;
-}
-
 void PluginClient::update_display_title()
 {
 	char lbuf[BCTEXTLEN];
