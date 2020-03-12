@@ -41,7 +41,6 @@
 RerouteConfig::RerouteConfig()
 {
 	operation = RerouteConfig::REPLACE;
-	output_track = RerouteConfig::TOP;
 }
 
 
@@ -50,7 +49,7 @@ const char* RerouteConfig::operation_to_text(int operation)
 	switch(operation)
 	{
 	case RerouteConfig::REPLACE:
-		return _("replace Target");
+		return _("Replace Target");
 	case RerouteConfig::REPLACE_COMPONENTS:
 		return _("Components only");
 	case RerouteConfig::REPLACE_ALPHA:
@@ -59,41 +58,17 @@ const char* RerouteConfig::operation_to_text(int operation)
 	return "";
 }
 
-const char* RerouteConfig::output_to_text(int output_track)
-{
-	switch(output_track)
-	{
-	case RerouteConfig::TOP:
-		return _("Top");
-	case RerouteConfig::BOTTOM:
-		return _("Bottom");
-	}
-	return "";
-}
-
 
 RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
-	x,
-	y, 
-	300, 
-	160)
+ : PluginWindow(plugin->gui_string, x, y, 300, 100)
 {
 	BC_Title *title;
-	x = y = 10;
 
-	add_subwindow(title = new BC_Title(x, y, _("Target track:")));
-	int col2 = title->get_w() + 5;
-	add_subwindow(output = new RerouteOutput(plugin, 
-		x + col2, 
-		y));
-	output->create_objects();
-
-	y += 30;
+	x = 10;
+	y = 40;
 	add_subwindow(title = new BC_Title(x, y, _("Operation:")));
 	add_subwindow(operation = new RerouteOperation(plugin, 
-		x + col2, 
-		y));
+		x + title->get_w() + 5, y));
 	operation->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
@@ -101,7 +76,6 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 void RerouteWindow::update()
 {
 	operation->set_text(RerouteConfig::operation_to_text(plugin->config.operation));
-	output->set_text(RerouteConfig::output_to_text(plugin->config.output_track));
 }
 
 RerouteOperation::RerouteOperation(Reroute *plugin,
@@ -133,61 +107,17 @@ int RerouteOperation::handle_event()
 {
 	char *text = get_text();
 
-	if(!strcmp(text, 
-		RerouteConfig::operation_to_text(
+	if(!strcmp(text, RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE)))
 		plugin->config.operation = RerouteConfig::REPLACE;
 	else
-	if(!strcmp(text, 
-		RerouteConfig::operation_to_text(
+	if(!strcmp(text, RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE_COMPONENTS)))
 		plugin->config.operation = RerouteConfig::REPLACE_COMPONENTS;
 	else
-	if(!strcmp(text, 
-		RerouteConfig::operation_to_text(
+	if(!strcmp(text, RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE_ALPHA)))
 		plugin->config.operation = RerouteConfig::REPLACE_ALPHA;
-
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-RerouteOutput::RerouteOutput(Reroute *plugin,
-	int x, 
-	int y)
- : BC_PopupMenu(x,
-	y,
-	100,
-	RerouteConfig::output_to_text(plugin->config.output_track),
-	1)
-{
-	this->plugin = plugin;
-}
-
-void RerouteOutput::create_objects()
-{
-	add_item(new BC_MenuItem(
-		RerouteConfig::output_to_text(
-			RerouteConfig::TOP)));
-	add_item(new BC_MenuItem(
-		RerouteConfig::output_to_text(
-			RerouteConfig::BOTTOM)));
-}
-
-int RerouteOutput::handle_event()
-{
-	char *text = get_text();
-
-	if(!strcmp(text, 
-		RerouteConfig::output_to_text(
-			RerouteConfig::TOP)))
-		plugin->config.output_track = RerouteConfig::TOP;
-	else
-	if(!strcmp(text, 
-		RerouteConfig::output_to_text(
-			RerouteConfig::BOTTOM)))
-		plugin->config.output_track = RerouteConfig::BOTTOM;
 
 	plugin->send_configure_change();
 	return 1;
@@ -276,20 +206,9 @@ void Reroute::process_frame(VFrame **frame)
 		break;
 	}
 
-	if(config.output_track == RerouteConfig::TOP)
-	{
-		input_track  = get_total_buffers() - 1;
-		output_track = 0;
-	}
-	else
-	{
-		input_track  = 0;
-		output_track = get_total_buffers() - 1;
-	}
-
 	// output buffers for source and target track
-	VFrame *source = frame[input_track];
-	VFrame *target = frame[output_track];
+	VFrame *source = frame[get_total_buffers() - 1];
+	VFrame *target = frame[0];
 
 	// input track always passed through unaltered
 	get_frame(source);  // no OpenGL support
@@ -378,13 +297,12 @@ void Reroute::load_defaults()
 	defaults = load_defaults_file("reroute.rc");
 
 	config.operation = defaults->get("OPERATION", config.operation);
-	config.output_track = defaults->get("OUTPUT_TRACK", config.output_track);
 }
 
 void Reroute::save_defaults()
 {
 	defaults->update("OPERATION", config.operation);
-	defaults->update("OUTPUT_TRACK", config.output_track);
+	defaults->delete_key("OUTPUT_TRACK");
 	defaults->save();
 }
 
@@ -394,7 +312,6 @@ void Reroute::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("REROUTE");
 	output.tag.set_property("OPERATION", config.operation);
-	output.tag.set_property("OUTPUT_TRACK", config.output_track);
 	output.append_tag();
 	output.tag.set_title("/REROUTE");
 	output.append_tag();
@@ -411,9 +328,6 @@ void Reroute::read_data(KeyFrame *keyframe)
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("REROUTE"))
-		{
 			config.operation = input.tag.get_property("OPERATION", config.operation);
-			config.output_track = input.tag.get_property("OUTPUT_TRACK", config.output_track);
-		}
 	}
 }

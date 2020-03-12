@@ -25,6 +25,7 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_MAX_CHANNELS 2
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("Reroute")
@@ -57,13 +58,6 @@ public:
 		REPLACE_ALPHA
 	};
 
-	static const char* output_to_text(int output_track);
-	int output_track;
-	enum
-	{
-		TOP,
-		BOTTOM
-	};
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -72,18 +66,6 @@ class RerouteOperation : public BC_PopupMenu
 {
 public:
 	RerouteOperation(Reroute *plugin,
-		int x, 
-		int y);
-
-	void create_objects();
-	int handle_event();
-	Reroute *plugin;
-};
-
-class RerouteOutput : public BC_PopupMenu
-{
-public:
-	RerouteOutput(Reroute *plugin,
 		int x, 
 		int y);
 
@@ -101,7 +83,6 @@ public:
 	void update();
 
 	RerouteOperation *operation;
-	RerouteOutput *output;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
