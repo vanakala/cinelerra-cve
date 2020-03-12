@@ -146,19 +146,14 @@ int PluginClient::get_interpolation_type()
 	return BC_Resources::interpolation_method;
 }
 
-float PluginClient::get_red()
+void PluginClient::get_picker_colors(double *red, double *green, double *blue)
 {
-	return master_edl->local_session->red;
-}
-
-float PluginClient::get_green()
-{
-	return master_edl->local_session->green;
-}
-
-float PluginClient::get_blue()
-{
-	return master_edl->local_session->blue;
+	if(red)
+		*red = plugin->edl->local_session->red;
+	if(green)
+		*green = plugin->edl->local_session->green;
+	if(blue)
+		*blue = plugin->edl->local_session->blue;
 }
 
 int PluginClient::get_use_opengl()

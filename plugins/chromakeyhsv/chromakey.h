@@ -65,9 +65,9 @@ public:
 	// Output mode
 	bool  show_mask;
 	// Key color definition
-	float red;
-	float green;
-	float blue;
+	double red;
+	double green;
+	double blue;
 	// Key shade definition
 	float min_brightness;
 	float max_brightness;

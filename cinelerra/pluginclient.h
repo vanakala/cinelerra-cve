@@ -184,9 +184,7 @@ public:
 	int get_interpolation_type();
 
 // Get the values from the color picker
-	float get_red();
-	float get_green();
-	float get_blue();
+	void get_picker_colors(double *red, double *green, double *blue);
 
 // All plugins define these.
 // load default settings for the plugin

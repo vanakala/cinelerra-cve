@@ -163,13 +163,12 @@ ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin,
 
 int ColorBalanceWhite::handle_event()
 {
+	double red, green, blue;
 // Get colorpicker value
-	float red = plugin->get_red();
-	float green = plugin->get_green();
-	float blue = plugin->get_blue();
+	plugin->get_picker_colors(&red, &green, &blue);
 
 // Get minimum value.  Can't use maximum because the sliders run out of room.
-	float min = MIN(red, green);
+	double min = MIN(red, green);
 	min = MIN(min, blue);
 
 // Get factors required to normalize other values to minimum

@@ -290,10 +290,9 @@ GammaColorPicker::GammaColorPicker(GammaMain *plugin,
 
 int GammaColorPicker::handle_event()
 {
+	double red, green, blue;
 // Get colorpicker value
-	float red = plugin->get_red();
-	float green = plugin->get_green();
-	float blue = plugin->get_blue();
+	plugin->get_picker_colors(&red, &green, &blue);
 // Get maximum value
 	plugin->config.max = MAX(red, green);
 	plugin->config.max = MAX(plugin->config.max, blue);

@@ -253,9 +253,8 @@ ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKey *plugin,
 
 int ChromaKeyUseColorPicker::handle_event()
 {
-	plugin->config.red = plugin->get_red();
-	plugin->config.green = plugin->get_green();
-	plugin->config.blue = plugin->get_blue();
+	plugin->get_picker_colors(&plugin->config.red, &plugin->config.green,
+		&plugin->config.blue);
 	gui->update_sample();
 	plugin->send_configure_change();
 	return 1;

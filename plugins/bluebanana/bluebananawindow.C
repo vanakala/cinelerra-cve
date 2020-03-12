@@ -586,10 +586,10 @@ public:
 	void pick()
 	{
 		int delta = plugin->config.Vsel_hi - plugin->config.Vsel_lo;
-		float r = plugin->get_red();
-		float g = plugin->get_green();
-		float b = plugin->get_blue();
+		double r, g, b;
 		float h, s, v;
+
+		plugin->get_picker_colors(&r, &g, &b);
 		RGB_to_HSpV(r, g, b, h, s, v);
 		h *= 60.f;
 		v = rint(v * 100.f);
@@ -722,10 +722,10 @@ public:
 	void pick()
 	{
 		int delta = plugin->config.Ssel_hi - plugin->config.Ssel_lo;
-		float r = plugin->get_red();
-		float g = plugin->get_green();
-		float b = plugin->get_blue();
+		double r, g, b;
 		float h, s, v;
+
+		plugin->get_picker_colors(&r, &g, &b);
 		RGB_to_HSpV(r, g, b, h, s, v);
 		h *= 60.f;
 		s = rint(s * 100.f);
@@ -858,10 +858,10 @@ public:
 	void pick()
 	{
 		int delta = plugin->config.Hsel_hi - plugin->config.Hsel_lo;
-		float r = plugin->get_red();
-		float g = plugin->get_green();
-		float b = plugin->get_blue();
+		double r, g, b;
 		float h, s, v;
+
+		plugin->get_picker_colors(&r, &g, &b);
 		RGB_to_HSpV(r, g, b, h, s, v);
 		h = rint(h * 60.f);
 		if(h < 0) h = 0;

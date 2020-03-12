@@ -57,9 +57,9 @@ public:
 		ptstime current_pts);
 	int get_color();
 
-	float red;
-	float green;
-	float blue;
+	double red;
+	double green;
+	double blue;
 	float threshold;
 	float slope;
 	int use_value;
