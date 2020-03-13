@@ -41,7 +41,8 @@ public:
 	void run();
 	VFrame *process_buffer(VFrame *buffer);
 	void allocate_vframes(Plugin *plugin);
-	void copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer);
+	void copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer,
+		int use_tmpframes);
 
 private:
 	void process_frame(ptstime pts);

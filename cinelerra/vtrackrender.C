@@ -514,8 +514,18 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 				}
 				plugin->client->process_buffer(plugin->vframes.values,
 					plugin->get_length());
-				frame->copy_from(plugin->vframes.values[0]);
-				videorender->copy_vframes(&plugin->vframes, this);
+				if(plugin->plugin_server->apiversion < 3)
+				{
+					frame->copy_from(plugin->vframes.values[0]);
+				}
+				else
+				{
+					VFrame *tmp = frame;
+					frame = plugin->vframes.values[0];
+					plugin->vframes.values[0] = tmp;
+				}
+				videorender->copy_vframes(&plugin->vframes, this,
+					plugin->plugin_server->apiversion > 2);
 				next_plugin = 0;
 			}
 			else
@@ -602,14 +612,21 @@ int VTrackRender::need_camera(ptstime pts)
 	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
 }
 
-void VTrackRender::copy_track_vframe(VFrame *vframe)
+VFrame *VTrackRender::copy_track_vframe(VFrame *vframe, int use_tmpframe)
 {
 	if(!is_muted(vframe->get_pts()))
 	{
 		if(!track_frame)
 			track_frame = BC_Resources::tmpframes.clone_frame(vframe);
+		if(use_tmpframe)
+		{
+			VFrame *tmp = track_frame;
+			track_frame = vframe;
+			return tmp;
+		}
 		track_frame->copy_from(vframe);
 	}
+	return vframe;
 }
 
 void VTrackRender::dump(int indent)

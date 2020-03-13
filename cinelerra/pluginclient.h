@@ -115,11 +115,10 @@ public:
 	virtual void process_realtime(AFrame **input, AFrame **output) {};
 
 // Multichannel buffer process for backwards compatibility
-	virtual void process_realtime(VFrame **input,
-		VFrame **output) {};
+	virtual void process_realtime(VFrame **input, VFrame **output) {};
 // Single channel buffer process for backwards compatibility and transitions
-	virtual void process_realtime(VFrame *input,
-		VFrame *output) {};
+	virtual void process_realtime(VFrame *input, VFrame *output) {};
+	virtual VFrame *process_realtime(VFrame *frame) { return frame; };
 
 // Process buffer using pull method.  By default this loads the input into the
 // frame and calls process_frame with input and output pointing to frame.
@@ -127,6 +126,9 @@ public:
 	virtual void process_frame(AFrame **aframe);
 	virtual void process_frame(VFrame **frame);
 	virtual void process_frame(VFrame *frame);
+// API v.3
+	virtual void process_tmpframes(VFrame **frame);
+	virtual VFrame *process_tmpframe(VFrame *frame);
 
 // process the data in the buffers
 // input - the current edit's data

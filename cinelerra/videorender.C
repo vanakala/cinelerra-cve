@@ -265,13 +265,23 @@ void VideoRender::flash_output()
 void VideoRender::allocate_vframes(Plugin *plugin)
 {
 	VFrame *frame;
-	Track *current = plugin->track;
+	Track *current;
+	int tmpframe_api;
 
 	if(plugin->vframes.total > 0)
 		return;
+
 	// Current track is the track of multitrack plugin
-	plugin->vframes.append(frame = new VFrame(0, current->track_w,
-		current->track_h, edl->this_edlsession->color_model));
+	current = plugin->track;
+	tmpframe_api = plugin->plugin_server->apiversion > 2;
+
+	if(tmpframe_api)
+		frame = BC_Resources::tmpframes.get_tmpframe(current->track_w,
+			current->track_h, edl->this_edlsession->color_model);
+	else
+		frame = new VFrame(0, current->track_w,
+			current->track_h, edl->this_edlsession->color_model);
+	plugin->vframes.append(frame);
 	frame->set_layer(current->number_of());
 
 	// Add frames for other tracks starting from the first
@@ -284,9 +294,14 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 			if(track->plugins.values[i]->shared_plugin == plugin &&
 				track->plugins.values[i]->on)
 			{
-				frame = new VFrame(0, track->track_w,
-					track->track_h,
-					edl->this_edlsession->color_model);
+				if(tmpframe_api)
+					frame = BC_Resources::tmpframes.get_tmpframe(
+						track->track_w, track->track_h,
+						edl->this_edlsession->color_model);
+				else
+					frame = new VFrame(0, track->track_w,
+						track->track_h,
+						edl->this_edlsession->color_model);
 				plugin->vframes.append(frame);
 				frame->set_layer(track->number_of());
 			}
@@ -295,13 +310,14 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 	plugin->client->plugin_init(plugin->vframes.total);
 }
 
-void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)
+void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer,
+	int use_tmpframes)
 {
 	for(int i = 1; i < vframes->total; i++)
 	{
 		VFrame *vframe = vframes->values[i];
 		Track *track = renderer->get_track_number(vframe->get_layer());
 
-		track->renderer->copy_track_vframe(vframe);
+		vframes->values[i] = track->renderer->copy_track_vframe(vframe, use_tmpframes);
 	}
 }

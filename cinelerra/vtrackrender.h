@@ -42,7 +42,7 @@ public:
 
 	void process_vframe(ptstime pts, int rstep);
 	VFrame *get_vframe(VFrame *buffer);
-	void copy_track_vframe(VFrame *vframe);
+	VFrame *copy_track_vframe(VFrame *vframe, int use_tmpframe);
 	VFrame *render_projector(VFrame *output, VFrame **input = 0);
 	void dump(int indent);
 

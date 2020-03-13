@@ -20,7 +20,9 @@
  */
 
 #include "aframe.h"
+#include "atmpframecache.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -34,6 +36,7 @@
 #include "preferences.inc"
 #include "track.h"
 #include "tracks.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 
 
@@ -638,8 +641,23 @@ void Plugin::clear_keyframes()
 
 void Plugin::reset_frames()
 {
-	vframes.remove_all_objects();
-	aframes.remove_all_objects();
+	if(!plugin_server)
+		return;
+
+	if(plugin_server->apiversion < 3)
+	{
+		vframes.remove_all_objects();
+		aframes.remove_all_objects();
+	}
+	else
+	{
+		for(int i = 0; i < vframes.total; i++)
+			BC_Resources::tmpframes.release_frame(vframes.values[i]);
+		vframes.remove_all();
+		for(int i = 0; i < aframes.total; i++)
+			audio_frames.release_frame(aframes.values[i]);
+		aframes.remove_all();
+	}
 }
 
 void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)

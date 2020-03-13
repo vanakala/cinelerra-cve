@@ -232,10 +232,20 @@ void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
 		plugin_process_loop(frame);
 	else
 	{
-		if(server->multichannel)
-			process_frame(frame);
+		if(server->apiversion < 3)
+		{
+			if(server->multichannel)
+				process_frame(frame);
+			else
+				process_frame(frame[0]);
+		}
 		else
-			process_frame(frame[0]);
+		{
+			if(server->multichannel)
+				process_tmpframes(frame);
+			else
+				*frame = process_tmpframe(*frame);
+		}
 	}
 }
 
@@ -290,10 +300,24 @@ void PluginClient::process_frame(VFrame **frame)
 		process_realtime(frame, frame);
 }
 
+void PluginClient::process_tmpframes(VFrame **frame)
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		get_frame(frame[i], i);
+	if(is_multichannel())
+		process_realtime(frame, frame);
+}
+
 void PluginClient::process_frame(VFrame *frame)
 {
 	get_frame(frame, 0);
 	process_realtime(frame, frame);
+}
+
+VFrame *PluginClient::process_tmpframe(VFrame *frame)
+{
+	get_frame(frame, 0);
+	return process_realtime(frame);
 }
 
 void PluginClient::get_frame(AFrame *frame)
