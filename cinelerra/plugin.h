@@ -103,6 +103,7 @@ public:
 	int get_number();
 	size_t get_size();
 	void reset_frames();
+	int shared_slots();
 
 	int id;
 

@@ -764,9 +764,11 @@ void EDL::get_shared_plugins(Track *source, ptstime startpos, ptstime endpos,
 					if(!plugin->plugin_server)
 						continue;
 					if(plugin->plugin_server->multichannel &&
-							track->get_shared_track(
-								plugin_start, plugin_end))
+							(track->get_shared_track(
+								plugin_start, plugin_end) ||
+							!plugin->shared_slots()))
 						continue;
+
 					if(track->get_shared_multichannel(plugin_start, plugin_end))
 						continue;
 

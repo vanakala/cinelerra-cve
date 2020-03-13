@@ -561,6 +561,28 @@ void Plugin::init_shared_pointers()
 		shared_track = other_track;
 }
 
+int Plugin::shared_slots()
+{
+	int count = 1;
+	int max;
+
+	if(!plugin_server || !plugin_server->multichannel)
+		return -1;
+
+	if(!(max = plugin_server->multichannel_max))
+		return -1;
+
+	for(Track *cur = track->tracks->first; cur; cur = cur->next)
+	{
+		for(int i = 0; i < cur->plugins.total; i++)
+		{
+			if(cur->plugins.values[i]->shared_plugin == this)
+				count++;
+		}
+	}
+	return count < max;
+}
+
 void Plugin::calculate_title(char *string, int use_nudge)
 {
 	string[0] = 0;
