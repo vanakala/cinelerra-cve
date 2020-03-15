@@ -38,6 +38,7 @@ class PluginClient;
 #include "menueffects.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
+#include "pluginwindow.h"
 #include "preferences.inc"
 #include "theme.inc"
 #include "trackrender.inc"
@@ -256,7 +257,8 @@ public:
 	Plugin *plugin;
 // Keyframe when plugin is not avalilable
 	KeyFrame *keyframe;
-
+// Plugin window
+	PluginWindow *plugin_gui;
 protected:
 	TrackRender *renderer;
 };

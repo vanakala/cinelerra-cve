@@ -123,7 +123,8 @@ int PluginPopupDetach::handle_event()
 {
 	if(mwindow_global->stop_composer())
 		return 0;
-	mwindow_global->hide_plugin(popup->plugin, 1);
+	if(popup->plugin->apiversion < 3)
+		mwindow_global->hide_plugin(popup->plugin, 1);
 	popup->plugin->track->remove_plugin(popup->plugin);
 	mwindow_global->save_backup();
 	mwindow_global->undo->update_undo(_("detach effect"), LOAD_ALL);

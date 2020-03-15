@@ -205,7 +205,7 @@ MWindow::~MWindow()
 	delete vwindow;
 	delete cwindow;
 	delete lwindow;
-	plugin_guis->remove_all_objects();
+	clear_plugin_guis();
 	removed_guis->remove_all_objects();
 	delete plugin_guis;
 	delete removed_guis;
@@ -1105,10 +1105,16 @@ void MWindow::show_plugin(Plugin *plugin)
 
 		if(server && server->uses_gui)
 		{
-			PluginClient *mainclient = plugin->client;
+			if(plugin->apiversion < 2)
+			{
+				PluginClient *mainclient = plugin->client;
 
-			plugin->gui_client = plugin_guis->append(server->open_plugin(plugin, 0));
-			plugin->client = mainclient;
+				plugin->gui_client = plugin_guis->append(server->open_plugin(plugin, 0));
+				plugin->client = mainclient;
+			}
+			else
+				plugin->gui_client = plugin->client;
+
 			plugin->gui_client->plugin_show_gui();
 			plugin->show = 1;
 		}
@@ -1127,9 +1133,20 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
 			PluginClient *ptr = plugin_guis->values[i];
+
 			plugin_guis->remove(ptr);
-			ptr->hide_gui();
-			removed_guis->append(ptr);
+
+			if(plugin->apiversion < 3)
+			{
+				ptr->hide_gui();
+				removed_guis->append(ptr);
+			}
+			else
+			{
+				plugin->gui_client = 0;
+				delete plugin->client->plugin_gui;
+				plugin->client->plugin_gui = 0;
+			}
 			break;
 		}
 	}
@@ -1140,7 +1157,7 @@ void MWindow::hide_plugins()
 {
 	plugin_gui_lock->lock("MWindow::hide_plugins");
 	clear_removed_guis();
-	plugin_guis->remove_all_objects();
+	clear_plugin_guis();
 	plugin_gui_lock->unlock();
 }
 
@@ -1261,6 +1278,23 @@ void MWindow::clear_removed_guis()
 		client->server->close_plugin(client);
 	}
 	removed_guis->remove_all();
+}
+
+void MWindow::clear_plugin_guis()
+{
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+		PluginClient *client = plugin_guis->values[i];
+
+		if(client->server->apiversion < 2)
+			client->server->close_plugin(client);
+		else
+		{
+			delete client->plugin_gui;
+			client->plugin_gui = 0;
+		}
+	}
+	plugin_guis->remove_all();
 }
 
 // Reset everything after a load.
@@ -1631,4 +1665,5 @@ void MWindow::show_program_status()
 		if(vs[2])
 			printf("  OpenGl renderer: %s\n", vs[2]);
 	}
+	BC_Resources::tmpframes.dump(4);
 }

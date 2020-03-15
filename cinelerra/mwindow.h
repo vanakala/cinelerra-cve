@@ -214,6 +214,8 @@ public:
 	int plugin_gui_open(Plugin *plugin);
 // Make removed guis list empty
 	void clear_removed_guis();
+// Make plugin guis list empty
+	void clear_plugin_guis();
 
 // ============================= editing commands ========================
 

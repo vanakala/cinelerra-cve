@@ -51,11 +51,13 @@ PluginClient::PluginClient(PluginServer *server)
 	plugin = 0;
 	prompt = 0;
 	keyframe = 0;
+	plugin_gui = 0;
 	this->server = server;
 }
 
 PluginClient::~PluginClient()
 {
+	delete plugin_gui;
 	if(mwindow_global && plugin)
 		mwindow_global->clear_msgs(plugin);
 }
@@ -99,12 +101,15 @@ void PluginClient::set_renderer(TrackRender *renderer)
 // close event from client side
 void PluginClient::client_side_close()
 {
+	if(server->apiversion < 3)
+	{
 // Last command executed
-	if(plugin)
-		mwindow_global->hide_plugin(plugin, 1);
-	else
-	if(prompt)
-		prompt->set_done(1);
+		if(plugin)
+			mwindow_global->hide_plugin(plugin, 1);
+		else
+		if(prompt)
+			prompt->set_done(1);
+	}
 }
 
 void PluginClient::set_prompt(MenuEffectPrompt *prompt)

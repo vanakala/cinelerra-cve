@@ -125,6 +125,8 @@ public:
 	PluginClient *client;
 // Client with gui
 	PluginClient *gui_client;
+// Apiversion of client
+	int apiversion;
 // Frames for multichannel plugin
 	ArrayList<VFrame*> vframes;
 	ArrayList<AFrame*> aframes;

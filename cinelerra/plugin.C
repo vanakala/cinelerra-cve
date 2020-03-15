@@ -59,6 +59,10 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	shared_track_num = shared_plugin_num = -1;
 	client = 0;
 	gui_client = 0;
+	if(server)
+		apiversion = server->apiversion;
+	else
+		apiversion = 0;
 }
 
 Plugin::~Plugin()
