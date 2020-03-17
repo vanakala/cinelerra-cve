@@ -154,7 +154,7 @@ void ScaleMain::process_frame(VFrame *frame)
 
 	load_configuration();
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 
 // No scaling
 	if(EQUIV(config.w, 1) && EQUIV(config.h,1))

@@ -509,7 +509,7 @@ void HistogramMain::process_frame(VFrame *frame)
 	int need_reconfigure = load_configuration();
 	int use_opengl = calculate_use_opengl();
 
-	get_frame(frame, use_opengl);
+	get_frame(frame);
 
 // Apply histogram in hardware
 	if(use_opengl)

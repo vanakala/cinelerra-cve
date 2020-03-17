@@ -132,7 +132,7 @@ void ThresholdMain::process_frame(VFrame *frame)
 	int use_opengl = get_use_opengl() &&
 		(!config.plot || !gui_open());
 
-	get_frame(frame, use_opengl);
+	get_frame(frame);
 
 	if(use_opengl)
 	{

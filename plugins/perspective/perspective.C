@@ -708,7 +708,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
 	{
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 		return;
 	}
 
@@ -716,7 +716,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	int use_opengl = get_use_opengl() &&
 		(config.mode == AffineEngine::PERSPECTIVE || 
 		config.mode == AffineEngine::SHEER);
-	get_frame(frame, use_opengl);
+	get_frame(frame);
 
 	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
 		get_project_smp() + 1);

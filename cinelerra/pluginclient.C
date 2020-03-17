@@ -52,6 +52,7 @@ PluginClient::PluginClient(PluginServer *server)
 	prompt = 0;
 	keyframe = 0;
 	plugin_gui = 0;
+	need_reconfigure = 0;
 	this->server = server;
 }
 
@@ -202,6 +203,7 @@ void PluginClient::send_configure_change()
 	KeyFrame* keyframe = get_keyframe();
 
 	save_data(keyframe);
+	need_reconfigure = 1;
 	if(mwindow_global)
 	{
 		mwindow_global->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
@@ -228,10 +230,9 @@ void PluginClient::process_transition(AFrame *input, AFrame *output,
 	process_realtime(input, output);
 }
 
-void PluginClient::process_buffer(VFrame **frame, ptstime total_length)
+void PluginClient::process_buffer(VFrame **frame)
 {
 	source_pts = frame[0]->get_pts();
-	total_len_pts = total_length;
 
 	if(!server->realtime)
 		plugin_process_loop(frame);
@@ -300,28 +301,24 @@ void PluginClient::process_frame(AFrame *aframe)
 void PluginClient::process_frame(VFrame **frame)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(frame[i], i);
+		get_frame(frame[i]);
 	if(is_multichannel())
 		process_realtime(frame, frame);
 }
 
 void PluginClient::process_tmpframes(VFrame **frame)
 {
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(frame[i], i);
-	if(is_multichannel())
-		process_realtime(frame, frame);
+	process_realtime(frame, frame);
 }
 
 void PluginClient::process_frame(VFrame *frame)
 {
-	get_frame(frame, 0);
+	get_frame(frame);
 	process_realtime(frame, frame);
 }
 
 VFrame *PluginClient::process_tmpframe(VFrame *frame)
 {
-	get_frame(frame, 0);
 	return process_realtime(frame);
 }
 
@@ -336,7 +333,7 @@ void PluginClient::get_frame(AFrame *frame)
 		frame->clear_frame(frame->pts, frame->source_duration);
 }
 
-VFrame *PluginClient::get_frame(VFrame *buffer, int use_opengl)
+VFrame *PluginClient::get_frame(VFrame *buffer)
 {
 	if(renderer)
 	{

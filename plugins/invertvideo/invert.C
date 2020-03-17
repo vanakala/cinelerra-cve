@@ -281,7 +281,7 @@ void InvertVideoEffect::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 
 	if(config.r || config.g || config.b || config.a)
 	{

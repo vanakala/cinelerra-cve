@@ -380,7 +380,7 @@ void LinearBlurMain::process_frame(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders

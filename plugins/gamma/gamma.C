@@ -412,7 +412,7 @@ void GammaMain::process_frame(VFrame *frame)
 		!config.automatic && 
 		(!config.plot || !gui_open());
 
-	get_frame(frame, use_opengl);
+	get_frame(frame);
 	if(!localframe)
 	{
 		localframe = BC_Resources::tmpframes.get_tmpframe(frame->get_w(),

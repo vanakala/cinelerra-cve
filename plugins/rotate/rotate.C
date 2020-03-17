@@ -548,7 +548,7 @@ void RotateEffect::process_frame(VFrame *frame)
 
 	if(config.angle == 0)
 	{
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 		return;
 	}
 
@@ -559,7 +559,7 @@ void RotateEffect::process_frame(VFrame *frame)
 
 	if(get_use_opengl())
 	{
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 		run_opengl();
 		return;
 	}
@@ -568,7 +568,7 @@ void RotateEffect::process_frame(VFrame *frame)
 		frame->get_h(),
 		frame->get_color_model());
 	temp_frame->copy_pts(frame);
-	get_frame(temp_frame, get_use_opengl());
+	get_frame(temp_frame);
 
 	frame->clear_frame();
 	engine->rotate(frame, 

@@ -557,7 +557,7 @@ void GradientMain::process_frame(VFrame *frame)
 
 	int need_alpha = config.in_a != 0xff || config.out_a != 0xff;
 	if(need_alpha)
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 
 	if(get_use_opengl())
 	{

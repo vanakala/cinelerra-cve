@@ -630,7 +630,7 @@ void ChromaKey::process_frame(VFrame *frame)
 	this->input = frame;
 	this->output = frame;
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 
 	if(EQUIV(config.threshold, 0))
 	{

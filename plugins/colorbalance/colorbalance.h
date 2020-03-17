@@ -118,7 +118,6 @@ public:
 	int g_lookup_16[0x10000];
 	int b_lookup_16[0x10000];
 	int redo_buffers;
-	int need_reconfigure;
 };
 
 #endif

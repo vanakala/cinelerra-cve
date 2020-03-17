@@ -215,7 +215,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 				frame->get_h(),
 				frame->get_color_model());
 			first_frame->set_pts(first_frame_pts);
-			get_frame(first_frame, get_use_opengl());
+			get_frame(first_frame);
 
 		if(get_use_opengl())
 		{
@@ -228,7 +228,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 // Still not frozen
 	if(!first_frame && !config.enabled)
 	{
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 	}
 	else
 // Just left frozen range
@@ -236,7 +236,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 	{
 		delete first_frame;
 		first_frame = 0;
-		get_frame(frame, get_use_opengl());
+		get_frame(frame);
 	}
 	else
 // Still frozen
@@ -246,7 +246,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 		if(!PTSEQU(previous_pts, first_frame_pts))
 		{
 			first_frame->set_pts(first_frame_pts);
-			get_frame(first_frame, get_use_opengl());
+			get_frame(first_frame);
 		}
 		if(get_use_opengl())
 		{

@@ -296,7 +296,7 @@ void RGB601Main::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 
 	if(get_use_opengl() && config.direction)
 	{

@@ -91,7 +91,7 @@ void BrightnessMain::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame, get_use_opengl());
+	get_frame(frame);
 
 // Use hardware
 	if(get_use_opengl())

@@ -145,11 +145,11 @@ public:
 // Process using pull method.
 // frame/buffer - video/audio fame to process
 // total_len - length of plugin
-	void process_buffer(VFrame **frame, ptstime total_len);
+	void process_buffer(VFrame **frame);
 	void process_buffer(AFrame **buffer, ptstime total_len);
 
 	void get_frame(AFrame *frame);
-	VFrame *get_frame(VFrame *buffer, int use_opengl = 0);
+	VFrame *get_frame(VFrame *buffer);
 
 	char* get_gui_string();
 
@@ -166,9 +166,7 @@ public:
 
 // get current camera position
 	void get_camera(double *x, double *y, double *z, ptstime postime);
-// When this plugin is adjusted, propogate parameters back to EDL and virtual
-// console.  This gets a keyframe from the EDL, with the position set to the
-// EDL tracking position.
+// When this plugin is adjusted, propogate parameters back to EDL
 	void send_configure_change();
 
 // Called from process_buffer
@@ -261,6 +259,7 @@ public:
 	PluginWindow *plugin_gui;
 protected:
 	TrackRender *renderer;
+	int need_reconfigure;
 };
 
 #endif

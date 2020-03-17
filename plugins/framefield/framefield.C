@@ -290,7 +290,7 @@ void FrameField::process_frame(VFrame *frame)
 		source_pts < current_frame_pts + current_frame_duration - EPSILON))
 	{
 // Get frame
-		get_frame(ptr, get_use_opengl());
+		get_frame(ptr);
 		current_frame_pts = ptr->get_pts();
 		current_frame_duration = ptr->get_duration();
 		new_frame = 1;
