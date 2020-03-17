@@ -346,7 +346,6 @@ VFrame *PluginClient::get_frame(VFrame *buffer, int use_opengl)
 		else
 			return current->renderer->get_vtmpframe(buffer);
 	}
-	buffer->clear_frame();
 	return buffer;
 }
 

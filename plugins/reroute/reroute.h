@@ -27,7 +27,7 @@
 #define PLUGIN_IS_MULTICHANNEL
 #define PLUGIN_MAX_CHANNELS 2
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_TITLE N_("Reroute")
 #define PLUGIN_CLASS Reroute
 #define PLUGIN_CONFIG_CLASS RerouteConfig
@@ -96,7 +96,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame **frame);
+	void process_tmpframes(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

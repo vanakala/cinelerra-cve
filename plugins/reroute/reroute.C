@@ -159,9 +159,12 @@ template<class TYPE, int COMPONENTS>
 void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_components, bool do_alpha)
 //partially overwrite target data buffer
 {
-	int w = target->get_w();
+	int w = source->get_w();
 	int h = source->get_h();
 	do_alpha = do_alpha && (COMPONENTS > 3);  // only possible if we have alpha
+
+	w = MIN(w, target->get_w());
+	h = MIN(h, target->get_h());
 
 	for(int i = 0; i < h; i++)
 	{
@@ -185,11 +188,11 @@ void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_
 	}
 }
 
-void Reroute::process_frame(VFrame **frame)
+void Reroute::process_tmpframes(VFrame **frame)
 {
-	load_configuration();
-
 	bool do_components, do_alpha;
+
+	load_configuration();
 
 	switch(config.operation)
 	{
@@ -206,17 +209,17 @@ void Reroute::process_frame(VFrame **frame)
 		break;
 	}
 
-	// output buffers for source and target track
-	VFrame *source = frame[get_total_buffers() - 1];
-	VFrame *target = frame[0];
-
-	// input track always passed through unaltered
-	get_frame(source);  // no OpenGL support
-
 // no real operation necessary
 //  unless applied to multiple tracks
 	if(get_total_buffers() <= 1)
 		return;
+
+	// output buffers for source and target track
+	VFrame *source = frame[1];
+	VFrame *target = frame[0];
+
+	if(do_alpha)
+		target->set_transparent();
 
 	if(config.operation == RerouteConfig::REPLACE)
 	{
@@ -254,8 +257,11 @@ void Reroute::process_frame(VFrame **frame)
 		break;
 	case BC_AYUV16161616:
 		{
-			int w = target->get_w();
+			int w = source->get_w();
 			int h = source->get_h();
+
+			w = MIN(w, target->get_w());
+			h = MIN(h, target->get_h());
 
 			for(int i = 0; i < h; i++)
 			{
