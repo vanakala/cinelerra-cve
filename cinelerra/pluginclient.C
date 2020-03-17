@@ -336,13 +336,18 @@ void PluginClient::get_frame(AFrame *frame)
 		frame->clear_frame(frame->pts, frame->source_duration);
 }
 
-void PluginClient::get_frame(VFrame *buffer, int use_opengl)
+VFrame *PluginClient::get_frame(VFrame *buffer, int use_opengl)
 {
 	if(renderer)
 	{
 		Track *current = renderer->get_track_number(buffer->get_layer());
-		current->renderer->get_vframe(buffer);
+		if(server->apiversion < 3)
+			current->renderer->get_vframe(buffer);
+		else
+			return current->renderer->get_vtmpframe(buffer);
 	}
+	buffer->clear_frame();
+	return buffer;
 }
 
 int PluginClient::plugin_process_loop(AFrame **aframes)

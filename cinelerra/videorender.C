@@ -266,23 +266,17 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 {
 	VFrame *frame;
 	Track *current;
-	int tmpframe_api;
 
 	if(plugin->vframes.total > 0)
 		return;
 
 	// Current track is the track of multitrack plugin
 	current = plugin->track;
-	tmpframe_api = plugin->plugin_server->apiversion > 2;
 
-	if(tmpframe_api)
-		frame = BC_Resources::tmpframes.get_tmpframe(current->track_w,
-			current->track_h, edl->this_edlsession->color_model);
-	else
-		frame = new VFrame(0, current->track_w,
-			current->track_h, edl->this_edlsession->color_model);
-	plugin->vframes.append(frame);
+	frame = new VFrame(0, current->track_w,
+		current->track_h, edl->this_edlsession->color_model);
 	frame->set_layer(current->number_of());
+	plugin->vframes.append(frame);
 
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
@@ -294,30 +288,69 @@ void VideoRender::allocate_vframes(Plugin *plugin)
 			if(track->plugins.values[i]->shared_plugin == plugin &&
 				track->plugins.values[i]->on)
 			{
-				if(tmpframe_api)
-					frame = BC_Resources::tmpframes.get_tmpframe(
-						track->track_w, track->track_h,
-						edl->this_edlsession->color_model);
-				else
-					frame = new VFrame(0, track->track_w,
-						track->track_h,
-						edl->this_edlsession->color_model);
-				plugin->vframes.append(frame);
+				frame = new VFrame(0, track->track_w,
+					track->track_h,
+					edl->this_edlsession->color_model);
 				frame->set_layer(track->number_of());
+				plugin->vframes.append(frame);
 			}
 		}
 	}
 	plugin->client->plugin_init(plugin->vframes.total);
 }
 
-void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer,
-	int use_tmpframes)
+void VideoRender::pass_vframes(Plugin *plugin, VTrackRender *current_renderer)
+{
+	current_renderer->vframes.remove_all();
+	current_renderer->vframes.append(current_renderer->handover_trackframe());
+
+	// Add frames for other tracks starting from the first
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_VIDEO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+					track->plugins.values[i]->on)
+				current_renderer->vframes.append(
+				((VTrackRender*)track->renderer)->handover_trackframe());
+		}
+	}
+	if(current_renderer->initialized_buffers != current_renderer->vframes.total)
+	{
+		plugin->client->plugin_init(current_renderer->vframes.total);
+		current_renderer->initialized_buffers = current_renderer->vframes.total;
+	}
+}
+
+void VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
+{
+	int k = 1;
+
+	current_renderer->take_vframe(current_renderer->vframes.values[0]);
+
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_VIDEO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+					track->plugins.values[i]->on)
+				((VTrackRender*)track->renderer)->take_vframe(
+					current_renderer->vframes.values[k]);
+		}
+	}
+}
+
+void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)
 {
 	for(int i = 1; i < vframes->total; i++)
 	{
 		VFrame *vframe = vframes->values[i];
 		Track *track = renderer->get_track_number(vframe->get_layer());
 
-		vframes->values[i] = track->renderer->copy_track_vframe(vframe, use_tmpframes);
+		vframes->values[i] = track->renderer->copy_track_vframe(vframe);
 	}
 }

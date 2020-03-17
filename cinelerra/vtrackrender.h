@@ -22,6 +22,7 @@
 #ifndef VTRACKRENDER_H
 #define VTRACKRENDER_H
 
+#include "arraylist.h"
 #include "cropengine.inc"
 #include "edit.inc"
 #include "fadeengine.inc"
@@ -42,9 +43,16 @@ public:
 
 	void process_vframe(ptstime pts, int rstep);
 	VFrame *get_vframe(VFrame *buffer);
-	VFrame *copy_track_vframe(VFrame *vframe, int use_tmpframe);
+	VFrame *get_vtmpframe(VFrame *buffer);
+	VFrame *handover_trackframe();
+	void take_vframe(VFrame *frame);
+	VFrame *copy_track_vframe(VFrame *vframe);
 	VFrame *render_projector(VFrame *output, VFrame **input = 0);
 	void dump(int indent);
+
+// Frames for multichannel plugin
+	ArrayList<VFrame*> vframes;
+	int initialized_buffers;
 
 private:
 	void read_vframe(VFrame *vframe, Edit *edit, int filenum = 0);

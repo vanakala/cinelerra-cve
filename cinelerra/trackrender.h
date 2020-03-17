@@ -42,9 +42,10 @@ public:
 	virtual ~TrackRender();
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
+	virtual VFrame *get_vtmpframe(VFrame *buffer) { return 0; };
 	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
 	virtual void copy_track_aframe(AFrame *buffer) {};
-	virtual VFrame *copy_track_vframe(VFrame *buffer, int use_tmpframe) {};
+	virtual VFrame *copy_track_vframe(VFrame *buffer) {};
 	Track *get_track_number(int number);
 	void set_effects_track(Track *track);
 	int track_ready();

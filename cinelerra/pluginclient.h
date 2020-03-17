@@ -149,7 +149,7 @@ public:
 	void process_buffer(AFrame **buffer, ptstime total_len);
 
 	void get_frame(AFrame *frame);
-	void get_frame(VFrame *buffer, int use_opengl = 0);
+	VFrame *get_frame(VFrame *buffer, int use_opengl = 0);
 
 	char* get_gui_string();
 

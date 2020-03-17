@@ -59,6 +59,7 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	videorender = vrender;
 	track_frame = 0;
 	plugin_frame = 0;
+	initialized_buffers = 0;
 }
 
 VTrackRender::~VTrackRender()
@@ -501,31 +502,30 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 				if(!plugin->client)
 					plugin->plugin_server->open_plugin(plugin, this);
 
-				videorender->allocate_vframes(plugin);
-
-				for(int i = 0; i < plugin->vframes.total; i++)
+				if(plugin->apiversion < 3)
 				{
-					VFrame *current = plugin->vframes.values[i];
-					layer = current->get_layer();
-					current->copy_pts(frame);
-					current->set_layer(layer);
-					get_track_number(
-						current->get_layer())->renderer->next_plugin = 0;
-				}
-				plugin->client->process_buffer(plugin->vframes.values,
-					plugin->get_length());
-				if(plugin->plugin_server->apiversion < 3)
-				{
-					frame->copy_from(plugin->vframes.values[0]);
+					videorender->allocate_vframes(plugin);
+					for(int i = 0; i < plugin->vframes.total; i++)
+					{
+						VFrame *current = plugin->vframes.values[i];
+						layer = current->get_layer();
+						current->copy_pts(frame);
+						current->set_layer(layer);
+						get_track_number(
+							current->get_layer())->renderer->next_plugin = 0;
+					}
+					plugin->client->process_buffer(plugin->vframes.values,
+						plugin->get_length());
+						frame->copy_from(plugin->vframes.values[0]);
+					videorender->copy_vframes(&plugin->vframes, this);
 				}
 				else
 				{
-					VFrame *tmp = frame;
-					frame = plugin->vframes.values[0];
-					plugin->vframes.values[0] = tmp;
+					videorender->pass_vframes(plugin, this);
+					plugin->client->process_buffer(vframes.values,
+						plugin->get_length());
+					videorender->take_vframes(plugin, this);
 				}
-				videorender->copy_vframes(&plugin->vframes, this,
-					plugin->plugin_server->apiversion > 2);
 				next_plugin = 0;
 			}
 			else
@@ -576,6 +576,24 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 	return buffer;
 }
 
+VFrame *VTrackRender::get_vtmpframe(VFrame *buffer)
+{
+// Called by tmpframe aware plugin
+	ptstime buffer_pts = buffer->get_pts();
+	Edit *edit = media_track->editof(buffer_pts);
+
+	if(edit)
+	{
+		read_vframe(buffer, edit, 2);
+
+		buffer = render_transition(buffer, edit);
+		buffer = render_camera(buffer);
+		render_mask(buffer, 1);
+		render_crop(buffer, 1);
+	}
+	return buffer;
+}
+
 VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 {
 	VFrame *tmpframe;
@@ -612,21 +630,28 @@ int VTrackRender::need_camera(ptstime pts)
 	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
 }
 
-VFrame *VTrackRender::copy_track_vframe(VFrame *vframe, int use_tmpframe)
+VFrame *VTrackRender::copy_track_vframe(VFrame *vframe)
 {
 	if(!is_muted(vframe->get_pts()))
 	{
 		if(!track_frame)
 			track_frame = BC_Resources::tmpframes.clone_frame(vframe);
-		if(use_tmpframe)
-		{
-			VFrame *tmp = track_frame;
-			track_frame = vframe;
-			return tmp;
-		}
 		track_frame->copy_from(vframe);
 	}
 	return vframe;
+}
+
+VFrame *VTrackRender::handover_trackframe()
+{
+	VFrame *tmp = track_frame;
+
+	track_frame = 0;
+	return tmp;
+}
+
+void VTrackRender::take_vframe(VFrame *frame)
+{
+	track_frame = frame;
 }
 
 void VTrackRender::dump(int indent)
