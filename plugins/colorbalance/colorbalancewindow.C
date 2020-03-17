@@ -91,6 +91,7 @@ int ColorBalanceSlider::handle_event()
 	float difference = get_value() - *output;
 	*output = get_value();
 	client->synchronize_params(this, difference);
+	client->need_reconfigure = 1;
 	client->send_configure_change();
 	return 1;
 }
@@ -115,6 +116,7 @@ ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int 
 int ColorBalancePreserve::handle_event()
 {
 	client->config.preserve = get_value();
+	client->need_reconfigure = 1;
 	client->send_configure_change();
 	return 1;
 }
@@ -131,6 +133,7 @@ ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
 int ColorBalanceLock::handle_event()
 {
 	client->config.lock_params = get_value();
+	client->need_reconfigure = 1;
 	client->send_configure_change();
 	return 1;
 }
@@ -170,7 +173,7 @@ int ColorBalanceWhite::handle_event()
 	plugin->config.magenta = plugin->calculate_slider(g_factor);
 	plugin->config.yellow = plugin->calculate_slider(b_factor);
 	gui->update();
-
+	plugin->need_reconfigure = 1;
 	plugin->send_configure_change();
 	return 1;
 }
@@ -192,6 +195,7 @@ int ColorBalanceReset::handle_event()
 	plugin->config.magenta = 0;
 	plugin->config.yellow = 0;
 	gui->update();
+	plugin->need_reconfigure = 1;
 	plugin->send_configure_change();
 	return 1;
 }

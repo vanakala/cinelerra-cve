@@ -493,7 +493,7 @@ void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diff
 	}
 }
 
-void ColorBalanceMain::process_frame(VFrame *frame)
+VFrame *ColorBalanceMain::process_tmpframe(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
@@ -516,18 +516,10 @@ void ColorBalanceMain::process_frame(VFrame *frame)
 		need_reconfigure = 0;
 	}
 
-	get_frame(frame, get_use_opengl());
-
 	if(!EQUIV(config.cyan, 0) || 
 		!EQUIV(config.magenta, 0) || 
 		!EQUIV(config.yellow, 0))
 	{
-		if(get_use_opengl())
-		{
-			run_opengl();
-			return;
-		}
-
 		for(int i = 0; i < total_engines; i++)
 		{
 			engine[i]->start_process_frame(frame, 
@@ -541,6 +533,7 @@ void ColorBalanceMain::process_frame(VFrame *frame)
 			engine[i]->wait_process_frame();
 		}
 	}
+	return frame;
 }
 
 void ColorBalanceMain::load_defaults()
