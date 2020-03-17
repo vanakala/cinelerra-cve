@@ -20,6 +20,7 @@
  */
 
 #include "bctitle.h"
+#include "clip.h"
 #include "colorbalancewindow.h"
 
 PLUGIN_THREAD_METHODS
@@ -59,10 +60,6 @@ ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-ColorBalanceWindow::~ColorBalanceWindow()
-{
-}
-
 void ColorBalanceWindow::update()
 {
 	cyan->update(plugin->config.cyan);
@@ -87,10 +84,6 @@ ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 	this->client = client;
 	this->output = output;
 	old_value = *output;
-}
-
-ColorBalanceSlider::~ColorBalanceSlider()
-{
 }
 
 int ColorBalanceSlider::handle_event()
@@ -119,10 +112,6 @@ ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int 
 	this->client = client;
 }
 
-ColorBalancePreserve::~ColorBalancePreserve()
-{
-}
-
 int ColorBalancePreserve::handle_event()
 {
 	client->config.preserve = get_value();
@@ -137,10 +126,6 @@ ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
 	_("Lock parameters"))
 {
 	this->client = client;
-}
-
-ColorBalanceLock::~ColorBalanceLock()
-{
 }
 
 int ColorBalanceLock::handle_event()
