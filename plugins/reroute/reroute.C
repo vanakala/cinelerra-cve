@@ -69,7 +69,6 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 	add_subwindow(title = new BC_Title(x, y, _("Operation:")));
 	add_subwindow(operation = new RerouteOperation(plugin, 
 		x + title->get_w() + 5, y));
-	operation->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -88,10 +87,7 @@ RerouteOperation::RerouteOperation(Reroute *plugin,
 	1)
 {
 	this->plugin = plugin;
-}
 
-void RerouteOperation::create_objects()
-{
 	add_item(new BC_MenuItem(
 		RerouteConfig::operation_to_text(
 			RerouteConfig::REPLACE)));
@@ -211,7 +207,7 @@ void Reroute::process_tmpframes(VFrame **frame)
 
 // no real operation necessary
 //  unless applied to multiple tracks
-	if(get_total_buffers() <= 1)
+	if(get_total_buffers() <= 1 || !frame[1])
 		return;
 
 	// output buffers for source and target track

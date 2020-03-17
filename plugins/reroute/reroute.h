@@ -69,7 +69,6 @@ public:
 		int x, 
 		int y);
 
-	void create_objects();
 	int handle_event();
 	Reroute *plugin;
 };
