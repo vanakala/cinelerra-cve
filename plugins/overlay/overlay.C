@@ -112,7 +112,7 @@ Overlay::~Overlay()
 
 PLUGIN_CLASS_METHODS
 
-void Overlay::process_frame(VFrame **frame)
+void Overlay::process_tmpframes(VFrame **frame)
 {
 	VFrame *output;
 	int total_buffers = get_total_buffers();
@@ -124,15 +124,14 @@ void Overlay::process_frame(VFrame **frame)
 
 // Direct copy the first layer
 	output = frame[0];
-	get_frame(output);
 
 	if(total_buffers < 2)
 		return;
 
 	for(int i = 1; i < total_buffers; i++)
 	{
-		get_frame(frame[i]);
-
+		if(!frame[i])
+			continue;
 		overlayer->overlay(output,
 			frame[i],
 			0,

@@ -23,6 +23,7 @@
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
 #define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("Overlay")
@@ -90,7 +91,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame **frame);
+	void process_tmpframes(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
