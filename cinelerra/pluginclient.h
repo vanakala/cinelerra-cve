@@ -150,6 +150,9 @@ public:
 
 	void get_frame(AFrame *frame);
 	VFrame *get_frame(VFrame *buffer);
+// Get, release tmpframes
+	VFrame *clone_vframe(VFrame *orig);
+	void release_vframe(VFrame *frame);
 
 	char* get_gui_string();
 

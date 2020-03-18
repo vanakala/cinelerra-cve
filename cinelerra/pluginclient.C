@@ -36,6 +36,7 @@
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "tmpframecache.h"
 #include "track.h"
 #include "trackrender.h"
 #include <string.h>
@@ -309,6 +310,16 @@ void PluginClient::process_frame(VFrame **frame)
 void PluginClient::process_tmpframes(VFrame **frame)
 {
 	process_realtime(frame, frame);
+}
+
+VFrame *PluginClient::clone_vframe(VFrame *orig)
+{
+	return BC_Resources::tmpframes.clone_frame(orig);
+}
+
+void PluginClient::release_vframe(VFrame *frame)
+{
+	BC_Resources::tmpframes.release_frame(frame);
 }
 
 void PluginClient::process_frame(VFrame *frame)
