@@ -235,24 +235,21 @@ void PluginClient::process_buffer(VFrame **frame)
 {
 	source_pts = frame[0]->get_pts();
 
-	if(!server->realtime)
-		plugin_process_loop(frame);
+	if(server->apiversion < 3)
+	{
+		if(!server->realtime)
+			plugin_process_loop(frame);
+		else if(server->multichannel)
+			process_frame(frame);
+		else
+			process_frame(frame[0]);
+	}
 	else
 	{
-		if(server->apiversion < 3)
-		{
-			if(server->multichannel)
-				process_frame(frame);
-			else
-				process_frame(frame[0]);
-		}
+		if(server->multichannel)
+			process_tmpframes(frame);
 		else
-		{
-			if(server->multichannel)
-				process_tmpframes(frame);
-			else
-				*frame = process_tmpframe(*frame);
-		}
+			*frame = process_tmpframe(*frame);
 	}
 }
 
