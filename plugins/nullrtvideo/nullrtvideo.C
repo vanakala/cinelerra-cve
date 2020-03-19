@@ -162,20 +162,20 @@ int NRTVideo::load_configuration()
 }
 
 /*
- * Pull frame and apply modifications
- * It is possible to use here
- * void process_realtime(VFrame *input, VFrame *output)
- *    - here input is already filled
- * multichannel plugin gets here arrays of pointers
- * prototype: void process_frame(VFrame **frame)
+ * Apply modifications to frame
+ * Multichannel plugin gets here arrays of pointers
+ * prototype: void process_tmpframes(VFrame **frame)
  *    - number of channels is total_in_buffers
+ * in new frame is needed, it must be aquired with clone_vframe
+ * input frame can be freed with release_vframe
+ * temporary frames should me aquired with clone_vframe and
+ *   released with release_vframe asap
  */
-void NRTVideo::process_frame(VFrame *frame)
+VFrame *NRTVideo::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
 	if(config.onoff)
 		frame->clear_frame();
+	return frame;
 }
