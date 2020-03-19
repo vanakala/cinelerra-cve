@@ -42,7 +42,6 @@ class BlurWindow : public PluginWindow
 {
 public:
 	BlurWindow(BlurMain *plugin, int x, int y);
-	~BlurWindow();
 
 	void update();
 
@@ -84,7 +83,9 @@ class BlurB : public BC_CheckBox
 {
 public:
 	BlurB(BlurMain *client, int x, int y);
+
 	int handle_event();
+
 	BlurMain *client;
 };
 
@@ -93,7 +94,7 @@ class BlurRadius : public BC_IPot
 {
 public:
 	BlurRadius(BlurMain *client, int x, int y);
-	~BlurRadius();
+
 	int handle_event();
 
 	BlurMain *client;
@@ -102,24 +103,21 @@ public:
 class BlurVertical : public BC_CheckBox
 {
 public:
-	BlurVertical(BlurMain *client, BlurWindow *window, int x, int y);
-	~BlurVertical();
+	BlurVertical(BlurMain *client, int x, int y);
+
 	int handle_event();
 
 	BlurMain *client;
-	BlurWindow *window;
 };
 
 class BlurHorizontal : public BC_CheckBox
 {
 public:
-	BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int y);
-	~BlurHorizontal();
+	BlurHorizontal(BlurMain *client, int x, int y);
+
 	int handle_event();
 
 	BlurMain *client;
-	BlurWindow *window;
 };
-
 
 #endif

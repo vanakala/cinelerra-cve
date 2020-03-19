@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Blur")
 #define PLUGIN_CLASS BlurMain
@@ -77,7 +78,7 @@ public:
 	~BlurMain();
 
 // required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 
 	void load_defaults();
 	void save_defaults();
@@ -85,8 +86,6 @@ public:
 	void read_data(KeyFrame *keyframe);
 
 	PLUGIN_CLASS_MEMBERS
-
-	int need_reconfigure;
 
 // a thread for the GUI
 	VFrame *temp, *input, *output;
@@ -103,7 +102,7 @@ public:
 	~BlurEngine();
 
 	void run();
-	void start_process_frame(VFrame *output, VFrame *input);
+	void start_process_frame(VFrame *input);
 	void wait_process_frame();
 
 // parameters needed for blur

@@ -95,7 +95,6 @@ BlurMain::BlurMain(PluginServer *server)
 
 BlurMain::~BlurMain()
 {
-	if(temp) delete temp;
 	if(engine)
 	{
 		for(int i = 0; i < (get_project_smp() + 1); i++)
@@ -107,12 +106,12 @@ BlurMain::~BlurMain()
 
 PLUGIN_CLASS_METHODS
 
-void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 {
 	int i, j, k, l;
 
 	this->input = input_ptr;
-	this->output = output_ptr;
+	this->output = input_ptr;
 	need_reconfigure |= load_configuration();
 
 	if(need_reconfigure)
@@ -136,30 +135,10 @@ void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		need_reconfigure = 0;
 	}
 
-	if(temp && 
-		(temp->get_w() != input_ptr->get_w() ||
-		temp->get_h() != input_ptr->get_h()))
-	{
-		delete temp;
-		temp = 0;
-	}
+	temp = clone_vframe(input);
 
-	if(!temp)
-		temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-
-	if(config.radius < 2 || 
-		(!config.vertical && !config.horizontal))
-	{
-// Data never processed so copy if necessary
-		if(input_ptr != output_ptr)
-		{
-			output_ptr->copy_from(input_ptr);
-		}
-	}
-	else
+	if(config.radius > 2 &&
+		(config.vertical || config.horizontal))
 	{
 // Process blur
 // TODO
@@ -167,7 +146,7 @@ void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // horizontally to the output in 2 discrete passes.
 		for(i = 0; i < (get_project_smp() + 1); i++)
 		{
-			engine[i]->start_process_frame(output_ptr, input_ptr);
+			engine[i]->start_process_frame(input);
 		}
 
 		for(i = 0; i < (get_project_smp() + 1); i++)
@@ -175,6 +154,8 @@ void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			engine[i]->wait_process_frame();
 		}
 	}
+	release_vframe(temp);
+	return input_ptr;
 }
 
 void BlurMain::load_defaults()
@@ -268,9 +249,9 @@ BlurEngine::~BlurEngine()
 	join();
 }
 
-void BlurEngine::start_process_frame(VFrame *output, VFrame *input)
+void BlurEngine::start_process_frame(VFrame *input)
 {
-	this->output = output;
+	this->output = input;
 	this->input = input;
 	input_lock.unlock();
 }

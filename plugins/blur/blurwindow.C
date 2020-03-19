@@ -37,9 +37,9 @@ BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
 
 	add_subwindow(new BC_Title(x, y, _(plugin->plugin_title())));
 	y += 20;
-	add_subwindow(horizontal = new BlurHorizontal(plugin, this, x, y));
+	add_subwindow(horizontal = new BlurHorizontal(plugin, x, y));
 	y += 30;
-	add_subwindow(vertical = new BlurVertical(plugin, this, x, y));
+	add_subwindow(vertical = new BlurVertical(plugin, x, y));
 	y += 35;
 	add_subwindow(radius = new BlurRadius(plugin, x, y));
 	add_subwindow(new BC_Title(x + 50, y, _("Radius")));
@@ -52,10 +52,6 @@ BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
 	y += 30;
 	add_subwindow(b = new BlurB(plugin, x, y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-BlurWindow::~BlurWindow()
-{
 }
 
 void BlurWindow::update()
@@ -80,10 +76,6 @@ BlurRadius::BlurRadius(BlurMain *client, int x, int y)
 	this->client = client;
 }
 
-BlurRadius::~BlurRadius()
-{
-}
-
 int BlurRadius::handle_event()
 {
 	client->config.radius = get_value();
@@ -91,38 +83,29 @@ int BlurRadius::handle_event()
 	return 1;
 }
 
-BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
+BlurVertical::BlurVertical(BlurMain *client, int x, int y)
  : BC_CheckBox(x, 
 	y, 
 	client->config.vertical, 
 	_("Vertical"))
 {
 	this->client = client;
-	this->window = window;
-}
-
-BlurVertical::~BlurVertical()
-{
 }
 
 int BlurVertical::handle_event()
 {
 	client->config.vertical = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
-BlurHorizontal::BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int y)
+BlurHorizontal::BlurHorizontal(BlurMain *client, int x, int y)
  : BC_CheckBox(x, 
 	y,
 	client->config.horizontal, 
 	_("Horizontal"))
 {
 	this->client = client;
-	this->window = window;
-}
-
-BlurHorizontal::~BlurHorizontal()
-{
 }
 
 int BlurHorizontal::handle_event()
