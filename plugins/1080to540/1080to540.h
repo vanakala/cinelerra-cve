@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("1080 to 540")
 #define PLUGIN_CLASS _1080to540Main 
@@ -43,7 +44,6 @@ class _1080to540Window : public PluginWindow
 {
 public:
 	_1080to540Window(_1080to540Main *plugin, int x, int y);
-	~_1080to540Window();
 
 	int set_first_field(int first_field, int send_event);
 	void update();
@@ -96,8 +96,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	void process_realtime(VFrame *input, VFrame *output);
+	VFrame *process_tmpframe(VFrame *input);
 
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -105,8 +104,6 @@ public:
 	void save_defaults();
 
 	void reduce_field(VFrame *output, VFrame *input, int src_field, int dst_field);
-
-	VFrame *temp;
 };
 
 #endif

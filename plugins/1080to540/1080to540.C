@@ -76,12 +76,6 @@ _1080to540Window::_1080to540Window(_1080to540Main *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-_1080to540Window::~_1080to540Window()
-{
-}
-
-
 void _1080to540Window::update()
 {
 	int first_field = plugin->config.first_field;
@@ -122,20 +116,15 @@ PLUGIN_THREAD_METHODS
 _1080to540Main::_1080to540Main(PluginServer *server)
  : PluginVClient(server)
 {
-	temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 _1080to540Main::~_1080to540Main()
 {
-	if(temp) delete temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
-
-#define TEMP_W 854
-#define TEMP_H 540
 #define OUT_ROWS 270
 
 void _1080to540Main::reduce_field(VFrame *output, VFrame *input, int src_field, int dst_field)
@@ -204,30 +193,23 @@ for(int i = 0; i < OUT_ROWS; i++) \
 	}
 }
 
-void _1080to540Main::process_realtime(VFrame *input, VFrame *output)
+VFrame *_1080to540Main::process_tmpframe(VFrame *input)
 {
+	VFrame *temp = clone_vframe(input);
+
 	load_configuration();
-	if(!temp)
-	{
-		temp = new VFrame(0,
-			input->get_w(),
-			input->get_h(),
-			input->get_color_model());
-		temp->clear_frame();
-	}
+	temp->clear_frame();
 	reduce_field(temp, input, config.first_field == 0 ? 0 : 1, 0);
 	reduce_field(temp, input, config.first_field == 0 ? 1 : 0, 1);
-
-	output->copy_from(temp, 0);
+	release_vframe(input);
+	return temp;
 }
-
 
 void _1080to540Main::load_defaults()
 {
 	defaults = load_defaults_file("1080to540.rc");
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 }
-
 
 void _1080to540Main::save_defaults()
 {
