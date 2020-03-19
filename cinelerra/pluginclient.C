@@ -311,7 +311,11 @@ void PluginClient::process_tmpframes(VFrame **frame)
 
 VFrame *PluginClient::clone_vframe(VFrame *orig)
 {
-	return BC_Resources::tmpframes.clone_frame(orig);
+	VFrame *cloned = BC_Resources::tmpframes.clone_frame(orig);
+
+	if(cloned)
+		cloned->copy_pts(orig);
+	return cloned;
 }
 
 void PluginClient::release_vframe(VFrame *frame)
