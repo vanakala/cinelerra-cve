@@ -24,8 +24,8 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
 #define PLUGIN_TITLE N_("AgingTV")
 #define PLUGIN_CLASS AgingMain
 #define PLUGIN_CONFIG_CLASS AgingConfig
@@ -126,7 +126,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 
 	AgingServer *aging_server;
 	AgingClient *aging_client;

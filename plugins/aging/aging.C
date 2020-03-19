@@ -70,18 +70,20 @@ PLUGIN_CLASS_METHODS
 
 int AgingMain::load_configuration()
 {
+    return 0;
 }
 
-void AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *AgingMain::process_tmpframe(VFrame *input_ptr)
 {
 	load_configuration();
 	this->input_ptr = input_ptr;
-	this->output_ptr = output_ptr;
+	this->output_ptr = input_ptr;
 
 	if(!aging_server) aging_server = new AgingServer(this, 
 		PluginClient::smp + 1, 
 		PluginClient::smp + 1);
 	aging_server->process_packages();
+	return input_ptr;
 }
 
 
