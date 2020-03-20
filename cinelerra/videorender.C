@@ -158,6 +158,7 @@ void VideoRender::get_frame(ptstime pts)
 		edl->this_edlsession->output_w,
 		edl->this_edlsession->output_h,
 		edl->this_edlsession->color_model);
+	frame->set_duration(edl->this_edlsession->frame_duration());
 
 	if(renderengine->brender_available(pts))
 	{
