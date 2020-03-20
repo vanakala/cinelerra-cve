@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Brightness/Contrast")
 #define PLUGIN_CLASS BrightnessMain
@@ -53,8 +54,8 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 
-	float brightness;
-	float contrast;
+	double brightness;
+	double contrast;
 	int luma;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -67,7 +68,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -76,7 +77,6 @@ public:
 	void handle_opengl();
 
 	BrightnessEngine *engine;
-	int redo_buffers;
 
 	VFrame *input, *output;
 };
@@ -94,7 +94,6 @@ class BrightnessUnit : public LoadClient
 {
 public:
 	BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin);
-	~BrightnessUnit();
 
 	void process_package(LoadPackage *package);
 
@@ -105,7 +104,6 @@ class BrightnessEngine : public LoadServer
 {
 public:
 	BrightnessEngine(BrightnessMain *plugin, int cpus);
-	~BrightnessEngine();
 
 	void init_packages();
 	LoadClient* new_client();

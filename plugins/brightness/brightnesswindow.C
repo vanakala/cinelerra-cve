@@ -56,10 +56,6 @@ BrightnessWindow::BrightnessWindow(BrightnessMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-BrightnessWindow::~BrightnessWindow()
-{
-}
-
 void BrightnessWindow::update()
 {
 	brightness->update(plugin->config.brightness);
@@ -69,26 +65,20 @@ void BrightnessWindow::update()
 
 
 BrightnessSlider::BrightnessSlider(BrightnessMain *client, 
-	float *output, 
-	int x, 
-	int y,
+	double *output,
+	int x, int y,
 	int is_brightness)
- : BC_FSlider(x, 
-	y,
+ : BC_FSlider(x, y,
 	0, 
 	200, 
 	200,
 	-100, 
 	100, 
-	(int)*output)
+	*output)
 {
 	this->client = client;
 	this->output = output;
 	this->is_brightness = is_brightness;
-}
-
-BrightnessSlider::~BrightnessSlider()
-{
 }
 
 int BrightnessSlider::handle_event()
@@ -125,10 +115,6 @@ BrightnessLuma::BrightnessLuma(BrightnessMain *client,
 	_("Boost luminance only"))
 {
 	this->client = client;
-}
-
-BrightnessLuma::~BrightnessLuma()
-{
 }
 
 int BrightnessLuma::handle_event()

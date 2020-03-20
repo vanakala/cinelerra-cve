@@ -40,7 +40,6 @@ class BrightnessWindow : public PluginWindow
 {
 public:
 	BrightnessWindow(BrightnessMain *plugin, int x, int y);
-	~BrightnessWindow();
 
 	void update();
 
@@ -53,22 +52,22 @@ public:
 class BrightnessSlider : public BC_FSlider
 {
 public:
-	BrightnessSlider(BrightnessMain *client, float *output, int x, int y, int is_brightness);
-	~BrightnessSlider();
+	BrightnessSlider(BrightnessMain *client, double *output, int x, int y, int is_brightness);
+
 	int handle_event();
 	char* get_caption();
 
 	BrightnessMain *client;
-	float *output;
+	double *output;
 	int is_brightness;
-	char string[BCTEXTLEN];
+	char string[64];
 };
 
 class BrightnessLuma : public BC_CheckBox
 {
 public:
 	BrightnessLuma(BrightnessMain *client, int x, int y);
-	~BrightnessLuma();
+
 	int handle_event();
 
 	BrightnessMain *client;

@@ -73,34 +73,24 @@ void BrightnessConfig::interpolate(BrightnessConfig &prev,
 BrightnessMain::BrightnessMain(PluginServer *server)
  : PluginVClient(server)
 {
-	redo_buffers = 1;
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 BrightnessMain::~BrightnessMain()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-
-void BrightnessMain::process_frame(VFrame *frame)
+VFrame *BrightnessMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
-// Use hardware
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
-
-	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
+	if(!engine)
+		engine = new BrightnessEngine(this, PluginClient::smp + 1);
 
 	this->input = frame;
 	this->output = frame;
@@ -109,6 +99,7 @@ void BrightnessMain::process_frame(VFrame *frame)
 	{
 		engine->process_packages();
 	}
+	return frame;
 }
 
 void BrightnessMain::handle_opengl()
@@ -248,7 +239,6 @@ void BrightnessMain::save_defaults()
 	defaults->save();
 }
 
-
 void BrightnessMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -293,10 +283,6 @@ BrightnessUnit::BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin)
  : LoadClient(server)
 {
 	this->plugin = plugin;
-}
-
-BrightnessUnit::~BrightnessUnit()
-{
 }
 
 void BrightnessUnit::process_package(LoadPackage *package)
@@ -412,13 +398,11 @@ void BrightnessUnit::process_package(LoadPackage *package)
 								u,  \
 								v); \
 						} \
-	 \
 					} \
-	 \
+ \
 					y = (y * scalar + offset) >> 8; \
 					CLAMP(y, 0, max); \
-	 \
-	 \
+ \
 					if(is_yuv) \
 					{ \
 						output_row[j * components] = y; \
@@ -593,7 +577,6 @@ void BrightnessUnit::process_package(LoadPackage *package)
 	} \
 }
 
-
 	switch(input->get_color_model())
 	{
 	case BC_RGB888:
@@ -735,10 +718,6 @@ BrightnessEngine::BrightnessEngine(BrightnessMain *plugin, int cpus)
  : LoadServer(cpus, cpus)
 {
 	this->plugin = plugin;
-}
-
-BrightnessEngine::~BrightnessEngine()
-{
 }
 
 void BrightnessEngine::init_packages()
