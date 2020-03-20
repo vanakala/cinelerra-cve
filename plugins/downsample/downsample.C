@@ -19,17 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Downsample")
-#define PLUGIN_CLASS DownSampleMain
-#define PLUGIN_CONFIG_CLASS DownSampleConfig
-#define PLUGIN_THREAD_CLASS DownSampleThread
-#define PLUGIN_GUI_CLASS DownSampleWindow
-
-#include "pluginmacros.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -38,135 +27,14 @@
 #include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
+#include "downsample.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
-
-
-class DownSampleServer;
-
-
-class DownSampleConfig
-{
-public:
-	DownSampleConfig();
-
-	int equivalent(DownSampleConfig &that);
-	void copy_from(DownSampleConfig &that);
-	void interpolate(DownSampleConfig &prev, 
-		DownSampleConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int horizontal_x;
-	int vertical_y;
-	int horizontal;
-	int vertical;
-	int r;
-	int g;
-	int b;
-	int a;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class DownSampleToggle : public BC_CheckBox
-{
-public:
-	DownSampleToggle(DownSampleMain *plugin, 
-		int x, 
-		int y, 
-		int *output, 
-		char *string);
-	int handle_event();
-	DownSampleMain *plugin;
-	int *output;
-};
-
-class DownSampleSize : public BC_ISlider
-{
-public:
-	DownSampleSize(DownSampleMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	DownSampleMain *plugin;
-	int *output;
-};
-
-class DownSampleWindow : public PluginWindow
-{
-public:
-	DownSampleWindow(DownSampleMain *plugin, int x, int y);
-	~DownSampleWindow();
-
-	void update();
-
-	DownSampleToggle *r, *g, *b, *a;
-	DownSampleSize *h, *v, *h_x, *v_y;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class DownSampleMain : public PluginVClient
-{
-public:
-	DownSampleMain(PluginServer *server);
-	~DownSampleMain();
-
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	PLUGIN_CLASS_MEMBERS
-
-	VFrame *input, *output;
-	DownSampleServer *engine;
-};
-
-class DownSamplePackage : public LoadPackage
-{
-public:
-	DownSamplePackage();
-	int y1, y2;
-};
-
-class DownSampleUnit : public LoadClient
-{
-public:
-	DownSampleUnit(DownSampleServer *server, DownSampleMain *plugin);
-	void process_package(LoadPackage *package);
-	DownSampleServer *server;
-	DownSampleMain *plugin;
-};
-
-class DownSampleServer : public LoadServer
-{
-public:
-	DownSampleServer(DownSampleMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	DownSampleMain *plugin;
-};
-
 
 REGISTER_PLUGIN
 
@@ -298,10 +166,6 @@ DownSampleWindow::DownSampleWindow(DownSampleMain *plugin, int x, int y)
 	y += 30;
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-DownSampleWindow::~DownSampleWindow()
-{
 }
 
 void DownSampleWindow::update()
