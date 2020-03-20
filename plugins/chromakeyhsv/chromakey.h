@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Chroma key (HSV)")
 #define PLUGIN_CLASS ChromaKeyHSV
@@ -131,8 +132,6 @@ public:
 	ChromaKeyHSV *plugin;
 };
 
-
-
 class ChromaKeyTolerance : public BC_FSlider
 {
 public:
@@ -172,6 +171,7 @@ public:
 	int handle_event();
 	ChromaKeyHSV *plugin;
 };
+
 class ChromaKeySpillAmount : public BC_FSlider
 {
 public:
@@ -274,7 +274,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void handle_opengl();
 	void load_defaults();

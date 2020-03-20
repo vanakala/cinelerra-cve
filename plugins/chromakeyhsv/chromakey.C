@@ -995,21 +995,19 @@ ChromaKeyHSV::~ChromaKeyHSV()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-void ChromaKeyHSV::process_frame(VFrame *frame)
+VFrame *ChromaKeyHSV::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 	this->input = frame;
 	this->output = frame;
 
-	get_frame(frame);
-
-	if(get_use_opengl()){
-		run_opengl();
-		return;
-	}
-
-	if(!engine) engine = new ChromaKeyServer(this);
+	if(!engine)
+		engine = new ChromaKeyServer(this);
 	engine->process_packages();
+
+	if(ColorModels::has_alpha(frame->get_color_model()))
+		frame->set_transparent();
+	return frame;
 }
 
 PLUGIN_CLASS_METHODS
