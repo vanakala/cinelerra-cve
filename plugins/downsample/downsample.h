@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Downsample")
 #define PLUGIN_CLASS DownSampleMain
@@ -118,7 +119,7 @@ public:
 	DownSampleMain(PluginServer *server);
 	~DownSampleMain();
 
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 
 	void load_defaults();
 	void save_defaults();
@@ -127,7 +128,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	VFrame *input, *output;
+	VFrame *output;
 	DownSampleServer *engine;
 };
 

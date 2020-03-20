@@ -234,23 +234,21 @@ DownSampleMain::~DownSampleMain()
 
 PLUGIN_CLASS_METHODS
 
-void DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *DownSampleMain::process_tmpframe(VFrame *input_ptr)
 {
-	this->input = input_ptr;
-	this->output = output_ptr;
+	this->output = input_ptr;
 	load_configuration();
 
-// Copy to destination
-	if(output != input)
-	{
-		output->copy_from(input);
-	}
-
 // Process in destination
-	if(!engine) engine = new DownSampleServer(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
+	if(!engine)
+		engine = new DownSampleServer(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
 	engine->process_packages();
+
+	if(config.a && ColorModels::has_alpha(output->get_color_model()))
+		output->set_transparent();
+	return output;
 }
 
 void DownSampleMain::load_defaults()
@@ -415,7 +413,7 @@ void DownSampleUnit::process_package(LoadPackage *package)
 	int h = plugin->output->get_h();
 	int w = plugin->output->get_w();
 
-	switch(plugin->input->get_color_model())
+	switch(plugin->output->get_color_model())
 	{
 	case BC_RGB888:
 		DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
