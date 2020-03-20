@@ -25,6 +25,8 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_USES_TMPFRAME
+#define PLUGIN_MAX_CHANNELS 2
 
 #define PLUGIN_TITLE N_("Difference key")
 #define PLUGIN_CLASS DiffKey
@@ -141,7 +143,7 @@ public:
 	DiffKey(PluginServer *server);
 	~DiffKey();
 
-	void process_frame(VFrame **frame);
+	void process_tmpframes(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

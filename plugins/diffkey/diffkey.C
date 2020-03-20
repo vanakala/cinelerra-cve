@@ -219,37 +219,22 @@ void DiffKey::read_data(KeyFrame *keyframe)
 	}
 }
 
-void DiffKey::process_frame(VFrame **frame)
+void DiffKey::process_tmpframes(VFrame **frame)
 {
 	load_configuration();
 
 // Don't process if only 1 layer.
-	if(get_total_buffers() < 2) 
+	if(get_total_buffers() > 1)
 	{
-		get_frame(frame[0]);
-		return;
+		top_frame = frame[0];
+		bottom_frame = frame[1];
+		top_frame->set_transparent();
+
+		if(!engine)
+			engine = new DiffKeyEngine(this);
+
+		engine->process_packages();
 	}
-
-// Read frames from 2 layers
-	get_frame(frame[0]);
-	get_frame(frame[1]);
-
-	top_frame = frame[0];
-	bottom_frame = frame[1];
-	top_frame->set_transparent();
-
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
-
-	if(!engine)
-	{
-		engine = new DiffKeyEngine(this);
-	}
-
-	engine->process_packages();
 }
 
 #define DIFFKEY_VARS(plugin) \
