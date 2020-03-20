@@ -270,7 +270,7 @@ int Plugin::get_number()
 void Plugin::change_plugin(PluginServer *server, int plugin_type,
 	Plugin *shared_plugin, Track *shared_track)
 {
-	PluginClient *client;
+	PluginClient *newclient;
 
 	plugin_server = server;
 	this->shared_plugin = shared_plugin;
@@ -283,6 +283,7 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 		delete keyframes->last;
 
 	server->close_plugin(client);
+
 	reset_frames();
 	if(plugin_type != PLUGIN_SHAREDPLUGIN)
 		this->shared_plugin = 0;
@@ -306,10 +307,10 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 		}
 	}
 
-	if(plugin_server && (client = plugin_server->open_plugin(0, 0)))
+	if(plugin_server && (newclient = plugin_server->open_plugin(0, 0)))
 	{
-		client->save_data(keyframes->get_first());
-		plugin_server->close_plugin(client);
+		newclient->save_data(keyframes->get_first());
+		plugin_server->close_plugin(newclient);
 	}
 
 	if(plugin_type != PLUGIN_TRANSITION)
@@ -721,8 +722,8 @@ void Plugin::dump(int indent)
 		printf(" shared_track_id: %d", shared_track_id);
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
-	printf("\n%*sproject_pts %.3f length %.3f id %d client %p\n", indent, "",
-		pts, duration, id, client);
+	printf("\n%*sproject_pts %.3f length %.3f id %d client %p gui %p\n", indent, "",
+		pts, duration, id, client, gui_client);
 	if(vframes.total)
 	{
 		printf("%*sFrames:", indent, "");
