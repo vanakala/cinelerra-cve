@@ -195,14 +195,12 @@ int ColorSpace::load_configuration()
 }
 
 /*
- * Pull frame and apply modifications
+ * Apply modifications
  */
-void ColorSpace::process_frame(VFrame *frame)
+VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 {
 	VFrame *tmp;
 	load_configuration();
-
-	get_frame(frame);
 
 	if(config.onoff)
 	{
@@ -217,7 +215,7 @@ void ColorSpace::process_frame(VFrame *frame)
 					BC_RGBA8888);
 				tmp->transfer_from(frame);
 				frame->transfer_from(tmp);
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			case BC_RGBA8888:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
@@ -226,7 +224,7 @@ void ColorSpace::process_frame(VFrame *frame)
 					BC_YUVA8888);
 				tmp->transfer_from(frame);
 				frame->transfer_from(tmp);
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			case BC_AYUV16161616:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
@@ -235,7 +233,7 @@ void ColorSpace::process_frame(VFrame *frame)
 					BC_RGBA16161616);
 				tmp->transfer_from(frame);
 				frame->transfer_from(tmp);
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			case BC_RGBA16161616:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
@@ -244,7 +242,7 @@ void ColorSpace::process_frame(VFrame *frame)
 					BC_AYUV16161616);
 				tmp->transfer_from(frame);
 				frame->transfer_from(tmp);
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			default:
 				printf("Test for %s is not ready\n",
@@ -300,7 +298,7 @@ void ColorSpace::process_frame(VFrame *frame)
 						frow[k + 3] = a;
 					}
 				}
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			case BC_RGBA8888:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
@@ -342,7 +340,7 @@ void ColorSpace::process_frame(VFrame *frame)
 						frow[k + 3] = a;
 					}
 				}
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			case BC_AYUV16161616:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
@@ -384,7 +382,7 @@ void ColorSpace::process_frame(VFrame *frame)
 						frow[k + 3] = v;
 					}
 				}
-				BC_Resources::tmpframes.release_frame(tmp);
+				release_vframe(tmp);
 				break;
 			default:
 				printf("Test for %s is not ready\n",
@@ -393,4 +391,6 @@ void ColorSpace::process_frame(VFrame *frame)
 			}
 		}
 	}
+	frame->set_transparent();
+	return frame;
 }
