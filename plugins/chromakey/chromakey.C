@@ -624,28 +624,20 @@ ChromaKey::~ChromaKey()
 }
 
 
-void ChromaKey::process_frame(VFrame *frame)
+VFrame *ChromaKey::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 	this->input = frame;
 	this->output = frame;
 
-	get_frame(frame);
-
-	if(EQUIV(config.threshold, 0))
+	if(!EQUIV(config.threshold, 0))
 	{
-		return;
-	}
-	else
-	{
-		if(get_use_opengl()){
-			run_opengl();
-			return;
-		}
-
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
+		if(ColorModels::has_alpha(frame->get_color_model()))
+			frame->set_transparent();
 	}
+	return frame;
 }
 
 PLUGIN_CLASS_METHODS

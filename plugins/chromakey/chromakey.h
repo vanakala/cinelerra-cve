@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Chroma key")
 #define PLUGIN_CLASS ChromaKey
@@ -179,7 +180,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void handle_opengl();
 	void load_defaults();
