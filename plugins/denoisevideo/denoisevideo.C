@@ -120,7 +120,6 @@ int DenoiseVideoThreshold::handle_event()
 
 
 DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin, 
-	DenoiseVideoWindow *gui, 
 	int x, 
 	int y, 
 	int *output,
@@ -155,13 +154,13 @@ DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
 	y += 20;
 	add_subwindow(threshold = new DenoiseVideoThreshold(plugin, x, y));
 	y += 40;
-	add_subwindow(do_r = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_r, _("Red")));
+	add_subwindow(do_r = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_r, _("Red")));
 	y += 30;
-	add_subwindow(do_g = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_g, _("Green")));
+	add_subwindow(do_g = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_g, _("Green")));
 	y += 30;
-	add_subwindow(do_b = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_b, _("Blue")));
+	add_subwindow(do_b = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_b, _("Blue")));
 	y += 30;
-	add_subwindow(do_a = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_a, _("Alpha")));
+	add_subwindow(do_a = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_a, _("Alpha")));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -190,7 +189,7 @@ DenoiseVideo::~DenoiseVideo()
 
 PLUGIN_CLASS_METHODS
 
-void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
+VFrame *DenoiseVideo::process_tmpframe(VFrame *input)
 {
 	load_configuration();
 
@@ -215,7 +214,7 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 { \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *output_row = (type*)output->get_row_ptr(i); \
+		type *output_row = (type*)input->get_row_ptr(i); \
 		type *input_row = (type*)input->get_row_ptr(i); \
  \
 		for(int k = 0; k < w * components; k++) \
@@ -287,6 +286,9 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 		DENOISE_MACRO(uint16_t, 4, 0xffff);
 		break;
 	}
+	if(config.do_a && ColorModels::has_alpha(input->get_color_model()))
+		input->set_transparent();
+	return input;
 }
 
 void DenoiseVideo::load_defaults()

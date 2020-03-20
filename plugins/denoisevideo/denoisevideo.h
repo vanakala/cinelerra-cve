@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 // Old name was "Denoise video"
 #define PLUGIN_TITLE N_("Denoise")
@@ -66,7 +67,9 @@ class DenoiseVideoFrames : public BC_ISlider
 {
 public:
 	DenoiseVideoFrames(DenoiseVideo *plugin, int x, int y);
+
 	int handle_event();
+
 	DenoiseVideo *plugin;
 };
 
@@ -75,7 +78,9 @@ class DenoiseVideoThreshold : public BC_TextBox
 {
 public:
 	DenoiseVideoThreshold(DenoiseVideo *plugin, int x, int y);
+
 	int handle_event();
+
 	DenoiseVideo *plugin;
 };
 
@@ -84,12 +89,13 @@ class DenoiseVideoToggle : public BC_CheckBox
 {
 public:
 	DenoiseVideoToggle(DenoiseVideo *plugin, 
-		DenoiseVideoWindow *gui, 
 		int x, 
 		int y, 
 		int *output,
 		const char *text);
+
 	int handle_event();
+
 	DenoiseVideo *plugin;
 	int *output;
 };
@@ -119,7 +125,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_realtime(VFrame *input, VFrame *output);
+	VFrame *process_tmpframe(VFrame *input);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
