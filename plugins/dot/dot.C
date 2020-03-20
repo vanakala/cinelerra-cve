@@ -163,14 +163,15 @@ void DotMain::reconfigure()
 	need_reconfigure = 0;
 }
 
-void DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 {
 	this->input_ptr = input_ptr;
-	this->output_ptr = output_ptr;
+	this->output_ptr = input_ptr;
 	load_configuration();
 	if(need_reconfigure) reconfigure();
 
 	dot_server->process_packages();
+	return input_ptr;
 }
 
 
@@ -530,7 +531,6 @@ unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
 
 	return i;
 }
-
 
 void DotClient::process_package(LoadPackage *package)
 {

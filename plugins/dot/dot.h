@@ -25,6 +25,7 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("DotTV")
 #define PLUGIN_CLASS DotMain
@@ -50,7 +51,6 @@ class DotConfig
 {
 public:
 	DotConfig();
-
 
 	int dot_depth;
 	int dot_size;
@@ -106,8 +106,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 
 	void make_pattern();
 	void init_sampxy_table();
@@ -123,7 +122,6 @@ public:
 	int dot_hsize;
 	uint32_t *pattern;
 	int *sampx, *sampy;
-	int need_reconfigure;
 	EffectTV *effecttv;
 };
 
