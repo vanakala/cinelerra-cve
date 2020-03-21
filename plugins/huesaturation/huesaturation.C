@@ -419,30 +419,21 @@ HueEffect::~HueEffect()
 
 PLUGIN_CLASS_METHODS
 
-void HueEffect::process_frame(VFrame *frame)
+VFrame *HueEffect::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
 	this->input = frame;
 	this->output = frame;
-	if(EQUIV(config.hue, 0) && EQUIV(config.saturation, 0) && EQUIV(config.value, 0))
+	if(!EQUIV(config.hue, 0) || !EQUIV(config.saturation, 0) ||
+		!EQUIV(config.value, 0))
 	{
-		return;
-	}
-	else
-	{
-		if(get_use_opengl())
-		{
-			run_opengl();
-			return;
-		}
-
-		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
+		if(!engine)
+			engine = new HueEngine(this, PluginClient::smp + 1);
 
 		engine->process_packages();
 	}
+	return frame;
 }
 
 void HueEffect::load_defaults()
