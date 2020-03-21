@@ -177,50 +177,45 @@ void HoloMain::add_frames(VFrame *output, VFrame *input)
 
 void HoloMain::set_background()
 {
-/*
- * grab 4 frames and composite them to get a quality background image
- */
-/**
- * For Cinelerra, we make every frame a holograph and expect the user to
- * provide a matte.
- **/
+// grab 4 frames and composite them to get a quality background image
+// For Cinelerra, we make every frame a holograph and expect the user to
+// provide a matte.
 	total = 0;
 
 	switch(total)
 	{
-		case 0:
-/* step 1: grab frame-1 to buffer-1 */
-			bgimage->copy_from(input_ptr);
-			break;
+	case 0:
+// step 1: grab frame-1 to buffer-1
+		bgimage->copy_from(input_ptr);
+		break;
 
-		case 1:
-/* step 2: add frame-2 to buffer-1 */
-			add_frames(bgimage, input_ptr);
-			break;
+	case 1:
+// step 2: add frame-2 to buffer-1
+		add_frames(bgimage, input_ptr);
+		break;
 
-		case 2:
-/* step 3: grab frame-3 to buffer-2 */
-			tmp->copy_from(input_ptr);
-			break;
+	case 2:
+// step 3: grab frame-3 to buffer-2
+		tmp->copy_from(input_ptr);
+		break;
 
-		case 3:
-/* step 4: add frame-4 to buffer-2 */
-			add_frames(tmp, input_ptr);
+	case 3:
+// step 4: add frame-4 to buffer-2
+		add_frames(tmp, input_ptr);
 
-/* step 5: add buffer-3 to buffer-1 */
-			add_frames(bgimage, tmp);
+// step 5: add buffer-3 to buffer-1
+		add_frames(bgimage, tmp);
 
-			effecttv->image_bgset_y(bgimage);
-			delete tmp;
-			break;
+		effecttv->image_bgset_y(bgimage);
+		delete tmp;
+		break;
 	}
 }
 
-
-void HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *HoloMain::process_tmpframe(VFrame *input_ptr)
 {
 	this->input_ptr = input_ptr;
-	this->output_ptr = output_ptr;
+	this->output_ptr = input_ptr;
 
 	load_configuration();
 
@@ -252,6 +247,7 @@ void HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	total++;
 	if(total >= config.recycle * project_frame_rate)
 		total = 0;
+	return input_ptr;
 }
 
 
@@ -309,51 +305,51 @@ void HoloClient::process_package(LoadPackage *package)
 
 // Convert discrete channels to a single 24 bit number
 #define STORE_PIXEL(type, components, dest, src, is_yuv) \
-if(sizeof(type) == 4) \
-{ \
-	int r = (int)(src[0] * 0xff); \
-	int g = (int)(src[1] * 0xff); \
-	int b = (int)(src[2] * 0xff); \
-	CLAMP(r, 0, 0xff); \
-	CLAMP(g, 0, 0xff); \
-	CLAMP(b, 0, 0xff); \
-	dest = (r << 16) | (g << 8) | b; \
-} \
-else \
-if(sizeof(type) == 2) \
-{ \
-	if(is_yuv) \
+	if(sizeof(type) == 4) \
 	{ \
-		int r = (int)src[0] >> 8; \
-		int g = (int)src[1] >> 8; \
-		int b = (int)src[2] >> 8; \
-		ColorSpaces::yuv_to_rgb_8(r, g, b); \
+		int r = (int)(src[0] * 0xff); \
+		int g = (int)(src[1] * 0xff); \
+		int b = (int)(src[2] * 0xff); \
+		CLAMP(r, 0, 0xff); \
+		CLAMP(g, 0, 0xff); \
+		CLAMP(b, 0, 0xff); \
 		dest = (r << 16) | (g << 8) | b; \
 	} \
 	else \
+	if(sizeof(type) == 2) \
 	{ \
-		dest = (((uint32_t)src[0] << 8) & 0xff0000) | \
-			((uint32_t)src[1] & 0xff00) | \
-			((uint32_t)src[2]) >> 8; \
-	} \
-} \
-else \
-{ \
-	if(is_yuv) \
-	{ \
-		int r = (int)src[0]; \
-		int g = (int)src[1]; \
-		int b = (int)src[2]; \
-		ColorSpaces::yuv_to_rgb_8(r, g, b); \
-		dest = (r << 16) | (g << 8) | b; \
+		if(is_yuv) \
+		{ \
+			int r = (int)src[0] >> 8; \
+			int g = (int)src[1] >> 8; \
+			int b = (int)src[2] >> 8; \
+			ColorSpaces::yuv_to_rgb_8(r, g, b); \
+			dest = (r << 16) | (g << 8) | b; \
+		} \
+		else \
+		{ \
+			dest = (((uint32_t)src[0] << 8) & 0xff0000) | \
+				((uint32_t)src[1] & 0xff00) | \
+				((uint32_t)src[2]) >> 8; \
+		} \
 	} \
 	else \
 	{ \
-		dest = ((uint32_t)src[0] << 16) | \
+		if(is_yuv) \
+		{ \
+			int r = (int)src[0]; \
+			int g = (int)src[1]; \
+			int b = (int)src[2]; \
+			ColorSpaces::yuv_to_rgb_8(r, g, b); \
+			dest = (r << 16) | (g << 8) | b; \
+		} \
+		else \
+		{ \
+			dest = ((uint32_t)src[0] << 16) | \
 			((uint32_t)src[1] << 8) | \
 			(uint32_t)src[2]; \
-	} \
-}
+		} \
+	}
 
 #define HOLO_CORE(type, components, is_yuv) \
 	for(y = 1; y < height - 1; y++) \
