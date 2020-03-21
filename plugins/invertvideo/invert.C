@@ -206,19 +206,12 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 	} \
 }
 
-void InvertVideoEffect::process_frame(VFrame *frame)
+VFrame  *InvertVideoEffect::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
 	if(config.r || config.g || config.b || config.a)
 	{
-		if(get_use_opengl())
-		{
-			run_opengl();
-			return;
-		}
 		int w = frame->get_w();
 
 		switch(frame->get_color_model())
@@ -264,7 +257,10 @@ void InvertVideoEffect::process_frame(VFrame *frame)
 			}
 			break;
 		}
+		if(ColorModels::has_alpha(frame->get_color_model()))
+			frame->set_transparent();
 	}
+	return frame;
 }
 
 void InvertVideoEffect::handle_opengl()
