@@ -23,6 +23,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Linear Blur")
 #define PLUGIN_CLASS LinearBlurMain
@@ -131,7 +132,7 @@ public:
 	LinearBlurMain(PluginServer *server);
 	~LinearBlurMain();
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

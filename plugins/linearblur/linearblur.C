@@ -219,11 +219,10 @@ void LinearBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-void LinearBlurMain::process_frame(VFrame *frame)
+VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
-	get_frame(frame);
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
@@ -304,14 +303,7 @@ void LinearBlurMain::process_frame(VFrame *frame)
 		MAX(sizeof(int), sizeof(float))];
 
 	this->input = frame;
-	this->output = frame;
-
-	if(!temp) temp = new VFrame(0,
-		frame->get_w(),
-		frame->get_h(),
-		frame->get_color_model());
-	temp->copy_from(frame);
-	this->input = temp;
+	output = clone_vframe(frame);
 
 	memset(accum, 0,
 		frame->get_w() * 
@@ -319,6 +311,10 @@ void LinearBlurMain::process_frame(VFrame *frame)
 		ColorModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
+	release_vframe(frame);
+	if(config.a && ColorModels::has_alpha(output->get_color_model()))
+		output->set_transparent();
+	return output;
 }
 
 void LinearBlurMain::load_defaults()
