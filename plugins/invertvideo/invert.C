@@ -19,25 +19,11 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-// Old name was "Invert Video"
-
-#define PLUGIN_TITLE N_("Invert")
-#define PLUGIN_CLASS InvertVideoEffect
-#define PLUGIN_CONFIG_CLASS InvertVideoConfig
-#define PLUGIN_THREAD_CLASS InvertVideoThread
-#define PLUGIN_GUI_CLASS InvertVideoWindow
-
-#define GL_GLEXT_PROTOTYPES
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "filexml.h"
+#include "invert.h"
 #include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
@@ -46,63 +32,6 @@
 
 #include <stdint.h>
 #include <string.h>
-
-
-class InvertVideoConfig
-{
-public:
-	InvertVideoConfig();
-
-	void copy_from(InvertVideoConfig &src);
-	int equivalent(InvertVideoConfig &src);
-	void interpolate(InvertVideoConfig &prev, 
-		InvertVideoConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int r, g, b, a;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class InvertVideoEnable : public BC_CheckBox
-{
-public:
-	InvertVideoEnable(InvertVideoEffect *plugin, int *output, int x, int y, char *text);
-	int handle_event();
-	InvertVideoEffect *plugin;
-	int *output;
-};
-
-class InvertVideoWindow : public PluginWindow
-{
-public:
-	InvertVideoWindow(InvertVideoEffect *plugin, int x, int y);
-
-	void update();
-
-	InvertVideoEnable *r, *g, *b, *a;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class InvertVideoEffect : public PluginVClient
-{
-public:
-	InvertVideoEffect(PluginServer *server);
-	~InvertVideoEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-};
 
 
 REGISTER_PLUGIN
@@ -341,6 +270,7 @@ void InvertVideoEffect::process_frame(VFrame *frame)
 void InvertVideoEffect::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *invert_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform bool do_r;\n"
@@ -355,7 +285,6 @@ void InvertVideoEffect::handle_opengl()
 		"	if(do_b) gl_FragColor.b = 1.0 - gl_FragColor.b;\n"
 		"	if(do_a) gl_FragColor.a = 1.0 - gl_FragColor.a;\n"
 		"}\n";
-/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
