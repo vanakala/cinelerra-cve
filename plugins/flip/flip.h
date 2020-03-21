@@ -25,6 +25,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Flip")
 #define PLUGIN_CLASS FlipMain
@@ -62,8 +63,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS;
 
-// required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();

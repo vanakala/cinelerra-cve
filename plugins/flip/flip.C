@@ -133,7 +133,7 @@ PLUGIN_CLASS_METHODS
 	} \
 }
 
-void FlipMain::process_frame(VFrame *frame)
+VFrame *FlipMain::process_tmpframe(VFrame *frame)
 {
 	int i, j, k, l;
 	int w = frame->get_w();
@@ -142,42 +142,37 @@ void FlipMain::process_frame(VFrame *frame)
 
 	load_configuration();
 
-	get_frame(frame);
-
-	if(get_use_opengl()) 
+	if(config.flip_vertical || config.flip_horizontal)
 	{
-		if(config.flip_vertical || config.flip_horizontal)
-			run_opengl();
+		switch(colormodel)
+		{
+		case BC_RGB888:
+		case BC_YUV888:
+			FLIP_MACRO(unsigned char, 3);
+			break;
+		case BC_RGB_FLOAT:
+			FLIP_MACRO(float, 3);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			FLIP_MACRO(uint16_t, 3);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			FLIP_MACRO(unsigned char, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			FLIP_MACRO(float, 4);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+		case BC_AYUV16161616:
+			FLIP_MACRO(uint16_t, 4);
+			break;
+		}
 	}
-
-	switch(colormodel)
-	{
-	case BC_RGB888:
-	case BC_YUV888:
-		FLIP_MACRO(unsigned char, 3);
-		break;
-	case BC_RGB_FLOAT:
-		FLIP_MACRO(float, 3);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		FLIP_MACRO(uint16_t, 3);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		FLIP_MACRO(unsigned char, 4);
-		break;
-	case BC_RGBA_FLOAT:
-		FLIP_MACRO(float, 4);
-		break;
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-	case BC_AYUV16161616:
-		FLIP_MACRO(uint16_t, 4);
-		break;
-	}
+	return frame;
 }
-
 
 void FlipMain::save_data(KeyFrame *keyframe)
 {

@@ -47,11 +47,6 @@ FlipWindow::FlipWindow(FlipMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-FlipWindow::~FlipWindow()
-{
-}
-
-
 void FlipWindow::update()
 {
 	flip_vertical->update(plugin->config.flip_vertical);
@@ -64,10 +59,6 @@ FlipToggle::FlipToggle(FlipMain *client, int *output, char *string, int x, int y
 {
 	this->client = client;
 	this->output = output;
-}
-
-FlipToggle::~FlipToggle()
-{
 }
 
 int FlipToggle::handle_event()

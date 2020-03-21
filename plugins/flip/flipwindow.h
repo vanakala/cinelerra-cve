@@ -36,7 +36,6 @@ class FlipWindow : public PluginWindow
 {
 public:
 	FlipWindow(FlipMain *plugin, int x, int y);
-	~FlipWindow();
 
 	void update();
 
@@ -49,7 +48,6 @@ class FlipToggle : public BC_CheckBox
 {
 public:
 	FlipToggle(FlipMain *client, int *output, char *string, int x, int y);
-	~FlipToggle();
 
 	int handle_event();
 
