@@ -135,7 +135,7 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 }
 
 // Pattern A B BC CD D
-void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *IVTCMain::process_tmpframe(VFrame *input_ptr)
 {
 	load_configuration();
 
@@ -166,7 +166,6 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int64_t field1_sum;
 	int64_t field2_sum;
 	this->input = input_ptr;
-	this->output = output_ptr;
 
 // Determine pattern
 	if(config.pattern == IVTCConfig::PULLDOWN32)
@@ -176,32 +175,24 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Direct copy
 		case 0:
 		case 4:
-			if(input_ptr != output_ptr)
-				output_ptr->copy_from(input_ptr);
 			break;
 
 		case 1:
 			temp_frame[0]->copy_from(input_ptr);
-			if(input_ptr != output_ptr)
-				output_ptr->copy_from(input_ptr);
 			break;
 
 		case 2:
 // Save one field for next frame.  Reuse previous frame.
 			temp_frame[1]->copy_from(input_ptr);
-			output_ptr->copy_from(temp_frame[0], 0);
+			input_ptr->copy_from(temp_frame[0], 0);
 			break;
 
 		case 3:
 // Combine previous field with current field.
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
-				if((i + config.first_field) & 1)
-					memcpy(output_ptr->get_row_ptr(i),
-						input_ptr->get_row_ptr(i),
-						row_size);
-				else
-					memcpy(output_ptr->get_row_ptr(i),
+				if(!((i + config.first_field) & 1))
+					memcpy(input_ptr->get_row_ptr(i),
 						temp_frame[1]->get_row_ptr(i),
 						row_size);
 			}
@@ -216,12 +207,8 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Recycle previous bottom or top
 		for(int i = 0; i < input_ptr->get_h(); i++)
 		{
-			if((i + config.first_field) & 1)
-				memcpy(output_ptr->get_row_ptr(i),
-					input_ptr->get_row_ptr(i),
-					row_size);
-			else
-				memcpy(output_ptr->get_row_ptr(i),
+			if(!((i + config.first_field) & 1))
+				memcpy(input_ptr->get_row_ptr(i),
 					temp_frame[0]->get_row_ptr(i),
 					row_size);
 		}
@@ -309,12 +296,8 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(!(i & 1))
-					memcpy(output_ptr->get_row_ptr(i),
+					memcpy(input_ptr->get_row_ptr(i),
 						temp_frame[0]->get_row_ptr(i),
-						row_size);
-				else
-					memcpy(output_ptr->get_row_ptr(i),
-						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
@@ -322,30 +305,20 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(i & 1)
-					memcpy(output_ptr->get_row_ptr(i),
+					memcpy(input_ptr->get_row_ptr(i),
 						temp_frame[0]->get_row_ptr(i),
-						row_size);
-				else
-					memcpy(output_ptr->get_row_ptr(i),
-						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
 		case 2:
-			if(input_ptr != output_ptr)
-				output_ptr->copy_from(input_ptr);
 			break;
 		case 3:
 // Deinterlace
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(i & 1)
-					memcpy(output_ptr->get_row_ptr(i),
+					memcpy(input_ptr->get_row_ptr(i),
 						input_ptr->get_row_ptr(i - 1),
-						row_size);
-				else
-					memcpy(output_ptr->get_row_ptr(i),
-						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
@@ -359,22 +332,7 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 }
 
-// labs returns different values on x86_64 causing our accumulators to explode
 #define ABS local_abs
-
-#ifdef __x86_64__
-
-static int local_abs(int value)
-{
-	return (value < 0 ? -value : value);
-}
-
-static float local_abs(float value)
-{
-	return (value < 0 ? -value : value);
-}
-
-#else
 
 static int local_abs(int value)
 {
@@ -385,9 +343,6 @@ static float local_abs(float value)
 {
 	return fabsf(value);
 }
-
-#endif
-
 
 IVTCPackage::IVTCPackage()
  : LoadPackage()

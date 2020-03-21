@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("Inverse Telecine")
@@ -72,7 +73,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
@@ -91,7 +92,7 @@ public:
 	void deinterlace_avg(VFrame *output, VFrame *input, int dominance);
 
 	VFrame *temp_frame[2];
-	VFrame *input, *output;
+	VFrame *input;
 
 // Automatic IVTC variables
 // Difference between averaged current even lines and original even lines
