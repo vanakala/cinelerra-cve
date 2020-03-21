@@ -19,22 +19,9 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Linear Blur")
-#define PLUGIN_CLASS LinearBlurMain
-#define PLUGIN_CONFIG_CLASS LinearBlurConfig
-#define PLUGIN_THREAD_CLASS LinearBlurThread
-#define PLUGIN_GUI_CLASS LinearBlurWindow
-
-#include "pluginmacros.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-
-#define GL_GLEXT_PROTOTYPES
 
 #include "bchash.h"
 #include "bcslider.h"
@@ -42,153 +29,13 @@
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "linearblur.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
-
-#ifdef HAVE_GL
-#include <GL/gl.h>
-#include <GL/glx.h>
-#endif
-
-
-class LinearBlurEngine;
-
-class LinearBlurConfig
-{
-public:
-	LinearBlurConfig();
-
-	int equivalent(LinearBlurConfig &that);
-	void copy_from(LinearBlurConfig &that);
-	void interpolate(LinearBlurConfig &prev, 
-		LinearBlurConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int radius;
-	int steps;
-	int angle;
-	int r;
-	int g;
-	int b;
-	int a;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class LinearBlurSize : public BC_ISlider
-{
-public:
-	LinearBlurSize(LinearBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	LinearBlurMain *plugin;
-	int *output;
-};
-
-class LinearBlurToggle : public BC_CheckBox
-{
-public:
-	LinearBlurToggle(LinearBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		char *string);
-	int handle_event();
-	LinearBlurMain *plugin;
-	int *output;
-};
-
-class LinearBlurWindow : public PluginWindow
-{
-public:
-	LinearBlurWindow(LinearBlurMain *plugin, int x, int y);
-	~LinearBlurWindow();
-
-	void update();
-
-	LinearBlurSize *angle, *steps, *radius;
-	LinearBlurToggle *r, *g, *b, *a;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-// Output coords for a layer of blurring
-// Used for OpenGL only
-class LinearBlurLayer
-{
-public:
-	LinearBlurLayer() {};
-	int x, y;
-};
-
-class LinearBlurMain : public PluginVClient
-{
-public:
-	LinearBlurMain(PluginServer *server);
-	~LinearBlurMain();
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void delete_tables();
-	VFrame *input, *output, *temp;
-	LinearBlurEngine *engine;
-	int **scale_y_table;
-	int **scale_x_table;
-	LinearBlurLayer *layer_table;
-	int table_entries;
-	int need_reconfigure;
-// The accumulation buffer is needed because 8 bits isn't precise enough
-	unsigned char *accum;
-};
-
-class LinearBlurPackage : public LoadPackage
-{
-public:
-	LinearBlurPackage();
-	int y1, y2;
-};
-
-class LinearBlurUnit : public LoadClient
-{
-public:
-	LinearBlurUnit(LinearBlurEngine *server, LinearBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	LinearBlurEngine *server;
-	LinearBlurMain *plugin;
-};
-
-class LinearBlurEngine : public LoadServer
-{
-public:
-	LinearBlurEngine(LinearBlurMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	LinearBlurMain *plugin;
-};
-
 
 REGISTER_PLUGIN
 
@@ -275,10 +122,6 @@ LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
 	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-LinearBlurWindow::~LinearBlurWindow()
-{
 }
 
 void LinearBlurWindow::update()
@@ -450,12 +293,6 @@ void LinearBlurMain::process_frame(VFrame *frame)
 			}
 		}
 		need_reconfigure = 0;
-	}
-
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
 	}
 
 	if(!engine) engine = new LinearBlurEngine(this,
