@@ -19,25 +19,13 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Hue saturation")
-#define PLUGIN_CLASS HueEffect
-#define PLUGIN_CONFIG_CLASS HueConfig
-#define PLUGIN_THREAD_CLASS HueThread
-#define PLUGIN_GUI_CLASS HueWindow
-
-#define GL_GLEXT_PROTOTYPES
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "colorspaces.h"
 #include "filexml.h"
+#include "huesaturation.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
@@ -47,118 +35,6 @@
 
 #include <stdint.h>
 #include <string.h>
-
-#define MINHUE -180
-#define MAXHUE 180
-#define MINSATURATION -100
-#define MAXSATURATION 100
-#define MINVALUE -100
-#define MAXVALUE 100
-
-
-class HueConfig
-{
-public:
-	HueConfig();
-
-	void copy_from(HueConfig &src);
-	int equivalent(HueConfig &src);
-	void interpolate(HueConfig &prev, 
-		HueConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	float hue, saturation, value;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class HueSlider : public BC_FSlider
-{
-public:
-	HueSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	HueEffect *plugin;
-};
-
-class SaturationSlider : public BC_FSlider
-{
-public:
-	SaturationSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	char* get_caption();
-	HueEffect *plugin;
-	char string[BCTEXTLEN];
-};
-
-class ValueSlider : public BC_FSlider
-{
-public:
-	ValueSlider(HueEffect *plugin, int x, int y, int w);
-	int handle_event();
-	char* get_caption();
-	HueEffect *plugin;
-	char string[BCTEXTLEN];
-};
-
-class HueWindow : public PluginWindow
-{
-public:
-	HueWindow(HueEffect *plugin, int x, int y);
-
-	void update();
-
-	HueSlider *hue;
-	SaturationSlider *saturation;
-	ValueSlider *value;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class HueEngine : public LoadServer
-{
-public:
-	HueEngine(HueEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	HueEffect *plugin;
-};
-
-class HuePackage : public LoadPackage
-{
-public:
-	HuePackage();
-	int row1, row2;
-};
-
-class HueUnit : public LoadClient
-{
-public:
-	HueUnit(HueEffect *plugin, HueEngine *server);
-	void process_package(LoadPackage *package);
-	HueEffect *plugin;
-};
-
-class HueEffect : public PluginVClient
-{
-public:
-	HueEffect(PluginServer *server);
-	~HueEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	VFrame *input, *output;
-	HueEngine *engine;
-};
-
 
 HueConfig::HueConfig()
 {
