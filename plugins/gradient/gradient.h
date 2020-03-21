@@ -25,6 +25,7 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Gradient")
 #define PLUGIN_CLASS GradientMain
@@ -101,7 +102,7 @@ public:
 		GradientWindow *gui,
 		int x, 
 		int y);
-	void create_objects();
+
 	static char* to_text(int shape);
 	static int from_text(char *text);
 	int handle_event();
@@ -116,7 +117,7 @@ public:
 	GradientRate(GradientMain *plugin, 
 		int x, 
 		int y);
-	void create_objects();
+
 	static const char* to_text(int shape);
 	static int from_text(const char *text);
 	int handle_event();
@@ -246,7 +247,7 @@ public:
 	GradientMain(PluginServer *server);
 	~GradientMain();
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "bctitle.h"
+#include "bcresources.h"
 #include "bcmenuitem.h"
 #include "clip.h"
 #include "bchash.h"
@@ -35,6 +36,7 @@
 #include "keyframe.h"
 #include "overlayframe.h"
 #include "picon_png.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 
 
@@ -165,7 +167,6 @@ GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
 		this, 
 		x + title->get_w() + 10, 
 		y));
-	shape->create_objects();
 	y += 40;
 	shape_x = x;
 	shape_y = y;
@@ -174,7 +175,6 @@ GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
 	add_subwindow(rate = new GradientRate(plugin,
 		x + title->get_w() + 10,
 		y));
-	rate->create_objects();
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y, _("Inner radius:")));
 	add_subwindow(in_radius = new GradientInRadius(plugin, x + title->get_w() + 10, y));
@@ -288,10 +288,6 @@ GradientShape::GradientShape(GradientMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-}
-
-void GradientShape::create_objects()
-{
 	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::RADIAL)));
 }
@@ -319,6 +315,7 @@ int GradientShape::handle_event()
 	plugin->config.shape = from_text(get_text());
 	gui->update_shape();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -375,10 +372,6 @@ GradientRate::GradientRate(GradientMain *plugin, int x, int y)
 	1)
 {
 	this->plugin = plugin;
-}
-
-void GradientRate::create_objects()
-{
 	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::LOG)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::SQUARE)));
@@ -541,7 +534,6 @@ GradientMain::GradientMain(PluginServer *server)
 
 GradientMain::~GradientMain()
 {
-	if(gradient) delete gradient;
 	if(engine) delete engine;
 	if(overlayer) delete overlayer;
 	PLUGIN_DESTRUCTOR_MACRO
@@ -549,23 +541,16 @@ GradientMain::~GradientMain()
 
 PLUGIN_CLASS_METHODS
 
-void GradientMain::process_frame(VFrame *frame)
+VFrame *GradientMain::process_tmpframe(VFrame *frame)
 {
 	this->input = frame;
 	this->output = frame;
 	need_reconfigure |= load_configuration();
 
 	int need_alpha = config.in_a != 0xff || config.out_a != 0xff;
-	if(need_alpha)
-		get_frame(frame);
-
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
 
 	int gradient_cmodel = input->get_color_model();
+
 	if(need_alpha && ColorModels::components(gradient_cmodel) == 3)
 	{
 		switch(gradient_cmodel)
@@ -582,20 +567,15 @@ void GradientMain::process_frame(VFrame *frame)
 		}
 	}
 
-	if(gradient && gradient->get_color_model() != gradient_cmodel)
-	{
-		delete gradient;
-		gradient = 0;
-	}
-
-	if(!gradient) gradient = new VFrame(0, 
+	gradient = BC_Resources::tmpframes.get_tmpframe(
 		input->get_w(),
 		input->get_h(),
 		gradient_cmodel);
 
-	if(!engine) engine = new GradientServer(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
+	if(!engine)
+		engine = new GradientServer(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
 	engine->process_packages();
 
 // Use overlay routine in GradientServer if mismatched colormodels
@@ -616,6 +596,8 @@ void GradientMain::process_frame(VFrame *frame)
 			TRANSFER_NORMAL,
 			NEAREST_NEIGHBOR);
 	}
+	release_vframe(gradient);
+	return output;
 }
 
 void GradientMain::load_defaults()
@@ -638,7 +620,6 @@ void GradientMain::load_defaults()
 	config.center_x = defaults->get("CENTER_X", config.center_x);
 	config.center_y = defaults->get("CENTER_Y", config.center_y);
 }
-
 
 void GradientMain::save_defaults()
 {
