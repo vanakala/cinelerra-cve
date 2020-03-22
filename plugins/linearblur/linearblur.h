@@ -142,15 +142,17 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	void delete_tables();
-	VFrame *input, *output, *temp;
+	VFrame *input, *output;
 	LinearBlurEngine *engine;
 	int **scale_y_table;
 	int **scale_x_table;
+/* FIXIT - OpenGl
 	LinearBlurLayer *layer_table;
+	*/
 	int table_entries;
-	int need_reconfigure;
 // The accumulation buffer is needed because 8 bits isn't precise enough
 	unsigned char *accum;
+	size_t accum_size;
 };
 
 class LinearBlurPackage : public LoadPackage

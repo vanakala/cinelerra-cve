@@ -184,7 +184,7 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	accum = 0;
 	need_reconfigure = 1;
 	temp = 0;
-	layer_table = 0;
+// FIXIT layer_table = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -212,8 +212,10 @@ void LinearBlurMain::delete_tables()
 			delete [] scale_y_table[i];
 		delete [] scale_y_table;
 	}
+/* FIXIT
 	delete [] layer_table;
 	layer_table = 0;
+	*/
 	scale_x_table = 0;
 	scale_y_table = 0;
 	table_entries = 0;
@@ -235,7 +237,9 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 		int angle = config.angle;
 		int radius = config.radius * MIN(w, h) / 100;
 
-		while(angle < 0) angle += 360;
+		while(angle < 0)
+			angle += 360;
+
 		switch(angle)
 		{
 		case 0:
@@ -256,30 +260,42 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 			y_offset = radius;
 			break;
 		default:
-			y_offset = (int)(sin((float)config.angle / 360 * 2 * M_PI) * radius);
-			x_offset = (int)(cos((float)config.angle / 360 * 2 * M_PI) * radius);
+			y_offset = round(sin((double)config.angle / 360 * 2 * M_PI) * radius);
+			x_offset = round(cos((double)config.angle / 360 * 2 * M_PI) * radius);
 			break;
 		}
 
-		delete_tables();
-		scale_x_table = new int*[config.steps];
-		scale_y_table = new int*[config.steps];
-		table_entries = config.steps;
+		if(table_entries < config.steps)
+		{
+			delete_tables();
+			table_entries = 2 * config.steps;
+			scale_x_table = new int*[table_entries];
+			scale_y_table = new int*[table_entries];
+			memset(scale_x_table, 0, table_entries * sizeof(int*));
+			memset(scale_y_table, 0, table_entries * sizeof(int*));
+		}
+/* FIXIT for OpenGL
 		layer_table = new LinearBlurLayer[table_entries];
-
+	*/
 		for(int i = 0; i < config.steps; i++)
 		{
-			float fraction = (float)(i - config.steps / 2) / config.steps;
-			int x = (int)(fraction * x_offset);
-			int y = (int)(fraction * y_offset);
-
+			double fraction = (double)(i - config.steps / 2) / config.steps;
+			int x = round(fraction * x_offset);
+			int y = round(fraction * y_offset);
 			int *x_table;
 			int *y_table;
-			scale_y_table[i] = y_table = new int[h];
-			scale_x_table[i] = x_table = new int[w];
 
+			if(!scale_y_table[i])
+				scale_y_table[i] = new int[h];
+			if(!scale_x_table[i])
+				scale_x_table[i] = new int[w];
+
+			x_table = scale_x_table[i];
+			y_table = scale_y_table[i];
+/* FIXIT - OpenGL
 			layer_table[i].x = x;
 			layer_table[i].y = y;
+	*/
 			for(int j = 0; j < h; j++)
 			{
 				y_table[j] = j + y;
@@ -294,22 +310,22 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 		need_reconfigure = 0;
 	}
 
-	if(!engine) engine = new LinearBlurEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[frame->get_w() * 
-		frame->get_h() *
-		ColorModels::components(frame->get_color_model()) *
-		MAX(sizeof(int), sizeof(float))];
+	if(!engine)
+		engine = new LinearBlurEngine(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
+	if(!accum)
+	{
+		accum_size = frame->get_w() * frame->get_h() *
+			ColorModels::components(frame->get_color_model()) *
+			MAX(sizeof(int), sizeof(float));
+		accum = new unsigned char[accum_size];
+	}
 
 	this->input = frame;
 	output = clone_vframe(frame);
 
-	memset(accum, 0,
-		frame->get_w() * 
-		frame->get_h() * 
-		ColorModels::components(frame->get_color_model()) *
-		MAX(sizeof(int), sizeof(float)));
+	memset(accum, 0, accum_size);
 	engine->process_packages();
 	release_vframe(frame);
 	if(config.a && ColorModels::has_alpha(output->get_color_model()))
@@ -637,18 +653,20 @@ LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 void LinearBlurUnit::process_package(LoadPackage *package)
 {
 	LinearBlurPackage *pkg = (LinearBlurPackage*)package;
-	int h = plugin->output->get_h();
 	int w = plugin->output->get_w();
-
 	int fraction = 0x10000 / plugin->config.steps;
 	int do_r = plugin->config.r;
 	int do_g = plugin->config.g;
 	int do_b = plugin->config.b;
 	int do_a = plugin->config.a;
+
 	for(int i = 0; i < plugin->config.steps; i++)
 	{
 		int *x_table = plugin->scale_x_table[i];
 		int *y_table = plugin->scale_y_table[i];
+
+		if(i > plugin->table_entries || !x_table || !y_table)
+			break;
 
 		switch(plugin->input->get_color_model())
 		{
@@ -689,7 +707,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 				int in_y = y_table[j];
 
 				// Blend image
-				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y); \
+				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y);
 				for(int k = 0; k < w; k++)
 				{
 					int in_x = x_table[k];
@@ -701,7 +719,6 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 					*out_row++ += in_row[in_offset + 3];
 				}
 			}
-
 			// Copy to output
 			if(i == plugin->config.steps - 1)
 			{
