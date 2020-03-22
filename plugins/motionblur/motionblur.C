@@ -19,17 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Motion Blur")
-#define PLUGIN_CLASS MotionBlurMain
-#define PLUGIN_CONFIG_CLASS MotionBlurConfig
-#define PLUGIN_THREAD_CLASS MotionBlurThread
-#define PLUGIN_GUI_CLASS MotionBlurWindow
-
-#include "pluginmacros.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -42,115 +31,11 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
+#include "motionblur.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
-
-
-class MotionBlurEngine;
-
-
-class MotionBlurConfig
-{
-public:
-	MotionBlurConfig();
-
-	int equivalent(MotionBlurConfig &that);
-	void copy_from(MotionBlurConfig &that);
-	void interpolate(MotionBlurConfig &prev, 
-		MotionBlurConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int radius;
-	int steps;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class MotionBlurSize : public BC_ISlider
-{
-public:
-	MotionBlurSize(MotionBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	MotionBlurMain *plugin;
-	int *output;
-};
-
-
-class MotionBlurWindow : public PluginWindow
-{
-public:
-	MotionBlurWindow(MotionBlurMain *plugin, int x, int y);
-	~MotionBlurWindow();
-
-	void update();
-
-	MotionBlurSize *steps, *radius;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class MotionBlurMain : public PluginVClient
-{
-public:
-	MotionBlurMain(PluginServer *server);
-	~MotionBlurMain();
-
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	PLUGIN_CLASS_MEMBERS
-
-	void delete_tables();
-	VFrame *input, *output, *temp;
-	MotionBlurEngine *engine;
-	int **scale_y_table;
-	int **scale_x_table;
-	int table_entries;
-	unsigned char *accum;
-};
-
-class MotionBlurPackage : public LoadPackage
-{
-public:
-	MotionBlurPackage();
-	int y1, y2;
-};
-
-class MotionBlurUnit : public LoadClient
-{
-public:
-	MotionBlurUnit(MotionBlurEngine *server, MotionBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	MotionBlurEngine *server;
-	MotionBlurMain *plugin;
-};
-
-class MotionBlurEngine : public LoadServer
-{
-public:
-	MotionBlurEngine(MotionBlurMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	MotionBlurMain *plugin;
-};
 
 
 REGISTER_PLUGIN
@@ -163,8 +48,7 @@ MotionBlurConfig::MotionBlurConfig()
 
 int MotionBlurConfig::equivalent(MotionBlurConfig &that)
 {
-	return 
-		radius == that.radius &&
+	return radius == that.radius &&
 		steps == that.steps;
 }
 
@@ -182,8 +66,8 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
-	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
-	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
+	this->radius = round((double)prev.radius * prev_scale + next.radius * next_scale);
+	this->steps = round((double)prev.steps * prev_scale + next.steps * next_scale);
 }
 
 
@@ -206,10 +90,6 @@ MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin, int x, int y)
 	y += 20;
 	add_subwindow(steps = new MotionBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-MotionBlurWindow::~MotionBlurWindow()
-{
 }
 
 void MotionBlurWindow::update()
