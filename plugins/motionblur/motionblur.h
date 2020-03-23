@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Motion Blur")
 #define PLUGIN_CLASS MotionBlurMain
@@ -102,7 +103,7 @@ public:
 	MotionBlurMain(PluginServer *server);
 	~MotionBlurMain();
 
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input_ptr);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -111,12 +112,14 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	void delete_tables();
-	VFrame *input, *output, *temp;
+	VFrame *input, *output;
 	MotionBlurEngine *engine;
 	int **scale_y_table;
 	int **scale_x_table;
 	int table_entries;
 	unsigned char *accum;
+	size_t accum_size;
+	int table_steps;
 };
 
 class MotionBlurPackage : public LoadPackage
