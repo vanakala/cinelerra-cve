@@ -19,17 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Oil painting")
-#define PLUGIN_CLASS OilEffect
-#define PLUGIN_CONFIG_CLASS OilConfig
-#define PLUGIN_THREAD_CLASS OilThread
-#define PLUGIN_GUI_CLASS OilWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bctitle.h"
 #include "bctoggle.h"
@@ -37,8 +26,8 @@
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
 #include "loadbalance.h"
+#include "oil.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
@@ -51,102 +40,6 @@
 
 // Algorithm by Torsten Martinsen
 // Ported to Cinelerra by Heroine Virtual Ltd.
-
-
-class OilConfig
-{
-public:
-	OilConfig();
-	void copy_from(OilConfig &src);
-	int equivalent(OilConfig &src);
-	void interpolate(OilConfig &prev, 
-		OilConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	float radius;
-	int use_intensity;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class OilRadius : public BC_FSlider
-{
-public:
-	OilRadius(OilEffect *plugin, int x, int y);
-	int handle_event();
-	OilEffect *plugin;
-};
-
-
-class OilIntensity : public BC_CheckBox
-{
-public:
-	OilIntensity(OilEffect *plugin, int x, int y);
-	int handle_event();
-	OilEffect *plugin;
-};
-
-class OilWindow : public PluginWindow
-{
-public:
-	OilWindow(OilEffect *plugin, int x, int y);
-	~OilWindow();
-
-	void update();
-
-	OilRadius *radius;
-	OilIntensity *intensity;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class OilServer : public LoadServer
-{
-public:
-	OilServer(OilEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	OilEffect *plugin;
-};
-
-class OilPackage : public LoadPackage
-{
-public:
-	OilPackage();
-	int row1, row2;
-};
-
-class OilUnit : public LoadClient
-{
-public:
-	OilUnit(OilEffect *plugin, OilServer *server);
-	void process_package(LoadPackage *package);
-	OilEffect *plugin;
-};
-
-
-class OilEffect : public PluginVClient
-{
-public:
-	OilEffect(PluginServer *server);
-	~OilEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	VFrame *temp_frame;
-	VFrame *input, *output;
-	OilServer *engine;
-	int need_reconfigure;
-};
 
 
 OilConfig::OilConfig()
@@ -230,10 +123,6 @@ OilWindow::OilWindow(OilEffect *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-OilWindow::~OilWindow()
-{
-}
-
 void OilWindow::update()
 {
 	radius->update(plugin->config.radius);
@@ -245,7 +134,6 @@ REGISTER_PLUGIN
 OilEffect::OilEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	temp_frame = 0;
 	need_reconfigure = 1;
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
@@ -253,7 +141,6 @@ OilEffect::OilEffect(PluginServer *server)
 
 OilEffect::~OilEffect()
 {
-	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
@@ -306,29 +193,16 @@ void OilEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-void OilEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *OilEffect::process_tmpframe(VFrame *input)
 {
 	need_reconfigure |= load_configuration();
 
 	this->input = input;
-	this->output = output;
+	output = input;
 
-	if(EQUIV(config.radius, 0))
+	if(!EQUIV(config.radius, 0))
 	{
-		if(input != output)
-			output->copy_from(input);
-	}
-	else
-	{
-		if(input == output)
-		{
-			if(!temp_frame) temp_frame = new VFrame(0,
-				input->get_w(),
-				input->get_h(),
-				input->get_color_model());
-			temp_frame->copy_from(input);
-			this->input = temp_frame;
-		}
+		output = clone_vframe(input);
 
 		if(!engine)
 		{
@@ -336,6 +210,7 @@ void OilEffect::process_realtime(VFrame *input, VFrame *output)
 		}
 		engine->process_packages();
 	}
+	return output;
 }
 
 
