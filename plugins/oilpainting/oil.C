@@ -226,6 +226,16 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 	this->plugin = plugin;
 }
 
+#define SUBSCRIPT(type, value) \
+	if(sizeof(type) == 4) \
+	{ \
+		subscript = (int)(value * 255); \
+		CLAMP(subscript, 0, 255); \
+	} \
+	else if(sizeof(type) == 2) \
+		subscript = (int)value >> 8; \
+	else \
+		subscript = (int)value;
 
 #define INTENSITY(p) ((unsigned int)(((p)[0]) * 77+ \
 				((p)[1] * 150) + \
@@ -274,13 +284,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 						type value; \
  \
 						value = src[x2 * components + 0]; \
-						if(sizeof(type) == 4) \
-						{ \
-							subscript = (int)(value * hist_size); \
-							CLAMP(subscript, 0, hist_size); \
-						} \
-						else \
-							subscript = (int)value; \
+						SUBSCRIPT(type, value) \
  \
 						if((c = ++hist[0][subscript]) > count[0]) \
 						{ \
@@ -289,13 +293,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 						} \
  \
 						value = src[x2 * components + 1]; \
-						if(sizeof(type) == 4) \
-						{ \
-							subscript = (int)(value * hist_size); \
-							CLAMP(subscript, 0, hist_size); \
-						} \
-						else \
-							subscript = (int)value; \
+						SUBSCRIPT(type, value) \
  \
 						if((c = ++hist[1][subscript]) > count[1]) \
 						{ \
@@ -304,13 +302,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 						} \
  \
 						value = src[x2 * components + 2]; \
-						if(sizeof(type) == 4) \
-						{ \
-							subscript = (int)(value * hist_size); \
-							CLAMP(subscript, 0, hist_size); \
-						} \
-						else \
-							subscript = (int)value; \
+						SUBSCRIPT(type, value) \
  \
 						if((c = ++hist[2][subscript]) > count[2]) \
 						{ \
@@ -321,13 +313,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 						if(components == 4) \
 						{ \
 							value = src[x2 * components + 3]; \
-							if(sizeof(type) == 4) \
-							{ \
-								subscript = (int)(value * hist_size); \
-								CLAMP(subscript, 0, hist_size); \
-							} \
-							else \
-								subscript = (int)value; \
+							SUBSCRIPT(type, value) \
  \
 							if((c = ++hist[3][subscript]) > count[3]) \
 							{ \
@@ -363,7 +349,10 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 					for(int x2 = x3; x2 < x4; x2++) \
 					{ \
 						int c; \
-						if((c = ++hist2[INTENSITY(src + x2 * components)]) > count2) \
+						int ix = INTENSITY(src + x2 * components); \
+						if(sizeof(type) >= 2) \
+							ix >>= 8; \
+						if((c = ++hist2[ix]) > count2) \
 						{ \
 							val[0] = src[x2 * components + 0]; \
 							val[1] = src[x2 * components + 1]; \
@@ -398,7 +387,7 @@ void OilUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 	case BC_RGB_FLOAT:
-		OIL_MACRO(float, 0xffff, 3)
+		OIL_MACRO(float, 0xff, 3)
 		break;
 	case BC_RGB888:
 	case BC_YUV888:
@@ -406,10 +395,10 @@ void OilUnit::process_package(LoadPackage *package)
 		break;
 	case BC_RGB161616:
 	case BC_YUV161616:
-		OIL_MACRO(uint16_t, 0xffff, 3)
+		OIL_MACRO(uint16_t, 0xff, 3)
 		break;
 	case BC_RGBA_FLOAT:
-		OIL_MACRO(float, 0xffff, 4)
+		OIL_MACRO(float, 0xff, 4)
 		break;
 	case BC_RGBA8888:
 	case BC_YUVA8888:
@@ -418,7 +407,7 @@ void OilUnit::process_package(LoadPackage *package)
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
 	case BC_AYUV16161616:
-		OIL_MACRO(uint16_t, 0xffff, 4)
+		OIL_MACRO(uint16_t, 0xff, 4)
 		break;
 	}
 }
