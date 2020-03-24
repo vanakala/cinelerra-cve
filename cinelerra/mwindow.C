@@ -1113,7 +1113,10 @@ void MWindow::show_plugin(Plugin *plugin)
 				plugin->client = mainclient;
 			}
 			else
+			{
 				plugin->gui_client = plugin->client;
+				plugin_guis->append(plugin->client);
+			}
 
 			plugin->gui_client->plugin_show_gui();
 			plugin->show = 1;
