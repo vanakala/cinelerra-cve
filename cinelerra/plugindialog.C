@@ -175,6 +175,7 @@ void PluginDialogThread::run()
 				return;
 			if(plugin)
 			{
+				mwindow_global->hide_plugin(plugin, 1);
 				plugin->change_plugin(
 					plugindb.get_pluginserver(plugin_title,
 						plugin->track->data_type),
