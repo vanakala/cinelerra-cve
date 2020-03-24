@@ -21,6 +21,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Perspective")
 #define PLUGIN_CLASS PerspectiveMain
@@ -172,7 +173,7 @@ public:
 	PerspectiveMain(PluginServer *server);
 	~PerspectiveMain();
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -186,6 +187,6 @@ public:
 	void set_current_x(float value);
 	void set_current_y(float value);
 	VFrame *input, *output;
-	VFrame *temp;
+	VFrame *strech_temp;
 	AffineEngine *engine;
 };

@@ -525,14 +525,14 @@ PerspectiveMain::PerspectiveMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	temp = 0;
+	strech_temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 PerspectiveMain::~PerspectiveMain()
 {
-	if(engine) delete engine;
-	if(temp) delete temp;
+	delete engine;
+	delete strech_temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -695,89 +695,52 @@ void PerspectiveMain::set_current_y(float value)
 	}
 }
 
-void PerspectiveMain::process_frame(VFrame *frame)
+VFrame *PerspectiveMain::process_tmpframe(VFrame *frame)
 {
-	int need_reconfigure = load_configuration();
+	load_configuration();
 
 // Do nothing
-	if(EQUIV(config.x1, 0)   && EQUIV(config.y1, 0) &&
-		EQUIV(config.x2, 100) && EQUIV(config.y2, 0) &&
-		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
-		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
-	{
-		get_frame(frame);
-		return;
-	}
-
-// Opengl does some funny business with stretching.
-	int use_opengl = get_use_opengl() &&
-		(config.mode == AffineEngine::PERSPECTIVE || 
-		config.mode == AffineEngine::SHEER);
-	get_frame(frame);
+	if(EQUIV(config.x1, 0) && EQUIV(config.y1, 0) &&
+			EQUIV(config.x2, 100) && EQUIV(config.y2, 0) &&
+			EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
+			EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
+		return frame;
 
 	if(!engine)
 		engine = new AffineEngine(get_project_smp() + 1,
 			get_project_smp() + 1);
 
-	if(use_opengl)
-	{
-		run_opengl();
-		return;
-	}
-
-	this->input = frame;
-	this->output = frame;
+	input = frame;
 
 	int w = frame->get_w();
 	int h = frame->get_h();
 	int color_model = frame->get_color_model();
 
-	if(temp && config.mode == AffineEngine::STRETCH &&
-		(temp->get_w() != w * AFFINE_OVERSAMPLE ||
-			temp->get_h() != h * AFFINE_OVERSAMPLE))
+	if(strech_temp && config.mode == AffineEngine::STRETCH &&
+		(strech_temp->get_w() != w * AFFINE_OVERSAMPLE ||
+			strech_temp->get_h() != h * AFFINE_OVERSAMPLE))
 	{
-		delete temp;
-		temp = 0;
-	}
-	else
-	if(temp &&(config.mode == AffineEngine::PERSPECTIVE ||
-		config.mode == AffineEngine::SHEER) &&
-		(temp->get_w() != w || temp->get_h() != h))
-	{
-		delete temp;
-		temp = 0;
+		delete strech_temp;
+		strech_temp = 0;
 	}
 
 	if(config.mode == AffineEngine::STRETCH)
 	{
-		if(!temp)
+		if(!strech_temp)
 		{
-			temp = new VFrame(0,
-					w * AFFINE_OVERSAMPLE,
-					h * AFFINE_OVERSAMPLE,
-					color_model);
-		}
-		temp->clear_frame();
-	}
-
-	if(config.mode == AffineEngine::PERSPECTIVE ||
-		config.mode == AffineEngine::SHEER)
-	{
-		if(!temp)
-		{
-			temp = new VFrame(0,
-				w,
-				h,
+			strech_temp = new VFrame(0,
+				w * AFFINE_OVERSAMPLE,
+				h * AFFINE_OVERSAMPLE,
 				color_model);
 		}
-		temp->copy_from(input);
-		input = temp;
-		output->clear_frame();
+		strech_temp->clear_frame();
 	}
+	output = clone_vframe(frame);
+	output->clear_frame();
 
 	engine->process(output,
 		input,
-		temp, 
+		strech_temp,
 		config.mode,
 		config.x1,
 		config.y1,
@@ -790,7 +753,6 @@ void PerspectiveMain::process_frame(VFrame *frame)
 		config.forward);
 
 // Resample
-
 	if(config.mode == AffineEngine::STRETCH)
 	{
 #define RESAMPLE(type, components, chroma_offset) \
@@ -798,8 +760,8 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	for(int i = 0; i < h; i++) \
 	{ \
 		type *out_row = (type*)output->get_row_ptr(i); \
-		type *in_row1 = (type*)temp->get_row_ptr(i * AFFINE_OVERSAMPLE); \
-		type *in_row2 = (type*)temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1); \
+		type *in_row1 = (type*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE); \
+		type *in_row2 = (type*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			out_row[0] = (in_row1[0] +  \
@@ -879,6 +841,8 @@ void PerspectiveMain::process_frame(VFrame *frame)
 			break;
 		}
 	}
+	release_vframe(input);
+	return output;
 }
 
 
