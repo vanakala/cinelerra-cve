@@ -21,7 +21,9 @@
 
 #include "affine.h"
 #include "bctitle.h"
+#include "clip.h"
 #include "cursors.h"
+#include "filexml.h"
 #include "language.h"
 #include "perspective.h"
 
@@ -46,8 +48,7 @@ PerspectiveConfig::PerspectiveConfig()
 
 int PerspectiveConfig::equivalent(PerspectiveConfig &that)
 {
-	return 
-		EQUIV(x1, that.x1) &&
+	return EQUIV(x1, that.x1) &&
 		EQUIV(y1, that.y1) &&
 		EQUIV(x2, that.x2) &&
 		EQUIV(y2, that.y2) &&
@@ -168,10 +169,6 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_canvas();
-}
-
-PerspectiveWindow::~PerspectiveWindow()
-{
 }
 
 void PerspectiveWindow::update()
@@ -703,7 +700,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	int need_reconfigure = load_configuration();
 
 // Do nothing
-	if( EQUIV(config.x1, 0)   && EQUIV(config.y1, 0) &&
+	if(EQUIV(config.x1, 0)   && EQUIV(config.y1, 0) &&
 		EQUIV(config.x2, 100) && EQUIV(config.y2, 0) &&
 		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
@@ -718,8 +715,9 @@ void PerspectiveMain::process_frame(VFrame *frame)
 		config.mode == AffineEngine::SHEER);
 	get_frame(frame);
 
-	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
-		get_project_smp() + 1);
+	if(!engine)
+		engine = new AffineEngine(get_project_smp() + 1,
+			get_project_smp() + 1);
 
 	if(use_opengl)
 	{
@@ -734,8 +732,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	int h = frame->get_h();
 	int color_model = frame->get_color_model();
 
-	if(temp && 
-		config.mode == AffineEngine::STRETCH &&
+	if(temp && config.mode == AffineEngine::STRETCH &&
 		(temp->get_w() != w * AFFINE_OVERSAMPLE ||
 			temp->get_h() != h * AFFINE_OVERSAMPLE))
 	{
@@ -743,11 +740,9 @@ void PerspectiveMain::process_frame(VFrame *frame)
 		temp = 0;
 	}
 	else
-	if(temp &&
-		(config.mode == AffineEngine::PERSPECTIVE ||
+	if(temp &&(config.mode == AffineEngine::PERSPECTIVE ||
 		config.mode == AffineEngine::SHEER) &&
-		(temp->get_w() != w ||
-			temp->get_h() != h))
+		(temp->get_w() != w || temp->get_h() != h))
 	{
 		delete temp;
 		temp = 0;

@@ -30,20 +30,11 @@
 
 #include "pluginmacros.h"
 
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
-
-#include "bcdisplayinfo.h"
-#include "clip.h"
-#include "bchash.h"
-#include "filexml.h"
-#include "keyframe.h"
-#include "loadbalance.h"
+#include "keyframe.inc"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
-#include "vframe.h"
+#include "vframe.inc"
 
 
 class PerspectiveConfig
@@ -149,7 +140,6 @@ class PerspectiveWindow : public PluginWindow
 {
 public:
 	PerspectiveWindow(PerspectiveMain *plugin, int x, int y);
-	~PerspectiveWindow();
 
 	void update();
 	void update_canvas();
