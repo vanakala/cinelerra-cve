@@ -103,15 +103,12 @@ void PluginClient::set_renderer(TrackRender *renderer)
 // close event from client side
 void PluginClient::client_side_close()
 {
-	if(server->apiversion < 3)
-	{
 // Last command executed
-		if(plugin)
-			mwindow_global->hide_plugin(plugin, 1);
-		else
-		if(prompt)
-			prompt->set_done(1);
-	}
+	if(plugin)
+		mwindow_global->hide_plugin(plugin, 1);
+	else
+	if(prompt)
+		prompt->set_done(1);
 }
 
 void PluginClient::set_prompt(MenuEffectPrompt *prompt)
