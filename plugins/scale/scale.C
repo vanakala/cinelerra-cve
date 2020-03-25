@@ -145,40 +145,24 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void ScaleMain::process_frame(VFrame *frame)
+VFrame *ScaleMain::process_tmpframe(VFrame *frame)
 {
-	VFrame *input, *output;
-
-	input = frame;
-	output = frame;
+	VFrame *output;
 
 	load_configuration();
 
-	get_frame(frame);
-
 // No scaling
 	if(EQUIV(config.w, 1) && EQUIV(config.h,1))
-		return;
+		return frame;
 
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
-
-	VFrame *temp_frame = new_temp(frame->get_w(), 
-			frame->get_h(),
-			frame->get_color_model());
-	temp_frame->copy_from(frame);
-	input = temp_frame;
+	output = clone_vframe(frame);
 
 	if(!overlayer)
-	{
 		overlayer = new OverlayFrame(smp + 1);
-	}
 
 // Perform scaling
-	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
+	double in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
+
 	calculate_transfer(output,
 		in_x1, 
 		in_x2, 
@@ -191,7 +175,7 @@ void ScaleMain::process_frame(VFrame *frame)
 	output->clear_frame();
 
 	overlayer->overlay(output, 
-		input,
+		frame,
 		in_x1, 
 		in_y1, 
 		in_x2, 
@@ -203,29 +187,31 @@ void ScaleMain::process_frame(VFrame *frame)
 		1,
 		TRANSFER_REPLACE,
 		get_interpolation_type());
+
+	release_vframe(frame);
+	return output;
 }
 
 void ScaleMain::calculate_transfer(VFrame *frame,
-	float &in_x1, 
-	float &in_x2, 
-	float &in_y1, 
-	float &in_y2, 
-	float &out_x1, 
-	float &out_x2, 
-	float &out_y1, 
-	float &out_y2)
+	double &in_x1, double &in_x2,
+	double &in_y1, double &in_y2,
+	double &out_x1, double &out_x2,
+	double &out_y1, double &out_y2)
 {
-	float center_x, center_y;
-	center_x = (float)frame->get_w() / 2;
-	center_y = (float)frame->get_h() / 2;
+	double center_x, center_y;
+
+	center_x = (double)frame->get_w() / 2;
+	center_y = (double)frame->get_h() / 2;
+
 	in_x1 = 0;
 	in_x2 = frame->get_w();
 	in_y1 = 0;
 	in_y2 = frame->get_h();
-	out_x1 = (float)center_x - (float)frame->get_w() * config.w / 2;
-	out_x2 = (float)center_x + (float)frame->get_w() * config.w / 2;
-	out_y1 = (float)center_y - (float)frame->get_h() * config.h / 2;
-	out_y2 = (float)center_y + (float)frame->get_h() * config.h / 2;
+
+	out_x1 = center_x - frame->get_w() * config.w / 2;
+	out_x2 = center_x + frame->get_w() * config.w / 2;
+	out_y1 = center_y - frame->get_h() * config.h / 2;
+	out_y2 = center_y + frame->get_h() * config.h / 2;
 
 	if(out_x1 < 0)
 	{

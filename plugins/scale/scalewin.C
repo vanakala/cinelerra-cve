@@ -53,8 +53,8 @@ ScaleWin::~ScaleWin()
 
 void ScaleWin::update()
 {
-	width->update(plugin->config.w);
-	height->update(plugin->config.h);
+	width->update((float)plugin->config.w);
+	height->update((float)plugin->config.h);
 	constrain->update(plugin->config.constrain);
 }
 
@@ -87,7 +87,7 @@ int ScaleWidth::handle_event()
 	if(client->config.constrain)
 	{
 		client->config.h = client->config.w;
-		win->height->update(client->config.h);
+		win->height->update((float)client->config.h);
 	}
 
 	client->send_configure_change();
@@ -121,7 +121,7 @@ int ScaleHeight::handle_event()
 	if(client->config.constrain)
 	{
 		client->config.w = client->config.h;
-		win->width->update(client->config.w);
+		win->width->update((float)client->config.w);
 	}
 
 	client->send_configure_change();

@@ -26,6 +26,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Scale")
 #define PLUGIN_CLASS ScaleMain
@@ -61,7 +62,7 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 
-	float w, h;
+	double w, h;
 	int constrain;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -124,16 +125,12 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void calculate_transfer(VFrame *frame,
-		float &in_x1, 
-		float &in_x2, 
-		float &in_y1, 
-		float &in_y2, 
-		float &out_x1, 
-		float &out_x2, 
-		float &out_y1, 
-		float &out_y2);
+		double &in_x1, double &in_x2,
+		double &in_y1, double &in_y2,
+		double &out_x1, double &out_x2,
+		double &out_y1, double &out_y2);
 	void handle_opengl();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
