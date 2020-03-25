@@ -22,10 +22,10 @@
 #ifndef SHARPEN_H
 #define SHARPEN_H
 
-// the simplest plugin possible
 // Sharpen leaves the last line too bright
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Sharpen")
 #define PLUGIN_CLASS SharpenMain
@@ -75,8 +75,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -86,7 +85,6 @@ public:
 	int row_step;
 
 	int pos_lut[0x10000], neg_lut[0x10000];
-	VFrame *output, *input;
 
 private:
 	void get_luts(int *pos_lut, int *neg_lut, int color_model);
@@ -98,10 +96,10 @@ private:
 class SharpenEngine : public Thread
 {
 public:
-	SharpenEngine(SharpenMain *plugin);
+	SharpenEngine(SharpenMain *plugin, VFrame *input);
 	~SharpenEngine();
 
-	void start_process_frame(VFrame *output, VFrame *input, int field);
+	void start_process_frame(VFrame *output, int field);
 	void wait_process_frame();
 	void run();
 
@@ -130,17 +128,17 @@ public:
 		float *neg1, 
 		float *neg2);
 
-	float calculate_pos(float value);
-	float calculate_neg(float value);
+	double calculate_pos(double value);
+	double calculate_neg(double value);
 
 	SharpenMain *plugin;
 	int field;
-	VFrame *output, *input;
+	VFrame *output;
 	int last_frame;
 	Condition *input_lock, *output_lock;
 	unsigned char *src_rows[4], *dst_row;
 	unsigned char *neg_rows[4];
-	float sharpness_coef;
+	double sharpness_coef;
 };
 
 #endif

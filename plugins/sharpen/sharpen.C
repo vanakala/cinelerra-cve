@@ -95,49 +95,42 @@ SharpenMain::~SharpenMain()
 
 PLUGIN_CLASS_METHODS
 
-void SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *SharpenMain::process_tmpframe(VFrame *input)
 {
 	int i, j, k;
-	output = output_ptr;
-	input = input_ptr;
 
 	load_configuration();
 	if(!engine)
 	{
-
 		total_engines = PluginClient::smp > 1 ? 2 : 1;
 		engine = new SharpenEngine*[total_engines];
+
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i] = new SharpenEngine(this);
+			engine[i] = new SharpenEngine(this, input);
 			engine[i]->start();
 		}
 	}
 
-	get_luts(pos_lut, neg_lut, input_ptr->get_color_model());
+	get_luts(pos_lut, neg_lut, input->get_color_model());
 
-	if(config.sharpness != 0)
+	if(config.sharpness)
 	{
 // Arm first row
-		row_step = (config.interlace /* || config.horizontal */) ? 2 : 1;
+		row_step = (config.interlace) ? 2 : 1;
 
 		for(j = 0; j < row_step; j += total_engines)
 		{
 			for(k = 0; k < total_engines && k + j < row_step; k++)
-			{
-				engine[k]->start_process_frame(input_ptr, input_ptr, k + j);
-			}
+				engine[k]->start_process_frame(input, k + j);
+
 			for(k = 0; k < total_engines && k + j < row_step; k++)
 			{
 				engine[k]->wait_process_frame();
 			}
 		}
 	}
-	else
-	if(input_ptr != output_ptr)
-	{
-		output_ptr->copy_from(input_ptr);
-	}
+	return input;
 }
 
 void SharpenMain::load_defaults()
@@ -261,7 +254,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 		if(config.sharpness < 0) config.sharpness = 0;
 }
 
-SharpenEngine::SharpenEngine(SharpenMain *plugin)
+SharpenEngine::SharpenEngine(SharpenMain *plugin, VFrame *input)
  : Thread(THREAD_SYNCHRONOUS)
 {
 	this->plugin = plugin;
@@ -270,9 +263,8 @@ SharpenEngine::SharpenEngine(SharpenMain *plugin)
 	last_frame = 0;
 	for(int i = 0; i < 4; i++)
 	{
-		neg_rows[i] = new unsigned char[plugin->input->get_w() * 
-			4 * 
-			MAX(sizeof(float), sizeof(int))];
+		neg_rows[i] = new unsigned char[input->get_w() *
+			4 * MAX(sizeof(float), sizeof(int))];
 	}
 }
 
@@ -290,16 +282,17 @@ SharpenEngine::~SharpenEngine()
 	delete output_lock;
 }
 
-void SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
+void SharpenEngine::start_process_frame(VFrame *output, int field)
 {
 	this->output = output;
-	this->input = input;
 	this->field = field;
 
 // Get coefficient for floating point
 	sharpness_coef = 100 - plugin->config.sharpness;
-	if(plugin->config.horizontal) sharpness_coef /= 2;
-	if(sharpness_coef < 1) sharpness_coef = 1;
+	if(plugin->config.horizontal)
+		sharpness_coef /= 2;
+	if(sharpness_coef < 1)
+		sharpness_coef = 1;
 	sharpness_coef = 800.0 / sharpness_coef;
 
 	input_lock->unlock();
@@ -310,12 +303,12 @@ void SharpenEngine::wait_process_frame()
 	output_lock->lock("SharpenEngine::wait_process_frame");
 }
 
-float SharpenEngine::calculate_pos(float value)
+double SharpenEngine::calculate_pos(double value)
 {
 	return sharpness_coef * value;
 }
 
-float SharpenEngine::calculate_neg(float value)
+double SharpenEngine::calculate_neg(double value)
 {
 	return (calculate_pos(value) - (value * 8)) / 8;
 }
@@ -492,11 +485,11 @@ void SharpenEngine::filter(int components,
 { \
 	int count, row; \
 	int wordsize = sizeof(type); \
-	int w = plugin->input->get_w(); \
-	int h = plugin->input->get_h(); \
+	int w = output->get_w(); \
+	int h = output->get_h(); \
  \
 	src_rows[0] = src_rows[1] = src_rows[2] = \
-		src_rows[3] = input->get_row_ptr(field); \
+		src_rows[3] = output->get_row_ptr(field); \
  \
 	for(int j = 0; j < w; j++) \
 	{ \
@@ -526,7 +519,7 @@ void SharpenEngine::filter(int components,
 		{ \
 			if(count >= 3) count--; \
 /* Arm next row */ \
-			src_rows[row] = input->get_row_ptr(i + plugin->row_step); \
+			src_rows[row] = output->get_row_ptr(i + plugin->row_step); \
 /* Calculate neg rows */ \
 			type *src = (type*)src_rows[row]; \
 			temp_type *neg = (temp_type*)neg_rows[row]; \
@@ -600,7 +593,7 @@ void SharpenEngine::run()
 			return;
 		}
 
-		switch(input->get_color_model())
+		switch(output->get_color_model())
 		{
 		case BC_RGB_FLOAT:
 			SHARPEN(3, float, float, 1);
@@ -634,12 +627,12 @@ void SharpenEngine::run()
 			{
 				int count, row;
 				int wordsize = sizeof(uint16_t);
-				int w = plugin->input->get_w();
-				int h = plugin->input->get_h();
+				int w = output->get_w();
+				int h = output->get_h();
 
 				src_rows[0] = src_rows[1] =
 					src_rows[2] = src_rows[3] =
-					input->get_row_ptr(field);
+					output->get_row_ptr(field);
 
 				for(int j = 0; j < w; j++)
 				{
@@ -661,7 +654,7 @@ void SharpenEngine::run()
 					{
 						if(count >= 3) count--;
 						// Arm next row
-						src_rows[row] = input->get_row_ptr(i + plugin->row_step);
+						src_rows[row] = output->get_row_ptr(i + plugin->row_step);
 						// Calculate neg rows
 						uint16_t *src = (uint16_t*)src_rows[row];
 						int *neg = (int*)neg_rows[row];
