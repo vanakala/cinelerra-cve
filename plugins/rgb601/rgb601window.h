@@ -22,11 +22,8 @@
 #ifndef RGB601WINDOW_H
 #define RGB601WINDOW_H
 
-class RGB601Thread;
 class RGB601Window;
 
-#include "filexml.h"
-#include "mutex.h"
 #include "rgb601.h"
 #include "pluginwindow.h"
 
@@ -36,7 +33,6 @@ class RGB601Direction : public BC_CheckBox
 {
 public:
 	RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, const char *text);
-	~RGB601Direction();
 
 	int handle_event();
 	RGB601Window *window;
@@ -48,7 +44,6 @@ class RGB601Window : public PluginWindow
 {
 public:
 	RGB601Window(RGB601Main *plugin, int x, int y);
-	~RGB601Window();
 
 	void update();
 

@@ -210,10 +210,11 @@ void RGB601Main::create_table(VFrame *input_ptr)
 	} \
 }
 
-void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
+void RGB601Main::process(VFrame *input_ptr)
 {
 	int w = input_ptr->get_w();
 	int h = input_ptr->get_h();
+	VFrame *output_ptr = input_ptr;
 
 	if(config.direction == 1)
 		switch(input_ptr->get_color_model())
@@ -292,30 +293,22 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 		}
 }
 
-void RGB601Main::process_frame(VFrame *frame)
+VFrame *RGB601Main::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
-	if(get_use_opengl() && config.direction)
+	if(config.direction)
 	{
-		run_opengl();
-		return;
+		create_table(frame);
+		process(frame);
 	}
-
-	create_table(frame);
-
-	if(config.direction == 1)
-		process(forward_table, frame, frame);
-	else
-	if(config.direction == 2)
-		process(reverse_table, frame, frame);
+	return frame;
 }
 
 void RGB601Main::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *yuv_fwd_frag = 
 		"uniform sampler2D tex;\n"
 		"void main()\n"
@@ -345,7 +338,6 @@ void RGB601Main::handle_opengl()
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->bind_texture(0);

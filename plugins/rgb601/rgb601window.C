@@ -51,10 +51,6 @@ RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-RGB601Window::~RGB601Window()
-{
-}
-
 void RGB601Window::update()
 {
 	forward->update(plugin->config.direction == 1);
@@ -68,10 +64,6 @@ RGB601Direction::RGB601Direction(RGB601Window *window, int x, int y, int *output
 	this->output = output;
 	this->true_value = true_value;
 	this->window = window;
-}
-
-RGB601Direction::~RGB601Direction()
-{
 }
 
 int RGB601Direction::handle_event()
