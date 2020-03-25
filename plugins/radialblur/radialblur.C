@@ -19,17 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Radial Blur")
-#define PLUGIN_CLASS RadialBlurMain
-#define PLUGIN_CONFIG_CLASS RadialBlurConfig
-#define PLUGIN_THREAD_CLASS RadialBlurThread
-#define PLUGIN_GUI_CLASS RadialBlurWindow
-
-#include "pluginmacros.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -43,132 +32,10 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
+#include "radialblur.h"
 #include "vframe.h"
-
-
-class RadialBlurEngine;
-
-
-class RadialBlurConfig
-{
-public:
-	RadialBlurConfig();
-
-	int equivalent(RadialBlurConfig &that);
-	void copy_from(RadialBlurConfig &that);
-	void interpolate(RadialBlurConfig &prev, 
-		RadialBlurConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int x;
-	int y;
-	int steps;
-	int angle;
-	int r;
-	int g;
-	int b;
-	int a;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class RadialBlurSize : public BC_ISlider
-{
-public:
-	RadialBlurSize(RadialBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	RadialBlurMain *plugin;
-	int *output;
-};
-
-class RadialBlurToggle : public BC_CheckBox
-{
-public:
-	RadialBlurToggle(RadialBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		char *string);
-	int handle_event();
-	RadialBlurMain *plugin;
-	int *output;
-};
-
-class RadialBlurWindow : public PluginWindow
-{
-public:
-	RadialBlurWindow(RadialBlurMain *plugin, int x, int y);
-	~RadialBlurWindow();
-
-	void update();
-
-	RadialBlurSize *x, *y, *steps, *angle;
-	RadialBlurToggle *r, *g, *b, *a;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class RadialBlurMain : public PluginVClient
-{
-public:
-	RadialBlurMain(PluginServer *server);
-	~RadialBlurMain();
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS
-
-	VFrame *input, *output, *temp;
-	RadialBlurEngine *engine;
-// Rotate engine only used for OpenGL
-	AffineEngine *rotate;
-};
-
-class RadialBlurPackage : public LoadPackage
-{
-public:
-	RadialBlurPackage();
-	int y1, y2;
-};
-
-class RadialBlurUnit : public LoadClient
-{
-public:
-	RadialBlurUnit(RadialBlurEngine *server, RadialBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	RadialBlurEngine *server;
-	RadialBlurMain *plugin;
-};
-
-class RadialBlurEngine : public LoadServer
-{
-public:
-	RadialBlurEngine(RadialBlurMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	RadialBlurMain *plugin;
-};
 
 
 REGISTER_PLUGIN
@@ -265,10 +132,6 @@ RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-RadialBlurWindow::~RadialBlurWindow()
-{
-}
-
 void RadialBlurWindow::update()
 {
 	x->update(plugin->config.x);
@@ -340,32 +203,20 @@ RadialBlurMain::~RadialBlurMain()
 
 PLUGIN_CLASS_METHODS
 
-void RadialBlurMain::process_frame(VFrame *frame)
+VFrame *RadialBlurMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
+	if(!engine)
+		engine = new RadialBlurEngine(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
 
-	if(get_use_opengl()){
-		run_opengl();
-		return;
-	}
-
-	if(!engine) engine = new RadialBlurEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-
-	this->input = frame;
-	this->output = frame;
-
-	if(!temp) temp = new VFrame(0,
-		frame->get_w(),
-		frame->get_h(),
-		frame->get_color_model());
-	temp->copy_from(frame);
-	this->input = temp;
-
+	input = frame;
+	output = clone_vframe(frame);
 	engine->process_packages();
+	release_vframe(input);
+	return output;
 }
 
 void RadialBlurMain::load_defaults()
@@ -381,7 +232,6 @@ void RadialBlurMain::load_defaults()
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
 }
-
 
 void RadialBlurMain::save_defaults()
 {
