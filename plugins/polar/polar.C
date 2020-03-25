@@ -19,137 +19,20 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Polar")
-#define PLUGIN_CLASS PolarEffect
-#define PLUGIN_CONFIG_CLASS PolarConfig
-#define PLUGIN_THREAD_CLASS PolarThread
-#define PLUGIN_GUI_CLASS PolarWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
-#include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
-#include "loadbalance.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
+#include "polar.h"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
 
-
 #define SQR(x) ((x) * (x))
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
-
-
-class PolarEngine;
-
-
-class PolarConfig
-{
-public:
-	PolarConfig();
-
-	void copy_from(PolarConfig &src);
-	int equivalent(PolarConfig &src);
-	void interpolate(PolarConfig &prev, 
-		PolarConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int polar_to_rectangular;
-	float depth;
-	float angle;
-	int backwards;
-	int invert;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class PolarDepth : public BC_FSlider
-{
-public:
-	PolarDepth(PolarEffect *plugin, int x, int y);
-	int handle_event();
-	PolarEffect *plugin;
-};
-
-class PolarAngle : public BC_FSlider
-{
-public:
-	PolarAngle(PolarEffect *plugin, int x, int y);
-	int handle_event();
-	PolarEffect *plugin;
-};
-
-class PolarWindow : public PluginWindow
-{
-public:
-	PolarWindow(PolarEffect *plugin, int x, int y);
-
-	void update();
-
-	PolarDepth *depth;
-	PolarAngle *angle;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class PolarPackage : public LoadPackage
-{
-public:
-	PolarPackage();
-	int row1, row2;
-};
-
-class PolarUnit : public LoadClient
-{
-public:
-	PolarUnit(PolarEffect *plugin, PolarEngine *server);
-	void process_package(LoadPackage *package);
-	PolarEffect *plugin;
-};
-
-class PolarEngine : public LoadServer
-{
-public:
-	PolarEngine(PolarEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	PolarEffect *plugin;
-};
-
-class PolarEffect : public PluginVClient
-{
-public:
-	PolarEffect(PluginServer *server);
-	~PolarEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	PolarEngine *engine;
-	VFrame *temp_frame;
-	VFrame *input, *output;
-	int need_reconfigure;
-};
 
 
 REGISTER_PLUGIN
@@ -263,15 +146,12 @@ int PolarAngle::handle_event()
 PolarEffect::PolarEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	need_reconfigure = 1;
-	temp_frame = 0;
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 PolarEffect::~PolarEffect()
 {
-	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
@@ -322,34 +202,27 @@ void PolarEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-void PolarEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *PolarEffect::process_tmpframe(VFrame *input)
 {
-	need_reconfigure |= load_configuration();
+	load_configuration();
 
 	this->input = input;
-	this->output = output;
 
 	if(EQUIV(config.depth, 0) || EQUIV(config.angle, 0))
 	{
-		if(input != output)
-			output->copy_from(input);
+		return input;
 	}
 	else
 	{
-		if(input == output)
-		{
-			if(!temp_frame) temp_frame = new VFrame(0,
-				input->get_w(),
-				input->get_h(),
-				input->get_color_model());
-			temp_frame->copy_from(input);
-			this->input = temp_frame;
-		}
+		output = clone_vframe(input);
 
-		if(!engine) engine = new PolarEngine(this, PluginClient::smp + 1);
+		if(!engine)
+			engine = new PolarEngine(this, PluginClient::smp + 1);
 
 		engine->process_packages();
 	}
+	release_vframe(input);
+	return output;
 }
 
 
