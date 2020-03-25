@@ -19,108 +19,18 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("ShiftInterlace")
-#define PLUGIN_CLASS ShiftInterlaceMain
-#define PLUGIN_CONFIG_CLASS ShiftInterlaceConfig
-#define PLUGIN_THREAD_CLASS ShiftInterlaceThread
-#define PLUGIN_GUI_CLASS ShiftInterlaceWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
-#include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
+#include "shiftinterlace.h"
 #include "vframe.h"
-
 
 #include <stdint.h>
 #include <string.h>
 
-
-class ShiftInterlaceConfig
-{
-public:
-	ShiftInterlaceConfig();
-
-	int equivalent(ShiftInterlaceConfig &that);
-	void copy_from(ShiftInterlaceConfig &that);
-	void interpolate(ShiftInterlaceConfig &prev, 
-		ShiftInterlaceConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int odd_offset;
-	int even_offset;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class ShiftInterlaceOdd : public BC_ISlider
-{
-public:
-	ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y);
-	int handle_event();
-	ShiftInterlaceMain *plugin;
-};
-
-class ShiftInterlaceEven : public BC_ISlider
-{
-public:
-	ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y);
-	int handle_event();
-	ShiftInterlaceMain *plugin;
-};
-
-class ShiftInterlaceWindow : public PluginWindow
-{
-public:
-	ShiftInterlaceWindow(ShiftInterlaceMain *plugin, int x, int y);
-
-	void update();
-
-	ShiftInterlaceOdd *odd_offset;
-	ShiftInterlaceEven *even_offset;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class ShiftInterlaceMain : public PluginVClient
-{
-public:
-	ShiftInterlaceMain(PluginServer *server);
-	~ShiftInterlaceMain();
-
-	PLUGIN_CLASS_MEMBERS
-
-// required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void load_defaults();
-	void save_defaults();
-
-	void shift_row(VFrame *input_frame, 
-		VFrame *output_frame,
-		int offset,
-		int row);
-};
-
-
 REGISTER_PLUGIN
-
 
 ShiftInterlaceConfig::ShiftInterlaceConfig()
 {
@@ -285,7 +195,7 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 #define SHIFT_ROW_MACRO(components, type, chroma_offset) \
 { \
 	type *input_row = (type*)input_frame->get_row_ptr(row); \
-	type *output_row = (type*)output_frame->get_row_ptr(row); \
+	type *output_row = (type*)input_frame->get_row_ptr(row); \
  \
 	if(offset < 0) \
 	{ \
@@ -332,12 +242,10 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 	} \
 }
 
-void ShiftInterlaceMain::shift_row(VFrame *input_frame, 
-	VFrame *output_frame,
-	int offset,
-	int row)
+void ShiftInterlaceMain::shift_row(VFrame *input_frame, int offset, int row)
 {
 	int w = input_frame->get_w();
+
 	switch(input_frame->get_color_model())
 	{
 	case BC_RGB888:
@@ -371,13 +279,9 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
 		break;
 	case BC_AYUV16161616:
-/* Pole
-		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
-	#define SHIFT_ROW_MACRO(components, type, chroma_offset) \
-	*/
 		{
 			uint16_t *input_row = (uint16_t*)input_frame->get_row_ptr(row);
-			uint16_t *output_row = (uint16_t*)output_frame->get_row_ptr(row);
+			uint16_t *output_row = (uint16_t*)input_frame->get_row_ptr(row);
 
 			if(offset < 0)
 			{
@@ -423,16 +327,17 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 	}
 }
 
-void ShiftInterlaceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *ShiftInterlaceMain::process_tmpframe(VFrame *input)
 {
-	load_configuration();
+	int h = input->get_h();
 
-	int h = input_ptr->get_h();
+	load_configuration();
 	for(int i = 0; i < h; i++)
 	{
 		if(i % 2)
-			shift_row(input_ptr, output_ptr, config.even_offset, i);
+			shift_row(input, config.even_offset, i);
 		else
-			shift_row(input_ptr, output_ptr, config.odd_offset, i);
+			shift_row(input, config.odd_offset, i);
 	}
+	return input;
 }
