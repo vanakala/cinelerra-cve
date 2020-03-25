@@ -24,7 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("Swap channels")
@@ -75,7 +75,6 @@ public:
 	SwapMenu(SwapMain *client, int *output, int x, int y);
 
 	int handle_event();
-	void create_objects();
 
 	SwapMain *client;
 	int *output;
@@ -96,7 +95,6 @@ class SwapWindow : public PluginWindow
 {
 public:
 	SwapWindow(SwapMain *plugin, int x, int y);
-	~SwapWindow();
 
 	void update();
 
@@ -118,8 +116,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input);
 
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -130,8 +127,6 @@ public:
 // parameters needed for processor
 	const char* output_to_text(int value);
 	int text_to_output(const char *text);
-
-	VFrame *temp;
 };
 
 #endif

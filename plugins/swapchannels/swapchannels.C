@@ -74,24 +74,16 @@ SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
 	add_subwindow(red = new SwapMenu(plugin, &(plugin->config.red), x, y));
-	red->create_objects();
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Green")));
 	add_subwindow(green = new SwapMenu(plugin, &(plugin->config.green), x, y));
-	green->create_objects();
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Blue")));
 	add_subwindow(blue = new SwapMenu(plugin, &(plugin->config.blue), x, y));
-	blue->create_objects();
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Alpha")));
 	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
-	alpha->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-SwapWindow::~SwapWindow()
-{
 }
 
 void SwapWindow::update()
@@ -107,22 +99,18 @@ SwapMenu::SwapMenu(SwapMain *client, int *output, int x, int y)
 {
 	this->client = client;
 	this->output = output;
-}
-
-int SwapMenu::handle_event()
-{
-	client->send_configure_change();
-	return 1;
-}
-
-void SwapMenu::create_objects()
-{
 	add_item(new SwapItem(this, client->output_to_text(RED_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(GREEN_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(BLUE_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(ALPHA_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(NO_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(MAX_SRC)));
+}
+
+int SwapMenu::handle_event()
+{
+	client->send_configure_change();
+	return 1;
 }
 
 
@@ -147,13 +135,11 @@ PLUGIN_THREAD_METHODS
 SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
-	temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SwapMain::~SwapMain()
 {
-	if(temp) delete temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -226,8 +212,8 @@ int SwapMain::load_configuration()
 
 #define SWAP_CHANNELS(type, max, components) \
 { \
-	int h = input_ptr->get_h(); \
-	int w = input_ptr->get_w(); \
+	int h = input->get_h(); \
+	int w = input->get_w(); \
 	int red = config.red; \
 	int green = config.green; \
 	int blue = config.blue; \
@@ -242,8 +228,8 @@ int SwapMain::load_configuration()
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *inrow = (type*)input_ptr->get_row_ptr(i); \
-		type *outrow = (type*)temp->get_row_ptr(i); \
+		type *inrow = (type*)input->get_row_ptr(i); \
+		type *outrow = (type*)output->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -273,8 +259,6 @@ int SwapMain::load_configuration()
 			inrow += components; \
 		} \
 	} \
- \
-	output_ptr->copy_from(temp, 0); \
 }
 
 #define CORCOLOR(col) \
@@ -285,17 +269,13 @@ int SwapMain::load_configuration()
 		col = 0; \
 }
 
-void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *SwapMain::process_tmpframe(VFrame *input)
 {
 	load_configuration();
 
-	if(!temp) 
-		temp = new VFrame(0, 
-			input_ptr->get_w(), 
-			input_ptr->get_h(), 
-			input_ptr->get_color_model());
+	VFrame *output = clone_vframe(input);
 
-	switch(input_ptr->get_color_model())
+	switch(input->get_color_model())
 	{
 	case BC_RGB_FLOAT:
 		SWAP_CHANNELS(float, 1, 3);
@@ -321,8 +301,8 @@ void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		break;
 	case BC_AYUV16161616:
 		{
-			int h = input_ptr->get_h();
-			int w = input_ptr->get_w();
+			int h = input->get_h();
+			int w = input->get_w();
 			int red = config.red;
 			int green = config.green;
 			int blue = config.blue;
@@ -335,8 +315,8 @@ void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 			for(int i = 0; i < h; i++) \
 			{
-				uint16_t *inrow = (uint16_t*)input_ptr->get_row_ptr(i);
-				uint16_t *outrow = (uint16_t*)temp->get_row_ptr(i);
+				uint16_t *inrow = (uint16_t*)input->get_row_ptr(i);
+				uint16_t *outrow = (uint16_t*)output->get_row_ptr(i);
 
 				for(int j = 0; j < w; j++)
 				{
@@ -363,12 +343,12 @@ void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 					inrow += 4;
 				}
 			}
-			output_ptr->copy_from(temp, 0);
 		}
 		break;
 	}
+	release_vframe(input);
+	return output;
 }
-
 
 const char* SwapMain::output_to_text(int value)
 {
