@@ -18,183 +18,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Rotate")
-#define PLUGIN_CLASS RotateEffect
-#define PLUGIN_CONFIG_CLASS RotateConfig
-#define PLUGIN_THREAD_CLASS RotateThread
-#define PLUGIN_GUI_CLASS RotateWindow
-
-#include "pluginmacros.h"
 
 #include "affine.h"
-#include "bcpot.h"
-#include "bctextbox.h"
 #include "bctitle.h"
-#include "bctoggle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
-#include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
-#include "rotateframe.h"
+#include "rotate.h"
 #include "vframe.h"
 
 #include <string.h>
 
 #define SQR(x) ((x) * (x))
 #define MAXANGLE 360
-
-class RotateConfig
-{
-public:
-	RotateConfig();
-
-	int equivalent(RotateConfig &that);
-	void copy_from(RotateConfig &that);
-	void interpolate(RotateConfig &prev, 
-		RotateConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	float angle;
-	float pivot_x;
-	float pivot_y;
-	int draw_pivot;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class RotateToggle : public BC_Radial
-{
-public:
-	RotateToggle(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int init_value, 
-		int x, 
-		int y, 
-		int value, 
-		const char *string);
-	int handle_event();
-
-	RotateEffect *plugin;
-	RotateWindow *window;
-	int value;
-};
-
-class RotateDrawPivot : public BC_CheckBox
-{
-public:
-	RotateDrawPivot(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-	RotateWindow *window;
-	int value;
-};
-
-
-class RotateFine : public BC_FPot
-{
-public:
-	RotateFine(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-
-	RotateEffect *plugin;
-	RotateWindow *window;
-};
-
-class RotateX : public BC_FPot
-{
-public:
-	RotateX(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-	RotateWindow *window;
-};
-
-class RotateY : public BC_FPot
-{
-public:
-	RotateY(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-	RotateEffect *plugin;
-	RotateWindow *window;
-};
-
-
-class RotateText : public BC_TextBox
-{
-public:
-	RotateText(RotateWindow *window, 
-		RotateEffect *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-
-	RotateEffect *plugin;
-	RotateWindow *window;
-};
-
-class RotateWindow : public PluginWindow
-{
-public:
-	RotateWindow(RotateEffect *plugin, int x, int y);
-
-	void update();
-	void update_fine();
-	void update_text();
-	void update_toggles();
-
-	RotateToggle *toggle0;
-	RotateToggle *toggle90;
-	RotateToggle *toggle180;
-	RotateToggle *toggle270;
-	RotateDrawPivot *draw_pivot;
-	RotateFine *fine;
-	RotateText *text;
-	RotateX *x;
-	RotateY *y;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class RotateEffect : public PluginVClient
-{
-public:
-	RotateEffect(PluginServer *server);
-	~RotateEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	AffineEngine *engine;
-	int need_reconfigure;
-};
 
 
 REGISTER_PLUGIN
@@ -539,41 +378,27 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-void RotateEffect::process_frame(VFrame *frame)
+VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 	int w = frame->get_w();
 	int h = frame->get_h();
 	int alpha_shift = 0;
+	VFrame *output;
 
 	if(config.angle == 0)
-	{
-		get_frame(frame);
-		return;
-	}
+		return frame;
 
-	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
-		PluginClient::smp + 1);
-	engine->set_pivot((int)(config.pivot_x * frame->get_w() / 100),
-		(int)(config.pivot_y * frame->get_h() / 100));
+	if(!engine)
+		engine = new AffineEngine(PluginClient::smp + 1, 
+			PluginClient::smp + 1);
 
-	if(get_use_opengl())
-	{
-		get_frame(frame);
-		run_opengl();
-		return;
-	}
+	engine->set_pivot(round(config.pivot_x * frame->get_w() / 100),
+		round(config.pivot_y * frame->get_h() / 100));
 
-	VFrame *temp_frame = PluginVClient::new_temp(frame->get_w(),
-		frame->get_h(),
-		frame->get_color_model());
-	temp_frame->copy_pts(frame);
-	get_frame(temp_frame);
-
-	frame->clear_frame();
-	engine->rotate(frame, 
-		temp_frame, 
-		config.angle);
+	output = clone_vframe(frame);
+	output->clear_frame();
+	engine->rotate(output, frame, config.angle);
 
 // Draw center
 #define CENTER_H 20
@@ -583,7 +408,7 @@ void RotateEffect::process_frame(VFrame *frame)
 	if(center_x >= 0 && center_x < w || \
 		center_y >= 0 && center_y < h) \
 	{ \
-		type *hrow = (type*)frame->get_row_ptr(center_y) + components * (center_x - CENTER_W / 2) + alpha_shift; \
+		type *hrow = (type*)output->get_row_ptr(center_y) + components * (center_x - CENTER_W / 2) + alpha_shift; \
 		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
 		{ \
 			if(i >= 0 && i < w) \
@@ -599,7 +424,7 @@ void RotateEffect::process_frame(VFrame *frame)
 		{ \
 			if(i >= 0 && i < h) \
 			{ \
-				type *vrow = (type*)frame->get_row_ptr(i) + center_x * components + alpha_shift; \
+				type *vrow = (type*)output->get_row_ptr(i) + center_x * components + alpha_shift; \
 				vrow[0] = max - vrow[0]; \
 				vrow[1] = max - vrow[1]; \
 				vrow[2] = max - vrow[2]; \
@@ -641,14 +466,8 @@ void RotateEffect::process_frame(VFrame *frame)
 			break;
 		}
 	}
-
-// Conserve memory by deleting large frames
-	if(frame->get_w() > PLUGIN_MAX_W &&
-		frame->get_h() > PLUGIN_MAX_H)
-	{
-		delete engine;
-		engine = 0;
-	}
+	release_vframe(frame);
+	return output;
 }
 
 void RotateEffect::handle_opengl()
