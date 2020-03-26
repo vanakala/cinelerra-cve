@@ -132,15 +132,16 @@ void UnsharpMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void UnsharpMain::process_frame(VFrame *frame)
+VFrame *UnsharpMain::process_tmpframe(VFrame *frame)
 {
-	int need_reconfigure = load_configuration();
+	load_configuration();
 
-	if(!engine) engine = new UnsharpEngine(this, 
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	get_frame(frame);
+	if(!engine)
+		engine = new UnsharpEngine(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
 	engine->do_unsharp(frame);
+	return frame;
 }
 
 UnsharpPackage::UnsharpPackage()
@@ -451,7 +452,7 @@ void UnsharpUnit::process_package(LoadPackage *package)
 			temp->get_w(),
 			components);
 		memcpy(temp->get_row_ptr(i - padded_y1),
-		 	temp_out,
+			temp_out,
 			temp->get_bytes_per_line());
 	}
 
@@ -537,10 +538,6 @@ UnsharpEngine::UnsharpEngine(UnsharpMain *plugin,
  : LoadServer(total_clients, total_packages)
 {
 	this->plugin = plugin;
-}
-
-UnsharpEngine::~UnsharpEngine()
-{
 }
 
 void UnsharpEngine::init_packages()

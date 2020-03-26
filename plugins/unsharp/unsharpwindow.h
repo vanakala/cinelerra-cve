@@ -31,6 +31,7 @@ class UnsharpRadius : public BC_FPot
 {
 public:
 	UnsharpRadius(UnsharpMain *plugin, int x, int y);
+
 	int handle_event();
 	UnsharpMain *plugin;
 };
@@ -39,6 +40,7 @@ class UnsharpAmount : public BC_FPot
 {
 public:
 	UnsharpAmount(UnsharpMain *plugin, int x, int y);
+
 	int handle_event();
 	UnsharpMain *plugin;
 };
@@ -47,6 +49,7 @@ class UnsharpThreshold : public BC_IPot
 {
 public:
 	UnsharpThreshold(UnsharpMain *plugin, int x, int y);
+
 	int handle_event();
 	UnsharpMain *plugin;
 };
@@ -55,7 +58,6 @@ class UnsharpWindow : public PluginWindow
 {
 public:
 	UnsharpWindow(UnsharpMain *plugin, int x, int y);
-	~UnsharpWindow();
 
 	void update();
 

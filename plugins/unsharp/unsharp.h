@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Unsharp")
 #define PLUGIN_CLASS UnsharpMain
@@ -32,10 +33,6 @@
 #define PLUGIN_GUI_CLASS UnsharpWindow
 
 #include "pluginmacros.h"
-
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
 
 #include "bchash.inc"
 #include "filexml.inc"
@@ -60,8 +57,8 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	float radius;
-	float amount;
+	double radius;
+	double amount;
 	int threshold;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -73,7 +70,7 @@ public:
 	UnsharpMain(PluginServer *server);
 	~UnsharpMain();
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -111,7 +108,7 @@ public:
 	UnsharpEngine(UnsharpMain *plugin, 
 		int total_clients, 
 		int total_packages);
-	~UnsharpEngine();
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();

@@ -58,10 +58,6 @@ UnsharpWindow::UnsharpWindow(UnsharpMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-UnsharpWindow::~UnsharpWindow()
-{
-}
-
 void UnsharpWindow::update()
 {
 	radius->update(plugin->config.radius);
