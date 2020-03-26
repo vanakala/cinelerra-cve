@@ -81,20 +81,16 @@ TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-TranslateWin::~TranslateWin()
-{
-}
-
 void TranslateWin::update()
 {
-	in_x->update(plugin->config.in_x);
-	in_y->update(plugin->config.in_y);
-	in_w->update(plugin->config.in_w);
-	in_h->update(plugin->config.in_h);
-	out_x->update(plugin->config.out_x);
-	out_y->update(plugin->config.out_y);
-	out_w->update(plugin->config.out_w);
-	out_h->update(plugin->config.out_h);
+	in_x->update((float)plugin->config.in_x);
+	in_y->update((float)plugin->config.in_y);
+	in_w->update((float)plugin->config.in_w);
+	in_h->update((float)plugin->config.in_h);
+	out_x->update((float)plugin->config.out_x);
+	out_y->update((float)plugin->config.out_y);
+	out_w->update((float)plugin->config.out_w);
+	out_h->update((float)plugin->config.out_h);
 }
 
 
@@ -102,7 +98,7 @@ TranslateCoord::TranslateCoord(TranslateWin *win,
 	TranslateMain *client, 
 	int x, 
 	int y,
-	float *value)
+	double *value)
  : BC_TumbleTextBox(win,
 	(int)*value,
 	(int)0,
@@ -112,12 +108,7 @@ TranslateCoord::TranslateCoord(TranslateWin *win,
 	100)
 {
 	this->client = client;
-	this->win = win;
 	this->value = value;
-}
-
-TranslateCoord::~TranslateCoord()
-{
 }
 
 int TranslateCoord::handle_event()

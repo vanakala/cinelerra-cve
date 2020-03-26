@@ -87,17 +87,13 @@ void TranslateConfig::interpolate(TranslateConfig &prev,
 TranslateMain::TranslateMain(PluginServer *server)
  : PluginVClient(server)
 {
-	temp_frame = 0;
 	overlayer = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 TranslateMain::~TranslateMain()
 {
-	if(temp_frame) delete temp_frame;
-	temp_frame = 0;
-	if(overlayer) delete overlayer;
-	overlayer = 0;
+	delete overlayer;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -174,29 +170,16 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *TranslateMain::process_tmpframe(VFrame *input)
 {
-	VFrame *input, *output;
-
-	input = input_ptr;
-	output = output_ptr;
+	VFrame *output;
 
 	load_configuration();
-
-	if(input == output)
-	{
-		if(!temp_frame) 
-			temp_frame = new VFrame(0, 
-				input_ptr->get_w(), 
-				input_ptr->get_h(),
-				input->get_color_model());
-		temp_frame->copy_from(input);
-		input = temp_frame;
-	}
 
 	if(!overlayer)
 		overlayer = new OverlayFrame(smp + 1);
 
+	output = clone_vframe(input);
 	output->clear_frame();
 
 	overlayer->overlay(output,
@@ -212,4 +195,6 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		1,
 		TRANSFER_REPLACE,
 		get_interpolation_type());
+	release_vframe(input);
+	return output;
 }

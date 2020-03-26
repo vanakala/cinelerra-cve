@@ -25,6 +25,7 @@
 // the simplest plugin possible
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Translate")
 #define PLUGIN_CLASS TranslateMain
@@ -52,7 +53,14 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 
-	float in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
+	double in_x;
+	double in_y;
+	double in_w;
+	double in_h;
+	double out_x;
+	double out_y;
+	double out_w;
+	double out_h;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -66,14 +74,13 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
 	void save_defaults();
 
 	OverlayFrame *overlayer;   // To translate images
-	VFrame *temp_frame;        // Used if buffers are the same
 };
 
 #endif

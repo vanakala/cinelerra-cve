@@ -35,7 +35,6 @@ class TranslateWin : public PluginWindow
 {
 public:
 	TranslateWin(TranslateMain *plugin, int x, int y);
-	~TranslateWin();
 
 	void update();
 
@@ -46,17 +45,15 @@ public:
 class TranslateCoord : public BC_TumbleTextBox
 {
 public:
-	TranslateCoord(TranslateWin *win, 
-		TranslateMain *client, 
-		int x, 
-		int y, 
-		float *value);
-	~TranslateCoord();
+	TranslateCoord(TranslateWin *win,
+		TranslateMain *client,
+		int x, int y,
+		double *value);
+
 	int handle_event();
 
 	TranslateMain *client;
-	TranslateWin *win;
-	float *value;
+	double *value;
 };
 
 
