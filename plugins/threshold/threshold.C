@@ -19,8 +19,6 @@
  * 
  */
 
-#define GL_GLEXT_PROTOTYPES
-
 #include "clip.h"
 #include "bchash.h"
 #include "bcresources.h"
@@ -38,7 +36,6 @@
 #include <string>
 
 using std::string;
-
 
 ThresholdConfig::ThresholdConfig()
 {
@@ -109,7 +106,6 @@ ThresholdMain::ThresholdMain(PluginServer *server)
 {
 	engine = 0;
 	threshold_engine = 0;
-	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -117,7 +113,6 @@ ThresholdMain::~ThresholdMain()
 {
 	delete engine;
 	delete threshold_engine;
-	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -125,34 +120,16 @@ ThresholdMain::~ThresholdMain()
 PLUGIN_CLASS_METHODS
 
 
-void ThresholdMain::process_frame(VFrame *frame)
+VFrame *ThresholdMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	int use_opengl = get_use_opengl() &&
-		(!config.plot || !gui_open());
-
-	get_frame(frame);
-
-	if(use_opengl)
-	{
-		run_opengl();
-		return;
-	}
-
-	if(!gui_frame || !gui_frame->equivalent(frame))
-	{
-		BC_Resources::tmpframes.release_frame(gui_frame);
-		gui_frame = BC_Resources::tmpframes.get_tmpframe(
-			frame->get_w(), frame->get_h(), frame->get_color_model());
-	}
-
-	gui_frame->copy_from(frame);
-	send_render_gui(gui_frame);
+	render_gui(frame);
 
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
 	threshold_engine->process_packages(frame);
+	return frame;
 }
 
 void ThresholdMain::load_defaults()
@@ -231,6 +208,7 @@ void ThresholdMain::calculate_histogram(VFrame *frame)
 void ThresholdMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *rgb_shader = 
 		"uniform sampler2D tex;\n"
 		"uniform float min;\n"
@@ -269,7 +247,6 @@ void ThresholdMain::handle_opengl()
 		"		pixel = high_color;\n"
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 

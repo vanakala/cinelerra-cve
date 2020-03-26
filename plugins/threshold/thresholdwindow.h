@@ -39,7 +39,9 @@ public:
 		int x,
 		int y,
 		int w);
+
 	int handle_event();
+
 	ThresholdMain *plugin;
 	ThresholdWindow *gui;
 };
@@ -52,7 +54,9 @@ public:
 		int x,
 		int y,
 		int w);
+
 	int handle_event();
+
 	ThresholdMain *plugin;
 	ThresholdWindow *gui;
 };
@@ -63,15 +67,20 @@ public:
 	ThresholdPlot(ThresholdMain *plugin,
 		int x,
 		int y);
+
 	int handle_event();
+
 	ThresholdMain *plugin;
 };
 
 class ThresholdLowColorButton : public BC_GenericButton
 {
 public:
-	ThresholdLowColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	ThresholdLowColorButton(ThresholdMain *plugin,
+		ThresholdWindow *window, int x, int y);
+
 	int handle_event();
+
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
 };
@@ -79,8 +88,11 @@ public:
 class ThresholdMidColorButton : public BC_GenericButton
 {
 public:
-	ThresholdMidColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	ThresholdMidColorButton(ThresholdMain *plugin,
+		ThresholdWindow *window, int x, int y);
+
 	int handle_event();
+
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
 };
@@ -88,7 +100,8 @@ public:
 class ThresholdHighColorButton : public BC_GenericButton
 {
 public:
-	ThresholdHighColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	ThresholdHighColorButton(ThresholdMain *plugin,
+		ThresholdWindow *window, int x, int y);
 	int handle_event();
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
@@ -98,7 +111,9 @@ class ThresholdLowColorThread : public ColorThread
 {
 public:
 	ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window);
-	virtual int handle_new_color(int output, int alpha);
+
+	int handle_new_color(int output, int alpha);
+
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
 };
@@ -107,7 +122,9 @@ class ThresholdMidColorThread : public ColorThread
 {
 public:
 	ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window);
-	virtual int handle_new_color(int output, int alpha);
+
+	int handle_new_color(int output, int alpha);
+
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
 };
@@ -116,7 +133,9 @@ class ThresholdHighColorThread : public ColorThread
 {
 public:
 	ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window);
-	virtual int handle_new_color(int output, int alpha);
+
+	int handle_new_color(int output, int alpha);
+
 	ThresholdMain *plugin;
 	ThresholdWindow *window;
 };
@@ -179,9 +198,3 @@ public:
 PLUGIN_THREAD_HEADER
 
 #endif
-
-
-
-
-
-

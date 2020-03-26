@@ -29,8 +29,6 @@
 #define COLOR_H 30
 
 
-
-
 ThresholdMin::ThresholdMin(ThresholdMain *plugin,
 	ThresholdWindow *gui,
 	int x,
@@ -101,10 +99,6 @@ int ThresholdPlot::handle_event()
 }
 
 
-
-
-
-
 ThresholdCanvas::ThresholdCanvas(ThresholdMain *plugin,
 	ThresholdWindow *gui,
 	int x,
@@ -126,12 +120,10 @@ int ThresholdCanvas::button_press_event()
 		state = DRAG_SELECTION;
 		if(shift_down())
 		{
-			x1 = (int)((plugin->config.min - HISTOGRAM_MIN) / 
-				(HISTOGRAM_MAX - HISTOGRAM_MIN) * 
-				get_w());
-			x2 = (int)((plugin->config.max - HISTOGRAM_MIN) /
-				(HISTOGRAM_MAX - HISTOGRAM_MIN) *
-				get_w());
+			x1 = round((plugin->config.min - HISTOGRAM_MIN) /
+				(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
+			x2 = round((plugin->config.max - HISTOGRAM_MIN) /
+				(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
 			center_x = (x2 + x1) / 2;
 			if(abs(get_cursor_x() - x1) < abs(get_cursor_x() - x2))
 			{
@@ -150,13 +142,11 @@ int ThresholdCanvas::button_press_event()
 		}
 
 		plugin->config.min = x1 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
-			HISTOGRAM_MIN;
-		plugin->config.max = x2 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
-			HISTOGRAM_MIN;
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() + HISTOGRAM_MIN;
+		plugin->config.max = x2 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() + HISTOGRAM_MIN;
 
 		draw();
 		return 1;
@@ -189,15 +179,13 @@ int ThresholdCanvas::cursor_motion_event()
 			x2 = center_x;
 		}
 
-		plugin->config.min = x1 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
-			HISTOGRAM_MIN;
+		plugin->config.min = x1 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() + HISTOGRAM_MIN;
 
-		plugin->config.max = x2 * 
-			(HISTOGRAM_MAX - HISTOGRAM_MIN) / 
-			get_w() + 
-			HISTOGRAM_MIN;
+		plugin->config.max = x2 *
+			(HISTOGRAM_MAX - HISTOGRAM_MIN) /
+			get_w() + HISTOGRAM_MIN;
 
 		gui->min->update(plugin->config.min);
 		gui->max->update(plugin->config.max);
@@ -213,19 +201,15 @@ void ThresholdCanvas::draw()
 	int max = 0;
 	set_color(WHITE);
 	draw_box(0, 0, get_w(), get_h());
-	int border_x1 = (int)((0 - HISTOGRAM_MIN) / 
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
-		get_w());
-	int border_x2 = (int)((1.0 - HISTOGRAM_MIN) / 
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
-		get_w());
+	int border_x1 = round((0 - HISTOGRAM_MIN) /
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
+	int border_x2 = round((1.0 - HISTOGRAM_MIN) /
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) *get_w());
 
-	int x1 = (int)((plugin->config.min - HISTOGRAM_MIN) / 
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) * 
-		get_w());
-	int x2 = (int)((plugin->config.max - HISTOGRAM_MIN) /
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) *
-		get_w());
+	int x1 = round((plugin->config.min - HISTOGRAM_MIN) /
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
+	int x2 = round((plugin->config.max - HISTOGRAM_MIN) /
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
 
 	if(plugin->engine)
 	{
@@ -352,6 +336,7 @@ int ThresholdLowColorThread::handle_new_color(int output, int alpha)
 	window->update_low_color();
 	window->flush();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -368,6 +353,7 @@ int ThresholdMidColorThread::handle_new_color(int output, int alpha)
 	window->update_mid_color();
 	window->flush();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -384,6 +370,7 @@ int ThresholdHighColorThread::handle_new_color(int output, int alpha)
 	window->update_high_color();
 	window->flush();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -453,6 +440,9 @@ ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
 
 ThresholdWindow::~ThresholdWindow()
 {
+	delete low_color_thread;
+	delete mid_color_thread;
+	delete high_color_thread;
 }
 
 void ThresholdWindow::update()
