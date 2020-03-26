@@ -19,29 +19,15 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Wave")
-#define PLUGIN_CLASS WaveEffect
-#define PLUGIN_CONFIG_CLASS WaveConfig
-#define PLUGIN_THREAD_CLASS WaveThread
-#define PLUGIN_GUI_CLASS WaveWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
-#include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
+#include "wave.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -49,112 +35,6 @@
 
 #define SMEAR 0
 #define BLACKEN 1
-
-
-class WaveConfig
-{
-public:
-	WaveConfig();
-	void copy_from(WaveConfig &src);
-	int equivalent(WaveConfig &src);
-	void interpolate(WaveConfig &prev, 
-		WaveConfig &next,
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	int mode;
-	int reflective;
-	float amplitude;
-	float phase;
-	float wavelength;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class WaveAmplitude : public BC_FSlider
-{
-public:
-	WaveAmplitude(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WavePhase : public BC_FSlider
-{
-public:
-	WavePhase(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WaveLength : public BC_FSlider
-{
-public:
-	WaveLength(WaveEffect *plugin, int x, int y);
-	int handle_event();
-	WaveEffect *plugin;
-};
-
-class WaveWindow : public PluginWindow
-{
-public:
-	WaveWindow(WaveEffect *plugin, int x, int y);
-	~WaveWindow();
-
-	void update();
-	WaveEffect *plugin;
-	WaveAmplitude *amplitude;
-	WavePhase *phase;
-	WaveLength *wavelength;
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class WaveServer : public LoadServer
-{
-public:
-	WaveServer(WaveEffect *plugin, int cpus);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	WaveEffect *plugin;
-};
-
-class WavePackage : public LoadPackage
-{
-public:
-	WavePackage();
-	int row1, row2;
-};
-
-class WaveUnit : public LoadClient
-{
-public:
-	WaveUnit(WaveEffect *plugin, WaveServer *server);
-	void process_package(LoadPackage *package);
-	WaveEffect *plugin;
-};
-
-
-class WaveEffect : public PluginVClient
-{
-public:
-	WaveEffect(PluginServer *server);
-	~WaveEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	VFrame *temp_frame;
-	VFrame *input, *output;
-	WaveServer *engine;
-};
 
 
 WaveConfig::WaveConfig()
@@ -177,8 +57,7 @@ void WaveConfig::copy_from(WaveConfig &src)
 
 int WaveConfig::equivalent(WaveConfig &src)
 {
-	return 
-		(this->mode == src.mode) &&
+	return (this->mode == src.mode) &&
 		EQUIV(this->reflective, src.reflective) &&
 		EQUIV(this->amplitude, src.amplitude) &&
 		EQUIV(this->phase, src.phase) &&
@@ -285,9 +164,6 @@ WaveWindow::WaveWindow(WaveEffect *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WaveWindow::~WaveWindow()
-{
-}
 
 void WaveWindow::update()
 {
@@ -306,15 +182,13 @@ REGISTER_PLUGIN
 WaveEffect::WaveEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	temp_frame = 0;
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 WaveEffect::~WaveEffect()
 {
-	if(temp_frame) delete temp_frame;
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -376,39 +250,26 @@ void WaveEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-void WaveEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *WaveEffect::process_tmpframe(VFrame *input)
 {
 	load_configuration();
 
 	this->input = input;
-	this->output = output;
+	output = input;
 
-	if(EQUIV(config.amplitude, 0) || EQUIV(config.wavelength, 0))
+	if(!EQUIV(config.amplitude, 0) &&  !EQUIV(config.wavelength, 0))
 	{
-		if(input != output)
-			output->copy_from(input);
-	}
-	else
-	{
-		if(input == output)
-		{
-			if(!temp_frame) temp_frame = new VFrame(0,
-				input->get_w(),
-				input->get_h(),
-				input->get_color_model());
-			temp_frame->copy_from(input);
-			this->input = temp_frame;
-		}
+		output = clone_vframe(input);
 
 		if(!engine)
-		{
 			engine = new WaveServer(this, (PluginClient::smp + 1));
-		}
 
 		engine->process_packages();
+		release_vframe(input);
 	}
+	return output;
 }
+
 
 WavePackage::WavePackage()
  : LoadPackage()
@@ -424,9 +285,9 @@ WaveUnit::WaveUnit(WaveEffect *plugin, WaveServer *server)
 
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
 
-static float bilinear(double  x,
+static double bilinear(double  x,
 	double  y,
-	float  *v)
+	double  *v)
 {
 	double m0, m1;
 	x = fmod(x, 1.0);
@@ -448,8 +309,8 @@ void WaveUnit::process_package(LoadPackage *package)
 	WavePackage *pkg = (WavePackage*)package;
 	int w = plugin->input->get_w();
 	int h = plugin->input->get_h();
-	double cen_x, cen_y;	   /* Center of wave */
-	double xhsiz, yhsiz;	   /* Half size of selection */
+	double cen_x, cen_y;       /* Center of wave */
+	double xhsiz, yhsiz;       /* Half size of selection */
 	double radius, radius2;    /* Radius and radius^2 */
 	double amnt, d;
 	double needx, needy;
@@ -457,8 +318,8 @@ void WaveUnit::process_package(LoadPackage *package)
 	double xscale, yscale;
 	double wavelength;
 	int xi, yi;
-	float values[4];
-	float val;
+	double values[4];
+	double val;
 	int x1, y1, x2, y2;
 	int x1_in, y1_in, x2_in, y2_in;
 	double phase = plugin->config.phase * M_PI / 180;
@@ -466,10 +327,10 @@ void WaveUnit::process_package(LoadPackage *package)
 	x1 = y1 = 0;
 	x2 = w;
 	y2 = h;
-	cen_x = (double) (x2 - 1 + x1) / 2.0;
-	cen_y = (double) (y2 - 1 + y1) / 2.0;
-	xhsiz = (double) (x2 - x1) / 2.0;
-	yhsiz = (double) (y2 - y1) / 2.0;
+	cen_x = (x2 - 1 + x1) / 2.0;
+	cen_y = (y2 - 1 + y1) / 2.0;
+	xhsiz = (x2 - x1) / 2.0;
+	yhsiz = (y2 - y1) / 2.0;
 
 	if (xhsiz < yhsiz)
 	{
