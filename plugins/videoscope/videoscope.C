@@ -19,45 +19,25 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("VideoScope")
-#define PLUGIN_CLASS  VideoScopeEffect
-#define PLUGIN_CONFIG_CLASS VideoScopeConfig
-#define PLUGIN_THREAD_CLASS VideoScopeThread
-#define PLUGIN_GUI_CLASS VideoScopeWindow
-
-#include "pluginmacros.h"
-
 #include "bcbitmap.h"
 #include "bchash.h"
-#include "bcresources.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "colorspaces.h"
 #include "filexml.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
-#include "tmpframecache.h"
 #include "fonts.h"
+#include "videoscope.h"
 #include "vframe.h"
+#include "videoscope.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
 
-
-const float FLOAT_MIN = -0.1;
-const float FLOAT_MAX =  1.1;
-const int   WAVEFORM_DIVISIONS    = 12;
-const int   VECTORSCOPE_DIVISIONS = 12;
-const int   RGB_MIN = 48;
+const double FLOAT_MIN = -0.1;
+const double FLOAT_MAX =  1.1;
 
 // Waveform and Vectorscope layout
 const char LABEL_WIDTH_SAMPLE[] = "100 ";
@@ -67,211 +47,6 @@ const int V_INSET = 10;
 // Widget layout
 const char WIDGET_HSPACE_SAMPLE[] = "    ";
 const int WIDGET_VSPACE = 3;
-
-// Vectorscope HSV axes and labels
-const struct Vectorscope_HSV_axes
-{
-	float  hue;   // angle, degrees
-	char   label[4];
-	int    color; // label color
-}
-
-Vectorscope_HSV_axes[] =
-	{
-		{   0, "R",  RED      },
-		{  60, "Yl", YELLOW   },
-		{ 120, "G",  GREEN    },
-		{ 180, "Cy", LTCYAN   },
-		{ 240, "B",  BLUE     },
-		{ 300, "Mg", MDPURPLE },
-	};
-const int Vectorscope_HSV_axes_count = sizeof(Vectorscope_HSV_axes) / sizeof(struct Vectorscope_HSV_axes);
-
-
-class VideoScopeEngine;
-
-
-class VideoScopeConfig
-{
-public:
-	VideoScopeConfig();
-
-	int show_srgb_limits;   // sRGB
-	int show_ycbcr_limits;
-	int draw_lines_inverse;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class VideoScopeGraduation
-{
-// One VideoScopeGraduation represents one line (or circle) and associated
-// label. We use arrays of VideoScopeGraduations.
-public:
-	VideoScopeGraduation();
-	void set(const char * label, int y);
-
-	char    label[4];   // Maximum label size is 3 characters
-	int     y;
-};
-
-class VideoScopeWaveform : public BC_SubWindow
-{
-public:
-	VideoScopeWaveform(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h);
-	VideoScopeEffect *plugin;
-
-	void calculate_graduations();
-	void draw_graduations();
-	void redraw();
-
-	// All standard divisions + the one more at the end
-	static const int NUM_GRADS = WAVEFORM_DIVISIONS + 1;
-	VideoScopeGraduation  grads[NUM_GRADS];
-
-	// Special limit lines are not always drawn, so they are separate.
-	// They don't get labels (too crowded).
-	int  limit_ycbcr_white;  // ITU-R B.601 235 = 92.2%
-	int  limit_ycbcr_black;  // ITU-R B.601  16 =  6.3%
-};
-
-
-class VideoScopeVectorscope : public BC_SubWindow
-{
-public:
-	VideoScopeVectorscope(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h);
-	VideoScopeEffect *plugin;
-
-	void calculate_graduations();
-	void draw_graduations();
-
-	// Draw only every other division.
-	static const int NUM_GRADS = VECTORSCOPE_DIVISIONS / 2;
-	VideoScopeGraduation  grads[NUM_GRADS];
-
-private:
-	int color_axis_font;
-	struct {
-		int x1, y1, x2, y2;
-		int text_x, text_y;
-	} axes[Vectorscope_HSV_axes_count];
-};
-
-class VideoScopeShowSRGBLimits : public BC_CheckBox
-{
-public:
-	VideoScopeShowSRGBLimits(VideoScopeEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	VideoScopeEffect *plugin;
-};
-
-class VideoScopeShowYCbCrLimits : public BC_CheckBox
-{
-public:
-	VideoScopeShowYCbCrLimits(VideoScopeEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	VideoScopeEffect *plugin;
-};
-
-class VideoScopeDrawLinesInverse : public BC_CheckBox
-{
-public:
-	VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	VideoScopeEffect *plugin;
-};
-
-class VideoScopeWindow : public PluginWindow
-{
-public:
-	VideoScopeWindow(VideoScopeEffect *plugin, int x, int y);
-	~VideoScopeWindow();
-
-	void update();
-	void calculate_sizes(int w, int h);
-	int get_label_width();
-	int get_widget_area_height();
-	void allocate_bitmaps();
-	void draw_labels();
-
-	VideoScopeWaveform *waveform;
-	VideoScopeVectorscope *vectorscope;
-	VideoScopeShowSRGBLimits *show_srgb_limits;
-	VideoScopeShowYCbCrLimits *show_ycbcr_limits;
-	VideoScopeDrawLinesInverse *draw_lines_inverse;
-	BC_Bitmap *waveform_bitmap;
-	BC_Bitmap *vector_bitmap;
-
-	int vector_x, vector_y, vector_w, vector_h;
-	int wave_x, wave_y, wave_w, wave_h;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class VideoScopePackage : public LoadPackage
-{
-public:
-	VideoScopePackage();
-	int row1, row2;
-};
-
-class VideoScopeUnit : public LoadClient
-{
-public:
-	VideoScopeUnit(VideoScopeEffect *plugin, VideoScopeEngine *server);
-	void process_package(LoadPackage *package);
-	VideoScopeEffect *plugin;
-private:
-	template<typename TYPE, typename TEMP_TYPE,
-		 int MAX, int COMPONENTS, bool USE_YUV>
-	void render_data(LoadPackage *package);
-};
-
-class VideoScopeEngine : public LoadServer
-{
-public:
-	VideoScopeEngine(VideoScopeEffect *plugin, int cpus);
-	~VideoScopeEngine();
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	VideoScopeEffect *plugin;
-};
-
-class VideoScopeEffect : public PluginVClient
-{
-public:
-	VideoScopeEffect(PluginServer *server);
-	~VideoScopeEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void render_gui(void *input);
-
-	VFrame *input;
-	VFrame *gui_frame;
-	VideoScopeEngine *engine;
-};
-
 
 VideoScopeConfig::VideoScopeConfig()
 {
@@ -356,10 +131,6 @@ VideoScopeWindow::~VideoScopeWindow()
 	if(vector_bitmap) delete vector_bitmap;
 }
 
-void VideoScopeWindow::update()
-{
-}
-
 VideoScopeGraduation::VideoScopeGraduation()
 {
 	memset(label, 0, sizeof(label));
@@ -420,17 +191,15 @@ void VideoScopeWindow::allocate_bitmaps()
 // Convert polar to cartesian for vectorscope.
 // Hue is angle (degrees), Saturation is distance from center [0, 1].
 // Value (intensity) is not plotted.
-static void polar_to_cartesian(float h,
-			float s,
-			float radius,
-			int & x,
-			int & y)
+static void polar_to_cartesian(double h,
+	double s, double radius,
+	int &x, int & y)
 {
-	float adjacent = cos(h / 360 * 2 * M_PI);
-	float opposite = sin(h / 360 * 2 * M_PI);
-	float r = (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius;
-	x = (int)roundf(radius + adjacent * r);
-	y = (int)roundf(radius - opposite * r);
+	double adjacent = cos(h / 360 * 2 * M_PI);
+	double opposite = sin(h / 360 * 2 * M_PI);
+	double r = (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius;
+	x = round(radius + adjacent * r);
+	y = round(radius - opposite * r);
 }
 
 // Calculate graduations based on current window size.
@@ -449,15 +218,18 @@ void VideoScopeWaveform::calculate_graduations()
 	}
 
 	// Special limits.
-	limit_ycbcr_white = (int)round(height * (FLOAT_MAX - 235.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
-	limit_ycbcr_black = (int)round(height * (FLOAT_MAX -  16.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
+	limit_ycbcr_white = round(height * (FLOAT_MAX - 235.0/255.0) /
+		(FLOAT_MAX - FLOAT_MIN));
+	limit_ycbcr_black = round(height * (FLOAT_MAX -  16.0/255.0) /
+		(FLOAT_MAX - FLOAT_MIN));
 }
 
 // Calculate graduations based on current window size.
 void VideoScopeVectorscope::calculate_graduations()
 {
 	// graduations/labels
-	const int radius = get_h() / 2;	// vector_w == vector_h
+	const int radius = get_h() / 2;  // vector_w == vector_h
+
 	for(int i = 1, g = 0; i <= VECTORSCOPE_DIVISIONS - 1; i += 2)
 	{
 		int y = radius - radius * i / VECTORSCOPE_DIVISIONS;
@@ -471,9 +243,10 @@ void VideoScopeVectorscope::calculate_graduations()
 	// color axes
 	color_axis_font = radius > 200 ? MEDIUMFONT : SMALLFONT;
 	const int ascent_half = get_text_ascent(color_axis_font) / 2;
+
 	for (int i = 0;  i < Vectorscope_HSV_axes_count; ++i)
 	{
-		const float hue = Vectorscope_HSV_axes[i].hue;
+		const double hue = Vectorscope_HSV_axes[i].hue;
 		polar_to_cartesian(hue, 0, radius, axes[i].x1, axes[i].y1);
 		polar_to_cartesian(hue, 1, radius, axes[i].x2, axes[i].y2);
 
@@ -496,30 +269,33 @@ void VideoScopeWindow::draw_labels()
 	const int label_width_half = get_label_width() / 2;
 
 // Waveform labels
-	if (waveform) {
+	if(waveform)
+	{
 		const int text_x  = wave_x - label_width_half;
+
 		for (int i = 0; i < VideoScopeWaveform::NUM_GRADS; ++i)
 			draw_center_text(text_x,
-					 waveform->grads[i].y + wave_y + sm_text_ascent_half,
-					 waveform->grads[i].label);
-			
+				waveform->grads[i].y + wave_y + sm_text_ascent_half,
+				 waveform->grads[i].label);
 	}
 
 // Vectorscope labels
-	if (vectorscope) {
+	if(vectorscope)
+	{
 		const int text_x = vector_x - label_width_half;
+
 		for (int i = 0; i < VideoScopeVectorscope::NUM_GRADS; ++i)
 			draw_center_text(text_x,
-					 vectorscope->grads[i].y + vector_y + sm_text_ascent_half,
-					 vectorscope->grads[i].label);
+				vectorscope->grads[i].y + vector_y + sm_text_ascent_half,
+				vectorscope->grads[i].label);
 	}
 
 #ifdef DEBUG_PLACEMENT
 	set_color(GREEN);
 	draw_rectangle(wave_x - 2 * label_width_half, wave_y - sm_text_ascent_half,
-		       2 * label_width_half, wave_h + 2 * sm_text_ascent_half);
+		2 * label_width_half, wave_h + 2 * sm_text_ascent_half);
 	draw_rectangle(vector_x - 2 * label_width_half, vector_y,
-		       2 * label_width_half, vector_h);
+		2 * label_width_half, vector_h);
 	set_color(BLUE);
 	waveform->draw_rectangle(0, 0, wave_w, wave_h);
 	set_color(RED);
@@ -536,31 +312,38 @@ void VideoScopeWindow::draw_labels()
 void VideoScopeWaveform::draw_graduations()
 {
 	VideoScopeConfig &config = plugin->config;
-	if (config.draw_lines_inverse)  set_inverse();
+
+	if(config.draw_lines_inverse)
+		set_inverse();
+
 	const int w = get_w();
 	const int h = get_h();
-	for (int i = 0; i < NUM_GRADS; ++i)
+
+	for(int i = 0; i < NUM_GRADS; ++i)
 	{
 		// 1 & 11 correspond to 100% & 0%.
 		set_color((config.show_srgb_limits && (i == 1 || i == 11))
-			  ? WHITE : MDGREY);
+			? WHITE : MDGREY);
 		int y = grads[i].y;
 		draw_line(0, y, w, y);
 	}
-	if (config.show_ycbcr_limits)
+	if(config.show_ycbcr_limits)
 	{
 		set_color(WHITE);
 		draw_line(0, limit_ycbcr_white, w, limit_ycbcr_white);
 		draw_line(0, limit_ycbcr_black, w, limit_ycbcr_black);
 	}
-	if (config.draw_lines_inverse)  set_opaque();
+	if(config.draw_lines_inverse)
+		set_opaque();
 }
 
 void VideoScopeVectorscope::draw_graduations()
 {
-	set_color(MDGREY);
 	const int diameter = get_h();  // diameter; vector_w == vector_h
-	for (int i = 0; i < NUM_GRADS; ++i)
+
+	set_color(MDGREY);
+
+	for(int i = 0; i < NUM_GRADS; ++i)
 	{
 		int top_left     = grads[i].y;
 		int width_height = diameter - 2 * top_left;
@@ -569,11 +352,11 @@ void VideoScopeVectorscope::draw_graduations()
 
 	// RGB+CYM axes and labels.
 	set_font(color_axis_font);
-	for (int i = 0;  i < Vectorscope_HSV_axes_count; ++i)
+	for(int i = 0;  i < Vectorscope_HSV_axes_count; ++i)
 	{
 		set_color(MDGREY);
 		draw_line(axes[i].x1, axes[i].y1,
-			  axes[i].x2, axes[i].y2);
+			axes[i].x2, axes[i].y2);
 
 		set_color(Vectorscope_HSV_axes[i].color);
 		draw_text(axes[i].text_x, axes[i].text_y, const_cast<char *>(Vectorscope_HSV_axes[i].label));
@@ -583,15 +366,14 @@ void VideoScopeVectorscope::draw_graduations()
 		int label_a = get_text_ascent(color_axis_font);
 		int label_d = get_text_descent(color_axis_font);
 		draw_rectangle(axes[i].text_x,
-			       axes[i].text_y - label_a,
-			       label_w, label_a + label_d);
+			axes[i].text_y - label_a,
+			label_w, label_a + label_d);
 #endif // DEBUG_PLACEMENT
 	}
 }
 
 void VideoScopeGraduation::set(const char * label, int y)
 {
-	assert(strlen(label) <= 3);
 	strcpy(this->label, label);
 	this->y    = y;
 }
@@ -603,13 +385,13 @@ VideoScopeShowSRGBLimits::VideoScopeShowSRGBLimits(VideoScopeEffect *plugin,
  : BC_CheckBox(x, y, plugin->config.show_srgb_limits, _("sRGB-range"))
 {
 	this->plugin = plugin;
-	set_tooltip("Indicate sRGB-range [0-255]");
+	set_tooltip(_("Indicate sRGB-range [0-255]"));
 }
 
 int VideoScopeShowSRGBLimits::handle_event()
 {
 	plugin->config.show_srgb_limits = get_value();
-	plugin->thread->window->waveform->redraw();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -625,7 +407,7 @@ VideoScopeShowYCbCrLimits::VideoScopeShowYCbCrLimits(VideoScopeEffect *plugin,
 int VideoScopeShowYCbCrLimits::handle_event()
 {
 	plugin->config.show_ycbcr_limits = get_value();
-	plugin->thread->window->waveform->redraw();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -641,7 +423,7 @@ VideoScopeDrawLinesInverse::VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
 int VideoScopeDrawLinesInverse::handle_event()
 {
 	plugin->config.draw_lines_inverse = get_value();
-	plugin->thread->window->waveform->redraw();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -654,14 +436,12 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 VideoScopeEffect::~VideoScopeEffect()
 {
 	if(engine) delete engine;
-	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -721,18 +501,10 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-void VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *VideoScopeEffect::process_tmpframe(VFrame *input)
 {
-	if(!gui_frame || !gui_frame->equivalent(input))
-	{
-		BC_Resources::tmpframes.release_frame(gui_frame);
-		gui_frame = BC_Resources::tmpframes.get_tmpframe(
-			input->get_w(), input->get_h(), input->get_color_model());
-	}
-	gui_frame->copy_from(input);
-	send_render_gui(gui_frame);
-	if(input != output)
-		output->copy_from(input);
+	render_gui(input);
+	return input;
 }
 
 void VideoScopeEffect::render_gui(void *input)
@@ -1080,9 +852,6 @@ VideoScopeEngine::VideoScopeEngine(VideoScopeEffect *plugin, int cpus)
 	this->plugin = plugin;
 }
 
-VideoScopeEngine::~VideoScopeEngine()
-{
-}
 
 void VideoScopeEngine::init_packages()
 {
