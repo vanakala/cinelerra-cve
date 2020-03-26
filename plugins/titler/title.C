@@ -1525,11 +1525,11 @@ int TitleMain::text_to_motion(const char *text)
 }
 
 
-void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 {
 	int result = 0;
 	input = input_ptr;
-	output = output_ptr;
+	output = input_ptr;
 
 	need_reconfigure |= load_configuration();
 
@@ -1555,7 +1555,8 @@ void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(config.size <= 0 || config.size >= 2048) config.size = 72;
 	if(config.stroke_width < 0 || 
 		config.stroke_width >= 512) config.stroke_width = 0.0;
-	if(!config.wtext_length) return;
+	if(!config.wtext_length)
+		return input;
 	if(!config.encoding) strcpy(config.encoding, DEFAULT_ENCODING);
 
 // Handle reconfiguration
@@ -1615,6 +1616,7 @@ void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		overlay_mask();
 	}
+	return output;
 }
 
 void TitleMain::load_defaults()
