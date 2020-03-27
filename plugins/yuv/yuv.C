@@ -19,17 +19,6 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("YUV")
-#define PLUGIN_CLASS YUVEffect
-#define PLUGIN_CONFIG_CLASS YUVConfig
-#define PLUGIN_THREAD_CLASS YUVThread
-#define PLUGIN_GUI_CLASS YUVWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
@@ -41,65 +30,10 @@
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
+#include "yuv.h"
 
 #include <stdint.h>
 #include <string.h>
-
-
-class YUVConfig
-{
-public:
-	YUVConfig();
-
-	void copy_from(YUVConfig &src);
-	int equivalent(YUVConfig &src);
-	void interpolate(YUVConfig &prev, 
-		YUVConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	float y, u, v;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class YUVLevel : public BC_FSlider
-{
-public:
-	YUVLevel(YUVEffect *plugin, float *output, int x, int y);
-	int handle_event();
-	YUVEffect *plugin;
-	float *output;
-};
-
-class YUVWindow : public PluginWindow
-{
-public:
-	YUVWindow(YUVEffect *plugin, int x, int y);
-
-	void update();
-
-	YUVLevel *y, *u, *v;
-	YUVEffect *plugin;
-};
-
-PLUGIN_THREAD_HEADER
-
-class YUVEffect : public PluginVClient
-{
-public:
-	YUVEffect(PluginServer *server);
-	~YUVEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-};
-
 
 REGISTER_PLUGIN
 
@@ -256,7 +190,7 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 	for(int i = 0; i < input->get_h(); i++) \
 	{ \
 		type *in_row = (type*)input->get_row_ptr(i); \
-		type *out_row = (type*)output->get_row_ptr(i); \
+		type *out_row = (type*)input->get_row_ptr(i); \
 		const float round = (sizeof(type) == 4) ? 0.0 : 0.5; \
  \
 		for(int j = 0; j < w; j++) \
@@ -323,16 +257,11 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 	} \
 }
 
-void YUVEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *YUVEffect::process_tmpframe(VFrame *input)
 {
 	load_configuration();
 
-	if(EQUIV(config.y, 0) && EQUIV(config.u, 0) && EQUIV(config.v, 0))
-	{
-		if(input != output)
-			output->copy_from(input);
-	}
-	else
+	if(!EQUIV(config.y, 0) || !EQUIV(config.u, 0) || !EQUIV(config.v, 0))
 	{
 		int w = input->get_w();
 
@@ -389,7 +318,7 @@ void YUVEffect::process_realtime(VFrame *input, VFrame *output)
 			for(int i = 0; i < input->get_h(); i++)
 			{
 				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i);
-				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)input->get_row_ptr(i);
 				const float round = 0.5;
 
 				for(int j = 0; j < w; j++)
