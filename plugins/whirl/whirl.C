@@ -19,159 +19,21 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Whirl")
-#define PLUGIN_CLASS WhirlEffect
-#define PLUGIN_CONFIG_CLASS WhirlConfig
-#define PLUGIN_THREAD_CLASS WhirlThread
-#define PLUGIN_GUI_CLASS WhirlWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "vframe.h"
-
+#include "whirl.h"
 
 #include <stdint.h>
 #include <string.h>
 
-class WhirlEffect;
-class WhirlWindow;
-class WhirlEngine;
-
 #define MAXRADIUS 100
 #define MAXPINCH 100
 
-
-class WhirlConfig
-{
-public:
-	WhirlConfig();
-
-	void copy_from(WhirlConfig &src);
-	int equivalent(WhirlConfig &src);
-	void interpolate(WhirlConfig &prev, 
-		WhirlConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	float angle;
-	float pinch;
-	float radius;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class WhirlAngle : public BC_FSlider
-{
-public:
-	WhirlAngle(WhirlEffect *plugin, int x, int y);
-
-	int handle_event();
-	WhirlEffect *plugin;
-};
-
-
-class WhirlPinch : public BC_FSlider
-{
-public:
-	WhirlPinch(WhirlEffect *plugin, int x, int y);
-
-	int handle_event();
-	WhirlEffect *plugin;
-};
-
-
-class WhirlRadius : public BC_FSlider
-{
-public:
-	WhirlRadius(WhirlEffect *plugin, int x, int y);
-
-	int handle_event();
-	WhirlEffect *plugin;
-};
-
-class WhirlWindow : public PluginWindow
-{
-public:
-	WhirlWindow(WhirlEffect *plugin, int x, int y);
-
-	void update();
-
-	WhirlRadius *radius;
-	WhirlPinch *pinch;
-	WhirlAngle *angle;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class WhirlPackage : public LoadPackage
-{
-public:
-	WhirlPackage();
-
-	int row1, row2;
-};
-
-class WhirlUnit : public LoadClient
-{
-public:
-	WhirlUnit(WhirlEffect *plugin, WhirlEngine *server);
-
-	void process_package(LoadPackage *package);
-	WhirlEngine *server;
-	WhirlEffect *plugin;
-};
-
-
-class WhirlEngine : public LoadServer
-{
-public:
-	WhirlEngine(WhirlEffect *plugin, int cpus);
-
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	WhirlEffect *plugin;
-};
-
-
-class WhirlEffect : public PluginVClient
-{
-public:
-	WhirlEffect(PluginServer *server);
-	~WhirlEffect();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_realtime(VFrame *input, VFrame *output);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	WhirlEngine *engine;
-	VFrame *temp_frame;
-	VFrame *input, *output;
-	int need_reconfigure;
-};
 
 PLUGIN_THREAD_METHODS
 
@@ -310,16 +172,13 @@ int WhirlRadius::handle_event()
 WhirlEffect::WhirlEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	need_reconfigure = 1;
 	engine = 0;
-	temp_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 WhirlEffect::~WhirlEffect()
 {
-	if(engine) delete engine;
-	if(temp_frame) delete temp_frame;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -375,34 +234,26 @@ void WhirlEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-void WhirlEffect::process_realtime(VFrame *input, VFrame *output)
+VFrame *WhirlEffect::process_tmpframe(VFrame *input)
 {
-	need_reconfigure |= load_configuration();
+	load_configuration();
+
 	this->input = input;
-	this->output = output;
+	output = input;
 
-	if(EQUIV(config.angle, 0) || 
-		(EQUIV(config.radius, 0) && EQUIV(config.pinch, 0)))
+	if(!EQUIV(config.angle, 0) &&
+		(!EQUIV(config.radius, 0) || !EQUIV(config.pinch, 0)))
 	{
-		if(input != output)
-			output->copy_from(input);
-	}
-	else
-	{
-		if(input == output)
-		{
-			if(!temp_frame) temp_frame = new VFrame(0,
-				input->get_w(),
-				input->get_h(),
-				input->get_color_model());
-			temp_frame->copy_from(input);
-			this->input = temp_frame;
-		}
+		output = clone_vframe(input);
+		output->copy_from(input);
 
-		if(!engine) engine = new WhirlEngine(this, PluginClient::smp + 1);
+		if(!engine)
+			engine = new WhirlEngine(this, PluginClient::smp + 1);
 
 		engine->process_packages();
+		release_vframe(input);
 	}
+	return output;
 }
 
 
@@ -439,34 +290,27 @@ static int calc_undistorted_coords(double cen_x,
 	double ang, sina, cosa;
 	int inside;
 
-/* Distances to center, scaled */
-
+// Distances to center, scaled
 	dx = (wx - cen_x) * scale_x;
 	dy = (wy - cen_y) * scale_y;
 
-/* Distance^2 to center of *circle* (scaled ellipse) */
-
+// Distance^2 to center of *circle* (scaled ellipse)
 	d = dx * dx + dy * dy;
 
-/*  If we are inside circle, then distort.
- *  Else, just return the same position
- */
+//  If we are inside circle, then distort.
+//  Else, just return the same position
 
 	inside = (d < radius2);
 
 	if(inside)
 	{
 		dist = sqrt(d / radius3) / radius;
-
-/* Pinch */
-
+// Pinch
 		factor = pow(sin(M_PI / 2 * dist), -pinch);
 
 		dx *= factor;
 		dy *= factor;
-
-/* Whirl */
-
+// Whirl
 		factor = 1.0 - dist;
 
 		ang = whirl * factor * factor;
@@ -477,16 +321,16 @@ static int calc_undistorted_coords(double cen_x,
 		x = (cosa * dx - sina * dy) / scale_x + cen_x;
 		y = (sina * dx + cosa * dy) / scale_y + cen_y;
 	}
-
 	return inside;
 }
 
 
 #define GET_PIXEL(components, x, y, type) \
-	(type*)plugin->input->get_row_ptr(CLIP(y, 0, (h - 1))) + components * CLIP(x, 0, (w - 1))
+	(type*)plugin->input->get_row_ptr(CLIP(y, 0, (h - 1))) + \
+		components * CLIP(x, 0, (w - 1))
 
 
-static float bilinear(double x, double y, double *values)
+static double bilinear(double x, double y, double *values)
 {
 	double m0, m1;
 	x = fmod(x, 1.0);
@@ -495,8 +339,8 @@ static float bilinear(double x, double y, double *values)
 	if(x < 0.0) x += 1.0;
 	if(y < 0.0) y += 1.0;
 
-	m0 = (double)values[0] + x * ((double)values[1] - values[0]);
-	m1 = (double)values[2] + x * ((double)values[3] - values[2]);
+	m0 = values[0] + x * (values[1] - values[0]);
+	m1 = values[2] + x * (values[3] - values[2]);
 	return m0 + y * (m1 - m0);
 }
 
@@ -722,7 +566,6 @@ void WhirlEngine::init_packages()
 		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
 		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
-	
 }
 
 LoadClient* WhirlEngine::new_client()

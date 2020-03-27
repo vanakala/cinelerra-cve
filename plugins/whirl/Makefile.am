@@ -1,13 +1,14 @@
 plugin_LTLIBRARIES = whirl.la
 whirl_la_LDFLAGS = -avoid-version -module -shared 
 whirl_la_LIBADD = 
-whirl_la_SOURCES = whirl.C 
+whirl_la_SOURCES = whirl.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
+noinst_HEADERS = whirl.h
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 
