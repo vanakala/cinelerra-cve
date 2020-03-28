@@ -22,8 +22,6 @@
 #ifndef BURNWINDOW_H
 #define BURNWINDOW_H
 
-#include "filexml.h"
-#include "mutex.h"
 #include "burn.h"
 #include "pluginwindow.h"
 
@@ -33,7 +31,6 @@ class BurnWindow : public PluginWindow
 {
 public:
 	BurnWindow(BurnMain *plugin, int x, int y);
-	~BurnWindow();
 
 	void update();
 	PLUGIN_GUI_CLASS_MEMBERS

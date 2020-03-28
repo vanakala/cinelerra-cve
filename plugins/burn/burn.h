@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("BurningTV")
@@ -34,13 +35,11 @@
 
 #include "pluginmacros.h"
 
-#include "bchash.h"
 #include "effecttv.inc"
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
 #include "burnwindow.h"
-#include <sys/types.h>
 
 class BurnConfig
 {
@@ -91,7 +90,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input);
 
 	void HSItoRGB(double H, 
 		double S, 

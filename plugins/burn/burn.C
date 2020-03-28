@@ -127,10 +127,10 @@ void BurnMain::make_palette(int color_model)
 	}
 }
 
-void BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *BurnMain::process_tmpframe(VFrame *input)
 {
-	this->input_ptr = input_ptr;
-	this->output_ptr = output_ptr;
+	input_ptr = input;
+	output_ptr = input;
 
 	load_configuration();
 
@@ -152,8 +152,8 @@ void BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		effecttv->image_bgset_y(input_ptr);
 	}
 	burn_server->process_packages();
-
 	total++;
+	return input;
 }
 
 

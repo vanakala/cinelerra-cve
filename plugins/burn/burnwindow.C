@@ -41,12 +41,6 @@ BurnWindow::BurnWindow(BurnMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-BurnWindow::~BurnWindow()
-{
-}
-
 void BurnWindow::update()
 {
 }
-
-
