@@ -19,22 +19,10 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-
-#define PLUGIN_TITLE N_("Zoom Blur")
-#define PLUGIN_CLASS ZoomBlurMain
-#define PLUGIN_CONFIG_CLASS ZoomBlurConfig
-#define PLUGIN_THREAD_CLASS ZoomBlurThread
-#define PLUGIN_GUI_CLASS ZoomBlurWindow
-
-#include "pluginmacros.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
-#define GL_GLEXT_PROTOTYPES
 #include "bchash.h"
 #include "bcsignals.h"
 #include "bcslider.h"
@@ -43,153 +31,8 @@
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
-#include "loadbalance.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "vframe.h"
-
-#ifdef HAVE_GL
-#include <GL/gl.h>
-#include <GL/glx.h>
-#endif
-
-class ZoomBlurEngine;
-
-
-class ZoomBlurConfig
-{
-public:
-	ZoomBlurConfig();
-
-	int equivalent(ZoomBlurConfig &that);
-	void copy_from(ZoomBlurConfig &that);
-	void interpolate(ZoomBlurConfig &prev, 
-		ZoomBlurConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-
-	int x;
-	int y;
-	int radius;
-	int steps;
-	int r;
-	int g;
-	int b;
-	int a;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class ZoomBlurSize : public BC_ISlider
-{
-public:
-	ZoomBlurSize(ZoomBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-	int handle_event();
-	ZoomBlurMain *plugin;
-	int *output;
-};
-
-class ZoomBlurToggle : public BC_CheckBox
-{
-public:
-	ZoomBlurToggle(ZoomBlurMain *plugin, 
-		int x, 
-		int y, 
-		int *output,
-		char *string);
-	int handle_event();
-	ZoomBlurMain *plugin;
-	int *output;
-};
-
-class ZoomBlurWindow : public PluginWindow
-{
-public:
-	ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y);
-	~ZoomBlurWindow();
-
-	void update();
-
-	ZoomBlurSize *x, *y, *radius, *steps;
-	ZoomBlurToggle *r, *g, *b, *a;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-// Output coords for a layer of blurring
-// Used for OpenGL only
-class ZoomBlurLayer
-{
-public:
-	ZoomBlurLayer() {};
-	float x1, y1, x2, y2;
-};
-
-class ZoomBlurMain : public PluginVClient
-{
-public:
-	ZoomBlurMain(PluginServer *server);
-	~ZoomBlurMain();
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void handle_opengl();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void delete_tables();
-	VFrame *input, *output, *temp;
-	ZoomBlurEngine *engine;
-	int **scale_y_table;
-	int **scale_x_table;
-	ZoomBlurLayer *layer_table;
-	int table_entries;
-	int need_reconfigure;
-// The accumulation buffer is needed because 8 bits isn't precise enough
-	unsigned char *accum;
-};
-
-class ZoomBlurPackage : public LoadPackage
-{
-public:
-	ZoomBlurPackage();
-	int y1, y2;
-};
-
-class ZoomBlurUnit : public LoadClient
-{
-public:
-	ZoomBlurUnit(ZoomBlurEngine *server, ZoomBlurMain *plugin);
-	void process_package(LoadPackage *package);
-	ZoomBlurEngine *server;
-	ZoomBlurMain *plugin;
-};
-
-class ZoomBlurEngine : public LoadServer
-{
-public:
-	ZoomBlurEngine(ZoomBlurMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	ZoomBlurMain *plugin;
-};
-
+#include "zoomblur.h"
 
 REGISTER_PLUGIN
 
@@ -208,8 +51,7 @@ ZoomBlurConfig::ZoomBlurConfig()
 
 int ZoomBlurConfig::equivalent(ZoomBlurConfig &that)
 {
-	return 
-		x == that.x &&
+	return x == that.x &&
 		y == that.y &&
 		radius == that.radius &&
 		steps == that.steps &&
@@ -286,10 +128,6 @@ ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-ZoomBlurWindow::~ZoomBlurWindow()
-{
-}
-
 void ZoomBlurWindow::update()
 {
 	x->update(plugin->config.x);
@@ -349,7 +187,6 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	table_entries = 0;
 	accum = 0;
 	need_reconfigure = 1;
-	temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -358,7 +195,6 @@ ZoomBlurMain::~ZoomBlurMain()
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
-	if(temp) delete temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -387,33 +223,31 @@ void ZoomBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-void ZoomBlurMain::process_frame(VFrame *frame)
+VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
-
-	get_frame(frame);
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
 	if(need_reconfigure)
 	{
-		float w = frame->get_w();
-		float h = frame->get_h();
-		float center_x = (float)config.x / 100 * w;
-		float center_y = (float)config.y / 100 * h;
-		float radius = (float)(100 + config.radius) / 100;
-		float min_w, min_h;
-		float max_w, max_h;
+		double w = frame->get_w();
+		double h = frame->get_h();
+		double center_x = config.x / 100.0 * w;
+		double center_y = config.y / 100.0 * h;
+		double radius = (100.0 + config.radius) / 100.0;
+		double min_w, min_h;
+		double max_w, max_h;
 		int steps = config.steps ? config.steps : 1;
-		float min_x1;
-		float min_y1;
-		float min_x2;
-		float min_y2;
-		float max_x1;
-		float max_y1;
-		float max_x2;
-		float max_y2;
+		double min_x1;
+		double min_y1;
+		double min_x2;
+		double min_y2;
+		double max_x1;
+		double max_y1;
+		double max_x2;
+		double max_y2;
 
 		center_x = (center_x - w / 2) * (1.0 - radius) + w / 2;
 		center_y = (center_y - h / 2) * (1.0 - radius) + h / 2;
@@ -439,18 +273,18 @@ void ZoomBlurMain::process_frame(VFrame *frame)
 
 		for(int i = 0; i < steps; i++)
 		{
-			float fraction = (float)i / steps;
-			float inv_fraction = 1.0 - fraction;
-			float out_x1 = min_x1 * fraction + max_x1 * inv_fraction;
-			float out_x2 = min_x2 * fraction + max_x2 * inv_fraction;
-			float out_y1 = min_y1 * fraction + max_y1 * inv_fraction;
-			float out_y2 = min_y2 * fraction + max_y2 * inv_fraction;
-			float out_w = out_x2 - out_x1;
-			float out_h = out_y2 - out_y1;
+			double fraction = (double)i / steps;
+			double inv_fraction = 1.0 - fraction;
+			double out_x1 = min_x1 * fraction + max_x1 * inv_fraction;
+			double out_x2 = min_x2 * fraction + max_x2 * inv_fraction;
+			double out_y1 = min_y1 * fraction + max_y1 * inv_fraction;
+			double out_y2 = min_y2 * fraction + max_y2 * inv_fraction;
+			double out_w = out_x2 - out_x1;
+			double out_h = out_y2 - out_y1;
 			if(out_w < 0) out_w = 0;
 			if(out_h < 0) out_h = 0;
-			float scale_x = (float)w / out_w;
-			float scale_y = (float)h / out_h;
+			double scale_x = w / out_w;
+			double scale_y = h / out_h;
 
 			int *x_table;
 			int *y_table;
@@ -464,39 +298,28 @@ void ZoomBlurMain::process_frame(VFrame *frame)
 
 			for(int j = 0; j < h; j++)
 			{
-				y_table[j] = (int)((j - out_y1) * scale_y);
+				y_table[j] = round((j - out_y1) * scale_y);
 			}
 			for(int j = 0; j < w; j++)
 			{
-				x_table[j] = (int)((j - out_x1) * scale_x);
+				x_table[j] = round((j - out_x1) * scale_x);
 			}
 		}
 		need_reconfigure = 0;
 	}
 
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
+	if(!engine)
+		engine = new ZoomBlurEngine(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
+	if(!accum)
+		accum = new unsigned char[frame->get_w() *
+			frame->get_h() *
+			ColorModels::components(frame->get_color_model()) *
+			MAX(sizeof(int), sizeof(float))];
 
-	if(!engine) engine = new ZoomBlurEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[frame->get_w() * 
-		frame->get_h() *
-		ColorModels::components(frame->get_color_model()) *
-		MAX(sizeof(int), sizeof(float))];
-
-	this->input = frame;
-	this->output = frame;
-
-	if(!temp) temp = new VFrame(0,
-		frame->get_w(),
-		frame->get_h(),
-		frame->get_color_model());
-	temp->copy_from(frame);
-	this->input = temp;
+	input = frame;
+	output = clone_vframe(frame);
 
 	memset(accum, 0,
 		frame->get_w() * 
@@ -504,6 +327,8 @@ void ZoomBlurMain::process_frame(VFrame *frame)
 		ColorModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
+	release_vframe(input);
+	return output;
 }
 
 void ZoomBlurMain::load_defaults()
@@ -574,6 +399,7 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+/* FIXIT
 #ifdef HAVE_GL
 static void draw_box(float x1, float y1, float x2, float y2)
 {
@@ -585,6 +411,7 @@ static void draw_box(float x1, float y1, float x2, float y2)
 	glEnd();
 }
 #endif
+	*/
 
 void ZoomBlurMain::handle_opengl()
 {
