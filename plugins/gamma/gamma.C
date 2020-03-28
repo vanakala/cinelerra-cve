@@ -19,7 +19,6 @@
  * 
  */
 
-#define GL_GLEXT_PROTOTYPES
 
 #include "bcsignals.h"
 #include "colorspaces.h"
@@ -29,7 +28,6 @@
 #include "language.h"
 #include "picon_png.h"
 #include "tmpframecache.h"
-
 
 #include <stdio.h>
 #include <string.h>
@@ -391,55 +389,35 @@ GammaMain::GammaMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	localframe = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 GammaMain::~GammaMain()
 {
 	delete engine;
-	BC_Resources::tmpframes.release_frame(localframe);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-void GammaMain::process_frame(VFrame *frame)
+VFrame *GammaMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
-	int use_opengl = get_use_opengl() &&
-		!config.automatic && 
-		(!config.plot || !gui_open());
-
-	get_frame(frame);
-	if(!localframe)
-	{
-		localframe = BC_Resources::tmpframes.get_tmpframe(frame->get_w(),
-			frame->get_h(), frame->get_color_model());
-	}
-
-	if(use_opengl)
-	{
-		run_opengl();
-		return;
-	}
-	else
 	if(config.automatic)
 	{
 		calculate_max(frame);
 // Always plot to set the slider
-		send_render_gui(this);
+		render_gui(this);
 	}
 	else
-	if(config.plot) 
-	{
-		send_render_gui(this);
-	}
+	if(config.plot)
+		render_gui(this);
 
-	if(!engine) engine = new GammaEngine(this);
+	if(!engine)
+		engine = new GammaEngine(this);
 	engine->process_packages(GammaEngine::APPLY, frame);
-	localframe->copy_from(frame);
+	return frame;
 }
 
 void GammaMain::calculate_max(VFrame *frame)
@@ -463,25 +441,12 @@ void GammaMain::calculate_max(VFrame *frame)
 
 void GammaMain::render_gui(void *data)
 {
-	GammaMain *ptr = (GammaMain*)data;
-
 	if(thread)
 	{
-		config.max = ptr->config.max;
-		if(!engine) engine = new GammaEngine(this);
-		if(ptr->engine && ptr->config.automatic)
-		{
-			memcpy(engine->accum,
-				ptr->engine->accum,
-				sizeof(int) * HISTOGRAM_SIZE);
+		if(engine && config.automatic)
 			thread->window->update();
-		}
 		else
-		{
-			engine->process_packages(GammaEngine::HISTOGRAM,
-				ptr->localframe);
 			thread->window->update_histogram();
-		}
 	}
 }
 

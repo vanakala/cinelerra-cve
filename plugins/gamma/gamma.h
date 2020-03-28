@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Gamma")
 #define PLUGIN_CLASS GammaMain
@@ -105,8 +106,7 @@ public:
 	GammaMain(PluginServer *server);
 	~GammaMain();
 
-// required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void calculate_max(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
@@ -117,7 +117,6 @@ public:
 	void handle_opengl();
 
 	GammaEngine *engine;
-	VFrame *localframe;
 
 	PLUGIN_CLASS_MEMBERS
 };
