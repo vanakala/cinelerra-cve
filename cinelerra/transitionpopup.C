@@ -76,14 +76,14 @@ TransitionLengthText::TransitionLengthText(TransitionLengthDialog *gui,
 	int y)
  : BC_TumbleTextBox(gui, 
 	gui->transition->get_length(),
-	(float)0, 
-	(float)100, 
+	0.0,
+	100.0,
 	x,
 	y,
 	100)
 {
 	this->gui = gui;
-	set_increment(0.1f);
+	set_increment(0.1);
 }
 
 int TransitionLengthText::handle_event()

@@ -45,6 +45,7 @@ public:
 	void reposition_window(int x, int y, int w=-1, int h=-1); // w & h don't do anything, except to inherit BC_Subwindow::(reposition_window)
 	virtual void set_boundaries(int64_t min, int64_t max) {};
 	virtual void set_boundaries(float min, float max) {};
+	virtual void set_boundaries(double min, double max) {};
 	virtual void set_increment(float value) {};
 	virtual void set_log_floatincrement(int value) {};
 
@@ -82,11 +83,12 @@ public:
 	void handle_up_event();
 	void handle_down_event();
 	void set_boundaries(float min, float max);
+	void set_boundaries(double min, double max);
 	void set_increment(float value);
 	void set_log_floatincrement(int value);
 
-	float min, max;
-	float increment;
+	double min, max;
+	double increment;
 	int log_floatincrement;
 	BC_TextBox *textbox;
 };

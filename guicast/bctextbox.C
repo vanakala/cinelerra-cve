@@ -2049,6 +2049,25 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	this->popup = popup;
 }
 
+BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
+	double default_value,
+	double min,
+	double max,
+	int x,
+	int y,
+	int precision)
+ : BC_TextBox(x,
+	y,
+	popup->text_w,
+	1,
+	default_value,
+	1,
+	MEDIUMFONT,
+	precision)
+{
+	this->popup = popup;
+}
+
 BC_TumbleTextBoxText::~BC_TumbleTextBoxText()
 {
 	if(popup)
@@ -2147,6 +2166,26 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	reset();
 }
 
+BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
+		double default_value_f,
+		double min_f,
+		double max_f,
+		int x,
+		int y,
+		int text_w)
+{
+	this->x = x;
+	this->y = y;
+	this->min_f = min_f;
+	this->max_f = max_f;
+	this->default_value_f = default_value_f;
+	this->text_w = text_w;
+	this->parent_window = parent_window;
+	use_float = 1;
+	precision = 4;
+	reset();
+}
+
 BC_TumbleTextBox::~BC_TumbleTextBox()
 {
 // Recursive delete.  Normally ~BC_TumbleTextBox is never called but textbox
@@ -2213,7 +2252,7 @@ void BC_TumbleTextBox::set_precision(int precision)
 	this->precision = precision;
 }
 
-void BC_TumbleTextBox::set_increment(float value)
+void BC_TumbleTextBox::set_increment(double value)
 {
 	this->increment = value;
 	if(tumbler) tumbler->set_increment(value);
@@ -2246,6 +2285,11 @@ void BC_TumbleTextBox::update(int value)
 }
 
 void BC_TumbleTextBox::update(float value)
+{
+	textbox->update(value);
+}
+
+void BC_TumbleTextBox::update(double value)
 {
 	textbox->update(value);
 }
@@ -2300,6 +2344,11 @@ void BC_TumbleTextBox::set_boundaries(int64_t min, int64_t max)
 }
 
 void BC_TumbleTextBox::set_boundaries(float min, float max)
+{
+	tumbler->set_boundaries(min, max);
+}
+
+void BC_TumbleTextBox::set_boundaries(double min, double max)
 {
 	tumbler->set_boundaries(min, max);
 }

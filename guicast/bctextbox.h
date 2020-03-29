@@ -346,6 +346,13 @@ public:
 		int x, 
 		int y, 
 		int text_w);
+	BC_TumbleTextBox(BC_WindowBase *parent_window,
+		double default_value,
+		double min,
+		double max,
+		int x,
+		int y,
+		int text_w);
 	virtual ~BC_TumbleTextBox();
 
 	virtual int handle_event();
@@ -354,6 +361,7 @@ public:
 	void update(int64_t value);
 	void update(int value);
 	void update(float value);
+	void update(double value);
 	int get_x();
 	int get_y();
 	int get_w();
@@ -362,8 +370,9 @@ public:
 	void reposition_window(int x, int y);
 	void set_boundaries(int64_t min, int64_t max);
 	void set_boundaries(float min, float max);
+	void set_boundaries(double min, double max);
 	void set_precision(int precision);
-	void set_increment(float value);
+	void set_increment(double value);
 	void set_log_floatincrement(int value);
 
 	friend class BC_TumbleTextBoxText;
@@ -373,10 +382,10 @@ private:
 	void reset();
 	int x, y, text_w;
 	int64_t default_value, min, max;
-	float default_value_f, min_f, max_f;
+	double default_value_f, min_f, max_f;
 	int use_float;
 	int precision;
-	float increment;
+	double increment;
 	int log_floatincrement;
 	BC_TumbleTextBoxText *textbox;
 	BC_Tumbler *tumbler;
@@ -397,6 +406,13 @@ public:
 		float min,
 		float max,
 		int x, 
+		int y,
+		int precision);
+	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
+		double default_value,
+		double min,
+		double max,
+		int x,
 		int y,
 		int precision);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);

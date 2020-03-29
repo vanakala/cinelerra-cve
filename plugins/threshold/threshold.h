@@ -95,8 +95,8 @@ public:
 		ptstime current_pts);
 	void boundaries();
 
-	float min;
-	float max;
+	double min;
+	double max;
 	int plot;
 	RGBA low_color;
 	RGBA mid_color;

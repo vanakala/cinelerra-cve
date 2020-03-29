@@ -245,7 +245,7 @@ PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(playback,
-	(float)playback->playback_config->aconfig->audio_offset,
+	playback->playback_config->aconfig->audio_offset,
 	-10.0,
 	10.0,
 	x,
