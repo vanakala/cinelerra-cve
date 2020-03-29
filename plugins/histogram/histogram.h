@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Histogram")
 #define PLUGIN_CLASS HistogramMain
@@ -45,22 +46,19 @@ public:
 	HistogramMain(PluginServer *server);
 	~HistogramMain();
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void render_gui(void *data);
-	int calculate_use_opengl();
 	void handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS
 
 // Interpolate quantized transfer table to linear output
-	float calculate_linear(float input, int mode, int do_value);
-	float calculate_smooth(float input, int subscript);
-// Convert input to smoothed output by looking up in smooth table.
-	float calculate_curve(float input);
+	double calculate_linear(double input, int mode, int do_value);
+	double calculate_smooth(double input, int subscript);
 // Calculate automatic settings
 	void calculate_automatic(VFrame *data);
 // Calculate histogram.
@@ -84,7 +82,6 @@ public:
 	int dragging_point;
 	int point_x_offset;
 	int point_y_offset;
-	VFrame *gui_frame;
 };
 
 class HistogramPackage : public LoadPackage

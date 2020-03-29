@@ -195,10 +195,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 
 }
 
-HistogramWindow::~HistogramWindow()
-{
-}
-
 int HistogramWindow::keypress_event()
 {
 	int result = 0;
@@ -266,13 +262,12 @@ void HistogramWindow::draw_canvas_overlay()
 // Draw output line
 	for(int i = 0; i < canvas_w; i++)
 	{
-		float input = (float)i / 
-				canvas_w * 
-				HISTOGRAM_FLOAT_RANGE +
+		double input = (double)i / canvas_w * HISTOGRAM_FLOAT_RANGE +
 				HISTOGRAM_MIN_INPUT;
-		float output = plugin->calculate_smooth(input, plugin->mode);
+		double output = plugin->calculate_smooth(input, plugin->mode);
 
 		int y2 = canvas_h - (int)(output * canvas_h);
+
 		if(i > 0)
 		{
 			canvas->draw_line(i - 1, y1, i, y2);
@@ -323,7 +318,7 @@ void HistogramWindow::update_canvas()
 {
 	int *accum = plugin->accum[plugin->mode];
 	int accum_per_canvas_i = HISTOGRAM_SLOTS / canvas_w + 1;
-	float accum_per_canvas_f = (float)HISTOGRAM_SLOTS / canvas_w;
+	double accum_per_canvas_f = (double)HISTOGRAM_SLOTS / canvas_w;
 	int normalize = 0;
 	int max = 0;
 
@@ -434,13 +429,10 @@ int HistogramCanvas::button_press_event()
 			if(plugin->current_point < 0)
 			{
 // Create new point under cursor
-				float current_x = (float)get_cursor_x() * 
+				double current_x = get_cursor_x() *
 					HISTOGRAM_FLOAT_RANGE /
-					get_w() + 
-					HISTOGRAM_MIN_INPUT;
-				float current_y = 1.0 - 
-					(float)get_cursor_y() / 
-					get_h();
+					get_w() + HISTOGRAM_MIN_INPUT;
+				double current_y = 1.0 - get_cursor_y() / get_h();
 				new_point = 
 					plugin->config.points[plugin->mode].insert(current_x, current_y);
 				plugin->current_point = 
@@ -468,13 +460,11 @@ int HistogramCanvas::cursor_motion_event()
 {
 	if(plugin->dragging_point)
 	{
-		float current_x = 
-			(float)(get_cursor_x() - plugin->point_x_offset) * 
+		double current_x =
+			(get_cursor_x() - plugin->point_x_offset) *
 			HISTOGRAM_FLOAT_RANGE /
-			get_w() + 
-			HISTOGRAM_MIN_INPUT;
-		float current_y = 1.0 - 
-			(float)(get_cursor_y() - plugin->point_y_offset) / 
+			get_w() + HISTOGRAM_MIN_INPUT;
+		double current_y = 1.0 - (get_cursor_y() - plugin->point_y_offset) /
 			get_h();
 		HistogramPoint *current_point = 
 			plugin->config.points[plugin->mode].get_item_number(plugin->current_point);
@@ -499,6 +489,7 @@ int HistogramCanvas::cursor_motion_event()
 			int y2;
 			int x;
 			int y;
+
 			gui->get_point_extents(current,
 				&x1, 
 				&y1, 
@@ -506,7 +497,9 @@ int HistogramCanvas::cursor_motion_event()
 				&y2,
 				&x,
 				&y);
+
 			int new_cursor = ARROW_CURSOR;
+
 			if(get_cursor_x() >= x1 && 
 				get_cursor_y() >= y1 &&
 				get_cursor_x() < x2 &&
@@ -584,9 +577,9 @@ HistogramSlider::HistogramSlider(HistogramMain *plugin,
 	operation = NONE;
 }
 
-int HistogramSlider::input_to_pixel(float input)
+int HistogramSlider::input_to_pixel(double input)
 {
-	return (int)((input - HISTOGRAM_MIN_INPUT) / HISTOGRAM_FLOAT_RANGE * get_w());
+	return round((input - HISTOGRAM_MIN_INPUT) / HISTOGRAM_FLOAT_RANGE * get_w());
 }
 
 int HistogramSlider::button_press_event()
@@ -643,7 +636,7 @@ int HistogramSlider::cursor_motion_event()
 {
 	if(operation != NONE)
 	{
-		float value = (float)get_cursor_x() / get_w() * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
+		double value = (double)get_cursor_x() / get_w() * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
 		CLAMP(value, HISTOGRAM_MIN_INPUT, HISTOGRAM_MAX_INPUT);
 
 		switch(operation)
@@ -703,8 +696,8 @@ void HistogramSlider::update()
 		draw_line(i, 0, i, half_h);
 	}
 
-	float min;
-	float max;
+	double min;
+	double max;
 	min = plugin->config.output_min[plugin->mode];
 	max = plugin->config.output_max[plugin->mode];
 
@@ -793,11 +786,11 @@ HistogramOutputText::HistogramOutputText(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
 	int y,
-	float *output)
+	double *output)
  : BC_TumbleTextBox(gui, 
-		output ? (float)*output : 0.0,
-		(float)HISTOGRAM_MIN_INPUT,
-		(float)HISTOGRAM_MAX_INPUT,
+		output ? *output : 0.0,
+		HISTOGRAM_MIN_INPUT,
+		HISTOGRAM_MAX_INPUT,
 		x, 
 		y, 
 		60)
@@ -829,8 +822,8 @@ HistogramInputText::HistogramInputText(HistogramMain *plugin,
 	int do_x)
  : BC_TumbleTextBox(gui, 
 		0.0,
-		(float)HISTOGRAM_MIN_INPUT,
-		(float)HISTOGRAM_MAX_INPUT,
+		HISTOGRAM_MIN_INPUT,
+		HISTOGRAM_MAX_INPUT,
 		x, 
 		y, 
 		60)
@@ -887,11 +880,11 @@ void HistogramInputText::update()
 		}
 		else
 		{
-			BC_TumbleTextBox::update((float)0.0);
+			BC_TumbleTextBox::update(0.0);
 		}
 	}
 	else
 	{
-		BC_TumbleTextBox::update((float)0.0);
+		BC_TumbleTextBox::update(0.0);
 	}
 }

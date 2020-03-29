@@ -42,7 +42,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int input_to_pixel(float input);
+	int input_to_pixel(double input);
 
 	int operation;
 	enum
@@ -117,10 +117,11 @@ public:
 		HistogramWindow *gui,
 		int x,
 		int y,
-		float *output);
+		double *output);
+
 	int handle_event();
 	HistogramMain *plugin;
-	float *output;
+	double *output;
 };
 
 class HistogramInputText : public BC_TumbleTextBox
@@ -160,7 +161,6 @@ class HistogramWindow : public PluginWindow
 {
 public:
 	HistogramWindow(HistogramMain *plugin, int x, int y);
-	~HistogramWindow();
 
 	void update();
 	void update_mode();

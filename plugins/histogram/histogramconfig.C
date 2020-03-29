@@ -23,15 +23,9 @@
 #include "histogram.h"
 #include "units.h"
 
-#include <math.h>
-
 
 HistogramPoint::HistogramPoint()
  : ListItem<HistogramPoint>()
-{
-}
-
-HistogramPoint::~HistogramPoint()
 {
 }
 
@@ -46,11 +40,7 @@ HistogramPoints::HistogramPoints()
 {
 }
 
-HistogramPoints::~HistogramPoints()
-{
-}
-
-HistogramPoint* HistogramPoints::insert(float x, float y)
+HistogramPoint* HistogramPoints::insert(double x, double y)
 {
 	HistogramPoint *current = first;
 
@@ -78,13 +68,13 @@ HistogramPoint* HistogramPoints::insert(float x, float y)
 	new_point->x = x;
 	new_point->y = y;
 
-
 	return new_point;
 }
 
 void HistogramPoints::boundaries()
 {
 	HistogramPoint *current = first;
+
 	while(current)
 	{
 		CLAMP(current->x, 0.0, 1.0);
@@ -97,15 +87,18 @@ int HistogramPoints::equivalent(HistogramPoints *src)
 {
 	HistogramPoint *current_this = first;
 	HistogramPoint *current_src = src->first;
+
 	while(current_this && current_src)
 	{
-		if(!current_this->equivalent(current_src)) return 0;
+		if(!current_this->equivalent(current_src))
+			return 0;
+
 		current_this = current_this->next;
 		current_src = current_src->next;
 	}
 
 	if(!current_this && current_src ||
-		current_this && !current_src)
+			current_this && !current_src)
 		return 0;
 	return 1;
 }
@@ -115,6 +108,7 @@ void HistogramPoints::copy_from(HistogramPoints *src)
 	while(last)
 		delete last;
 	HistogramPoint *current = src->first;
+
 	while(current)
 	{
 		HistogramPoint *new_point = new HistogramPoint;
@@ -254,6 +248,7 @@ void HistogramConfig::dump()
 		printf("HistogramConfig::dump mode=%d plot=%d split=%d\n", j, plot, split);
 		HistogramPoints *points = &this->points[j];
 		HistogramPoint *current = points->first;
+
 		while(current)
 		{
 			printf("%f,%f ", current->x, current->y);

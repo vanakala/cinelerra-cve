@@ -29,7 +29,6 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
-#include "bcresources.h"
 #include "colorspaces.h"
 #include "filexml.h"
 #include "histogram.h"
@@ -38,16 +37,8 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "tmpframecache.h"
 #include "vframe.h"
 #include "picon_png.h"
-
-#include "aggregated.h"
-#include "../colorbalance/aggregated.h"
-#include "../gamma/aggregated.h"
-
-class HistogramEngine;
-
 
 REGISTER_PLUGIN
 
@@ -69,7 +60,6 @@ HistogramMain::HistogramMain(PluginServer *server)
 	dragging_point = 0;
 	input = 0;
 	output = 0;
-	gui_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -84,7 +74,6 @@ HistogramMain::~HistogramMain()
 		delete [] preview_lookup[i];
 	}
 	delete engine;
-	BC_Resources::tmpframes.release_frame(gui_frame);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -94,32 +83,7 @@ void HistogramMain::render_gui(void *data)
 {
 	if(thread)
 	{
-// Process just the RGB values to determine the automatic points or
-// all the points if manual
-		if(!config.automatic)
-		{
-// Generate curves for value histogram
-// Lock out changes to curves
-			tabulate_curve(HISTOGRAM_RED, 0);
-			tabulate_curve(HISTOGRAM_GREEN, 0);
-			tabulate_curve(HISTOGRAM_BLUE, 0);
-		}
-
 		calculate_histogram((VFrame*)data, !config.automatic);
-
-		if(config.automatic)
-		{
-			calculate_automatic((VFrame*)data);
-
-// Generate curves for value histogram
-// Lock out changes to curves
-			tabulate_curve(HISTOGRAM_RED, 0);
-			tabulate_curve(HISTOGRAM_GREEN, 0);
-			tabulate_curve(HISTOGRAM_BLUE, 0);
-
-// Need a second pass to get the luminance values.
-			calculate_histogram((VFrame*)data, 1);
-		}
 
 		thread->window->update_canvas();
 		if(config.automatic)
@@ -313,12 +277,12 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 	config.boundaries();
 }
 
-float HistogramMain::calculate_linear(float input, 
+double HistogramMain::calculate_linear(double input,
 	int subscript,
 	int use_value)
 {
 	int done = 0;
-	float output;
+	double output;
 
 	if(!done)
 	{
@@ -370,11 +334,11 @@ float HistogramMain::calculate_linear(float input,
 		output = calculate_linear(output, HISTOGRAM_VALUE, 0);
 	}
 
-	float output_min = config.output_min[subscript];
-	float output_max = config.output_max[subscript];
-	float output_left;
-	float output_right;
-	float output_linear;
+	double output_min = config.output_min[subscript];
+	double output_max = config.output_max[subscript];
+	double output_left;
+	double output_right;
+	double output_linear;
 
 // Compress output for value followed by channel
 	output = output_min + 
@@ -384,25 +348,24 @@ float HistogramMain::calculate_linear(float input,
 	return output;
 }
 
-float HistogramMain::calculate_smooth(float input, int subscript)
+double HistogramMain::calculate_smooth(double input, int subscript)
 {
-	float x_f = (input - HISTOGRAM_MIN_INPUT) * HISTOGRAM_SLOTS / HISTOGRAM_FLOAT_RANGE;
+	double x_f = (input - HISTOGRAM_MIN_INPUT) * HISTOGRAM_SLOTS / HISTOGRAM_FLOAT_RANGE;
 	int x_i1 = (int)x_f;
 	int x_i2 = x_i1 + 1;
 	CLAMP(x_i1, 0, HISTOGRAM_SLOTS - 1);
 	CLAMP(x_i2, 0, HISTOGRAM_SLOTS - 1);
 	CLAMP(x_f, 0, HISTOGRAM_SLOTS - 1);
 
-	float smooth1 = smoothed[subscript][x_i1];
-	float smooth2 = smoothed[subscript][x_i2];
-	float result = smooth1 + (smooth2 - smooth1) * (x_f - x_i1);
+	double smooth1 = smoothed[subscript][x_i1];
+	double smooth2 = smoothed[subscript][x_i2];
+	double result = smooth1 + (smooth2 - smooth1) * (x_f - x_i1);
 	CLAMP(result, 0, 1.0);
 	return result;
 }
 
 void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 {
-
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -490,60 +453,22 @@ void HistogramMain::calculate_automatic(VFrame *data)
 	}
 }
 
-
-int HistogramMain::calculate_use_opengl()
+VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 {
-// glHistogram doesn't work.
-	int result = get_use_opengl() &&
-		!config.automatic && 
-		config.points[HISTOGRAM_RED].total() < 3 &&
-		config.points[HISTOGRAM_GREEN].total() < 3 &&
-		config.points[HISTOGRAM_BLUE].total() < 3 &&
-		config.points[HISTOGRAM_VALUE].total() < 3 &&
-		(!config.plot || !gui_open());
-	return result;
-}
+	need_reconfigure |= load_configuration();
 
-void HistogramMain::process_frame(VFrame *frame)
-{
-	int need_reconfigure = load_configuration();
-	int use_opengl = calculate_use_opengl();
+	if(!engine)
+		engine = new HistogramEngine(this,
+			get_project_smp() + 1,
+			get_project_smp() + 1);
+	input = frame;
+	output = frame;
 
-	get_frame(frame);
-
-// Apply histogram in hardware
-	if(use_opengl)
-	{
-		run_opengl();
-		return;
-	}
-
-	if(!engine) engine = new HistogramEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	this->input = frame;
-	this->output = frame;
-
-// Always plot to set the curves if automatic
-	if(config.plot || config.automatic)
-	{
-		if(!gui_frame || !gui_frame->equivalent(frame))
-		{
-			BC_Resources::tmpframes.release_frame(gui_frame);
-			gui_frame = BC_Resources::tmpframes.get_tmpframe(
-				frame->get_w(), frame->get_h(), frame->get_color_model());
-		}
-		gui_frame->copy_from(frame);
-		send_render_gui(gui_frame);
-	}
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure || 
-		!lookup[0] || 
-		!smoothed[0] || 
-		!linear[0] || 
-		config.automatic)
+	if(need_reconfigure || !lookup[0] || !smoothed[0] ||
+		!linear[0] || config.automatic)
 	{
 // Calculate new curves
 		if(config.automatic)
@@ -558,6 +483,10 @@ void HistogramMain::process_frame(VFrame *frame)
 
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input, 0);
+// Always plot to set the curves if automatic
+	if(config.plot || config.automatic)
+		render_gui(frame);
+	return frame;
 }
 
 void HistogramMain::tabulate_curve(int subscript, int use_value)
@@ -579,12 +508,11 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 // Make linear curve
 	for(i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
-		float input = (float)i / HISTOGRAM_SLOTS * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
+		double input = (double)i / HISTOGRAM_SLOTS * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
 		current_linear[i] = calculate_linear(input, subscript, use_value);
 	}
 
 // Make smooth curve (currently a copy of the linear curve)
-	float prev = 0.0;
 	for(i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
 		current_smooth[i] = current_linear[i];
@@ -599,13 +527,15 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 		case BC_RGBA8888:
 			for(i = 0; i < 0x100; i++)
 				lookup[subscript][i] = 
-					(int)(calculate_smooth((float)i / 0xff, subscript) * 0xff);
+					round(calculate_smooth((double)i / 0xff,
+						subscript) * 0xff);
 			break;
 // All other integer colormodels are converted to 16 bit RGB
 		default:
 			for(i = 0; i < 0x10000; i++)
 				lookup[subscript][i] = 
-					(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
+					round(calculate_smooth((double)i / 0xffff,
+						subscript) * 0xffff);
 			break;
 		}
 	}
@@ -615,13 +545,15 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	{
 		for(i = 0; i < 0x10000; i++)
 			preview_lookup[subscript][i] = 
-				(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
+				round(calculate_smooth((double)i / 0xffff,
+					subscript) * 0xffff);
 	}
 }
 
 void HistogramMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 // Functions to get pixel from either previous effect or texture
 	static const char *histogram_get_pixel1 =
 		"vec4 histogram_get_pixel()\n"
@@ -655,11 +587,9 @@ void HistogramMain::handle_opengl()
 
 	static const char *get_rgb_frag =
 		"	vec4 pixel = histogram_get_pixel();\n";
-/* FIXIT
 	static const char *get_yuv_frag =
 		"	vec4 pixel = histogram_get_pixel();\n"
 			YUV_TO_RGB_FRAG("pixel");
-	*/
 #define APPLY_INPUT_CURVE(PIXEL, INPUT_MIN, INPUT_MAX) \
 		"// apply input curve\n" \
 		"	if(" PIXEL " < 0.0)\n" \
@@ -699,7 +629,6 @@ void HistogramMain::handle_opengl()
 	static const char *put_rgb_frag =
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-/* FIXIT
 	static const char *put_yuv_frag =
 			RGB_TO_YUV_FRAG("pixel")
 		"	gl_FragColor = pixel;\n"

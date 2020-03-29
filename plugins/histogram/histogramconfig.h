@@ -24,16 +24,14 @@
 
 #include "datatype.h"
 #include "linklist.h"
-#include <stdint.h>
 
 class HistogramPoint : public ListItem<HistogramPoint>
 {
 public:
 	HistogramPoint();
-	~HistogramPoint();
 
 	int equivalent(HistogramPoint *src);
-	float x, y;
+	double x, y;
 };
 
 
@@ -41,10 +39,9 @@ class HistogramPoints : public List<HistogramPoint>
 {
 public:
 	HistogramPoints();
-	~HistogramPoints();
 
 // Insert new point
-	HistogramPoint* insert(float x, float y);
+	HistogramPoint* insert(double x, double y);
 	int equivalent(HistogramPoints *src);
 	void boundaries();
 	void copy_from(HistogramPoints *src);
@@ -76,10 +73,10 @@ public:
 // Input points
 	HistogramPoints points[HISTOGRAM_MODES];
 // Output points
-	float output_min[HISTOGRAM_MODES];
-	float output_max[HISTOGRAM_MODES];
+	double output_min[HISTOGRAM_MODES];
+	double output_max[HISTOGRAM_MODES];
 	int automatic;
-	float threshold;
+	double threshold;
 	int plot;
 	int split;
 	PLUGIN_CONFIG_CLASS_MEMBERS

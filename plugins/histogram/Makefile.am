@@ -9,7 +9,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-noinst_HEADERS = aggregated.h histogram.h histogramconfig.h \
+noinst_HEADERS = histogram.h histogramconfig.h \
 	histogramwindow.h histogram.inc 
 
 EXTRA_DIST = picon.png max_picon.png mid_picon.png min_picon.png
