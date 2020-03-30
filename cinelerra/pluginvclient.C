@@ -106,7 +106,7 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 
 GuideFrame *PluginVClient::get_guides()
 {
-	if(plugin->guideframe && mwindow_global)
+	if(!plugin->guideframe && mwindow_global)
 	{
 		ptstime start = plugin->get_pts();
 		ptstime end = plugin->get_length();
