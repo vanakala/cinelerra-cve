@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_TITLE N_("Blue Banana")
 #define PLUGIN_CLASS BluebananaMain
 #define PLUGIN_CONFIG_CLASS BluebananaConfig
@@ -84,7 +85,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_auto(KeyFrame *keyframe);

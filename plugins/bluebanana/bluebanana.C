@@ -81,15 +81,13 @@ void BluebananaMain::render_gui(void *data)
 {
 	if(thread)
 	{
-		BluebananaMain *that = (BluebananaMain *)data; // that is server-side
-
 		// push histogram data to gui
-		thread->window->update_histograms(that);
+		thread->window->update_histograms(this);
 
 		// push any colormodel update to gui
-		if(that->frame && colormodel != that->frame->get_color_model())
+		if(frame && colormodel != frame->get_color_model())
 		{
-			colormodel = that->frame->get_color_model();
+			colormodel = frame->get_color_model();
 			thread->window->update();
 		}
 	}
@@ -673,14 +671,12 @@ float *BluebananaMain::fill_selection(float *in, float *work,
 	return C;
 }
 
-void BluebananaMain::process_frame(VFrame *frame)
+VFrame *BluebananaMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 	this->frame = frame;
 
 	update_lookups(1);
-
-	get_frame(frame);
 
 	if(!engine)
 		engine = new BluebananaEngine(this, get_project_smp() + 1,
@@ -688,5 +684,7 @@ void BluebananaMain::process_frame(VFrame *frame)
 	engine->process_packages(frame);
 
 	// push final histograms to UI if it's up
-	send_render_gui(this);
+	render_gui(this);
+
+	return frame;
 }
