@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 // Old name was "Delay Video"
 #define PLUGIN_TITLE N_("Delay")
@@ -55,8 +56,7 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 
-	// kjb - match defined update() type of float instead of double.
-	float length;
+	ptstime length;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -76,7 +76,6 @@ class DelayVideoWindow : public PluginWindow
 {
 public:
 	DelayVideoWindow(DelayVideo *plugin, int x, int y);
-	~DelayVideoWindow();
 
 	void update();
 
@@ -96,12 +95,11 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	VFrame *process_tmpframe(VFrame *input);
 
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void reset();
-	void reconfigure();
+	void reconfigure(VFrame *input);
 
 	void load_defaults();
 	void save_defaults();
@@ -109,7 +107,6 @@ public:
 	int need_reconfigure;
 	int allocation;
 	VFrame **buffer;
-	VFrame *input, *output;
 };
 
 #endif

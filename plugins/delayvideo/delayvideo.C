@@ -74,10 +74,6 @@ DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-DelayVideoWindow::~DelayVideoWindow()
-{
-}
-
 void DelayVideoWindow::update()
 {
 	slider->update(plugin->config.length);
@@ -85,7 +81,7 @@ void DelayVideoWindow::update()
 
 
 DelayVideoSlider::DelayVideoSlider(DelayVideo *plugin, int x, int y)
- : BC_TextBox(x, y, 150, 1, plugin->config.length)
+ : BC_TextBox(x, y, 150, 1, (float)plugin->config.length)
 {
 	this->plugin = plugin;
 }
@@ -126,9 +122,20 @@ DelayVideo::~DelayVideo()
 
 PLUGIN_CLASS_METHODS
 
-void DelayVideo::reconfigure()
+void DelayVideo::reconfigure(VFrame *input)
 {
-	int new_allocation = 1 + (int)(config.length * project_frame_rate);
+	int new_allocation = round(config.length * project_frame_rate);
+
+	if(new_allocation < 1)
+	{
+		for(int i = 0; i < allocation; i++)
+			delete buffer[i];
+		delete [] buffer;
+		buffer = 0;
+		allocation = 0;
+		return;
+	}
+
 	VFrame **new_buffer = new VFrame*[new_allocation];
 	int reuse = MIN(new_allocation, allocation);
 
@@ -145,6 +152,8 @@ void DelayVideo::reconfigure()
 			input->get_w(),
 			input->get_h(),
 			project_color_model);
+		new_buffer[i]->clear_frame();
+		new_buffer[i]->set_layer(input->get_layer());
 		new_buffer[i]->set_pts(cpts);
 		new_buffer[i]->set_duration(1 / project_frame_rate);
 		cpts = new_buffer[i]->next_pts();
@@ -164,24 +173,27 @@ void DelayVideo::reconfigure()
 	need_reconfigure = 0;
 }
 
-void DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+VFrame *DelayVideo::process_tmpframe(VFrame *frame)
 {
-	this->input = input_ptr;
-	this->output = output_ptr;
 	need_reconfigure += load_configuration();
 	CLAMP(config.length, 0, 10);
 
-	if(need_reconfigure) reconfigure();
+	if(need_reconfigure)
+		reconfigure(frame);
 
-	buffer[allocation - 1]->copy_from(input_ptr);
-	output_ptr->copy_from(buffer[0], 0);
-
-	VFrame *temp = buffer[0];
-	for(int i = 0; i < allocation - 1; i++)
+	if(allocation > 1)
 	{
-		buffer[i] = buffer[i + 1];
+		buffer[allocation - 1]->copy_from(frame);
+		frame->copy_from(buffer[0], 0);
+
+		VFrame *temp = buffer[0];
+
+		for(int i = 0; i < allocation - 1; i++)
+			buffer[i] = buffer[i + 1];
+
+		buffer[allocation - 1] = temp;
 	}
-	buffer[allocation - 1] = temp;
+	return frame;
 }
 
 void DelayVideo::save_data(KeyFrame *keyframe)
