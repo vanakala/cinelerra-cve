@@ -1006,7 +1006,7 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 			// (235 - 16) / 256 * 0.9
 			values.coef1 = 0.770 / (values.coef1 - values.coef2);
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
-			send_render_gui(&values);
+			render_gui(&values);
 		}
 
 		GuideFrame *gf = get_guides();
