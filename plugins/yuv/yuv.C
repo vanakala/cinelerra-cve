@@ -337,4 +337,5 @@ VFrame *YUVEffect::process_tmpframe(VFrame *input)
 			break;
 		}
 	}
+	return input;
 }
