@@ -25,64 +25,15 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_SYNTHESIS
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Freeze Frame")
 #define PLUGIN_CLASS FreezeFrameMain
-#define PLUGIN_CONFIG_CLASS FreezeFrameConfig
-#define PLUGIN_THREAD_CLASS FreezeFrameThread
-#define PLUGIN_GUI_CLASS FreezeFrameWindow
 
 #include "pluginmacros.h"
 
-#include "filexml.inc"
 #include "language.h"
 #include "pluginvclient.h"
-#include "pluginwindow.h"
-
-class FreezeFrameConfig
-{
-public:
-	FreezeFrameConfig();
-	void copy_from(FreezeFrameConfig &that);
-	int equivalent(FreezeFrameConfig &that);
-	void interpolate(FreezeFrameConfig &prev, 
-		FreezeFrameConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	int enabled;
-	int line_double;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class FreezeFrameToggle : public BC_CheckBox
-{
-public:
-	FreezeFrameToggle(FreezeFrameMain *client, 
-		int *value, 
-		int x, 
-		int y,
-		char *text);
-	~FreezeFrameToggle();
-	int handle_event();
-	FreezeFrameMain *client;
-	int *value;
-};
-
-class FreezeFrameWindow : public PluginWindow
-{
-public:
-	FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y);
-	~FreezeFrameWindow();
-
-	void update();
-
-	FreezeFrameToggle *enabled;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
 
 class FreezeFrameMain : public PluginVClient
 {
@@ -92,17 +43,11 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame(VFrame *frame);
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void load_defaults();
-	void save_defaults();
+	VFrame *process_tmpframe(VFrame *frame);
 	void handle_opengl();
 
 // Frame to replicate
 	VFrame *first_frame;
-// Position of frame to replicate
-	ptstime first_frame_pts;
 };
 
 #endif
