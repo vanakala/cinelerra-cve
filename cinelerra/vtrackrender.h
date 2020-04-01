@@ -29,6 +29,7 @@
 #include "maskengine.inc"
 #include "overlayframe.inc"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "track.inc"
 #include "videorender.inc"
 #include "trackrender.h"
@@ -43,7 +44,7 @@ public:
 
 	void process_vframe(ptstime pts, int rstep);
 	VFrame *get_vframe(VFrame *buffer);
-	VFrame *get_vtmpframe(VFrame *buffer);
+	VFrame *get_vtmpframe(VFrame *buffer, PluginClient *client);
 	VFrame *handover_trackframe();
 	void take_vframe(VFrame *frame);
 	VFrame *copy_track_vframe(VFrame *vframe);

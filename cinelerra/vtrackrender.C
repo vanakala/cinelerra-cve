@@ -574,10 +574,17 @@ VFrame *VTrackRender::get_vframe(VFrame *buffer)
 	return buffer;
 }
 
-VFrame *VTrackRender::get_vtmpframe(VFrame *buffer)
+VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
 {
 // Called by tmpframe aware plugin
 	ptstime buffer_pts = buffer->get_pts();
+	Plugin *current = client->plugin;
+
+	if(buffer_pts > client->end_pts)
+		buffer_pts = client->end_pts - buffer->get_duration();
+	if(buffer_pts < client->source_start_pts)
+		buffer_pts = client->source_start_pts;
+
 	Edit *edit = media_track->editof(buffer_pts);
 
 	if(edit)
@@ -588,6 +595,20 @@ VFrame *VTrackRender::get_vtmpframe(VFrame *buffer)
 		buffer = render_camera(buffer);
 		render_mask(buffer, 1);
 		render_crop(buffer, 1);
+		// render all standalone plugns before the current
+		for(int i = 0; i < plugins_track->plugins.total; i++)
+		{
+			Plugin *plugin = plugins_track->plugins.values[i];
+
+			if(plugin == current)
+				break;
+			if(!plugin->plugin_server)
+				continue;
+			if(plugin->plugin_type != PLUGIN_STANDALONE ||
+					plugin->plugin_server->multichannel)
+				continue;
+			buffer = execute_plugin(plugin, buffer, RSTEP_NORMAL);
+		}
 	}
 	return buffer;
 }

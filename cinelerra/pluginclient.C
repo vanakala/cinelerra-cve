@@ -350,7 +350,7 @@ VFrame *PluginClient::get_frame(VFrame *buffer)
 		if(server->apiversion < 3)
 			current->renderer->get_vframe(buffer);
 		else
-			return current->renderer->get_vtmpframe(buffer);
+			return current->renderer->get_vtmpframe(buffer, this);
 	}
 	return buffer;
 }

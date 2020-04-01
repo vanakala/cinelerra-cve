@@ -27,6 +27,7 @@
 #include "edit.inc"
 #include "file.inc"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "track.inc"
 #include "trackrender.inc"
 #include "vframe.inc"
@@ -42,7 +43,8 @@ public:
 	virtual ~TrackRender();
 
 	virtual VFrame *get_vframe(VFrame *buffer) { return 0; };
-	virtual VFrame *get_vtmpframe(VFrame *buffer) { return 0; };
+	virtual VFrame *get_vtmpframe(VFrame *buffer,
+		PluginClient *client) { return 0; };
 	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
 	virtual void copy_track_aframe(AFrame *buffer) {};
 	virtual VFrame *copy_track_vframe(VFrame *buffer) {};
