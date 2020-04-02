@@ -451,7 +451,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/colorspace/Makefile
 	plugins/compressor/Makefile
 	plugins/crossfade/Makefile
-	plugins/decimate/Makefile
 	plugins/deinterlace/Makefile
 	plugins/delayaudio/Makefile 
 	plugins/delayvideo/Makefile

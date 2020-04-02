@@ -23,7 +23,6 @@ SUBDIRS= \
 	colorspace \
 	compressor \
 	crossfade \
-	decimate \
 	deinterlace \
 	delayaudio \
 	delayvideo \
