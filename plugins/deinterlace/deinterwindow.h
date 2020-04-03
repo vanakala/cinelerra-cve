@@ -43,7 +43,6 @@ class DeInterlaceWindow : public PluginWindow
 {
 public:
 	DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y);
-	~DeInterlaceWindow();
 
 	void update();
 	void set_mode(int mode, int recursive);
@@ -62,16 +61,15 @@ public:
 class DeInterlaceOption : public BC_Radial
 {
 public:
-	DeInterlaceOption(DeInterlaceMain *client, 
-		DeInterlaceWindow *window, 
+	DeInterlaceOption(DeInterlaceMain *client,
+		DeInterlaceWindow *window,
 		int output, 
 		int x, 
 		int y, 
 		char *text);
-	~DeInterlaceOption();
+
 	int handle_event();
 
-	DeInterlaceMain *client;
 	DeInterlaceWindow *window;
 	int output;
 };

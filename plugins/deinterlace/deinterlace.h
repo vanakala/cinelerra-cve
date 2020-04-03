@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Deinterlace")
 #define PLUGIN_CLASS DeInterlaceMain
@@ -82,7 +83,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
@@ -90,7 +91,7 @@ public:
 	void save_defaults();
 	void render_gui(void *data);
 
-	void deinterlace_avg_top(VFrame *input, VFrame *output, int dominance);
+	VFrame *deinterlace_avg_top(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_top(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg(VFrame *input, VFrame *output);
 	void deinterlace_swap(VFrame *input, VFrame *output, int dominance);
@@ -98,7 +99,6 @@ public:
 	void deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFrame *output, int dominance);
 
 	int changed_rows;
-	VFrame *temp;
 	VFrame *temp_prevframe;
 };
 

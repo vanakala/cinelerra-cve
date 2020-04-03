@@ -73,13 +73,12 @@ void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
 DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	temp_prevframe=0;
+	temp_prevframe = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
-	if(temp_prevframe) delete temp_prevframe;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -123,12 +122,12 @@ PLUGIN_CLASS_METHODS
 		type *input_row1 = (type*)input->get_row_ptr(in_number1); \
 		type *input_row2 = (type*)input->get_row_ptr(in_number2); \
 		type *input_row3 = (type*)input->get_row_ptr(out_number2); \
-		type *temp_row1 = (type*)temp->get_row_ptr(out_number1); \
-		type *temp_row2 = (type*)temp->get_row_ptr(out_number2); \
+		type *out_row1 = (type*)output->get_row_ptr(out_number1); \
+		type *out_row2 = (type*)output->get_row_ptr(out_number2); \
 		temp_type sum = 0; \
 		temp_type accum_r, accum_b, accum_g, accum_a; \
  \
-		memcpy(temp_row1, input_row1, w * components * sizeof(type)); \
+		memcpy(out_row1, input_row1, w * components * sizeof(type)); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			accum_r = (*input_row1++) + (*input_row2++); \
@@ -144,24 +143,24 @@ PLUGIN_CLASS_METHODS
 			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_r; \
 			abs_diff += (sum < 0 ? -sum : sum); \
-			*temp_row2++ = accum_r; \
+			*out_row2++ = accum_r; \
  \
 			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_g; \
 			abs_diff += (sum < 0 ? -sum : sum); \
-			*temp_row2++ = accum_g; \
+			*out_row2++ = accum_g; \
  \
 			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_b; \
 			abs_diff += (sum < 0 ? -sum : sum); \
-			*temp_row2++ = accum_b; \
+			*out_row2++ = accum_b; \
  \
 			if(components == 4) \
 			{ \
 	 			total += *input_row3; \
 				sum = ((temp_type)*input_row3++) - accum_a; \
 				abs_diff += (sum < 0 ? -sum : sum); \
-				*temp_row2++ = accum_a; \
+				*out_row2++ = accum_a; \
 			} \
 		} \
 	} \
@@ -169,12 +168,12 @@ PLUGIN_CLASS_METHODS
 	temp_type threshold = (temp_type)total * config.threshold / THRESHOLD_SCALAR; \
 	if(abs_diff > threshold || !config.adaptive) \
 	{ \
-		output->copy_from(temp); \
+		result = output; \
 		changed_rows = 240; \
 	} \
 	else \
 	{ \
-		output->copy_from(input); \
+		result = input; \
 		changed_rows = 0; \
 	} \
  \
@@ -241,11 +240,12 @@ PLUGIN_CLASS_METHODS
 		\
 		if (dominance) { \
 			input_row1 = (type*)input->get_row_ptr(i); \
-			input_row2 = (type*)prevframe->get_row_ptr(i+1); \
+			input_row2 = (type*)prevframe->get_row_ptr(i + 1); \
 		} \
-		else  {\
+		else \
+		{ \
 			input_row1 = (type*)prevframe->get_row_ptr(i); \
-			input_row2 = (type*)input->get_row_ptr(i+1); \
+			input_row2 = (type*)input->get_row_ptr(i + 1); \
 		} \
  \
 		for(int j = 0; j < w * components; j++) \
@@ -303,16 +303,20 @@ Similar is defined as in abs(difference)/(sum) < threshold
 			old = old_row[j]; \
 			above = row_above[j]; \
 \
-			if  ( ( FABS(pixel-old) <= noise_threshold )  \
-			|| ((pixel+old != 0) && (((FABS((double) pixel-old))/((double) pixel+old)) >= exp_threshold )) \
-			|| ((above+below != 0) && (((FABS((double) pixel-old))/((double) above+below)) >= exp_threshold )) \
-			) {\
-				pixel=(above+below)/2 ;\
-			}\
+			if((FABS(pixel - old) <= noise_threshold) || \
+				((pixel + old != 0) && \
+				(((FABS((double)pixel - old)) / ((double)pixel + old)) \
+					>= exp_threshold )) || \
+				((above + below != 0) && \
+				(((FABS((double)pixel - old)) / ((double)above + below)) \
+					>= exp_threshold ))) \
+			{ \
+				pixel = (above + below) / 2; \
+			} \
 			output_row1[j] = pixel; \
 			output_row2[j] = below; \
 		} \
-		row_above=input_row2; \
+		row_above = input_row2; \
 	} \
 }
 
@@ -347,8 +351,10 @@ void DeInterlaceMain::deinterlace_top(VFrame *input, VFrame *output, int dominan
 	}
 }
 
-void DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dominance)
+VFrame *DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dominance)
 {
+	VFrame *result;
+
 	switch(input->get_color_model())
 	{
 	case BC_RGB888:
@@ -375,6 +381,7 @@ void DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dom
 		DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 4, dominance);
 		break;
 	}
+	return result;
 }
 
 void DeInterlaceMain::deinterlace_avg(VFrame *input, VFrame *output)
@@ -500,68 +507,62 @@ void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFr
 	}
 }
 
-
-void DeInterlaceMain::process_frame(VFrame *frame)
+VFrame *DeInterlaceMain::process_tmpframe(VFrame *frame)
 {
+	VFrame *output = 0;
+	VFrame *res;
+
 	changed_rows = frame->get_h();
 	load_configuration();
-
-	get_frame(frame);
-
-// Temp was used for adaptive deinterlacing where it took deinterlacing
-// an entire frame to decide if the deinterlaced output should be used.
-	temp = frame;
-
-	if(!temp_prevframe)
-		temp_prevframe = new VFrame(0,
-			frame->get_w(),
-			frame->get_h(),
-			frame->get_color_model());
 
 	switch(config.mode)
 	{
 	case DEINTERLACE_NONE:
 		break;
 	case DEINTERLACE_KEEP:
-		deinterlace_top(frame, frame, config.dominance);
+		output = clone_vframe(frame);
+		deinterlace_top(frame, output, config.dominance);
 		break;
 	case DEINTERLACE_AVG:
-		deinterlace_avg(frame, frame);
+		output = clone_vframe(frame);
+		deinterlace_avg(frame, output);
 		break;
 	case DEINTERLACE_AVG_1F:
-		deinterlace_avg_top(frame, frame, config.dominance);
+		output = clone_vframe(frame);
+		res = deinterlace_avg_top(frame, output, config.dominance);
+		if(res == frame)
+		{
+			frame = output;
+			output = res;
+		}
 		break;
 	case DEINTERLACE_SWAP:
-		deinterlace_swap(frame, frame, config.dominance);
+		output = clone_vframe(frame);
+		deinterlace_swap(frame, output, config.dominance);
 		break;
 	case DEINTERLACE_BOBWEAVE:
-		if (frame->get_pts() < EPSILON)
-		{
-			temp_prevframe->set_pts(0);
-			get_frame(temp_prevframe);
-		}
-		else
-		{
-			temp_prevframe->set_pts(frame->get_pts() - frame->get_duration() - EPSILON);
-			get_frame(temp_prevframe);
-		}
-		deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
+		output = clone_vframe(frame);
+		temp_prevframe = clone_vframe(frame);
+		temp_prevframe->set_pts(frame->get_pts() - frame->get_duration());
+		get_frame(temp_prevframe);
+		deinterlace_bobweave(frame, temp_prevframe, output, config.dominance);
 		break;
 	case DEINTERLACE_TEMPORALSWAP:
-		if (frame->get_pts() < EPSILON)
-		{
-			temp_prevframe->set_pts(0);
-			get_frame(temp_prevframe);
-		}
-		else
-		{
-			temp_prevframe->set_pts(frame->get_pts() - frame->get_duration() - EPSILON);
-			get_frame(temp_prevframe);
-		}
-		deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
+		output = clone_vframe(frame);
+		temp_prevframe = clone_vframe(frame);
+		temp_prevframe->set_pts(frame->get_pts() - frame->get_duration());
+		get_frame(temp_prevframe);
+		deinterlace_temporalswap(frame, temp_prevframe, output, config.dominance);
 		break;
 	}
-	send_render_gui(&changed_rows);
+	release_vframe(temp_prevframe);
+	if(output)
+	{
+		release_vframe(frame);
+		frame = output;
+	}
+	render_gui(&changed_rows);
+	return frame;
 }
 
 void DeInterlaceMain::render_gui(void *data)
@@ -569,7 +570,7 @@ void DeInterlaceMain::render_gui(void *data)
 	if(thread)
 	{
 		char string[BCTEXTLEN];
-		thread->window->get_status_string(string, *(int*)data);
+		thread->window->get_status_string(string, changed_rows);
 		thread->window->status->update(string);
 		thread->window->flush();
 	}
