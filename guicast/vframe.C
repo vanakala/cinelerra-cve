@@ -544,6 +544,9 @@ void VFrame::transfer_from(VFrame *frame)
 
 void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 {
+	if(frame == this)
+		return;
+
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
 	int bytes = MIN(bytes_per_line, frame->get_bytes_per_line());
