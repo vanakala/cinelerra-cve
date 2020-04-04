@@ -105,10 +105,6 @@ SelTempAvgWindow::SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-SelTempAvgWindow::~SelTempAvgWindow()
-{
-}
-
 void SelTempAvgWindow::update()
 {
 	total_frames->update(plugin->config.duration);
@@ -148,17 +144,15 @@ SelTempAvgThreshSlider::SelTempAvgThreshSlider(SelTempAvgMain *client, int x, in
 	this->client = client;
 }
 
-SelTempAvgThreshSlider::~SelTempAvgThreshSlider()
-{
-}
-
 int SelTempAvgThreshSlider::handle_event()
 {
 	float val = atof(get_text());
 
-	if(val < 0) val = 0;
+	if(val < 0)
+		val = 0;
 
-	switch (type) {
+	switch(type)
+	{
 	case AVG_RY:
 		client->config.avg_threshold_RY = val;
 		break;
@@ -178,7 +172,6 @@ int SelTempAvgThreshSlider::handle_event()
 		client->config.std_threshold_BV = val;
 		break;
 	}
-
 	client->send_configure_change();
 	return 1;
 }
@@ -188,10 +181,6 @@ SelTempAvgOffsetValue::SelTempAvgOffsetValue(SelTempAvgMain *client, int x, int 
   : BC_TextBox(x,y, 80, 1, client->config.offset_fixed_pts, 1, MEDIUMFONT, 2)
 {
 	this->client = client;
-}
-
-SelTempAvgOffsetValue::~SelTempAvgOffsetValue()
-{
 }
 
 int SelTempAvgOffsetValue::handle_event()
@@ -206,10 +195,6 @@ SelTempAvgGainValue::SelTempAvgGainValue(SelTempAvgMain *client, int x, int y)
   : BC_TextBox(x,y, 80, 1, client->config.gain)
 {
 	this->client = client;
-}
-
-SelTempAvgGainValue::~SelTempAvgGainValue()
-{
 }
 
 int SelTempAvgGainValue::handle_event()
@@ -234,10 +219,6 @@ SelTempAvgSlider::SelTempAvgSlider(SelTempAvgMain *client, int x, int y)
 	client->config.duration)
 {
 	this->client = client;
-}
-
-SelTempAvgSlider::~SelTempAvgSlider()
-{
 }
 
 int SelTempAvgSlider::handle_event()
@@ -340,7 +321,7 @@ SelTempAvgMask::SelTempAvgMask(SelTempAvgMain *client, int x, int y, int type, i
  : BC_CheckBox(x, 
 	y,
 	val,
-	"")
+	0)
 {
 	this->client = client;
 	this->type = type;
@@ -349,7 +330,9 @@ SelTempAvgMask::SelTempAvgMask(SelTempAvgMain *client, int x, int y, int type, i
 int SelTempAvgMask::handle_event()
 {
 	int result = get_value();
-	switch (type) {
+
+	switch(type)
+	{
 	case MASK_RY:
 		client->config.mask_RY = result;
 		break;

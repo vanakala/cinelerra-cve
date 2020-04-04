@@ -65,7 +65,6 @@ class SelTempAvgWindow : public PluginWindow
 {
 public:
 	SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y);
-	~SelTempAvgWindow();
 
 	void update();
 
@@ -93,7 +92,7 @@ class SelTempAvgThreshSlider : public BC_TextBox
 {
 public:
 	SelTempAvgThreshSlider(SelTempAvgMain *client, int x, int y, int type, float curval);
-	~SelTempAvgThreshSlider();
+
 	int handle_event();
 	int type;
 	SelTempAvgMain *client;
@@ -104,7 +103,7 @@ class SelTempAvgOffsetValue : public BC_TextBox
 {
 public:
 	SelTempAvgOffsetValue(SelTempAvgMain *client, int x, int y);
-	~SelTempAvgOffsetValue();
+
 	int handle_event();
 	SelTempAvgMain *client;
 };
@@ -114,7 +113,7 @@ class SelTempAvgGainValue : public BC_TextBox
 {
 public:
 	SelTempAvgGainValue(SelTempAvgMain *client, int x, int y);
-	~SelTempAvgGainValue();
+
 	int handle_event();
 	SelTempAvgMain *client;
 };
@@ -124,7 +123,7 @@ class SelTempAvgSlider : public BC_FSlider
 {
 public:
 	SelTempAvgSlider(SelTempAvgMain *client, int x, int y);
-	~SelTempAvgSlider();
+
 	int handle_event();
 
 	SelTempAvgMain *client;
