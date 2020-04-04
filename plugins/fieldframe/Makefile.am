@@ -1,13 +1,14 @@
 plugin_LTLIBRARIES = fieldframe.la
 fieldframe_la_LDFLAGS = -avoid-version -module -shared 
 fieldframe_la_LIBADD = 
-fieldframe_la_SOURCES = fieldframe.C 
+fieldframe_la_SOURCES = fieldframe.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
+noinst_HEADERS = fieldframe.h
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 

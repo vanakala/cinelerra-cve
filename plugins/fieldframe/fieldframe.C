@@ -19,99 +19,14 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("Fields to frames")
-#define PLUGIN_CLASS FieldFrame
-#define PLUGIN_CONFIG_CLASS FieldFrameConfig
-#define PLUGIN_THREAD_CLASS FieldFrameThread
-#define PLUGIN_GUI_CLASS FieldFrameWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
-#include "bctoggle.h"
+#include "fieldframe.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "language.h"
 #include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "vframe.h"
 
 #include <string.h>
-
-#define TOP_FIELD_FIRST 0
-#define BOTTOM_FIELD_FIRST 1
-
-class FieldFrameConfig
-{
-public:
-	FieldFrameConfig();
-	int equivalent(FieldFrameConfig &src);
-	int field_dominance;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class FieldFrameTop : public BC_Radial
-{
-public:
-	FieldFrameTop(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-
-	int handle_event();
-	FieldFrame *plugin;
-	FieldFrameWindow *gui;
-};
-
-
-class FieldFrameBottom : public BC_Radial
-{
-public:
-	FieldFrameBottom(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-
-	int handle_event();
-	FieldFrame *plugin;
-	FieldFrameWindow *gui;
-};
-
-
-class FieldFrameWindow : public PluginWindow
-{
-public:
-	FieldFrameWindow(FieldFrame *plugin, int x, int y);
-
-	void update();
-
-	FieldFrameTop *top;
-	FieldFrameBottom *bottom;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class FieldFrame : public PluginVClient
-{
-public:
-	FieldFrame(PluginServer *server);
-	~FieldFrame();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void apply_field(VFrame *output, VFrame *input, int field);
-
-	VFrame *input;
-};
-
 
 REGISTER_PLUGIN
 
@@ -261,26 +176,13 @@ void FieldFrame::read_data(KeyFrame *keyframe)
 	}
 }
 
-void FieldFrame::process_frame(VFrame *frame)
+VFrame *FieldFrame::process_tmpframe(VFrame *input)
 {
+	VFrame *frame;
 	load_configuration();
 
-	if(input && !input->equivalent(frame))
-	{
-		delete input;
-		input = 0;
-	}
+	frame = clone_vframe(input);
 
-	if(!input)
-	{
-		input = new VFrame(0, 
-			frame->get_w(), 
-			frame->get_h(), 
-			frame->get_color_model());
-	}
-
-	input->copy_pts(frame);
-	get_frame(input);
 	frame->copy_pts(input);
 
 	apply_field(frame, 
@@ -293,6 +195,8 @@ void FieldFrame::process_frame(VFrame *frame)
 		input, 
 		config.field_dominance == TOP_FIELD_FIRST ? 1 : 0);
 	frame->set_duration(input->next_pts() - frame->get_pts());
+	release_vframe(input);
+	return frame;
 }
 
 void FieldFrame::apply_field(VFrame *output, VFrame *input, int field)
