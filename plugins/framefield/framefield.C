@@ -18,147 +18,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("Frames to fields")
-#define PLUGIN_CLASS FrameField
-#define PLUGIN_CONFIG_CLASS FrameFieldConfig
-#define PLUGIN_THREAD_CLASS FrameFieldThread
-#define PLUGIN_GUI_CLASS FrameFieldWindow
-
-#define GL_GLEXT_PROTOTYPES
-
-#include "pluginmacros.h"
 
 #include "bcsignals.h"
-#include "bctoggle.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "framefield.h"
 #include "keyframe.h"
-#include "language.h"
 #include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
-
-#define TOP_FIELD_FIRST 0
-#define BOTTOM_FIELD_FIRST 1
-
-// 601 to RGB expansion is provided as a convenience for OpenGL users since
-// frame bobbing is normally done during playback together with 601 to RGB expansion.
-// It's not optimized for software.
-
-class FrameFieldConfig
-{
-public:
-	FrameFieldConfig();
-
-	int equivalent(FrameFieldConfig &src);
-
-	int field_dominance;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class FrameFieldTop : public BC_Radial
-{
-public:
-	FrameFieldTop(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
-	int handle_event();
-	FrameField *plugin;
-	FrameFieldWindow *gui;
-};
-
-
-class FrameFieldBottom : public BC_Radial
-{
-public:
-	FrameFieldBottom(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
-	int handle_event();
-	FrameField *plugin;
-	FrameFieldWindow *gui;
-};
-
-
-class FrameFieldDouble : public BC_CheckBox
-{
-public:
-	FrameFieldDouble(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
-	int handle_event();
-	FrameField *plugin;
-	FrameFieldWindow *gui;
-};
-
-class FrameFieldShift : public BC_CheckBox
-{
-public:
-	FrameFieldShift(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
-	int handle_event();
-	FrameField *plugin;
-	FrameFieldWindow *gui;
-};
-
-class FrameFieldAvg : public BC_CheckBox
-{
-public:
-	FrameFieldAvg(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
-	int handle_event();
-	FrameField *plugin;
-	FrameFieldWindow *gui;
-};
-
-class FrameFieldWindow : public PluginWindow
-{
-public:
-	FrameFieldWindow(FrameField *plugin, int x, int y);
-
-	void update();
-
-	FrameFieldTop *top;
-	FrameFieldBottom *bottom;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class FrameField : public PluginVClient
-{
-public:
-	FrameField(PluginServer *server);
-	~FrameField();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-// Constructs odd or even rows from the average of the surrounding rows.
-	void average_rows(int offset, VFrame *frame);
-
-	void handle_opengl();
-
-// Field needed
-	int field_number;
-
-// Frame stored
-	ptstime current_frame_pts;
-	ptstime current_frame_duration;
-	VFrame *src_frame;
-
-// Signal OpenGL handler a new frame was read.
-	int new_frame;
-};
 
 REGISTER_PLUGIN
 
@@ -244,59 +114,37 @@ FrameField::FrameField(PluginServer *server)
 	field_number = 0;
 	current_frame_pts = -1;
 	current_frame_duration = 0;
-	src_frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 FrameField::~FrameField()
 {
-	if(src_frame) delete src_frame;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-void FrameField::process_frame(VFrame *frame)
+VFrame *FrameField::process_tmpframe(VFrame *src_frame)
 {
-	VFrame *ptr = frame;
+	VFrame *frame;
 
 	load_configuration();
 
-	new_frame = 0;
-
-	if(!get_use_opengl())
-	{
 // Read into temporary for software
-		if(src_frame &&
-			src_frame->get_color_model() != frame->get_color_model())
-		{
-			delete src_frame;
-			src_frame = 0;
-		}
-
-		if(!src_frame)
-		{
-			src_frame = new VFrame(0,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model());
-		}
-		src_frame->copy_pts(frame);
-		ptr = src_frame;
-	}
+	frame = clone_vframe(src_frame);
+	frame->copy_pts(src_frame);
 
 // Import source frame at half frame rate
 	if(!(current_frame_pts <= source_pts && 
 		source_pts < current_frame_pts + current_frame_duration - EPSILON))
 	{
 // Get frame
-		get_frame(ptr);
-		current_frame_pts = ptr->get_pts();
-		current_frame_duration = ptr->get_duration();
-		new_frame = 1;
+		current_frame_pts = src_frame->get_pts();
+		current_frame_duration = src_frame->get_duration();
 	}
 
-	field_number = (source_pts < current_frame_pts + current_frame_duration / 2.2) ? 0 : 1;
+	field_number = (source_pts < current_frame_pts + current_frame_duration / 2.2) ?
+		0 : 1;
 
 	if(field_number)
 		frame->set_pts(current_frame_pts + current_frame_duration / 2);
@@ -304,13 +152,7 @@ void FrameField::process_frame(VFrame *frame)
 		frame->set_pts(current_frame_pts);
 	frame->set_duration(current_frame_duration / 2);
 
-	if(get_use_opengl())
-	{
-		run_opengl();
-		return;
-	}
-
-	int row_size = frame->get_bytes_per_line();
+	int row_size = src_frame->get_bytes_per_line();
 	int start_row;
 
 // Even field
@@ -373,6 +215,8 @@ void FrameField::process_frame(VFrame *frame)
 			average_rows(0, frame);
 		}
 	}
+	release_vframe(src_frame);
+	return frame;
 }
 
 // Averaging 2 pixels
@@ -532,6 +376,7 @@ void FrameField::read_data(KeyFrame *keyframe)
 void FrameField::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *field_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float double_line_h;\n"
@@ -539,12 +384,12 @@ void FrameField::handle_opengl()
 		"void main()\n"
 		"{\n"
 		"	vec2 coord = gl_TexCoord[0].st;\n"
-/* Number of double lines + fraction of current double line */
+// Number of double lines + fraction of current double line
 		"	float half_y = (coord.y - y_offset) / double_line_h;\n"
-/* Lines comprising current double line */
+// Lines comprising current double line
 		"	float line1 = floor(half_y) * double_line_h + y_offset;\n"
 		"	float line2 = line1 + double_line_h;\n"
-/* Distance from line1 to line2 */
+// Distance from line1 to line2
 		"	float frac = fract(half_y);\n"
 		"	gl_FragColor =  mix(\n"
 		"		texture2D(tex, vec2(coord.x, line1)), \n"
@@ -575,7 +420,6 @@ void FrameField::handle_opengl()
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
 		"}\n";
-/* FIXIT
 	if(new_frame)
 	{
 		if(get_output()->get_opengl_state() != VFrame::SCREEN)
