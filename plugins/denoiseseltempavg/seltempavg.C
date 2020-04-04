@@ -108,7 +108,6 @@ SelTempAvgMain::SelTempAvgMain(PluginServer *server)
 	history = 0;
 	history_valid = 0;
 	prev_frame_pts = -1;
-	temp_frame = 0;
 	frames_accum = 0;
 	max_num_frames = 0;
 	max_denominator = 0;
@@ -131,14 +130,12 @@ SelTempAvgMain::~SelTempAvgMain()
 	}
 	if(history_valid)
 		delete [] history_valid;
-	if(temp_frame)
-		delete temp_frame;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-void SelTempAvgMain::process_frame(VFrame *frame)
+VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 {
 	int h = frame->get_h();
 	int w = frame->get_w();
@@ -302,8 +299,8 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 			max_denominator = round(config.duration * project_frame_rate);
 		} else
 			prev_frame_pts = source_pts;
-		if(!temp_frame)
-			temp_frame = new VFrame(0, w, h, color_model);
+
+		VFrame *temp_frame = 0;
 
 		for(cpts = prev_frame_pts;;cpts = temp_frame->next_pts())
 		{
@@ -311,19 +308,20 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 				frames_accum = max_denominator - 1;
 			if((source_pts - cpts) < EPSILON)
 			{
-				get_frame(frame);
 				got_frame = 1;
 				add_accum(frame);
 				break;
 			}
 			else
 			{
+				if(!temp_frame)
+					temp_frame = clone_vframe(frame);
 				temp_frame->set_pts(cpts);
 				get_frame(temp_frame);
 				add_accum(temp_frame);
 			}
 		}
-
+		release_vframe(temp_frame);
 		prev_frame_pts = source_pts;
 	}
 	if(!got_frame && config.method == SelTempAvgConfig::METHOD_SELTEMPAVG)
@@ -343,14 +341,12 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 		}
 		if(!got_frame)
 		{
-			get_frame(frame);
 			got_frame = 1;
 		}
 	}
 	if(frames_accum && config.method != SelTempAvgConfig::METHOD_NONE)
 		transfer_accum(frame);
-	else if(!got_frame)
-		get_frame(frame);
+	return frame;
 }
 
 // Reset accumulation

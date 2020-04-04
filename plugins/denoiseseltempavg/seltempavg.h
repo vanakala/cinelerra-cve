@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 // Old name: "Selective Temporal Averaging"
@@ -47,7 +48,6 @@ public:
 	SelTempAvgConfig();
 	void copy_from(SelTempAvgConfig *src);
 	int equivalent(SelTempAvgConfig *src);
-// oli frames
 	ptstime duration;
 
 	float avg_threshold_RY, avg_threshold_GU, avg_threshold_BV;
@@ -87,8 +87,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -103,7 +102,6 @@ public:
 	int onakeyframe;
 
 	VFrame **history;
-	VFrame *temp_frame;
 
 // Frame of history in requested framerate
 	int max_num_frames;
