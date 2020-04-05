@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_IS_MULTICHANNEL
 
 #define PLUGIN_TITLE N_("Motion")
@@ -157,7 +158,7 @@ public:
 	MotionMain(PluginServer *server);
 	~MotionMain();
 
-	void process_frame(VFrame **frame);
+	void process_tmpframes(VFrame **frame);
 	void process_global();
 	void process_rotation();
 	void draw_vectors();
@@ -167,7 +168,6 @@ public:
 	void read_data(KeyFrame *keyframe);
 // Calculate frame to copy from and frame to move
 	void calculate_pointers(VFrame **frame, VFrame **src, VFrame **dst);
-	void allocate_temp(int w, int h, int color_model);
 
 	PLUGIN_CLASS_MEMBERS
 
@@ -200,9 +200,6 @@ public:
 
 	void draw_arrow(GuideFrame *gf, int x1, int y1, int x2, int y2);
 
-// The frame compared with the previous frame to get the motion.
-// It is moved to compensate for motion and copied to the previous_frame.
-	VFrame *temp_frame;
 	MotionScan *engine;
 	RotateScan *motion_rotate;
 	OverlayFrame *overlayer;

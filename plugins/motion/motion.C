@@ -213,7 +213,6 @@ MotionMain::MotionMain(PluginServer *server)
 	overlayer = 0;
 	search_area = 0;
 	search_size = 0;
-	temp_frame = 0;
 	prev_global_ref = 0;
 	current_global_ref = 0;
 	global_target_src = 0;
@@ -231,7 +230,6 @@ MotionMain::~MotionMain()
 	delete engine;
 	delete overlayer;
 	delete [] search_area;
-	delete temp_frame;
 	delete rotate_engine;
 	delete motion_rotate;
 
@@ -395,19 +393,6 @@ void MotionMain::read_data(KeyFrame *keyframe)
 		}
 	}
 	config.boundaries();
-}
-
-void MotionMain::allocate_temp(int w, int h, int color_model)
-{
-	if(temp_frame && 
-		(temp_frame->get_w() != w ||
-		temp_frame->get_h() != h))
-	{
-		delete temp_frame;
-		temp_frame = 0;
-	}
-	if(!temp_frame)
-		temp_frame = new VFrame(0, w, h, color_model);
 }
 
 void MotionMain::process_global()
@@ -698,18 +683,13 @@ void MotionMain::process_rotation()
 }
 
 
-void MotionMain::process_frame(VFrame **frame)
+void MotionMain::process_tmpframes(VFrame **frame)
 {
-	int need_reconfigure = load_configuration();
+	need_reconfigure |= load_configuration();
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
 
-// Get all frames
-	for(int i = 0; i < total_in_buffers; i++)
-	{
-		get_frame(frame[i]);
-	}
 // Calculate the source and destination pointers for each of the operations.
 // Get the layer to track motion in.
 	reference_layer = config.bottom_is_master ?
@@ -769,6 +749,7 @@ void MotionMain::process_frame(VFrame **frame)
 		current_angle = 0;
 	}
 
+	need_reconfigure = 0;
 // Get the global pointers.  Here we walk through the sequence of events.
 	if(config.global)
 	{

@@ -318,7 +318,6 @@ class MotionWindow : public PluginWindow
 {
 public:
 	MotionWindow(MotionMain *plugin, int x, int y);
-	~MotionWindow();
 
 	void update();
 	void update_mode();

@@ -228,10 +228,6 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-MotionWindow::~MotionWindow()
-{
-}
-
 void MotionWindow::update()
 {
 	char string[BCTEXTLEN];
