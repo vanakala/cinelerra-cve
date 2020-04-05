@@ -19,135 +19,15 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_SYNTHESIS
-
-#define PLUGIN_TITLE N_("ReframeRT")
-#define PLUGIN_CLASS ReframeRT
-#define PLUGIN_CONFIG_CLASS ReframeRTConfig
-#define PLUGIN_THREAD_CLASS ReframeRTThread
-#define PLUGIN_GUI_CLASS ReframeRTWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
+#include "picon_png.h"
+#include "reframert.h"
 
 #include <string.h>
-#include "picon_png.h"
-
-
-class ReframeRTConfig
-{
-public:
-	ReframeRTConfig();
-
-	void boundaries();
-	int equivalent(ReframeRTConfig &src);
-	void copy_from(ReframeRTConfig &src);
-	void interpolate(ReframeRTConfig &prev, 
-		ReframeRTConfig &next, 
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts);
-	double scale;
-	int stretch;
-	int interp;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class ReframeRTScale : public BC_TumbleTextBox
-{
-public:
-	ReframeRTScale(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-};
-
-
-class ReframeRTStretch : public BC_Radial
-{
-public:
-	ReframeRTStretch(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-
-class ReframeRTDownsample : public BC_Radial
-{
-public:
-	ReframeRTDownsample(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-
-class ReframeRTInterpolate : public BC_CheckBox
-{
-public:
-	ReframeRTInterpolate(ReframeRT *plugin,
-		ReframeRTWindow *gui,
-		int x,
-		int y);
-	int handle_event();
-	ReframeRT *plugin;
-	ReframeRTWindow *gui;
-};
-
-
-class ReframeRTWindow : public PluginWindow
-{
-public:
-	ReframeRTWindow(ReframeRT *plugin, int x, int y);
-	~ReframeRTWindow();
-
-	void update();
-
-	ReframeRTScale *scale;
-	ReframeRTStretch *stretch;
-	ReframeRTDownsample *downsample;
-	ReframeRTInterpolate *interpolate;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class ReframeRT : public PluginVClient
-{
-public:
-	ReframeRT(PluginServer *server);
-	~ReframeRT();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void process_frame(VFrame *frame);
-
-	KeyFrame *fake_keyframe;
-};
-
 
 REGISTER_PLUGIN
 
@@ -196,7 +76,8 @@ void ReframeRTConfig::interpolate(ReframeRTConfig &prev,
 
 void ReframeRTConfig::boundaries()
 {
-	if(fabs(scale) < 0.0001) scale = 0.0001;
+	if(fabs(scale) < 0.0001)
+		scale = 0.0001;
 }
 
 
@@ -232,10 +113,6 @@ ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin, int x, int y)
 		x, 
 		y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-ReframeRTWindow::~ReframeRTWindow()
-{
 }
 
 void ReframeRTWindow::update()
@@ -335,21 +212,18 @@ int ReframeRTInterpolate::handle_event()
 ReframeRT::ReframeRT(PluginServer *server)
  : PluginVClient(server)
 {
-	fake_keyframe = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 ReframeRT::~ReframeRT()
 {
-	if(fake_keyframe)
-		delete fake_keyframe;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-void ReframeRT::process_frame(VFrame *frame)
+VFrame *ReframeRT::process_tmpframe(VFrame *frame)
 {
 	ptstime input_pts = source_start_pts;
 	ReframeRTConfig prev_config, next_config;
@@ -357,15 +231,6 @@ void ReframeRT::process_frame(VFrame *frame)
 	ptstime duration;
 	ptstime tmp_pts, next_pts;
 	int is_current_keyframe;
-// FIXPOS
-// if there are no keyframes, the default keyframe is used, and its position is always 0;
-// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
-// so let's calculate using a fake keyframe with the same settings but position == effect start
-	if(!fake_keyframe)
-		fake_keyframe = new KeyFrame();
-	fake_keyframe->copy_from(next_keyframe);
-	fake_keyframe->pos_time = source_start_pts;
-	next_keyframe = fake_keyframe;
 
 	// calculate input_frame accounting for all previous keyframes
 	do
@@ -381,7 +246,7 @@ void ReframeRT::process_frame(VFrame *frame)
 			|| PTSEQU(next_keyframe->pos_time, tmp_keyframe->pos_time) // there are no more keyframes
 			|| !next_keyframe->pos_time; // there are no keyframes at all
 
-		if (is_current_keyframe)
+		if(is_current_keyframe)
 			duration = source_pts - tmp_pts;
 		else
 			duration = next_pts - tmp_pts;
@@ -396,14 +261,15 @@ void ReframeRT::process_frame(VFrame *frame)
 // as long as interpolate() uses a linear slope we can use geometry to determine this
 // if interpolate() changes to use a curve then this needs use (possibly) the definite integral
 		input_pts += (duration * ((prev_config.scale + config.scale) / 2));
-	} while (!is_current_keyframe);
+	} while(!is_current_keyframe);
 
 	frame->set_pts(input_pts);
 	get_frame(frame);
 	frame->set_pts(source_pts);
 
-	if (!config.stretch)
+	if(!config.stretch)
 		frame->set_duration(frame->get_duration() / config.scale);
+	return frame;
 }
 
 void ReframeRT::load_defaults()
