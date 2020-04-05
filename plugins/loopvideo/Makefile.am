@@ -1,13 +1,14 @@
 plugin_LTLIBRARIES = loopvideo.la
 loopvideo_la_LDFLAGS = -avoid-version -module -shared 
 loopvideo_la_LIBADD = 
-loopvideo_la_SOURCES = loopvideo.C 
+loopvideo_la_SOURCES = loopvideo.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
+noinst_HEADERS = loopvideo.h
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 

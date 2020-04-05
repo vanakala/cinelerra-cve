@@ -19,82 +19,16 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_IS_SYNTHESIS
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-// Old name was "Loop video"
-#define PLUGIN_TITLE N_("Loop")
-#define PLUGIN_CLASS LoopVideo
-#define PLUGIN_CONFIG_CLASS LoopVideoConfig
-#define PLUGIN_THREAD_CLASS LoopVideoThread
-#define PLUGIN_GUI_CLASS LoopVideoWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
-#include "language.h"
+#include "loopvideo.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "picon_png.h"
 
 #include <string.h>
-
-class LoopVideo;
-
-class LoopVideoConfig
-{
-public:
-	LoopVideoConfig();
-
-	ptstime duration;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-class LoopVideoFrames : public BC_TextBox
-{
-public:
-	LoopVideoFrames(LoopVideo *plugin,
-		int x,
-		int y);
-	int handle_event();
-	LoopVideo *plugin;
-};
-
-class LoopVideoWindow : public PluginWindow
-{
-public:
-	LoopVideoWindow(LoopVideo *plugin, int x, int y);
-	~LoopVideoWindow();
-
-	void update();
-
-	LoopVideoFrames *frames;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-PLUGIN_THREAD_HEADER
-
-class LoopVideo : public PluginVClient
-{
-public:
-	LoopVideo(PluginServer *server);
-	~LoopVideo();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	void process_frame(VFrame *frame);
-};
-
 
 REGISTER_PLUGIN
 
@@ -118,10 +52,6 @@ LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
 		x, 
 		y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-LoopVideoWindow::~LoopVideoWindow()
-{
 }
 
 void LoopVideoWindow::update()
@@ -160,7 +90,6 @@ LoopVideo::LoopVideo(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
-
 LoopVideo::~LoopVideo()
 {
 	PLUGIN_DESTRUCTOR_MACRO
@@ -168,7 +97,7 @@ LoopVideo::~LoopVideo()
 
 PLUGIN_CLASS_METHODS
 
-void LoopVideo::process_frame(VFrame *frame)
+VFrame *LoopVideo::process_tmpframe(VFrame *frame)
 {
 	ptstime current_loop_pts;
 	ptstime start_pts = frame->get_pts();
@@ -187,6 +116,7 @@ void LoopVideo::process_frame(VFrame *frame)
 	frame->set_pts(current_loop_pts);
 	get_frame(frame);
 	frame->set_pts(start_pts);
+	return frame;
 }
 
 int LoopVideo::load_configuration()
