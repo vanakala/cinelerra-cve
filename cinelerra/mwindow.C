@@ -1105,7 +1105,10 @@ void MWindow::show_plugin(Plugin *plugin)
 
 		if(server && server->uses_gui)
 		{
-			if(plugin->apiversion < 2)
+			if(!plugin->client)
+				server->open_plugin(plugin, 0);
+
+			if(plugin->apiversion < 3)
 			{
 				PluginClient *mainclient = plugin->client;
 
