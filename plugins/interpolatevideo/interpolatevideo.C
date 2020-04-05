@@ -19,123 +19,17 @@
  * 
  */
 
-#define PLUGIN_IS_VIDEO
-#define PLUGIN_IS_REALTIME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
-
-#define PLUGIN_TITLE N_("Interpolate")
-#define PLUGIN_CLASS InterpolateVideo
-#define PLUGIN_CONFIG_CLASS InterpolateVideoConfig
-#define PLUGIN_THREAD_CLASS InterpolateVideoThread
-#define PLUGIN_GUI_CLASS InterpolateVideoWindow
-
-#include "pluginmacros.h"
-
 #include "bchash.h"
-#include "bctoggle.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
+#include "interpolatevideo.h"
 #include "keyframe.h"
-#include "language.h"
 #include "picon_png.h"
-#include "pluginvclient.h"
-#include "pluginwindow.h"
-#include "selection.h"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
-
-
-class InterpolateVideoConfig
-{
-public:
-	InterpolateVideoConfig();
-
-	void copy_from(InterpolateVideoConfig *config);
-	int equivalent(InterpolateVideoConfig *config);
-
-// Frame rate of input
-	double input_rate;
-// If 1, use the keyframes as beginning and end frames and ignore input rate
-	int use_keyframes;
-	PLUGIN_CONFIG_CLASS_MEMBERS
-};
-
-
-class InterpolateVideoRate : public FrameRateSelection
-{
-public:
-	InterpolateVideoRate(InterpolateVideo *plugin, 
-		InterpolateVideoWindow *gui, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	InterpolateVideo *plugin;
-};
-
-
-class InterpolateVideoKeyframes : public BC_CheckBox
-{
-public:
-	InterpolateVideoKeyframes(InterpolateVideo *plugin,
-		InterpolateVideoWindow *gui,
-		int x, 
-		int y);
-	int handle_event();
-	InterpolateVideoWindow *gui;
-	InterpolateVideo *plugin;
-};
-
-class InterpolateVideoWindow : public PluginWindow
-{
-public:
-	InterpolateVideoWindow(InterpolateVideo *plugin, int x, int y);
-	~InterpolateVideoWindow();
-
-	void update();
-	void update_enabled();
-
-	ArrayList<BC_ListBoxItem*> frame_rates;
-
-	InterpolateVideoRate *rate;
-/* Pole
-	InterpolateVideoRateMenu *rate_menu;
-	*/
-	InterpolateVideoKeyframes *keyframes;
-	PLUGIN_GUI_CLASS_MEMBERS
-};
-
-
-PLUGIN_THREAD_HEADER
-
-
-class InterpolateVideo : public PluginVClient
-{
-public:
-	InterpolateVideo(PluginServer *server);
-	~InterpolateVideo();
-
-	PLUGIN_CLASS_MEMBERS
-
-	void process_frame(VFrame *frame);
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-
-	void fill_border(double frame_rate, ptstime start_pts);
-
-// beginning and end frames
-	VFrame *frames[2];
-
-// Current requested positions
-	ptstime range_start_pts;
-	ptstime range_end_pts;
-};
 
 
 InterpolateVideoConfig::InterpolateVideoConfig()
@@ -181,10 +75,6 @@ InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin, int x, 
 		y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_enabled();
-}
-
-InterpolateVideoWindow::~InterpolateVideoWindow()
-{
 }
 
 void InterpolateVideoWindow::update()
@@ -270,8 +160,9 @@ InterpolateVideo::~InterpolateVideo()
 
 PLUGIN_CLASS_METHODS
 
-void InterpolateVideo::fill_border(double frame_rate, ptstime start_pts)
+void InterpolateVideo::fill_border(ptstime start_pts)
 {
+tracemsg("%.2f .. %.2f", range_start_pts, range_end_pts);
 	if(!frames[0]->pts_in_frame(range_start_pts))
 	{
 		frames[0]->set_pts(range_start_pts);
@@ -286,7 +177,7 @@ void InterpolateVideo::fill_border(double frame_rate, ptstime start_pts)
 }
 
 
-#define AVERAGE(type, temp_type,components, max) \
+#define AVERAGE(type, temp_type, components, max) \
 { \
 	temp_type fraction0 = (temp_type)(lowest_fraction * max); \
 	temp_type fraction1 = (temp_type)(max - fraction0); \
@@ -298,13 +189,14 @@ void InterpolateVideo::fill_border(double frame_rate, ptstime start_pts)
 		type *out_row = (type*)frame->get_row_ptr(i); \
 		for(int j = 0; j < w * components; j++) \
 		{ \
-			*out_row++ = (*in_row0++ * fraction0 + *in_row1++ * fraction1) / max; \
+			*out_row++ = (*in_row0++ * fraction0 + \
+				*in_row1++ * fraction1) / max; \
 		} \
 	} \
 }
 
 
-void InterpolateVideo::process_frame(VFrame *frame)
+VFrame *InterpolateVideo::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
@@ -320,16 +212,10 @@ void InterpolateVideo::process_frame(VFrame *frame)
 		}
 	}
 
-	if(PTSEQU(range_start_pts, range_end_pts))
+	if(!PTSEQU(range_start_pts, range_end_pts))
 	{
-		get_frame(frame);
-		return;
-	}
-	else
-	{
-
 // Fill border frames
-		fill_border(project_frame_rate, frame->get_pts());
+		fill_border(frame->get_pts());
 // Fraction of lowest frame in output
 		float highest_fraction = (frame->get_pts() - frames[0]->get_pts()) /
 			(frames[1]->get_pts() - frames[0]->get_pts());
@@ -368,6 +254,7 @@ void InterpolateVideo::process_frame(VFrame *frame)
 			break;
 		}
 	}
+	return frame;
 }
 
 int InterpolateVideo::load_configuration()
