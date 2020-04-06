@@ -52,10 +52,6 @@ TimeAvgWindow::TimeAvgWindow(TimeAvgMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-TimeAvgWindow::~TimeAvgWindow()
-{
-}
-
 void TimeAvgWindow::update()
 {
 	total_frames->update(plugin->config.duration);
@@ -78,10 +74,6 @@ TimeAvgSlider::TimeAvgSlider(TimeAvgMain *client, int x, int y)
 	client->config.duration)
 {
 	this->client = client;
-}
-
-TimeAvgSlider::~TimeAvgSlider()
-{
 }
 
 int TimeAvgSlider::handle_event()

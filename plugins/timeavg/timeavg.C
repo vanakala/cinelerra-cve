@@ -66,7 +66,6 @@ TimeAvgMain::TimeAvgMain(PluginServer *server)
 	history = 0;
 	history_valid = 0;
 	prev_frame_pts = -1;
-	temp_frame = 0;
 	max_num_frames = 0;
 	frames_accum = 0;
 	max_denominator = 0;
@@ -84,14 +83,12 @@ TimeAvgMain::~TimeAvgMain()
 		delete [] history;
 	}
 	if(history_valid) delete [] history_valid;
-	if(temp_frame)
-		delete temp_frame;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
-void TimeAvgMain::process_frame(VFrame *frame)
+VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 {
 	int h = frame->get_h();
 	int w = frame->get_w();
@@ -104,8 +101,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 // Allocate accumulation
 	if(!accumulation)
 	{
-		accumulation = new unsigned char[w * 
-			h * 
+		accumulation = new unsigned char[w * h *
 			ColorModels::components(color_model) *
 			MAX(sizeof(float), sizeof(int))];
 		clear_accum(w, h, color_model);
@@ -258,15 +254,13 @@ void TimeAvgMain::process_frame(VFrame *frame)
 		} else
 			prev_frame_pts = source_pts;
 
-		if(!temp_frame)
-			temp_frame = temp_frame = new VFrame(0, w, h, color_model);
+		VFrame *temp_frame = clone_vframe(frame);
 		for(cpts = prev_frame_pts;;cpts = temp_frame->next_pts())
 		{
 			if(frames_accum >= max_denominator)
 				frames_accum = max_denominator - 1;
 			if((source_pts - cpts) < EPSILON)
 			{
-				get_frame(frame);
 				got_frame = 1;
 				add_accum(frame);
 				break;
@@ -278,6 +272,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 				add_accum(temp_frame);
 			}
 		}
+		release_vframe(temp_frame);
 		prev_frame_pts = frame->get_pts();
 	}
 
@@ -296,14 +291,10 @@ void TimeAvgMain::process_frame(VFrame *frame)
 				}
 			}
 		}
-		if(!got_frame)
-		{
-			get_frame(frame);
-			got_frame = 1;
-		}
 	}
 // Transfer accumulation to output with division if average is desired.
 	transfer_accum(frame);
+	return frame;
 }
 
 // Reset accumulation

@@ -30,7 +30,6 @@ class TimeAvgNoSubtract;
 class TimeAvgSlider;
 
 #include "bcslider.h"
-#include "mutex.h"
 #include "timeavg.h"
 #include "pluginwindow.h"
 
@@ -40,7 +39,6 @@ class TimeAvgWindow : public PluginWindow
 {
 public:
 	TimeAvgWindow(TimeAvgMain *plugin, int x, int y);
-	~TimeAvgWindow();
 
 	void update();
 
@@ -57,7 +55,7 @@ class TimeAvgSlider : public BC_FSlider
 {
 public:
 	TimeAvgSlider(TimeAvgMain *client, int x, int y);
-	~TimeAvgSlider();
+
 	int handle_event();
 
 	TimeAvgMain *client;

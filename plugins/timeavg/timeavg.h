@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("Time Average")
@@ -69,7 +70,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	void process_frame(VFrame *frame);
+	VFrame *process_tmpframe(VFrame *frame);
 
 	void load_defaults();
 	void save_defaults();
@@ -81,7 +82,6 @@ public:
 	void transfer_accum(VFrame *frame);
 
 	VFrame **history;
-	VFrame *temp_frame;
 	int max_num_frames;
 	int *history_valid;
 	unsigned char *accumulation;
