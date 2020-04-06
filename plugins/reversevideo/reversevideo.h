@@ -19,37 +19,33 @@
  * 
  */
 
-#include "picon_png.h"
-#include "reversevideo.h"
+#ifndef REVERSEVIDEO_H
+#define REVERSEVIDEO_H
 
-REGISTER_PLUGIN
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
-ReverseVideo::ReverseVideo(PluginServer *server)
- : PluginVClient(server)
+// Old name was "Reverse video"
+#define PLUGIN_TITLE N_("Reverse")
+#define PLUGIN_CLASS ReverseVideo
+
+#include "pluginmacros.h"
+
+#include "language.h"
+#include "pluginvclient.h"
+
+
+class ReverseVideo : public PluginVClient
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-}
+public:
+	ReverseVideo(PluginServer *server);
+	~ReverseVideo();
 
-ReverseVideo::~ReverseVideo()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-}
+	PLUGIN_CLASS_MEMBERS
 
-PLUGIN_CLASS_METHODS
+	VFrame *process_tmpframe(VFrame *frame);
+};
 
-VFrame *ReverseVideo::process_tmpframe(VFrame *frame)
-{
-	ptstime curpts = frame->get_pts();
-	ptstime input_pts;
-
-	input_pts = end_pts - curpts + source_start_pts;
-
-	if(input_pts >= 0 && input_pts < end_pts)
-	{
-		frame->set_pts(input_pts);
-		get_frame(frame);
-		frame->set_pts(curpts);
-	}
-	return frame;
-}
-
+#endif
