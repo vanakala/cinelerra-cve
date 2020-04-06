@@ -26,6 +26,8 @@
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_SYNTHESIS
 #define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_USES_TMPFRAME
+#define PLUGIN_MAX_CHANNELS 2
 
 #define PLUGIN_TITLE N_("TimeFront")
 #define PLUGIN_CLASS TimeFrontMain
@@ -42,8 +44,6 @@ class TimeFrontServer;
 #include "bcpopupmenu.h"
 #include "bcpot.h"
 #include "bcslider.h"
-#include "bctoggle.h"
-#include "filexml.inc"
 #include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
@@ -110,7 +110,7 @@ public:
 		TimeFrontWindow *gui,
 		int x, 
 		int y);
-	void create_objects();
+
 	static const char* to_text(int shape);
 	static int from_text(const char *text);
 	int handle_event();
@@ -125,7 +125,7 @@ public:
 		TimeFrontWindow *gui,
 		int x, 
 		int y);
-	void create_objects();
+
 	static const char* to_text(int track_usage);
 	static int from_text(const char *text);
 	int handle_event();
@@ -218,7 +218,6 @@ class TimeFrontWindow : public PluginWindow
 {
 public:
 	TimeFrontWindow(TimeFrontMain *plugin, int x, int y);
-	~TimeFrontWindow();
 
 	void update();
 	void update_shape();
@@ -255,7 +254,7 @@ public:
 	TimeFrontMain(PluginServer *server);
 	~TimeFrontMain();
 
-	void process_frame(VFrame **frame);
+	void process_tmpframes(VFrame **frame);
 
 	void load_defaults();
 	void save_defaults();
@@ -264,11 +263,9 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	int need_reconfigure;
-
 	OverlayFrame *overlayer;
 	VFrame *gradient;
-	VFrame *input, *output;
+	VFrame *input;
 	TimeFrontServer *engine;
 	int framelist_allocated;
 	int framelist_last;

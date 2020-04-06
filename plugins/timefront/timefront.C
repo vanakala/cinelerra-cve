@@ -139,7 +139,6 @@ TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
 		this, 
 		x + title->get_w() + 10, 
 		y));
-	shape->create_objects();
 	y += 40;
 	shape_x = x;
 	shape_y = y;
@@ -155,10 +154,6 @@ TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_shape();
-}
-
-TimeFrontWindow::~TimeFrontWindow()
-{
 }
 
 void TimeFrontWindow::update()
@@ -300,8 +295,6 @@ void TimeFrontWindow::update_shape()
 				this,
 				x + track_usage_title->get_w() + 10,
 				y));
-			track_usage->create_objects();
-
 		}
 	} else
 	if(plugin->config.shape == TimeFrontConfig::ALPHA)
@@ -335,7 +328,6 @@ void TimeFrontWindow::update_shape()
 		track_usage_title = 0;
 		track_usage = 0;
 	}
-
 }
 
 
@@ -347,10 +339,7 @@ TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-}
 
-void TimeFrontShape::create_objects()
-{
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::RADIAL)));
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::ALPHA)));
@@ -400,10 +389,7 @@ TimeFrontTrackUsage::TimeFrontTrackUsage(TimeFrontMain *plugin,
 {
 	this->plugin = plugin;
 	this->gui = gui;
-}
 
-void TimeFrontTrackUsage::create_objects()
-{
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::OTHERTRACK_INTENSITY)));
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::OTHERTRACK_ALPHA)));
 }
@@ -752,34 +738,32 @@ PLUGIN_CLASS_METHODS
 	}
 
 
-void TimeFrontMain::process_frame(VFrame **frame)
+void TimeFrontMain::process_tmpframes(VFrame **frame)
 {
 	VFrame **outframes = frame;
 
 	need_reconfigure |= load_configuration();
 	if(config.time_range < (1 / project_frame_rate) + EPSILON)
-	{
-		for(int i = 0; i < total_in_buffers; i++)
-			get_frame(frame[i]);
 		return;
-	}
+
 	if(!framelist[0])
 	{
-		framelist[0] = new VFrame (0, outframes[0]->get_w(), outframes[0]->get_h(), outframes[0]->get_color_model());
+		framelist[0] = new VFrame(0, outframes[0]->get_w(),
+			outframes[0]->get_h(), outframes[0]->get_color_model());
 		framelist_allocated = 1;
 	}
 	framelist[0]->copy_pts(outframes[0]);
 	get_frame(framelist[0]);
 	this->input = framelist[0];
-	this->output = outframes[0];
-	if (config.shape == TimeFrontConfig::OTHERTRACK)
+	if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		if (total_in_buffers != 2)
+		if(total_in_buffers != 2)
 		{
 			abort_plugin(_("If you are using another track for timefront, you have to have it under shared effects"));
 			return;
 		}
-		if (outframes[0]->get_w() != outframes[1]->get_w() || outframes[0]->get_h() != outframes[1]->get_h())
+		if(outframes[0]->get_w() != outframes[1]->get_w() ||
+			outframes[0]->get_h() != outframes[1]->get_h())
 		{
 			abort_plugin(_("Sizes of master track and timefront track do not match"));
 			return;
@@ -790,28 +774,31 @@ void TimeFrontMain::process_frame(VFrame **frame)
 	if(need_reconfigure)
 	{
 		need_reconfigure = 0;
-		if(!gradient) gradient = new VFrame(0, 
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
+		if(!gradient)
+			gradient = new VFrame(0,
+				outframes[0]->get_w(),
+				outframes[0]->get_h(),
+				BC_A8);
 
-		if (config.shape != TimeFrontConfig::OTHERTRACK &&
+		if(config.shape != TimeFrontConfig::OTHERTRACK &&
 			config.shape != TimeFrontConfig::ALPHA)
 		{
-			if(!engine) engine = new TimeFrontServer(this,
-				get_project_smp() + 1,
-				get_project_smp() + 1);
+			if(!engine)
+				engine = new TimeFrontServer(this,
+					get_project_smp() + 1,
+					get_project_smp() + 1);
 			engine->process_packages();
 		}
 	}
 	if (config.shape == TimeFrontConfig::ALPHA)
 	{
-		if(!gradient) gradient = new VFrame(0, 
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
+		if(!gradient)
+			gradient = new VFrame(0,
+				outframes[0]->get_w(),
+				outframes[0]->get_h(),
+				BC_A8);
 		VFrame *tfframe = framelist[0];
-		switch (tfframe->get_color_model())
+		switch(tfframe->get_color_model())
 		{
 		case BC_YUVA8888:
 		case BC_RGBA8888:
@@ -835,7 +822,10 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				int frame_w = tfframe->get_w();
 
 				for(int j = 0; j < frame_w; j++)
-					grad_row[j] = (unsigned char)(CLIP(frames * in_row[j * 4] * in_row[j * 4] / 0xffff / 0xffff, 0, frames));
+					grad_row[j] = (unsigned char)(
+							CLIP(frames * in_row[j * 4] *
+							in_row[j * 4] / 0xffff / 0xffff,
+						0, frames));
 			}
 			break;
 
@@ -844,17 +834,17 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			return;
 		}
 	}
-	else if (config.shape == TimeFrontConfig::OTHERTRACK)
+	else if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		if(!gradient) gradient = new VFrame(0, 
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
-			BC_A8);
+		if(!gradient)
+			gradient = new VFrame(0, 
+				outframes[0]->get_w(),
+				outframes[0]->get_h(),
+				BC_A8);
 		VFrame *tfframe = outframes[1];
-		get_frame(tfframe);
-		if (config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
+		if(config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
-			switch (tfframe->get_color_model())
+			switch(tfframe->get_color_model())
 			{
 			case BC_RGBA8888:
 // Has to be 2 ranges bigger, sice we need precision for alpha
@@ -900,7 +890,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				break;
 			}
 		}
-		else if (config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
+		else if(config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
 		{
 			switch (tfframe->get_color_model())
 			{
@@ -941,7 +931,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			return;
 		}
 	}
-	if (!config.show_grayscale)
+	if(!config.show_grayscale)
 	{
 		framelist_last = 2;
 // Get frames in forward direction - it is faster
@@ -950,7 +940,8 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			if(!framelist[1])
 			{
 				framelist[1] = new VFrame (0, outframes[0]->get_w(),
-					outframes[0]->get_h(), outframes[0]->get_color_model());
+					outframes[0]->get_h(),
+					outframes[0]->get_color_model());
 				framelist_allocated++;
 			}
 			framelist[1]->set_pts(cpts);
@@ -973,9 +964,9 @@ void TimeFrontMain::process_frame(VFrame **frame)
 	}
 	int width = outframes[0]->get_w();
 	int height = outframes[0]->get_h();
-	if (config.show_grayscale)
+	if(config.show_grayscale)
 	{
-		if (!config.invert)
+		if(!config.invert)
 		{
 			switch (outframes[0]->get_color_model())
 			{
@@ -1025,28 +1016,32 @@ void TimeFrontMain::process_frame(VFrame **frame)
 		else
 		{
 			int pframes = config.time_range * project_frame_rate;
-			switch (outframes[0]->get_color_model())
+			switch(outframes[0]->get_color_model())
 			{
 			case BC_RGB888:
 				GRADIENTTOPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
 				break;
 			case BC_RGBA8888:
 				GRADIENTTOPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
+				outframes[0]->set_transparent();
 				break;
 			case BC_YUV888:
 				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
 				break;
 			case BC_YUVA8888:
 				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
+				outframes[0]->set_transparent();
 				break;
 			case BC_RGB_FLOAT:
 				GRADIENTTOPICTURE(float, float, 3, 1.0f, pframes -);
 				break;
 			case BC_RGBA_FLOAT:
 				GRADIENTTOPICTURE(float, float, 4, 1.0f, pframes -);
+				outframes[0]->set_transparent();
 				break;
 			case BC_RGBA16161616:
 				GRADIENTTOPICTURE(uint16_t, unsigned int, 4, 0xffff, pframes -);
+				outframes[0]->set_transparent();
 				break;
 			case BC_AYUV16161616:
 				for(int i = 0; i < height; i++)
@@ -1065,33 +1060,37 @@ void TimeFrontMain::process_frame(VFrame **frame)
 						grad_row ++;
 					}
 				}
+				outframes[0]->set_transparent();
 				break;
 			default:
 				break;
 			}
 		}
 	}
-	else if (!config.invert)
+	else if(!config.invert)
 	{
-		switch (outframes[0]->get_color_model())
+		switch(outframes[0]->get_color_model())
 		{
 		case BC_RGB888:
 			COMPOSITEIMAGE(unsigned char, 3, );
 			break;
 		case BC_RGBA8888:
 			COMPOSITEIMAGE(unsigned char, 4, );
+			outframes[0]->set_transparent();
 			break;
 		case BC_YUV888:
 			COMPOSITEIMAGE(unsigned char, 3, );
 			break;
 		case BC_YUVA8888:
 			COMPOSITEIMAGE(unsigned char, 4, );
+			outframes[0]->set_transparent();
 			break;
 		case BC_RGB_FLOAT:
 			COMPOSITEIMAGE(float, 3, );
 			break;
 		case BC_RGBA_FLOAT:
 			COMPOSITEIMAGE(float, 4, );
+			outframes[0]->set_transparent();
 			break;
 		case BC_RGBA16161616:
 		case BC_AYUV16161616:
@@ -1112,6 +1111,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 					out_row += 4;
 				}
 			}
+			outframes[0]->set_transparent();
 			break;
 		default:
 			break;
@@ -1120,7 +1120,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 	else
 	{
 		int pframes = framelist_last - 1;
-		switch (outframes[0]->get_color_model())
+		switch(outframes[0]->get_color_model())
 		{
 		case BC_RGB888:
 			COMPOSITEIMAGE(unsigned char, 3, pframes -);
@@ -1164,10 +1164,10 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			break;
 		}
 	}
-	if (config.shape == TimeFrontConfig::ALPHA)
+	if(config.shape == TimeFrontConfig::ALPHA)
 	{
 		// Set alpha to max
-		switch (outframes[0]->get_color_model())
+		switch(outframes[0]->get_color_model())
 		{
 		case BC_YUVA8888:
 		case BC_RGBA8888:
@@ -1195,6 +1195,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 		default:
 			break;
 		}
+		outframes[0]->set_transparent();
 	}
 }
 
@@ -1432,12 +1433,8 @@ void TimeFrontServer::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		TimeFrontPackage *package = (TimeFrontPackage*)get_package(i);
-		package->y1 = plugin->input->get_h() * 
-			i / 
-			get_total_packages();
-		package->y2 = plugin->input->get_h() * 
-			(i + 1) /
-			get_total_packages();
+		package->y1 = plugin->input->get_h() * i / get_total_packages();
+		package->y2 = plugin->input->get_h() * (i + 1) / get_total_packages();
 	}
 }
 
