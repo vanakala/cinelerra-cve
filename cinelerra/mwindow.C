@@ -108,6 +108,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 extern const char *version_name;
 
@@ -1126,6 +1127,18 @@ void MWindow::show_plugin(Plugin *plugin)
 		}
 	}
 	plugin_gui_lock->unlock();
+
+	if(!done && plugin->plugin_server && plugin->plugin_server->status_gui)
+	{
+		ptstime cur_pts = master_edl->local_session->get_selectionstart(1);
+
+		if(cur_pts >= plugin->get_pts() && cur_pts < plugin->end_pts())
+		{
+			// Give some time for gui opening
+			usleep(100000);
+			sync_parameters(0);
+		}
+	}
 }
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)

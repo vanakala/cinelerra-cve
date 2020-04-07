@@ -79,6 +79,8 @@ public:
 	int opengl_plugin;
 // Maximum number channels supported by multichannel plugin
 	int multichannel_max;
+// Plugin gui shows status of the current frame
+	int status_gui;
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;

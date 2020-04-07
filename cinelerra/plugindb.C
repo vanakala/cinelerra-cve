@@ -334,11 +334,12 @@ void PluginDB::dump(int indent, int data_type)
 			sprintf(max, "%02d", server->multichannel_max);
 		else
 			strcpy(max, "--");
-		printf("%*s%c%c%c%c%c%c%02d%c%s %s\n", indent, "",
+		printf("%*s%c%c%c%c%c%c%02d%c%c%s %s\n", indent, "",
 			server->realtime ? 'R' : '-', typ,
 			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-',
 			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-',
 			server->apiversion, server->opengl_plugin ? 'L' : '-',
+			server->status_gui ? 'U' : '-',
 			max, server->title);
 	}
 	putchar('\n');
@@ -352,5 +353,6 @@ void PluginDB::dump(int indent, int data_type)
 	printf("%*sT     - transition\n", indent, "");
 	printf("%*s##    - api version\n", indent, "");
 	printf("%*sL     - opengl support\n", indent, "");
+	printf("%*sU     - plugin has status gui\n", indent, "");
 	printf("%*s##    - number of channels\n", indent, "");
 }

@@ -73,6 +73,8 @@ public:
 // maximum number of channels supported by multichannel plugin
 //  0 - unlimited number
 	virtual int multi_max_channels() { return 0; }
+// plugin shows status of the current frame
+	virtual int has_status_gui() { return 0; }
 // return the title of the plugin
 	virtual const char* plugin_title();
 	virtual VFrame* new_picon() { return 0; };

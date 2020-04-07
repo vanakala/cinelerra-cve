@@ -30,6 +30,7 @@
  * PLUGIN_IS_SYNTHESIS
  * PLUGIN_USES_TMPFRAME
  * PLUGIN_USES_OPENGL
+ * PLUGIN_STATUS_GUI
  * PLUGIN_CUSTOM_LOAD_CONFIGURATION
  * PLUGIN_CLASS class_name
  * PLUGIN_TITLE plugin_title
@@ -132,6 +133,13 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_MAX_CHANNELS_MEMBER
 #endif
 
+#ifdef PLUGIN_STATUS_GUI
+#define PLUGIN_CLASS_STATUS_GUI_MEMBER \
+	int has_status_gui() { return 1; };
+#else
+#define PLUGIN_CLASS_STATUS_GUI_MEMBER
+#endif
+
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
 	const char* plugin_title() { return PLUGIN_TITLE; }; \
@@ -145,6 +153,7 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CLASS_SYNTHESIS_MEMBER \
 	PLUGIN_CLASS_USES_OPENGL_MEMBER \
 	PLUGIN_CLASS_MAX_CHANNELS_MEMBER \
+	PLUGIN_CLASS_STATUS_GUI_MEMBER \
 	unsigned char *picon_data; \
 	BC_Hash *defaults;
 

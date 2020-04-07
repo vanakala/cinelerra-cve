@@ -55,6 +55,7 @@ int PluginServer::reset_parameters()
 	path = 0;
 	audio = video = theme = 0;
 	uses_gui = 0;
+	status_gui = 0;
 	realtime = multichannel = 0;
 	synthesis = 0;
 	apiversion = 0;
@@ -107,6 +108,7 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	video = client->is_video();
 	theme = client->is_theme();
 	uses_gui = client->uses_gui();
+	status_gui = client->has_status_gui();
 	multichannel = client->is_multichannel();
 	synthesis = client->is_synthesis();
 	apiversion = client->api_version();
