@@ -137,7 +137,6 @@ MotionBlurMain::~MotionBlurMain()
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
-	if(temp) delete temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 

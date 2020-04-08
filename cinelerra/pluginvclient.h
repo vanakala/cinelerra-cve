@@ -23,10 +23,8 @@
 #define PLUGINVCLIENT_H
 
 #include "bcfontentry.h"
-#include "cinelerra.h"
 #include "guidelines.inc"
 #include "pluginclient.h"
-#include "vframe.inc"
 
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcfreetype.h>
@@ -40,7 +38,7 @@ class PluginVClient : public PluginClient
 {
 public:
 	PluginVClient(PluginServer *server);
-	virtual ~PluginVClient();
+	virtual ~PluginVClient() {};
 
 	int is_video();
 
@@ -51,14 +49,6 @@ public:
 // Overridden by the user with the commands to run synchronously.
 	virtual void handle_opengl() {};
 
-// Called by user to allocate the temporary for the current process_buffer.  
-// It may be deleted after the process_buffer to conserve memory.
-	VFrame* new_temp(int w, int h, int color_model);
-// Called by PluginServer after process_buffer to delete the temp if it's too
-// large.
-	void age_temp();
-	VFrame* get_temp();
-
 // Get list of system fonts
 	ArrayList<BC_FontEntry*> *get_fontlist();
 // Find font entry
@@ -68,9 +58,6 @@ public:
 	int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 // Get guideframe of the plugin
 	GuideFrame *get_guides();
-
-// Tempo
-	VFrame *temp;
 };
 
 #endif

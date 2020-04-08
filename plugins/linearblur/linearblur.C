@@ -183,7 +183,6 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	table_entries = 0;
 	accum = 0;
 	need_reconfigure = 1;
-	temp = 0;
 // FIXIT layer_table = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -193,7 +192,6 @@ LinearBlurMain::~LinearBlurMain()
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
-	if(temp) delete temp;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 

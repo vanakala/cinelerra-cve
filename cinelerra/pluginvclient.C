@@ -19,69 +19,23 @@
  * 
  */
 
-#include "edlsession.h"
 #include "bcresources.h"
-#include "cinelerra.h"
 #include "cwindow.h"
 #include "mwindow.h"
 #include "plugin.h"
-#include "pluginserver.h"
+#include "pluginserver.inc"
 #include "pluginvclient.h"
-#include "track.h"
-#include "trackrender.h"
-#include "vframe.h"
 
 #include <string.h>
 
 PluginVClient::PluginVClient(PluginServer *server)
  : PluginClient(server)
 {
-	temp = 0;
-}
-
-PluginVClient::~PluginVClient()
-{
-	if(temp) delete temp;
 }
 
 int PluginVClient::is_video()
 {
 	return 1;
-}
-
-VFrame* PluginVClient::new_temp(int w, int h, int color_model)
-{
-	if(temp && 
-		(temp->get_w() != w ||
-		temp->get_h() != h ||
-		temp->get_color_model() != color_model))
-	{
-		delete temp;
-		temp = 0;
-	}
-
-	if(!temp)
-	{
-		temp = new VFrame(0, w, h, color_model);
-	}
-
-	return temp;
-}
-
-void PluginVClient::age_temp()
-{
-	if(temp &&
-		temp->get_w() > PLUGIN_MAX_W &&
-		temp->get_h() > PLUGIN_MAX_H)
-	{
-		delete temp;
-		temp = 0;
-	}
-}
-
-VFrame* PluginVClient::get_temp()
-{
-	return temp;
 }
 
 void PluginVClient::run_opengl()
