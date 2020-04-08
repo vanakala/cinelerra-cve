@@ -25,6 +25,7 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
+#define PLUGIN_STATUS_GUI
 
 #define PLUGIN_TITLE N_("Deinterlace")
 #define PLUGIN_CLASS DeInterlaceMain
