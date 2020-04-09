@@ -55,17 +55,17 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	float y, u, v;
+	double y, u, v;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class YUVLevel : public BC_FSlider
 {
 public:
-	YUVLevel(YUVEffect *plugin, float *output, int x, int y);
+	YUVLevel(YUVEffect *plugin, double *output, int x, int y);
 	int handle_event();
 	YUVEffect *plugin;
-	float *output;
+	double *output;
 };
 
 class YUVWindow : public PluginWindow
@@ -90,7 +90,6 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	VFrame *process_tmpframe(VFrame *input);
-
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

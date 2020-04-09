@@ -22,6 +22,7 @@
 #include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
+#include "bctimer.h"
 #include "clip.h"
 #include "colorspaces.h"
 #include "filexml.h"
@@ -72,7 +73,7 @@ void YUVConfig::interpolate(YUVConfig &prev,
 
 #define MAXVALUE 100
 
-YUVLevel::YUVLevel(YUVEffect *plugin, float *output, int x, int y)
+YUVLevel::YUVLevel(YUVEffect *plugin, double *output, int x, int y)
  : BC_FSlider(x, 
 			y,
 			0,
@@ -265,9 +266,9 @@ VFrame *YUVEffect::process_tmpframe(VFrame *input)
 	{
 		int w = input->get_w();
 
-		float y_scale = (float)(config.y + MAXVALUE) / MAXVALUE;
-		float u_scale = (float)(config.u + MAXVALUE) / MAXVALUE;
-		float v_scale = (float)(config.v + MAXVALUE) / MAXVALUE;
+		double y_scale = (double)(config.y + MAXVALUE) / MAXVALUE;
+		double u_scale = (double)(config.u + MAXVALUE) / MAXVALUE;
+		double v_scale = (double)(config.v + MAXVALUE) / MAXVALUE;
 
 		if(u_scale > 1) u_scale = 1 + (u_scale - 1) * 4;
 		if(v_scale > 1) v_scale = 1 + (v_scale - 1) * 4;
@@ -319,13 +320,14 @@ VFrame *YUVEffect::process_tmpframe(VFrame *input)
 			{
 				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i);
 				uint16_t *out_row = (uint16_t*)input->get_row_ptr(i);
-				const float round = 0.5;
 
 				for(int j = 0; j < w; j++)
 				{
-					int y = (int)((float)in_row[1] * y_scale + round);
-					int u = (int)((float)(in_row[2] - 0x8000) * u_scale + round) + 0x8000;
-					int v = (int)((float)(in_row[3] - 0x8000) * v_scale + round) + 0x8000;
+					int y = ((double)in_row[1] * y_scale);
+					int u = ((double)(in_row[2] - 0x8000) * u_scale);
+					int v = ((double)(in_row[3] - 0x8000) * v_scale);
+					u += 0x8000;
+					v += 0x8000;
 					out_row[1] = CLIP(y, 0, 0xffff);
 					out_row[2] = CLIP(u, 0, 0xffff);
 					out_row[3] = CLIP(v, 0, 0xffff);
