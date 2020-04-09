@@ -176,14 +176,11 @@ void GammaUnit::process_package(LoadPackage *package)
 			b = (float)row[2] / 0xffff;
 			HISTOGRAM_TAIL(4)
 			break;
-		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			HISTOGRAM_HEAD(uint16_t)
-			y = row[1];
-			u = row[2];
-			v = row[3];
-			y /= 0xffff;
-			u = (float)((u - 0x8000) / 0xffff);
-			v = (float)((v - 0x8000) / 0xffff);
+			y = (float)row[1] / 0xffff;
+			u = (float)(row[2] - 0x8000) / 0xffff;
+			v = (float)(row[3] - 0x8000) / 0xffff;
 			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
 			HISTOGRAM_TAIL(4)
 			break;
@@ -313,12 +310,9 @@ void GammaUnit::process_package(LoadPackage *package)
 			break;
 		case BC_AYUV16161616:
 			GAMMA_HEAD(uint16_t)
-			y = row[1];
-			u = row[2];
-			v = row[3];
-			y /= 0xffff;
-			u = (float)((u - 0x8000) / 0xffff);
-			v = (float)((v - 0x8000) / 0xffff);
+			y = (float)row[1] / 0xffff;
+			u = (float)(row[2] - 0x8000) / 0xffff;
+			v = (float)(row[3] - 0x8000) / 0xffff;
 			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
 			GAMMA_MID
 			ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
@@ -354,9 +348,9 @@ void GammaEngine::init_packages()
 	for(int i = 0; i < get_total_clients(); i++)
 	{
 		GammaUnit *unit = (GammaUnit*)get_client(i);
-		bzero(unit->accum, sizeof(int) * HISTOGRAM_SIZE);
+		memset(unit->accum, 0, sizeof(int) * HISTOGRAM_SIZE);
 	}
-	bzero(accum, sizeof(int) * HISTOGRAM_SIZE);
+	memset(accum, 0, sizeof(int) * HISTOGRAM_SIZE);
 }
 
 LoadClient* GammaEngine::new_client()
@@ -373,7 +367,9 @@ void GammaEngine::process_packages(int operation, VFrame *data)
 {
 	this->data = data;
 	this->operation = operation;
+
 	LoadServer::process_packages();
+
 	for(int i = 0; i < get_total_clients(); i++)
 	{
 		GammaUnit *unit = (GammaUnit*)get_client(i);
@@ -404,6 +400,9 @@ VFrame *GammaMain::process_tmpframe(VFrame *frame)
 {
 	load_configuration();
 
+	if(!engine)
+		engine = new GammaEngine(this);
+
 	if(config.automatic)
 	{
 		calculate_max(frame);
@@ -412,22 +411,23 @@ VFrame *GammaMain::process_tmpframe(VFrame *frame)
 	}
 	else
 	if(config.plot)
+	{
+		engine->process_packages(GammaEngine::HISTOGRAM, frame);
 		render_gui(this);
-
-	if(!engine)
-		engine = new GammaEngine(this);
+	}
 	engine->process_packages(GammaEngine::APPLY, frame);
 	return frame;
 }
 
 void GammaMain::calculate_max(VFrame *frame)
 {
-	if(!engine) engine = new GammaEngine(this);
-	engine->process_packages(GammaEngine::HISTOGRAM, frame);
 	int total_pixels = frame->get_w() * frame->get_h() * 3;
 	int max_fraction = (int)((int64_t)total_pixels * 99 / 100);
 	int current = 0;
+
+	engine->process_packages(GammaEngine::HISTOGRAM, frame);
 	config.max = 1;
+
 	for(int i = 0; i < HISTOGRAM_SIZE; i++)
 	{
 		current += engine->accum[i];
@@ -443,7 +443,7 @@ void GammaMain::render_gui(void *data)
 {
 	if(thread)
 	{
-		if(engine && config.automatic)
+		if(config.automatic)
 			thread->window->update();
 		else
 			thread->window->update_histogram();
