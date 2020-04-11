@@ -24,9 +24,6 @@
 #include "gainwindow.h"
 #include "language.h"
 
-#include <string.h>
-
-
 PLUGIN_THREAD_METHODS
 
 
@@ -42,10 +39,6 @@ GainWindow::GainWindow(Gain *plugin, int x, int y)
 	y += 20;
 	add_tool(level = new GainLevel(plugin, x, y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-GainWindow::~GainWindow()
-{
 }
 
 void GainWindow::update()

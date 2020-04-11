@@ -35,7 +35,6 @@ class GainWindow : public PluginWindow
 {
 public:
 	GainWindow(Gain *gain, int x, int y);
-	~GainWindow();
 
 	void update();
 

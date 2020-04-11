@@ -72,16 +72,15 @@ Gain::~Gain()
 
 PLUGIN_CLASS_METHODS
 
-void Gain::process_realtime(AFrame *input, AFrame *output)
+AFrame *Gain::process_tmpframe(AFrame *input)
 {
 	int size = input->length;
 	double *ipp = input->buffer;
-	double *opp;
 	double slope, gain;
 	int begin_slope, end_slope;
 
 	load_configuration();
-
+tracemsg("levelslope %.2f", config.levelslope);
 	if(fabs(config.levelslope) > EPSILON)
 	{
 		slope = config.levelslope / input->samplerate;
@@ -97,15 +96,10 @@ void Gain::process_realtime(AFrame *input, AFrame *output)
 		gain = db.fromdb(config.level);
 		slope = 0;
 	}
-
-	if(input != output)
-		output->copy_of(input);
-
-	opp = output->buffer;
-
+tracemsg("gain %.2f slope %.4f", gain, slope);
 	for(int i = 0; i < size; i++)
 	{
-		if(slope)
+		if(fabs(slope) > EPSILON)
 		{
 			if(i < begin_slope)
 				gain = db.fromdb(config.level);
@@ -114,8 +108,9 @@ void Gain::process_realtime(AFrame *input, AFrame *output)
 			else
 				gain = db.fromdb(config.level + slope * i);
 		}
-		*opp++ = *ipp++ * gain;
+		*ipp++ *= gain;
 	}
+	return input;
 }
 
 void Gain::load_defaults()

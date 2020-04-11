@@ -24,6 +24,7 @@
 
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("Gain")
 #define PLUGIN_CLASS Gain
@@ -59,7 +60,7 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	void process_realtime(AFrame *input, AFrame *output);
+	AFrame *process_tmpframe(AFrame *input);
 
 	PLUGIN_CLASS_MEMBERS
 	void save_data(KeyFrame *keyframe);
