@@ -34,6 +34,7 @@
  */
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
 /*
  * We have own load_configiration (no need of parameter interpolation)
@@ -116,7 +117,7 @@ public:
  */
 	PLUGIN_CLASS_MEMBERS
 // Processing is here
-	void process_frame(AFrame *frame);
+	AFrame *process_tmpframe(AFrame *frame);
 // Loading and saving of defaults - optional: needed if plugin has parameters
 	void load_defaults();
 	void save_defaults();

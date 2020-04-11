@@ -26,8 +26,6 @@
 #include "picon_png.h"
 #include "nullrtaudio.h"
 
-#include <string.h>
-
 // Registers plugin
 REGISTER_PLUGIN
 
@@ -161,20 +159,16 @@ int NRTAudio::load_configuration()
 }
 
 /*
- * Pull frame and apply modifications
- * It is possible to use here
- * void process_realtime(AFrame *input, AFrame *output)
- *    - here input is already filled
+ * Process frame
  * multichannel plugin gets here arrays of pointers
- * prototype: void process_frame(AFrame **frame)
+ * prototype: void process_tmpframes(AFrame **frame)
  *    - number of channels is total_in_buffers
  */
-void NRTAudio::process_frame(AFrame *frame)
+AFrame *NRTAudio::process_tmpframe(AFrame *frame)
 {
 	load_configuration();
 
-	get_frame(frame);
-
 	if(config.onoff)
 		memset(frame->buffer, 0, frame->length * sizeof(double));
+	return frame;
 }
