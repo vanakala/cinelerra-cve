@@ -30,7 +30,7 @@
 #include "units.h"
 
 #define WINDOW_BORDER (window_size / 2)
-#define SGN(x) (x<0 ? -1: 1)
+#define SGN(x) ((x) < 0 ? -1: 1)
 
 REGISTER_PLUGIN
 
@@ -118,7 +118,6 @@ void DenoiseEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/DENOISE");
 	output.append_tag();
-	output.append_newline();
 	keyframe->set_data(output.string);
 }
 
@@ -161,14 +160,15 @@ void DenoiseEffect::convolve_dec_2(double *input_sequence,
 	for(i = 0; (i <= lengthp8) && ((i - filtlen) <= lengthp8); i += 2)
 	{
 		if(i < filtlen)
-			*output_sequence++ = dot_product(input_sequence + i, filter, i + 1);
+			*output_sequence++ = dot_product(input_sequence + i,
+				filter, i + 1);
 		else 
 		if(i > lengthp5)
 		{
 			offset = i - lengthm4;
 			shortlen = filtlen - offset;
 			*output_sequence++ = dot_product(input_sequence + lengthp4,
-							filter + offset, shortlen);
+				filter + offset, shortlen);
 		}
 		else
 			*output_sequence++ = dot_product(input_sequence + i, filter, filtlen);
@@ -185,7 +185,7 @@ int DenoiseEffect::decompose_branches(double *in_data,
 // original length. Length of branches is returned.
 	convolve_dec_2(in_data, length, decomp_filter->h, decomp_filter->length, out_low);
 	convolve_dec_2(in_data, length, decomp_filter->g, decomp_filter->length, out_high);
-	return (length / 2);
+	return(length / 2);
 }
 
 void DenoiseEffect::wavelet_decomposition(double *in_data, 
@@ -277,7 +277,8 @@ double DenoiseEffect::dot_product_even(double *data, double *filter, int filtlen
 	static double sum;
 
 	sum = 0.0;
-	for(i = 0; i < filtlen; i += 2) sum += *data-- * filter[i];
+	for(i = 0; i < filtlen; i += 2)
+		sum += *data-- * filter[i];
 	return sum;
 }
 
@@ -287,7 +288,8 @@ double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 	static double sum;
 
 	sum = 0.0;
-	for(i = 1; i < filtlen; i += 2) sum += *data-- * filter[i];
+	for(i = 1; i < filtlen; i += 2)
+		sum += *data-- * filter[i];
 	return sum;
 }
 
@@ -309,10 +311,11 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 // every other dot product interpolates the data
 		for(i = (filtlen / 2) - 1, j = (filtlen / 2); i < endpoint; i++, j++)
 		{
-			*output_sequence++ += dot_product_odd(input_sequence + i, filter, filtlen);
-			*output_sequence++ += dot_product_even(input_sequence + j, filter, filtlen);
+			*output_sequence++ += dot_product_odd(input_sequence + i,
+				filter, filtlen);
+			*output_sequence++ += dot_product_even(input_sequence + j,
+				filter, filtlen);
 		}
-
 		*output_sequence++ += dot_product_odd(input_sequence + i, filter, filtlen);
 	}
 	else
@@ -321,10 +324,11 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 // every other dot product interpolates the data
 		for(i = (filtlen / 2) - 1, j = (filtlen / 2); i < endpoint; i++, j++)
 		{
-			*output_sequence++ = dot_product_odd(input_sequence + i, filter, filtlen);
-			*output_sequence++ = dot_product_even(input_sequence + j, filter, filtlen);
+			*output_sequence++ = dot_product_odd(input_sequence + i,
+				filter, filtlen);
+			*output_sequence++ = dot_product_even(input_sequence + j,
+				filter, filtlen);
 		}
-
 		*output_sequence++ = dot_product_odd(input_sequence + i, filter, filtlen);
 	}
 }
@@ -337,9 +341,9 @@ int DenoiseEffect::reconstruct_branches(double *in_low,
 {
 // take input data and filters and form two branches of half the
 // original length. length of branches is returned
-	convolve_int_2(in_low, in_length, recon_filter->h, 
+	convolve_int_2(in_low, in_length, recon_filter->h,
 			recon_filter->length, 0, output);
-	convolve_int_2(in_high, in_length, recon_filter->g, 
+	convolve_int_2(in_high, in_length, recon_filter->g,
 			recon_filter->length, 1, output);
 	return in_length * 2;
 }
@@ -393,7 +397,7 @@ void DenoiseEffect::process_window()
 	}
 }
 
-void DenoiseEffect::process_realtime(AFrame *input, AFrame *output)
+AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 {
 	int size = input->length;
 
@@ -488,7 +492,6 @@ void DenoiseEffect::process_realtime(AFrame *input, AFrame *output)
 				sizeof(double) * window_size);
 			output_size += window_size;
 		}
-
 // Shift input buffer forward
 		for(int i = window_size - WINDOW_BORDER, j = 0; 
 			i < input_size; 
@@ -496,22 +499,19 @@ void DenoiseEffect::process_realtime(AFrame *input, AFrame *output)
 			input_buffer[j] = input_buffer[i];
 		input_size -= window_size - WINDOW_BORDER;
 	}
-
-	if(input != output)
-		output->copy_of(input);
-
 // Have enough to send to output
 	if(output_size - WINDOW_BORDER >= size)
 	{
-		memcpy(output->buffer, output_buffer, sizeof(double) * size);
+		memcpy(input->buffer, output_buffer, sizeof(double) * size);
 		for(int i = size, j = 0; i < output_size; i++, j++)
 			output_buffer[j] = output_buffer[i];
 		output_size -= size;
 	}
 	else
 	{
-		memset(output->buffer, 0, sizeof(double) * size);
+		memset(input->buffer, 0, sizeof(double) * size);
 	}
+	return input;
 }
 
 
@@ -524,10 +524,10 @@ Tree::Tree(int input_length, int levels)
 // create decomposition tree
 	values = new double*[2 * levels];
 	j = input_length;
-	for (i = 0; i < levels; i++)
+	for(i = 0; i < levels; i++)
 	{
 		j /= 2;
-		if (j == 0)
+		if(j == 0)
 		{
 			levels = i;
 			continue;
@@ -541,7 +541,7 @@ Tree::~Tree()
 {
 	int i;
 
-	for (i = 2 * levels - 1; i >= 0; i--)
+	for(i = 2 * levels - 1; i >= 0; i--)
 		delete values[i];
 
 	delete values;
@@ -557,9 +557,9 @@ WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 
 // calculate first two wavelet coefficients  a = a(-2) and b = a(-1)
 	values[0] = ((1.0 + tcosa + tsina) * (1.0 - tcosb - tsinb)
-					+ 2.0 * tsinb * tcosa) / 4.0;
+		+ 2.0 * tsinb * tcosa) / 4.0;
 	values[1] = ((1.0 - tcosa + tsina) * (1.0 + tcosb - tsinb)
-					- 2.0 * tsinb * tcosa) / 4.0;
+		- 2.0 * tsinb * tcosa) / 4.0;
 
 	tcosa = cos(alpha - beta);
 	tsina = sin(alpha - beta);
@@ -578,22 +578,19 @@ WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 	}
 }
 
-WaveletCoeffs::~WaveletCoeffs()
-{
-}
-
-
 WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 {
 	int i, j, k;
 
 // find the first non-zero wavelet coefficient
 	i = 0;
-	while(wave_coeffs->values[i] == 0.0) i++;
+	while(wave_coeffs->values[i] == 0.0)
+		i++;
 
 // find the last non-zero wavelet coefficient
 	j = 5;
-	while(wave_coeffs->values[j] == 0.0) j--;
+	while(wave_coeffs->values[j] == 0.0)
+		j--;
 
 // Form the decomposition filters h~ and g~ or the reconstruction
 // filters h and g.  The division by 2 in the construction
@@ -601,15 +598,17 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 	length = j - i + 1;
 	for(k = 0; k < length; k++)
 	{
-		if (transform == DECOMP)
+		if(transform == DECOMP)
 		{
 			h[k] = wave_coeffs->values[j--] / 2.0;
-			g[k] = (double) (((i++ & 0x01) * 2) - 1) * wave_coeffs->values[i] / 2.0;
+			g[k] = (double)(((i++ & 0x01) * 2) - 1) *
+				wave_coeffs->values[i] / 2.0;
 		}
 		else
 		{
 			h[k] = wave_coeffs->values[i++];
-			g[k] = (double) (((j-- & 0x01) * 2) - 1) * wave_coeffs->values[j];
+			g[k] = (double) (((j-- & 0x01) * 2) - 1) *
+				wave_coeffs->values[j];
 		}
 	}
 
@@ -619,10 +618,6 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 		h[k] = 0.0;
 		g[k++] = 0.0;
 	}
-}
-
-WaveletFilters::~WaveletFilters()
-{
 }
 
 

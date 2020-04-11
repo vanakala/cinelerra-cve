@@ -25,6 +25,8 @@
 #define PLUGIN_TITLE N_("Denoise")
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
+
 #define PLUGIN_CLASS DenoiseEffect
 #define PLUGIN_CONFIG_CLASS DenoiseConfig
 #define PLUGIN_THREAD_CLASS DenoiseThread
@@ -33,11 +35,9 @@
 #include "pluginmacros.h"
 
 #include "bcpot.h"
-#include "bchash.inc"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"
-#include "vframe.inc"
 
 typedef enum { DECOMP, RECON } wavetype;
 
@@ -92,7 +92,6 @@ class WaveletCoeffs
 {
 public:
 	WaveletCoeffs(double alpha, double beta);
-	~WaveletCoeffs();
 
 	double values[6];
 	int length;
@@ -102,7 +101,6 @@ class WaveletFilters
 {
 public:
 	WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform);
-	~WaveletFilters();
 
 	double g[6], h[6];
 	int length;
@@ -114,9 +112,9 @@ public:
 	DenoiseEffect(PluginServer *server);
 	~DenoiseEffect();
 
+	AFrame *process_tmpframe(AFrame *input);
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void process_realtime(AFrame *input, AFrame *output);
 
 	void load_defaults();
 	void save_defaults();
@@ -189,9 +187,9 @@ public:
 	double alpha;
 	double beta;
 // power
-	float output_level;
+	double output_level;
 // higher number kills more noise at the expense of more aliasing
-	float noise_level;
+	double noise_level;
 	int window_size;
 	int first_window;
 	int initialized;
