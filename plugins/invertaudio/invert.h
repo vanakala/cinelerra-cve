@@ -19,30 +19,34 @@
  * 
  */
 
-#include "aframe.h"
-#include "invert.h"
-#include "picon_png.h"
+#ifndef INVERT_H
+#define INVERT_H
 
-REGISTER_PLUGIN
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 
-InvertAudioEffect::InvertAudioEffect(PluginServer *server)
- : PluginAClient(server)
+// Original name was "Invert Audio"
+#define PLUGIN_TITLE N_("Invert")
+#define PLUGIN_CLASS InvertAudioEffect
+
+#include "pluginmacros.h"
+
+#include "aframe.inc"
+#include "language.h"
+#include "pluginaclient.h"
+#include "pluginserver.inc"
+
+
+class InvertAudioEffect : public PluginAClient
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-}
+public:
+	InvertAudioEffect(PluginServer *server);
+	~InvertAudioEffect();
 
-InvertAudioEffect::~InvertAudioEffect()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-}
+	PLUGIN_CLASS_MEMBERS
 
-PLUGIN_CLASS_METHODS
+	AFrame *process_tmpframe(AFrame *input);
+};
 
-
-AFrame *InvertAudioEffect::process_tmpframe(AFrame *input)
-{
-	int size = input->length;
-
-	for(int i = 0; i < size; i++)
-		input->buffer[i] = -input->buffer[i];
-}
+#endif
