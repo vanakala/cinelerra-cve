@@ -28,6 +28,7 @@
 #include "edit.inc"
 #include "levelhist.h"
 #include "plugin.inc"
+#include "pluginclient.inc"
 #include "track.inc"
 #include "audiorender.inc"
 #include "trackrender.h"
@@ -40,11 +41,19 @@ public:
 
 	void process_aframes(AFrame **output, int out_channels, int rstp);
 	AFrame *get_aframe(AFrame *buffer);
+	AFrame *get_atmpframe(AFrame *buffer, PluginClient *client);
 	void render_pan(AFrame **output, int out_channels);
 	void copy_track_aframe(AFrame *aframe);
+	AFrame *handover_trackframe();
+	void take_aframe(AFrame *frame);
 	void dump(int indent);
 
 	LevelHistory module_levels;
+
+// Frames for multichannel plugin
+	ArrayList<AFrame*> aframes;
+	int initialized_buffers;
+
 private:
 	void render_fade(AFrame *aframe);
 	void render_transition(AFrame *aframe, Edit *edit);

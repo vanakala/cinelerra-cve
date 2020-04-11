@@ -32,6 +32,7 @@
 
 #include "pluginmacros.h"
 
+#include "aframe.h"
 #include "bchash.h"
 #include "bctitle.h"
 #include "clip.h"

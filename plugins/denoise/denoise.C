@@ -20,6 +20,7 @@
  */
 
 
+#include "aframe.h"
 #include "bchash.h"
 #include "bctitle.h"
 #include "clip.h"
@@ -27,10 +28,6 @@
 #include "denoise.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
-
-#include <math.h>
-#include <string.h>
 
 #define WINDOW_BORDER (window_size / 2)
 #define SGN(x) (x<0 ? -1: 1)

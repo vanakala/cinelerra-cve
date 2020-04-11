@@ -22,8 +22,8 @@
 #ifndef PLUGINACLIENT_H
 #define PLUGINACLIENT_H
 
-#include "aframe.h"
 #include "pluginclient.h"
+#include "pluginserver.inc"
 
 class PluginAClient : public PluginClient
 {

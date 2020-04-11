@@ -46,6 +46,8 @@ public:
 	virtual VFrame *get_vtmpframe(VFrame *buffer,
 		PluginClient *client) { return 0; };
 	virtual AFrame *get_aframe(AFrame *buffer) { return 0; };
+	virtual AFrame *get_atmpframe(AFrame *buffer,
+		PluginClient *client) { return 0; };
 	virtual void copy_track_aframe(AFrame *buffer) {};
 	virtual VFrame *copy_track_vframe(VFrame *buffer) {};
 	Track *get_track_number(int number);

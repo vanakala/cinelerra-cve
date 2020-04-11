@@ -31,6 +31,7 @@
 
 #include "pluginmacros.h"
 
+#include "aframe.h"
 #include "bchash.h"
 #include "bcpot.h"
 #include "bctitle.h"
@@ -43,9 +44,6 @@
 #include "pluginwindow.h"
 #include "revmodel.hpp"
 #include "units.h"
-
-#include <math.h>
-#include <string.h>
 
 class FreeverbConfig
 {

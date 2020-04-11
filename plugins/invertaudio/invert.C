@@ -26,11 +26,11 @@
 // Original name was "Invert Audio"
 #define PLUGIN_TITLE N_("Invert")
 
+#include "aframe.h"
 #include "pluginmacros.h"
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
-#include "vframe.h"
 
 
 class InvertAudioEffect : public PluginAClient

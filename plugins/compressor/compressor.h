@@ -31,6 +31,7 @@
 #define PLUGIN_THREAD_CLASS CompressorThread
 #define PLUGIN_GUI_CLASS CompressorWindow
 
+#include "aframe.h"
 #include "bcbutton.h"
 #include "bcpopupmenu.h"
 #include "bctextbox.h"

@@ -569,6 +569,52 @@ void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *render
 	}
 }
 
+void AudioRender::pass_aframes(Plugin *plugin, ATrackRender *current_renderer)
+{
+	current_renderer->aframes.remove_all();
+	current_renderer->aframes.append(current_renderer->handover_trackframe());
+
+	// Add frames for other tracks starting from the first
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_AUDIO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+					track->plugins.values[i]->on)
+				current_renderer->aframes.append(
+					((ATrackRender*)track->renderer)->handover_trackframe());
+		}
+	}
+	if(current_renderer->initialized_buffers != current_renderer->aframes.total)
+	{
+		plugin->client->plugin_init(current_renderer->aframes.total);
+		current_renderer->initialized_buffers = current_renderer->aframes.total;
+	}
+}
+
+void AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)
+{
+	int k = 1;
+
+	current_renderer->take_aframe(current_renderer->aframes.values[0]);
+
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_AUDIO)
+			continue;
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			if(track->plugins.values[i]->shared_plugin == plugin &&
+					track->plugins.values[i]->on)
+				((ATrackRender*)track->renderer)->take_aframe(
+					current_renderer->aframes.values[k]);
+		}
+	}
+}
+
+
 InFrame::InFrame(File *file, int out_length, int filenum)
 {
 	this->file = file;

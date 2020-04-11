@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "clip.h"
 #include "bchash.h"
 #include "mainerror.h"
@@ -28,10 +29,7 @@
 #include "reverb.h"
 #include "reverbwindow.h"
 
-#include <math.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 REGISTER_PLUGIN
 

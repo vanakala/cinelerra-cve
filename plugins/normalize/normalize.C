@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "language.h"
@@ -27,11 +28,8 @@
 #include "normalizewindow.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
 
-#include <stdio.h>
 #include <string.h>
-
 
 REGISTER_PLUGIN
 

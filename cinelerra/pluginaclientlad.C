@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "clip.h"
 #include "data/lad_picon_png.h"
 #include "bchash.h"

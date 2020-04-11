@@ -20,6 +20,7 @@
  */
 
 #include "aframe.h"
+#include "atmpframecache.h"
 #include "autoconf.h"
 #include "bcsignals.h"
 #include "bchash.h"
@@ -250,7 +251,7 @@ void PluginClient::process_buffer(VFrame **frame)
 	}
 }
 
-void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
+void PluginClient::process_buffer(AFrame **buffer)
 {
 	AFrame *aframe = buffer[0];
 
@@ -258,24 +259,33 @@ void PluginClient::process_buffer(AFrame **buffer, ptstime total_len)
 		aframe->samplerate = edlsession->sample_rate;
 
 	source_pts = aframe->pts;
-	total_len_pts = total_len;
 
-	if(!server->realtime)
-		plugin_process_loop(buffer);
+	if(server->apiversion < 3)
+	{
+		if(!server->realtime)
+			plugin_process_loop(buffer);
+		else
+		{
+			if(server->multichannel)
+			{
+				int fragment_size = aframe->fill_length();
+
+				for(int i = 1; i < total_in_buffers; i++)
+					buffer[i]->set_fill_request(source_pts,
+						fragment_size);
+
+				process_frame(buffer);
+			}
+			else
+				process_frame(buffer[0]);
+		}
+	}
 	else
 	{
 		if(server->multichannel)
-		{
-			int fragment_size = aframe->fill_length();
-
-			for(int i = 1; i < total_in_buffers; i++)
-				buffer[i]->set_fill_request(source_pts,
-					fragment_size);
-
-			process_frame(buffer);
-		}
+			process_tmpframes(buffer);
 		else
-			process_frame(buffer[0]);
+			*buffer = process_tmpframe(*buffer);
 	}
 }
 
@@ -301,11 +311,6 @@ void PluginClient::process_frame(VFrame **frame)
 		process_realtime(frame, frame);
 }
 
-void PluginClient::process_tmpframes(VFrame **frame)
-{
-	process_realtime(frame, frame);
-}
-
 VFrame *PluginClient::clone_vframe(VFrame *orig)
 {
 	VFrame *cloned = BC_Resources::tmpframes.clone_frame(orig);
@@ -315,9 +320,23 @@ VFrame *PluginClient::clone_vframe(VFrame *orig)
 	return cloned;
 }
 
+AFrame *PluginClient::clone_aframe(AFrame *orig)
+{
+	AFrame *cloned = audio_frames.clone_frame(orig);
+
+	if(cloned)
+		cloned->pts = orig->pts;
+	return cloned;
+}
+
 void PluginClient::release_vframe(VFrame *frame)
 {
 	BC_Resources::tmpframes.release_frame(frame);
+}
+
+void PluginClient::release_aframe(AFrame *frame)
+{
+	audio_frames.release_frame(frame);
 }
 
 void PluginClient::process_frame(VFrame *frame)
@@ -326,17 +345,15 @@ void PluginClient::process_frame(VFrame *frame)
 	process_realtime(frame, frame);
 }
 
-VFrame *PluginClient::process_tmpframe(VFrame *frame)
-{
-	return process_realtime(frame);
-}
-
-void PluginClient::get_frame(AFrame *frame)
+AFrame *PluginClient::get_frame(AFrame *frame)
 {
 	if(renderer)
 	{
 		Track *current = renderer->get_track_number(frame->get_track());
-		current->renderer->get_aframe(frame);
+		if(server->apiversion < 3)
+			current->renderer->get_aframe(frame);
+		else
+			return current->renderer->get_atmpframe(frame, this);
 	}
 	else
 		frame->clear_frame(frame->pts, frame->source_duration);

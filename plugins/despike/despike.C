@@ -19,16 +19,13 @@
  * 
  */
 
+#include "aframe.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "picon_png.h"
 #include "despike.h"
 #include "despikewindow.h"
-
-#include "vframe.h"
-
-#include <string.h>
 
 REGISTER_PLUGIN
 

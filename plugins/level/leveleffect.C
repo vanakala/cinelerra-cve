@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "clip.h"
 #include "bchash.h"
 #include "bctitle.h"

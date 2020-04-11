@@ -20,13 +20,8 @@
  */
 
 #include "bcsignals.h"
-#include "edl.h"
-#include "edlsession.h"
 #include "pluginaclient.h"
-#include "pluginserver.h"
-#include "renderengine.inc"
-#include "track.h"
-#include "trackrender.h"
+#include "pluginserver.inc"
 
 #include <string.h>
 

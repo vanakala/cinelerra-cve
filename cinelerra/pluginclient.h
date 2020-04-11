@@ -130,8 +130,10 @@ public:
 	virtual void process_frame(VFrame **frame);
 	virtual void process_frame(VFrame *frame);
 // API v.3
-	virtual void process_tmpframes(VFrame **frame);
-	virtual VFrame *process_tmpframe(VFrame *frame);
+	virtual void process_tmpframes(VFrame **frame) {};
+	virtual VFrame *process_tmpframe(VFrame *frame) { return frame; };
+	virtual void process_tmpframes(AFrame **frames) {};
+	virtual AFrame *process_tmpframe(AFrame *frame) { return frame; };
 
 // process the data in the buffers
 // input - the current edit's data
@@ -146,15 +148,16 @@ public:
 
 // Process using pull method.
 // frame/buffer - video/audio fame to process
-// total_len - length of plugin
 	void process_buffer(VFrame **frame);
-	void process_buffer(AFrame **buffer, ptstime total_len);
+	void process_buffer(AFrame **buffer);
 
-	void get_frame(AFrame *frame);
+	AFrame *get_frame(AFrame *frame);
 	VFrame *get_frame(VFrame *buffer);
 // Get, release tmpframes
 	VFrame *clone_vframe(VFrame *orig);
 	void release_vframe(VFrame *frame);
+	AFrame *clone_aframe(AFrame *orig);
+	void release_aframe(AFrame *frame);
 
 	char* get_gui_string();
 

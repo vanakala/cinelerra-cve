@@ -30,6 +30,8 @@
 #define PLUGIN_GUI_CLASS ReverseAudioWindow
 
 #include "pluginmacros.h"
+
+#include "aframe.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"

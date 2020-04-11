@@ -19,16 +19,13 @@
  * 
  */
 
+#include "aframe.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "delayaudio.h"
 #include "filexml.h"
 #include "picon_png.h"
-#include "vframe.h"
-#include <algorithm>
-#include <string.h>
-
 
 REGISTER_PLUGIN
 

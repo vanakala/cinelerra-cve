@@ -19,13 +19,13 @@
  * 
  */
 
+#include "aframe.h"
 #include "bchash.h"
 #include "bctitle.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "../../cinelerra/resample.h"
 #include "resample.h"
-#include "vframe.h"
 
 REGISTER_PLUGIN
 

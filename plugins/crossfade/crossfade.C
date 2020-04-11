@@ -19,10 +19,9 @@
  * 
  */
 
+#include "aframe.h"
 #include "crossfade.h"
 #include "picon_png.h"
-#include "vframe.h"
-
 
 REGISTER_PLUGIN
 

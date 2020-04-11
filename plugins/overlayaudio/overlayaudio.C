@@ -29,6 +29,7 @@
 
 #include "pluginmacros.h"
 
+#include "aframe.h"
 #include "bchash.h"
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
