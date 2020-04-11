@@ -19,40 +19,33 @@
  * 
  */
 
-#include "aframe.h"
-#include "overlayaudio.h"
-#include "picon_png.h"
+#ifndef OVERLAYAUDIO_H
+#define OVERLAYAUDIO_H
 
-REGISTER_PLUGIN
+#define PLUGIN_TITLE N_("Overlay")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_USES_TMPFRAME
 
-OverlayAudio::OverlayAudio(PluginServer *server)
- : PluginAClient(server)
+#define PLUGIN_CLASS OverlayAudio
+
+#include "pluginmacros.h"
+
+#include "aframe.inc"
+#include "language.h"
+#include "pluginaclient.h"
+
+
+class OverlayAudio : public PluginAClient
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-}
+public:
+	OverlayAudio(PluginServer *server);
+	~OverlayAudio();
 
-OverlayAudio::~OverlayAudio()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-}
+	void process_tmpframes(AFrame **aframes);
 
-PLUGIN_CLASS_METHODS
+	PLUGIN_CLASS_MEMBERS
+};
 
-void OverlayAudio::process_tmpframes(AFrame **aframes)
-{
-	int num = get_total_buffers();
-// Direct copy the output track
-	int size = aframes[0]->source_length;
-
-	double *output_buffer = aframes[0]->buffer;
-
-	for(int i = 1; i < num; i++)
-	{
-		double *input_buffer = aframes[i]->buffer;
-
-		for(int j = 0; j < size; j++)
-		{
-			output_buffer[j] += input_buffer[j];
-		}
-	}
-}
+#endif
