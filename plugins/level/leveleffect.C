@@ -29,10 +29,6 @@
 #include "picon_png.h"
 #include "units.h"
 
-#include <errno.h>
-#include <math.h>
-#include <string.h>
-#include <unistd.h>
 
 REGISTER_PLUGIN
 
@@ -150,7 +146,6 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/SOUNDLEVEL");
 	output.append_tag();
-	output.append_newline();
 	keyframe->set_data(output.string);
 }
 
@@ -166,7 +161,7 @@ void SoundLevelEffect::save_defaults()
 	defaults->save();
 }
 
-void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
+AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 {
 	int size = input->length;
 
@@ -185,11 +180,12 @@ void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
 		rms_accum = sqrt(rms_accum / accum_size);
 		gui_args[0] = max_accum;
 		gui_args[1] = rms_accum;
-		send_render_gui(gui_args);
+		render_gui(gui_args);
 		rms_accum = 0;
 		max_accum = 0;
 		accum_size = 0;
 	}
+	return input;
 }
 
 void SoundLevelEffect::render_gui(void *data)
@@ -198,9 +194,9 @@ void SoundLevelEffect::render_gui(void *data)
 	{
 		char string[BCTEXTLEN];
 		double *arg = (double*)data;
-		sprintf(string, "%.2f", DB::todb(arg[0]));
+		sprintf(string, "%.2f", DB::todb(max_accum));
 		thread->window->soundlevel_max->update(string);
-		sprintf(string, "%.2f", DB::todb(arg[1]));
+		sprintf(string, "%.2f", DB::todb(rms_accum));
 		thread->window->soundlevel_rms->update(string);
 		thread->window->flush();
 	}

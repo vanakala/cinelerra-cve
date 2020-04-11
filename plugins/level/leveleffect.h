@@ -25,6 +25,8 @@
 #define PLUGIN_TITLE N_("SoundLevel")
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
+
 #define PLUGIN_CLASS SoundLevelEffect
 #define PLUGIN_CONFIG_CLASS SoundLevelConfig
 #define PLUGIN_THREAD_CLASS SoundLevelThread
@@ -47,7 +49,7 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	float duration;
+	double duration;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -79,9 +81,10 @@ public:
 	SoundLevelEffect(PluginServer *server);
 	~SoundLevelEffect();
 
+	AFrame *process_tmpframe(AFrame *input);
+
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void process_realtime(AFrame *input, AFrame *output);
 
 	void load_defaults();
 	void save_defaults();
