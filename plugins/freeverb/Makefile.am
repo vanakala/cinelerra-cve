@@ -9,6 +9,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
+	freeverb.h \
 	allpass.hpp \
 	comb.hpp \
 	denormals.h \
