@@ -28,7 +28,6 @@ class ReverbThread;
 class ReverbWindow;
 
 #include "bcpot.h"
-#include "mutex.h"
 #include "reverb.h"
 #include "pluginwindow.h"
 
@@ -49,7 +48,6 @@ class ReverbWindow : public PluginWindow
 {
 public:
 	ReverbWindow(Reverb *reverb, int x, int y);
-	~ReverbWindow();
 
 	void update();
 
@@ -70,7 +68,7 @@ class ReverbLevelInit : public BC_FPot
 {
 public:
 	ReverbLevelInit(Reverb *reverb, int x, int y);
-	~ReverbLevelInit();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -79,7 +77,7 @@ class ReverbDelayInit : public BC_IPot
 {
 public:
 	ReverbDelayInit(Reverb *reverb, int x, int y);
-	~ReverbDelayInit();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -88,7 +86,7 @@ class ReverbRefLevel1 : public BC_FPot
 {
 public:
 	ReverbRefLevel1(Reverb *reverb, int x, int y);
-	~ReverbRefLevel1();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -97,7 +95,7 @@ class ReverbRefLevel2 : public BC_FPot
 {
 public:
 	ReverbRefLevel2(Reverb *reverb, int x, int y);
-	~ReverbRefLevel2();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -106,7 +104,7 @@ class ReverbRefTotal : public BC_IPot
 {
 public:
 	ReverbRefTotal(Reverb *reverb, int x, int y);
-	~ReverbRefTotal();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -115,7 +113,7 @@ class ReverbRefLength : public BC_IPot
 {
 public:
 	ReverbRefLength(Reverb *reverb, int x, int y);
-	~ReverbRefLength();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -124,7 +122,7 @@ class ReverbLowPass1 : public BC_QPot
 {
 public:
 	ReverbLowPass1(Reverb *reverb, int x, int y);
-	~ReverbLowPass1();
+
 	int handle_event();
 	Reverb *reverb;
 };
@@ -133,7 +131,7 @@ class ReverbLowPass2 : public BC_QPot
 {
 public:
 	ReverbLowPass2(Reverb *reverb, int x, int y);
-	~ReverbLowPass2();
+
 	int handle_event();
 	Reverb *reverb;
 };

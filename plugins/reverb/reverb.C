@@ -87,11 +87,11 @@ Reverb::~Reverb()
 
 PLUGIN_CLASS_METHODS
 
-void Reverb::process_realtime(AFrame **input, AFrame **output)
+void Reverb::process_tmpframes(AFrame **input)
 {
 	int new_dsp_length, i, j;
 	main_in = input;
-	main_out = output;
+	main_out = input;
 	int size = input[0]->length;
 	redo_buffers |= load_configuration();
 
@@ -140,7 +140,8 @@ void Reverb::process_realtime(AFrame **input, AFrame **output)
 			double *new_dsp = new double[new_dsp_length];
 			for(j = 0; j < dsp_in_length && j < new_dsp_length; j++) 
 				new_dsp[j] = old_dsp[j];
-			for( ; j < new_dsp_length; j++) new_dsp[j] = 0;
+			for( ; j < new_dsp_length; j++)
+				new_dsp[j] = 0;
 			delete [] old_dsp;
 			dsp_in[i] = new_dsp;
 		}
@@ -244,14 +245,14 @@ void Reverb::process_realtime(AFrame **input, AFrame **output)
 void Reverb::load_defaults()
 {
 	defaults = load_defaults_file("reverb.rc");
-	config.level_init = defaults->get("LEVEL_INIT", (double)0);
-	config.delay_init = defaults->get("DELAY_INIT", 100);
-	config.ref_level1 = defaults->get("REF_LEVEL1", (double)-6);
-	config.ref_level2 = defaults->get("REF_LEVEL2", (double)INFINITYGAIN);
-	config.ref_total = defaults->get("REF_TOTAL", 12);
-	config.ref_length = defaults->get("REF_LENGTH", 1000);
-	config.lowpass1 = defaults->get("LOWPASS1", 20000);
-	config.lowpass2 = defaults->get("LOWPASS2", 20000);
+	config.level_init = defaults->get("LEVEL_INIT", config.level_init);
+	config.delay_init = defaults->get("DELAY_INIT", config.delay_init);
+	config.ref_level1 = defaults->get("REF_LEVEL1", config.ref_level1);
+	config.ref_level2 = defaults->get("REF_LEVEL2", config.ref_level2);
+	config.ref_total = defaults->get("REF_TOTAL", config.ref_total);
+	config.ref_length = defaults->get("REF_LENGTH", config.ref_length);
+	config.lowpass1 = defaults->get("LOWPASS1", config.lowpass1);
+	config.lowpass2 = defaults->get("LOWPASS2", config.lowpass2);
 }
 
 void Reverb::save_defaults()
@@ -348,7 +349,8 @@ int ReverbEngine::process_overlay(double *in, double *out, double &out1,
 	if(lowpass == -1 || lowpass >= 20000)
 	{
 // no lowpass filter
-		for(int i = 0; i < size; i++) out[i] += in[i] * level;
+		for(int i = 0; i < size; i++)
+			out[i] += in[i] * level;
 	}
 	else
 	{
@@ -393,7 +395,6 @@ void ReverbEngine::run()
 						size);
 			}
 		}
-
 		output_lock.unlock();
 	}
 }
@@ -401,6 +402,14 @@ void ReverbEngine::run()
 
 ReverbConfig::ReverbConfig()
 {
+	level_init = 0;
+	delay_init = 100;
+	ref_level1 = -6;
+	ref_level2 = INFINITYGAIN;
+	ref_total = 12;
+	ref_length = 1000;
+	lowpass1 = 20000;
+	lowpass2 = 20000;
 }
 
 int ReverbConfig::equivalent(ReverbConfig &that)
@@ -441,17 +450,4 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 	ref_length = prev.ref_length;
 	lowpass1 = prev.lowpass1;
 	lowpass2 = prev.lowpass2;
-}
-
-void ReverbConfig::dump()
-{
-	printf("ReverbConfig::dump %f %d %f %f %d %d %d %d\n",
-	level_init,
-	delay_init, 
-	ref_level1, 
-	ref_level2, 
-	ref_total, 
-	ref_length, 
-	lowpass1, 
-	lowpass2);
 }

@@ -28,6 +28,7 @@
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
 #define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CLASS Reverb
 #define PLUGIN_CONFIG_CLASS ReverbConfig
 #define PLUGIN_THREAD_CLASS ReverbThread
@@ -37,6 +38,7 @@ class ReverbEngine;
 
 #include "pluginmacros.h"
 #include "language.h"
+#include "mutex.h"
 #include "reverbwindow.h"
 #include "pluginaclient.h"
 
@@ -52,7 +54,6 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	void dump();
 
 	double level_init;
 	int delay_init;
@@ -83,8 +84,7 @@ public:
 	double **lowpass_in1, **lowpass_in2;
 	DB db;
 
-// required for all realtime/multichannel plugins
-	void process_realtime(AFrame **input_ptr, AFrame **output_ptr);
+	void process_tmpframes(AFrame **input_ptr);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 

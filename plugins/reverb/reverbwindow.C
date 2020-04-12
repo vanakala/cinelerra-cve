@@ -60,10 +60,6 @@ ReverbWindow::ReverbWindow(Reverb *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-ReverbWindow::~ReverbWindow()
-{
-}
-
 void ReverbWindow::update()
 {
 	level_init->update(plugin->config.level_init);
@@ -78,17 +74,9 @@ void ReverbWindow::update()
 
 
 ReverbLevelInit::ReverbLevelInit(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
-	y,
-	reverb->config.level_init, 
-	INFINITYGAIN, 
-	0)
+ : BC_FPot(x, y,reverb->config.level_init, INFINITYGAIN, 0)
 {
 	this->reverb = reverb;
-}
-
-ReverbLevelInit::~ReverbLevelInit() 
-{
 }
 
 int ReverbLevelInit::handle_event()
@@ -98,18 +86,11 @@ int ReverbLevelInit::handle_event()
 	return 1;
 }
 
+
 ReverbDelayInit::ReverbDelayInit(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
-	y, 
-	reverb->config.delay_init, 
-	0, 
-	1000)
+ : BC_IPot(x, y, reverb->config.delay_init, 0, 1000)
 {
 	this->reverb = reverb;
-}
-
-ReverbDelayInit::~ReverbDelayInit() 
-{
 }
 
 int ReverbDelayInit::handle_event()
@@ -119,18 +100,11 @@ int ReverbDelayInit::handle_event()
 	return 1;
 }
 
+
 ReverbRefLevel1::ReverbRefLevel1(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
-	y, 
-	reverb->config.ref_level1, 
-	INFINITYGAIN, 
-	0)
+ : BC_FPot(x, y, reverb->config.ref_level1, INFINITYGAIN, 0)
 {
 	this->reverb = reverb;
-}
-
-ReverbRefLevel1::~ReverbRefLevel1() 
-{
 }
 
 int ReverbRefLevel1::handle_event()
@@ -142,17 +116,9 @@ int ReverbRefLevel1::handle_event()
 
 
 ReverbRefLevel2::ReverbRefLevel2(Reverb *reverb, int x, int y)
- : BC_FPot(x, 
-	y, 
-	reverb->config.ref_level2, 
-	INFINITYGAIN, 
-	0)
+ : BC_FPot(x, y, reverb->config.ref_level2, INFINITYGAIN, 0)
 {
 	this->reverb = reverb;
-}
-
-ReverbRefLevel2::~ReverbRefLevel2()
-{
 }
 
 int ReverbRefLevel2::handle_event()
@@ -162,18 +128,11 @@ int ReverbRefLevel2::handle_event()
 	return 1;
 }
 
+
 ReverbRefTotal::ReverbRefTotal(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
-	y,
-	reverb->config.ref_total, 
-	1, 
-	250)
+ : BC_IPot(x, y, reverb->config.ref_total, 1, 250)
 {
 	this->reverb = reverb;
-}
-
-ReverbRefTotal::~ReverbRefTotal()
-{
 }
 
 int ReverbRefTotal::handle_event()
@@ -185,17 +144,9 @@ int ReverbRefTotal::handle_event()
 
 
 ReverbRefLength::ReverbRefLength(Reverb *reverb, int x, int y)
- : BC_IPot(x, 
-	y,
-	reverb->config.ref_length, 
-	0, 
-	5000)
+ : BC_IPot(x, y,reverb->config.ref_length, 0, 5000)
 {
 	this->reverb = reverb;
-}
-
-ReverbRefLength::~ReverbRefLength() 
-{
 }
 
 int ReverbRefLength::handle_event()
@@ -205,16 +156,11 @@ int ReverbRefLength::handle_event()
 	return 1;
 }
 
+
 ReverbLowPass1::ReverbLowPass1(Reverb *reverb, int x, int y)
- : BC_QPot(x, 
-	y, 
-	reverb->config.lowpass1)
+ : BC_QPot(x, y, reverb->config.lowpass1)
 {
 	this->reverb = reverb;
-}
-
-ReverbLowPass1::~ReverbLowPass1() 
-{
 }
 
 int ReverbLowPass1::handle_event()
@@ -224,16 +170,11 @@ int ReverbLowPass1::handle_event()
 	return 1;
 }
 
+
 ReverbLowPass2::ReverbLowPass2(Reverb *reverb, int x, int y)
- : BC_QPot(x, 
-	y,
-	reverb->config.lowpass2)
+ : BC_QPot(x, y, reverb->config.lowpass2)
 {
 	this->reverb = reverb;
-}
-
-ReverbLowPass2::~ReverbLowPass2() 
-{
 }
 
 int ReverbLowPass2::handle_event()
