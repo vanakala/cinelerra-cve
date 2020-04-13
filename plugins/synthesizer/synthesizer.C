@@ -26,7 +26,6 @@
 #include "bcmenubar.h"
 #include "bctitle.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "synthesizer.h"
 
@@ -306,36 +305,38 @@ double Synth::function_triangle(double x)
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
-void Synth::process_realtime(AFrame *input, AFrame *output)
+AFrame *Synth::process_tmpframe(AFrame *input)
 {
 	int size = input->length;
+	int fragment_len;
 	double wetness;
 
 	need_reconfigure |= load_configuration();
-	if(need_reconfigure) reconfigure();
+
+	if(need_reconfigure)
+		reconfigure();
 
 	if(config.wetness < (INFINITYGAIN + EPSILON)) 
 		wetness = 0;
 	else
 		wetness = DB::fromdb(config.wetness);
 
-	if(input != output)
-		output->copy_of(input);
-
 	for(int j = 0; j < size; j++)
-		output->buffer[j] = input->buffer[j] * wetness;
+		input->buffer[j] *= wetness;
 
-	int fragment_len;
 	for(int i = 0; i < size; i += fragment_len)
 	{
 		fragment_len = size;
-		if(i + fragment_len > size) fragment_len = size - i;
+		if(i + fragment_len > size)
+			fragment_len = size - i;
 
-		fragment_len = overlay_synth(i, fragment_len, input->buffer, output->buffer);
+		fragment_len = overlay_synth(i, fragment_len,
+			input->buffer);
 	}
+	return input;
 }
 
-int Synth::overlay_synth(samplenum start, int length, double *input, double *output)
+int Synth::overlay_synth(samplenum start, int length, double *output)
 {
 	if(waveform_sample + length > waveform_length) 
 		length = waveform_length - waveform_sample;
@@ -345,20 +346,17 @@ int Synth::overlay_synth(samplenum start, int length, double *input, double *out
 	if(waveform_sample + length > samples_rendered)
 	{
 		samplenum start = waveform_sample, end = waveform_sample + length;
-		for(int i = start; i < end; i++) dsp_buffer[i] = 0;
+		for(int i = start; i < end; i++)
+			dsp_buffer[i] = 0;
 
-		double normalize_constant = 1 / get_total_power();
+		double normalize_constant = 1.0 / get_total_power();
 		for(int i = 0; i < config.oscillator_config.total; i++)
-			solve_eqn(dsp_buffer, 
-				start, 
-				end, 
-				normalize_constant,
-				i);
+			solve_eqn(dsp_buffer, start, end,
+				normalize_constant, i);
 
 		samples_rendered = end;
 	}
 
-	double *buffer_in = &input[start];
 	double *buffer_out = &output[start];
 
 	for(int i = 0; i < length; i++)
@@ -366,7 +364,8 @@ int Synth::overlay_synth(samplenum start, int length, double *input, double *out
 		buffer_out[i] += dsp_buffer[waveform_sample++];
 	}
 
-	if(waveform_sample >= waveform_length) waveform_sample = 0;
+	if(waveform_sample >= waveform_length)
+		waveform_sample = 0;
 
 	return length;
 }
@@ -438,14 +437,13 @@ SynthWindow::SynthWindow(Synth *plugin, int x, int y)
 	x += 240;
 
 	add_subwindow(waveform = new SynthWaveForm(plugin, x, y, waveform_to_text(plugin->config.wavefunction)));
-	waveform->create_objects();
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
 	y += 30;
 	add_subwindow(base_freq = new SynthBaseFreq(plugin, x, y));
 	x += 80;
-	add_subwindow(freqpot = new SynthFreqPot(plugin, this, x, y - 10));
+	add_subwindow(freqpot = new SynthFreqPot(plugin, x, y - 10));
 	base_freq->freq_pot = freqpot;
 	freqpot->freq_text = base_freq;
 	x -= 80;
@@ -477,10 +475,6 @@ SynthWindow::SynthWindow(Synth *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_scrollbar();
 	update_oscillators();
-}
-
-SynthWindow::~SynthWindow()
-{
 }
 
 void SynthWindow::update()
@@ -602,10 +596,6 @@ SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
 	this->gui = gui;
 }
 
-SynthOscGUILevel::~SynthOscGUILevel()
-{
-}
-
 int SynthOscGUILevel::handle_event()
 {
 	SynthOscillatorConfig *config = synth->config.oscillator_config.values[gui->number];
@@ -625,10 +615,6 @@ SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
 {
 	this->synth = synth;
 	this->gui = gui;
-}
-
-SynthOscGUIPhase::~SynthOscGUIPhase()
-{
 }
 
 int SynthOscGUIPhase::handle_event()
@@ -652,13 +638,10 @@ SynthOscGUIFreq::SynthOscGUIFreq(Synth *synth, SynthOscGUI *gui, int y)
 	this->gui = gui;
 }
 
-SynthOscGUIFreq::~SynthOscGUIFreq()
-{
-}
-
 int SynthOscGUIFreq::handle_event()
 {
 	SynthOscillatorConfig *config = synth->config.oscillator_config.values[gui->number];
+
 	config->freq_factor = get_value();
 	gui->window->canvas->update();
 	synth->send_configure_change();
@@ -671,10 +654,6 @@ SynthAddOsc::SynthAddOsc(Synth *synth, SynthWindow *window, int x, int y)
 {
 	this->synth = synth;
 	this->window = window;
-}
-
-SynthAddOsc::~SynthAddOsc()
-{
 }
 
 int SynthAddOsc::handle_event()
@@ -691,10 +670,6 @@ SynthDelOsc::SynthDelOsc(Synth *synth, SynthWindow *window, int x, int y)
 {
 	this->synth = synth;
 	this->window = window;
-}
-
-SynthDelOsc::~SynthDelOsc()
-{
 }
 
 int SynthDelOsc::handle_event()
@@ -722,10 +697,6 @@ SynthScroll::SynthScroll(Synth *synth,
 	this->window = window;
 }
 
-SynthScroll::~SynthScroll()
-{
-}
-
 int SynthScroll::handle_event()
 {
 	window->update();
@@ -738,18 +709,12 @@ SynthSubWindow::SynthSubWindow(Synth *synth, int x, int y, int w, int h)
 {
 	this->synth = synth;
 }
-SynthSubWindow::~SynthSubWindow()
-{
-}
+
 
 SynthClear::SynthClear(Synth *synth, int x, int y)
  : BC_GenericButton(x, y, _("Clear"))
 {
 	this->synth = synth;
-}
-
-SynthClear::~SynthClear()
-{
 }
 
 int SynthClear::handle_event()
@@ -765,14 +730,6 @@ SynthWaveForm::SynthWaveForm(Synth *synth, int x, int y, const char *text)
  : BC_PopupMenu(x, y, 120, text)
 {
 	this->synth = synth;
-}
-
-SynthWaveForm::~SynthWaveForm()
-{
-}
-
-void SynthWaveForm::create_objects()
-{
 	add_item(new SynthWaveFormItem(synth, this, _("Sine"), SINE));
 	add_item(new SynthWaveFormItem(synth, this, _("Sawtooth"), SAWTOOTH));
 	add_item(new SynthWaveFormItem(synth, this, _("Square"), SQUARE));
@@ -801,11 +758,7 @@ int SynthWaveFormItem::handle_event()
 
 
 SynthWetness::SynthWetness(Synth *synth, int x, int y)
- : BC_FPot(x, 
-		y, 
-		synth->config.wetness, 
-		INFINITYGAIN, 
-		0)
+ : BC_FPot(x, y, synth->config.wetness, INFINITYGAIN, 0)
 {
 	this->synth = synth;
 }
@@ -818,14 +771,10 @@ int SynthWetness::handle_event()
 }
 
 
-SynthFreqPot::SynthFreqPot(Synth *synth, SynthWindow *window, int x, int y)
+SynthFreqPot::SynthFreqPot(Synth *synth, int x, int y)
  : BC_QPot(x, y, synth->config.base_freq)
 {
 	this->synth = synth;
-}
-
-SynthFreqPot::~SynthFreqPot()
-{
 }
 
 int SynthFreqPot::handle_event()
@@ -844,10 +793,6 @@ SynthBaseFreq::SynthBaseFreq(Synth *synth, int x, int y)
  : BC_TextBox(x, y, 70, 1, (int)synth->config.base_freq)
 {
 	this->synth = synth;
-}
-
-SynthBaseFreq::~SynthBaseFreq()
-{
 }
 
 int SynthBaseFreq::handle_event()
@@ -878,10 +823,6 @@ SynthCanvas::SynthCanvas(Synth *synth,
 {
 	this->synth = synth;
 	this->window = window;
-}
-
-SynthCanvas::~SynthCanvas()
-{
 }
 
 void SynthCanvas::update()
@@ -915,10 +856,6 @@ SynthLevelZero::SynthLevelZero(Synth *synth)
 	this->synth = synth; 
 }
 
-SynthLevelZero::~SynthLevelZero() 
-{
-}
-
 int SynthLevelZero::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -936,10 +873,6 @@ SynthLevelMax::SynthLevelMax(Synth *synth)
 	this->synth = synth; 
 }
 
-SynthLevelMax::~SynthLevelMax()
-{
-}
-
 int SynthLevelMax::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -954,10 +887,6 @@ SynthLevelNormalize::SynthLevelNormalize(Synth *synth)
  : BC_MenuItem(_("Normalize"))
 {
 	this->synth = synth;
-}
-
-SynthLevelNormalize::~SynthLevelNormalize()
-{
 }
 
 int SynthLevelNormalize::handle_event()
@@ -993,10 +922,6 @@ SynthLevelSlope::SynthLevelSlope(Synth *synth)
 	this->synth = synth;
 }
 
-SynthLevelSlope::~SynthLevelSlope()
-{
-}
-
 int SynthLevelSlope::handle_event()
 {
 	float slope = (float)INFINITYGAIN / synth->config.oscillator_config.total;
@@ -1014,10 +939,6 @@ SynthLevelRandom::SynthLevelRandom(Synth *synth)
  : BC_MenuItem(_("Random"))
 { 
 	this->synth = synth; 
-}
-
-SynthLevelRandom::~SynthLevelRandom()
-{
 }
 
 int SynthLevelRandom::handle_event()
@@ -1038,10 +959,6 @@ SynthLevelInvert::SynthLevelInvert(Synth *synth)
 	this->synth = synth;
 }
 
-SynthLevelInvert::~SynthLevelInvert()
-{
-}
-
 int SynthLevelInvert::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -1058,10 +975,6 @@ SynthLevelSine::SynthLevelSine(Synth *synth)
  : BC_MenuItem(_("Sine"))
 {
 	this->synth = synth;
-}
-
-SynthLevelSine::~SynthLevelSine()
-{
 }
 
 int SynthLevelSine::handle_event()
@@ -1088,10 +1001,6 @@ SynthPhaseInvert::SynthPhaseInvert(Synth *synth)
 	this->synth = synth;
 }
 
-SynthPhaseInvert::~SynthPhaseInvert()
-{
-}
-
 int SynthPhaseInvert::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -1111,10 +1020,6 @@ SynthPhaseZero::SynthPhaseZero(Synth *synth)
 	this->synth = synth;
 }
 
-SynthPhaseZero::~SynthPhaseZero()
-{
-}
-
 int SynthPhaseZero::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -1126,14 +1031,11 @@ int SynthPhaseZero::handle_event()
 	synth->send_configure_change();
 }
 
+
 SynthPhaseSine::SynthPhaseSine(Synth *synth)
  : BC_MenuItem(_("Sine"))
 {
 	this->synth = synth;
-}
-
-SynthPhaseSine::~SynthPhaseSine()
-{
 }
 
 int SynthPhaseSine::handle_event()
@@ -1154,10 +1056,6 @@ SynthPhaseRandom::SynthPhaseRandom(Synth *synth)
  : BC_MenuItem(_("Random"))
 {
 	this->synth = synth;
-}
-
-SynthPhaseRandom::~SynthPhaseRandom()
-{
 }
 
 int SynthPhaseRandom::handle_event()
@@ -1183,10 +1081,6 @@ SynthFreqRandom::SynthFreqRandom(Synth *synth)
 	this->synth = synth;
 }
 
-SynthFreqRandom::~SynthFreqRandom()
-{
-}
-
 int SynthFreqRandom::handle_event()
 {
 	srand(time(0));
@@ -1206,10 +1100,6 @@ SynthFreqEnum::SynthFreqEnum(Synth *synth)
 	this->synth = synth;
 }
 
-SynthFreqEnum::~SynthFreqEnum()
-{
-}
-
 int SynthFreqEnum::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -1226,10 +1116,6 @@ SynthFreqEven::SynthFreqEven(Synth *synth)
  : BC_MenuItem(_("Even"))
 {
 	this->synth = synth;
-}
-
-SynthFreqEven::~SynthFreqEven()
-{
 }
 
 int SynthFreqEven::handle_event()
@@ -1253,10 +1139,6 @@ SynthFreqOdd::SynthFreqOdd(Synth *synth)
 	this->synth = synth;
 }
 
-SynthFreqOdd::~SynthFreqOdd()
-{
-}
-
 int SynthFreqOdd::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
@@ -1273,10 +1155,6 @@ SynthFreqFibonacci::SynthFreqFibonacci(Synth *synth)
  : BC_MenuItem(_("Fibonnacci"))
 { 
 	this->synth = synth; 
-}
-
-SynthFreqFibonacci::~SynthFreqFibonacci()
-{
 }
 
 int SynthFreqFibonacci::handle_event()
@@ -1299,10 +1177,6 @@ SynthFreqPrime::SynthFreqPrime(Synth *synth)
  : BC_MenuItem(_("Prime"))
 { 
 	this->synth = synth; 
-}
-
-SynthFreqPrime::~SynthFreqPrime()
-{
 }
 
 int SynthFreqPrime::handle_event()
@@ -1344,10 +1218,6 @@ SynthOscillatorConfig::SynthOscillatorConfig(int number)
 	this->number = number;
 }
 
-SynthOscillatorConfig::~SynthOscillatorConfig()
-{
-}
-
 void SynthOscillatorConfig::reset()
 {
 	level = 0;
@@ -1360,11 +1230,11 @@ void SynthOscillatorConfig::load_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 
 	sprintf(string, "LEVEL%d", number);
-	level = defaults->get(string, (float)0);
+	level = defaults->get(string, level);
 	sprintf(string, "PHASE%d", number);
-	phase = defaults->get(string, (float)0);
+	phase = defaults->get(string, phase);
 	sprintf(string, "FREQFACTOR%d", number);
-	freq_factor = defaults->get(string, (float)1);
+	freq_factor = defaults->get(string, freq_factor);
 }
 
 void SynthOscillatorConfig::save_defaults(BC_Hash *defaults)
@@ -1372,26 +1242,26 @@ void SynthOscillatorConfig::save_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 
 	sprintf(string, "LEVEL%d", number);
-	defaults->update(string, (float)level);
+	defaults->update(string, level);
 	sprintf(string, "PHASE%d", number);
-	defaults->update(string, (float)phase);
+	defaults->update(string, phase);
 	sprintf(string, "FREQFACTOR%d", number);
-	defaults->update(string, (float)freq_factor);
+	defaults->update(string, freq_factor);
 }
 
 void SynthOscillatorConfig::read_data(FileXML *file)
 {
-	level = file->tag.get_property("LEVEL", (float)level);
-	phase = file->tag.get_property("PHASE", (float)phase);
-	freq_factor = file->tag.get_property("FREQFACTOR", (float)freq_factor);
+	level = file->tag.get_property("LEVEL", level);
+	phase = file->tag.get_property("PHASE", phase);
+	freq_factor = file->tag.get_property("FREQFACTOR", freq_factor);
 }
 
 void SynthOscillatorConfig::save_data(FileXML *file)
 {
 	file->tag.set_title("OSCILLATOR");
-	file->tag.set_property("LEVEL", (float)level);
-	file->tag.set_property("PHASE", (float)phase);
-	file->tag.set_property("FREQFACTOR", (float)freq_factor);
+	file->tag.set_property("LEVEL", level);
+	file->tag.set_property("PHASE", phase);
+	file->tag.set_property("FREQFACTOR", freq_factor);
 	file->append_tag();
 	file->append_newline();
 }
