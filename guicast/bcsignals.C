@@ -32,6 +32,8 @@
 #include <X11/Xlibint.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <math.h>
+#include <values.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
 int BC_Signals::catch_X_errors = 0;
@@ -725,6 +727,113 @@ int BC_Signals::is_listed(void *srcptr)
 			return 1;
 	}
 	return 0;
+}
+
+void BC_Signals::show_array(float *array, int length, int indent, int nohead)
+{
+	float max = FLT_MIN;
+	float min = FLT_MAX;
+	float avg = 0;
+	int minpos, maxpos;
+	int firstnan, lastnan;
+
+	if(!array)
+	{
+		if(!nohead)
+			printf("%*sFloat array is missing [%d].\n", indent, "", length);
+		return;
+	}
+
+	minpos = maxpos = -1;
+	firstnan = lastnan = -1;
+
+	if(!nohead)
+	{
+		printf("%*sFloat array %p[%d]:\n", indent, "", array, length);
+		indent++;
+	}
+	for(int i = 0; i < length; i++)
+	{
+		if(isnan(array[i]))
+		{
+			if(firstnan < 0)
+				firstnan = i;
+			lastnan = i;
+			continue;
+		}
+		else if(firstnan >= 0)
+		{
+			printf("%*snans %d..%d\n", indent, "",
+				firstnan, lastnan);
+			firstnan = lastnan = -1;
+		}
+		avg += array[i];
+		if(min > array[i])
+		{
+			minpos = i;
+			min = array[i];
+		}
+		if(max < array[i])
+		{
+			max = array[i];
+			maxpos = i;
+		}
+	}
+	printf("%*savg %.3g min[%d] %.3g max[%d] %.3g\n", indent, "", avg / length,
+		minpos, min, maxpos, max);
+}
+
+void BC_Signals::show_array(double *array, int length, int indent, int nohead)
+{
+	double max = DBL_MIN;
+	double min = DBL_MAX;
+	double avg = 0;
+	int minpos, maxpos;
+	int firstnan, lastnan;
+
+	if(!array)
+	{
+		if(!nohead)
+			printf("%*sDouble array is missing [%d].\n", indent, "", length);
+		return;
+	}
+	minpos = maxpos = -1;
+	firstnan = lastnan = -1;
+
+	if(!nohead)
+	{
+		printf("%*sDouble array %p[%d]:\n", indent, "", array, length);
+		indent++;
+	}
+	for(int i = 0; i < length; i++)
+	{
+		if(isnan(array[i]))
+		{
+			if(firstnan < 0)
+				firstnan = i;
+			lastnan = i;
+			continue;
+		}
+		else if(firstnan >= 0)
+		{
+			printf("%*snans %d..%d\n", indent, "",
+				firstnan, lastnan);
+			firstnan = lastnan = -1;
+		}
+		avg += array[i];
+		if(min > array[i])
+		{
+			minpos = i;
+			min = array[i];
+		}
+		if(max < array[i])
+		{
+			max = array[i];
+			maxpos = i;
+		}
+	}
+	printf("%*savg %.4g min[%d] %.4g max[%d] %.4g\n", indent, "", avg / length,
+		minpos, min, maxpos, max);
 }
 
 void BC_Signals::dumpGC(Display *dpy, GC gc, int indent)

@@ -132,6 +132,11 @@ public:
 	// Do not abort on X errors
 	static int set_catch_errors();
 	static int reset_catch();
+	// Peek into array
+	static void show_array(float *array, int length,
+		int indent = 0, int nohead = 0);
+	static void show_array(double *array, int length,
+		int indent = 0, int nohead = 0);
 	// Pointer list
 	static void add_pointer_list(void *srcptr);
 	static void remove_pointer_list(void *srcptr);
