@@ -329,32 +329,10 @@ void AFrame::dump(int indent, int dumpdata)
 		buffer, float_buffer, buffer_length, shared, float_data);
 	if(dumpdata && length > 0)
 	{
-		avg = 0;
-		min = +100;
-		max = -100;
 		if(buffer)
-		{
-			for(int i = 0; i < length; i++)
-			{
-				avg += fabs(buffer[i]);
-				if(buffer[i] < min)
-					min = buffer[i];
-				if(buffer[i] > max)
-					max = buffer[i];
-			}
-		}
+			BC_Signals::show_array(buffer, length, indent, 1);
+
 		if(float_buffer)
-		{
-			for(int i = 0; i < length; i++)
-			{
-				avg += fabs(float_buffer[i]);
-				if(float_buffer[i] < min)
-					min = float_buffer[i];
-				if(float_buffer[i] > max)
-					max = float_buffer[i];
-			}
-		}
-		printf("%*sbuffer vals avg %.4f min %.3f max %.3f\n", indent, "",
-			avg/length, min, max);
+			BC_Signals::show_array(float_buffer, length, indent, 1);
 	}
 }
