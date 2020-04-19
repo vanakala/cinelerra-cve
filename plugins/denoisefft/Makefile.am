@@ -4,8 +4,9 @@ denoisefft_la_LIBADD = $(top_builddir)/plugins/libfourier/libfourier.la
 denoisefft_la_SOURCES = denoisefft.C 
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
+AM_CPPFLAGS = -I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/plugins/libfourier \
+	-I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 

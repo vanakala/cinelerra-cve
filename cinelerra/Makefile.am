@@ -120,6 +120,7 @@ cinelerracve_SOURCES = aautomation.C \
 		    floatautos.C \
 		    formatpresets.C \
 		    formattools.C \
+		    fourier.C \
 		    framecache.C \
 		    guidelines.C \
 		    gwindow.C \
@@ -344,6 +345,7 @@ noinst_HEADERS = aautomation.h \
 		 floatautos.h \
 		 formatpresets.h \
 		 formattools.h \
+		 fourier.h \
 		 framecache.h \
 		 guidelines.h \
 		 gwindow.h \
@@ -480,7 +482,7 @@ cinelerracve_LDADD = \
 	$(top_builddir)/guicast/libguicastcve.la \
 	@FFMPEG_LIBS@ \
 	$(OPENEXR_LIBS) \
-	-lsndfile \
+	-lsndfile -lfftw3 \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(OPENGL_LIBS) \

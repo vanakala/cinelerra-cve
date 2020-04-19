@@ -4,8 +4,10 @@ pitch_la_LIBADD = $(top_builddir)/plugins/libfourier/libfourier.la
 pitch_la_SOURCES = pitch.C 
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/plugins/libfourier -I$(top_srcdir)/include \
+AM_CPPFLAGS = -I$(top_srcdir)/guicast \
+	-I$(top_srcdir)/plugins/libfourier \
+	-I$(top_srcdir)/cinelerra \
+	-I$(top_srcdir)/include \
 	$(FFMPEG_CPPFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
