@@ -26,17 +26,18 @@
 
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 #define PLUGIN_CLASS Spectrogram
 #define PLUGIN_CONFIG_CLASS SpectrogramConfig
 #define PLUGIN_THREAD_CLASS SpectrogramThread
 #define PLUGIN_GUI_CLASS SpectrogramWindow
 
-#include "bcpot.h"
 #include "pluginmacros.h"
-#include "bchash.inc"
+
+#include "bcpot.h"
+#include "bctoggle.h"
 #include "fourier.h"
-#include "mutex.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"
 #include "vframe.inc"
@@ -48,35 +49,42 @@ class SpectrogramLevel : public BC_FPot
 {
 public:
 	SpectrogramLevel(Spectrogram *plugin, int x, int y);
+
 	int handle_event();
 	Spectrogram *plugin;
 };
 
+class SpectrogramBW : public BC_CheckBox
+{
+public:
+	SpectrogramBW(Spectrogram *plugin, int x, int y);
+
+	int handle_event();
+
+	Spectrogram *plugin;
+};
 
 class SpectrogramWindow : public PluginWindow
 {
 public:
 	SpectrogramWindow(Spectrogram *plugin, int x, int y);
-	~SpectrogramWindow();
 
 	void update();
 
 	SpectrogramLevel *level;
-	int done;
+	SpectrogramBW *blackwhite;
 	BC_SubWindow *canvas;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 PLUGIN_THREAD_HEADER
 
-class SpectrogramFFT : public CrossfadeFFT
+class SpectrogramFFT : public Fourier
 {
 public:
 	SpectrogramFFT(Spectrogram *plugin, int window_size);
-	~SpectrogramFFT();
 
-	void signal_process();
-	void get_frame(AFrame *aframe);
+	int signal_process();
 
 	Spectrogram *plugin;
 };
@@ -86,7 +94,9 @@ class SpectrogramConfig
 {
 public:
 	SpectrogramConfig();
+
 	double level;
+	int blackwhite;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -99,21 +109,23 @@ public:
 
 	PLUGIN_CLASS_MEMBERS;
 
-	void process_frame(AFrame *aframe);
+	AFrame *process_tmpframe(AFrame *aframe);
 	void load_defaults();
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void render_gui(void *data);
 
-	void reset();
+	int window_size;
+	int data_size;
+	int gui_tmp_size;
+	int window_num;
+	AFrame *frame;
+	double *data;
+	double *gui_tmp;
 
-	int done;
-
-	int need_reconfigure;
+private:
 	SpectrogramFFT *fft;
-	float *data;
-	int total_windows;
 };
 
 #endif

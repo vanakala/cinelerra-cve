@@ -25,21 +25,21 @@
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
+#include "plugin.h"
 #include "spectrogram.h"
 #include "units.h"
-#include "vframe.h"
 
 #include <string.h>
 
 REGISTER_PLUGIN
 
 #define WINDOW_SIZE 4096
-#define HALF_WINDOW 2048
 
 
 SpectrogramConfig::SpectrogramConfig()
 {
 	level = 0.0;
+	blackwhite = 0;
 }
 
 SpectrogramLevel::SpectrogramLevel(Spectrogram *plugin, int x, int y)
@@ -55,6 +55,18 @@ int SpectrogramLevel::handle_event()
 	return 1;
 }
 
+SpectrogramBW::SpectrogramBW(Spectrogram *plugin, int x, int y)
+ : BC_CheckBox(x, y, plugin->config.blackwhite, _("B&W spectrogram"))
+{
+	this->plugin = plugin;
+}
+
+int SpectrogramBW::handle_event()
+{
+	plugin->config.blackwhite = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
 
 SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
@@ -65,6 +77,7 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 {
 	int divisions = 5;
 	char string[BCTEXTLEN];
+	BC_WindowBase *win;
 
 	x = 60;
 	y = 10;
@@ -86,60 +99,71 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 	x = canvas->get_x();
 	y = canvas->get_y() + canvas->get_h() + 5;
 
-	add_subwindow(new BC_Title(x, y + 10, _("Level:")));
-	add_subwindow(level = new SpectrogramLevel(plugin, x + 70, y));
+	win = add_subwindow(new BC_Title(x, y + 10, _("Level:")));
+	win = add_subwindow(level = new SpectrogramLevel(plugin,
+		x + win->get_w() + 10, y));
+	add_subwindow(blackwhite = new SpectrogramBW(plugin,
+		win->get_x() + win->get_w() + 20, y + 10));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
-
-SpectrogramWindow::~SpectrogramWindow()
-{
-}
-
 
 void SpectrogramWindow::update()
 {
 	level->update(plugin->config.level);
+	blackwhite->update(plugin->config.blackwhite);
 }
 
 PLUGIN_THREAD_METHODS
 
 
 SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin, int window_size)
- : CrossfadeFFT(window_size)
+ : Fourier(window_size)
 {
 	this->plugin = plugin;
 }
 
-SpectrogramFFT::~SpectrogramFFT()
+int SpectrogramFFT::signal_process()
 {
-}
-
-void SpectrogramFFT::signal_process()
-{
+	int win_size;
+	double coef;
 	double level = DB::fromdb(plugin->config.level);
-	for(int i = 0; i < HALF_WINDOW; i++)
+
+	plugin->window_size = get_window_size();
+	win_size = plugin->window_size / 2;
+	coef = win_size;
+
+	if(plugin->data_size < win_size)
 	{
-		plugin->data[i] += level *
-			sqrt(freq_real[i] * freq_real[i] + 
-				freq_imag[i] * freq_imag[i]);
+		delete [] plugin->data;
+		plugin->data = 0;
 	}
-
-	plugin->total_windows++;
+	if(!plugin->data)
+	{
+		plugin->data = new double[win_size];
+		plugin->data_size = win_size;
+		memset(plugin->data, 0, sizeof(double) * plugin->data_size);
+	}
+	for(int i = 0; i < win_size; i++)
+	{
+		double re = fftw_window[i][0] / coef;
+		double im = fftw_window[i][0] / coef;
+		plugin->data[i] += level *
+			sqrt(re * re + im * im);
+	}
+	plugin->window_num++;
+	plugin->render_gui(plugin->data);
+	return 0;
 }
-
-void SpectrogramFFT::get_frame(AFrame *aframe)
-{
-	plugin->get_frame(aframe);
-}
-
 
 Spectrogram::Spectrogram(PluginServer *server)
  : PluginAClient(server)
 {
-	thread = 0;
 	fft = 0;
-	done = 0;
 	data = 0;
+	data_size = 0;
+	gui_tmp = 0;
+	gui_tmp_size = 0;
+	frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -147,92 +171,119 @@ Spectrogram::~Spectrogram()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 
-	if(fft) delete fft;
-	if(data) delete [] data;
+	delete fft;
+	delete [] data;
+	delete [] gui_tmp;
 }
 
 PLUGIN_CLASS_METHODS
 
-void Spectrogram::process_frame(AFrame *aframe)
+AFrame *Spectrogram::process_tmpframe(AFrame *aframe)
 {
 	load_configuration();
+
 	if(!fft)
-	{
 		fft = new SpectrogramFFT(this, WINDOW_SIZE);
-	}
-	if(!data)
-	{
-		data = new float[HALF_WINDOW];
-	}
+	if(data)
+		memset(data, 0, sizeof(double) * data_size);
 
-	memset(data, 0, sizeof(float) * HALF_WINDOW);
-	total_windows = 0;
-	fft->process_frame(aframe);
+	window_num = 0;
+	frame = aframe;
+	aframe = fft->process_frame(aframe);
 
-	for(int i = 0; i < HALF_WINDOW; i++)
-		data[i] /= total_windows;
-	send_render_gui(data);
+	return aframe;
 }
 
-void Spectrogram::render_gui(void *data)
+void Spectrogram::render_gui(void *odata)
 {
 	if(thread)
 	{
-		float *frame = (float*)data;
-		int niquist = project_sample_rate;
 		BC_SubWindow *canvas = thread->window->canvas;
 		int h = canvas->get_h();
-		int input1 = HALF_WINDOW - 1;
-		double *temp = new double[h];
+		int input1 = data_size - 1;
 
+		if(gui_tmp_size < h)
+		{
+			delete [] gui_tmp;
+			gui_tmp = 0;
+		}
+		if(!gui_tmp)
+		{
+			gui_tmp = new double[h];
+			gui_tmp_size = h;
+		}
 // Scale frame to canvas height
 		for(int i = 0; i < h; i++)
 		{
 			int input2 = (int)((h - 1 - i) * TOTALFREQS / h);
-			input2 = Freq::tofreq(input2) * 
-				HALF_WINDOW / 
-				niquist;
-			input2 = MIN(HALF_WINDOW - 1, input2);
+
+			input2 = Freq::tofreq(input2) *
+				window_size / frame->samplerate;
+			input2 = MIN(data_size - 1, input2);
+
 			double sum = 0;
 			if(input1 > input2)
 			{
 				for(int j = input1 - 1; j >= input2; j--)
-					sum += frame[j];
+					sum += data[j];
 
 				sum /= input1 - input2;
 			}
 			else
-			{
-				sum = frame[input2];
-			}
+				sum = data[input2];
 
-			temp[i] = sum;
+			if(config.blackwhite)
+				gui_tmp[i] = (10. * log(sum + 1e-6) + 96) / 96;
+			else
+				gui_tmp[i] = sum;
+
 			input1 = input2;
 		}
 
-// Shift left
-		canvas->copy_area(1, 
-			0, 
-			0, 
-			0, 
-			canvas->get_w() - 1,
-			canvas->get_h());
-		int x = canvas->get_w() - 1;
-		double scale = (double)0xffffff;
-		for(int i = 0; i < h; i++)
+		int w = canvas->get_w();
+		double wipts = (double)window_size / frame->samplerate;
+		double x_scale = (double)w / plugin->get_length();
+		int x_pos = round(((window_num - 1) * wipts +
+			frame->pts - plugin->get_pts()) * x_scale);
+		int slice = round(wipts * x_scale);
+		if(slice + x_pos > w)
+			slice = w - x_pos;
+		int x = x_pos;
+
+		if(slice > 0)
 		{
-			int color;
-			color = (int)(scale * temp[i]);
+			double scale = (double)(config.blackwhite ?
+				0xff : 0xffffff);
 
-			if(color < 0) color = 0;
-			if(color > 0xffffff) color = 0xffffff;
-			canvas->set_color(color);
-			canvas->draw_pixel(x, i);
+			for(int i = 0; i < h; i++)
+			{
+				int color = round(scale * gui_tmp[i]);
+
+				if(color < 0)
+					color = 0;
+				if(config.blackwhite)
+				{
+					if(color > 0xff)
+						color = 0xff;
+					color = color << 16 | color << 8 | color;
+				}
+				else if(color > 0xffffff)
+					color = 0xffffff;
+
+				if(slice == 1)
+				{
+					canvas->set_current_color(color);
+					canvas->draw_pixel(x_pos, i);
+				}
+				else
+				{
+					canvas->set_color(color);
+					canvas->draw_line(x_pos, i, x_pos + slice, i);
+				}
+			}
 		}
-
 		canvas->flash();
 		canvas->flush();
-		delete [] temp;
 	}
 }
 
@@ -261,6 +312,8 @@ void Spectrogram::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("SPECTROGRAM"))
 			{
 				config.level = input.tag.get_property("LEVEL", config.level);
+				config.blackwhite = input.tag.get_property("BLACKWHITE",
+					config.blackwhite);
 			}
 		}
 	}
@@ -271,7 +324,8 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 	output.tag.set_title("SPECTROGRAM");
-	output.tag.set_property("LEVEL", (double)config.level);
+	output.tag.set_property("LEVEL", config.level);
+	output.tag.set_property("BLACKWHITE", config.blackwhite);
 	output.append_tag();
 	output.tag.set_title("/SPECTROGRAM");
 	output.append_tag();
@@ -284,10 +338,12 @@ void Spectrogram::load_defaults()
 	defaults = load_defaults_file("spectrogram.rc");
 
 	config.level = defaults->get("LEVEL", config.level);
+	config.blackwhite = defaults->get("BLACKWHITE", config.blackwhite);
 }
 
 void Spectrogram::save_defaults()
 {
 	defaults->update("LEVEL", config.level);
+	defaults->update("BLACKWHITE", config.blackwhite);
 	defaults->save();
 }
