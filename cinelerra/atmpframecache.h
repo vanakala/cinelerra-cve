@@ -28,6 +28,8 @@
 #include "atmpframecache.inc"
 #include "aframe.inc"
 
+#include <stddef.h>
+
 class ATmpFrameCacheElem : public ListItem<ATmpFrameCacheElem>
 {
 public:
