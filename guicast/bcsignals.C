@@ -731,7 +731,7 @@ int BC_Signals::is_listed(void *srcptr)
 
 void BC_Signals::show_array(float *array, int length, int indent, int nohead)
 {
-	float max = FLT_MIN;
+	float max = -FLT_MAX;
 	float min = FLT_MAX;
 	float avg = 0;
 	int minpos, maxpos;
@@ -785,7 +785,7 @@ void BC_Signals::show_array(float *array, int length, int indent, int nohead)
 
 void BC_Signals::show_array(double *array, int length, int indent, int nohead)
 {
-	double max = DBL_MIN;
+	double max = -DBL_MAX;
 	double min = DBL_MAX;
 	double avg = 0;
 	int minpos, maxpos;
