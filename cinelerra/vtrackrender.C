@@ -501,6 +501,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 					return 0;
 				if(!plugin->client)
 					plugin->plugin_server->open_plugin(plugin, this);
+				plugin->client->set_renderer(this);
 
 				if(plugin->apiversion < 3)
 				{
@@ -533,6 +534,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 					plugin->plugin_server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
+				plugin->client->set_renderer(this);
 				plugin->client->process_buffer(&frame);
 				return frame;
 			}
