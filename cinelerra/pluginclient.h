@@ -158,6 +158,8 @@ public:
 	void release_vframe(VFrame *frame);
 	AFrame *clone_aframe(AFrame *orig);
 	void release_aframe(AFrame *frame);
+// Get project samplerate
+	int get_project_samplerate();
 
 	char* get_gui_string();
 

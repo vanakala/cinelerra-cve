@@ -79,6 +79,13 @@ void PluginClient::plugin_init(int total_in_buffers)
 	init_plugin();
 }
 
+int PluginClient::get_project_samplerate()
+{
+	if(plugin && plugin->edl && plugin->edl->this_edlsession)
+		return plugin->edl->this_edlsession->sample_rate;
+	return edlsession->sample_rate;
+}
+
 int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)
 {
 	start_pts = source_start_pts = start;
@@ -349,25 +356,24 @@ AFrame *PluginClient::get_frame(AFrame *frame)
 {
 	if(renderer)
 	{
-		Track *current = renderer->get_track_number(frame->get_track());
 		if(server->apiversion < 3)
-			current->renderer->get_aframe(frame);
+			renderer->get_aframe(frame);
 		else
-			return current->renderer->get_atmpframe(frame, this);
+			return renderer->get_atmpframe(frame, this);
 	}
 	else
 		frame->clear_frame(frame->pts, frame->source_duration);
+	return frame;
 }
 
 VFrame *PluginClient::get_frame(VFrame *buffer)
 {
 	if(renderer)
 	{
-		Track *current = renderer->get_track_number(buffer->get_layer());
 		if(server->apiversion < 3)
-			current->renderer->get_vframe(buffer);
+			renderer->get_vframe(buffer);
 		else
-			return current->renderer->get_vtmpframe(buffer, this);
+			return renderer->get_vtmpframe(buffer, this);
 	}
 	return buffer;
 }
