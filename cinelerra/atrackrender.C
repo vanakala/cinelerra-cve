@@ -131,30 +131,27 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 
 	Edit *edit = media_track->editof(buffer_pts);
 
-	if(edit)
+	if(edit && (aframe = arender->get_file_frame(buffer_pts,
+			buffer->source_duration, edit, 2)))
 	{
-		if(aframe = arender->get_file_frame(buffer->pts,
-			buffer->source_duration, edit, 2))
+		render_fade(aframe);
+		render_transition(aframe, edit);
+		// render all standalone plugns before the current
+		for(int i = 0; i < plugins_track->plugins.total; i++)
 		{
-			render_fade(aframe);
-			render_transition(aframe, edit);
-			// render all standalone plugns before the current
-			for(int i = 0; i < plugins_track->plugins.total; i++)
-			{
-				Plugin *plugin = plugins_track->plugins.values[i];
+			Plugin *plugin = plugins_track->plugins.values[i];
 
-				if(plugin == current)
-					break;
-				if(!plugin->plugin_server)
-					continue;
-				if(plugin->plugin_type != PLUGIN_STANDALONE ||
-						plugin->plugin_server->multichannel)
-					continue;
-				aframe = execute_plugin(plugin, aframe, RSTEP_NORMAL);
-			}
-			audio_frames.release_frame(buffer);
-			buffer = aframe;
+			if(plugin == current)
+				break;
+			if(!plugin->plugin_server)
+				continue;
+			if(plugin->plugin_type != PLUGIN_STANDALONE ||
+					plugin->plugin_server->multichannel)
+				continue;
+			aframe = execute_plugin(plugin, aframe, RSTEP_NORMAL);
 		}
+		audio_frames.release_frame(buffer);
+		buffer = aframe;
 	}
 	else
 		buffer->clear_frame(buffer->pts, buffer->source_duration);
@@ -357,6 +354,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 					return 0;
 				if(!plugin->client)
 					plugin->plugin_server->open_plugin(plugin, this);
+				plugin->client->set_renderer(this);
 
 				if(plugin->apiversion < 3)
 				{
@@ -395,6 +393,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 					plugin->plugin_server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
+				plugin->client->set_renderer(this);
 				plugin->client->process_buffer(&aframe);
 			}
 		}
