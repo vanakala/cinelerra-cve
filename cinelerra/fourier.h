@@ -18,6 +18,7 @@ public:
 	~Fourier();
 
 	AFrame *process_frame(AFrame *aframe);
+	void symmetry(int size, fftw_complex *fftw_window);
 	int get_window_size() { return window_size; };
 	// called when fftw_window contains fourier transformation
 	// return nz when inverse transformation is needed
