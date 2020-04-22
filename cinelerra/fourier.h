@@ -23,6 +23,7 @@ public:
 	// called when fftw_window contains fourier transformation
 	// return nz when inverse transformation is needed
 	virtual int signal_process() { return 0; };
+	void dump(int indent = 0);
 	fftw_complex *fftw_window;
 private:
 	fftw_plan plan_forward;

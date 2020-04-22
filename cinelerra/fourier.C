@@ -9,8 +9,8 @@
 #include "fourier.h"
 
 #include <math.h>
-#include <string.h>
 #include <fftw3.h>
+#include <values.h>
 
 Mutex Fourier::plans_lock = Mutex("Fourier::plans_lock");
 
@@ -87,5 +87,55 @@ void Fourier::symmetry(int size, fftw_complex *fftw_window)
 	{
 		fftw_window[i][0] = fftw_window[size - i][0];
 		fftw_window[i][1] = -fftw_window[size - i][1];
+	}
+}
+
+void Fourier::dump(int indent)
+{
+	printf("%*sFourier %p winsize %d dump:\n", indent, "", this, window_size);
+	if(window_size > 0)
+	{
+		double re_max = -DBL_MAX;
+		double im_max = -DBL_MAX;
+		double re_min = DBL_MAX;
+		double im_min = DBL_MAX;
+		double re_avg = 0;
+		double im_avg = 0;
+		int remaxpos;
+		int reminpos;
+		int immaxpos;
+		int imminpos;
+
+		remaxpos = reminpos = immaxpos = imminpos = -1;
+
+		for(int i = 0; i < window_size; i++)
+		{
+			re_avg += fftw_window[i][0];
+			im_avg += fftw_window[i][1];
+			if(fftw_window[i][0] > re_max)
+			{
+				re_max = fftw_window[i][0];
+				remaxpos = i;
+			}
+			if(fftw_window[i][0] < re_min)
+			{
+				re_min = fftw_window[i][0];
+				reminpos = i;
+			}
+			if(fftw_window[i][1] > im_max)
+			{
+				im_max = fftw_window[i][1];
+				immaxpos = i;
+			}
+			if(fftw_window[i][1] < im_min)
+			{
+				im_min = fftw_window[i][1];
+				imminpos = i;
+			}
+		}
+		printf("%*sre: avg %.3g min[%d] %.3g max[%d] %.3g\n", indent, "",
+			re_avg / window_size, reminpos, re_min, remaxpos, re_max);
+		printf("%*sim: avg %.3g min[%d] %.3g max[%d] %.3g\n", indent, "",
+			im_avg / window_size, imminpos, im_min, immaxpos, im_max);
 	}
 }
