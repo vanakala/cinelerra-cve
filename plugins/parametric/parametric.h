@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef PARAMETRIC_H
 #define PARAMETRIC_H
@@ -25,6 +9,7 @@
 #define PLUGIN_TITLE N_("EQ Parametric")
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CLASS ParametricEQ
 #define PLUGIN_CONFIG_CLASS ParametricConfig
 #define PLUGIN_THREAD_CLASS ParametricThread
@@ -45,7 +30,6 @@
 // It causes significant delay but is useful.
 
 #define BANDS 3
-#define WINDOW_SIZE 16384
 #define MAXMAGNITUDE 15
 
 class ParametricFreq;
@@ -147,7 +131,6 @@ class ParametricMode : public BC_PopupMenu
 public:
 	ParametricMode(ParametricEQ *plugin, int x, int y, int band);
 
-	void create_objects();
 	int handle_event();
 	static int text_to_mode(const char *text);
 	static const char* mode_to_text(int mode);
@@ -165,13 +148,10 @@ public:
 		int x, 
 		int y, 
 		int band);
-	~ParametricBandGUI();
 
-	void create_objects();
 	void update_gui();
 
 	int band;
-	int x, y;
 	ParametricEQ *plugin;
 	ParametricWindow *window;
 	ParametricFreq *freq;
@@ -206,14 +186,12 @@ public:
 };
 
 
-class ParametricFFT : public CrossfadeFFT
+class ParametricFFT : public Fourier
 {
 public:
 	ParametricFFT(ParametricEQ *plugin, int window_size);
-	~ParametricFFT();
 
-	void signal_process();
-	void get_frame(AFrame *aframe);
+	int signal_process();
 
 	ParametricEQ *plugin;
 };
@@ -227,7 +205,7 @@ public:
 
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void process_frame(AFrame *aframe);
+	AFrame *process_tmpframe(AFrame *aframe);
 
 	void load_defaults();
 	void save_defaults();
@@ -236,8 +214,8 @@ public:
 	void calculate_envelope();
 	double gauss(double sigma, double a, double x);
 
-	double envelope[WINDOW_SIZE / 2];
-	int need_reconfigure;
+	AFrame *input_frame;
+	double *envelope;
 	PLUGIN_CLASS_MEMBERS
 	ParametricFFT *fft;
 };
