@@ -71,18 +71,12 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 		else
 		{
 			if(next_plugin)
-			{
 				render_plugins(track_frame, edit, rstep);
-				aframe = track_frame;
-			}
 			else
 				return;
 		}
 		if(!next_plugin)
-		{
-			module_levels.fill(&aframe);
-			track_frame = aframe;
-		}
+			module_levels.fill(&track_frame);
 	}
 	else
 		next_plugin = 0;
