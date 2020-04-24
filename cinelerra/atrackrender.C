@@ -65,13 +65,13 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 			{
 				render_fade(aframe);
 				render_transition(aframe, edit);
-				render_plugins(aframe, edit, rstep);
+				track_frame = render_plugins(aframe, edit, rstep);
 			}
 		}
 		else
 		{
 			if(next_plugin)
-				render_plugins(track_frame, edit, rstep);
+				track_frame = render_plugins(track_frame, edit, rstep);
 			else
 				return;
 		}
@@ -274,14 +274,13 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	audio_frames.release_frame(tmpframe);
 }
 
-void ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
+AFrame *ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 {
 	Plugin *plugin;
 	AFrame *tmp;
 	ptstime start = aframe->pts;
 	ptstime end = start + aframe->duration;
 
-	track_frame = aframe;
 	current_edit = edit;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
@@ -295,17 +294,17 @@ void ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			track_frame->set_track(media_track->number_of());
-			if(tmp = execute_plugin(plugin, track_frame, rstep))
-				track_frame = tmp;
+			aframe->set_track(media_track->number_of());
+			if(tmp = execute_plugin(plugin, aframe, rstep))
+				aframe = tmp;
 			else
 			{
-				track_frame = aframe;
 				next_plugin = plugin;
 				break;
 			}
 		}
 	}
+	return aframe;
 }
 
 AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
@@ -323,7 +322,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 		set_effects_track(plugin->shared_track);
 		render_fade(aframe);
 		render_transition(aframe, current_edit);
-		render_plugins(aframe, current_edit, rstep);
+		aframe = render_plugins(aframe, current_edit, rstep);
 		set_effects_track(media_track);
 		break;
 
