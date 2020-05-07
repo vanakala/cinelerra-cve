@@ -139,3 +139,44 @@ void Fourier::dump(int indent)
 			im_avg / window_size, imminpos, im_min, immaxpos, im_max);
 	}
 }
+
+void Fourier::dump_file(const char *filename, int samplerate, int append)
+{
+	const char *mode;
+	FILE *fp;
+	int k;
+	double itmrate;
+	double itmval;
+
+	if(append)
+		mode = "a";
+	else
+		mode = "w";
+
+	if(samplerate > 0)         // frequency
+		itmrate = (double)samplerate / window_size;
+	else if(samplerate < 0)    // time
+		itmrate = 1.0 / -samplerate;
+	else
+		itmrate = 1.0;    // elem number
+
+	if(!(fp = fopen(filename, mode)))
+	{
+		perror(filename);
+		return;
+	}
+
+	for(int i = 0; i < window_size; i++)
+	{
+		itmval = itmrate * i;
+		k = fwrite(&itmval, 1, sizeof(double), fp);
+		k += fwrite(&fftw_window[i][0], 1, sizeof(double), fp);
+		k += fwrite(&fftw_window[i][1], 1, sizeof(double), fp);
+		if(k != 24)
+		{
+			fprintf(stderr, "Writing to %s at elem %d failed\n", filename, i);
+			break;
+		}
+	}
+	fclose(fp);
+}
