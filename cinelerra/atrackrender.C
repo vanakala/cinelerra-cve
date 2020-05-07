@@ -117,13 +117,17 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 	AFrame *aframe;
 	ptstime buffer_pts = buffer->pts;
 	Plugin *current = client->plugin;
-
-	if(buffer_pts > client->end_pts)
-		buffer_pts = client->end_pts - buffer->source_duration;
-	if(buffer_pts < client->source_start_pts)
-		buffer_pts = client->source_start_pts;
-
 	Edit *edit = media_track->editof(buffer_pts);
+	ptstime plugin_start = current->get_pts();
+
+	if(buffer_pts > current->end_pts() ||
+			buffer_pts - buffer->source_duration < plugin_start)
+		edit = 0;
+	else if(buffer_pts < plugin_start)
+	{
+		buffer->source_duration -= buffer_pts - plugin_start;
+		buffer_pts = plugin_start;
+	}
 
 	if(edit && (aframe = arender->get_file_frame(buffer_pts,
 			buffer->source_duration, edit, 2)))
