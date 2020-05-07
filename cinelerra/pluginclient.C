@@ -27,6 +27,7 @@
 #include "bcresources.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "keyframes.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainerror.h"
@@ -84,6 +85,27 @@ int PluginClient::get_project_samplerate()
 	if(plugin && plugin->edl && plugin->edl->this_edlsession)
 		return plugin->edl->this_edlsession->sample_rate;
 	return edlsession->sample_rate;
+}
+
+ptstime PluginClient::get_start()
+{
+	if(plugin)
+		return plugin->get_pts();
+	return 0;
+}
+
+ptstime PluginClient::get_length()
+{
+	if(plugin)
+		return plugin->get_length();
+	return master_edl->total_length();
+}
+
+ptstime PluginClient::get_end()
+{
+	if(plugin)
+		return plugin->end_pts();
+	return master_edl->total_length();
 }
 
 int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)
@@ -448,6 +470,17 @@ KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 		if(plugin->shared_plugin)
 			return plugin->shared_plugin->get_next_keyframe(pts);
 		return plugin->get_next_keyframe(pts);
+	}
+	return keyframe;
+}
+
+KeyFrame *PluginClient::get_first_keyframe()
+{
+	if(plugin)
+	{
+		if(plugin->shared_plugin)
+			return (KeyFrame*)plugin->shared_plugin->keyframes->first;
+		return (KeyFrame*)plugin->keyframes->first;
 	}
 	return keyframe;
 }

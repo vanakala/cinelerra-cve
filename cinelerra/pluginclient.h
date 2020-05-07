@@ -160,6 +160,12 @@ public:
 	void release_aframe(AFrame *frame);
 // Get project samplerate
 	int get_project_samplerate();
+// Get the start of the plugin
+	ptstime get_start();
+// Get the length of the plugin
+	ptstime get_length();
+// Get the end position of the plugin
+	ptstime get_end();
 
 	char* get_gui_string();
 
@@ -170,6 +176,7 @@ public:
 // Return keyframe objects.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
+	KeyFrame *get_first_keyframe();
 
 	void set_keyframe(KeyFrame *keyframe);
 	KeyFrame *get_keyframe();
