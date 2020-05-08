@@ -235,9 +235,9 @@ int PackageRenderer::do_audio()
 				af = audio_output[i];
 				if(af)
 				{
-					af->init_aframe(audio_pts, audio_read_length);
+					af->init_aframe(audio_pts, audio_read_length,
+						default_asset->sample_rate);
 					af->set_fill_request(audio_pts, audio_read_length);
-					af->samplerate = default_asset->sample_rate;
 				}
 			}
 			else
@@ -248,7 +248,7 @@ int PackageRenderer::do_audio()
 		if(result = render_engine->arender->process_buffer(audio_output_ptr))
 			return result;
 // Fix buffers for preroll
-		read_length = audio_output_ptr[0]->length;
+		read_length = audio_output_ptr[0]->get_length();
 		int output_length = read_length;
 
 		if(audio_preroll > 0)
@@ -266,8 +266,10 @@ int PackageRenderer::do_audio()
 					{
 						for(int j = 0; j < output_length; j++)
 							audio_output_ptr[i]->buffer[j] = audio_output_ptr[i]->buffer[j + audio_read_length - output_length];
-						audio_output_ptr[i]->length = output_length;
-						audio_output_ptr[i]->duration -= audio_preroll;
+						audio_output_ptr[i]->set_length(output_length);
+						audio_output_ptr[i]->set_duration(
+							audio_output_ptr[i]->get_duration() -
+							audio_preroll);
 					}
 				}
 			}

@@ -332,7 +332,7 @@ void FreeverbEffect::save_defaults()
 
 void FreeverbEffect::process_tmpframes(AFrame **input)
 {
-	int size = input[0]->length;
+	int size = input[0]->get_length();
 
 	load_configuration();
 	if(!engine)

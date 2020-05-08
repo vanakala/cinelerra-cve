@@ -265,7 +265,7 @@ int Resample::resample(double *output,
 // Import new samples
 		if(out_len > 0)
 		{
-			inframe->samplerate = in_rate;
+			inframe->set_samplerate(in_rate);
 			if(reseek)
 			{
 				inframe->set_fill_request((double)out_position / out_rate, input_size);
@@ -277,7 +277,7 @@ int Resample::resample(double *output,
 			inframe->channel = channel;
 			file->get_samples(inframe);
 
-			input_chunk_end[channel] = inframe->position + inframe->length;
+			input_chunk_end[channel] = inframe->position + inframe->get_length();
 
 			resample_chunk(inframe->buffer,
 				input_size,
@@ -525,7 +525,7 @@ int Resample_float::resample(double *output,
 // Import new samples
 		if(out_len > 0)
 		{
-			inframe->samplerate = in_rate;
+			inframe->set_samplerate(in_rate);
 			if(reseek)
 			{
 				inframe->set_fill_request((double)out_position / out_rate, input_size);
@@ -537,7 +537,7 @@ int Resample_float::resample(double *output,
 			inframe->channel = channel;
 			file->get_samples(inframe);
 
-			input_chunk_end[channel] = inframe->position + inframe->length;
+			input_chunk_end[channel] = inframe->position + inframe->get_length();
 
 			resample_chunk(inframe->float_buffer,
 				input_size,

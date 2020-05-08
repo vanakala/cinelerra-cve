@@ -42,10 +42,10 @@ PLUGIN_CLASS_METHODS
 void CrossfadeMain::process_realtime(AFrame *out, AFrame *in)
 {
 	double intercept = source_pts / total_len_pts;
-	double slope = (double)1 / round(total_len_pts * out->samplerate);
+	double slope = (double)1 / round(total_len_pts * out->get_samplerate());
 	double *incoming = in->buffer;
 	double *outgoing = out->buffer;
-	int size = out->length;
+	int size = out->get_length();
 
 	for(int i = 0; i < size; i++)
 	{

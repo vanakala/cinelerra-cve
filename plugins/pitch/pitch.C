@@ -89,7 +89,7 @@ AFrame *PitchEffect::process_tmpframe(AFrame *aframe)
 	input_frame = aframe;
 
 	if(!fft)
-		fft = new PitchFFT(this, aframe->buffer_length / 2);
+		fft = new PitchFFT(this, aframe->get_buffer_length() / 2);
 	else if(need_reconfigure)
 		fft->reset_phase = 1;
 
@@ -141,7 +141,7 @@ int PitchFFT::signal_process()
 	else
 		expected_phase_diff = 0;
 // frequency per bin
-	double freq_per_bin = (double)plugin->input_frame->samplerate / window_size;
+	double freq_per_bin = (double)plugin->input_frame->get_samplerate() / window_size;
 
 	for(int i = 0; i < half_size; i++)
 	{

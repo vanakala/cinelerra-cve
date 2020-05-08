@@ -70,15 +70,15 @@ PitchEngine::~PitchEngine()
 void PitchEngine::get_frame(AFrame *aframe)
 {
 // FIXME, make sure this is set at the beginning, always
-	int samples = aframe->source_length;
+	int samples = aframe->get_source_length();
 
-	if (!PTSEQU(current_output_pts,  aframe->pts))
+	if (!PTSEQU(current_output_pts,  aframe->get_pts()))
 	{
 		input_size = 0;
 		ptstime input_pts = plugin->source_start_pts + 
-			(aframe->pts - plugin->source_start_pts) / plugin->config.scale;
+			(aframe->get_pts() - plugin->source_start_pts) / plugin->config.scale;
 		current_input_sample = aframe->to_samples(input_pts);
-		current_output_pts = aframe->pts;
+		current_output_pts = aframe->get_pts();
 	}
 
 	while(input_size < samples)
@@ -87,16 +87,16 @@ void PitchEngine::get_frame(AFrame *aframe)
 		if(!temp)
 		{
 			temp = new AFrame(INPUT_SIZE);
-			temp->samplerate = aframe->samplerate;
+			temp->set_samplerate(aframe->get_samplerate());
 		}
 		temp->set_fill_request(current_input_sample, INPUT_SIZE);
 		plugin->get_frame(temp);
-		current_input_sample += aframe->length;
+		current_input_sample += aframe->get_length();
 
 		plugin->resample->resample_chunk(temp->buffer,
 			INPUT_SIZE,
-			temp->samplerate,
-			round(temp->samplerate * scale),
+			temp->get_samplerate(),
+			round(temp->get_samplerate() * scale),
 			0);
 
 		int fragment_size = plugin->resample->get_output_size(0);
@@ -119,13 +119,13 @@ void PitchEngine::get_frame(AFrame *aframe)
 			fragment_size);
 		input_size += fragment_size;
 	}
-	memcpy(aframe->buffer, input_buffer, aframe->source_length * sizeof(double));
+	memcpy(aframe->buffer, input_buffer, aframe->get_source_length() * sizeof(double));
 	memcpy(input_buffer, 
-		input_buffer + aframe->source_length,
+		input_buffer + aframe->get_source_length(),
 		sizeof(double) * (input_size - samples));
-	aframe->set_filled(aframe->source_length);
+	aframe->set_filled(aframe->get_source_length());
 	input_size -= samples;
-	current_output_pts = aframe->pts + aframe->duration;
+	current_output_pts = aframe->get_end_pts();
 }
 
 void PitchEngine::signal_process_oversample(int reset)

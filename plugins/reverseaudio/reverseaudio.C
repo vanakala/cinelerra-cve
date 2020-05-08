@@ -164,20 +164,20 @@ PLUGIN_CLASS_METHODS
 
 void ReverseAudio::process_frame(AFrame *aframe)
 {
-	input_frame.samplerate = aframe->samplerate;
+	input_frame.set_samplerate(aframe->get_samplerate());
 
 	while((fragment_size = aframe->fill_length()) > 0)
 	{
 		load_configuration();
-		input_frame.set_buffer(&aframe->buffer[aframe->length], fragment_size);
+		input_frame.set_buffer(&aframe->buffer[aframe->get_length()], fragment_size);
 
 		if(config.enabled)
 			input_frame.set_fill_request(input_pts, fragment_size);
 		else
-			input_frame.set_fill_request(aframe->pts + aframe->duration, fragment_size);
+			input_frame.set_fill_request(aframe->get_end_pts(), fragment_size);
 		get_frame(&input_frame);
 
-		aframe->set_filled(aframe->length + input_frame.length);
+		aframe->set_filled(aframe->get_length() + input_frame.get_length());
 
 		if(config.enabled)
 		{
@@ -236,7 +236,7 @@ int ReverseAudio::load_configuration()
 	}
 
 // Plugin is active
-	if(input_frame.samplerate > 0)
+	if(input_frame.get_samplerate() > 0)
 	{
 		samplenum range_size = input_frame.to_samples(range_end - source_pts);
 		if(range_size < fragment_size)

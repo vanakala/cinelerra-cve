@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2011 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #ifndef AFRAME_H
 #define AFRAME_H
@@ -43,7 +27,7 @@ public:
 // Makes frame empty
 	void reset_buffer(void);
 // Initializes frame pts, checks buffer length, clears buffer
-	void init_aframe(ptstime postime, int length);
+	void init_aframe(ptstime postime, int length, int samplerate);
 // Copy parameters
 	void copy_pts(AFrame *that);
 // Copy buffer
@@ -57,9 +41,6 @@ public:
 // Samples/duration conversions
 	samplenum to_samples(ptstime duration);
 	ptstime to_duration(samplenum samples);
-
-// Calculates source_duration
-	ptstime get_source_duration();
 
 // Calculates fill position in samples
 	samplenum fill_position(int srcpos = 0);
@@ -84,6 +65,36 @@ public:
 
 // Set frame pts rounded to sample
 	ptstime set_pts(ptstime t);
+// Set filled length
+	void set_length(int length);
+// Set filled duration
+	ptstime set_duration(ptstime pts);
+// Get frame pts
+	inline ptstime get_pts() { return pts; };
+// Get frame duration
+	inline ptstime get_duration() { return duration; };
+// Get end pts of frame
+	inline ptstime get_end_pts() { return pts + duration; };
+// Get frame length in samples
+	inline int get_length() { return length; };
+// Set frame source pts
+	ptstime set_source_pts(ptstime pts);
+// Set frame source duration
+	ptstime set_source_duration(ptstime duration);
+	void set_source_length(int length);
+// Get frame source_pts
+	inline ptstime get_source_pts() { return source_pts; };
+// Get source duration
+	inline ptstime get_source_duration() { return source_duration; };
+	inline int get_source_length() { return source_length; };
+// Set samplerate
+	inline void set_samplerate(int rate) { samplerate = rate; };
+// Get buffer length
+	inline int get_buffer_length() { return buffer_length; };
+// Get samplerate
+	inline int get_samplerate() { return samplerate; };
+// Make frame empty
+	void set_empty();
 
 // Track number
 	void set_track(int number);
@@ -93,6 +104,16 @@ public:
 
 	void dump(int indent, int dumpdata = 0);
 
+// Audio channel
+	int channel;
+// Sample position in source
+	samplenum position;
+
+// Buffers of samples
+	double *buffer;
+	float *float_buffer;
+
+private:
 // Buffer start in source
 	ptstime source_pts;
 	ptstime source_duration;
@@ -101,21 +122,14 @@ public:
 	ptstime pts;
 // Buffer duration
 	ptstime duration;
-// Sample position in source
-	samplenum position;
-// Audio channel
-	int channel;
-// Buffer length in samples
+// Filled length in samples
 	int length;
 
 	int samplerate;
-	double *buffer;
-	float *float_buffer;
 
 // Length of allocated buffer
 	int buffer_length;
 
-private:
 	int trackno;
 	int shared;
 	int float_data;

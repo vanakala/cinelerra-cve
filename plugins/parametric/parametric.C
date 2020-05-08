@@ -377,7 +377,7 @@ void ParametricWindow::update_canvas()
 	if(!plugin->envelope || !plugin->fft)
 		return;
 
-	niquist = plugin->input_frame->samplerate / 2;
+	niquist = plugin->input_frame->get_samplerate() / 2;
 	half_window = plugin->fft->get_window_size() / 2;
 
 	canvas->set_color(BLACK);
@@ -523,7 +523,7 @@ void ParametricEQ::reconfigure()
 		return;
 
 	if(!fft)
-		fft = new ParametricFFT(this, input_frame->buffer_length);
+		fft = new ParametricFFT(this, input_frame->get_buffer_length());
 
 	half_window = fft->get_window_size() / 2;
 
@@ -554,7 +554,7 @@ void ParametricEQ::calculate_envelope()
 	int half_window = fft->get_window_size() / 2;
 
 	envelope[0] = 0;
-	niquist = input_frame->samplerate;
+	niquist = input_frame->get_samplerate();
 	for(int i = 1; i < half_window; i++)
 	{
 		envelope[i] = wetness;

@@ -212,7 +212,7 @@ AFrame *DenoiseFFTEffect::process_tmpframe(AFrame *aframe)
 
 // Remove noise
 	if(!remove_engine)
-		remove_engine = new DenoiseFFTRemove(this, aframe->buffer_length);
+		remove_engine = new DenoiseFFTRemove(this, aframe->get_buffer_length());
 
 	aframe = remove_engine->process_frame(aframe);
 	return aframe;
@@ -221,7 +221,7 @@ AFrame *DenoiseFFTEffect::process_tmpframe(AFrame *aframe)
 void DenoiseFFTEffect::collect_noise()
 {
 	AFrame *noise_frame;
-	int window_size = input_frame->buffer_length;
+	int window_size = input_frame->get_buffer_length();
 	int half_window = window_size / 2;
 
 	if(!reference)
@@ -239,7 +239,8 @@ void DenoiseFFTEffect::collect_noise()
 	if(collection_end > plugin->end_pts())
 		collection_end = plugin->end_pts();
 
-	for(ptstime t = collection_pts; t < collection_end ; t += noise_frame->duration)
+	for(ptstime t = collection_pts; t < collection_end;
+			t += noise_frame->get_duration())
 	{
 		noise_frame->set_fill_request(t, window_size);
 		noise_frame = get_frame(noise_frame);

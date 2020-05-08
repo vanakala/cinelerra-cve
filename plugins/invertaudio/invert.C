@@ -41,7 +41,7 @@ PLUGIN_CLASS_METHODS
 
 AFrame *InvertAudioEffect::process_tmpframe(AFrame *input)
 {
-	int size = input->length;
+	int size = input->get_length();
 
 	for(int i = 0; i < size; i++)
 		input->buffer[i] = -input->buffer[i];

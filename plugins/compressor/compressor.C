@@ -200,7 +200,7 @@ void CompressorEffect::save_defaults()
 void CompressorEffect::process_frame(AFrame **aframes)
 {
 	AFrame *aframe = aframes[0];
-	int size = aframe->source_length;
+	int size = aframe->get_source_length();
 
 	load_configuration();
 
@@ -217,8 +217,8 @@ void CompressorEffect::process_frame(AFrame **aframes)
 	max_x = 1.0;
 	max_y = 1.0;
 
-	int reaction_samples = (int)(config.reaction_len * aframe->samplerate + 0.5);
-	int decay_samples = (int)(config.decay_len * aframe->samplerate + 0.5);
+	int reaction_samples = (int)(config.reaction_len * aframe->get_samplerate() + 0.5);
+	int decay_samples = (int)(config.decay_len * aframe->get_samplerate() + 0.5);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
 
 // FIXIT: Clamping must be done in gui
@@ -334,7 +334,7 @@ void CompressorEffect::process_frame(AFrame **aframes)
 	{
 		if(target_current_sample < 0) target_current_sample = target_samples;
 		int preview_samples = -reaction_samples;
-		samplenum start_position = aframe->to_samples(aframe->pts);
+		samplenum start_position = aframe->to_samples(aframe->get_pts());
 
 // Start of new buffer is outside the current buffer.  Start buffer over.
 		if(start_position < input_start ||
@@ -377,7 +377,7 @@ void CompressorEffect::process_frame(AFrame **aframes)
 				}
 				input_buffer[i] = new_buffer;
 				buffer_headers[i].channel = i;
-				buffer_headers[i].samplerate = aframe->samplerate;
+				buffer_headers[i].set_samplerate(aframe->get_samplerate());
 			}
 			input_allocated = size + preview_samples;
 		}

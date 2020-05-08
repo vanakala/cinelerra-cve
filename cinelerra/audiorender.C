@@ -79,7 +79,7 @@ void AudioRender::init_frames()
 					audio_out[i]->check_buffer(out_length);
 				else
 					audio_out[i] = audio_frames.get_tmpframe(out_length);
-				audio_out[i]->samplerate = out_samplerate;
+				audio_out[i]->set_samplerate(out_samplerate);
 				audio_out[i]->channel = i;
 			}
 		}
@@ -107,7 +107,8 @@ int AudioRender::process_buffer(AFrame **buffer_out)
 			AFrame *cur_buf = buffer_out[i];
 
 			audio_out[i] = cur_buf;
-			audio_out[i]->clear_frame(cur_buf->pts, cur_buf->source_duration);
+			audio_out[i]->clear_frame(cur_buf->get_pts(),
+				cur_buf->get_source_duration());
 		}
 		else
 			audio_out[i] = 0;
@@ -277,7 +278,7 @@ void AudioRender::run()
 			{
 				int in, out;
 				double *current_buffer, *orig_buffer;
-				int out_length = audio_out[0]->length;
+				int out_length = audio_out[0]->get_length();
 
 				orig_buffer = audio_buf[i] = audio_out[i]->buffer;
 				current_buffer = audio_out_packed[i];
@@ -379,9 +380,9 @@ void AudioRender::get_aframes(ptstime pts, ptstime input_duration)
 
 	for(int i = 0; i < out_channels; i++)
 	{
-		audio_out[i]->init_aframe(pts, input_len);
+		audio_out[i]->init_aframe(pts, input_len, audio_out[0]->get_samplerate());
 		audio_out[i]->clear_frame(pts, input_duration);
-		audio_out[i]->source_duration = input_duration;
+		audio_out[i]->set_source_duration(input_duration);
 	}
 	process_frames();
 }
@@ -472,8 +473,8 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		{
 			AFrame *cur = infile->get_aframe(channel);
 
-			if(PTSEQU(cur->pts, pts) &&
-					PTSEQU(cur->duration, duration))
+			if(PTSEQU(cur->get_pts(), pts) &&
+					PTSEQU(cur->get_duration(), duration))
 				return infile->handover_aframe();
 		}
 	}
@@ -490,11 +491,11 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 			{
 				AFrame *aframe = input_frames.values[i + j]->get_aframe(j);
 
-				aframe->samplerate = out_samplerate;
+				aframe->set_samplerate(out_samplerate);
 				aframe->reset_buffer();
 				aframe->set_fill_request(pts, duration);
-				aframe->source_pts = pts - edit->get_pts() +
-					edit->get_source_pts();
+				aframe->set_source_pts(pts - edit->get_pts() +
+					edit->get_source_pts());
 				infile->file->get_samples(aframe);
 			}
 			return input_frames.values[i + channel]->handover_aframe();
@@ -519,9 +520,9 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 
 		cur = infile->get_aframe(j);
 		cur->set_fill_request(pts, duration);
-		cur->samplerate = out_samplerate;
-		cur->source_pts = pts - edit->get_pts() +
-			edit->get_source_pts();
+		cur->set_samplerate(out_samplerate);
+		cur->set_source_pts(pts - edit->get_pts() +
+			edit->get_source_pts());
 		file->get_samples(cur);
 		input_frames.append(infile);
 	}

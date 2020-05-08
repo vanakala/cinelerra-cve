@@ -163,7 +163,7 @@ void SoundLevelEffect::save_defaults()
 
 AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 {
-	int size = input->length;
+	int size = input->get_length();
 
 	load_configuration();
 

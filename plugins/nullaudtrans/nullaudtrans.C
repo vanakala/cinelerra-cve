@@ -166,5 +166,5 @@ void NATransition::process_realtime(AFrame *incoming, AFrame *outgoing)
 	load_configuration();
 
 	if(onoff)
-		memset(outgoing->buffer, 0, outgoing->length * sizeof(double));
+		memset(outgoing->buffer, 0, outgoing->get_length() * sizeof(double));
 }

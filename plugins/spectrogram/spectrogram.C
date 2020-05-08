@@ -218,7 +218,7 @@ void Spectrogram::render_gui(void *odata)
 			int input2 = (int)((h - 1 - i) * TOTALFREQS / h);
 
 			input2 = Freq::tofreq(input2) *
-				window_size / frame->samplerate;
+				window_size / frame->get_samplerate();
 			input2 = MIN(data_size - 1, input2);
 
 			double sum = 0;
@@ -241,10 +241,10 @@ void Spectrogram::render_gui(void *odata)
 		}
 
 		int w = canvas->get_w();
-		double wipts = (double)window_size / frame->samplerate;
+		double wipts = (double)window_size / frame->get_samplerate();
 		double x_scale = (double)w / plugin->get_length();
 		int x_pos = round(((window_num - 1) * wipts +
-			frame->pts - plugin->get_pts()) * x_scale);
+			frame->get_pts() - plugin->get_pts()) * x_scale);
 		int slice = round(wipts * x_scale);
 		if(slice + x_pos > w)
 			slice = w - x_pos;

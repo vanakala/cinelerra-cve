@@ -1517,7 +1517,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		swr_ctx = swr_alloc_set_opts(NULL,
 			ch_layout,
 			AV_SAMPLE_FMT_DBLP,           // out sample format
-			aframe->samplerate,           // out samplerate
+			aframe->get_samplerate(),     // out samplerate
 			ch_layout,
 			decoder_context->sample_fmt,  // in sample fmt
 			decoder_context->sample_rate, // in sample rate
@@ -1536,14 +1536,14 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		}
 	}
 
-	if(buffer_len < aframe->buffer_length || num_ch != num_buffers)
+	if(buffer_len < aframe->get_buffer_length() || num_ch != num_buffers)
 	{
 		int j;
 		for(j = 0; j < num_ch; j++)
 		{
 			if(abuffer[j])
 				delete [] abuffer[j];
-			abuffer[j] = new double[aframe->buffer_length];
+			abuffer[j] = new double[aframe->get_buffer_length()];
 		}
 		for(; j < MAXCHANNELS; j++)
 		{
@@ -1553,12 +1553,12 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 			abuffer[j] = 0;
 		}
 		num_buffers = num_ch;
-		buffer_len = aframe->buffer_length;
+		buffer_len = aframe->get_buffer_length();
 		buffer_start = buffer_end = 0;
 		buffer_pos = 0;
 	}
-	rqpos = round((aframe->source_pts + pts_base) / av_q2d(stream->time_base));
-	rqlen = round(aframe->source_duration / av_q2d(stream->time_base));
+	rqpos = round((aframe->get_source_pts() + pts_base) / av_q2d(stream->time_base));
+	rqlen = round(aframe->get_source_duration() / av_q2d(stream->time_base));
 
 	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end && !audio_eof))
 	{
@@ -1571,7 +1571,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 			avlibs_lock->unlock();
 			return error;
 		}
-		buffer_end = round((double)buffer_pos / aframe->samplerate /
+		buffer_end = round((double)buffer_pos / aframe->get_samplerate() /
 			av_q2d(stream->time_base)) + buffer_start;
 	}
 
@@ -2185,7 +2185,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	AVStream *stream;
 	int got_it, rv;
 	int chan;
-	int in_length = frames[0]->length;
+	int in_length = frames[0]->get_length();
 	double *in_data[MAXCHANNELS];
 	uint8_t *resampled_ptr[MAXCHANNELS];
 	int resampled_length;
@@ -2196,7 +2196,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	avlibs_lock->lock("FileAVlibs::write_aframes");
 
 	if(pts_base < 0)
-		pts_base = frames[0]->pts;
+		pts_base = frames[0]->get_pts();
 
 	stream = context->streams[audio_index];
 	audio_ctx = codec_contexts[audio_index];
@@ -2246,7 +2246,8 @@ int FileAVlibs::write_aframes(AFrame **frames)
 		return 1;
 	}
 
-	rv = write_samples(resampled_length + resample_fill, audio_ctx, frames[0]->pts - pts_base);
+	rv = write_samples(resampled_length + resample_fill, audio_ctx,
+		frames[0]->get_pts() - pts_base);
 	avlibs_lock->unlock();
 	return rv;
 }

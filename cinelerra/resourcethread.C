@@ -338,7 +338,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				item->channel == aframe->channel &&
 				item->asset->id == audio_asset_id &&
 				sample >= aframe->position &&
-				sample < aframe->position + aframe->length))
+				sample < aframe->position + aframe->get_length()))
 			{
 // Load new buffer
 				File *source = audio_cache->check_out(item->asset);
@@ -352,7 +352,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				if(!aframe)
 					aframe = new AFrame(BUFFERSIZE);
 
-				aframe->samplerate = item->asset->sample_rate;
+				aframe->set_samplerate(item->asset->sample_rate);
 				aframe->channel = item->channel;
 
 				if(fragment + sample > total_samples)

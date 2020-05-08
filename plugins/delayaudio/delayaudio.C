@@ -97,7 +97,7 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 
 void DelayAudio::process_realtime(AFrame *input, AFrame *output)
 {
-	int size = input->length;
+	int size = input->get_length();
 
 	load_configuration();
 	samplenum num_delayed = input->to_samples(config.length);

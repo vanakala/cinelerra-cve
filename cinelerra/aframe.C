@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2011 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -146,12 +130,19 @@ void AFrame::reset_buffer(void)
 	length = 0;
 }
 
-void AFrame::init_aframe(ptstime postime, int len)
+void AFrame::set_empty()
 {
+	duration = 0;
+	length = 0;
+}
+
+void AFrame::init_aframe(ptstime postime, int len, int rate)
+{
+	samplerate = rate;
 	reset_buffer();
 	check_buffer(len);
 	clear_buffer();
-	pts = postime;
+	pts = round_to_sample(postime);
 }
 
 void AFrame::copy_pts(AFrame *that)
@@ -198,7 +189,7 @@ void AFrame::set_filled(int length)
 {
 	check_buffer(length);
 	this->length = length;
-	duration = (ptstime)length / samplerate;
+	duration = round_to_sample((ptstime)length / samplerate);
 }
 
 void AFrame::set_filled(ptstime duration)
@@ -207,7 +198,7 @@ void AFrame::set_filled(ptstime duration)
 
 	check_buffer(length);
 	this->length = length;
-	this->duration = duration;
+	this->duration = to_duration(length);
 }
 
 samplenum AFrame::to_samples(ptstime duration)
@@ -217,14 +208,12 @@ samplenum AFrame::to_samples(ptstime duration)
 
 ptstime AFrame::to_duration(samplenum samples)
 {
+	if(!samplerate)
+	{
+		printf("Missing samplerate in audio frame.\n");
+		return 0;
+	}
 	return (ptstime)samples / samplerate;
-}
-
-ptstime AFrame::get_source_duration()
-{
-	if(source_duration)
-		return source_duration;
-	return (ptstime)source_length / samplerate;
 }
 
 samplenum AFrame::fill_position(int srcpos)
@@ -252,21 +241,21 @@ int AFrame::fill_length()
 void AFrame::set_filled_length()
 {
 	length += source_length;
-	duration = (ptstime)length / samplerate;
+	duration = round_to_sample((ptstime)length / samplerate);
 }
 
 void AFrame::set_fill_request(ptstime pts, ptstime duration)
 {
 	reset_buffer();
-	this->source_pts = this->pts = pts;
-	source_duration = duration;
-	source_length = to_samples(duration);
+	source_pts = this->pts = round_to_sample(pts);
+	source_duration = round_to_sample(duration);
+	source_length = to_samples(source_duration);
 }
 
 void AFrame::set_fill_request(ptstime pts, int length)
 {
 	reset_buffer();
-	this->source_pts = this->pts = pts;
+	this->source_pts = this->pts = round_to_sample(pts);
 	source_length = length;
 	source_duration = to_duration(length);
 }
@@ -295,6 +284,38 @@ ptstime AFrame::set_pts(ptstime t)
 {
 	pts = round_to_sample(t);
 	return pts;
+}
+
+ptstime AFrame::set_duration(ptstime t)
+{
+	length = to_samples(t);
+	duration = to_duration(length);
+	return duration;
+}
+
+void AFrame::set_length(int l)
+{
+	length = l;
+	duration = to_duration(l);
+}
+
+ptstime AFrame::set_source_pts(ptstime t)
+{
+	source_pts = round_to_sample(t);
+	return source_pts;
+}
+
+ptstime AFrame::set_source_duration(ptstime t)
+{
+	source_length = to_samples(t);
+	source_duration = to_duration(source_length);
+	return source_duration;
+}
+
+void AFrame::set_source_length(int length)
+{
+	source_length = length;
+	source_duration = to_duration(length);
 }
 
 void AFrame::set_track(int number)

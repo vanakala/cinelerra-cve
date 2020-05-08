@@ -118,17 +118,14 @@ AFrame *ATmpFrameCache::clone_frame(AFrame *frame)
 	if(!frame)
 		return 0;
 
-	aframe = get_tmpframe(frame->buffer_length);
+	aframe = get_tmpframe(frame->get_buffer_length());
 // Debugging - should never happen
 	if(aframe == frame)
 		printf("ERR: Cloned the same audio frame %p\n", frame);
-	aframe->samplerate = frame->samplerate;
+	aframe->set_samplerate(frame->get_samplerate());
 	aframe->channel = frame->channel;
 	aframe->set_track(frame->get_track());
-
-	// Make frame empty
-	aframe->duration = 0;
-	aframe->length = 0;
+	aframe->set_empty();
 
 	return aframe;
 }
@@ -148,7 +145,7 @@ void ATmpFrameCache::release_frame(AFrame *tmp_frame)
 			if(!cur->in_use)
 				printf("ERR: Double release of audio frame %p\n", tmp_frame);
 			cur->in_use = 0;
-			cur->length = cur->frame->buffer_length;
+			cur->length = cur->frame->get_buffer_length();
 			cur->age = ++moment;
 			break;
 		}

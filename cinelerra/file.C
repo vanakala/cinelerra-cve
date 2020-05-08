@@ -493,7 +493,7 @@ int File::write_aframes(AFrame **frames)
 		{
 			if(frames[i])
 			{
-				asset->audio_length += frames[i]->length;
+				asset->audio_length += frames[i]->get_length();
 				break;
 			}
 		}
@@ -564,26 +564,21 @@ int File::get_samples(AFrame *aframe)
 	if(!file)
 		return 0;
 
-	if(aframe->samplerate == 0)
-		aframe->samplerate = asset->sample_rate;
-	if(aframe->buffer_length <= 0)
+	if(aframe->get_samplerate() == 0)
+		aframe->set_samplerate(asset->sample_rate);
+	if(aframe->get_buffer_length() <= 0)
 		return 0;
-	if(aframe->source_duration <= 0)
-	{
-		if(aframe->source_length > 0)
-			aframe->source_duration = (ptstime)aframe->source_length / aframe->samplerate;
-		else
+	if(aframe->get_source_duration() <= 0)
 			return 0;
-	} else
-		aframe->source_length = round(aframe->source_duration * aframe->samplerate);
-	aframe->position = round(aframe->source_pts * aframe->samplerate);
-	if(aframe->length + aframe->source_length > aframe->buffer_length)
-		aframe->source_length = aframe->buffer_length - aframe->length;
-	if(aframe->source_length <= 0)
+
+	aframe->position = round(aframe->get_source_pts() * aframe->get_samplerate());
+	if(aframe->get_length() + aframe->get_source_length() > aframe->get_buffer_length())
+		aframe->set_source_length(aframe->get_buffer_length() - aframe->get_length());
+	if(aframe->get_source_length() <= 0)
 		return 0;
 
 	// Resample
-	if(aframe->samplerate != asset->sample_rate)
+	if(aframe->get_samplerate() != asset->sample_rate)
 	{
 		if(!file->prefer_samples_float())
 		{
@@ -591,9 +586,9 @@ int File::get_samples(AFrame *aframe)
 				resample = new Resample(this, asset->channels);
 
 			samples = resample->resample(aframe->buffer,
-					aframe->source_length,
+					aframe->get_source_length(),
 					asset->sample_rate,
-					aframe->samplerate,
+					aframe->get_samplerate(),
 					aframe->channel,
 					aframe->position);
 		}
@@ -603,21 +598,21 @@ int File::get_samples(AFrame *aframe)
 				resample_float = new Resample_float(this, asset->channels);
 
 			samples = resample_float->resample(aframe->buffer,
-					aframe->source_length,
+					aframe->get_source_length(),
 					asset->sample_rate,
-					aframe->samplerate,
+					aframe->get_samplerate(),
 					aframe->channel,
 					aframe->position);
 		}
-		aframe->source_length = samples;
+		aframe->set_source_length(samples);
 		aframe->set_filled_length();
 	}
 	else
 // Load directly
 	{
 // Never try to read more samples than exist in the file
-		if(aframe->position + aframe->source_length > asset->audio_length) 
-			aframe->source_length = asset->audio_length - aframe->position;
+		if(aframe->position + aframe->get_source_length() > asset->audio_length)
+			aframe->set_source_length(asset->audio_length - aframe->position);
 
 		result = file->read_aframe(aframe);
 	}

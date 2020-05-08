@@ -28,7 +28,6 @@
 #include "language.h"
 #include "pluginaclientlad.h"
 #include "pluginwindow.h"
-#include "vframe.h"
 
 #ifdef HAVE_LADSPA
 #include <ctype.h>
@@ -726,7 +725,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 
 void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
 {
-	int size = input->length;
+	int size = input->get_length();
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
 
@@ -757,7 +756,7 @@ void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
 void PluginAClientLAD::process_realtime(AFrame **input_frames,
 	AFrame **output_frames)
 {
-	int size = input_frames[0]->length;
+	int size = input_frames[0]->get_length();
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
 

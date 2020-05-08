@@ -169,6 +169,6 @@ AFrame *NRTAudio::process_tmpframe(AFrame *frame)
 	load_configuration();
 
 	if(config.onoff)
-		memset(frame->buffer, 0, frame->length * sizeof(double));
+		memset(frame->buffer, 0, frame->get_length() * sizeof(double));
 	return frame;
 }

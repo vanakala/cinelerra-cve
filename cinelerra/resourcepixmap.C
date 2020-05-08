@@ -497,7 +497,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		else
 			aframe->check_buffer(total_source_samples);
 
-		aframe->samplerate = edit->asset->sample_rate;
+		aframe->set_samplerate(edit->asset->sample_rate);
 		aframe->channel = edit->channel;
 		aframe->set_fill_request(source_start, total_source_samples);
 

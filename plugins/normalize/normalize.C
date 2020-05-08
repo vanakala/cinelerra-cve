@@ -71,10 +71,10 @@ int NormalizeMain::process_loop(AFrame **aframes)
 
 	if(writing)
 	{
-		fragment_len = aframes[0]->buffer_length;
+		fragment_len = aframes[0]->get_buffer_length();
 // Assume we always have samplerate here - we are reusing the same buffers
 //  used below in analyzing part
-		if(aframes[0]->samplerate)
+		if(aframes[0]->get_samplerate())
 		{
 			if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
 				fragment_len = aframes[0]->to_samples(end_pts - current_pts);
@@ -84,11 +84,11 @@ int NormalizeMain::process_loop(AFrame **aframes)
 			aframes[i]->set_fill_request(current_pts, fragment_len);
 			get_frame(aframes[i]);
 
-			for(int j = 0; j < aframes[0]->length; j++)
+			for(int j = 0; j < aframes[0]->get_length(); j++)
 				aframes[i]->buffer[j] *= scale[i];
 		}
 
-		current_pts = aframes[0]->pts + aframes[0]->duration;
+		current_pts = aframes[0]->get_pts() + aframes[0]->get_duration();
 		result = progress->update(end_pts - 2 * start_pts + current_pts);
 
 		if(end_pts - current_pts < EPSILON)
@@ -99,10 +99,10 @@ int NormalizeMain::process_loop(AFrame **aframes)
 // Get peak
 		for(current_pts = start_pts; end_pts - current_pts > EPSILON;)
 		{
-			fragment_len = aframes[0]->buffer_length;
+			fragment_len = aframes[0]->get_buffer_length();
 // Samplerate is not set at first
 // We need samplerate of the asset here
-			if(aframes[0]->samplerate)
+			if(aframes[0]->get_samplerate())
 			{
 				if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
 					fragment_len = aframes[0]->to_samples(end_pts - current_pts);
@@ -122,13 +122,13 @@ int NormalizeMain::process_loop(AFrame **aframes)
 					}
 					duration_valid = 1;
 				}
-				for(int k = 0; k < aframes[j]->length; k++)
+				for(int k = 0; k < aframes[j]->get_length(); k++)
 				{
 					if(peak[j] < fabs(aframes[j]->buffer[k])) 
 						peak[j] = fabs(aframes[j]->buffer[k]);
 				}
 			}
-			current_pts = aframes[0]->pts + aframes[0]->duration;
+			current_pts = aframes[0]->get_pts() + aframes[0]->get_duration();
 			if(progress->update(current_pts - start_pts))
 				break;
 		}

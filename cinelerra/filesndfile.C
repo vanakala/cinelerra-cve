@@ -266,7 +266,7 @@ int FileSndFile::read_aframe(AFrame *aframe)
 {
 	int result = 0;
 	sf_count_t rqpos = aframe->position;
-	int len = aframe->source_length;
+	int len = aframe->get_source_length();
 
 // Get temp buffer for interleaved channels
 	if(temp_allocated && temp_allocated < len)
@@ -299,7 +299,7 @@ int FileSndFile::read_aframe(AFrame *aframe)
 		buf_end = bufpos + buf_fill;
 	}
 // Extract single channel
-	double *buffer = &aframe->buffer[aframe->length];
+	double *buffer = &aframe->buffer[aframe->get_length()];
 
 	for(int i = 0, j = aframe->channel;
 		i < buf_fill;
@@ -314,7 +314,7 @@ int FileSndFile::read_aframe(AFrame *aframe)
 int FileSndFile::write_aframes(AFrame **frames)
 {
 	int result = 0;
-	int len = frames[0]->length;
+	int len = frames[0]->get_length();
 
 // Get temp buffer for interleaved channels
 	if(temp_allocated && temp_allocated < len)

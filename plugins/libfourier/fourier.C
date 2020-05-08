@@ -262,15 +262,15 @@ CrossfadeFFT::~CrossfadeFFT()
 
 void CrossfadeFFT::process_frame(AFrame *aframe)
 {
-	int size = aframe->source_length;
+	int size = aframe->get_source_length();
 
-	if(!PTSEQU(aframe->pts, aframe->to_duration(output_sample)) || first_window)
+	if(!PTSEQU(aframe->get_pts(), aframe->to_duration(output_sample)) || first_window)
 	{
 		output_size = 0;
 		input_size = 0;
 		first_window = 1;
-		input_sample = output_sample = aframe->to_samples(aframe->pts);
-		input_frame.samplerate = aframe->samplerate;
+		input_sample = output_sample = aframe->to_samples(aframe->get_pts());
+		input_frame.set_samplerate(aframe->get_samplerate());
 	}
 
 // Fill output buffer half a window at a time until size samples are available
@@ -402,14 +402,14 @@ void CrossfadeFFT::process_frame_oversample(AFrame *aframe)
 	int overlap_size = window_size / oversample;
 	int total_size;
 	int start_skip;
-	int size = aframe->source_length;
+	int size = aframe->get_source_length();
 
-	if(!PTSEQU(aframe->pts, aframe->to_duration(output_sample)) || first_window)
+	if(!PTSEQU(aframe->get_pts(), aframe->to_duration(output_sample)) || first_window)
 	{
 		input_size = 0;
 		first_window = 1;
-		output_sample = aframe->to_samples(aframe->pts);
-		input_frame.samplerate = aframe->samplerate;
+		output_sample = aframe->to_samples(aframe->get_pts());
+		input_frame.set_samplerate(aframe->get_samplerate());
 		samples_ready = 0;
 		start_skip = window_size - overlap_size;
 		total_size = size + start_skip;
@@ -508,8 +508,9 @@ void CrossfadeFFT::process_frame_oversample(AFrame *aframe)
 		first_window = 0;
 	}
 
-	memcpy(aframe->buffer, output_buffer + start_skip , aframe->source_length * sizeof(double));
-	aframe->set_filled(aframe->source_length);
+	memcpy(aframe->buffer, output_buffer + start_skip,
+		aframe->get_source_length() * sizeof(double));
+	aframe->set_filled(aframe->get_source_length());
 	samples_ready -= total_size;
 
 	memmove(output_buffer, 

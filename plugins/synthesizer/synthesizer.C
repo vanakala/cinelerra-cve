@@ -307,7 +307,7 @@ double Synth::function_triangle(double x)
 
 AFrame *Synth::process_tmpframe(AFrame *input)
 {
-	int size = input->length;
+	int size = input->get_length();
 	int fragment_len;
 	double wetness;
 

@@ -115,20 +115,20 @@ void NullAudio::save_defaults()
  */
 int NullAudio::process_loop(AFrame *frame)
 {
-	int fragment_len = frame->buffer_length;
+	int fragment_len = frame->get_buffer_length();
 
-	if(frame->samplerate)
+	if(frame->get_samplerate())
 	{
 		// Region may end before buffer end
 		if(current_pts + frame->to_duration(fragment_len) > end_pts)
 			fragment_len = frame->to_samples(end_pts - current_pts);
 	}
-	frame->set_fill_request(current_pts, frame->buffer_length);
+	frame->set_fill_request(current_pts, frame->get_buffer_length());
 	get_frame(frame);
 
-	current_pts = frame->pts + frame->duration;
+	current_pts = frame->get_end_pts();
 
 	if(onoff)
-		memset(frame->buffer, 0, frame->length * sizeof(double));
+		memset(frame->buffer, 0, frame->get_length() * sizeof(double));
 	return ((end_pts - current_pts) < EPSILON);
 }

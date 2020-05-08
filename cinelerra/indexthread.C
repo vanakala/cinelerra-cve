@@ -70,7 +70,7 @@ IndexThread::IndexThread(MWindow *mwindow,
 		{
 			frames_in[i][j] = new AFrame(buffer_size);
 			frames_in[i][j]->channel = j;
-			frames_in[i][j]->samplerate = asset->sample_rate;
+			frames_in[i][j]->set_samplerate(asset->sample_rate);
 		}
 	}
 
@@ -148,14 +148,13 @@ void IndexThread::run()
 		if(!interrupt_flag && !done)
 		{
 // process buffer
-
 			for(int channel = 0; channel < asset->channels; channel++)
 			{
 				int *highpoint_channel = &highpoint[channel];
 				int *lowpoint_channel = &lowpoint[channel];
 				samplenum *frame_position_channel = &frame_position[channel];
 				double *buffer_source = frames_in[current_buffer][channel]->buffer;
-				fragment_size = frames_in[current_buffer][channel]->length;
+				fragment_size = frames_in[current_buffer][channel]->get_length();
 
 				for(int i = 0; i < fragment_size; i++)
 				{

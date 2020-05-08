@@ -92,7 +92,7 @@ void Reverb::process_tmpframes(AFrame **input)
 	int new_dsp_length, i, j;
 	main_in = input;
 	main_out = input;
-	int size = input[0]->length;
+	int size = input[0]->get_length();
 	redo_buffers |= load_configuration();
 
 	if(!config.ref_total) return;

@@ -44,7 +44,7 @@ AFrame *Fourier::process_frame(AFrame *aframe)
 
 	aframe->clear_buffer();
 
-	while(frame_pos < aframe->length)
+	while(frame_pos < aframe->get_length())
 	{
 		for(int i = 0; i < window_size; i++)
 		{
@@ -59,7 +59,7 @@ AFrame *Fourier::process_frame(AFrame *aframe)
 			if(!output)
 			{
 				output = audio_frames.clone_frame(aframe);
-				output->pts = aframe->pts;
+				output->set_pts(aframe->get_pts());
 			}
 			for(int i = 0; i < window_size; i++)
 			{
@@ -72,7 +72,7 @@ AFrame *Fourier::process_frame(AFrame *aframe)
 
 	if(output)
 	{
-		output->set_filled(aframe->length);
+		output->set_filled(aframe->get_length());
 		audio_frames.release_frame(aframe);
 		aframe = output;
 	}

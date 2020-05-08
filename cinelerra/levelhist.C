@@ -117,7 +117,7 @@ void LevelHistory::reset(int fragment_len, int samplerate, int channels)
 
 void LevelHistory::fill(AFrame **frames)
 {
-	int len = frames[0]->length;
+	int len = frames[0]->get_length();
 	double peak, sample;
 	int start, end;
 
@@ -130,7 +130,7 @@ void LevelHistory::fill(AFrame **frames)
 		if(end > len)
 			end = len;
 
-		level_pts[current_peak] = frames[0]->pts + frames[0]->to_duration(start);
+		level_pts[current_peak] = frames[0]->get_pts() + frames[0]->to_duration(start);
 
 		for(int c = 0; c < channels; c++)
 		{

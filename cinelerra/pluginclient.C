@@ -284,10 +284,7 @@ void PluginClient::process_buffer(AFrame **buffer)
 {
 	AFrame *aframe = buffer[0];
 
-	if(aframe->samplerate <= 0)
-		aframe->samplerate = edlsession->sample_rate;
-
-	source_pts = aframe->pts;
+	source_pts = aframe->get_pts();
 
 	if(server->apiversion < 3)
 	{
@@ -354,7 +351,7 @@ AFrame *PluginClient::clone_aframe(AFrame *orig)
 	AFrame *cloned = audio_frames.clone_frame(orig);
 
 	if(cloned)
-		cloned->pts = orig->pts;
+		cloned->set_pts(orig->get_pts());
 	return cloned;
 }
 
@@ -384,7 +381,7 @@ AFrame *PluginClient::get_frame(AFrame *frame)
 			return renderer->get_atmpframe(frame, this);
 	}
 	else
-		frame->clear_frame(frame->pts, frame->source_duration);
+		frame->clear_frame(frame->get_pts(), frame->get_source_duration());
 	return frame;
 }
 

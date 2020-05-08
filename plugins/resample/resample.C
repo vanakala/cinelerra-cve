@@ -95,7 +95,7 @@ int ResampleEffect::process_loop(AFrame *aframe)
 	int output_size;
 
 // Length to read based on desired output size
-	int size = (int)(aframe->buffer_length * scale);
+	int size = (int)(aframe->get_buffer_length() * scale);
 
 	if(!resample)
 		resample = new Resample(0, 1);
@@ -108,12 +108,12 @@ int ResampleEffect::process_loop(AFrame *aframe)
 
 	if(!predicted_total)
 		predicted_total = input_frame->to_samples((end_pts - start_pts) / scale);
-	current_pts = input_frame->pts + input_frame->duration;
+	current_pts = input_frame->get_end_pts();
 
 	resample->resample_chunk(input_frame->buffer,
 		size, 
-		input_frame->samplerate,
-		(int)(input_frame->samplerate / scale),
+		input_frame->get_samplerate(),
+		(int)(input_frame->get_samplerate() / scale),
 		0);
 
 	if(output_size = resample->get_output_size(0))
@@ -126,13 +126,13 @@ int ResampleEffect::process_loop(AFrame *aframe)
 			output_size -= total_written - predicted_total;
 			result = 1;
 		}
-		aframe->samplerate = input_frame->samplerate;
+		aframe->set_samplerate(input_frame->get_samplerate());
 		aframe->set_filled(output_size);
 		aframe->set_pts(output_pts);
 
 		resample->read_output(aframe->buffer, 0, output_size);
 
-		output_pts = aframe->pts + aframe->duration;
+		output_pts = aframe->get_end_pts();
 	}
 
 	return result;

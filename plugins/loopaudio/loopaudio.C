@@ -177,7 +177,7 @@ void LoopAudio::process_frame(AFrame *aframe)
 
 	while((fragment_size = aframe->fill_length()) > 0)
 	{
-		current_pts = aframe->pts + aframe->duration;
+		current_pts = aframe->get_pts() + aframe->get_duration();
 
 // Truncate to next keyframe
 		KeyFrame *next_keyframe = next_keyframe_pts(current_pts);
@@ -209,10 +209,11 @@ void LoopAudio::process_frame(AFrame *aframe)
 		int left_samples = aframe->to_samples((1 - q) * config.duration);
 		if(left_samples > 0)
 			fragment_size = MIN(left_samples, fragment_size);
-		loop_frame.set_buffer(&aframe->buffer[aframe->length], fragment_size);
+		loop_frame.set_buffer(&aframe->buffer[aframe->get_length()],
+			fragment_size);
 		loop_frame.set_fill_request(loop_pts, fragment_size);
 		get_frame(&loop_frame);
-		aframe->set_filled(aframe->length + loop_frame.length);
+		aframe->set_filled(aframe->get_length() + loop_frame.get_length());
 	}
 }
 

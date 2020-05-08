@@ -42,7 +42,7 @@ void OverlayAudio::process_tmpframes(AFrame **aframes)
 {
 	int num = get_total_buffers();
 // Direct copy the output track
-	int size = aframes[0]->source_length;
+	int size = aframes[0]->get_source_length();
 
 	double *output_buffer = aframes[0]->buffer;
 

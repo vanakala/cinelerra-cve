@@ -74,29 +74,29 @@ PLUGIN_CLASS_METHODS
 
 AFrame *Gain::process_tmpframe(AFrame *input)
 {
-	int size = input->length;
+	int size = input->get_length();
 	double *ipp = input->buffer;
 	double slope, gain;
 	int begin_slope, end_slope;
 
 	load_configuration();
-tracemsg("levelslope %.2f", config.levelslope);
+
 	if(fabs(config.levelslope) > EPSILON)
 	{
-		slope = config.levelslope / input->samplerate;
+		slope = config.levelslope / input->get_samplerate();
 		begin_slope = 0;
 		end_slope = size;
-		if(config.slope_start > input->pts)
-			begin_slope = input->to_samples(config.slope_start - input->pts);
-		if(config.slope_end < input->pts + input->duration)
-			end_slope = input->to_samples(config.slope_end - input->pts);
+		if(config.slope_start > input->get_pts())
+			begin_slope = input->to_samples(config.slope_start - input->get_pts());
+		if(config.slope_end < input->get_pts() + input->get_duration())
+			end_slope = input->to_samples(config.slope_end - input->get_pts());
 	}
 	else
 	{
 		gain = db.fromdb(config.level);
 		slope = 0;
 	}
-tracemsg("gain %.2f slope %.4f", gain, slope);
+
 	for(int i = 0; i < size; i++)
 	{
 		if(fabs(slope) > EPSILON)
