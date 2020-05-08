@@ -59,6 +59,7 @@ void PlaybackPrefs::show()
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
 	int maxw;
+	BC_Title *title1;
 
 	playback_config = pwindow->thread->this_edlsession->playback_config;
 
@@ -72,28 +73,6 @@ void PlaybackPrefs::show()
 		LARGEFONT));
 
 	y += get_text_height(LARGEFONT) + 5;
-
-	BC_Title *title1, *title2;
-	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
-	x2 = title2->get_w() + 10;
-
-	PlaybackModuleFragment *menu;
-	add_subwindow(menu = new PlaybackModuleFragment(x2, 
-		y, 
-		pwindow, 
-		this, 
-		playback_config->aconfig->fragment_size_text()));
-	menu->add_item(new BC_MenuItem("Auto"));
-	menu->add_item(new BC_MenuItem("2048"));
-	menu->add_item(new BC_MenuItem("4096"));
-	menu->add_item(new BC_MenuItem("8192"));
-	menu->add_item(new BC_MenuItem("16384"));
-	menu->add_item(new BC_MenuItem("32768"));
-	menu->add_item(new BC_MenuItem("65536"));
-	menu->add_item(new BC_MenuItem("131072"));
-	menu->add_item(new BC_MenuItem("262144"));
-
-	y += menu->get_h() + 5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
 	x2 += title1->get_w() + 5;
@@ -263,29 +242,6 @@ int PlaybackAudioOffset::handle_event()
 	playback->playback_config->aconfig->audio_offset = atof(get_text());
 	return 1;
 }
-
-
-PlaybackModuleFragment::PlaybackModuleFragment(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback, 
-	const char *text)
- : BC_PopupMenu(x, 
-	y, 
-	100, 
-	text,
-	1)
-{ 
-	this->pwindow = pwindow;
-	this->playback = playback;
-}
-
-int PlaybackModuleFragment::handle_event() 
-{
-	playback->playback_config->aconfig->set_fragment_size(get_text());
-	return 1;
-}
-
 
 PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y)
  : BC_CheckBox(10, y, value, _("View follows playback"))

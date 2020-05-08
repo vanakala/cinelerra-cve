@@ -31,7 +31,6 @@ AudioOutConfig::AudioOutConfig(int duplex)
 {
 	this->duplex = duplex;
 
-	fragment_size = 0;
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
 #else
@@ -61,8 +60,7 @@ int AudioOutConfig::operator!=(AudioOutConfig &that)
 
 int AudioOutConfig::operator==(AudioOutConfig &that)
 {
-	return fragment_size == that.fragment_size &&
-		driver == that.driver &&
+	return driver == that.driver &&
 		EQUIV(audio_offset, that.audio_offset) &&
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
@@ -80,7 +78,6 @@ AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
 
 void AudioOutConfig::copy_from(AudioOutConfig *src)
 {
-	fragment_size = src->fragment_size;
 	driver = src->driver;
 	audio_offset = src->audio_offset;
 
@@ -101,7 +98,6 @@ void AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
-	fragment_size = defaults->get("FRAGMENT_SIZE", fragment_size);
 	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
 	driver = defaults->get(string, driver);
@@ -129,7 +125,7 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
-	defaults->update("FRAGMENT_SIZE", fragment_size);
+	defaults->delete_key("FRAGMENT_SIZE");
 	defaults->update("AUDIO_OFFSET", audio_offset);
 
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
@@ -153,41 +149,6 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	defaults->update(string, esound_out_port);
-}
-
-void AudioOutConfig::set_fragment_size(const char *val)
-{
-	fragment_size = atol(val);
-	if(fragment_size < 0)
-		fragment_size = 0;
-}
-
-void AudioOutConfig::set_fragment_size(int val)
-{
-	fragment_size = val;
-	if(fragment_size < 0)
-		fragment_size = 0;
-}
-
-int AudioOutConfig::get_fragment_size(int sample_rate)
-{
-	int j;
-
-	if(fragment_size)
-		return fragment_size;
-	if(!sample_rate)
-		return 16384;
-	sample_rate = sample_rate / 4;
-	for(j = 2048; j < sample_rate; j *= 2);
-	return j;
-}
-
-const char *AudioOutConfig::fragment_size_text(void)
-{
-	if(!fragment_size)
-		return "Auto";
-	sprintf(frag_text, "%d", fragment_size);
-	return frag_text;
 }
 
 

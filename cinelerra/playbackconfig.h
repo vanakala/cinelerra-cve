@@ -40,10 +40,6 @@ public:
 	void copy_from(AudioOutConfig *src);
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
-	void set_fragment_size(const char *val);
-	void set_fragment_size(int val);
-	int get_fragment_size(int sample_rate);
-	const char *fragment_size_text(void);
 
 // Offset for synchronization in seconds
 	ptstime audio_offset;

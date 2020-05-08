@@ -151,13 +151,12 @@ int PackageRenderer::create_output()
 
 void PackageRenderer::create_engine()
 {
-	audio_read_length = edlsession->sample_rate / 4;
+	audio_read_length = AUDIO_BUFFER_SIZE;
 
 	render_engine = new RenderEngine(0, 0);
 
 	aconfig = render_engine->config->aconfig;
 	vconfig = render_engine->config->vconfig;
-	aconfig->set_fragment_size(audio_read_length);
 	render_engine->arm_command(command);
 
 	if(package->use_brender)

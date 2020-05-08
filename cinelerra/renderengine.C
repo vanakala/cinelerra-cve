@@ -124,7 +124,7 @@ int RenderEngine::arm_command(TransportCommand *new_command)
 
 	if(do_audio)
 	{
-		fragment_len = config->aconfig->get_fragment_size(edlsession->sample_rate);
+		fragment_len = AUDIO_BUFFER_SIZE;
 	}
 	if(playback_engine)
 		open_output();

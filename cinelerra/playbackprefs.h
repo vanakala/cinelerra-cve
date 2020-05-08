@@ -32,7 +32,6 @@ class PlaybackDisableNoEdits;
 class PlaybackHead;
 class PlaybackHeadCount;
 class PlaybackHost;
-class PlaybackModuleFragment;
 class PlaybackNearest;
 class PlaybackOutBits;
 class PlaybackOutChannels;
@@ -77,21 +76,6 @@ public:
 	BC_Title *vdevice_title;
 };
 
-
-class PlaybackModuleFragment : public BC_PopupMenu
-{
-public:
-	PlaybackModuleFragment(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback, 
-		const char *text);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
 
 class PlaybackAudioOffset : public BC_TumbleTextBox
 {
