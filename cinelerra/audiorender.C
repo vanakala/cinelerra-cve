@@ -519,8 +519,8 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		InFrame *infile = new InFrame(file, out_length, filenum);
 
 		cur = infile->get_aframe(j);
-		cur->set_fill_request(pts, duration);
 		cur->set_samplerate(out_samplerate);
+		cur->set_fill_request(pts, duration);
 		cur->set_source_pts(pts - edit->get_pts() +
 			edit->get_source_pts());
 		file->get_samples(cur);
