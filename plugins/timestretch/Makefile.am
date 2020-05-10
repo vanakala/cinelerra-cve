@@ -1,13 +1,12 @@
 plugin_LTLIBRARIES = timestretch.la
 timestretch_la_LDFLAGS = -avoid-version -module -shared 
-timestretch_la_LIBADD = ../libfourier/libfourier.la
+timestretch_la_LIBADD =
 timestretch_la_SOURCES = timestretch.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast \
-	-I$(top_srcdir)/plugins/libfourier \
 	-I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = timestretch.h

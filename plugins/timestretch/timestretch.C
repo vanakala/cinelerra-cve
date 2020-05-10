@@ -1,24 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "aframe.h"
 #include "clip.h"
 #include "bchash.h"
 #include "bctitle.h"
@@ -29,36 +14,27 @@
 
 #include <string.h>
 
-
-#define WINDOW_SIZE 4096
-#define INPUT_SIZE 65536
-#define OVERSAMPLE 8
+#define OVERSAMPLE 0
 
 REGISTER_PLUGIN
 
 
 PitchEngine::PitchEngine(TimeStretch *plugin, int window_size)
- : CrossfadeFFT(window_size)
+ : Fourier(window_size)
 {
 	this->plugin = plugin;
-	last_phase = new double[WINDOW_SIZE];
-	new_freq = new double[WINDOW_SIZE];
-	new_magn = new double[WINDOW_SIZE];
-	sum_phase = new double[WINDOW_SIZE];
-	anal_magn = new double[WINDOW_SIZE];
-	anal_freq = new double[WINDOW_SIZE];
-
-	input_buffer = 0;
-	input_size = 0;
-	input_allocated = 0;
-	current_output_pts = -1;
-	temp = 0;
+	oversample = OVERSAMPLE;
+	reset_phase = 1;
+	last_phase = new double[window_size];
+	new_freq = new double[window_size];
+	new_magn = new double[window_size];
+	sum_phase = new double[window_size];
+	anal_magn = new double[window_size];
+	anal_freq = new double[window_size];
 }
 
 PitchEngine::~PitchEngine()
 {
-	if(input_buffer) delete [] input_buffer;
-	if(temp) delete temp;
 	delete [] last_phase;
 	delete [] new_freq;
 	delete [] new_magn;
@@ -67,98 +43,47 @@ PitchEngine::~PitchEngine()
 	delete [] anal_freq;
 }
 
-void PitchEngine::get_frame(AFrame *aframe)
+
+int PitchEngine::signal_process()
 {
-// FIXME, make sure this is set at the beginning, always
-	int samples = aframe->get_source_length();
-
-	if (!PTSEQU(current_output_pts,  aframe->get_pts()))
-	{
-		input_size = 0;
-		ptstime input_pts = plugin->source_start_pts + 
-			(aframe->get_pts() - plugin->source_start_pts) / plugin->config.scale;
-		current_input_sample = aframe->to_samples(input_pts);
-		current_output_pts = aframe->get_pts();
-	}
-
-	while(input_size < samples)
-	{
-		double scale = plugin->config.scale;
-		if(!temp)
-		{
-			temp = new AFrame(INPUT_SIZE);
-			temp->set_samplerate(aframe->get_samplerate());
-		}
-		temp->set_fill_request(current_input_sample, INPUT_SIZE);
-		plugin->get_frame(temp);
-		current_input_sample += aframe->get_length();
-
-		plugin->resample->resample_chunk(temp->buffer,
-			INPUT_SIZE,
-			temp->get_samplerate(),
-			round(temp->get_samplerate() * scale),
-			0);
-
-		int fragment_size = plugin->resample->get_output_size(0);
-
-		if(input_size + fragment_size > input_allocated)
-		{
-			int new_allocated = input_size + fragment_size;
-			double *new_buffer = new double[new_allocated];
-			if(input_buffer)
-			{
-				memcpy(new_buffer, input_buffer, input_size * sizeof(double));
-				delete [] input_buffer;
-			}
-			input_buffer = new_buffer;
-			input_allocated = new_allocated;
-		}
-
-		plugin->resample->read_output(input_buffer + input_size,
-			0,
-			fragment_size);
-		input_size += fragment_size;
-	}
-	memcpy(aframe->buffer, input_buffer, aframe->get_source_length() * sizeof(double));
-	memcpy(input_buffer, 
-		input_buffer + aframe->get_source_length(),
-		sizeof(double) * (input_size - samples));
-	aframe->set_filled(aframe->get_source_length());
-	input_size -= samples;
-	current_output_pts = aframe->get_end_pts();
-}
-
-void PitchEngine::signal_process_oversample(int reset)
-{
+	int window_size = get_window_size();
+	int half_size = window_size / 2;
 	double scale = plugin->config.scale;
+	double expected_phase_diff;
 
 	memset(new_freq, 0, window_size * sizeof(double));
 	memset(new_magn, 0, window_size * sizeof(double));
 
-	if (reset)
+	if(reset_phase)
 	{
-		memset (last_phase, 0, WINDOW_SIZE * sizeof(double));
-		memset (sum_phase, 0, WINDOW_SIZE * sizeof(double));
+		memset(last_phase, 0, window_size * sizeof(double));
+		memset(sum_phase, 0, window_size * sizeof(double));
 	}
 
 // expected phase difference between windows
-	double expected_phase_diff = 2.0 * M_PI / oversample; 
+	if(oversample)
+		expected_phase_diff = 2.0 * M_PI / oversample;
+	else
+		expected_phase_diff = 0;
 // frequency per bin
-	double freq_per_bin = (double)plugin->project_sample_rate / window_size;
+	double freq_per_bin = (double)plugin->input_frame->get_samplerate() / window_size;
 
-//scale = 1.0;
-	for (int i = 0; i < window_size/2; i++) 
+	for(int i = 0; i < half_size; i++)
 	{
 // Convert to magnitude and phase
-		double magn = sqrt(fftw_data[i][0] * fftw_data[i][0] + fftw_data[i][1] * fftw_data[i][1]);
-		double phase = atan2(fftw_data[i][1], fftw_data[i][0]);
+		double re = fftw_window[i][0];
+		double im = fftw_window[i][1];
+
+		double magn = sqrt(re * re + im * im);
+		double phase = atan2(im, re);
 
 // Remember last phase
 		double temp = phase - last_phase[i];
 		last_phase[i] = phase;
 
 // Substract the expected advancement of phase
-		temp -= (double)i * expected_phase_diff;
+		if(oversample)
+			temp -= (double)i * expected_phase_diff;
 
 // wrap temp into -/+ PI ...  good trick!
 		int qpd = (int)(temp/M_PI);
@@ -169,7 +94,8 @@ void PitchEngine::signal_process_oversample(int reset)
 		temp -= M_PI*(double)qpd;
 
 // Deviation from bin frequency
-		temp = oversample * temp / (2.0 * M_PI);
+		if(oversample)
+			temp = oversample * temp / (2.0 * M_PI);
 
 		temp = (double)(temp + i) * freq_per_bin;
 
@@ -177,9 +103,11 @@ void PitchEngine::signal_process_oversample(int reset)
 		anal_freq[i] = temp;
 	}
 
-	for (int k = 0; k <= window_size/2; k++) {
-		int index = int(k/scale);
-		if (index <= window_size/2)
+	for(int k = 0; k <= half_size; k++)
+	{
+		int index = int(k / scale);
+
+		if(index <= half_size)
 		{
 			new_magn[k] += anal_magn[index];
 			new_freq[k] = anal_freq[index] * scale;
@@ -192,7 +120,7 @@ void PitchEngine::signal_process_oversample(int reset)
 	}
 
 	// Synthesize back the fft window 
-	for (int i = 0; i < window_size/2; i++) 
+	for(int i = 0; i < half_size; i++)
 	{
 		double magn = new_magn[i];
 		double temp = new_freq[i];
@@ -202,25 +130,26 @@ void PitchEngine::signal_process_oversample(int reset)
 // get bin deviation from freq deviation
 		temp /= freq_per_bin;
 
-// oversample 
-		temp = 2.0 * M_PI *temp / oversample;
+		if(oversample)
+			temp = 2.0 * M_PI * temp / oversample;
 
 // add back the expected phase difference (that we substracted in analysis)
-		temp += (double)(i) * expected_phase_diff;
+		if(oversample)
+			temp += i * expected_phase_diff;
 
 // accumulate delta phase, to get bin phase
 		sum_phase[i] += temp;
 
 		double phase = sum_phase[i];
 
-		fftw_data[i][0] = magn * cos(phase);
-		fftw_data[i][1] = magn * sin(phase);
+		fftw_window[i][0] = magn * cos(phase);
+		fftw_window[i][1] = magn * sin(phase);
 	}
 
-	for (int i = window_size/2; i< window_size; i++)
+	for(int i = half_size; i < window_size; i++)
 	{
-		fftw_data[i][0] = 0;
-		fftw_data[i][1] = 0;
+		fftw_window[i][0] = 0;
+		fftw_window[i][1] = 0;
 	}
 }
 
@@ -229,21 +158,19 @@ TimeStretch::TimeStretch(PluginServer *server)
  : PluginAClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-	temp = 0;
 	pitch = 0;
 	resample = 0;
-	input = 0;
-	input_allocated = 0;
+	input_pts = -1;
+	prev_input = -1;
+	prev_frame = -1;
 }
 
 
 TimeStretch::~TimeStretch()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	if(temp) delete [] temp;
-	if(input) delete [] input;
-	if(pitch) delete pitch;
-	if(resample) delete resample;
+	delete pitch;
+	delete resample;
 }
 
 PLUGIN_CLASS_METHODS
@@ -312,28 +239,103 @@ void TimeStretchConfig::copy_from(TimeStretchConfig &that)
 	scale = that.scale;
 }
 
-void TimeStretchConfig::interpolate(TimeStretchConfig &prev, 
-	TimeStretchConfig &next, 
-	ptstime prev_pts,
-	ptstime next_pts,
-	ptstime current_pts)
+int TimeStretch::load_configuration()
 {
-	PLUGIN_CONFIG_INTERPOLATE_MACRO
-	scale = prev.scale * prev_scale + next.scale * next_scale;
+	return 0;
 }
 
-void TimeStretch::process_frame(AFrame *aframe)
+AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 {
-	load_configuration();
+	int output_pos = 0;
+	int fragment_size;
+	AFrame *src_frame, *tmp_frame;
+
+	input_frame = aframe;
+	src_frame = aframe;
 
 	if(!pitch)
 	{
-		pitch = new PitchEngine(this, WINDOW_SIZE);
-		pitch->set_oversample(OVERSAMPLE);
+		pitch = new PitchEngine(this, aframe->get_buffer_length() / 4);
 		resample = new Resample(0, 1);
+		need_reconfigure = 1;
+	}
+	calculate_pts();
+	input_pts = aframe->round_to_sample(input_pts);
+
+	if(need_reconfigure || input_pts < prev_frame || input_pts > prev_input + EPSILON)
+	{
+		pitch->reset_phase = 1;
+		resample->reset(0);
+		need_reconfigure = 0;
+		prev_input = -1;
 	}
 
-	pitch->process_frame_oversample(aframe);
+	if(!PTSEQU(aframe->get_pts(), input_pts))
+		src_frame = 0;
+	tmp_frame = 0;
+
+	while(output_pos < aframe->get_length())
+	{
+		if(src_frame)
+		{
+			resample->resample_chunk(src_frame->buffer,
+				src_frame->get_length(),
+				src_frame->get_samplerate(),
+				round(src_frame->get_samplerate() * config.scale), 0);
+			prev_frame = src_frame->get_pts();
+			prev_input = src_frame->get_end_pts();
+		}
+		fragment_size = resample->get_output_size(0);
+
+		if(fragment_size > 0)
+		{
+			if(fragment_size > aframe->get_length() - output_pos)
+				fragment_size = aframe->get_length() - output_pos;
+			resample->read_output(aframe->buffer + output_pos, 0,
+				fragment_size);
+			output_pos += fragment_size;
+		}
+
+		if(prev_input < 0)
+			prev_input = input_pts;
+
+		if(output_pos < aframe->get_length())
+		{
+			if(!tmp_frame)
+				tmp_frame = clone_aframe(aframe);
+			tmp_frame->set_fill_request(prev_input,
+				tmp_frame->get_buffer_length());
+			tmp_frame = get_frame(tmp_frame);
+			src_frame = tmp_frame;
+		}
+	}
+	release_aframe(tmp_frame);
+	aframe = pitch->process_frame(aframe);
+	return aframe;
+}
+
+void TimeStretch::calculate_pts()
+{
+	KeyFrame *keyframe;
+	ptstime pts;
+
+	keyframe = get_first_keyframe();
+	input_pts = pts = get_start();
+
+	if(keyframe)
+	{
+		read_data(keyframe);
+		keyframe = (KeyFrame*)keyframe->next;
+
+		while(keyframe && keyframe->pos_time < source_pts)
+		{
+			input_pts += (keyframe->pos_time - pts) / config.scale;
+			pts = keyframe->pos_time;
+			read_data(keyframe);
+			keyframe = (KeyFrame*)keyframe->next;
+		}
+	}
+	input_pts += (source_pts - pts) / config.scale;
 }
 
 PLUGIN_THREAD_METHODS
