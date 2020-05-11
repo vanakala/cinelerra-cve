@@ -375,10 +375,12 @@ AFrame *PluginClient::get_frame(AFrame *frame)
 {
 	if(renderer)
 	{
+		Track *current = renderer->get_track_number(frame->get_track());
+
 		if(server->apiversion < 3)
-			renderer->get_aframe(frame);
+			current->renderer->get_aframe(frame);
 		else
-			return renderer->get_atmpframe(frame, this);
+			return current->renderer->get_atmpframe(frame, this);
 	}
 	else
 		frame->clear_frame(frame->get_pts(), frame->get_source_duration());
@@ -389,10 +391,12 @@ VFrame *PluginClient::get_frame(VFrame *buffer)
 {
 	if(renderer)
 	{
+		Track *current = renderer->get_track_number(buffer->get_layer());
+
 		if(server->apiversion < 3)
-			renderer->get_vframe(buffer);
+			current->renderer->get_vframe(buffer);
 		else
-			return renderer->get_vtmpframe(buffer, this);
+			return current->renderer->get_vtmpframe(buffer, this);
 	}
 	return buffer;
 }
