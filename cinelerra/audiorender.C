@@ -570,10 +570,11 @@ void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *render
 	}
 }
 
-void AudioRender::pass_aframes(Plugin *plugin, ATrackRender *current_renderer)
+void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
+	ATrackRender *current_renderer)
 {
 	current_renderer->aframes.remove_all();
-	current_renderer->aframes.append(current_renderer->handover_trackframe());
+	current_renderer->aframes.append(current_frame);
 
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
@@ -588,6 +589,7 @@ void AudioRender::pass_aframes(Plugin *plugin, ATrackRender *current_renderer)
 					((ATrackRender*)track->renderer)->handover_trackframe());
 		}
 	}
+
 	if(current_renderer->initialized_buffers != current_renderer->aframes.total)
 	{
 		plugin->client->plugin_init(current_renderer->aframes.total);
@@ -595,11 +597,10 @@ void AudioRender::pass_aframes(Plugin *plugin, ATrackRender *current_renderer)
 	}
 }
 
-void AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)
+AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)
 {
 	int k = 1;
-
-	current_renderer->take_aframe(current_renderer->aframes.values[0]);
+	AFrame *current_frame = current_renderer->aframes.values[0];
 
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
@@ -610,9 +611,10 @@ void AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)
 			if(track->plugins.values[i]->shared_plugin == plugin &&
 					track->plugins.values[i]->on)
 				((ATrackRender*)track->renderer)->take_aframe(
-					current_renderer->aframes.values[k]);
+					current_renderer->aframes.values[k++]);
 		}
 	}
+	return current_frame;
 }
 
 

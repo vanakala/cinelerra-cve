@@ -64,8 +64,9 @@ public:
 		Edit *edit, int filenum);
 	void allocate_aframes(Plugin *plugin);
 	void copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer);
-	void pass_aframes(Plugin *plugin, ATrackRender *current_renderer);
-	void take_aframes(Plugin *plugin, ATrackRender *current_renderer);
+	void pass_aframes(Plugin *plugin, AFrame *current_frame,
+		ATrackRender *current_renderer);
+	AFrame *take_aframes(Plugin *plugin, ATrackRender *current_renderer);
 
 private:
 	void init_frames();

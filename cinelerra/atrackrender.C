@@ -377,9 +377,9 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 				}
 				else
 				{
-					arender->pass_aframes(plugin, this);
+					arender->pass_aframes(plugin, aframe, this);
 					plugin->client->process_buffer(aframes.values);
-					arender->take_aframes(plugin, this);
+					aframe = arender->take_aframes(plugin, this);
 				}
 				next_plugin = 0;
 			}
