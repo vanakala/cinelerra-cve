@@ -122,7 +122,7 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 	ptstime plugin_start = current->get_pts();
 
 	if(buffer_pts > current->end_pts() ||
-			buffer_pts - buffer->get_source_duration() < plugin_start)
+			buffer_pts  < plugin_start - buffer->get_source_duration())
 		edit = 0;
 	else if(buffer_pts < plugin_start)
 		buffer->set_fill_request(buffer_pts,
