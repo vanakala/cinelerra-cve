@@ -132,6 +132,8 @@ AFrame *ATmpFrameCache::clone_frame(AFrame *frame)
 
 void ATmpFrameCache::release_frame(AFrame *tmp_frame)
 {
+	AFrame *released = 0;
+
 	if(!tmp_frame)
 		return;
 
@@ -147,11 +149,14 @@ void ATmpFrameCache::release_frame(AFrame *tmp_frame)
 			cur->in_use = 0;
 			cur->length = cur->frame->get_buffer_length();
 			cur->age = ++moment;
+			released = tmp_frame;
 			break;
 		}
 	}
 
 	listlock.unlock();
+	if(!released)
+		printf("Attempt to release non-tmpframe %p\n", tmp_frame);
 }
 
 void ATmpFrameCache::delete_old_frames()
