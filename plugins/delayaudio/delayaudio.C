@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "bctitle.h"
@@ -95,7 +79,7 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 
 }
 
-void DelayAudio::process_realtime(AFrame *input, AFrame *output)
+AFrame *DelayAudio::process_tmpframe(AFrame *input)
 {
 	int size = input->get_length();
 
@@ -120,17 +104,14 @@ void DelayAudio::process_realtime(AFrame *input, AFrame *output)
 
 	// Ex buffer.size() ==  A: 7, B: 15, C: 6, D: 6, E: 15
 
-	if(input != output)
-		output->copy_of(input);
-
-	if (num_silence > 0)
+	if(num_silence > 0)
 	{
-		std::fill_n(output->buffer, num_silence, 0.0);
+		std::fill_n(input->buffer, num_silence, 0.0);
 		size -= num_silence;
 	}
 	// Ex size ==  A: 5, B: 5, C: 0, D: 4, E: 5
 
-	if (buffer.size() >= num_delayed + size)
+	if(buffer.size() >= num_delayed + size)
 	{
 		std::vector<double>::iterator from = buffer.end() - (num_delayed + size);
 		// usually, from == buffer.begin(); but if the delay has just been
@@ -138,9 +119,10 @@ void DelayAudio::process_realtime(AFrame *input, AFrame *output)
 
 		// Ex from points to idx A: 0, B: 0, C: n/a, D: 0, E: 8
 
-		std::copy(from, from + size, output->buffer);
+		std::copy(from, from + size, input->buffer);
 		buffer.erase(buffer.begin(), from + size);
 	}
+	return input;
 }
 
 PLUGIN_CLASS_METHODS
@@ -160,34 +142,23 @@ DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
 	update();
 }
 
-DelayAudioWindow::~DelayAudioWindow()
-{
-}
-
-
 void DelayAudioWindow::update()
 {
-	char string[BCTEXTLEN];
-
-	sprintf(string, "%.04f", plugin->config.length);
-	length->update(string);
+	length->update(plugin->config.length);
 }
 
 
 DelayAudioTextBox::DelayAudioTextBox(DelayAudio *plugin, int x, int y)
- : BC_TextBox(x, y, 150, 1, "")
+ : BC_TextBox(x, y, 150, 1, 0)
 {
 	this->plugin = plugin;
-}
-
-DelayAudioTextBox::~DelayAudioTextBox()
-{
 }
 
 int DelayAudioTextBox::handle_event()
 {
 	plugin->config.length = atof(get_text());
-	if(plugin->config.length < 0) plugin->config.length = 0;
+	if(plugin->config.length < 0)
+		plugin->config.length = 0;
 	plugin->send_configure_change();
 	return 1;
 }
