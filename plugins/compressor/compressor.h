@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef COMPRESSOR_H
 #define COMPRESSOR_H
@@ -26,12 +10,13 @@
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_USES_TMPFRAME
 #define PLUGIN_CLASS CompressorEffect
 #define PLUGIN_CONFIG_CLASS CompressorConfig
 #define PLUGIN_THREAD_CLASS CompressorThread
 #define PLUGIN_GUI_CLASS CompressorWindow
 
-#include "aframe.h"
+#include "aframe.inc"
 #include "bcbutton.h"
 #include "bcpopupmenu.h"
 #include "bctextbox.h"
@@ -41,7 +26,6 @@
 #include "cinelerra.h"
 #include "language.h"
 #include "pluginaclient.h"
-#include "vframe.inc"
 #include "pluginwindow.h"
 
 
@@ -49,6 +33,7 @@ class CompressorCanvas : public BC_SubWindow
 {
 public:
 	CompressorCanvas(CompressorEffect *plugin, int x, int y, int w, int h);
+
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
@@ -69,8 +54,10 @@ class CompressorReaction : public BC_TextBox
 {
 public:
 	CompressorReaction(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
 	int button_press_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -78,7 +65,9 @@ class CompressorClear : public BC_GenericButton
 {
 public:
 	CompressorClear(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -86,7 +75,9 @@ class CompressorX : public BC_TextBox
 {
 public:
 	CompressorX(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -94,7 +85,9 @@ class CompressorY : public BC_TextBox
 {
 public:
 	CompressorY(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -102,8 +95,10 @@ class CompressorTrigger : public BC_TextBox
 {
 public:
 	CompressorTrigger(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
 	int button_press_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -111,8 +106,10 @@ class CompressorDecay : public BC_TextBox
 {
 public:
 	CompressorDecay(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
 	int button_press_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -120,7 +117,9 @@ class CompressorSmooth : public BC_CheckBox
 {
 public:
 	CompressorSmooth(CompressorEffect *plugin, int x, int y);
+
 	int handle_event();
+
 	CompressorEffect *plugin;
 };
 
@@ -128,8 +127,10 @@ class CompressorInput : public BC_PopupMenu
 {
 public:
 	CompressorInput(CompressorEffect *plugin, int x, int y);
+
 	void create_objects();
 	int handle_event();
+
 	static const char* value_to_text(int value);
 	static int text_to_value(const char *text);
 	CompressorEffect *plugin;
@@ -188,7 +189,6 @@ public:
 // Returns db output from db input
 	double calculate_db(double x);
 	int set_point(double x, double y);
-	void dump();
 
 	int trigger;
 	int input;
@@ -216,7 +216,7 @@ public:
 
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void process_frame(AFrame **aframes);
+	void process_tmpframes(AFrame **aframes);
 	double calculate_gain(double input);
 
 // Calculate linear output from linear input
@@ -224,12 +224,9 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void delete_dsp();
 
 	PLUGIN_CLASS_MEMBERS
 
-// Frames for readahead
-	AFrame buffer_headers[MAXCHANNELS];
 // The raw input data for each channel with readahead
 	double *input_buffer[MAXCHANNELS];
 // Number of samples in the input buffer 

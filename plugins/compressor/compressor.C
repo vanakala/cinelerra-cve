@@ -1,24 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "aframe.h"
+#include "atmpframecache.h"
 #include "bcmenuitem.h"
 #include "bcsignals.h"
 #include "bctitle.h"
@@ -59,10 +45,7 @@ CompressorEffect::CompressorEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	for(int i = 0; i < MAXCHANNELS; i++)
-	{
 		input_buffer[i] = 0;
-		buffer_headers[i].reset_buffer();
-	}
 	input_size = 0;
 	input_allocated = 0;
 	input_start = 0;
@@ -197,10 +180,12 @@ void CompressorEffect::save_defaults()
 	defaults->save();
 }
 
-void CompressorEffect::process_frame(AFrame **aframes)
+void CompressorEffect::process_tmpframes(AFrame **aframes)
 {
 	AFrame *aframe = aframes[0];
-	int size = aframe->get_source_length();
+	AFrame *tmp_frame;
+	int size = aframe->get_length();
+	int total_buffers = get_total_buffers();
 
 	load_configuration();
 
@@ -217,25 +202,25 @@ void CompressorEffect::process_frame(AFrame **aframes)
 	max_x = 1.0;
 	max_y = 1.0;
 
-	int reaction_samples = (int)(config.reaction_len * aframe->get_samplerate() + 0.5);
-	int decay_samples = (int)(config.decay_len * aframe->get_samplerate() + 0.5);
+	int reaction_samples = aframe->to_samples(config.reaction_len);
+	int decay_samples = aframe->to_samples(config.decay_len);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
 
 // FIXIT: Clamping must be done in gui
 	CLAMP(reaction_samples, -1000000, 1000000);
 	CLAMP(decay_samples, reaction_samples, 1000000);
 	CLAMP(decay_samples, 1, 1000000);
-	if(abs(reaction_samples) < 1) reaction_samples = 1;
-	if(abs(decay_samples) < 1) decay_samples = 1;
+	if(abs(reaction_samples) < 1)
+		reaction_samples = 1;
+	if(abs(decay_samples) < 1)
+		decay_samples = 1;
 
-	int total_buffers = get_total_buffers();
 	if(reaction_samples > 0)
 	{
-		if(target_current_sample < 0) target_current_sample = reaction_samples;
-		for(int i = 0; i < total_buffers; i++)
-			get_frame(aframes[i]);
+		if(target_current_sample < 0)
+			target_current_sample = reaction_samples;
 
-		double current_slope = (next_target - previous_target) / 
+		double current_slope = (next_target - previous_target) /
 			reaction_samples;
 		AFrame *trigger_frame = aframes[trigger];
 
@@ -244,6 +229,7 @@ void CompressorEffect::process_frame(AFrame **aframes)
 // Get slope required to reach current sample from smoothed sample over reaction
 // length.
 			double sample;
+
 			switch(config.input)
 			{
 			case CompressorConfig::MAX:
@@ -252,7 +238,8 @@ void CompressorEffect::process_frame(AFrame **aframes)
 					for(int j = 0; j < total_buffers; j++)
 					{
 						sample = fabs(aframes[j]->buffer[i]);
-						if(sample > max) max = sample;
+						if(sample > max)
+							max = sample;
 					}
 					sample = max;
 					break;
@@ -279,9 +266,8 @@ void CompressorEffect::process_frame(AFrame **aframes)
 				reaction_samples;
 
 // Slope greater than current slope
-			if(new_slope >= current_slope && 
-				(current_slope >= 0 ||
-				new_slope >= 0))
+			if(new_slope >= current_slope &&
+				(current_slope >= 0 || new_slope >= 0))
 			{
 				next_target = sample;
 				previous_target = current_value;
@@ -309,8 +295,9 @@ void CompressorEffect::process_frame(AFrame **aframes)
 			}
 
 // Update current value and store gain
-			current_value = (next_target * target_current_sample + 
-				previous_target * (target_samples - target_current_sample)) /
+			current_value = (next_target * target_current_sample +
+				previous_target *
+				(target_samples - target_current_sample)) /
 				target_samples;
 
 			target_current_sample++;
@@ -332,8 +319,11 @@ void CompressorEffect::process_frame(AFrame **aframes)
 	}
 	else
 	{
-		if(target_current_sample < 0) target_current_sample = target_samples;
+		if(target_current_sample < 0)
+			target_current_sample = target_samples;
+
 		int preview_samples = -reaction_samples;
+
 		samplenum start_position = aframe->to_samples(aframe->get_pts());
 
 // Start of new buffer is outside the current buffer.  Start buffer over.
@@ -351,10 +341,12 @@ void CompressorEffect::process_frame(AFrame **aframes)
 			if(input_buffer)
 			{
 				int len = input_start + input_size - start_position;
+
 				for(int i = 0; i < total_buffers; i++)
 				{
 					memcpy(input_buffer[i],
-						input_buffer[i] + (start_position - input_start),
+						input_buffer[i] +
+							(start_position - input_start),
 						len * sizeof(double));
 				}
 				input_size = len;
@@ -370,40 +362,59 @@ void CompressorEffect::process_frame(AFrame **aframes)
 				double *new_buffer = new double[size + preview_samples];
 				if(input_buffer[i])
 				{
-					memcpy(new_buffer,
-						input_buffer[i], 
+					memcpy(new_buffer, input_buffer[i],
 						input_size * sizeof(double));
 					delete [] input_buffer[i];
 				}
 				input_buffer[i] = new_buffer;
-				buffer_headers[i].channel = i;
-				buffer_headers[i].set_samplerate(aframe->get_samplerate());
 			}
 			input_allocated = size + preview_samples;
 		}
+// Copy current frame to input buffer
+		if(!input_size)
+		{
+			for(int i = 0; i < total_buffers; i++)
+				mempcpy(input_buffer[i], aframes[i]->buffer,
+					size * sizeof(double));
+			input_start += size;
+		}
 
 // Append data to input buffer to construct readahead area.
-#define MAX_FRAGMENT_SIZE 131072
+		tmp_frame = 0;
 		while(input_size < size + preview_samples)
 		{
-			int fragment_size = MAX_FRAGMENT_SIZE;
+			int fragment_size = aframe->get_buffer_length();
+
+			if(!tmp_frame)
+				tmp_frame = audio_frames.clone_frame(aframe);
+
 			if(fragment_size + input_size > size + preview_samples)
 				fragment_size = size + preview_samples - input_size;
+			if(tmp_frame->to_duration(input_start) > get_end())
+			{
+				for(int i = 0; i < total_buffers; i++)
+					memset(&input_buffer[i][input_size], 0,
+						fragment_size * sizeof(double));
+				input_size += fragment_size;
+				continue;
+			}
 			for(int i = 0; i < total_buffers; i++)
 			{
-				buffer_headers[i].set_buffer(input_buffer[i] + input_size, fragment_size);
-				buffer_headers[i].set_fill_request(input_start + input_size, fragment_size);
-				get_frame(&buffer_headers[i]);
+				tmp_frame->channel = aframes[i]->channel;
+				tmp_frame->set_track(aframes[i]->get_track());
+				tmp_frame->set_fill_request(input_start + input_size,
+					fragment_size);
+				tmp_frame = get_frame(tmp_frame);
+				memcpy(&input_buffer[i][input_size],
+					tmp_frame->buffer, tmp_frame->get_length());
 			}
-			input_size += fragment_size;
+			input_size += tmp_frame->get_length();
 		}
+		audio_frames.release_frame(tmp_frame);
 
 		double current_slope = (next_target - previous_target) /
 			target_samples;
 		double *trigger_buffer = input_buffer[trigger];
-
-		for(int k = 0; k < total_buffers; k++)
-			aframes[k]->set_filled(size);
 
 		for(int i = 0; i < size; i++)
 		{
@@ -417,44 +428,38 @@ void CompressorEffect::process_frame(AFrame **aframes)
 // Need new slope immediately
 			if(target_current_sample >= target_samples)
 				first_slope = 1;
-			for(int j = first_slope; 
-				j < preview_samples; 
-				j++)
+			for(int j = first_slope; j < preview_samples; j++)
 			{
 				double sample;
+				double max = 0;
+
 				switch(config.input)
 				{
-					case CompressorConfig::MAX:
+				case CompressorConfig::MAX:
+					for(int k = 0; k < total_buffers; k++)
 					{
-						double max = 0;
-						for(int k = 0; k < total_buffers; k++)
-						{
-							sample = fabs(input_buffer[k][i + j]);
-							if(sample > max) max = sample;
-						}
-						sample = max;
-						break;
+						sample = fabs(input_buffer[k][i + j]);
+						if(sample > max)
+							max = sample;
 					}
+					sample = max;
+					break;
 
-					case CompressorConfig::TRIGGER:
-						sample = fabs(trigger_buffer[i + j]);
-						break;
+				case CompressorConfig::TRIGGER:
+					sample = fabs(trigger_buffer[i + j]);
+					break;
 
-					case CompressorConfig::SUM:
+				case CompressorConfig::SUM:
+					for(int k = 0; k < total_buffers; k++)
 					{
-						double max = 0;
-						for(int k = 0; k < total_buffers; k++)
-						{
-							sample = fabs(input_buffer[k][i + j]);
-							max += sample;
-						}
-						sample = max;
-						break;
+						sample = fabs(input_buffer[k][i + j]);
+						max += sample;
 					}
+					sample = max;
+					break;
 				}
 
-				double new_slope = (sample - current_value) /
-					j;
+				double new_slope = (sample - current_value) / j;
 // Got equal or higher slope
 				if(new_slope >= current_slope && 
 					(current_slope >= 0 ||
@@ -482,7 +487,8 @@ void CompressorEffect::process_frame(AFrame **aframes)
 				{
 					target_current_sample = 0;
 					target_samples = decay_samples;
-					current_slope = (sample - current_value) / decay_samples;
+					current_slope = (sample - current_value) /
+						decay_samples;
 					next_target = sample;
 					previous_target = current_value;
 				}
@@ -490,7 +496,8 @@ void CompressorEffect::process_frame(AFrame **aframes)
 
 // Update current value and multiply gain
 			current_value = (next_target * target_current_sample +
-				previous_target * (target_samples - target_current_sample)) /
+				previous_target *
+				(target_samples - target_current_sample)) /
 				target_samples;
 			target_current_sample++;
 
@@ -502,10 +509,9 @@ void CompressorEffect::process_frame(AFrame **aframes)
 			else
 			{
 				double gain = calculate_gain(current_value);
+
 				for(int j = 0; j < total_buffers; j++)
-				{
-					aframes[j]->buffer[i] = input_buffer[j][i] * gain;
-				}
+					aframes[j]->buffer[i] *= gain;
 			}
 		}
 	}
@@ -538,9 +544,8 @@ double CompressorEffect::calculate_output(double x)
 
 	if(levels.total)
 	{
-		return min_y + 
-			(x - min_x) * 
-			(levels.values[0].y - min_y) / 
+		return min_y + (x - min_x) *
+			(levels.values[0].y - min_y) /
 			(levels.values[0].x - min_x);
 	}
 	else
@@ -551,6 +556,7 @@ double CompressorEffect::calculate_gain(double input)
 {
 	double y_linear = calculate_output(input);
 	double gain;
+
 	if(input != 0)
 		gain = y_linear / input;
 	else
@@ -598,15 +604,17 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 		this->input != that.input ||
 		this->smoothing_only != that.smoothing_only)
 		return 0;
-	if(this->levels.total != that.levels.total) return 0;
-	for(int i = 0; 
-		i < this->levels.total && i < that.levels.total; 
+
+	if(this->levels.total != that.levels.total)
+		return 0;
+	for(int i = 0; i < this->levels.total && i < that.levels.total;
 		i++)
 	{
 		compressor_point_t *this_level = &this->levels.values[i];
 		compressor_point_t *that_level = &that.levels.values[i];
+
 		if(!EQUIV(this_level->x, that_level->x) ||
-			!EQUIV(this_level->y, that_level->y))
+				!EQUIV(this_level->y, that_level->y))
 			return 0;
 	}
 	return 1;
@@ -628,16 +636,6 @@ int CompressorConfig::total_points()
 	else
 		return levels.total;
 }
-
-void CompressorConfig::dump()
-{
-	printf("CompressorConfig::dump\n");
-	for(int i = 0; i < levels.total; i++)
-	{
-		printf("\t%f %f\n", levels.values[i].x, levels.values[i].y);
-	}
-}
-
 
 double CompressorConfig::get_y(int number)
 {
@@ -688,9 +686,8 @@ double CompressorConfig::calculate_db(double x)
 
 	if(levels.total)
 	{
-		return min_y + 
-			(x - min_x) * 
-			(levels.values[0].y - min_y) / 
+		return min_y + (x - min_x) *
+			(levels.values[0].y - min_y) /
 			(levels.values[0].x - min_x);
 	}
 	else
@@ -743,8 +740,6 @@ void CompressorConfig::optimize()
 	while(!done)
 	{
 		done = 1;
-		
-		
 		for(int i = 0; i < levels.total - 1; i++)
 		{
 			if(levels.values[i].x >= levels.values[i + 1].x)
@@ -765,20 +760,14 @@ PLUGIN_THREAD_METHODS
 
 
 CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
-	x,
-	y, 
-	650, 
-	480)
+ : PluginWindow(plugin->gui_string, x, y, 650, 480)
 {
 	int control_margin = 130;
 	x = 35;
 	y = 10;
 
 	add_subwindow(canvas = new CompressorCanvas(plugin, 
-		x, 
-		y, 
-		get_w() - x - control_margin - 10, 
+		x, y, get_w() - x - control_margin - 10,
 		get_h() - y - 70));
 	canvas->set_cursor(CROSS_CURSOR);
 	x = get_w() - control_margin;
@@ -831,7 +820,7 @@ void CompressorWindow::draw_scales()
 
 		sprintf(string, "%.0f", (float)i / DIVISIONS * plugin->config.min_db);
 		draw_text(x, y, string);
-		
+
 		int y1 = canvas->get_y() + canvas->get_h() / DIVISIONS * i;
 		int y2 = canvas->get_y() + canvas->get_h() / DIVISIONS * (i + 1);
 		for(int j = 0; j < 10; j++)
@@ -886,7 +875,7 @@ void CompressorWindow::update()
 void CompressorWindow::update_textboxes()
 {
 	if(atol(trigger->get_text()) != plugin->config.trigger)
-		trigger->update((int64_t)plugin->config.trigger);
+		trigger->update(plugin->config.trigger);
 	if(strcmp(input->get_text(), CompressorInput::value_to_text(plugin->config.input)))
 		input->set_text(CompressorInput::value_to_text(plugin->config.input));
 
@@ -897,14 +886,14 @@ void CompressorWindow::update_textboxes()
 		trigger->enable();
 
 	if(!EQUIV(atof(reaction->get_text()), plugin->config.reaction_len))
-		reaction->update((float)plugin->config.reaction_len);
+		reaction->update(plugin->config.reaction_len);
 	if(!EQUIV(atof(decay->get_text()), plugin->config.decay_len))
-		decay->update((float)plugin->config.decay_len);
+		decay->update(plugin->config.decay_len);
 	smooth->update(plugin->config.smoothing_only);
 	if(canvas->current_operation == CompressorCanvas::DRAG)
 	{
-		x_text->update((float)plugin->config.levels.values[canvas->current_point].x);
-		y_text->update((float)plugin->config.levels.values[canvas->current_point].y);
+		x_text->update(plugin->config.levels.values[canvas->current_point].x);
+		y_text->update(plugin->config.levels.values[canvas->current_point].y);
 	}
 }
 
@@ -919,17 +908,16 @@ void CompressorWindow::update_canvas()
 	{
 		int y = canvas->get_h() * i / DIVISIONS;
 		canvas->draw_line(0, y, canvas->get_w(), y);
-		
+
 		int x = canvas->get_w() * i / DIVISIONS;
 		canvas->draw_line(x, 0, x, canvas->get_h());
 	}
 
 	canvas->set_font(MEDIUMFONT);
-	canvas->draw_text(5, 
-		canvas->get_h() / 2 - 20, 
-		_("Output"));
-	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input level")) / 2, 
-		canvas->get_h() - canvas->get_text_height(MEDIUMFONT), 
+	canvas->draw_text(5, canvas->get_h() / 2 - 20, _("Output"));
+	canvas->draw_text(canvas->get_w() / 2 -
+		canvas->get_text_width(MEDIUMFONT, _("Input level")) / 2,
+		canvas->get_h() - canvas->get_text_height(MEDIUMFONT),
 		_("Input"));
 
 	canvas->set_color(BLACK);
@@ -953,9 +941,10 @@ void CompressorWindow::update_canvas()
 		double x_db = plugin->config.get_x(i);
 		double y_db = plugin->config.get_y(i);
 
-		int x = (int)(((double)1 - x_db / plugin->config.min_db) * canvas->get_w());
-		int y = (int)(y_db / plugin->config.min_db * canvas->get_h());
-		
+		int x = round(((double)1 - x_db / plugin->config.min_db) *
+			canvas->get_w());
+		int y = round(y_db / plugin->config.min_db * canvas->get_h());
+
 		canvas->draw_box(x - POINT_W / 2, y - POINT_W / 2, POINT_W, POINT_W);
 	}
 	canvas->flash();
@@ -979,8 +968,9 @@ int CompressorCanvas::button_press_event()
 			double x_db = plugin->config.get_x(i);
 			double y_db = plugin->config.get_y(i);
 
-			int x = (int)(((double)1 - x_db / plugin->config.min_db) * get_w());
-			int y = (int)(y_db / plugin->config.min_db * get_h());
+			int x = round(((double)1 - x_db / plugin->config.min_db) *
+				get_w());
+			int y = round(y_db / plugin->config.min_db * get_h());
 
 			if(get_cursor_x() < x + POINT_W / 2 && get_cursor_x() >= x - POINT_W / 2 &&
 				get_cursor_y() < y + POINT_W / 2 && get_cursor_y() >= y - POINT_W / 2)
@@ -992,7 +982,7 @@ int CompressorCanvas::button_press_event()
 		}
 
 // Create new point
-		double x_db = (double)(1 - (double)get_cursor_x() / get_w()) * plugin->config.min_db;
+		double x_db = (1 - (double)get_cursor_x() / get_w()) * plugin->config.min_db;
 		double y_db = (double)get_cursor_y() / get_h() * plugin->config.min_db;
 
 		current_point = plugin->config.set_point(x_db, y_db);
@@ -1067,17 +1057,14 @@ int CompressorReaction::button_press_event()
 {
 	if(is_event_win())
 	{
-		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() < 4)
+			return BC_TextBox::button_press_event();
 		if(get_buttonpress() == 4)
-		{
 			plugin->config.reaction_len += 0.1;
-		}
-		else
-		if(get_buttonpress() == 5)
-		{
+		else if(get_buttonpress() == 5)
 			plugin->config.reaction_len -= 0.1;
-		}
-		update((float)plugin->config.reaction_len);
+
+		update(plugin->config.reaction_len);
 		plugin->send_configure_change();
 		return 1;
 	}
@@ -1089,6 +1076,7 @@ CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int CompressorDecay::handle_event()
 {
 	plugin->config.decay_len = atof(get_text());
@@ -1100,17 +1088,14 @@ int CompressorDecay::button_press_event()
 {
 	if(is_event_win())
 	{
-		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() < 4)
+			return BC_TextBox::button_press_event();
 		if(get_buttonpress() == 4)
-		{
 			plugin->config.decay_len += 0.1;
-		}
-		else
-		if(get_buttonpress() == 5)
-		{
+		else if(get_buttonpress() == 5)
 			plugin->config.decay_len -= 0.1;
-		}
-		update((float)plugin->config.decay_len);
+
+		update(plugin->config.decay_len);
 		plugin->send_configure_change();
 		return 1;
 	}
@@ -1127,6 +1112,7 @@ CompressorX::CompressorX(CompressorEffect *plugin, int x, int y)
 int CompressorX::handle_event()
 {
 	int current_point = plugin->thread->window->canvas->current_point;
+
 	if(current_point < plugin->config.levels.total)
 	{
 		plugin->config.levels.values[current_point].x = atof(get_text());
@@ -1138,7 +1124,7 @@ int CompressorX::handle_event()
 
 
 CompressorY::CompressorY(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, 100, 1, "")
+ : BC_TextBox(x, y, 100, 1, 0)
 {
 	this->plugin = plugin;
 }
@@ -1157,7 +1143,7 @@ int CompressorY::handle_event()
 
 
 CompressorTrigger::CompressorTrigger(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, (int64_t)100, (int64_t)1, (int64_t)plugin->config.trigger)
+ : BC_TextBox(x, y, 100, 1, (int64_t)plugin->config.trigger)
 {
 	this->plugin = plugin;
 }
@@ -1173,17 +1159,14 @@ int CompressorTrigger::button_press_event()
 {
 	if(is_event_win())
 	{
-		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() < 4)
+			return BC_TextBox::button_press_event();
 		if(get_buttonpress() == 4)
-		{
 			plugin->config.trigger++;
-		}
-		else
-		if(get_buttonpress() == 5)
-		{
+		else if(get_buttonpress() == 5)
 			plugin->config.trigger--;
-		}
-		update((int64_t)plugin->config.trigger);
+
+		update(plugin->config.trigger);
 		plugin->send_configure_change();
 		return 1;
 	}
@@ -1192,11 +1175,8 @@ int CompressorTrigger::button_press_event()
 
 
 CompressorInput::CompressorInput(CompressorEffect *plugin, int x, int y) 
- : BC_PopupMenu(x, 
-	y, 
-	100, 
-	CompressorInput::value_to_text(plugin->config.input), 
-	1)
+ : BC_PopupMenu(x, y, 100,
+	CompressorInput::value_to_text(plugin->config.input), 1)
 {
 	this->plugin = plugin;
 }
@@ -1237,7 +1217,6 @@ int CompressorInput::text_to_value(const char *text)
 	{
 		if(!strcmp(value_to_text(i), text)) return i;
 	}
-
 	return CompressorConfig::TRIGGER;
 }
 
