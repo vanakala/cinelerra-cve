@@ -81,6 +81,8 @@ public:
 	int multichannel_max;
 // Plugin gui shows status of the current frame
 	int status_gui;
+// Plugin ignores keyframes
+	int no_keyframes;
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;

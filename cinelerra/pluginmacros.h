@@ -1,21 +1,7 @@
-/*
- * pluginmacros.h
- * Copyright (C) 2011-2012 Einar Rünkaru <einarrunkaru at gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2011-2012 Einar Rünkaru <einarrunkaru at gmail dot com>
 
 
 #ifndef PLUGINMACROS_H
@@ -28,6 +14,7 @@
  * PLUGIN_IS_REALTIME
  * PLUGIN_IS_MULTICHANNEL
  * PLUGIN_IS_SYNTHESIS
+ * PLUGIN_NOT_KEYFRAMEABLE
  * PLUGIN_USES_TMPFRAME
  * PLUGIN_USES_OPENGL
  * PLUGIN_STATUS_GUI
@@ -119,6 +106,13 @@ class PLUGIN_GUI_CLASS;
 	int api_version() { return 2; };
 #endif
 
+#ifdef PLUGIN_NOT_KEYFRAMEABLE
+#define PLUGIN_CLASS_NOT_KEYFRAMEABLE_MEMBER \
+	int not_keyframeable() { return 1; };
+#else
+#define PLUGIN_CLASS_NOT_KEYFRAMEABLE_MEMBER
+#endif
+
 #ifdef PLUGIN_USES_OPENGL
 #define PLUGIN_CLASS_USES_OPENGL_MEMBER \
 	int has_opengl_support() { return 1; };
@@ -151,6 +145,7 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CLASS_USES_GUI_MEMBER \
 	PLUGIN_CLASS_MULTICHANNEL_MEMBER \
 	PLUGIN_CLASS_SYNTHESIS_MEMBER \
+	PLUGIN_CLASS_NOT_KEYFRAMEABLE_MEMBER \
 	PLUGIN_CLASS_USES_OPENGL_MEMBER \
 	PLUGIN_CLASS_MAX_CHANNELS_MEMBER \
 	PLUGIN_CLASS_STATUS_GUI_MEMBER \

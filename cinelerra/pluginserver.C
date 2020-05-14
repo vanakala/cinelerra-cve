@@ -111,6 +111,7 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	status_gui = client->has_status_gui();
 	multichannel = client->is_multichannel();
 	synthesis = client->is_synthesis();
+	no_keyframes = client->not_keyframeable();
 	apiversion = client->api_version();
 	transition = client->is_transition();
 	opengl_plugin = client->has_opengl_support();

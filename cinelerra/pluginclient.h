@@ -64,6 +64,7 @@ public:
 	virtual int is_multichannel() { return 0; };
 	virtual int is_synthesis() { return 0; };
 	virtual int is_transition() { return 0; };
+	virtual int not_keyframeable() { return 0; };
 // API version:
 //   2 - plugin has pts support
 //   3 - plugin supports tmpframe, same instance can open gui
