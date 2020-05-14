@@ -131,6 +131,7 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 	if(edit && (aframe = arender->get_file_frame(buffer_pts,
 			buffer->get_source_duration(), edit, 2)))
 	{
+		aframe->set_track(media_track->number_of());
 		render_fade(aframe);
 		render_transition(aframe, edit);
 		// render all standalone plugns before the current
