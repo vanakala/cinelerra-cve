@@ -308,10 +308,15 @@ void PluginClient::process_buffer(AFrame **buffer)
 	}
 	else
 	{
-		if(server->multichannel)
-			process_tmpframes(buffer);
+		if(!server->realtime)
+			plugin_process_loop(buffer);
 		else
-			*buffer = process_tmpframe(*buffer);
+		{
+			if(server->multichannel)
+				process_tmpframes(buffer);
+			else
+				*buffer = process_tmpframe(*buffer);
+		}
 	}
 }
 
