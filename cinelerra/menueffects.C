@@ -199,7 +199,7 @@ void MenuEffectThread::run()
 		plugindb.fill_plugindb(default_asset->audio_data,
 			default_asset->video_data,
 			-1,
-			0,
+			-1,
 			0,
 			0,
 			local_plugindb);
@@ -340,7 +340,7 @@ void MenuEffectThread::run()
 
 	if(!result)
 	{
-		ptstime min_track_length = 100 * 3600; // 100 hours
+		ptstime min_track_length = master_edl->total_length();
 
 		render_edl = new EDL(0);
 		render_edl->update_assets(master_edl);
@@ -384,7 +384,7 @@ void MenuEffectThread::run()
 			if(!shared_master)
 			{
 				Plugin *new_plugin = track->insert_effect(plugin_server,
-					total_start, max_pts,
+					0, max_pts,
 					PLUGIN_STANDALONE, 0, 0);
 				KeyFrame *new_keyframe = new_plugin->get_keyframe(total_start);
 
@@ -400,7 +400,7 @@ void MenuEffectThread::run()
 			else
 			if(total_start < min_track_length)
 			{
-				track->insert_effect(0, total_start, min_track_length,
+				track->insert_effect(0, 0, min_track_length,
 					PLUGIN_SHAREDPLUGIN, shared_master, 0);
 			}
 		}
