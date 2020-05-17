@@ -1,29 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "language.h"
-#include "mainprogress.h"
 #include "normalize.h"
 #include "normalizewindow.h"
 #include "picon_png.h"
@@ -39,6 +22,7 @@ NormalizeMain::NormalizeMain(PluginServer *server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	memset(peak, 0, sizeof(double) * MAXCHANNELS);
+	writing = 0;
 }
 
 NormalizeMain::~NormalizeMain()
@@ -68,76 +52,54 @@ int NormalizeMain::process_loop(AFrame **aframes)
 	int result = 0;
 	int fragment_len;
 	int duration_valid = 0;
+	ptstime start_pts = get_start();
+	ptstime end_pts = get_end();
 
-	if(writing)
+	if(!writing)
 	{
-		fragment_len = aframes[0]->get_buffer_length();
-// Assume we always have samplerate here - we are reusing the same buffers
-//  used below in analyzing part
-		if(aframes[0]->get_samplerate())
+		AFrame *tmpframes[MAXCHANNELS];
+
+		for(int j = 0; j < total_in_buffers; j++)
 		{
-			if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
-				fragment_len = aframes[0]->to_samples(end_pts - current_pts);
+			tmpframes[j] = clone_aframe(aframes[j]);
+			tmpframes[j]->set_pts(start_pts);
 		}
-		for(int i = 0; i < total_in_buffers; i++)
-		{
-			aframes[i]->set_fill_request(current_pts, fragment_len);
-			get_frame(aframes[i]);
-
-			for(int j = 0; j < aframes[0]->get_length(); j++)
-				aframes[i]->buffer[j] *= scale[i];
-		}
-
-		current_pts = aframes[0]->get_pts() + aframes[0]->get_duration();
-		result = progress->update(end_pts - 2 * start_pts + current_pts);
-
-		if(end_pts - current_pts < EPSILON)
-			result = 1;
-	}
-	else
-	{
 // Get peak
-		for(current_pts = start_pts; end_pts - current_pts > EPSILON;)
+		for(ptstime current_pts = start_pts; current_pts < end_pts;)
 		{
-			fragment_len = aframes[0]->get_buffer_length();
-// Samplerate is not set at first
-// We need samplerate of the asset here
-			if(aframes[0]->get_samplerate())
-			{
-				if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
-					fragment_len = aframes[0]->to_samples(end_pts - current_pts);
-				duration_valid = 1;
-			}
+			fragment_len = tmpframes[0]->get_buffer_length();
+
+			if(tmpframes[0]->get_pts() + tmpframes[0]->to_duration(fragment_len) > end_pts)
+				fragment_len = tmpframes[0]->to_samples(end_pts - current_pts);
+
 			for(int j = 0; j < total_in_buffers; j++)
 			{
-				aframes[j]->set_fill_request(current_pts, fragment_len);
-				get_frame(aframes[j]);
-				if(!duration_valid)
+				tmpframes[j]->set_fill_request(current_pts, fragment_len);
+				tmpframes[j] = get_frame(tmpframes[j]);
+
+				int frame_len = tmpframes[0]->get_length();
+
+				for(int k = 0; k < frame_len; k++)
 				{
-					if(current_pts + aframes[j]->to_duration(fragment_len) > end_pts)
-					{
-					// truncate length afterwards - we have now samplerate
-						fragment_len = aframes[j]->to_samples(end_pts - current_pts);
-						aframes[j]->set_filled(fragment_len);
-					}
-					duration_valid = 1;
-				}
-				for(int k = 0; k < aframes[j]->get_length(); k++)
-				{
-					if(peak[j] < fabs(aframes[j]->buffer[k])) 
-						peak[j] = fabs(aframes[j]->buffer[k]);
+					if(peak[j] < fabs(tmpframes[j]->buffer[k]))
+						peak[j] = fabs(tmpframes[j]->buffer[k]);
 				}
 			}
-			current_pts = aframes[0]->get_pts() + aframes[0]->get_duration();
-			if(progress->update(current_pts - start_pts))
+			current_pts = tmpframes[0]->get_end_pts();
+
+			if(fragment_len < tmpframes[0]->get_buffer_length())
 				break;
 		}
+
+		for(int j = 0; j < total_in_buffers; j++)
+			release_aframe(tmpframes[j]);
 
 // Normalize all tracks
 		double max = 0;
 		for(int i = 0; i < total_in_buffers; i++)
 		{
-			if(peak[i] > max) max = peak[i];
+			if(peak[i] > max)
+				max = peak[i];
 		}
 		if(!separate_tracks)
 		{
@@ -148,15 +110,22 @@ int NormalizeMain::process_loop(AFrame **aframes)
 		}
 
 		for(int i = 0; i < total_in_buffers; i++)
-		{
 			scale[i] = DB::fromdb(db_over) / peak[i];
+		writing = 1;
+	}
+
+	if(writing)
+	{
+		int buflen = aframes[0]->get_length();
+
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			for(int j = 0; j < buflen; j++)
+				aframes[i]->buffer[j] *= scale[i];
 		}
 
-		progress->update_title("%s %.0f%%...", plugin_title(), (DB::fromdb(db_over) / max) * 100);
-
-// Start writing on next iteration
-		current_pts = start_pts;
-		writing = 1;
+		if(end_pts - aframes[0]->get_end_pts() < EPSILON)
+			result = 1;
 	}
 	return result;
 }
