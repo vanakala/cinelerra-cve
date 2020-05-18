@@ -8,7 +8,6 @@ SUBDIRS= \
 	libfourier \
 	libeffecttv \
 	1080to540 \
-	720to480 \
 	C41 \
 	aging \
 	bandslide \
