@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "bctextbox.h"
@@ -38,13 +22,8 @@ BandWipeCount::BandWipeCount(BandWipeMain *plugin,
 	BandWipeWindow *window,
 	int x,
 	int y)
- : BC_TumbleTextBox(window, 
-		(int64_t)plugin->bands,
-		(int64_t)0,
-		(int64_t)1000,
-		x, 
-		y, 
-		50)
+ : BC_TumbleTextBox(window, plugin->bands,
+	0, 1000, x, y, 50)
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -234,6 +213,9 @@ void BandWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 	int band_h = ((bands == 0) ? h : (h / bands + 1));
+
+	if(total_len_pts < 0)
+		return;
 
 	switch(incoming->get_color_model())
 	{
