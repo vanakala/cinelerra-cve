@@ -273,10 +273,15 @@ void PluginClient::process_buffer(VFrame **frame)
 	}
 	else
 	{
-		if(server->multichannel)
-			process_tmpframes(frame);
+		if(!server->realtime)
+			process_loop(frame);
 		else
-			*frame = process_tmpframe(*frame);
+		{
+			if(server->multichannel)
+				process_tmpframes(frame);
+			else
+				*frame = process_tmpframe(*frame);
+		}
 	}
 }
 
