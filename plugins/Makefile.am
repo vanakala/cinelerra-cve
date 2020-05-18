@@ -76,7 +76,6 @@ SUBDIRS= \
 	reframe \
 	reframert \
 	reroute \
-	resample \
 	reverb \
 	reverseaudio \
 	reversevideo \
