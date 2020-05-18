@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -35,10 +19,8 @@ REGISTER_PLUGIN
 NullAudioSwitch::NullAudioSwitch(NullAudio *plugin, 
 	int x,
 	int y)
- : BC_Radial(x,
-		y,
-		plugin->onoff,
-		_("Clear"))
+ : BC_Radial(x, y, plugin->onoff,
+	_("Clear"))
 {
 	this->plugin = plugin;
 }
@@ -109,26 +91,15 @@ void NullAudio::save_defaults()
 
 /*
  * Pull frame and apply modifications
- * multichannel plugin gets here arrays of pointers
- * prototype: int process_loop(AFrame **frame)
- *    - number of channels is total_in_buffers
+ * Multichannel plugin has the same interface -
+ *  it receives multiple frames
+ *    - number of frames is total_in_buffers
  */
-int NullAudio::process_loop(AFrame *frame)
+int NullAudio::process_loop(AFrame **frames)
 {
-	int fragment_len = frame->get_buffer_length();
-
-	if(frame->get_samplerate())
-	{
-		// Region may end before buffer end
-		if(current_pts + frame->to_duration(fragment_len) > end_pts)
-			fragment_len = frame->to_samples(end_pts - current_pts);
-	}
-	frame->set_fill_request(current_pts, frame->get_buffer_length());
-	get_frame(frame);
-
-	current_pts = frame->get_end_pts();
+	AFrame *frame = *frames;
 
 	if(onoff)
 		memset(frame->buffer, 0, frame->get_length() * sizeof(double));
-	return ((end_pts - current_pts) < EPSILON);
+	return 0; // return value is not used
 }
