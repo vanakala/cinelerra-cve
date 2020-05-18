@@ -492,7 +492,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/polar/Makefile
 	plugins/reroute/Makefile
 	plugins/reframert/Makefile
-	plugins/reframe/Makefile
 	plugins/reverb/Makefile
 	plugins/reverseaudio/Makefile
 	plugins/reversevideo/Makefile

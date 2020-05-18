@@ -73,7 +73,6 @@ SUBDIRS= \
 	pitch \
 	polar \
 	radialblur \
-	reframe \
 	reframert \
 	reroute \
 	reverb \
