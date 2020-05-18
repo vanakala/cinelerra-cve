@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -37,9 +21,9 @@ NullVideoSwitch::NullVideoSwitch(NullVideo *plugin,
 	int x,
 	int y)
  : BC_Radial(x,
-		y,
-		plugin->onoff,
-		_("Clear"))
+	y,
+	plugin->onoff,
+	_("Clear"))
 {
 	this->plugin = plugin;
 }
@@ -111,18 +95,14 @@ void NullVideo::save_defaults()
 /*
  * Pull frame and apply modifications
  * multichannel plugin gets here arrays of pointers
- * prototype: int process_loop(VFrame **frame)
  *    - number of channels is total_in_buffers
  */
-int NullVideo::process_loop(VFrame *frame)
+int NullVideo::process_loop(VFrame **frames)
 {
-	frame->set_pts(current_pts);
-	get_frame(frame);
-
-	current_pts = frame->next_pts();
-
+	VFrame *frame = *frames;
+tracemsg("frame %.2f %.2f", frame->get_pts(), frame->get_duration());
 	if(onoff)
 		frame->clear_frame();
 
-	return current_pts >= end_pts;
+	return 0; // Not used
 }
