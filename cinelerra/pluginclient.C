@@ -309,7 +309,7 @@ void PluginClient::process_buffer(AFrame **buffer)
 	else
 	{
 		if(!server->realtime)
-			plugin_process_loop(buffer);
+			process_loop(buffer);
 		else
 		{
 			if(server->multichannel)
