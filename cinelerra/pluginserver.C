@@ -121,7 +121,7 @@ PluginClient *PluginServer::open_plugin(Plugin *plugin,
 	client->plugin = plugin;
 
 // Check API version
-	if((audio || video) && apiversion < 2)
+	if((audio || video) && apiversion < 3)
 	{
 		delete client;
 		dlclose(plugin_fd);
