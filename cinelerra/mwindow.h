@@ -210,8 +210,6 @@ public:
 	void clear_msgs(Plugin *plugin);
 // Searches for stored data and sends it to plugin
 	void get_gui_data(PluginClient *client);
-// Called from PluginClient::process_buffer
-	int plugin_gui_open(Plugin *plugin);
 // Make removed guis list empty
 	void clear_removed_guis();
 // Make plugin guis list empty
