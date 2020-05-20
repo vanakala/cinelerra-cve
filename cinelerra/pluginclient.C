@@ -428,13 +428,6 @@ void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 	plugin->get_camera(x, y, z, postime);
 }
 
-int PluginClient::gui_open()
-{
-	if(mwindow_global)
-		return mwindow_global->plugin_gui_open(plugin);
-	return 0;
-}
-
 void PluginClient::plugin_render_gui(void *data)
 {
 	render_gui(data);

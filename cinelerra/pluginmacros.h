@@ -55,6 +55,7 @@ class PLUGIN_THREAD_CLASS;
 	void set_string(); \
 	void raise_window(); \
 	void hide_gui(); \
+	int gui_open() { return !!thread; }; \
 	PLUGIN_CLASS_UPDATE_GUI_MEMBER \
 	PLUGIN_THREAD_CLASS *thread;
 #else

@@ -172,11 +172,6 @@ public:
 // When this plugin is adjusted, propogate parameters back to EDL
 	void send_configure_change();
 
-// Called from process_buffer
-// Returns 1 if a GUI is open so OpenGL routines can determine if
-// they can run.
-	int gui_open();
-
 // Plugin must call this before performing OpenGL operations.
 // Returns 1 if the user supports opengl buffers.
 	int get_use_opengl();
