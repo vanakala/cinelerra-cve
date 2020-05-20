@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "aframe.h"
 #include "asset.h"
@@ -527,47 +511,6 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		input_frames.append(infile);
 	}
 	return input_frames.values[last_file + channel]->handover_aframe();
-}
-
-void AudioRender::allocate_aframes(Plugin *plugin)
-{
-	AFrame *frame;
-	Track *current = plugin->track;
-
-	if(plugin->aframes.total > 0)
-		return;
-	// Current track is the track of multitrack plugin
-	plugin->aframes.append(frame = new AFrame(out_length));
-	frame->set_track(current->number_of());
-
-	// Add frames for other tracks starting from the first
-	for(Track *track = edl->tracks->first; track; track = track->next)
-	{
-		if(track->data_type != TRACK_AUDIO)
-			continue;
-		for(int i = 0; i < track->plugins.total; i++)
-		{
-			if(track->plugins.values[i]->shared_plugin == plugin &&
-				track->plugins.values[i]->on)
-			{
-				frame = new AFrame(out_length);
-				plugin->aframes.append(frame);
-				frame->set_track(track->number_of());
-			}
-		}
-	}
-	plugin->client->plugin_init(plugin->aframes.total);
-}
-
-void AudioRender::copy_aframes(ArrayList<AFrame*> *aframes, ATrackRender *renderer)
-{
-	for(int i = 1; i < aframes->total; i++)
-	{
-		AFrame *aframe = aframes->values[i];
-		Track *track = renderer->get_track_number(aframe->get_track());
-
-		track->renderer->copy_track_aframe(aframe);
-	}
 }
 
 void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
