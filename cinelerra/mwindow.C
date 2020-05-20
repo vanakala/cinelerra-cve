@@ -1112,10 +1112,9 @@ void MWindow::show_plugin(Plugin *plugin)
 				plugin->client->plugin_init(1);
 			}
 
-			plugin->gui_client = plugin->client;
 			plugin_guis->append(plugin->client);
 
-			plugin->gui_client->plugin_show_gui();
+			plugin->client->plugin_show_gui();
 			plugin->show = 1;
 		}
 	}
@@ -1148,7 +1147,6 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 
 			plugin_guis->remove(ptr);
 
-			plugin->gui_client = 0;
 			break;
 		}
 	}
@@ -1177,12 +1175,13 @@ void MWindow::update_plugin_guis()
 int MWindow::plugin_gui_open(Plugin *plugin)
 {
 	int result = 0;
-	if(plugin->gui_client)
+
+	if(plugin->client)
 	{
 		plugin_gui_lock->lock("MWindow::plugin_gui_open");
 		for(int i = 0; i < plugin_guis->total; i++)
 		{
-			if(plugin_guis->values[i] == plugin->gui_client)
+			if(plugin_guis->values[i] == plugin->client)
 			{
 				result = 1;
 				break;
@@ -1196,11 +1195,11 @@ int MWindow::plugin_gui_open(Plugin *plugin)
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 {
 	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	if(plugin->gui_client)
+	if(plugin->client)
 	{
 		for(int i = 0; i < plugin_guis->total; i++)
 		{
-			if(plugin_guis->values[i] == plugin->gui_client)
+			if(plugin_guis->values[i] == plugin->client)
 			{
 				plugin_guis->values[i]->plugin_render_gui(data);
 				break;
@@ -1247,7 +1246,7 @@ void MWindow::update_plugin_states()
 				Plugin *plugin = track->plugins.values[j];
 
 				if(plugin == src_plugin &&
-						plugin->gui_client == src_plugingui)
+						plugin->client == src_plugingui)
 					result = 1;
 			}
 		}

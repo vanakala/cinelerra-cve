@@ -58,7 +58,6 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	shared_track_id = shared_plugin_id = -1;
 	shared_track_num = shared_plugin_num = -1;
 	client = 0;
-	gui_client = 0;
 	if(server)
 		apiversion = server->apiversion;
 	else
@@ -89,7 +88,6 @@ Plugin::~Plugin()
 	track->tracks->reset_plugins();
 	delete guideframe;
 	plugin_server->close_plugin(client);
-	plugin_server->close_plugin(gui_client);
 }
 
 int Plugin::silence()
@@ -134,7 +132,6 @@ void Plugin::copy_from(Plugin *plugin)
 	shared_plugin_id = plugin->shared_plugin_id;
 	id = plugin->id;
 	client = 0;
-	gui_client = 0;
 
 	copy_keyframes(plugin);
 }
@@ -707,8 +704,8 @@ void Plugin::dump(int indent)
 		printf(" shared_track_id: %d", shared_track_id);
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
-	printf("\n%*sproject_pts %.3f length %.3f id %d client %p gui %p\n", indent, "",
-		pts, duration, id, client, gui_client);
+	printf("\n%*sproject_pts %.3f length %.3f id %d client %p\n", indent, "",
+		pts, duration, id, client);
 
 	keyframes->dump(indent);
 }

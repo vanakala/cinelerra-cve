@@ -105,8 +105,6 @@ public:
 	PluginServer *plugin_server;
 // Client
 	PluginClient *client;
-// Client with gui
-	PluginClient *gui_client;
 // Apiversion of client
 	int apiversion;
 

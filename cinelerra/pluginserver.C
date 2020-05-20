@@ -149,8 +149,6 @@ void PluginServer::close_plugin(PluginClient *client)
 	{
 		if(client->plugin->client == client)
 			client->plugin->client = 0;
-		if(client->plugin->gui_client == client)
-			client->plugin->gui_client = 0;
 	}
 	delete client;
 }
