@@ -345,22 +345,12 @@ VFrame *PluginClient::get_frame(VFrame *buffer)
 
 void PluginClient::plugin_show_gui()
 {
-	smp = preferences_global->processors - 1;
-	if(plugin)
-	{
-		total_len_pts = plugin->get_length();
-		source_start_pts = plugin->get_pts();
-	}
-	source_pts = master_edl->local_session->get_selectionstart(1);
 	update_display_title();
 	show_gui();
 }
 
 void PluginClient::plugin_update_gui()
 {
-	total_len_pts = plugin->get_length();
-	source_start_pts = plugin->get_pts();
-	source_pts = master_edl->local_session->get_selectionstart(1);
 	update_gui();
 }
 
