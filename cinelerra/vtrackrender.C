@@ -503,28 +503,10 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 					plugin->plugin_server->open_plugin(plugin, this);
 				plugin->client->set_renderer(this);
 
-				if(plugin->apiversion < 3)
-				{
-					videorender->allocate_vframes(plugin);
-					for(int i = 0; i < plugin->vframes.total; i++)
-					{
-						VFrame *current = plugin->vframes.values[i];
-						layer = current->get_layer();
-						current->copy_pts(frame);
-						current->set_layer(layer);
-						get_track_number(
-							current->get_layer())->renderer->next_plugin = 0;
-					}
-					plugin->client->process_buffer(plugin->vframes.values);
-						frame->copy_from(plugin->vframes.values[0]);
-					videorender->copy_vframes(&plugin->vframes, this);
-				}
-				else
-				{
-					videorender->pass_vframes(plugin, this);
-					plugin->client->process_buffer(vframes.values);
-					videorender->take_vframes(plugin, this);
-				}
+				videorender->pass_vframes(plugin, this);
+				plugin->client->process_buffer(vframes.values);
+				videorender->take_vframes(plugin, this);
+
 				next_plugin = 0;
 			}
 			else

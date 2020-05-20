@@ -353,35 +353,10 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 					plugin->plugin_server->open_plugin(plugin, this);
 				plugin->client->set_renderer(this);
 
-				if(plugin->apiversion < 3)
-				{
-					arender->allocate_aframes(plugin);
+				arender->pass_aframes(plugin, aframe, this);
+				plugin->client->process_buffer(aframes.values);
+				aframe = arender->take_aframes(plugin, this);
 
-					for(int i = 0; i < plugin->aframes.total; i++)
-					{
-						AFrame *current = plugin->aframes.values[i];
-						current->set_fill_request(aframe->get_pts(),
-							aframe->get_duration());
-						current->copy_pts(aframe);
-						if(i > 0)
-						{
-							Track *pltrack = get_track_number(current->get_track());
-							Edit *edit = pltrack->editof(aframe->get_pts());
-							if(edit)
-								current->channel = edit->channel;
-							pltrack->renderer->next_plugin = 0;
-						}
-					}
-					plugin->client->process_buffer(plugin->aframes.values);
-					aframe->copy(plugin->aframes.values[0]);
-					arender->copy_aframes(&plugin->aframes, this);
-				}
-				else
-				{
-					arender->pass_aframes(plugin, aframe, this);
-					plugin->client->process_buffer(aframes.values);
-					aframe = arender->take_aframes(plugin, this);
-				}
 				next_plugin = 0;
 			}
 			else
