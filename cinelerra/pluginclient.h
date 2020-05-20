@@ -258,8 +258,7 @@ public:
 	Plugin *plugin;
 // Keyframe when plugin is not avalilable
 	KeyFrame *keyframe;
-// Plugin window
-	PluginWindow *plugin_gui;
+
 protected:
 	TrackRender *renderer;
 	int need_reconfigure;

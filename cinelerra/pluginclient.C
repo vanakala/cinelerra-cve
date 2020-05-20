@@ -54,14 +54,12 @@ PluginClient::PluginClient(PluginServer *server)
 	plugin = 0;
 	prompt = 0;
 	keyframe = 0;
-	plugin_gui = 0;
 	need_reconfigure = 0;
 	this->server = server;
 }
 
 PluginClient::~PluginClient()
 {
-	delete plugin_gui;
 	if(mwindow_global && plugin)
 		mwindow_global->clear_msgs(plugin);
 }

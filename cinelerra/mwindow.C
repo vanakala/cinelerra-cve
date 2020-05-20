@@ -1149,8 +1149,6 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 			plugin_guis->remove(ptr);
 
 			plugin->gui_client = 0;
-			delete plugin->client->plugin_gui;
-			plugin->client->plugin_gui = 0;
 			break;
 		}
 	}
@@ -1286,13 +1284,6 @@ void MWindow::clear_removed_guis()
 
 void MWindow::clear_plugin_guis()
 {
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		PluginClient *client = plugin_guis->values[i];
-
-		delete client->plugin_gui;
-		client->plugin_gui = 0;
-	}
 	plugin_guis->remove_all();
 }
 
