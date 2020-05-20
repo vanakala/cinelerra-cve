@@ -1112,18 +1112,8 @@ void MWindow::show_plugin(Plugin *plugin)
 				plugin->client->plugin_init(1);
 			}
 
-			if(plugin->apiversion < 3)
-			{
-				PluginClient *mainclient = plugin->client;
-
-				plugin->gui_client = plugin_guis->append(server->open_plugin(plugin, 0));
-				plugin->client = mainclient;
-			}
-			else
-			{
-				plugin->gui_client = plugin->client;
-				plugin_guis->append(plugin->client);
-			}
+			plugin->gui_client = plugin->client;
+			plugin_guis->append(plugin->client);
 
 			plugin->gui_client->plugin_show_gui();
 			plugin->show = 1;
@@ -1158,17 +1148,9 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 
 			plugin_guis->remove(ptr);
 
-			if(plugin->apiversion < 3)
-			{
-				ptr->hide_gui();
-				removed_guis->append(ptr);
-			}
-			else
-			{
-				plugin->gui_client = 0;
-				delete plugin->client->plugin_gui;
-				plugin->client->plugin_gui = 0;
-			}
+			plugin->gui_client = 0;
+			delete plugin->client->plugin_gui;
+			plugin->client->plugin_gui = 0;
 			break;
 		}
 	}
@@ -1308,13 +1290,8 @@ void MWindow::clear_plugin_guis()
 	{
 		PluginClient *client = plugin_guis->values[i];
 
-		if(client->server->apiversion < 2)
-			client->server->close_plugin(client);
-		else
-		{
-			delete client->plugin_gui;
-			client->plugin_gui = 0;
-		}
+		delete client->plugin_gui;
+		client->plugin_gui = 0;
 	}
 	plugin_guis->remove_all();
 }
