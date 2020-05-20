@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
+
 
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -262,44 +247,6 @@ void VideoRender::flash_output()
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
 
-// Assume changes of edl clear plugin frames
-void VideoRender::allocate_vframes(Plugin *plugin)
-{
-	VFrame *frame;
-	Track *current;
-
-	if(plugin->vframes.total > 0)
-		return;
-
-	// Current track is the track of multitrack plugin
-	current = plugin->track;
-
-	frame = new VFrame(0, current->track_w,
-		current->track_h, edl->this_edlsession->color_model);
-	frame->set_layer(current->number_of());
-	plugin->vframes.append(frame);
-
-	// Add frames for other tracks starting from the first
-	for(Track *track = edl->tracks->first; track; track = track->next)
-	{
-		if(track->data_type != TRACK_VIDEO)
-			continue;
-		for(int i = 0; i < track->plugins.total; i++)
-		{
-			if(track->plugins.values[i]->shared_plugin == plugin &&
-				track->plugins.values[i]->on)
-			{
-				frame = new VFrame(0, track->track_w,
-					track->track_h,
-					edl->this_edlsession->color_model);
-				frame->set_layer(track->number_of());
-				plugin->vframes.append(frame);
-			}
-		}
-	}
-	plugin->client->plugin_init(plugin->vframes.total);
-}
-
 void VideoRender::pass_vframes(Plugin *plugin, VTrackRender *current_renderer)
 {
 	current_renderer->vframes.remove_all();
@@ -342,16 +289,5 @@ void VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
 				((VTrackRender*)track->renderer)->take_vframe(
 					current_renderer->vframes.values[k]);
 		}
-	}
-}
-
-void VideoRender::copy_vframes(ArrayList<VFrame*> *vframes, VTrackRender *renderer)
-{
-	for(int i = 1; i < vframes->total; i++)
-	{
-		VFrame *vframe = vframes->values[i];
-		Track *track = renderer->get_track_number(vframe->get_layer());
-
-		vframes->values[i] = track->renderer->copy_track_vframe(vframe);
 	}
 }
