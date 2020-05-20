@@ -1,24 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "automation.h"
 #include "bcresources.h"
@@ -631,17 +615,6 @@ int VTrackRender::need_camera(ptstime pts)
 	autos_track->automation->get_camera(&auto_x, &auto_y, &auto_z, pts);
 
 	return (!EQUIV(auto_x, 0) || !EQUIV(auto_y, 0) || !EQUIV(auto_z, 1));
-}
-
-VFrame *VTrackRender::copy_track_vframe(VFrame *vframe)
-{
-	if(!is_muted(vframe->get_pts()))
-	{
-		if(!track_frame)
-			track_frame = BC_Resources::tmpframes.clone_frame(vframe);
-		track_frame->copy_from(vframe);
-	}
-	return vframe;
 }
 
 VFrame *VTrackRender::handover_trackframe()
