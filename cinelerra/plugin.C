@@ -648,21 +648,6 @@ void Plugin::reset_frames()
 {
 	if(!plugin_server)
 		return;
-
-	if(plugin_server->apiversion < 3)
-	{
-		vframes.remove_all_objects();
-		aframes.remove_all_objects();
-	}
-	else
-	{
-		for(int i = 0; i < vframes.total; i++)
-			BC_Resources::tmpframes.release_frame(vframes.values[i]);
-		vframes.remove_all();
-		for(int i = 0; i < aframes.total; i++)
-			audio_frames.release_frame(aframes.values[i]);
-		aframes.remove_all();
-	}
 }
 
 void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)
@@ -724,20 +709,6 @@ void Plugin::dump(int indent)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
 	printf("\n%*sproject_pts %.3f length %.3f id %d client %p gui %p\n", indent, "",
 		pts, duration, id, client, gui_client);
-	if(vframes.total)
-	{
-		printf("%*sFrames:", indent, "");
-		for(int i = 0; i < vframes.total; i++)
-			printf(" %p", vframes.values[i]);
-		putchar('\n');
-	}
-	if(aframes.total)
-	{
-		printf("%*sAFrames:", indent, "");
-		for(int i = 0; i < aframes.total; i++)
-			printf(" %p", aframes.values[i]);
-		putchar('\n');
-	}
 
 	keyframes->dump(indent);
 }
