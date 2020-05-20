@@ -106,30 +106,14 @@ public:
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
-	int plugin_process_loop(VFrame **buffers);
-	int plugin_process_loop(AFrame **buffers);
-
-	virtual int process_loop(AFrame *aframe) { return 1; };
+// Batch effects
 	virtual int process_loop(AFrame **aframes) { return 1; };
 	virtual int process_loop(VFrame **buffers) { return 1; };
-	virtual int process_loop(VFrame *buffer) { return 1; };
 
-// Multichannel buffer process for backwards compatibility
+// Transitions
 	virtual void process_realtime(AFrame *input, AFrame *output) {};
-	virtual void process_realtime(AFrame **input, AFrame **output) {};
-
-// Multichannel buffer process for backwards compatibility
-	virtual void process_realtime(VFrame **input, VFrame **output) {};
-// Single channel buffer process for backwards compatibility and transitions
 	virtual void process_realtime(VFrame *input, VFrame *output) {};
-	virtual VFrame *process_realtime(VFrame *frame) { return frame; };
 
-// Process buffer using pull method.  By default this loads the input into the
-// frame and calls process_frame with input and output pointing to frame.
-	virtual void process_frame(AFrame *aframe);
-	virtual void process_frame(AFrame **aframe);
-	virtual void process_frame(VFrame **frame);
-	virtual void process_frame(VFrame *frame);
 // API v.3
 	virtual void process_tmpframes(VFrame **frame) {};
 	virtual VFrame *process_tmpframe(VFrame *frame) { return frame; };
@@ -147,18 +131,19 @@ public:
 	void process_transition(AFrame *input, AFrame *output,
 		ptstime current_postime, ptstime total_len);
 
-// Process using pull method.
 // frame/buffer - video/audio fame to process
 	void process_buffer(VFrame **frame);
 	void process_buffer(AFrame **buffer);
 
 	AFrame *get_frame(AFrame *frame);
 	VFrame *get_frame(VFrame *buffer);
+
 // Get, release tmpframes
 	VFrame *clone_vframe(VFrame *orig);
 	void release_vframe(VFrame *frame);
 	AFrame *clone_aframe(AFrame *orig);
 	void release_aframe(AFrame *frame);
+
 // Get project samplerate
 	int get_project_samplerate();
 // Get the start of the plugin

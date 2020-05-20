@@ -262,26 +262,14 @@ void PluginClient::process_buffer(VFrame **frame)
 {
 	source_pts = frame[0]->get_pts();
 
-	if(server->apiversion < 3)
-	{
-		if(!server->realtime)
-			plugin_process_loop(frame);
-		else if(server->multichannel)
-			process_frame(frame);
-		else
-			process_frame(frame[0]);
-	}
+	if(!server->realtime)
+		process_loop(frame);
 	else
 	{
-		if(!server->realtime)
-			process_loop(frame);
+		if(server->multichannel)
+			process_tmpframes(frame);
 		else
-		{
-			if(server->multichannel)
-				process_tmpframes(frame);
-			else
-				*frame = process_tmpframe(*frame);
-		}
+			*frame = process_tmpframe(*frame);
 	}
 }
 
@@ -291,60 +279,15 @@ void PluginClient::process_buffer(AFrame **buffer)
 
 	source_pts = aframe->get_pts();
 
-	if(server->apiversion < 3)
-	{
-		if(!server->realtime)
-			plugin_process_loop(buffer);
-		else
-		{
-			if(server->multichannel)
-			{
-				int fragment_size = aframe->fill_length();
-
-				for(int i = 1; i < total_in_buffers; i++)
-					buffer[i]->set_fill_request(source_pts,
-						fragment_size);
-
-				process_frame(buffer);
-			}
-			else
-				process_frame(buffer[0]);
-		}
-	}
+	if(!server->realtime)
+		process_loop(buffer);
 	else
 	{
-		if(!server->realtime)
-			process_loop(buffer);
+		if(server->multichannel)
+			process_tmpframes(buffer);
 		else
-		{
-			if(server->multichannel)
-				process_tmpframes(buffer);
-			else
-				*buffer = process_tmpframe(*buffer);
-		}
+			*buffer = process_tmpframe(*buffer);
 	}
-}
-
-void PluginClient::process_frame(AFrame **aframe)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(aframe[i]);
-
-	process_realtime(aframe, aframe);
-}
-
-void PluginClient::process_frame(AFrame *aframe)
-{
-	get_frame(aframe);
-	process_realtime(aframe, aframe);
-}
-
-void PluginClient::process_frame(VFrame **frame)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_frame(frame[i]);
-	if(is_multichannel())
-		process_realtime(frame, frame);
 }
 
 VFrame *PluginClient::clone_vframe(VFrame *orig)
@@ -375,22 +318,13 @@ void PluginClient::release_aframe(AFrame *frame)
 	audio_frames.release_frame(frame);
 }
 
-void PluginClient::process_frame(VFrame *frame)
-{
-	get_frame(frame);
-	process_realtime(frame, frame);
-}
-
 AFrame *PluginClient::get_frame(AFrame *frame)
 {
 	if(renderer)
 	{
 		Track *current = renderer->get_track_number(frame->get_track());
 
-		if(server->apiversion < 3)
-			current->renderer->get_aframe(frame);
-		else
-			return current->renderer->get_atmpframe(frame, this);
+		return current->renderer->get_atmpframe(frame, this);
 	}
 	else
 		frame->clear_frame(frame->get_pts(), frame->get_source_duration());
@@ -403,30 +337,12 @@ VFrame *PluginClient::get_frame(VFrame *buffer)
 	{
 		Track *current = renderer->get_track_number(buffer->get_layer());
 
-		if(server->apiversion < 3)
-			current->renderer->get_vframe(buffer);
-		else
-			return current->renderer->get_vtmpframe(buffer, this);
+		return current->renderer->get_vtmpframe(buffer, this);
 	}
+	else
+		buffer->clear_frame();
+
 	return buffer;
-}
-
-int PluginClient::plugin_process_loop(AFrame **aframes)
-{
-	if(is_multichannel())
-		return process_loop(aframes);
-	else
-		return process_loop(aframes[0]);
-}
-
-int PluginClient::plugin_process_loop(VFrame **buffers)
-{
-	int result = 0;
-
-	if(is_multichannel())
-		return process_loop(buffers);
-	else
-		return process_loop(buffers[0]);
 }
 
 void PluginClient::plugin_show_gui()
