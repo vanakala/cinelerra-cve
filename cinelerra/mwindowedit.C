@@ -518,7 +518,6 @@ void MWindow::delete_tracks()
 	save_backup();
 
 	restart_brender();
-	update_plugin_states();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 }
@@ -532,7 +531,6 @@ void MWindow::delete_track(Track *track)
 	undo->update_undo(_("delete track"), LOAD_ALL);
 
 	restart_brender();
-	update_plugin_states();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 	save_backup();
@@ -1262,7 +1260,6 @@ void MWindow::redo_entry()
 	undo->redo();
 
 	save_backup();
-	update_plugin_states();
 	update_plugin_guis();
 	restart_brender();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
@@ -1536,7 +1533,6 @@ void MWindow::undo_entry()
 
 	save_backup();
 	restart_brender();
-	update_plugin_states();
 	update_plugin_guis();
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);

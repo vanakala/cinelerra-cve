@@ -1172,43 +1172,6 @@ void MWindow::update_plugin_guis()
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::update_plugin_states()
-{
-	plugin_gui_lock->lock("MWindow::update_plugin_states");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		int result = 0;
-// Get a plugin GUI
-		Plugin *src_plugin = plugin_guis->values[i]->plugin;
-		PluginClient *src_plugingui = plugin_guis->values[i];
-
-// Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
-		for(Track *track = master_edl->first_track();
-			track && !result; 
-			track = track->next)
-		{
-			for(int j = 0; j < track->plugins.total && !result;
-				j++)
-			{
-				Plugin *plugin = track->plugins.values[j];
-
-				if(plugin == src_plugin &&
-						plugin->client == src_plugingui)
-					result = 1;
-			}
-		}
-
-// Doesn't exist anymore
-		if(!result)
-		{
-			hide_plugin(src_plugin, 0);
-			i--;
-		}
-	}
-	clear_removed_guis();
-	plugin_gui_lock->unlock();
-}
-
 void MWindow::update_plugin_titles()
 {
 	for(int i = 0; i < plugin_guis->total; i++)

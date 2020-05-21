@@ -193,7 +193,6 @@ void PluginDialogThread::run()
 
 			mwindow_global->save_backup();
 			mwindow_global->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
-			mwindow_global->update_plugin_states();
 			mwindow_global->sync_parameters();
 			mwindow_global->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_PATCHBAY);
