@@ -161,7 +161,6 @@ MWindow::MWindow(const char *config_path)
 	clip_edit = new ClipEdit();
 
 	plugin_guis = new ArrayList<PluginClient*>;
-	removed_guis = new ArrayList<PluginClient*>;
 
 	if(mainsession->show_vwindow) vwindow->gui->show_window();
 	if(mainsession->show_cwindow) cwindow->gui->show_window();
@@ -207,9 +206,7 @@ MWindow::~MWindow()
 	delete cwindow;
 	delete lwindow;
 	clear_plugin_guis();
-	removed_guis->remove_all_objects();
 	delete plugin_guis;
-	delete removed_guis;
 	delete plugin_gui_lock;
 	delete vwindow_edl;
 	delete master_edl;
@@ -578,7 +575,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
 		reset_caches();
-		hide_plugins();
 		assetlist_global.reset_inuse();
 		cliplist_global.remove_all_objects();
 		vwindow->remove_source();
@@ -1090,7 +1086,6 @@ void MWindow::show_plugin(Plugin *plugin)
 	int done = 0;
 
 	plugin_gui_lock->lock("MWindow::show_plugin");
-	clear_removed_guis();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
@@ -1147,7 +1142,6 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 void MWindow::hide_plugins()
 {
 	plugin_gui_lock->lock("MWindow::hide_plugins");
-	clear_removed_guis();
 	clear_plugin_guis();
 	plugin_gui_lock->unlock();
 }
@@ -1164,17 +1158,6 @@ void MWindow::update_plugin_guis()
 void MWindow::update_plugin_titles()
 {
 	master_edl->update_plugin_titles();
-}
-
-void MWindow::clear_removed_guis()
-{
-	for(int i = 0; i < removed_guis->total; i++)
-	{
-		PluginClient *client = removed_guis->values[i];
-
-		client->server->close_plugin(client);
-	}
-	removed_guis->remove_all();
 }
 
 void MWindow::clear_plugin_guis()

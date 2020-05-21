@@ -107,7 +107,6 @@ void New::create_new_project()
 	mwindow->set_filename(0);
 	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
-	mwindow->hide_plugins();
 	assetlist_global.delete_all();
 	master_edl->reset_instance();
 	edlsession->copy(new_edlsession);

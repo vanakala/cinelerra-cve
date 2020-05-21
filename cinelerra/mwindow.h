@@ -201,8 +201,6 @@ public:
 // Called by TrackCanvas::cursor_motion_event.
 	void update_plugin_guis();
 	void update_plugin_titles();
-// Make removed guis list empty
-	void clear_removed_guis();
 // Make plugin guis list empty
 	void clear_plugin_guis();
 
@@ -368,8 +366,6 @@ public:
 
 // Currently visible plugins
 	ArrayList<PluginClient*> *plugin_guis;
-// Closed plugin guis ready to remove
-	ArrayList<PluginClient*> *removed_guis;
 
 	BatchRenderThread *batch_render;
 	Render *render;
