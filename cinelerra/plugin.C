@@ -652,6 +652,12 @@ void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)
 	track->automation->get_camera(x, y, z, postime);
 }
 
+void Plugin::update_plugin_gui()
+{
+	if(client)
+		client->plugin_update_gui();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);

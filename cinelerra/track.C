@@ -315,6 +315,12 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 	}
 }
 
+void Track::update_plugin_guis()
+{
+	for(int i = 0; i < plugins.total; i++)
+		plugins.values[i]->update_plugin_gui();
+}
+
 void Track::load(FileXML *file)
 {
 	int result = 0;

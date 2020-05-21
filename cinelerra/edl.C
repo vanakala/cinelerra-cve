@@ -833,6 +833,14 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 	return temp;
 }
 
+void EDL::update_plugin_guis()
+{
+	for(Track *track = tracks->first; track; track = track->next)
+	{
+		track->update_plugin_guis();
+	}
+}
+
 void EDL::init_edl()
 {
 	Asset *new_asset;

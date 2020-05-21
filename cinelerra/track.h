@@ -99,6 +99,8 @@ public:
 	// Maximum possible plugin start pts on track
 	ptstime plugin_max_start(Plugin *plugin);
 
+	void update_plugin_guis();
+
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
 	virtual posnum to_units(ptstime position, int round = 0);

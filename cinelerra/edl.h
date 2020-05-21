@@ -75,6 +75,9 @@ public:
 // Convert position to frames if cursor alignment is enabled
 	ptstime align_to_frame(ptstime position, int round = 1);
 
+// Plugin and client
+	void update_plugin_guis();
+
 // Scale all sample values since everything is locked to audio
 	void rechannel();
 	void copy_tracks(EDL *edl);
