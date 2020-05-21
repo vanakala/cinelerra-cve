@@ -203,13 +203,8 @@ public:
 	void update_plugin_guis();
 	void update_plugin_states();
 	void update_plugin_titles();
-// Called by Attachmentpoint during playback.
-// Searches for matching plugin and renders data in it.
-	void render_plugin_gui(void *data, Plugin *plugin);
 // Clear stored messages of the plugin
 	void clear_msgs(Plugin *plugin);
-// Searches for stored data and sends it to plugin
-	void get_gui_data(PluginClient *client);
 // Make removed guis list empty
 	void clear_removed_guis();
 // Make plugin guis list empty

@@ -210,13 +210,7 @@ public:
 // Initialize plugin
 	void plugin_init(int total_in_buffers);
 
-// Called by plugin server to render the GUI with rendered data.
-	void plugin_render_gui(void *data);
 	virtual void render_gui(void *data) { };
-// Called by client to cause GUI to be rendered with data.
-	void send_render_gui(void *data);
-// Called by gui when it is ready to get data
-	void get_gui_data();
 // Sets the current trackrender (needed by get_?frame)
 	void set_renderer(TrackRender *renderer);
 

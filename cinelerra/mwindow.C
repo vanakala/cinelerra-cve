@@ -1172,34 +1172,6 @@ void MWindow::update_plugin_guis()
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::render_plugin_gui(void *data, Plugin *plugin)
-{
-	plugin_gui_lock->lock("MWindow::render_plugin_gui");
-	if(plugin->client)
-	{
-		for(int i = 0; i < plugin_guis->total; i++)
-		{
-			if(plugin_guis->values[i] == plugin->client)
-			{
-				plugin_guis->values[i]->plugin_render_gui(data);
-				break;
-			}
-		}
-	}
-	plugin_messages.add_msg(data, plugin);
-	plugin_gui_lock->unlock();
-}
-
-void MWindow::get_gui_data(PluginClient *client)
-{
-	struct pluginmsg *msg;
-
-	plugin_gui_lock->lock("MWindow::get_gui_data");
-	if(msg = plugin_messages.get_msg(client->plugin))
-		client->plugin_render_gui(msg->data);
-	plugin_gui_lock->unlock();
-}
-
 void MWindow::clear_msgs(Plugin *plugin)
 {
 	plugin_messages.delete_msg(plugin);
