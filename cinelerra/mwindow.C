@@ -1083,39 +1083,13 @@ void MWindow::age_caches()
 
 void MWindow::show_plugin(Plugin *plugin)
 {
-	int done = 0;
+	int new_win = 0;
 
 	plugin_gui_lock->lock("MWindow::show_plugin");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->values[i]->plugin == plugin)
-		{
-			plugin_guis->values[i]->raise_window();
-			done = 1;
-			break;
-		}
-	}
-	if(!done)
-	{
-		PluginServer *server = plugin->plugin_server;
-
-		if(server && server->uses_gui)
-		{
-			if(!plugin->client)
-			{
-				server->open_plugin(plugin, 0);
-				plugin->client->plugin_init(1);
-			}
-
-			plugin_guis->append(plugin->client);
-
-			plugin->client->plugin_show_gui();
-			plugin->show = 1;
-		}
-	}
+	new_win = plugin->show_plugin_gui();
 	plugin_gui_lock->unlock();
 
-	if(!done && plugin->plugin_server && plugin->plugin_server->status_gui)
+	if(new_win && plugin->plugin_server->status_gui)
 	{
 		ptstime cur_pts = master_edl->local_session->get_selectionstart(1);
 

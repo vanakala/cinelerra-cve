@@ -671,6 +671,28 @@ void Plugin::hide_plugin_gui()
 		client->hide_gui();
 }
 
+int Plugin::show_plugin_gui()
+{
+	int result = 0;
+
+	if(plugin_server && plugin_server->uses_gui)
+	{
+		if(show)
+			client->raise_window();
+		else
+		{
+			if(!client)
+			{
+				plugin_server->open_plugin(this, 0);
+				client->plugin_init(1);
+			}
+			client->plugin_show_gui();
+			result = show = 1;
+		}
+	}
+	return result;
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);
