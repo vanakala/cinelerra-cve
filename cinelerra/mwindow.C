@@ -1172,10 +1172,7 @@ void MWindow::update_plugin_guis()
 
 void MWindow::update_plugin_titles()
 {
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		plugin_guis->values[i]->update_display_title();
-	}
+	master_edl->update_plugin_titles();
 }
 
 void MWindow::clear_removed_guis()

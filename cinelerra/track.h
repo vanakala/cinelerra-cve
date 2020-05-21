@@ -100,6 +100,7 @@ public:
 	ptstime plugin_max_start(Plugin *plugin);
 
 	void update_plugin_guis();
+	void update_plugin_titles();
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value

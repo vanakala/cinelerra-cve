@@ -82,6 +82,7 @@ public:
 	Plugin *active_in(ptstime start, ptstime end);
 // Client
 	void update_plugin_gui();
+	void update_display_title();
 
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();

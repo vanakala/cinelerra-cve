@@ -77,6 +77,7 @@ public:
 
 // Plugin and client
 	void update_plugin_guis();
+	void update_plugin_titles();
 
 // Scale all sample values since everything is locked to audio
 	void rechannel();

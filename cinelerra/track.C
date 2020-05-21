@@ -321,6 +321,12 @@ void Track::update_plugin_guis()
 		plugins.values[i]->update_plugin_gui();
 }
 
+void Track::update_plugin_titles()
+{
+	for(int i = 0; i < plugins.total; i++)
+		plugins.values[i]->update_display_title();
+}
+
 void Track::load(FileXML *file)
 {
 	int result = 0;

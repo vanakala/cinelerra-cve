@@ -658,6 +658,12 @@ void Plugin::update_plugin_gui()
 		client->plugin_update_gui();
 }
 
+void Plugin::update_display_title()
+{
+	if(client)
+		client->update_display_title();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);
