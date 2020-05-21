@@ -664,6 +664,13 @@ void Plugin::update_display_title()
 		client->update_display_title();
 }
 
+void Plugin::hide_plugin_gui()
+{
+	show = 0;
+	if(client)
+		client->hide_gui();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);

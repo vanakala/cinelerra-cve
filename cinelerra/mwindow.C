@@ -1135,22 +1135,13 @@ void MWindow::show_plugin(Plugin *plugin)
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
-	plugin->show = 0;
-	gui->update(WUPD_CANVINCR);
-
 	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
-	for(int i = 0; i < plugin_guis->total; i++)
-	{
-		if(plugin_guis->values[i]->plugin == plugin)
-		{
-			PluginClient *ptr = plugin_guis->values[i];
 
-			plugin_guis->remove(ptr);
+	plugin->hide_plugin_gui();
 
-			break;
-		}
-	}
 	if(lock) plugin_gui_lock->unlock();
+
+	gui->update(WUPD_CANVINCR);
 }
 
 void MWindow::hide_plugins()
