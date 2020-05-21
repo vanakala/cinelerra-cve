@@ -53,7 +53,7 @@ class PluginClient
 {
 public:
 	PluginClient(PluginServer *server);
-	virtual ~PluginClient();
+	virtual ~PluginClient() {};
 
 // Queries for the plugin server.
 	virtual int is_realtime() { return 0; };

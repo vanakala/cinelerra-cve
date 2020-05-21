@@ -1172,11 +1172,6 @@ void MWindow::update_plugin_guis()
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::clear_msgs(Plugin *plugin)
-{
-	plugin_messages.delete_msg(plugin);
-}
-
 void MWindow::update_plugin_states()
 {
 	plugin_gui_lock->lock("MWindow::update_plugin_states");

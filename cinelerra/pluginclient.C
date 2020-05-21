@@ -58,12 +58,6 @@ PluginClient::PluginClient(PluginServer *server)
 	this->server = server;
 }
 
-PluginClient::~PluginClient()
-{
-	if(mwindow_global && plugin)
-		mwindow_global->clear_msgs(plugin);
-}
-
 void PluginClient::plugin_init(int total_in_buffers)
 {
 	smp = preferences_global->processors - 1;

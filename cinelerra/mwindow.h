@@ -60,7 +60,6 @@
 #include "playbackengine.inc"
 #include "plugin.inc"
 #include "pluginclient.inc"
-#include "pluginmsgs.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
@@ -203,8 +202,6 @@ public:
 	void update_plugin_guis();
 	void update_plugin_states();
 	void update_plugin_titles();
-// Clear stored messages of the plugin
-	void clear_msgs(Plugin *plugin);
 // Make removed guis list empty
 	void clear_removed_guis();
 // Make plugin guis list empty
@@ -374,8 +371,6 @@ public:
 	ArrayList<PluginClient*> *plugin_guis;
 // Closed plugin guis ready to remove
 	ArrayList<PluginClient*> *removed_guis;
-// Messges to deliver to plugins
-	PluginMsgs plugin_messages;
 
 	BatchRenderThread *batch_render;
 	Render *render;

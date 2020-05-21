@@ -191,7 +191,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    plugindb.C \
 		    pluginclient.C \
 		    plugindialog.C \
-		    pluginmsgs.C \
 		    pluginpopup.C \
 		    pluginserver.C \
 		    plugintclient.C \
@@ -416,7 +415,6 @@ noinst_HEADERS = aautomation.h \
 		 pluginmacros.h \
 		 plugin.h \
 		 plugindb.h \
-		 pluginmsgs.h \
 		 pluginpopup.h \
 		 pluginserver.h \
 		 plugintclient.h \
