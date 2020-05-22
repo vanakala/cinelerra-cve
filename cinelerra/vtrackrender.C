@@ -497,7 +497,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 			{
 				if(!plugin->client)
 				{
-					plugin->plugin_server->open_plugin(plugin, this);
+					server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
 				plugin->client->set_renderer(this);

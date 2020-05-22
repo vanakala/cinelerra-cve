@@ -347,7 +347,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 			{
 				if(!plugin->client)
 				{
-					plugin->plugin_server->open_plugin(plugin, this);
+					server->open_plugin(plugin, this);
 					plugin->client->plugin_init(1);
 				}
 				plugin->client->set_renderer(this);
