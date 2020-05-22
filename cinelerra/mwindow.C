@@ -160,8 +160,6 @@ MWindow::MWindow(const char *config_path)
 	undo = new MainUndo(this);
 	clip_edit = new ClipEdit();
 
-	plugin_guis = new ArrayList<PluginClient*>;
-
 	if(mainsession->show_vwindow) vwindow->gui->show_window();
 	if(mainsession->show_cwindow) cwindow->gui->show_window();
 	if(mainsession->show_awindow) awindow->gui->show_window();
@@ -205,8 +203,6 @@ MWindow::~MWindow()
 	delete vwindow;
 	delete cwindow;
 	delete lwindow;
-	clear_plugin_guis();
-	delete plugin_guis;
 	delete plugin_gui_lock;
 	delete vwindow_edl;
 	delete master_edl;
@@ -1113,13 +1109,6 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 	gui->update(WUPD_CANVINCR);
 }
 
-void MWindow::hide_plugins()
-{
-	plugin_gui_lock->lock("MWindow::hide_plugins");
-	clear_plugin_guis();
-	plugin_gui_lock->unlock();
-}
-
 void MWindow::update_plugin_guis()
 {
 	plugin_gui_lock->lock("MWindow::update_plugin_guis");
@@ -1132,11 +1121,6 @@ void MWindow::update_plugin_guis()
 void MWindow::update_plugin_titles()
 {
 	master_edl->update_plugin_titles();
-}
-
-void MWindow::clear_plugin_guis()
-{
-	plugin_guis->remove_all();
 }
 
 // Reset everything after a load.
