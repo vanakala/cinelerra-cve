@@ -261,10 +261,10 @@ DenoiseFFTRemove::DenoiseFFTRemove(DenoiseFFTEffect *plugin, int window_size)
 
 int DenoiseFFTRemove::signal_process()
 {
-	int window_size = get_window_size();
+	int half_window = get_window_size() / 2;
 	double level = DB::fromdb(plugin->config.level);
 
-	for(int i = 1; i < window_size / 2; i++)
+	for(int i = 1; i < half_window; i++)
 	{
 		double re = fftw_window[i][0];
 		double im = fftw_window[i][1];
@@ -276,7 +276,7 @@ int DenoiseFFTRemove::signal_process()
 		fftw_window[i][0] = result * cos(angle);
 		fftw_window[i][1] = result * sin(angle);
 	}
-	symmetry(window_size, fftw_window);
+	symmetry();
 	return 1;
 }
 

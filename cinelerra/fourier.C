@@ -79,14 +79,12 @@ AFrame *Fourier::process_frame(AFrame *aframe)
 	return aframe;
 }
 
-void Fourier::symmetry(int size, fftw_complex *fftw_window)
+void Fourier::symmetry()
 {
-	int h = size / 2;
-
-	for(int i = h + 1; i < size; i++)
+	for(int i = half_size + 1; i < window_size; i++)
 	{
-		fftw_window[i][0] = fftw_window[size - i][0];
-		fftw_window[i][1] = -fftw_window[size - i][1];
+		fftw_window[i][0] = fftw_window[half_size - i][0];
+		fftw_window[i][1] = -fftw_window[half_size - i][1];
 	}
 }
 

@@ -421,8 +421,7 @@ ParametricFFT::ParametricFFT(ParametricEQ *plugin, int window_size)
 
 int ParametricFFT::signal_process()
 {
-	int window_size = get_window_size();
-	int half_window = window_size / 2;
+	int half_window = get_window_size() / 2;
 
 	for(int i = 1; i < half_window / 2; i++)
 	{
@@ -433,7 +432,7 @@ int ParametricFFT::signal_process()
 		fftw_window[i][0] = result * cos(angle);
 		fftw_window[i][1] = result * sin(angle);
 	}
-	symmetry(window_size, fftw_window);
+	symmetry();
 	return 1;
 }
 
