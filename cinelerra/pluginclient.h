@@ -217,7 +217,6 @@ public:
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
 
-	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
 	ptstime start_pts, end_pts;
 	int success;
@@ -237,6 +236,7 @@ public:
 	double sample_aspect_ratio;
 	int project_color_model;
 	int project_sample_rate;
+	int audio_buffer_size;
 
 // Total number of processors available - 1
 	int smp;

@@ -45,7 +45,6 @@
 
 PluginClient::PluginClient(PluginServer *server)
 {
-	show_initially = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
 	source_pts = 0;
@@ -55,6 +54,7 @@ PluginClient::PluginClient(PluginServer *server)
 	prompt = 0;
 	keyframe = 0;
 	need_reconfigure = 0;
+	audio_buffer_size = AUDIO_BUFFER_SIZE;
 	this->server = server;
 }
 
