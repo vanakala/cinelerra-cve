@@ -370,15 +370,21 @@ void ParametricWindow::update_canvas()
 	int half_window;
 	int y1 = canvas->get_h() / 2;
 	int wetness = canvas->get_h() -
-		(int)((plugin->config.wetness - INFINITYGAIN) /
+		(int)round((plugin->config.wetness - INFINITYGAIN) /
 		-INFINITYGAIN * canvas->get_h() / 4);
 
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
-	if(!plugin->envelope || !plugin->fft)
-		return;
 
-	niquist = plugin->input_frame->get_samplerate() / 2;
-	half_window = plugin->fft->get_window_size() / 2;
+	if(!plugin->envelope)
+	{
+		plugin->load_configuration();
+		plugin->reconfigure();
+	}
+	else
+		plugin->calculate_envelope();
+
+	niquist = plugin->get_project_samplerate() / 2;
+	half_window = plugin->audio_buffer_size / 2;
 
 	canvas->set_color(BLACK);
 
@@ -423,16 +429,15 @@ int ParametricFFT::signal_process()
 {
 	int half_window = get_window_size() / 2;
 
-	for(int i = 1; i < half_window / 2; i++)
+	for(int i = 1; i < half_window; i++)
 	{
 		double re = fftw_window[i][0];
 		double im = fftw_window[i][1];
-		double result = plugin->envelope[i] * sqrt(re * re + im * im);
+		double result = sqrt(re * re + im * im) * plugin->envelope[i - 1];
 		double angle = atan2(im, re);
 		fftw_window[i][0] = result * cos(angle);
 		fftw_window[i][1] = result * sin(angle);
 	}
-	symmetry();
 	return 1;
 }
 
@@ -518,13 +523,10 @@ void ParametricEQ::reconfigure()
 	int half_window;
 	int new_envelope = 0;
 
-	if(!input_frame)
-		return;
-
 	if(!fft)
-		fft = new ParametricFFT(this, input_frame->get_buffer_length());
+		fft = new ParametricFFT(this, audio_buffer_size);
 
-	half_window = fft->get_window_size() / 2;
+	half_window = audio_buffer_size / 2;
 
 	if(!envelope)
 	{
@@ -534,7 +536,7 @@ void ParametricEQ::reconfigure()
 
 // Reset envelope
 	calculate_envelope();
-
+BC_Signals::show_array(envelope, half_window, 4);
 	for(int i = 0; i < half_window; i++)
 	{
 		if(envelope[i] < 0)
@@ -552,9 +554,8 @@ void ParametricEQ::calculate_envelope()
 	int niquist;
 	int half_window = fft->get_window_size() / 2;
 
-	envelope[0] = 0;
-	niquist = input_frame->get_samplerate();
-	for(int i = 1; i < half_window; i++)
+	niquist = get_project_samplerate();
+	for(int i = 0; i < half_window; i++)
 	{
 		envelope[i] = wetness;
 	}
@@ -570,7 +571,7 @@ void ParametricEQ::calculate_envelope()
 				{
 					double magnitude = DB::fromdb(config.band[band].magnitude);
 					int cutoff = round((double)config.band[band].freq / niquist * half_window);
-					for(int i = 1; i < half_window; i++)
+					for(int i = 0; i < half_window; i++)
 					{
 						if(i < cutoff)
 							envelope[i] += magnitude;
@@ -583,7 +584,7 @@ void ParametricEQ::calculate_envelope()
 				{
 					double magnitude = DB::fromdb(config.band[band].magnitude);
 					int cutoff = round((double)config.band[band].freq / niquist * half_window);
-					for(int i = 1; i < half_window; i++)
+					for(int i = 0; i < half_window; i++)
 					{
 						if(i > cutoff)
 							envelope[i] += magnitude;
@@ -598,14 +599,13 @@ void ParametricEQ::calculate_envelope()
 						(DB::fromdb(config.band[band].magnitude) - 1) : 
 						(-1 + DB::fromdb(config.band[band].magnitude));
 					double sigma = (config.band[band].quality < 1) ?
-						(1.0 - config.band[band].quality) :
-						0.01;
+						(1.0 - config.band[band].quality) : 0.01;
 					sigma /= 4;
 					double a = (double)config.band[band].freq / niquist;
 					double normalize = gauss(sigma, 0, 0);
 					if(config.band[band].magnitude <= -MAXMAGNITUDE)
 						magnitude = -1;
-					for(int i = 1; i < half_window; i++)
+					for(int i = 0; i < half_window; i++)
 						envelope[i] += magnitude *
 							gauss(sigma, a,
 								(double)i / half_window) /
@@ -629,7 +629,6 @@ double ParametricEQ::gauss(double sigma, double a, double x)
 AFrame *ParametricEQ::process_tmpframe(AFrame *aframe)
 {
 	need_reconfigure |= load_configuration();
-	input_frame = aframe;
 
 	if(need_reconfigure)
 		reconfigure();

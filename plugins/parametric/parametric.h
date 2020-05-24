@@ -214,7 +214,6 @@ public:
 	void calculate_envelope();
 	double gauss(double sigma, double a, double x);
 
-	AFrame *input_frame;
 	double *envelope;
 	PLUGIN_CLASS_MEMBERS
 	ParametricFFT *fft;
