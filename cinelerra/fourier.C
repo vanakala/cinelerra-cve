@@ -79,15 +79,6 @@ AFrame *Fourier::process_frame(AFrame *aframe)
 	return aframe;
 }
 
-void Fourier::symmetry()
-{
-	for(int i = half_size + 1; i < window_size; i++)
-	{
-		fftw_window[i][0] = fftw_window[half_size - i][0];
-		fftw_window[i][1] = -fftw_window[half_size - i][1];
-	}
-}
-
 void Fourier::dump(int indent)
 {
 	printf("%*sFourier %p winsize %d dump:\n", indent, "", this, window_size);
