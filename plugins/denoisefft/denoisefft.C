@@ -276,7 +276,6 @@ int DenoiseFFTRemove::signal_process()
 		fftw_window[i][0] = result * cos(angle);
 		fftw_window[i][1] = result * sin(angle);
 	}
-	symmetry();
 	return 1;
 }
 
