@@ -5,7 +5,6 @@ THEMES= \
 
 SUBDIRS= \
 	$(THEMES) \
-	libfourier \
 	libeffecttv \
 	1080to540 \
 	C41 \
