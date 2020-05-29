@@ -14,144 +14,7 @@
 
 #include <string.h>
 
-#define OVERSAMPLE 0
-
 REGISTER_PLUGIN
-
-
-PitchEngine::PitchEngine(TimeStretch *plugin, int window_size)
- : Fourier(window_size)
-{
-	this->plugin = plugin;
-	oversample = OVERSAMPLE;
-	reset_phase = 1;
-	last_phase = new double[window_size];
-	new_freq = new double[window_size];
-	new_magn = new double[window_size];
-	sum_phase = new double[window_size];
-	anal_magn = new double[window_size];
-	anal_freq = new double[window_size];
-}
-
-PitchEngine::~PitchEngine()
-{
-	delete [] last_phase;
-	delete [] new_freq;
-	delete [] new_magn;
-	delete [] sum_phase;
-	delete [] anal_magn;
-	delete [] anal_freq;
-}
-
-
-int PitchEngine::signal_process()
-{
-	int window_size = get_window_size();
-	int half_size = window_size / 2;
-	double scale = plugin->config.scale;
-	double expected_phase_diff;
-
-	memset(new_freq, 0, window_size * sizeof(double));
-	memset(new_magn, 0, window_size * sizeof(double));
-
-	if(reset_phase)
-	{
-		memset(last_phase, 0, window_size * sizeof(double));
-		memset(sum_phase, 0, window_size * sizeof(double));
-	}
-
-// expected phase difference between windows
-	if(oversample)
-		expected_phase_diff = 2.0 * M_PI / oversample;
-	else
-		expected_phase_diff = 0;
-// frequency per bin
-	double freq_per_bin = (double)plugin->input_frame->get_samplerate() / window_size;
-
-	for(int i = 0; i < half_size; i++)
-	{
-// Convert to magnitude and phase
-		double re = fftw_window[i][0];
-		double im = fftw_window[i][1];
-
-		double magn = sqrt(re * re + im * im);
-		double phase = atan2(im, re);
-
-// Remember last phase
-		double temp = phase - last_phase[i];
-		last_phase[i] = phase;
-
-// Substract the expected advancement of phase
-		if(oversample)
-			temp -= (double)i * expected_phase_diff;
-
-// wrap temp into -/+ PI ...  good trick!
-		int qpd = (int)(temp/M_PI);
-		if (qpd >= 0) 
-			qpd += qpd&1;
-		else 
-			qpd -= qpd&1;
-		temp -= M_PI*(double)qpd;
-
-// Deviation from bin frequency
-		if(oversample)
-			temp = oversample * temp / (2.0 * M_PI);
-
-		temp = (double)(temp + i) * freq_per_bin;
-
-		anal_magn[i] = magn;
-		anal_freq[i] = temp;
-	}
-
-	for(int k = 0; k <= half_size; k++)
-	{
-		int index = int(k / scale);
-
-		if(index <= half_size)
-		{
-			new_magn[k] += anal_magn[index];
-			new_freq[k] = anal_freq[index] * scale;
-		}
-		else
-		{
-			new_magn[k] = 0;
-			new_freq[k] = 0;
-		}
-	}
-
-	// Synthesize back the fft window 
-	for(int i = 0; i < half_size; i++)
-	{
-		double magn = new_magn[i];
-		double temp = new_freq[i];
-// substract the bin frequency
-		temp -= (double)(i) * freq_per_bin;
-
-// get bin deviation from freq deviation
-		temp /= freq_per_bin;
-
-		if(oversample)
-			temp = 2.0 * M_PI * temp / oversample;
-
-// add back the expected phase difference (that we substracted in analysis)
-		if(oversample)
-			temp += i * expected_phase_diff;
-
-// accumulate delta phase, to get bin phase
-		sum_phase[i] += temp;
-
-		double phase = sum_phase[i];
-
-		fftw_window[i][0] = magn * cos(phase);
-		fftw_window[i][1] = magn * sin(phase);
-	}
-
-	for(int i = half_size; i < window_size; i++)
-	{
-		fftw_window[i][0] = 0;
-		fftw_window[i][1] = 0;
-	}
-}
 
 
 TimeStretch::TimeStretch(PluginServer *server)
@@ -164,7 +27,6 @@ TimeStretch::TimeStretch(PluginServer *server)
 	prev_input = -1;
 	prev_frame = -1;
 }
-
 
 TimeStretch::~TimeStretch()
 {
@@ -255,7 +117,8 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 
 	if(!pitch)
 	{
-		pitch = new PitchEngine(this, aframe->get_buffer_length() / 4);
+		pitch = new Pitch(aframe->get_samplerate(),
+			aframe->get_buffer_length() / 4);
 		resample = new Resample(0, 1);
 		need_reconfigure = 1;
 	}
@@ -264,7 +127,7 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 
 	if(need_reconfigure || input_pts < prev_frame || input_pts > prev_input + EPSILON)
 	{
-		pitch->reset_phase = 1;
+		pitch->set_scale(config.scale);
 		resample->reset(0);
 		need_reconfigure = 0;
 		prev_input = -1;

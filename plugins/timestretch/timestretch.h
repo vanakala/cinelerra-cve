@@ -62,26 +62,6 @@ public:
 };
 
 
-class PitchEngine : public Fourier
-{
-public:
-	PitchEngine(TimeStretch *plugin, int window_size);
-	~PitchEngine();
-
-	int signal_process();
-
-	int oversample;
-	int reset_phase;
-	TimeStretch *plugin;
-
-	double *last_phase;
-	double *new_freq;
-	double *new_magn;
-	double *sum_phase;
-	double *anal_freq;
-	double *anal_magn;
-};
-
 class TimeStretch : public PluginAClient
 {
 public:
@@ -101,7 +81,7 @@ public:
 	ptstime input_pts;
 	ptstime prev_frame;
 	ptstime prev_input;
-	PitchEngine *pitch;
+	Pitch *pitch;
 	Resample *resample;
 	AFrame *input_frame;
 };
