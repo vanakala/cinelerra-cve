@@ -34,4 +34,22 @@ private:
 	static Mutex plans_lock;
 };
 
+class Pitch : public Fourier
+{
+public:
+	Pitch(int samplerate, int window_size);
+	~Pitch();
+
+	int signal_process();
+	void set_scale(double new_scale);
+
+	int samplerate;
+	int reset_phase;
+	double scale;
+	double *last_phase;
+	double *new_freq;
+	double *new_magn;
+	double *sum_phase;
+};
+
 #endif

@@ -62,23 +62,6 @@ public:
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-class PitchFFT : public Fourier
-{
-public:
-	PitchFFT(PitchEffect *plugin, int window_size);
-	~PitchFFT();
-	int signal_process();
-
-	PitchEffect *plugin;
-
-	int oversample;
-	int reset_phase;
-	double *last_phase;
-	double *new_freq;
-	double *new_magn;
-	double *sum_phase;
-};
-
 class PitchEffect : public PluginAClient
 {
 public:
@@ -96,7 +79,7 @@ public:
 	void save_defaults();
 
 	AFrame *input_frame;
-	PitchFFT *fft;
+	Pitch *fft;
 };
 
 #endif

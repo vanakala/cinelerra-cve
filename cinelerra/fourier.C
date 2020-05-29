@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 // This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 // Copyright (C) 2020 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "atmpframecache.h"
@@ -11,6 +12,7 @@
 #include <math.h>
 #include <fftw3.h>
 #include <values.h>
+#include <string.h>
 
 Mutex Fourier::plans_lock = Mutex("Fourier::plans_lock");
 
@@ -168,4 +170,107 @@ void Fourier::dump_file(const char *filename, int samplerate, int append)
 		}
 	}
 	fclose(fp);
+}
+
+Pitch::Pitch(int samplerate, int window_size)
+ : Fourier(window_size)
+{
+	scale = 1;
+	this->samplerate = samplerate;
+	reset_phase = 1;
+	last_phase = new double[window_size];
+	new_freq = new double[window_size];
+	new_magn = new double[window_size];
+	sum_phase = new double[window_size];
+}
+
+Pitch::~Pitch()
+{
+	delete [] last_phase;
+	delete [] new_freq;
+	delete [] new_magn;
+	delete [] sum_phase;
+}
+
+void Pitch::set_scale(double new_scale)
+{
+	scale = new_scale;
+	reset_phase = 1;
+}
+
+int Pitch::signal_process()
+{
+	int window_size = get_window_size();
+	int half_size = window_size / 2;
+
+	memset(new_freq, 0, window_size * sizeof(double));
+	memset(new_magn, 0, window_size * sizeof(double));
+
+	if(reset_phase)
+	{
+		memset(last_phase, 0, window_size * sizeof(double));
+		memset(sum_phase, 0, window_size * sizeof(double));
+		reset_phase = 0;
+	}
+
+// frequency per bin
+	double freq_per_bin = (double)samplerate / window_size;
+
+	for(int i = 1; i < half_size; i++)
+	{
+// Convert to magnitude and phase
+		double re = fftw_window[i][0];
+		double im = fftw_window[i][1];
+
+		double magn = sqrt(re * re + im * im);
+		double phase = atan2(im, re);
+
+// Remember last phase
+		double temp = phase - last_phase[i];
+		last_phase[i] = phase;
+
+// wrap temp into -/+ PI ...  good trick!
+		int qpd = temp / M_PI;
+
+		if(qpd >= 0)
+			qpd += qpd & 1;
+		else
+			qpd -= qpd & 1;
+		temp -= M_PI * qpd;
+
+		temp = (temp + i) * freq_per_bin;
+// Now temp is the real freq... move it!
+		int new_bin = round(i * scale);
+
+		if(new_bin > 0 && new_bin < half_size)
+		{
+			new_freq[new_bin] = temp * scale;
+			new_magn[new_bin] += magn;
+		}
+	}
+// Synthesize back the fft window
+	for(int i = 1; i < half_size; i++)
+	{
+		double magn = new_magn[i];
+		double temp = new_freq[i];
+// substract the bin frequency
+		temp -= freq_per_bin * i;
+
+// get bin deviation from freq deviation
+		temp /= freq_per_bin;
+
+// accumulate delta phase, to get bin phase
+		sum_phase[i] += temp;
+
+		double phase = sum_phase[i];
+
+		fftw_window[i][0] = magn * cos(phase);
+		fftw_window[i][1] = magn * sin(phase);
+	}
+	for(int i = half_size; i < window_size; i++)
+	{
+		fftw_window[i][0] = 0;
+		fftw_window[i][1] = 0;
+	}
+	return 1;
 }
