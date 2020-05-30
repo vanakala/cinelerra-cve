@@ -358,7 +358,7 @@ KeyFrame* Plugin::get_keyframe(ptstime selpos)
 	if(!result)
 		result = (KeyFrame*)keyframes->insert_auto(pts);
 // Return nearest keyframe if not in automatic keyframe generation
-	if(!edlsession->auto_keyframes)
+	if(!edlsession->auto_keyframes || !plugin_server ||  plugin_server->no_keyframes)
 		return result;
 	else
 	{
