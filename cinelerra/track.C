@@ -22,7 +22,7 @@
 #include "asset.h"
 #include "aautomation.h"
 #include "automation.h"
-#include "vautomation.h"
+#include "atrackrender.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
@@ -38,9 +38,10 @@
 #include "plugindb.h"
 #include "theme.h"
 #include "track.h"
-#include "trackrender.h"
 #include "tracks.h"
+#include "vautomation.h"
 #include "vframe.h"
+#include "vtrackrender.h"
 #include <string.h>
 
 
@@ -702,9 +703,18 @@ void Track::dump(int indent)
 		tp, master ? 'M' : 'm', play ? 'P' : 'p',
 		record ? 'A' : 'a', gang ? 'G' : 'g', draw ? 'D' : 'd', nudge, id);
 	if(data_type == TRACK_VIDEO)
-		printf("%*sTitle: '%s' [%d,%d]\n", indent, "", title, track_w, track_h);
+	{
+		printf("%*sTitle: '%s' [%d,%d] renderer %p\n", indent, "",
+			title, track_w, track_h, renderer);
+		if(renderer)
+			((VTrackRender*)renderer)->dump(indent);
+	}
 	else
-		printf("%*sTitle: '%s'\n", indent, "", title);
+	{
+		printf("%*sTitle: '%s' renderer %p\n", indent, "", title, renderer);
+		if(renderer)
+			((ATrackRender*)renderer)->dump(indent);
+	}
 	edits->dump(indent);
 	automation->dump(indent);
 	printf("%*sPlugins: %d\n", indent, "", plugins.total);

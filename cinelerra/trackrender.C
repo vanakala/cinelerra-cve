@@ -128,7 +128,7 @@ void TrackRender::dump(int indent)
 {
 	int tfs = 0;
 
-	printf("%*smedia track %p plugins_track %p autos_track %p\n", indent, "",
+	printf("%*stracks: media %p plugins %p autos %p\n", indent, "",
 		media_track, plugins_track, autos_track);
 
 	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
