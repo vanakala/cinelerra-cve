@@ -52,7 +52,7 @@ private:
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
 	VFrame *render_plugins(VFrame *frame, Edit *edit, int rstep);
-	VFrame *execute_plugin(Plugin *plugin, VFrame *frame, int rstep);
+	VFrame *execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, int rstep);
 	VFrame *render_transition(VFrame *frame, Edit *edit);
 	int need_camera(ptstime pts);
 
@@ -61,7 +61,6 @@ private:
 	MaskEngine *masker;
 	CropEngine *cropper;
 	OverlayFrame *overlayer;
-	Edit *current_edit;
 	VFrame *track_frame;
 	VFrame *plugin_frame;
 };

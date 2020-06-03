@@ -39,7 +39,6 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	masker = 0;
 	cropper = 0;
 	overlayer = 0;
-	current_edit = 0;
 	videorender = vrender;
 	track_frame = 0;
 	plugin_frame = 0;
@@ -412,7 +411,6 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 	VFrame *tmpframe;
 
 	plugin_frame = input;
-	current_edit = edit;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
 		plugin = plugins_track->plugins.values[i];
@@ -426,7 +424,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			track_frame->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, plugin_frame, rstep))
+			if(tmpframe = execute_plugin(plugin, plugin_frame, edit, rstep))
 				plugin_frame = tmpframe;
 			else
 			{
@@ -438,7 +436,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 	return plugin_frame;
 }
 
-VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
+VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, int rstep)
 {
 	PluginServer *server = plugin->plugin_server;
 	int layer;
@@ -456,7 +454,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, int rstep)
 		frame = render_camera(frame);
 		render_mask(frame, 1);
 		render_crop(frame, 1);
-		frame = render_plugins(frame, current_edit, rstep);
+		frame = render_plugins(frame, edit, rstep);
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
@@ -575,7 +573,7 @@ VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
 			if(plugin->plugin_type != PLUGIN_STANDALONE ||
 					plugin->plugin_server->multichannel)
 				continue;
-			buffer = execute_plugin(plugin, buffer, RSTEP_NORMAL);
+			buffer = execute_plugin(plugin, buffer, edit, RSTEP_NORMAL);
 		}
 	}
 	return buffer;
@@ -634,7 +632,7 @@ void VTrackRender::dump(int indent)
 {
 	printf("%*sVTrackRender %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*strack_frame %p current_edit %p videorender %p\n", indent, "",
-		track_frame, current_edit, videorender);
+	printf("%*strack_frame %p videorender %p\n", indent, "",
+		track_frame, videorender);
 	TrackRender::dump(indent);
 }
