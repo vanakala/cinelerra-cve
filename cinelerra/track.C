@@ -1168,12 +1168,6 @@ Edit *Track::editof(ptstime postime, int use_nudge)
 	return edits->editof(postime, use_nudge);
 }
 
-void Track::reset_plugin_frames()
-{
-	for(int i = 0; i < plugins.total; i++)
-		plugins.values[i]->reset_frames();
-}
-
 Plugin *Track::get_shared_multichannel(ptstime start, ptstime end)
 {
 	if(PTSEQU(start, end))

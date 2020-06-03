@@ -59,10 +59,7 @@ void Tracks::reset_instance()
 
 void Tracks::reset_plugins()
 {
-	for(Track *track = first; track; track = track->next)
-	{
-		track->reset_plugin_frames();
-	}
+// FIXIT: reset of plugins is useful
 }
 
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)

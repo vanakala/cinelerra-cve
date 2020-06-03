@@ -84,7 +84,6 @@ Plugin::~Plugin()
 	}
 	while(keyframes->last) delete keyframes->last;
 	delete keyframes;
-	reset_frames();
 	track->tracks->reset_plugins();
 	delete guideframe;
 	plugin_server->close_plugin(client);
@@ -281,7 +280,6 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 
 	server->close_plugin(client);
 
-	reset_frames();
 	if(plugin_type != PLUGIN_SHAREDPLUGIN)
 		this->shared_plugin = 0;
 	if(plugin_type != PLUGIN_SHAREDMODULE)
@@ -639,12 +637,6 @@ ptstime Plugin::plugin_change_duration(ptstime start, ptstime length)
 void Plugin::clear_keyframes()
 {
 	keyframes->clear_all();
-}
-
-void Plugin::reset_frames()
-{
-	if(!plugin_server)
-		return;
 }
 
 void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)
