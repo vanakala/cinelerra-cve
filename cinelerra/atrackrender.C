@@ -309,7 +309,6 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 			break;
 		set_effects_track(plugin->shared_track);
 		render_fade(aframe);
-		render_transition(aframe, current_edit);
 		aframe = render_plugins(aframe, current_edit, rstep);
 		set_effects_track(media_track);
 		break;
