@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcwindowbase.inc"
 #include "clip.h"
@@ -39,20 +23,9 @@ MaskPoint::MaskPoint()
 	control_y2 = 0;
 }
 
-MaskPoint& MaskPoint::operator=(MaskPoint& ptr)
-{
-	this->x = ptr.x;
-	this->y = ptr.y;
-	this->control_x1 = ptr.control_x1;
-	this->control_y1 = ptr.control_y1;
-	this->control_x2 = ptr.control_x2;
-	this->control_y2 = ptr.control_y2;
-}
-
 int MaskPoint::operator==(MaskPoint& ptr)
 {
-	return x == ptr.x &&
-		y == ptr.y &&
+	return x == ptr.x && y == ptr.y &&
 		EQUIV(control_x1, ptr.control_x1) &&
 		EQUIV(control_y1, ptr.control_y1) &&
 		EQUIV(control_x2, ptr.control_x2) &&
@@ -67,18 +40,6 @@ size_t MaskPoint::get_size()
 SubMask::SubMask(MaskAuto *keyframe)
 {
 	this->keyframe = keyframe;
-}
-
-int SubMask::operator==(SubMask& ptr)
-{
-	if(points.total != ptr.points.total) return 0;
-
-	for(int i = 0; i < points.total; i++)
-	{
-		if(!(*points.values[i] == *ptr.points.values[i]))
-			return 0;
-	}
-	return 1;
 }
 
 void SubMask::copy_from(SubMask& ptr)
@@ -229,32 +190,6 @@ MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
 MaskAuto::~MaskAuto()
 {
 	masks.remove_all_objects();
-}
-
-int MaskAuto::operator==(Auto &that)
-{
-	return identical((MaskAuto*)&that);
-}
-
-int MaskAuto::operator==(MaskAuto &that)
-{
-	return identical((MaskAuto*)&that);
-}
-
-int MaskAuto::identical(MaskAuto *src)
-{
-	if(src == this)
-		return 1;
-
-	if(value != src->value ||
-		feather != src->feather ||
-		masks.total != src->masks.total ||
-		apply_before_plugins != src->apply_before_plugins) return 0;
-
-	for(int i = 0; i < masks.total; i++)
-		if(!(*masks.values[i] == *src->masks.values[i])) return 0;
-
-	return 1;
 }
 
 void MaskAuto::copy_from(Auto *src)

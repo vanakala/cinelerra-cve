@@ -1,27 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef MASKAUTO_H
 #define MASKAUTO_H
-
 
 #include "arraylist.h"
 #include "auto.h"
@@ -33,9 +16,8 @@ class MaskPoint
 public:
 	MaskPoint();
 
-	size_t get_size();
 	int operator==(MaskPoint& ptr);
-	MaskPoint& operator=(MaskPoint& ptr);
+	size_t get_size();
 
 	int x;
 	int y;
@@ -50,7 +32,6 @@ class SubMask
 public:
 	SubMask(MaskAuto *keyframe);
 
-	int operator==(SubMask& ptr);
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file);
 	void save_xml(FileXML *file);
@@ -67,9 +48,6 @@ public:
 	MaskAuto(EDL *edl, MaskAutos *autos);
 	~MaskAuto();
 
-	int operator==(Auto &that);
-	int operator==(MaskAuto &that);
-	int identical(MaskAuto *src);
 	void load(FileXML *file);
 	void save_xml(FileXML *file);
 	void copy(Auto *that, ptstime start, ptstime end);
