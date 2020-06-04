@@ -25,7 +25,6 @@ public:
 	~ATrackRender();
 
 	void process_aframes(AFrame **output, int out_channels, int rstp);
-	AFrame *get_aframe(AFrame *buffer);
 	AFrame *get_atmpframe(AFrame *buffer, PluginClient *client);
 	void render_pan(AFrame **output, int out_channels);
 	AFrame *handover_trackframe();

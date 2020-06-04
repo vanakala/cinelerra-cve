@@ -66,36 +66,6 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 		next_plugin = 0;
 }
 
-AFrame *ATrackRender::get_aframe(AFrame *buffer)
-{
-// Called by plugin
-	AFrame *aframe;
-	ptstime buffer_pts = buffer->get_pts();
-	ptstime buffer_duration = buffer->get_source_duration();
-	int channel = buffer->channel;
-
-	if(track_frame && track_frame->channel == channel &&
-			PTSEQU(track_frame->get_pts(), buffer_pts))
-		buffer->copy(track_frame);
-	else
-	{
-		Edit *edit = media_track->editof(buffer_pts);
-
-		if(aframe = arender->get_file_frame(buffer->get_pts(),
-			buffer->get_source_duration(), edit, 2))
-		{
-			buffer->copy(aframe);
-			render_fade(buffer);
-			render_transition(buffer, edit);
-			audio_frames.release_frame(aframe);
-		}
-		else
-			buffer->clear_frame(buffer->get_pts(),
-				buffer->get_source_duration());
-	}
-	return buffer;
-}
-
 AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 {
 // Called by tmpframe aware plugin
