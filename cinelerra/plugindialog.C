@@ -85,7 +85,7 @@ void PluginDialogThread::start_window(Track *track,
 
 		if(plugin)
 		{
-			plugin->calculate_title(plugin_title, 0);
+			plugin->calculate_title(plugin_title);
 			this->shared_plugin = plugin->shared_plugin;
 			this->shared_track = plugin->shared_track;
 			this->plugin_type = plugin->plugin_type;

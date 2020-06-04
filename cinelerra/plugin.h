@@ -67,7 +67,7 @@ public:
 	KeyFrame* get_keyframe(ptstime selpos);
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
-	void calculate_title(char *string, int use_nudge);
+	void calculate_title(char *string);
 // Remove all keyframes
 	void clear_keyframes();
 // Get camera coordinates at postion

@@ -1450,7 +1450,7 @@ void TrackCanvas::draw_plugins()
 						total_x, total_w,
 						mwindow->theme->get_image("plugin_bg_data"),
 						0);
-					plugin->calculate_title(string, 0);
+					plugin->calculate_title(string);
 
 // Truncate string visible in background
 					int len = strlen(string), j;

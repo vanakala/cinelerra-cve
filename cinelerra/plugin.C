@@ -586,7 +586,7 @@ int Plugin::shared_slots()
 	return count < max;
 }
 
-void Plugin::calculate_title(char *string, int use_nudge)
+void Plugin::calculate_title(char *string)
 {
 	string[0] = 0;
 
