@@ -95,8 +95,6 @@ public:
 // Positions are identical for handle modifications
 	int identical(ptstime sample1, ptstime sample2);
 
-	Plugin* get_current_transition(ptstime position);
-
 // detach shared effects referencing plugin or track
 	void detach_shared_effects(Plugin *plugin, Track *track);
 

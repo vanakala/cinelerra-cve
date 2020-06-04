@@ -626,26 +626,6 @@ void Track::detach_shared_effects(Plugin *plugin, Track *track)
 	}
 }
 
-Plugin* Track::get_current_transition(ptstime position)
-{
-	Edit *current;
-	Plugin *result = 0;
-
-	for(current = edits->last; current; current = PREVIOUS)
-	{
-		if(current->get_pts() <= position && current->end_pts() > position)
-		{
-			if(current->transition && position <
-				current->get_pts() + current->transition->get_length())
-			{
-				result = current->transition;
-				break;
-			}
-		}
-	}
-	return result;
-}
-
 void Track::dump(int indent)
 {
 	const char *tp;
