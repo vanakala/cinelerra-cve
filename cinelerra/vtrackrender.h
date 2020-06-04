@@ -28,7 +28,6 @@ public:
 	~VTrackRender();
 
 	void process_vframe(ptstime pts, int rstep);
-	VFrame *get_vframe(VFrame *buffer);
 	VFrame *get_vtmpframe(VFrame *buffer, PluginClient *client);
 	VFrame *handover_trackframe();
 	void take_vframe(VFrame *frame);
@@ -62,7 +61,6 @@ private:
 	CropEngine *cropper;
 	OverlayFrame *overlayer;
 	VFrame *track_frame;
-	VFrame *plugin_frame;
 };
 
 #endif

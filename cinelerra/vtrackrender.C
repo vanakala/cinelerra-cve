@@ -41,7 +41,6 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	overlayer = 0;
 	videorender = vrender;
 	track_frame = 0;
-	plugin_frame = 0;
 	initialized_buffers = 0;
 }
 
@@ -411,7 +410,6 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 	ptstime end = start + input->get_duration();
 	VFrame *tmpframe;
 
-	plugin_frame = input;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
 		plugin = plugins_track->plugins.values[i];
@@ -425,8 +423,8 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			track_frame->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, plugin_frame, edit, rstep))
-				plugin_frame = tmpframe;
+			if(tmpframe = execute_plugin(plugin, input, edit, rstep))
+				input = tmpframe;
 			else
 			{
 				next_plugin = plugin;
@@ -434,7 +432,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 			}
 		}
 	}
-	return plugin_frame;
+	return input;
 }
 
 VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, int rstep)
@@ -507,38 +505,6 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 		break;
 	}
 	return frame;
-}
-
-VFrame *VTrackRender::get_vframe(VFrame *buffer)
-{
-// This is called by plugin
-// We have to copy frame into buffer, because plugins
-// do not accept tmpframes yet
-	ptstime buffer_pts = buffer->get_pts();
-	int layer = buffer->get_layer();
-
-	if(plugin_frame && PTSEQU(plugin_frame->get_pts(), buffer_pts))
-		buffer->copy_from(plugin_frame, 1);
-	else
-	{
-		Edit *edit = media_track->editof(buffer_pts);
-
-		read_vframe(buffer, edit, 2);
-		if(edit->transition && edit->transition->plugin_server &&
-			edit->transition->on || need_camera(buffer_pts))
-		{
-			VFrame *frame = BC_Resources::tmpframes.clone_frame(buffer);
-			frame->copy_from(buffer, 1);
-			frame = render_transition(frame, edit);
-			frame = render_camera(frame);
-			buffer->copy_from(frame, 1);
-			BC_Resources::tmpframes.release_frame(frame);
-		}
-		render_mask(buffer, 1);
-		render_crop(buffer, 1);
-	}
-	buffer->set_layer(layer);
-	return buffer;
 }
 
 VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
