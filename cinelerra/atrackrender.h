@@ -42,10 +42,9 @@ private:
 	void render_fade(AFrame *aframe);
 	void render_transition(AFrame *aframe, Edit *edit);
 	AFrame *render_plugins(AFrame *aframe, Edit *edit, int rstep);
-	AFrame *execute_plugin(Plugin *plugin, AFrame *aframe, int rstep);
+	AFrame *execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit, int rstep);
 
 	AudioRender *arender;
-	Edit *current_edit;
 	AFrame *track_frame;
 };
 

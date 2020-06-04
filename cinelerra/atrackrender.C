@@ -130,7 +130,7 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 			if(plugin->plugin_type != PLUGIN_STANDALONE ||
 					plugin->plugin_server->multichannel)
 				continue;
-			aframe = execute_plugin(plugin, aframe, RSTEP_NORMAL);
+			aframe = execute_plugin(plugin, aframe, edit, RSTEP_NORMAL);
 		}
 		audio_frames.release_frame(buffer);
 		buffer = aframe;
@@ -269,7 +269,6 @@ AFrame *ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 	ptstime start = aframe->get_pts();
 	ptstime end = start + aframe->get_duration();
 
-	current_edit = edit;
 	for(int i = 0; i < plugins_track->plugins.total; i++)
 	{
 		plugin = plugins_track->plugins.values[i];
@@ -283,7 +282,7 @@ AFrame *ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			aframe->set_track(media_track->number_of());
-			if(tmp = execute_plugin(plugin, aframe, rstep))
+			if(tmp = execute_plugin(plugin, aframe, edit, rstep))
 				aframe = tmp;
 			else
 			{
@@ -295,7 +294,7 @@ AFrame *ATrackRender::render_plugins(AFrame *aframe, Edit *edit, int rstep)
 	return aframe;
 }
 
-AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
+AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit, int rstep)
 {
 	PluginServer *server = plugin->plugin_server;
 
@@ -309,7 +308,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, int rstep)
 			break;
 		set_effects_track(plugin->shared_track);
 		render_fade(aframe);
-		aframe = render_plugins(aframe, current_edit, rstep);
+		aframe = render_plugins(aframe, edit, rstep);
 		set_effects_track(media_track);
 		break;
 
@@ -375,7 +374,7 @@ void ATrackRender::dump(int indent)
 {
 	printf("%*sATrackRender %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*strack_frame %p current_edit %p audiorender %p\n", indent, "",
-		track_frame, current_edit, arender);
+	printf("%*strack_frame %p audiorender %p\n", indent, "",
+		track_frame, arender);
 	TrackRender::dump(indent);
 }
