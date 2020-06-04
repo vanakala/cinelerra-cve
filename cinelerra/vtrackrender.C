@@ -64,6 +64,7 @@ void VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 	{
 		vframe->set_duration(media_track->edl->this_edlsession->frame_duration());
 		vframe->clear_frame();
+		return;
 	}
 
 	src_pts = pts - edit->get_pts() + edit->get_source_pts();
