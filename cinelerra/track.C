@@ -1084,13 +1084,6 @@ ptstime Track::from_units(posnum position)
 	return (double)position;
 }
 
-int Track::identical(ptstime sample1, ptstime sample2)
-{
-	if(fabs(sample1 - sample2) <= one_unit) 
-		return 1;
-	return 0;
-}
-
 void Track::cleanup()
 {
 	// Remove orphaned shared plugins

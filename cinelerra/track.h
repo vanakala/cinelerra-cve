@@ -92,9 +92,6 @@ public:
 // For drawing
 	virtual ptstime from_units(posnum position);
 
-// Positions are identical for handle modifications
-	int identical(ptstime sample1, ptstime sample2);
-
 // detach shared effects referencing plugin or track
 	void detach_shared_effects(Plugin *plugin, Track *track);
 
