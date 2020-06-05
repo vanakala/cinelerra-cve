@@ -80,10 +80,12 @@ PLUGIN_CLASS_METHODS
 
 void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	if(total_len_pts < EPSILON)
+	ptstime length = get_length();
+
+	if(length < EPSILON)
 		return;
 
-	ptstime half = total_len_pts / 2;
+	ptstime half = length / 2;
 	ptstime pts = half - fabs(source_pts - half);
 	double fraction = pts / half;
 	int is_before = source_pts < half;
