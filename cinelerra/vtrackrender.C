@@ -513,10 +513,10 @@ VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
 	ptstime buffer_pts = buffer->get_pts();
 	Plugin *current = client->plugin;
 
-	if(buffer_pts > client->end_pts)
-		buffer_pts = client->end_pts - buffer->get_duration();
-	if(buffer_pts < client->source_start_pts)
-		buffer_pts = client->source_start_pts;
+	if(buffer_pts > current->end_pts())
+		buffer_pts = current->end_pts() - buffer->get_duration();
+	if(buffer_pts < current->get_pts())
+		buffer_pts = current->get_pts();
 
 	Edit *edit = media_track->editof(buffer_pts);
 
