@@ -175,7 +175,7 @@ AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 		rms_accum += value * value;
 	}
 
-	if(accum_size > config.duration * project_sample_rate)
+	if(accum_size > input->to_samples(config.duration))
 	{
 		rms_accum = sqrt(rms_accum / accum_size);
 		gui_args[0] = max_accum;
