@@ -275,7 +275,7 @@ int InterpolateVideo::load_configuration()
 	ptstime next_pts = next_keyframe->pos_time;
 	if(prev_pts < EPSILON && next_pts < EPSILON)
 	{
-		next_pts = prev_pts = source_start_pts;
+		next_pts = prev_pts = get_start();
 	}
 
 // Get range to average in requested rate
@@ -285,23 +285,23 @@ int InterpolateVideo::load_configuration()
 // Use keyframes to determine range
 	if(config.use_keyframes)
 	{
-		active_input_rate = project_frame_rate;
+		active_input_rate = get_project_framerate();
 // Between keyframe and edge of range or no keyframes
 		if(PTSEQU(range_start_pts, range_end_pts))
 		{
 // Between first keyframe and start of effect
-			if(source_pts >= source_start_pts &&
+			if(source_pts >= get_start() &&
 				source_pts < range_start_pts)
 			{
-				range_start_pts = source_start_pts;
+				range_start_pts = get_start();
 			}
 			else
 // Between last keyframe and end of effect
 			if(source_pts >= range_start_pts &&
-				source_pts < source_start_pts + total_len_pts)
+				source_pts < get_end())
 			{
 // Last frame should be inclusive of current effect
-				range_end_pts = source_start_pts + total_len_pts - 1 / active_input_rate;
+				range_end_pts = get_end() - 1 / active_input_rate;
 			}
 		}
 	}
@@ -310,8 +310,8 @@ int InterpolateVideo::load_configuration()
 	{
 		active_input_rate = config.input_rate;
 // Convert to input frame rate
-		range_start_pts = floor((source_pts - source_start_pts) * active_input_rate)
-				/ active_input_rate + source_start_pts;
+		range_start_pts = floor((source_pts - get_start()) * active_input_rate)
+				/ active_input_rate + get_start();
 		range_end_pts = source_pts + 1.0 / active_input_rate;
 	}
 	return !config.equivalent(&old_config);
