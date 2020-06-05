@@ -31,11 +31,12 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	int w = outgoing->get_w();
 	int h = outgoing->get_h();
+	ptstime length = get_length();
 
-	if(total_len_pts < EPSILON)
+	if(length < EPSILON)
 		return;
 
-	fade = source_pts / total_len_pts;
+	fade = source_pts / length;
 
 // Use hardware
 	if(get_use_opengl())
