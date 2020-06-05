@@ -231,7 +231,12 @@ int Plugin::identical(Plugin *that)
 	if(this == that)
 		return 1;
 // Test type
-	if(plugin_type != that->plugin_type) return 0;
+	if(plugin_type != that->plugin_type)
+		return 0;
+
+// Test length
+	if(!PTSEQU(duration, that->duration))
+		return 0;
 
 // Test server or location
 	switch(plugin_type)
