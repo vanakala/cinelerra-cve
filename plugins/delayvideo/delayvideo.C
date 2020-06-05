@@ -124,7 +124,7 @@ PLUGIN_CLASS_METHODS
 
 void DelayVideo::reconfigure(VFrame *input)
 {
-	int new_allocation = round(config.length * project_frame_rate);
+	int new_allocation = round(config.length * get_project_framerate());
 
 	if(new_allocation < 1)
 	{
@@ -151,11 +151,11 @@ void DelayVideo::reconfigure(VFrame *input)
 		new_buffer[i] = new VFrame(0, 
 			input->get_w(),
 			input->get_h(),
-			project_color_model);
+			get_project_color_model());
 		new_buffer[i]->clear_frame();
 		new_buffer[i]->set_layer(input->get_layer());
 		new_buffer[i]->set_pts(cpts);
-		new_buffer[i]->set_duration(1 / project_frame_rate);
+		new_buffer[i]->set_duration(1 / get_project_framerate());
 		cpts = new_buffer[i]->next_pts();
 	}
 
