@@ -223,15 +223,17 @@ int IrisSquareMain::load_configuration()
 
 void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
+	ptstime length = get_length();
+
 	load_configuration();
 
-	if(total_len_pts < EPSILON)
+	if(length < EPSILON)
 		return;
 
 	int w = incoming->get_w();
 	int h = incoming->get_h();
-	int dw = round(w / 2 * source_pts / total_len_pts);
-	int dh = round(h / 2 * source_pts / total_len_pts);
+	int dw = round(w / 2 * source_pts / length);
+	int dh = round(h / 2 * source_pts / length);
 
 	switch(incoming->get_color_model())
 	{
