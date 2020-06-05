@@ -245,7 +245,7 @@ VFrame *HoloMain::process_tmpframe(VFrame *input_ptr)
 	holo_server->process_packages();
 
 	total++;
-	if(total >= config.recycle * project_frame_rate)
+	if(total >= config.recycle * get_project_framerate())
 		total = 0;
 	return input_ptr;
 }
