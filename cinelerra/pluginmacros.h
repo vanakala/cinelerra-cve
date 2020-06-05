@@ -103,8 +103,7 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_APIVERSION_MEMBER \
 	int api_version() { return 3; };
 #else
-#define PLUGIN_CLASS_APIVERSION_MEMBER \
-	int api_version() { return 2; };
+#define PLUGIN_CLASS_APIVERSION_MEMBER
 #endif
 
 #ifdef PLUGIN_NOT_KEYFRAMEABLE
