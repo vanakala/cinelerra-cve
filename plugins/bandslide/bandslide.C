@@ -184,7 +184,7 @@ int BandSlideMain::load_configuration()
 { \
 	if(direction == 0) \
 	{ \
-		int x = round(w * source_pts / total_len_pts); \
+		int x = round(w * source_pts / get_length()); \
 		for(int i = 0; i < bands; i++) \
 		{ \
 			for(int j = 0; j < band_h; j++) \
@@ -222,7 +222,7 @@ int BandSlideMain::load_configuration()
 	} \
 	else \
 	{ \
-		int x = w - (int)(round(w * source_pts / total_len_pts)); \
+		int x = w - (int)(round(w * source_pts / get_length())); \
 		for(int i = 0; i < bands; i++) \
 		{ \
 			for(int j = 0; j < band_h; j++) \
@@ -283,7 +283,7 @@ void BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int h = incoming->get_h();
 	int band_h = ((bands == 0) ? h : (h / bands + 1));
 
-	if(total_len_pts < EPSILON)
+	if(get_length() < EPSILON)
 		return;
 
 	switch(incoming->get_color_model())
