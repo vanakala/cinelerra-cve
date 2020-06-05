@@ -188,7 +188,7 @@ int DenoiseFFTEffect::load_configuration()
 
 	read_data(prev_keyframe);
 	if(prev_pts <= 0)
-		prev_pts = source_start_pts;
+		prev_pts = get_start();
 
 	if(!PTSEQU(prev_pts, collection_pts))
 	{
