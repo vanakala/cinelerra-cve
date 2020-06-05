@@ -228,7 +228,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	}
 
 	transition->client->process_transition(tmpframe, aframe,
-		aframe->get_pts() - edit->get_pts(), transition->get_length());
+		aframe->get_pts() - edit->get_pts());
 	audio_frames.release_frame(tmpframe);
 }
 

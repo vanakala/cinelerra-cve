@@ -124,11 +124,10 @@ public:
 // output - the previous edit's data and the destination of the transition output
 // current_position - Position from start of the transition and
 //     relative to the transition.
-// total_len - total len for transition
 	void process_transition(VFrame *input, VFrame *output,
-		ptstime current_postime, ptstime total_len);
+		ptstime current_postime);
 	void process_transition(AFrame *input, AFrame *output,
-		ptstime current_postime, ptstime total_len);
+		ptstime current_postime);
 
 // frame/buffer - video/audio fame to process
 	void process_buffer(VFrame **frame);

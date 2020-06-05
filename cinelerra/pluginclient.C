@@ -255,19 +255,16 @@ void PluginClient::send_configure_change()
 }
 
 void PluginClient::process_transition(VFrame *input, VFrame *output,
-	ptstime current_postime, ptstime total_len)
+	ptstime current_postime)
 {
 	source_pts = current_postime;
-	total_len_pts = total_len;
-
 	process_realtime(input, output);
 }
 
 void PluginClient::process_transition(AFrame *input, AFrame *output,
-	ptstime current_postime, ptstime total_len)
+	ptstime current_postime)
 {
 	source_pts = current_postime;
-	total_len_pts = total_len;
 	process_realtime(input, output);
 }
 
