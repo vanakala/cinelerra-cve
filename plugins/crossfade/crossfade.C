@@ -25,11 +25,13 @@ PLUGIN_CLASS_METHODS
 
 void CrossfadeMain::process_realtime(AFrame *out, AFrame *in)
 {
-	if(total_len_pts < EPSILON)
+	ptstime length = get_length();
+
+	if(length < EPSILON)
 		return;
 
-	double intercept = source_pts / total_len_pts;
-	double slope = (double)1 / round(total_len_pts * out->get_samplerate());
+	double intercept = source_pts / length;
+	double slope = (double)1 / round(length * out->get_samplerate());
 	double *incoming = in->buffer;
 	double *outgoing = out->buffer;
 	int size = out->get_length();
