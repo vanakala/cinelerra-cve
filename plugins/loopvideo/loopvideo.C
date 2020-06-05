@@ -78,7 +78,7 @@ int LoopVideoFrames::handle_event()
 {
 	plugin->config.duration = atof(get_text());
 	if(plugin->config.duration < EPSILON)
-		plugin->config.duration = 1 / plugin->project_frame_rate;
+		plugin->config.duration = 1 / plugin->get_project_framerate();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -106,7 +106,7 @@ VFrame *LoopVideo::process_tmpframe(VFrame *frame)
 	KeyFrame *prev_keyframe = prev_keyframe_pts(start_pts);
 	ptstime prev_pts = prev_keyframe->pos_time;
 	if(prev_pts < EPSILON)
-		prev_pts = source_start_pts;
+		prev_pts = get_start();
 	read_data(prev_keyframe);
 
 // Get start of fragment in current loop
@@ -127,7 +127,7 @@ int LoopVideo::load_configuration()
 	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 	if(config.duration < EPSILON)
-		config.duration = 1 / project_frame_rate;
+		config.duration = 1 / get_project_framerate();
 	return PTSEQU(old_duration, config.duration);
 }
 
@@ -138,7 +138,7 @@ void LoopVideo::load_defaults()
 
 	frames = defaults->get("FRAMES", 0);
 	if(frames > 0)
-		config.duration = frames / project_frame_rate;
+		config.duration = frames / get_project_framerate();
 	config.duration = defaults->get("DURATION", config.duration);
 }
 
@@ -173,7 +173,7 @@ void LoopVideo::read_data(KeyFrame *keyframe)
 		{
 			frames = input.tag.get_property("FRAMES", 0);
 			if(frames > 0)
-				config.duration = frames / project_frame_rate;
+				config.duration = frames / get_project_framerate();
 			config.duration = input.tag.get_property("DURATION", config.duration);
 		}
 	}
