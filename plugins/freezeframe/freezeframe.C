@@ -49,12 +49,13 @@ VFrame *FreezeFrameMain::process_tmpframe(VFrame *frame)
 {
 	if(!first_frame)
 	{
+		ptstime plugin_start = get_start();
 		first_frame = clone_vframe(frame);
-		if(PTSEQU(frame->get_pts(), source_start_pts))
+		if(PTSEQU(frame->get_pts(), plugin_start))
 			first_frame->copy_from(frame, 1);
 		else
 		{
-			first_frame->set_pts(source_start_pts);
+			first_frame->set_pts(plugin_start);
 			get_frame(first_frame);
 		}
 	}
