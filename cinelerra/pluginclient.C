@@ -79,6 +79,27 @@ int PluginClient::get_project_samplerate()
 	return edlsession->sample_rate;
 }
 
+double PluginClient::get_project_framerate()
+{
+	if(plugin && plugin->edl && plugin->edl->this_edlsession)
+		return plugin->edl->this_edlsession->frame_rate;
+	return edlsession->frame_rate;
+}
+
+double PluginClient::get_sample_aspect_ratio()
+{
+	if(plugin && plugin->edl && plugin->edl->this_edlsession)
+		return plugin->edl->this_edlsession->sample_aspect_ratio;
+	return edlsession->sample_aspect_ratio;
+}
+
+int PluginClient::get_project_color_model()
+{
+	if(plugin && plugin->edl && plugin->edl->this_edlsession)
+		return plugin->edl->this_edlsession->color_model;
+	return edlsession->color_model;
+}
+
 ptstime PluginClient::get_start()
 {
 	if(plugin)

@@ -66,7 +66,6 @@ public:
 	virtual int is_transition() { return 0; };
 	virtual int not_keyframeable() { return 0; };
 // API version:
-//   2 - plugin has pts support
 //   3 - plugin supports tmpframe, same instance can open gui
 	virtual int api_version() { return 0; };
 // plugin supporta OpenGL
@@ -146,6 +145,12 @@ public:
 
 // Get project samplerate
 	int get_project_samplerate();
+// Get framerate of project
+	double get_project_framerate();
+// Get video pixel aspect ratio
+	double get_sample_aspect_ratio();
+// Get color model of project
+	int get_project_color_model();
 // Get the start of the plugin
 	ptstime get_start();
 // Get the length of the plugin
@@ -218,24 +223,23 @@ public:
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
 
 // range in project for processing
-	ptstime start_pts, end_pts;
+	ptstime start_pts, end_pts __attribute__ ((deprecated));
 	int success;
 	int total_in_buffers;           // total buffers allocated by the server
 
-// Position relative to start of EDL.  Calculated for every process
-// command.  Used for keyframes.
+// The currrent position relative to start of EDL.
 	ptstime source_pts;
 // For realtime plugins gets the lowest pts (start of plugin)
-	ptstime source_start_pts;
+	ptstime source_start_pts __attribute__ ((deprecated));
 
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.
-	ptstime total_len_pts;
+	ptstime total_len_pts __attribute__ ((deprecated));
 
-	double project_frame_rate;
-	double sample_aspect_ratio;
-	int project_color_model;
-	int project_sample_rate;
+	double project_frame_rate __attribute__ ((deprecated));
+	double sample_aspect_ratio __attribute__ ((deprecated));
+	int project_color_model __attribute__ ((deprecated));
+	int project_sample_rate __attribute__ ((deprecated));
 	int audio_buffer_size;
 
 // Total number of processors available - 1
