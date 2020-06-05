@@ -147,7 +147,8 @@ VFrame *IVTCMain::process_tmpframe(VFrame *input_ptr)
 	}
 
 // Determine position in pattern
-	int pattern_position = ((int)round(source_pts * project_frame_rate) + config.frame_offset) % 5;
+	int pattern_position = ((int)round(source_pts * get_project_framerate()) +
+		config.frame_offset) % 5;
 
 	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
 		input_ptr->get_w(),
