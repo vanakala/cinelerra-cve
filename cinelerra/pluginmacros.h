@@ -249,9 +249,9 @@ int PLUGIN_CLASS::load_configuration() \
 	read_data(prev_keyframe); \
 	if(PTSEQU(next_pts, prev_pts)) \
 	{ \
-		config.next_border_pts = source_start_pts + total_len_pts; \
+		config.next_border_pts = get_end(); \
 		if(PTSEQU(prev_pts, 0)) \
-			config.prev_border_pts = source_start_pts; \
+			config.prev_border_pts = get_start(); \
 		else \
 			config.prev_border_pts = prev_pts; \
 		if(!config.equivalent(old_config)) \
@@ -269,7 +269,7 @@ int PLUGIN_CLASS::load_configuration() \
 		source_pts); \
 	config.next_border_pts = next_pts; \
 	if(PTSEQU(prev_pts, 0)) \
-		config.prev_border_pts = source_start_pts; \
+		config.prev_border_pts = get_start(); \
 	else \
 		config.prev_border_pts = prev_pts; \
  \
