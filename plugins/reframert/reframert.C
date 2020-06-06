@@ -225,9 +225,9 @@ PLUGIN_CLASS_METHODS
 
 VFrame *ReframeRT::process_tmpframe(VFrame *frame)
 {
-	ptstime input_pts = source_start_pts;
+	ptstime input_pts = get_start();
 	ReframeRTConfig prev_config, next_config;
-	KeyFrame *tmp_keyframe, *next_keyframe = prev_keyframe_pts(source_start_pts);
+	KeyFrame *tmp_keyframe, *next_keyframe = prev_keyframe_pts(input_pts);
 	ptstime duration;
 	ptstime tmp_pts, next_pts;
 	int is_current_keyframe;
