@@ -741,6 +741,7 @@ PLUGIN_CLASS_METHODS
 void TimeFrontMain::process_tmpframes(VFrame **frame)
 {
 	VFrame **outframes = frame;
+	double project_frame_rate = get_project_framerate();
 
 	need_reconfigure |= load_configuration();
 	if(config.time_range < (1 / project_frame_rate) + EPSILON)
@@ -1208,7 +1209,7 @@ void TimeFrontMain::load_defaults()
 	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
 	config.out_radius = defaults->get("OUT_RADIUS", config.out_radius);
 	if((frame_range = defaults->get("FRAME_RANGE", 0)) > 0)
-		config.time_range = frame_range / project_frame_rate;
+		config.time_range = frame_range / get_project_framerate();
 	config.time_range = defaults->get("TIME_RANGE", config.time_range);
 	config.shape = defaults->get("SHAPE", config.shape);
 	config.shape = defaults->get("TRACK_USAGE", config.track_usage);
@@ -1274,7 +1275,7 @@ void TimeFrontMain::read_data(KeyFrame *keyframe)
 			config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
 			config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
 			if((frame_range = input.tag.get_property("FRAME_RANGE", 0)) > 0)
-				config.time_range = frame_range / project_frame_rate;
+				config.time_range = frame_range / get_project_framerate();
 			config.time_range = input.tag.get_property("TIME_RANGE", config.time_range);
 			config.shape = input.tag.get_property("SHAPE", config.shape);
 			config.track_usage = input.tag.get_property("TRACK_USAGE", config.track_usage);
@@ -1412,7 +1413,7 @@ void TimeFrontUnit::process_package(LoadPackage *package)
 		out_radius ^= in_radius;
 		in_radius ^= out_radius;
 	}
-	int in4 = plugin->config.time_range * plugin->project_frame_rate;
+	int in4 = plugin->config.time_range * plugin->get_project_framerate();
 	int out4 = 0;
 	CREATE_GRADIENT
 
