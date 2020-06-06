@@ -274,7 +274,7 @@ void MotionMain::load_defaults()
 	config.mode3 = defaults->get("MODE3", config.mode3);
 	framenum track_frame = defaults->get("TRACK_FRAME", -1);
 	if(track_frame >= 0)
-		config.track_pts = track_frame / project_frame_rate;
+		config.track_pts = track_frame / get_project_framerate();
 	config.track_pts = defaults->get("TRACK_PTS", config.track_pts);
 	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
 	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
@@ -385,7 +385,7 @@ void MotionMain::read_data(KeyFrame *keyframe)
 			config.mode3 = input.tag.get_property("MODE3", config.mode3);
 			framenum track_frame = input.tag.get_property("TRACK_FRAME", -1);
 			if(track_frame > 0)
-				config.track_pts = track_frame / project_frame_rate;
+				config.track_pts = track_frame / get_project_framerate();
 			config.track_pts = input.tag.get_property("TRACK_PTS", config.track_pts);
 			config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 			config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
@@ -715,7 +715,7 @@ void MotionMain::process_tmpframes(VFrame **frame)
 	{
 		actual_previous_pts = source_pts - frame[0]->get_duration();
 
-		if(actual_previous_pts < source_start_pts)
+		if(actual_previous_pts < get_start())
 			skip_current = 1;
 		else
 		{
