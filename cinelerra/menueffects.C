@@ -298,8 +298,7 @@ void MenuEffectThread::run()
 			client->set_keyframe(&plugin_data);
 			client->set_prompt(&prompt);
 // Must set parameters since there is no plugin object to draw from.
-			client->plugin_get_parameters(total_start,
-				total_end, 1);
+			client->plugin_get_parameters(1);
 			client->plugin_show_gui();
 
 // wait for user input
@@ -315,8 +314,7 @@ void MenuEffectThread::run()
 // ============================non realtime plugin 
 		{
 			client->update_display_title();
-			result = client->plugin_get_parameters(total_start,
-				total_end,
+			result = client->plugin_get_parameters(
 				get_recordable_tracks(default_asset));
 
 			realtime = 0;

@@ -48,8 +48,6 @@ PluginClient::PluginClient(PluginServer *server)
 	gui_string[0] = 0;
 	total_in_buffers = 0;
 	source_pts = 0;
-	source_start_pts = 0;
-	total_len_pts = 0;
 	plugin = 0;
 	prompt = 0;
 	keyframe = 0;
@@ -62,13 +60,6 @@ void PluginClient::plugin_init(int total_in_buffers)
 {
 	smp = preferences_global->processors - 1;
 	this->total_in_buffers = total_in_buffers;
-	start_pts = source_start_pts = plugin->get_pts();
-	total_len_pts = plugin->get_length();
-	end_pts = source_start_pts + total_len_pts;
-	project_frame_rate = plugin->edl->this_edlsession->frame_rate;
-	project_color_model = plugin->edl->this_edlsession->color_model;
-	sample_aspect_ratio = plugin->edl->this_edlsession->sample_aspect_ratio;
-	project_sample_rate = plugin->edl->this_edlsession->sample_rate;
 	init_plugin();
 }
 
@@ -121,13 +112,9 @@ ptstime PluginClient::get_end()
 	return master_edl->total_length();
 }
 
-int PluginClient::plugin_get_parameters(ptstime start, ptstime end, int channels)
+int PluginClient::plugin_get_parameters(int channels)
 {
-	start_pts = source_start_pts = start;
-	end_pts = end;
-	total_len_pts = end - start;
 	total_in_buffers = channels;
-	project_frame_rate = edlsession->frame_rate;
 	return get_parameters();
 }
 

@@ -122,7 +122,7 @@ public:
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
-// current_position - Position from start of the transition and
+// current_postime - Position from start of the transition and
 //     relative to the transition.
 	void process_transition(VFrame *input, VFrame *output,
 		ptstime current_postime);
@@ -196,10 +196,10 @@ public:
 	virtual void save_defaults() {};
 	virtual int load_configuration() { return 0; }
 
-// Total number of processors - 1
+// Total number of processors
 	int get_project_smp();
 
-	int plugin_get_parameters(ptstime start, ptstime end, int channels);
+	int plugin_get_parameters(int channels);
 
 	void plugin_show_gui();
 	void plugin_update_gui();
@@ -221,27 +221,15 @@ public:
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
 
-// range in project for processing
-	ptstime start_pts, end_pts __attribute__ ((deprecated));
 	int success;
 	int total_in_buffers;           // total buffers allocated by the server
 
 // The currrent position relative to start of EDL.
 	ptstime source_pts;
-// For realtime plugins gets the lowest pts (start of plugin)
-	ptstime source_start_pts __attribute__ ((deprecated));
 
-// Length of source.  For effects it's the plugin length.  For transitions
-// it's the transition length.
-	ptstime total_len_pts __attribute__ ((deprecated));
-
-	double project_frame_rate __attribute__ ((deprecated));
-	double sample_aspect_ratio __attribute__ ((deprecated));
-	int project_color_model __attribute__ ((deprecated));
-	int project_sample_rate __attribute__ ((deprecated));
 	int audio_buffer_size;
 
-// Total number of processors available - 1
+// Total number of processors available
 	int smp;
 
 	PluginServer *server;
