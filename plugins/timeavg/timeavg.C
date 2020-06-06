@@ -112,7 +112,8 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 // Reallocate history
 		if(history)
 		{
-			int new_num_frames = round(config.duration * project_frame_rate * 2);
+			int new_num_frames = round(config.duration *
+				get_project_framerate() * 2);
 			if(max_num_frames != new_num_frames)
 			{
 				VFrame **history2;
@@ -158,7 +159,8 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 		else
 // Allocate history
 		{
-			max_num_frames = round(2 * config.duration * project_frame_rate);
+			max_num_frames = round(2 * config.duration *
+				get_project_framerate());
 			history = new VFrame*[max_num_frames];
 			memset(history, 0, max_num_frames * sizeof(VFrame*));
 
@@ -167,8 +169,8 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 		}
 		history_start = source_pts - config.duration;
 		history_end = source_pts;
-		if(history_start < source_start_pts)
-			history_start = source_start_pts;
+		if(history_start < get_start())
+			history_start = get_start();
 // Subtract old history frames which are not in the new vector
 		int no_change = 1;
 		for(int i = 0; i < max_num_frames; i++)
@@ -250,12 +252,12 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 			prev_frame_pts = source_pts - config.duration;
 			prev_frame_pts = MAX(0, prev_frame_pts);
 			clear_accum(w, h, color_model);
-			max_denominator = round(config.duration * project_frame_rate);
+			max_denominator = round(config.duration * get_project_framerate());
 		} else
 			prev_frame_pts = source_pts;
 
 		VFrame *temp_frame = clone_vframe(frame);
-		for(cpts = prev_frame_pts;;cpts = temp_frame->next_pts())
+		for(cpts = prev_frame_pts;; cpts = temp_frame->next_pts())
 		{
 			if(frames_accum >= max_denominator)
 				frames_accum = max_denominator - 1;
@@ -865,7 +867,7 @@ void TimeAvgMain::load_defaults()
 
 	frames = defaults->get("FRAMES", 0);
 	if(frames)
-		config.duration = frames / project_frame_rate;
+		config.duration = frames / get_project_framerate();
 	config.duration = defaults->get("DURATION", config.duration);
 	config.mode = defaults->get("MODE", config.mode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
@@ -920,7 +922,7 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("TIME_AVERAGE"))
 		{
 			if((frames = input.tag.get_property("FRAMES", 0)) > 0)
-				config.duration = frames / project_frame_rate;
+				config.duration = frames / get_project_framerate();
 			config.duration = input.tag.get_property("DURATION", config.duration);
 			config.mode = input.tag.get_property("MODE", config.mode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);
