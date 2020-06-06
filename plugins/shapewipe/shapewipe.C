@@ -398,6 +398,7 @@ erret:
 
 	double row_factor, col_factor;
 	double row_offset = 0.5, col_offset = 0.5;         // for rounding
+	double sample_aspect_ratio = get_sample_aspect_ratio();
 
 	if(preserve_aspect && sample_aspect_ratio)
 	{
@@ -628,13 +629,13 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	load_configuration();
 
-	if(total_len_pts < EPSILON)
+	if(get_length() < EPSILON)
 		return;
 
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 
-	if(strncmp(filename,last_read_filename, BCTEXTLEN)
+	if(strncmp(filename, last_read_filename, BCTEXTLEN)
 			|| preserve_aspect != last_preserve_aspect)
 		reset_pattern_image();
 
@@ -653,14 +654,14 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if(direction)
 	{
-		threshold = (unsigned char)round(source_pts / total_len_pts * (max_value - min_value))
-			+ min_value;
+		threshold = (unsigned char)round(source_pts / get_length() *
+			(max_value - min_value)) + min_value;
 	}
 	else
 	{
 		threshold = (unsigned char)((max_value - min_value) -
-				round(source_pts / total_len_pts *
-				(float)(max_value - min_value)))
+				round(source_pts / get_length() *
+				(double)(max_value - min_value)))
 			+ min_value;
 	}
 
