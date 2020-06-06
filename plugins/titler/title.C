@@ -1545,7 +1545,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 				input->get_pts(),
 				tcf, 
 				0,
-				PluginVClient::project_frame_rate, 
+				get_project_framerate(),
 				0);
 		config.text_to_ucs4(DEFAULT_ENCODING);
 		need_reconfigure = 1;
