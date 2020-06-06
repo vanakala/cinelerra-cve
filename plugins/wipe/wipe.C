@@ -147,7 +147,7 @@ int WipeMain::load_configuration()
 		{ \
 			type *in_row = (type*)incoming->get_row_ptr(j); \
 			type *out_row = (type*)outgoing->get_row_ptr(j); \
-			int x = round(w * source_pts /  total_len_pts); \
+			int x = round(w * source_pts / total_len_pts); \
  \
 			for(int k = 0; k < x; k++) \
 			{ \
@@ -183,6 +183,7 @@ void WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+	ptstime total_len_pts = get_length();
 
 	switch(incoming->get_color_model())
 	{
