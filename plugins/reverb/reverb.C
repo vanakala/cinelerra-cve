@@ -130,7 +130,7 @@ void Reverb::process_tmpframes(AFrame **input)
 
 	new_dsp_length = size + 
 		(config.delay_init + config.ref_length) * 
-		project_sample_rate / 1000 + 1;
+		get_project_samplerate() / 1000 + 1;
 
 	if(redo_buffers || new_dsp_length != dsp_in_length)
 	{
@@ -173,7 +173,8 @@ void Reverb::process_tmpframes(AFrame **input)
 			ref_channels[i][1] = i;         // first reflection
 // set offsets
 			ref_offsets[i][0] = 0;
-			ref_offsets[i][1] = config.delay_init * project_sample_rate / 1000;
+			ref_offsets[i][1] = config.delay_init *
+				get_project_samplerate() / 1000;
 // set levels
 			ref_levels[i][0] = db.fromdb(config.level_init);
 			ref_levels[i][1] = db.fromdb(config.ref_level1);
@@ -186,7 +187,7 @@ void Reverb::process_tmpframes(AFrame **input)
 			lowpass_in2[i][1] = 0;
 
 			int ref_division = config.ref_length *
-				project_sample_rate / 1000 / (config.ref_total + 1);
+				get_project_samplerate() / 1000 / (config.ref_total + 1);
 
 			for(j = 2; j < config.ref_total + 1; j++)
 			{
@@ -355,7 +356,7 @@ int ReverbEngine::process_overlay(double *in, double *out, double &out1,
 	else
 	{
 		double coef = 0.25 * 2.0 * M_PI *
-			(double)lowpass / (double)plugin->project_sample_rate;
+			(double)lowpass / (double)plugin->get_project_samplerate();
 		double a = coef * 0.25;
 		double b = coef * 0.50;
 
@@ -391,7 +392,7 @@ void ReverbEngine::run()
 						plugin->lowpass_in2[i][j],
 						plugin->ref_levels[i][j],
 						plugin->ref_lowpass[i][j],
-						plugin->project_sample_rate,
+						plugin->get_project_samplerate(),
 						size);
 			}
 		}
