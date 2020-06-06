@@ -204,14 +204,14 @@ int SlideMain::load_configuration()
 		int in_add, out_add, cpy_len; \
 		if(motion_direction == 0) \
 		{ \
-			int x = round(w * source_pts / total_len_pts); \
+			int x = round(w * source_pts / get_length()); \
 			out_add = 0; \
 			in_add = (w - x) * components * sizeof(type); \
 			cpy_len = x * components * sizeof(type); \
 		} \
 		else \
 		{ \
-			int x = w - (int)(round(w * source_pts / total_len_pts)); \
+			int x = w - (int)(round(w * source_pts / get_length())); \
 			out_add = x * components * sizeof(type); \
 			in_add = 0; \
 			cpy_len = (w - x) * components * sizeof(type); \
@@ -228,7 +228,7 @@ int SlideMain::load_configuration()
 	{ \
 		if(motion_direction == 0) \
 		{ \
-			int x = w - (int)(round(w * source_pts / total_len_pts)); \
+			int x = w - (int)(round(w * source_pts / get_length())); \
 			for(int j = 0; j < h; j++) \
 			{ \
 				char *in_row = (char*)incoming->get_row_ptr(j); \
@@ -239,7 +239,7 @@ int SlideMain::load_configuration()
 		} \
 		else \
 		{ \
-			int x = round(w * source_pts / total_len_pts); \
+			int x = round(w * source_pts / get_length()); \
 			for(int j = 0; j < h; j++) \
 			{ \
 				char *in_row = (char*)incoming->get_row_ptr(j); \
