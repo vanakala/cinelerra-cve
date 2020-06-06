@@ -504,7 +504,7 @@ public:
 	int waveform_length;           // length of loop buffer
 	int samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
 	samplenum waveform_sample;     // current sample in waveform of loop
-	float period;            // number of samples in a period for this frequency
+	double period;                 // number of samples in a period for this frequency
 };
 
 #endif
