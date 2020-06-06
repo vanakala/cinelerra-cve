@@ -40,9 +40,10 @@ PLUGIN_CLASS_METHODS
 VFrame *ReverseVideo::process_tmpframe(VFrame *frame)
 {
 	ptstime curpts = frame->get_pts();
+	ptstime end_pts = get_end();
 	ptstime input_pts;
 
-	input_pts = end_pts - curpts + source_start_pts;
+	input_pts = end_pts - curpts + get_start();
 
 	if(input_pts >= 0 && input_pts < end_pts)
 	{
