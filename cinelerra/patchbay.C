@@ -421,7 +421,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 	}
 }
 
-void PatchBay::synchronize_nudge(posnum value, Track *skip)
+void PatchBay::synchronize_nudge(ptstime value, Track *skip)
 {
 	for(Track *current = master_edl->first_track();
 		current;
