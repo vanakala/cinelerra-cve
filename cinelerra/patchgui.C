@@ -1,28 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+
 
 #include "automation.h"
 #include "bcsignals.h"
 #include "cinelerra.h"
-#include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -36,14 +20,15 @@
 #include "mwindowgui.h"
 #include "patchbay.h"
 #include "patchgui.h"
-#include "playbackengine.h"
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
 #include "vframe.h"
 
 #include <string.h>
+#include <stdlib.h>
 
+#define PATCH_INCREMENT 0.01
 
 PatchGUI::PatchGUI(MWindow *mwindow, 
 		PatchBay *patchbay, 
@@ -604,7 +589,7 @@ NudgePatch::NudgePatch(MWindow *mwindow,
 	y,
 	w,
 	1,
-	patch->calculate_nudge_text(0))
+	(float)patch->track->nudge)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -613,7 +598,7 @@ NudgePatch::NudgePatch(MWindow *mwindow,
 
 int NudgePatch::handle_event()
 {
-	set_value(patch->calculate_nudge(get_text()));
+	set_value(atof(get_text()));
 	return 1;
 }
 
@@ -625,34 +610,30 @@ void NudgePatch::set_value(ptstime value)
 		patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
 	mwindow->undo->update_undo(_("nudge"), LOAD_AUTOMATION, this);
-
 	mwindow->sync_parameters(patch->track->data_type == TRACK_VIDEO);
-
 	mainsession->changes_made = 1;
 }
-
 
 int NudgePatch::button_press_event()
 {
 	int result = 0;
+	ptstime value;
 
 	if(is_event_win() && cursor_inside())
 	{
 		if(get_buttonpress() == 4)
 		{
-			ptstime value = patch->calculate_nudge(get_text());
-			value += calculate_increment();
+			value = atof(get_text()) + PATCH_INCREMENT;
 			set_value(value);
-			update();
+			update(value);
 			result = 1;
 		}
 		else
 		if(get_buttonpress() == 5)
 		{
-			int value = patch->calculate_nudge(get_text());
-			value -= calculate_increment();
+			value = atof(get_text()) - PATCH_INCREMENT;
 			set_value(value);
-			update();
+			update(value);
 			result = 1;
 		}
 	}
@@ -661,24 +642,4 @@ int NudgePatch::button_press_event()
 		return BC_TextBox::button_press_event();
 	else
 		return result;
-}
-
-ptstime NudgePatch::calculate_increment()
-{
-	if(patch->track->data_type == TRACK_AUDIO)
-	{
-		return 0.01;
-	}
-	else
-	{
-		return (ptstime)ceil(1.0 / edlsession->frame_rate);
-	}
-}
-
-void NudgePatch::update()
-{
-	int changed;
-	char *string = patch->calculate_nudge_text(&changed);
-	if(changed)
-		BC_TextBox::update(string);
 }
