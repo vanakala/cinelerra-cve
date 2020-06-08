@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCSLIDER_H
 #define BCSLIDER_H
@@ -106,21 +90,22 @@ class BC_ISlider : public BC_Slider
 {
 public:
 	BC_ISlider(int x, 
-			int y,
-			int vertical,
-			int pixels, 
-			int pointer_motion_range, 
-			int64_t minvalue, 
-			int64_t maxvalue, 
-			int64_t value,
-			int use_caption = 0,
-			VFrame **data = 0,
-			int *output = 0);
+		int y,
+		int vertical,
+		int pixels,
+		int pointer_motion_range,
+		int minvalue,
+		int maxvalue,
+		int value,
+		int use_caption = 0,
+		VFrame **data = 0,
+		int *output = 0);
 
-	void update(int64_t value);
-	void update(int pointer_motion_range, int64_t value, int64_t minvalue, int64_t maxvalue);
-	int64_t get_value();
-	int64_t get_length();
+	void update(int value);
+	void update(int pointer_motion_range, int value,
+		int minvalue, int maxvalue);
+	int get_value();
+	int get_length();
 	void increase_value();
 	void decrease_value();
 	void increase_value_big();
@@ -132,7 +117,7 @@ private:
 	int value_to_pixel();
 	void init_selection(int cursor_x, int cursor_y);
 	int update_selection(int cursor_x, int cursor_y);
-	int64_t minvalue, maxvalue, value;
+	int minvalue, maxvalue, value;
 	int *output;
 };
 
@@ -140,52 +125,53 @@ class BC_FSlider : public BC_Slider
 {
 public:
 	BC_FSlider(int x, 
-			int y,
-			int vertical,
-			int pixels, 
-			int pointer_motion_range, 
-			float minvalue, 
-			float maxvalue, 
-			float value,
-			int use_caption = 0,
-			VFrame **data = 0);
+		int y,
+		int vertical,
+		int pixels,
+		int pointer_motion_range,
+		double minvalue,
+		double maxvalue,
+		double value,
+		int use_caption = 0,
+		VFrame **data = 0);
 
 	friend class BC_PercentageSlider;
 
-	void update(float value);
-	void update(int pointer_motion_range, float value, float minvalue, float maxvalue);
-	float get_value();
-	float get_length();
+	void update(double value);
+	void update(int pointer_motion_range, double value,
+		double minvalue, double maxvalue);
+	double get_value();
+	double get_length();
 	virtual void increase_value();
 	virtual void decrease_value();
 	virtual void increase_value_big();
 	virtual void decrease_value_big();
-	virtual char* get_caption();
-	void set_precision(float value);
-	void set_pagination(float small_change, float big_change);
+	virtual char *get_caption();
+	void set_precision(double value);
+	void set_pagination(double small_change, double big_change);
 
 private:
 	int value_to_pixel();
 	void init_selection(int cursor_x, int cursor_y);
 	int update_selection(int cursor_x, int cursor_y);
-	float minvalue, maxvalue, value;
-	float precision;
-	float small_change, big_change;
+	double minvalue, maxvalue, value;
+	double precision;
+	double small_change, big_change;
 };
 
 class BC_PercentageSlider : public BC_FSlider
 {
 public:
 	BC_PercentageSlider(int x, 
-			int y,
-			int vertical,
-			int pixels, 
-			int pointer_motion_range, 
-			float minvalue, 
-			float maxvalue, 
-			float value,
-			int use_caption = 0,
-			VFrame **data = 0);
+		int y,
+		int vertical,
+		int pixels,
+		int pointer_motion_range,
+		double minvalue,
+		double maxvalue,
+		double value,
+		int use_caption = 0,
+		VFrame **data = 0);
 
 	char* get_caption();
 };
