@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcclipboard.h"
 #include "bclistboxitem.h"
@@ -107,11 +91,11 @@ BC_TextBox::BC_TextBox(int x,
 	}
 }
 
-BC_TextBox::BC_TextBox(int x, 
-	int y, 
-	int w, 
-	int rows, 
-	int64_t text, 
+BC_TextBox::BC_TextBox(int x,
+	int y,
+	int w,
+	int rows,
+	int64_t text,
 	int options,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
@@ -126,7 +110,7 @@ BC_TextBox::BC_TextBox(int x,
 	int y, 
 	int w, 
 	int rows, 
-	float text, 
+	double text,
 	int options,
 	int font,
 	int precision)
@@ -372,27 +356,10 @@ wchar_t *BC_TextBox::wstringbreaker(int font, wchar_t *text,
 	return text;
 }
 
-void BC_TextBox::update(int64_t value)
-{
-	char string[TEXTBOXLEN];
-	sprintf(string, "%" PRId64, value);
-
-	update(string);
-}
-
 void BC_TextBox::update(int value)
 {
 	char string[TEXTBOXLEN];
 	sprintf(string, "%d", value);
-
-	update(string);
-}
-
-void BC_TextBox::update(float value)
-{
-	char string[TEXTBOXLEN];
-
-	sprintf(string, "%0.*f", precision, value);
 
 	update(string);
 }
@@ -2013,38 +1980,14 @@ void BC_PopupTextBox::disable_text(int option)
 	textbox->disable(option);
 }
 
-
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-	int64_t default_value,
-	int64_t min,
-	int64_t max,
-	int x, 
+	int default_value,
+	int min,
+	int max,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
-	popup->text_w, 
-	1, 
+ : BC_TextBox(x, y,popup->text_w, 1,
 	default_value)
-{
-	this->popup = popup;
-}
-
-
-BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-	float default_value,
-	float min,
-	float max,
-	int x, 
-	int y,
-	int precision)
- : BC_TextBox(x, 
-	y, 
-	popup->text_w, 
-	1, 
-	default_value,
-	1,
-	MEDIUMFONT,
-	precision)
 {
 	this->popup = popup;
 }
@@ -2056,14 +1999,8 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	int x,
 	int y,
 	int precision)
- : BC_TextBox(x,
-	y,
-	popup->text_w,
-	1,
-	default_value,
-	1,
-	MEDIUMFONT,
-	precision)
+ : BC_TextBox(x, y, popup->text_w, 1, default_value,
+	1, MEDIUMFONT, precision)
 {
 	this->popup = popup;
 }
@@ -2104,12 +2041,12 @@ int BC_TumbleTextBoxText::button_press_event()
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x, 
-		int y, 
-		int text_w)
+	int default_value,
+	int min,
+	int max,
+	int x,
+	int y,
+	int text_w)
 {
 	this->x = x;
 	this->y = y;
@@ -2119,60 +2056,17 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	use_float = 0;
-	precision = 4;
-	increment = 1;
-	log_floatincrement = 0;
-	reset();
-}
-
-
-BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		int default_value,
-		int min,
-		int max,
-		int x, 
-		int y, 
-		int text_w)
-{
-	this->x = x;
-	this->y = y;
-	this->min = min;
-	this->max = max;
-	this->default_value = default_value;
-	this->text_w = text_w;
-	this->parent_window = parent_window;
-	use_float = 0;
-	precision = 4;
-	reset();
-}
-
-BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		float default_value_f,
-		float min_f,
-		float max_f,
-		int x, 
-		int y, 
-		int text_w)
-{
-	this->x = x;
-	this->y = y;
-	this->min_f = min_f;
-	this->max_f = max_f;
-	this->default_value_f = default_value_f;
-	this->text_w = text_w;
-	this->parent_window = parent_window;
-	use_float = 1;
 	precision = 4;
 	reset();
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
-		double default_value_f,
-		double min_f,
-		double max_f,
-		int x,
-		int y,
-		int text_w)
+	double default_value_f,
+	double min_f,
+	double max_f,
+	int x,
+	int y,
+	int text_w)
 {
 	this->x = x;
 	this->y = y;
@@ -2274,17 +2168,7 @@ void BC_TumbleTextBox::update(const char *value)
 	textbox->update(value);
 }
 
-void BC_TumbleTextBox::update(int64_t value)
-{
-	textbox->update(value);
-}
-
 void BC_TumbleTextBox::update(int value)
-{
-	textbox->update(value);
-}
-
-void BC_TumbleTextBox::update(float value)
 {
 	textbox->update(value);
 }
@@ -2338,12 +2222,7 @@ void BC_TumbleTextBox::reposition_window(int x, int y)
 }
 
 
-void BC_TumbleTextBox::set_boundaries(int64_t min, int64_t max)
-{
-	tumbler->set_boundaries(min, max);
-}
-
-void BC_TumbleTextBox::set_boundaries(float min, float max)
+void BC_TumbleTextBox::set_boundaries(int min, int max)
 {
 	tumbler->set_boundaries(min, max);
 }

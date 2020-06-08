@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCTEXTBOX_H
 #define BCTEXTBOX_H
@@ -54,21 +38,21 @@ public:
 		int y, 
 		int w, 
 		int rows, 
-		int64_t text, 
+		int text,
+		int options = TXTBOX_BORDER,
+		int font = MEDIUMFONT);
+	BC_TextBox(int x,
+		int y,
+		int w,
+		int rows,
+		int64_t text,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
 		int rows, 
-		int text, 
-		int options = TXTBOX_BORDER,
-		int font = MEDIUMFONT);
-	BC_TextBox(int x, 
-		int y, 
-		int w, 
-		int rows, 
-		float text, 
+		double text,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT,
 		int precision = 4);
@@ -82,9 +66,7 @@ public:
 	void update(const char *text);
 	void update(const wchar_t *text);
 	void updateutf8(const char *text);
-	void update(int64_t value);
 	void update(int value);
-	void update(float value);
 	void update(double value);
 	static wchar_t *wstringbreaker(int font, wchar_t *text,
 		int boxwidth, BC_WindowBase *win);
@@ -326,23 +308,9 @@ class BC_TumbleTextBox : public BC_RelocatableWidget
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x, 
-		int y, 
-		int text_w);
-	BC_TumbleTextBox(BC_WindowBase *parent_window, 
 		int default_value,
 		int min,
 		int max,
-		int x, 
-		int y, 
-		int text_w);
-	BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		float default_value,
-		float min,
-		float max,
 		int x, 
 		int y, 
 		int text_w);
@@ -358,9 +326,7 @@ public:
 	virtual int handle_event();
 	char* get_text();
 	void update(const char *value);
-	void update(int64_t value);
 	void update(int value);
-	void update(float value);
 	void update(double value);
 	int get_x();
 	int get_y();
@@ -368,7 +334,7 @@ public:
 	int get_h();
 	void reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
-	void set_boundaries(int64_t min, int64_t max);
+	void set_boundaries(int min, int max);
 	void set_boundaries(float min, float max);
 	void set_boundaries(double min, double max);
 	void set_precision(int precision);
@@ -381,7 +347,7 @@ public:
 private:
 	void reset();
 	int x, y, text_w;
-	int64_t default_value, min, max;
+	int default_value, min, max;
 	double default_value_f, min_f, max_f;
 	int use_float;
 	int precision;
@@ -395,19 +361,12 @@ private:
 class BC_TumbleTextBoxText : public BC_TextBox
 {
 public:
-	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-		int64_t default_value,
-		int64_t min,
-		int64_t max,
-		int x, 
+	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
+		int default_value,
+		int min,
+		int max,
+		int x,
 		int y);
-	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-		float default_value,
-		float min,
-		float max,
-		int x, 
-		int y,
-		int precision);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 		double default_value,
 		double min,
@@ -417,6 +376,7 @@ public:
 		int precision);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);
 	virtual ~BC_TumbleTextBoxText();
+
 	int handle_event();
 	int button_press_event();
 	BC_TumbleTextBox *popup;

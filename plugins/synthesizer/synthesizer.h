@@ -457,8 +457,8 @@ public:
 		ptstime current_ptstime);
 	void reset();
 
-	float wetness;
-	int base_freq;         // base frequency for oscillators
+	double wetness;
+	int base_freq;           // base frequency for oscillators
 	int wavefunction;        // SINE, SAWTOOTH, etc
 	ArrayList<SynthOscillatorConfig*> oscillator_config;
 	PLUGIN_CONFIG_CLASS_MEMBERS

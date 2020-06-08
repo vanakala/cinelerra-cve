@@ -87,7 +87,7 @@ void IVTCWindow::update()
 		frame_offset->enable();
 		first_field->enable();
 	}
-	frame_offset->update((int64_t)plugin->config.frame_offset);
+	frame_offset->update(plugin->config.frame_offset);
 	first_field->update(plugin->config.first_field);
 
 	for(int i = 0; i < TOTAL_PATTERNS; i++)

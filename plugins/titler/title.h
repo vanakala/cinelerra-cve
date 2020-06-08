@@ -124,7 +124,7 @@ public:
 // Number of seconds the fade in and fade out of the title take
 	ptstime fade_in, fade_out;
 // Position in frame relative to top left
-	float x, y;
+	double x, y;
 // Pixels down and right of dropshadow
 	int dropshadow;
 // Stamp timecode

@@ -480,7 +480,7 @@ SynthWindow::SynthWindow(Synth *plugin, int x, int y)
 void SynthWindow::update()
 {
 	freqpot->update(plugin->config.base_freq);
-	base_freq->update((int64_t)plugin->config.base_freq);
+	base_freq->update(plugin->config.base_freq);
 	wetness->update(plugin->config.wetness);
 	waveform->set_text(waveform_to_text(plugin->config.wavefunction));
 
@@ -782,7 +782,7 @@ int SynthFreqPot::handle_event()
 	if(get_value() > 0 && get_value() < 30000)
 	{
 		synth->config.base_freq = get_value();
-		freq_text->update(get_value());
+		freq_text->update((int)get_value());
 		synth->send_configure_change();
 	}
 	return 1;

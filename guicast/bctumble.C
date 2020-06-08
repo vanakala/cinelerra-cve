@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcpixmap.h"
 #include "bcresources.h"
@@ -234,7 +218,7 @@ int BC_Tumbler::cursor_motion_event()
 }
 
 
-BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, int y)
+BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int min, int max, int x, int y)
  : BC_Tumbler(x, y)
 {
 	this->textbox = textbox;
@@ -243,19 +227,16 @@ BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, i
 	this->increment = 1;
 }
 
-BC_ITumbler::~BC_ITumbler()
+void BC_ITumbler::set_increment(int value)
 {
-}
-
-void BC_ITumbler::set_increment(float value)
-{
-	this->increment = (int64_t)value;
-	if(increment < 1) increment = 1;
+	increment = value;
+	if(increment < 1)
+		increment = 1;
 }
 
 void BC_ITumbler::handle_up_event()
 {
-	int64_t value = atol(textbox->get_text());
+	int value = atoi(textbox->get_text());
 	value += increment;
 	if(value > max) value = max;
 	textbox->update(value);
@@ -264,14 +245,14 @@ void BC_ITumbler::handle_up_event()
 
 void BC_ITumbler::handle_down_event()
 {
-	int64_t value = atol(textbox->get_text());
+	int value = atoi(textbox->get_text());
 	value -= increment;
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();
 }
 
-void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
+void BC_ITumbler::set_boundaries(int min, int max)
 {
 	this->min = min;
 	this->max = max;
@@ -279,8 +260,8 @@ void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
 
 
 BC_FTumbler::BC_FTumbler(BC_TextBox *textbox, 
-	float min, 
-	float max, 
+	double min,
+	double max,
 	int x, 
 	int y)
  : BC_Tumbler(x, y)
@@ -292,48 +273,46 @@ BC_FTumbler::BC_FTumbler(BC_TextBox *textbox,
 	this->log_floatincrement = 0;
 }
 
-BC_FTumbler::~BC_FTumbler()
-{
-}
-
 void BC_FTumbler::handle_up_event()
 {
-	float value = atof(textbox->get_text());
-	if (log_floatincrement) {
+	double value = atof(textbox->get_text());
+
+	if(log_floatincrement)
+	{
 		// round off to to current precision (i.e. 250 -> 200)
-		float cp = floor(log(value)/log(10) + 0.0001);
-		value = floor((value/pow(10,cp))+ 0.0001)*pow(10,cp);
-		value += pow(10,cp);
+		double cp = floor(log(value) / log(10) + 0.0001);
+		value = floor((value / pow(10,cp)) + 0.0001) * pow(10, cp);
+		value += pow(10, cp);
 	}
 	else
 		value += increment;
-	if(value > max) value = max;
+
+	if(value > max)
+		value = max;
 	textbox->update(value);
 	textbox->handle_event();
 }
 
 void BC_FTumbler::handle_down_event()
 {
-	float value = atof(textbox->get_text());
-	if (log_floatincrement) {
+	double value = atof(textbox->get_text());
+
+	if(log_floatincrement)
+	{
 		// round off to to current precision (i.e. 250 -> 200)
-		float cp = floor(log(value)/log(10));
-		value = floor(value/pow(10,cp))*pow(10,cp);
+		double cp = floor(log(value) / log(10));
+		value = floor(value / pow(10, cp)) * pow(10, cp);
 		// Need to make it so that: [.001 .01 .1 1 10 100] => [.0001 .001 .01 .1 1 10]
-		cp = floor(log(value)/log(10)-.01);
-		value -= pow(10,cp);
+		cp = floor(log(value) / log(10) - .01);
+		value -= pow(10, cp);
 	}
 	else
 		value -= increment;
-	if(value < min) value = min;
+
+	if(value < min)
+		value = min;
 	textbox->update(value);
 	textbox->handle_event();
-}
-
-void BC_FTumbler::set_boundaries(float min, float max)
-{
-	this->min = min;
-	this->max = max;
 }
 
 void BC_FTumbler::set_boundaries(double min, double max)
@@ -342,7 +321,7 @@ void BC_FTumbler::set_boundaries(double min, double max)
 	this->max = max;
 }
 
-void BC_FTumbler::set_increment(float value)
+void BC_FTumbler::set_increment(double value)
 {
 	this->increment = value;
 }

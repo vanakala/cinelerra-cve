@@ -641,7 +641,7 @@ CWindowCamProjGUI::CWindowCamProjGUI(MWindow *mwindow, CWindowTool *thread,
 		y, 
 		(float)1,
 		1);
-	this->z->set_boundaries((float).0001, (float)256.0);
+	this->z->set_boundaries(.0001, 256.0);
 
 	y += 30;
 	x1 = 10;

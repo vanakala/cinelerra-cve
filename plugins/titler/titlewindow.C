@@ -333,7 +333,7 @@ void TitleWindow::update()
 	timecodeformat->update(plugin->config.timecodeformat);
 	motion->update(TitleMain::motion_to_text(plugin->config.motion_strategy));
 	loop->update(plugin->config.loop);
-	dropshadow->update((int64_t)plugin->config.dropshadow);
+	dropshadow->update(plugin->config.dropshadow);
 	fade_in->update((float)plugin->config.fade_in);
 	fade_out->update((float)plugin->config.fade_out);
 #ifdef USE_OUTLINE
@@ -601,9 +601,9 @@ int TitleText::handle_event()
 
 TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(int64_t)client->config.dropshadow,
-	(int64_t)0,
-	(int64_t)1000,
+	client->config.dropshadow,
+	0,
+	1000,
 	x, 
 	y, 
 	70)
@@ -622,9 +622,9 @@ int TitleDropShadow::handle_event()
 
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	(int64_t)client->config.x,
-	(int64_t)-2048,
-	(int64_t)2048,
+	client->config.x,
+	-2048.0,
+	2048.0,
 	x, 
 	y, 
 	60)
@@ -642,9 +642,9 @@ int TitleX::handle_event()
 
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	(int64_t)client->config.y, 
-	(int64_t)-2048,
-	(int64_t)2048,
+	client->config.y,
+	-2048.0,
+	2048.0,
 	x, 
 	y, 
 	60)
@@ -665,9 +665,9 @@ TitleStrokeW::TitleStrokeW(TitleMain *client,
 	int x, 
 	int y)
  : BC_TumbleTextBox(window,
- 	(float)client->config.stroke_width,
-	(float)-2048,
-	(float)2048,
+	client->config.stroke_width,
+	-2048.0,
+	2048.0,
 	x, 
 	y, 
 	60)
@@ -686,16 +686,15 @@ int TitleStrokeW::handle_event()
 
 TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	(float)client->config.pixels_per_second, 
-	(float)0,
-	(float)1000,
+	client->config.pixels_per_second,
+	0.0,
+	1000.0,
 	x, 
 	y, 
 	70)
 {
 	this->client = client;
 }
-
 
 int TitleSpeed::handle_event()
 {
