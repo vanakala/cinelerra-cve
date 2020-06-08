@@ -1,25 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcpot.h"
+#include "clip.h"
 #include "bcresources.h"
 #include "colors.h"
 #include "keys.h"
@@ -39,10 +24,6 @@ BC_Pot::BC_Pot(int x, int y, VFrame **data)
 	for(int i = 0; i < POT_STATES; i++)
 		images[i] = 0;
 	use_caption = 1;
-}
-
-BC_Pot::~BC_Pot()
-{
 }
 
 int BC_Pot::calculate_h()
@@ -101,17 +82,17 @@ void BC_Pot::draw()
 	top_level->unlock_window();
 }
 
-float BC_Pot::percentage_to_angle(float percentage)
+double BC_Pot::percentage_to_angle(double percentage)
 {
 	return percentage * (MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
 }
 
-float BC_Pot::angle_to_percentage(float angle)
+double BC_Pot::angle_to_percentage(double angle)
 {
 	return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
 }
 
-void BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
+void BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, double angle)
 {
 	x1 = resources.pot_x1;
 	y1 = resources.pot_y1;
@@ -127,10 +108,10 @@ void BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * resources.pot_r + y1);
 }
 
-float BC_Pot::coords_to_angle(int x2, int y2)
+double BC_Pot::coords_to_angle(int x2, int y2)
 {
 	int x1, y1, x, y;
-	float angle;
+	double angle;
 
 	x1 = resources.pot_x1;
 	y1 = resources.pot_y1;
@@ -145,22 +126,22 @@ float BC_Pot::coords_to_angle(int x2, int y2)
 
 	if(x > 0 && y <= 0)
 	{
-		angle = atan((float)-y / x) / (2 * M_PI) * 360;
+		angle = atan((double)-y / x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x < 0 && y <= 0)
 	{
-		angle = 180 - atan((float)-y / -x) / (2 * M_PI) * 360;
+		angle = 180 - atan((double)-y / -x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x < 0 && y > 0)
 	{
-		angle = 180 - atan((float)-y / -x) / (2 * M_PI) * 360;
+		angle = 180 - atan((double)-y / -x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x > 0 && y > 0)
 	{
-		angle = 360 + atan((float)-y / x) / (2 * M_PI) * 360;
+		angle = 360 + atan((double)-y / x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x == 0 && y < 0)
@@ -348,7 +329,7 @@ int BC_Pot::cursor_motion_event()
 		top_level->event_win == win && 
 		status == POT_DN)
 	{
-		float angle = coords_to_angle(get_cursor_x(), get_cursor_y());
+		double angle = coords_to_angle(get_cursor_x(), get_cursor_y());
 
 		if(prev_angle >= 0 && prev_angle < 90 &&
 			angle >= 270 && angle < 360)
@@ -378,9 +359,9 @@ int BC_Pot::cursor_motion_event()
 
 BC_FPot::BC_FPot(int x, 
 	int y, 
-	float value, 
-	float minvalue, 
-	float maxvalue, 
+	double value,
+	double minvalue,
+	double maxvalue,
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
@@ -388,10 +369,6 @@ BC_FPot::BC_FPot(int x,
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
 	precision = 0.1;
-}
-
-BC_FPot::~BC_FPot()
-{
 }
 
 void BC_FPot::increase_value()
@@ -406,52 +383,54 @@ void BC_FPot::decrease_value()
 	if(value < minvalue) value = minvalue;
 }
 
-void BC_FPot::set_precision(float value)
+void BC_FPot::set_precision(double value)
 {
 	this->precision = value;
 }
 
-const char*  BC_FPot::get_caption()
+const char *BC_FPot::get_caption()
 {
 	sprintf(caption, "%.2f", value);
 	return caption;
 }
 
-float BC_FPot::get_percentage()
+double BC_FPot::get_percentage()
 {
 	return (value - minvalue) / (maxvalue - minvalue);
 }
 
-int BC_FPot::percentage_to_value(float percentage)
+int BC_FPot::percentage_to_value(double percentage)
 {
-	float old_value = value;
+	double old_value = value;
+
 	value = percentage * (maxvalue - minvalue) + minvalue;
 	value = Units::quantize(value, precision);
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
-	if(value != old_value) return 1;
+	if(!EQUIV(value, old_value))
+		return 1;
 	return 0;
 }
 
-float BC_FPot::get_value()
+double BC_FPot::get_value()
 {
 	return value;
 }
 
-void BC_FPot::update(float value)
+void BC_FPot::update(double value)
 {
-	if(value != this->value)
+	if(!EQUIV(value, this->value))
 	{
 		this->value = value;
 		draw();
 	}
 }
 
-void BC_FPot::update(float value, float minvalue, float maxvalue)
+void BC_FPot::update(double value, double minvalue, double maxvalue)
 {
-	if(value != this->value ||
-		minvalue != this->minvalue ||
-		maxvalue != this->maxvalue)
+	if(!EQUIV(value, this->value) ||
+		!EQUIV(minvalue, this->minvalue) ||
+		!EQUIV(maxvalue, this->maxvalue))
 	{
 		this->value = value;
 		this->minvalue = minvalue;
@@ -462,19 +441,15 @@ void BC_FPot::update(float value, float minvalue, float maxvalue)
 
 BC_IPot::BC_IPot(int x, 
 	int y, 
-	int64_t value, 
-	int64_t minvalue, 
-	int64_t maxvalue, 
+	int value,
+	int minvalue,
+	int maxvalue,
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = value;
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
-}
-
-BC_IPot::~BC_IPot()
-{
 }
 
 void BC_IPot::increase_value()
@@ -489,33 +464,33 @@ void BC_IPot::decrease_value()
 	if(value < minvalue) value = minvalue;
 }
 
-const char*  BC_IPot::get_caption()
+const char *BC_IPot::get_caption()
 {
-	sprintf(caption, "%" PRId64, value);
+	sprintf(caption, "%d", value);
 	return caption;
 }
 
-float BC_IPot::get_percentage()
+double BC_IPot::get_percentage()
 {
-	return ((float)value - minvalue) / (maxvalue - minvalue);
+	return ((double)value - minvalue) / (maxvalue - minvalue);
 }
 
-int BC_IPot::percentage_to_value(float percentage)
+int BC_IPot::percentage_to_value(double percentage)
 {
-	int64_t old_value = value;
-	value = (int64_t)(percentage * (maxvalue - minvalue) + minvalue);
+	int old_value = value;
+	value = round(percentage * (maxvalue - minvalue) + minvalue);
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
 	if(value != old_value) return 1;
 	return 0;
 }
 
-int64_t BC_IPot::get_value()
+int BC_IPot::get_value()
 {
 	return value;
 }
 
-void BC_IPot::update(int64_t value)
+void BC_IPot::update(int value)
 {
 	if(this->value != value)
 	{
@@ -524,7 +499,7 @@ void BC_IPot::update(int64_t value)
 	}
 }
 
-void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
+void BC_IPot::update(int value, int minvalue, int maxvalue)
 {
 	if(this->value != value ||
 		this->minvalue != minvalue ||
@@ -540,17 +515,13 @@ void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
 
 BC_QPot::BC_QPot(int x, 
 	int y, 
-	int64_t value, 
+	int value,
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = Freq::fromfreq(value);
 	this->minvalue = 0;
 	this->maxvalue = TOTALFREQS;
-}
-
-BC_QPot::~BC_QPot()
-{
 }
 
 void BC_QPot::increase_value()
@@ -565,33 +536,33 @@ void BC_QPot::decrease_value()
 	if(value < minvalue) value = minvalue;
 }
 
-const char*  BC_QPot::get_caption()
+const char *BC_QPot::get_caption()
 {
 	sprintf(caption, "%d", Freq::tofreq(value));
 	return caption;
 }
 
-float BC_QPot::get_percentage()
+double BC_QPot::get_percentage()
 {
-	return ((float)value - minvalue) / (maxvalue - minvalue);
+	return ((double)value - minvalue) / (maxvalue - minvalue);
 }
 
-int BC_QPot::percentage_to_value(float percentage)
+int BC_QPot::percentage_to_value(double percentage)
 {
-	int64_t old_value = value;
-	value = (int64_t)(percentage * (maxvalue - minvalue) + minvalue);
+	int old_value = value;
+	value = round(percentage * (maxvalue - minvalue) + minvalue);
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
 	if(value != old_value) return 1;
 	return 0;
 }
 
-int64_t BC_QPot::get_value()
+int BC_QPot::get_value()
 {
 	return Freq::tofreq(value);
 }
 
-void BC_QPot::update(int64_t value)
+void BC_QPot::update(int value)
 {
 	if(this->value != value)
 	{
@@ -603,19 +574,15 @@ void BC_QPot::update(int64_t value)
 
 BC_PercentagePot::BC_PercentagePot(int x, 
 	int y, 
-	float value, 
-	float minvalue, 
-	float maxvalue, 
+	double value,
+	double minvalue,
+	double maxvalue,
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
 	this->value = value;
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
-}
-
-BC_PercentagePot::~BC_PercentagePot()
-{
 }
 
 void BC_PercentagePot::increase_value()
@@ -630,20 +597,20 @@ void BC_PercentagePot::decrease_value()
 	if(value < minvalue) value = minvalue;
 }
 
-const char*  BC_PercentagePot::get_caption()
+const char *BC_PercentagePot::get_caption()
 {
 	sprintf(caption, "%d%%", (int)(get_percentage() * 100 + 0.5));
 	return caption;
 }
 
-float BC_PercentagePot::get_percentage()
+double BC_PercentagePot::get_percentage()
 {
 	return (value - minvalue) / (maxvalue - minvalue);
 }
 
-int BC_PercentagePot::percentage_to_value(float percentage)
+int BC_PercentagePot::percentage_to_value(double percentage)
 {
-	float old_value = value;
+	double old_value = value;
 	value = percentage * (maxvalue - minvalue) + minvalue;
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
@@ -651,14 +618,14 @@ int BC_PercentagePot::percentage_to_value(float percentage)
 	return 0;
 }
 
-float BC_PercentagePot::get_value()
+double BC_PercentagePot::get_value()
 {
 	return value;
 }
 
-void BC_PercentagePot::update(float value)
+void BC_PercentagePot::update(double value)
 {
-	if(this->value != value)
+	if(!EQUIV(this->value, value))
 	{
 		this->value = value;
 		draw();

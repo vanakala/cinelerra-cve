@@ -116,8 +116,9 @@ public:
 		int x,
 		int y,
 		LADSPA_Data *output,
-		float min,
-		float max);
+		double min,
+		double max);
+
 	int handle_event();
 	PluginAClientLAD *plugin;
 	LADSPA_Data *output;

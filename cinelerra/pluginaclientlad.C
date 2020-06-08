@@ -243,8 +243,8 @@ PluginACLientFLinear::PluginACLientFLinear(PluginAClientLAD *plugin,
 	int x,
 	int y,
 	LADSPA_Data *output,
-	float min,
-	float max)
+	double min,
+	double max)
  : BC_FPot(x, y, *output, min, max)
 {
 	this->plugin = plugin;
