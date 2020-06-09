@@ -92,10 +92,10 @@ int Track::get_id()
 void Track::equivalent_output(Track *track, ptstime *result)
 {
 	if(data_type != track->data_type ||
-		track_w != track->track_w ||
-		track_h != track->track_h ||
-		play != track->play ||
-		nudge != track->nudge)
+			track_w != track->track_w ||
+			track_h != track->track_h ||
+			play != track->play ||
+			!EQUIV(nudge, track->nudge))
 		*result = 0;
 
 // Convert result to track units
