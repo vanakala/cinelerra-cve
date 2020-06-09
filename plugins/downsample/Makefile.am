@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = downsample.la
 downsample_la_LDFLAGS = -avoid-version -module -shared 
 downsample_la_LIBADD = 
-downsample_la_SOURCES = downsample.C 
+downsample_la_SOURCES = downsample.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \

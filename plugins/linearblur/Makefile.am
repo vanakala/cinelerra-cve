@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = linearblur.la
 linearblur_la_LDFLAGS = -avoid-version -module -shared 
 linearblur_la_LIBADD = 
-linearblur_la_SOURCES = linearblur.C 
+linearblur_la_SOURCES = linearblur.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \

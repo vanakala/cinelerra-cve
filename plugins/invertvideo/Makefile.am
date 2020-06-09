@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = invertvideo.la
 invertvideo_la_LDFLAGS = -avoid-version -module -shared 
 invertvideo_la_LIBADD =
-invertvideo_la_SOURCES = invert.C 
+invertvideo_la_SOURCES = invert.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \

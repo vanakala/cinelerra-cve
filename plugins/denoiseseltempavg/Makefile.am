@@ -5,7 +5,7 @@ denoiseseltempavg_la_SOURCES = seltempavg.C seltempavgwindow.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = seltempavg.h seltempavgwindow.h 

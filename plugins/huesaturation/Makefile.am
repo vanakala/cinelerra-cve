@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = huesaturation.la
 huesaturation_la_LDFLAGS = -avoid-version -module -shared 
 huesaturation_la_LIBADD =
-huesaturation_la_SOURCES = huesaturation.C 
+huesaturation_la_SOURCES = huesaturation.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \

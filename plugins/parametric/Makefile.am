@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = parametric.la
 parametric_la_LDFLAGS = -avoid-version -module -shared 
 parametric_la_LIBADD =
-parametric_la_SOURCES = parametric.C 
+parametric_la_SOURCES = parametric.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast \

@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = polar.la
 polar_la_LDFLAGS = -avoid-version -module -shared 
 polar_la_LIBADD = 
-polar_la_SOURCES = polar.C 
+polar_la_SOURCES = polar.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \

@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = shapewipe.la
 shapewipe_la_LDFLAGS = -avoid-version -module -shared 
 shapewipe_la_LIBADD = 
-shapewipe_la_SOURCES = shapewipe.C 
+shapewipe_la_SOURCES = shapewipe.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS) \
 	-DDEFAULT_SHAPE=\"$(shapewipedir)/heart.png\"
 
