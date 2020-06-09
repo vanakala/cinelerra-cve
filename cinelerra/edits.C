@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "assetlist.h"
@@ -203,7 +187,7 @@ Edit* Edits::split_edit(ptstime postime, int force)
 		return edit;
 	}
 // Get edit containing position
-	edit = editof(postime, 0);
+	edit = editof(postime);
 
 	if(!edit)
 	{
@@ -373,10 +357,9 @@ ptstime Edits::length()
 		return 0;
 }
 
-Edit* Edits::editof(ptstime postime, int use_nudge)
+Edit* Edits::editof(ptstime postime)
 {
 	Edit *current = 0;
-	if(use_nudge && track) postime += track->nudge;
 
 	for(current = first; current; current = NEXT)
 	{
@@ -389,10 +372,9 @@ Edit* Edits::editof(ptstime postime, int use_nudge)
 	return 0;     // return 0 on failure
 }
 
-Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
+Edit* Edits::get_playable_edit(ptstime postime)
 {
 	Edit *current;
-	if(track && use_nudge) postime += track->nudge;
 
 // Get the current edit
 	for(current = first; current; current = NEXT)
@@ -481,8 +463,8 @@ void Edits::copy(Edits *edits, ptstime start, ptstime end)
 
 void Edits::clear(ptstime start, ptstime end)
 {
-	Edit* edit1 = editof(start, 0);
-	Edit* edit2 = editof(end, 0);
+	Edit* edit1 = editof(start);
+	Edit* edit2 = editof(end);
 	Edit* current_edit;
 
 	if(PTSEQU(end, start)) return;        // nothing selected
@@ -803,7 +785,7 @@ void Edits::paste_silence(ptstime start, ptstime end)
 	// b) paste silence is after last edit
 	// in both cases editof returns NULL
 
-	Edit *new_edit = editof(start, 0);
+	Edit *new_edit = editof(start);
 	if(!new_edit) return;
 
 	if(new_edit->asset)

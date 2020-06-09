@@ -829,7 +829,7 @@ void Track::copy_assets(ptstime start,
 {
 	int i, result = 0;
 
-	Edit *current = edits->editof(start, 0);
+	Edit *current = edits->editof(start);
 
 // Search all edits
 	while(current && current->get_pts() < end)
@@ -989,7 +989,6 @@ int Track::need_edit(Edit *current, int test_transitions)
 ptstime Track::plugin_change_duration(ptstime input_position,
 	ptstime input_length)
 {
-	input_position += nudge;
 	for(int i = 0; i < plugins.total; i++)
 	{
 		ptstime new_duration = plugins.values[i]->plugin_change_duration(
@@ -1008,7 +1007,6 @@ ptstime Track::edit_change_duration(ptstime input_position,
 {
 	Edit *current;
 	ptstime edit_length = input_length;
-	input_position += nudge;
 
 // =================================== forward playback
 // Get first edit on or before position
@@ -1111,9 +1109,9 @@ ptstime Track::plugin_max_start(Plugin *plugin)
 		return tracks->length() - plugin->get_length();
 }
 
-Edit *Track::editof(ptstime postime, int use_nudge)
+Edit *Track::editof(ptstime postime)
 {
-	return edits->editof(postime, use_nudge);
+	return edits->editof(postime);
 }
 
 Plugin *Track::get_shared_multichannel(ptstime start, ptstime end)
