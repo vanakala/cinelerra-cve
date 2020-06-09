@@ -571,7 +571,7 @@ NudgePatch::NudgePatch(MWindow *mwindow,
 	y,
 	w,
 	1,
-	(float)patch->track->nudge)
+	patch->track->nudge)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
