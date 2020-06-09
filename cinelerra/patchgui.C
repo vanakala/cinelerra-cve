@@ -311,24 +311,6 @@ void PatchGUI::toggle_master(int value,
 		toggle->update(*output);
 }
 
-char* PatchGUI::calculate_nudge_text(int *changed)
-{
-	if(changed) *changed = 0;
-
-	sprintf(string_return, "%.4f", track->nudge);
-	if(changed && nudge && strcmp(nudge->get_text(), string_return))
-		*changed = 1;
-	return string_return;
-}
-
-ptstime PatchGUI::calculate_nudge(char *string)
-{
-	ptstime result;
-
-	sscanf(string, "%lf", &result);
-	return result;
-}
-
 
 PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, 

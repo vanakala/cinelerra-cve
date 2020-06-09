@@ -45,8 +45,6 @@ public:
 	virtual int update(int x, int y);
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
-	char* calculate_nudge_text(int *changed);
-	ptstime calculate_nudge(char *string);
 
 	MWindow *mwindow;
 	PatchBay *patchbay;
