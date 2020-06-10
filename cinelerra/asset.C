@@ -367,7 +367,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 	// Set active streams
 	last_active = 0;
 	if(nb_programs)
-		set_program_id(program_id);
+	{
+		if(set_program_id(program_id) < 0)
+			set_program(0);
+	}
 	else
 	{
 		set_audio_stream(audio_streamno - 1);
@@ -638,6 +641,8 @@ void Asset::read(FileXML *file,
 					format = ContainerSelection::text_to_container(string);
 				use_header = 
 					file->tag.get_property("USE_HEADER", use_header);
+				program_id =
+					file->tag.get_property("PROGRAM", program_id);
 			}
 			else
 			if(file->tag.title_is("VIDEO"))
@@ -832,6 +837,8 @@ void Asset::write(FileXML *file,
 	file->tag.set_property("TYPE", 
 		ContainerSelection::container_prefix(format));
 	file->tag.set_property("USE_HEADER", use_header);
+	if(nb_programs && program_id)
+		file->tag.set_property("PROGRAM", program_id);
 
 	file->append_tag();
 	file->tag.set_title("/FORMAT");
