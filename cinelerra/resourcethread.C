@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "asset.h"
@@ -277,25 +261,17 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
 	{
-		int exists = 0;
-
 		for(int i = 0; i < mwindow_global->gui->canvas->resource_pixmaps.total; i++)
 		{
-			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] ==
+				item->pixmap)
 			{
-				exists = 1;
+				item->pixmap->draw_vframe(picon_frame,
+					item->picon_x, item->picon_y,
+					item->picon_w, item->picon_h,
+					0, 0);
 				break;
 			}
-		}
-		if(exists)
-		{
-			item->pixmap->draw_vframe(picon_frame,
-				item->picon_x, 
-				item->picon_y, 
-				item->picon_w, 
-				item->picon_h, 
-				0, 
-				0);
 		}
 	}
 
@@ -346,11 +322,12 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				if(!source)
 					return;
 
-				int fragment = BUFFERSIZE;
 				samplenum total_samples = source->get_audio_length();
 
 				if(!aframe)
-					aframe = new AFrame(BUFFERSIZE);
+					aframe = new AFrame(AUDIO_BUFFER_SIZE);
+
+				int fragment = aframe->get_buffer_length();
 
 				aframe->set_samplerate(item->asset->sample_rate);
 				aframe->channel = item->channel;

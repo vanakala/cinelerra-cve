@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "asset.h"
@@ -68,7 +52,7 @@ ResourcePixmap::ResourcePixmap(ResourceThread *resource_thread,
 	this->canvas = canvas;
 	source_pts = edit->get_source_pts();
 	data_type = edit->track->data_type;
-	edit_id = edit->id;
+	edit_id = 0;
 }
 
 ResourcePixmap::~ResourcePixmap()
@@ -97,21 +81,22 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Area to redraw relative to pixmap
 	int refresh_x = 0;
 	int refresh_w = 0;
+	int y = 0;
+	Track *track = edit->edits->track;
 
 // Ignore if called by resourcethread.
 	if(mode & WUPD_CANVPICIGN) return;
 
-	int y = 0;
 	if(edlsession->show_titles)
 		y += theme_global->get_image("title_bg_data")->get_h();
-	Track *track = edit->edits->track;
 
 // If index can't be drawn, don't do anything.
-	int need_redraw = 0;
 	if(indexes_only)
 	{
-		int64_t index_zoom = 0;
+		int index_zoom = 0;
+		int need_redraw = 0;
 		IndexFile indexfile(mwindow_global);
+
 		if(!indexfile.open_index(edit->asset))
 		{
 			index_zoom = edit->asset->index_zoom;
@@ -122,10 +107,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			if(data_type == TRACK_AUDIO)
 			{
-				double asset_over_session = (double)edit->asset->sample_rate / 
+				double asset_over_session =
+					(double)edit->asset->sample_rate /
 					edlsession->sample_rate;
-				if(index_zoom <=
-						edlsession->sample_rate *
+				if(index_zoom <= edlsession->sample_rate *
 						master_edl->local_session->zoom_time *
 						asset_over_session)
 					need_redraw = 1;
@@ -138,15 +123,12 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Redraw everything
 	if(!PTSEQU(edit->get_source_pts(), this->source_pts) ||
-		(data_type == TRACK_AUDIO) ||
-		(data_type == TRACK_VIDEO) ||
 		!PTSEQU(master_edl->local_session->zoom_time, zoom_time) ||
 		master_edl->local_session->zoom_track != zoom_track ||
 		this->pixmap_h != pixmap_h ||
-		(data_type == TRACK_AUDIO && 
+		(data_type == TRACK_AUDIO &&
 			master_edl->local_session->zoom_y != zoom_y) ||
-		(mode & WUPD_CANVREDRAW) ||
-		need_redraw)
+		(mode & WUPD_CANVREDRAW))
 	{
 // Shouldn't draw at all if zoomed in below index zoom.
 		refresh_x = 0;
@@ -155,11 +137,11 @@ void ResourcePixmap::draw_data(Edit *edit,
 	else
 	{
 // Start translated right
-		if(pixmap_w == this->pixmap_w && edit_x < this->edit_x && edit_w != pixmap_w)
+		if(pixmap_w == this->pixmap_w &&
+			edit_x < this->edit_x && edit_w != pixmap_w)
 		{
 			refresh_w = this->edit_x - edit_x;
 			refresh_x = this->pixmap_w - refresh_w;
-
 // Moved completely off the pixmap
 			if(refresh_w > this->pixmap_w)
 			{
@@ -168,12 +150,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 			}
 			else
 			{
-				copy_area(refresh_w, 
-					y, 
-					refresh_x, 
+				copy_area(refresh_w, y, refresh_x,
 					master_edl->local_session->zoom_track,
-					0, 
-					y);
+					0, y);
 			}
 		}
 		else
@@ -182,7 +161,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			refresh_x = 0;
 			refresh_w = edit_x - this->edit_x;
-
 // Moved completely off the pixmap
 			if(refresh_w > this->pixmap_w)
 			{
@@ -190,12 +168,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 			}
 			else
 			{
-				copy_area(0, 
-					y, 
-					this->pixmap_w - refresh_w, 
+				copy_area(0, y, this->pixmap_w - refresh_w,
 					master_edl->local_session->zoom_track,
-					refresh_w, 
-					y);
+					refresh_w, y);
 			}
 		}
 		else
@@ -203,7 +178,8 @@ void ResourcePixmap::draw_data(Edit *edit,
 		if(pixmap_w < this->pixmap_w && edit_x < this->edit_x && 
 			this->edit_x + edit_w > this->pixmap_x + this->pixmap_w)
 		{
-			refresh_w = (this->edit_x + edit_w) - (this->pixmap_x + this->pixmap_w);
+			refresh_w = (this->edit_x + edit_w) -
+				(this->pixmap_x + this->pixmap_w);
 			refresh_x = pixmap_w - refresh_w;
 
 			if(refresh_w >= pixmap_w)
@@ -213,12 +189,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 			}
 			else
 			{
-				copy_area(this->edit_x - edit_x, 
-					y, 
+				copy_area(this->edit_x - edit_x, y,
 					pixmap_w - refresh_w, 
 					master_edl->local_session->zoom_track,
-					0, 
-					y);
+					0, y);
 			}
 		}
 		else
@@ -227,13 +201,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			refresh_x = 0;
 			refresh_w = 0;
-
-			copy_area(this->pixmap_w - pixmap_w, 
-				y, 
-				pixmap_w, 
+			copy_area(this->pixmap_w - pixmap_w, y,
+				pixmap_w,
 				master_edl->local_session->zoom_track,
-				0, 
-				y);
+				0, y);
 		}
 		else
 // Start translated left and pixmap came off left side
@@ -243,18 +214,12 @@ void ResourcePixmap::draw_data(Edit *edit,
 			refresh_w = -this->edit_x;
 
 			if(refresh_w > pixmap_w)
-			{
 				refresh_w = pixmap_w;
-			}
 			else
-			{
-				copy_area(0, 
-						y, 
-						this->pixmap_w, 
-						master_edl->local_session->zoom_track,
-						refresh_w, 
-						y);
-			}
+				copy_area(0, y,
+					this->pixmap_w,
+					master_edl->local_session->zoom_track,
+					refresh_w, y);
 		}
 		else
 // Start translated left and reduced in size on the right
@@ -269,7 +234,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			refresh_w = pixmap_w - (edit_x + this->pixmap_w);
 			refresh_x = pixmap_w - refresh_w;
-
 // Moved completely off new pixmap
 			if(refresh_w > pixmap_w)
 			{
@@ -278,12 +242,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 			}
 			else
 			{
-				copy_area(-edit_x, 
-					y,
+				copy_area(-edit_x, y,
 					refresh_x,
 					master_edl->local_session->zoom_track,
-					0,
-					y);
+					0, y);
 			}
 		}
 		else
@@ -299,7 +261,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			refresh_x = 0;
 			refresh_w = edit_x - this->edit_x;
-
 // Moved completely off new pixmap
 			if(refresh_w > this->pixmap_w)
 			{
@@ -308,14 +269,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 			}
 // Shift and insert
 			else
-			{
-				copy_area(0, 
-					y,
+				copy_area(0, y,
 					this->pixmap_w,
 					master_edl->local_session->zoom_track,
-					refresh_w,
-					y);
-			}
+					refresh_w, y);
 		}
 	}
 
@@ -332,15 +289,14 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Draw in new background
 	if(refresh_w > 0)
-		theme_global->draw_resource_bg(canvas,
-			this, 
-			edit_x,
-			edit_w,
+	{
+		theme_global->draw_resource_bg(canvas, this,
+			edit_x, edit_w,
 			pixmap_x,
-			refresh_x, 
-			y,
+			refresh_x, y,
 			refresh_x + refresh_w,
 			master_edl->local_session->zoom_track + y);
+	}
 
 // Draw media
 	if(track->draw && edlsession->show_assets)
@@ -626,29 +582,26 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // pixels spanned by a picon
 	int picon_w = round(edit->picon_w());
 	int picon_h = edit->picon_h();
+// Current pixel relative to pixmap
+	int y = 0;
 
 // Don't draw video if edit is tiny
 	if(edit_w < 2) return;
 
-// Current pixel relative to pixmap
-	int x = 0;
-	int y = 0;
 	if(edlsession->show_titles)
 		y += theme_global->get_image("title_bg_data")->get_h();
 
-	double picons = ((double)(refresh_x + pixmap_x - edit_x) / picon_w);
-	double picount = trunc(picons);
-	x = -round((picons - picount) * picon_w);
+	int picount = (refresh_x + pixmap_x - edit_x) / picon_w;
+	int x = picount * picon_w + edit_x;
 	ptstime picon_len = picon_w * zoom_time;
-
 	ptstime picon_src = picount * picon_len;
 
 // Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
 		ptstime source_pts = edit->get_source_pts() + picon_src;
-		VFrame *picon_frame = 0;
-		int use_cache = 0;
+		VFrame *picon_frame;
+
 		if(picon_frame = resource_thread->frame_cache->get_frame_ptr(source_pts,
 			edit->channel,
 			BC_RGB888,
@@ -670,13 +623,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Set picon thread to display from file
 			if(!(mode & WUPD_CANVPICIGN))
 			{
-				canvas->resource_thread->add_picon(this, 
-					x, 
-					y, 
-					picon_w,
-					picon_h,
-					source_pts,
-					picon_len,
+				canvas->resource_thread->add_picon(this,
+					x, y, picon_w, picon_h,
+					source_pts, picon_len,
 					edit->channel,
 					edit->asset);
 			}
@@ -687,8 +636,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	}
 }
 
-void ResourcePixmap::dump()
+void ResourcePixmap::dump(int indent)
 {
-	printf("ResourcePixmap %p\n", this);
-	printf(" edit %x edit_x %d pixmap_x %d pixmap_w %d visible %d\n", edit_id, edit_x, pixmap_x, pixmap_w, visible);
+	printf("%*sResourcePixmap %p dump:\n", indent, "", this);
+	printf("%*sedit_id %d edit_x %d pixmap_x %d pixmap_w %d visible %d\n",
+		indent + 1, "", edit_id, edit_x, pixmap_x, pixmap_w, visible);
 }
