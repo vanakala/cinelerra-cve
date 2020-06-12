@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2015 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2015 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "aframe.h"
 #include "asset.h"
@@ -392,6 +376,12 @@ int FileAVlibs::probe_input(Asset *asset)
 			asset->programs[i].nb_streams = prg->nb_stream_indexes;
 			for(int j = 0; j < prg->nb_stream_indexes; j++)
 				asset->programs[i].streams[j] = prg->stream_index[j];
+		}
+// set the default program
+		if(asset->nb_programs)
+		{
+			if(asset->set_program_id(asset->program_id) < 0)
+				asset->set_program(0);
 		}
 		avformat_close_input(&ctx);
 	}
