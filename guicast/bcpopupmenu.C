@@ -57,7 +57,9 @@ BC_PopupMenu::BC_PopupMenu(int x,
 
 	use_title = options & POPUPMENU_USE_TITLE;
 	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
-	strcpy(this->text, text);
+	this->text[0] = 0;
+	if(text && *text)
+		strcpy(this->text, text);
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
