@@ -423,19 +423,41 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 void PatchBay::synchronize_nudge(ptstime value, Track *skip)
 {
-	for(Track *current = master_edl->first_track();
-		current;
-		current = NEXT)
+	PatchGUI *patch;
+
+	switch(skip->data_type)
 	{
-		if(current->data_type == skip->data_type &&
-			current->gang &&
-			current->record &&
-			current != skip)
+	case TRACK_VIDEO:
+		for(Track *current = master_edl->first_track();
+			current;
+			current = NEXT)
 		{
-			current->nudge = value;
-			PatchGUI *patch = get_patch_of(current);
-			if(patch) patch->update(patch->x, patch->y);
+			if(current->data_type == TRACK_VIDEO &&
+				current->gang &&
+				current->record &&
+				current != skip)
+			{
+				current->nudge = value;
+				if(patch = get_patch_of(current))
+					patch->update(patch->x, patch->y);
+			}
 		}
+		break;
+	case TRACK_AUDIO:
+		// All audio tracks have the same nudge
+		for(Track *current = master_edl->first_track();
+			current;
+			current = NEXT)
+		{
+			if(current->data_type == TRACK_AUDIO &&
+				current != skip)
+			{
+				current->nudge = value;
+				if(patch = get_patch_of(current))
+					patch->update(patch->x, patch->y);
+			}
+		}
+		break;
 	}
 }
 

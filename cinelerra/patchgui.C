@@ -588,8 +588,7 @@ void NudgePatch::set_value(ptstime value)
 {
 	patch->track->nudge = value;
 
-	if(patch->track->gang)
-		patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
+	patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
 	mwindow->undo->update_undo(_("nudge"), LOAD_AUTOMATION, this);
 	mwindow->sync_parameters(patch->track->data_type == TRACK_VIDEO);
