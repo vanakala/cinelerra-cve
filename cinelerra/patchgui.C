@@ -30,13 +30,11 @@
 
 #define PATCH_INCREMENT 0.01
 
-PatchGUI::PatchGUI(MWindow *mwindow, 
-		PatchBay *patchbay, 
-		Track *track, 
-		int x, 
-		int y)
+PatchGUI::PatchGUI(PatchBay *patchbay,
+	Track *track,
+	int x,
+	int y)
 {
-	this->mwindow = mwindow;
 	this->patchbay = patchbay;
 	this->track = track;
 	this->x = x;
@@ -84,7 +82,7 @@ int PatchGUI::reposition(int x, int y)
 		{
 			title->reposition_window(x1, y1 + y);
 		}
-		y1 += mwindow->theme->title_h;
+		y1 += theme_global->title_h;
 
 		if(play)
 		{
@@ -103,19 +101,19 @@ int PatchGUI::reposition(int x, int y)
 
 			if(expand)
 			{
-				VFrame **expandpatch_data = mwindow->theme->get_image_set("expandpatch_data");
+				VFrame **expandpatch_data = theme_global->get_image_set("expandpatch_data");
 				expand->reposition_window(
 					patchbay->get_w() - 10 - expandpatch_data[0]->get_w(), 
 					y1 + y);
 				x1 += expand->get_w();
 			}
 		}
-		y1 += mwindow->theme->play_h;
+		y1 += theme_global->play_h;
 	}
 	else
 	{
-		y1 += mwindow->theme->title_h;
-		y1 += mwindow->theme->play_h;
+		y1 += theme_global->title_h;
+		y1 += theme_global->play_h;
 	}
 
 	return y1;
@@ -125,7 +123,7 @@ int PatchGUI::update(int x, int y)
 {
 	reposition(x, y);
 
-	int h = track->vertical_span(mwindow->theme);
+	int h = track->vertical_span(theme_global);
 	int y1 = 0;
 	int x1 = 0;
 
@@ -144,13 +142,13 @@ int PatchGUI::update(int x, int y)
 	else
 	if(h - y1 >= 0)
 	{
-		patchbay->add_subwindow(title = new TitlePatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(title = new TitlePatch(this, x1 + x, y1 + y));
 	}
-	y1 += mwindow->theme->title_h;
+	y1 += theme_global->title_h;
 
 	if(play)
 	{
-		if(h - y1 < mwindow->theme->play_h)
+		if(h - y1 < theme_global->play_h)
 		{
 			delete play;
 			delete record;
@@ -173,35 +171,34 @@ int PatchGUI::update(int x, int y)
 			record->update(track->record);
 			gang->update(track->gang);
 			draw->update(track->draw);
-			mute->update(mute->get_keyframe_value(mwindow, this));
+			mute->update(mute->get_keyframe_value(this));
 			expand->update(track->expand_view);
 			master->update(track->master);
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->play_h)
+	if(h - y1 >= theme_global->play_h)
 	{
 		patchbay->add_subwindow(master = new MasterTrackPatch(this, 0, y1 + y));
 		x1 += master->get_w();
-		patchbay->add_subwindow(play = new PlayPatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(play = new PlayPatch(this, x1 + x, y1 + y));
 		x1 += play->get_w();
-		patchbay->add_subwindow(record = new RecordPatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(record = new RecordPatch(this, x1 + x, y1 + y));
 		x1 += record->get_w();
-		patchbay->add_subwindow(gang = new GangPatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(gang = new GangPatch(this, x1 + x, y1 + y));
 		x1 += gang->get_w();
-		patchbay->add_subwindow(draw = new DrawPatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(draw = new DrawPatch(this, x1 + x, y1 + y));
 		x1 += draw->get_w();
-		patchbay->add_subwindow(mute = new MutePatch(mwindow, this, x1 + x, y1 + y));
+		patchbay->add_subwindow(mute = new MutePatch(this, x1 + x, y1 + y));
 		x1 += mute->get_w();
 
-		VFrame **expandpatch_data = mwindow->theme->get_image_set("expandpatch_data");
-		patchbay->add_subwindow(expand = new ExpandPatch(mwindow, 
-			this, 
-			patchbay->get_w() - 10 - expandpatch_data[0]->get_w(), 
+		VFrame **expandpatch_data = theme_global->get_image_set("expandpatch_data");
+		patchbay->add_subwindow(expand = new ExpandPatch(this,
+			patchbay->get_w() - 10 - expandpatch_data[0]->get_w(),
 			y1 + y));
 		x1 += expand->get_w();
 	}
-	y1 += mwindow->theme->play_h;
+	y1 += theme_global->play_h;
 
 	return y1;
 }
@@ -267,32 +264,32 @@ void PatchGUI::toggle_behavior(int type,
 	switch(type)
 	{
 	case Tracks::PLAY:
-		mwindow->sync_parameters();
-		mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
+		mwindow_global->sync_parameters();
+		mwindow_global->undo->update_undo(_("play patch"), LOAD_PATCHES);
 		break;
 
 	case Tracks::MUTE:
-		mwindow->sync_parameters();
-		mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
+		mwindow_global->sync_parameters();
+		mwindow_global->undo->update_undo(_("mute patch"), LOAD_PATCHES);
 		break;
 
 // Update affected tracks in cwindow
 	case Tracks::RECORD:
-		mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
-		mwindow->undo->update_undo(_("record patch"), LOAD_PATCHES);
+		mwindow_global->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
+		mwindow_global->undo->update_undo(_("record patch"), LOAD_PATCHES);
 		break;
 
 	case Tracks::GANG:
-		mwindow->undo->update_undo(_("gang patch"), LOAD_PATCHES);
+		mwindow_global->undo->update_undo(_("gang patch"), LOAD_PATCHES);
 		break;
 
 	case Tracks::DRAW:
-		mwindow->undo->update_undo(_("draw patch"), LOAD_PATCHES);
-		mwindow->gui->update(WUPD_CANVINCR);
+		mwindow_global->undo->update_undo(_("draw patch"), LOAD_PATCHES);
+		mwindow_global->gui->update(WUPD_CANVINCR);
 		break;
 
 	case Tracks::EXPAND:
-		mwindow->undo->update_undo(_("expand patch"), LOAD_PATCHES);
+		mwindow_global->undo->update_undo(_("expand patch"), LOAD_PATCHES);
 		break;
 	}
 }
@@ -312,17 +309,10 @@ void PatchGUI::toggle_master(int value,
 }
 
 
-PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, 
-		y, 
-		mwindow->theme->get_image_set("playpatch_data"),
-		patch->track->play, 
-		"",
-		0,
-		0,
-		0)
+PlayPatch::PlayPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("playpatch_data"),
+	patch->track->play, 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Play track"));
 	set_select_drag(1);
@@ -344,17 +334,10 @@ int PlayPatch::button_release_event()
 }
 
 
-RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, 
-		y, 
-		mwindow->theme->get_image_set("recordpatch_data"),
-		patch->track->record, 
-		"",
-		0,
-		0,
-		0)
+RecordPatch::RecordPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("recordpatch_data"),
+	patch->track->record, 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Arm track"));
 	set_select_drag(1);
@@ -376,16 +359,10 @@ int RecordPatch::button_release_event()
 }
 
 
-GangPatch::GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, y, 
-		mwindow->theme->get_image_set("gangpatch_data"),
-		patch->track->gang, 
-		"",
-		0,
-		0,
-		0)
+GangPatch::GangPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("gangpatch_data"),
+	patch->track->gang, 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Gang faders"));
 	set_select_drag(1);
@@ -407,16 +384,10 @@ int GangPatch::button_release_event()
 }
 
 
-DrawPatch::DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, y, 
-		mwindow->theme->get_image_set("drawpatch_data"),
-		patch->track->draw, 
-		"",
-		0,
-		0,
-		0)
+DrawPatch::DrawPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("drawpatch_data"),
+	patch->track->draw, 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Draw media"));
 	set_select_drag(1);
@@ -438,16 +409,10 @@ int DrawPatch::button_release_event()
 }
 
 
-MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, y, 
-		mwindow->theme->get_image_set("mutepatch_data"),
-		get_keyframe_value(mwindow, patch),
-		"",
-		0,
-		0,
-		0)
+MutePatch::MutePatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("mutepatch_data"),
+	get_keyframe_value(patch), 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Don't send to output"));
 	set_select_drag(1);
@@ -466,10 +431,10 @@ int MutePatch::handle_event()
 		this,
 		&current->value);
 
-	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
+	mwindow_global->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
-		mwindow->draw_canvas_overlays();
+		mwindow_global->draw_canvas_overlays();
 	return 1;
 }
 
@@ -479,7 +444,7 @@ int MutePatch::button_release_event()
 	return BC_Toggle::button_release_event();
 }
 
-int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
+int MutePatch::get_keyframe_value(PatchGUI *patch)
 {
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
@@ -490,12 +455,8 @@ int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
 
 MasterTrackPatch::MasterTrackPatch(PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y,
-	mwindow_global->theme->get_image_set("mastertrack_data"),
-	patch->track->master,
-	"",
-	0,
-	0,
-	0)
+	theme_global->get_image_set("mastertrack_data"),
+	patch->track->master, 0, 0, 0, 0)
 {
 	this->patch = patch;
 	set_tooltip(_("Set master track"));
@@ -508,17 +469,10 @@ int MasterTrackPatch::handle_event()
 	return 1;
 }
 
-ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_Toggle(x, 
-		y, 
-		mwindow->theme->get_image_set("expandpatch_data"),
-		patch->track->expand_view, 
-		"",
-		0,
-		0,
-		0)
+ExpandPatch::ExpandPatch(PatchGUI *patch, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("expandpatch_data"),
+	patch->track->expand_view, 0, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_select_drag(1);
 }
@@ -529,7 +483,7 @@ int ExpandPatch::handle_event()
 		get_value(),
 		this,
 		&patch->track->expand_view);
-	mwindow->trackmovement(master_edl->local_session->track_start);
+	mwindow_global->trackmovement(master_edl->local_session->track_start);
 	return 1;
 }
 
@@ -540,40 +494,27 @@ int ExpandPatch::button_release_event()
 }
 
 
-TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
- : BC_TextBox(x, 
-		y, 
-		patch->patchbay->get_w() - 10, 
-		1,
-		patch->track->title,
-		1, MEDIUMFONT, 1)
+TitlePatch::TitlePatch(PatchGUI *patch, int x, int y)
+ : BC_TextBox(x, y, patch->patchbay->get_w() - 10,
+	1, patch->track->title,
+	1, MEDIUMFONT, 1)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 }
 
 int TitlePatch::handle_event()
 {
 	strcpy(patch->track->title, get_utf8text());
-	mwindow->update_plugin_titles();
-	mwindow->draw_canvas_overlays();
-	mwindow->undo->update_undo(_("track title"), LOAD_PATCHES);
+	mwindow_global->update_plugin_titles();
+	mwindow_global->draw_canvas_overlays();
+	mwindow_global->undo->update_undo(_("track title"), LOAD_PATCHES);
 	return 1;
 }
 
 
-NudgePatch::NudgePatch(MWindow *mwindow, 
-	PatchGUI *patch, 
-	int x, 
-	int y, 
-	int w)
- : BC_TextBox(x,
-	y,
-	w,
-	1,
-	patch->track->nudge)
+NudgePatch::NudgePatch(PatchGUI *patch, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, patch->track->nudge)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Nudge"));
 }
@@ -590,8 +531,8 @@ void NudgePatch::set_value(ptstime value)
 
 	patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
-	mwindow->undo->update_undo(_("nudge"), LOAD_AUTOMATION, this);
-	mwindow->sync_parameters(patch->track->data_type == TRACK_VIDEO);
+	mwindow_global->undo->update_undo(_("nudge"), LOAD_AUTOMATION, this);
+	mwindow_global->sync_parameters(patch->track->data_type == TRACK_VIDEO);
 	mainsession->changes_made = 1;
 }
 

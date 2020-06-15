@@ -20,16 +20,12 @@ class VModePatch;
 class VPatchGUI : public PatchGUI
 {
 public:
-	VPatchGUI(MWindow *mwindow, 
-		PatchBay *patchbay, 
-		VTrack *track, 
-		int x, 
-		int y);
+	VPatchGUI(PatchBay *patchbay, VTrack *track, int x, int y);
 	~VPatchGUI();
 
 	int reposition(int x, int y);
 	int update(int x, int y);
-	void synchronize_fade(float value_change);
+	void synchronize_fade(double value_change);
 
 	VTrack *vtrack;
 	VModePatch *mode;
@@ -39,25 +35,24 @@ public:
 class VFadePatch : public BC_ISlider
 {
 public:
-	VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w);
-	int handle_event();
-	float update_edl();
-	static float get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
+	VFadePatch(VPatchGUI *patch, int x, int y, int w);
 
-	MWindow *mwindow;
+	int handle_event();
+	double update_edl();
+	static double get_keyframe_value(VPatchGUI *patch);
+
 	VPatchGUI *patch;
 };
 
 class VModePatch : public BC_PopupMenu
 {
 public:
-	VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
+	VModePatch(VPatchGUI *patch, int x, int y);
 
 	int handle_event();
-	static int get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
+	static int get_keyframe_value(VPatchGUI *patch);
 	void update(int mode);
 
-	MWindow *mwindow;
 	VPatchGUI *patch;
 	int mode;
 };

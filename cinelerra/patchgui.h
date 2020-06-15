@@ -29,10 +29,9 @@ class MasterTrackPatch;
 class PatchGUI
 {
 public:
-	PatchGUI(MWindow *mwindow, 
-		PatchBay *patchbay, 
-		Track *track, 
-		int x, 
+	PatchGUI(PatchBay *patchbay,
+		Track *track,
+		int x,
 		int y);
 	virtual ~PatchGUI();
 
@@ -46,7 +45,6 @@ public:
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
 
-	MWindow *mwindow;
 	PatchBay *patchbay;
 	Track *track;
 // Used by update routines so non-existent track doesn't need to be dereferenced
@@ -72,64 +70,69 @@ protected:
 };
 
 
-
 class PlayPatch : public BC_Toggle
 {
 public:
-	PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	PlayPatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class RecordPatch : public BC_Toggle
 {
 public:
-	RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	RecordPatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class TitlePatch : public BC_TextBox
 {
 public:
-	TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	TitlePatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class GangPatch : public BC_Toggle
 {
 public:
-	GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	GangPatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class DrawPatch : public BC_Toggle
 {
 public:
-	DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	DrawPatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class MutePatch : public BC_Toggle
 {
 public:
-	MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	MutePatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	static int get_keyframe_value(MWindow *mwindow, PatchGUI *patch);
-	MWindow *mwindow;
+	static int get_keyframe_value(PatchGUI *patch);
+
 	PatchGUI *patch;
 };
 
@@ -139,29 +142,30 @@ public:
 	MasterTrackPatch(PatchGUI *patch, int x, int y);
 
 	int handle_event();
+
 	PatchGUI *patch;
 };
 
 class ExpandPatch : public BC_Toggle
 {
 public:
-	ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
+	ExpandPatch(PatchGUI *patch, int x, int y);
+
 	int handle_event();
 	int button_release_event();
-	MWindow *mwindow;
+
 	PatchGUI *patch;
 };
 
 class NudgePatch : public BC_TextBox
 {
 public:
-	NudgePatch(MWindow *mwindow, PatchGUI *patch, int x, int y, int w);
+	NudgePatch(PatchGUI *patch, int x, int y, int w);
 
 	int handle_event();
 	int button_press_event();
 	void set_value(ptstime value);
 
-	MWindow *mwindow;
 	PatchGUI *patch;
 };
 

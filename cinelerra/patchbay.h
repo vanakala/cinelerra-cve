@@ -52,7 +52,7 @@ public:
 	void update_meters(double *module_levels, int total);
 	void stop_meters();
 	void synchronize_nudge(ptstime value, Track *skip);
-	void synchronize_faders(float value, int data_type, Track *skip);
+	void synchronize_faders(double value, int data_type, Track *skip);
 	void change_meter_format(int min, int max);
 	void reset_meters();
 	void set_delays(int over_delay, int peak_delay);

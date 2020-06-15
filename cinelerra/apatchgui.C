@@ -23,16 +23,10 @@
 #include "theme.h"
 
 
-APatchGUI::APatchGUI(MWindow *mwindow, 
-	PatchBay *patchbay, 
-	ATrack *track, 
-	int x, 
-	int y)
- : PatchGUI(mwindow, 
-	patchbay,
-	track, 
-	x, 
-	y)
+APatchGUI::APatchGUI(PatchBay *patchbay,
+	ATrack *track,
+	int x, int y)
+ : PatchGUI(patchbay, track, x, y)
 {
 	data_type = TRACK_AUDIO;
 	this->atrack = track;
@@ -44,9 +38,9 @@ APatchGUI::APatchGUI(MWindow *mwindow,
 
 APatchGUI::~APatchGUI()
 {
-	if(fade) delete fade;
-	if(meter) delete meter;
-	if(pan) delete pan;
+	delete fade;
+	delete meter;
+	delete pan;
 }
 
 int APatchGUI::reposition(int x, int y)
@@ -54,22 +48,22 @@ int APatchGUI::reposition(int x, int y)
 	int x1 = 0;
 	int y1 = PatchGUI::reposition(x, y);
 
-	if(fade) fade->reposition_window(fade->get_x(), 
-		y1 + y);
-	y1 += mwindow->theme->fade_h;
+	if(fade)
+		fade->reposition_window(fade->get_x(), y1 + y);
+	y1 += theme_global->fade_h;
 
-	if(meter) meter->reposition_window(meter->get_x(),
-		y1 + y,
-		meter->get_w());
-	y1 += mwindow->theme->meter_h;
+	if(meter)
+		meter->reposition_window(meter->get_x(), y1 + y,
+			meter->get_w());
+	y1 += theme_global->meter_h;
 
-	if(pan) pan->reposition_window(pan->get_x(),
-		y1 + y);
+	if(pan)
+		pan->reposition_window(pan->get_x(), y1 + y);
 
-	if(nudge) nudge->reposition_window(nudge->get_x(),
-		y1 + y);
+	if(nudge)
+		nudge->reposition_window(nudge->get_x(), y1 + y);
 
-	y1 += mwindow->theme->pan_h;
+	y1 += theme_global->pan_h;
 	return y1;
 }
 
@@ -79,13 +73,13 @@ int APatchGUI::update(int x, int y)
 
 	patchgui_lock->lock("APatchGUI::update");
 
-	h = track->vertical_span(mwindow->theme);
+	h = track->vertical_span(theme_global);
 	x1 = 0;
 	y1 = PatchGUI::update(x, y);
 
 	if(fade)
 	{
-		if(h - y1 < mwindow->theme->fade_h)
+		if(h - y1 < theme_global->fade_h)
 		{
 			delete fade;
 			fade = 0;
@@ -94,6 +88,7 @@ int APatchGUI::update(int x, int y)
 		{
 			FloatAuto *previous = 0, *next = 0;
 			ptstime unit_position = master_edl->local_session->get_selectionstart(1);
+
 			unit_position = master_edl->align_to_frame(unit_position);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
 			float value = ptr->get_value(
@@ -107,38 +102,34 @@ int APatchGUI::update(int x, int y)
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->fade_h)
+	if(h - y1 >= theme_global->fade_h)
 	{
-		patchbay->add_subwindow(fade = new AFadePatch(mwindow, 
-			this, 
-			x1 + x, 
-			y1 + y, 
+		patchbay->add_subwindow(fade = new AFadePatch(this,
+			x1 + x, y1 + y,
 			patchbay->get_w() - 10));
 	}
-	y1 += mwindow->theme->fade_h;
+	y1 += theme_global->fade_h;
 
 	if(meter)
 	{
-		if(h - y1 < mwindow->theme->meter_h)
+		if(h - y1 < theme_global->meter_h)
 		{
 			delete meter;
 			meter = 0;
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->meter_h)
+	if(h - y1 >= theme_global->meter_h)
 	{
-		patchbay->add_subwindow(meter = new AMeterPatch(mwindow,
-			this,
-			x1 + x, 
-			y1 + y));
+		patchbay->add_subwindow(meter = new AMeterPatch(this,
+			x1 + x, y1 + y));
 	}
-	y1 += mwindow->theme->meter_h;
+	y1 += theme_global->meter_h;
 	x1 += 10;
 
 	if(pan)
 	{
-		if(h - y1 < mwindow->theme->pan_h)
+		if(h - y1 < theme_global->pan_h)
 		{
 			delete pan;
 			pan = 0;
@@ -159,6 +150,7 @@ int APatchGUI::update(int x, int y)
 				ptstime position = master_edl->local_session->get_selectionstart(1);
 				position = master_edl->align_to_frame(position);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
+
 				ptr->get_handle(handle_x,
 					handle_y,
 					position, 
@@ -170,7 +162,7 @@ int APatchGUI::update(int x, int y)
 		}
 	}
 	else
-	if(h - y1 >= mwindow->theme->pan_h)
+	if(h - y1 >= theme_global->pan_h)
 	{
 		int handle_x, handle_y;
 		PanAuto *previous = 0, *next = 0;
@@ -186,24 +178,20 @@ int APatchGUI::update(int x, int y)
 		else
 			values = ptr->default_values;
 
-		patchbay->add_subwindow(pan = new APanPatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
+		patchbay->add_subwindow(pan = new APanPatch(this,
+			x1 + x, y1 + y,
 			handle_x, handle_y, values));
 		x1 += pan->get_w() + 10;
-		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
-			this,
-			x1 + x,
-			y1 + y,
+		patchbay->add_subwindow(nudge = new NudgePatch(this,
+			x1 + x, y1 + y,
 			patchbay->get_w() - x1 - 10));
 	}
-	y1 += mwindow->theme->pan_h;
+	y1 += theme_global->pan_h;
 	patchgui_lock->unlock();
 	return y1;
 }
 
-void APatchGUI::synchronize_fade(float value_change)
+void APatchGUI::synchronize_fade(double value_change)
 {
 	if(fade && !change_source) 
 	{
@@ -213,21 +201,16 @@ void APatchGUI::synchronize_fade(float value_change)
 }
 
 
-AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
- : BC_FSlider(x, 
-	y,
-	0,
-	w,
-	w,
+AFadePatch::AFadePatch(APatchGUI *patch, int x, int y, int w)
+ : BC_FSlider(x, y, 0, w, w,
 	master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
 	master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
-	get_keyframe_value(mwindow, patch))
+	get_keyframe_value(patch))
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 }
 
-float AFadePatch::update_edl()
+double AFadePatch::update_edl()
 {
 	FloatAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
@@ -236,12 +219,11 @@ float AFadePatch::update_edl()
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
-	float result = get_value() - current->get_value();
+	double result = get_value() - current->get_value();
 	current->set_value(get_value());
 
-	mwindow->undo->update_undo(_("fade"), 
-		LOAD_AUTOMATION, 
-		need_undo ? 0 : this);
+	mwindow_global->undo->update_undo(_("fade"),
+		LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	return result;
 }
@@ -255,19 +237,20 @@ int AFadePatch::handle_event()
 	}
 
 	patch->change_source = 1;
-	float change = update_edl();
-	if(patch->track->gang) 
-		patch->patchbay->synchronize_faders(change, TRACK_AUDIO, patch->track);
+	double change = update_edl();
+	if(patch->track->gang)
+		patch->patchbay->synchronize_faders(change,
+			TRACK_AUDIO, patch->track);
 	patch->change_source = 0;
 
-	mwindow->sync_parameters(0);
+	mwindow_global->sync_parameters(0);
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
-		mwindow->draw_canvas_overlays();
+		mwindow_global->draw_canvas_overlays();
 	return 1;
 }
 
-float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
+double AFadePatch::get_keyframe_value(APatchGUI *patch)
 {
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
@@ -279,19 +262,15 @@ float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 }
 
 
-APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y, 
-    int handle_x, int handle_y, double *values)
- : BC_Pan(x,
-		y, 
-		PAN_RADIUS, 
-		MAX_PAN, 
-		edlsession->audio_channels,
-		edlsession->achannel_positions,
-		handle_x,
-		handle_y,
-		values)
+APanPatch::APanPatch(APatchGUI *patch, int x, int y,
+	int handle_x, int handle_y, double *values)
+ : BC_Pan(x, y, PAN_RADIUS, MAX_PAN,
+	edlsession->audio_channels,
+	edlsession->achannel_positions,
+	handle_x,
+	handle_y,
+	values)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 	set_tooltip(_("Pan"));
 }
@@ -309,26 +288,21 @@ int APanPatch::handle_event()
 	current->handle_y = get_stick_y();
 	memcpy(current->values, get_values(), sizeof(double) * edlsession->audio_channels);
 
-	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
+	mwindow_global->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
-	mwindow->sync_parameters(0);
+	mwindow_global->sync_parameters(0);
 
 	if(need_undo && edlsession->auto_conf->auto_visible[AUTOMATION_PAN])
-		mwindow->draw_canvas_overlays();
+		mwindow_global->draw_canvas_overlays();
 	return 1;
 }
 
 
-AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Meter(x, 
-		y,
-		METER_HORIZ,
-		patch->patchbay->get_w() - 10,
-		edlsession->min_meter_db,
-		edlsession->max_meter_db,
-		0)
+AMeterPatch::AMeterPatch(APatchGUI *patch, int x, int y)
+ : BC_Meter(x, y,METER_HORIZ, patch->patchbay->get_w() - 10,
+	edlsession->min_meter_db,
+	edlsession->max_meter_db, 0)
 {
-	this->mwindow = mwindow;
 	this->patch = patch;
 }
 
@@ -336,9 +310,8 @@ int AMeterPatch::button_press_event()
 {
 	if(cursor_inside() && is_event_win() && get_buttonpress() == 1)
 	{
-		mwindow->reset_meters();
+		mwindow_global->reset_meters();
 		return 1;
 	}
-
 	return 0;
 }

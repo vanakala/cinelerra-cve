@@ -353,10 +353,12 @@ void PatchBay::update()
 				switch(current->data_type)
 				{
 				case TRACK_AUDIO:
-					patchgui = patches.values[patch_count] = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
+					patchgui = patches.values[patch_count] =
+						new APatchGUI(this, (ATrack*)current, PATCH_X, y);
 					break;
 				case TRACK_VIDEO:
-					patchgui = patches.values[patch_count] = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
+					patchgui = patches.values[patch_count] =
+						new VPatchGUI(this, (VTrack*)current, PATCH_X, y);
 					break;
 				}
 			}
@@ -370,10 +372,10 @@ void PatchBay::update()
 			switch(current->data_type)
 			{
 			case TRACK_AUDIO:
-				patchgui = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
+				patchgui = new APatchGUI(this, (ATrack*)current, PATCH_X, y);
 				break;
 			case TRACK_VIDEO:
-				patchgui = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
+				patchgui = new VPatchGUI(this, (VTrack*)current, PATCH_X, y);
 				break;
 			}
 			patches.append(patchgui);
@@ -387,7 +389,7 @@ void PatchBay::update()
 	}
 }
 
-void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
+void PatchBay::synchronize_faders(double change, int data_type, Track *skip)
 {
 	for(Track *current = master_edl->first_track();
 		current;
