@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "apatchgui.h"
 #include "automation.h"
@@ -44,14 +28,13 @@
 #include <string.h>
 
 
-PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
- : BC_SubWindow(mwindow->theme->patchbay_x,
-	mwindow->theme->patchbay_y,
-	mwindow->theme->patchbay_w,
-	mwindow->theme->patchbay_h)
+PatchBay::PatchBay()
+ : BC_SubWindow(theme_global->patchbay_x,
+	theme_global->patchbay_y,
+	theme_global->patchbay_w,
+	theme_global->patchbay_h)
 {
-	this->mwindow = mwindow;
-	this->gui = gui;
+	this->gui = mwindow_global->gui;
 	button_down = 0;
 	reconfigure_trigger = 0;
 	drag_operation = Tracks::NONE;
@@ -75,25 +58,25 @@ void PatchBay::show()
 {
 // Create icons for mode types
 	mode_icons[TRANSFER_NORMAL] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_normal"),
+		theme_global->get_image("mode_normal"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_ADDITION] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_add"),
+		theme_global->get_image("mode_add"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_SUBTRACT] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_subtract"),
+		theme_global->get_image("mode_subtract"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_MULTIPLY] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_multiply"),
+		theme_global->get_image("mode_multiply"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_DIVIDE] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_divide"),
+		theme_global->get_image("mode_divide"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_REPLACE] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_replace"),
+		theme_global->get_image("mode_replace"),
 		PIXMAP_ALPHA);
 	mode_icons[TRANSFER_MAX] = new BC_Pixmap(this, 
-		mwindow->theme->get_image("mode_max"),
+		theme_global->get_image("mode_max"),
 		PIXMAP_ALPHA);
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
@@ -114,10 +97,10 @@ int PatchBay::icon_to_mode(BC_Pixmap *icon)
 
 void PatchBay::resize_event()
 {
-	reposition_window(mwindow->theme->patchbay_x,
-		mwindow->theme->patchbay_y,
-		mwindow->theme->patchbay_w,
-		mwindow->theme->patchbay_h);
+	reposition_window(theme_global->patchbay_x,
+		theme_global->patchbay_y,
+		theme_global->patchbay_w,
+		theme_global->patchbay_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	update();
 	flash();
@@ -140,14 +123,15 @@ Track *PatchBay::is_over_track()     // called from mwindow
 			track = track->next)
 		{
 			int y = track->y_pixel;
-			int h = track->vertical_span(mwindow->theme);
+			int h = track->vertical_span(theme_global);
+
 			if(cursor_y >= y && cursor_y < y + h)
-			{	
+			{
 				over_track = track;
 			}
 		}
 	}
-	return (over_track);
+	return over_track;
 }
 
 int PatchBay::cursor_motion_event()
@@ -159,8 +143,7 @@ int PatchBay::cursor_motion_event()
 
 	if(drag_operation != Tracks::NONE)
 	{
-		if(cursor_y >= 0 &&
-			cursor_y < get_h())
+		if(cursor_y >= 0 && cursor_y < get_h())
 		{
 // Get track we're inside of
 			for(Track *track = master_edl->first_track();
@@ -168,7 +151,8 @@ int PatchBay::cursor_motion_event()
 				track = track->next)
 			{
 				int y = track->y_pixel;
-				int h = track->vertical_span(mwindow->theme);
+				int h = track->vertical_span(theme_global);
+
 				if(cursor_y >= y && cursor_y < y + h)
 				{
 					switch(drag_operation)
@@ -177,7 +161,7 @@ int PatchBay::cursor_motion_event()
 						if(track->play != new_status)
 						{
 							track->play = new_status;
-							mwindow->sync_parameters();
+							mwindow_global->sync_parameters();
 							update_gui = 1;
 						}
 						break;
@@ -206,7 +190,7 @@ int PatchBay::cursor_motion_event()
 						if(track->expand_view != new_status)
 						{
 							track->expand_view = new_status;
-							mwindow->trackmovement(master_edl->local_session->track_start);
+							mwindow_global->trackmovement(master_edl->local_session->track_start);
 							update_gui = 0;
 						}
 						break;
@@ -220,17 +204,14 @@ int PatchBay::cursor_motion_event()
 
 							if(current->value != new_status)
 							{
-
 								current = (IntAuto*)mute_autos->get_auto_for_editing(position);
 
 								current->value = new_status;
-
-								mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
-
-								mwindow->sync_parameters();
+								mwindow_global->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
+								mwindow_global->sync_parameters();
 
 								if(edlsession->auto_conf->auto_visible[AUTOMATION_MUTE])
-									mwindow->draw_canvas_overlays();
+									mwindow_global->draw_canvas_overlays();
 
 								update_gui = 1;
 							}
@@ -254,6 +235,7 @@ void PatchBay::change_meter_format(int min, int max)
 	for(int i = 0; i < patches.total; i++)
 	{
 		PatchGUI *patchgui = patches.values[i];
+
 		if(patchgui->data_type == TRACK_AUDIO)
 		{
 			APatchGUI *apatchgui = (APatchGUI*)patchgui;
@@ -280,7 +262,6 @@ void PatchBay::update_meters(double *module_levels, int total)
 				double level = module_levels[level_number];
 				patchgui->meter->update(level, level > 1);
 			}
-
 			level_number++;
 		}
 	}
@@ -475,8 +456,8 @@ PatchGUI* PatchBay::get_patch_of(Track *track)
 
 void PatchBay::resize_event(int top, int bottom)
 {
-	reposition_window(mwindow->theme->patchbay_x,
-		mwindow->theme->patchbay_y,
-		mwindow->theme->patchbay_w,
-		mwindow->theme->patchbay_h);
+	reposition_window(theme_global->patchbay_x,
+		theme_global->patchbay_y,
+		theme_global->patchbay_w,
+		theme_global->patchbay_h);
 }

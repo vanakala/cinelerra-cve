@@ -170,7 +170,7 @@ void MWindowGUI::show()
 		mwindow->theme->mtimebar_h));
 	timebar->update();
 
-	add_subwindow(patchbay = new PatchBay(mwindow, this));
+	add_subwindow(patchbay = new PatchBay());
 	patchbay->show();
 
 	get_scrollbars();
