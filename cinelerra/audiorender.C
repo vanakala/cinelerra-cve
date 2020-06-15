@@ -479,7 +479,7 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 				aframe->reset_buffer();
 				aframe->set_fill_request(pts, duration);
 				aframe->set_source_pts(pts - edit->get_pts() +
-					edit->get_source_pts());
+					edit->get_source_pts() - edit->track->nudge);
 				infile->file->get_samples(aframe);
 			}
 			return input_frames.values[i + channel]->handover_aframe();
@@ -506,7 +506,7 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		cur->set_samplerate(out_samplerate);
 		cur->set_fill_request(pts, duration);
 		cur->set_source_pts(pts - edit->get_pts() +
-			edit->get_source_pts());
+			edit->get_source_pts() - edit->track->nudge);
 		file->get_samples(cur);
 		input_frames.append(infile);
 	}
