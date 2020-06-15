@@ -66,7 +66,7 @@ void VTrackRender::read_vframe(VFrame *vframe, Edit *edit, int filenum)
 		return;
 	}
 
-	src_pts = pts - edit->get_pts() + edit->get_source_pts();
+	src_pts = pts - edit->get_pts() + edit->get_source_pts() - media_track->nudge;
 	vframe->set_source_pts(src_pts);
 	file->get_frame(vframe);
 	pts = align_to_frame(pts);
