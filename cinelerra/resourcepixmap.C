@@ -575,7 +575,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int edit_w,
 	int pixmap_x,
 	int pixmap_w,
-	int refresh_x, 
+	int refresh_x,
 	int refresh_w,
 	int mode)
 {
@@ -583,21 +583,28 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int picon_w = round(edit->picon_w());
 	int picon_h = edit->picon_h();
 // Current pixel relative to pixmap
+	int x;
 	int y = 0;
-
+	int refresh_end;
+// Number of picons to redraw
+	double picons, picount;
+// Start and duration of a picon
+	ptstime picon_src, picon_len;
 // Don't draw video if edit is tiny
-	if(edit_w < 2) return;
+	if(edit_w < 2)
+		return;
 
 	if(edlsession->show_titles)
 		y += theme_global->get_image("title_bg_data")->get_h();
 
-	int picount = (refresh_x + pixmap_x - edit_x) / picon_w;
-	int x = picount * picon_w + edit_x;
-	ptstime picon_len = picon_w * zoom_time;
-	ptstime picon_src = picount * picon_len;
-
+	picons = (pixmap_x + refresh_x - edit_x) / edit->picon_w();
+	picount = floor(picons);
+	x = -round((picons - picount) * edit->picon_w()) + refresh_x;
+	picon_len = edit->picon_w() * zoom_time;
+	picon_src = picount * picon_len;
 // Draw only cached frames
-	while(x < refresh_x + refresh_w)
+	refresh_end = refresh_x + refresh_w;
+	while(x < refresh_end)
 	{
 		ptstime source_pts = edit->get_source_pts() + picon_src;
 		VFrame *picon_frame;

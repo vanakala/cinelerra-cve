@@ -23,6 +23,8 @@
 #include "vframe.h"
 #include "wavecache.h"
 
+#define MAX_FRAME_CACHE_ITEMS 64
+
 
 ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
@@ -278,11 +280,10 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	frame_cache->unlock();
 	mwindow_global->gui->canvas->pixmaps_lock->unlock();
 
-	if(frame_cache->total() > 32)
+	if(frame_cache->total() > MAX_FRAME_CACHE_ITEMS)
 		frame_cache->delete_oldest();
 }
 
-#define BUFFERSIZE 65536
 void ResourceThread::do_audio(AResourceThreadItem *item)
 {
 // Search again
