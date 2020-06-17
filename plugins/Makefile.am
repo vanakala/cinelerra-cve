@@ -6,7 +6,6 @@ THEMES= \
 SUBDIRS= \
 	$(THEMES) \
 	libeffecttv \
-	1080to540 \
 	C41 \
 	aging \
 	bandslide \

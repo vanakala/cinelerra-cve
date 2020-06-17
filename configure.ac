@@ -432,7 +432,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	cinelerra/data/Makefile
 	plugins/libeffecttv/Makefile
 	plugins/Makefile
-	plugins/1080to540/Makefile
 	plugins/histogram/Makefile
 	plugins/C41/Makefile
 	plugins/bandslide/Makefile
