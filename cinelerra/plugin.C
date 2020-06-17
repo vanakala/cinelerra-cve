@@ -690,6 +690,12 @@ int Plugin::show_plugin_gui()
 	return result;
 }
 
+void Plugin::reset_plugin()
+{
+	if(client)
+		client->reset_plugin();
+}
+
 size_t Plugin::get_size()
 {
 	size_t size = sizeof(*this);

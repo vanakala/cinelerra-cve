@@ -59,7 +59,18 @@ void Tracks::reset_instance()
 
 void Tracks::reset_plugins()
 {
-// FIXIT: reset of plugins is useful
+	ptstime selections[4];
+
+	if(edl == master_edl)
+	{
+		master_edl->local_session->get_selections(selections);
+		// no highlight active
+		if(!EQUIV(selections[0], selections[1]))
+			return;
+		for(Track *current = first; current; current = current->next)
+			current->reset_plugins(selections[0]);
+	}
+// FIXIT: reset for rendering should be implemented
 }
 
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)

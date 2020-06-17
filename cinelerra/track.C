@@ -28,6 +28,8 @@
 #include "vtrackrender.h"
 #include <string.h>
 
+// Reset plugin if it is inactive more seconds
+#define PLUGIN_INACTIVE_TIME 1
 
 Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 {
@@ -561,6 +563,29 @@ void Track::move_plugin_down(Plugin *plugin)
 	}
 }
 
+void Track::reset_plugins(ptstime pts)
+{
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *current = plugins.values[i];
+
+		if(current->get_pts() > pts - PLUGIN_INACTIVE_TIME ||
+				current->end_pts() < pts + PLUGIN_INACTIVE_TIME)
+			current->reset_plugin();
+	}
+	for(Edit *edit = edits->first; edit; edit = edit->next)
+	{
+		if(edit->transition)
+		{
+			ptstime pos = edit->get_pts();
+
+			if(pos > pts - PLUGIN_INACTIVE_TIME ||
+					pos + edit->transition->get_length() <
+					pts + PLUGIN_INACTIVE_TIME)
+				edit->transition->reset_plugin();
+		}
+	}
+}
 
 void Track::remove_asset(Asset *asset)
 {

@@ -77,6 +77,7 @@ public:
 	void move_plugin_up(Plugin *plugin);
 	void move_plugin_down(Plugin *plugin);
 	void remove_plugin(Plugin *plugin);
+	void reset_plugins(ptstime pts);
 	void remove_asset(Asset *asset);
 	void detach_transition(Plugin *transition);
 	void cleanup();

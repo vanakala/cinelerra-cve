@@ -84,6 +84,8 @@ public:
 	virtual int get_parameters() { return 0; };
 
 	virtual void init_plugin() {};
+// Free resources of idle plugin
+	virtual void reset_plugin() {};
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
