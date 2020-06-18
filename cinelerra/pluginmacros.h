@@ -197,7 +197,8 @@ PluginClient* new_plugin(PluginServer *server) \
 	thread = 0; \
 	defaults = 0; \
 	picon_data = picon_png; \
-	load_defaults();
+	load_defaults(); \
+	load_configuration();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
 	if(thread) \
@@ -209,7 +210,8 @@ PluginClient* new_plugin(PluginServer *server) \
 		delete thread; \
 	} \
  \
-	if(defaults) { \
+	if(defaults) \
+	{ \
 		save_defaults(); \
 		delete defaults; \
 	}
@@ -240,6 +242,9 @@ int PLUGIN_CLASS::load_configuration() \
  \
 	prev_keyframe = prev_keyframe_pts(source_pts); \
 	next_keyframe = next_keyframe_pts(source_pts); \
+ \
+	if(!prev_keyframe) \
+		return 0; \
  \
 	ptstime next_pts = next_keyframe->pos_time; \
 	ptstime prev_pts = prev_keyframe->pos_time; \
@@ -286,7 +291,6 @@ int PLUGIN_CLASS::load_configuration() \
 #define PLUGIN_CLASS_SHOW_GUI \
 void PLUGIN_CLASS::show_gui() \
 { \
-	load_configuration(); \
 	PLUGIN_THREAD_CLASS *new_thread = new PLUGIN_THREAD_CLASS(this); \
 	new_thread->start(); \
 } \
