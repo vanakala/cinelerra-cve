@@ -348,11 +348,6 @@ void PluginClient::plugin_show_gui()
 	show_gui();
 }
 
-void PluginClient::plugin_update_gui()
-{
-	update_gui();
-}
-
 void PluginClient::abort_plugin(const char *fmt, ...)
 {
 	va_list ap;

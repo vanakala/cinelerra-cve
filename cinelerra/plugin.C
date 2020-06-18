@@ -652,7 +652,7 @@ void Plugin::get_camera(double *x, double *y, double *z, ptstime postime)
 void Plugin::update_plugin_gui()
 {
 	if(client)
-		client->plugin_update_gui();
+		client->update_gui();
 }
 
 void Plugin::update_display_title()
