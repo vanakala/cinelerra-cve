@@ -179,6 +179,9 @@ void SlideMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
+	if(!keyframe)
+		return;
+
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())

@@ -124,7 +124,9 @@ int LoopVideo::load_configuration()
 	KeyFrame *prev_keyframe;
 	ptstime old_duration = config.duration;
 
-	prev_keyframe = prev_keyframe_pts(source_pts);
+	if(!(prev_keyframe = prev_keyframe_pts(source_pts)))
+		return 0;
+
 	read_data(prev_keyframe);
 	if(config.duration < EPSILON)
 		config.duration = 1 / get_project_framerate();

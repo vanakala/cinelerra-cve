@@ -25,7 +25,6 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 // Old name was "Reverse video"
 #define PLUGIN_TITLE N_("Reverse")

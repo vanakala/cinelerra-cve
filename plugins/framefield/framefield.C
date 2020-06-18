@@ -328,6 +328,10 @@ int FrameField::load_configuration()
 	FrameFieldConfig old_config = config;
 
 	prev_keyframe = prev_keyframe_pts(source_pts);
+
+	if(!prev_keyframe)
+		return 0;
+
 	read_data(prev_keyframe);
 
 	return !old_config.equivalent(config);

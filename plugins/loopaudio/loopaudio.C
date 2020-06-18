@@ -128,8 +128,8 @@ int LoopAudio::load_configuration()
 {
 	KeyFrame *keyframe = get_first_keyframe();
 	ptstime old_pts = config.duration;
-
-	read_data(keyframe);
+	if(keyframe)
+		read_data(keyframe);
 	return !PTSEQU(old_pts, config.duration);
 }
 

@@ -71,6 +71,7 @@ PLUGIN_CLASS_METHODS
 
 int DotMain::load_configuration()
 {
+	return 0;
 }
 
 void DotMain::make_pattern()
