@@ -213,6 +213,8 @@ public:
 // Abort plugin with a message
 	void abort_plugin(const char *fmt, ...)
 		__attribute__ ((__format__(__printf__, 2, 3)));
+// Abort plugin with unsupported colormodel
+	void unsupported(int cmodel);
 // Initialize plugin
 	void plugin_init(int total_in_buffers);
 

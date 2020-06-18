@@ -366,6 +366,11 @@ void PluginClient::abort_plugin(const char *fmt, ...)
 	plugin->on = 0;
 }
 
+void PluginClient::unsupported(int cmodel)
+{
+	abort_plugin(_("Unsupported colormodel '%s'."), ColorModels::name(cmodel));
+}
+
 KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
 {
 	if(plugin)
