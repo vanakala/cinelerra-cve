@@ -297,8 +297,12 @@ void PLUGIN_CLASS::show_gui() \
  \
 void PLUGIN_CLASS::hide_gui() \
 { \
-	if(thread && thread->window) \
-		thread->window->close_event(); \
+	PLUGIN_THREAD_CLASS *old_thread = thread; \
+ \
+	thread = 0; \
+	if(old_thread && old_thread->window) \
+		old_thread->window->close_event(); \
+	delete old_thread; \
 }
 
 #define PLUGIN_CLASS_SET_STRING \
