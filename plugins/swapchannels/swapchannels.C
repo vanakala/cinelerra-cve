@@ -1,35 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "swapchannels.h"
 #include "vframe.h"
 
-#include <stdint.h>
 #include <string.h>
+
+#define CHNL0_SRC  0
+#define CHNL1_SRC  1
+#define CHNL2_SRC  2
+#define CHNL3_SRC  3
+#define NUL_SRC    4
+#define MAX_SRC    5
+#define HLF_SRC    6
+#define CHNL_MAX   NUL_SRC
+
+struct selection_int SwapColorSelection::color_channels_rgb[] =
+{
+	{ N_("Red"), CHNL0_SRC },
+	{ N_("Green"), CHNL1_SRC },
+	{ N_("Blue"), CHNL2_SRC },
+	{ N_("Alpha"), CHNL3_SRC },
+	{ N_("0%"), NUL_SRC },
+	{ N_("100%"), MAX_SRC },
+	{ N_("50%"), HLF_SRC },
+	{ 0, 0 }
+};
+
+struct selection_int SwapColorSelection::color_channels_yuv[] =
+{
+	{ N_("Alpha"), CHNL0_SRC },
+	{ N_("Y:"), CHNL1_SRC },
+	{ N_("U:"), CHNL2_SRC },
+	{ N_("V:"), CHNL3_SRC },
+	{ N_("0%"), NUL_SRC },
+	{ N_("100%"), MAX_SRC },
+	{ N_("50%"), HLF_SRC },
+	{ 0, 0 }
+};
 
 
 REGISTER_PLUGIN
@@ -37,26 +52,26 @@ REGISTER_PLUGIN
 
 SwapConfig::SwapConfig()
 {
-	red = RED_SRC;
-	green = GREEN_SRC;
-	blue = BLUE_SRC;
-	alpha = ALPHA_SRC;
+	chan0 = CHNL0_SRC;
+	chan1 = CHNL1_SRC;
+	chan2 = CHNL2_SRC;
+	chan3 = CHNL3_SRC;
 }
 
 int SwapConfig::equivalent(SwapConfig &that)
 {
-	return (red == that.red &&
-		green == that.green &&
-		blue == that.blue &&
-		alpha == that.alpha);
+	return chan0 == that.chan0 &&
+		chan1 == that.chan1 &&
+		chan2 == that.chan2 &&
+		chan3 == that.chan3;
 }
 
 void SwapConfig::copy_from(SwapConfig &that)
 {
-	red = that.red;
-	green = that.green;
-	blue = that.blue;
-	alpha = that.alpha;
+	chan0 = that.chan0;
+	chan1 = that.chan1;
+	chan2 = that.chan2;
+	chan3 = that.chan3;
 }
 
 
@@ -64,70 +79,99 @@ SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	250, 
+	250,
 	170)
 {
-	int margin = 30;
+	BC_WindowBase *win;
+	int sel_width;
+	int yb, h;
+	struct selection_int *sel;
+	int cmodel = plugin->get_project_color_model();
+	char str[BCTEXTLEN];
 	x = y = 10;
 
-	add_subwindow(new BC_Title(x, y, _(plugin->plugin_title())));
-	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
-	add_subwindow(red = new SwapMenu(plugin, &(plugin->config.red), x, y));
-	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Green")));
-	add_subwindow(green = new SwapMenu(plugin, &(plugin->config.green), x, y));
-	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Blue")));
-	add_subwindow(blue = new SwapMenu(plugin, &(plugin->config.blue), x, y));
-	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Alpha")));
-	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
+	this->plugin = plugin;
+	switch(cmodel)
+	{
+	case BC_AYUV16161616:
+		sel = SwapColorSelection::color_channels_yuv;
+		break;
+	case BC_RGBA16161616:
+		sel = SwapColorSelection::color_channels_rgb;
+		break;
+	default:
+		sel = SwapColorSelection::color_channels_rgb;
+		plugin->unsupported(cmodel);
+		break;
+	}
+	add_subwindow(win = new BC_Title(x, y, _(ColorModels::name(cmodel))));
+	x += 15;
+	y += win->get_h() + 10;
+	add_subwindow(chan0 = new SwapColorSelection(x, y, sel, plugin, this,
+		&plugin->config.chan0));
+	sel_width = chan0->calculate_width() + 5;
+	yb = y;
+	h = chan0->get_h() + 8;
+	for(int i = 0; i < CHNL_MAX; i++)
+	{
+		add_subwindow(print_title(x + sel_width, y, "=> %s", _(sel[i].text)));
+		y += h;
+	}
+	y = yb + h;
+	add_subwindow(chan1 = new SwapColorSelection(x, y, sel, plugin, this,
+		&plugin->config.chan1));
+	y += h;
+	add_subwindow(chan2 = new SwapColorSelection(x, y, sel, plugin, this,
+		&plugin->config.chan2));
+	y += h;
+	add_subwindow(chan3 = new SwapColorSelection(x, y, sel, plugin, this,
+		&plugin->config.chan3));
+	update();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void SwapWindow::update()
 {
-	red->set_text(plugin->output_to_text(plugin->config.red));
-	green->set_text(plugin->output_to_text(plugin->config.green));
-	blue->set_text(plugin->output_to_text(plugin->config.blue));
-	alpha->set_text(plugin->output_to_text(plugin->config.alpha));
+	chan0->update(plugin->config.chan0);
+	chan1->update(plugin->config.chan1);
+	chan2->update(plugin->config.chan2);
+	chan3->update(plugin->config.chan3);
 }
 
-SwapMenu::SwapMenu(SwapMain *client, int *output, int x, int y)
- : BC_PopupMenu(x, y, 150, client->output_to_text(*output))
+
+SwapColorSelection::SwapColorSelection(int x, int y,
+	struct selection_int *chnls,
+	SwapMain *plugin, BC_WindowBase *basewindow, int *value)
+ : Selection(x, y, basewindow, chnls, value)
 {
-	this->client = client;
-	this->output = output;
-	add_item(new SwapItem(this, client->output_to_text(RED_SRC)));
-	add_item(new SwapItem(this, client->output_to_text(GREEN_SRC)));
-	add_item(new SwapItem(this, client->output_to_text(BLUE_SRC)));
-	add_item(new SwapItem(this, client->output_to_text(ALPHA_SRC)));
-	add_item(new SwapItem(this, client->output_to_text(NO_SRC)));
-	add_item(new SwapItem(this, client->output_to_text(MAX_SRC)));
+	channels = chnls;
+	this->plugin = plugin;
+	disable(1);
 }
 
-int SwapMenu::handle_event()
+void SwapColorSelection::update(int value)
 {
-	client->send_configure_change();
-	return 1;
+	BC_TextBox::update(_(name(value)));
 }
 
-
-SwapItem::SwapItem(SwapMenu *menu, const char *title)
- : BC_MenuItem(title)
+int SwapColorSelection::handle_event()
 {
-	this->menu = menu;
+	int ret = Selection::handle_event();
+
+	if(ret)
+		plugin->send_configure_change();
+	return ret;
 }
 
-int SwapItem::handle_event()
+const char *SwapColorSelection::name(int value)
 {
-	menu->set_text(get_text());
-	*(menu->output) = menu->client->text_to_output(get_text());
-	menu->handle_event();
-	return 1;
+	for(int i = 0; channels[i].text; i++)
+	{
+		if(value == channels[i].value)
+			return channels[i].text;
+	}
+	return channels[0].text;
 }
-
 
 PLUGIN_THREAD_METHODS
 
@@ -148,19 +192,28 @@ PLUGIN_CLASS_METHODS
 void SwapMain::load_defaults()
 {
 	defaults = load_defaults_file("swapchannels.rc");
+// Backward compatibility
+	config.chan0 = defaults->get("RED", config.chan0);
+	config.chan1 = defaults->get("GREEN", config.chan1);
+	config.chan2 = defaults->get("BLUE", config.chan2);
+	config.chan3 = defaults->get("ALPHA", config.chan3);
 
-	config.red = defaults->get("RED", config.red);
-	config.green = defaults->get("GREEN", config.green);
-	config.blue = defaults->get("BLUE", config.blue);
-	config.alpha = defaults->get("ALPHA", config.alpha);
+	config.chan0 = defaults->get("CHAN0", config.chan0);
+	config.chan1 = defaults->get("CHAN1", config.chan1);
+	config.chan2 = defaults->get("CHAN2", config.chan2);
+	config.chan3 = defaults->get("CHAN3", config.chan3);
 }
 
 void SwapMain::save_defaults()
 {
-	defaults->update("RED", config.red);
-	defaults->update("GREEN", config.green);
-	defaults->update("BLUE", config.blue);
-	defaults->update("ALPHA", config.alpha);
+	defaults->delete_key("RED");
+	defaults->delete_key("GREEN");
+	defaults->delete_key("BLUE");
+	defaults->delete_key("ALPHA");
+	defaults->update("CHAN0", config.chan0);
+	defaults->update("CHAN1", config.chan1);
+	defaults->update("CHAN2", config.chan2);
+	defaults->update("CHAN3", config.chan3);
 	defaults->save();
 }
 
@@ -169,14 +222,13 @@ void SwapMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 	output.tag.set_title("SWAPCHANNELS");
-	output.tag.set_property("RED", config.red);
-	output.tag.set_property("GREEN", config.green);
-	output.tag.set_property("BLUE", config.blue);
-	output.tag.set_property("ALPHA", config.alpha);
+	output.tag.set_property("CHAN0", config.chan0);
+	output.tag.set_property("CHAN1", config.chan1);
+	output.tag.set_property("CHAN2", config.chan2);
+	output.tag.set_property("CHAN3", config.chan3);
 	output.append_tag();
 	output.tag.set_title("/SWAPCHANNELS");
 	output.append_tag();
-	output.append_newline();
 	keyframe->set_data(output.string);
 }
 
@@ -190,10 +242,15 @@ void SwapMain::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("SWAPCHANNELS"))
 		{
-			config.red = input.tag.get_property("RED", config.red);
-			config.green = input.tag.get_property("GREEN", config.green);
-			config.blue = input.tag.get_property("BLUE", config.blue);
-			config.alpha = input.tag.get_property("ALPHA", config.alpha);
+			config.chan0 = input.tag.get_property("RED", config.chan0);
+			config.chan1 = input.tag.get_property("GREEN", config.chan1);
+			config.chan2 = input.tag.get_property("BLUE", config.chan2);
+			config.chan3 = input.tag.get_property("ALPHA", config.chan3);
+
+			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
+			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
+			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
+			config.chan3 = input.tag.get_property("CHAN3", config.chan3);
 		}
 	}
 }
@@ -201,189 +258,75 @@ void SwapMain::read_data(KeyFrame *keyframe)
 int SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
+	SwapConfig old_config;
 
-	prev_keyframe = prev_keyframe_pts(source_pts);
-	read_data(prev_keyframe);
-	return 1;
+	if(prev_keyframe = prev_keyframe_pts(source_pts))
+	{
+		old_config.copy_from(config);
+		read_data(prev_keyframe);
+		return !config.equivalent(old_config);
+	}
+	return 0;
 }
 
-#define MAXMINSRC(src, max) \
-	(src == MAX_SRC ? max : 0)
-
-#define SWAP_CHANNELS(type, max, components) \
-{ \
-	int h = input->get_h(); \
-	int w = input->get_w(); \
-	int red = config.red; \
-	int green = config.green; \
-	int blue = config.blue; \
-	int alpha = config.alpha; \
- \
-	if(components == 3) \
-	{ \
-		if(red == ALPHA_SRC) red = MAX_SRC; \
-		if(green == ALPHA_SRC) green = MAX_SRC; \
-		if(blue == ALPHA_SRC) blue = MAX_SRC; \
-	} \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *inrow = (type*)input->get_row_ptr(i); \
-		type *outrow = (type*)output->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			if(red < 4) \
-				*outrow++ = *(inrow + red); \
-			else \
-				*outrow++ = MAXMINSRC(red, max); \
- \
-			if(green < 4) \
-				*outrow++ = *(inrow + green); \
-			else \
-				*outrow++ = MAXMINSRC(green, max); \
- \
-			if(blue < 4) \
-				*outrow++ = *(inrow + blue); \
-			else \
-				*outrow++ = MAXMINSRC(blue, max); \
- \
-			if(components == 4) \
-			{ \
-				if(alpha < 4) \
-					*outrow++ = *(inrow + alpha); \
-				else \
-					*outrow++ = MAXMINSRC(alpha, max); \
-			} \
- \
-			inrow += components; \
-		} \
-	} \
-}
-
-#define CORCOLOR(col) \
-{ \
-	if(col < 3) \
-		col++; \
-	else if(col == 3) \
-		col = 0; \
-}
+#define CHNVAL(chnsrc) \
+	chnsrc == MAX_SRC ? 0xffff : chnsrc == HLF_SRC ? 0x8000 : 0
 
 VFrame *SwapMain::process_tmpframe(VFrame *input)
 {
-	load_configuration();
+	VFrame *output = input;
 
-	VFrame *output = clone_vframe(input);
+	int h = input->get_h();
+	int w = input->get_w();
+
+	if(load_configuration())
+		update_gui();
+
+	int chnl0val = CHNVAL(config.chan0);
+	int chnl1val = CHNVAL(config.chan1);
+	int chnl2val = CHNVAL(config.chan2);
+	int chnl3val = CHNVAL(config.chan3);
 
 	switch(input->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		SWAP_CHANNELS(float, 1, 3);
-		break;
-	case BC_RGBA_FLOAT:
-		SWAP_CHANNELS(float, 1, 4);
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		SWAP_CHANNELS(unsigned char, 0xff, 3);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		SWAP_CHANNELS(unsigned char, 0xff, 4);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		SWAP_CHANNELS(uint16_t, 0xffff, 3);
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		SWAP_CHANNELS(uint16_t, 0xffff, 4);
-		break;
 	case BC_AYUV16161616:
+		output = clone_vframe(input);
+		for(int i = 0; i < h; i++)
 		{
-			int h = input->get_h();
-			int w = input->get_w();
-			int red = config.red;
-			int green = config.green;
-			int blue = config.blue;
-			int alpha = config.alpha;
+			uint16_t *inrow = (uint16_t*)input->get_row_ptr(i);
+			uint16_t *outrow = (uint16_t*)output->get_row_ptr(i);
 
-			CORCOLOR(red);
-			CORCOLOR(green);
-			CORCOLOR(blue);
-			CORCOLOR(alpha);
-
-			for(int i = 0; i < h; i++) \
+			for(int j = 0; j < w; j++)
 			{
-				uint16_t *inrow = (uint16_t*)input->get_row_ptr(i);
-				uint16_t *outrow = (uint16_t*)output->get_row_ptr(i);
+				if(config.chan0 < CHNL_MAX)
+					*outrow++ = *(inrow + config.chan0);
+				else
+					*outrow++ = chnl0val;
 
-				for(int j = 0; j < w; j++)
-				{
-					if(alpha < 4) \
-						*outrow++ = *(inrow + alpha);
-					else
-						*outrow++ = MAXMINSRC(alpha, 0xffff);
+				if(config.chan1 < CHNL_MAX)
+					*outrow++ = *(inrow + config.chan1);
+				else
+					*outrow++ = chnl1val;
 
-					if(red < 4)
-						*outrow++ = *(inrow + red);
-					else
-						*outrow++ = MAXMINSRC(red, 0xffff);
+				if(config.chan2 < CHNL_MAX)
+					*outrow++ = *(inrow + config.chan2);
+				else
+					*outrow++ = chnl2val;
 
-					if(green < 4)
-						*outrow++ = *(inrow + green);
-					else
-						*outrow++ = MAXMINSRC(green, 0xffff);
+				if(config.chan3 < CHNL_MAX)
+					*outrow++ = *(inrow + config.chan3);
+				else
+					*outrow++ = chnl3val;
 
-					if(blue < 4)
-						*outrow++ = *(inrow + blue);
-					else
-						*outrow++ = MAXMINSRC(blue, 0xffff);
-
-					inrow += 4;
-				}
+				inrow += CHNL_MAX;
 			}
 		}
+		release_vframe(input);
+		break;
+	default:
+		unsupported(input->get_color_model());
 		break;
 	}
-	release_vframe(input);
 	return output;
-}
-
-const char* SwapMain::output_to_text(int value)
-{
-	switch(value)
-	{
-	case RED_SRC:
-		return _("Red");
-
-	case GREEN_SRC:
-		return _("Green");
-
-	case BLUE_SRC:
-		return _("Blue");
-
-	case ALPHA_SRC:
-		return _("Alpha");
-
-	case NO_SRC:
-		return _("0%");
-
-	case MAX_SRC:
-		return _("100%");
-
-	default:
-		return "";
-	}
-}
-
-int SwapMain::text_to_output(const char *text)
-{
-	if(!strcmp(text, _("Red"))) return RED_SRC;
-	if(!strcmp(text, _("Green"))) return GREEN_SRC;
-	if(!strcmp(text, _("Blue"))) return BLUE_SRC;
-	if(!strcmp(text, _("Alpha"))) return ALPHA_SRC;
-	if(!strcmp(text, _("0%"))) return NO_SRC;
-	if(!strcmp(text, _("100%"))) return MAX_SRC;
-	return 0;
 }

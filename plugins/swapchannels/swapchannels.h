@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef SWAPCHANNELS_H
 #define SWAPCHANNELS_H
@@ -39,19 +23,10 @@
 #include "bcpopupmenu.h"
 #include "bcmenuitem.h"
 #include "language.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
+#include "selection.h"
 #include "vframe.inc"
-
-
-#define RED_SRC 0
-#define GREEN_SRC 1
-#define BLUE_SRC 2
-#define ALPHA_SRC 3
-#define NO_SRC 4
-#define MAX_SRC 5
-
 
 class SwapConfig
 {
@@ -61,34 +36,28 @@ public:
 	int equivalent(SwapConfig &that);
 	void copy_from(SwapConfig &that);
 
-	int red;
-	int green;
-	int blue;
-	int alpha;
+	int chan0;
+	int chan1;
+	int chan2;
+	int chan3;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-
-class SwapMenu : public BC_PopupMenu
+class SwapColorSelection : public Selection
 {
 public:
-	SwapMenu(SwapMain *client, int *output, int x, int y);
+	SwapColorSelection(int x, int y, struct selection_int *chnls,
+		SwapMain *plugin, BC_WindowBase *basewindow, int *value);
 
 	int handle_event();
+	void update(int value);
+	const char *name(int value);
 
-	SwapMain *client;
-	int *output;
-};
-
-
-class SwapItem : public BC_MenuItem
-{
-public:
-	SwapItem(SwapMenu *menu, const char *title);
-
-	int handle_event();
-
-	SwapMenu *menu;
+	static struct selection_int color_channels_rgb[];
+	static struct selection_int color_channels_yuv[];
+private:
+	SwapMain *plugin;
+	struct selection_int *channels;
 };
 
 class SwapWindow : public PluginWindow
@@ -97,11 +66,11 @@ public:
 	SwapWindow(SwapMain *plugin, int x, int y);
 
 	void update();
-
-	SwapMenu *red;
-	SwapMenu *green;
-	SwapMenu *blue;
-	SwapMenu *alpha;
+private:
+	SwapColorSelection *chan0;
+	SwapColorSelection *chan1;
+	SwapColorSelection *chan2;
+	SwapColorSelection *chan3;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
@@ -123,10 +92,6 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-
-// parameters needed for processor
-	const char* output_to_text(int value);
-	int text_to_output(const char *text);
 };
 
 #endif
