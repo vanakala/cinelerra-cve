@@ -165,9 +165,6 @@ void CTracking::update_tracker(ptstime position)
 			mwindow->gui->timebar->update_highlights();
 		mwindow->gui->canvas->flash(1);
 	}
-
-	mwindow->update_plugin_guis();
-
 	update_meters(position);
 }
 
