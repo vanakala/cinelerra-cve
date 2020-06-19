@@ -329,10 +329,7 @@ void PLUGIN_CLASS::raise_window() \
 void PLUGIN_CLASS::update_gui() \
 { \
 	if(thread) \
-	{ \
-		if(load_configuration()) \
-			thread->window->update(); \
-	} \
+		thread->window->update(); \
 }
 #else
 #define PLUGIN_CLASS_UPDATE_GUI
