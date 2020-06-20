@@ -275,6 +275,7 @@ int SwapMain::load_configuration()
 VFrame *SwapMain::process_tmpframe(VFrame *input)
 {
 	VFrame *output = input;
+	int cmodel = input->get_color_model();
 
 	int h = input->get_h();
 	int w = input->get_w();
@@ -287,11 +288,16 @@ VFrame *SwapMain::process_tmpframe(VFrame *input)
 	int chnl2val = CHNVAL(config.chan2);
 	int chnl3val = CHNVAL(config.chan3);
 
-	switch(input->get_color_model())
+	switch(cmodel)
 	{
 	case BC_RGBA16161616:
 	case BC_AYUV16161616:
 		output = clone_vframe(input);
+
+		if((cmodel == BC_RGBA16161616 && config.chan3 != CHNL3_SRC) ||
+				(cmodel == BC_AYUV16161616 && config.chan0 != CHNL0_SRC))
+			output->set_transparent();
+
 		for(int i = 0; i < h; i++)
 		{
 			uint16_t *inrow = (uint16_t*)input->get_row_ptr(i);
@@ -325,7 +331,7 @@ VFrame *SwapMain::process_tmpframe(VFrame *input)
 		release_vframe(input);
 		break;
 	default:
-		unsupported(input->get_color_model());
+		unsupported(cmodel);
 		break;
 	}
 	return output;
