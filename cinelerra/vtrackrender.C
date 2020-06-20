@@ -489,6 +489,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 				videorender->take_vframes(plugin, this);
 
 				next_plugin = 0;
+				videorender->shared_done(plugin);
 			}
 			else
 			{
