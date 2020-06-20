@@ -190,8 +190,9 @@ public:
 
 // Get the values from the color picker
 	void get_picker_colors(double *red, double *green, double *blue);
+	void get_picker_rgb(int *red, int *green, int *blue);
+	void get_picker_yuv(int *y, int *u, int *v);
 
-// All plugins define these.
 // load default settings for the plugin
 	virtual void load_defaults() {};
 // save the current settings as defaults

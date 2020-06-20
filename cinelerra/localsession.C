@@ -1,29 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "automation.h"
 #include "awindowgui.h"
 #include "bcsignals.h"
-#include "clip.h"
 #include "bchash.h"
+#include "clip.h"
+#include "colorspaces.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -70,7 +55,8 @@ LocalSession::LocalSession(EDL *edl)
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
 
 	zoombar_showautotype = AUTOGROUPTYPE_AUDIO_FADE;
-	red = green = blue = 0;
+	picker_red = picker_green = picker_blue = 0;
+	picker_y = picker_u = picker_v = 0;
 }
 
 void LocalSession::reset_instance()
@@ -103,13 +89,16 @@ void LocalSession::copy_from(LocalSession *that)
 	zoom_track = that->zoom_track;
 	preview_start = that->preview_start;
 	preview_end = that->preview_end;
-	red = that->red;
-	green = that->green;
+	picker_red = that->picker_red;
+	picker_green = that->picker_green;
+	picker_blue = that->picker_blue;
+	picker_y = that->picker_y;
+	picker_u = that->picker_u;
+	picker_v = that->picker_v;
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
 		automation_mins[i] = that->automation_mins[i];
 		automation_maxs[i] = that->automation_maxs[i];
 	}
-	blue = that->blue;
 }
 
 void LocalSession::copy(LocalSession *that, ptstime start, ptstime end)
@@ -134,9 +123,12 @@ void LocalSession::copy(LocalSession *that, ptstime start, ptstime end)
 	preview_end = this->preview_end - start;
 	if(preview_end  < 0)
 		preview_end = 0;
-	red = that->red;
-	green = that->green;
-	blue = that->blue;
+	picker_red = that->picker_red;
+	picker_green = that->picker_green;
+	picker_blue = that->picker_blue;
+	picker_y = that->picker_y;
+	picker_u = that->picker_u;
+	picker_v = that->picker_v;
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 	{
 		automation_mins[i] = that->automation_mins[i];
@@ -171,9 +163,9 @@ void LocalSession::save_xml(FileXML *file)
 
 	file->tag.set_property("PREVIEW_START", preview_start);
 	file->tag.set_property("PREVIEW_END", preview_end);
-	file->tag.set_property("RED", red);
-	file->tag.set_property("GREEN", green);
-	file->tag.set_property("BLUE", blue);
+	file->tag.set_property("RED", picker_red);
+	file->tag.set_property("GREEN", picker_green);
+	file->tag.set_property("BLUE", picker_blue);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 	{
@@ -194,6 +186,8 @@ void LocalSession::save_xml(FileXML *file)
 
 void LocalSession::load_xml(FileXML *file)
 {
+	double red, green, blue;
+
 	file->tag.get_property("CLIP_TITLE", clip_title);
 	file->tag.get_property("CLIP_NOTES", clip_notes);
 	char *string = file->tag.get_property("FOLDER");
@@ -219,9 +213,24 @@ void LocalSession::load_xml(FileXML *file)
 	zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
 	preview_start = file->tag.get_property("PREVIEW_START", preview_start);
 	preview_end = file->tag.get_property("PREVIEW_END", preview_end);
-	red = file->tag.get_property("RED", red);
-	green = file->tag.get_property("GREEN", green);
-	blue = file->tag.get_property("BLUE", blue);
+
+	// Compatibility: old values were 0 .. 1.0
+	red = file->tag.get_property("RED", 0.0);
+	green = file->tag.get_property("GREEN", 0.0);
+	blue = file->tag.get_property("BLUE", 0.0);
+	if(red > 0 && red < 1.0)
+		picker_red = red * 0x10000;
+	else
+		picker_red = red;
+	if(green > 0 && green < 1.0)
+		picker_green = green * 0x10000;
+	else
+		picker_green = green;
+	if(blue > 0 && blue < 1.0)
+		picker_blue = blue * 0x10000;
+	else
+		picker_blue = blue;
+	picker_to_yuv();
 
 	for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 	{
@@ -274,6 +283,8 @@ void LocalSession::boundaries()
 
 void LocalSession::load_defaults(BC_Hash *defaults)
 {
+	double red, green, blue;
+
 	loop_playback = defaults->get("LOOP_PLAYBACK", 0);
 	loop_start = defaults->get("LOOP_START", (ptstime)0);
 	loop_end = defaults->get("LOOP_END", (ptstime)0);
@@ -289,6 +300,16 @@ void LocalSession::load_defaults(BC_Hash *defaults)
 	red = defaults->get("RED", 0.0);
 	green = defaults->get("GREEN", 0.0);
 	blue = defaults->get("BLUE", 0.0);
+	if(red > 0)
+		picker_red = red * 0x10000;
+	if(green > 0)
+		picker_green = green * 0x10000;
+	if(blue > 0)
+		picker_blue = blue * 0x10000;
+	picker_red = defaults->get("PICKER_RED", picker_red);
+	picker_green = defaults->get("PICKER_GREEN", picker_green);
+	picker_blue = defaults->get("PICKER_BLUE", picker_blue);
+	picker_to_yuv();
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 	{
@@ -318,9 +339,12 @@ void LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ZOOM_SAMPLE");
 	defaults->update("ZOOMY", zoom_y);
 	defaults->update("ZOOM_TRACK", zoom_track);
-	defaults->update("RED", red);
-	defaults->update("GREEN", green);
-	defaults->update("BLUE", blue);
+	defaults->delete_key("RED");
+	defaults->delete_key("GREEN");
+	defaults->delete_key("BLUE");
+	defaults->update("PICKER_RED", picker_red);
+	defaults->update("PICKER_GREEN", picker_green);
+	defaults->update("PICKER_BLUE", picker_blue);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 	{
@@ -432,6 +456,77 @@ int LocalSession::outpoint_valid()
 	return out_point >= 0;
 }
 
+void LocalSession::get_picker_rgb(int *r, int *g, int *b)
+{
+	if(r)
+		*r = picker_red;
+	if(g)
+		*g = picker_green;
+	if(b)
+		*b = picker_blue;
+}
+
+void LocalSession::get_picker_yuv(int *y, int *u, int *v)
+{
+	if(y)
+		*y = picker_y;
+	if(u)
+		*u = picker_u;
+	if(v)
+		*v = picker_v;
+}
+
+void LocalSession::get_picker_rgb(double *r, double *g, double *b)
+{
+	if(r)
+		*r = (double)picker_red / 0x10000;
+	if(g)
+		*g = (double)picker_green / 0x10000;
+	if(b)
+		*b = (double)picker_blue / 0x10000;
+}
+
+void LocalSession::set_picker_yuv(int y, int u, int v)
+{
+	picker_y = y;
+	picker_u = u;
+	picker_v = v;
+	picker_to_rgb();
+}
+
+void LocalSession::set_picker_rgb(int r, int g, int b)
+{
+	picker_red = r;
+	picker_green = g;
+	picker_blue = b;
+	picker_to_yuv();
+}
+
+void LocalSession::set_picker_rgb(double r, double g, double b)
+{
+	double val;
+
+	val = round(r * 0x10000);
+	picker_red = CLIP(val, 0, 0xffff);
+	val = round(g * 0x10000);
+	picker_green =  CLIP(val, 0, 0xffff);
+	val = round(b * 0x10000);
+	picker_blue = CLIP(val, 0, 0xffff);
+	picker_to_yuv();
+}
+
+void LocalSession::picker_to_yuv()
+{
+	ColorSpaces::rgb_to_yuv_16(picker_red, picker_green, picker_blue,
+		picker_y, picker_u, picker_v);
+}
+
+void LocalSession::picker_to_rgb()
+{
+	ColorSpaces::yuv_to_rgb_16(picker_red, picker_green, picker_blue,
+		picker_y, picker_u, picker_v);
+}
+
 size_t LocalSession::get_size()
 {
 	return sizeof(*this);
@@ -449,8 +544,8 @@ void LocalSession::dump(int indent)
 		loop_playback, loop_start, loop_end);
 	printf("%*szoom_time %.3f zoom_y %d zoom_track %d showautotype %d\n",  indent, "",
 		zoom_time, zoom_y, zoom_track, zoombar_showautotype);
-	printf("%*seye dropper red %.3f green %.3f blue %.3f\n", indent, "",
-		red, green, blue);
+	printf("%*spicker rgb:[%#04x %#04x %#04x] yuv:[%#04x %#04x %#04x]\n", indent, "",
+		picker_red, picker_green, picker_blue, picker_y, picker_u, picker_v);
 	printf("%*sfolder '%s(%d)'\n",  indent, "", AWindowGUI::folder_names[awindow_folder], awindow_folder);
 	printf("%*sclip title '%s'\n",  indent, "", clip_title);
 	printf("%*sclip notes '%s'\n",  indent, "", clip_notes);

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef LOCALSESSION_H
 #define LOCALSESSION_H
@@ -70,6 +54,15 @@ public:
 	void set_clip_title(const char *path);
 
 	void boundaries();
+
+// Accessors for colorpicker
+	void get_picker_rgb(int *r, int *g, int *b);
+	void get_picker_yuv(int *y, int *u, int *v);
+	void get_picker_rgb(double *r, double *g, double *b);
+	void set_picker_yuv(int y, int u, int v);
+	void set_picker_rgb(int r, int g, int b);
+	void set_picker_rgb(double r, double g, double b);
+
 	size_t get_size();
 	void dump(int indent = 0);
 
@@ -100,14 +93,14 @@ public:
 	float automation_maxs[6];
 	int zoombar_showautotype;
 
-// Eye dropper
-	double red, green, blue;
-
 // Range for CWindow and VWindow preview in seconds.
 	ptstime preview_start;
 	ptstime preview_end;
 
 private:
+	void picker_to_yuv();
+	void picker_to_rgb();
+
 // The reason why selection ranges and inpoints have to be separate:
 // The selection position has to change to set new in points.
 // For editing functions we have a precidence for what determines
@@ -115,6 +108,14 @@ private:
 
 	ptstime selectionstart, selectionend;
 	ptstime in_point, out_point;
+
+// Colorpicker colors
+	int picker_red;
+	int picker_green;
+	int picker_blue;
+	int picker_y;
+	int picker_u;
+	int picker_v;
 };
 
 #endif

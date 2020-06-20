@@ -182,12 +182,17 @@ int PluginClient::get_interpolation_type()
 
 void PluginClient::get_picker_colors(double *red, double *green, double *blue)
 {
-	if(red)
-		*red = plugin->edl->local_session->red;
-	if(green)
-		*green = plugin->edl->local_session->green;
-	if(blue)
-		*blue = plugin->edl->local_session->blue;
+	plugin->edl->local_session->get_picker_rgb(red, green, blue);
+}
+
+void PluginClient::get_picker_rgb(int *red, int *green, int *blue)
+{
+	plugin->edl->local_session->get_picker_rgb(red, green, blue);
+}
+
+void PluginClient::get_picker_yuv(int *y, int *u, int *v)
+{
+	plugin->edl->local_session->get_picker_yuv(y, u, v);
 }
 
 int PluginClient::get_use_opengl()

@@ -1602,94 +1602,98 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 		canvas_to_output(master_edl, cursor_x, cursor_y);
 
 // Get color out of frame.
-// Doesn't work during playback because that bypasses the refresh frame.
 		if(refresh_frame)
 		{
-			CLAMP(cursor_x, 0, refresh_frame->get_w() - 1);
-			CLAMP(cursor_y, 0, refresh_frame->get_h() - 1);
-
-// Decompression coefficients straight out of jpeglib
-#define V_TO_R    1.40200
-#define V_TO_G    -0.71414
-
-#define U_TO_G    -0.34414
-#define U_TO_B    1.77200
-
-#define GET_COLOR(type, components, max, do_yuv) \
-{ \
-	type *row = (type*)(refresh_frame->get_row_ptr((int)cursor_y)) + \
-		(int)cursor_x * components; \
-	double red = (double)*row++ / max; \
-	double green = (double)*row++ / max; \
-	double blue = (double)*row++ / max; \
-	if(do_yuv) \
-	{ \
-		master_edl->local_session->red = red + V_TO_R * (blue - 0.5); \
-		master_edl->local_session->green = red + U_TO_G * (green - 0.5) + V_TO_G * (blue - 0.5); \
-		master_edl->local_session->blue = red + U_TO_B * (green - 0.5); \
-	} \
-	else \
-	{ \
-		master_edl->local_session->red = red; \
-		master_edl->local_session->green = green; \
-		master_edl->local_session->blue = blue; \
-	} \
-}
+			int in_x = round(CLIP(cursor_x, 0, refresh_frame->get_w() - 1));
+			int in_y = round(CLIP(cursor_y, 0, refresh_frame->get_h() - 1));
 
 			switch(refresh_frame->get_color_model())
 			{
 			case BC_YUV888:
-				GET_COLOR(unsigned char, 3, 0xff, 1);
-				break;
+				{
+					unsigned char *pixel =
+						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
+					master_edl->local_session->set_picker_yuv(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_YUVA8888:
-				GET_COLOR(unsigned char, 4, 0xff, 1);
-				break;
+				{
+					unsigned char *pixel =
+						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_yuv(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_YUV161616:
-				GET_COLOR(uint16_t, 3, 0xffff, 1);
-				break;
+				{
+					uint16_t *pixel =
+						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
+					master_edl->local_session->set_picker_yuv(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_YUVA16161616:
-				GET_COLOR(uint16_t, 4, 0xffff, 1);
-				break;
+				{
+					uint16_t *pixel =
+						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_yuv(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_RGB888:
-				GET_COLOR(unsigned char, 3, 0xff, 0);
-				break;
+				{
+					unsigned char *pixel =
+						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
+					master_edl->local_session->set_picker_rgb(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_RGBA8888:
-				GET_COLOR(unsigned char, 4, 0xff, 0);
-				break;
+				{
+					unsigned char *pixel =
+						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_rgb(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_RGB_FLOAT:
-				GET_COLOR(float, 3, 1.0, 0);
-				break;
+				{
+					float *pixel =
+						&((float*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
+					master_edl->local_session->set_picker_rgb(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_RGBA_FLOAT:
-				GET_COLOR(float, 4, 1.0, 0);
-				break;
+				{
+					float *pixel =
+						&((float*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_rgb(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_RGBA16161616:
-				GET_COLOR(uint16_t, 4, 0xffff, 0);
-				break;
+				{
+					uint16_t *pixel =
+						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_rgb(
+						pixel[0], pixel[1], pixel[2]);
+					break;
+				}
 			case BC_AYUV16161616:
 				{
-					uint16_t *row = (uint16_t*)(refresh_frame->get_row_ptr((int)cursor_y)) +
-						(int)cursor_x * 4;
-					row++;
-					double red = (double)*row++ / 0xffff;
-					double green = (double)*row++ / 0xffff;
-					double blue = (double)*row++ / 0xffff;
-					master_edl->local_session->red =
-						red + V_TO_R * (blue - 0.5);
-					master_edl->local_session->green =
-						red + U_TO_G * (green - 0.5) +
-						V_TO_G * (blue - 0.5);
-					master_edl->local_session->blue =
-						red + U_TO_B * (green - 0.5);
+					uint16_t *pixel =
+						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+					master_edl->local_session->set_picker_yuv(
+						pixel[1], pixel[2], pixel[3]);
+					break;
 				}
-				break;
 			}
 		}
 		else
-		{
-			master_edl->local_session->red = 0;
-			master_edl->local_session->green = 0;
-			master_edl->local_session->blue = 0;
-		}
+			master_edl->local_session->set_picker_rgb(0, 0, 0);
+
 		gui->update_tool();
 		result = 1;
 // Can't rerender since the color value is from the output of any effect it
