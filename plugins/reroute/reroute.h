@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2007 Hermann Vosseler
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2007 Hermann Vosseler
 
 #ifndef REROUTE_H
 #define REROUTE_H
@@ -40,6 +24,7 @@
 #include "pluginserver.inc"
 #include "pluginwindow.h"
 #include "pluginvclient.h"
+#include "selection.h"
 #include "vframe.inc"
 
 class Reroute;
@@ -49,11 +34,13 @@ class RerouteConfig
 public:
 	RerouteConfig();
 
-	static const char* operation_to_text(int operation);
+	int equivalent(RerouteConfig &that);
+	void copy_from(RerouteConfig &that);
+
 	int operation;
 	enum
 	{
-		REPLACE,
+		REPLACE_ALL,
 		REPLACE_COMPONENTS,
 		REPLACE_ALPHA
 	};
@@ -61,16 +48,19 @@ public:
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-
-class RerouteOperation : public BC_PopupMenu
+class RerouteSelection : public Selection
 {
 public:
-	RerouteOperation(Reroute *plugin,
-		int x, 
-		int y);
+	RerouteSelection(int x, int y, Reroute *plugin,
+		BC_WindowBase *basewindow, int *value);
 
 	int handle_event();
+	void update(int value);
+	static const char *name(int value);
+
+private:
 	Reroute *plugin;
+	static struct selection_int reroute_operation[];
 };
 
 
@@ -81,8 +71,9 @@ public:
 
 	void update();
 
-	RerouteOperation *operation;
 	PLUGIN_GUI_CLASS_MEMBERS
+private:
+	RerouteSelection *operation;
 };
 
 PLUGIN_THREAD_HEADER
@@ -100,9 +91,6 @@ public:
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-
-	int output_track;
-	int input_track;
 };
 
 #endif

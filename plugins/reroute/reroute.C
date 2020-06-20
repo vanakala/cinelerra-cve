@@ -1,33 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2007 Hermann Vosseler
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2007 Hermann Vosseler
 
 #include "bchash.h"
-#include "bcmenuitem.h"
-#include "bcpopupmenu.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
@@ -37,27 +18,60 @@
 #include <string.h>
 #include <stdint.h>
 
+struct selection_int RerouteSelection::reroute_operation[] =
+{
+	{ N_("Replace Target"), RerouteConfig::REPLACE_ALL },
+	{ N_("Components only"), RerouteConfig::REPLACE_COMPONENTS },
+	{ N_("Alpha replace"), RerouteConfig::REPLACE_ALPHA },
+	{ 0, 0 }
+};
 
 RerouteConfig::RerouteConfig()
 {
-	operation = RerouteConfig::REPLACE;
+	operation = RerouteConfig::REPLACE_ALL;
 }
 
-
-const char* RerouteConfig::operation_to_text(int operation)
+int RerouteConfig::equivalent(RerouteConfig &that)
 {
-	switch(operation)
-	{
-	case RerouteConfig::REPLACE:
-		return _("Replace Target");
-	case RerouteConfig::REPLACE_COMPONENTS:
-		return _("Components only");
-	case RerouteConfig::REPLACE_ALPHA:
-		return _("Alpha replace");
-	}
-	return "";
+	return operation == that.operation;
 }
 
+void RerouteConfig::copy_from(RerouteConfig &that)
+{
+	operation = that.operation;
+}
+
+RerouteSelection::RerouteSelection(int x, int y, Reroute *plugin,
+	BC_WindowBase *basewindow, int *value)
+ : Selection(x, y, basewindow, reroute_operation, value, SELECTION_VARWIDTH)
+{
+	this->plugin = plugin;
+	disable(1);
+}
+
+void RerouteSelection::update(int value)
+{
+	BC_TextBox::update(_(name(value)));
+}
+
+int RerouteSelection::handle_event()
+{
+	int ret = Selection::handle_event();
+
+	if(ret)
+		plugin->send_configure_change();
+	return ret;
+}
+
+const char *RerouteSelection::name(int value)
+{
+	for(int i = 0; reroute_operation[i].text; i++)
+	{
+		if(value == reroute_operation[i].value)
+			return reroute_operation[i].text;
+	}
+	return reroute_operation[0].text;
+}
 
 RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, x, y, 300, 100)
@@ -67,62 +81,20 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 	x = 10;
 	y = 40;
 	add_subwindow(title = new BC_Title(x, y, _("Operation:")));
-	add_subwindow(operation = new RerouteOperation(plugin, 
-		x + title->get_w() + 5, y));
+	add_subwindow(operation = new RerouteSelection(x + title->get_w() + 5, y,
+		plugin, this, &plugin->config.operation));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
+	update();
 }
 
 void RerouteWindow::update()
 {
-	operation->set_text(RerouteConfig::operation_to_text(plugin->config.operation));
-}
-
-RerouteOperation::RerouteOperation(Reroute *plugin,
-	int x, 
-	int y)
- : BC_PopupMenu(x,
-	y,
-	150,
-	RerouteConfig::operation_to_text(plugin->config.operation),
-	1)
-{
-	this->plugin = plugin;
-
-	add_item(new BC_MenuItem(
-		RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE)));
-	add_item(new BC_MenuItem(
-		RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE_COMPONENTS)));
-	add_item(new BC_MenuItem(
-		RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE_ALPHA)));
-}
-
-int RerouteOperation::handle_event()
-{
-	char *text = get_text();
-
-	if(!strcmp(text, RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE)))
-		plugin->config.operation = RerouteConfig::REPLACE;
-	else
-	if(!strcmp(text, RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE_COMPONENTS)))
-		plugin->config.operation = RerouteConfig::REPLACE_COMPONENTS;
-	else
-	if(!strcmp(text, RerouteConfig::operation_to_text(
-			RerouteConfig::REPLACE_ALPHA)))
-		plugin->config.operation = RerouteConfig::REPLACE_ALPHA;
-
-	plugin->send_configure_change();
-	return 1;
+	operation->update(plugin->config.operation);
 }
 
 
 PLUGIN_THREAD_METHODS
 
-/***** Register Plugin ***********************************/
 
 REGISTER_PLUGIN
 
@@ -140,59 +112,16 @@ Reroute::~Reroute()
 
 PLUGIN_CLASS_METHODS
 
-/*
- *  Main operation
- *
- *****************************************/
-template<class TYPE, int COMPONENTS>
-struct px_type 
-{
-	static inline
-	void transfer(VFrame*, VFrame*, bool, bool) ;
-};
-
-template<class TYPE, int COMPONENTS>
-void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_components, bool do_alpha)
-//partially overwrite target data buffer
-{
-	int w = source->get_w();
-	int h = source->get_h();
-	do_alpha = do_alpha && (COMPONENTS > 3);  // only possible if we have alpha
-
-	w = MIN(w, target->get_w());
-	h = MIN(h, target->get_h());
-
-	for(int i = 0; i < h; i++)
-	{
-		TYPE *inpx  = (TYPE*)source->get_row_ptr(i);
-		TYPE *outpx = (TYPE*)target->get_row_ptr(i);
-
-		for(int j = 0; j < w; j++)
-		{
-			if(do_components)
-			{
-				outpx[0] = inpx[0];
-				outpx[1] = inpx[1];
-				outpx[2] = inpx[2];
-			}
-			if(do_alpha)
-				outpx[3] = inpx[3];
-
-			inpx += COMPONENTS;
-			outpx += COMPONENTS;
-		}
-	}
-}
-
 void Reroute::process_tmpframes(VFrame **frame)
 {
 	bool do_components, do_alpha;
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	switch(config.operation)
 	{
-	case RerouteConfig::REPLACE:
+	case RerouteConfig::REPLACE_ALL:
 		do_components = do_alpha = true;
 		break;
 	case RerouteConfig::REPLACE_ALPHA:
@@ -214,73 +143,74 @@ void Reroute::process_tmpframes(VFrame **frame)
 	VFrame *source = frame[1];
 	VFrame *target = frame[0];
 
+	if(source->get_w() != target->get_w() || source->get_h() != target->get_h())
+	{
+		abort_plugin(_("Tracks must be the same size"));
+		return;
+	}
+
 	if(do_alpha)
 		target->set_transparent();
 
-	if(config.operation == RerouteConfig::REPLACE)
+	if(config.operation == RerouteConfig::REPLACE_ALL)
 	{
 		target->copy_from(source);
 		return;
 	}
 
-// prepare data for output track
-// (to be overidden partially)
-	get_frame(target);
+	int w = source->get_w();
+	int h = source->get_h();
 
 	switch(source->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		px_type<float,3>::transfer(source, target, do_components, do_alpha);
-		break;
-	case BC_RGBA_FLOAT:
-		px_type<float,4>::transfer(source, target, do_components, do_alpha);
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		px_type<unsigned char,3>::transfer(source, target, do_components, do_alpha);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		px_type<unsigned char,4>::transfer(source, target, do_components, do_alpha);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		px_type<uint16_t,3>::transfer(source, target, do_components, do_alpha);
-		break;
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		px_type<uint16_t,4>::transfer(source, target, do_components, do_alpha);
-		break;
 	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
 		{
-			int w = source->get_w();
-			int h = source->get_h();
+			uint16_t *inpx  = (uint16_t*)source->get_row_ptr(i);
+			uint16_t *outpx = (uint16_t*)target->get_row_ptr(i);
 
-			w = MIN(w, target->get_w());
-			h = MIN(h, target->get_h());
-
-			for(int i = 0; i < h; i++)
+			for(int j = 0; j < w; j++)
 			{
-				uint16_t *inpx  = (uint16_t*)source->get_row_ptr(i);
-				uint16_t *outpx = (uint16_t*)target->get_row_ptr(i);
+				if(do_alpha)
+					outpx[0] = inpx[0];
 
-				for(int j = 0; j < w; j++)
+				if(do_components)
 				{
-					if(do_alpha)
-						outpx[0] = inpx[0];
-
-					if(do_components)
-					{
-						outpx[1] = inpx[1];
-						outpx[2] = inpx[2];
-						outpx[3] = inpx[3];
-					}
-
-					inpx += 4;
-					outpx += 4;
+					outpx[1] = inpx[1];
+					outpx[2] = inpx[2];
+					outpx[3] = inpx[3];
 				}
+
+				inpx += 4;
+				outpx += 4;
 			}
 		}
+		break;
+	case BC_RGBA16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *inpx  = (uint16_t*)source->get_row_ptr(i);
+			uint16_t *outpx = (uint16_t*)target->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				if(do_components)
+				{
+					outpx[0] = inpx[0];
+					outpx[1] = inpx[1];
+					outpx[2] = inpx[2];
+				}
+
+				if(do_alpha)
+					outpx[3] = inpx[3];
+
+				inpx += 4;
+				outpx += 4;
+			}
+		}
+		break;
+	default:
+		unsupported(source->get_color_model());
 		break;
 	}
 }
@@ -288,10 +218,15 @@ void Reroute::process_tmpframes(VFrame **frame)
 int Reroute::load_configuration()
 {
 	KeyFrame *prev_keyframe;
+	RerouteConfig old_config;
 
 	if(prev_keyframe = prev_keyframe_pts(source_pts))
+	{
+		old_config.copy_from(config);
 		read_data(prev_keyframe);
-	return 1;
+		return !config.equivalent(old_config);
+	}
+	return 0;
 }
 
 void Reroute::load_defaults()
