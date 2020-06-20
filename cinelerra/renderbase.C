@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bcsignals.h"
 #include "condition.h"
@@ -127,4 +111,29 @@ int RenderBase::is_shared_ready(Plugin *plugin, ptstime pts)
 		}
 	}
 	return pcount == ncount;
+}
+
+void RenderBase::shared_done(Plugin *plugin)
+{
+	int plugin_type = plugin->track->data_type;
+
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != plugin_type)
+			continue;
+
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *current = track->plugins.values[i];
+
+			if(current->plugin_type == PLUGIN_SHAREDPLUGIN &&
+					current->shared_plugin == plugin &&
+					current->on)
+			{
+				if(track->renderer && track->renderer->next_plugin &&
+						track->renderer->next_plugin->shared_plugin == plugin)
+					track->renderer->next_plugin = 0;
+			}
+		}
+	}
 }
