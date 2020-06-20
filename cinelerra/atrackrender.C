@@ -310,6 +310,7 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit,
 				aframe = arender->take_aframes(plugin, this);
 
 				next_plugin = 0;
+				arender->shared_done(plugin);
 			}
 			else
 			{
