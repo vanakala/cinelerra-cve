@@ -8,7 +8,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-noinst_HEADERS = blur.h blur.inc blurwindow.h blurwindow.inc
+noinst_HEADERS = blur.h blurwindow.h
 EXTRA_DIST = picon.png
 
 BUILT_SOURCES = picon_png.h

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BLUR_H
 #define BLUR_H
@@ -67,7 +51,10 @@ public:
 	int vertical;
 	int horizontal;
 	int radius;
-	int a, r ,g ,b;
+	int chan0;
+	int chan1;
+	int chan2;
+	int chan3;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -77,8 +64,8 @@ public:
 	BlurMain(PluginServer *server);
 	~BlurMain();
 
-// required for all realtime plugins
 	VFrame *process_tmpframe(VFrame *input_ptr);
+	void reset_plugin();
 
 	void load_defaults();
 	void save_defaults();
@@ -87,10 +74,10 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// a thread for the GUI
-	VFrame *temp, *input, *output;
-
+	VFrame *input;
+	VFrame *temp;
 private:
+	int num_engines;
 	BlurEngine **engine;
 };
 
@@ -128,7 +115,7 @@ public:
 // A margin is introduced between the input and output to give a seemless transition between blurs
 	int start_in, start_out;
 	int end_in, end_out;
-	VFrame *output, *input;
+	VFrame *input;
 	int last_frame;
 	Mutex input_lock, output_lock;
 };
