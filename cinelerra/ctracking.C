@@ -165,6 +165,7 @@ void CTracking::update_tracker(ptstime position)
 			mwindow->gui->timebar->update_highlights();
 		mwindow->gui->canvas->flash(1);
 	}
+	master_edl->reset_plugins();
 	update_meters(position);
 }
 

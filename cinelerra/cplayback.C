@@ -23,6 +23,7 @@
 #include "cplayback.h"
 #include "ctracking.h"
 #include "cwindow.h"
+#include "edl.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playtransport.h"
@@ -48,6 +49,7 @@ void CPlayback::stop_cursor()
 
 	if(is_playing_back)
 		mwindow_global->gui->canvas->activate();
+	master_edl->reset_plugins();
 }
 
 int CPlayback::brender_available(ptstime position)
