@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef EDL_INC
 #define EDL_INC
@@ -32,13 +16,13 @@ extern EDL *render_edl;
 #define LOAD_ALL        0xffffffff
 #define LOAD_EDITS      0x00000001
 #define LOAD_AUTOMATION 0x00000002
-#define LOAD_PATCHES 	0x00000004
-#define LOAD_CONSOLE 	0x00000008
-#define LOAD_TIMEBAR 	0x00000010
-#define LOAD_ACONFIG 	0x00000020
-#define LOAD_VCONFIG 	0x00000040
-#define LOAD_ASSETS 	0x00000080
-#define LOAD_SESSION	0x00000100
+#define LOAD_PATCHES    0x00000004
+#define LOAD_CONSOLE    0x00000008
+#define LOAD_TIMEBAR    0x00000010
+#define LOAD_ACONFIG    0x00000020
+#define LOAD_VCONFIG    0x00000040
+#define LOAD_ASSETS     0x00000080
+#define LOAD_SESSION    0x00000100
 
 
 #define EDITING_MODES 2
