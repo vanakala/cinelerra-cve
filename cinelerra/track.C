@@ -569,8 +569,8 @@ void Track::reset_plugins(ptstime pts)
 	{
 		Plugin *current = plugins.values[i];
 
-		if(current->get_pts() > pts - PLUGIN_INACTIVE_TIME ||
-				current->end_pts() < pts + PLUGIN_INACTIVE_TIME)
+		if(current->end_pts() < pts - PLUGIN_INACTIVE_TIME ||
+				current->get_pts() > pts + PLUGIN_INACTIVE_TIME)
 			current->reset_plugin();
 	}
 	for(Edit *edit = edits->first; edit; edit = edit->next)
@@ -578,10 +578,10 @@ void Track::reset_plugins(ptstime pts)
 		if(edit->transition)
 		{
 			ptstime pos = edit->get_pts();
+			ptstime end = edit->get_pts() + edit->transition->get_length();
 
-			if(pos > pts - PLUGIN_INACTIVE_TIME ||
-					pos + edit->transition->get_length() <
-					pts + PLUGIN_INACTIVE_TIME)
+			if(end < pts - PLUGIN_INACTIVE_TIME ||
+					pos > pts + PLUGIN_INACTIVE_TIME)
 				edit->transition->reset_plugin();
 		}
 	}
