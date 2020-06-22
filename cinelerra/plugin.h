@@ -96,6 +96,7 @@ public:
 
 	int plugin_type;
 	int show, on;
+	int idle;
 	Track *track;
 	EDL *edl;
 

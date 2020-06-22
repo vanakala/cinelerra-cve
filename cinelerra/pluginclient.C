@@ -251,6 +251,7 @@ void PluginClient::process_transition(VFrame *input, VFrame *output,
 {
 	source_pts = current_postime;
 	process_realtime(input, output);
+	plugin->idle = 0;
 }
 
 void PluginClient::process_transition(AFrame *input, AFrame *output,
@@ -258,6 +259,7 @@ void PluginClient::process_transition(AFrame *input, AFrame *output,
 {
 	source_pts = current_postime;
 	process_realtime(input, output);
+	plugin->idle = 0;
 }
 
 void PluginClient::process_buffer(VFrame **frame)
@@ -273,6 +275,7 @@ void PluginClient::process_buffer(VFrame **frame)
 		else
 			*frame = process_tmpframe(*frame);
 	}
+	plugin->idle = 0;
 }
 
 void PluginClient::process_buffer(AFrame **buffer)
@@ -290,6 +293,7 @@ void PluginClient::process_buffer(AFrame **buffer)
 		else
 			*buffer = process_tmpframe(*buffer);
 	}
+	plugin->idle = 0;
 }
 
 VFrame *PluginClient::clone_vframe(VFrame *orig)

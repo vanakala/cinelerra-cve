@@ -49,6 +49,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	duration = 0;
 	show = 0;
 	on = 1;
+	idle = 0;
 	guideframe = 0;
 	shared_track = 0;
 	shared_plugin = 0;
@@ -692,8 +693,11 @@ int Plugin::show_plugin_gui()
 
 void Plugin::reset_plugin()
 {
-	if(client)
+	if(!idle && client)
+	{
 		client->reset_plugin();
+		idle = 1;
+	}
 }
 
 size_t Plugin::get_size()
@@ -748,8 +752,8 @@ void Plugin::dump(int indent)
 		printf(" shared_track_id: %d", shared_track_id);
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
-	printf("\n%*sproject_pts %.3f length %.3f id %d client %p\n", indent, "",
-		pts, duration, id, client);
+	printf("\n%*sproject_pts %.3f length %.3f id %d idle %d client %p\n", indent, "",
+		pts, duration, id, idle, client);
 
 	keyframes->dump(indent);
 }
