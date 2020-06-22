@@ -121,6 +121,9 @@ VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 		return input_ptr;
 	}
 
+	if(need_reconfigure)
+		update_gui();
+
 	if(!engine)
 	{
 		num_engines = get_project_smp();
@@ -142,7 +145,6 @@ VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 			engine[i]->reconfigure();
 		need_reconfigure = 0;
 	}
-
 	temp = clone_vframe(input);
 
 	if((color_model == BC_RGBA16161616 && config.chan3) ||
@@ -261,10 +263,10 @@ BlurEngine::BlurEngine(BlurMain *plugin, int start_out, int end_out)
 	this->start_out = start_out;
 	this->end_out = end_out;
 	last_frame = 0;
-	val_p = new pixel_f[size];
-	val_m = new pixel_f[size];
-	src = new pixel_f[size];
-	dst = new pixel_f[size];
+	val_p = new pixel[size];
+	val_m = new pixel[size];
+	src = new pixel[size];
+	dst = new pixel[size];
 	input_lock.lock();
 	output_lock.lock();
 }
@@ -320,8 +322,6 @@ void BlurEngine::run()
 		VFrame *cur_input = input;
 		VFrame *cur_output = input;
 
-		vmax = 0xffff;
-
 		if(plugin->config.vertical)
 		{
 			// Vertical pass
@@ -330,21 +330,21 @@ void BlurEngine::run()
 
 			for(j = 0; j < w; j++)
 			{
-				memset(val_p, 0, sizeof(pixel_f) * (end_in - start_in));
-				memset(val_m, 0, sizeof(pixel_f) * (end_in - start_in));
+				memset(val_p, 0, sizeof(pixel) * (end_in - start_in));
+				memset(val_m, 0, sizeof(pixel) * (end_in - start_in));
 
 				for(l = 0, k = start_in; k < end_in; l++, k++)
 				{
 					uint16_t *row = ((uint16_t*)cur_input->get_row_ptr(k));
 
 					if(plugin->config.chan0)
-						src[l].r = (float)row[j * 4];
+						src[l].chnl0 = row[j * 4];
 					if(plugin->config.chan1)
-						src[l].g = (float)row[j * 4 + 1];
+						src[l].chnl1 = row[j * 4 + 1];
 					if(plugin->config.chan2)
-						src[l].b = (float)row[j * 4 + 2];
+						src[l].chnl2 = row[j * 4 + 2];
 					if(plugin->config.chan3)
-						src[l].a = (float)row[j * 4 + 3];
+						src[l].chnl3 = row[j * 4 + 3];
 				}
 				blur_strip4(strip_size);
 
@@ -353,13 +353,13 @@ void BlurEngine::run()
 					uint16_t *row = ((uint16_t*)cur_output->get_row_ptr(k));
 
 					if(plugin->config.chan0)
-						row[j * 4] = (uint16_t)dst[l].r;
+						row[j * 4] = dst[l].chnl0;
 					if(plugin->config.chan1)
-						row[j * 4 + 1] = (uint16_t)dst[l].g;
+						row[j * 4 + 1] = dst[l].chnl1;
 					if(plugin->config.chan2)
-						row[j * 4 + 2] = (uint16_t)dst[l].b;
+						row[j * 4 + 2] = dst[l].chnl2;
 					if(plugin->config.chan3)
-						row[j * 4 + 3] = (uint16_t)dst[l].a;
+						row[j * 4 + 3] = dst[l].chnl3;
 				}
 			}
 
@@ -372,21 +372,21 @@ void BlurEngine::run()
 			// Horizontal pass
 			for(j = start_out; j < end_out; j++)
 			{
-				memset(val_p, 0, sizeof(pixel_f) * w);
-				memset(val_m, 0, sizeof(pixel_f) * w);
+				memset(val_p, 0, sizeof(pixel) * w);
+				memset(val_m, 0, sizeof(pixel) * w);
 
 				for(k = 0; k < w; k++)
 				{
 					uint16_t *row = (uint16_t*)cur_input->get_row_ptr(j);
 
 					if(plugin->config.chan0)
-						src[k].r = (float)row[k * 4];
+						src[k].chnl0 = row[k * 4];
 					if(plugin->config.chan1)
-						src[k].g = (float)row[k * 4 + 1];
+						src[k].chnl1 = row[k * 4 + 1];
 					if(plugin->config.chan2)
-						src[k].b = (float)row[k * 4 + 2];
+						src[k].chnl2 = row[k * 4 + 2];
 					if(plugin->config.chan3)
-						src[k].a = (float)row[k * 4 + 3];
+						src[k].chnl3 = row[k * 4 + 3];
 				}
 				blur_strip4(w);
 
@@ -395,13 +395,13 @@ void BlurEngine::run()
 					uint16_t *row = (uint16_t*)cur_output->get_row_ptr(j);
 
 					if(plugin->config.chan0)
-						row[k * 4] = (uint16_t)dst[k].r;
+						row[k * 4] = dst[k].chnl0;
 					if(plugin->config.chan1)
-						row[k * 4 + 1] = (uint16_t)dst[k].g;
+						row[k * 4 + 1] = dst[k].chnl1;
 					if(plugin->config.chan2)
-						row[k * 4 + 2] = (uint16_t)dst[k].b;
+						row[k * 4 + 2] = dst[k].chnl2;
 					if(plugin->config.chan3)
-						row[k * 4 + 3] = (uint16_t)dst[k].a;
+						row[k * 4 + 3] = dst[k].chnl3;
 				}
 			}
 		}
@@ -499,31 +499,31 @@ void BlurEngine::get_constants()
 	}
 }
 
-#define BOUNDARY(x) if((x) > vmax) (x) = vmax; else if((x) < 0) (x) = 0;
+#define BOUNDARY(x) if((x) > 0xffff) (x) = 0xffff; else if((x) < 0) (x) = 0;
 
-void BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size)
+void BlurEngine::transfer_pixels(pixel *src1, pixel *src2, pixel *dest, int size)
 {
 	int i;
-	float sum;
+	int sum;
 
 	for(i = 0; i < size; i++)
 	{
-		sum = src1[i].r + src2[i].r;
+		sum = src1[i].chnl0 + src2[i].chnl0;
 		BOUNDARY(sum);
-		dest[i].r = sum;
-		sum = src1[i].g + src2[i].g;
+		dest[i].chnl0 = sum;
+		sum = src1[i].chnl1 + src2[i].chnl1;
 		BOUNDARY(sum);
-		dest[i].g = sum;
-		sum = src1[i].b + src2[i].b;
+		dest[i].chnl1 = sum;
+		sum = src1[i].chnl2 + src2[i].chnl2;
 		BOUNDARY(sum);
-		dest[i].b = sum;
-		sum = src1[i].a + src2[i].a;
+		dest[i].chnl2 = sum;
+		sum = src1[i].chnl3 + src2[i].chnl3;
 		BOUNDARY(sum);
-		dest[i].a = sum;
+		dest[i].chnl3 = sum;
 	}
 }
 
-void BlurEngine::blur_strip4(int &size)
+void BlurEngine::blur_strip4(int size)
 {
 	sp_p = src;
 	sp_m = src + size - 1;
@@ -536,53 +536,53 @@ void BlurEngine::blur_strip4(int &size)
 	int l;
 	for(int k = 0; k < size; k++)
 	{
-		terms = (k < 4) ? k : 4;
+		int terms = (k < 4) ? k : 4;
 
 		for(l = 0; l <= terms; l++)
 		{
 			if(plugin->config.chan0)
 			{
-				vp->r += n_p[l] * sp_p[-l].r - d_p[l] * vp[-l].r;
-				vm->r += n_m[l] * sp_m[l].r - d_m[l] * vm[l].r;
+				vp->chnl0 += n_p[l] * sp_p[-l].chnl0 - d_p[l] * vp[-l].chnl0;
+				vm->chnl0 += n_m[l] * sp_m[l].chnl0 - d_m[l] * vm[l].chnl0;
 			}
 			if(plugin->config.chan1)
 			{
-				vp->g += n_p[l] * sp_p[-l].g - d_p[l] * vp[-l].g;
-				vm->g += n_m[l] * sp_m[l].g - d_m[l] * vm[l].g;
+				vp->chnl1 += n_p[l] * sp_p[-l].chnl1 - d_p[l] * vp[-l].chnl1;
+				vm->chnl1 += n_m[l] * sp_m[l].chnl1 - d_m[l] * vm[l].chnl1;
 			}
 			if(plugin->config.chan2)
 			{
-				vp->b += n_p[l] * sp_p[-l].b - d_p[l] * vp[-l].b;
-				vm->b += n_m[l] * sp_m[l].b - d_m[l] * vm[l].b;
+				vp->chnl2 += n_p[l] * sp_p[-l].chnl2 - d_p[l] * vp[-l].chnl2;
+				vm->chnl2 += n_m[l] * sp_m[l].chnl2 - d_m[l] * vm[l].chnl2;
 			}
 			if(plugin->config.chan3)
 			{
-				vp->a += n_p[l] * sp_p[-l].a - d_p[l] * vp[-l].a;
-				vm->a += n_m[l] * sp_m[l].a - d_m[l] * vm[l].a;
+				vp->chnl3 += n_p[l] * sp_p[-l].chnl3 - d_p[l] * vp[-l].chnl3;
+				vm->chnl3 += n_m[l] * sp_m[l].chnl3 - d_m[l] * vm[l].chnl3;
 			}
 		}
 
-		for( ; l <= 4; l++)
+		for(; l <= 4; l++)
 		{
 			if(plugin->config.chan0)
 			{
-				vp->r += (n_p[l] - bd_p[l]) * initial_p.r;
-				vm->r += (n_m[l] - bd_m[l]) * initial_m.r;
+				vp->chnl0 += (n_p[l] - bd_p[l]) * initial_p.chnl0;
+				vm->chnl0 += (n_m[l] - bd_m[l]) * initial_m.chnl0;
 			}
 			if(plugin->config.chan1)
 			{
-				vp->g += (n_p[l] - bd_p[l]) * initial_p.g;
-				vm->g += (n_m[l] - bd_m[l]) * initial_m.g;
+				vp->chnl1 += (n_p[l] - bd_p[l]) * initial_p.chnl1;
+				vm->chnl1 += (n_m[l] - bd_m[l]) * initial_m.chnl1;
 			}
 			if(plugin->config.chan2)
 			{
-				vp->b += (n_p[l] - bd_p[l]) * initial_p.b;
-				vm->b += (n_m[l] - bd_m[l]) * initial_m.b;
+				vp->chnl2 += (n_p[l] - bd_p[l]) * initial_p.chnl2;
+				vm->chnl2 += (n_m[l] - bd_m[l]) * initial_m.chnl2;
 			}
 			if(plugin->config.chan3)
 			{
-				vp->a += (n_p[l] - bd_p[l]) * initial_p.a;
-				vm->a += (n_m[l] - bd_m[l]) * initial_m.a;
+				vp->chnl3 += (n_p[l] - bd_p[l]) * initial_p.chnl3;
+				vm->chnl3 += (n_m[l] - bd_m[l]) * initial_m.chnl3;
 			}
 		}
 

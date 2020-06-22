@@ -29,11 +29,12 @@ class BlurEngine;
 
 typedef struct
 {
-	float r;
-	float g;
-	float b;
-	float a;
-} pixel_f;
+	double chnl0;
+	double chnl1;
+	double chnl2;
+	double chnl3;
+} pixel;
+
 
 class BlurConfig
 {
@@ -95,22 +96,18 @@ public:
 // parameters needed for blur
 	void get_constants();
 	void reconfigure();
-	void transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size);
-	void blur_strip3(int &size);
-	void blur_strip4(int &size);
+	void transfer_pixels(pixel *src1, pixel *src2, pixel *dest, int size);
+	void blur_strip4(int size);
 
-	int color_model;
-	float vmax;
-	pixel_f *val_p, *val_m, *vp, *vm;
-	pixel_f *sp_p, *sp_m;
-	float n_p[5], n_m[5];
-	float d_p[5], d_m[5];
-	float bd_p[5], bd_m[5];
-	float std_dev;
-	pixel_f *src, *dst;
-	pixel_f initial_p;
-	pixel_f initial_m;
-	int terms;
+	pixel *val_p, *val_m, *vp, *vm;
+	pixel *sp_p, *sp_m;
+	double n_p[5], n_m[5];
+	double d_p[5], d_m[5];
+	double bd_p[5], bd_m[5];
+	double std_dev;
+	pixel *src, *dst;
+	pixel initial_p;
+	pixel initial_m;
 	BlurMain *plugin;
 // A margin is introduced between the input and output to give a seemless transition between blurs
 	int start_in, start_out;
