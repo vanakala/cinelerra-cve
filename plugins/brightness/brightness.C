@@ -1,24 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
-#define GL_GLEXT_PROTOTYPES
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "filexml.h"
@@ -83,20 +66,37 @@ BrightnessMain::~BrightnessMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void BrightnessMain::reset_plugin()
+{
+	delete engine;
+	engine = 0;
+}
+
 PLUGIN_CLASS_METHODS
 
 VFrame *BrightnessMain::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int cmodel = frame->get_color_model();
 
-	if(!engine)
-		engine = new BrightnessEngine(this, PluginClient::smp + 1);
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	this->input = frame;
-	this->output = frame;
 
 	if(!EQUIV(config.brightness, 0) || !EQUIV(config.contrast, 0))
 	{
+		if(!engine)
+			engine = new BrightnessEngine(this, get_project_smp());
 		engine->process_packages();
 	}
 	return frame;
@@ -105,6 +105,7 @@ VFrame *BrightnessMain::process_tmpframe(VFrame *frame)
 void BrightnessMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* To be fixed
 	static const char *brightness_yuvluma_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float brightness;\n"
@@ -168,7 +169,6 @@ void BrightnessMain::handle_opengl()
 		"	rgba.rgb = yuv_to_rgb_matrix * rgba.rgb;\n"
 		"	gl_FragColor = rgba;\n"
 		"}\n";
-/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -197,7 +197,6 @@ void BrightnessMain::handle_opengl()
 				0);
 		break;
 	}
-
 
 	if(shader_id > 0) 
 	{
@@ -288,424 +287,129 @@ BrightnessUnit::BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin)
 void BrightnessUnit::process_package(LoadPackage *package)
 {
 	BrightnessPackage *pkg = (BrightnessPackage*)package;
-
-	VFrame *output = plugin->output;
 	VFrame *input = plugin->input;
-
-
-#define DO_BRIGHTNESS(max, type, components, is_yuv) \
-{ \
-	VFrame *inframe = input; \
-	VFrame *outframe = output; \
-	int row1 = pkg->row1; \
-	int row2 = pkg->row2; \
-	int width = output->get_w(); \
-	int r, g, b; \
- \
-	if(!EQUIV(plugin->config.brightness, 0)) \
-	{ \
-		int offset = (int)(plugin->config.brightness / 100 * max); \
- \
-		for(int i = row1; i < row2; i++) \
-		{ \
-			type *input_row = (type*)inframe->get_row_ptr(i); \
-			type *output_row = (type*)outframe->get_row_ptr(i); \
- \
-			for(int j = 0; j < width; j++) \
-			{ \
-				r = input_row[j * components] + offset; \
- \
- 				if(!is_yuv) \
-				{ \
-					g = input_row[j * components + 1] + offset; \
-					b = input_row[j * components + 2] + offset; \
-				} \
- \
-				CLAMP(r, 0, max); \
-				if(!is_yuv) \
-				{ \
-					CLAMP(g, 0, max); \
-					CLAMP(b, 0, max); \
-				} \
- \
-				output_row[j * components] = r; \
- \
- 				if(!is_yuv) \
-				{ \
-					output_row[j * components + 1] = g; \
-					output_row[j * components + 2] = b; \
-				} \
-				else \
-				{ \
-					output_row[j * components + 1] = input_row[j * components + 1]; \
-					output_row[j * components + 2] = input_row[j * components + 2]; \
-				} \
- \
- 				if(components == 4)  \
-					output_row[j * components + 3] = input_row[j * components + 3]; \
-			} \
-		} \
- \
-/* Data to be processed is now in the output buffer */ \
-		inframe = outframe; \
-	} \
- \
-	if(!EQUIV(plugin->config.contrast, 0)) \
-	{ \
-		float contrast = (plugin->config.contrast < 0) ?  \
-			(plugin->config.contrast + 100) / 100 :  \
-			(plugin->config.contrast + 25) / 25; \
- \
-		int scalar = (int)(contrast * 0x100); \
-		int offset = (max << 8) / 2 - max * scalar / 2; \
-		int y, u, v; \
- \
-		for(int i = row1; i < row2; i++) \
-		{ \
-			type *input_row = (type*)inframe->get_row_ptr(i); \
-			type *output_row = (type*)outframe->get_row_ptr(i); \
- \
-			if(plugin->config.luma) \
-			{ \
-				for(int j = 0; j < width; j++) \
-				{ \
-					if(is_yuv) \
-					{ \
-						y = input_row[j * components]; \
-					} \
-					else \
-					{ \
-						r = input_row[j * components]; \
-						g = input_row[j * components + 1]; \
-						b = input_row[j * components + 2]; \
-						if(max == 0xff) \
-						{ \
-							ColorSpaces::rgb_to_yuv_8( \
-								r,  \
-								g,  \
-								b,  \
-								y,  \
-								u,  \
-								v); \
-						} \
-						else \
-						{ \
-							ColorSpaces::rgb_to_yuv_16( \
-								r,  \
-								g,  \
-								b,  \
-								y,  \
-								u,  \
-								v); \
-						} \
-					} \
- \
-					y = (y * scalar + offset) >> 8; \
-					CLAMP(y, 0, max); \
- \
-					if(is_yuv) \
-					{ \
-						output_row[j * components] = y; \
-						output_row[j * components + 1] = input_row[j * components + 1]; \
-						output_row[j * components + 2] = input_row[j * components + 2]; \
-					} \
-					else \
-					{ \
-						if(max == 0xff) \
-						{ \
-							ColorSpaces::yuv_to_rgb_8( \
-								r,  \
-								g,  \
-								b,  \
-								y,  \
-								u,  \
-								v); \
-						} \
-						else \
-						{ \
-							ColorSpaces::yuv_to_rgb_16( \
-								r,  \
-								g,  \
-								b,  \
-								y,  \
-								u,  \
-								v); \
-						} \
-						input_row[j * components] = r; \
-						input_row[j * components + 1] = g; \
-						input_row[j * components + 2] = b; \
-					} \
- \
-					if(components == 4)  \
-						output_row[j * components + 3] = input_row[j * components + 3]; \
-				} \
-			} \
-			else \
-			{ \
-				for(int j = 0; j < width; j++) \
-				{ \
-					r = input_row[j * components]; \
-					g = input_row[j * components + 1]; \
-					b = input_row[j * components + 2]; \
- \
-					r = (r * scalar + offset) >> 8; \
-					g = (g * scalar + offset) >> 8; \
-					b = (b * scalar + offset) >> 8; \
- \
-					CLAMP(r, 0, max); \
-					CLAMP(g, 0, max); \
-					CLAMP(b, 0, max); \
- \
-					output_row[j * components] = r; \
-					output_row[j * components + 1] = g; \
-					output_row[j * components + 2] = b; \
- \
-					if(components == 4)  \
-						output_row[j * components + 3] = input_row[j * components + 3]; \
-				} \
-			} \
-		} \
-	} \
-}
-
-
-#define DO_BRIGHTNESS_F(components) \
-{ \
-	VFrame *inframe = input; \
-	VFrame *outframe = output; \
-	int row1 = pkg->row1; \
-	int row2 = pkg->row2; \
-	int width = output->get_w(); \
-	float r, g, b; \
- \
-	if(!EQUIV(plugin->config.brightness, 0)) \
-	{ \
-		float offset = plugin->config.brightness / 100; \
- \
-		for(int i = row1; i < row2; i++) \
-		{ \
-			float *input_row = (float*)inframe->get_row_ptr(i); \
-			float *output_row = (float*)outframe->get_row_ptr(i); \
- \
-			for(int j = 0; j < width; j++) \
-			{ \
-				r = input_row[j * components] + offset; \
-				g = input_row[j * components + 1] + offset; \
-				b = input_row[j * components + 2] + offset; \
- \
-				output_row[j * components] = r; \
-				output_row[j * components + 1] = g; \
-				output_row[j * components + 2] = b; \
-				if(components == 4)  \
-					output_row[j * components + 3] = input_row[j * components + 3]; \
-			} \
-		} \
- \
-/* Data to be processed is now in the output buffer */ \
-		inframe = outframe; \
-	} \
- \
-	if(!EQUIV(plugin->config.contrast, 0)) \
-	{ \
-		float contrast = (plugin->config.contrast < 0) ?  \
-			(plugin->config.contrast + 100) / 100 :  \
-			(plugin->config.contrast + 25) / 25; \
- \
-/* Shift black level down so shadows get darker instead of lighter */ \
-		float offset = 0.5 - contrast / 2; \
-		float y, u, v; \
- \
-		for(int i = row1; i < row2; i++) \
-		{ \
-			float *input_row = (float*)inframe->get_row_ptr(i); \
-			float *output_row = (float*)outframe->get_row_ptr(i); \
- \
-			if(plugin->config.luma) \
-			{ \
-				for(int j = 0; j < width; j++) \
-				{ \
-					r = input_row[j * components]; \
-					g = input_row[j * components + 1]; \
-					b = input_row[j * components + 2]; \
-					ColorSpaces::rgb_to_yuv_f( \
-						r,  \
-						g,  \
-						b,  \
-						y,  \
-						u,  \
-						v); \
- \
-					y = y * contrast + offset; \
- \
- \
-					ColorSpaces::yuv_to_rgb_f( \
-						r,  \
-						g,  \
-						b,  \
-						y,  \
-						u,  \
-						v); \
-					input_row[j * components] = r; \
-					input_row[j * components + 1] = g; \
-					input_row[j * components + 2] = b; \
- \
-					if(components == 4)  \
-						output_row[j * components + 3] = input_row[j * components + 3]; \
-				} \
-			} \
-			else \
-			{ \
-				for(int j = 0; j < width; j++) \
-				{ \
-					r = input_row[j * components]; \
-					g = input_row[j * components + 1]; \
-					b = input_row[j * components + 2]; \
- \
-					r = r * contrast + offset; \
-					g = g * contrast + offset; \
-					b = b * contrast + offset; \
- \
-					output_row[j * components] = r; \
-					output_row[j * components + 1] = g; \
-					output_row[j * components + 2] = b; \
- \
-					if(components == 4)  \
-						output_row[j * components + 3] = input_row[j * components + 3]; \
-				} \
-			} \
-		} \
-	} \
-}
+	int row1 = pkg->row1;
+	int row2 = pkg->row2;
+	int width = input->get_w();
+	int r, g, b;
 
 	switch(input->get_color_model())
 	{
-	case BC_RGB888:
-		DO_BRIGHTNESS(0xff, unsigned char, 3, 0)
-		break;
-
-	case BC_RGB_FLOAT:
-		DO_BRIGHTNESS_F(3)
-		break;
-
-	case BC_YUV888:
-		DO_BRIGHTNESS(0xff, unsigned char, 3, 1)
-		break;
-
-	case BC_RGBA8888:
-		DO_BRIGHTNESS(0xff, unsigned char, 4, 0)
-		break;
-
-	case BC_RGBA_FLOAT:
-		DO_BRIGHTNESS_F(4)
-		break;
-
-	case BC_YUVA8888:
-		DO_BRIGHTNESS(0xff, unsigned char, 4, 1)
-		break;
-
-	case BC_RGB161616:
-		DO_BRIGHTNESS(0xffff, uint16_t, 3, 0)
-		break;
-
-	case BC_YUV161616:
-		DO_BRIGHTNESS(0xffff, uint16_t, 3, 1)
-		break;
-
 	case BC_RGBA16161616:
-		DO_BRIGHTNESS(0xffff, uint16_t, 4, 0)
-		break;
+		if(!EQUIV(plugin->config.brightness, 0))
+		{
+			int offset = round(plugin->config.brightness / 100.0 * 0xffff);
 
-	case BC_YUVA16161616:
-		DO_BRIGHTNESS(0xffff, uint16_t, 4, 1)
+			for(int i = row1; i < row2; i++)
+			{
+				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+				for(int j = 0; j < width; j++)
+				{
+					r = input_row[j * 4] + offset;
+					g = input_row[j * 4 + 1] + offset;
+					b = input_row[j * 4 + 2] + offset;
+
+					input_row[j * 4] = CLIP(r, 0, 0xffff);
+					input_row[j * 4 + 1] = CLIP(g, 0, 0xffff);
+					input_row[j * 4 + 2] = CLIP(r, 0, 0xffff);
+				}
+			}
+		}
+
+		if(!EQUIV(plugin->config.contrast, 0))
+		{
+			double contrast = (plugin->config.contrast < 0) ?
+				(plugin->config.contrast + 100.0) / 100.0 :
+				(plugin->config.contrast + 25.0) / 25.0;
+
+			int scalar = round(contrast * 0x100);
+			int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2;
+			int y, u, v;
+
+			for(int i = row1; i < row2; i++)
+			{
+				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+				if(plugin->config.luma)
+				{
+					for(int j = 0; j < width; j++)
+					{
+						r = input_row[j * 4];
+						g = input_row[j * 4 + 1];
+						b = input_row[j * 4 + 2];
+
+						ColorSpaces::rgb_to_yuv_16(
+							r, g, b, y, u, v);
+
+						y = (y * scalar + offset) >> 8;
+						CLAMP(y, 0, 0xffff);
+
+						ColorSpaces::yuv_to_rgb_16(
+							r, g, b, y, u, v);
+
+						input_row[j * 4] = r;
+						input_row[j * 4 + 1] = g;
+						input_row[j * 4 + 2] = b;
+					}
+				}
+				else
+				{
+					for(int j = 0; j < width; j++)
+					{
+						r = input_row[j * 4];
+						g = input_row[j * 4 + 1];
+						b = input_row[j * 4 + 2];
+
+						r = (r * scalar + offset) >> 8;
+						g = (g * scalar + offset) >> 8;
+						b = (b * scalar + offset) >> 8;
+
+						input_row[j * 4] = CLIP(r, 0, 0xffff);
+						input_row[j * 4 + 1] = CLIP(g, 0, 0xffff);
+						input_row[j * 4 + 2] = CLIP(b, 0, 0xffff);
+					}
+				}
+			}
+		}
 		break;
 
 	case BC_AYUV16161616:
+		if(!EQUIV(plugin->config.brightness, 0))
 		{
-			VFrame *inframe = input;
-			VFrame *outframe = output;
-			int row1 = pkg->row1;
-			int row2 = pkg->row2;
-			int width = output->get_w();
-			int r, g, b;
+			int offset = plugin->config.brightness / 100 * 0xffff;
 
-			if(!EQUIV(plugin->config.brightness, 0))
+			for(int i = row1; i < row2; i++)
 			{
-				int offset = (int)(plugin->config.brightness / 100 * 0xffff);
+				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
 
-				for(int i = row1; i < row2; i++)
+				for(int j = 0; j < width; j++)
 				{
-					uint16_t *input_row = (uint16_t*)inframe->get_row_ptr(i);
-					uint16_t *output_row = (uint16_t*)outframe->get_row_ptr(i);
-
-					for(int j = 0; j < width; j++)
-					{
-						output_row[j * 4] = input_row[j * 4];
-						r = input_row[j * 4 + 1] + offset;
-
-						CLAMP(r, 0, 0xffff);
-
-						output_row[j * 4 + 1] = r;
-
-						output_row[j * 4 + 2] = input_row[j * 4 + 2];
-						output_row[j * 4 + 3] = input_row[j * 4 + 3];
-					}
+					int y = input_row[j * 4 + 1] + offset;
+					input_row[j * 4 + 1] = CLIP(y, 0, 0xffff);
 				}
-
-				// Data to be processed is now in the output buffer
-				inframe = outframe;
 			}
+		}
 
-			if(!EQUIV(plugin->config.contrast, 0))
+		if(!EQUIV(plugin->config.contrast, 0))
+		{
+			double contrast = (plugin->config.contrast < 0) ?
+				(plugin->config.contrast + 100.0) / 100 :
+				(plugin->config.contrast + 25.0) / 25.0;
+
+			int scalar = round(contrast * 0x100);
+			int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2;
+			int y;
+
+			for(int i = row1; i < row2; i++)
 			{
-				float contrast = (plugin->config.contrast < 0) ?
-					(plugin->config.contrast + 100) / 100 :
-					(plugin->config.contrast + 25) / 25;
+				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
 
-				int scalar = (int)(contrast * 0x100); \
-				int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2; \
-				int y, u, v;
-
-				for(int i = row1; i < row2; i++)
+				for(int j = 0; j < width; j++) \
 				{
-					uint16_t *input_row = (uint16_t*)inframe->get_row_ptr(i);
-					uint16_t *output_row = (uint16_t*)outframe->get_row_ptr(i);
-
-					if(plugin->config.luma) \
-					{
-						for(int j = 0; j < width; j++) \
-						{
-							y = input_row[j * 4 + 1];
-							y = (y * scalar + offset) >> 8;
-							CLAMP(y, 0, 0xffff);
-
-							output_row[j * 4] = input_row[j * 4];
-							output_row[j * 4 + 1] = y;
-							output_row[j * 4 + 2] = input_row[j * 4 + 2];
-							output_row[j * 4 + 3] = input_row[j * 4 + 3];
-						}
-					}
-					else
-					{
-						for(int j = 0; j < width; j++)
-						{
-							output_row[j * 4] = input_row[j * 4];
-							r = input_row[j * 4 + 1];
-							g = input_row[j * 4 + 2];
-							b = input_row[j * 4 + 3];
-
-							r = (r * scalar + offset) >> 8;
-							g = (g * scalar + offset) >> 8;
-							b = (b * scalar + offset) >> 8;
-
-							CLAMP(r, 0, 0xffff);
-							CLAMP(g, 0, 0xffff);
-							CLAMP(b, 0, 0xffff);
-
-							output_row[j * 4 + 1] = r;
-							output_row[j * 4 + 2] = g;
-							output_row[j * 4 + 3] = b;
-						}
-					}
+					y = input_row[j * 4 + 1];
+					y = (y * scalar + offset) >> 8;
+					input_row[j * 4 + 1] = CLIP(y, 0, 0xffff);
 				}
 			}
 		}
