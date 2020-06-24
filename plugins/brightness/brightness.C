@@ -91,7 +91,7 @@ VFrame *BrightnessMain::process_tmpframe(VFrame *frame)
 	if(load_configuration())
 		update_gui();
 
-	this->input = frame;
+	input = frame;
 
 	if(!EQUIV(config.brightness, 0) || !EQUIV(config.contrast, 0))
 	{
@@ -292,6 +292,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 	int row2 = pkg->row2;
 	int width = input->get_w();
 	int r, g, b;
+	int y, u, v;
 
 	switch(input->get_color_model())
 	{
@@ -312,7 +313,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 					input_row[j * 4] = CLIP(r, 0, 0xffff);
 					input_row[j * 4 + 1] = CLIP(g, 0, 0xffff);
-					input_row[j * 4 + 2] = CLIP(r, 0, 0xffff);
+					input_row[j * 4 + 2] = CLIP(b, 0, 0xffff);
 				}
 			}
 		}
@@ -325,14 +326,13 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 			int scalar = round(contrast * 0x100);
 			int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2;
-			int y, u, v;
 
-			for(int i = row1; i < row2; i++)
+			if(plugin->config.luma)
 			{
-				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
-
-				if(plugin->config.luma)
+				for(int i = row1; i < row2; i++)
 				{
+					uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
 					for(int j = 0; j < width; j++)
 					{
 						r = input_row[j * 4];
@@ -353,8 +353,13 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						input_row[j * 4 + 2] = b;
 					}
 				}
-				else
+			}
+			else
+			{
+				for(int i = row1; i < row2; i++)
 				{
+					uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
 					for(int j = 0; j < width; j++)
 					{
 						r = input_row[j * 4];
@@ -385,7 +390,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 				for(int j = 0; j < width; j++)
 				{
-					int y = input_row[j * 4 + 1] + offset;
+					y = input_row[j * 4 + 1] + offset;
 					input_row[j * 4 + 1] = CLIP(y, 0, 0xffff);
 				}
 			}
@@ -399,17 +404,49 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 			int scalar = round(contrast * 0x100);
 			int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2;
-			int y;
 
-			for(int i = row1; i < row2; i++)
+			if(plugin->config.luma)
 			{
-				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
-
-				for(int j = 0; j < width; j++) \
+				for(int i = row1; i < row2; i++)
 				{
-					y = input_row[j * 4 + 1];
-					y = (y * scalar + offset) >> 8;
-					input_row[j * 4 + 1] = CLIP(y, 0, 0xffff);
+					uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+					for(int j = 0; j < width; j++)
+					{
+						y = input_row[j * 4 + 1];
+						y = (y * scalar + offset) >> 8;
+						input_row[j * 4 + 1] = CLIP(y, 0, 0xffff);
+					}
+				}
+			}
+			else
+			{
+				for(int i = row1; i < row2; i++)
+				{
+					uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+					for(int j = 0; j < width; j++)
+					{
+						y = input_row[j * 4 + 1];
+						u = input_row[j * 4 + 2];
+						v = input_row[j * 4 + 3];
+
+						ColorSpaces::yuv_to_rgb_16(
+							r, g, b, y, u, v);
+
+						r = (r * scalar + offset) >> 8;
+						g = (g * scalar + offset) >> 8;
+						b = (b * scalar + offset) >> 8;
+						CLAMP(r, 0, 0xffff);
+						CLAMP(g, 0, 0xffff);
+						CLAMP(b, 0, 0xffff);
+						ColorSpaces::rgb_to_yuv_16(
+							r, g, b, y, u, v);
+
+						input_row[j * 4 + 1] = y;
+						input_row[j * 4 + 2] = u;
+						input_row[j * 4 + 3] = v;
+					}
 				}
 			}
 		}
