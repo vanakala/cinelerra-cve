@@ -126,7 +126,6 @@ SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
 	y += h;
 	add_subwindow(chan3 = new SwapColorSelection(x, y, sel, plugin, this,
 		&plugin->config.chan3));
-	update();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 

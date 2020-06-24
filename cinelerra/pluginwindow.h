@@ -13,6 +13,7 @@ class PluginWindow : public BC_Window
 public:
 	PluginWindow(const char *title, int x, int y, int w, int h);
 
+	virtual void update() {};
 	void close_event();
 	BC_Title *print_title(int x, int y, const char *fmt, ...)
 		__attribute__ ((format (printf, 4, 5)));

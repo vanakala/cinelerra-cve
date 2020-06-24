@@ -84,7 +84,6 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 	add_subwindow(operation = new RerouteSelection(x + title->get_w() + 5, y,
 		plugin, this, &plugin->config.operation));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-	update();
 }
 
 void RerouteWindow::update()

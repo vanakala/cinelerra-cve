@@ -419,6 +419,7 @@ void PLUGIN_THREAD_CLASS::run() \
 #define PLUGIN_GUI_CONSTRUCTOR_MACRO \
 	this->plugin = plugin; \
 	set_icon(new VFrame(plugin->picon_data)); \
+	update(); \
 	show_window(); \
 	flush();
 #else
@@ -427,6 +428,7 @@ void PLUGIN_THREAD_CLASS::run() \
 	set_icon(new VFrame(plugin->picon_data)); \
 	add_subwindow(new BC_OKButton(this)); \
 	add_subwindow(new BC_CancelButton(this)); \
+	update(); \
 	show_window(); \
 	flush();
 #endif // is realtime or transition
