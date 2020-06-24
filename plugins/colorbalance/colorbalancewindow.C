@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "clip.h"
@@ -70,8 +54,8 @@ void ColorBalanceWindow::update()
 }
 
 
-ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client, 
-	float *output, int x, int y)
+ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
+	double *output, int x, int y)
  : BC_ISlider(x, 
 	y, 
 	0, 
@@ -83,21 +67,25 @@ ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 {
 	this->client = client;
 	this->output = output;
-	old_value = *output;
 }
 
 int ColorBalanceSlider::handle_event()
 {
-	float difference = get_value() - *output;
+	double difference = get_value() - *output;
+
 	*output = get_value();
-	client->synchronize_params(this, difference);
-	client->send_configure_change();
+	if(!EQUIV(difference, 0))
+	{
+		client->synchronize_params(this, difference);
+		client->send_configure_change();
+	}
 	return 1;
 }
 
 char* ColorBalanceSlider::get_caption()
 {
-	float fraction = client->calculate_transfer(*output);
+	double fraction = client->calculate_transfer(*output);
+
 	sprintf(string, "%0.4f", fraction);
 	return string;
 }
@@ -148,23 +136,13 @@ ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin,
 
 int ColorBalanceWhite::handle_event()
 {
-	double red, green, blue;
+	int red, green, blue;
 // Get colorpicker value
-	plugin->get_picker_colors(&red, &green, &blue);
-
-// Get minimum value.  Can't use maximum because the sliders run out of room.
-	double min = MIN(red, green);
-	min = MIN(min, blue);
-
-// Get factors required to normalize other values to minimum
-	float r_factor = min / red;
-	float g_factor = min / green;
-	float b_factor = min / blue;
-
+	plugin->get_picker_rgb(&red, &green, &blue);
 // Try normalizing to green like others do it
-	r_factor = green / red;
-	g_factor = 1.0;
-	b_factor = green / blue;
+	double r_factor = (double)green / red;
+	double g_factor = 1.0;
+	double b_factor = (double)green / blue;
 // Convert factors to slider values
 	plugin->config.cyan = plugin->calculate_slider(r_factor);
 	plugin->config.magenta = plugin->calculate_slider(g_factor);

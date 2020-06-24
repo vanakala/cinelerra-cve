@@ -1,24 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
-#define GL_GLEXT_PROTOTYPES
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "filexml.h"
@@ -50,11 +33,11 @@ ColorBalanceConfig::ColorBalanceConfig()
 
 int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)
 {
-	return (EQUIV(cyan, that.cyan) &&
+	return EQUIV(cyan, that.cyan) &&
 		EQUIV(magenta, that.magenta) &&
 		EQUIV(yellow, that.yellow) && 
 		lock_params == that.lock_params && 
-		preserve == that.preserve);
+		preserve == that.preserve;
 }
 
 void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
@@ -97,9 +80,8 @@ ColorBalanceEngine::~ColorBalanceEngine()
 	Thread::join();
 }
 
-void ColorBalanceEngine::start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end)
+void ColorBalanceEngine::start_process_frame(VFrame *input, int row_start, int row_end)
 {
-	this->output = output;
 	this->input = input;
 	this->row_start = row_start;
 	this->row_end = row_end;
@@ -116,268 +98,110 @@ void ColorBalanceEngine::run()
 	while(1)
 	{
 		input_lock.lock("ColorBalanceEngine::run");
+
 		if(last_frame)
 		{
 			output_lock.unlock();
 			return;
 		}
 
-#define PROCESS(yuvtorgb,  \
-	rgbtoyuv,  \
-	r_lookup,  \
-	g_lookup,  \
-	b_lookup,  \
-	type,  \
-	max,  \
-	components,  \
-	do_yuv) \
-{ \
-	int i, j, k; \
-	int y, cb, cr, r, g, b, r_n, g_n, b_n; \
-	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
- \
-	for(j = row_start; j < row_end; j++) \
-	{ \
-		type *in_row = (type*)input->get_row_ptr(j); \
-		type *out_row = (type*)output->get_row_ptr(j); \
- \
-		for(k = 0; k < input->get_w() * components; k += components) \
-		{ \
-			if(do_yuv) \
-			{ \
-				y = in_row[k]; \
-				cb = in_row[k + 1]; \
-				cr = in_row[k + 2]; \
-				yuvtorgb(r, g, b, y, cb, cr); \
-			} \
-			else \
-			{ \
-				r = in_row[k]; \
-				g = in_row[k + 1]; \
-				b = in_row[k + 2]; \
-			} \
- \
-			r = CLAMP(r, 0, max-1); g = CLAMP(g, 0, max-1); b = CLAMP(b, 0, max-1); \
-			r_n = plugin->r_lookup[r]; \
-			g_n = plugin->g_lookup[g]; \
-			b_n = plugin->b_lookup[b]; \
- \
-			if(plugin->config.preserve) \
-			{ \
-				ColorSpaces::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v); \
-				ColorSpaces::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v); \
-				ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
-				r = (type)r_f; \
-				g = (type)g_f; \
-				b = (type)b_f; \
-			} \
-			else \
-			{ \
-				r = r_n; \
-				g = g_n; \
-				b = b_n; \
-			} \
- \
-			if(do_yuv) \
-			{ \
-				rgbtoyuv(CLAMP(r, 0, max), CLAMP(g, 0, max), CLAMP(b, 0, max), y, cb, cr); \
-				out_row[k] = y; \
-				out_row[k + 1] = cb; \
-				out_row[k + 2] = cr; \
-			} \
-			else \
-			{ \
-				out_row[k] = CLAMP(r, 0, max); \
-				out_row[k + 1] = CLAMP(g, 0, max); \
-				out_row[k + 2] = CLAMP(b, 0, max); \
-			} \
-		} \
-	} \
-}
-
-#define PROCESS_F(components) \
-{ \
-	int i, j, k; \
-	float y, cb, cr, r, g, b, r_n, g_n, b_n; \
-	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
-	cyan_f = plugin->calculate_transfer(plugin->config.cyan); \
-	magenta_f = plugin->calculate_transfer(plugin->config.magenta); \
-	yellow_f = plugin->calculate_transfer(plugin->config.yellow); \
- \
-	for(j = row_start; j < row_end; j++) \
-	{ \
-		float *in_row = (float*)input->get_row_ptr(j); \
-		float *out_row = (float*)output->get_row_ptr(j); \
- \
-		for(k = 0; k < input->get_w() * components; k += components) \
-		{ \
-			r = in_row[k]; \
-			g = in_row[k + 1]; \
-			b = in_row[k + 2]; \
- \
-			r_n = r * cyan_f; \
-			g_n = g * magenta_f; \
-			b_n = b * yellow_f; \
- \
-			if(plugin->config.preserve) \
-			{ \
-				ColorSpaces::rgb_to_hsv(r_n, g_n, b_n, h, s, v); \
-				ColorSpaces::rgb_to_hsv(r, g, b, h_old, s_old, v); \
-				ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
-				r = (float)r_f; \
-				g = (float)g_f; \
-				b = (float)b_f; \
-			} \
-			else \
-			{ \
-				r = r_n; \
-				g = g_n; \
-				b = b_n; \
-			} \
- \
-			out_row[k] = r; \
-			out_row[k + 1] = g; \
-			out_row[k + 2] = b; \
-		} \
-	} \
-}
+		int i, j, k;
+		int y, cb, cr, r, g, b, r_n, g_n, b_n;
+		float h, s, v, h_old, s_old, r_f, g_f, b_f;
+		int compwidth = input->get_w() * 4;
 
 		switch(input->get_color_model())
 		{
-		case BC_RGB888:
-			PROCESS(ColorSpaces::yuv_to_rgb_8,
-				ColorSpaces::rgb_to_yuv_8,
-				r_lookup_8,
-				g_lookup_8,
-				b_lookup_8,
-				unsigned char,
-				0xff,
-				3,
-				0);
-			break;
-
-		case BC_RGB_FLOAT:
-			PROCESS_F(3);
-			break;
-
-		case BC_YUV888:
-			PROCESS(ColorSpaces::yuv_to_rgb_8,
-				ColorSpaces::rgb_to_yuv_8,
-				r_lookup_8,
-				g_lookup_8,
-				b_lookup_8,
-				unsigned char,
-				0xff,
-				3,
-				1);
-			break;
-
-		case BC_RGBA_FLOAT:
-			PROCESS_F(4);
-			break;
-
-		case BC_RGBA8888:
-			PROCESS(ColorSpaces::yuv_to_rgb_8,
-				ColorSpaces::rgb_to_yuv_8,
-				r_lookup_8,
-				g_lookup_8,
-				b_lookup_8,
-				unsigned char,
-				0xff,
-				4,
-				0);
-			break;
-
-		case BC_YUVA8888:
-			PROCESS(ColorSpaces::yuv_to_rgb_8,
-				ColorSpaces::rgb_to_yuv_8,
-				r_lookup_8,
-				g_lookup_8,
-				b_lookup_8,
-				unsigned char,
-				0xff,
-				4,
-				1);
-			break;
-
-		case BC_YUV161616:
-			PROCESS(ColorSpaces::yuv_to_rgb_16,
-				ColorSpaces::rgb_to_yuv_16,
-				r_lookup_16,
-				g_lookup_16,
-				b_lookup_16,
-				u_int16_t,
-				0xffff,
-				3,
-				1);
-			break;
-
 		case BC_RGBA16161616:
-			PROCESS(ColorSpaces::yuv_to_rgb_16,
-				ColorSpaces::rgb_to_yuv_16,
-				r_lookup_16,
-				g_lookup_16,
-				b_lookup_16,
-				uint16_t,
-				0xffff,
-				4,
-				0);
+			for(j = row_start; j < row_end; j++)
+			{
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(j);
+
+				for(k = 0; k < compwidth; k += 4)
+				{
+					r = in_row[k];
+					g = in_row[k + 1];
+					b = in_row[k + 2];
+
+					CLAMP(r, 0, 0xfffe);
+					CLAMP(g, 0, 0xfffe);
+					CLAMP(b, 0, 0xfffe);
+
+					r_n = plugin->r_lookup_16[r];
+					g_n = plugin->g_lookup_16[g];
+					b_n = plugin->b_lookup_16[b];
+
+					if(plugin->config.preserve)
+					{
+						ColorSpaces::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v);
+						ColorSpaces::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v);
+						ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v);
+						r = r_f;
+						g = g_f;
+						b = b_f;
+					}
+					else
+					{
+						r = r_n;
+						g = g_n;
+						b = b_n;
+					}
+
+					in_row[k] = CLIP(r, 0, 0xffff);
+					in_row[k + 1] = CLIP(g, 0, 0xffff);
+					in_row[k + 2] = CLIP(b, 0, 0xffff);
+				}
+			}
 			break;
 
 		case BC_AYUV16161616:
+			for(j = row_start; j < row_end; j++)
 			{
-				int i, j, k;
-				int y, cb, cr, r, g, b, r_n, g_n, b_n;
-				float h, s, v, h_old, s_old, r_f, g_f, b_f;
-				for(j = row_start; j < row_end; j++)
+				uint16_t *irow = (uint16_t*)input->get_row_ptr(j);
+
+				for(k = 0; k < compwidth; k += 4)
 				{
-					uint16_t *irow = (uint16_t*)input->get_row_ptr(j);
-					uint16_t *orow = (uint16_t*)output->get_row_ptr(j);
+					y = irow[k + 1];
+					cb = irow[k + 2];
+					cr = irow[k + 3];
+					ColorSpaces::yuv_to_rgb_16(r, g, b, y, cb, cr);
 
-					for(k = 0; k < input->get_w() * 4; k += 4)
+					r = CLAMP(r, 0, 0xfffe);
+					g = CLAMP(g, 0, 0xfffe);
+					b = CLAMP(b, 0, 0xfffe);
+
+					r_n = plugin->r_lookup_16[r];
+					g_n = plugin->g_lookup_16[g];
+					b_n = plugin->b_lookup_16[b];
+
+					if(plugin->config.preserve)
 					{
-						y = irow[k + 1];
-						cb = irow[k + 2];
-						cr = irow[k + 3];
-						ColorSpaces::yuv_to_rgb_16(r, g, b, y, cb, cr);
-
-						r = CLAMP(r, 0, 0xfffe);
-						g = CLAMP(g, 0, 0xfffe);
-						b = CLAMP(b, 0, 0xfffe);
-
-						r_n = plugin->r_lookup_16[r];
-						g_n = plugin->g_lookup_16[g];
-						b_n = plugin->b_lookup_16[b];
-
-						if(plugin->config.preserve)
-						{
-							ColorSpaces::rgb_to_hsv((float)r_n,
-								(float)g_n, (float)b_n, h, s, v);
-							ColorSpaces::rgb_to_hsv((float)r,
-								(float)g, (float)b,
+						ColorSpaces::rgb_to_hsv((float)r_n,
+							(float)g_n, (float)b_n, h, s, v);
+						ColorSpaces::rgb_to_hsv((float)r,
+							(float)g, (float)b,
 							h_old, s_old, v);
-							ColorSpaces::hsv_to_rgb(r_f, g_f, b_f,
-								h, s, v);
-							r = (uint16_t)r_f;
-							g = (uint16_t)g_f;
-							b = (uint16_t)b_f;
-						}
-						else
-						{
-							r = r_n;
-							g = g_n;
-							b = b_n;
-						}
-
-						ColorSpaces::rgb_to_yuv_16(CLAMP(r, 0, 0xffff),
-							CLAMP(g, 0, 0xffff),
-							CLAMP(b, 0, 0xffff),
-							y, cb, cr);
-
-						orow[k + 1] = y;
-						orow[k + 2] = cb;
-						orow[k + 3] = cr;
+						ColorSpaces::hsv_to_rgb(r_f, g_f, b_f,
+							h, s, v);
+						r = r_f;
+						g = g_f;
+						b = b_f;
 					}
+					else
+					{
+						r = r_n;
+						g = g_n;
+						b = b_n;
+					}
+
+					ColorSpaces::rgb_to_yuv_16(CLAMP(r, 0, 0xffff),
+						CLAMP(g, 0, 0xffff),
+						CLAMP(b, 0, 0xffff),
+						y, cb, cr);
+
+					irow[k + 1] = y;
+					irow[k + 2] = cb;
+					irow[k + 3] = cr;
 				}
 			}
 			break;
@@ -392,61 +216,62 @@ ColorBalanceMain::ColorBalanceMain(PluginServer *server)
  : PluginVClient(server)
 {
 	need_reconfigure = 1;
-	engine = 0;
+	total_engines = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ColorBalanceMain::~ColorBalanceMain()
 {
-	if(engine)
-	{
-		for(int i = 0; i < total_engines; i++)
-		{
-			delete engine[i];
-		}
-		delete [] engine;
-	}
+	for(int i = 0; i < total_engines; i++)
+		delete engines[i];
+
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void ColorBalanceMain::reset_plugin()
+{
+	for(int i = 0; i < total_engines; i++)
+		delete engines[i];
+	total_engines = 0;
 }
 
 PLUGIN_CLASS_METHODS
 
 void ColorBalanceMain::reconfigure()
 {
-	int r_n, g_n, b_n;
-	float r_scale = calculate_transfer(config.cyan);
-	float g_scale = calculate_transfer(config.magenta);
-	float b_scale = calculate_transfer(config.yellow);
+	double r_scale = calculate_transfer(config.cyan);
+	double g_scale = calculate_transfer(config.magenta);
+	double b_scale = calculate_transfer(config.yellow);
 
+	for(int i = 0; i < 0x10000; i++)
+	{
+		int val;
 
-#define RECONFIGURE(r_lookup, g_lookup, b_lookup, max) \
-	for(int i = 0; i <= max; i++) \
-	{ \
-		r_lookup[i] = CLIP((int)(r_scale * i), 0, max); \
-		g_lookup[i] = CLIP((int)(g_scale * i), 0, max); \
-		b_lookup[i] = CLIP((int)(b_scale * i), 0, max); \
+		val = round(r_scale * i);
+		r_lookup_16[i] = CLIP(val, 0, 0xffff);
+		val = round(g_scale * i);
+		g_lookup_16[i] = CLIP(val, 0, 0xffff);
+		val = round(b_scale * i);
+		b_lookup_16[i] = CLIP(val, 0, 0xffff);
 	}
-
-	RECONFIGURE(r_lookup_8, g_lookup_8, b_lookup_8, 0xff);
-	RECONFIGURE(r_lookup_16, g_lookup_16, b_lookup_16, 0xffff);
 }
 
-float ColorBalanceMain::calculate_slider(float in)
+double ColorBalanceMain::calculate_slider(double in)
 {
 	if(in < 1.0)
 	{
-		return (in * 1000 - 1000.0);
+		return (in * 1000.0 - 1000.0);
 	}
 	else
 	if(in > 1.0)
 	{
-		return (1000 * (in - 1.0) / MAX_COLOR);
+		return (1000.0 * (in - 1.0) / MAX_COLOR);
 	}
 	else
 		return 0;
 }
 
-float ColorBalanceMain::calculate_transfer(float in)
+double ColorBalanceMain::calculate_transfer(double in)
 {
 	if(in < 0)
 	{
@@ -461,14 +286,15 @@ float ColorBalanceMain::calculate_transfer(float in)
 		return 1.0;
 }
 
-
-void ColorBalanceMain::test_boundary(float &value)
+void ColorBalanceMain::test_boundary(double &value)
 {
-	if(value < -1000) value = -1000;
-	if(value > 1000) value = 1000;
+	if(value < -1000)
+		value = -1000;
+	if(value > 1000)
+		value = 1000;
 }
 
-void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float difference)
+void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, double difference)
 {
 	if(thread && config.lock_params)
 	{
@@ -495,42 +321,53 @@ void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diff
 
 VFrame *ColorBalanceMain::process_tmpframe(VFrame *frame)
 {
+	int cmodel = frame->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
 	need_reconfigure |= load_configuration();
+
+	if(!total_engines)
+	{
+		total_engines = get_project_smp() > 1 ? CB_MAX_ENGINES : 1;
+
+		for(int i = 0; i < total_engines; i++)
+		{
+			engines[i] = new ColorBalanceEngine(this);
+			engines[i]->start();
+		}
+		need_reconfigure = 1;
+	}
 
 	if(need_reconfigure)
 	{
-		int i;
-
-		if(!engine)
-		{
-			total_engines = PluginClient::smp > 1 ? 2 : 1;
-			engine = new ColorBalanceEngine*[total_engines];
-			for(int i = 0; i < total_engines; i++)
-			{
-				engine[i] = new ColorBalanceEngine(this);
-				engine[i]->start();
-			}
-		}
+		update_gui();
 
 		reconfigure();
 		need_reconfigure = 0;
 	}
 
-	if(!EQUIV(config.cyan, 0) || 
-		!EQUIV(config.magenta, 0) || 
+	if(!EQUIV(config.cyan, 0) || !EQUIV(config.magenta, 0) ||
 		!EQUIV(config.yellow, 0))
 	{
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i]->start_process_frame(frame, 
-				frame, 
-				frame->get_h() * i / total_engines, 
+			engines[i]->start_process_frame(frame,
+				frame->get_h() * i / total_engines,
 				frame->get_h() * (i + 1) / total_engines);
 		}
 
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i]->wait_process_frame();
+			engines[i]->wait_process_frame();
 		}
 	}
 	return frame;
