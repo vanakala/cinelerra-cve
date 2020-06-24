@@ -368,6 +368,7 @@ void PluginClient::abort_plugin(const char *fmt, ...)
 	MainError::va_MessageBox(buffer, fmt, ap);
 	va_end(ap);
 	plugin->on = 0;
+	send_configure_change();
 }
 
 void PluginClient::unsupported(int cmodel)
