@@ -1,23 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2018 Einar Rünkaru <einarrunkaru at gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2018 Einar Rünkaru <einarrunkaru at gmail dot com>
+
+// Test of colormodels conversion
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -44,10 +30,7 @@ ColorSpaceConfig::ColorSpaceConfig()
 ColorSpaceSwitch::ColorSpaceSwitch(ColorSpace *plugin,
 	int x,
 	int y)
- : BC_Radial(x,
-		y,
-		plugin->config.onoff,
-		_("On"))
+ : BC_Radial(x, y, plugin->config.onoff, _("On"))
 {
 	this->plugin = plugin;
 }
@@ -63,10 +46,7 @@ int ColorSpaceSwitch::handle_event()
 AVlibsSwitch::AVlibsSwitch(ColorSpace *plugin,
 	int x,
 	int y)
- : BC_Radial(x,
-		y,
-		plugin->config.avlibs,
-		_("Use avlibs"))
+ : BC_Radial(x, y, plugin->config.avlibs, _("Use avlibs"))
 {
 	this->plugin = plugin;
 }
@@ -79,14 +59,10 @@ int AVlibsSwitch::handle_event()
 	return 1;
 }
 
-/*
- * The gui of the plugin
- * Using the constuctor macro is mandatory
- * The constructor macro must be near the end of constructor after
- * creating the elements of gui.
- */
+
+// The gui of the plugin
 ColorSpaceWindow::ColorSpaceWindow(ColorSpace *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	200,
@@ -111,15 +87,8 @@ void ColorSpaceWindow::update()
 	avltoggle->update(plugin->config.avlibs);
 }
 
-/*
- * All methods of the plugin thread class
- */
 PLUGIN_THREAD_METHODS
 
-/*
- * The processor of the plugin
- * Using the constructor and the destructor macro is mandatory
- */
 ColorSpace::ColorSpace(PluginServer *server)
  : PluginVClient(server)
 {
@@ -131,9 +100,6 @@ ColorSpace::~ColorSpace()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-/*
- * Creates most of the api methods of the plugin
- */
 PLUGIN_CLASS_METHODS
 
 void ColorSpace::load_defaults()
@@ -152,9 +118,7 @@ void ColorSpace::save_defaults()
 	defaults->save();
 }
 
-/*
- * Saves the values of the parameters to the project
- */
+// Saves the values of the parameters to the project
 void ColorSpace::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -187,23 +151,27 @@ void ColorSpace::read_data(KeyFrame *keyframe)
 	}
 }
 
-/*
- * Loads parameters from keyframe
- */
+// Loads parameters from keyframe
+// Keyframe may be missing
 int ColorSpace::load_configuration()
 {
 	int prev_val = config.onoff;
-	read_data(prev_keyframe_pts(source_pts));
-	return !(prev_val == config.onoff);
+	KeyFrame *prev_keyframe = prev_keyframe_pts(source_pts);
+
+	if(prev_keyframe)
+	{
+		read_data(prev_keyframe);
+		return !(prev_val == config.onoff);
+	}
+	return 0;
 }
 
-/*
- * Apply modifications
- */
 VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 {
 	VFrame *tmp;
-	load_configuration();
+
+	if(load_configuration())
+		update_gui();
 
 	if(config.onoff)
 	{
@@ -211,24 +179,6 @@ VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 		{
 			switch(frame->get_color_model())
 			{
-			case BC_YUVA8888:
-				tmp = BC_Resources::tmpframes.get_tmpframe(
-					frame->get_w(),
-					frame->get_h(),
-					BC_RGBA8888);
-				tmp->transfer_from(frame);
-				frame->transfer_from(tmp);
-				release_vframe(tmp);
-				break;
-			case BC_RGBA8888:
-				tmp = BC_Resources::tmpframes.get_tmpframe(
-					frame->get_w(),
-					frame->get_h(),
-					BC_YUVA8888);
-				tmp->transfer_from(frame);
-				frame->transfer_from(tmp);
-				release_vframe(tmp);
-				break;
 			case BC_AYUV16161616:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
 					frame->get_w(),
@@ -248,8 +198,7 @@ VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 				release_vframe(tmp);
 				break;
 			default:
-				printf("Test for %s is not ready\n",
-					ColorModels::name(frame->get_color_model()));
+				unsupported(frame->get_color_model());
 				break;
 			}
 		}
@@ -261,90 +210,6 @@ VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 
 			switch(frame->get_color_model())
 			{
-			case BC_YUVA8888:
-				tmp = BC_Resources::tmpframes.get_tmpframe(
-					width, height,
-					BC_RGBA8888);
-				for(int j = 0; j < height; j++)
-				{
-					unsigned char *frow = frame->get_row_ptr(j);
-					unsigned char *trow = tmp->get_row_ptr(j);
-					for(int i = 0; i < width; i++)
-					{
-						k = 4 * i;
-						y = frow[k + 0];
-						u = frow[k + 1];
-						v = frow[k + 2];
-						a = frow[k + 3];
-						ColorSpaces::yuv_to_rgb_8(r, g, b, y, u, v);
-						trow[k + 0] = r;
-						trow[k + 1] = g;
-						trow[k + 2] = b;
-						trow[k + 3] = a;
-					}
-				}
-				for(int j = 0; j < height; j++)
-				{
-					unsigned char *frow = frame->get_row_ptr(j);
-					unsigned char *trow = tmp->get_row_ptr(j);
-					for(int i = 0; i < width; i++)
-					{
-						k = 4 * i;
-						r = trow[k + 0];
-						g = trow[k + 1];
-						b = trow[k + 2];
-						a = trow[k + 3];
-						ColorSpaces::rgb_to_yuv_8(r, g, b, y, u, v);
-						frow[k + 0] = y;
-						frow[k + 1] = u;
-						frow[k + 2] = v;
-						frow[k + 3] = a;
-					}
-				}
-				release_vframe(tmp);
-				break;
-			case BC_RGBA8888:
-				tmp = BC_Resources::tmpframes.get_tmpframe(
-					width, height,
-					BC_YUVA8888);
-				for(int j = 0; j < height; j++)
-				{
-					unsigned char *frow = frame->get_row_ptr(j);
-					unsigned char *trow = tmp->get_row_ptr(j);
-					for(int i = 0; i < width; i++)
-					{
-						k = 4 * i;
-						r = frow[k + 0];
-						g = frow[k + 1];
-						b = frow[k + 2];
-						a = frow[k + 3];
-						ColorSpaces::rgb_to_yuv_8(r, g, b, y, u, v);
-						trow[k + 0] = y;
-						trow[k + 1] = u;
-						trow[k + 2] = v;
-						trow[k + 3] = a;
-					}
-				}
-				for(int j = 0; j < height; j++)
-				{
-					unsigned char *frow = frame->get_row_ptr(j);
-					unsigned char *trow = tmp->get_row_ptr(j);
-					for(int i = 0; i < width; i++)
-					{
-						k = 4 * i;
-						y = trow[k + 0];
-						u = trow[k + 1];
-						v = trow[k + 2];
-						a = trow[k + 3];
-						ColorSpaces::yuv_to_rgb_8(r, g, b, y, u, v);
-						frow[k + 0] = r;
-						frow[k + 1] = g;
-						frow[k + 2] = b;
-						frow[k + 3] = a;
-					}
-				}
-				release_vframe(tmp);
-				break;
 			case BC_AYUV16161616:
 				tmp = BC_Resources::tmpframes.get_tmpframe(
 					width, height,
@@ -387,9 +252,50 @@ VFrame *ColorSpace::process_tmpframe(VFrame *frame)
 				}
 				release_vframe(tmp);
 				break;
+			case BC_RGBA16161616:
+				tmp = BC_Resources::tmpframes.get_tmpframe(
+					width, height,
+					BC_AYUV16161616);
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						r = frow[k + 0];
+						g = frow[k + 1];
+						b = frow[k + 2];
+						a = frow[k + 3];
+						ColorSpaces::rgb_to_yuv_16(r, g, b, y, u, v);
+						trow[k + 0] = a;
+						trow[k + 1] = y;
+						trow[k + 2] = u;
+						trow[k + 3] = v;
+					}
+				}
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						a = trow[k + 0];
+						y = trow[k + 1];
+						u = trow[k + 2];
+						v = trow[k + 3];
+						ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
+						frow[k + 0] = r;
+						frow[k + 1] = g;
+						frow[k + 2] = b;
+						frow[k + 3] = a;
+					}
+				}
+				release_vframe(tmp);
+				break;
 			default:
-				printf("Test for %s is not ready\n",
-					ColorModels::name(frame->get_color_model()));
+				unsupported(frame->get_color_model());
 				break;
 			}
 		}
