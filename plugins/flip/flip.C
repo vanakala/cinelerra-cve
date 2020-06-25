@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "colormodels.inc"
@@ -139,37 +123,81 @@ VFrame *FlipMain::process_tmpframe(VFrame *frame)
 	int w = frame->get_w();
 	int h = frame->get_h();
 	int colormodel = frame->get_color_model();
+	uint16_t *input_row;
+	uint16_t *output_row;
+	uint16_t pix;
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
-	if(config.flip_vertical || config.flip_horizontal)
+	switch(colormodel)
 	{
-		switch(colormodel)
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		if(config.flip_vertical)
 		{
-		case BC_RGB888:
-		case BC_YUV888:
-			FLIP_MACRO(unsigned char, 3);
-			break;
-		case BC_RGB_FLOAT:
-			FLIP_MACRO(float, 3);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			FLIP_MACRO(uint16_t, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			FLIP_MACRO(unsigned char, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			FLIP_MACRO(float, 4);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-		case BC_AYUV16161616:
-			FLIP_MACRO(uint16_t, 4);
-			break;
+			for(i = 0, j = h - 1; i < h / 2; i++, j--)
+			{
+				input_row = (uint16_t*)frame->get_row_ptr(i);
+				output_row = (uint16_t*)frame->get_row_ptr(j);
+
+				for(k = 0; k < w; k++)
+				{
+					pix = output_row[0];
+					output_row[0] = input_row[0];
+					input_row[0] = pix;
+
+					pix = output_row[1];
+					output_row[1] = input_row[1];
+					input_row[1] = pix;
+
+					pix = output_row[2];
+					output_row[2] = input_row[2];
+					input_row[2] = pix;
+
+					pix = output_row[3];
+					output_row[3] = input_row[3];
+					input_row[3] = pix;
+
+					output_row += 4;
+					input_row += 4;
+				}
+			}
 		}
+
+		if(config.flip_horizontal)
+		{
+			for(i = 0; i < h; i++)
+			{
+				input_row = (uint16_t*)frame->get_row_ptr(i);
+				output_row = (uint16_t*)frame->get_row_ptr(i) + (w - 1) * 4;
+
+				for(k = 0; k < w / 2; k++)
+				{
+					pix = output_row[0];
+					output_row[0] = input_row[0];
+					input_row[0] = pix;
+
+					pix = output_row[1];
+					output_row[1] = input_row[1];
+					input_row[1] = pix;
+
+					pix = output_row[2];
+					output_row[2] = input_row[2];
+					input_row[2] = pix;
+
+					pix = output_row[3];
+					output_row[3] = input_row[3];
+					input_row[3] = pix;
+					input_row += 4;
+					output_row -= 4;
+				}
+			}
+		}
+		break;
+	default:
+		unsupported(colormodel);
+		break;
 	}
 	return frame;
 }
