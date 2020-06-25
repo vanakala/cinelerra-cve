@@ -587,6 +587,23 @@ void Track::reset_plugins(ptstime pts)
 	}
 }
 
+void Track::reset_renderers()
+{
+	for(int i = 0; i < plugins.total; i++)
+	{
+		Plugin *current = plugins.values[i];
+
+		if(current->plugin_server && current->client)
+		{
+			delete current->guideframe;
+			current->guideframe = 0;
+			current->plugin_server->close_plugin(current->client);
+		}
+	}
+	delete renderer;
+	renderer = 0;
+}
+
 void Track::remove_asset(Asset *asset)
 {
 	for(Edit *edit = edits->first; edit; edit = edit->next)

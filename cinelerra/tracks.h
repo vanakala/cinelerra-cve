@@ -41,6 +41,7 @@ public:
 
 	void reset_instance();
 	void reset_plugins();
+	void reset_renderers();
 	Tracks& operator=(Tracks &tracks);
 	void load(FileXML *xml);
 	void init_shared_pointers();

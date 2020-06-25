@@ -44,6 +44,7 @@ public:
 
 	void reset_instance();
 	void reset_plugins();
+	void reset_renderers();
 
 	EDL& operator=(EDL &edl);
 

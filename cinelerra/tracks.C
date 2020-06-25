@@ -73,6 +73,12 @@ void Tracks::reset_plugins()
 // FIXIT: reset for rendering should be implemented
 }
 
+void Tracks::reset_renderers()
+{
+	for(Track *current = first; current; current = NEXT)
+		current->reset_renderers();
+}
+
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
 	if(playable_tracks_of(TRACK_VIDEO) != tracks->playable_tracks_of(TRACK_VIDEO))

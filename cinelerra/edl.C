@@ -71,6 +71,11 @@ void EDL::reset_plugins()
 	tracks->reset_plugins();
 }
 
+void EDL::reset_renderers()
+{
+	tracks->reset_renderers();
+}
+
 EDL& EDL::operator=(EDL &edl)
 {
 	copy_all(&edl);
@@ -946,6 +951,7 @@ Track *EDL::number(int number)
 	}
 	return current;
 }
+
 
 void EDL::set_all_toggles(int toggle_type, int value)
 {
