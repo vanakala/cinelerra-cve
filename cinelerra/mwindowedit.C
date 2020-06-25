@@ -733,6 +733,7 @@ void MWindow::match_output_size(Track *track)
 	if(cwindow->stop_playback())
 		return;
 
+	track->reset_renderers();
 	track->track_w = edlsession->output_w;
 	track->track_h = edlsession->output_h;
 	save_backup();
@@ -756,6 +757,7 @@ void MWindow::match_asset_size(Track *track)
 		if(cwindow->stop_playback())
 			return;
 
+		track->reset_renderers();
 		track->track_w = w;
 		track->track_h = h;
 
@@ -1274,6 +1276,8 @@ void MWindow::resize_track(Track *track, int w, int h)
 {
 	if(cwindow->stop_playback())
 		return;
+
+	track->reset_renderers();
 // We have to move all maskpoints so they do not move in relation to image areas
 	((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->translate_masks(
 		(w - track->track_w) / 2, 

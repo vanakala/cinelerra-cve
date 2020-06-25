@@ -130,6 +130,8 @@ void SetFormatThread::apply_changes()
 	int new_channels = new_edlsession->audio_channels;
 	CLAMP(new_channels, 1, MAXCHANNELS);
 
+	master_edl->reset_renderers();
+
 	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 		new_edlsession->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
