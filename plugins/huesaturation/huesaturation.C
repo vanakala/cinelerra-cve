@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bcslider.h"
@@ -68,15 +52,9 @@ void HueConfig::interpolate(HueConfig &prev,
 	this->value = prev.value * prev_scale + next.value * next_scale;
 }
 
+
 HueSlider::HueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
-			y,
-			0,
-			w, 
-			w, 
-			(float)MINHUE, 
-			(float)MAXHUE, 
-			plugin->config.hue)
+ : BC_FSlider(x, y, 0, w, w, MINHUE, MAXHUE, plugin->config.hue)
 {
 	this->plugin = plugin;
 }
@@ -90,14 +68,9 @@ int HueSlider::handle_event()
 
 
 SaturationSlider::SaturationSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
-			y,
-			0,
-			w, 
-			w, 
-			(float)MINSATURATION, 
-			(float)MAXSATURATION, 
-			plugin->config.saturation)
+ : BC_FSlider(x, y, 0, w, w,
+	MINSATURATION, MAXSATURATION,
+	plugin->config.saturation)
 {
 	this->plugin = plugin;
 }
@@ -111,21 +84,15 @@ int SaturationSlider::handle_event()
 
 char* SaturationSlider::get_caption()
 {
-	float fraction = ((float)plugin->config.saturation - MINSATURATION) / 
-		MAXSATURATION;;
+	double fraction = (plugin->config.saturation - MINSATURATION) /
+		MAXSATURATION;
+
 	sprintf(string, "%0.4f", fraction);
 	return string;
 }
 
 ValueSlider::ValueSlider(HueEffect *plugin, int x, int y, int w)
- : BC_FSlider(x, 
-			y,
-			0,
-			w, 
-			w, 
-			(float)MINVALUE, 
-			(float)MAXVALUE, 
-			plugin->config.value)
+ : BC_FSlider(x, y, 0, w, w, MINVALUE, MAXVALUE, plugin->config.value)
 {
 	this->plugin = plugin;
 }
@@ -139,7 +106,8 @@ int ValueSlider::handle_event()
 
 char* ValueSlider::get_caption()
 {
-	float fraction = ((float)plugin->config.value - MINVALUE) / MAXVALUE;
+	double fraction = (plugin->config.value - MINVALUE) / MAXVALUE;
+
 	sprintf(string, "%0.4f", fraction);
 	return string;
 }
@@ -147,11 +115,11 @@ char* ValueSlider::get_caption()
 PLUGIN_THREAD_METHODS
 
 HueWindow::HueWindow(HueEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
-			x,
-			y,
-			345,
-			100)
+ : PluginWindow(plugin->gui_string,
+	x,
+	y,
+	345,
+	100)
 {
 	int x1 = 125;
 	x = y = 10;
@@ -180,6 +148,7 @@ HueEngine::HueEngine(HueEffect *plugin, int cpus)
 {
 	this->plugin = plugin;
 }
+
 void HueEngine::init_packages()
 {
 	for(int i = 0; i < LoadServer::get_total_packages(); i++)
@@ -211,188 +180,101 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 	this->plugin = plugin;
 }
 
-
-#define HUESATURATION(type, max, components, use_yuv) \
-{ \
-	float h_offset = plugin->config.hue; \
-	float s_offset = ((float)plugin->config.saturation - MINSATURATION) / MAXSATURATION; \
-	float v_offset = ((float)plugin->config.value - MINVALUE) / MAXVALUE; \
-	for(int i = pkg->row1; i < pkg->row2; i++) \
-	{ \
-		type* in_row = (type*)plugin->input->get_row_ptr(i); \
-		type* out_row = (type*)plugin->output->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			float h, s, va; \
-			int y, u, v; \
-			float r, g, b; \
-			int r_i, g_i, b_i; \
- \
-			if(use_yuv) \
-			{ \
-				y = (int)in_row[0]; \
-				u = (int)in_row[1]; \
-				v = (int)in_row[2]; \
-				if(max == 0xffff) \
-					ColorSpaces::yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
-				else \
-					ColorSpaces::yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
-				ColorSpaces::rgb_to_hsv((float)r_i / max, \
-					(float)g_i / max, \
-					(float)b_i / max, \
-					h, \
-					s, \
-					va); \
-			} \
-			else \
-			{ \
-				r = (float)in_row[0] / max; \
-				g = (float)in_row[1] / max; \
-				b = (float)in_row[2] / max; \
-				ColorSpaces::rgb_to_hsv(r, g, b, h, s, va); \
-			} \
- \
-			h += h_offset; \
-			s *= s_offset; \
-			va *= v_offset; \
- \
-			if(h >= 360) h -= 360; \
-			if(h < 0) h += 360; \
-			if(sizeof(type) < 4) \
-			{ \
-				if(s > 1) s = 1; \
-				if(va > 1) va = 1; \
-				if(s < 0) s = 0; \
-				if(va < 0) va = 0; \
-			} \
- \
-			if(use_yuv) \
-			{ \
-				ColorSpaces::hsv_to_yuv(y, u, v, h, s, va, max); \
-				out_row[0] = y; \
-				out_row[1] = u; \
-				out_row[2] = v; \
-			} \
-			else \
-			{ \
-				ColorSpaces::hsv_to_rgb(r, g, b, h, s, va); \
-				if(sizeof(type) < 4) \
-				{ \
-					r *= max; \
-					g *= max; \
-					b *= max; \
-					out_row[0] = (type)CLIP(r, 0, max); \
-					out_row[1] = (type)CLIP(g, 0, max); \
-					out_row[2] = (type)CLIP(b, 0, max); \
-				} \
-				else \
-				{ \
-					out_row[0] = (type)r; \
-					out_row[1] = (type)g; \
-					out_row[2] = (type)b; \
-				} \
-			} \
- \
-			in_row += components; \
-			out_row += components; \
-		} \
-	} \
-}
-
-
 void HueUnit::process_package(LoadPackage *package)
 {
 	HuePackage *pkg = (HuePackage*)package;
 	int w = plugin->input->get_w();
+	double h_offset = plugin->config.hue;
+	double s_offset = (plugin->config.saturation -
+		MINSATURATION) / MAXSATURATION;
+	double v_offset = (plugin->config.value -
+		MINVALUE) / MAXVALUE;
+	float h, s, va;
+	int y, u, v;
+	float r, g, b;
+	int r_i, g_i, b_i;
 
 	switch(plugin->input->get_color_model())
 	{
-	case BC_RGB888:
-		HUESATURATION(unsigned char, 0xff, 3, 0)
-		break;
-
-	case BC_RGB_FLOAT:
-		HUESATURATION(float, 1, 3, 0)
-		break;
-
-	case BC_YUV888:
-		HUESATURATION(unsigned char, 0xff, 3, 1)
-		break;
-
-	case BC_RGB161616:
-		HUESATURATION(uint16_t, 0xffff, 3, 0)
-		break;
-
-	case BC_YUV161616:
-		HUESATURATION(uint16_t, 0xffff, 3, 1)
-		break;
-
-	case BC_RGBA_FLOAT:
-		HUESATURATION(float, 1, 4, 0)
-		break;
-
-	case BC_RGBA8888:
-		HUESATURATION(unsigned char, 0xff, 4, 0)
-		break;
-
-	case BC_YUVA8888:
-		HUESATURATION(unsigned char, 0xff, 4, 1)
-		break;
-
 	case BC_RGBA16161616:
-		HUESATURATION(uint16_t, 0xffff, 4, 0)
-		break;
+		for(int i = pkg->row1; i < pkg->row2; i++)
+		{
+			uint16_t* in_row = (uint16_t*)plugin->input->get_row_ptr(i);
 
-	case BC_YUVA16161616:
-		HUESATURATION(uint16_t, 0xffff, 4, 1)
+			for(int j = 0; j < w; j++)
+			{
+				r = (float)in_row[0] / 0xffff;
+				g = (float)in_row[1] / 0xffff;
+				b = (float)in_row[2] / 0xffff;
+				ColorSpaces::rgb_to_hsv(r, g, b, h, s, va);
+
+				h += h_offset;
+				s *= s_offset;
+				va *= v_offset;
+
+				if(h >= 360)
+					h -= 360;
+				if(h < 0)
+					h += 360;
+
+				if(s > 1)
+					s = 1;
+				if(va > 1)
+					va = 1;
+				if(s < 0)
+					s = 0;
+				if(va < 0)
+					va = 0;
+
+				ColorSpaces::hsv_to_rgb(r, g, b, h, s, va);
+				r *= 0xffff;
+				g *= 0xffff;
+				b *= 0xffff;
+				in_row[0] = CLIP(r, 0, 0xffff);
+				in_row[1] = CLIP(g, 0, 0xffff);
+				in_row[2] = CLIP(b, 0, 0xffff);
+
+				in_row += 4;
+			}
+		}
 		break;
 
 	case BC_AYUV16161616:
 		{
-			float h_offset = plugin->config.hue;
-			float s_offset = ((float)plugin->config.saturation -
-				MINSATURATION) / MAXSATURATION;
-			float v_offset = ((float)plugin->config.value -
-				MINVALUE) / MAXVALUE;
 			for(int i = pkg->row1; i < pkg->row2; i++)
 			{
 				uint16_t* in_row = (uint16_t*)plugin->input->get_row_ptr(i);
-				uint16_t* out_row = (uint16_t*)plugin->output->get_row_ptr(i);
 
 				for(int j = 0; j < w; j++)
 				{
-					float h, s, va;
-					int y, u, v;
-					float r, g, b;
-					int r_i, g_i, b_i;
 
-					y = (int)in_row[1];
-					u = (int)in_row[2];
-					v = (int)in_row[3];
-					ColorSpaces::yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
-					ColorSpaces::rgb_to_hsv((float)r_i / 0xffff,
-						(float)g_i / 0xffff,
-						(float)b_i / 0xffff,
-						h, s, va);
-
+					y = in_row[1];
+					u = in_row[2];
+					v = in_row[3];
+					ColorSpaces::yuv_to_hsv(y, u, v, h, s, va, 0xffff);
 					h += h_offset;
 					s *= s_offset;
 					va *= v_offset;
 
-					if(h >= 360) h -= 360;
-					if(h < 0) h += 360;
-					if(s > 1) s = 1;
-					if(va > 1) va = 1;
-					if(s < 0) s = 0;
-					if(va < 0) va = 0;
+					if(h >= 360)
+						h -= 360;
+					if(h < 0)
+						h += 360;
+					if(s > 1)
+						s = 1;
+					if(va > 1)
+						va = 1;
+					if(s < 0)
+						s = 0;
+					if(va < 0)
+						va = 0;
+
 					ColorSpaces::hsv_to_yuv(y, u, v, h, s, va, 0xffff);
-					out_row[1] = y;
-					out_row[2] = u;
-					out_row[3] = v;
+					in_row[1] = y;
+					in_row[2] = u;
+					in_row[3] = v;
 
 					in_row += 4;
-					out_row += 4;
 				}
 			}
 		}
@@ -413,23 +295,42 @@ HueEffect::HueEffect(PluginServer *server)
 
 HueEffect::~HueEffect()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void HueEffect::reset_plugin()
+{
+	delete engine;
+	engine = 0;
 }
 
 PLUGIN_CLASS_METHODS
 
 VFrame *HueEffect::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int cmodel = frame->get_color_model();
 
-	this->input = frame;
-	this->output = frame;
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+	return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
+
+	input = frame;
+
 	if(!EQUIV(config.hue, 0) || !EQUIV(config.saturation, 0) ||
 		!EQUIV(config.value, 0))
 	{
 		if(!engine)
-			engine = new HueEngine(this, PluginClient::smp + 1);
+			engine = new HueEngine(this, get_project_smp());
 
 		engine->process_packages();
 	}
@@ -486,6 +387,7 @@ void HueEffect::read_data(KeyFrame *keyframe)
 void HueEffect::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *yuv_saturation_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float s_offset;\n"
@@ -500,7 +402,6 @@ void HueEffect::handle_opengl()
 		"	pixel.gb += vec2(0.5, 0.5);\n"
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-/* FIXIT
 	static const char *yuv_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
