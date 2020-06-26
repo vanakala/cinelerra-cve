@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+
 #ifndef LINEARBLUR_H
 #define LINEARBLUR_H
 
@@ -66,10 +51,10 @@ public:
 	int radius;
 	int steps;
 	int angle;
-	int r;
-	int g;
-	int b;
-	int a;
+	int chan0;
+	int chan1;
+	int chan2;
+	int chan3;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -109,14 +94,20 @@ public:
 	void update();
 
 	LinearBlurSize *angle, *steps, *radius;
-	LinearBlurToggle *r, *g, *b, *a;
+	LinearBlurToggle *chan0;
+	LinearBlurToggle *chan1;
+	LinearBlurToggle *chan2;
+	LinearBlurToggle *chan3;
 	PLUGIN_GUI_CLASS_MEMBERS
+private:
+	static const char *blur_chn_rgba[];
+	static const char *blur_chn_ayuv[];
 };
 
 
 PLUGIN_THREAD_HEADER
 
-
+/* FIXIT - OpenGl
 // Output coords for a layer of blurring
 // Used for OpenGL only
 class LinearBlurLayer
@@ -125,6 +116,7 @@ public:
 	LinearBlurLayer() {};
 	int x, y;
 };
+	*/
 
 class LinearBlurMain : public PluginVClient
 {
@@ -133,6 +125,7 @@ public:
 	~LinearBlurMain();
 
 	VFrame *process_tmpframe(VFrame *frame);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -159,6 +152,7 @@ class LinearBlurPackage : public LoadPackage
 {
 public:
 	LinearBlurPackage();
+
 	int y1, y2;
 };
 
@@ -166,7 +160,9 @@ class LinearBlurUnit : public LoadClient
 {
 public:
 	LinearBlurUnit(LinearBlurEngine *server, LinearBlurMain *plugin);
+
 	void process_package(LoadPackage *package);
+
 	LinearBlurEngine *server;
 	LinearBlurMain *plugin;
 };
@@ -177,9 +173,11 @@ public:
 	LinearBlurEngine(LinearBlurMain *plugin, 
 		int total_clients, 
 		int total_packages);
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
+
 	LinearBlurMain *plugin;
 };
 

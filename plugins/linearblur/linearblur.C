@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <math.h>
 #include <stdint.h>
@@ -39,27 +23,42 @@
 
 REGISTER_PLUGIN
 
+const char *LinearBlurWindow::blur_chn_rgba[] =
+{
+    N_("Blur red"),
+    N_("Blur green"),
+    N_("Blur blue"),
+    N_("Blur alpha")
+};
+
+const char *LinearBlurWindow::blur_chn_ayuv[] =
+{
+    N_("Blur alpha"),
+    N_("Blur Y"),
+    N_("Blur U"),
+    N_("Blur V")
+};
+
 LinearBlurConfig::LinearBlurConfig()
 {
 	radius = 10;
 	angle = 0;
 	steps = 10;
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
+	chan0 = 1;
+	chan1 = 1;
+	chan2 = 1;
+	chan3 = 1;
 }
 
 int LinearBlurConfig::equivalent(LinearBlurConfig &that)
 {
-	return 
-		radius == that.radius &&
+	return radius == that.radius &&
 		angle == that.angle &&
 		steps == that.steps &&
-		r == that.r &&
-		g == that.g &&
-		b == that.b &&
-		a == that.a;
+		chan0 == that.chan0 &&
+		chan1 == that.chan1 &&
+		chan2 == that.chan2 &&
+		chan3 == that.chan3;
 }
 
 void LinearBlurConfig::copy_from(LinearBlurConfig &that)
@@ -67,10 +66,10 @@ void LinearBlurConfig::copy_from(LinearBlurConfig &that)
 	radius = that.radius;
 	angle = that.angle;
 	steps = that.steps;
-	r = that.r;
-	g = that.g;
-	b = that.b;
-	a = that.a;
+	chan0 = that.chan0;
+	chan1 = that.chan1;
+	chan2 = that.chan2;
+	chan3 = that.chan3;
 }
 
 void LinearBlurConfig::interpolate(LinearBlurConfig &prev, 
@@ -84,10 +83,10 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
 	this->angle = (int)(prev.angle * prev_scale + next.angle * next_scale + 0.5);
 	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
-	r = prev.r;
-	g = prev.g;
-	b = prev.b;
-	a = prev.a;
+	chan0 = prev.chan0;
+	chan1 = prev.chan1;
+	chan2 = prev.chan2;
+	chan3 = prev.chan3;
 }
 
 PLUGIN_THREAD_METHODS
@@ -97,30 +96,51 @@ LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
 	x,
 	y,
 	230, 
-	290)
+	330)
 {
+	BC_WindowBase *win;
+	int title_h;
+	const char **chname;
+	int cmodel = plugin->get_project_color_model();
+
 	x = y = 10;
+	if(cmodel == BC_AYUV16161616)
+		chname = blur_chn_ayuv;
+	else
+		chname = blur_chn_rgba;
+
+	add_subwindow(win = print_title(x, y, "%s: %s", _(plugin->plugin_title()),
+		ColorModels::name(cmodel)));
+	title_h = win->get_h() + 8;
+	y += title_h;
 
 	add_subwindow(new BC_Title(x, y, _("Length:")));
-	y += 20;
-	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
-	y += 30;
+	y += title_h;
+	add_subwindow(radius = new LinearBlurSize(plugin, x, y,
+		&plugin->config.radius, 0, 100));
+	y += radius->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	y += 20;
-	add_subwindow(angle = new LinearBlurSize(plugin, x, y, &plugin->config.angle, -180, 180));
-	y += 30;
+	y += title_h;
+	add_subwindow(angle = new LinearBlurSize(plugin, x, y,
+		&plugin->config.angle, -180, 180));
+	y += angle->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += 20;
-	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 200));
-	y += 30;
-	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += 30;
-	add_subwindow(g = new LinearBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += 30;
-	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += 30;
-	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 30;
+	y += title_h;
+	add_subwindow(steps = new LinearBlurSize(plugin, x, y,
+		&plugin->config.steps, 1, 200));
+	y += steps->get_h() + 8;
+	add_subwindow(chan0 = new LinearBlurToggle(plugin, x, y,
+		&plugin->config.chan0, _(chname[0])));
+	y += chan0->get_h() + 8;
+	add_subwindow(chan1 = new LinearBlurToggle(plugin, x, y,
+		&plugin->config.chan1, _(chname[1])));
+	y += chan1->get_h() + 8;
+	add_subwindow(chan2 = new LinearBlurToggle(plugin, x, y,
+		&plugin->config.chan2, _(chname[2])));
+	y += chan2->get_h() + 8;
+	add_subwindow(chan3 = new LinearBlurToggle(plugin, x, y,
+		&plugin->config.chan3, _(chname[3])));
+	y += chan3->get_h() + 8;
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -129,10 +149,10 @@ void LinearBlurWindow::update()
 	radius->update(plugin->config.radius);
 	angle->update(plugin->config.angle);
 	steps->update(plugin->config.steps);
-	r->update(plugin->config.r);
-	g->update(plugin->config.g);
-	b->update(plugin->config.b);
-	a->update(plugin->config.a);
+	chan0->update(plugin->config.chan0);
+	chan1->update(plugin->config.chan1);
+	chan2->update(plugin->config.chan2);
+	chan3->update(plugin->config.chan3);
 }
 
 LinearBlurToggle::LinearBlurToggle(LinearBlurMain *plugin, 
@@ -189,10 +209,19 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 
 LinearBlurMain::~LinearBlurMain()
 {
-	if(engine) delete engine;
+	delete engine;
 	delete_tables();
-	if(accum) delete [] accum;
+	delete [] accum;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void LinearBlurMain::reset_plugin()
+{
+	delete engine;
+	engine = 0;
+	delete_tables();
+	delete [] accum;
+	accum = 0;
 }
 
 void LinearBlurMain::delete_tables()
@@ -221,6 +250,23 @@ void LinearBlurMain::delete_tables()
 
 VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 {
+	int color_model = frame->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+		if(config.chan3)
+			frame->set_transparent();
+		break;
+	case BC_AYUV16161616:
+		if(config.chan0)
+			frame->set_transparent();
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
 	need_reconfigure |= load_configuration();
 
 // Generate tables here.  The same table is used by many packages to render
@@ -234,6 +280,8 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 		int y_offset;
 		int angle = config.angle;
 		int radius = config.radius * MIN(w, h) / 100;
+
+		update_gui();
 
 		while(angle < 0)
 			angle += 360;
@@ -273,6 +321,7 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 			memset(scale_y_table, 0, table_entries * sizeof(int*));
 		}
 /* FIXIT for OpenGL
+* No check of existence?
 		layer_table = new LinearBlurLayer[table_entries];
 	*/
 		for(int i = 0; i < config.steps; i++)
@@ -310,8 +359,8 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 
 	if(!engine)
 		engine = new LinearBlurEngine(this,
-			get_project_smp() + 1,
-			get_project_smp() + 1);
+			get_project_smp(),
+			get_project_smp());
 	if(!accum)
 	{
 		accum_size = frame->get_w() * frame->get_h() *
@@ -326,8 +375,6 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 	memset(accum, 0, accum_size);
 	engine->process_packages();
 	release_vframe(frame);
-	if(config.a && ColorModels::has_alpha(output->get_color_model()))
-		output->set_transparent();
 	return output;
 }
 
@@ -338,10 +385,16 @@ void LinearBlurMain::load_defaults()
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.angle = defaults->get("ANGLE", config.angle);
 	config.steps = defaults->get("STEPS", config.steps);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
+	// Compatibility
+	config.chan0 = defaults->get("R", config.chan0);
+	config.chan1 = defaults->get("G", config.chan1);
+	config.chan2 = defaults->get("B", config.chan2);
+	config.chan3 = defaults->get("A", config.chan3);
+
+	config.chan0 = defaults->get("CHAN0", config.chan0);
+	config.chan1 = defaults->get("CHAN1", config.chan1);
+	config.chan2 = defaults->get("CHAN2", config.chan2);
+	config.chan3 = defaults->get("CHAN3", config.chan3);
 }
 
 void LinearBlurMain::save_defaults()
@@ -349,10 +402,14 @@ void LinearBlurMain::save_defaults()
 	defaults->update("RADIUS", config.radius);
 	defaults->update("ANGLE", config.angle);
 	defaults->update("STEPS", config.steps);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
+	defaults->delete_key("R");
+	defaults->delete_key("G");
+	defaults->delete_key("B");
+	defaults->delete_key("A");
+	defaults->update("CHAN0", config.chan0);
+	defaults->update("CHAN1", config.chan1);
+	defaults->update("CHAN2", config.chan2);
+	defaults->update("CHAN3", config.chan3);
 	defaults->save();
 }
 
@@ -364,10 +421,10 @@ void LinearBlurMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("ANGLE", config.angle);
 	output.tag.set_property("STEPS", config.steps);
-	output.tag.set_property("R", config.r);
-	output.tag.set_property("G", config.g);
-	output.tag.set_property("B", config.b);
-	output.tag.set_property("A", config.a);
+	output.tag.set_property("CHAN0", config.chan0);
+	output.tag.set_property("CHAN1", config.chan1);
+	output.tag.set_property("CHAN2", config.chan2);
+	output.tag.set_property("CHAN3", config.chan3);
 	output.append_tag();
 	output.tag.set_title("/LINEARBLUR");
 	output.append_tag();
@@ -387,14 +444,20 @@ void LinearBlurMain::read_data(KeyFrame *keyframe)
 			config.radius = input.tag.get_property("RADIUS", config.radius);
 			config.angle = input.tag.get_property("ANGLE", config.angle);
 			config.steps = input.tag.get_property("STEPS", config.steps);
-			config.r = input.tag.get_property("R", config.r);
-			config.g = input.tag.get_property("G", config.g);
-			config.b = input.tag.get_property("B", config.b);
-			config.a = input.tag.get_property("A", config.a);
+			// Compatibility
+			config.chan0 = input.tag.get_property("R", config.chan0);
+			config.chan1 = input.tag.get_property("G", config.chan1);
+			config.chan2 = input.tag.get_property("B", config.chan2);
+			config.chan3 = input.tag.get_property("A", config.chan3);
+
+			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
+			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
+			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
+			config.chan3 = input.tag.get_property("CHAN3", config.chan3);
 		}
 	}
 }
-
+/* FIXIT
 #ifdef HAVE_GL
 static void draw_box(float x1, float y1, float x2, float y2)
 {
@@ -406,7 +469,7 @@ static void draw_box(float x1, float y1, float x2, float y2)
 	glEnd();
 }
 #endif
-
+	*/
 void LinearBlurMain::handle_opengl()
 {
 #ifdef HAVE_GL
@@ -528,135 +591,15 @@ LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 	this->server = server;
 }
 
-
-#define BLEND_LAYER(COMPONENTS, TYPE, TEMP, MAX, DO_YUV) \
-{ \
-	const int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
-	for(int j = pkg->y1; j < pkg->y2; j++) \
-	{ \
-		TEMP *out_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-		int in_y = y_table[j]; \
- \
-/* Blend image */ \
-		TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
-		for(int k = 0; k < w; k++) \
-		{ \
-			int in_x = x_table[k]; \
-/* Blend pixel */ \
-			int in_offset = in_x * COMPONENTS; \
-			*out_row++ += in_row[in_offset]; \
-			if(DO_YUV) \
-			{ \
-				*out_row++ += in_row[in_offset + 1]; \
-				*out_row++ += in_row[in_offset + 2]; \
-			} \
-			else \
-			{ \
-				*out_row++ += in_row[in_offset + 1]; \
-				*out_row++ += in_row[in_offset + 2]; \
-			} \
-			if(COMPONENTS == 4) \
-				*out_row++ += in_row[in_offset + 3]; \
-		} \
-	} \
- \
-/* Copy to output */ \
-	if(i == plugin->config.steps - 1) \
-	{ \
-		for(int j = pkg->y1; j < pkg->y2; j++) \
-		{ \
-			TEMP *in_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
-			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
-			for(int k = 0; k < w; k++) \
-			{ \
-				if(do_r) \
-				{ \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-				} \
-				else \
-				{ \
-					*out_row++ = *in_backup++; \
-					in_row++; \
-				} \
- \
-				if(DO_YUV) \
-				{ \
-					if(do_g) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
- \
-					if(do_b) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
-				else \
-				{ \
-					if(do_g) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
- \
-					if(do_b) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
- \
-				if(COMPONENTS == 4) \
-				{ \
-					if(do_a) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
-			} \
-		} \
-	} \
-}
-
 void LinearBlurUnit::process_package(LoadPackage *package)
 {
 	LinearBlurPackage *pkg = (LinearBlurPackage*)package;
 	int w = plugin->output->get_w();
 	int fraction = 0x10000 / plugin->config.steps;
-	int do_r = plugin->config.r;
-	int do_g = plugin->config.g;
-	int do_b = plugin->config.b;
-	int do_a = plugin->config.a;
+	int do0 = plugin->config.chan0;
+	int do1 = plugin->config.chan1;
+	int do2 = plugin->config.chan2;
+	int do3 = plugin->config.chan3;
 
 	for(int i = 0; i < plugin->config.steps; i++)
 	{
@@ -668,36 +611,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_LAYER(3, float, float, 1, 0)
-			break;
-		case BC_RGB888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_LAYER(4, float, float, 1, 0)
-			break;
-		case BC_RGBA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGB161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-			break;
 		case BC_RGBA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
-			break;
-		case BC_YUV888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUVA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUV161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-			break;
-		case BC_YUVA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-			break;
 		case BC_AYUV16161616:
 			for(int j = pkg->y1; j < pkg->y2; j++)
 			{
@@ -727,7 +641,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
 					for(int k = 0; k < w; k++)
 					{
-						if(do_a)
+						if(do0)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
@@ -738,7 +652,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_r)
+						if(do1)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
@@ -749,7 +663,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_g)
+						if(do2)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
@@ -760,7 +674,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_b)
+						if(do3)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
