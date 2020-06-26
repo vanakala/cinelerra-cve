@@ -1,26 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bctoggle.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "filexml.h"
 #include "invert.h"
@@ -36,29 +21,45 @@
 
 REGISTER_PLUGIN
 
+const char *InvertVideoWindow::inv_chn_rgba[] =
+{
+    N_("Invert red"),
+    N_("Invert green"),
+    N_("Invert blue"),
+    N_("Invert alpha")
+};
+
+const char *InvertVideoWindow::inv_chn_ayuv[] =
+{
+    N_("Invert alpha"),
+    N_("Invert Y"),
+    N_("Invert U"),
+    N_("Invert V")
+};
+
 
 InvertVideoConfig::InvertVideoConfig()
 {
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
+	chan0 = 1;
+	chan1 = 1;
+	chan2 = 1;
+	chan3 = 1;
 }
 
 void InvertVideoConfig::copy_from(InvertVideoConfig &src)
 {
-	r = src.r;
-	g = src.g;
-	b = src.b;
-	a = src.a;
+	chan0 = src.chan0;
+	chan1 = src.chan1;
+	chan2 = src.chan2;
+	chan3 = src.chan3;
 }
 
 int InvertVideoConfig::equivalent(InvertVideoConfig &src)
 {
-	return r == src.r && 
-		g == src.g && 
-		b == src.b && 
-		a == src.a;
+	return chan0 == src.chan0 &&
+		chan1 == src.chan1 &&
+		chan2 == src.chan2 &&
+		chan3 == src.chan3;
 }
 
 void InvertVideoConfig::interpolate(InvertVideoConfig &prev, 
@@ -67,14 +68,15 @@ void InvertVideoConfig::interpolate(InvertVideoConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	r = prev.r;
-	g = prev.g;
-	b = prev.b;
-	a = prev.a;
+	chan0 = prev.chan0;
+	chan1 = prev.chan1;
+	chan2 = prev.chan2;
+	chan3 = prev.chan3;
 }
 
 
-InvertVideoEnable::InvertVideoEnable(InvertVideoEffect *plugin, int *output, int x, int y, char *text)
+InvertVideoEnable::InvertVideoEnable(InvertVideoEffect *plugin,
+	int *output, int x, int y, const char *text)
  : BC_CheckBox(x, y, *output, text)
 {
 	this->plugin = plugin;
@@ -94,26 +96,45 @@ InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
 	x, 
 	y, 
 	260, 
-	130)
+	170)
 {
+	BC_WindowBase *win;
+	int title_h;
+	const char **chname;
+	int cmodel = plugin->get_project_color_model();
+
 	x = y = 10;
 
-	add_subwindow(r = new InvertVideoEnable(plugin, &plugin->config.r, x, y, _("Invert R")));
-	y += 30;
-	add_subwindow(g = new InvertVideoEnable(plugin, &plugin->config.g, x, y, _("Invert G")));
-	y += 30;
-	add_subwindow(b = new InvertVideoEnable(plugin, &plugin->config.b, x, y, _("Invert B")));
-	y += 30;
-	add_subwindow(a = new InvertVideoEnable(plugin, &plugin->config.a, x, y, _("Invert A")));
+	if(cmodel == BC_AYUV16161616)
+		chname = inv_chn_ayuv;
+	else
+		chname = inv_chn_rgba;
+
+	add_subwindow(win = print_title(x, y, "%s: %s", _(plugin->plugin_title()),
+		ColorModels::name(cmodel)));
+	title_h = win->get_h() + 8;
+	y += title_h;
+
+	add_subwindow(chan0 = new InvertVideoEnable(plugin,
+		&plugin->config.chan0, x, y, _(chname[0])));
+	y += chan0->get_h() + 8;
+	add_subwindow(chan1 = new InvertVideoEnable(plugin,
+		&plugin->config.chan1, x, y, _(chname[1])));
+	y += chan1->get_h() + 8;
+	add_subwindow(chan2 = new InvertVideoEnable(plugin,
+		&plugin->config.chan2, x, y, _(chname[2])));
+	y += chan2->get_h() + 8;
+	add_subwindow(chan3 = new InvertVideoEnable(plugin,
+		&plugin->config.chan3, x, y, _(chname[3])));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void InvertVideoWindow::update()
 {
-	r->update(plugin->config.r);
-	g->update(plugin->config.g);
-	b->update(plugin->config.b);
-	a->update(plugin->config.a);
+	chan0->update(plugin->config.chan0);
+	chan1->update(plugin->config.chan1);
+	chan2->update(plugin->config.chan2);
+	chan3->update(plugin->config.chan3);
 }
 
 PLUGIN_THREAD_METHODS
@@ -135,19 +156,28 @@ PLUGIN_CLASS_METHODS
 void InvertVideoEffect::load_defaults()
 {
 	defaults = load_defaults_file("invertvideo.rc");
+	// Compatibility
+	config.chan0 = defaults->get("R", config.chan0);
+	config.chan1 = defaults->get("G", config.chan1);
+	config.chan2 = defaults->get("B", config.chan2);
+	config.chan3 = defaults->get("A", config.chan3);
 
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
+	config.chan0 = defaults->get("CHAN0", config.chan0);
+	config.chan1 = defaults->get("CHAN1", config.chan1);
+	config.chan2 = defaults->get("CHAN2", config.chan2);
+	config.chan3 = defaults->get("CHAN3", config.chan3);
 }
 
 void InvertVideoEffect::save_defaults()
 {
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
+	defaults->delete_key("R");
+	defaults->delete_key("G");
+	defaults->delete_key("B");
+	defaults->delete_key("A");
+	defaults->update("CHAN0", config.chan0);
+	defaults->update("CHAN1", config.chan1);
+	defaults->update("CHAN2", config.chan2);
+	defaults->update("CHAN3", config.chan3);
 	defaults->save();
 }
 
@@ -156,10 +186,10 @@ void InvertVideoEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 	output.tag.set_title("INVERTVIDEO");
-	output.tag.set_property("R", config.r);
-	output.tag.set_property("G", config.g);
-	output.tag.set_property("B", config.b);
-	output.tag.set_property("A", config.a);
+	output.tag.set_property("CHAN0", config.chan0);
+	output.tag.set_property("CHAN1", config.chan1);
+	output.tag.set_property("CHAN2", config.chan2);
+	output.tag.set_property("CHAN3", config.chan3);
 	output.append_tag();
 	output.tag.set_title("/INVERTVIDEO");
 	output.append_tag();
@@ -176,89 +206,54 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("INVERTVIDEO"))
 		{
-			config.r = input.tag.get_property("R", config.r);
-			config.g = input.tag.get_property("G", config.g);
-			config.b = input.tag.get_property("B", config.b);
-			config.a = input.tag.get_property("A", config.a);
+			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
+			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
+			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
+			config.chan3 = input.tag.get_property("CHAN3", config.chan3);
 		}
 	}
 }
 
-
-#define INVERT_MACRO(type, components, max) \
-{ \
-	for(int i = 0; i < frame->get_h(); i++) \
-	{ \
-		type *in_row = (type*)frame->get_row_ptr(i); \
-		type *out_row = (type*)frame->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			if(config.r) out_row[0] = max - in_row[0]; \
-			if(config.g) out_row[1] = max - in_row[1]; \
-			if(config.b) out_row[2] = max - in_row[2]; \
-			if(components == 4) \
-				if(config.a) out_row[3] = max - in_row[3]; \
- \
-			in_row += components; \
-			out_row += components; \
-		} \
-	} \
-}
-
 VFrame  *InvertVideoEffect::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int cmodel = frame->get_color_model();
 
-	if(config.r || config.g || config.b || config.a)
+	if(load_configuration())
+		update_gui();
+
+	if(config.chan0 || config.chan1 || config.chan2 || config.chan3)
 	{
 		int w = frame->get_w();
 
 		switch(frame->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			INVERT_MACRO(float, 3, 1.0)
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			INVERT_MACRO(unsigned char, 3, 0xff)
-			break;
-		case BC_RGBA_FLOAT:
-			INVERT_MACRO(float, 4, 1.0)
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			INVERT_MACRO(unsigned char, 4, 0xff)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			INVERT_MACRO(uint16_t, 3, 0xffff)
-			break;
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			INVERT_MACRO(uint16_t, 4, 0xffff)
-			break;
 		case BC_AYUV16161616:
 			for(int i = 0; i < frame->get_h(); i++)
 			{
 				uint16_t *in_row = (uint16_t*)frame->get_row_ptr(i);
-				uint16_t *out_row = (uint16_t*)frame->get_row_ptr(i);
 
-				for(int j = 0; j < w; j++) \
+				for(int j = 0; j < w; j++)
 				{
-					if(config.a) out_row[0] = 0xffff - in_row[0];
-					if(config.r) out_row[1] = 0xffff - in_row[1];
-					if(config.g) out_row[2] = 0xffff - in_row[2];
-					if(config.b) out_row[3] = 0xffff - in_row[3];
-
+					if(config.chan0)
+						in_row[0] = 0xffff - in_row[0];
+					if(config.chan1)
+						in_row[1] = 0xffff - in_row[1];
+					if(config.chan2)
+						in_row[2] = 0xffff - in_row[2];
+					if(config.chan3)
+						in_row[3] = 0xffff - in_row[3];
 					in_row += 4;
-					out_row += 4;
 				}
 			}
+			if(cmodel == BC_RGBA16161616 && config.chan3 ||
+					cmodel == BC_AYUV16161616 && config.chan0)
+				frame->set_transparent();
+			break;
+		default:
+			unsupported(cmodel);
 			break;
 		}
-		if(ColorModels::has_alpha(frame->get_color_model()))
-			frame->set_transparent();
 	}
 	return frame;
 }
