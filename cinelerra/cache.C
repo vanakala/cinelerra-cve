@@ -174,7 +174,6 @@ void CICache::age()
 	size_t memory_usage;
 	int result = 0;
 
-	total_lock->lock("CICache::age");
 // delete old assets if memory usage is exceeded
 	do
 	{
@@ -188,7 +187,6 @@ void CICache::age()
 		memory_usage = get_memory_usage();
 	}while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences_global->cache_size && !result);
-	total_lock->unlock();
 }
 
 size_t CICache::get_size(int *count)
