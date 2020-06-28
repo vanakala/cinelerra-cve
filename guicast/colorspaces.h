@@ -99,6 +99,11 @@ public:
 		v = (rtov_tab_16[r] + gtov_tab_16[g] + btov_tab_16[b]) >> 8;
 	};
 
+	static inline int rgb_to_y_16(int r, int g, int b)
+	{
+		return (rtoy_tab_16[r] + gtoy_tab_16[g] + btoy_tab_16[b]) >> 8;
+	};
+
 	static inline void yuv_to_rgb_8(int &r, int &g, int &b)
 	{
 		int y = r;
