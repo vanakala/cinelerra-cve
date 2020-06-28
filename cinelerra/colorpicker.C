@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcdisplayinfo.h"
 #include "bcresources.h"
@@ -119,15 +103,6 @@ void ColorThread::update_gui(int output, int alpha)
 	}
 	mutex->unlock();
 }
-
-int ColorThread::handle_new_color(int output, int alpha)
-{
-	printf("ColorThread::handle_new_color undefined.\n");
-	return 0;
-}
-
-
-
 
 
 ColorWindow::ColorWindow(ColorThread *thread, int x, int y, const char *title)
@@ -277,9 +252,13 @@ void ColorWindow::update_display()
 int ColorWindow::handle_event()
 {
 	float r, g, b;
+
 	ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
-	int result = (((int)(r * 255)) << 16) | (((int)(g * 255)) << 8) | ((int)(b * 255));
-	thread->handle_new_color(result, (int)(a * 255));
+	if(!thread->handle_new_color(r * 0xffff, g * 0xffff, b * 0xffff, a * 0xffff))
+	{
+		int result = (((int)(r * 255)) << 16) | (((int)(g * 255)) << 8) | ((int)(b * 255));
+		thread->handle_new_color(result, (int)(a * 255));
+	}
 	return 1;
 }
 
