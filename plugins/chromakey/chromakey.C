@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #define GL_GLEXT_PROTOTYPES
 
@@ -40,9 +24,9 @@
 
 ChromaKeyConfig::ChromaKeyConfig()
 {
-	red = 0.0;
-	green = 0.0;
-	blue = 0.0;
+	red = 0;
+	green = 0;
+	blue = 0;
 	threshold = 60.0;
 	use_value = 0;
 	slope = 100;
@@ -60,12 +44,12 @@ void ChromaKeyConfig::copy_from(ChromaKeyConfig &src)
 
 int ChromaKeyConfig::equivalent(ChromaKeyConfig &src)
 {
-	return (EQUIV(red, src.red) &&
-		EQUIV(green, src.green) &&
-		EQUIV(blue, src.blue) &&
+	return red == src.red &&
+		green == src.green &&
+		blue == src.blue &&
 		EQUIV(threshold, src.threshold) &&
 		EQUIV(slope, src.slope) &&
-		use_value == src.use_value);
+		use_value == src.use_value;
 }
 
 void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev, 
@@ -76,19 +60,19 @@ void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev,
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
-	this->red = prev.red * prev_scale + next.red * next_scale;
-	this->green = prev.green * prev_scale + next.green * next_scale;
-	this->blue = prev.blue * prev_scale + next.blue * next_scale;
-	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
-	this->slope = prev.slope * prev_scale + next.slope * next_scale;
-	this->use_value = prev.use_value;
+	red = round(prev.red * prev_scale + next.red * next_scale);
+	green = round(prev.green * prev_scale + next.green * next_scale);
+	blue = round(prev.blue * prev_scale + next.blue * next_scale);
+	threshold = prev.threshold * prev_scale + next.threshold * next_scale;
+	slope = prev.slope * prev_scale + next.slope * next_scale;
+	use_value = prev.use_value;
 }
 
 int ChromaKeyConfig::get_color()
 {
-	int red = (int)(CLIP(this->red, 0, 1) * 0xff);
-	int green = (int)(CLIP(this->green, 0, 1) * 0xff);
-	int blue = (int)(CLIP(this->blue, 0, 1) * 0xff);
+	int red = (this->red >> 8) & 0xff;
+	int green = (this->green >> 8) & 0xff;
+	int blue = (this->blue >> 8) & 0xff;
 	return (red << 16) | (green << 8) | blue;
 }
 
@@ -117,14 +101,14 @@ ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
 	add_subwindow(new BC_Title(x, y, _("Slope:")));
 	add_subwindow(slope = new ChromaKeySlope(plugin, x1, y));
 
-	y += 30;
+	y += slope->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	add_subwindow(threshold = new ChromaKeyThreshold(plugin, x1, y));
 
-	y += 30;
+	y += threshold->get_h() + 8;
 	add_subwindow(use_value = new ChromaKeyUseValue(plugin, x1, y));
 
-	y += 30;
+	y += use_value->get_h() + 8;
 	add_subwindow(use_colorpicker = new ChromaKeyUseColorPicker(plugin, this, x1, y));
 
 	color_thread = new ChromaKeyColorThread(plugin, this);
@@ -141,14 +125,12 @@ ChromaKeyWindow::~ChromaKeyWindow()
 void ChromaKeyWindow::update_sample()
 {
 	sample->set_color(plugin->config.get_color());
-	sample->draw_box(0, 
-		0, 
-		sample->get_w(), 
+	sample->draw_box(0, 0,
+		sample->get_w(),
 		sample->get_h());
 	sample->set_color(BLACK);
-	sample->draw_rectangle(0, 
-		0, 
-		sample->get_w(), 
+	sample->draw_rectangle(0, 0,
+		sample->get_w(),
 		sample->get_h());
 	sample->flash();
 }
@@ -184,14 +166,8 @@ int ChromaKeyColor::handle_event()
 
 
 ChromaKeyThreshold::ChromaKeyThreshold(ChromaKey *plugin, int x, int y)
- : BC_FSlider(x, 
-		y,
-		0,
-		200,
-		200,
-		(float)0,
-		(float)100,
-		plugin->config.threshold)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 100.0,
+	plugin->config.threshold)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -206,14 +182,7 @@ int ChromaKeyThreshold::handle_event()
 
 
 ChromaKeySlope::ChromaKeySlope(ChromaKey *plugin, int x, int y)
- : BC_FSlider(x, 
-		y,
-		0,
-		200,
-		200,
-		(float)0,
-		(float)100,
-		plugin->config.slope)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 100.0, plugin->config.slope)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -253,7 +222,7 @@ ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKey *plugin,
 
 int ChromaKeyUseColorPicker::handle_event()
 {
-	plugin->get_picker_colors(&plugin->config.red, &plugin->config.green,
+	plugin->get_picker_rgb(&plugin->config.red, &plugin->config.green,
 		&plugin->config.blue);
 	gui->update_sample();
 	plugin->send_configure_change();
@@ -268,11 +237,11 @@ ChromaKeyColorThread::ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *g
 	this->gui = gui;
 }
 
-int ChromaKeyColorThread::handle_new_color(int output, int alpha)
+int ChromaKeyColorThread::handle_new_color(int red, int green, int blue, int alpha)
 {
-	plugin->config.red = (float)(output & 0xff0000) / 0xff0000;
-	plugin->config.green = (float)(output & 0xff00) / 0xff00;
-	plugin->config.blue = (float)(output & 0xff) / 0xff;
+	plugin->config.red = red;
+	plugin->config.green = green;
+	plugin->config.blue = blue;
 	gui->update_sample();
 	plugin->send_configure_change();
 	return 1;
@@ -283,7 +252,7 @@ PLUGIN_THREAD_METHODS
 
 
 ChromaKeyServer::ChromaKeyServer(ChromaKey *plugin)
- : LoadServer(plugin->PluginClient::smp + 1, plugin->PluginClient::smp + 1)
+ : LoadServer(plugin->get_project_smp(), plugin->get_project_smp())
 {
 	this->plugin = plugin;
 }
@@ -326,281 +295,144 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	ChromaKeyPackage *pkg = (ChromaKeyPackage*)package;
 
 	int w = plugin->input->get_w();
-
-	float h, s, v;
-	ColorSpaces::rgb_to_hsv(plugin->config.red,
-		plugin->config.green,
-		plugin->config.blue,
-		h,
-		s,
-		v);
-	float min_hue = h - plugin->config.threshold * 360 / 100;
-	float max_hue = h + plugin->config.threshold * 360 / 100;
-
-
-#define RGB_TO_VALUE(r, g, b) \
-((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
-
-#define SQR(x) ((x) * (x))
-
-#define OUTER_VARIABLES(plugin) \
-	float value = RGB_TO_VALUE(plugin->config.red, \
-		plugin->config.green, \
-		plugin->config.blue); \
-	float threshold = plugin->config.threshold / 100; \
-	float min_v = value - threshold; \
-	float max_v = value + threshold; \
-	float r_key = plugin->config.red; \
-	float g_key = plugin->config.green; \
-	float b_key = plugin->config.blue; \
-	int y_key, u_key, v_key; \
-	ColorSpaces::rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
-	float run = plugin->config.slope / 100; \
-	float threshold_run = threshold + run;
-
-	OUTER_VARIABLES(plugin)
-
-
-
-#define CHROMAKEY(type, components, max, use_yuv) \
-{ \
-	for(int i = pkg->y1; i < pkg->y2; i++) \
-	{ \
-		type *row = (type*)plugin->input->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			float a = 1; \
- \
-/* Test for value in range */ \
-			if(plugin->config.use_value) \
-			{ \
-				float current_value; \
-				if(use_yuv) \
-				{ \
-					float r = (float)row[0] / max; \
-					current_value = r; \
-				} \
-				else \
-				{ \
-					float r = (float)row[0] / max; \
-					float g = (float)row[1] / max; \
-					float b = (float)row[2] / max; \
-					current_value = RGB_TO_VALUE(r, g, b); \
-				} \
- \
-/* Full transparency if in range */ \
-				if(current_value >= min_v && current_value < max_v) \
-				{ \
-					a = 0; \
-				} \
-				else \
-/* Phased out if below or above range */ \
-				if(current_value < min_v) \
-				{ \
-					if(min_v - current_value < run) \
-						a = (min_v - current_value) / run; \
-				} \
-				else \
-				if(current_value - max_v < run) \
-					a = (current_value - max_v) / run; \
-			} \
-			else \
-/* Use color cube */ \
-			{ \
-				float difference; \
-				if(use_yuv) \
-				{ \
-					type y = row[0]; \
-					type u = row[1]; \
-					type v = row[2]; \
-					difference = sqrt(SQR(y - y_key) + \
-						SQR(u - u_key) + \
-						SQR(v - v_key)) / max; \
-				} \
-				else \
-				{ \
-					float r = (float)row[0] / max; \
-					float g = (float)row[1] / max; \
-					float b = (float)row[2] / max; \
-					difference = sqrt(SQR(r - r_key) +  \
-						SQR(g - g_key) + \
-						SQR(b - b_key)); \
-				} \
-				if(difference < threshold) \
-				{ \
-					a = 0; \
-				} \
-				else \
-				if(difference < threshold_run) \
-				{ \
-					a = (difference - threshold) / run; \
-				} \
- \
-			} \
- \
-/* Multiply alpha and put back in frame */ \
-			if(components == 4) \
-			{ \
-				row[3] = MIN((type)(a * max), row[3]); \
-			} \
-			else \
-			if(use_yuv) \
-			{ \
-				row[0] = (type)(a * row[0]); \
-				row[1] = (type)(a * (row[1] - (max / 2 + 1)) + max / 2 + 1); \
-				row[2] = (type)(a * (row[2] - (max / 2 + 1)) + max / 2 + 1); \
-			} \
-			else \
-			{ \
-				row[0] = (type)(a * row[0]); \
-				row[1] = (type)(a * row[1]); \
-				row[2] = (type)(a * row[2]); \
-			} \
- \
-			row += components; \
-		} \
-	} \
-}
+	int value = ColorSpaces::rgb_to_y_16(plugin->config.red,
+		plugin->config.green, plugin->config.blue);
+	int threshold = plugin->config.threshold * 0xffff / 100;
+	int min_v = value - threshold;
+	int max_v = value + threshold;
+	int r_key = plugin->config.red;
+	int g_key = plugin->config.green;
+	int b_key = plugin->config.blue;
+	int y_key, u_key, v_key;
+	ColorSpaces::rgb_to_yuv_16(r_key, g_key, b_key, y_key, u_key, v_key);
+	int run = plugin->config.slope * 0xffff / 100;
+	int threshold_run = threshold + run;
 
 	switch(plugin->input->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		CHROMAKEY(float, 3, 1.0, 0);
-		break;
-	case BC_RGBA_FLOAT:
-		CHROMAKEY(float, 4, 1.0, 0);
-		break;
-	case BC_RGB888:
-		CHROMAKEY(unsigned char, 3, 0xff, 0);
-		break;
-	case BC_RGBA8888:
-		CHROMAKEY(unsigned char, 4, 0xff, 0);
-		break;
-	case BC_YUV888:
-		CHROMAKEY(unsigned char, 3, 0xff, 1);
-		break;
-	case BC_YUVA8888:
-		CHROMAKEY(unsigned char, 4, 0xff, 1);
-		break;
-	case BC_YUV161616:
-		CHROMAKEY(uint16_t, 3, 0xffff, 1);
-		break;
-	case BC_YUVA16161616:
-		CHROMAKEY(uint16_t, 4, 0xffff, 1);
-		break;
-
 	case BC_RGBA16161616:
-		for(int i = pkg->y1; i < pkg->y2; i++)
+		if(plugin->config.use_value)
 		{
-			uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
-
-			for(int j = 0; j < w; j++)
+			for(int i = pkg->y1; i < pkg->y2; i++)
 			{
-				double a = 1;
+				uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
 
-				// Test for value in range
-				if(plugin->config.use_value)
+				for(int j = 0; j < w; j++)
 				{
-					double current_value;
+					int alpha = 0xffff;
 
-					double r = (double)row[0] / 0xffff;
-					double g = (double)row[1] / 0xffff;
-					double b = (double)row[2] / 0xffff;
-					current_value = RGB_TO_VALUE(r, g, b);
+					// Test for value in range
+					int current_value = ColorSpaces::rgb_to_y_16(row[0], row[1], row[2]);
 
 					// Full transparency if in range
 					if(current_value >= min_v && current_value < max_v)
-						a = 0;
+						alpha = 0;
 					else
 					// Phased out if below or above range
 					if(current_value < min_v)
 					{
 						if(min_v - current_value < run)
-							a = (min_v - current_value) / run;
+							alpha = (min_v - current_value);
 					}
 					else
 					if(current_value - max_v < run)
-						a = (current_value - max_v) / run;
-				}
-				else
-				// Use color cube
-				{
-					double difference;
+						alpha = (current_value - max_v);
 
-					double r = (double)row[0] / 0xffff;
-					double g = (double)row[1] / 0xffff;
-					double b = (double)row[2] / 0xffff;
-					difference = sqrt(SQR(r - r_key) +
-						SQR(g - g_key) +
-						SQR(b - b_key));
+					row[3] = MIN(alpha, row[3]);
+					row += 4;
+				}
+			}
+		}
+		else
+		{
+			// Use color cube
+			for(int i = pkg->y1; i < pkg->y2; i++)
+			{
+				uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					int alpha = 0xffff;
+					double dr = row[0] - r_key;
+					double dg = row[1] - g_key;
+					double db = row[2] - b_key;
+
+					int difference = round(sqrt(SQR(dr) +
+						SQR(dg) + SQR(db)));
+
 					if(difference < threshold)
-						a = 0;
+						alpha = 0;
 					else
 					if(difference < threshold_run)
-						a = (difference - threshold) / run;
+						alpha = (difference - threshold);
+
+					row[3] = MIN(alpha, row[3]);
+
+					row += 4;
 				}
-
-				// Multiply alpha and put back in frame
-				row[3] = MIN((uint16_t)(a * 0xffff), row[3]);
-
-				row += 4;
 			}
 		}
 		break;
 
 	case BC_AYUV16161616:
-		for(int i = pkg->y1; i < pkg->y2; i++)
+		if(plugin->config.use_value)
 		{
-			uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
-
-			for(int j = 0; j < w; j++)
+			for(int i = pkg->y1; i < pkg->y2; i++)
 			{
-				double a = 1;
+				uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
 
-				// Test for value in range
-				if(plugin->config.use_value)
+				for(int j = 0; j < w; j++)
 				{
-					double current_value = (double)row[1] / 0xffff;;
+					int alpha = 0xffff;
+
+					// Test for value in range
+					int current_value = row[1];
 
 					// Full transparency if in range
 					if(current_value >= min_v && current_value < max_v)
-							a = 0;
+							alpha = 0;
 					else
 					// Phased out if below or above range
 					if(current_value < min_v)
 					{
 						if(min_v - current_value < run)
-							a = (min_v - current_value) / run;
+							alpha = min_v - current_value;
 					}
 					else
 					if(current_value - max_v < run)
-						a = (current_value - max_v) / run;
+						alpha = current_value - max_v;
+					row[0] = MIN(alpha, row[0]);
+					row += 4;
 				}
-				else
-				// Use color cube
+			}
+		}
+		else
+		{
+			// Use color cube
+			for(int i = pkg->y1; i < pkg->y2; i++)
+			{
+				uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
 				{
-					double difference;
+					int alpha = 0xffff;
 
-					uint16_t y = row[1];
-					uint16_t u = row[2];
-					uint16_t v = row[3];
+					double dy = row[1] - y_key;
+					double du = row[2] - u_key;
+					double dv = row[3] - v_key;
 
-					difference = sqrt(SQR(y - y_key) +
-						SQR(u - u_key) +
-						SQR(v - v_key)) / 0xffff;
+					int difference = round(sqrt(SQR(dy) +
+						SQR(du) + SQR(dv)));
 
 					if(difference < threshold)
-						a = 0;
+						alpha = 0;
 					else
 					if(difference < threshold_run)
-						a = (difference - threshold) / run;
+						alpha = difference - threshold;
+
+					row[0] = MIN(alpha, row[0]);
+					row += 4;
 				}
-
-				// Multiply alpha and put back in frame
-				row[0] = MIN((uint16_t)(a * 0xffff), row[0]);
-
-				row += 4;
 			}
 		}
 		break;
@@ -623,19 +455,38 @@ ChromaKey::~ChromaKey()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void ChromaKey::reset_plugin()
+{
+	delete engine;
+	engine = 0;
+}
 
 VFrame *ChromaKey::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
-	this->input = frame;
-	this->output = frame;
+	int cmodel = frame->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
+
+	input = frame;
 
 	if(!EQUIV(config.threshold, 0))
 	{
-		if(!engine) engine = new ChromaKeyServer(this);
+		if(!engine)
+			engine = new ChromaKeyServer(this);
 		engine->process_packages();
-		if(ColorModels::has_alpha(frame->get_color_model()))
-			frame->set_transparent();
+		frame->set_transparent();
 	}
 	return frame;
 }
@@ -685,6 +536,7 @@ void ChromaKey::save_data(KeyFrame *keyframe)
 void ChromaKey::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	double dcol;
 
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
@@ -692,9 +544,34 @@ void ChromaKey::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("CHROMAKEY"))
 		{
-			config.red = input.tag.get_property("RED", config.red);
-			config.green = input.tag.get_property("GREEN", config.green);
-			config.blue = input.tag.get_property("BLUE", config.blue);
+			// Old color was < 1; new color is > 1
+			dcol = input.tag.get_property("RED", 0.0);
+			if(dcol > 0 && dcol < 1.0)
+			{
+				config.red = dcol * 0x10000;
+				CLAMP(config.red, 0, 0xffff);
+			}
+			else
+				config.red = input.tag.get_property("RED", config.red);
+			dcol = input.tag.get_property("GREEN", 0.0);
+
+			if(dcol > 0 && dcol < 1.0)
+			{
+				config.green = dcol * 0x10000;
+				CLAMP(config.green, 0, 0xffff);
+			}
+			else
+				config.green = input.tag.get_property("GREEN", config.green);
+
+			dcol = input.tag.get_property("BLUE", 0.0);
+			if(dcol && dcol < 1.0)
+			{
+				config.blue = dcol * 0x10000;
+				CLAMP(config.blue, 0, 0xffff);
+			}
+			else
+				config.blue = input.tag.get_property("BLUE", config.blue);
+
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 			config.slope = input.tag.get_property("SLOPE", config.slope);
 			config.use_value = input.tag.get_property("USE_VALUE", config.use_value);
@@ -705,6 +582,7 @@ void ChromaKey::read_data(KeyFrame *keyframe)
 void ChromaKey::handle_opengl()
 {
 #ifdef HAVE_GL
+/* To be fixed
 	OUTER_VARIABLES(this)
 
 	static const char *uniform_frag =
@@ -763,7 +641,6 @@ void ChromaKey::handle_opengl()
 		"		alpha = (difference - threshold) / run;\n"
 		"	gl_FragColor = vec4(color.rgb, min(color.a, alpha));\n"
 		"}\n";
-/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
