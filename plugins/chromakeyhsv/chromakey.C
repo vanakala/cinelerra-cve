@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+
 #define GL_GLEXT_PROTOTYPES
 
 #include "bcbar.h"
@@ -29,11 +14,11 @@
 #include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
@@ -41,9 +26,9 @@
 
 ChromaKeyConfig::ChromaKeyConfig()
 {
-	red = 0.0;
-	green = 1.0;
-	blue = 0.0;
+	red = 0;
+	green = 0xffff;
+	blue = 0;
 
 	min_brightness = 50.0;
 	max_brightness = 100.0;
@@ -82,9 +67,9 @@ void ChromaKeyConfig::copy_from(ChromaKeyConfig & src)
 
 int ChromaKeyConfig::equivalent(ChromaKeyConfig & src)
 {
-	return (EQUIV(red, src.red) &&
-		EQUIV(green, src.green) &&
-		EQUIV(blue, src.blue) &&
+	return red == src.red &&
+		green == src.green &&
+		blue == src.blue &&
 		EQUIV(spill_threshold, src.spill_threshold) &&
 		EQUIV(spill_amount, src.spill_amount) &&
 		EQUIV(min_brightness, src.min_brightness) &&
@@ -94,20 +79,20 @@ int ChromaKeyConfig::equivalent(ChromaKeyConfig & src)
 		EQUIV(tolerance, src.tolerance) &&
 		EQUIV(in_slope, src.in_slope) &&
 		EQUIV(out_slope, src.out_slope) &&
-		EQUIV(show_mask, src.show_mask) &&
-		EQUIV(alpha_offset, src.alpha_offset));
+		show_mask == src.show_mask &&
+		EQUIV(alpha_offset, src.alpha_offset);
 }
 
 void ChromaKeyConfig::interpolate(ChromaKeyConfig & prev,
-			ChromaKeyConfig & next,
-			ptstime prev_pts,
-			ptstime next_pts, ptstime current_pts)
+	ChromaKeyConfig & next,
+	ptstime prev_pts,
+	ptstime next_pts, ptstime current_pts)
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
-	this->red = prev.red * prev_scale + next.red * next_scale;
-	this->green = prev.green * prev_scale + next.green * next_scale;
-	this->blue = prev.blue * prev_scale + next.blue * next_scale;
+	this->red = round(prev.red * prev_scale + next.red * next_scale);
+	this->green = round(prev.green * prev_scale + next.green * next_scale);
+	this->blue = round(prev.blue * prev_scale + next.blue * next_scale);
 	this->spill_threshold =
 		prev.spill_threshold * prev_scale + next.spill_threshold * next_scale;
 	this->spill_amount =
@@ -130,9 +115,9 @@ void ChromaKeyConfig::interpolate(ChromaKeyConfig & prev,
 
 int ChromaKeyConfig::get_color()
 {
-	int red = (int)(CLIP(this->red, 0, 1) * 0xff);
-	int green = (int)(CLIP(this->green, 0, 1) * 0xff);
-	int blue = (int)(CLIP(this->blue, 0, 1) * 0xff);
+	int red = (this->red >> 8) & 0xff;
+	int green = (this->green >> 8) & 0xff;
+	int blue = (this->blue >> 8) & 0xff;
 	return (red << 16) | (green << 8) | blue;
 }
 
@@ -291,7 +276,7 @@ void ChromaKeyWindow::update_sample()
 
 
 ChromaKeyColor::ChromaKeyColor(ChromaKeyHSV * plugin,
-				ChromaKeyWindow * gui, int x, int y)
+	ChromaKeyWindow * gui, int x, int y)
  : BC_GenericButton(x, y, _("Color..."))
 {
 	this->plugin = plugin;
@@ -306,10 +291,8 @@ int ChromaKeyColor::handle_event()
 
 
 ChromaKeyMinBrightness::ChromaKeyMinBrightness(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0,
-	200, 200, (float) 0, (float) 100, plugin->config.min_brightness)
+ : BC_FSlider(x, y, 0,
+	200, 200, 0, 100, plugin->config.min_brightness)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -323,10 +306,8 @@ int ChromaKeyMinBrightness::handle_event()
 }
 
 ChromaKeyMaxBrightness::ChromaKeyMaxBrightness(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0,
-	200, 200, (float) 0, (float) 100, plugin->config.max_brightness)
+ : BC_FSlider(x, y, 0,
+	200, 200, 0, 100, plugin->config.max_brightness)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -341,9 +322,8 @@ int ChromaKeyMaxBrightness::handle_event()
 
 
 ChromaKeySaturation::ChromaKeySaturation(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0, 200, 200, (float) 0, (float) 100, plugin->config.saturation)
+ : BC_FSlider(x, y,
+	0, 200, 200, 0, 100, plugin->config.saturation)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -357,10 +337,8 @@ int ChromaKeySaturation::handle_event()
 }
 
 ChromaKeyMinSaturation::ChromaKeyMinSaturation(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0,
-	200, 200, (float) 0, (float) 100, plugin->config.min_saturation)
+ : BC_FSlider(x, y, 0,
+	200, 200, 0, 100, plugin->config.min_saturation)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -375,9 +353,8 @@ int ChromaKeyMinSaturation::handle_event()
 
 
 ChromaKeyTolerance::ChromaKeyTolerance(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0, 200, 200, (float) 0, (float) 100, plugin->config.tolerance)
+ : BC_FSlider(x, y,
+	0, 200, 200, 0, 100, plugin->config.tolerance)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -392,9 +369,8 @@ int ChromaKeyTolerance::handle_event()
 
 
 ChromaKeyInSlope::ChromaKeyInSlope(ChromaKeyHSV * plugin, int x, int y)
-: BC_FSlider(x,
-	y,
-	0, 200, 200, (float) 0, (float) 20, plugin->config.in_slope)
+: BC_FSlider(x, y,
+	0, 200, 200, 0, 20, plugin->config.in_slope)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -409,9 +385,8 @@ int ChromaKeyInSlope::handle_event()
 
 
 ChromaKeyOutSlope::ChromaKeyOutSlope(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0, 200, 200, (float) 0, (float)20, plugin->config.out_slope)
+ : BC_FSlider(x, y,
+	0, 200, 200, 0, 20, plugin->config.out_slope)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -426,10 +401,8 @@ int ChromaKeyOutSlope::handle_event()
 
 
 ChromaKeyAlphaOffset::ChromaKeyAlphaOffset(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0,
-	200, 200, (float) -100, (float) 100, plugin->config.alpha_offset)
+ : BC_FSlider(x, y, 0,
+	200, 200, -100, 100, plugin->config.alpha_offset)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -441,6 +414,7 @@ int ChromaKeyAlphaOffset::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 ChromaKeyShowMask::ChromaKeyShowMask(ChromaKeyHSV * plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.show_mask, _("Show Mask"))
@@ -455,6 +429,7 @@ int ChromaKeyShowMask::handle_event()
 	return 1;
 }
 
+
 ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKeyHSV * plugin, ChromaKeyWindow * gui, int x, int y)
  : BC_GenericButton(x, y, _("Use color picker"))
 {
@@ -464,7 +439,7 @@ ChromaKeyUseColorPicker::ChromaKeyUseColorPicker(ChromaKeyHSV * plugin, ChromaKe
 
 int ChromaKeyUseColorPicker::handle_event()
 {
-	plugin->get_picker_colors(&plugin->config.red, &plugin->config.green,
+	plugin->get_picker_rgb(&plugin->config.red, &plugin->config.green,
 		&plugin->config.blue);
 	gui->update_sample();
 	plugin->send_configure_change();
@@ -476,7 +451,7 @@ ChromaKeySpillThreshold::ChromaKeySpillThreshold(ChromaKeyHSV * plugin, int x, i
 : BC_FSlider(x,
 	y,
 	0,
-	200, 200, (float) 0, (float) 100, plugin->config.spill_threshold)
+	200, 200, 0, 100, plugin->config.spill_threshold)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -492,7 +467,7 @@ int ChromaKeySpillThreshold::handle_event()
 ChromaKeySpillAmount::ChromaKeySpillAmount(ChromaKeyHSV * plugin, int x, int y)
  : BC_FSlider(x,
 	y,
-	0, 200, 200, (float) 0, (float) 100, plugin->config.spill_amount)
+	0, 200, 200, 0, 100, plugin->config.spill_amount)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -506,19 +481,18 @@ int ChromaKeySpillAmount::handle_event()
 }
 
 
-
 ChromaKeyColorThread::ChromaKeyColorThread(ChromaKeyHSV * plugin, ChromaKeyWindow * gui)
-: ColorThread(1, _("Inner color"), plugin->new_picon())
+: ColorThread(0, _("Inner color"), plugin->new_picon())
 {
-  this->plugin = plugin;
-  this->gui = gui;
+	this->plugin = plugin;
+	this->gui = gui;
 }
 
-int ChromaKeyColorThread::handle_new_color(int output, int alpha)
+int ChromaKeyColorThread::handle_new_color(int red, int green, int blue, int alpha)
 {
-	plugin->config.red = (float)(output & 0xff0000) / 0xff0000;
-	plugin->config.green = (float)(output & 0xff00) / 0xff00;
-	plugin->config.blue = (float)(output & 0xff) / 0xff;
+	plugin->config.red = red;
+	plugin->config.green = green;
+	plugin->config.blue = blue;
 	gui->update_sample();
 	plugin->send_configure_change();
 	return 1;
@@ -527,8 +501,8 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 PLUGIN_THREAD_METHODS
 
 ChromaKeyServer::ChromaKeyServer(ChromaKeyHSV * plugin)
- : LoadServer(plugin->PluginClient::smp + 1,
-	plugin->PluginClient::smp + 1)
+ : LoadServer(plugin->get_project_smp(),
+	plugin->get_project_smp())
 {
 	this->plugin = plugin;
 }
@@ -562,307 +536,170 @@ ChromaKeyPackage::ChromaKeyPackage()
 ChromaKeyUnit::ChromaKeyUnit(ChromaKeyHSV* plugin, ChromaKeyServer* server)
  : LoadClient(server)
 {
-  this->plugin = plugin;
+	this->plugin = plugin;
 }
-
-
-#define ABS(a) ((a<0)?-(a):a)
-// Reuse as much as possible in the opengl version
-#define OUTER_VARIABLES \
-	float red = plugin->config.red; \
-	float green = plugin->config.green; \
-	float blue = plugin->config.blue; \
- \
-	float in_slope = plugin->config.in_slope / 100; \
-	float out_slope = plugin->config.out_slope / 100; \
- \
-	float tolerance = plugin->config.tolerance / 100; \
-	float tolerance_in = tolerance - in_slope; \
-	float tolerance_out = tolerance + out_slope; \
- \
-	float sat = plugin->config.saturation / 100; \
-	float min_s = plugin->config.min_saturation / 100; \
-	float min_s_in = min_s + in_slope; \
-	float min_s_out = min_s - out_slope; \
- \
-	float min_v = plugin->config.min_brightness / 100; \
-	float min_v_in = min_v + in_slope; \
-	float min_v_out = min_v - out_slope; \
- \
-	float max_v = plugin->config.max_brightness / 100; \
-	float max_v_in = max_v - in_slope; \
-	float max_v_out = max_v + out_slope; \
- \
-	float spill_threshold = plugin->config.spill_threshold / 100; \
-	float spill_amount = 1.0 - plugin->config.spill_amount / 100; \
- \
-	float alpha_offset = plugin->config.alpha_offset / 100; \
- \
-/* Convert RGB key to HSV key */ \
-	float hue_key, saturation_key, value_key; \
-	ColorSpaces::rgb_to_hsv(red,  \
-		green, \
-		blue, \
-		hue_key, \
-		saturation_key, \
-		value_key);
-
-
-template <typename component_type> 
-void ChromaKeyUnit::process_chromakey(int components, 
-	component_type max, 
-	bool use_yuv, 
-	ChromaKeyPackage *pkg) 
-{
-	OUTER_VARIABLES
-
-	int w = plugin->input->get_w();
-
-	for(int i = pkg->y1; i < pkg->y2; i++)
-	{
-		component_type *row = (component_type *) plugin->input->get_row_ptr(i);
-
-		for(int j = 0; j < w; j++)
-		{
-			float a = 1;
-
-			float r = (float) row[0] / max;
-			float g = (float) row[1] / max;
-			float b = (float) row[2] / max;
-
-			float h, s, v;
-
-			float av = 1, ah = 1, as = 1, avm = 1;
-			bool has_match = true;
-
-			if(use_yuv)
-			{
-/* Convert pixel to RGB float */
-				float y = r;
-				float u = g;
-				float v = b;
-				ColorSpaces::yuv_to_rgb_f(r, g, b, y, u - 0.5, v - 0.5);
-			}
-
-			ColorSpaces::rgb_to_hsv(r, g, b, h, s, v);
-
-// First, test if the hue is in range
-			if(tolerance == 0)
-				ah = 1.0;
-			else 
-			if(ABS(h - hue_key) < tolerance_in * 180)
-				ah = 0;
-			else 
-			if((out_slope != 0) && (ABS(h - hue_key) < tolerance * 180))
-/* we scale alpha between 0 and 1/2 */
-				ah = ABS(h - hue_key) / tolerance / 360;
-			else 
-			if(ABS (h - hue_key) < tolerance_out * 180)
-/* we scale alpha between 1/2 and 1 */
-				ah = ABS(h - hue_key) / tolerance_out / 360;
-			else
-				has_match = false;
-
-// Check if the saturation matches
-			if(has_match)
-			{
-				if(min_s == 0)
-					as = 0;
-				else if(s - sat >= min_s_in)
-					as = 0;
-				else if((out_slope != 0) && (s - sat > min_s))
-					as = (s - sat - min_s) / (min_s * 2);
-				else if(s - sat > min_s_out)
-					as = (s - sat - min_s_out) / (min_s_out * 2);
-				else
-					has_match = false;
-			}
-
-// Check if the value is more than the minimun
-			if(has_match)
-			{
-				if(min_v == 0)
-					av = 0;
-				else if(v >= min_v_in)
-					av = 0;
-				else if((out_slope != 0) && (v > min_v))
-					av = (v - min_v) / (min_v * 2);
-				else if(v > min_v_out)
-					av = (v - min_v_out) / (min_v_out * 2);
-				else
-					has_match = false;
-			}
-
-// Check if the value is less than the maximum
-			if(has_match)
-			{
-				if(max_v == 0)
-					avm = 1;
-				else if(v <= max_v_in)
-					avm = 0;
-				else if((out_slope != 0) && (v < max_v))
-					avm = (v - max_v) / (max_v * 2);
-				else if(v < max_v_out)
-					avm = (v - max_v_out) / (max_v_out * 2);
-				else
-					has_match = false;
-			}
-
-// If the color is part of the key, update the alpha channel
-			if(has_match)
-				a = MAX(MAX(ah, av), MAX(as, avm));
-
-// Spill light processing
-			if((ABS(h - hue_key) < spill_threshold * 180) ||
-				((ABS(h - hue_key) > 360)
-				&& (ABS(h - hue_key) - 360 < spill_threshold * 180)))
-			{
-				s = s * spill_amount * ABS(h - hue_key) / (spill_threshold * 180);
-
-				ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
-
-				if(use_yuv)
-				{
-					float y;
-					float u;
-					float v;
-					ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
-					CLAMP(y, 0, 1.0);
-					CLAMP(u, 0, 1.0);
-					CLAMP(v, 0, 1.0);
-					row[0] = (component_type) ((float) y * max);
-					row[1] = (component_type) ((float) (u + 0.5) * max);
-					row[2] = (component_type) ((float) (v + 0.5) * max);
-				}
-				else
-				{
-					CLAMP(r, 0, 1.0);
-					CLAMP(g, 0, 1.0);
-					CLAMP(b, 0, 1.0);
-					row[0] = (component_type) ((float) r * max);
-					row[1] = (component_type) ((float) g * max);
-					row[2] = (component_type) ((float) b * max);
-				}
-			}
-
-			a += alpha_offset;
-			CLAMP(a, 0.0, 1.0);
-
-			if(plugin->config.show_mask)
-			{
-
-				if(use_yuv)
-				{
-					row[0] = (component_type) ((float) a * max);
-					row[1] = (component_type) ((float) max / 2);
-					row[2] = (component_type) ((float) max / 2);
-				}
-				else
-				{
-					row[0] = (component_type) ((float) a * max);
-					row[1] = (component_type) ((float) a * max);
-					row[2] = (component_type) ((float) a * max);
-				}
-			}
-
-// Multiply alpha and put back in frame
-			if(components == 4)
-			{
-				row[3] = MIN((component_type) (a * max), row[3]);
-			}
-			else if(use_yuv)
-			{
-				row[0] = (component_type) ((float) a * row[0]);
-				row[1] = (component_type) ((float) a * (row[1] - (max / 2 + 1)) +
-						max / 2 + 1);
-				row[2] = (component_type) ((float) a * (row[2] - (max / 2 + 1)) +
-					max / 2 + 1);
-			}
-			else
-			{
-				row[0] = (component_type) ((float) a * row[0]);
-				row[1] = (component_type) ((float) a * row[1]);
-				row[2] = (component_type) ((float) a * row[2]);
-			}
-
-			row += components;
-		}
-	}
-}
-
 
 void ChromaKeyUnit::process_package(LoadPackage *package)
 {
 	ChromaKeyPackage *pkg = (ChromaKeyPackage*)package;
+	int w = plugin->input->get_w();
+
+	float red = (float)plugin->config.red / 0xffff;
+	float green = (float)plugin->config.green / 0xffff;
+	float blue = (float)plugin->config.blue / 0xffff;
+
+	float in_slope = plugin->config.in_slope / 100;
+	float out_slope = plugin->config.out_slope / 100;
+
+	float tolerance = plugin->config.tolerance / 100;
+	float tolerance_in = tolerance - in_slope;
+	float tolerance_out = tolerance + out_slope;
+
+	float sat = plugin->config.saturation / 100;
+	float min_s = plugin->config.min_saturation / 100;
+	float min_s_in = min_s + in_slope;
+	float min_s_out = min_s - out_slope;
+
+	float min_v = plugin->config.min_brightness / 100;
+	float min_v_in = min_v + in_slope;
+	float min_v_out = min_v - out_slope;
+
+	float max_v = plugin->config.max_brightness / 100;
+	float max_v_in = max_v - in_slope;
+	float max_v_out = max_v + out_slope;
+
+	float spill_threshold = plugin->config.spill_threshold / 100;
+	float spill_amount = 1.0 - plugin->config.spill_amount / 100;
+
+	int alpha_offset = plugin->config.alpha_offset * 0xffff / 100;
+
+// Convert RGB key to HSV key
+	float hue_key, saturation_key, value_key;
+	ColorSpaces::rgb_to_hsv(red, green, blue,
+		hue_key, saturation_key, value_key);
 
 	switch(plugin->input->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		process_chromakey<float>(3, 1.0, 0, pkg);
-		break;
-	case BC_RGBA_FLOAT:
-		process_chromakey<float>( 4, 1.0, 0, pkg);
-		break;
-	case BC_RGB888:
-		process_chromakey<unsigned char>( 3, 0xff, 0, pkg);
-		break;
-	case BC_RGBA8888:
-		process_chromakey<unsigned char>( 4, 0xff, 0, pkg);
-		break;
-	case BC_YUV888:
-		process_chromakey<unsigned char>( 3, 0xff, 1, pkg);
-		break;
-	case BC_YUVA8888:
-		process_chromakey<unsigned char>( 4, 0xff, 1, pkg);
-		break;
-	case BC_YUV161616:
-		process_chromakey<uint16_t>(3, 0xffff, 1, pkg);
-		break;
-	case BC_YUVA16161616:
-		process_chromakey<uint16_t>(4, 0xffff, 1, pkg);
-		break;
-
 	case BC_RGBA16161616:
-		process_chromakey<uint16_t>(4, 0xffff, 0, pkg);
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			uint16_t *row = (uint16_t*) plugin->input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				float a = 1;
+
+				float r = (float)row[0] / 0xffff;
+				float g = (float)row[1] / 0xffff;
+				float b = (float)row[2] / 0xffff;
+
+				float h, s, v;
+
+				float av = 1, ah = 1, as = 1, avm = 1;
+				bool has_match = true;
+
+				ColorSpaces::rgb_to_hsv(r, g, b, h, s, v);
+
+// First, test if the hue is in range
+				if(tolerance == 0)
+					ah = 1.0;
+				else if(fabs(h - hue_key) < tolerance_in * 180)
+					ah = 0;
+				else if((out_slope != 0) && (fabs(h - hue_key) < tolerance * 180))
+// we scale alpha between 0 and 1/2
+					ah = fabs(h - hue_key) / tolerance / 360;
+				else if(fabs (h - hue_key) < tolerance_out * 180)
+// we scale alpha between 1/2 and 1
+					ah = fabs(h - hue_key) / tolerance_out / 360;
+				else
+					has_match = false;
+
+// Check if the saturation matches
+				if(has_match)
+				{
+					if(min_s == 0)
+						as = 0;
+					else if(s - sat >= min_s_in)
+						as = 0;
+					else if((out_slope != 0) && (s - sat > min_s))
+						as = (s - sat - min_s) / (min_s * 2);
+					else if(s - sat > min_s_out)
+						as = (s - sat - min_s_out) / (min_s_out * 2);
+					else
+						has_match = false;
+				}
+
+// Check if the value is more than the minimun
+				if(has_match)
+				{
+					if(min_v == 0)
+						av = 0;
+					else if(v >= min_v_in)
+						av = 0;
+					else if((out_slope != 0) && (v > min_v))
+						av = (v - min_v) / (min_v * 2);
+					else if(v > min_v_out)
+						av = (v - min_v_out) / (min_v_out * 2);
+					else
+						has_match = false;
+				}
+
+// Check if the value is less than the maximum
+				if(has_match)
+				{
+					if(max_v == 0)
+						avm = 1;
+					else if(v <= max_v_in)
+						avm = 0;
+					else if((out_slope != 0) && (v < max_v))
+						avm = (v - max_v) / (max_v * 2);
+					else if(v < max_v_out)
+						avm = (v - max_v_out) / (max_v_out * 2);
+					else
+						has_match = false;
+				}
+
+// If the color is part of the key, update the alpha channel
+				if(has_match)
+					a = MAX(MAX(ah, av), MAX(as, avm));
+
+// Spill light processing
+				if((fabs(h - hue_key) < spill_threshold * 180) ||
+					((fabs(h - hue_key) > 360)
+					&& (fabs(h - hue_key) - 360 < spill_threshold * 180)))
+				{
+					s = s * spill_amount * fabs(h - hue_key) / (spill_threshold * 180);
+
+					ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
+
+					int ri = r * 0xffff;
+					int gi = g * 0xffff;
+					int bi = b * 0xffff;
+
+					row[0] = CLIP(ri, 0, 0xffff);
+					row[1] = CLIP(gi, 0, 0xffff);
+					row[2] = CLIP(bi, 0, 0xffff);
+				}
+
+				int ai = a * 0xffff;
+				ai += alpha_offset;
+				CLAMP(ai, 0, 0xffff);
+
+				if(plugin->config.show_mask)
+				{
+					row[0] = ai;
+					row[1] = ai;
+					row[2] = ai;
+				}
+
+// Multiply alpha and put back in frame
+				row[3] = MIN(ai, row[3]);
+				row += 4;
+			}
+		}
 		break;
 
 	case BC_AYUV16161616:
-		float red = plugin->config.red;
-		float green = plugin->config.green;
-		float blue = plugin->config.blue;
-
-		float in_slope = plugin->config.in_slope / 100;
-		float out_slope = plugin->config.out_slope / 100;
-
-		float tolerance = plugin->config.tolerance / 100;
-		float tolerance_in = tolerance - in_slope;
-		float tolerance_out = tolerance + out_slope;
-
-		float sat = plugin->config.saturation / 100;
-		float min_s = plugin->config.min_saturation / 100;
-		float min_s_in = min_s + in_slope;
-		float min_s_out = min_s - out_slope;
-
-		float min_v = plugin->config.min_brightness / 100;
-		float min_v_in = min_v + in_slope;
-		float min_v_out = min_v - out_slope;
-
-		float max_v = plugin->config.max_brightness / 100;
-		float max_v_in = max_v - in_slope;
-		float max_v_out = max_v + out_slope;
-
-		float spill_threshold = plugin->config.spill_threshold / 100;
-		float spill_amount = 1.0 - plugin->config.spill_amount / 100;
-
-		float alpha_offset = plugin->config.alpha_offset / 100;
-
-		// Convert RGB key to HSV key
-		float hue_key, saturation_key, value_key;
-		ColorSpaces::rgb_to_hsv(red, green, blue, hue_key,
-			saturation_key, value_key);
-
-		int w = plugin->input->get_w();
-
 		for(int i = pkg->y1; i < pkg->y2; i++)
 		{
 			uint16_t *row = (uint16_t*) plugin->input->get_row_ptr(i);
@@ -881,16 +718,16 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 				if(tolerance == 0)
 					ah = 1.0;
 				else
-				if(ABS(h - hue_key) < tolerance_in * 180)
+				if(fabs(h - hue_key) < tolerance_in * 180)
 					ah = 0;
 				else
-				if((out_slope != 0) && (ABS(h - hue_key) < tolerance * 180))
+				if((out_slope != 0) && (fabs(h - hue_key) < tolerance * 180))
 					// we scale alpha between 0 and 1/2
-					ah = ABS(h - hue_key) / tolerance / 360;
+					ah = fabs(h - hue_key) / tolerance / 360;
 				else
-				if(ABS (h - hue_key) < tolerance_out * 180)
+				if(fabs(h - hue_key) < tolerance_out * 180)
 					// we scale alpha between 1/2 and 1
-					ah = ABS(h - hue_key) / tolerance_out / 360;
+					ah = fabs(h - hue_key) / tolerance_out / 360;
 				else
 					has_match = false;
 
@@ -944,22 +781,23 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 					a = MAX(MAX(ah, av), MAX(as, avm));
 
 				// Spill light processing
-				if((ABS(h - hue_key) < spill_threshold * 180) ||
-					((ABS(h - hue_key) > 360)
-					&& (ABS(h - hue_key) - 360 < spill_threshold * 180)))
+				if((fabs(h - hue_key) < spill_threshold * 180) ||
+					((fabs(h - hue_key) > 360)
+					&& (fabs(h - hue_key) - 360 < spill_threshold * 180)))
 				{
-					s = s * spill_amount * ABS(h - hue_key) /
+					s = s * spill_amount * fabs(h - hue_key) /
 						(spill_threshold * 180);
-					int iy, iu, iv;
 
+					int iy, iu, iv;
 					ColorSpaces::hsv_to_yuv(iy, iu, iv, h, s, v, 0xffff);
 					row[1] = iy;
 					row[2] = iu;
 					row[3] = iv;
 				}
 
-				a += alpha_offset;
-				CLAMP(a, 0.0, 1.0);
+				int ia = a * 0xffff;
+				ia += alpha_offset;
+				CLAMP(ia, 0, 0xffff);
 
 				if(plugin->config.show_mask)
 				{
@@ -969,8 +807,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 				}
 
 				// Multiply alpha and put back in frame
-				row[0] = MIN((uint16_t) (a * 0xffff), row[0]);
-
+				row[0] = MIN(ia, row[0]);
 				row += 4;
 			}
 		}
@@ -991,22 +828,41 @@ ChromaKeyHSV::ChromaKeyHSV(PluginServer *server)
 
 ChromaKeyHSV::~ChromaKeyHSV()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void ChromaKeyHSV::reset_plugin()
+{
+	delete engine;
+	engine = 0;
 }
 
 VFrame *ChromaKeyHSV::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
-	this->input = frame;
-	this->output = frame;
+	int cmodel = frame->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
+
+	input = frame;
 
 	if(!engine)
 		engine = new ChromaKeyServer(this);
 	engine->process_packages();
 
-	if(ColorModels::has_alpha(frame->get_color_model()))
-		frame->set_transparent();
+	frame->set_transparent();
 	return frame;
 }
 
@@ -1083,6 +939,7 @@ void ChromaKeyHSV::save_data(KeyFrame * keyframe)
 void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 {
 	FileXML input;
+	double dcol;
 
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
@@ -1090,13 +947,35 @@ void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 	{
 		if(input.tag.title_is("CHROMAKEY_HSV"))
 		{
-			config.red = input.tag.get_property("RED", config.red);
-			config.green = input.tag.get_property("GREEN", config.green);
-			config.blue = input.tag.get_property("BLUE", config.blue);
+			// Old color was < 1; new >= 1;
+			dcol = input.tag.get_property("RED", 0.0);
+			if(dcol > 0 && dcol <= 1.0)
+			{
+				config.red = dcol * 0x10000;
+				CLAMP(config.red, 0, 0xffff);
+			}
+			else
+				config.red = input.tag.get_property("RED", config.red);
+			dcol = input.tag.get_property("GREEN", 0.0);
+			if(dcol > 0 && dcol <= 1.0)
+			{
+				config.green = dcol * 0x10000;
+				CLAMP(config.green, 0, 0xffff);
+			}
+			else
+				config.green = input.tag.get_property("GREEN", config.green);
+			dcol = input.tag.get_property("BLUE", 0.0);
+			if(dcol > 0 && dcol <= 1.0)
+			{
+				config.blue = dcol * 0x10000;
+				CLAMP(config.blue, 0, 0xffff);
+			}
+			else
+				config.blue = input.tag.get_property("BLUE", config.blue);
 			config.min_brightness =
-			input.tag.get_property("MIN_BRIGHTNESS", config.min_brightness);
+				input.tag.get_property("MIN_BRIGHTNESS", config.min_brightness);
 			config.max_brightness =
-			input.tag.get_property("MAX_BRIGHTNESS", config.max_brightness);
+				input.tag.get_property("MAX_BRIGHTNESS", config.max_brightness);
 			config.saturation =
 				input.tag.get_property("SATURATION", config.saturation);
 			config.min_saturation =
@@ -1122,10 +1001,10 @@ void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 void ChromaKeyHSV::handle_opengl()
 {
 #ifdef HAVE_GL
+/* To be fixed
 // For macro
 	ChromaKeyHSV *plugin = this;
 	OUTER_VARIABLES
-/* To be fixed
 	static const char *yuv_shader = 
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
 		"\n"
@@ -1140,7 +1019,6 @@ void ChromaKeyHSV::handle_opengl()
 			RGB_TO_YUV_FRAG("color")
 		"	return color;\n"
 		"}\n";
-	*/
 	static const char *rgb_shader = 
 		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
 		"\n"
@@ -1152,7 +1030,6 @@ void ChromaKeyHSV::handle_opengl()
 		"{\n"
 		"	return color;\n"
 		"}\n";
-/* To be fixed
 	static const char *hsv_shader = 
 		"vec4 rgb_to_hsv(vec4 color)\n"
 		"{\n"
@@ -1166,7 +1043,6 @@ void ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n"
 		"\n";
-	*/
 	static const char *show_rgbmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
@@ -1187,7 +1063,6 @@ void ChromaKeyHSV::handle_opengl()
 
 	extern unsigned char _binary_chromakey_sl_start[];
 	static char *shader = (char*)_binary_chromakey_sl_start;
-/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
