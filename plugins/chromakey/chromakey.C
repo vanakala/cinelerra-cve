@@ -231,7 +231,7 @@ int ChromaKeyUseColorPicker::handle_event()
 
 
 ChromaKeyColorThread::ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *gui)
- : ColorThread(1, _("Inner color"), plugin->new_picon())
+ : ColorThread(0, _("Inner color"), plugin->new_picon())
 {
 	this->plugin = plugin;
 	this->gui = gui;
