@@ -60,7 +60,6 @@ class ColorWindow : public PluginWindow
 public:
 	ColorWindow(ColorThread *thread, int x, int y, const char *title);
 
-	void create_objects();
 	void change_values();
 	void close_event();
 	void update_display();
@@ -88,15 +87,16 @@ class PaletteWheel : public BC_SubWindow
 {
 public:
 	PaletteWheel(ColorWindow *window, int x, int y);
-	~PaletteWheel();
+
+	void show();
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
 
-	int create_objects();
-	int draw(float hue, float saturation);
+	void draw(float hue, float saturation);
 	int get_angle(float x1, float y1, float x2, float y2);
-	float torads(float angle);
+	double torads(double angle);
+
 	ColorWindow *window;
 	float oldhue;
 	float oldsaturation;
@@ -108,11 +108,12 @@ class PaletteWheelValue : public BC_SubWindow
 public:
 	PaletteWheelValue(ColorWindow *window, int x, int y);
 	~PaletteWheelValue();
-	int create_objects();
+
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
-	int draw(float hue, float saturation, float value);
+	void draw(float hue, float saturation, float value);
+
 	ColorWindow *window;
 	int button_down;
 // Gradient
@@ -123,10 +124,10 @@ class PaletteOutput : public BC_SubWindow
 {
 public:
 	PaletteOutput(ColorWindow *window, int x, int y);
-	~PaletteOutput();
-	int create_objects();
+
 	int handle_event();
-	int draw();
+	void draw();
+
 	ColorWindow *window;
 };
 
@@ -134,8 +135,9 @@ class PaletteHue : public BC_ISlider
 {
 public:
 	PaletteHue(ColorWindow *window, int x, int y);
-	~PaletteHue();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
@@ -143,7 +145,7 @@ class PaletteSaturation : public BC_FSlider
 {
 public:
 	PaletteSaturation(ColorWindow *window, int x, int y);
-	~PaletteSaturation();
+
 	int handle_event();
 	ColorWindow *window;
 };
@@ -152,8 +154,9 @@ class PaletteValue : public BC_FSlider
 {
 public:
 	PaletteValue(ColorWindow *window, int x, int y);
-	~PaletteValue();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
@@ -161,8 +164,9 @@ class PaletteRed : public BC_FSlider
 {
 public:
 	PaletteRed(ColorWindow *window, int x, int y);
-	~PaletteRed();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
@@ -170,8 +174,9 @@ class PaletteGreen : public BC_FSlider
 {
 public:
 	PaletteGreen(ColorWindow *window, int x, int y);
-	~PaletteGreen();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
@@ -179,8 +184,9 @@ class PaletteBlue : public BC_FSlider
 {
 public:
 	PaletteBlue(ColorWindow *window, int x, int y);
-	~PaletteBlue();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
@@ -188,8 +194,9 @@ class PaletteAlpha : public BC_FSlider
 {
 public:
 	PaletteAlpha(ColorWindow *window, int x, int y);
-	~PaletteAlpha();
+
 	int handle_event();
+
 	ColorWindow *window;
 };
 
