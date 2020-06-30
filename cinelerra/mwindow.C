@@ -835,7 +835,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
 					master_edl->load_xml(&xml_file, edlsession);
-					set_filename(master_edl->project_path);
+					set_filename(filenames->values[i]);
 					cur_edl = master_edl;
 					new_edl = 0;
 					if(load_mode == LOADMODE_REPLACE_CONCATENATE)
