@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -40,14 +24,14 @@ InterpolateVideoConfig::InterpolateVideoConfig()
 
 void InterpolateVideoConfig::copy_from(InterpolateVideoConfig *config)
 {
-	this->input_rate = config->input_rate;
-	this->use_keyframes = config->use_keyframes;
+	input_rate = config->input_rate;
+	use_keyframes = config->use_keyframes;
 }
 
 int InterpolateVideoConfig::equivalent(InterpolateVideoConfig *config)
 {
-	return EQUIV(this->input_rate, config->input_rate) &&
-		(this->use_keyframes == config->use_keyframes);
+	return (use_keyframes == config->use_keyframes) &&
+		(!use_keyframes && EQUIV(input_rate, config->input_rate));
 }
 
 
@@ -87,13 +71,9 @@ void InterpolateVideoWindow::update()
 void InterpolateVideoWindow::update_enabled()
 {
 	if(plugin->config.use_keyframes)
-	{
 		rate->disable();
-	}
 	else
-	{
 		rate->enable();
-	}
 }
 
 
@@ -145,112 +125,110 @@ REGISTER_PLUGIN
 InterpolateVideo::InterpolateVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	for(int i = 0; i < 2; i++)
-		frames[i] = 0;
+	frame1 = 0;
+	frame2 = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 InterpolateVideo::~InterpolateVideo()
 {
-	if(frames[0]) delete frames[0];
-	if(frames[1]) delete frames[1];
+	release_vframe(frame1);
+	release_vframe(frame2);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void InterpolateVideo::reset_plugin()
+{
+	if(frame1)
+	{
+		release_vframe(frame1);
+		frame1 = 0;
+		release_vframe(frame2);
+		frame2 = 0;
+	}
+}
 PLUGIN_CLASS_METHODS
 
-void InterpolateVideo::fill_border(ptstime start_pts)
+void InterpolateVideo::fill_border()
 {
-tracemsg("%.2f .. %.2f", range_start_pts, range_end_pts);
-	if(!frames[0]->pts_in_frame(range_start_pts))
+	if(!frame1->pts_in_frame(range_start_pts))
 	{
-		frames[0]->set_pts(range_start_pts);
-		get_frame(frames[0]);
+		frame1->set_pts(range_start_pts);
+		frame1 = get_frame(frame1);
 	}
 
-	if(!frames[1]->pts_in_frame(range_end_pts))
+	if(!frame2->pts_in_frame(range_end_pts))
 	{
-		frames[1]->set_pts(range_end_pts);
-		get_frame(frames[1]);
+		frame2->set_pts(range_end_pts);
+		frame2 = get_frame(frame2);
 	}
 }
-
-
-#define AVERAGE(type, temp_type, components, max) \
-{ \
-	temp_type fraction0 = (temp_type)(lowest_fraction * max); \
-	temp_type fraction1 = (temp_type)(max - fraction0); \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *in_row0 = (type*)frames[0]->get_row_ptr(i); \
-		type *in_row1 = (type*)frames[1]->get_row_ptr(i); \
-		type *out_row = (type*)frame->get_row_ptr(i); \
-		for(int j = 0; j < w * components; j++) \
-		{ \
-			*out_row++ = (*in_row0++ * fraction0 + \
-				*in_row1++ * fraction1) / max; \
-		} \
-	} \
-}
-
 
 VFrame *InterpolateVideo::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int cmodel = frame->get_color_model();
 
-	if(!frames[0])
+	if(load_configuration())
+		update_gui();
+
+	switch(cmodel)
 	{
-		for(int i = 0; i < 2; i++)
-		{
-			frames[i] = new VFrame(0,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model(),
-				-1);
-		}
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(!frame1)
+	{
+		frame1 = clone_vframe(frame);
+		frame1->set_pts(-1);
+	}
+
+	if(!frame2)
+	{
+		frame2 = clone_vframe(frame);
+		frame2->set_pts(-1);
 	}
 
 	if(!PTSEQU(range_start_pts, range_end_pts))
 	{
 // Fill border frames
-		fill_border(frame->get_pts());
+		fill_border();
 // Fraction of lowest frame in output
-		float highest_fraction = (frame->get_pts() - frames[0]->get_pts()) /
-			(frames[1]->get_pts() - frames[0]->get_pts());
-// Fraction of highest frame in output
-		float lowest_fraction = 1.0 - highest_fraction;
-		CLAMP(highest_fraction, 0, 1);
-		CLAMP(lowest_fraction, 0, 1);
+		double lowest_fraction = 1.0 - ((frame->get_pts() - frame1->get_pts()) /
+			(frame2->get_pts() - frame1->get_pts()));
 
-		int w = frame->get_w();
+		int fraction0 = lowest_fraction * 0xffff;
+		int fraction1 = 0xffff - fraction0;
+
+		CLAMP(fraction0, 0, 0xffff);
+		CLAMP(fraction1, 0, 0xffff);
+
+		int wpx = frame->get_w() * 4;
 		int h = frame->get_h();
 
-		switch(frame->get_color_model())
+		switch(cmodel)
 		{
-		case BC_RGB_FLOAT:
-			AVERAGE(float, float, 3, 1);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			AVERAGE(unsigned char, int, 3, 0xff);
-			break;
-		case BC_RGBA_FLOAT:
-			AVERAGE(float, float, 4, 1);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			AVERAGE(unsigned char, int, 4, 0xff);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			AVERAGE(uint16_t, int, 3, 0xffff);
-			break;
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
-			AVERAGE(uint16_t, int, 4, 0xffff);
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *in_row0 = (uint16_t*)frame1->get_row_ptr(i);
+				uint16_t *in_row1 = (uint16_t*)frame2->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < wpx; j++)
+				{
+					*out_row++ = (*in_row0++ * fraction0 +
+						*in_row1++ * fraction1) / 0x10000;
+				}
+			}
+			if(frame1->is_transparent() || frame2->is_transparent())
+				frame->set_transparent();
 			break;
 		}
 	}
