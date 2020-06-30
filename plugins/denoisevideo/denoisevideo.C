@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "clip.h"
@@ -30,39 +14,56 @@
 #include "vframe.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 REGISTER_PLUGIN
+
+const char *DenoiseVideoWindow::denoise_chn_rgba[] =
+{
+    N_("Red"),
+    N_("Green"),
+    N_("Blue"),
+    N_("Alpha")
+};
+
+const char *DenoiseVideoWindow::denoise_chn_ayuv[] =
+{
+    N_("Alpha"),
+    N_("Y"),
+    N_("U"),
+    N_("V")
+};
 
 
 DenoiseVideoConfig::DenoiseVideoConfig()
 {
 	frames = 2;
 	threshold = 0.1;
-	do_r = 1;
-	do_g = 1;
-	do_b = 1;
-	do_a = 1;
+	chan0 = 1;
+	chan1 = 1;
+	chan2 = 1;
+	chan3 = 1;
 }
 
 int DenoiseVideoConfig::equivalent(DenoiseVideoConfig &that)
 {
 	return frames == that.frames && 
 		EQUIV(threshold, that.threshold) &&
-		do_r == that.do_r &&
-		do_g == that.do_g &&
-		do_b == that.do_b &&
-		do_a == that.do_a;
+		chan0 == chan0 &&
+		chan1 == chan1 &&
+		chan2 == chan2 &&
+		chan3 == chan3;
 }
 
 void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 {
 	frames = that.frames;
 	threshold = that.threshold;
-	do_r = that.do_r;
-	do_g = that.do_g;
-	do_b = that.do_b;
-	do_a = that.do_a;
+	chan0 = chan0;
+	chan1 = chan1;
+	chan2 = chan2;
+	chan3 = chan3;
 }
 
 void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev, 
@@ -75,10 +76,10 @@ void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
 
 	this->frames = (int)(prev.frames * prev_scale + next.frames * next_scale);
 	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
-	do_r = prev.do_r;
-	do_g = prev.do_g;
-	do_b = prev.do_b;
-	do_a = prev.do_a;
+	chan0 = prev.chan0;
+	chan1 = prev.chan1;
+	chan2 = prev.chan2;
+	chan3 = prev.chan3;
 }
 
 
@@ -98,7 +99,9 @@ DenoiseVideoFrames::DenoiseVideoFrames(DenoiseVideo *plugin, int x, int y)
 int DenoiseVideoFrames::handle_event()
 {
 	int result = get_value();
-	if(result < 1 || result > 256) result = 256;
+
+	if(result < 1 || result > 256)
+		result = 256;
 	plugin->config.frames = result;
 	plugin->send_configure_change();
 	return 1;
@@ -138,29 +141,43 @@ int DenoiseVideoToggle::handle_event()
 
 
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
-	x,
-	y, 
-	210, 
-	240)
+ : PluginWindow(plugin->gui_string, x, y, 210, 270)
 {
+	BC_WindowBase *win;
+	int cmodel = plugin->get_project_color_model();
+	const char **names;
+	int title_h;
+
 	x = y = 10;
 
+	if(cmodel == BC_AYUV16161616)
+		names = denoise_chn_ayuv;
+	else
+		names = denoise_chn_rgba;
+
+	add_subwindow(win = print_title(x, y, "%s: %s", plugin->plugin_title(),
+		ColorModels::name(cmodel)));
+	title_h = win->get_h() + 8;
+	y += title_h;
 	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(frames = new DenoiseVideoFrames(plugin, x, y));
-	y += 30;
+	y += frames->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Threshold:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(threshold = new DenoiseVideoThreshold(plugin, x, y));
-	y += 40;
-	add_subwindow(do_r = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_r, _("Red")));
-	y += 30;
-	add_subwindow(do_g = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_g, _("Green")));
-	y += 30;
-	add_subwindow(do_b = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_b, _("Blue")));
-	y += 30;
-	add_subwindow(do_a = new DenoiseVideoToggle(plugin, x, y, &plugin->config.do_a, _("Alpha")));
+	y += threshold->get_h() + 8;
+	add_subwindow(chan0 = new DenoiseVideoToggle(plugin, x, y,
+		&plugin->config.chan0, _(names[0])));
+	y += chan0->get_h() + 8;
+	add_subwindow(chan1 = new DenoiseVideoToggle(plugin, x, y,
+		&plugin->config.chan1, _(names[1])));
+	y += chan1->get_h() + 8;
+	add_subwindow(chan2 = new DenoiseVideoToggle(plugin, x, y,
+		&plugin->config.chan2, _(names[2])));
+	y += chan2->get_h() + 8;
+	add_subwindow(chan3 = new DenoiseVideoToggle(plugin, x, y,
+		&plugin->config.chan2, _(names[3])));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -183,111 +200,88 @@ DenoiseVideo::DenoiseVideo(PluginServer *server)
 
 DenoiseVideo::~DenoiseVideo()
 {
-	if(accumulation) delete [] accumulation;
+	delete [] accumulation;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void DenoiseVideo::reset_plugin()
+{
+	if(accumulation)
+		delete [] accumulation;
+	accumulation = 0;
 }
 
 PLUGIN_CLASS_METHODS
 
 VFrame *DenoiseVideo::process_tmpframe(VFrame *input)
 {
-	load_configuration();
-
+	int color_model = input->get_color_model();
 	int h = input->get_h();
 	int w = input->get_w();
-	int color_model = input->get_color_model();
-
-	if(!accumulation)
-	{
-		accumulation = new float[w * h * ColorModels::components(color_model)];
-		memset(accumulation, 0, sizeof(float) * w * h * ColorModels::components(color_model));
-	}
-
-	float *accumulation_ptr = accumulation;
-	float opacity = (float)1.0 / config.frames;
-	float transparency = 1 - opacity;
-	float threshold = (float)config.threshold * 
-		ColorModels::calculate_max(color_model);
-	int do_it[4] = { config.do_r, config.do_g, config.do_b, config.do_a };
-
-#define DENOISE_MACRO(type, components, max) \
-{ \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *output_row = (type*)input->get_row_ptr(i); \
-		type *input_row = (type*)input->get_row_ptr(i); \
- \
-		for(int k = 0; k < w * components; k++) \
-		{ \
-			if(do_it[k % components]) \
-			{ \
-				float input_pixel = *input_row; \
-				(*accumulation_ptr) = \
-					transparency * (*accumulation_ptr) + \
-					opacity * input_pixel; \
- \
-				if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
-				{ \
-					(*accumulation_ptr) = input_pixel; \
-					*output_row = (type)(*accumulation_ptr); \
-				} \
-				else \
-				if(sizeof(type) < 4) \
-					*output_row = (type)CLIP((*accumulation_ptr), 0, max); \
-			} \
-			else \
-			{ \
-				*output_row = *input_row; \
-			} \
- \
-			output_row++; \
-			input_row++; \
-			accumulation_ptr++; \
-		} \
-	} \
-}
 
 	switch(color_model)
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-		DENOISE_MACRO(unsigned char, 3, 0xff);
-		break;
-
-	case BC_RGB_FLOAT:
-		DENOISE_MACRO(float, 3, 1.0);
-		break;
-
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		DENOISE_MACRO(unsigned char, 4, 0xff);
-		break;
-
-	case BC_RGBA_FLOAT:
-		DENOISE_MACRO(float, 4, 1.0);
-		break;
-
-	case BC_RGB161616:
-	case BC_YUV161616:
-		DENOISE_MACRO(uint16_t, 3, 0xffff);
-		break;
-
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		DENOISE_MACRO(uint16_t, 4, 0xffff);
+		if(config.chan3)
+			input->set_transparent();
 		break;
-
 	case BC_AYUV16161616:
-		// rotate do_it
-		int t = do_it[3];
-		for(int i = 3; i > 0; i--)
-			do_it[i] = do_it[i - 1];
-		do_it[0] = t;
-		DENOISE_MACRO(uint16_t, 4, 0xffff);
+		if(config.chan0)
+			input->set_transparent();
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
+
+	if(!accumulation)
+	{
+		accumulation = new int[w * h * 4];
+		memset(accumulation, 0, sizeof(int) * w * h * 4);
+	}
+
+	int *accumulation_ptr = accumulation;
+	double opacity = 1.0 / config.frames;
+	double transparency = 1 - opacity;
+	int threshold = config.threshold * 0xffff;
+	int do_it[4] = { config.chan0, config.chan1, config.chan2, config.chan3 };
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+			for(int k = 0; k < w * 4; k++)
+			{
+				if(do_it[k % 4])
+				{
+					int input_pixel = *input_row;
+
+					*accumulation_ptr =
+						transparency * *accumulation_ptr +
+						opacity * input_pixel;
+
+					if(abs(*accumulation_ptr - input_pixel) > threshold)
+					{
+						*accumulation_ptr = input_pixel;
+						*input_row = *accumulation_ptr;
+					}
+					else
+						*input_row = CLIP(*accumulation_ptr, 0, 0xffff);
+				}
+
+				input_row++;
+				accumulation_ptr++;
+			}
+		}
 		break;
 	}
-	if(config.do_a && ColorModels::has_alpha(input->get_color_model()))
-		input->set_transparent();
 	return input;
 }
 
@@ -297,20 +291,30 @@ void DenoiseVideo::load_defaults()
 
 	config.frames = defaults->get("FRAMES", config.frames);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.do_r = defaults->get("DO_R", config.do_r);
-	config.do_g = defaults->get("DO_G", config.do_g);
-	config.do_b = defaults->get("DO_B", config.do_b);
-	config.do_a = defaults->get("DO_A", config.do_a);
+	// Compatibility
+	config.chan0 = defaults->get("DO_R", config.chan0);
+	config.chan1 = defaults->get("DO_G", config.chan1);
+	config.chan2 = defaults->get("DO_B", config.chan2);
+	config.chan3 = defaults->get("DO_A", config.chan3);
+
+	config.chan0 = defaults->get("CHAN0", config.chan0);
+	config.chan1 = defaults->get("CHAN1", config.chan1);
+	config.chan2 = defaults->get("CHAN2", config.chan2);
+	config.chan3 = defaults->get("CHAN3", config.chan3);
 }
 
 void DenoiseVideo::save_defaults()
 {
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->update("FRAMES", config.frames);
-	defaults->update("DO_R", config.do_r);
-	defaults->update("DO_G", config.do_g);
-	defaults->update("DO_B", config.do_b);
-	defaults->update("DO_A", config.do_a);
+	defaults->delete_key("DO_R");
+	defaults->delete_key("DO_G");
+	defaults->delete_key("DO_B");
+	defaults->delete_key("DO_A");
+	defaults->update("CHAN0", config.chan0);
+	defaults->update("CHAN1", config.chan1);
+	defaults->update("CHAN2", config.chan2);
+	defaults->update("CHAN3", config.chan3);
 	defaults->save();
 }
 
@@ -321,10 +325,10 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("DENOISE_VIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("THRESHOLD", config.threshold);
-	output.tag.set_property("DO_R", config.do_r);
-	output.tag.set_property("DO_G", config.do_g);
-	output.tag.set_property("DO_B", config.do_b);
-	output.tag.set_property("DO_A", config.do_a);
+	output.tag.set_property("CHAN0", config.chan0);
+	output.tag.set_property("CHAN1", config.chan1);
+	output.tag.set_property("CHAN2", config.chan2);
+	output.tag.set_property("CHAN3", config.chan3);
 	output.append_tag();
 	output.tag.set_title("/DENOISE_VIDEO");
 	output.append_tag();
@@ -345,10 +349,16 @@ void DenoiseVideo::read_data(KeyFrame *keyframe)
 		{
 			config.frames = input.tag.get_property("FRAMES", config.frames);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
-			config.do_r = input.tag.get_property("DO_R", config.do_r);
-			config.do_g = input.tag.get_property("DO_G", config.do_g);
-			config.do_b = input.tag.get_property("DO_B", config.do_b);
-			config.do_a = input.tag.get_property("DO_A", config.do_a);
+			// Compatibility
+			config.chan0 = input.tag.get_property("DO_R", config.chan0);
+			config.chan1 = input.tag.get_property("DO_G", config.chan1);
+			config.chan2 = input.tag.get_property("DO_B", config.chan2);
+			config.chan3 = input.tag.get_property("DO_A", config.chan3);
+
+			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
+			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
+			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
+			config.chan3 = input.tag.get_property("CHAN3", config.chan3);
 		}
 	}
 }
