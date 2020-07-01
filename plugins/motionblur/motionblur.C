@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <math.h>
 #include <stdint.h>
@@ -140,6 +124,18 @@ MotionBlurMain::~MotionBlurMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void MotionBlurMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+		delete_tables();
+		delete [] accum;
+		accum = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 void MotionBlurMain::delete_tables()
@@ -168,6 +164,17 @@ VFrame *MotionBlurMain::process_tmpframe(VFrame *input_ptr)
 	double xb, yb, zb;
 	double xd, yd, zd;
 	ptstime frame_pts = input_ptr->get_pts();
+	int color_model = input_ptr->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input_ptr;
+	}
 
 	if(frame_pts < EPSILON)
 		get_camera(&xa, &ya, &za, frame_pts);
@@ -179,17 +186,16 @@ VFrame *MotionBlurMain::process_tmpframe(VFrame *input_ptr)
 	yd = yb - ya;
 	zd = zb - za;
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	if(!engine)
 		engine = new MotionBlurEngine(this,
-			get_project_smp() + 1,
-			get_project_smp() + 1);
+			get_project_smp(),
+			get_project_smp());
 	if(!accum)
 	{
-		accum_size = input_ptr->get_w() * input_ptr->get_h() *
-			ColorModels::components(input_ptr->get_color_model()) *
-			MAX(sizeof(int), sizeof(float));
+		accum_size = input_ptr->get_w() * input_ptr->get_h() * 4 * sizeof(int);
 		accum = new unsigned char[accum_size];
 	}
 
@@ -348,108 +354,6 @@ MotionBlurUnit::MotionBlurUnit(MotionBlurEngine *server,
 	this->server = server;
 }
 
-#define BLEND_LAYER(COMPONENTS, TYPE, TEMP, MAX, DO_YUV) \
-{ \
-	const int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
-	for(int j = pkg->y1; j < pkg->y2; j++) \
-	{ \
-		TEMP *out_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-		int in_y = y_table[j]; \
- \
-/* Blend image */ \
-		if(in_y >= 0 && in_y < h) \
-		{ \
-			TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
-			for(int k = 0; k < w; k++) \
-			{ \
-				int in_x = x_table[k]; \
-/* Blend pixel */ \
-				if(in_x >= 0 && in_x < w) \
-				{ \
-					int in_offset = in_x * COMPONENTS; \
-					*out_row++ += in_row[in_offset]; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += in_row[in_offset + 1]; \
-						*out_row++ += in_row[in_offset + 2]; \
-					} \
-					else \
-					{ \
-						*out_row++ += in_row[in_offset + 1]; \
-						*out_row++ += in_row[in_offset + 2]; \
-					} \
-					if(COMPONENTS == 4) \
-						*out_row++ += in_row[in_offset + 3]; \
-				} \
-/* Blend nothing */ \
-				else \
-				{ \
-					out_row++; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += chroma_offset; \
-						*out_row++ += chroma_offset; \
-					} \
-					else \
-					{ \
-						out_row += 2; \
-					} \
-					if(COMPONENTS == 4) out_row++; \
-				} \
-			} \
-		} \
-		else \
-		if(DO_YUV) \
-		{ \
-			for(int k = 0; k < w; k++) \
-			{ \
-				out_row++; \
-				*out_row++ += chroma_offset; \
-				*out_row++ += chroma_offset; \
-				if(COMPONENTS == 4) out_row++; \
-			} \
-		} \
-	} \
- \
-/* Copy to output */ \
-	if(i == plugin->table_steps - 1) \
-	{ \
-		for(int j = pkg->y1; j < pkg->y2; j++) \
-		{ \
-			TEMP *in_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
-			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
-			for(int k = 0; k < w; k++) \
-			{ \
-				*out_row++ = (*in_row++ * fraction) / 0x10000; \
-				in_backup++; \
- \
-				if(DO_YUV) \
-				{ \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
- \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-				} \
-				else \
-				{ \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-				} \
- \
-				if(COMPONENTS == 4) \
-				{ \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-				} \
-			} \
-		} \
-	} \
-}
-
 void MotionBlurUnit::process_package(LoadPackage *package)
 {
 	MotionBlurPackage *pkg = (MotionBlurPackage*)package;
@@ -465,36 +369,60 @@ void MotionBlurUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_LAYER(3, float, float, 1, 0)
-			break;
-		case BC_RGB888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_LAYER(4, float, float, 1, 0)
-			break;
-		case BC_RGBA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGB161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-			break;
 		case BC_RGBA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+			for(int j = pkg->y1; j < pkg->y2; j++)
+			{
+				int *out_row = (int*)plugin->accum + 4 * w * j;
+				int in_y = y_table[j];
+
+				// Blend image
+				if(in_y >= 0 && in_y < h)
+				{
+					uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y);
+
+					for(int k = 0; k < w; k++)
+					{
+						int in_x = x_table[k];
+
+						// Blend pixel
+						if(in_x >= 0 && in_x < w)
+						{
+							int in_offset = in_x * 4;
+							*out_row++ += in_row[in_offset];
+							*out_row++ += in_row[in_offset + 1];
+							*out_row++ += in_row[in_offset + 2];
+							*out_row++ += in_row[in_offset + 3];
+						}
+						// Blend nothing
+						else
+							out_row += 4;
+					}
+				}
+			}
+			// Copy to output
+			if(i == plugin->table_steps - 1)
+			{
+				for(int j = pkg->y1; j < pkg->y2; j++)
+				{
+					int *in_row = (int*)plugin->accum + 4 * w * j;
+					uint16_t *in_backup = (uint16_t*)plugin->input->get_row_ptr(j);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
+
+					for(int k = 0; k < w; k++)
+					{
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+					}
+				}
+			}
 			break;
-		case BC_YUV888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUVA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUV161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-			break;
-		case BC_YUVA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-			break;
+
 		case BC_AYUV16161616:
 			for(int j = pkg->y1; j < pkg->y2; j++)
 			{
