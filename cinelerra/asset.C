@@ -1546,23 +1546,24 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d signed %d samples:%" PRId64 " codec:'%s' '%s' '%s'\n",
+				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d signed %d samples:%" PRId64 " tocitm %d codec:'%s' '%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
 					streams[i].bits, streams[i].signedsample,
-					streams[i].length, streams[i].codec,
-					streams[i].samplefmt, streams[i].layout);
+					streams[i].length, streams[i].toc_items,
+					streams[i].codec, streams[i].samplefmt,
+					streams[i].layout);
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " codec:'%s' '%s'\n",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " tocitm %d codec:'%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
 					streams[i].frame_rate, streams[i].sample_aspect_ratio,
-					streams[i].length, streams[i].codec,
-					streams[i].samplefmt);
+					streams[i].length, streams[i].toc_items,
+					streams[i].codec, streams[i].samplefmt);
 			}
 			for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
 			{

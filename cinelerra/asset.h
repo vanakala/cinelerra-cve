@@ -65,6 +65,7 @@ struct streamdesc
 	double frame_rate;
 	double sample_aspect_ratio;
 	int options;
+	int toc_items;   // number of keyframes
 	Paramlist *decoding_params[MAX_DEC_PARAMLISTS];
 	char codec[MAX_LEN_CODECNAME]; // codecname
 	char samplefmt[MAX_LEN_CODECNAME]; // audio or video sample format

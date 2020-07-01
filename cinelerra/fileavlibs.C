@@ -691,6 +691,7 @@ int FileAVlibs::open_file(int open_mode)
 						av_q2d(context->streams[fileix]->time_base) *
 						asset->sample_rate);
 				}
+				asset->streams[i].toc_items = tocfile->toc_streams[i].max_items;
 			}
 			pts_base = (ptstime)INT64_MAX;
 			// Set audio duration and length from active stream
