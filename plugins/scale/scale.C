@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "filexml.h"
@@ -75,9 +59,17 @@ ScaleMain::ScaleMain(PluginServer *server)
 
 ScaleMain::~ScaleMain()
 {
-	if(overlayer) delete overlayer;
-	overlayer = 0;
+	delete overlayer;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void ScaleMain::reset_plugin()
+{
+	if(overlayer)
+	{
+		delete overlayer;
+		overlayer = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -148,8 +140,20 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 VFrame *ScaleMain::process_tmpframe(VFrame *frame)
 {
 	VFrame *output;
+	int cmodel = frame->get_color_model();
 
-	load_configuration();
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // No scaling
 	if(EQUIV(config.w, 1) && EQUIV(config.h,1))
@@ -189,6 +193,7 @@ VFrame *ScaleMain::process_tmpframe(VFrame *frame)
 		get_interpolation_type());
 
 	release_vframe(frame);
+	output->set_transparent();
 	return output;
 }
 

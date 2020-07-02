@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "clip.h"
@@ -47,10 +31,6 @@ ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-ScaleWin::~ScaleWin()
-{
-}
-
 void ScaleWin::update()
 {
 	width->update((float)plugin->config.w);
@@ -58,14 +38,15 @@ void ScaleWin::update()
 	constrain->update(plugin->config.constrain);
 }
 
+
 ScaleWidth::ScaleWidth(ScaleWin *win, 
 	ScaleMain *client, 
 	int x, 
 	int y)
  : BC_TumbleTextBox(win,
-	(float)client->config.w,
-	(float)0,
-	(float)100,
+	client->config.w,
+	0.0,
+	100.0,
 	x, 
 	y, 
 	100)
@@ -73,10 +54,6 @@ ScaleWidth::ScaleWidth(ScaleWin *win,
 	this->client = client;
 	this->win = win;
 	set_increment(0.1);
-}
-
-ScaleWidth::~ScaleWidth()
-{
 }
 
 int ScaleWidth::handle_event()
@@ -97,9 +74,9 @@ int ScaleWidth::handle_event()
 
 ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
  : BC_TumbleTextBox(win,
-	(float)client->config.h,
-	(float)0,
-	(float)100,
+	client->config.h,
+	0.0,
+	100.0,
 	x, 
 	y, 
 	100)
@@ -107,10 +84,6 @@ ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
 	this->client = client;
 	this->win = win;
 	set_increment(0.1);
-}
-
-ScaleHeight::~ScaleHeight()
-{
 }
 
 int ScaleHeight::handle_event()
@@ -133,10 +106,6 @@ ScaleConstrain::ScaleConstrain(ScaleMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.constrain, _("Constrain ratio"))
 {
 	this->client = client;
-}
-
-ScaleConstrain::~ScaleConstrain()
-{
 }
 
 int ScaleConstrain::handle_event()
