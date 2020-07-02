@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "affine.h"
 #include "bctitle.h"
@@ -32,8 +16,9 @@
 
 #include <string.h>
 
-#define SQR(x) ((x) * (x))
-#define MAXANGLE 360
+// Draw center
+#define CENTER_H 20
+#define CENTER_W 20
 
 
 REGISTER_PLUGIN
@@ -120,11 +105,8 @@ int RotateDrawPivot::handle_event()
 
 
 RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
-	y, 
-	(float)plugin->config.angle, 
-	(float)-360, 
-	(float)360)
+ : BC_FPot(x, y, plugin->config.angle,
+	-360.0, 360.0)
 {
 	this->window = window;
 	this->plugin = plugin;
@@ -168,11 +150,7 @@ int RotateText::handle_event()
 
 
 RotateX::RotateX(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
-	y,
-	(float)plugin->config.pivot_x, 
-	(float)0, 
-	(float)100)
+ : BC_FPot(x, y,plugin->config.pivot_x, 0.0, 100.0)
 {
 	this->window = window;
 	this->plugin = plugin;
@@ -189,11 +167,7 @@ int RotateX::handle_event()
 
 
 RotateY::RotateY(RotateWindow *window, RotateEffect *plugin, int x, int y)
- : BC_FPot(x, 
-	y,
-	(float)plugin->config.pivot_y, 
-	(float)0, 
-	(float)100)
+ : BC_FPot(x, y, plugin->config.pivot_y, 0.0, 100.0)
 {
 	this->window = window;
 	this->plugin = plugin;
@@ -214,7 +188,7 @@ RotateWindow::RotateWindow(RotateEffect *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	250, 
+	260,
 	230)
 {
 	BC_Title *title;
@@ -306,9 +280,7 @@ void RotateWindow::update_toggles()
 	draw_pivot->update(plugin->config.draw_pivot);
 }
 
-
 PLUGIN_THREAD_METHODS
-
 
 RotateEffect::RotateEffect(PluginServer *server)
  : PluginVClient(server)
@@ -320,8 +292,14 @@ RotateEffect::RotateEffect(PluginServer *server)
 
 RotateEffect::~RotateEffect()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void RotateEffect::reset_plugin()
+{
+	if(engine)
+		delete engine;
 }
 
 PLUGIN_CLASS_METHODS
@@ -380,18 +358,30 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 
 VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int cmodel = frame->get_color_model();
+	VFrame *output;
 	int w = frame->get_w();
 	int h = frame->get_h();
-	int alpha_shift = 0;
-	VFrame *output;
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	if(config.angle == 0)
 		return frame;
 
 	if(!engine)
-		engine = new AffineEngine(PluginClient::smp + 1, 
-			PluginClient::smp + 1);
+		engine = new AffineEngine(get_project_smp(),
+			get_project_smp());
 
 	engine->set_pivot(round(config.pivot_x * frame->get_w() / 100),
 		round(config.pivot_y * frame->get_h() / 100));
@@ -400,73 +390,79 @@ VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 	output->clear_frame();
 	engine->rotate(output, frame, config.angle);
 
-// Draw center
-#define CENTER_H 20
-#define CENTER_W 20
-#define DRAW_CENTER(components, type, max) \
-{ \
-	if(center_x >= 0 && center_x < w || \
-		center_y >= 0 && center_y < h) \
-	{ \
-		type *hrow = (type*)output->get_row_ptr(center_y) + components * (center_x - CENTER_W / 2) + alpha_shift; \
-		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
-		{ \
-			if(i >= 0 && i < w) \
-			{ \
-				hrow[0] = max - hrow[0]; \
-				hrow[1] = max - hrow[1]; \
-				hrow[2] = max - hrow[2]; \
-				hrow += components; \
-			} \
-		} \
- \
-		for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++) \
-		{ \
-			if(i >= 0 && i < h) \
-			{ \
-				type *vrow = (type*)output->get_row_ptr(i) + center_x * components + alpha_shift; \
-				vrow[0] = max - vrow[0]; \
-				vrow[1] = max - vrow[1]; \
-				vrow[2] = max - vrow[2]; \
-			} \
-		} \
-	} \
-}
-
 	if(config.draw_pivot)
 	{
-		int center_x = (int)(config.pivot_x * w / 100); \
-		int center_y = (int)(config.pivot_y * h / 100); \
-		switch(frame->get_color_model())
+		int center_x = (int)(config.pivot_x * w / 100);
+		int center_y = (int)(config.pivot_y * h / 100);
+
+		switch(cmodel)
 		{
-		case BC_RGB_FLOAT:
-			DRAW_CENTER(3, float, 1.0)
-			break;
-		case BC_RGBA_FLOAT:
-			DRAW_CENTER(4, float, 1.0)
-			break;
-		case BC_RGB888:
-			DRAW_CENTER(3, unsigned char, 0xff)
-			break;
-		case BC_RGBA8888:
-			DRAW_CENTER(4, unsigned char, 0xff)
-			break;
-		case BC_YUV888:
-			DRAW_CENTER(3, unsigned char, 0xff)
-			break;
-		case BC_YUVA8888:
-			DRAW_CENTER(4, unsigned char, 0xff)
-			break;
 		case BC_RGBA16161616:
-			DRAW_CENTER(4, uint16_t, 0xffff)
+			if(center_x >= 0 && center_x < w ||
+				center_y >= 0 && center_y < h)
+			{
+				uint16_t *hrow = (uint16_t*)output->get_row_ptr(center_y) +
+					4 * (center_x - CENTER_W / 2);
+
+				for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++)
+				{
+					if(i >= 0 && i < w)
+					{
+						hrow[0] = 0xffff - hrow[0];
+						hrow[1] = 0xffff - hrow[1];
+						hrow[2] = 0xffff - hrow[2];
+						hrow += 4;
+					}
+				}
+
+				for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++)
+				{
+					if(i >= 0 && i < h)
+					{
+						uint16_t *vrow = (uint16_t*)output->get_row_ptr(i) +
+							center_x * 4;
+						vrow[0] = 0xffff - vrow[0];
+						vrow[1] = 0xffff - vrow[1];
+						vrow[2] = 0xffff - vrow[2];
+					}
+				}
+			}
 			break;
 		case BC_AYUV16161616:
-			alpha_shift = 1;
-			DRAW_CENTER(4, uint16_t, 0xffff)
+			if(center_x >= 0 && center_x < w ||
+				center_y >= 0 && center_y < h)
+			{
+				uint16_t *hrow = (uint16_t*)output->get_row_ptr(center_y) +
+					4 * (center_x - CENTER_W / 2);
+				for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++)
+				{
+					if(i >= 0 && i < w)
+					{
+						hrow[1] = 0xffff - hrow[1];
+						hrow[2] = 0xffff - hrow[2];
+						hrow[3] = 0xffff - hrow[3];
+					}
+					hrow += 4;
+				}
+			}
+
+			for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++)
+			{
+				if(i >= 0 && i < h)
+				{
+					uint16_t *vrow = (uint16_t*)output->get_row_ptr(i) +
+						center_x * 4;
+
+					vrow[1] = 0xffff - vrow[1];
+					vrow[2] = 0xffff - vrow[2];
+					vrow[3] = 0xffff - vrow[3];
+				}
+			}
 			break;
 		}
 	}
 	release_vframe(frame);
+	output->set_transparent();
 	return output;
 }
 
