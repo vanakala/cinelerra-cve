@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "language.h"
 #include "rgb601window.h"
@@ -39,22 +23,22 @@ RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
 		x, 
 		y, 
 		&plugin->config.direction, 
-		1, 
+		RGB601_FORW,
 		_("RGB -> 601 compression")));
 	y += 30;
 	add_tool(reverse = new RGB601Direction(this, 
 		x, 
 		y, 
 		&plugin->config.direction, 
-		2, 
+		RGB601_RVRS,
 		_("601 -> RGB expansion")));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void RGB601Window::update()
 {
-	forward->update(plugin->config.direction == 1);
-	reverse->update(plugin->config.direction == 2);
+	forward->update(plugin->config.direction == RGB601_FORW);
+	reverse->update(plugin->config.direction == RGB601_RVRS);
 }
 
 
