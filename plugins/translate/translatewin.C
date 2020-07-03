@@ -1,25 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "translatewin.h"
 
@@ -83,14 +68,14 @@ TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
 
 void TranslateWin::update()
 {
-	in_x->update((float)plugin->config.in_x);
-	in_y->update((float)plugin->config.in_y);
-	in_w->update((float)plugin->config.in_w);
-	in_h->update((float)plugin->config.in_h);
-	out_x->update((float)plugin->config.out_x);
-	out_y->update((float)plugin->config.out_y);
-	out_w->update((float)plugin->config.out_w);
-	out_h->update((float)plugin->config.out_h);
+	in_x->update(plugin->config.in_x);
+	in_y->update(plugin->config.in_y);
+	in_w->update(plugin->config.in_w);
+	in_h->update(plugin->config.in_h);
+	out_x->update(plugin->config.out_x);
+	out_y->update(plugin->config.out_y);
+	out_w->update(plugin->config.out_w);
+	out_h->update(plugin->config.out_h);
 }
 
 
@@ -100,12 +85,10 @@ TranslateCoord::TranslateCoord(TranslateWin *win,
 	int y,
 	double *value)
  : BC_TumbleTextBox(win,
-	(int)*value,
-	(int)0,
-	(int)1000,
-	x, 
-	y, 
-	100)
+	*value,
+	(double)-MAX_FRAME_HEIGHT,
+	(double)MAX_FRAME_HEIGHT,
+	x, y, 100, 0)
 {
 	this->client = client;
 	this->value = value;

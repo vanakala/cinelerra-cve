@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "filexml.h"
@@ -97,6 +81,15 @@ TranslateMain::~TranslateMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void TranslateMain::reset_plugin()
+{
+	if(overlayer)
+	{
+		delete overlayer;
+		overlayer = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 void TranslateMain::load_defaults()
@@ -173,8 +166,20 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 VFrame *TranslateMain::process_tmpframe(VFrame *input)
 {
 	VFrame *output;
+	int cmodel = input->get_color_model();
 
-	load_configuration();
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	if(!overlayer)
 		overlayer = new OverlayFrame(smp + 1);
@@ -196,5 +201,6 @@ VFrame *TranslateMain::process_tmpframe(VFrame *input)
 		TRANSFER_REPLACE,
 		get_interpolation_type());
 	release_vframe(input);
+	output->set_transparent();
 	return output;
 }
