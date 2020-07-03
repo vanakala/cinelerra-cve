@@ -320,7 +320,8 @@ public:
 		double max,
 		int x,
 		int y,
-		int text_w);
+		int text_w,
+		int precision = 4);
 	virtual ~BC_TumbleTextBox();
 
 	virtual int handle_event();

@@ -2066,7 +2066,8 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	double max_f,
 	int x,
 	int y,
-	int text_w)
+	int text_w,
+	int precision)
 {
 	this->x = x;
 	this->y = y;
@@ -2076,7 +2077,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	use_float = 1;
-	precision = 4;
+	this->precision = precision;
 	reset();
 }
 
@@ -2144,6 +2145,8 @@ void BC_TumbleTextBox::reset()
 void BC_TumbleTextBox::set_precision(int precision)
 {
 	this->precision = precision;
+	if(textbox)
+		textbox->set_precision(precision);
 }
 
 void BC_TumbleTextBox::set_increment(double value)
