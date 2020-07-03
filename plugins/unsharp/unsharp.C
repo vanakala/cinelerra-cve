@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 1999 Winston Chang <winstonc@cs.wisc.edu> <winston@stdout.org>
 
 #include "clip.h"
 #include "bchash.h"
@@ -63,7 +48,7 @@ void UnsharpConfig::interpolate(UnsharpConfig &prev,
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->radius = prev.radius * prev_scale + next.radius * next_scale;
 	this->amount = prev.amount * prev_scale + next.amount * next_scale;
-	this->threshold = (int)(prev.threshold * prev_scale + next.threshold * next_scale);
+	this->threshold = round(prev.threshold * prev_scale + next.threshold * next_scale);
 }
 
 
@@ -80,6 +65,12 @@ UnsharpMain::~UnsharpMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void UnsharpMain::reset_plugin()
+{
+	if(engine)
+		delete engine;
+}
+
 PLUGIN_CLASS_METHODS
 
 void UnsharpMain::load_defaults()
@@ -91,7 +82,6 @@ void UnsharpMain::load_defaults()
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 }
 
-
 void UnsharpMain::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
@@ -99,7 +89,6 @@ void UnsharpMain::save_defaults()
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->save();
 }
-
 
 void UnsharpMain::save_data(KeyFrame *keyframe)
 {
@@ -134,12 +123,25 @@ void UnsharpMain::read_data(KeyFrame *keyframe)
 
 VFrame *UnsharpMain::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int color_model = frame->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	if(!engine)
 		engine = new UnsharpEngine(this,
-			get_project_smp() + 1,
-			get_project_smp() + 1);
+			get_project_smp(),
+			get_project_smp());
 	engine->do_unsharp(frame);
 	return frame;
 }
@@ -226,7 +228,7 @@ static int calculate_convolution_matrix(double radius, double **cmatrix)
 }
 
 static double get_convolution(double *cmatrix,
-	float input,
+	double input,
 	int index)
 {
 	return cmatrix[index] * input;
@@ -236,8 +238,7 @@ static void blur_pixels(double *cmatrix,
 	int cmatrix_length,
 	float *input,
 	float *output,
-	int pixels,
-	int components)
+	int pixels)
 {
 	if(cmatrix_length > pixels)
 	{
@@ -253,7 +254,7 @@ static void blur_pixels(double *cmatrix,
 				}
 			}
 
-			for(int i = 0; i < components; i++)
+			for(int i = 0; i < 4; i++)
 			{
 				double sum = 0;
 				for(int j = 0; j < pixels; j++)
@@ -261,10 +262,10 @@ static void blur_pixels(double *cmatrix,
 					if((j >= pixel - cmatrix_length / 2) &&
 						(j <= pixel + cmatrix_length / 2))
 					{
-						sum += input[j * components + i] * cmatrix[i];
+						sum += input[j * 4 + i] * cmatrix[i];
 					}
 				}
-				output[pixel * components + i] = sum / scale;
+				output[pixel * 4 + i] = sum / scale;
 			}
 		}
 	}
@@ -280,23 +281,23 @@ static void blur_pixels(double *cmatrix,
 				scale += cmatrix[j];
 			}
 
-			for(int i = 0; i < components; i++)
+			for(int i = 0; i < 4; i++)
 			{
 				double sum = 0;
 				for(int j = cmatrix_middle - pixel; j < cmatrix_length; j++)
 				{
-					sum += input[(pixel + j - cmatrix_middle) * components + i] *
+					sum += input[(pixel + j - cmatrix_middle) * 4 + i] *
 						cmatrix[j];
 				}
-				output[pixel * components + i] = sum / scale;
+				output[pixel * 4 + i] = sum / scale;
 			}
 		}
 
-		float *output_ptr = output + pixel * components;
+		float *output_ptr = output + pixel * 4;
 		for( ; pixel < pixels - cmatrix_middle; pixel++)
 		{
-			float *input_ptr = input + (pixel - cmatrix_middle) * components;
-			for(int i = 0; i < components; i++)
+			float *input_ptr = input + (pixel - cmatrix_middle) * 4;
+			for(int i = 0; i < 4; i++)
 			{
 				double sum = 0;
 				float *input_ptr2 = input_ptr;
@@ -305,7 +306,7 @@ static void blur_pixels(double *cmatrix,
 					sum += get_convolution(cmatrix, 
 						*input_ptr2, 
 						cmatrix_length - j);
-					input_ptr2 += components;
+					input_ptr2 += 4;
 				}
 				input_ptr++;
 				*output_ptr++ = sum;
@@ -320,78 +321,48 @@ static void blur_pixels(double *cmatrix,
 				scale += cmatrix[j];
 			}
 
-			for(int i = 0; i < components; i++)
+			for(int i = 0; i < 4; i++)
 			{
 				double sum = 0;
 				for(int j = 0; j < pixels - pixel + cmatrix_middle; j++)
 				{
-					sum += input[(pixel + j - cmatrix_middle) * components + i] *
+					sum += input[(pixel + j - cmatrix_middle) * 4 + i] *
 						cmatrix[j];
 				}
-				output[pixel * components + i] = sum / scale;
+				output[pixel * 4 + i] = sum / scale;
 			}
 		}
 	}
 }
 
-#define GET_ROW(type, components) \
-{ \
-	type *in_row = (type*)src->get_row_ptr(row); \
-	int pixels = src->get_w() * components; \
-	for(int i = 0; i < pixels; i++) \
-	{ \
-		dst[i] = in_row[i]; \
-	} \
-}
-
 static void get_row(float *dst, VFrame *src, int row)
 {
-	switch(src->get_color_model())
+	uint16_t *in_row = (uint16_t*)src->get_row_ptr(row);
+	int pixels = src->get_w() * 4;
+
+	for(int i = 0; i < pixels; i++)
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-		GET_ROW(unsigned char, 3);
-		break;
-	case BC_RGB_FLOAT:
-		GET_ROW(float, 3);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		GET_ROW(unsigned char, 4);
-		break;
-	case BC_RGBA_FLOAT:
-		GET_ROW(float, 4);
-		break;
-	case BC_YUV161616:
-		GET_ROW(uint16_t, 3);
-		break;
-	case BC_YUVA16161616:
-	case BC_RGBA16161616:
-	case BC_AYUV16161616:
-		GET_ROW(uint16_t, 4);
-		break;
+		dst[i] = in_row[i];
 	}
 }
 
 static void get_column(float *dst, VFrame *src, int column)
 {
-	int components = ColorModels::components(src->get_color_model());
 	for(int i = 0; i < src->get_h(); i++)
 	{
-		float *input_pixel = (float*)src->get_row_ptr(i) + column * components;
-		memcpy(dst, input_pixel, sizeof(float) * components);
-		dst += components;
+		float *input_pixel = (float*)src->get_row_ptr(i) + column * 4;
+		memcpy(dst, input_pixel, sizeof(float) * 4);
+		dst += 4;
 	}
 }
 
 static void put_column(float *src, VFrame *dst, int column)
 {
-	int components = ColorModels::components(dst->get_color_model());
 	for(int i = 0; i < dst->get_h(); i++)
 	{
-		float *output_pixel = (float*)dst->get_row_ptr(i) + column * components;
-		memcpy(output_pixel, src, sizeof(float) * components);
-		src += components;
+		float *output_pixel = (float*)dst->get_row_ptr(i) + column * 4;
+		memcpy(output_pixel, src, sizeof(float) * 4);
+		src += 4;
 	}
 }
 
@@ -401,15 +372,16 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	int w = server->src->get_w();
 	int h = server->src->get_h();
 	int color_model = server->src->get_color_model();
-	int components = ColorModels::components(color_model);
 	double *cmatrix = 0;
 	int cmatrix_length = 0;
 	int padded_y1 = pkg->y1;
 	int padded_y2 = pkg->y2;
+	float threshold = (float)plugin->config.threshold * 0xffff / 0xff;
+	float amount = plugin->config.amount;
+	int value;
 
 	cmatrix_length = calculate_convolution_matrix(
-		plugin->config.radius, 
-		&cmatrix);
+		plugin->config.radius, &cmatrix);
 
 	if(padded_y2 < server->src->get_h())
 	{
@@ -435,11 +407,11 @@ void UnsharpUnit::process_package(LoadPackage *package)
 		temp = new VFrame(0,
 			server->src->get_w(),
 			padded_rows,
-			components == 3 ? BC_RGB_FLOAT : BC_RGBA_FLOAT);
+			BC_RGBA_FLOAT);
 	}
 
-	float *temp_in = new float[MAX(temp->get_w(), padded_rows) * components];
-	float *temp_out = new float[MAX(temp->get_w(), padded_rows) * components];
+	float *temp_in = new float[MAX(temp->get_w(), padded_rows) * 4];
+	float *temp_out = new float[MAX(temp->get_w(), padded_rows) * 4];
 
 // Blur rows
 	for(int i = padded_y1; i < padded_y2; i++)
@@ -449,14 +421,13 @@ void UnsharpUnit::process_package(LoadPackage *package)
 			cmatrix_length,
 			temp_in,
 			temp_out,
-			temp->get_w(),
-			components);
+			temp->get_w());
 		memcpy(temp->get_row_ptr(i - padded_y1),
 			temp_out,
 			temp->get_bytes_per_line());
 	}
 
-//Now we're 100% floating point.  Blur the columns
+// Now we're 100% floating point.  Blur the columns
 	for(int i = 0; i < temp->get_w(); i++)
 	{
 		get_column(temp_in, temp, i);
@@ -464,65 +435,35 @@ void UnsharpUnit::process_package(LoadPackage *package)
 			cmatrix_length,
 			temp_in,
 			temp_out,
-			padded_rows,
-			components);
+			padded_rows);
 		put_column(temp_out, temp, i);
 	}
 
-
-#define UNSHARPEN(type, components, max) \
-{ \
-	float threshold = (float)plugin->config.threshold * max / 0xff; \
-	float amount = plugin->config.amount; \
- \
-	for(int i = pkg->y1; i < pkg->y2; i++) \
-	{ \
-		float *blurry_row = (float*)temp->get_row_ptr(i - padded_y1); \
-		type *orig_row = (type*)server->src->get_row_ptr(i); \
-		for(int j = 0; j < server->src->get_w(); j++) \
-		{ \
-			for(int k = 0; k < components; k++) \
-			{ \
-				float diff = *orig_row - *blurry_row; \
-				if(fabsf(2 * diff) < threshold) \
-					diff = 0; \
-				float value = *orig_row + amount * diff; \
-				if(sizeof(type) == 4) \
-					*orig_row = (type)value; \
-				else \
-					*orig_row = (type)CLIP(value, 0, max); \
-				blurry_row++; \
-				orig_row++; \
-			} \
-		} \
-	} \
-}
-
-// Apply unsharpening
-	float threshold;
 	switch(color_model)
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-		UNSHARPEN(unsigned char, 3, 0xff);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		UNSHARPEN(unsigned char, 4, 0xff);
-		break;
-	case BC_RGB_FLOAT:
-		UNSHARPEN(float, 3, 1.0);
-		break;
-	case BC_RGBA_FLOAT:
-		UNSHARPEN(float, 4, 1.0);
-		break;
-	case BC_YUV161616:
-		UNSHARPEN(uint16_t, 3, 0xffff);
-		break;
-	case BC_YUVA16161616:
 	case BC_RGBA16161616:
 	case BC_AYUV16161616:
-		UNSHARPEN(uint16_t, 4, 0xffff);
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			float *blurry_row = (float*)temp->get_row_ptr(i - padded_y1);
+			uint16_t *orig_row = (uint16_t*)server->src->get_row_ptr(i);
+
+			for(int j = 0; j < server->src->get_w(); j++)
+			{
+				for(int k = 0; k < 4; k++)
+				{
+					float diff = *orig_row - *blurry_row;
+					if(fabsf(2 * diff) >= threshold)
+					{
+						value = *orig_row + amount * diff;
+						CLAMP(value, 0, 0xffff);
+						*orig_row = value;
+					}
+					blurry_row++;
+					orig_row++;
+				}
+			}
+		}
 		break;
 	}
 
