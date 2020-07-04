@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <math.h>
 #include <stdint.h>
@@ -31,11 +15,27 @@
 #include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "picon_png.h"
 #include "vframe.h"
 #include "zoomblur.h"
 
 REGISTER_PLUGIN
 
+const char *ZoomBlurWindow::blur_chn_rgba[] =
+{
+	N_("Blur red"),
+	N_("Blur green"),
+	N_("Blur blue"),
+	N_("Blur alpha")
+};
+
+const char *ZoomBlurWindow::blur_chn_ayuv[] =
+{
+	N_("Blur alpha"),
+	N_("Blur Y"),
+	N_("Blur U"),
+	N_("Blur V")
+};
 
 ZoomBlurConfig::ZoomBlurConfig()
 {
@@ -43,10 +43,10 @@ ZoomBlurConfig::ZoomBlurConfig()
 	y = 50;
 	radius = 10;
 	steps = 10;
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
+	chan0 = 1;
+	chan1 = 1;
+	chan2 = 1;
+	chan3 = 1;
 }
 
 int ZoomBlurConfig::equivalent(ZoomBlurConfig &that)
@@ -55,10 +55,10 @@ int ZoomBlurConfig::equivalent(ZoomBlurConfig &that)
 		y == that.y &&
 		radius == that.radius &&
 		steps == that.steps &&
-		r == that.r &&
-		g == that.g &&
-		b == that.b &&
-		a == that.a;
+		chan0 == that.chan0 &&
+		chan1 == that.chan1 &&
+		chan2 == that.chan2 &&
+		chan3 == that.chan3;
 }
 
 void ZoomBlurConfig::copy_from(ZoomBlurConfig &that)
@@ -67,10 +67,10 @@ void ZoomBlurConfig::copy_from(ZoomBlurConfig &that)
 	y = that.y;
 	radius = that.radius;
 	steps = that.steps;
-	r = that.r;
-	g = that.g;
-	b = that.b;
-	a = that.a;
+	chan0 = that.chan0;
+	chan1 = that.chan1;
+	chan2 = that.chan2;
+	chan3 = that.chan3;
 }
 
 void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev, 
@@ -84,10 +84,10 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 	this->y = (int)(prev.y * prev_scale + next.y * next_scale + 0.5);
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
 	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
-	r = prev.r;
-	g = prev.g;
-	b = prev.b;
-	a = prev.a;
+	chan0 = prev.chan0;
+	chan1 = prev.chan1;
+	chan2 = prev.chan2;
+	chan3 = prev.chan3;
 }
 
 PLUGIN_THREAD_METHODS
@@ -97,34 +97,52 @@ ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
 	x,
 	y,
 	230, 
-	340)
+	360)
 {
+	int cmodel = plugin->get_project_color_model();
+	const char **names;
+	int title_h;
+	BC_WindowBase *win;
+
 	x = y = 10;
 
+	if(cmodel == BC_AYUV16161616)
+		names = blur_chn_ayuv;
+	else
+		names = blur_chn_rgba;
+
+	add_subwindow(win = print_title(x, y, "%s: %s", plugin->plugin_title(),
+		ColorModels::name(cmodel)));
+	title_h = win->get_h() + 8;
+	y += title_h;
 	add_subwindow(new BC_Title(x, y, _("X:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
-	y += 30;
+	y += this->x->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(this->y = new ZoomBlurSize(plugin, x, y, &plugin->config.y, 0, 100));
-	y += 30;
+	y += this->y->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Radius:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(radius = new ZoomBlurSize(plugin, x, y, &plugin->config.radius, -100, 100));
-	y += 30;
+	y += radius->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
-	y += 20;
+	y += title_h;
 	add_subwindow(steps = new ZoomBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
-	y += 30;
-	add_subwindow(r = new ZoomBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
-	y += 30;
-	add_subwindow(g = new ZoomBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
-	y += 30;
-	add_subwindow(b = new ZoomBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
-	y += 30;
-	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
-	y += 30;
+	y += steps->get_h() + 8;
+	add_subwindow(chan0 = new ZoomBlurToggle(plugin, x, y,
+		&plugin->config.chan0, _(names[0])));
+	y += chan0->get_h() + 8;
+	add_subwindow(chan1 = new ZoomBlurToggle(plugin, x, y,
+		&plugin->config.chan1, _(names[1])));
+	y += chan1->get_h() + 8;
+	add_subwindow(chan2 = new ZoomBlurToggle(plugin, x, y,
+		&plugin->config.chan2, _(names[2])));
+	y += chan2->get_h() + 8;
+	add_subwindow(chan3 = new ZoomBlurToggle(plugin, x, y,
+		&plugin->config.chan3, _(names[3])));
+	y += chan3->get_h() + 8;
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -134,10 +152,10 @@ void ZoomBlurWindow::update()
 	y->update(plugin->config.y);
 	radius->update(plugin->config.radius);
 	steps->update(plugin->config.steps);
-	r->update(plugin->config.r);
-	g->update(plugin->config.g);
-	b->update(plugin->config.b);
-	a->update(plugin->config.a);
+	chan0->update(plugin->config.chan0);
+	chan1->update(plugin->config.chan1);
+	chan2->update(plugin->config.chan2);
+	chan3->update(plugin->config.chan3);
 }
 
 ZoomBlurToggle::ZoomBlurToggle(ZoomBlurMain *plugin, 
@@ -187,15 +205,28 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	table_entries = 0;
 	accum = 0;
 	need_reconfigure = 1;
+	accum_size = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ZoomBlurMain::~ZoomBlurMain()
 {
-	if(engine) delete engine;
+	delete engine;
 	delete_tables();
-	if(accum) delete [] accum;
+	delete [] accum;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void ZoomBlurMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+		delete_tables();
+		delete [] accum;
+		accum = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -225,12 +256,26 @@ void ZoomBlurMain::delete_tables()
 
 VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 {
+	int color_model = frame->get_color_model();
+	size_t new_accum_size = sizeof(int) * 4 * frame->get_h() * frame->get_w();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
 	need_reconfigure |= load_configuration();
+	need_reconfigure |= accum_size < new_accum_size;
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure)
+	if(need_reconfigure || !table_entries)
 	{
 		double w = frame->get_w();
 		double h = frame->get_h();
@@ -305,27 +350,29 @@ VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 				x_table[j] = round((j - out_x1) * scale_x);
 			}
 		}
+		update_gui();
 		need_reconfigure = 0;
 	}
 
 	if(!engine)
 		engine = new ZoomBlurEngine(this,
-			get_project_smp() + 1,
-			get_project_smp() + 1);
+			get_project_smp(),
+			get_project_smp());
 	if(!accum)
-		accum = new unsigned char[frame->get_w() *
-			frame->get_h() *
-			ColorModels::components(frame->get_color_model()) *
-			MAX(sizeof(int), sizeof(float))];
+	{
+		accum_size = frame->get_w() *
+			frame->get_h() * 4 * sizeof(int);
+		accum = new unsigned char[accum_size];
+	}
 
 	input = frame;
 	output = clone_vframe(frame);
 
-	memset(accum, 0,
-		frame->get_w() * 
-		frame->get_h() *
-		ColorModels::components(frame->get_color_model()) *
-		MAX(sizeof(int), sizeof(float)));
+	if((BC_RGBA16161616 == color_model && config.chan3) ||
+			(BC_AYUV16161616  == color_model && config.chan0))
+		output->set_transparent();
+
+	memset(accum, 0, accum_size);
 	engine->process_packages();
 	release_vframe(input);
 	return output;
@@ -339,10 +386,16 @@ void ZoomBlurMain::load_defaults()
 	config.y = defaults->get("Y", config.y);
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.steps = defaults->get("STEPS", config.steps);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
+	// Compatibility
+	config.chan0 = defaults->get("R", config.chan0);
+	config.chan1 = defaults->get("G", config.chan1);
+	config.chan2 = defaults->get("B", config.chan2);
+	config.chan3 = defaults->get("A", config.chan3);
+
+	config.chan0 = defaults->get("CHAN0", config.chan0);
+	config.chan1 = defaults->get("CHAN1", config.chan1);
+	config.chan2 = defaults->get("CHAN2", config.chan2);
+	config.chan3 = defaults->get("CHAN3", config.chan3);
 }
 
 void ZoomBlurMain::save_defaults()
@@ -351,10 +404,10 @@ void ZoomBlurMain::save_defaults()
 	defaults->update("Y", config.y);
 	defaults->update("RADIUS", config.radius);
 	defaults->update("STEPS", config.steps);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
+	defaults->delete_key("R");
+	defaults->delete_key("G");
+	defaults->delete_key("B");
+	defaults->delete_key("A");
 	defaults->save();
 }
 
@@ -367,10 +420,10 @@ void ZoomBlurMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("Y", config.y);
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("STEPS", config.steps);
-	output.tag.set_property("R", config.r);
-	output.tag.set_property("G", config.g);
-	output.tag.set_property("B", config.b);
-	output.tag.set_property("A", config.a);
+	output.tag.set_property("CHAN0", config.chan0);
+	output.tag.set_property("CHAN1", config.chan1);
+	output.tag.set_property("CHAN2", config.chan2);
+	output.tag.set_property("CHAN3", config.chan3);
 	output.append_tag();
 	output.tag.set_title("/ZOOMBLUR");
 	output.append_tag();
@@ -381,7 +434,7 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-        input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
 	while(!input.read_tag())
 	{
@@ -391,10 +444,16 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 			config.y = input.tag.get_property("Y", config.y);
 			config.radius = input.tag.get_property("RADIUS", config.radius);
 			config.steps = input.tag.get_property("STEPS", config.steps);
-			config.r = input.tag.get_property("R", config.r);
-			config.g = input.tag.get_property("G", config.g);
-			config.b = input.tag.get_property("B", config.b);
-			config.a = input.tag.get_property("A", config.a);
+			// Compatibility
+			config.chan0 = input.tag.get_property("R", config.chan0);
+			config.chan1 = input.tag.get_property("G", config.chan1);
+			config.chan2 = input.tag.get_property("B", config.chan2);
+			config.chan3 = input.tag.get_property("A", config.chan3);
+
+			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
+			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
+			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
+			config.chan3 = input.tag.get_property("CHAN3", config.chan3);
 		}
 	}
 }
@@ -531,207 +590,113 @@ ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server,
 	this->server = server;
 }
 
-
-#define BLEND_LAYER(COMPONENTS, TYPE, TEMP_TYPE, MAX, DO_YUV) \
-{ \
-	const int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
-	for(int j = pkg->y1; j < pkg->y2; j++) \
-	{ \
-		TEMP_TYPE *out_row = (TEMP_TYPE*)plugin->accum + COMPONENTS * w * j; \
-		int in_y = y_table[j]; \
- \
-/* Blend image */ \
-		if(in_y >= 0 && in_y < h) \
-		{ \
-			TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
-			for(int k = 0; k < w; k++) \
-			{ \
-				int in_x = x_table[k]; \
-/* Blend pixel */ \
-				if(in_x >= 0 && in_x < w) \
-				{ \
-					int in_offset = in_x * COMPONENTS; \
-					*out_row++ += in_row[in_offset]; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += in_row[in_offset + 1]; \
-						*out_row++ += in_row[in_offset + 2]; \
-					} \
-					else \
-					{ \
-						*out_row++ += (TEMP_TYPE)in_row[in_offset + 1]; \
-						*out_row++ += (TEMP_TYPE)in_row[in_offset + 2]; \
-					} \
-					if(COMPONENTS == 4) \
-						*out_row++ += in_row[in_offset + 3]; \
-				} \
-/* Blend nothing */ \
-				else \
-				{ \
-					out_row++; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += chroma_offset; \
-						*out_row++ += chroma_offset; \
-					} \
-					else \
-					{ \
-						out_row += 2; \
-					} \
-					if(COMPONENTS == 4) out_row++; \
-				} \
-			} \
-		} \
-		else \
-		if(DO_YUV) \
-		{ \
-			for(int k = 0; k < w; k++) \
-			{ \
-				out_row++; \
-				*out_row++ += chroma_offset; \
-				*out_row++ += chroma_offset; \
-				if(COMPONENTS == 4) out_row++; \
-			} \
-		} \
-	} \
- \
-/* Copy just selected blurred channels to output and combine with original \
-	unblurred channels */ \
-	if(i == plugin->config.steps - 1) \
-	{ \
-		for(int j = pkg->y1; j < pkg->y2; j++) \
-		{ \
-			TEMP_TYPE *in_row = (TEMP_TYPE*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
-			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
-			for(int k = 0; k < w; k++) \
-			{ \
-				if(do_r) \
-				{ \
-					*out_row++ = (*in_row++ * fraction) / 0x10000; \
-					in_backup++; \
-				} \
-				else \
-				{ \
-					*out_row++ = *in_backup++; \
-					in_row++; \
-				} \
- \
-				if(DO_YUV) \
-				{ \
-					if(do_g) \
-					{ \
-						*out_row++ = ((*in_row++ * fraction) / 0x10000); \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
- \
-					if(do_b) \
-					{ \
-						*out_row++ = ((*in_row++ * fraction) / 0x10000); \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
-				else \
-				{ \
-					if(do_g) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
- \
-					if(do_b) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
- \
-				if(COMPONENTS == 4) \
-				{ \
-					if(do_a) \
-					{ \
-						*out_row++ = (*in_row++ * fraction) / 0x10000; \
-						in_backup++; \
-					} \
-					else \
-					{ \
-						*out_row++ = *in_backup++; \
-						in_row++; \
-					} \
-				} \
-			} \
-		} \
-	} \
-}
-
 void ZoomBlurUnit::process_package(LoadPackage *package)
 {
 	ZoomBlurPackage *pkg = (ZoomBlurPackage*)package;
 	int h = plugin->output->get_h();
 	int w = plugin->output->get_w();
-	int do_r = plugin->config.r;
-	int do_g = plugin->config.g;
-	int do_b = plugin->config.b;
-	int do_a = plugin->config.a;
+	int do0 = plugin->config.chan0;
+	int do1 = plugin->config.chan1;
+	int do2 = plugin->config.chan2;
+	int do3 = plugin->config.chan3;
+	int fraction = 0x10000 / plugin->table_entries;
 
-	int fraction = 0x10000 / plugin->config.steps;
-	for(int i = 0; i < plugin->config.steps; i++)
+	for(int i = 0; i < plugin->table_entries; i++)
 	{
 		int *x_table = plugin->scale_x_table[i];
 		int *y_table = plugin->scale_y_table[i];
 
 		switch(plugin->input->get_color_model())
 		{
-		case BC_RGB888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGB_FLOAT:
-			BLEND_LAYER(3, float, float, 1, 0)
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_LAYER(4, float, float, 1, 0)
-			break;
-		case BC_RGBA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGB161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-			break;
 		case BC_RGBA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+			for(int j = pkg->y1; j < pkg->y2; j++)
+			{
+				int *out_row = (int*)plugin->accum + 4 * w * j;
+				int in_y = y_table[j];
+
+				// Blend image
+				if(in_y >= 0 && in_y < h)
+				{
+					uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y); \
+
+					for(int k = 0; k < w; k++)
+					{
+						int in_x = x_table[k];
+						// Blend pixel
+						if(in_x >= 0 && in_x < w)
+						{
+							int in_offset = in_x * 4;
+							*out_row++ += in_row[in_offset];
+							*out_row++ += in_row[in_offset + 1];
+							*out_row++ += in_row[in_offset + 2];
+							*out_row++ += in_row[in_offset + 3];
+						}
+						// Blend nothing
+						else
+							out_row += 4;
+					}
+				}
+			}
+
+			// Copy just selected blurred channels to output
+			// and combine with original unblurred channels
+			if(i == plugin->table_entries - 1)
+			{
+				for(int j = pkg->y1; j < pkg->y2; j++)
+				{
+					int *in_row = (int*)plugin->accum + 4 * w * j;
+					uint16_t *in_backup = (uint16_t*)plugin->input->get_row_ptr(j);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j); \
+					for(int k = 0; k < w; k++)
+					{
+						if(do0)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do1)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do2)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do3)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+					}
+				}
+			}
 			break;
-		case BC_YUV888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUVA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUV161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-			break;
-		case BC_YUVA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-			break;
+
 		case BC_AYUV16161616:
 			for(int j = pkg->y1; j < pkg->y2; j++)
 			{
@@ -777,7 +742,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 
 			// Copy just selected blurred channels to output
 			//  and combine with original unblurred channels
-			if(i == plugin->config.steps - 1)
+			if(i == plugin->table_entries - 1)
 			{
 				for(int j = pkg->y1; j < pkg->y2; j++)
 				{
@@ -786,7 +751,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
 					for(int k = 0; k < w; k++)
 					{
-						if(do_a)
+						if(do0)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
@@ -797,7 +762,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_r)
+						if(do1)
 						{
 							*out_row++ = (*in_row++ * fraction) / 0x10000;
 							in_backup++;
@@ -808,7 +773,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_g)
+						if(do2)
 						{
 							*out_row++ = ((*in_row++ * fraction) / 0x10000);
 							in_backup++;
@@ -819,7 +784,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 							in_row++;
 						}
 
-						if(do_b)
+						if(do3)
 						{
 							*out_row++ = ((*in_row++ * fraction) / 0x10000);
 							in_backup++;
