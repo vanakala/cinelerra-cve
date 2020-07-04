@@ -143,6 +143,7 @@ public:
 	LinearBlurLayer *layer_table;
 	*/
 	int table_entries;
+	int steps_in_table;
 // The accumulation buffer is needed because 8 bits isn't precise enough
 	unsigned char *accum;
 	size_t accum_size;

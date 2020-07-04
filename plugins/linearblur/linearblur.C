@@ -201,6 +201,7 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	scale_x_table = 0;
 	scale_y_table = 0;
 	table_entries = 0;
+	steps_in_table = 0;
 	accum = 0;
 	need_reconfigure = 1;
 // FIXIT layer_table = 0;
@@ -324,9 +325,10 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 * No check of existence?
 		layer_table = new LinearBlurLayer[table_entries];
 	*/
-		for(int i = 0; i < config.steps; i++)
+		steps_in_table = config.steps;
+		for(int i = 0; i < steps_in_table; i++)
 		{
-			double fraction = (double)(i - config.steps / 2) / config.steps;
+			double fraction = (double)(i - steps_in_table / 2) / config.steps;
 			int x = round(fraction * x_offset);
 			int y = round(fraction * y_offset);
 			int *x_table;
@@ -595,13 +597,13 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 {
 	LinearBlurPackage *pkg = (LinearBlurPackage*)package;
 	int w = plugin->output->get_w();
-	int fraction = 0x10000 / plugin->config.steps;
+	int fraction = 0x10000 / plugin->steps_in_table;
 	int do0 = plugin->config.chan0;
 	int do1 = plugin->config.chan1;
 	int do2 = plugin->config.chan2;
 	int do3 = plugin->config.chan3;
 
-	for(int i = 0; i < plugin->config.steps; i++)
+	for(int i = 0; i < plugin->steps_in_table; i++)
 	{
 		int *x_table = plugin->scale_x_table[i];
 		int *y_table = plugin->scale_y_table[i];
@@ -632,7 +634,7 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 				}
 			}
 			// Copy to output
-			if(i == plugin->config.steps - 1)
+			if(i == plugin->steps_in_table - 1)
 			{
 				for(int j = pkg->y1; j < pkg->y2; j++)
 				{
