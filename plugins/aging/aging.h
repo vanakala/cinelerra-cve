@@ -9,7 +9,6 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 #define PLUGIN_TITLE N_("AgingTV")
 #define PLUGIN_CLASS AgingMain
 #define PLUGIN_CONFIG_CLASS AgingConfig
@@ -21,6 +20,7 @@
 class AgingEngine;
 
 #include "bchash.h"
+#include "keyframe.inc"
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
@@ -29,6 +29,7 @@ class AgingEngine;
 #include <sys/types.h>
 
 #define SCRATCH_MAX 20
+#define AREA_SCALE_MAX 40
 
 typedef struct _scratch
 {
@@ -43,18 +44,16 @@ class AgingConfig
 public:
 	AgingConfig();
 
+	int equivalent(AgingConfig &that);
+	void copy_from(AgingConfig &that);
+	void interpolate(AgingConfig &prev,
+		AgingConfig &next,
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
+
 	int area_scale;
-	scratch_t scratches[SCRATCH_MAX];
-
-	static int dx[8];
-	static int dy[8];
-	int dust_interval;
-
-	int pits_interval;
 	int scratch_lines;
-	int pit_count;
-	int dust_count;
-
 	int colorage;
 	int scratch;
 	int pits;
@@ -110,12 +109,21 @@ public:
 
 	VFrame *process_tmpframe(VFrame *input_ptr);
 	void reset_plugin();
+	void load_defaults();
+	void save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 
 	AgingServer *aging_server;
 	AgingClient *aging_client;
 
 	AgingEngine **engine;
 	VFrame *input;
+	scratch_t scratches[SCRATCH_MAX];
+	static int dx[8];
+	static int dy[8];
+	int dust_interval;
+	int pits_interval;
 };
 
 #endif
