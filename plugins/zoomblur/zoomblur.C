@@ -206,6 +206,7 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	accum = 0;
 	need_reconfigure = 1;
 	accum_size = 0;
+	entries_in_use = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -252,6 +253,7 @@ void ZoomBlurMain::delete_tables()
 	scale_y_table = 0;
 	layer_table = 0;
 	table_entries = 0;
+	entries_in_use = 0;
 }
 
 VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
@@ -310,11 +312,18 @@ VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 		max_y2 = h;
 
 // Dimensions of outermost rectangle
-		delete_tables();
-		table_entries = steps;
-		scale_x_table = new int*[steps];
-		scale_y_table = new int*[steps];
-		layer_table = new ZoomBlurLayer[table_entries];
+		if(table_entries < steps)
+		{
+			delete_tables();
+			table_entries = steps * 2;
+			scale_x_table = new int*[table_entries];
+			scale_y_table = new int*[table_entries];
+			layer_table = new ZoomBlurLayer[table_entries];
+			memset(scale_x_table, 0, table_entries * sizeof(int*));
+			memset(scale_y_table, 0, table_entries * sizeof(int*));
+		}
+
+		entries_in_use = steps;
 
 		for(int i = 0; i < steps; i++)
 		{
@@ -333,8 +342,10 @@ VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 
 			int *x_table;
 			int *y_table;
-			scale_y_table[i] = y_table = new int[(int)(h + 1)];
-			scale_x_table[i] = x_table = new int[(int)(w + 1)];
+			if(!(y_table = scale_y_table[i]))
+				scale_y_table[i] = y_table = new int[(int)(h + 1)];
+			if(!(x_table = scale_x_table[i]))
+				scale_x_table[i] = x_table = new int[(int)(w + 1)];
 
 			layer_table[i].x1 = out_x1;
 			layer_table[i].y1 = out_y1;
@@ -599,9 +610,9 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 	int do1 = plugin->config.chan1;
 	int do2 = plugin->config.chan2;
 	int do3 = plugin->config.chan3;
-	int fraction = 0x10000 / plugin->table_entries;
+	int fraction = 0x10000 / plugin->entries_in_use;
 
-	for(int i = 0; i < plugin->table_entries; i++)
+	for(int i = 0; i < plugin->entries_in_use; i++)
 	{
 		int *x_table = plugin->scale_x_table[i];
 		int *y_table = plugin->scale_y_table[i];
@@ -640,7 +651,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 
 			// Copy just selected blurred channels to output
 			// and combine with original unblurred channels
-			if(i == plugin->table_entries - 1)
+			if(i == plugin->entries_in_use - 1)
 			{
 				for(int j = pkg->y1; j < pkg->y2; j++)
 				{
@@ -742,7 +753,7 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 
 			// Copy just selected blurred channels to output
 			//  and combine with original unblurred channels
-			if(i == plugin->table_entries - 1)
+			if(i == plugin->entries_in_use - 1)
 			{
 				for(int j = pkg->y1; j < pkg->y2; j++)
 				{

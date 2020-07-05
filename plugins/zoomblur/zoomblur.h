@@ -140,6 +140,7 @@ public:
 	int table_entries;
 // The accumulation buffer is needed because 8 bits isn't precise enough
 	unsigned char *accum;
+	int entries_in_use;
 private:
 	size_t accum_size;
 };
