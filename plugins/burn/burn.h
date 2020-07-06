@@ -9,7 +9,6 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("BurningTV")
 #define PLUGIN_CLASS BurnMain
@@ -29,6 +28,15 @@ class BurnConfig
 {
 public:
 	BurnConfig();
+
+	int equivalent(BurnConfig &that);
+	void copy_from(BurnConfig &that);
+	void interpolate(BurnConfig &prev,
+		BurnConfig &next,
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
+
 	int threshold;
 	int decay;
 	PLUGIN_CONFIG_CLASS_MEMBERS
@@ -76,6 +84,10 @@ public:
 // required for all realtime plugins
 	VFrame *process_tmpframe(VFrame *input);
 	void reset_plugin();
+	void load_defaults();
+	void save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 	void HSItoRGB(double H, 
 		double S, 
 		double I, 
@@ -85,7 +97,6 @@ public:
 		int color_model);
 	void make_palette(int color_model);
 
-// a thread for the GUI
 	BurnServer *burn_server;
 
 	int palette[3][256];
@@ -94,7 +105,7 @@ public:
 	int total;
 
 	EffectTV *effecttv;
-	VFrame *input_ptr, *output_ptr;
+	VFrame *input_ptr;
 };
 
 #endif

@@ -23,11 +23,33 @@ BurnConfig::BurnConfig()
 	decay = 15;
 }
 
+int BurnConfig::equivalent(BurnConfig &that)
+{
+	return threshold == that.threshold &&
+		decay == that.decay;
+}
+
+void BurnConfig::copy_from(BurnConfig &that)
+{
+	threshold = that.threshold;
+	decay = that.decay;
+}
+
+void BurnConfig::interpolate(BurnConfig &prev,
+	BurnConfig &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
+{
+	threshold = prev.threshold;
+	decay = prev.decay;
+}
+
+
 BurnMain::BurnMain(PluginServer *server)
  : PluginVClient(server)
 {
 	input_ptr = 0;
-	output_ptr = 0;
 	burn_server = 0;
 	buffer = 0;
 	effecttv = 0;
@@ -44,7 +66,7 @@ BurnMain::~BurnMain()
 
 void BurnMain::reset_plugin()
 {
-	if(buffer)
+	if(burn_server)
 	{
 		delete [] buffer;
 		buffer = 0;
@@ -56,11 +78,6 @@ void BurnMain::reset_plugin()
 }
 
 PLUGIN_CLASS_METHODS
-
-int BurnMain::load_configuration()
-{
-	return 0;
-}
 
 #define MAXCOLOR 120
 
@@ -148,6 +165,49 @@ VFrame *BurnMain::process_tmpframe(VFrame *input)
 	return input;
 }
 
+void BurnMain::load_defaults()
+{
+	defaults = load_defaults_file("burningtv.rc");
+
+	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.decay = defaults->get("DECAY", config.decay);
+}
+
+void BurnMain::save_defaults()
+{
+	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("DECAY", config.decay);
+}
+
+void BurnMain::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+	output.tag.set_title("BURNTV");
+	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("DECAY", config.decay);
+	output.append_tag();
+	output.tag.set_title("/BURNTV");
+	output.append_tag();
+	keyframe->set_data(output.string);
+}
+
+void BurnMain::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
+	while(!input.read_tag())
+	{
+		if(input.tag.title_is("BURNTV"))
+		{
+			config.threshold = input.tag.get_property("THRESHOLD",
+				config.threshold);
+			config.decay = input.tag.get_property("DECAY", config.decay);
+		}
+	}
+}
 
 BurnServer::BurnServer(BurnMain *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
