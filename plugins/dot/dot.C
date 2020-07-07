@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 2001 FUKUCHI Kentarou
 
 #include "clip.h"
 #include "colormodels.inc"
@@ -25,7 +10,6 @@
 #include "picon_png.h"
 #include "dot.h"
 #include "dotwindow.h"
-#include "effecttv.h"
 #include "language.h"
 
 #include <stdint.h>
@@ -49,22 +33,37 @@ DotMain::DotMain(PluginServer *server)
 	pattern = 0;
 	sampx = 0;
 	sampy = 0;
-	effecttv = 0;
+	dot_server = 0;
+	pattern_allocated = 0;
+	pattern_size = 0;
 	need_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DotMain::~DotMain()
 {
-	if(pattern) delete [] pattern;
-	if(sampx) delete [] sampx;
-	if(sampy) delete [] sampy;
-	if(effecttv)
-	{
-		delete dot_server;
-		delete effecttv;
-	}
+	delete [] pattern;
+	delete [] sampx;
+	delete [] sampy;
+	delete dot_server;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void DotMain::reset_plugin()
+{
+	if(pattern)
+	{
+		pattern_allocated = 0;
+		pattern_size = 0;
+		delete [] pattern;
+		pattern = 0;
+		delete [] sampx;
+		sampx = 0;
+		delete [] sampy;
+		sampy = 0;
+		delete dot_server;
+		dot_server = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -76,25 +75,25 @@ int DotMain::load_configuration()
 
 void DotMain::make_pattern()
 {
-	int i, x, y, c;
 	int u, v;
 	double p, q, r;
 	uint32_t *pat;
+	int dotmax = config.dot_max();
 
-	for(i = 0; i < config.dot_max(); i++) 
+	for(int i = 0; i < dotmax; i++)
 	{
-/* Generated pattern is a quadrant of a disk. */
+// Generated pattern is a quadrant of a disk.
 		pat = pattern + (i + 1) * dot_hsize * dot_hsize - 1;
 
-		r = ((double)i / config.dot_max()) * dot_hsize;
+		r = ((double)i / dotmax) * dot_hsize;
 		r *= 5;
 
-		for(y = 0; y < dot_hsize; y++) 
+		for(int y = 0; y < dot_hsize; y++)
 		{
-			for(x = 0; x < dot_hsize; x++) 
+			for(int x = 0; x < dot_hsize; x++)
 			{
-				c = 0;
-				for(u = 0; u < 4; u++) 
+				int c = 0;
+				for(int u = 0; u < 4; u++)
 				{
 					p = (double)u / 4.0 + y;
 					p = p * p;
@@ -112,8 +111,8 @@ void DotMain::make_pattern()
 
 				c = (c > 15) ? 15 : c;
 				*pat-- = (c << 20) | (c << 12) | (c << 4);
-/* The upper left part of a disk is needed, but generated pattern is a bottom
- * right part. So I spin the pattern. */
+// The upper left part of a disk is needed, but generated pattern is a bottom
+//   right part. So I spin the pattern.
 			}
 		}
 	}
@@ -140,25 +139,10 @@ void DotMain::init_sampxy_table()
 
 void DotMain::reconfigure()
 {
-	if(!effecttv)
-	{
-		effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
-		dot_server = new DotServer(this, 1, 1);
-	}
-
-	dot_size = config.dot_size;
-	dot_size = dot_size & 0xfe;
-	dot_hsize = dot_size / 2;
 	dots_width = input_ptr->get_w() / dot_size;
 	dots_height = input_ptr->get_h() / dot_size;
-	pattern = new uint32_t[config.dot_max() * 
-		dot_hsize * 
-		dot_hsize];
-	sampx = new int[input_ptr->get_w()];
-	sampy = new int[input_ptr->get_h()];
 
 	make_pattern();
-
 	init_sampxy_table();
 
 	need_reconfigure = 0;
@@ -166,10 +150,51 @@ void DotMain::reconfigure()
 
 VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 {
+	int color_model = input_ptr->get_color_model();
+	int new_size;
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input_ptr;
+	}
+
 	this->input_ptr = input_ptr;
-	this->output_ptr = input_ptr;
-	load_configuration();
-	if(need_reconfigure) reconfigure();
+	if(load_configuration())
+	{
+		update_gui();
+		need_reconfigure = 1;
+	}
+
+	if(!dot_server)
+		dot_server = new DotServer(this, 1, 1);
+
+	dot_size = config.dot_size;
+	dot_size = dot_size & 0xfe;
+	dot_hsize = dot_size / 2;
+	new_size = config.dot_max() * dot_hsize * dot_hsize;
+	if(new_size > pattern_allocated)
+	{
+		delete [] pattern;
+		pattern = new uint32_t[new_size];
+		pattern_allocated = new_size;
+		need_reconfigure = 1;
+	}
+	pattern_size = new_size;
+
+	if(!sampx)
+	{
+		sampx = new int[input_ptr->get_w()];
+		sampy = new int[input_ptr->get_h()];
+		need_reconfigure = 1;
+	}
+
+	if(need_reconfigure)
+		reconfigure();
 
 	dot_server->process_packages();
 	return input_ptr;
@@ -209,201 +234,150 @@ DotClient::DotClient(DotServer *server)
 	this->plugin = server->plugin;
 }
 
-#define COPY_PIXEL(type, components, output, pattern, chroma_offset) \
-{ \
-	if(chroma_offset) \
-	{ \
-		if(sizeof(type) == 2) \
-		{ \
-			output[0] = (pattern & 0xff0000) >> 8; \
-			output[1] = chroma_offset; \
-			output[2] = chroma_offset; \
-			if(components > 3) output[3] = (type)0xffff; \
-		} \
-		else \
-		{ \
-			output[0] = (pattern & 0xff0000) >> 16; \
-			output[1] = chroma_offset; \
-			output[2] = chroma_offset; \
-			if(components > 3) output[3] = 0xff; \
-		} \
-	} \
-	else \
-	{ \
-		if(sizeof(type) == 4) \
-		{ \
-			output[0] = (type)(pattern & 0xff0000) / 0xff0000; \
-			output[1] = (type)(pattern & 0xff00) / 0xff00; \
-			output[2] = (type)(pattern & 0xff) / 0xff; \
-			if(components > 3) output[3] = 1; \
-		} \
-		else \
-		if(sizeof(type) == 2) \
-		{ \
-			output[0] = (pattern & 0xff0000) >> 8; \
-			output[1] = (pattern & 0xff00); \
-			output[2] = (pattern & 0xff) << 8; \
-			if(components > 3) output[3] = (type)0xffff; \
-		} \
-		else \
-		{ \
-			output[0] = (pattern & 0xff0000) >> 16; \
-			output[1] = (pattern & 0xff00) >> 8; \
-			output[2] = (pattern & 0xff); \
-			if(components > 3) output[3] = 0xff; \
-		} \
-	} \
-}
-
-#define DRAW_DOT(type, components, chroma_offset) \
-{ \
-	int x, y; \
-	uint32_t *pat; \
-	type *output; \
-	int y_total = 0; \
- \
-	c = (c >> (8 - plugin->config.dot_depth)); \
-	pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize; \
-	output = ((type*)output_row) + \
-		yy *  \
-		plugin->dot_size *  \
-		plugin->input_ptr->get_w() * \
-		components + \
-		xx *  \
-		plugin->dot_size * \
-		components; \
- \
-	for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)  \
-	{ \
-		for(x = 0; x < plugin->dot_hsize; x++)  \
-		{ \
-			COPY_PIXEL(type, components, output, *pat, chroma_offset); \
-			output += components; \
-			pat++; \
-		} \
- \
-		pat -= 2; \
- \
-		for(x = 0; x < plugin->dot_hsize - 1; x++)  \
-		{ \
-			COPY_PIXEL(type, components, output, *pat, chroma_offset); \
-			output += components; \
-			pat--; \
-		} \
- \
- 		COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
- \
-		output += components * (plugin->input_ptr->get_w() - plugin->dot_size + 1); \
-		pat += plugin->dot_hsize + 1; \
-		y_total++; \
-	} \
- \
-	pat -= plugin->dot_hsize * 2; \
- \
-	for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)  \
-	{ \
-		if(y < plugin->dot_hsize - 1) \
-		{ \
-			for(x = 0; x < plugin->dot_hsize; x++)  \
-			{ \
-				COPY_PIXEL(type, components, output, *pat, chroma_offset); \
-				output += components; \
-				pat++; \
-			} \
- \
-			pat -= 2; \
- \
-			for(x = 0; x < plugin->dot_hsize - 1; x++)  \
-			{ \
-				COPY_PIXEL(type, components, output, *pat, chroma_offset); \
-				output += components; \
-				pat--; \
-			} \
- \
- 			COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
- \
-			output += components * (plugin->input_ptr->get_w() - plugin->dot_size + 1); \
-			pat += -plugin->dot_hsize + 1; \
-		} \
-		else \
-		{ \
-			for(x = 0; x < plugin->dot_hsize * 2; x++) \
-			{ \
-				COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
-				output += components; \
-			} \
-		} \
- \
-		y_total++; \
- \
-	} \
-}
-
-void DotClient::draw_dot(int xx, 
-	int yy, 
-	unsigned char c, 
-	unsigned char *output_row,
-	int color_model)
+void DotClient::draw_dot(int xx, int yy,
+	int c, int first_row)
 {
+	uint32_t *pat;
+	int y_total = 0;
+	uint16_t *output = &((uint16_t*)plugin->input_ptr->get_row_ptr(yy * plugin->dot_size))[xx * plugin->dot_size * 4];
+	int width = plugin->input_ptr->get_w();
+	int height = plugin->input_ptr->get_h();
+
 	switch(plugin->input_ptr->get_color_model())
 	{
-	case BC_RGB888:
-		DRAW_DOT(uint8_t, 3, 0x0);
-		break;
-
-	case BC_RGB_FLOAT:
-		DRAW_DOT(float, 3, 0x0);
-		break;
-
-	case BC_YUV888:
-		DRAW_DOT(uint8_t, 3, 0x80);
-		break;
-
-	case BC_RGBA_FLOAT:
-		DRAW_DOT(float, 4, 0x0);
-		break;
-
-	case BC_RGBA8888:
-		DRAW_DOT(uint8_t, 4, 0x0);
-		break;
-
-	case BC_YUVA8888:
-		DRAW_DOT(uint8_t, 4, 0x80);
-		break;
-
-	case BC_RGB161616:
-		DRAW_DOT(uint16_t, 3, 0x0);
-		break;
-
-	case BC_YUV161616:
-		DRAW_DOT(uint16_t, 3, 0x8000);
-		break;
-
 	case BC_RGBA16161616:
-		DRAW_DOT(uint16_t, 4, 0x0);
-		break;
+		c = (c >> (16 - plugin->config.dot_depth));
+		pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize;
 
-	case BC_YUVA16161616:
-		DRAW_DOT(uint16_t, 4, 0x8000);
+		for(int y = 0; y < plugin->dot_hsize &&
+			y_total < height; y++)
+		{
+			for(int x = 0; x < plugin->dot_hsize; x++)
+			{
+				output[0] = (*pat & 0xff0000) >> 8;
+				output[1] = (*pat & 0xff00);
+				output[2] = (*pat & 0xff) << 8;
+				output[3] = 0xffff;
+				output += 4;
+				pat++;
+			}
+
+			pat -= 2;
+
+			for(int x = 0; x < plugin->dot_hsize - 1; x++)
+			{
+				output[0] = (*pat & 0xff0000) >> 8;
+				output[1] = (*pat & 0xff00);
+				output[2] = (*pat & 0xff) << 8;
+				output[3] = 0xffff;
+				output += 4;
+				pat--;
+			}
+			output[0] = 0;
+			output[1] = 0;
+			output[2] = 0;
+			output[3] = 0xffff;
+
+			output += 4 * (width - plugin->dot_size + 1);
+			pat += plugin->dot_hsize + 1;
+			y_total++;
+		}
+		pat -= plugin->dot_hsize * 2;
+
+		for(int y = 0; y < plugin->dot_hsize &&
+			y_total < height; y++)
+		{
+			if(y < plugin->dot_hsize - 1)
+			{
+				for(int x = 0; x < plugin->dot_hsize; x++)
+				{
+					output[0] = (*pat & 0xff0000) >> 8;
+					output[1] = (*pat & 0xff00);
+					output[2] = (*pat & 0xff) << 8;
+					output[3] = 0xffff;
+					output += 4;
+					pat++;
+				}
+
+				pat -= 2;
+
+				for(int x = 0; x < plugin->dot_hsize - 1; x++)
+				{
+					output[0] = (*pat & 0xff0000) >> 8;
+					output[1] = (*pat & 0xff00);
+					output[2] = (*pat & 0xff) << 8;
+					output[3] = 0xffff;
+					output += 4;
+					pat--;
+				}
+				output[0] = 0;
+				output[1] = 0;
+				output[2] = 0;
+				output[3] = 0xffff;
+
+				output += 4 * (width - plugin->dot_size + 1);
+				pat += -plugin->dot_hsize + 1;
+			}
+			else
+			{
+				for(int x = 0; x < plugin->dot_hsize * 2; x++)
+				{
+					output[0] = 0;
+					output[1] = 0;
+					output[2] = 0;
+					output[3] = 0xffff;
+					output += 4;
+				}
+			}
+			y_total++;
+		}
 		break;
 
 	case BC_AYUV16161616:
-		{ \
-			int x, y;
-			uint32_t *pat;
-			uint16_t *output;
-			int y_total = 0;
+		c = (c >> (16 - plugin->config.dot_depth));
+		pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize;
 
-			c = (c >> (8 - plugin->config.dot_depth));
-			pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize;
-			output = ((uint16_t*)output_row) + yy *
-				plugin->dot_size *
-				plugin->input_ptr->get_w() * 4 +
-				xx * plugin->dot_size * 4;
-
-			for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)
+		for(int y = 0; y < plugin->dot_hsize && y_total < height; y++)
+		{
+			for(int x = 0; x < plugin->dot_hsize; x++)
 			{
-				for(x = 0; x < plugin->dot_hsize; x++)
+				output[0] = 0xffff;
+				output[1] = (*pat & 0xff0000) >> 8;
+				output[2] = 0x8000;
+				output[3] = 0x8000;
+				output += 4;
+				pat++;
+			}
+			pat -= 2;
+
+			for(int x = 0; x < plugin->dot_hsize - 1; x++)
+			{
+				output[0] = 0xffff;
+				output[1] = (*pat & 0xff0000) >> 8;
+				output[2] = 0x8000;
+				output[3] = 0x8000;
+				output += 4;
+				pat--;
+			}
+
+			output[0] = 0xffff;
+			output[1] = 0;
+			output[2] = 0x8000;
+			output[3] = 0x8000;
+
+			output += 4 * (width - plugin->dot_size + 1);
+			pat += plugin->dot_hsize + 1;
+			y_total++;
+		}
+
+		pat -= plugin->dot_hsize * 2;
+
+		for(int y = 0; y < plugin->dot_hsize &&
+			y_total < height; y++)
+		{
+			if(y < plugin->dot_hsize - 1)
+			{
+				for(int x = 0; x < plugin->dot_hsize; x++)
 				{
 					output[0] = 0xffff;
 					output[1] = (*pat & 0xff0000) >> 8;
@@ -414,45 +388,13 @@ void DotClient::draw_dot(int xx,
 				}
 				pat -= 2;
 
-				for(x = 0; x < plugin->dot_hsize - 1; x++)
+				for(int x = 0; x < plugin->dot_hsize - 1; x++)
 				{
 					output[0] = 0xffff;
 					output[1] = (*pat & 0xff0000) >> 8;
 					output[2] = 0x8000;
 					output[3] = 0x8000;
 					output += 4;
-					pat--;
-				}
-
-				output += 4 * (plugin->input_ptr->get_w() - plugin->dot_size + 1);
-				pat += plugin->dot_hsize + 1;
-				y_total++;
-			}
-
-			pat -= plugin->dot_hsize * 2;
-
-			for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)
-			{
-				if(y < plugin->dot_hsize - 1)
-				{
-					for(x = 0; x < plugin->dot_hsize; x++)
-					{
-						output[0] = 0xffff;
-						output[1] = (*pat & 0xff0000) >> 8;
-						output[2] = 0x8000;
-						output[3] = 0x8000;
-						output += 4;
-						pat++;
-					}
-					pat -= 2;
-
-					for(x = 0; x < plugin->dot_hsize - 1; x++)
-					{
-						output[0] = 0xffff;
-						output[1] = (*pat & 0xff0000) >> 8;
-						output[2] = 0x8000;
-						output[3] = 0x8000;
-						output += 4;
 						pat--;
 					}
 
@@ -461,12 +403,12 @@ void DotClient::draw_dot(int xx,
 					output[2] = 0x8000;
 					output[3] = 0x8000;
 
-					output += 4 * (plugin->input_ptr->get_w() - plugin->dot_size + 1);
+					output += 4 * (width - plugin->dot_size + 1);
 					pat += -plugin->dot_hsize + 1;
 				}
 				else
 				{
-					for(x = 0; x < plugin->dot_hsize * 2; x++)
+					for(int x = 0; x < plugin->dot_hsize * 2; x++)
 					{
 						output[0] = 0xffff;
 						output[1] = 0;
@@ -478,84 +420,42 @@ void DotClient::draw_dot(int xx,
 
 				y_total++;
 			}
-		}
 		break;
 	}
 }
 
-unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
+int DotClient::RGBtoY(uint16_t *row, int color_model)
 {
-	unsigned char i;
 	int y, u, v;
-	float *row_f;
-	uint16_t *row_s;
 
 	switch(color_model)
 	{
-	case BC_RGB888:
-	case BC_RGBA8888:
-		ColorSpaces::rgb_to_yuv_8(row[0], row[1], row[2], y, u, v);
-		i = (unsigned char)y;
-		break;
-	case BC_RGB_FLOAT:
-	case BC_RGBA_FLOAT:
-		row_f = (float *)row;
-		y = row_f[0] * 0xff;
-		u = row_f[1] * 0xff;
-		v = row_f[2] * 0xff;
-		CLAMP(y, 0, 0xff);
-		CLAMP(u, 0, 0xff);
-		CLAMP(v, 0, 0xff);
-		ColorSpaces::rgb_to_yuv_8(y, u, v, y, u, v);
-		i = (unsigned char)y;
-		break;
-	case BC_YUV888:
-	case BC_YUVA8888:
-		i = row[0];
-		break;
-	case BC_RGB161616:
 	case BC_RGBA16161616:
-		row_s = (uint16_t *)row;
 		ColorSpaces::rgb_to_yuv_16(row[0], row[1], row[2], y, u, v);
-		i = y;
-		break;
-	case BC_YUV161616:
-	case BC_YUVA16161616:
-		row_s = (uint16_t *)row;
-		i = row[0] >> 8;
 		break;
 	case BC_AYUV16161616:
-		row_s = (uint16_t*)row;
-		i = row_s[1] >> 8;
+		y = row[1];
 		break;
 	}
-
-	return i;
+	return y;
 }
 
 void DotClient::process_package(LoadPackage *package)
 {
-	int x, y;
-	int sx, sy;
 	DotPackage *local_package = (DotPackage*)package;
-	int width = plugin->input_ptr->get_w();
-	int height = local_package->row2 - local_package->row1;
 
-
-	for(y = 0; y < plugin->dots_height; y++)
+	for(int y = 0; y < plugin->dots_height; y++)
 	{
-		sy = plugin->sampy[y];
-		for(x = 0; x < plugin->dots_width; x++)
+		int sy = plugin->sampy[y];
+		for(int x = 0; x < plugin->dots_width; x++)
 		{
-			sx = plugin->sampx[x];
+			int sx = plugin->sampx[x];
 
-			draw_dot(x, 
-				y,
+			draw_dot(x, y,
 				RGBtoY(
-					&plugin->input_ptr->get_row_ptr(local_package->row1 + sy)[sx * plugin->input_ptr->get_bytes_per_pixel()],
+					&((uint16_t*)plugin->input_ptr->get_row_ptr(local_package->row1 + sy))[sx * 4],
 					plugin->input_ptr->get_color_model()),
-				plugin->output_ptr->get_row_ptr(local_package->row1),
-				plugin->input_ptr->get_color_model());
+				local_package->row1);
 		}
 	}
 }
