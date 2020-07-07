@@ -7,6 +7,7 @@
 #include "clip.h"
 #include "colormodels.inc"
 #include "colorspaces.h"
+#include "filexml.h"
 #include "picon_png.h"
 #include "dot.h"
 #include "dotwindow.h"
@@ -26,6 +27,27 @@ DotConfig::DotConfig()
 	dot_size = 8;
 }
 
+int DotConfig::equivalent(DotConfig &that)
+{
+	return dot_depth == that.dot_depth &&
+		dot_size == that.dot_size;
+}
+
+void DotConfig::copy_from(DotConfig &that)
+{
+	dot_depth = that.dot_depth;
+	dot_size = that.dot_size;
+}
+
+void DotConfig::interpolate(DotConfig &prev,
+	DotConfig &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
+{
+	dot_depth = prev.dot_depth;
+	dot_size = prev.dot_size;
+}
 
 DotMain::DotMain(PluginServer *server)
  : PluginVClient(server)
@@ -67,11 +89,6 @@ void DotMain::reset_plugin()
 }
 
 PLUGIN_CLASS_METHODS
-
-int DotMain::load_configuration()
-{
-	return 0;
-}
 
 void DotMain::make_pattern()
 {
@@ -421,6 +438,51 @@ void DotClient::draw_dot(int xx, int yy,
 				y_total++;
 			}
 		break;
+	}
+}
+
+void DotMain::load_defaults()
+{
+	defaults = load_defaults_file("dottv.rc");
+
+	config.dot_depth = defaults->get("DEPTH", config.dot_depth);
+	config.dot_size = defaults->get("SIZE", config.dot_size);
+}
+
+void DotMain::save_defaults()
+{
+	defaults->update("DEPTH", config.dot_depth);
+	defaults->update("SIZE", config.dot_size);
+}
+
+void DotMain::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+	output.tag.set_title("DOTTV");
+	output.tag.set_property("DEPTH", config.dot_depth);
+	output.tag.set_property("SIZE", config.dot_size);
+	output.append_tag();
+	output.tag.set_title("/DOTTV");
+	output.append_tag();
+	keyframe->set_data(output.string);
+}
+
+void DotMain::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
+	while(!input.read_tag())
+	{
+		if(input.tag.title_is("DOTTV"))
+		{
+			config.dot_depth = input.tag.get_property("DEPTH",
+				config.dot_depth);
+			config.dot_size = input.tag.get_property("SIZE",
+				config.dot_size);
+		}
 	}
 }
 

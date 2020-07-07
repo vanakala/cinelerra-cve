@@ -7,9 +7,22 @@
 #define DOTWINDOW_H
 
 #include "dot.h"
+#include "bcslider.h"
 #include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
+
+class DotSize : public BC_ISlider
+{
+public:
+	DotSize(DotMain *plugin, int x, int y,
+		int *output, int min, int max);
+
+	int handle_event();
+private:
+	DotMain *plugin;
+	int *output;
+};
 
 class DotWindow : public PluginWindow
 {
@@ -17,6 +30,9 @@ public:
 	DotWindow(DotMain *plugin, int x, int y);
 
 	void update();
+
+	DotSize *dot_depth;
+	DotSize *dot_size;
 
 	PLUGIN_GUI_CLASS_MEMBERS
 };

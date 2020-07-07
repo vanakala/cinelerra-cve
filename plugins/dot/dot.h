@@ -8,7 +8,6 @@
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 #define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE N_("DotTV")
@@ -34,6 +33,14 @@ class DotConfig
 {
 public:
 	DotConfig();
+
+	int equivalent(DotConfig &that);
+	void copy_from(DotConfig &that);
+	void interpolate(DotConfig &prev,
+		DotConfig &next,
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int dot_depth;
 	int dot_size;
@@ -91,6 +98,10 @@ public:
 	void make_pattern();
 	void init_sampxy_table();
 	void reconfigure();
+	void load_defaults();
+	void save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 
 	DotServer *dot_server;
 	DotClient *dot_client;
