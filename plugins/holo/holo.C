@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 2001 FUKUCHI Kentarou
 
 #include "clip.h"
 #include "colormodels.inc"
@@ -46,6 +31,7 @@ HoloMain::HoloMain(PluginServer *server)
  : PluginVClient(server)
 {
 	effecttv = 0;
+	holo_server = 0;
 	bgimage = 0;
 	do_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
@@ -53,21 +39,31 @@ HoloMain::HoloMain(PluginServer *server)
 
 HoloMain::~HoloMain()
 {
+	delete holo_server;
+	delete effecttv;
+
+	release_vframe(bgimage);
+	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void HoloMain::reset_plugin()
+{
 	if(effecttv)
 	{
 		delete holo_server;
+		holo_server = 0;
 		delete effecttv;
+		effecttv = 0;
+		release_vframe(bgimage);
+		bgimage = 0;
 	}
-
-	if(bgimage)
-		delete bgimage;
-	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
 int HoloMain::load_configuration()
 {
+	return 0;
 }
 
 void HoloMain::reconfigure()
@@ -77,97 +73,51 @@ void HoloMain::reconfigure()
 	effecttv->image_set_threshold_y(config.threshold);
 }
 
-
-#define ADD_FRAMES(type, components) \
-{ \
-	int w = input->get_w(); \
-	int h = input->get_h(); \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *output_row = (type*)output->get_row_ptr(i); \
-		type *input_row = (type*)input->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			for(int k = 0; k < 3; k++) \
-			{ \
-				if(sizeof(type) == 4) \
-				{ \
-					int in_temp = (int)(*input_row * 0xffff); \
-					int out_temp = (int)(*output_row * 0xffff); \
-					int temp = (in_temp & out_temp) + \
-						((in_temp ^ out_temp) >> 1); \
-					*output_row = (type)temp / 0xffff; \
-				} \
-				else \
-				{ \
-					*output_row = ((uint16_t)*input_row & (uint16_t)*output_row) + \
-						(((uint16_t)*input_row ^ (uint16_t)*output_row) >> 1); \
-				} \
-				output_row++; \
-				input_row++; \
-			} \
- \
-			if(components == 4) \
-			{ \
-				output_row++; \
-				input_row++; \
-			} \
-		} \
-	} \
-}
-
-
 // Add input to output and store result in output
 void HoloMain::add_frames(VFrame *output, VFrame *input)
 {
+	int w = input->get_w();
+	int h = input->get_h();
+
 	switch(output->get_color_model())
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-		ADD_FRAMES(uint8_t, 3);
-		break;
-	case BC_RGB_FLOAT:
-		ADD_FRAMES(float, 3);
-		break;
-	case BC_RGBA_FLOAT:
-		ADD_FRAMES(float, 4);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		ADD_FRAMES(uint8_t, 4);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		ADD_FRAMES(uint16_t, 3);
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		ADD_FRAMES(uint16_t, 4);
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *output_row = (uint16_t*)output->get_row_ptr(i);
+			uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				for(int k = 0; k < 3; k++)
+				{
+					*output_row = (*input_row & *output_row) +
+						((*input_row ^ *output_row) >> 1);
+					output_row++;
+					input_row++;
+				}
+				output_row++;
+				input_row++;
+			}
+		}
 		break;
 
 	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
 		{
-			int w = input->get_w();
-			int h = input->get_h();
+			uint16_t *output_row = (uint16_t*)output->get_row_ptr(i);
+			uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
 
-			for(int i = 0; i < h; i++)
+			for(int j = 0; j < w; j++)
 			{
-				uint16_t *output_row = (uint16_t*)output->get_row_ptr(i);
-				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
-
-				for(int j = 0; j < w; j++)
+				output_row++;
+				input_row++;
+				for(int k = 0; k < 3; k++)
 				{
+					*output_row = (*input_row & *output_row) +
+						((*input_row ^ *output_row) >> 1);
 					output_row++;
 					input_row++;
-					for(int k = 0; k < 3; k++)
-					{
-						*output_row = (*input_row & *output_row) +
-							((*input_row ^ *output_row) >> 1);
-						output_row++;
-						input_row++;
-					}
 				}
 			}
 		}
@@ -214,28 +164,41 @@ void HoloMain::set_background()
 
 VFrame *HoloMain::process_tmpframe(VFrame *input_ptr)
 {
+
+	int color_model = input_ptr->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input_ptr;
+	}
+
 	this->input_ptr = input_ptr;
 	this->output_ptr = input_ptr;
 
-	load_configuration();
+	if(load_configuration())
+	{
+		update_gui();
+		do_reconfigure = 1;
+	}
+
+	if(!effecttv)
+	{
+		effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
+		bgimage = clone_vframe(input_ptr);
+		do_reconfigure = 1;
+	}
 
 	if(do_reconfigure)
 	{
-		if(!effecttv)
-		{
-			effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
-			bgimage = new VFrame(0, 
-				input_ptr->get_w(), 
-				input_ptr->get_h(), 
-				input_ptr->get_color_model());
+		for(int i = 0; i < 256; i++)
+			noisepattern[i] = (i * i * i / 40000)* i / 256;
 
-			for(int i = 0; i < 256; i++)
-			{
-				noisepattern[i] = (i * i * i / 40000)* i / 256;
-			}
-
-			holo_server = new HoloServer(this, 1, 1);
-		}
+		holo_server = new HoloServer(this, 1, 1);
 
 		reconfigure();
 	}
@@ -286,7 +249,6 @@ HoloClient::HoloClient(HoloServer *server)
 
 void HoloClient::process_package(LoadPackage *package)
 {
-	int x, y;
 	int sx, sy;
 	HoloPackage *local_package = (HoloPackage*)package;
 	unsigned char *input_row = plugin->input_ptr->get_row_ptr(local_package->row1);
@@ -303,233 +265,131 @@ void HoloClient::process_package(LoadPackage *package)
 
 	diff += width;
 
-// Convert discrete channels to a single 24 bit number
-#define STORE_PIXEL(type, components, dest, src, is_yuv) \
-	if(sizeof(type) == 4) \
-	{ \
-		int r = (int)(src[0] * 0xff); \
-		int g = (int)(src[1] * 0xff); \
-		int b = (int)(src[2] * 0xff); \
-		CLAMP(r, 0, 0xff); \
-		CLAMP(g, 0, 0xff); \
-		CLAMP(b, 0, 0xff); \
-		dest = (r << 16) | (g << 8) | b; \
-	} \
-	else \
-	if(sizeof(type) == 2) \
-	{ \
-		if(is_yuv) \
-		{ \
-			int r = (int)src[0] >> 8; \
-			int g = (int)src[1] >> 8; \
-			int b = (int)src[2] >> 8; \
-			ColorSpaces::yuv_to_rgb_8(r, g, b); \
-			dest = (r << 16) | (g << 8) | b; \
-		} \
-		else \
-		{ \
-			dest = (((uint32_t)src[0] << 8) & 0xff0000) | \
-				((uint32_t)src[1] & 0xff00) | \
-				((uint32_t)src[2]) >> 8; \
-		} \
-	} \
-	else \
-	{ \
-		if(is_yuv) \
-		{ \
-			int r = (int)src[0]; \
-			int g = (int)src[1]; \
-			int b = (int)src[2]; \
-			ColorSpaces::yuv_to_rgb_8(r, g, b); \
-			dest = (r << 16) | (g << 8) | b; \
-		} \
-		else \
-		{ \
-			dest = ((uint32_t)src[0] << 16) | \
-			((uint32_t)src[1] << 8) | \
-			(uint32_t)src[2]; \
-		} \
-	}
-
-#define HOLO_CORE(type, components, is_yuv) \
-	for(y = 1; y < height - 1; y++) \
-	{ \
-		type *src = (type*)plugin->input_ptr->get_row_ptr(y + local_package->row1); \
-		type *bg = (type*)plugin->bgimage->get_row_ptr(y); \
-		type *dest = (type*)plugin->output_ptr->get_row_ptr(y + local_package->row1); \
- \
-		if(((y + phase) & 0x7f) < 0x58)  \
-		{ \
-			for(x = 0 ; x < width; x++)  \
-			{ \
-				if(*diff) \
-				{ \
-					STORE_PIXEL(type, components, s, src, is_yuv); \
- \
-					t = (s & 0xff) +  \
-						((s & 0xff00) >> 7) +  \
-						((s & 0xff0000) >> 16); \
-					t += plugin->noisepattern[EffectTV::fastrand() >> 24]; \
- \
-					r = ((s & 0xff0000) >> 17) + t; \
-					g = ((s & 0xff00) >> 8) + t; \
-					b = (s & 0xff) + t; \
- \
-					r = (r >> 1) - 100; \
-					g = (g >> 1) - 100; \
-					b = b >> 2; \
- \
-					if(r < 20) r = 20; \
-					if(g < 20) g = 20; \
- \
-					STORE_PIXEL(type, components, s, bg, is_yuv); \
- \
-					r += (s & 0xff0000) >> 17; \
-					g += (s & 0xff00) >> 9; \
-					b += ((s & 0xff) >> 1) + 40; \
- \
-					if(r > 255) r = 255; \
-					if(g > 255) g = 255; \
-					if(b > 255) b = 255; \
- \
-					if(is_yuv) ColorSpaces::rgb_to_yuv_8(r, g, b); \
-					if(sizeof(type) == 4) \
-					{ \
-						dest[0] = (type)r / 0xff; \
-						dest[1] = (type)g / 0xff; \
-						dest[2] = (type)b / 0xff; \
-					} \
-					else \
-					if(sizeof(type) == 2) \
-					{ \
-						dest[0] = (r << 8) | r; \
-						dest[1] = (g << 8) | g; \
-						dest[2] = (b << 8) | b; \
-					} \
-					else \
-					{ \
-						dest[0] = r; \
-						dest[1] = g; \
-						dest[2] = b; \
-					} \
-				}  \
-				else  \
-				{ \
-					dest[0] = bg[0]; \
-					dest[1] = bg[1]; \
-					dest[2] = bg[2]; \
-				} \
- \
-				diff++; \
-				src += components; \
-				dest += components; \
-				bg += components; \
-			} \
-		}  \
-		else  \
-		{ \
-			for(x = 0; x < width; x++) \
-			{ \
-				if(*diff) \
-				{ \
-					STORE_PIXEL(type, components, s, src, is_yuv); \
- \
-					t = (s & 0xff) + ((s & 0xff00) >> 6) + ((s & 0xff0000) >> 16); \
-					t += plugin->noisepattern[EffectTV::fastrand() >> 24]; \
- \
-					r = ((s & 0xff0000) >> 16) + t; \
-					g = ((s & 0xff00) >> 8) + t; \
-					b = (s & 0xff) + t; \
- \
-					r = (r >> 1) - 100; \
-					g = (g >> 1) - 100; \
-					b = b >> 2; \
- \
-					if(r < 0) r = 0; \
-					if(g < 0) g = 0; \
- \
-					STORE_PIXEL(type, components, s, bg, is_yuv); \
- \
-					r += ((s & 0xff0000) >> 17) + 10; \
-					g += ((s & 0xff00) >> 9) + 10; \
-					b += ((s & 0xff) >> 1) + 40; \
- \
-					if(r > 255) r = 255; \
-					if(g > 255) g = 255; \
-					if(b > 255) b = 255; \
- \
-					if(is_yuv) ColorSpaces::rgb_to_yuv_8(r, g, b); \
-					if(sizeof(type) == 4) \
-					{ \
-						dest[0] = (type)r / 0xff; \
-						dest[1] = (type)g / 0xff; \
-						dest[2] = (type)b / 0xff; \
-					} \
-					else \
-					if(sizeof(type) == 2) \
-					{ \
-						dest[0] = (r << 8) | r; \
-						dest[1] = (g << 8) | g; \
-						dest[2] = (b << 8) | b; \
-					} \
-					else \
-					{ \
-						dest[0] = r; \
-						dest[1] = g; \
-						dest[2] = b; \
-					} \
-				}  \
-				else  \
-				{ \
-					dest[0] = bg[0]; \
-					dest[1] = bg[1]; \
-					dest[2] = bg[2]; \
-				} \
- \
-				diff++; \
-				src += components; \
-				dest += components; \
-				bg += components; \
-			} \
-		} \
-	}
-
-
 	switch(plugin->input_ptr->get_color_model())
 	{
-	case BC_RGB888:
-		HOLO_CORE(uint8_t, 3, 0);
-		break;
-	case BC_RGB_FLOAT:
-		HOLO_CORE(float, 3, 0);
-		break;
-	case BC_YUV888:
-		HOLO_CORE(uint8_t, 3, 1);
-		break;
-	case BC_RGBA_FLOAT:
-		HOLO_CORE(float, 4, 0);
-		break;
-	case BC_RGBA8888:
-		HOLO_CORE(uint8_t, 4, 0);
-		break;
-	case BC_YUVA8888:
-		HOLO_CORE(uint8_t, 4, 1);
-		break;
-	case BC_RGB161616:
-		HOLO_CORE(uint16_t, 3, 0);
-		break;
-	case BC_YUV161616:
-		HOLO_CORE(uint16_t, 3, 1);
-		break;
 	case BC_RGBA16161616:
-		HOLO_CORE(uint16_t, 4, 0);
-		break;
-	case BC_YUVA16161616:
-		HOLO_CORE(uint16_t, 4, 1);
+		for(int y = 1; y < height - 1; y++)
+		{
+			uint16_t *src = (uint16_t*)plugin->input_ptr->get_row_ptr(y +
+				local_package->row1);
+			uint16_t *bg = (uint16_t*)plugin->bgimage->get_row_ptr(y);
+			uint16_t *dest = (uint16_t*)plugin->output_ptr->get_row_ptr(y +
+				local_package->row1);
+
+			if(((y + phase) & 0x7f) < 0x58)
+			{
+				for(int x = 0 ; x < width; x++)
+				{
+					if(*diff)
+					{
+						s = ((src[0] << 8) & 0xff0000) |
+							(src[1] & 0xff00) |
+							src[2] >> 8;
+
+						t = (s & 0xff) +
+							((s & 0xff00) >> 7) +
+							((s & 0xff0000) >> 16);
+						t += plugin->noisepattern[EffectTV::fastrand() >> 24];
+
+						r = ((s & 0xff0000) >> 17) + t;
+						g = ((s & 0xff00) >> 8) + t;
+						b = (s & 0xff) + t;
+
+						r = (r >> 1) - 100;
+						g = (g >> 1) - 100;
+						b = b >> 2;
+
+						if(r < 20) r = 20;
+						if(g < 20) g = 20;
+
+						s = ((bg[0] << 8) & 0xff0000) |
+							(bg[1] & 0xff00) |
+							bg[2] >> 8;
+
+						r += (s & 0xff0000) >> 17;
+						g += (s & 0xff00) >> 9;
+						b += ((s & 0xff) >> 1) + 40;
+
+						if(r > 255) r = 255;
+						if(g > 255) g = 255;
+						if(b > 255) b = 255;
+
+						dest[0] = (r << 8) | r;
+						dest[1] = (g << 8) | g;
+						dest[2] = (b << 8) | b;
+					}
+					else
+					{
+						dest[0] = bg[0];
+						dest[1] = bg[1];
+						dest[2] = bg[2];
+					}
+
+					diff++;
+					src += 4;
+					dest += 4;
+					bg += 4;
+				}
+			}
+			else
+			{
+				for(int x = 0; x < width; x++)
+				{
+					if(*diff)
+					{
+						s = ((src[0] << 8) & 0xff0000) |
+							(src[1] & 0xff00) |
+							src[2] >> 8;
+
+						t = (s & 0xff) + ((s & 0xff00) >> 6) +
+							((s & 0xff0000) >> 16);
+						t += plugin->noisepattern[EffectTV::fastrand() >> 24];
+
+						r = ((s & 0xff0000) >> 16) + t;
+						g = ((s & 0xff00) >> 8) + t;
+						b = (s & 0xff) + t;
+
+						r = (r >> 1) - 100;
+						g = (g >> 1) - 100;
+						b = b >> 2;
+
+						if(r < 0) r = 0;
+						if(g < 0) g = 0;
+
+						s = ((bg[0] << 8) & 0xff0000) |
+							(bg[1] & 0xff00) |
+							bg[2] >> 8;
+
+						r += ((s & 0xff0000) >> 17) + 10;
+						g += ((s & 0xff00) >> 9) + 10;
+						b += ((s & 0xff) >> 1) + 40;
+
+						if(r > 255) r = 255;
+						if(g > 255) g = 255;
+						if(b > 255) b = 255;
+
+						dest[0] = (r << 8) | r;
+						dest[1] = (g << 8) | g;
+						dest[2] = (b << 8) | b;
+					}
+					else
+					{
+						dest[0] = bg[0];
+						dest[1] = bg[1];
+						dest[2] = bg[2];
+					}
+
+					diff++;
+					src += 4;
+					dest += 4;
+					bg += 4;
+				}
+			}
+		}
 		break;
 
 	case BC_AYUV16161616:
-		for(y = 1; y < height - 1; y++)
+		for(int y = 1; y < height - 1; y++)
 		{
 			uint16_t *src = (uint16_t*)plugin->input_ptr->get_row_ptr(y + local_package->row1);
 			uint16_t *bg = (uint16_t*)plugin->bgimage->get_row_ptr(y);
@@ -537,13 +397,13 @@ void HoloClient::process_package(LoadPackage *package)
 
 			if(((y + phase) & 0x7f) < 0x58)
 			{
-				for(x = 0 ; x < width; x++)
+				for(int x = 0; x < width; x++)
 				{
 					if(*diff)
 					{
-						r = (int)src[1] >> 8;
-						g = (int)src[2] >> 8;
-						b = (int)src[3] >> 8;
+						r = src[1] >> 8;
+						g = src[2] >> 8;
+						b = src[3] >> 8;
 						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
@@ -563,9 +423,9 @@ void HoloClient::process_package(LoadPackage *package)
 						if(r < 20) r = 20;
 						if(g < 20) g = 20;
 
-						r = (int)bg[1] >> 8;
-						g = (int)bg[2] >> 8;
-						b = (int)bg[3] >> 8;
+						r = bg[1] >> 8;
+						g = bg[2] >> 8;
+						b = bg[3] >> 8;
 						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
@@ -579,9 +439,9 @@ void HoloClient::process_package(LoadPackage *package)
 
 						ColorSpaces::rgb_to_yuv_8(r, g, b);
 
-						dest[1] = (r << 8) | r; \
-						dest[2] = (g << 8) | g; \
-						dest[3] = (b << 8) | b; \
+						dest[1] = (r << 8) | r;
+						dest[2] = (g << 8) | g;
+						dest[3] = (b << 8) | b;
 					}
 					else
 					{
@@ -598,14 +458,14 @@ void HoloClient::process_package(LoadPackage *package)
 			}
 			else
 			{
-				for(x = 0; x < width; x++)
+				for(int x = 0; x < width; x++)
 				{
 					if(*diff)
 					{
 
-						r = (int)src[1] >> 8;
-						g = (int)src[2] >> 8;
-						b = (int)src[3] >> 8;
+						r = src[1] >> 8;
+						g = src[2] >> 8;
+						b = src[3] >> 8;
 						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
@@ -623,9 +483,9 @@ void HoloClient::process_package(LoadPackage *package)
 						if(r < 0) r = 0;
 						if(g < 0) g = 0;
 
-						r = (int)bg[1] >> 8;
-						g = (int)bg[2] >> 8;
-						b = (int)bg[3] >> 8;
+						r = bg[1] >> 8;
+						g = bg[2] >> 8;
+						b = bg[3] >> 8;
 						ColorSpaces::yuv_to_rgb_8(r, g, b);
 						s = (r << 16) | (g << 8) | b;
 
@@ -645,9 +505,13 @@ void HoloClient::process_package(LoadPackage *package)
 					}
 					else
 					{
-						dest[1] = bg[0];
-						dest[2] = bg[1];
-						dest[3] = bg[2];
+						r = bg[1] >> 8;
+						g = bg[2] >> 8;
+						b = bg[3] >> 8;
+						ColorSpaces::yuv_to_rgb_8(r, g, b);
+						dest[1] = (r << 8) | r;
+						dest[2] = (g << 8) | g;
+						dest[3] = (b << 8) | b;
 					}
 
 					diff++;
