@@ -9,7 +9,6 @@
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
-#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("HolographicTV")
 #define PLUGIN_CLASS HoloMain
@@ -35,8 +34,16 @@ class HoloConfig
 public:
 	HoloConfig();
 
+	int equivalent(HoloConfig &that);
+	void copy_from(HoloConfig &that);
+	void interpolate(HoloConfig &prev,
+		HoloConfig &next,
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
+
 	int threshold;
-	double recycle;    // Number of seconds between recycles
+	ptstime recycle;    // Number of seconds between recycles
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -81,6 +88,10 @@ public:
 	VFrame *process_tmpframe(VFrame *input_ptr);
 	void reset_plugin();
 	void reconfigure();
+	void load_defaults();
+	void save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 
 	void add_frames(VFrame *output, VFrame *input);
 	void set_background();
@@ -92,7 +103,7 @@ public:
 	EffectTV *effecttv;
 
 	unsigned int noisepattern[256];
-	VFrame *bgimage, *tmp;
+	VFrame *bgimage, *tmpframe;
 	int total;
 };
 

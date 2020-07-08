@@ -8,6 +8,7 @@
 #include "colormodels.inc"
 #include "colorspaces.h"
 #include "effecttv.h"
+#include "filexml.h"
 #include "holo.h"
 #include "holowindow.h"
 #include "picon_png.h"
@@ -26,6 +27,27 @@ HoloConfig::HoloConfig()
 	recycle = 1.0;
 }
 
+int HoloConfig::equivalent(HoloConfig &that)
+{
+	return threshold == that.threshold &&
+		PTSEQU(recycle, that.recycle);
+}
+
+void HoloConfig::copy_from(HoloConfig &that)
+{
+	threshold = that.threshold;
+	recycle = that.recycle;
+}
+
+void HoloConfig::interpolate(HoloConfig &prev,
+	HoloConfig &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
+{
+	threshold = prev.threshold;
+	recycle = prev.recycle;
+}
 
 HoloMain::HoloMain(PluginServer *server)
  : PluginVClient(server)
@@ -33,6 +55,8 @@ HoloMain::HoloMain(PluginServer *server)
 	effecttv = 0;
 	holo_server = 0;
 	bgimage = 0;
+	tmpframe = 0;
+	total = 0;
 	do_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -43,6 +67,7 @@ HoloMain::~HoloMain()
 	delete effecttv;
 
 	release_vframe(bgimage);
+	release_vframe(tmpframe);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -56,14 +81,57 @@ void HoloMain::reset_plugin()
 		effecttv = 0;
 		release_vframe(bgimage);
 		bgimage = 0;
+		release_vframe(tmpframe);
+		tmpframe = 0;
+		total = 0;
 	}
 }
 
 PLUGIN_CLASS_METHODS
 
-int HoloMain::load_configuration()
+void HoloMain::load_defaults()
 {
-	return 0;
+	defaults = load_defaults_file("holographictv.rc");
+
+	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.recycle = defaults->get("RECYCLE", config.recycle);
+}
+
+void HoloMain::save_defaults()
+{
+	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("RECYCLE", config.recycle);
+}
+
+void HoloMain::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+	output.tag.set_title("HOLOTV");
+	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("RECYCLE", config.recycle);
+	output.append_tag();
+	output.tag.set_title("HOLOTV");
+	output.append_tag();
+	keyframe->set_data(output.string);
+}
+
+void HoloMain::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
+
+	while(!input.read_tag())
+        {
+		if(input.tag.title_is("HOLOTV"))
+		{
+			config.threshold = input.tag.get_property("THRESHOLD",
+				config.threshold);
+			config.recycle = input.tag.get_property("RECYCLE",
+				config.recycle);
+		}
+	}
 }
 
 void HoloMain::reconfigure()
@@ -130,7 +198,7 @@ void HoloMain::set_background()
 // grab 4 frames and composite them to get a quality background image
 // For Cinelerra, we make every frame a holograph and expect the user to
 // provide a matte.
-	total = 0;
+//	total = 0;
 
 	switch(total)
 	{
@@ -146,18 +214,18 @@ void HoloMain::set_background()
 
 	case 2:
 // step 3: grab frame-3 to buffer-2
-		tmp->copy_from(input_ptr);
+		if(!tmpframe)
+			tmpframe = clone_vframe(input_ptr);
+		tmpframe->copy_from(input_ptr);
 		break;
 
 	case 3:
 // step 4: add frame-4 to buffer-2
-		add_frames(tmp, input_ptr);
+		add_frames(tmpframe, input_ptr);
 
-// step 5: add buffer-3 to buffer-1
-		add_frames(bgimage, tmp);
-
+	default:
+		add_frames(bgimage, tmpframe);
 		effecttv->image_bgset_y(bgimage);
-		delete tmp;
 		break;
 	}
 }
