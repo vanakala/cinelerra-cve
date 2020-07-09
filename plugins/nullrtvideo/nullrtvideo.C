@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -52,7 +36,7 @@ int NRTVideoSwitch::handle_event()
 {
 	plugin->config.onoff = plugin->config.onoff ? 0 : 1;
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 /*
@@ -100,6 +84,15 @@ NRTVideo::NRTVideo(PluginServer *server)
 NRTVideo::~NRTVideo()
 {
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+/*
+ * Optional entry called when plugin is idle
+ * Plugin should release excessive resources
+ *  temporary frames, working byffers, etc
+ */
+void NRTVideo::reset_plugin()
+{
 }
 
 /*
@@ -171,12 +164,15 @@ int NRTVideo::load_configuration()
  *    - number of channels is total_in_buffers
  * in new frame is needed, it must be aquired with clone_vframe
  * input frame can be freed with release_vframe
- * temporary frames should me aquired with clone_vframe and
+ * temporary frames should be aquired with clone_vframe and
  *   released with release_vframe asap
+ * When parameters change load_configuration returns NZ,
+ *  update_gui then
  */
 VFrame *NRTVideo::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	if(config.onoff)
 		frame->clear_frame();
