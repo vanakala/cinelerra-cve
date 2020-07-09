@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -152,8 +136,17 @@ PolarEffect::PolarEffect(PluginServer *server)
 
 PolarEffect::~PolarEffect()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void PolarEffect::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -204,7 +197,20 @@ void PolarEffect::read_data(KeyFrame *keyframe)
 
 VFrame *PolarEffect::process_tmpframe(VFrame *input)
 {
-	load_configuration();
+	int color_model = input->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	this->input = input;
 
@@ -217,7 +223,7 @@ VFrame *PolarEffect::process_tmpframe(VFrame *input)
 		output = clone_vframe(input);
 
 		if(!engine)
-			engine = new PolarEngine(this, PluginClient::smp + 1);
+			engine = new PolarEngine(this, get_project_smp());
 
 		engine->process_packages();
 	}
@@ -510,78 +516,6 @@ static double bilinear(double x, double y, double *values)
 	return m0 + y * (m1 - m0);
 }
 
-#define GET_PIXEL(x, y, components, type) \
-	(type*)plugin->input->get_row_ptr(CLIP((y), 0, ((h) - 1))) + components * CLIP((x), 0, ((w) - 1))
-
-#define POLAR_MACRO(type, max, components, chroma_offset) \
-{ \
-	double values[4]; \
- \
-	for(int y = pkg->row1; y < pkg->row2; y++) \
-	{ \
-		type *output_row = (type*)plugin->output->get_row_ptr(y); \
- \
-		for(int x = 0; x < w; x++) \
-		{ \
-			type *output_pixel = output_row + x * components; \
-			if(calc_undistorted_coords(x, \
-				y, \
-				w, \
-				h, \
-				plugin->config.depth, \
-				plugin->config.angle, \
-				plugin->config.polar_to_rectangular, \
-				plugin->config.backwards, \
-				plugin->config.invert, \
-				cen_x, \
-				cen_y, \
-				cx, \
-				cy)) \
-			{ \
-				type *pixel1 = GET_PIXEL((int)cx,     (int)cy,	 components, type); \
-				type *pixel2 = GET_PIXEL((int)cx + 1, (int)cy,	 components, type); \
-				type *pixel3 = GET_PIXEL((int)cx,     (int)cy + 1, components, type); \
-				type *pixel4 = GET_PIXEL((int)cx + 1, (int)cy + 1, components, type); \
- \
-				values[0] = pixel1[0]; \
-				values[1] = pixel2[0]; \
-				values[2] = pixel3[0]; \
-				values[3] = pixel4[0]; \
-				output_pixel[0] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[1]; \
-				values[1] = pixel2[1]; \
-				values[2] = pixel3[1]; \
-				values[3] = pixel4[1]; \
-				output_pixel[1] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[2]; \
-				values[1] = pixel2[2]; \
-				values[2] = pixel3[2]; \
-				values[3] = pixel4[2]; \
-				output_pixel[2] = (type)bilinear(cx, cy, values); \
- \
-				if(components == 4) \
-				{ \
-					values[0] = pixel1[3]; \
-					values[1] = pixel2[3]; \
-					values[2] = pixel3[3]; \
-					values[3] = pixel4[3]; \
-					output_pixel[3] = (type)bilinear(cx, cy, values); \
-				} \
-			} \
-			else \
-			{ \
-				output_pixel[0] = 0; \
-				output_pixel[1] = chroma_offset; \
-				output_pixel[2] = chroma_offset; \
-				if(components == 4) output_pixel[3] = max; \
-			} \
-		} \
-	} \
-}
-
-
 void PolarUnit::process_package(LoadPackage *package)
 {
 	PolarPackage *pkg = (PolarPackage*)package;
@@ -591,43 +525,75 @@ void PolarUnit::process_package(LoadPackage *package)
 	double cy;
 	double cen_x = (double)(w - 1) / 2.0;
 	double cen_y = (double)(h - 1) / 2.0;
+	double values[4];
 
 	switch(plugin->input->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		POLAR_MACRO(float, 1, 3, 0x0)
-		break;
-	case BC_RGBA_FLOAT:
-		POLAR_MACRO(float, 1, 4, 0x0)
-		break;
-	case BC_RGB888:
-		POLAR_MACRO(unsigned char, 0xff, 3, 0x0)
-		break;
-	case BC_RGBA8888:
-		POLAR_MACRO(unsigned char, 0xff, 4, 0x0)
-		break;
-	case BC_RGB161616:
-		POLAR_MACRO(uint16_t, 0xffff, 3, 0x0)
-		break;
 	case BC_RGBA16161616:
-		POLAR_MACRO(uint16_t, 0xffff, 4, 0x0)
+		for(int y = pkg->row1; y < pkg->row2; y++)
+		{
+			uint16_t *output_row = (uint16_t*)plugin->output->get_row_ptr(y);
+
+			for(int x = 0; x < w; x++)
+			{
+				uint16_t *output_pixel = output_row + x * 4;
+
+				if(calc_undistorted_coords(x, y, w, h,
+					plugin->config.depth,
+					plugin->config.angle,
+					plugin->config.polar_to_rectangular,
+					plugin->config.backwards,
+					plugin->config.invert,
+					cen_x, cen_y, cx, cy))
+				{
+					uint16_t *pixel1 =
+						(uint16_t*)plugin->input->get_row_ptr(CLIP((int)cy, 0, (h - 1))) +
+							4 * CLIP((int)cx, 0, (w - 1));
+					uint16_t *pixel2 = (uint16_t*)plugin->input->get_row_ptr(CLIP((int)cy, 0, (h - 1))) +
+						4 * CLIP(((int)cx + 1), 0, (w - 1));
+					uint16_t *pixel3 = (uint16_t*)plugin->input->get_row_ptr(CLIP(((int)cy + 1), 0, (h - 1))) +
+						4 * CLIP(((int)cx), 0, (w - 1));
+					uint16_t *pixel4 = (uint16_t *)plugin->input->get_row_ptr(CLIP(((int)cy + 1), 0, (h - 1))) +
+						4 * CLIP(((int)cx + 1), 0, (w - 1));
+
+					values[0] = pixel1[0];
+					values[1] = pixel2[0];
+					values[2] = pixel3[0];
+					values[3] = pixel4[0];
+					output_pixel[0] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[1];
+					values[1] = pixel2[1];
+					values[2] = pixel3[1];
+					values[3] = pixel4[1];
+					output_pixel[1] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[2];
+					values[1] = pixel2[2];
+					values[2] = pixel3[2];
+					values[3] = pixel4[2];
+					output_pixel[2] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[3];
+					values[1] = pixel2[3];
+					values[2] = pixel3[3];
+					values[3] = pixel4[3];
+					output_pixel[3] = (uint16_t)bilinear(cx, cy, values);
+				}
+				else
+				{
+					output_pixel[0] = 0;
+					output_pixel[1] = 0;
+					output_pixel[2] = 0;
+					output_pixel[3] = 0xffff;
+				}
+			}
+		}
 		break;
-	case BC_YUV888:
-		POLAR_MACRO(unsigned char, 0xff, 3, 0x80)
-		break;
-	case BC_YUVA8888:
-		POLAR_MACRO(unsigned char, 0xff, 4, 0x80)
-		break;
-	case BC_YUV161616:
-		POLAR_MACRO(uint16_t, 0xffff, 3, 0x8000)
-		break;
-	case BC_YUVA16161616:
-		POLAR_MACRO(uint16_t, 0xffff, 4, 0x8000)
-		break;
+
 	case BC_AYUV16161616:
 		for(int y = pkg->row1; y < pkg->row2; y++)
 		{
-			double values[4];
 			uint16_t *output_row = (uint16_t*)plugin->output->get_row_ptr(y);
 
 			for(int x = 0; x < w; x++)
