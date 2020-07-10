@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -69,7 +53,7 @@ LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
 	y, 
 	100,
 	1,
-	(float)plugin->config.duration)
+	plugin->config.duration)
 {
 	this->plugin = plugin;
 }
@@ -100,34 +84,32 @@ PLUGIN_CLASS_METHODS
 VFrame *LoopVideo::process_tmpframe(VFrame *frame)
 {
 	ptstime current_loop_pts;
-	ptstime start_pts = frame->get_pts();
-// Truncate to next keyframe
-// Get start of current loop
-	KeyFrame *prev_keyframe = prev_keyframe_pts(start_pts);
-	ptstime prev_pts = prev_keyframe->pos_time;
-	if(prev_pts < EPSILON)
-		prev_pts = get_start();
-	read_data(prev_keyframe);
+	ptstime frame_pts = frame->get_pts();
+	ptstime start_pts = get_start();
+
+	if(load_configuration())
+		update_gui();
 
 // Get start of fragment in current loop
-	current_loop_pts = prev_pts +
-		fmod(start_pts - prev_pts, config.duration);
+	current_loop_pts = start_pts +
+		fmod(frame_pts - start_pts, config.duration);
 
 	frame->set_pts(current_loop_pts);
-	get_frame(frame);
-	frame->set_pts(start_pts);
+	frame = get_frame(frame);
+	frame->set_pts(frame_pts);
 	return frame;
 }
 
 int LoopVideo::load_configuration()
 {
-	KeyFrame *prev_keyframe;
+	KeyFrame *prev_keyframe = get_first_keyframe();
 	ptstime old_duration = config.duration;
 
-	if(!(prev_keyframe = prev_keyframe_pts(source_pts)))
+	if(!prev_keyframe)
 		return 0;
 
 	read_data(prev_keyframe);
+
 	if(config.duration < EPSILON)
 		config.duration = 1 / get_project_framerate();
 	return PTSEQU(old_duration, config.duration);
