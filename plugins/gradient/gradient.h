@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef GRADIENT_H
 #define GRADIENT_H
@@ -39,9 +23,6 @@ class GradientEngine;
 class GradientThread;
 class GradientWindow;
 class GradientServer;
-
-
-#define MAXRADIUS 10000
 
 #include "bcpopupmenu.h"
 #include "bcpot.h"
@@ -248,6 +229,7 @@ public:
 	~GradientMain();
 
 	VFrame *process_tmpframe(VFrame *frame);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -256,11 +238,9 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	int need_reconfigure;
-
 	OverlayFrame *overlayer;
 	VFrame *gradient;
-	VFrame *input, *output;
+	VFrame *output;
 	GradientServer *engine;
 };
 
@@ -276,15 +256,24 @@ class GradientUnit : public LoadClient
 {
 public:
 	GradientUnit(GradientServer *server, GradientMain *plugin);
+	~GradientUnit();
+
 	void process_package(LoadPackage *package);
 	GradientServer *server;
 	GradientMain *plugin;
+
+	int gradient_size;
+	uint16_t *r_table;
+	uint16_t *g_table;
+	uint16_t *b_table;
+	uint16_t *a_table;
 };
 
 class GradientServer : public LoadServer
 {
 public:
 	GradientServer(GradientMain *plugin, int total_clients, int total_packages);
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
