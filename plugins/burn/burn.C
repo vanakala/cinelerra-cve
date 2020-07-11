@@ -138,6 +138,18 @@ void BurnMain::make_palette(int color_model)
 
 VFrame *BurnMain::process_tmpframe(VFrame *input)
 {
+	int color_model = input->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
 	input_ptr = input;
 
 	if(load_configuration())
