@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef SHARPENWINDOW_H
 #define SHARPENWINDOW_H
@@ -41,7 +25,6 @@ class SharpenWindow : public PluginWindow
 {
 public:
 	SharpenWindow(SharpenMain *plugin, int x, int y);
-	~SharpenWindow();
 
 	void update();
 
@@ -55,19 +38,19 @@ public:
 class SharpenSlider : public BC_ISlider
 {
 public:
-	SharpenSlider(SharpenMain *client, float *output, int x, int y);
-	~SharpenSlider();
+	SharpenSlider(SharpenMain *client, double *output, int x, int y);
+
 	int handle_event();
 
 	SharpenMain *client;
-	float *output;
+	double *output;
 };
 
 class SharpenInterlace : public BC_CheckBox
 {
 public:
 	SharpenInterlace(SharpenMain *client, int x, int y);
-	~SharpenInterlace();
+
 	int handle_event();
 
 	SharpenMain *client;
@@ -77,7 +60,7 @@ class SharpenHorizontal : public BC_CheckBox
 {
 public:
 	SharpenHorizontal(SharpenMain *client, int x, int y);
-	~SharpenHorizontal();
+
 	int handle_event();
 
 	SharpenMain *client;
@@ -87,7 +70,7 @@ class SharpenLuminance : public BC_CheckBox
 {
 public:
 	SharpenLuminance(SharpenMain *client, int x, int y);
-	~SharpenLuminance();
+
 	int handle_event();
 
 	SharpenMain *client;

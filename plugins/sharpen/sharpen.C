@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "colormodels.h"
@@ -76,58 +60,87 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	engine = 0;
+	for(int i = 0; i < MAX_ENGINES; i++)
+		engine[i] = 0;
+	total_engines = 0;
+	pos_lut = 0;
+	neg_lut = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SharpenMain::~SharpenMain()
 {
-	if(engine)
+	for(int i = 0; i < MAX_ENGINES; i++)
+		delete engine[i];
+	delete [] pos_lut;
+	delete [] neg_lut;
+	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void SharpenMain::reset_plugin()
+{
+	if(total_engines)
 	{
 		for(int i = 0; i < total_engines; i++)
 		{
 			delete engine[i];
+			engine[i] = 0;
 		}
-		delete engine;
+		delete [] pos_lut;
+		delete [] neg_lut;
+		pos_lut = 0;
+		neg_lut = 0;
+		total_engines = 0;
 	}
-	PLUGIN_DESTRUCTOR_MACRO
 }
 
 PLUGIN_CLASS_METHODS
 
 VFrame *SharpenMain::process_tmpframe(VFrame *input)
 {
-	int i, j, k;
+	int color_model = input->get_color_model();
 
-	load_configuration();
-	if(!engine)
+	switch(color_model)
 	{
-		total_engines = PluginClient::smp > 1 ? 2 : 1;
-		engine = new SharpenEngine*[total_engines];
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+	{
+		update_gui();
+		need_reconfigure = 1;
+	}
+
+	if(!total_engines)
+	{
+		total_engines = get_project_smp() > 1 ? MAX_ENGINES : 1;
 
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i] = new SharpenEngine(this, input);
+			engine[i] = new SharpenEngine(this);
 			engine[i]->start();
 		}
 	}
 
-	get_luts(pos_lut, neg_lut, input->get_color_model());
-
 	if(config.sharpness)
 	{
+		if(need_reconfigure || !pos_lut)
+			get_luts();
 // Arm first row
 		row_step = (config.interlace) ? 2 : 1;
 
-		for(j = 0; j < row_step; j += total_engines)
+		for(int j = 0; j < row_step; j += total_engines)
 		{
-			for(k = 0; k < total_engines && k + j < row_step; k++)
+			for(int k = 0; k < total_engines && k + j < row_step; k++)
 				engine[k]->start_process_frame(input, k + j);
 
-			for(k = 0; k < total_engines && k + j < row_step; k++)
-			{
+			for(int k = 0; k < total_engines && k + j < row_step; k++)
 				engine[k]->wait_process_frame();
-			}
 		}
 	}
 	return input;
@@ -152,17 +165,22 @@ void SharpenMain::save_defaults()
 	defaults->save();
 }
 
-void SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)
+void SharpenMain::get_luts()
 {
-	int i, inv_sharpness, vmax;
+	int inv_sharpness = round(100 - config.sharpness);
 
-	vmax = ColorModels::calculate_max(color_model);
+	if(!pos_lut)
+		pos_lut = new int[LUTS_SIZE];
+	if(!neg_lut)
+		neg_lut = new int[LUTS_SIZE];
 
-	inv_sharpness = (int)(100 - config.sharpness);
-	if(config.horizontal) inv_sharpness /= 2;
-	if(inv_sharpness < 1) inv_sharpness = 1;
+	if(config.horizontal)
+		inv_sharpness /= 2;
 
-	for(i = 0; i < vmax + 1; i++)
+	if(inv_sharpness < 1)
+		inv_sharpness = 1;
+
+	for(int i = 0; i < LUTS_SIZE; i++)
 	{
 		pos_lut[i] = 800 * i / inv_sharpness;
 		neg_lut[i] = (4 + pos_lut[i] - (i << 3)) >> 3;
@@ -254,7 +272,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 		if(config.sharpness < 0) config.sharpness = 0;
 }
 
-SharpenEngine::SharpenEngine(SharpenMain *plugin, VFrame *input)
+SharpenEngine::SharpenEngine(SharpenMain *plugin)
  : Thread(THREAD_SYNCHRONOUS)
 {
 	this->plugin = plugin;
@@ -262,10 +280,7 @@ SharpenEngine::SharpenEngine(SharpenMain *plugin, VFrame *input)
 	output_lock = new Condition(0, "SharpenEngine::output_lock");
 	last_frame = 0;
 	for(int i = 0; i < 4; i++)
-	{
-		neg_rows[i] = new unsigned char[input->get_w() *
-			4 * MAX(sizeof(float), sizeof(int))];
-	}
+		neg_rows[i] = 0;
 }
 
 SharpenEngine::~SharpenEngine()
@@ -295,6 +310,11 @@ void SharpenEngine::start_process_frame(VFrame *output, int field)
 		sharpness_coef = 1;
 	sharpness_coef = 800.0 / sharpness_coef;
 
+	if(!neg_rows[0])
+	{
+		for(int i = 0; i < 4; i++)
+			neg_rows[i] = new int[output->get_w() * 4];
+	}
 	input_lock->unlock();
 }
 
@@ -313,277 +333,58 @@ double SharpenEngine::calculate_neg(double value)
 	return (calculate_pos(value) - (value * 8)) / 8;
 }
 
-#define FILTER(components, vmax) \
-{ \
-	int *pos_lut = plugin->pos_lut; \
-	const int wordsize = sizeof(*src); \
- \
-/* Skip first pixel in row */ \
-	memcpy(dst, src, components * wordsize); \
-	dst += components; \
-	src += components; \
- \
-	w -= 2; \
- \
-	while(w > 0) \
-	{ \
-		long pixel; \
-		pixel = (long)pos_lut[src[0]] -  \
-			(long)neg0[-components] -  \
-			(long)neg0[0] -  \
-			(long)neg0[components] -  \
-			(long)neg1[-components] -  \
-			(long)neg1[components] -  \
-			(long)neg2[-components] -  \
-			(long)neg2[0] -  \
-			(long)neg2[components]; \
-		pixel = (pixel + 4) >> 3; \
-		if(pixel < 0) dst[0] = 0; \
-		else \
-		if(pixel > vmax) dst[0] = vmax; \
-		else \
-		dst[0] = pixel; \
- \
-		pixel = (long)pos_lut[src[1]] -  \
-			(long)neg0[-components + 1] -  \
-			(long)neg0[1] -  \
-			(long)neg0[components + 1] -  \
-			(long)neg1[-components + 1] -  \
-			(long)neg1[components + 1] -  \
-			(long)neg2[-components + 1] -  \
-			(long)neg2[1] -  \
-			(long)neg2[components + 1]; \
-		pixel = (pixel + 4) >> 3; \
-		if(pixel < 0) dst[1] = 0; \
-		else \
-		if(pixel > vmax) dst[1] = vmax; \
-		else \
-		dst[1] = pixel; \
- \
-		pixel = (long)pos_lut[src[2]] -  \
-			(long)neg0[-components + 2] -  \
-			(long)neg0[2] -  \
-			(long)neg0[components + 2] -  \
-			(long)neg1[-components + 2] -  \
-			(long)neg1[components + 2] -  \
-			(long)neg2[-components + 2] -  \
-			(long)neg2[2] -  \
-			(long)neg2[components + 2]; \
-		pixel = (pixel + 4) >> 3; \
-		if(pixel < 0) dst[2] = 0; \
-		else \
-		if(pixel > vmax) dst[2] = vmax; \
-		else \
-		dst[2] = pixel; \
- \
-		src += components; \
-		dst += components; \
- \
-		neg0 += components; \
-		neg1 += components; \
-		neg2 += components; \
-		w--; \
-	} \
- \
-/* Skip last pixel in row */ \
-	memcpy(dst, src, components * wordsize); \
-}
-
-void SharpenEngine::filter(int components,
-	int vmax,
-	int w, 
+void SharpenEngine::filter(int w,
 	u_int16_t *src, 
 	u_int16_t *dst,
 	int *neg0, 
 	int *neg1, 
 	int *neg2)
 {
-	FILTER(components, vmax);
-}
+	int *pos_lut = plugin->pos_lut;
 
-void SharpenEngine::filter(int components,
-	int vmax,
-	int w, 
-	unsigned char *src, 
-	unsigned char *dst,
-	int *neg0, 
-	int *neg1, 
-	int *neg2)
-{
-	FILTER(components, vmax);
-}
-
-void SharpenEngine::filter(int components,
-	int vmax,
-	int w, 
-	float *src, 
-	float *dst,
-	float *neg0, 
-	float *neg1, 
-	float *neg2)
-{
-	const int wordsize = sizeof(float);
-// First pixel in row
-	memcpy(dst, src, components * wordsize);
-	dst += components;
-	src += components;
+	// Skip first pixel in row
+	memcpy(dst, src, 4 * sizeof(uint16_t));
+	dst += 4;
+	src += 4;
 
 	w -= 2;
+
 	while(w > 0)
 	{
-		float pixel;
-		pixel = calculate_pos(src[0]) -
-			neg0[-components] -
-			neg0[0] - 
-			neg0[components] -
-			neg1[-components] -
-			neg1[components] -
-			neg2[-components] -
-			neg2[0] -
-			neg2[components];
-		pixel /= 8;
-		dst[0] = pixel;
+		int pixel = pos_lut[src[0]] - neg0[-4] - neg0[0] -
+			neg0[4] - neg1[-4] - neg1[4] -
+			neg2[-4] - neg2[0] - neg2[4];
+		pixel = (pixel + 4) >> 3;
+		dst[0] = CLIP(pixel, 0, 0xffff);
 
-		pixel = calculate_pos(src[1]) -
-			neg0[-components + 1] -
-			neg0[1] - 
-			neg0[components + 1] -
-			neg1[-components + 1] -
-			neg1[components + 1] -
-			neg2[-components + 1] -
-			neg2[1] -
-			neg2[components + 1];
-		pixel /= 8;
-		dst[1] = pixel;
+		pixel = pos_lut[src[1]] - neg0[-3] - neg0[1] -
+			neg0[5] - neg1[-3] - neg1[5] -
+			neg2[-3] - neg2[1] - neg2[5];
+		pixel = (pixel + 4) >> 3;
+		dst[1] = CLIP(pixel, 0, 0xffff);
 
-		pixel = calculate_pos(src[2]) -
-			neg0[-components + 2] -
-			neg0[2] - 
-			neg0[components + 2] -
-			neg1[-components + 2] -
-			neg1[components + 2] -
-			neg2[-components + 2] -
-			neg2[2] -
-			neg2[components + 2];
-		pixel /= 8;
-		dst[2] = pixel;
+		pixel = pos_lut[src[2]] - neg0[-2] - neg0[2] -
+			neg0[6] - neg1[-2] - neg1[6] -
+			neg2[-2] - neg2[2] - neg2[6];
+		pixel = (pixel + 4) >> 3;
+		dst[2] = CLIP(pixel, 0, 0xffff);
 
-		src += components;
-		dst += components;
-		neg0 += components;
-		neg1 += components;
-		neg2 += components;
+		src += 4;
+		dst += 4;
+
+		neg0 += 4;
+		neg1 += 4;
+		neg2 += 4;
 		w--;
 	}
-
-/* Last pixel */
-	memcpy(dst, src, components * wordsize);
-}
-
-
-#define SHARPEN(components, type, temp_type, vmax) \
-{ \
-	int count, row; \
-	int wordsize = sizeof(type); \
-	int w = output->get_w(); \
-	int h = output->get_h(); \
- \
-	src_rows[0] = src_rows[1] = src_rows[2] = \
-		src_rows[3] = output->get_row_ptr(field); \
- \
-	for(int j = 0; j < w; j++) \
-	{ \
-		temp_type *neg = (temp_type*)neg_rows[0]; \
-		type *src = (type*)src_rows[0]; \
-		for(int k = 0; k < components; k++) \
-		{ \
-			if(wordsize == 4) \
-			{ \
-				neg[j * components + k] = \
-					(temp_type)calculate_neg(src[j * components + k]); \
-			} \
-			else \
-			{ \
-				neg[j * components + k] = \
-					(temp_type)plugin->neg_lut[(int)src[j * components + k]]; \
-			} \
-		} \
-	} \
- \
-	row = 1; \
-	count = 1; \
- \
-	for(int i = field; i < h; i += plugin->row_step) \
-	{ \
-		if((i + plugin->row_step) < h) \
-		{ \
-			if(count >= 3) count--; \
-/* Arm next row */ \
-			src_rows[row] = output->get_row_ptr(i + plugin->row_step); \
-/* Calculate neg rows */ \
-			type *src = (type*)src_rows[row]; \
-			temp_type *neg = (temp_type*)neg_rows[row]; \
-			for(int k = 0; k < w; k++) \
-			{ \
-				for(int j = 0; j < components; j++) \
-				{ \
-					if(wordsize == 4) \
-					{ \
-						neg[k * components + j] = \
-							(temp_type)calculate_neg(src[k * components + j]); \
-					} \
-					else \
-					{ \
-						neg[k * components + j] = \
-							plugin->neg_lut[(int)src[k * components + j]]; \
-					} \
-				} \
-			} \
- \
-			count++; \
-			row = (row + 1) & 3; \
-		} \
-		else \
-		{ \
-			count--; \
-		} \
- \
-		dst_row = output->get_row_ptr(i); \
-		if(count == 3) \
-		{ \
-/* Do the filter */ \
-			if(plugin->config.horizontal) \
-				filter(components, \
-					vmax, \
-					w,  \
-					(type*)src_rows[(row + 2) & 3],  \
-					(type*)dst_row, \
-					(temp_type*)neg_rows[(row + 2) & 3] + components, \
-					(temp_type*)neg_rows[(row + 2) & 3] + components, \
-					(temp_type*)neg_rows[(row + 2) & 3] + components); \
-			else \
-				filter(components, \
-					vmax, \
-					w,  \
-					(type*)src_rows[(row + 2) & 3],  \
-					(type*)dst_row, \
-					(temp_type*)neg_rows[(row + 1) & 3] + components, \
-					(temp_type*)neg_rows[(row + 2) & 3] + components, \
-					(temp_type*)neg_rows[(row + 3) & 3] + components); \
-		} \
-		else  \
-		if(count == 2) \
-		{ \
-			if(i == 0) \
-				memcpy(dst_row, src_rows[0], w * components * wordsize); \
-			else \
-				memcpy(dst_row, src_rows[2], w * components * wordsize); \
-		} \
-	} \
+// Skip last pixel in row
+	memcpy(dst, src, 4 * sizeof(uint16_t));
 }
 
 void SharpenEngine::run()
 {
+	int count, row;
+
 	while(1)
 	{
 		input_lock->lock("SharpenEngine::run");
@@ -593,114 +394,157 @@ void SharpenEngine::run()
 			return;
 		}
 
+		int w = output->get_w();
+		int h = output->get_h();
+
 		switch(output->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			SHARPEN(3, float, float, 1);
-			break;
-
-		case BC_RGB888:
-		case BC_YUV888:
-			SHARPEN(3, unsigned char, int, 0xff);
-			break;
-
-		case BC_RGBA_FLOAT:
-			SHARPEN(4, float, float, 1);
-			break;
-
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			SHARPEN(4, unsigned char, int, 0xff);
-			break;
-
-		case BC_RGB161616:
-		case BC_YUV161616:
-			SHARPEN(3, u_int16_t, int, 0xffff);
-			break;
-
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			SHARPEN(4, u_int16_t, int, 0xffff);
+			src_rows[0] = src_rows[1] = src_rows[2] =
+				src_rows[3] = (uint16_t*)output->get_row_ptr(field);
+
+			for(int j = 0; j < w; j++)
+			{
+				int *neg = neg_rows[0];
+				uint16_t *src = src_rows[0];
+
+				for(int k = 0; k < 4; k++)
+				{
+					neg[j * 4 + k] =
+						plugin->neg_lut[src[j * 4 + k]];
+				}
+			}
+
+			row = 1;
+			count = 1;
+
+			for(int i = field; i < h; i += plugin->row_step)
+			{
+				if((i + plugin->row_step) < h)
+				{
+					if(count >= 3)
+						count--;
+					// Arm next row
+					src_rows[row] = (uint16_t*)output->get_row_ptr(i + plugin->row_step);
+					// Calculate neg rows
+					uint16_t *src = src_rows[row];
+					int *neg = neg_rows[row];
+
+					for(int k = 0; k < w; k++)
+					{
+						for(int j = 0; j < 4; j++)
+						{
+							neg[k * 4 + j] =
+								plugin->neg_lut[src[k * 4 + j]];
+						}
+					}
+
+					count++;
+					row = (row + 1) & 3;
+				}
+				else
+					count--;
+
+				dst_row = (uint16_t*)output->get_row_ptr(i);
+				if(count == 3)
+				{
+					// Do the filter
+					if(plugin->config.horizontal)
+						filter(w, src_rows[(row + 2) & 3],
+							dst_row,
+							neg_rows[(row + 2) & 3] + 4,
+							neg_rows[(row + 2) & 3] + 4,
+							neg_rows[(row + 2) & 3] + 4);
+				else
+					filter(w, src_rows[(row + 2) & 3],
+						dst_row,
+						neg_rows[(row + 1) & 3] + 4,
+						neg_rows[(row + 2) & 3] + 4,
+						neg_rows[(row + 3) & 3] + 4);
+				}
+				else
+				if(count == 2)
+				{
+					if(i == 0)
+						memcpy(dst_row, src_rows[0], w * 4 * sizeof(uint16_t));
+					else
+						memcpy(dst_row, src_rows[2], w * 4 * sizeof(uint16_t));
+				}
+			}
 			break;
 
 		case BC_AYUV16161616:
+			src_rows[0] = src_rows[1] =
+				src_rows[2] = src_rows[3] =
+				(uint16_t*)output->get_row_ptr(field);
+
+			for(int j = 0; j < w; j++)
 			{
-				int count, row;
-				int wordsize = sizeof(uint16_t);
-				int w = output->get_w();
-				int h = output->get_h();
+				int *neg = neg_rows[0];
+				uint16_t *src = src_rows[0];
 
-				src_rows[0] = src_rows[1] =
-					src_rows[2] = src_rows[3] =
-					output->get_row_ptr(field);
-
-				for(int j = 0; j < w; j++)
+				for(int k = 0; k < 4; k++)
 				{
-					int *neg = (int*)neg_rows[0];
-					uint16_t *src = (uint16_t*)src_rows[0];
-					for(int k = 0; k < 4; k++)
-					{
-						neg[j * 4 + k] =
-							(int)plugin->neg_lut[(int)src[j * 4 + k]];
-					}
+					neg[j * 4 + k] =
+						plugin->neg_lut[(int)src[j * 4 + k]];
 				}
+			}
 
-				row = 1;
-				count = 1;
+			row = 1;
+			count = 1;
 
-				for(int i = field; i < h; i += plugin->row_step)
+			for(int i = field; i < h; i += plugin->row_step)
+			{
+				if((i + plugin->row_step) < h)
 				{
-					if((i + plugin->row_step) < h)
-					{
-						if(count >= 3) count--;
-						// Arm next row
-						src_rows[row] = output->get_row_ptr(i + plugin->row_step);
-						// Calculate neg rows
-						uint16_t *src = (uint16_t*)src_rows[row];
-						int *neg = (int*)neg_rows[row];
-
-						for(int k = 0; k < w; k++)
-						{
-							for(int j = 0; j < 4; j++)
-							{
-								neg[k * 4 + j] =
-									plugin->neg_lut[(int)src[k * 4 + j]];
-							}
-						}
-
-						count++;
-						row = (row + 1) & 3;
-					}
-					else
+					if(count >= 3)
 						count--;
+					// Arm next row
+					src_rows[row] = (uint16_t*)output->get_row_ptr(i + plugin->row_step);
+					// Calculate neg rows
+					uint16_t *src = src_rows[row];
+					int *neg = neg_rows[row];
 
-					dst_row = output->get_row_ptr(i);
-					if(count == 3)
+					for(int k = 0; k < w; k++)
 					{
-						// Do the filter
-						if(plugin->config.horizontal)
-							filter(4, 0xffff, w,
-								(uint16_t*)src_rows[(row + 2) & 3],
-								(uint16_t*)dst_row,
-								(int*)neg_rows[(row + 2) & 3] + 4,
-								(int*)neg_rows[(row + 2) & 3] + 4,
-								(int*)neg_rows[(row + 2) & 3] + 4);
-						else
-							filter(4, 0xffff, w,
-								(uint16_t*)src_rows[(row + 2) & 3],
-								(uint16_t*)dst_row,
-								(int*)neg_rows[(row + 1) & 3] + 4,
-								(int*)neg_rows[(row + 2) & 3] + 4,
-								(int*)neg_rows[(row + 3) & 3] + 4);
+						for(int j = 0; j < 4; j++)
+						{
+							neg[k * 4 + j] =
+								plugin->neg_lut[src[k * 4 + j]];
+						}
 					}
+
+					count++;
+					row = (row + 1) & 3;
+				}
+				else
+					count--;
+
+				dst_row = (uint16_t*)output->get_row_ptr(i);
+				if(count == 3)
+				{
+					// Do the filter
+					if(plugin->config.horizontal)
+						filter(w, src_rows[(row + 2) & 3],
+							dst_row,
+							neg_rows[(row + 2) & 3] + 4,
+							neg_rows[(row + 2) & 3] + 4,
+							neg_rows[(row + 2) & 3] + 4);
 					else
-					if(count == 2)
-					{
-						if(i == 0)
-							memcpy(dst_row, src_rows[0], w * 4 * 2);
-						else
-							memcpy(dst_row, src_rows[2], w * 4 * 2);
-					}
+						filter(w,
+							src_rows[(row + 2) & 3],
+							dst_row,
+							neg_rows[(row + 1) & 3] + 4,
+							neg_rows[(row + 2) & 3] + 4,
+							neg_rows[(row + 3) & 3] + 4);
+				}
+				else
+				if(count == 2)
+				{
+					if(i == 0)
+						memcpy(dst_row, src_rows[0], w * 4 * sizeof(uint16_t));
+					else
+						memcpy(dst_row, src_rows[2], w * 4 * sizeof(uint16_t));
 				}
 			}
 			break;

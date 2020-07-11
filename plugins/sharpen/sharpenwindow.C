@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "sharpenwindow.h"
@@ -44,10 +28,6 @@ SharpenWindow::SharpenWindow(SharpenMain *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-SharpenWindow::~SharpenWindow()
-{
-}
-
 void SharpenWindow::update()
 {
 	sharpen_slider->update((int)plugin->config.sharpness);
@@ -57,7 +37,7 @@ void SharpenWindow::update()
 }
 
 
-SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
+SharpenSlider::SharpenSlider(SharpenMain *client, double *output, int x, int y)
  : BC_ISlider(x, 
 	y,
 	0,
@@ -74,10 +54,6 @@ SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
 	this->output = output;
 }
 
-SharpenSlider::~SharpenSlider()
-{
-}
-
 int SharpenSlider::handle_event()
 {
 	*output = get_value();
@@ -90,10 +66,6 @@ SharpenInterlace::SharpenInterlace(SharpenMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.interlace, _("Interlace"))
 {
 	this->client = client;
-}
-
-SharpenInterlace::~SharpenInterlace()
-{
 }
 
 int SharpenInterlace::handle_event()
@@ -110,10 +82,6 @@ SharpenHorizontal::SharpenHorizontal(SharpenMain *client, int x, int y)
 	this->client = client;
 }
 
-SharpenHorizontal::~SharpenHorizontal()
-{
-}
-
 int SharpenHorizontal::handle_event()
 {
 	client->config.horizontal = get_value();
@@ -126,10 +94,6 @@ SharpenLuminance::SharpenLuminance(SharpenMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.luminance, _("Luminance only"))
 {
 	this->client = client;
-}
-
-SharpenLuminance::~SharpenLuminance()
-{
 }
 
 int SharpenLuminance::handle_event()

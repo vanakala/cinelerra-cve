@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef SHARPEN_H
 #define SHARPEN_H
@@ -36,6 +20,8 @@
 #include "pluginmacros.h"
 
 #define MAXSHARPNESS 100
+#define MAX_ENGINES  2
+#define LUTS_SIZE    0x10000
 
 #include "condition.inc"
 #include "bchash.h"
@@ -63,7 +49,7 @@ public:
 	int horizontal;
 	int interlace;
 	int luminance;
-	float sharpness;
+	double sharpness;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -76,6 +62,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	VFrame *process_tmpframe(VFrame *input);
+	void reset_plugin();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -84,11 +71,11 @@ public:
 // parameters needed for sharpness
 	int row_step;
 
-	int pos_lut[0x10000], neg_lut[0x10000];
+	int *pos_lut, *neg_lut;
 
 private:
-	void get_luts(int *pos_lut, int *neg_lut, int color_model);
-	SharpenEngine **engine;
+	void get_luts();
+	SharpenEngine *engine[MAX_ENGINES];
 	int total_engines;
 };
 
@@ -96,37 +83,19 @@ private:
 class SharpenEngine : public Thread
 {
 public:
-	SharpenEngine(SharpenMain *plugin, VFrame *input);
+	SharpenEngine(SharpenMain *plugin);
 	~SharpenEngine();
 
 	void start_process_frame(VFrame *output, int field);
 	void wait_process_frame();
 	void run();
 
-	void filter(int components,
-		int vmax,
-		int w, 
-		unsigned char *src, 
-		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-	void filter(int components,
-		int vmax,
-		int w, 
-		u_int16_t *src, 
+	void filter(int w,
+		u_int16_t *src,
 		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
+		int *neg0,
+		int *neg1,
 		int *neg2);
-	void filter(int components,
-		int vmax,
-		int w, 
-		float *src, 
-		float *dst,
-		float *neg0, 
-		float *neg1, 
-		float *neg2);
 
 	double calculate_pos(double value);
 	double calculate_neg(double value);
@@ -136,8 +105,8 @@ public:
 	VFrame *output;
 	int last_frame;
 	Condition *input_lock, *output_lock;
-	unsigned char *src_rows[4], *dst_row;
-	unsigned char *neg_rows[4];
+	uint16_t *src_rows[4], *dst_row;
+	int *neg_rows[4];
 	double sharpness_coef;
 };
 
