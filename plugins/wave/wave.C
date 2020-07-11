@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -65,10 +50,10 @@ int WaveConfig::equivalent(WaveConfig &src)
 }
 
 void WaveConfig::interpolate(WaveConfig &prev, 
-		WaveConfig &next,
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts)
+	WaveConfig &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
@@ -81,14 +66,8 @@ void WaveConfig::interpolate(WaveConfig &prev,
 
 
 WaveAmplitude::WaveAmplitude(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-			y,
-			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
-			plugin->config.amplitude)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 100.0,
+	plugin->config.amplitude)
 {
 	this->plugin = plugin;
 }
@@ -102,14 +81,8 @@ int WaveAmplitude::handle_event()
 
 
 WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-			y,
-			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)360, 
-			plugin->config.phase)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 360.0,
+	plugin->config.phase)
 {
 	this->plugin = plugin;
 }
@@ -123,14 +96,8 @@ int WavePhase::handle_event()
 
 
 WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-			y,
-			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)50, 
-			plugin->config.wavelength)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 50.0,
+	plugin->config.wavelength)
 {
 	this->plugin = plugin;
 }
@@ -190,6 +157,15 @@ WaveEffect::~WaveEffect()
 {
 	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void WaveEffect::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -252,7 +228,20 @@ void WaveEffect::read_data(KeyFrame *keyframe)
 
 VFrame *WaveEffect::process_tmpframe(VFrame *input)
 {
-	load_configuration();
+	int color_model = input->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	this->input = input;
 	output = input;
@@ -262,7 +251,7 @@ VFrame *WaveEffect::process_tmpframe(VFrame *input)
 		output = clone_vframe(input);
 
 		if(!engine)
-			engine = new WaveServer(this, (PluginClient::smp + 1));
+			engine = new WaveServer(this, get_project_smp());
 
 		engine->process_packages();
 		release_vframe(input);
@@ -309,6 +298,7 @@ void WaveUnit::process_package(LoadPackage *package)
 	WavePackage *pkg = (WavePackage*)package;
 	int w = plugin->input->get_w();
 	int h = plugin->input->get_h();
+	int row_size = w * 4;
 	double cen_x, cen_y;       /* Center of wave */
 	double xhsiz, yhsiz;       /* Half size of selection */
 	double radius, radius2;    /* Radius and radius^2 */
@@ -353,140 +343,172 @@ void WaveUnit::process_package(LoadPackage *package)
 
 	wavelength = plugin->config.wavelength / 100 * radius;
 
-#define WAVE(type, components, chroma_offset) \
-{ \
-	int row_size = w * components; \
-	for(int y = pkg->row1; y < pkg->row2; y++) \
-	{ \
-		type *dest = (type*)plugin->output->get_row_ptr(y); \
- \
-		for(int x = x1; x < x2; x++) \
-		{ \
-			dx = (x - cen_x) * xscale; \
-			dy = (y - cen_y) * yscale; \
-			d = sqrt(dx * dx + dy * dy); \
- \
-			if(plugin->config.reflective) \
-			{ \
-				amnt = plugin->config.amplitude *  \
-					fabs(sin(((d / wavelength) *  \
-						(2.0 * M_PI) + \
-						phase))); \
- \
-				needx = (amnt * dx) / xscale + cen_x; \
-				needy = (amnt * dy) / yscale + cen_y; \
-			} \
-			else \
-			{ \
-				amnt = plugin->config.amplitude *  \
-					sin(((d / wavelength) *  \
-						(2.0 * M_PI) + \
-						phase)); \
- \
-				needx = (amnt + dx) / xscale + cen_x; \
-				needy = (amnt + dy) / yscale + cen_y; \
-			} \
- \
-			xi = (int)needx; \
-			yi = (int)needy; \
- \
-			if(plugin->config.mode == SMEAR) \
-			{ \
-				if(xi > w - 2) \
-				{ \
-					xi = w - 2; \
-				} \
-				else  \
-				if(xi < 0) \
-				{ \
-				  	xi = 0; \
-				} \
- \
-				if(yi > h - 2) \
-				{ \
-					yi = h - 2; \
-				} \
-				else  \
-				if(yi < 0) \
-				{ \
-					yi = 0; \
-				} \
-			} \
- \
-			type *p = (type *)plugin->input->get_row_ptr(CLIP(yi, 0, h - 1)) + \
-				CLIP(xi, 0, w - 1) * components; \
-			x1_in = WITHIN(0, xi, w - 1); \
-			y1_in = WITHIN(0, yi, h - 1); \
-			x2_in = WITHIN(0, xi + 1, w - 1); \
-			y2_in = WITHIN(0, yi + 1, h - 1); \
- \
-			for(int k = 0; k < components; k++) \
-			{ \
-				if (x1_in && y1_in) \
-					values[0] = *(p + k); \
-				else \
-					values[0] = ((k == 1 || k == 2) ? 0 : chroma_offset); \
- \
-				if (x2_in && y1_in) \
-					values[1] = *(p + components + k); \
-				else \
-					values[1] = ((k == 1 || k == 2) ? 0 : chroma_offset); \
- \
-				if (x1_in && y2_in) \
-					values[2] = *(p + row_size + k); \
-				else \
-					values[2] = ((k == 1 || k == 2) ? 0 : chroma_offset); \
- \
-				if (x2_in) \
-				{ \
-					if (y2_in) \
-						values[3] = *(p + row_size + components + k); \
-					else \
-						values[3] = ((k == 1 || k == 2) ? 0 : chroma_offset); \
-				} \
-				else \
-					values[3] = ((k == 1 || k == 2) ? 0 : chroma_offset); \
- \
-				val = bilinear(needx, needy, values); \
- \
-				*dest++ = (type)val; \
-			} \
-		} \
-	} \
-}
-
 	switch(plugin->input->get_color_model())
 	{
-	case BC_RGB888:
-		WAVE(unsigned char, 3, 0x0);
-		break;
-	case BC_RGB_FLOAT:
-		WAVE(float, 3, 0x0);
-		break;
-	case BC_YUV888:
-		WAVE(unsigned char, 3, 0x80);
-		break;
-	case BC_RGB161616:
-		WAVE(uint16_t, 3, 0x0);
-		break;
-	case BC_YUV161616:
-		WAVE(uint16_t, 3, 0x8000);
-		break;
-	case BC_RGBA_FLOAT:
-		WAVE(unsigned char, 4, 0x0);
-		break;
-	case BC_RGBA8888:
-		WAVE(unsigned char, 4, 0x0);
-		break;
-	case BC_YUVA8888:
-		WAVE(unsigned char, 4, 0x8000);
-		break;
 	case BC_RGBA16161616:
-		WAVE(uint16_t, 4, 0x0);
+		for(int y = pkg->row1; y < pkg->row2; y++) \
+		{
+			uint16_t *dest = (uint16_t*)plugin->output->get_row_ptr(y);
+
+			for(int x = x1; x < x2; x++)
+			{
+				dx = (x - cen_x) * xscale;
+				dy = (y - cen_y) * yscale;
+				d = sqrt(dx * dx + dy * dy);
+
+				if(plugin->config.reflective)
+				{
+					amnt = plugin->config.amplitude *
+						fabs(sin(((d / wavelength) *
+						(2.0 * M_PI) + phase)));
+
+					needx = (amnt * dx) / xscale + cen_x;
+					needy = (amnt * dy) / yscale + cen_y;
+				}
+				else
+				{
+					amnt = plugin->config.amplitude *
+						sin(((d / wavelength) *
+						(2.0 * M_PI) + phase));
+
+					needx = (amnt + dx) / xscale + cen_x;
+					needy = (amnt + dy) / yscale + cen_y;
+				}
+
+				xi = round(needx);
+				yi = round(needy);
+
+				if(plugin->config.mode == SMEAR)
+				{
+					if(xi > w - 2)
+						xi = w - 2;
+					else if(xi < 0)
+						xi = 0;
+
+					if(yi > h - 2)
+						yi = h - 2;
+					else if(yi < 0)
+						yi = 0;
+				}
+
+				uint16_t *p = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(yi, 0, h - 1)) +
+					CLIP(xi, 0, w - 1) * 4;
+				x1_in = WITHIN(0, xi, w - 1);
+				y1_in = WITHIN(0, yi, h - 1);
+				x2_in = WITHIN(0, xi + 1, w - 1);
+				y2_in = WITHIN(0, yi + 1, h - 1);
+
+				for(int k = 0; k < 4; k++)
+				{
+					if(x1_in && y1_in)
+						values[0] = *(p + k);
+					else
+						values[0] = 0;
+
+					if(x2_in && y1_in)
+						values[1] = *(p + 4 + k);
+					else
+						values[1] = 0;
+
+					if(x1_in && y2_in)
+						values[2] = *(p + row_size + k);
+					else
+						values[2] = 0;
+
+					if(x2_in && y2_in)
+						values[3] = *(p + row_size + 4 + k);
+					else
+						values[3] = 0;
+
+					val = bilinear(needx, needy, values);
+					*dest++ = val;
+				}
+			}
+		}
 		break;
-	case BC_YUVA16161616:
+
 	case BC_AYUV16161616:
-		WAVE(uint16_t, 4, 0x8000);
+		for(int y = pkg->row1; y < pkg->row2; y++)
+		{
+			uint16_t *dest = (uint16_t*)plugin->output->get_row_ptr(y);
+
+			for(int x = x1; x < x2; x++)
+			{
+				dx = (x - cen_x) * xscale;
+				dy = (y - cen_y) * yscale;
+				d = sqrt(dx * dx + dy * dy);
+
+				if(plugin->config.reflective) \
+				{
+					amnt = plugin->config.amplitude *
+						fabs(sin(((d / wavelength) *
+						(2.0 * M_PI) + phase)));
+
+					needx = (amnt * dx) / xscale + cen_x;
+					needy = (amnt * dy) / yscale + cen_y;
+				}
+				else
+				{
+					amnt = plugin->config.amplitude *
+						sin(((d / wavelength) *
+						(2.0 * M_PI) + phase));
+
+					needx = (amnt + dx) / xscale + cen_x;
+					needy = (amnt + dy) / yscale + cen_y;
+				}
+
+				xi = round(needx);
+				yi = round(needy);
+
+				if(plugin->config.mode == SMEAR)
+				{
+					if(xi > w - 2)
+						xi = w - 2;
+					else if(xi < 0)
+						xi = 0;
+
+					if(yi > h - 2)
+						yi = h - 2;
+					else if(yi < 0)
+						yi = 0;
+				}
+
+				uint16_t *p = (uint16_t*)plugin->input->get_row_ptr(
+					CLIP(yi, 0, h - 1)) + CLIP(xi, 0, w - 1) * 4;
+				x1_in = WITHIN(0, xi, w - 1);
+				y1_in = WITHIN(0, yi, h - 1);
+				x2_in = WITHIN(0, xi + 1, w - 1);
+				y2_in = WITHIN(0, yi + 1, h - 1);
+
+				for(int k = 0; k < 4; k++)
+				{
+					if(x1_in && y1_in)
+						values[0] = *(p + k);
+					else
+						values[0] = ((k == 1 || k == 2) ? 0 : 0x8000);
+
+					if(x2_in && y1_in)
+						values[1] = *(p + 4 + k);
+					else
+						values[1] = ((k == 1 || k == 1) ? 0 : 0x8000);
+
+					if(x1_in && y2_in)
+						values[2] = *(p + row_size + k);
+					else
+						values[2] = ((k == 1 || k == 2) ? 0 : 0x8000);
+
+					if(x2_in && y2_in)
+						values[3] = *(p + row_size + 4 + k);
+					else
+						values[3] = ((k == 1 || k == 2) ? 0 : 0x8000);
+
+					val = bilinear(needx, needy, values);
+
+					*dest++ = val;
+				}
+			}
+		}
 		break;
 	}
 }
