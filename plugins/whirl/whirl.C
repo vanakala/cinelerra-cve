@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bcslider.h"
@@ -107,14 +91,8 @@ void WhirlWindow::update()
 
 
 WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-		y,
-		0,
-		200,
-		200, 
-		(float)0, 
-		(float)360,
-		plugin->config.angle)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, 360.0,
+	plugin->config.angle)
 {
 	this->plugin = plugin;
 }
@@ -128,14 +106,8 @@ int WhirlAngle::handle_event()
 
 
 WhirlPinch::WhirlPinch(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-		y,
-		0,
-		200,
-		200, 
-		(float)0, 
-		(float)MAXPINCH, 
-		plugin->config.pinch)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, MAXPINCH,
+	plugin->config.pinch)
 {
 	this->plugin = plugin;
 }
@@ -149,14 +121,7 @@ int WhirlPinch::handle_event()
 
 
 WhirlRadius::WhirlRadius(WhirlEffect *plugin, int x, int y)
- : BC_FSlider(x, 
-		y,
-		0,
-		200,
-		200, 
-		(float)0, 
-		(float)MAXRADIUS, 
-		plugin->config.radius)
+ : BC_FSlider(x, y, 0, 200, 200, 0.0, MAXRADIUS, plugin->config.radius)
 {
 	this->plugin = plugin;
 }
@@ -180,6 +145,15 @@ WhirlEffect::~WhirlEffect()
 {
 	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void WhirlEffect::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -236,7 +210,20 @@ void WhirlEffect::read_data(KeyFrame *keyframe)
 
 VFrame *WhirlEffect::process_tmpframe(VFrame *input)
 {
-	load_configuration();
+	int color_model = input->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 	this->input = input;
 	output = input;
@@ -248,8 +235,7 @@ VFrame *WhirlEffect::process_tmpframe(VFrame *input)
 		output->copy_from(input);
 
 		if(!engine)
-			engine = new WhirlEngine(this, PluginClient::smp + 1);
-
+			engine = new WhirlEngine(this, get_project_smp());
 		engine->process_packages();
 		release_vframe(input);
 	}
@@ -324,15 +310,10 @@ static int calc_undistorted_coords(double cen_x,
 	return inside;
 }
 
-
-#define GET_PIXEL(components, x, y, type) \
-	(type*)plugin->input->get_row_ptr(CLIP(y, 0, (h - 1))) + \
-		components * CLIP(x, 0, (w - 1))
-
-
 static double bilinear(double x, double y, double *values)
 {
 	double m0, m1;
+
 	x = fmod(x, 1.0);
 	y = fmod(y, 1.0);
 
@@ -342,151 +323,6 @@ static double bilinear(double x, double y, double *values)
 	m0 = values[0] + x * (values[1] - values[0]);
 	m1 = values[2] + x * (values[3] - values[2]);
 	return m0 + y * (m1 - m0);
-}
-
-
-#define WHIRL_MACRO(type, max, components) \
-{ \
-	double values[components]; \
-	for(int row = pkg->row1; row <= (pkg->row2 + pkg->row1) / 2; row++) \
-	{ \
-		type *top_row = (type*)plugin->output->get_row_ptr(row); \
-		type *bot_row = (type*)plugin->output->get_row_ptr(h - row - 1); \
-		type *top_p = top_row; \
-		type *bot_p = bot_row + components * w - components; \
-		 \
-		for(int col = 0; col < w; col++) \
-		{ \
-			if(calc_undistorted_coords(cen_x, \
-				cen_y, \
-				scale_x, \
-				scale_y, \
-				radius, \
-				radius2, \
-				radius3, \
-				pinch, \
-				col, \
-				row, \
-				whirl, \
-				cx, \
-				cy)) \
-			{ \
-/* Inside distortion area */ \
-/* Do top */ \
-				if(cx >= 0.0) \
-					ix = (int)cx; \
-				else \
-					ix = -((int)-cx + 1); \
- \
-				if(cy >= 0.0) \
-					iy = (int)cy; \
-				else \
-					iy = -((int)-cy + 1); \
- \
-				type *pixel1 = GET_PIXEL(components, ix,     iy,     type); \
-				type *pixel2 = GET_PIXEL(components, ix + 1, iy,     type); \
-				type *pixel3 = GET_PIXEL(components, ix,     iy + 1, type); \
-				type *pixel4 = GET_PIXEL(components, ix + 1, iy + 1, type); \
- \
-				values[0] = pixel1[0]; \
-				values[1] = pixel2[0]; \
-				values[2] = pixel3[0]; \
-				values[3] = pixel4[0]; \
-				top_p[0] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[1]; \
-				values[1] = pixel2[1]; \
-				values[2] = pixel3[1]; \
-				values[3] = pixel4[1]; \
-				top_p[1] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[2]; \
-				values[1] = pixel2[2]; \
-				values[2] = pixel3[2]; \
-				values[3] = pixel4[2]; \
-				top_p[2] = (type)bilinear(cx, cy, values); \
- \
-				if(components == 4) \
-				{ \
-					values[0] = pixel1[3]; \
-					values[1] = pixel2[3]; \
-					values[2] = pixel3[3]; \
-					values[3] = pixel4[3]; \
-					top_p[3] = (type)bilinear(cx, cy, values); \
-				} \
- \
-				top_p += components; \
- \
-/* Do bottom */ \
-				cx = cen_x + (cen_x - cx); \
-				cy = cen_y + (cen_y - cy); \
- \
-				if(cx >= 0.0) \
-						ix = (int)cx; \
-				else \
-					ix = -((int)-cx + 1); \
- \
-				if(cy >= 0.0) \
-					iy = (int)cy; \
-				else \
-					iy = -((int)-cy + 1); \
- \
-				pixel1 = GET_PIXEL(components, ix,     iy,     type); \
-				pixel2 = GET_PIXEL(components, ix + 1, iy,     type); \
-				pixel3 = GET_PIXEL(components, ix,     iy + 1, type); \
-				pixel4 = GET_PIXEL(components, ix + 1, iy + 1, type); \
- \
-				values[0] = pixel1[0]; \
-				values[1] = pixel2[0]; \
-				values[2] = pixel3[0]; \
-				values[3] = pixel4[0]; \
-				bot_p[0] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[1]; \
-				values[1] = pixel2[1]; \
-				values[2] = pixel3[1]; \
-				values[3] = pixel4[1]; \
-				bot_p[1] = (type)bilinear(cx, cy, values); \
- \
-				values[0] = pixel1[2]; \
-				values[1] = pixel2[2]; \
-				values[2] = pixel3[2]; \
-				values[3] = pixel4[2]; \
-				bot_p[2] = (type)bilinear(cx, cy, values); \
- \
-				if(components == 4) \
-				{ \
-					values[0] = pixel1[3]; \
-					values[1] = pixel2[3]; \
-					values[2] = pixel3[3]; \
-					values[3] = pixel4[3]; \
-					bot_p[3] = (type)bilinear(cx, cy, values); \
-				} \
- \
-				bot_p -= components; \
- \
-			} \
-			else \
-			{ \
-/* Outside distortion area */ \
-/* Do top */ \
-				top_p[0] = top_row[components * col + 0]; \
-				top_p[1] = top_row[components * col + 1]; \
-				top_p[2] = top_row[components * col + 2]; \
-				if(components == 4) top_p[3] = top_row[components * col + 3]; \
- \
-				top_p += components; \
- \
-/* Do bottom */ \
-				int bot_offset = w * components - col * components - components; \
-				bot_p[0] = bot_row[bot_offset + 0]; \
-				bot_p[1] = bot_row[bot_offset + 1]; \
-				bot_p[2] = bot_row[bot_offset + 2]; \
-				if(components == 4) bot_p[3] = bot_row[bot_offset + 3]; \
-				bot_p -= components; \
-			} \
-		} \
-	} \
 }
 
 void WhirlUnit::process_package(LoadPackage *package)
@@ -505,6 +341,7 @@ void WhirlUnit::process_package(LoadPackage *package)
 	double radius2 = radius * radius * radius3;
 	double scale_x;
 	double scale_y;
+	double values[4];
 
 	if(w < h)
 	{
@@ -523,31 +360,145 @@ void WhirlUnit::process_package(LoadPackage *package)
 		scale_y = 1.0;
 	}
 
-	switch(plugin->input->get_color_model())
+	for(int row = pkg->row1; row <= (pkg->row2 + pkg->row1) / 2; row++)
 	{
-	case BC_RGB_FLOAT:
-		WHIRL_MACRO(float, 1, 3);
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		WHIRL_MACRO(unsigned char, 0xff, 3);
-		break;
-	case BC_RGBA_FLOAT:
-		WHIRL_MACRO(float, 1, 4);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		WHIRL_MACRO(unsigned char, 0xff, 4);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		WHIRL_MACRO(uint16_t, 0xffff, 3);
-		break;
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-	case BC_AYUV16161616:
-		WHIRL_MACRO(uint16_t, 0xffff, 4);
-		break;
+		uint16_t *top_row = (uint16_t*)plugin->output->get_row_ptr(row);
+		uint16_t *bot_row = (uint16_t*)plugin->output->get_row_ptr(h - row - 1);
+		uint16_t *top_p = top_row;
+		uint16_t *bot_p = bot_row + 4 * w - 4;
+
+		for(int col = 0; col < w; col++)
+		{
+			if(calc_undistorted_coords(cen_x, cen_y,
+				scale_x, scale_y,
+				radius, radius2, radius3,
+				pinch, col, row, whirl,
+				cx, cy))
+			{
+				// Inside distortion area
+				// Do top
+				if(cx >= 0.0)
+					ix = round(cx);
+				else
+					ix = -(round(-cx) + 1);
+
+				if(cy >= 0.0) \
+					iy = round(cy);
+				else
+					iy = -(round(-cy) + 1);
+
+				uint16_t *pixel1 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy, 0, (h - 1))) +
+					4 * CLIP(ix, 0, (w - 1));
+				uint16_t *pixel2 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy, 0, (h - 1))) +
+					4 * CLIP(ix + 1, 0, (w - 1));
+				uint16_t *pixel3 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy + 1, 0, (h - 1))) +
+					4 * CLIP(ix, 0, (w - 1));
+				uint16_t *pixel4 = (uint16_t*)plugin->input->get_row_ptr(
+					CLIP(iy + 1, 0, (h - 1))) +
+					4 * CLIP(ix + 1, 0, (w - 1));
+
+				values[0] = pixel1[0];
+				values[1] = pixel2[0];
+				values[2] = pixel3[0];
+				values[3] = pixel4[0];
+				top_p[0] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[1];
+				values[1] = pixel2[1];
+				values[2] = pixel3[1];
+				values[3] = pixel4[1];
+				top_p[1] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[2];
+				values[1] = pixel2[2];
+				values[2] = pixel3[2];
+				values[3] = pixel4[2];
+				top_p[2] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[3];
+				values[1] = pixel2[3];
+				values[2] = pixel3[3];
+				values[3] = pixel4[3];
+				top_p[3] = round(bilinear(cx, cy, values));
+
+				top_p += 4;
+
+				// Do bottom
+				cx = cen_x + (cen_x - cx);
+				cy = cen_y + (cen_y - cy);
+
+				if(cx >= 0.0)
+					ix = round(cx);
+				else
+					ix = -(round(-cx) + 1);
+
+				if(cy >= 0.0)
+					iy = round(cy);
+				else
+					iy = -(round(-cy) + 1);
+
+				pixel1 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy, 0, (h - 1))) +
+					4 * CLIP(ix, 0, (w - 1));
+				pixel2 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy, 0, (h - 1))) +
+					4 * CLIP(ix + 1, 0, (w - 1));
+				pixel3 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy + 1, 0, (h - 1))) +
+					4 * CLIP(ix, 0, (w - 1));
+				pixel4 = (uint16_t*)plugin->input->get_row_ptr(
+						CLIP(iy + 1, 0, (h - 1))) +
+					4 * CLIP(ix + 1, 0, (w - 1));
+
+				values[0] = pixel1[0];
+				values[1] = pixel2[0];
+				values[2] = pixel3[0];
+				values[3] = pixel4[0];
+				bot_p[0] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[1];
+				values[1] = pixel2[1];
+				values[2] = pixel3[1];
+				values[3] = pixel4[1];
+				bot_p[1] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[2];
+				values[1] = pixel2[2];
+				values[2] = pixel3[2];
+				values[3] = pixel4[2];
+				bot_p[2] = round(bilinear(cx, cy, values));
+
+				values[0] = pixel1[3];
+				values[1] = pixel2[3];
+				values[2] = pixel3[3];
+				values[3] = pixel4[3];
+				bot_p[3] = round(bilinear(cx, cy, values));
+
+				bot_p -= 4;
+			}
+			else
+			{
+				// Outside distortion area
+				// Do top
+				top_p[0] = top_row[4 * col + 0];
+				top_p[1] = top_row[4 * col + 1];
+				top_p[2] = top_row[4 * col + 2];
+				top_p[3] = top_row[4 * col + 3];
+
+				top_p += 4;
+
+				// Do bottom
+				int bot_offset = w * 4 - col * 4 - 4;
+				bot_p[0] = bot_row[bot_offset + 0];
+				bot_p[1] = bot_row[bot_offset + 1];
+				bot_p[2] = bot_row[bot_offset + 2];
+				bot_p[3] = bot_row[bot_offset + 3];
+				bot_p -= 4;
+			}
+		}
 	}
 }
 
