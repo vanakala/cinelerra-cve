@@ -541,7 +541,8 @@ VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
 			if(plugin->plugin_type != PLUGIN_STANDALONE ||
 					plugin->plugin_server->multichannel)
 				continue;
-			buffer = execute_plugin(plugin, buffer, edit, RSTEP_NORMAL);
+			if(plugin->on && plugin->active_in(buffer->get_pts(), buffer->next_pts()))
+				buffer = execute_plugin(plugin, buffer, edit, RSTEP_NORMAL);
 		}
 	}
 	return buffer;
