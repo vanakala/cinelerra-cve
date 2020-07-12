@@ -100,7 +100,8 @@ AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
 			if(plugin->plugin_type != PLUGIN_STANDALONE ||
 					plugin->plugin_server->multichannel)
 				continue;
-			aframe = execute_plugin(plugin, aframe, edit, RSTEP_NORMAL);
+			if(plugin->on && plugin->active_in(aframe->get_pts(), aframe->get_end_pts()))
+				aframe = execute_plugin(plugin, aframe, edit, RSTEP_NORMAL);
 		}
 		audio_frames.release_frame(buffer);
 		buffer = aframe;
