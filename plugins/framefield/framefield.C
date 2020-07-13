@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "bchash.h"
@@ -127,8 +111,20 @@ PLUGIN_CLASS_METHODS
 VFrame *FrameField::process_tmpframe(VFrame *src_frame)
 {
 	VFrame *frame;
+	int color_model = src_frame->get_color_model();
 
-	load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return src_frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // Read into temporary for software
 	frame = clone_vframe(src_frame);
@@ -219,106 +215,22 @@ VFrame *FrameField::process_tmpframe(VFrame *src_frame)
 	return frame;
 }
 
-// Averaging 2 pixels
-#define AVERAGE(type, temp_type, components, offset) \
-{ \
-	int w = frame->get_w(); \
-	int h = frame->get_h(); \
-	int row_size = components * w; \
-	for(int i = offset; i < h - 3; i += 2) \
-	{ \
-		type *row1 = (type*)frame->get_row_ptr(i); \
-		type *row2 = (type*)frame->get_row_ptr(i + 1); \
-		type *row3 = (type*)frame->get_row_ptr(i + 2); \
-		for(int j = 0; j < row_size; j++) \
-		{ \
-			temp_type sum = (temp_type)*row1++ + (temp_type)*row3++; \
-			*row2++ = (sum / 2); \
-		} \
-	} \
-}
-
-// Averaging 6 pixels
-#define AVERAGE_BAK(type, components, offset) \
-{ \
-	int w = frame->get_w(); \
-	int h = frame->get_h(); \
-	int row_size = w; \
-	for(int i = offset; i < h - 3; i += 2) \
-	{ \
-		type *row1 = (type*)frame->get_row_ptr(i); \
-		type *row2 = (type*)frame->get_row_ptr(i + 1); \
-		type *row3 = (type*)frame->get_row_ptr(i + 2); \
-		int64_t sum; \
-		int64_t pixel1[4], pixel2[4], pixel3[4]; \
-		int64_t pixel4[4], pixel5[4], pixel6[4]; \
- \
-/* First pixel */ \
-		for(int j = 0; j < components; j++) \
-		{ \
-			pixel1[j] = *row1++; \
-			pixel4[j] = *row3++; \
-			*row2++ = (pixel1[j] + pixel4[j]) >> 1; \
-		} \
- \
-		for(int j = 2; j < row_size; j++) \
-		{ \
-			for(int k = 0; k < components; k++) \
-			{ \
-				pixel2[k] = *row1++; \
-				pixel5[k] = *row3++; \
-			} \
- \
-			for(int k = 0; k < components; k++) \
-			{ \
-				pixel3[k] = *row1; \
-				pixel6[k] = *row3; \
-				*row2++ = (pixel1[k] + \
-					pixel2[k] + \
-					pixel3[k] + \
-					pixel4[k] + \
-					pixel5[k] + \
-					pixel6[k]) / 6; \
-				pixel1[k] = pixel2[k]; \
-				pixel4[k] = pixel5[k]; \
-			} \
-		} \
- \
-/* Last pixel */ \
-		for(int j = 0; j < components; j++) \
-		{ \
-			*row2++ = (pixel3[j] + pixel6[j]) >> 1; \
-		} \
-	} \
-}
-
 void FrameField::average_rows(int offset, VFrame *frame)
 {
-	switch(frame->get_color_model())
+	int w = frame->get_w();
+	int h = frame->get_h();
+	int row_size = 4 * w;
+
+	for(int i = offset; i < h - 3; i += 2)
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-		AVERAGE(unsigned char, int64_t, 3, offset);
-		break;
-	case BC_RGB_FLOAT:
-		AVERAGE(float, float, 3, offset);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		AVERAGE(unsigned char, int64_t, 4, offset);
-		break;
-	case BC_RGBA_FLOAT:
-		AVERAGE(float, float, 4, offset);
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		AVERAGE(uint16_t, int64_t, 3, offset);
-		break;
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-	case BC_AYUV16161616:
-		AVERAGE(uint16_t, int64_t, 4, offset);
-		break;
+		uint16_t *row1 = (uint16_t*)frame->get_row_ptr(i);
+		uint16_t *row2 = (uint16_t*)frame->get_row_ptr(i + 1);
+		uint16_t *row3 = (uint16_t*)frame->get_row_ptr(i + 2);
+		for(int j = 0; j < row_size; j++)
+		{
+			int sum = *row1++ + *row3++;
+			*row2++ = (sum / 2);
+		}
 	}
 }
 
