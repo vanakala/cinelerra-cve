@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcmenuitem.h"
 #include "bctitle.h"
@@ -35,10 +19,10 @@ DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y)
 	400, 
 	210)
 { 
-	adaptive=0;
-	dominance_top=0;
-	dominance_bottom=0;
-	threshold=0;
+	adaptive = 0;
+	dominance_top = 0;
+	dominance_bottom = 0;
+	threshold = 0;
 
 	x = y = 10;
 
@@ -47,8 +31,8 @@ DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y)
 	add_tool(mode = new DeInterlaceMode(plugin, this, x, y));
 	mode->create_objects();
 	y += 25;
-	optional_controls_x=x;
-	optional_controls_y=y;
+	optional_controls_x = x;
+	optional_controls_y = y;
 	y += 125;
 
 	char string[BCTEXTLEN];
@@ -75,7 +59,7 @@ void DeInterlaceWindow::update()
 
 void DeInterlaceWindow::get_status_string(char *string, int changed_rows)
 {
-	sprintf(string, _("Changed rows: %d\n"), changed_rows);
+	sprintf(string, _("Changed rows: %d"), changed_rows);
 }
 
 void DeInterlaceWindow::set_mode(int mode, int recursive)
