@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef VIDEOSCOPE_H
 #define VIDEOSCOPE_H
@@ -27,6 +11,7 @@
 #define PLUGIN_USES_TMPFRAME
 #define PLUGIN_STATUS_GUI
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_NOT_KEYFRAMEABLE
 
 #define PLUGIN_TITLE N_("VideoScope")
 #define PLUGIN_CLASS  VideoScopeEffect
@@ -90,8 +75,8 @@ public:
 	VideoScopeGraduation();
 	void set(const char * label, int y);
 
-	char    label[4];   // Maximum label size is 3 characters
-	int     y;
+	char label[4];
+	int y;
 };
 
 class VideoScopeWaveform : public BC_SubWindow
@@ -213,12 +198,9 @@ class VideoScopeUnit : public LoadClient
 {
 public:
 	VideoScopeUnit(VideoScopeEffect *plugin, VideoScopeEngine *server);
+
 	void process_package(LoadPackage *package);
 	VideoScopeEffect *plugin;
-private:
-	template<typename TYPE, typename TEMP_TYPE,
-		int MAX, int COMPONENTS, bool USE_YUV>
-	void render_data(LoadPackage *package);
 };
 
 class VideoScopeEngine : public LoadServer
@@ -241,6 +223,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	VFrame *process_tmpframe(VFrame *input);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -252,4 +235,3 @@ public:
 };
 
 #endif
-

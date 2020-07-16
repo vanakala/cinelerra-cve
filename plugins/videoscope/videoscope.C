@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcbitmap.h"
 #include "bchash.h"
@@ -360,15 +344,6 @@ void VideoScopeVectorscope::draw_graduations()
 
 		set_color(Vectorscope_HSV_axes[i].color);
 		draw_text(axes[i].text_x, axes[i].text_y, const_cast<char *>(Vectorscope_HSV_axes[i].label));
-
-#ifdef DEBUG_PLACEMENT
-		int label_w = get_text_width(color_axis_font, const_cast<char *>(Vectorscope_HSV_axes[i].label));
-		int label_a = get_text_ascent(color_axis_font);
-		int label_d = get_text_descent(color_axis_font);
-		draw_rectangle(axes[i].text_x,
-			axes[i].text_y - label_a,
-			label_w, label_a + label_d);
-#endif // DEBUG_PLACEMENT
 	}
 }
 
@@ -441,14 +416,29 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
 
 VideoScopeEffect::~VideoScopeEffect()
 {
-	if(engine) delete engine;
+	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void VideoScopeEffect::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
 
 int VideoScopeEffect::load_configuration()
 {
+	KeyFrame *keyframe = get_first_keyframe();
+
+	if(!keyframe)
+		return 0;
+
+	read_data(keyframe);
 	return 1;
 }
 
@@ -503,6 +493,18 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 
 VFrame *VideoScopeEffect::process_tmpframe(VFrame *input)
 {
+	int color_model = input->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
 	render_gui(input);
 	return input;
 }
@@ -517,8 +519,8 @@ void VideoScopeEffect::render_gui(void *input)
 
 		if(!engine)
 		{
-			engine = new VideoScopeEngine(this, 
-				(PluginClient::smp + 1));
+			engine = new VideoScopeEngine(this,
+				get_project_smp());
 		}
 
 // Clear bitmaps
@@ -562,7 +564,6 @@ VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 	this->plugin = plugin;
 }
 
-
 static void draw_point(BC_Bitmap *bitmap,
 	int x, 
 	int y, 
@@ -570,7 +571,6 @@ static void draw_point(BC_Bitmap *bitmap,
 	int g, 
 	int b)
 {
-
 	int color_model = bitmap->get_color_model();
 	unsigned char *pixel = bitmap->get_data() +
 		y * bitmap->get_bytes_per_line() +
@@ -579,23 +579,13 @@ static void draw_point(BC_Bitmap *bitmap,
 	switch(color_model)
 	{
 	case BC_BGR8888:
-	{
 		pixel[0] = b;
 		pixel[1] = g;
 		pixel[2] = r;
 		break;
-	}
-	case BC_BGR888:
-		break;
 	case BC_RGB565:
-	{
 		pixel[0] = (r & 0xf8) | (g >> 5);
 		pixel[1] = ((g & 0xfc) << 5) | (b >> 3);
-		break;
-	}
-	case BC_BGR565:
-		break;
-	case BC_RGB8:
 		break;
 	}
 }
@@ -609,8 +599,7 @@ static int brighten(int v)
 }
 
 
-template<typename TYPE, typename TEMP_TYPE, int MAX, int COMPONENTS, bool USE_YUV>
-void VideoScopeUnit::render_data(LoadPackage *package)
+void VideoScopeUnit::process_package(LoadPackage *package)
 {
 	VideoScopeWindow *window = plugin->thread->window;
 	VideoScopePackage *pkg = (VideoScopePackage*)package;
@@ -622,223 +611,118 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 	int vector_w = window->vector_bitmap->get_w();
 	float radius = vector_h / 2.0;
 
-	for(int i = pkg->row1; i < pkg->row2; i++)
+	switch(plugin->input->get_color_model())
 	{
-		TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(i);
-		for(int j = 0; j < w; j++)
+	case BC_RGBA16161616:
+		for(int i = pkg->row1; i < pkg->row2; i++)
 		{
-			TYPE *in_pixel = in_row + j * COMPONENTS;
-			float intensity;
+			uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(i);
 
-/* Analyze pixel */
-			if(USE_YUV) intensity = (float)*in_pixel / MAX;
+			for(int j = 0; j < w; j++)
+			{
+				uint16_t *in_pixel = in_row + j * 4;
+				float intensity;
+				float h, s, v;
+				int r, g, b;
 
-			float h, s, v;
-			TEMP_TYPE r, g, b;
-			if(USE_YUV)
-			{
-				if(sizeof(TYPE) == 2)
-				{
-					ColorSpaces::yuv_to_rgb_16(r,
-						g,
-						b,
-						in_pixel[0],
-						in_pixel[1],
-						in_pixel[2]);
-				}
-				else
-				{
-					ColorSpaces::yuv_to_rgb_8(r,
-						g,
-						b,
-						in_pixel[0],
-						in_pixel[1],
-						in_pixel[2]);
-				}
-			}
-			else
-			{
 				r = in_pixel[0];
 				g = in_pixel[1];
 				b = in_pixel[2];
-			}
 
-			ColorSpaces::rgb_to_hsv((float)r / MAX,
-					(float)g / MAX,
-					(float)b / MAX,
-					h,
-					s,
-					v);
-
-/* Calculate point's RGB, used in both waveform and vectorscope. */
-			int ri, gi, bi;
-			if(sizeof(TYPE) == 2)
-			{
-				ri = (int)(r/256);
-				gi = (int)(g/256);
-				bi = (int)(b/256);
-			}
-			else
-			if(sizeof(TYPE) == 4)
-			{
-				ri = (int)(CLIP(r, 0, 1) * 0xff);
-				gi = (int)(CLIP(g, 0, 1) * 0xff);
-				bi = (int)(CLIP(b, 0, 1) * 0xff);
-			}
-			else
-			{
-				ri = (int)r;
-				gi = (int)g;
-				bi = (int)b;
-			}
-
-/* Brighten & decrease contrast so low levels are visible against black. */
-			ri = brighten(ri);
-			gi = brighten(gi);
-			bi = brighten(bi);
-
-/* Calculate waveform */
-			if(!USE_YUV) intensity = v;
-			int y = waveform_h -
-				(int)roundf((intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) *
-					    waveform_h);
-			int x = j * waveform_w / w;
-			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
-				draw_point(window->waveform_bitmap,
-					x,
-					y,
-					ri,
-					gi,
-					bi);
-
-/* Calculate vectorscope */
-			polar_to_cartesian(h, s, radius, x, y);
-			CLAMP(x, 0, vector_w - 1);
-			CLAMP(y, 0, vector_h - 1);
-			draw_point(window->vector_bitmap,
-				x,
-				y,
-				ri,
-				gi,
-				bi);
-		}
-	}
-}
-
-
-void VideoScopeUnit::process_package(LoadPackage *package)
-{
-	switch(plugin->input->get_color_model())
-	{
-	case BC_RGB888:
-		render_data<unsigned char, int, 0xff, 3, 0>(package);
-		break;
-
-	case BC_RGB_FLOAT:
-		render_data<float, float, 1, 3, 0>(package);
-		break;
-
-	case BC_YUV888:
-		render_data<unsigned char, int, 0xff, 3, 1>(package);
-		break;
-
-	case BC_RGB161616:
-		render_data<uint16_t, int, 0xffff, 3, 0>(package);
-		break;
-
-	case BC_YUV161616:
-		render_data<uint16_t, int, 0xffff, 3, 1>(package);
-		break;
-
-	case BC_RGBA8888:
-		render_data<unsigned char, int, 0xff, 4, 0>(package);
-		break;
-
-	case BC_RGBA_FLOAT:
-		render_data<float, float, 1, 4, 0>(package);
-		break;
-
-	case BC_YUVA8888:
-		render_data<unsigned char, int, 0xff, 4, 1>(package);
-		break;
-
-	case BC_RGBA16161616:
-		render_data<uint16_t, int, 0xffff, 4, 0>(package);
-		break;
-
-	case BC_YUVA16161616:
-		render_data<uint16_t, int, 0xffff, 4, 1>(package);
-		break;
-
-	case BC_AYUV16161616:
-		{
-			VideoScopeWindow *window = plugin->thread->window;
-			VideoScopePackage *pkg = (VideoScopePackage*)package;
-			int w = plugin->input->get_w();
-			int h = plugin->input->get_h();
-			int waveform_h = window->wave_h;
-			int waveform_w = window->wave_w;
-			int vector_h = window->vector_bitmap->get_h();
-			int vector_w = window->vector_bitmap->get_w();
-			float radius = vector_h / 2.0;
-
-			for(int i = pkg->row1; i < pkg->row2; i++)
-			{
-				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(i);
-
-				for(int j = 0; j < w; j++)
-				{
-					uint16_t *in_pixel = in_row + j * 4;
-					float intensity;
-
-					// Analyze pixel
-					intensity = (float)in_pixel[1] / 0xffff;
-
-					float h, s, v;
-					int r, g, b;
-
-					ColorSpaces::yuv_to_rgb_16(r, g, b,
-						in_pixel[1],
-						in_pixel[2],
-						in_pixel[3]);
-
-					ColorSpaces::rgb_to_hsv((float)r / 0xffff,
+				ColorSpaces::rgb_to_hsv((float)r / 0xffff,
 						(float)g / 0xffff,
 						(float)b / 0xffff,
 						h, s, v);
+				// Calculate point's RGB,
+				// used in both waveform and vectorscope.
+				int ri, gi, bi;
 
-					// Calculate point's RGB, used in both
-					//  waveform and vectorscope.
-					int ri, gi, bi;
+				ri = r / 256;
+				gi = g / 256;
+				bi = b / 256;
+				// Brighten & decrease contrast
+				// so low levels are visible against black.
+				ri = brighten(ri);
+				gi = brighten(gi);
+				bi = brighten(bi);
+				// Calculate waveform
+				intensity = v;
+				int y = waveform_h -
+					(int)roundf((intensity - FLOAT_MIN) /
+						(FLOAT_MAX - FLOAT_MIN) *
+						waveform_h);
+				int x = j * waveform_w / w;
 
-					ri = (int)(r/256);
-					gi = (int)(g/256);
-					bi = (int)(b/256);
-
-					// Brighten & decrease contrast so low
-					// levels are visible against black.
-					ri = brighten(ri);
-					gi = brighten(gi);
-					bi = brighten(bi);
-
-					// Calculate waveform
-					int y = waveform_h -
-						(int)roundf((intensity - FLOAT_MIN) /
-							(FLOAT_MAX - FLOAT_MIN) *
-							waveform_h);
-
-					int x = j * waveform_w / w;
-					if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
-						draw_point(window->waveform_bitmap,
-							x, y, ri, gi, bi);
-
-					// Calculate vectorscope
-					polar_to_cartesian(h, s, radius, x, y);
-					CLAMP(x, 0, vector_w - 1);
-					CLAMP(y, 0, vector_h - 1);
-					draw_point(window->vector_bitmap,
+				if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
+					draw_point(window->waveform_bitmap,
 						x, y, ri, gi, bi);
-				}
+				// Calculate vectorscope
+				polar_to_cartesian(h, s, radius, x, y);
+				CLAMP(x, 0, vector_w - 1);
+				CLAMP(y, 0, vector_h - 1);
+				draw_point(window->vector_bitmap,
+					x, y, ri, gi, bi);
+			}
+		}
+		break;
+
+	case BC_AYUV16161616:
+		for(int i = pkg->row1; i < pkg->row2; i++)
+		{
+			uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				uint16_t *in_pixel = in_row + j * 4;
+				float intensity;
+
+				// Analyze pixel
+				intensity = (float)in_pixel[1] / 0xffff;
+
+				float h, s, v;
+				int r, g, b;
+
+				ColorSpaces::yuv_to_rgb_16(r, g, b,
+					in_pixel[1],
+					in_pixel[2],
+					in_pixel[3]);
+
+				ColorSpaces::rgb_to_hsv((float)r / 0xffff,
+					(float)g / 0xffff,
+					(float)b / 0xffff,
+					h, s, v);
+
+				// Calculate point's RGB, used in both
+				//  waveform and vectorscope.
+				int ri, gi, bi;
+
+				ri = r / 256;
+				gi = g / 256;
+				bi = b / 256;
+
+				// Brighten & decrease contrast so low
+				// levels are visible against black.
+				ri = brighten(ri);
+				gi = brighten(gi);
+				bi = brighten(bi);
+
+				// Calculate waveform
+				int y = waveform_h -
+					(int)roundf((intensity - FLOAT_MIN) /
+						(FLOAT_MAX - FLOAT_MIN) *
+						waveform_h);
+
+				int x = j * waveform_w / w;
+				if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
+					draw_point(window->waveform_bitmap,
+						x, y, ri, gi, bi);
+
+				// Calculate vectorscope
+				polar_to_cartesian(h, s, radius, x, y);
+				CLAMP(x, 0, vector_w - 1);
+				CLAMP(y, 0, vector_h - 1);
+				draw_point(window->vector_bitmap,
+					x, y, ri, gi, bi);
 			}
 		}
 		break;
