@@ -1,26 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -124,13 +109,37 @@ SelTempAvgMain::~SelTempAvgMain()
 	if(history)
 	{
 		for(int i = 0; i < max_num_frames; i++)
-			if(history[i])
-				delete history[i];
+			release_vframe(history[i]);
 		delete [] history;
 	}
 	if(history_valid)
 		delete [] history_valid;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void SelTempAvgMain::reset_plugin()
+{
+	if(accumulation)
+	{
+		delete [] accumulation;
+		accumulation = 0;
+		delete [] accumulation_sq;
+		accumulation_sq = 0;
+		frames_accum = 0;
+	}
+	if(history)
+	{
+		for(int i = 0; i < max_num_frames; i++)
+			release_vframe(history[i]);
+		delete [] history;
+		history = 0;
+		max_num_frames = 0;
+	}
+	if(history_valid)
+	{
+		delete [] history_valid;
+		history_valid = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -143,18 +152,28 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 	ptstime history_start, history_end, cpts;
 	int got_frame = 0;
 
-	load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // Allocate accumulation
 	if(!accumulation)
 	{
-		accumulation = new unsigned char[w * h *
-			ColorModels::components(color_model) * sizeof(float)];
+		accumulation = new float[w * h * 3];
 
-		accumulation_sq = new unsigned char[w * h *
-			3 * sizeof(float)];
-		clear_accum(w, h, color_model);
+		accumulation_sq = new float[w * h *3];
+		clear_accum(w, h);
 	}
+
 	if(!config.nosubtract)
 	{
 // Reallocate history
@@ -185,7 +204,7 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 							break;
 					}
 					else if(history[i])
-						delete history[i];
+						release_vframe(history[i]);
 				}
 
 // Delete extra previous frames and subtract from accumulation
@@ -194,7 +213,7 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 					if(history_valid[i])
 						subtract_accum(history[i]);
 					if(history[i])
-						delete history[i];
+						release_vframe(history[i]);
 				}
 				delete [] history;
 				delete [] history_valid;
@@ -218,21 +237,28 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 		}
 
 		ptstime theoffset = config.offset_fixed_pts;
-		if (config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS)
+
+		if(config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS)
 			theoffset = restartoffset;
 		history_start = source_pts + restartoffset;
 
 		if(history_start < EPSILON)
 			history_start = 0;
 		history_end = history_start + config.duration;
+
+		if(history_start < get_start())
+			history_start = get_start();
+		if(history_end > get_end())
+			history_end = get_end();
+
 // Remove frames not in history any more
 		int no_change = 1;
 		for(int i = 0; i < max_num_frames; i++)
 		{
 			if(history_valid[i])
 			{
-				cpts = history[i]->get_pts();
-				if(cpts < history_start || cpts > history_end)
+				if(history[i]->next_pts() < history_start ||
+					history[i]->get_pts() > history_end)
 				{
 					subtract_accum(history[i]);
 					history_valid[i] = 0;
@@ -245,12 +271,11 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 		{
 			for(int i = 0; i < max_num_frames; i++)
 				history_valid[i] = 0;
-			clear_accum(w, h, color_model);
+			clear_accum(w, h);
 		}
 // Add new history frames which are not in the old vector
 		cpts = history_start;
 		int got_it = 0;
-
 		for(int i = 0; i < max_num_frames; i++)
 		{
 			for(int j = 0; j < max_num_frames; j++)
@@ -272,9 +297,9 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 					if(!history_valid[j])
 					{
 						if(!history[j])
-							history[j] = new VFrame(0, w, h, color_model);
+							history[j] = clone_vframe(frame);
 						history[j]->set_pts(cpts);
-						get_frame(history[j]);
+						history[j] = get_frame(history[j]);
 						add_accum(history[j]);
 						history_valid[j] = 1;
 						cpts = history[j]->next_pts();
@@ -296,7 +321,7 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 		{
 			prev_frame_pts = source_pts - config.duration;
 			prev_frame_pts = MAX(0, prev_frame_pts);
-			clear_accum(w, h, color_model);
+			clear_accum(w, h);
 			max_denominator = round(config.duration * get_project_framerate());
 		} else
 			prev_frame_pts = source_pts;
@@ -318,7 +343,7 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 				if(!temp_frame)
 					temp_frame = clone_vframe(frame);
 				temp_frame->set_pts(cpts);
-				get_frame(temp_frame);
+				temp_frame = get_frame(temp_frame);
 				add_accum(temp_frame);
 			}
 		}
@@ -351,57 +376,12 @@ VFrame *SelTempAvgMain::process_tmpframe(VFrame *frame)
 }
 
 // Reset accumulation
-void SelTempAvgMain::clear_accum(int w, int h, int color_model)
+void SelTempAvgMain::clear_accum(int w, int h)
 {
 	frames_accum = 0;
-	memset(accumulation, 0,
-		w * h * ColorModels::components(color_model) * sizeof(float));
+	memset(accumulation, 0, w * h * 3 * sizeof(float));
 	memset(accumulation_sq, 0, w * h * 3 * sizeof(float));
 }
-
-#define C2_IS(frame_row,chroma,max)  (float)(frame_row)/max 
-
-#define SUBTRACT_ACCUM(type, \
-	components, \
-	chroma, \
-	max) \
-{ \
-	for(int i = 0; i < h; i++) \
-	{ \
-		float *accum_row = (float*)accumulation + \
-			i * w * components; \
-		float *accum_row_sq = (float*)accumulation_sq + \
-			i * w *3; \
-		type *frame_row = (type*)frame->get_row_ptr(i); \
-		float c1, c2, c3; \
-		for(int j = 0; j < w; j++) \
-		{ \
-			c1 = ((float)*frame_row) / max; \
-				frame_row++; \
-			c2 = ((float)*frame_row) / max; \
-			frame_row++; \
-			c3 = ((float)(*frame_row)) / max; \
-			frame_row++; \
-\
-			*accum_row -= c1; \
-			accum_row++; \
-			*accum_row -= c2; \
-			accum_row++; \
-			*accum_row -= c3; \
-			accum_row++; \
-			if(components == 4) \
-			{ \
-				*accum_row -= ((float)*frame_row++) / max; \
-				accum_row++; \
-			} \
-\
-			*accum_row_sq++ -= c1 * c1; \
-			*accum_row_sq++ -= c2 * c2; \
-			*accum_row_sq++ -= c3 * c3; \
-		} \
-	} \
-}
-
 
 void SelTempAvgMain::subtract_accum(VFrame *frame)
 {
@@ -411,53 +391,50 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 
 	int w = frame->get_w();
 	int h = frame->get_h();
+	float c1, c2, c3;
 
 	if(--frames_accum < 0)
 	{
-		clear_accum(w, h, frame->get_color_model());
+		clear_accum(w, h);
 		return;
 	}
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		SUBTRACT_ACCUM(unsigned char, 3, 0x0, 0xff)
-		break;
-	case BC_RGB_FLOAT:
-		SUBTRACT_ACCUM(float, 3, 0x0, 1.0)
-		break;
-	case BC_RGBA8888:
-		SUBTRACT_ACCUM(unsigned char, 4, 0x0, 0xff)
-		break;
-	case BC_RGBA_FLOAT:
-		SUBTRACT_ACCUM(float, 4, 0x0, 1.0)
-		break;
-	case BC_YUV888:
-		SUBTRACT_ACCUM(unsigned char, 3, 0x80, 0xff)
-		break;
-	case BC_YUVA8888:
-		SUBTRACT_ACCUM(unsigned char, 4, 0x80, 0xff)
-		break;
-	case BC_YUV161616:
-		SUBTRACT_ACCUM(uint16_t, 3, 0x8000, 0xffff)
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		SUBTRACT_ACCUM(uint16_t, 4, 0x8000, 0xffff)
+		for(int i = 0; i < h; i++)
+		{
+			float *accum_row = accumulation + i * w * 3;
+			float *accum_row_sq = accumulation_sq + i * w * 3;
+			uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				c1 = ((float)*frame_row++) / 0xffff;
+				c2 = ((float)*frame_row++) / 0xffff;
+				c3 = ((float)*frame_row++) / 0xffff;
+				frame_row++;
+
+				*accum_row++ -= c1;
+				*accum_row++ -= c2;
+				*accum_row++ -= c3;
+			}
+
+			*accum_row_sq++ -= c1 * c1;
+			*accum_row_sq++ -= c2 * c2;
+			*accum_row_sq++ -= c3 * c3;
+		}
 		break;
 	case BC_AYUV16161616:
 		for(int i = 0; i < h; i++) \
 		{
-			float *accum_row = (float*)accumulation +
-				i * w * 4;
-			float *accum_row_sq = (float*)accumulation_sq +
-				i * w * 3;
+			float *accum_row = accumulation + i * w * 3;
+			float *accum_row_sq = accumulation_sq + i * w * 3;
 			uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
-			float c1, c2, c3, c4;
 
 			for(int j = 0; j < w; j++) \
 			{
-				c4 = ((float)*frame_row++) / 0xffff;
+				frame_row++;
 				c1 = ((float)*frame_row++) / 0xffff;
 				c2 = ((float)*frame_row++) / 0xffff;
 				c3 = ((float)*frame_row++) / 0xffff;
@@ -465,7 +442,6 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 				*accum_row++ -= c1;
 				*accum_row++ -= c2;
 				*accum_row++ -= c3;
-				*accum_row++ -= c4;
 
 				*accum_row_sq++ -= c1 * c1;
 				*accum_row_sq++ -= c2 * c2;
@@ -476,91 +452,49 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 	}
 }
 
-// The behavior has to be very specific to the color model because we rely on
-// the value of full black to determine what pixel to show.
-#define ADD_ACCUM(type, components, chroma, max) \
-{ \
-	float c1, c2, c3; \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		float *accum_row = (float*)accumulation + \
-			i * w * components; \
-		float *accum_row_sq = (float*)accumulation_sq + \
-			i * w *3; \
-		type *frame_row = (type*)frame->get_row_ptr(i); \
-		for(int j = 0; j < w; j++) \
-		{ \
-			c1 = ((float)*frame_row) / max; \
-			frame_row++; \
-			c2 = ((float)*frame_row) /max; \
-			frame_row++; \
-			c3 = ((float)*frame_row ) / max; \
-			frame_row++; \
-\
-			*accum_row += c1; \
-			accum_row++; \
-			*accum_row += c2; \
-			accum_row++; \
-			*accum_row += c3; \
-			accum_row++; \
-			if(components == 4) \
-			{ \
-				*accum_row += ((float)*frame_row++) / max; \
-				accum_row++; \
-			} \
-			*accum_row_sq++ += c1 * c1; \
-			*accum_row_sq++ += c2 * c2; \
-			*accum_row_sq++ += c3 * c3; \
-		} \
-	} \
-}
-
 void SelTempAvgMain::add_accum(VFrame *frame)
 {
 	int w = frame->get_w();
 	int h = frame->get_h();
-	frames_accum++;
+	float c1, c2, c3;
 
+	frames_accum++;
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		ADD_ACCUM(unsigned char, 3, 0x0, 0xff)
-		break;
-	case BC_RGB_FLOAT:
-		ADD_ACCUM(float, 3, 0x0, 1.0)
-		break;
-	case BC_RGBA8888:
-		ADD_ACCUM(unsigned char, 4, 0x0, 0xff)
-		break;
-	case BC_RGBA_FLOAT:
-		ADD_ACCUM(float, 4, 0x0, 1.0)
-		break;
-	case BC_YUV888:
-		ADD_ACCUM(unsigned char, 3, 0x80, 0xff)
-		break;
-	case BC_YUVA8888:
-		ADD_ACCUM(unsigned char, 4, 0x80, 0xff)
-		break;
-	case BC_YUV161616:
-		ADD_ACCUM(uint16_t, 3, 0x8000, 0xffff)
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		ADD_ACCUM(uint16_t, 4, 0x8000, 0xffff)
+		for(int i = 0; i < h; i++)
+		{
+			float *accum_row = accumulation + i * w * 3;
+			float *accum_row_sq = accumulation_sq + i * w * 3;
+
+			uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				c1 = ((float)*frame_row++) / 0xffff;
+				c2 = ((float)*frame_row++) / 0xffff;
+				c3 = ((float)*frame_row++) / 0xffff;
+				frame_row++;
+
+				*accum_row++ += c1;
+				*accum_row++ += c2;
+				*accum_row++ += c3;
+			}
+			*accum_row_sq++ += c1 * c1;
+			*accum_row_sq++ += c2 * c2;
+			*accum_row_sq++ += c3 * c3;
+		}
 		break;
 	case BC_AYUV16161616:
 		for(int i = 0; i < h; i++)
 		{
-			float *accum_row = (float*)accumulation +
-				i * w * 4;
-			float *accum_row_sq = (float*)accumulation_sq +
-				i * w * 3;
+			float *accum_row = accumulation + i * w * 3;
+			float *accum_row_sq = accumulation_sq + i * w * 3;
 			uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
 			for(int j = 0; j < w; j++)
 			{
-				float c1, c2, c3, c4;
-				c4 = ((float)*frame_row++) / 0xffff;
+				frame_row++;
 				c1 = ((float)*frame_row++) / 0xffff;
 				c2 = ((float)*frame_row++) / 0xffff;
 				c3 = ((float)*frame_row++) / 0xffff;
@@ -568,7 +502,6 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 				*accum_row++ += c1;
 				*accum_row++ += c2;
 				*accum_row++ += c3;
-				*accum_row++ += c4;
 
 				*accum_row_sq++ += c1 * c1;
 				*accum_row_sq++ += c2 * c2;
@@ -579,221 +512,35 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 	}
 }
 
-#define MASKER(type, avg_thresh, std_thresh, c_now, c_mean, c_stddev, mask, gain, frame_rowp, max) \
-{ \
-	if((avg_thresh > fabs(c_now - c_mean)) &&  (std_thresh > c_stddev)) \
-		if(mask) \
-			frame_rowp = max; \
-		else \
-			frame_rowp = (type)(c_mean * max * gain); \
-	else \
-	if(mask) \
-		frame_rowp = 0; \
-	else \
-		frame_rowp = (type)(c_now * max * gain); \
-}
-
-#define TRANSFER_ACCUM(type, components, chroma, max, c1_gain, c2_gain, c3_gain) \
-{ \
-	if(config.method == SelTempAvgConfig::METHOD_SELTEMPAVG) \
-	{ \
-		float denominator = frames_accum; \
-		float c1_now, c2_now, c3_now, c4_now; \
-		float c1_mean, c2_mean, c3_mean, c4_mean; \
-		float c1_stddev, c2_stddev, c3_stddev; \
- \
-		for(int i = 0; i < h; i++) \
-		{ \
-			float *accum_row = (float*)accumulation + i * w * components; \
-			float *accum_row_sq = (float*)accumulation_sq + i * w * 3; \
-\
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				c1_now = (float)(*frame_row) / max; \
-				*frame_row++; \
-				c2_now = (float)(*frame_row) / max; \
-				*frame_row++; \
-				c3_now = (float)(*frame_row) / max; \
-				frame_row -= 2; \
-\
-				c1_mean = *accum_row / denominator; \
-				accum_row++; \
-				c2_mean = *accum_row / denominator; \
-				accum_row++; \
-				c3_mean = *accum_row / denominator; \
-				accum_row++; \
-				if(components == 4) \
-				{ \
-					c4_mean = *accum_row / denominator; \
-					accum_row++; \
-				} \
-\
-				c1_stddev = (*accum_row_sq++) / denominator - \
-					c1_mean * c1_mean; \
-				c2_stddev = (*accum_row_sq++) / denominator - \
-					c2_mean*c2_mean; \
-				c3_stddev = (*accum_row_sq++) / denominator - \
-					c3_mean*c3_mean; \
-\
-				MASKER(type,  \
-					config.avg_threshold_RY, \
-					config.std_threshold_RY, \
-					c1_now, c1_mean, \
-					c1_stddev, config.mask_RY, c1_gain,\
-					*frame_row++, max)\
-				MASKER(type,  \
-					config.avg_threshold_GU, \
-					config.std_threshold_GU, \
-					c2_now, c2_mean, c2_stddev, \
-					config.mask_GU, c2_gain,\
-					*frame_row++, max)\
-				MASKER(type,  \
-					config.avg_threshold_BV, \
-					config.std_threshold_BV, \
-					c3_now, c3_mean, c3_stddev, \
-					config.mask_BV, c3_gain,\
-					*frame_row++, max)\
-				if(components == 4) \
-					*frame_row++ = max; \
-			} \
-		} \
-	} \
-	else \
-	if(config.method == SelTempAvgConfig::METHOD_AVERAGE) \
-	{ \
-		float denominator = frames_accum; \
-		for(int i = 0; i < h; i++) \
-		{ \
-			float *accum_row = (float*)accumulation + i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
- \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*frame_row++ = (type)((*accum_row++ / denominator) * \
-					c1_gain * max); \
-				*frame_row++ = (type)((*accum_row++ / denominator) * \
-					c2_gain * max); \
-				*frame_row++ = (type)((*accum_row++ / denominator) * \
-					c3_gain * max); \
-				if(components == 4) \
-					*frame_row++ = (type)((*accum_row++ / \
-						denominator) * max ); \
-			} \
-		} \
-	} \
-	else \
-	if(config.method == SelTempAvgConfig::METHOD_STDDEV) \
-	{ \
-		float c1_mean, c2_mean, c3_mean, c4_mean; \
-		float c1_stddev, c2_stddev, c3_stddev; \
-		float denominator = frames_accum; \
- \
-		for(int i = 0; i < h; i++) \
-		{ \
-			float *accum_row = (float*)accumulation + i * w * components; \
-			float *accum_row_sq = (float*)accumulation_sq + i * w * 3; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-\
-				c1_mean = *accum_row / denominator; \
-				accum_row++; \
-				c2_mean = *accum_row / denominator; \
-				accum_row++; \
-				c3_mean = *accum_row / denominator; \
-				accum_row++; \
-				if(components == 4) \
-				{ \
-					c4_mean = *accum_row / denominator; \
-					accum_row++; \
-				} \
-\
-				c1_stddev = (*accum_row_sq++) / denominator - \
-					c1_mean * c1_mean; \
-				c2_stddev = (*accum_row_sq++) / denominator - \
-					c2_mean * c2_mean; \
-				c3_stddev = (*accum_row_sq++) / denominator - \
-					c3_mean * c3_mean; \
-\
-				*frame_row++ = (type)(c1_stddev * c1_gain * max ); \
-				*frame_row++ = (type)(c2_stddev * c2_gain * max ); \
-				*frame_row++ = (type)(c3_stddev * c3_gain * max ); \
-				if(components == 4) \
-					*frame_row++ = max; \
-			} \
-		} \
-	} \
-}
-
 void SelTempAvgMain::transfer_accum(VFrame *frame)
 {
 	int w = frame->get_w();
 	int h = frame->get_h();
+	float denominator = frames_accum;
+	float c1_now, c2_now, c3_now;
+	float c1_mean, c2_mean, c3_mean;
+	float c1_stddev, c2_stddev, c3_stddev;
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		TRANSFER_ACCUM(unsigned char, 3, 0x0, 0xff,
-			config.gain, config.gain, config.gain)
-		break;
-	case BC_RGB_FLOAT:
-		TRANSFER_ACCUM(float, 3, 0x0, 1,
-			config.gain, config.gain, config.gain)
-		break;
-	case BC_RGBA8888:
-		TRANSFER_ACCUM(unsigned char, 4, 0x0, 0xff,
-			config.gain, config.gain, config.gain)
-		break;
-	case BC_RGBA_FLOAT:
-		TRANSFER_ACCUM(float, 4, 0x0, 1,
-			config.gain, config.gain, config.gain)
-		break;
 	case BC_RGBA16161616:
-		TRANSFER_ACCUM(uint16_t, 4, 0x0, 0xffff,
-			config.gain, config.gain, config.gain)
-		break;
-	case BC_YUV888:
-		TRANSFER_ACCUM(unsigned char, 3, 0x80, 0xff,
-			config.gain, 1.0, 1.0)
-		break;
-	case BC_YUVA8888:
-		TRANSFER_ACCUM(unsigned char, 4, 0x80, 0xff,
-			config.gain, 1.0, 1.0)
-		break;
-	case BC_YUV161616:
-		TRANSFER_ACCUM(uint16_t, 3, 0x8000, 0xffff,
-			config.gain, 1.0, 1.0)
-		break;
-	case BC_YUVA16161616:
-		TRANSFER_ACCUM(uint16_t, 4, 0x8000, 0xffff,
-			config.gain, 1.0, 1.0)
-		break;
-	case BC_AYUV16161616:
 		if(config.method == SelTempAvgConfig::METHOD_SELTEMPAVG)
 		{
-			float denominator = frames_accum;
-			float c1_now, c2_now, c3_now, c4_now;
-			float c1_mean, c2_mean, c3_mean, c4_mean;
-			float c1_stddev, c2_stddev, c3_stddev;
-
 			for(int i = 0; i < h; i++)
 			{
-				float *accum_row = (float*)accumulation + i * w * 4;
-				float *accum_row_sq = (float*)accumulation_sq + i * w * 3;
-				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+				float *accum_row = accumulation + i * w * 3;
+				float *accum_row_sq = accumulation_sq + i * w * 3;
 
+				uint16_t *frame_row = (uint16_t *)frame->get_row_ptr(i);
 				for(int j = 0; j < w; j++)
 				{
-					*frame_row++ = 0xffff;
-					c1_now = (float)(frame_row[0]) / 0xffff;
-					c2_now = (float)(frame_row[1]) / 0xffff;
-					c3_now = (float)(frame_row[2]) / 0xffff;
+					c1_now = (float)frame_row[0] / 0xffff;
+					c2_now = (float)frame_row[1] / 0xffff;
+					c3_now = (float)frame_row[2] / 0xffff;
 
 					c1_mean = *accum_row++ / denominator;
 					c2_mean = *accum_row++ / denominator;
 					c3_mean = *accum_row++ / denominator;
-					c4_mean = *accum_row++ / denominator;
 
 					c1_stddev = (*accum_row_sq++) / denominator -
 						c1_mean * c1_mean;
@@ -801,63 +548,76 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 						c2_mean * c2_mean;
 					c3_stddev = (*accum_row_sq++) / denominator -
 						c3_mean * c3_mean;
-\
-					MASKER(uint16_t,
-						config.avg_threshold_RY,
-						config.std_threshold_RY,
-						c1_now, c1_mean, c1_stddev,
-						config.mask_RY, config.gain,
-						*frame_row++, 0xffff)
-					MASKER(uint16_t,
-						config.avg_threshold_GU,
-						config.std_threshold_GU,
-						c2_now, c2_mean, c2_stddev,
-						config.mask_GU, 1.0,
-						*frame_row++, 0xffff)
-					MASKER(uint16_t,
-						config.avg_threshold_BV,
-						config.std_threshold_BV,
-						c3_now, c3_mean, c3_stddev,
-						config.mask_BV, 1.0,
-						*frame_row++, 0xffff)
+
+					if((config.avg_threshold_RY > fabsf(c1_now - c1_mean)) &&
+						(config.std_threshold_RY > c1_stddev))
+					{
+						if(config.mask_RY)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c1_mean * 0xffff * config.gain);
+					}
+					else if(config.mask_RY)
+						*frame_row++ = 0;
+					else
+						*frame_row++ *= config.gain;
+
+					if((config.avg_threshold_GU > fabsf(c2_now - c2_mean)) &&
+						(config.std_threshold_GU > c2_stddev))
+					{
+						if(config.mask_GU)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c2_mean * 0xffff * config.gain);
+					}
+					else if(config.mask_GU)
+						*frame_row++ = 0;
+					else
+						*frame_row++ *= config.gain;
+
+					if((config.avg_threshold_BV > fabsf(c3_now - c3_mean)) &&
+						(config.std_threshold_BV > c3_stddev))
+					{
+						if(config.mask_BV)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c3_mean * 0xffff * config.gain);
+					}
+					else if(config.mask_BV)
+						*frame_row++ = 0;
+					else
+						*frame_row++ *= config.gain;
+					frame_row++;
 				}
 			}
 		}
 		else
 		if(config.method == SelTempAvgConfig::METHOD_AVERAGE)
 		{
-			float denominator = frames_accum;
-
 			for(int i = 0; i < h; i++)
 			{
-				float *accum_row = (float*)accumulation + i * w * 4;
+				float *accum_row = accumulation + i * w * 3;
 				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
 
 				for(int j = 0; j < w; j++)
 				{
-					*frame_row++ = (uint16_t)((accum_row[3] /
-						denominator) * 0xffff );
-					*frame_row++ = (uint16_t)((*accum_row++ /
-						denominator) * config.gain * 0xffff);
-					*frame_row++ = (uint16_t)((*accum_row++ /
-						denominator) * 1 * 0xffff);
-					*frame_row++ = (uint16_t)((*accum_row++ /
-						denominator) * 1 * 0xffff);
-					accum_row++;
+					*frame_row++ = round((*accum_row++ / denominator) *
+						config.gain * 0xffff);
+					*frame_row++ = round((*accum_row++ / denominator) *
+						config.gain * 0xffff);
+					*frame_row++ = round((*accum_row++ / denominator) *
+						config.gain * 0xffff);
+					frame_row++;
 				}
 			}
 		}
 		else
 		if(config.method == SelTempAvgConfig::METHOD_STDDEV)
 		{
-			float c1_mean, c2_mean, c3_mean, c4_mean;
-			float c1_stddev, c2_stddev, c3_stddev;
-			float denominator = frames_accum;
-
 			for(int i = 0; i < h; i++)
 			{
-				float *accum_row = (float*)accumulation + i * w * 4;
-				float *accum_row_sq = (float*)accumulation_sq + i * w * 3;
+				float *accum_row = accumulation + i * w * 3;
+				float *accum_row_sq = accumulation_sq + i * w * 3;
 				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
 
 				for(int j = 0; j < w; j++)
@@ -865,7 +625,125 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 					c1_mean = *accum_row++ / denominator;
 					c2_mean = *accum_row++ / denominator;
 					c3_mean = *accum_row++ / denominator;
-					c4_mean = *accum_row++ / denominator;
+				}
+
+				c1_stddev = (*accum_row_sq++) / denominator -
+					c1_mean * c1_mean;
+				c2_stddev = (*accum_row_sq++) / denominator -
+					c2_mean * c2_mean;
+				c3_stddev = (*accum_row_sq++) / denominator -
+					c3_mean * c3_mean;
+
+				*frame_row++ = round(c1_stddev * config.gain * 0xffff);
+				*frame_row++ = round(c2_stddev * config.gain * 0xffff);
+				*frame_row++ = round(c3_stddev * config.gain * 0xffff);
+				*frame_row++;
+			}
+		}
+		break;
+
+	case BC_AYUV16161616:
+		if(config.method == SelTempAvgConfig::METHOD_SELTEMPAVG)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				float *accum_row = accumulation + i * w * 3;
+				float *accum_row_sq = accumulation_sq + i * w * 3;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*frame_row++;
+					c1_now = (float)(frame_row[0]) / 0xffff;
+					c2_now = (float)(frame_row[1]) / 0xffff;
+					c3_now = (float)(frame_row[2]) / 0xffff;
+
+					c1_mean = *accum_row++ / denominator;
+					c2_mean = *accum_row++ / denominator;
+					c3_mean = *accum_row++ / denominator;
+
+					c1_stddev = (*accum_row_sq++) / denominator -
+						c1_mean * c1_mean;
+					c2_stddev = (*accum_row_sq++) / denominator -
+						c2_mean * c2_mean;
+					c3_stddev = (*accum_row_sq++) / denominator -
+						c3_mean * c3_mean;
+
+					if((config.avg_threshold_RY > fabsf(c1_now - c1_mean)) &&
+						(config.std_threshold_RY > c1_stddev))
+					{
+						if(config.mask_RY)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c1_mean * 0xffff * config.gain);
+					}
+					else if(config.mask_RY)
+						*frame_row++ = 0;
+					else
+						*frame_row++ = round(c1_now * 0xffff * config.gain);
+
+					if((config.avg_threshold_GU > fabsf(c2_now - c2_mean)) &&
+						(config.std_threshold_GU > c2_stddev))
+					{
+						if(config.mask_GU)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c1_mean * 0xffff);
+					}
+					else if(config.mask_GU)
+						*frame_row++ = 0;
+					else
+						frame_row++;
+
+					if((config.avg_threshold_BV > fabsf(c3_now - c3_mean)) &&
+						(config.std_threshold_BV > c3_stddev))
+					{
+						if(config.mask_BV)
+							*frame_row++ = 0xffff;
+						else
+							*frame_row++ = round(c3_mean * 0xffff);
+					}
+					else if(config.mask_BV)
+						*frame_row++ = 0;
+					else
+						frame_row++;
+				}
+			}
+		}
+		else
+		if(config.method == SelTempAvgConfig::METHOD_AVERAGE)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				float *accum_row = accumulation + i * w * 3;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*frame_row++;
+					*frame_row++ = round((*accum_row++ /
+						denominator) * config.gain * 0xffff);
+					*frame_row++ = round((*accum_row++ /
+						denominator) * 0xffff);
+					*frame_row++ = round((*accum_row++ /
+						denominator) * 0xffff);
+				}
+			}
+		}
+		else
+		if(config.method == SelTempAvgConfig::METHOD_STDDEV)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				float *accum_row = accumulation + i * w * 3;
+				float *accum_row_sq = accumulation_sq + i * w * 3;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					c1_mean = *accum_row++ / denominator;
+					c2_mean = *accum_row++ / denominator;
+					c3_mean = *accum_row++ / denominator;
 
 					c1_stddev = *accum_row_sq++ / denominator -
 						c1_mean * c1_mean;
@@ -874,11 +752,11 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 					c3_stddev = *accum_row_sq++ / denominator -
 						c3_mean * c3_mean;
 
-					*frame_row++ = 0xffff;
-					*frame_row++ = (uint16_t)(c1_stddev *
+					*frame_row++;
+					*frame_row++ = round(c1_stddev *
 						config.gain * 0xffff);
-					*frame_row++ = (uint16_t)(c2_stddev * 1 * 0xffff);
-					*frame_row++ = (uint16_t)(c3_stddev * 1 * 0xffff);
+					frame_row++;
+					frame_row++;
 				}
 			}
 		}
@@ -987,9 +865,10 @@ int SelTempAvgMain::load_configuration()
 
 	restartoffset = -config.duration / 2;
 
-	if ((source_pts - prev_restart_pts) < config.duration / 2)
+	if((source_pts - prev_restart_pts) < config.duration / 2)
 		restartoffset = prev_restart_pts - source_pts;
-	else if ((next_restart_pts - source_pts) < config.duration / 2) {
+	else if((next_restart_pts - source_pts) < config.duration / 2)
+	{
 		restartoffset = (next_restart_pts - source_pts) - config.duration;
 		// Probably should put another if in here, (when two "restart" keyframes are close together
 	}
@@ -1043,6 +922,8 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 			if(frames)
 				config.duration = frames / get_project_framerate();
 			config.duration = input.tag.get_property("DURATION", config.duration);
+			if(config.duration > HISTORY_MAX_DURATION)
+				config.duration = HISTORY_MAX_DURATION;
 			config.method = input.tag.get_property("METHOD", config.method);
 			config.offsetmode = input.tag.get_property("OFFSETMODE", config.offsetmode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);

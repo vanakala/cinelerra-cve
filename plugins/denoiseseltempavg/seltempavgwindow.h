@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef TIMEAVGWINDOW_H
 #define TIMEAVGWINDOW_H
@@ -45,19 +29,21 @@ class SelTempAvgGainValue;
 
 PLUGIN_THREAD_HEADER
 
-enum {
-  AVG_RY,
-  AVG_GU,
-  AVG_BV,
-  STD_RY,
-  STD_GU,
-  STD_BV
+enum
+{
+	AVG_RY,
+	AVG_GU,
+	AVG_BV,
+	STD_RY,
+	STD_GU,
+	STD_BV
 };
 
-enum {
-  MASK_RY,
-  MASK_GU,
-  MASK_BV
+enum
+{
+	MASK_RY,
+	MASK_GU,
+	MASK_BV
 };
 
 
@@ -134,9 +120,11 @@ class SelTempAvgOffsetRadial : public BC_Radial
 {
 public:
 	SelTempAvgOffsetRadial(SelTempAvgMain *client, SelTempAvgWindow *gui, int x, int y, int type, char *caption);
+
 	int handle_event();
 	SelTempAvgMain *client;
 	SelTempAvgWindow *gui;
+
 	int type;
 };
 
@@ -145,7 +133,9 @@ class SelTempAvgMethodRadial : public BC_Radial
 {
 public:
 	SelTempAvgMethodRadial(SelTempAvgMain *client, SelTempAvgWindow *gui, int x, int y, int type, char *caption);
+
 	int handle_event();
+
 	SelTempAvgMain *client;
 	SelTempAvgWindow *gui;
 	int type;
@@ -155,7 +145,9 @@ class SelTempAvgParanoid : public BC_CheckBox
 {
 public:
 	SelTempAvgParanoid(SelTempAvgMain *client, int x, int y);
+
 	int handle_event();
+
 	SelTempAvgMain *client;
 };
 
@@ -163,7 +155,9 @@ class SelTempAvgNoSubtract : public BC_CheckBox
 {
 public:
 	SelTempAvgNoSubtract(SelTempAvgMain *client, int x, int y);
+
 	int handle_event();
+
 	SelTempAvgMain *client;
 };
 
@@ -171,7 +165,9 @@ class SelTempAvgMask : public BC_CheckBox
 {
 public:
 	SelTempAvgMask(SelTempAvgMain *client, int x, int y,int type, int val);
+
 	int handle_event();
+
 	SelTempAvgMain *client;
 	int type;
 };
@@ -181,7 +177,9 @@ class SelTempAvgStartKeyframe : public BC_CheckBox
 {
 public:
 	SelTempAvgStartKeyframe(SelTempAvgMain *client, int x, int y);
+
 	int handle_event();
+
 	SelTempAvgMain *client;
 };
 

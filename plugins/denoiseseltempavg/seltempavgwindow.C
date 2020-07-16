@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "language.h"
@@ -34,9 +18,15 @@ SelTempAvgWindow::SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y)
 	310,
 	540)
 {
+	BC_WindowBase *win;
+	int cmodel = plugin->get_project_color_model();
 	int x1 = 10, x2 = 40, x3 = 80, x4 = 175, x5 = 260;
+
 	y = 10;
 
+	add_tool(win = print_title(x1, y, "%s: %s", plugin->plugin_title(),
+		ColorModels::name(cmodel)));
+	y += win->get_h() + 8;
 	add_tool(new BC_Title(x1, y, _("Duration to average")));
 	y += 20;
 	add_tool(total_frames = new SelTempAvgSlider(plugin, x1, y));
@@ -120,7 +110,7 @@ void SelTempAvgWindow::update()
 	paranoid->update(plugin->config.paranoid);
 	no_subtract->update(plugin->config.nosubtract);
 
-	offset_fixed_value->update((float)plugin->config.offset_fixed_pts);
+	offset_fixed_value->update(plugin->config.offset_fixed_pts);
 	gain->update(plugin->config.gain);
 
 	avg_threshold_RY->update(plugin->config.avg_threshold_RY);
@@ -215,7 +205,7 @@ SelTempAvgSlider::SelTempAvgSlider(SelTempAvgMain *client, int x, int y)
 	190,
 	200,
 	0.0,
-	MAX_DURATION,
+	HISTORY_MAX_DURATION,
 	client->config.duration)
 {
 	this->client = client;
@@ -223,8 +213,10 @@ SelTempAvgSlider::SelTempAvgSlider(SelTempAvgMain *client, int x, int y)
 
 int SelTempAvgSlider::handle_event()
 {
-	int result = get_value();
-	if(result < 1) result = 1;
+	ptstime result = get_value();
+
+	if(result < 0)
+		result = 0;
 	client->config.duration = result;
 	client->send_configure_change();
 	return 1;
