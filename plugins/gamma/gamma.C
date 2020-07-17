@@ -1,24 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
-
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "colorspaces.h"
@@ -27,7 +10,6 @@
 #include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
-#include "tmpframecache.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -48,9 +30,9 @@ GammaConfig::GammaConfig()
 
 int GammaConfig::equivalent(GammaConfig &that)
 {
-	return (EQUIV(max, that.max) && 
+	return EQUIV(max, that.max) &&
 		EQUIV(gamma, that.gamma) &&
-		automatic == that.automatic) &&
+		automatic == that.automatic &&
 		plot == that.plot;
 }
 
@@ -93,244 +75,117 @@ void GammaUnit::process_package(LoadPackage *package)
 	GammaEngine *engine = (GammaEngine*)get_server();
 	VFrame *data = engine->data;
 	int w = data->get_w();
-	float r, g, b, y, u, v;
+	int ir, ig, ib, iy, iu, iv;
+	int slot;
 
 // The same algorithm used by dcraw
 	if(engine->operation == GammaEngine::HISTOGRAM)
 	{
-#define HISTOGRAM_HEAD(type) \
-		for(int i = pkg->start; i < pkg->end; i++) \
-		{ \
-			type *row = (type*)data->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{
-
-#define HISTOGRAM_TAIL(components) \
-				int slot; \
-				slot = (int)(r * HISTOGRAM_SIZE); \
-				accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++; \
-				slot = (int)(g * HISTOGRAM_SIZE); \
-				accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++; \
-				slot = (int)(b * HISTOGRAM_SIZE); \
-				accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++; \
-				row += components; \
-			} \
-		}
-
 		switch(data->get_color_model())
 		{
-		case BC_RGB888:
-			HISTOGRAM_HEAD(unsigned char)
-			r = (float)row[0] / 0xff;
-			g = (float)row[1] / 0xff;
-			b = (float)row[2] / 0xff;
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_RGBA8888:
-			HISTOGRAM_HEAD(unsigned char)
-			r = (float)row[0] / 0xff;
-			g = (float)row[1] / 0xff;
-			b = (float)row[2] / 0xff;
-			HISTOGRAM_TAIL(4)
-			break;
-		case BC_RGB_FLOAT:
-			HISTOGRAM_HEAD(float)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_RGBA_FLOAT:
-			HISTOGRAM_HEAD(float)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			HISTOGRAM_TAIL(4)
-			break;
-		case BC_YUV888:
-			HISTOGRAM_HEAD(unsigned char)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			y /= 0xff;
-			u = (float)((u - 0x80) / 0xff);
-			v = (float)((v - 0x80) / 0xff);
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_YUVA8888:
-			HISTOGRAM_HEAD(unsigned char)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			y /= 0xff;
-			u = (float)((u - 0x80) / 0xff);
-			v = (float)((v - 0x80) / 0xff);
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(4)
-			break;
 		case BC_RGBA16161616:
-			HISTOGRAM_HEAD(uint16_t)
-			r = (float)row[0] / 0xffff;
-			g = (float)row[1] / 0xffff;
-			b = (float)row[2] / 0xffff;
-			HISTOGRAM_TAIL(4)
+			for(int i = pkg->start; i < pkg->end; i++)
+			{
+				uint16_t *row = (uint16_t*)data->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					ir = row[0];
+					ig = row[1];
+					ib = row[2];
+					slot = ir * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					slot = ig * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					slot = ib * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					row += 4;
+				}
+			}
 			break;
 		case BC_AYUV16161616:
-			HISTOGRAM_HEAD(uint16_t)
-			y = (float)row[1] / 0xffff;
-			u = (float)(row[2] - 0x8000) / 0xffff;
-			v = (float)(row[3] - 0x8000) / 0xffff;
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(4)
+			for(int i = pkg->start; i < pkg->end; i++)
+			{
+				uint16_t *row = (uint16_t*)data->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					iy = row[1];
+					iu = row[2];
+					iv = row[3];
+					ColorSpaces::yuv_to_rgb_16(ir, ig, ib, iy, iu, iv);
+					slot = ir * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					slot = ig * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					slot = ib * HISTOGRAM_SIZE / 0xffff;
+					accum[CLIP(slot, 0, HISTOGRAM_SIZE - 1)]++;
+					row += 4;
+				}
+			}
 			break;
 		}
 	}
 	else
 	{
-		float max = plugin->config.max;
-		float scale = 1.0 / max;
-		float gamma = plugin->config.gamma - 1.0;
-
-#define GAMMA_HEAD(type) \
-		for(int i = pkg->start; i < pkg->end; i++) \
-		{ \
-			type *row = (type*)data->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{
-
-// powf errors don't show up until later in the pipeline, which makes
-// this very hard to isolate.
-#define MY_POW(x, y) ((x > 0.0) ? powf(x * 2 / max, y) : 0.0)
-
-#define GAMMA_MID \
-				r = r * scale * MY_POW(r, gamma); \
-				g = g * scale * MY_POW(g, gamma); \
-				b = b * scale * MY_POW(b, gamma); \
-
-#define GAMMA_TAIL(components) \
-				row += components; \
-			} \
-		}
+		double max = plugin->config.max;
+		double scale = 1.0 / max;
+		double gamma = plugin->config.gamma - 1.0;
 
 		switch(data->get_color_model())
 		{
-		case BC_RGB888:
-			GAMMA_HEAD(unsigned char)
-			r = (float)row[0] / 0xff;
-			g = (float)row[1] / 0xff;
-			b = (float)row[2] / 0xff;
-			GAMMA_MID
-			row[0] = (int)CLIP(r * 0xff, 0, 0xff);
-			row[1] = (int)CLIP(g * 0xff, 0, 0xff);
-			row[2] = (int)CLIP(b * 0xff, 0, 0xff);
-			GAMMA_TAIL(3)
-			break;
-		case BC_RGBA8888:
-			GAMMA_HEAD(unsigned char)
-			r = (float)row[0] / 0xff;
-			g = (float)row[1] / 0xff;
-			b = (float)row[2] / 0xff;
-			GAMMA_MID
-			row[0] = (int)CLIP(r * 0xff, 0, 0xff);
-			row[1] = (int)CLIP(g * 0xff, 0, 0xff);
-			row[2] = (int)CLIP(b * 0xff, 0, 0xff);
-			GAMMA_TAIL(4)
-			break;
-		case BC_RGB_FLOAT:
-			GAMMA_HEAD(float)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			GAMMA_MID
-			row[0] = r;
-			row[1] = g;
-			row[2] = b;
-			GAMMA_TAIL(3)
-			break;
-		case BC_RGBA_FLOAT:
-			GAMMA_HEAD(float)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			GAMMA_MID
-			row[0] = r;
-			row[1] = g;
-			row[2] = b;
-			GAMMA_TAIL(4)
-			break;
-		case BC_YUV888:
-			GAMMA_HEAD(unsigned char)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			y /= 0xff;
-			u = (float)((u - 0x80) / 0xff);
-			v = (float)((v - 0x80) / 0xff);
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			GAMMA_MID
-			ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
-			y *= 0xff;
-			u = u * 0xff + 0x80;
-			v = v * 0xff + 0x80;
-			row[0] = (int)CLIP(y, 0, 0xff);
-			row[1] = (int)CLIP(u, 0, 0xff);
-			row[2] = (int)CLIP(v, 0, 0xff);
-			GAMMA_TAIL(3)
-			break;
-		case BC_YUVA8888:
-			GAMMA_HEAD(unsigned char)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			y /= 0xff;
-			u = (float)((u - 0x80) / 0xff);
-			v = (float)((v - 0x80) / 0xff);
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			GAMMA_MID
-			ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
-			y *= 0xff;
-			u = u * 0xff + 0x80;
-			v = v * 0xff + 0x80;
-			row[0] = (int)CLIP(y, 0, 0xff);
-			row[1] = (int)CLIP(u, 0, 0xff);
-			row[2] = (int)CLIP(v, 0, 0xff);
-			GAMMA_TAIL(4)
-			break;
 		case BC_RGBA16161616:
-			GAMMA_HEAD(uint16_t)
-			r = (float)row[0] / 0xffff;
-			g = (float)row[1] / 0xffff;
-			b = (float)row[2] / 0xffff;
-			GAMMA_MID
-			row[0] = (int)CLIP(r * 0xffff, 0, 0xffff);
-			row[1] = (int)CLIP(g * 0xffff, 0, 0xffff);
-			row[2] = (int)CLIP(b * 0xffff, 0, 0xffff);
-			GAMMA_TAIL(4)
+			for(int i = pkg->start; i < pkg->end; i++)
+			{
+				uint16_t *row = (uint16_t*)data->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					ir = row[0];
+					ig = row[1];
+					ib = row[2];
+					ir *= scale * pow(2.0 * ir / 0xffff, gamma);
+					ig *= scale * pow(2.0 * ig / 0xffff, gamma);
+					ib *= scale * pow(2.0 * ib / 0xffff, gamma);
+					row[0] = CLIP(ir, 0, 0xffff);
+					row[1] = CLIP(ig, 0, 0xffff);
+					row[2] = CLIP(ib, 0, 0xffff);
+					row += 4;
+				}
+			}
 			break;
 		case BC_AYUV16161616:
-			GAMMA_HEAD(uint16_t)
-			y = (float)row[1] / 0xffff;
-			u = (float)(row[2] - 0x8000) / 0xffff;
-			v = (float)(row[3] - 0x8000) / 0xffff;
-			ColorSpaces::yuv_to_rgb_f(r, g, b, y, u, v);
-			GAMMA_MID
-			ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
-			y *= 0xffff;
-			u = u * 0xffff + 0x8000;
-			v = v * 0xffff + 0x8000;
-			row[1] = (int)CLIP(y, 0, 0xffff);
-			row[2] = (int)CLIP(u, 0, 0xffff);
-			row[3] = (int)CLIP(v, 0, 0xffff);
-			GAMMA_TAIL(4)
+			for(int i = pkg->start; i < pkg->end; i++)
+			{
+				uint16_t *row = (uint16_t*)data->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					iy = row[1];
+					iu = row[2];
+					iv = row[3];
+					ColorSpaces::yuv_to_rgb_16(ir, ig, ib, iy, iu, iv);
+					ir *= scale * pow(2.0 * ir / 0xffff, gamma);
+					ig *= scale * pow(2.0 * ig / 0xffff, gamma);
+					ib *= scale * pow(2.0 * ib / 0xffff, gamma);
+					CLAMP(ir, 0, 0xffff);
+					CLAMP(ig, 0, 0xffff);
+					CLAMP(ib, 0, 0xffff);
+					ColorSpaces::rgb_to_yuv_16(ir, ig, ib, iy, iu, iv);
+					row[1] = iy;
+					row[2] = iu;
+					row[3] = iv;
+					row += 4;
+				}
+			}
 			break;
 		}
 	}
 }
 
 GammaEngine::GammaEngine(GammaMain *plugin)
- : LoadServer(plugin->get_project_smp() + 1, 
-	plugin->get_project_smp() + 1)
+ : LoadServer(plugin->get_project_smp(),
+	plugin->get_project_smp())
 {
 	this->plugin = plugin;
 }
@@ -394,10 +249,31 @@ GammaMain::~GammaMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void GammaMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 VFrame *GammaMain::process_tmpframe(VFrame *frame)
 {
+	int color_model = frame->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
 	load_configuration();
 
 	if(!engine)
@@ -489,8 +365,6 @@ void GammaMain::read_data(KeyFrame *keyframe)
 	FileXML input;
 
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
