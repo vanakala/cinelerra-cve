@@ -1,27 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef HISTOGRAMWINDOW_H
 #define HISTOGRAMWINDOW_H
-
 
 #include "histogram.h"
 #include "pluginvclient.h"
@@ -73,7 +56,9 @@ public:
 	HistogramPlot(HistogramMain *plugin, 
 		int x, 
 		int y);
+
 	int handle_event();
+
 	HistogramMain *plugin;
 };
 
@@ -83,20 +68,26 @@ public:
 	HistogramSplit(HistogramMain *plugin, 
 		int x, 
 		int y);
+
 	int handle_event();
+
 	HistogramMain *plugin;
 };
 
 class HistogramMode : public BC_Radial
 {
 public:
-	HistogramMode(HistogramMain *plugin, 
+	HistogramMode(HistogramMain *plugin,
+		HistogramWindow *gui,
 		int x, 
 		int y,
 		int value,
 		char *text);
+
 	int handle_event();
+
 	HistogramMain *plugin;
+	HistogramWindow *gui;
 	int value;
 };
 
@@ -106,7 +97,9 @@ public:
 	HistogramReset(HistogramMain *plugin, 
 		int x,
 		int y);
+
 	int handle_event();
+
 	HistogramMain *plugin;
 };
 
@@ -120,6 +113,7 @@ public:
 		double *output);
 
 	int handle_event();
+
 	HistogramMain *plugin;
 	double *output;
 };
@@ -150,11 +144,16 @@ public:
 		int y,
 		int w,
 		int h);
+
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
+
 	HistogramMain *plugin;
 	HistogramWindow *gui;
+	int dragging_point;
+	int point_x_offset;
+	int point_y_offset;
 };
 
 class HistogramWindow : public PluginWindow
@@ -195,9 +194,11 @@ public:
 	BC_Pixmap *max_picon, *mid_picon, *min_picon;
 	HistogramPlot *plot;
 	HistogramSplit *split;
+// Input point being dragged or edited
+	HistogramPoint *current_point;
+
 	PLUGIN_GUI_CLASS_MEMBERS
 };
-
 
 PLUGIN_THREAD_HEADER
 

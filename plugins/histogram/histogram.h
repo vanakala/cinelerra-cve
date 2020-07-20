@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef HISTOGRAM_H
 #define HISTOGRAM_H
@@ -48,27 +32,27 @@ public:
 	~HistogramMain();
 
 	VFrame *process_tmpframe(VFrame *frame);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void render_gui(void *data);
 	void handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS
 
 // Interpolate quantized transfer table to linear output
-	double calculate_linear(double input, int mode, int do_value);
+	double calculate_linear(double input, int mode);
 	double calculate_smooth(double input, int subscript);
 // Calculate automatic settings
 	void calculate_automatic(VFrame *data);
 // Calculate histogram.
 // Value is only calculated for preview.
-	void calculate_histogram(VFrame *data, int do_value);
+	void calculate_histogram(VFrame *data);
 // Calculate the linear, smoothed, lookup curves
-	void tabulate_curve(int subscript, int use_value);
+	void tabulate_curve(int subscript);
 
-	VFrame *input, *output;
+	VFrame *input;
 	HistogramEngine *engine;
 	int *lookup[HISTOGRAM_MODES];
 	float *smoothed[HISTOGRAM_MODES];
@@ -76,13 +60,8 @@ public:
 // No value applied to this
 	int *preview_lookup[HISTOGRAM_MODES];
 	int *accum[HISTOGRAM_MODES];
-// Input point being dragged or edited
-	int current_point;
 // Current channel being viewed
 	int mode;
-	int dragging_point;
-	int point_x_offset;
-	int point_y_offset;
 };
 
 class HistogramPackage : public LoadPackage
@@ -90,6 +69,7 @@ class HistogramPackage : public LoadPackage
 public:
 	HistogramPackage();
 	int start, end;
+	int package_done;
 };
 
 class HistogramUnit : public LoadClient
@@ -97,10 +77,13 @@ class HistogramUnit : public LoadClient
 public:
 	HistogramUnit(HistogramEngine *server, HistogramMain *plugin);
 	~HistogramUnit();
+
 	void process_package(LoadPackage *package);
+
 	HistogramEngine *server;
 	HistogramMain *plugin;
-	int *accum[5];
+	int *accum[HISTOGRAM_MODES];
+	int package_done;
 };
 
 class HistogramEngine : public LoadServer
@@ -109,7 +92,7 @@ public:
 	HistogramEngine(HistogramMain *plugin, 
 		int total_clients, 
 		int total_packages);
-	void process_packages(int operation, VFrame *data, int do_value);
+	void process_packages(int operation, VFrame *data);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
@@ -123,7 +106,6 @@ public:
 		APPLY
 	};
 	VFrame *data;
-	int do_value;
 };
 
 #endif

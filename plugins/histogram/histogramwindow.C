@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
@@ -57,25 +41,29 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 	max_picon = new BC_Pixmap(this, &max_picon_image);
 	mid_picon = new BC_Pixmap(this, &mid_picon_image);
 	min_picon = new BC_Pixmap(this, &min_picon_image);
-	add_subwindow(mode_v = new HistogramMode(plugin, 
+	add_subwindow(mode_v = new HistogramMode(plugin,
+		this,
 		x, 
 		y,
 		HISTOGRAM_VALUE,
 		_("Value")));
 	x += 70;
-	add_subwindow(mode_r = new HistogramMode(plugin, 
+	add_subwindow(mode_r = new HistogramMode(plugin,
+		this,
 		x, 
 		y,
 		HISTOGRAM_RED,
 		_("Red")));
 	x += 70;
-	add_subwindow(mode_g = new HistogramMode(plugin, 
+	add_subwindow(mode_g = new HistogramMode(plugin,
+		this,
 		x, 
 		y,
 		HISTOGRAM_GREEN,
 		_("Green")));
 	x += 70;
-	add_subwindow(mode_b = new HistogramMode(plugin, 
+	add_subwindow(mode_b = new HistogramMode(plugin,
+		this,
 		x, 
 		y,
 		HISTOGRAM_BLUE,
@@ -108,7 +96,7 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 	title1_x = x;
 	title2_x = x + (int)(canvas_w * - HISTOGRAM_MIN_INPUT / HISTOGRAM_FLOAT_RANGE);
 	title3_x = x + (int)(canvas_w * (1.0 - HISTOGRAM_MIN_INPUT) / HISTOGRAM_FLOAT_RANGE);
-	title4_x = x + (int)(canvas_w);
+	title4_x = x + canvas_w;
 	add_subwindow(canvas = new HistogramCanvas(plugin,
 		this,
 		x, 
@@ -117,18 +105,12 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		canvas_h));
 
 	y += canvas->get_h() + 1;
-	add_subwindow(new BC_Title(title1_x, 
-		y, 
-		"-10%"));
-	add_subwindow(new BC_Title(title2_x,
-		y,
-		"0%"));
+	add_subwindow(new BC_Title(title1_x, y, "-10%"));
+	add_subwindow(new BC_Title(title2_x, y, "0%"));
 	add_subwindow(new BC_Title(title3_x - get_text_width(MEDIUMFONT, "100"),
-		y,
-		"100%"));
+		y, "100%"));
 	add_subwindow(new BC_Title(title4_x - get_text_width(MEDIUMFONT, "110"),
-		y,
-		"110%"));
+		y, "110%"));
 
 	y += 20;
 	add_subwindow(title = new BC_Title(x, y, _("Output min:")));
@@ -187,33 +169,27 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 	add_subwindow(split = new HistogramSplit(plugin, 
 		x, 
 		y));
+	current_point = 0;
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 // Calculate output curve with no value function
-	plugin->tabulate_curve(plugin->mode, 0);
 	draw_canvas_overlay();
 	canvas->flash();
-
 }
 
 int HistogramWindow::keypress_event()
 {
-	int result = 0;
 	if(get_keypress() == BACKSPACE ||
 		get_keypress() == DELETE)
 	{
-		if(plugin->current_point >= 0)
+		if(current_point)
 		{
-			HistogramPoint *current = 
-				plugin->config.points[plugin->mode].get_item_number(plugin->current_point);
-			delete current;
-			plugin->current_point = -1;
-			update_input();
-			update_canvas();
+			delete current_point;
+			current_point = 0;
 			plugin->send_configure_change();
-			result = 1;
+			return 1;
 		}
 	}
-	return result;
+	return 0;
 }
 
 void HistogramWindow::update()
@@ -226,6 +202,7 @@ void HistogramWindow::update()
 		update_input();
 
 	update_output();
+	update_canvas();
 }
 
 void HistogramWindow::update_input()
@@ -255,9 +232,9 @@ void HistogramWindow::update_mode()
 
 void HistogramWindow::draw_canvas_overlay()
 {
-	canvas->set_color(0x00ff00);
 	int y1;
 
+	canvas->set_color(GREEN);
 
 // Draw output line
 	for(int i = 0; i < canvas_w; i++)
@@ -269,16 +246,13 @@ void HistogramWindow::draw_canvas_overlay()
 		int y2 = canvas_h - (int)(output * canvas_h);
 
 		if(i > 0)
-		{
 			canvas->draw_line(i - 1, y1, i, y2);
-		}
 		y1 = y2;
 	}
 
 // Draw output points
-	HistogramPoint *current = plugin->config.points[plugin->mode].first;
-	int number = 0;
-	while(current)
+	for(HistogramPoint *current = plugin->config.points[plugin->mode].first;
+		current; current = NEXT)
 	{
 		int x1;
 		int y1;
@@ -294,16 +268,14 @@ void HistogramWindow::draw_canvas_overlay()
 			&x,
 			&y);
 
-		if(number == plugin->current_point)
+		if(current == current_point)
 			canvas->draw_box(x1, y1, x2 - x1, y2 - y1);
 		else
 			canvas->draw_rectangle(x1, y1, x2 - x1, y2 - y1);
-		current = NEXT;
-		number++;
 	}
 
 // Draw 0 and 100% lines.
-	canvas->set_color(0xff0000);
+	canvas->set_color(RED);
 	canvas->draw_line(title2_x - canvas->get_x(), 
 		0, 
 		title2_x - canvas->get_x(), 
@@ -322,40 +294,39 @@ void HistogramWindow::update_canvas()
 	int normalize = 0;
 	int max = 0;
 
-// Calculate output curve with no value function
-	plugin->tabulate_curve(plugin->mode, 0);
-
-	for(int i = 0; i < HISTOGRAM_SLOTS; i++)
+	if(accum)
 	{
-		if(accum && accum[i] > normalize) normalize = accum[i];
+		for(int i = 0; i < HISTOGRAM_SLOTS; i++)
+		{
+			if(accum[i] > normalize)
+				normalize = accum[i];
+		}
 	}
 
 	if(normalize)
 	{
 		for(int i = 0; i < canvas_w; i++)
 		{
-			int accum_start = (int)(accum_per_canvas_f * i);
+			int accum_start = round(accum_per_canvas_f * i);
 			int accum_end = accum_start + accum_per_canvas_i;
+
 			max = 0;
 			for(int j = accum_start; j < accum_end; j++)
-			{
 				max = MAX(accum[j], max);
-			}
 
-			max = (int)(log(max) / log(normalize) * canvas_h);
+			max = round(log(max) / log(normalize) * canvas_h);
 
-			canvas->set_color(0xffffff);
+			canvas->set_color(WHITE);
 			canvas->draw_line(i, 0, i, canvas_h - max);
-			canvas->set_color(0x000000);
+			canvas->set_color(BLACK);
 			canvas->draw_line(i, canvas_h - max, i, canvas_h);
 		}
 	}
 	else
 	{
-		canvas->set_color(0xffffff);
+		canvas->set_color(WHITE);
 		canvas->draw_box(0, 0, canvas_w, canvas_h);
 	}
-
 
 	draw_canvas_overlay();
 	canvas->flash();
@@ -388,69 +359,70 @@ HistogramCanvas::HistogramCanvas(HistogramMain *plugin,
 	y,
 	w,
 	h,
-	0xffffff)
+	WHITE)
 {
 	this->plugin = plugin;
 	this->gui = gui;
+	dragging_point = 0;
+	point_x_offset = 0;
+	point_y_offset = 0;
 }
 
 int HistogramCanvas::button_press_event()
 {
 	int result = 0;
+
 	if(is_event_win() && cursor_inside())
 	{
-		if(!plugin->dragging_point && 
+		if(!dragging_point &&
 			(!plugin->config.automatic || plugin->mode == HISTOGRAM_VALUE))
 		{
 			HistogramPoint *new_point = 0;
 			gui->deactivate();
 // Search for existing point under cursor
-			HistogramPoint *current = plugin->config.points[plugin->mode].first;
-			plugin->current_point = -1;
-			while(current)
+			gui->current_point = 0;
+
+			for(HistogramPoint *current = plugin->config.points[plugin->mode].first;
+				current; current = NEXT)
 			{
-				int x = (int)((current->x - HISTOGRAM_MIN_INPUT) * gui->canvas_w / HISTOGRAM_FLOAT_RANGE);
-				int y = (int)(gui->canvas_h - current->y * gui->canvas_h);
+				int x = round((current->x - HISTOGRAM_MIN_INPUT) * gui->canvas_w / HISTOGRAM_FLOAT_RANGE);
+				int y = round(gui->canvas_h - current->y * gui->canvas_h);
 
 				if(get_cursor_x() >= x - HISTOGRAM_BOX_SIZE / 2 &&
 					get_cursor_y() >= y - HISTOGRAM_BOX_SIZE / 2 &&
 					get_cursor_x() < x + HISTOGRAM_BOX_SIZE / 2 &&
 					get_cursor_y() < y + HISTOGRAM_BOX_SIZE / 2)
 				{
-					plugin->current_point = 
-						plugin->config.points[plugin->mode].number_of(current);
-					plugin->point_x_offset = get_cursor_x() - x;
-					plugin->point_y_offset = get_cursor_y() - y;
+					gui->current_point = current;
+					point_x_offset = get_cursor_x() - x;
+					point_y_offset = get_cursor_y() - y;
 					break;
 				}
-				current = NEXT;
 			}
 
-			if(plugin->current_point < 0)
+			if(!gui->current_point)
 			{
 // Create new point under cursor
-				double current_x = get_cursor_x() *
+				double current_x = (double)get_cursor_x() *
 					HISTOGRAM_FLOAT_RANGE /
 					get_w() + HISTOGRAM_MIN_INPUT;
-				double current_y = 1.0 - get_cursor_y() / get_h();
+				double current_y = 1.0 - (double)get_cursor_y() / get_h();
 				new_point = 
 					plugin->config.points[plugin->mode].insert(current_x, current_y);
-				plugin->current_point = 
-					plugin->config.points[plugin->mode].number_of(new_point);
-				plugin->point_x_offset = 0;
-				plugin->point_y_offset = 0;
+				gui->current_point = new_point;
+				point_x_offset = 0;
+				point_y_offset = 0;
 			}
 
-			plugin->dragging_point = 1;
+			dragging_point = 1;
 			result = 1;
 
 			plugin->config.boundaries();
 			gui->update_input();
 			gui->update_canvas();
+
 			if(new_point)
-			{
 				plugin->send_configure_change();
-			}
 		}
 	}
 	return result;
@@ -458,18 +430,17 @@ int HistogramCanvas::button_press_event()
 
 int HistogramCanvas::cursor_motion_event()
 {
-	if(plugin->dragging_point)
+	if(dragging_point && gui->current_point)
 	{
 		double current_x =
-			(get_cursor_x() - plugin->point_x_offset) *
+			(get_cursor_x() - point_x_offset) *
 			HISTOGRAM_FLOAT_RANGE /
 			get_w() + HISTOGRAM_MIN_INPUT;
-		double current_y = 1.0 - (get_cursor_y() - plugin->point_y_offset) /
+		double current_y = 1.0 - (double)(get_cursor_y() - point_y_offset) /
 			get_h();
-		HistogramPoint *current_point = 
-			plugin->config.points[plugin->mode].get_item_number(plugin->current_point);
-		current_point->x = current_x;
-		current_point->y = current_y;
+
+		gui->current_point->x = current_x;
+		gui->current_point->y = current_y;
 		plugin->config.boundaries();
 		gui->update_input();
 		gui->update_canvas();
@@ -479,9 +450,8 @@ int HistogramCanvas::cursor_motion_event()
 	else
 	if(is_event_win() && cursor_inside())
 	{
-		HistogramPoint *current = plugin->config.points[plugin->mode].first;
-		int done = 0;
-		while(current && !done)
+		for(HistogramPoint *current = plugin->config.points[plugin->mode].first;
+			current; current = NEXT)
 		{
 			int x1;
 			int y1;
@@ -498,21 +468,14 @@ int HistogramCanvas::cursor_motion_event()
 				&x,
 				&y);
 
-			int new_cursor = ARROW_CURSOR;
-
 			if(get_cursor_x() >= x1 && 
 				get_cursor_y() >= y1 &&
 				get_cursor_x() < x2 &&
 				get_cursor_y() < y2)
 			{
-				new_cursor = UPRIGHT_ARROW_CURSOR;
-				done = 1;
+				set_cursor(UPRIGHT_ARROW_CURSOR);
+				break;
 			}
-
-			if(new_cursor != get_cursor())
-				set_cursor(new_cursor);
-
-			current = NEXT;
 		}
 	}
 	return 0;
@@ -520,11 +483,10 @@ int HistogramCanvas::cursor_motion_event()
 
 int HistogramCanvas::button_release_event()
 {
-	if(plugin->dragging_point)
+	if(dragging_point && gui->current_point)
 	{
 // Test for out of order points to delete.
-		HistogramPoint *current = 
-			plugin->config.points[plugin->mode].get_item_number(plugin->current_point);
+		HistogramPoint *current = gui->current_point;
 		HistogramPoint *prev = PREVIOUS;
 		HistogramPoint *next = NEXT;
 
@@ -532,15 +494,15 @@ int HistogramCanvas::button_release_event()
 			(next && next->x <= current->x))
 		{
 			delete current;
-			plugin->current_point = -1;
+			gui->current_point = 0;
 			plugin->config.boundaries();
-			gui->update_input();
-			gui->update_canvas();
 			plugin->send_configure_change();
 		}
 
-		plugin->dragging_point = 0;
+		dragging_point = 0;
+		return 1;
 	}
+	dragging_point = 0;
 	return 0;
 }
 
@@ -555,8 +517,6 @@ HistogramReset::HistogramReset(HistogramMain *plugin,
 int HistogramReset::handle_event()
 {
 	plugin->config.reset(0);
-	plugin->thread->window->update();
-	plugin->thread->window->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -636,7 +596,8 @@ int HistogramSlider::cursor_motion_event()
 {
 	if(operation != NONE)
 	{
-		double value = (double)get_cursor_x() / get_w() * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
+		double value = (double)get_cursor_x() / get_w() *
+			HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
 		CLAMP(value, HISTOGRAM_MIN_INPUT, HISTOGRAM_MAX_INPUT);
 
 		switch(operation)
@@ -652,7 +613,6 @@ int HistogramSlider::cursor_motion_event()
 		}
 
 		plugin->config.boundaries();
-		gui->update_output();
 
 		plugin->send_configure_change();
 		return 1;
@@ -758,7 +718,8 @@ int HistogramSplit::handle_event()
 	return 1;
 }
 
-HistogramMode::HistogramMode(HistogramMain *plugin, 
+HistogramMode::HistogramMode(HistogramMain *plugin,
+	HistogramWindow *gui,
 	int x, 
 	int y,
 	int value,
@@ -766,18 +727,14 @@ HistogramMode::HistogramMode(HistogramMain *plugin,
  : BC_Radial(x, y, plugin->mode == value, text)
 {
 	this->plugin = plugin;
+	this->gui = gui;
 	this->value = value;
 }
 int HistogramMode::handle_event()
 {
 	plugin->mode = value;
-	plugin->current_point= -1;
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_mode();
-	plugin->thread->window->update_input();
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_output();
-	plugin->thread->window->output->update();
+	gui->current_point= 0;
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -805,11 +762,8 @@ HistogramOutputText::HistogramOutputText(HistogramMain *plugin,
 int HistogramOutputText::handle_event()
 {
 	if(output)
-	{
 		*output = atof(get_text());
-	}
 
-	plugin->thread->window->output->update();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -837,51 +791,27 @@ HistogramInputText::HistogramInputText(HistogramMain *plugin,
 
 int HistogramInputText::handle_event()
 {
-	if(plugin->current_point >= 0 &&
-		plugin->current_point < plugin->config.points[plugin->mode].total())
+	if(gui->current_point)
 	{
-		HistogramPoint *point = 
-			plugin->config.points[plugin->mode].get_item_number(
-				plugin->current_point);
+		if(do_x)
+			gui->current_point->x = atof(get_text());
+		else
+			gui->current_point->y = atof(get_text());
 
-		if(point)
-		{
-			if(do_x) 
-				point->x = atof(get_text());
-			else
-				point->y = atof(get_text());
-
-			plugin->config.boundaries();
-			gui->update_canvas();
-
-			plugin->thread->window->output->update();
-			plugin->send_configure_change();
-		}
+		plugin->config.boundaries();
+		plugin->send_configure_change();
 	}
 	return 1;
 }
 
 void HistogramInputText::update()
 {
-	if(plugin->current_point >= 0 &&
-		plugin->current_point < plugin->config.points[plugin->mode].total())
+	if(gui->current_point)
 	{
-		HistogramPoint *point = 
-
-			plugin->config.points[plugin->mode].get_item_number(
-				plugin->current_point);
-
-		if(point)
-		{
-			if(do_x)
-				BC_TumbleTextBox::update(point->x);
-			else
-				BC_TumbleTextBox::update(point->y);
-		}
+		if(do_x)
+			BC_TumbleTextBox::update(gui->current_point->x);
 		else
-		{
-			BC_TumbleTextBox::update(0.0);
-		}
+			BC_TumbleTextBox::update(gui->current_point->y);
 	}
 	else
 	{
