@@ -32,10 +32,8 @@ HistogramMain::HistogramMain(PluginServer *server)
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		lookup[i] = 0;
-		smoothed[i] = 0;
 		linear[i] = 0;
 		accum[i] = 0;
-		preview_lookup[i] = 0;
 	}
 	mode = HISTOGRAM_VALUE;
 	input = 0;
@@ -47,10 +45,8 @@ HistogramMain::~HistogramMain()
 	for(int i = 0; i < HISTOGRAM_MODES;i++)
 	{
 		delete [] lookup[i];
-		delete [] smoothed[i];
 		delete [] linear[i];
 		delete [] accum[i];
-		delete [] preview_lookup[i];
 	}
 	delete engine;
 	PLUGIN_DESTRUCTOR_MACRO
@@ -64,14 +60,10 @@ void HistogramMain::reset_plugin()
 		{
 			delete [] lookup[i];
 			lookup[i] = 0;
-			delete [] smoothed[i];
-			smoothed[i] = 0;
 			delete [] linear[i];
 			linear[i] = 0;
 			delete [] accum[i];
 			accum[i] = 0;
-			delete [] preview_lookup[i];
-			preview_lookup[i] = 0;
 		}
 		delete engine;
 		engine = 0;
@@ -265,52 +257,39 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 
 double HistogramMain::calculate_linear(double input, int subscript)
 {
-	int done = 0;
 	double output;
-
-	if(!done)
-	{
-		double x1 = 0;
-		double y1 = 0;
-		double x2 = 1;
-		double y2 = 1;
+	double x1 = 0;
+	double y1 = 0;
+	double x2 = 1;
+	double y2 = 1;
+	HistogramPoint *current;
+	HistogramPoints *points = &config.points[subscript];
 
 // Get 2 points surrounding current position
-		HistogramPoints *points = &config.points[subscript];
-		HistogramPoint *current = points->first;
-		int done = 0;
-		while(current && !done)
+	for(current = points->first; current; current = NEXT)
+	{
+		if(current->x > input)
 		{
-			if(current->x > input)
-			{
-				x2 = current->x;
-				y2 = current->y;
-				done = 1;
-			}
-			else
-				current = NEXT;
+			x2 = current->x;
+			y2 = current->y;
+			break;
 		}
-
-		current = points->last;
-		done = 0;
-		while(current && !done)
-		{
-			if(current->x <= input)
-			{
-				x1 = current->x;
-				y1 = current->y;
-				done = 1;
-			}
-			else
-				current = PREVIOUS;
-		}
-
-// Linear
-		if(!EQUIV(x2 - x1, 0))
-			output = (input - x1) * (y2 - y1) / (x2 - x1) + y1;
-		else
-			output = input * y2;
 	}
+
+	for(current = points->last; current; current = PREVIOUS)
+	{
+		if(current->x <= input)
+		{
+			x1 = current->x;
+			y1 = current->y;
+			break;
+		}
+	}
+// Linear
+	if(!EQUIV(x2 - x1, 0))
+		output = (input - x1) * (y2 - y1) / (x2 - x1) + y1;
+	else
+		output = input * y2;
 
 	double output_min = config.output_min[subscript];
 	double output_max = config.output_max[subscript];
@@ -324,15 +303,15 @@ double HistogramMain::calculate_linear(double input, int subscript)
 double HistogramMain::calculate_smooth(double input, int subscript)
 {
 	double x_f = (input - HISTOGRAM_MIN_INPUT) * HISTOGRAM_SLOTS / HISTOGRAM_FLOAT_RANGE;
-	int x_i1 = (int)x_f;
+	int x_i1 = round(x_f);
 	int x_i2 = x_i1 + 1;
 
 	CLAMP(x_i1, 0, HISTOGRAM_SLOTS - 1);
 	CLAMP(x_i2, 0, HISTOGRAM_SLOTS - 1);
 	CLAMP(x_f, 0, HISTOGRAM_SLOTS - 1);
 
-	double smooth1 = smoothed[subscript][x_i1];
-	double smooth2 = smoothed[subscript][x_i2];
+	double smooth1 = linear[subscript][x_i1];
+	double smooth2 = linear[subscript][x_i2];
 	double result = smooth1 + (smooth2 - smooth1) * (x_f - x_i1);
 	CLAMP(result, 0, 1.0);
 	return result;
@@ -387,9 +366,8 @@ void HistogramMain::calculate_histogram(VFrame *data)
 void HistogramMain::calculate_automatic(VFrame *data)
 {
 	config.reset_points(1);
-
 // Do each channel
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		int *accum = this->accum[i];
 		int pixels = data->get_w() * data->get_h();
@@ -399,6 +377,8 @@ void HistogramMain::calculate_automatic(VFrame *data)
 		double max_level = 1.0;
 		double min_level = 0.0;
 
+		if(i == HISTOGRAM_VALUE || !accum)
+			continue;
 // Get histogram slot above threshold of pixels
 		for(int j = 0; j < HISTOGRAM_SLOTS; j++)
 		{
@@ -451,7 +431,7 @@ VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure || !lookup[0] || !smoothed[0] ||
+	if(need_reconfigure || !lookup[0] ||
 		!linear[0] || config.automatic)
 	{
 // Calculate new curves
@@ -462,7 +442,6 @@ VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 		for(int i = 0; i < HISTOGRAM_MODES; i++)
 			tabulate_curve(i);
 	}
-
 	calculate_histogram(input);
 
 // Apply histogram
@@ -478,32 +457,20 @@ void HistogramMain::tabulate_curve(int subscript)
 {
 	if(!lookup[subscript])
 		lookup[subscript] = new int[HISTOGRAM_SLOTS];
-	if(!smoothed[subscript])
-		smoothed[subscript] = new float[HISTOGRAM_SLOTS];
 	if(!linear[subscript])
 		linear[subscript] = new float[HISTOGRAM_SLOTS];
-	if(!preview_lookup[subscript])
-		preview_lookup[subscript] = new int[HISTOGRAM_SLOTS];
 
-	float *current_smooth = smoothed[subscript];
 	float *current_linear = linear[subscript];
 
 // Make linear curve and smooth curve as a copy of linear
 	for(int i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
 		double input = (double)i / HISTOGRAM_SLOTS * HISTOGRAM_FLOAT_RANGE + HISTOGRAM_MIN_INPUT;
-		current_smooth[i] = current_linear[i] = calculate_linear(input, subscript);
+		current_linear[i] = calculate_linear(input, subscript);
 	}
-
 // Generate lookup tables for integer colormodels
 	for(int i = 0; i < 0x10000; i++)
 		lookup[subscript][i] =
-			round(calculate_smooth((double)i / 0xffff,
-				subscript) * 0xffff);
-
-// Lookup table for preview only used for GUI
-	for(int i = 0; i < 0x10000; i++)
-		preview_lookup[subscript][i] =
 			round(calculate_smooth((double)i / 0xffff,
 				subscript) * 0xffff);
 }
@@ -790,9 +757,9 @@ void HistogramUnit::process_package(LoadPackage *package)
 		int *accum_v = accum[HISTOGRAM_VALUE];
 		int r, g, b, a, y, u, v;
 		int r_out, g_out, b_out;
-		int *lookup_r = plugin->preview_lookup[HISTOGRAM_RED];
-		int *lookup_g = plugin->preview_lookup[HISTOGRAM_GREEN];
-		int *lookup_b = plugin->preview_lookup[HISTOGRAM_BLUE];
+		int *lookup_r = plugin->lookup[HISTOGRAM_RED];
+		int *lookup_g = plugin->lookup[HISTOGRAM_GREEN];
+		int *lookup_b = plugin->lookup[HISTOGRAM_BLUE];
 		memset(accum_r, 0, sizeof(int) * HISTOGRAM_SLOTS);
 		memset(accum_g, 0, sizeof(int) * HISTOGRAM_SLOTS);
 		memset(accum_b, 0, sizeof(int) * HISTOGRAM_SLOTS);
@@ -886,9 +853,9 @@ void HistogramUnit::process_package(LoadPackage *package)
 		VFrame *input = plugin->input;
 		int w = input->get_w();
 		int h = input->get_h();
-		int *lookup_r = plugin->lookup[0];
-		int *lookup_g = plugin->lookup[1];
-		int *lookup_b = plugin->lookup[2];
+		int *lookup_r = plugin->lookup[HISTOGRAM_RED];
+		int *lookup_g = plugin->lookup[HISTOGRAM_GREEN];
+		int *lookup_b = plugin->lookup[HISTOGRAM_BLUE];
 		int r, g, b, y, u, v, a;
 		switch(input->get_color_model())
 		{

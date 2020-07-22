@@ -47,18 +47,14 @@ public:
 // Calculate automatic settings
 	void calculate_automatic(VFrame *data);
 // Calculate histogram.
-// Value is only calculated for preview.
 	void calculate_histogram(VFrame *data);
-// Calculate the linear, smoothed, lookup curves
+// Calculate the linear, lookup curves
 	void tabulate_curve(int subscript);
 
 	VFrame *input;
 	HistogramEngine *engine;
 	int *lookup[HISTOGRAM_MODES];
-	float *smoothed[HISTOGRAM_MODES];
 	float *linear[HISTOGRAM_MODES];
-// No value applied to this
-	int *preview_lookup[HISTOGRAM_MODES];
 	int *accum[HISTOGRAM_MODES];
 // Current channel being viewed
 	int mode;
