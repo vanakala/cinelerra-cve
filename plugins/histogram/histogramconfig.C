@@ -224,21 +224,19 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 	split = prev.split;
 }
 
-
-void HistogramConfig::dump()
+void HistogramConfig::dump(int indent)
 {
+	printf("%*sHistogramConfig %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*splot %d split %d\n", indent, "", plot, split);
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
-		printf("HistogramConfig::dump mode=%d plot=%d split=%d\n", j, plot, split);
-		HistogramPoints *points = &this->points[j];
-		HistogramPoint *current = points->first;
+		HistogramPoints *node_points = &points[j];
+		int num = 0;
 
-		while(current)
-		{
-			printf("%f,%f ", current->x, current->y);
-			fflush(stdout);
-			current = NEXT;
-		}
-		printf("\n");
+		for(HistogramPoint *current = node_points->first;
+				current; current = NEXT)
+			printf("%*s%2d %02d (%.3f,%.3f)\n", indent, "",
+				j, num++, current->x, current->y);
 	}
 }

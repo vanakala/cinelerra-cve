@@ -51,7 +51,7 @@ public:
 	void reset(int do_mode);
 	void reset_points(int colors_only);
 	void boundaries();
-	void dump();
+	void dump(int indent = 0);
 
 // Range 0 - 1.0
 // Input points
