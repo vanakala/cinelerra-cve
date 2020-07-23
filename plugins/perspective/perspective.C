@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "affine.h"
 #include "bctitle.h"
@@ -255,25 +239,26 @@ void PerspectiveWindow::calculate_canvas_coords(int &x1,
 {
 	int w = canvas->get_w() - 1;
 	int h = canvas->get_h() - 1;
+
 	if(plugin->config.mode == AffineEngine::PERSPECTIVE ||
 		plugin->config.mode == AffineEngine::STRETCH)
 	{
-		x1 = (int)(plugin->config.x1 * w / 100);
-		y1 = (int)(plugin->config.y1 * h / 100);
-		x2 = (int)(plugin->config.x2 * w / 100);
-		y2 = (int)(plugin->config.y2 * h / 100);
-		x3 = (int)(plugin->config.x3 * w / 100);
-		y3 = (int)(plugin->config.y3 * h / 100);
-		x4 = (int)(plugin->config.x4 * w / 100);
-		y4 = (int)(plugin->config.y4 * h / 100);
+		x1 = round(plugin->config.x1 * w / 100);
+		y1 = round(plugin->config.y1 * h / 100);
+		x2 = round(plugin->config.x2 * w / 100);
+		y2 = round(plugin->config.y2 * h / 100);
+		x3 = round(plugin->config.x3 * w / 100);
+		y3 = round(plugin->config.y3 * h / 100);
+		x4 = round(plugin->config.x4 * w / 100);
+		y4 = round(plugin->config.y4 * h / 100);
 	}
 	else
 	{
-		x1 = (int)(plugin->config.x1 * w) / 100;
+		x1 = round(plugin->config.x1 * w) / 100;
 		y1 = 0;
 		x2 = x1 + w;
 		y2 = 0;
-		x4 = (int)(plugin->config.x4 * w) / 100;
+		x4 = round(plugin->config.x4 * w) / 100;
 		y4 = h;
 		x3 = x4 + w;
 		y3 = h;
@@ -292,7 +277,6 @@ PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin,
 	state = PerspectiveCanvas::NONE;
 }
 
-
 int PerspectiveCanvas::button_press_event()
 {
 	if(is_event_win() && cursor_inside())
@@ -301,14 +285,18 @@ int PerspectiveCanvas::button_press_event()
 		int x1, y1, x2, y2, x3, y3, x4, y4;
 		int cursor_x = get_cursor_x();
 		int cursor_y = get_cursor_y();
-		plugin->thread->window->calculate_canvas_coords(x1, y1, x2, y2, x3, y3, x4, y4);
 
-		float distance1 = DISTANCE(cursor_x, cursor_y, x1, y1);
-		float distance2 = DISTANCE(cursor_x, cursor_y, x2, y2);
-		float distance3 = DISTANCE(cursor_x, cursor_y, x3, y3);
-		float distance4 = DISTANCE(cursor_x, cursor_y, x4, y4);
-		float min = distance1;
+		plugin->thread->window->calculate_canvas_coords(x1, y1, x2, y2,
+			x3, y3, x4, y4);
+
+		double distance1 = DISTANCE(cursor_x, cursor_y, x1, y1);
+		double distance2 = DISTANCE(cursor_x, cursor_y, x2, y2);
+		double distance3 = DISTANCE(cursor_x, cursor_y, x3, y3);
+		double distance4 = DISTANCE(cursor_x, cursor_y, x4, y4);
+		double min = distance1;
+
 		plugin->config.current_point = 0;
+
 		if(distance2 < min)
 		{
 			min = distance2;
@@ -333,6 +321,7 @@ int PerspectiveCanvas::button_press_event()
 			if(plugin->config.current_point == 2)
 				plugin->config.current_point = 3;
 		}
+
 		start_cursor_x = cursor_x;
 		start_cursor_y = cursor_y;
 
@@ -356,7 +345,6 @@ int PerspectiveCanvas::button_press_event()
 		else
 		{
 			state = PerspectiveCanvas::DRAG;
-
 // Get starting positions
 			start_x1 = plugin->get_current_x();
 			start_y1 = plugin->get_current_y();
@@ -365,7 +353,6 @@ int PerspectiveCanvas::button_press_event()
 		plugin->thread->window->update_canvas();
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -385,35 +372,36 @@ int PerspectiveCanvas::cursor_motion_event()
 	{
 		int w = get_w() - 1;
 		int h = get_h() - 1;
+
 		if(state == PerspectiveCanvas::DRAG)
 		{
-			plugin->set_current_x((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
-			plugin->set_current_y((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
+			plugin->set_current_x((double)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
+			plugin->set_current_y((double)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
 		}
 		else
 		if(state == PerspectiveCanvas::DRAG_FULL)
 		{
-			plugin->config.x1 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
-			plugin->config.y1 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
-			plugin->config.x2 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x2);
-			plugin->config.y2 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y2);
-			plugin->config.x3 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x3);
-			plugin->config.y3 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y3);
-			plugin->config.x4 = ((float)(get_cursor_x() - start_cursor_x) / w * 100 + start_x4);
-			plugin->config.y4 = ((float)(get_cursor_y() - start_cursor_y) / h * 100 + start_y4);
+			plugin->config.x1 = ((double)(get_cursor_x() - start_cursor_x) / w * 100 + start_x1);
+			plugin->config.y1 = ((double)(get_cursor_y() - start_cursor_y) / h * 100 + start_y1);
+			plugin->config.x2 = ((double)(get_cursor_x() - start_cursor_x) / w * 100 + start_x2);
+			plugin->config.y2 = ((double)(get_cursor_y() - start_cursor_y) / h * 100 + start_y2);
+			plugin->config.x3 = ((double)(get_cursor_x() - start_cursor_x) / w * 100 + start_x3);
+			plugin->config.y3 = ((double)(get_cursor_y() - start_cursor_y) / h * 100 + start_y3);
+			plugin->config.x4 = ((double)(get_cursor_x() - start_cursor_x) / w * 100 + start_x4);
+			plugin->config.y4 = ((double)(get_cursor_y() - start_cursor_y) / h * 100 + start_y4);
 		}
 		else
 		if(state == PerspectiveCanvas::ZOOM)
 		{
-			float center_x = (start_x1 +
+			double center_x = (start_x1 +
 				start_x2 +
 				start_x3 +
 				start_x4) / 4;
-			float center_y = (start_y1 +
+			double center_y = (start_y1 +
 				start_y2 +
 				start_y3 +
 				start_y4) / 4;
-			float zoom = (float)(get_cursor_y() - start_cursor_y + 640) / 640;
+			double zoom = (double)(get_cursor_y() - start_cursor_y + 640) / 640;
 			plugin->config.x1 = center_x + (start_x1 - center_x) * zoom;
 			plugin->config.y1 = center_y + (start_y1 - center_y) * zoom;
 			plugin->config.x2 = center_x + (start_x2 - center_x) * zoom;
@@ -423,12 +411,9 @@ int PerspectiveCanvas::cursor_motion_event()
 			plugin->config.x4 = center_x + (start_x4 - center_x) * zoom;
 			plugin->config.y4 = center_y + (start_y4 - center_y) * zoom;
 		}
-		plugin->thread->window->update_canvas();
-		plugin->thread->window->update_coord();
 		plugin->send_configure_change();
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -437,9 +422,9 @@ PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
 	PerspectiveMain *plugin, 
 	int x, 
 	int y,
-	float value,
+	double value,
 	int is_x)
- : BC_TumbleTextBox(gui, value, (float)0, (float)100, x, y, 100)
+ : BC_TumbleTextBox(gui, value, 0.0, 1000.0, x, y, 100)
 {
 	this->plugin = plugin;
 	this->is_x = is_x;
@@ -451,7 +436,6 @@ int PerspectiveCoord::handle_event()
 		plugin->set_current_x(atof(get_text()));
 	else
 		plugin->set_current_y(atof(get_text()));
-	plugin->thread->window->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -464,6 +448,7 @@ PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin,
 {
 	this->plugin = plugin;
 }
+
 int PerspectiveReset::handle_event()
 {
 	plugin->config.x1 = 0;
@@ -474,8 +459,6 @@ int PerspectiveReset::handle_event()
 	plugin->config.y3 = 100;
 	plugin->config.x4 = 0;
 	plugin->config.y4 = 100;
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_coord();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -491,11 +474,10 @@ PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin,
 	this->plugin = plugin;
 	this->value = value;
 }
+
 int PerspectiveMode::handle_event()
 {
 	plugin->config.mode = value;
-	plugin->thread->window->update_mode();
-	plugin->thread->window->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -515,7 +497,6 @@ PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin,
 int PerspectiveDirection::handle_event()
 {
 	plugin->config.forward = value;
-	plugin->thread->window->update_mode();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -534,6 +515,17 @@ PerspectiveMain::~PerspectiveMain()
 	delete engine;
 	delete strech_temp;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void PerspectiveMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+		delete strech_temp;
+		strech_temp = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -621,7 +613,7 @@ void PerspectiveMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-float PerspectiveMain::get_current_x()
+double PerspectiveMain::get_current_x()
 {
 	switch(config.current_point)
 	{
@@ -639,7 +631,7 @@ float PerspectiveMain::get_current_x()
 	}
 }
 
-float PerspectiveMain::get_current_y()
+double PerspectiveMain::get_current_y()
 {
 	switch(config.current_point)
 	{
@@ -657,7 +649,7 @@ float PerspectiveMain::get_current_y()
 	}
 }
 
-void PerspectiveMain::set_current_x(float value)
+void PerspectiveMain::set_current_x(double value)
 {
 	switch(config.current_point)
 	{
@@ -676,7 +668,7 @@ void PerspectiveMain::set_current_x(float value)
 	}
 }
 
-void PerspectiveMain::set_current_y(float value)
+void PerspectiveMain::set_current_y(double value)
 {
 	switch(config.current_point)
 	{
@@ -697,7 +689,22 @@ void PerspectiveMain::set_current_y(float value)
 
 VFrame *PerspectiveMain::process_tmpframe(VFrame *frame)
 {
-	load_configuration();
+	int w = frame->get_w();
+	int h = frame->get_h();
+	int color_model = frame->get_color_model();
+
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // Do nothing
 	if(EQUIV(config.x1, 0) && EQUIV(config.y1, 0) &&
@@ -707,14 +714,10 @@ VFrame *PerspectiveMain::process_tmpframe(VFrame *frame)
 		return frame;
 
 	if(!engine)
-		engine = new AffineEngine(get_project_smp() + 1,
-			get_project_smp() + 1);
+		engine = new AffineEngine(get_project_smp(),
+			get_project_smp());
 
 	input = frame;
-
-	int w = frame->get_w();
-	int h = frame->get_h();
-	int color_model = frame->get_color_model();
 
 	if(strech_temp && config.mode == AffineEngine::STRETCH &&
 		(strech_temp->get_w() != w * AFFINE_OVERSAMPLE ||
@@ -755,96 +758,71 @@ VFrame *PerspectiveMain::process_tmpframe(VFrame *frame)
 // Resample
 	if(config.mode == AffineEngine::STRETCH)
 	{
-#define RESAMPLE(type, components, chroma_offset) \
-{ \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *out_row = (type*)output->get_row_ptr(i); \
-		type *in_row1 = (type*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE); \
-		type *in_row2 = (type*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1); \
-		for(int j = 0; j < w; j++) \
-		{ \
-			out_row[0] = (in_row1[0] +  \
-					in_row1[components] +  \
-					in_row2[0] +  \
-					in_row2[components]) /  \
-				AFFINE_OVERSAMPLE /  \
-				AFFINE_OVERSAMPLE; \
-			out_row[1] = ((in_row1[1] +  \
-						in_row1[components + 1] +  \
-						in_row2[1] +  \
-						in_row2[components + 1]) -  \
-					chroma_offset *  \
-					AFFINE_OVERSAMPLE *  \
-					AFFINE_OVERSAMPLE) /  \
-				AFFINE_OVERSAMPLE /  \
-				AFFINE_OVERSAMPLE + \
-				chroma_offset; \
-			out_row[2] = ((in_row1[2] +  \
-						in_row1[components + 2] +  \
-						in_row2[2] +  \
-						in_row2[components + 2]) -  \
-					chroma_offset *  \
-					AFFINE_OVERSAMPLE *  \
-					AFFINE_OVERSAMPLE) /  \
-				AFFINE_OVERSAMPLE /  \
-				AFFINE_OVERSAMPLE + \
-				chroma_offset; \
-			if(components == 4) \
-			{ \
-				out_row[3] = (in_row1[3] +  \
-						in_row1[components + 3] +  \
-						in_row2[3] +  \
-						in_row2[components + 3]) /  \
-					AFFINE_OVERSAMPLE /  \
-					AFFINE_OVERSAMPLE; \
-			} \
-			out_row += components; \
-			in_row1 += components * AFFINE_OVERSAMPLE; \
-			in_row2 += components * AFFINE_OVERSAMPLE; \
-		} \
-	} \
-}
-
 		switch(frame->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			RESAMPLE(float, 3, 0)
-			break;
-		case BC_RGB888:
-			RESAMPLE(unsigned char, 3, 0)
-			break;
-		case BC_RGBA_FLOAT:
-			RESAMPLE(float, 4, 0)
-			break;
-		case BC_RGBA8888:
-			RESAMPLE(unsigned char, 4, 0)
-			break;
-		case BC_YUV888:
-			RESAMPLE(unsigned char, 3, 0x80)
-			break;
-		case BC_YUVA8888:
-			RESAMPLE(unsigned char, 4, 0x80)
-			break;
-		case BC_RGB161616:
-			RESAMPLE(uint16_t, 3, 0)
-			break;
 		case BC_RGBA16161616:
-			RESAMPLE(uint16_t, 4, 0)
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i);
+				uint16_t *in_row1 = (uint16_t*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE);
+				uint16_t *in_row2 = (uint16_t*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1);
+
+				for(int j = 0; j < w; j++)
+				{
+					out_row[0] = (in_row1[0] + in_row1[4] +
+						in_row2[0] + in_row2[4]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row[1] = (in_row1[1] + in_row1[5] +
+						in_row2[1] + in_row2[5]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row[2] = (in_row1[2] + in_row1[6] +
+						in_row2[2] + in_row2[6]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row[3] = (in_row1[3] + in_row1[7] +
+						in_row2[3] + in_row2[7]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row += 4;
+					in_row1 += 4 * AFFINE_OVERSAMPLE;
+					in_row2 += 4 * AFFINE_OVERSAMPLE;
+				}
+			}
 			break;
-		case BC_YUV161616:
-			RESAMPLE(uint16_t, 3, 0x8000)
-			break;
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
-			RESAMPLE(uint16_t, 4, 0x8000)
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i);
+				uint16_t *in_row1 = (uint16_t*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE);
+				uint16_t *in_row2 = (uint16_t*)strech_temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1);
+
+				for(int j = 0; j < w; j++)
+				{
+					out_row[0] = (in_row1[0] + in_row1[4] +
+						in_row2[0] + in_row2[4]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row[1] = (in_row1[1] + in_row1[5] +
+						in_row2[1] + in_row2[5]) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE;
+					out_row[2] = ((in_row1[2] + in_row1[6] +
+						in_row2[2] + in_row2[6]) - 0x8000 *
+						AFFINE_OVERSAMPLE * AFFINE_OVERSAMPLE) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE +
+						0x8000;
+					out_row[3] = ((in_row1[3] + in_row1[7] +
+						in_row2[3] + in_row2[7]) - 0x8000 *
+						AFFINE_OVERSAMPLE *AFFINE_OVERSAMPLE) /
+						AFFINE_OVERSAMPLE / AFFINE_OVERSAMPLE +
+						0x8000;
+					out_row += 4;
+					in_row1 += 4 * AFFINE_OVERSAMPLE;
+					in_row2 += 4 * AFFINE_OVERSAMPLE;
+				}
+			}
 			break;
 		}
 	}
 	release_vframe(input);
 	return output;
 }
-
 
 void PerspectiveMain::handle_opengl()
 {

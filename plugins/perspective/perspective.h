@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #define PLUGIN_IS_VIDEO
 #define PLUGIN_IS_REALTIME
@@ -51,7 +35,10 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 
-	float x1, y1, x2, y2, x3, y3, x4, y4;
+	double x1, y1;
+	double x2, y2;
+	double x3, y3;
+	double x4, y4;
 	int mode;
 	int current_point;
 	int forward;
@@ -80,10 +67,10 @@ public:
 	};
 
 	int start_cursor_x, start_cursor_y;
-	float start_x1, start_y1;
-	float start_x2, start_y2;
-	float start_x3, start_y3;
-	float start_x4, start_y4;
+	double start_x1, start_y1;
+	double start_x2, start_y2;
+	double start_x3, start_y3;
+	double start_x4, start_y4;
 	PerspectiveMain *plugin;
 };
 
@@ -94,8 +81,9 @@ public:
 		PerspectiveMain *plugin, 
 		int x, 
 		int y,
-		float value,
+		double value,
 		int is_x);
+
 	int handle_event();
 	PerspectiveMain *plugin;
 	int is_x;
@@ -107,6 +95,7 @@ public:
 	PerspectiveReset(PerspectiveMain *plugin, 
 		int x, 
 		int y);
+
 	int handle_event();
 	PerspectiveMain *plugin;
 };
@@ -119,6 +108,7 @@ public:
 		int y,
 		int value,
 		char *text);
+
 	int handle_event();
 	PerspectiveMain *plugin;
 	int value;
@@ -132,6 +122,7 @@ public:
 		int y,
 		int value,
 		char *text);
+
 	int handle_event();
 	PerspectiveMain *plugin;
 	int value;
@@ -163,9 +154,7 @@ public:
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
 PLUGIN_THREAD_HEADER
-
 
 class PerspectiveMain : public PluginVClient
 {
@@ -174,6 +163,7 @@ public:
 	~PerspectiveMain();
 
 	VFrame *process_tmpframe(VFrame *frame);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -182,10 +172,11 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	float get_current_x();
-	float get_current_y();
-	void set_current_x(float value);
-	void set_current_y(float value);
+	double get_current_x();
+	double get_current_y();
+	void set_current_x(double value);
+	void set_current_y(double value);
+
 	VFrame *input, *output;
 	VFrame *strech_temp;
 	AffineEngine *engine;
