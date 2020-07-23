@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bctitle.h"
@@ -172,7 +156,6 @@ void ShiftInterlaceMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/SHIFTINTERLACE");
 	output.append_tag();
-	output.append_newline();
 	keyframe->set_data(output.string);
 }
 
@@ -244,83 +227,94 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 
 void ShiftInterlaceMain::shift_row(VFrame *input_frame, int offset, int row)
 {
+	int i, j;
 	int w = input_frame->get_w();
+	uint16_t *input_row = (uint16_t*)input_frame->get_row_ptr(row);
+	uint16_t *output_row = (uint16_t*)input_frame->get_row_ptr(row);
 
 	switch(input_frame->get_color_model())
 	{
-	case BC_RGB888:
-		SHIFT_ROW_MACRO(3, unsigned char, 0x0)
-		break;
-	case BC_RGB_FLOAT:
-		SHIFT_ROW_MACRO(3, float, 0x0)
-		break;
-	case BC_YUV888:
-		SHIFT_ROW_MACRO(3, unsigned char, 0x80)
-		break;
-	case BC_RGBA_FLOAT:
-		SHIFT_ROW_MACRO(4, float, 0x0)
-		break;
-	case BC_RGBA8888:
-		SHIFT_ROW_MACRO(4, unsigned char, 0x0)
-		break;
-	case BC_YUVA8888:
-		SHIFT_ROW_MACRO(4, unsigned char, 0x80)
-		break;
-	case BC_RGB161616:
-		SHIFT_ROW_MACRO(3, uint16_t, 0x0)
-		break;
-	case BC_YUV161616:
-		SHIFT_ROW_MACRO(3, uint16_t, 0x8000)
-		break;
 	case BC_RGBA16161616:
+/* Pole
 		SHIFT_ROW_MACRO(4, uint16_t, 0x0)
-		break;
-	case BC_YUVA16161616:
-		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
+	#define SHIFT_ROW_MACRO(components, type, chroma_offset) \
+{ \
+	type *input_row = (type*)input_frame->get_row_ptr(row); \
+	type *output_row = (type*)input_frame->get_row_ptr(row); \
+ \
+	*/
+		if(offset < 0)
+		{
+			for(i = 0, j = -offset; j < w; i++, j++)
+			{
+				output_row[i * 4 + 0] = input_row[j * 4 + 0];
+				output_row[i * 4 + 1] = input_row[j * 4 + 1];
+				output_row[i * 4 + 2] = input_row[j * 4 + 2];
+				output_row[i * 4 + 3] = input_row[j * 4 + 3];
+			}
+
+			for(; i < w; i++)
+			{
+				output_row[i * 4 + 0] = 0;
+				output_row[i * 4 + 1] = 0;
+				output_row[i * 4 + 2] = 0;
+				output_row[i * 4 + 3] = 0;
+			}
+		}
+		else
+		{
+			for(i = w - offset - 1, j = w - 1; j >= offset; i--, j--)
+			{
+				output_row[j * 4 + 0] = input_row[i * 4 + 0];
+				output_row[j * 4 + 1] = input_row[i * 4 + 1];
+				output_row[j * 4 + 2] = input_row[i * 4 + 2];
+				output_row[j * 4 + 3] = input_row[i * 4 + 3];
+			}
+
+			for(; j >= 0; j--)
+			{
+				output_row[j * 4 + 0] = 0;
+				output_row[j * 4 + 1] = 0;
+				output_row[j * 4 + 2] = 0;
+				output_row[j * 4 + 3] = 0;
+			}
+		}
 		break;
 	case BC_AYUV16161616:
+		if(offset < 0)
 		{
-			uint16_t *input_row = (uint16_t*)input_frame->get_row_ptr(row);
-			uint16_t *output_row = (uint16_t*)input_frame->get_row_ptr(row);
-
-			if(offset < 0)
+			for(i = 0, j = -offset; j < w; i++, j++)
 			{
-				int i, j;
-				for(i = 0, j = -offset; j < w; i++, j++)
-				{
-					output_row[i * 4 + 0] = input_row[j * 4 + 0];
-					output_row[i * 4 + 1] = input_row[j * 4 + 1];
-					output_row[i * 4 + 2] = input_row[j * 4 + 2];
-					output_row[i * 4 + 3] = input_row[j * 4 + 3];
-				}
-
-				for( ; i < w; i++)
-				{
-					output_row[i * 4 + 0] = 0;
-					output_row[i * 4 + 1] = 0;
-					output_row[i * 4 + 2] = 0x8000;
-					output_row[i * 4 + 3] = 0x8000;
-				}
+				output_row[i * 4 + 0] = input_row[j * 4 + 0];
+				output_row[i * 4 + 1] = input_row[j * 4 + 1];
+				output_row[i * 4 + 2] = input_row[j * 4 + 2];
+				output_row[i * 4 + 3] = input_row[j * 4 + 3];
 			}
-			else
-			{
-				int i, j;
-				for(i = w - offset - 1, j = w - 1;
-					j >= offset; i--, j--)
-				{
-					output_row[j * 4 + 0] = input_row[i * 4 + 0];
-					output_row[j * 4 + 1] = input_row[i * 4 + 1];
-					output_row[j * 4 + 2] = input_row[i * 4 + 2];
-					output_row[j * 4 + 3] = input_row[i * 4 + 3];
-				}
 
-				for( ; j >= 0; j--)
-				{
-					output_row[j * 4 + 0] = 0;
-					output_row[j * 4 + 1] = 0;
-					output_row[j * 4 + 2] = 0x8000;
-					output_row[j * 4 + 3] = 0x8000;
-				}
+			for(; i < w; i++)
+			{
+				output_row[i * 4 + 0] = 0;
+				output_row[i * 4 + 1] = 0;
+				output_row[i * 4 + 2] = 0x8000;
+				output_row[i * 4 + 3] = 0x8000;
+			}
+		}
+		else
+		{
+			for(i = w - offset - 1, j = w - 1; j >= offset; i--, j--)
+			{
+				output_row[j * 4 + 0] = input_row[i * 4 + 0];
+				output_row[j * 4 + 1] = input_row[i * 4 + 1];
+				output_row[j * 4 + 2] = input_row[i * 4 + 2];
+				output_row[j * 4 + 3] = input_row[i * 4 + 3];
+			}
+
+			for(; j >= 0; j--)
+			{
+				output_row[j * 4 + 0] = 0;
+				output_row[j * 4 + 1] = 0;
+				output_row[j * 4 + 2] = 0x8000;
+				output_row[j * 4 + 3] = 0x8000;
 			}
 		}
 		break;
@@ -330,8 +324,21 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame, int offset, int row)
 VFrame *ShiftInterlaceMain::process_tmpframe(VFrame *input)
 {
 	int h = input->get_h();
+	int color_model = input->get_color_model();
 
-	load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input;
+	}
+
+	if(load_configuration())
+		update_gui();
+
 	for(int i = 0; i < h; i++)
 	{
 		if(i % 2)
