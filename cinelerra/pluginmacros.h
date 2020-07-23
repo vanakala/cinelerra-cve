@@ -244,7 +244,7 @@ int PLUGIN_CLASS::load_configuration() \
 	next_keyframe = next_keyframe_pts(source_pts); \
  \
 	if(!prev_keyframe) \
-		return 0; \
+		return need_reconfigure; \
  \
 	ptstime next_pts = next_keyframe->pos_time; \
 	ptstime prev_pts = prev_keyframe->pos_time; \
@@ -261,7 +261,7 @@ int PLUGIN_CLASS::load_configuration() \
 			config.prev_border_pts = prev_pts; \
 		if(!config.equivalent(old_config)) \
 			return 1; \
-		return 0; \
+		return need_reconfigure; \
 	} \
 	prev_config.copy_from(config); \
 	read_data(next_keyframe); \
@@ -281,7 +281,7 @@ int PLUGIN_CLASS::load_configuration() \
 	if(!config.equivalent(old_config)) \
 		return 1; \
 	else \
-		return 0; \
+		return need_reconfigure; \
 }
 #else
 #define PLUGIN_CLASS_LOAD_CONFIGURATION

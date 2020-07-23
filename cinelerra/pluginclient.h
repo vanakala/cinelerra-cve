@@ -197,7 +197,7 @@ public:
 	virtual void load_defaults() {};
 // save the current settings as defaults
 	virtual void save_defaults() {};
-	virtual int load_configuration() { return 0; }
+	virtual int load_configuration() { return need_reconfigure; }
 
 // Total number of processors
 	int get_project_smp();
