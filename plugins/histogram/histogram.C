@@ -172,8 +172,6 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PLOT", config.plot);
 	output.tag.set_property("SPLIT", config.split);
 	output.append_tag();
-	output.tag.set_title("/HISTOGRAM");
-	output.append_tag();
 	output.append_newline();
 
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
@@ -197,6 +195,8 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 		output.append_tag();
 		output.append_newline();
 	}
+	output.tag.set_title("/HISTOGRAM");
+	output.append_tag();
 	keyframe->set_data(output.string);
 }
 
