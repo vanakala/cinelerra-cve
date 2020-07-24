@@ -1,22 +1,7 @@
-/*
- * C41 plugin for Cinelerra
- * Copyright (C) 2011 Florent Delannoy <florent at plui dot es>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2011 Florent Delannoy <florent at plui dot es>
 
 #include "c41.h"
 #include "clip.h"
@@ -454,14 +439,22 @@ C41Effect::~C41Effect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-PLUGIN_CLASS_METHODS
-
-void C41Effect::render_gui(void* data)
+void C41Effect::reset_plugin()
 {
-	// Updating values computed by process_frame
-	if(thread)
-		thread->window->update_magic();
+	if(tmp_frame)
+	{
+		delete tmp_frame;
+		tmp_frame = 0;
+		delete blurry_frame;
+		blurry_frame = 0;
+		delete [] pv_min;
+		pv_min = 0;
+		delete [] pv_max;
+		pv_max = 0;
+		pv_alloc = 0;
+	}
 }
+PLUGIN_CLASS_METHODS
 
 void C41Effect::load_defaults()
 {
@@ -609,19 +602,14 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 {
 	int pixlen;
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	int frame_w = frame->get_w();
 	int frame_h = frame->get_h();
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		pixlen = 3;
-		break;
-	case BC_RGBA_FLOAT:
-		pixlen = 4;
-		break;
 	case BC_RGBA16161616:
 	case BC_AYUV16161616:
 		pixlen = 4;
@@ -646,26 +634,10 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 
 		switch(frame->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-		case BC_RGBA_FLOAT:
-			for(i = 0; i < frame_h; i++)
-			{
-				float *row = (float*)frame->get_row_ptr(i);
-				blurry_row = (float*)blurry_frame->get_row_ptr(i);
-				for(j = k = 0; j < (pixlen * frame_w); j++)
-				{
-					if(pixlen == 4 && (j & 3) == 3)
-						continue;
-					blurry_row[k++] = fix_exepts(row[j]);
-				}
-			}
-			break;
-
 		case BC_RGBA16161616:
 			for(i = 0; i < frame_h; i++)
 			{
 				uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-				blurry_row = (float*)blurry_frame->get_row_ptr(i);
 				for(j = k = 0; j < (pixlen * frame_w); j++)
 				{
 					if((j & 3) == 3)
@@ -857,9 +829,6 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 		values.frame_max_col = frame_w;
 		values.coef1 = -1;
 		values.coef2 = -1;
-
-		// Update GUI
-		render_gui(&values);
 	}
 
 	// Apply the transformation
@@ -1006,7 +975,6 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 			// (235 - 16) / 256 * 0.9
 			values.coef1 = 0.770 / (values.coef1 - values.coef2);
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
-			render_gui(&values);
 		}
 
 		GuideFrame *gf = get_guides();
