@@ -1,22 +1,8 @@
-/*
- * Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
- * Copyright (C) 2012-2013 Monty <monty@xiph.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012-2013 Monty <monty@xiph.org>
+// Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
 
 #include <math.h>
 #include <stdint.h>
@@ -75,23 +61,16 @@ BluebananaMain::~BluebananaMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-PLUGIN_CLASS_METHODS
-
-void BluebananaMain::render_gui(void *data)
+void BluebananaMain::reset_plugin()
 {
-	if(thread)
+	if(engine)
 	{
-		// push histogram data to gui
-		thread->window->update_histograms(this);
-
-		// push any colormodel update to gui
-		if(frame && colormodel != frame->get_color_model())
-		{
-			colormodel = frame->get_color_model();
-			thread->window->update();
-		}
+		delete engine;
+		engine = 0;
 	}
 }
+
+PLUGIN_CLASS_METHODS
 
 void BluebananaMain::load_defaults()
 {
@@ -673,18 +652,30 @@ float *BluebananaMain::fill_selection(float *in, float *work,
 
 VFrame *BluebananaMain::process_tmpframe(VFrame *frame)
 {
+	colormodel = frame->get_color_model();
+
+	switch(colormodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(colormodel);
+		return frame;
+	}
+
 	load_configuration();
 	this->frame = frame;
 
 	update_lookups(1);
 
 	if(!engine)
-		engine = new BluebananaEngine(this, get_project_smp() + 1,
-			get_project_smp() + 1);
+		engine = new BluebananaEngine(this, get_project_smp(),
+			get_project_smp());
 	engine->process_packages(frame);
 
 	// push final histograms to UI if it's up
-	render_gui(this);
+	update_gui();
 
 	return frame;
 }

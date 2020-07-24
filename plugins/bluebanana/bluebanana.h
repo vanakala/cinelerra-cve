@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
- * Copyright (C) 2012-2013 Monty <monty@xiph.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012-2013 Monty <monty@xiph.org>
+// Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
 
 #ifndef BLUEBANANA_H
 #define BLUEBANANA_H
@@ -87,6 +72,7 @@ public:
 	PLUGIN_CLASS_MEMBERS
 
 	VFrame *process_tmpframe(VFrame *frame);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_auto(KeyFrame *keyframe);
@@ -95,7 +81,6 @@ public:
 	void enter_config_change();
 	void commit_config_change();
 	void leave_config_change();
-	void render_gui(void *data);
 
 	float hue_select_alpha(float hue);
 	float sat_select_alpha(float sat);

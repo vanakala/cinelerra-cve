@@ -1,23 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
- * Copyright (C) 2012 Monty <monty@xiph.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012 Monty <monty@xiph.org>
+// Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
 
 #include <unistd.h>
 #include <math.h>
@@ -2289,28 +2274,7 @@ public:
 
 		switch(plugin->colormodel)
 		{
-		case BC_RGB888:
-		case BC_RGB_FLOAT:
-		case BC_YUV888:
-		case BC_RGB161616:
-		case BC_YUV161616:
-			if(hidden != 1)
-			{
-				hide_window();
-				label->hide_window();
-				gui->set_color(get_resources()->get_bg_color());
-				gui->draw_box(x, y, w, h);
-				gui->set_color(get_resources()->default_text_color);
-				gui->draw_line(x, y + h / 2, x + w, y + h / 2);
-				hidden = 1;
-				f = 1;
-			}
-			break;
-		case BC_RGBA8888:
-		case BC_RGBA_FLOAT:
-		case BC_YUVA8888:
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
 			if(hidden != 0)
 			{
@@ -2808,6 +2772,7 @@ void BluebananaWindow::update()
 	Gadj_active->update();
 	Badj_active->update();
 	Oadj_active->update();
+	update_histograms();
 
 	// called to release configuration without pushing
 	leave_config_change();
@@ -2831,7 +2796,7 @@ void BluebananaWindow::render()
 	}
 }
 
-void BluebananaWindow::update_histograms(BluebananaMain *plugin)
+void BluebananaWindow::update_histograms()
 {
 	int w = plugin->frame->get_w();
 	int h = plugin->frame->get_h();

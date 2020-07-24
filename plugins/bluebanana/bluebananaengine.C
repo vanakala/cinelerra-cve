@@ -1,22 +1,8 @@
-/*
- * Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
- * Copyright (C) 2012-2013 Monty <monty@xiph.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012-2013 Monty <monty@xiph.org>
+// Cinelerra :: Blue Banana - color modification plugin for Cinelerra-CV
 
 #include <math.h>
 #include <stdint.h>
@@ -209,30 +195,6 @@ void BluebananaUnit::process_package(LoadPackage *package)
 
 					switch(frame->get_color_model())
 					{
-					case BC_RGB888:
-						rgb8_to_RGB((unsigned char *)row, Rvec, Gvec, Bvec, todo);
-						row += todo * 3;
-						break;
-					case BC_RGBA8888:
-						rgba8_to_RGBA((unsigned char *)row, Rvec, Gvec, Bvec, Avec, todo);
-						row += todo * 4;
-						break;
-					case BC_RGB_FLOAT:
-						rgbF_to_RGB((float *)row, Rvec, Gvec, Bvec, todo);
-						row += todo * 12;
-						break;
-					case BC_RGBA_FLOAT:
-						rgbaF_to_RGBA((float *)row, Rvec, Gvec, Bvec, Avec, todo);
-						row += todo * 16;
-						break;
-					case BC_YUV888:
-						yuv8_to_RGB((unsigned char *)row, Rvec, Gvec, Bvec, todo);
-						row += todo * 3;
-						break;
-					case BC_YUVA8888:
-						yuva8_to_RGBA((unsigned char *)row, Rvec, Gvec, Bvec, Avec, todo);
-						row += todo * 4;
-						break;
 					case BC_RGBA16161616:
 						rgba16_to_RGBA((uint16_t *)row, Rvec, Gvec, Bvec, Avec, todo);
 						row += todo * 8;
@@ -313,66 +275,12 @@ void BluebananaUnit::process_package(LoadPackage *package)
 
 					switch(frame->get_color_model())
 					{
-					case BC_RGB888:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 3);
-						pthread_mutex_unlock(&engine->copylock);
-						rgb8_to_RGB(row_fragment, Rvec, Gvec, Bvec, todo);
-						byte_advance = todo * 3;
-						have_alpha = 0;
-						break;
-
-					case BC_RGBA8888:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 4);
-						pthread_mutex_unlock(&engine->copylock);
-						rgba8_to_RGBA(row_fragment, Rvec, Gvec, Bvec, Avec, todo);
-						byte_advance = todo * 4;
-						have_alpha = 1;
-						break;
-
 					case BC_RGBA16161616:
 						pthread_mutex_lock(&engine->copylock);
 						memcpy(row_fragment, row, todo * 8);
 						pthread_mutex_unlock(&engine->copylock);
 						rgba16_to_RGBA((uint16_t*)row_fragment, Rvec, Gvec, Bvec, Avec, todo);
 						byte_advance = todo * 8;
-						have_alpha = 1;
-						break;
-
-					case BC_RGB_FLOAT:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 12);
-						pthread_mutex_unlock(&engine->copylock);
-						rgbF_to_RGB((float *)row_fragment, Rvec, Gvec, Bvec, todo);
-						byte_advance = todo * 12;
-						have_alpha = 0;
-						break;
-
-					case BC_RGBA_FLOAT:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 16);
-						pthread_mutex_unlock(&engine->copylock);
-						rgbaF_to_RGBA((float *)row_fragment, Rvec, Gvec, Bvec, Avec, todo);
-						byte_advance = todo * 16;
-						have_alpha = 1;
-						break;
-
-					case BC_YUV888:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 3);
-						pthread_mutex_unlock(&engine->copylock);
-						yuv8_to_RGB(row_fragment, Rvec, Gvec, Bvec, todo);
-						byte_advance = todo * 3;
-						have_alpha = 0;
-						break;
-
-					case BC_YUVA8888:
-						pthread_mutex_lock(&engine->copylock);
-						memcpy(row_fragment, row, todo * 4);
-						pthread_mutex_unlock(&engine->copylock);
-						yuva8_to_RGBA(row, Rvec, Gvec, Bvec, Avec, todo);
-						byte_advance = todo * 4;
 						have_alpha = 1;
 						break;
 
@@ -521,15 +429,6 @@ void BluebananaUnit::process_package(LoadPackage *package)
 							{
 								switch(frame->get_color_model())
 								{
-								case BC_RGBA8888:
-									unmask_rgba8(row_fragment, todo);
-									break;
-								case BC_RGBA_FLOAT:
-									unmask_rgbaF((float *)row_fragment, todo);
-									break;
-								case BC_YUVA8888:
-									unmask_yuva8(row_fragment, todo);
-									break;
 								case BC_AYUV16161616:
 									unmask_ayuv16((uint16_t*)row_fragment, todo);
 									break;
@@ -943,7 +842,7 @@ void BluebananaUnit::process_package(LoadPackage *package)
 							}
 						}
 					}
-					else if (gui_open)
+					else if(gui_open)
 					{
 						if(have_selection)
 						{
@@ -1026,26 +925,8 @@ void BluebananaUnit::process_package(LoadPackage *package)
 					// layer back into pipeline color format; master fader applies here
 					switch(frame->get_color_model())
 					{
-					case BC_RGB888:
-						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 3);
-						break;
-					case BC_RGBA8888:
-						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 4);
-						break;
 					case BC_RGBA16161616:
 						RGB_to_rgb16(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (uint16_t*)row_fragment, todo, 4);
-						break;
-					case BC_RGB_FLOAT:
-						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (float *)row_fragment, todo, 3);
-						break;
-					case BC_RGBA_FLOAT:
-						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (float *)row_fragment, todo, 4);
-						break;
-					case BC_YUV888:
-						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 3);
-						break;
-					case BC_YUVA8888:
-						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 4);
 						break;
 					case BC_AYUV16161616:
 						RGB_to_ayuv16(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (uint16_t*)row_fragment, todo);
@@ -1080,17 +961,8 @@ void BluebananaUnit::process_package(LoadPackage *package)
 					{
 						switch(frame->get_color_model())
 						{
-						case BC_RGBA8888:
-							unmask_rgba8(row_fragment, todo);
-							break;
 						case BC_RGBA16161616:
 							unmask_rgba16((uint16_t*)row_fragment, todo);
-							break;
-						case BC_RGBA_FLOAT:
-							unmask_rgbaF((float *)row_fragment, todo);
-							break;
-						case BC_YUVA8888:
-							unmask_yuva8(row_fragment, todo);
 							break;
 						case BC_AYUV16161616:
 							unmask_ayuv16((uint16_t*)row_fragment, todo);
