@@ -1,25 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
-
-#define GL_GLEXT_PROTOTYPES
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bcslider.h"
@@ -164,14 +146,19 @@ DiffKey::~DiffKey()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void DiffKey::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 void DiffKey::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
-
 // load the defaults
 	defaults = load_defaults_file("diffkey.rc");
 
@@ -221,13 +208,34 @@ void DiffKey::read_data(KeyFrame *keyframe)
 
 void DiffKey::process_tmpframes(VFrame **frame)
 {
-	load_configuration();
+	int cmodel = frame[0]->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // Don't process if only 1 layer.
 	if(get_total_buffers() > 1)
 	{
 		top_frame = frame[0];
 		bottom_frame = frame[1];
+
+		if(top_frame->get_w() != bottom_frame->get_w() ||
+			top_frame->get_h() != bottom_frame->get_h())
+		{
+			abort_plugin(_("Tracks must have the same dimensions"));
+			return;
+		}
+
 		top_frame->set_transparent();
 
 		if(!engine)
@@ -237,15 +245,17 @@ void DiffKey::process_tmpframes(VFrame **frame)
 	}
 }
 
+/* FIXIT
 #define DIFFKEY_VARS(plugin) \
 	float threshold = plugin->config.threshold / 100; \
 	float pad = plugin->config.slope / 100; \
 	float threshold_pad = threshold + pad; \
-
+	*/
 
 void DiffKey::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	static const char *diffkey_head = 
 		"uniform sampler2D tex_bg;\n"
 		"uniform sampler2D tex_fg;\n"
@@ -280,7 +290,6 @@ void DiffKey::handle_opengl()
 		"	gl_FragColor = result;\n"
 		"}\n";
 
-/* FIXIT
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
@@ -390,148 +399,71 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 	DiffKeyPackage *pkg = (DiffKeyPackage*)ptr;
 	DiffKey *plugin = engine->plugin;
 	int w = plugin->top_frame->get_w();
-
-#define RGB_TO_VALUE(r, g, b) \
-((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
-
-#define SQR(x) ((x) * (x))
-
-#define DIFFKEY_MACRO(type, components, max, chroma_offset) \
-{ \
- \
-	for(int i = pkg->row1; i < pkg->row2; i++) \
-	{ \
-		type *top_row = (type*)plugin->top_frame->get_row_ptr(i); \
-		type *bottom_row = (type*)plugin->bottom_frame->get_row_ptr(i); \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			float a = 1.0; \
- \
-/* Test for value in range */ \
-			if(plugin->config.do_value) \
-			{ \
-				float top_value; \
-				float bottom_value; \
- \
-/* Convert pixel data into floating point value */ \
-				if(chroma_offset) \
-				{ \
-					float top_r = (float)top_row[0] / max; \
-					float bottom_r = (float)bottom_row[0] / max; \
-					top_value = top_r; \
-					bottom_value = bottom_r; \
-				} \
-				else \
-				{ \
-					float top_r = (float)top_row[0] / max; \
-					float top_g = (float)top_row[1] / max; \
-					float top_b = (float)top_row[2] / max; \
-					top_g -= (float)chroma_offset / max; \
-					top_b -= (float)chroma_offset / max; \
- \
-					float bottom_r = (float)bottom_row[0] / max; \
-					float bottom_g = (float)bottom_row[1] / max; \
-					float bottom_b = (float)bottom_row[2] / max; \
-					bottom_g -= (float)chroma_offset / max; \
-					bottom_b -= (float)chroma_offset / max; \
- \
-					top_value = RGB_TO_VALUE(top_r, top_g, top_b); \
-					bottom_value = RGB_TO_VALUE(bottom_r, bottom_g, bottom_b); \
-				} \
- \
- 				float min_v = bottom_value - threshold; \
-				float max_v = bottom_value + threshold; \
- \
-/* Full transparency if in range */ \
-				if(top_value >= min_v && top_value < max_v) \
-				{ \
-					a = 0; \
-				} \
-				else \
-/* Phased out if below or above range */ \
-				if(top_value < min_v) \
-				{ \
-					if(min_v - top_value < pad) \
-						a = (min_v - top_value) / pad; \
-				} \
-				else \
-				if(top_value - max_v < pad) \
-					a = (top_value - max_v) / pad; \
-			} \
-			else \
-/* Use color cube */ \
-			{ \
-				float top_r = (float)top_row[0] / max; \
-				float top_g = (float)top_row[1] / max; \
-				float top_b = (float)top_row[2] / max; \
-				top_g -= (float)chroma_offset / max; \
-				top_b -= (float)chroma_offset / max; \
- \
-				float bottom_r = (float)bottom_row[0] / max; \
-				float bottom_g = (float)bottom_row[1] / max; \
-				float bottom_b = (float)bottom_row[2] / max; \
-				bottom_g -= (float)chroma_offset / max; \
-				bottom_b -= (float)chroma_offset / max; \
- \
- \
-				float difference = sqrt(SQR(top_r - bottom_r) +  \
-					SQR(top_g - bottom_g) + \
-					SQR(top_b - bottom_b)); \
- \
-				if(difference < threshold) \
-				{ \
-					a = 0; \
-				} \
-				else \
-				if(difference < threshold_pad) \
-				{ \
-					a = (difference - threshold) / pad; \
-				} \
-			} \
- \
-/* multiply alpha */ \
-			if(components == 4) \
-			{ \
-				top_row[3] = MIN((type)(a * max), top_row[3]); \
-			} \
-			else \
-			{ \
-				top_row[0] = (type)(a * top_row[0]); \
-				top_row[1] = (type)(a * (top_row[1] - chroma_offset) + chroma_offset); \
-				top_row[2] = (type)(a * (top_row[2] - chroma_offset) + chroma_offset); \
-			} \
- \
-			top_row += components; \
-			bottom_row += components; \
-		} \
-	} \
-}
-
-	DIFFKEY_VARS(plugin)
+	int threshold = round(plugin->config.threshold * 0xffff / 100);
+	int pad = round(plugin->config.slope * 0xffff / 100);
+	int threshold_pad = threshold + pad;
 
 	switch(plugin->top_frame->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		DIFFKEY_MACRO(float, 3, 1.0, 0);
-		break;
-	case BC_RGBA_FLOAT:
-		DIFFKEY_MACRO(float, 4, 1.0, 0);
-		break;
-	case BC_RGB888:
-		DIFFKEY_MACRO(unsigned char, 3, 0xff, 0);
-		break;
-	case BC_RGBA8888:
-		DIFFKEY_MACRO(unsigned char, 4, 0xff, 0);
-		break;
-	case BC_YUV888:
-		DIFFKEY_MACRO(unsigned char, 3, 0xff, 0x80);
-		break;
-	case BC_YUVA8888:
-		DIFFKEY_MACRO(unsigned char, 4, 0xff, 0x80);
-		break;
 	case BC_RGBA16161616:
-		DIFFKEY_MACRO(uint16_t, 4, 0xffff, 0);
+		for(int i = pkg->row1; i < pkg->row2; i++)
+		{
+			uint16_t *top_row = (uint16_t*)plugin->top_frame->get_row_ptr(i);
+			uint16_t *bottom_row = (uint16_t*)plugin->bottom_frame->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				int alpha = 0xfffff;
+
+				// Test for value in range
+				if(plugin->config.do_value)
+				{
+					int top_value = ColorSpaces::rgb_to_y_16(
+						top_row[0], top_row[1], top_row[2]);
+					int bottom_value = ColorSpaces::rgb_to_y_16(
+						bottom_row[0], bottom_row[1], bottom_row[2]);
+
+					int min_v = bottom_value - threshold;
+					int max_v = bottom_value + threshold;
+
+					// Full transparency if in range
+					if(top_value >= min_v && top_value < max_v)
+						alpha = 0;
+					else
+					// Phased out if below or above range
+					if(top_value < min_v)
+					{
+						if(min_v - top_value < pad)
+							alpha = (min_v - top_value) / pad;
+					}
+					else
+					if(top_value - max_v < pad)
+						alpha = (top_value - max_v) / pad;
+				}
+				else
+				// Use color cube
+				{
+					double dr = top_row[0] - bottom_row[0];
+					double dg = top_row[1] - bottom_row[1];
+					double db = top_row[2] - bottom_row[2];
+
+					int difference = round(sqrt(SQR(dr) +
+						SQR(dg) + SQR(db)));
+
+					if(difference < threshold)
+						alpha = 0;
+					else
+					if(difference < threshold_pad)
+						alpha = (difference - threshold) / pad;
+				}
+
+				// multiply alpha
+				top_row[3] = MIN(alpha, top_row[3]);
+
+				top_row += 4;
+				bottom_row += 4;
+			}
+		}
 		break;
 	case BC_AYUV16161616:
 		for(int i = pkg->row1; i < pkg->row2; i++)
@@ -541,63 +473,50 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 
 			for(int j = 0; j < w; j++)
 			{
-				float a = 1.0;
+				int alpha = 0xffff;
 
 				// Test for value in range
 				if(plugin->config.do_value)
 				{
-					float top_value;
-					float bottom_value;
+					int top_value = top_row[1];
+					int bottom_value = bottom_row[1];
 
-					// Convert pixel data into floating point value
-					top_value = (float)top_row[1] / 0xffff;
-					bottom_value = (float)bottom_row[1] / 0xffff;
-
-					float min_v = bottom_value - threshold;
-					float max_v = bottom_value + threshold;
+					int min_v = bottom_value - threshold;
+					int max_v = bottom_value + threshold;
 
 					// Full transparency if in range
 					if(top_value >= min_v && top_value < max_v)
-						a = 0;
+						alpha = 0;
 					else
 					// Phased out if below or above range
 					if(top_value < min_v)
 					{
 						if(min_v - top_value < pad)
-							a = (min_v - top_value) / pad;
+							alpha = (min_v - top_value) / pad;
 					}
 					else
 					if(top_value - max_v < pad)
-						a = (top_value - max_v) / pad;
+						alpha = (top_value - max_v) / pad;
 				}
 				else
 				// Use color cube
 				{
-					float top_r = (float)top_row[1] / 0xffff;
-					float top_g = (float)top_row[2] / 0xffff;
-					float top_b = (float)top_row[3] / 0xffff;
-					top_g -= (float)0x8000 / 0xffff;
-					top_b -= (float)0x8000 / 0xffff;
+					double dy = top_row[1] - bottom_row[1];
+					double du = top_row[2] - bottom_row[2];
+					double dv = top_row[3] - bottom_row[3];
 
-					float bottom_r = (float)bottom_row[1] / 0xffff;
-					float bottom_g = (float)bottom_row[2] / 0xffff;
-					float bottom_b = (float)bottom_row[3] / 0xffff;
-					bottom_g -= (float)0x8000 / 0xffff;
-					bottom_b -= (float)0x8000 / 0xffff;
-
-					float difference = sqrt(SQR(top_r - bottom_r) +
-						SQR(top_g - bottom_g) +
-						SQR(top_b - bottom_b));
+					int difference = round(sqrt(SQR(dy) +
+						SQR(du) + SQR(dv)));
 
 					if(difference < threshold)
-						a = 0;
+						alpha = 0;
 					else
 					if(difference < threshold_pad)
-						a = (difference - threshold) / pad;
+						alpha = (difference - threshold) / pad;
 				}
 
 				// multiply alpha
-				top_row[0] = MIN((uint16_t)(a * 0xffff), top_row[0]);
+				top_row[0] = MIN(alpha, top_row[0]);
 
 				top_row += 4;
 				bottom_row += 4;
