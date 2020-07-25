@@ -35,6 +35,7 @@ public:
 
 	static const char* mode_to_text(int mode);
 	int mode;
+	int direction;
 
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -51,6 +52,15 @@ public:
 	Overlay *plugin;
 };
 
+class OverlayDirection : public BC_CheckBox
+{
+public:
+	OverlayDirection(Overlay *plugin, int x, int y);
+
+	int handle_event();
+
+	Overlay *plugin;
+};
 
 class OverlayWindow : public PluginWindow
 {
@@ -60,6 +70,7 @@ public:
 	void update();
 
 	OverlayMode *mode;
+	OverlayDirection *direction;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 

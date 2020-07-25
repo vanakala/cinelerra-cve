@@ -18,6 +18,7 @@
 OverlayConfig::OverlayConfig()
 {
 	mode = TRANSFER_NORMAL;
+	direction = 0;
 }
 
 OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
@@ -25,7 +26,7 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 	x,
 	y, 
 	300, 
-	70)
+	85)
 {
 	BC_Title *title;
 
@@ -37,6 +38,8 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 		x + title->get_w() + 5, 
 		y));
 	mode->create_objects();
+	y += mode->get_h() + 8;
+	add_subwindow(direction = new OverlayDirection(plugin, x, y));
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
@@ -71,6 +74,20 @@ int OverlayMode::handle_event()
 
 	plugin->config.mode = OverlayFrame::transfer_mode(text);
 
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+OverlayDirection::OverlayDirection(Overlay *plugin, int x, int y)
+: BC_CheckBox(x, y, plugin->config.direction, _("Bottom-top"))
+{
+	this->plugin = plugin;
+}
+
+int OverlayDirection::handle_event()
+{
+	plugin->config.direction = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -132,6 +149,50 @@ void Overlay::process_tmpframes(VFrame **frame)
 	if(total_buffers < 2)
 		return;
 
+	if(config.direction)
+	{
+		if(total_buffers == 2 && frame[1])
+		{
+			// do not modify frame[1]
+			VFrame *tmp = clone_vframe(output);
+			tmp->copy_from(frame[1], 1);
+			overlayer->overlay(tmp,
+				output,
+				0,
+				0,
+				output->get_w(),
+				output->get_h(),
+				0,
+				0,
+				output->get_w(),
+				output->get_h(),
+				1,
+				config.mode,
+				NEAREST_NEIGHBOR);
+			frame[0] = tmp;
+			release_vframe(output);
+		}
+		else
+		for(int i = total_buffers - 1; i > 0; i--)
+		{
+			if(!frame[i])
+				continue;
+			overlayer->overlay(output,
+				frame[i],
+				0,
+				0,
+				output->get_w(),
+				output->get_h(),
+				0,
+				0,
+				output->get_w(),
+				output->get_h(),
+				1,
+				config.mode,
+				NEAREST_NEIGHBOR);
+		}
+	}
+	else
 	for(int i = 1; i < total_buffers; i++)
 	{
 		if(!frame[i])
@@ -326,12 +387,13 @@ void Overlay::load_defaults()
 	defaults = load_defaults_file("overlay.rc");
 
 	config.mode = defaults->get("MODE", config.mode);
+	config.direction = defaults->get("DIRECTION", config.direction);
 }
 
 void Overlay::save_defaults()
 {
 	defaults->update("MODE", config.mode);
-	defaults->delete_key("DIRECTION");
+	defaults->update("DIRECTION", config.direction);
 	defaults->delete_key("OUTPUT_LAYER");
 	defaults->save();
 }
@@ -342,6 +404,7 @@ void Overlay::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("MODE", config.mode);
+	output.tag.set_property("DIRECTION", config.direction);
 	output.append_tag();
 	output.tag.set_title("/OVERLAY");
 	output.append_tag();
@@ -359,6 +422,7 @@ void Overlay::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("OVERLAY"))
 		{
 			config.mode = input.tag.get_property("MODE", config.mode);
+			config.direction = input.tag.get_property("DIRECTION", config.direction);
 		}
 	}
 }
