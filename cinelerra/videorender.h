@@ -24,8 +24,9 @@ public:
 
 	void run();
 	VFrame *process_buffer(VFrame *buffer);
-	void pass_vframes(Plugin *plugin, VTrackRender *current_renderer);
-	void take_vframes(Plugin *plugin, VTrackRender *current_renderer);
+	void pass_vframes(Plugin *plugin, VFrame *current_frame,
+		VTrackRender *current_renderer);
+	VFrame *take_vframes(Plugin *plugin, VTrackRender *current_renderer);
 
 private:
 	void process_frame(ptstime pts);

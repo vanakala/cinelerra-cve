@@ -247,10 +247,11 @@ void VideoRender::flash_output()
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
 
-void VideoRender::pass_vframes(Plugin *plugin, VTrackRender *current_renderer)
+void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
+	VTrackRender *current_renderer)
 {
 	current_renderer->vframes.remove_all();
-	current_renderer->vframes.append(current_renderer->handover_trackframe());
+	current_renderer->vframes.append(current_frame);
 
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
@@ -272,11 +273,10 @@ void VideoRender::pass_vframes(Plugin *plugin, VTrackRender *current_renderer)
 	}
 }
 
-void VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
+VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
 {
 	int k = 1;
-
-	current_renderer->take_vframe(current_renderer->vframes.values[0]);
+	VFrame *current_frame = current_renderer->vframes.values[0];
 
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
@@ -287,7 +287,8 @@ void VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
 			if(track->plugins.values[i]->shared_plugin == plugin &&
 					track->plugins.values[i]->on)
 				((VTrackRender*)track->renderer)->take_vframe(
-					current_renderer->vframes.values[k]);
+					current_renderer->vframes.values[k++]);
 		}
 	}
+	return current_frame;
 }

@@ -422,7 +422,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 
 		if(plugin->on && plugin->active_in(start, end))
 		{
-			track_frame->set_layer(media_track->number_of());
+			input->set_layer(media_track->number_of());
 			if(tmpframe = execute_plugin(plugin, input, edit, rstep))
 				input = tmpframe;
 			else
@@ -484,9 +484,9 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 					plugin->plugin_server->open_plugin(plugin, this);
 				plugin->client->set_renderer(this);
 
-				videorender->pass_vframes(plugin, this);
+				videorender->pass_vframes(plugin, frame, this);
 				plugin->client->process_buffer(vframes.values);
-				videorender->take_vframes(plugin, this);
+				frame = videorender->take_vframes(plugin, this);
 
 				next_plugin = 0;
 				videorender->shared_done(plugin);
