@@ -133,6 +133,8 @@ public:
 	static int set_catch_errors();
 	static int reset_catch();
 	// Peek into array
+	static void show_array(int *array, int length,
+		int indent = 0, int nohead = 0);
 	static void show_array(float *array, int length,
 		int indent = 0, int nohead = 0);
 	static void show_array(double *array, int length,

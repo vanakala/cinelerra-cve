@@ -22,6 +22,7 @@
 
 #include "bcsignals.h"
 #include "bcwindowbase.inc"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -727,6 +728,45 @@ int BC_Signals::is_listed(void *srcptr)
 			return 1;
 	}
 	return 0;
+}
+
+void BC_Signals::show_array(int *array, int length, int indent, int nohead)
+{
+	int max = -INT_MAX;
+	int min = INT_MAX;
+	int64_t avg = 0;
+	int minpos, maxpos;
+
+	if(!array)
+	{
+		if(!nohead)
+			printf("%*sInteger array is missing [%d].\n", indent, "", length);
+		return;
+	}
+
+	minpos = maxpos = -1;
+
+	if(!nohead)
+	{
+		printf("%*sInteger array %p[%d]:\n", indent, "", array, length);
+		indent++;
+	}
+	for(int i = 0; i < length; i++)
+	{
+		avg += array[i];
+		if(min > array[i])
+		{
+			minpos = i;
+			min = array[i];
+		}
+		if(max < array[i])
+		{
+			max = array[i];
+			maxpos = i;
+		}
+	}
+	printf("%*savg %" PRId64 " min[%d] %d max[%d] %d\n", indent, "", avg / length,
+		minpos, min, maxpos, max);
 }
 
 void BC_Signals::show_array(float *array, int length, int indent, int nohead)
