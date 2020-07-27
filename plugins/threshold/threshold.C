@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "bchash.h"
@@ -42,9 +26,9 @@ ThresholdConfig::ThresholdConfig()
 	min = 0.0;
 	max = 1.0;
 	plot = 1;
-	low_color.set (0x0,  0x0,  0x0,  0xff);
-	mid_color.set (0xff, 0xff, 0xff, 0xff);
-	high_color.set(0x0,  0x0,  0x0,  0xff);
+	low_color.set (0x0,  0x0,  0x0,  0xffff);
+	mid_color.set (0xffff, 0xffff, 0xffff, 0xffff);
+	high_color.set(0x0,  0x0,  0x0,  0xffff);
 }
 
 int ThresholdConfig::equivalent(ThresholdConfig &that)
@@ -116,19 +100,42 @@ ThresholdMain::~ThresholdMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void ThresholdMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+		delete threshold_engine;
+		threshold_engine = 0;
+	}
+}
 
 PLUGIN_CLASS_METHODS
 
 
 VFrame *ThresholdMain::process_tmpframe(VFrame *frame)
 {
+	int cmodel = frame->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return frame;
+	}
+
 	load_configuration();
 
-	render_gui(frame);
-
+	if(config.plot)
+		calculate_histogram(frame);
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
 	threshold_engine->process_packages(frame);
+	update_gui();
 	return frame;
 }
 
@@ -138,10 +145,58 @@ void ThresholdMain::load_defaults()
 	config.min = defaults->get("MIN", config.min);
 	config.max = defaults->get("MAX", config.max);
 	config.plot = defaults->get("PLOT", config.plot);
-	config.low_color.load_default(defaults,  "LOW_COLOR");
-	config.mid_color.load_default(defaults,  "MID_COLOR");
-	config.high_color.load_default(defaults, "HIGH_COLOR");
+
+	config.low_color.r = adjusted_default(defaults, "LOW_COLOR_R",
+		"LOW_COLOR_RE", config.low_color.r);
+	config.low_color.g = adjusted_default(defaults, "LOW_COLOR_G",
+		"LOW_COLOR_GR", config.low_color.g);
+	config.low_color.b = adjusted_default(defaults, "LOW_COLOR_B",
+		"LOW_COLOR_BL", config.low_color.b);
+	config.low_color.a = adjusted_default(defaults, "LOW_COLOR_A",
+		"LOW_COLOR_AL", config.low_color.a);
+
+	config.mid_color.r = adjusted_default(defaults, "MID_COLOR_R",
+		"MID_COLOR_RE", config.mid_color.r);
+	config.mid_color.g = adjusted_default(defaults, "MID_COLOR_G",
+		"MID_COLOR_GR", config.mid_color.g);
+	config.mid_color.b = adjusted_default(defaults, "MID_COLOR_B",
+		"MID_COLOR_BL", config.mid_color.b);
+	config.mid_color.a = adjusted_default(defaults, "MID_COLOR_A",
+		"MID_COLOR_AL", config.mid_color.a);
+
+	config.high_color.r = adjusted_default(defaults, "HIGH_COLOR_R",
+		"HIGH_COLOR_RE", config.high_color.r);
+	config.high_color.g = adjusted_default(defaults, "HIGH_COLOR_G",
+		"HIGH_COLOR_GR", config.high_color.g);
+	config.high_color.b = adjusted_default(defaults, "HIGH_COLOR_B",
+		"HIGH_COLOR_BL", config.high_color.b);
+	config.high_color.a = adjusted_default(defaults, "HIGH_COLOR_A",
+		"HIGH_COLOR_AL", config.high_color.a);
 	config.boundaries();
+}
+
+int ThresholdMain::adjusted_default(BC_Hash *defaults,
+	const char *oldkey, const char *newkey, int default_value)
+{
+	int val = defaults->get(oldkey, 0);
+
+	if(val < 256 && val > 0)
+		val = (val << 8) | val;
+	else
+		val = defaults->get(newkey, default_value);
+	return val;
+}
+
+int ThresholdMain::adjusted_property(FileXML *file,
+	const char *oldkey, const char *newkey, int default_value)
+{
+	int val = file->tag.get_property(oldkey, 0);
+
+	if(val < 256 && val > 0)
+		val = (val << 8) | val;
+	else
+		val = file->tag.get_property(newkey, default_value);
+	return val;
 }
 
 void ThresholdMain::save_defaults()
@@ -149,9 +204,36 @@ void ThresholdMain::save_defaults()
 	defaults->update("MIN", config.min);
 	defaults->update("MAX", config.max);
 	defaults->update("PLOT", config.plot);
-	config.low_color.save_defaults(defaults,  "LOW_COLOR");
-	config.mid_color.save_defaults(defaults,  "MID_COLOR");
-	config.high_color.save_defaults(defaults, "HIGH_COLOR");
+
+	defaults->delete_key("LOW_COLOR_R");
+	defaults->delete_key("LOW_COLOR_G");
+	defaults->delete_key("LOW_COLOR_B");
+	defaults->delete_key("LOW_COLOR_A");
+
+	defaults->delete_key("MID_COLOR_R");
+	defaults->delete_key("MID_COLOR_G");
+	defaults->delete_key("MID_COLOR_B");
+	defaults->delete_key("MID_COLOR_A");
+
+	defaults->delete_key("HIGH_COLOR_R");
+	defaults->delete_key("HIGH_COLOR_G");
+	defaults->delete_key("HIGH_COLOR_B");
+	defaults->delete_key("HIGH_COLOR_A");
+
+	defaults->update("LOW_COLOR_RE", config.low_color.r);
+	defaults->update("LOW_COLOR_GR", config.low_color.g);
+	defaults->update("LOW_COLOR_BL", config.low_color.b);
+	defaults->update("LOW_COLOR_AL", config.low_color.a);
+
+	defaults->update("MID_COLOR_RE", config.mid_color.r);
+	defaults->update("MID_COLOR_GR", config.mid_color.g);
+	defaults->update("MID_COLOR_BL", config.mid_color.b);
+	defaults->update("MID_COLOR_AL", config.mid_color.a);
+
+	defaults->update("HIGH_COLOR_RE", config.high_color.r);
+	defaults->update("HIGH_COLOR_GR", config.high_color.g);
+	defaults->update("HIGH_COLOR_BL", config.high_color.b);
+	defaults->update("HIGH_COLOR_AL", config.high_color.a);
 }
 
 void ThresholdMain::save_data(KeyFrame *keyframe)
@@ -162,9 +244,22 @@ void ThresholdMain::save_data(KeyFrame *keyframe)
 	file.tag.set_property("MIN", config.min);
 	file.tag.set_property("MAX", config.max);
 	file.tag.set_property("PLOT", config.plot);
-	config.low_color.set_property(file.tag,  "LOW_COLOR");
-	config.mid_color.set_property(file.tag,  "MID_COLOR");
-	config.high_color.set_property(file.tag, "HIGH_COLOR");
+
+	file.tag.set_property("LOW_COLOR_RE", config.low_color.r);
+	file.tag.set_property("LOW_COLOR_GR", config.low_color.g);
+	file.tag.set_property("LOW_COLOR_BL", config.low_color.b);
+	file.tag.set_property("LOW_COLOR_AL", config.low_color.a);
+
+	file.tag.set_property("MID_COLOR_RE", config.mid_color.r);
+	file.tag.set_property("MID_COLOR_GR", config.mid_color.g);
+	file.tag.set_property("MID_COLOR_BL", config.mid_color.b);
+	file.tag.set_property("MID_COLOR_AL", config.mid_color.a);
+
+	file.tag.set_property("HIGH_COLOR_RE", config.high_color.r);
+	file.tag.set_property("HIGH_COLOR_GR", config.high_color.g);
+	file.tag.set_property("HIGH_COLOR_BL", config.high_color.b);
+	file.tag.set_property("HIGH_COLOR_AL", config.high_color.a);
+
 	file.append_tag();
 	file.tag.set_title("/THRESHOLD");
 	file.append_tag();
@@ -182,26 +277,43 @@ void ThresholdMain::read_data(KeyFrame *keyframe)
 		config.min = file.tag.get_property("MIN", config.min);
 		config.max = file.tag.get_property("MAX", config.max);
 		config.plot = file.tag.get_property("PLOT", config.plot);
-		config.low_color = config.low_color.get_property(file.tag, "LOW_COLOR");
-		config.mid_color = config.mid_color.get_property(file.tag, "MID_COLOR");
-		config.high_color = config.high_color.get_property(file.tag, "HIGH_COLOR");
+
+		config.low_color.r = adjusted_property(&file, "LOW_COLOR_R",
+			"LOW_COLOR_RE", config.low_color.r);
+		config.low_color.g = adjusted_property(&file, "LOW_COLOR_G",
+			"LOW_COLOR_GR", config.low_color.g);
+		config.low_color.b = adjusted_property(&file, "LOW_COLOR_B",
+			"LOW_COLOR_BL", config.low_color.b);
+		config.low_color.a = adjusted_property(&file, "LOW_COLOR_A",
+			"LOW_COLOR_AL", config.low_color.a);
+
+		config.mid_color.r = adjusted_property(&file, "MID_COLOR_R",
+			"MID_COLOR_RE", config.mid_color.r);
+		config.mid_color.g = adjusted_property(&file, "MID_COLOR_G",
+			"MID_COLOR_GR",config.mid_color.g);
+		config.mid_color.b = adjusted_property(&file, "MID_COLOR_B",
+			"MID_COLOR_BL", config.mid_color.b);
+		config.mid_color.a = adjusted_property(&file, "MID_COLOR_A",
+			"MID_COLOR_AL", config.mid_color.a);
+
+		config.high_color.r = adjusted_property(&file, "HIGH_COLOR_R",
+			"HIGH_COLOR_RE", config.high_color.r);
+		config.high_color.g = adjusted_property(&file, "HIGH_COLOR_G",
+			"HIGH_COLOR_GR", config.high_color.g);
+		config.high_color.b = adjusted_property(&file, "HIGH_COLOR_B",
+			"HIGH_COLOR_BL", config.high_color.b);
+		config.high_color.a = adjusted_property(&file, "HIGH_COLOR_A",
+			"HIGH_COLOR_AL", config.high_color.a);
 	}
 	config.boundaries();
 }
 
-void ThresholdMain::render_gui(void *data)
-{
-	if(thread)
-	{
-		calculate_histogram((VFrame*)data);
-		thread->window->canvas->draw();
-	}
-}
-
 void ThresholdMain::calculate_histogram(VFrame *frame)
 {
-	if(!engine) engine = new HistogramEngine(get_project_smp() + 1,
-		get_project_smp() + 1);
+	if(!engine)
+		engine = new HistogramEngine(get_project_smp(),
+			get_project_smp());
+
 	engine->process_packages(frame);
 }
 
@@ -348,278 +460,125 @@ ThresholdUnit::ThresholdUnit(ThresholdEngine *server)
 	this->server = server;
 }
 
-// Coerces pixel component to int.
-static inline int get_component(unsigned char v)
-{
-	return (v << 8) | v;
-}
-
-static inline int get_component(float v)
-{
-	return (int)(v * 0xffff);
-}
-
-static inline int get_component(uint16_t v)
-{
-	return v;
-}
-
-// Rescales value in range [0, 255] to range appropriate to TYPE.
-template<typename TYPE>
-static TYPE scale_to_range(int v)
-{
-	return v;  // works for unsigned char, override for the rest.
-}
-
-template<>
-inline float scale_to_range(int v)
-{
-	return (float) v / 0xff;
-}
-
-template<>
-inline uint16_t scale_to_range(int v)
-{
-	return v << 8 | v;
-}
-
-static inline void rgb_to_yuv(unsigned char r, unsigned char g, unsigned char  b,
-	unsigned char &y, unsigned char &u, unsigned char &v)
-{
-	ColorSpaces::rgb_to_yuv_8(r, g, b, y, u, v);
-}
-
-static inline void rgb_to_yuv(float r, float g, float b,
-			float &y, float &u, float &v)
-{
-	ColorSpaces::rgb_to_yuv_f(r, g, b, y, u, v);
-}
-
-static inline void rgb_to_yuv(uint16_t r, uint16_t g, uint16_t b,
-	uint16_t &y, uint16_t &u, uint16_t &v)
-{
-	ColorSpaces::rgb_to_yuv_16(r, g, b, y, u, v);
-}
-
-template<typename TYPE, int COMPONENTS, bool USE_YUV>
-void ThresholdUnit::render_data(LoadPackage *package)
+void ThresholdUnit::process_package(LoadPackage *package)
 {
 	const ThresholdPackage *pkg = (ThresholdPackage*)package;
-	const ThresholdConfig *config = & server->plugin->config;
+	const ThresholdConfig *config = &server->plugin->config;
 	VFrame *data = server->data;
-	const int min = (int)(config->min * 0xffff);
-	const int max = (int)(config->max * 0xffff);
+	const int min = round(config->min * 0xffff);
+	const int max = round(config->max * 0xffff);
 	const int w = data->get_w();
 	const int h = data->get_h();
 
-	const TYPE r_low = scale_to_range<TYPE>(config->low_color.r);
-	const TYPE g_low = scale_to_range<TYPE>(config->low_color.g);
-	const TYPE b_low = scale_to_range<TYPE>(config->low_color.b);
-	const TYPE a_low = scale_to_range<TYPE>(config->low_color.a);
+	const uint16_t r_low = config->low_color.r;
+	const uint16_t g_low = config->low_color.g;
+	const uint16_t b_low = config->low_color.b;
+	const uint16_t a_low = config->low_color.a;
 
-	const TYPE r_mid = scale_to_range<TYPE>(config->mid_color.r);
-	const TYPE g_mid = scale_to_range<TYPE>(config->mid_color.g);
-	const TYPE b_mid = scale_to_range<TYPE>(config->mid_color.b);
-	const TYPE a_mid = scale_to_range<TYPE>(config->mid_color.a);
+	const uint16_t r_mid = config->mid_color.r;
+	const uint16_t g_mid = config->mid_color.g;
+	const uint16_t b_mid = config->mid_color.b;
+	const uint16_t a_mid = config->mid_color.a;
 
-	const TYPE r_high = scale_to_range<TYPE>(config->high_color.r);
-	const TYPE g_high = scale_to_range<TYPE>(config->high_color.g);
-	const TYPE b_high = scale_to_range<TYPE>(config->high_color.b);
-	const TYPE a_high = scale_to_range<TYPE>(config->high_color.a);
+	const uint16_t r_high = config->high_color.r;
+	const uint16_t g_high = config->high_color.g;
+	const uint16_t b_high = config->high_color.b;
+	const uint16_t a_high = config->high_color.a;
 
-	TYPE y_low,  u_low,  v_low;
-	TYPE y_mid,  u_mid,  v_mid;
-	TYPE y_high, u_high, v_high;
+	uint16_t y_low,  u_low,  v_low;
+	uint16_t y_mid,  u_mid,  v_mid;
+	uint16_t y_high, u_high, v_high;
 
-	if (USE_YUV)
+	switch(server->data->get_color_model())
 	{
-		rgb_to_yuv(r_low,  g_low,  b_low,  y_low,  u_low,  v_low);
-		rgb_to_yuv(r_mid,  g_mid,  b_mid,  y_mid,  u_mid,  v_mid);
-		rgb_to_yuv(r_high, g_high, b_high, y_high, u_high, v_high);
-	}
-
-	for(int i = pkg->start; i < pkg->end; i++)
-	{
-		TYPE *in_row = (TYPE*)data->get_row_ptr(i);
-		TYPE *out_row = in_row;
-		for(int j = 0; j < w; j++)
+	case BC_RGBA16161616:
+		for(int i = pkg->start; i < pkg->end; i++)
 		{
-			if (USE_YUV)
+			uint16_t *in_row = (uint16_t*)data->get_row_ptr(i);
+			uint16_t *out_row = in_row;
+
+			for(int j = 0; j < w; j++)
 			{
-				const int y = get_component(in_row[0]);
-				if (y < min)
-				{
-					*out_row++ = y_low;
-					*out_row++ = u_low;
-					*out_row++ = v_low;
-					if(COMPONENTS == 4) *out_row++ = a_low;
-				}
-				else if (y < max)
-				{
-					*out_row++ = y_mid;
-					*out_row++ = u_mid;
-					*out_row++ = v_mid;
-					if(COMPONENTS == 4) *out_row++ = a_mid;
-				}
-				else
-				{
-					*out_row++ = y_high;
-					*out_row++ = u_high;
-					*out_row++ = v_high;
-					if(COMPONENTS == 4) *out_row++ = a_high;
-				}
-			}
-			else
-			{
-				const int r = get_component(in_row[0]);
-				const int g = get_component(in_row[1]);
-				const int b = get_component(in_row[2]);
-				const int y = (r * 76 + g * 150 + b * 29) >> 8;
-				if (y < min)
+				int r = in_row[0];
+				int g = in_row[1];
+				int b = in_row[2];
+				int y = ColorSpaces::rgb_to_y_16(r, g, b);
+
+				if(y < min)
 				{
 					*out_row++ = r_low;
 					*out_row++ = g_low;
 					*out_row++ = b_low;
-					if(COMPONENTS == 4) *out_row++ = a_low;
+					*out_row++ = a_low;
 				}
-				else if (y < max)
+				else if(y < max)
 				{
 					*out_row++ = r_mid;
 					*out_row++ = g_mid;
 					*out_row++ = b_mid;
-					if(COMPONENTS == 4) *out_row++ = a_mid;
+					*out_row++ = a_mid;
 				}
 				else
 				{
 					*out_row++ = r_high;
 					*out_row++ = g_high;
 					*out_row++ = b_high;
-					if(COMPONENTS == 4) *out_row++ = a_high;
+					*out_row++ = a_high;
 				}
+				in_row += 4;
 			}
-			in_row += COMPONENTS;
 		}
-	}
-}
+		break;
 
-void ThresholdUnit::process_package(LoadPackage *package)
-{
-	switch(server->data->get_color_model())
-	{
-		case BC_RGB888:
-			render_data<unsigned char, 3, false>(package);
-			break;
+	case BC_AYUV16161616:
+		ColorSpaces::rgb_to_yuv_16(r_low, g_low, b_low,
+			y_low, u_low, v_low);
+		ColorSpaces::rgb_to_yuv_16(r_mid, g_mid, b_mid,
+			y_mid, u_mid, v_mid);
+		ColorSpaces::rgb_to_yuv_16(r_high, g_high, b_high,
+			y_high, u_high, v_high);
 
-		case BC_RGB_FLOAT:
-			render_data<float, 3, false>(package);
-			break;
+		for(int i = pkg->start; i < pkg->end; i++)
+		{
+			uint16_t *in_row = (uint16_t*)server->data->get_row_ptr(i);
+			uint16_t *out_row = in_row;
 
-		case BC_RGBA8888:
-			render_data<unsigned char, 4, false>(package);
-			break;
-
-		case BC_RGBA_FLOAT:
-			render_data<float, 4, false>(package);
-			break;
-
-		case BC_YUV888:
-			render_data<unsigned char, 3, true>(package);
-			break;
-
-		case BC_YUVA8888:
-			render_data<unsigned char, 4, true>(package);
-			break;
-
-		case BC_YUV161616:
-			render_data<uint16_t, 3, true>(package);
-			break;
-
-		case BC_YUVA16161616:
-			render_data<uint16_t, 4, true>(package);
-			break;
-
-		case BC_RGBA16161616:
-			render_data<uint16_t, 4, false>(package);
-			break;
-
-		case BC_AYUV16161616:
+			for(int j = 0; j < w; j++)
 			{
-				ThresholdPackage *pkg = (ThresholdPackage*)package;
-				ThresholdConfig *config = &server->plugin->config;
-				int min = (int)(config->min * 0xffff);
-				int max = (int)(config->max * 0xffff);
-				int w = server->data->get_w();
-				int h = server->data->get_h();
+				int y = in_row[1];
 
-				uint16_t r_low = scale_to_range<uint16_t>(config->low_color.r);
-				uint16_t g_low = scale_to_range<uint16_t>(config->low_color.g);
-				uint16_t b_low = scale_to_range<uint16_t>(config->low_color.b);
-				uint16_t a_low = scale_to_range<uint16_t>(config->low_color.a);
-
-				uint16_t r_mid = scale_to_range<uint16_t>(config->mid_color.r);
-				uint16_t g_mid = scale_to_range<uint16_t>(config->mid_color.g);
-				uint16_t b_mid = scale_to_range<uint16_t>(config->mid_color.b);
-				uint16_t a_mid = scale_to_range<uint16_t>(config->mid_color.a);
-
-				uint16_t r_high = scale_to_range<uint16_t>(config->high_color.r);
-				uint16_t g_high = scale_to_range<uint16_t>(config->high_color.g);
-				uint16_t b_high = scale_to_range<uint16_t>(config->high_color.b);
-				uint16_t a_high = scale_to_range<uint16_t>(config->high_color.a);
-
-				uint16_t y_low,  u_low,  v_low;
-				uint16_t y_mid,  u_mid,  v_mid;
-				uint16_t y_high, u_high, v_high;
-
-				ColorSpaces::rgb_to_yuv_16(r_low, g_low, b_low,
-					y_low, u_low, v_low);
-				ColorSpaces::rgb_to_yuv_16(r_mid, g_mid, b_mid,
-					y_mid, u_mid, v_mid);
-				ColorSpaces::rgb_to_yuv_16(r_high, g_high, b_high,
-					y_high, u_high, v_high);
-
-				for(int i = pkg->start; i < pkg->end; i++)
+				if(y < min)
 				{
-					uint16_t *in_row = (uint16_t*)server->data->get_row_ptr(i);
-					uint16_t *out_row = in_row;
-
-					for(int j = 0; j < w; j++)
-					{
-
-						int y = in_row[1];
-
-						if(y < min)
-						{
-							*out_row++ = a_low;
-							*out_row++ = y_low;
-							*out_row++ = u_low;
-							*out_row++ = v_low;
-						}
-						else if (y < max)
-						{
-							*out_row++ = a_mid;
-							*out_row++ = y_mid;
-							*out_row++ = u_mid;
-							*out_row++ = v_mid;
-						}
-						else
-						{
-							*out_row++ = a_high;
-							*out_row++ = y_high;
-							*out_row++ = u_high;
-							*out_row++ = v_high;
-						}
-						in_row += 4;
-					}
+					*out_row++ = a_low;
+					*out_row++ = y_low;
+					*out_row++ = u_low;
+					*out_row++ = v_low;
 				}
+				else if (y < max)
+				{
+					*out_row++ = a_mid;
+					*out_row++ = y_mid;
+					*out_row++ = u_mid;
+					*out_row++ = v_mid;
+				}
+				else
+				{
+					*out_row++ = a_high;
+					*out_row++ = y_high;
+					*out_row++ = u_high;
+					*out_row++ = v_high;
+				}
+				in_row += 4;
 			}
-			break;
+		}
+		break;
 	}
 }
 
 
 ThresholdEngine::ThresholdEngine(ThresholdMain *plugin)
- : LoadServer(plugin->get_project_smp() + 1,
-	plugin->get_project_smp() + 1)
+ : LoadServer(plugin->get_project_smp(),
+	plugin->get_project_smp())
 {
 	this->plugin = plugin;
 }
@@ -672,78 +631,9 @@ void RGBA::set(int r, int g, int b, int a)
 	this->a = a;
 }
 
-void RGBA::set(int rgb, int alpha)
-{
-	r = (rgb & 0xff0000) >> 16;
-	g = (rgb & 0xff00)   >>  8;
-	b = (rgb & 0xff);
-	a = alpha;
-}
-
 int RGBA::getRGB() const
 {
-	return r << 16 | g << 8 | b;
-}
-
-static void init_RGBA_keys(const char * prefix,
-			string & r_s,
-			string & g_s,
-			string & b_s,
-			string & a_s)
-{
-	r_s = prefix;
-	g_s = prefix;
-	b_s = prefix;
-	a_s = prefix;
-
-	r_s += "_R";
-	g_s += "_G";
-	b_s += "_B";
-	a_s += "_A";
-}
-
-RGBA RGBA::load_default(BC_Hash * defaults, const char * prefix) const
-{
-	string r_s, g_s, b_s, a_s;
-	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
-
-	return RGBA(defaults->get(const_cast<char *>(r_s.c_str()), r),
-		defaults->get(const_cast<char *>(g_s.c_str()), g),
-		defaults->get(const_cast<char *>(b_s.c_str()), b),
-		defaults->get(const_cast<char *>(a_s.c_str()), a));
-}
-
-void RGBA::save_defaults(BC_Hash * defaults, const char * prefix) const
-{
-	string r_s, g_s, b_s, a_s;
-	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
-
-	defaults->update(const_cast<char *>(r_s.c_str()), r);
-	defaults->update(const_cast<char *>(g_s.c_str()), g);
-	defaults->update(const_cast<char *>(b_s.c_str()), b);
-	defaults->update(const_cast<char *>(a_s.c_str()), a);
-}
-
-void RGBA::set_property(XMLTag & tag, const char * prefix) const
-{
-	string r_s, g_s, b_s, a_s;
-	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
-
-	tag.set_property(const_cast<char *>(r_s.c_str()), r);
-	tag.set_property(const_cast<char *>(g_s.c_str()), g);
-	tag.set_property(const_cast<char *>(b_s.c_str()), b);
-	tag.set_property(const_cast<char *>(a_s.c_str()), a);
-}
-
-RGBA RGBA::get_property(XMLTag & tag, const char * prefix) const
-{
-	string r_s, g_s, b_s, a_s;
-	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
-
-	return RGBA(tag.get_property(const_cast<char *>(r_s.c_str()), r),
-		tag.get_property(const_cast<char *>(g_s.c_str()), g),
-		tag.get_property(const_cast<char *>(b_s.c_str()), b),
-		tag.get_property(const_cast<char *>(a_s.c_str()), a));
+	return ((r << 8) & 0xff0000) | g & 0xff00 | b >> 8;
 }
 
 bool operator==(const RGBA & a, const RGBA & b)

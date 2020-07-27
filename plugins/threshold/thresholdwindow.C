@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "histogramengine.h"
@@ -46,11 +30,9 @@ ThresholdMin::ThresholdMin(ThresholdMain *plugin,
 	this->gui = gui;
 }
 
-
 int ThresholdMin::handle_event()
 {
 	plugin->config.min = atof(get_text());
-	gui->canvas->draw();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -76,7 +58,6 @@ ThresholdMax::ThresholdMax(ThresholdMain *plugin,
 int ThresholdMax::handle_event()
 {
 	plugin->config.max = atof(get_text());
-	gui->canvas->draw();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -93,7 +74,6 @@ ThresholdPlot::ThresholdPlot(ThresholdMain *plugin,
 int ThresholdPlot::handle_event()
 {
 	plugin->config.plot = get_value();
-
 	plugin->send_configure_change();
 	return 1;
 }
@@ -199,13 +179,14 @@ int ThresholdCanvas::cursor_motion_event()
 void ThresholdCanvas::draw()
 {
 	int max = 0;
+
 	set_color(WHITE);
 	draw_box(0, 0, get_w(), get_h());
+
 	int border_x1 = round((0 - HISTOGRAM_MIN) /
 		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
 	int border_x2 = round((1.0 - HISTOGRAM_MIN) /
-		(HISTOGRAM_MAX - HISTOGRAM_MIN) *get_w());
-
+		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
 	int x1 = round((plugin->config.min - HISTOGRAM_MIN) /
 		(HISTOGRAM_MAX - HISTOGRAM_MIN) * get_w());
 	int x2 = round((plugin->config.max - HISTOGRAM_MIN) /
@@ -213,8 +194,7 @@ void ThresholdCanvas::draw()
 
 	if(plugin->engine)
 	{
-		int64_t *array = plugin->engine->accum[HISTOGRAM_VALUE];
-
+		int *array = plugin->engine->accum;
 // Get normalizing factor
 		for(int i = 0; i < get_w(); i++)
 		{
@@ -259,7 +239,6 @@ void ThresholdCanvas::draw()
 	}
 	else
 	{
-
 		set_color(BLUE);
 		draw_box(x1, 0, x2 - x1, get_h());
 	}
@@ -282,9 +261,9 @@ ThresholdLowColorButton::ThresholdLowColorButton(ThresholdMain *plugin, Threshol
 int ThresholdLowColorButton::handle_event()
 {
 	RGBA & color = plugin->config.low_color;
-	window->low_color_thread->start_window(
-		color.getRGB(),
-		color.a);
+
+	window->low_color_thread->start_window(color.r, color.g,
+		color.b, color.a);
 	return 1;
 }
 
@@ -299,9 +278,9 @@ ThresholdMidColorButton::ThresholdMidColorButton(ThresholdMain *plugin, Threshol
 int ThresholdMidColorButton::handle_event()
 {
 	RGBA & color = plugin->config.mid_color;
-	window->mid_color_thread->start_window(
-		color.getRGB(),
-		color.a);
+
+	window->mid_color_thread->start_window(color.r, color.g,
+		color.b, color.a);
 	return 1;
 }
 
@@ -316,9 +295,9 @@ ThresholdHighColorButton::ThresholdHighColorButton(ThresholdMain *plugin, Thresh
 int ThresholdHighColorButton::handle_event()
 {
 	RGBA & color = plugin->config.high_color;
-	window->high_color_thread->start_window(
-		color.getRGB(),
-		color.a);
+
+	window->high_color_thread->start_window(color.r, color.g,
+		color.b, color.a);
 	return 1;
 }
 
@@ -330,11 +309,9 @@ ThresholdLowColorThread::ThresholdLowColorThread(ThresholdMain *plugin, Threshol
 	this->window = window;
 }
 
-int ThresholdLowColorThread::handle_new_color(int output, int alpha)
+int ThresholdLowColorThread::handle_new_color(int r, int g, int b, int alpha)
 {
-	plugin->config.low_color.set(output, alpha);
-	window->update_low_color();
-	window->flush();
+	plugin->config.low_color.set(r, g, b, alpha);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -347,11 +324,9 @@ ThresholdMidColorThread::ThresholdMidColorThread(ThresholdMain *plugin, Threshol
 	this->window = window;
 }
 
-int ThresholdMidColorThread::handle_new_color(int output, int alpha)
+int ThresholdMidColorThread::handle_new_color(int r, int g, int b, int alpha)
 {
-	plugin->config.mid_color.set(output, alpha);
-	window->update_mid_color();
-	window->flush();
+	plugin->config.mid_color.set(r, g, b, alpha);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -364,11 +339,9 @@ ThresholdHighColorThread::ThresholdHighColorThread(ThresholdMain *plugin, Thresh
 	this->window = window;
 }
 
-int ThresholdHighColorThread::handle_new_color(int output, int alpha)
+int ThresholdHighColorThread::handle_new_color(int r, int g, int b, int alpha)
 {
-	plugin->config.high_color.set(output, alpha);
-	window->update_high_color();
-	window->flush();
+	plugin->config.high_color.set(r, g, b, alpha);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -453,9 +426,16 @@ void ThresholdWindow::update()
 	update_low_color();
 	update_mid_color();
 	update_high_color();
-	low_color_thread->update_gui(plugin->config.low_color.getRGB(), plugin->config.low_color.a);
-	mid_color_thread->update_gui(plugin->config.mid_color.getRGB(), plugin->config.mid_color.a);
-	high_color_thread->update_gui(plugin->config.high_color.getRGB(), plugin->config.high_color.a);
+	low_color_thread->update_gui(plugin->config.low_color.r,
+		plugin->config.low_color.g, plugin->config.low_color.b,
+		plugin->config.low_color.a);
+	mid_color_thread->update_gui(plugin->config.mid_color.r,
+		plugin->config.mid_color.g, plugin->config.mid_color.b,
+		plugin->config.mid_color.a);
+	high_color_thread->update_gui(plugin->config.high_color.r,
+		plugin->config.high_color.g, plugin->config.high_color.b,
+		plugin->config.high_color.a);
+	canvas->draw();
 }
 
 void ThresholdWindow::update_low_color()

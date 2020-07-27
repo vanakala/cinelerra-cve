@@ -11,8 +11,8 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
 	histogramengine.h histogramengine.inc \
-	threshold.h threshold.inc \
-	thresholdwindow.h thresholdwindow.inc
+	threshold.h thresholdwindow.h
+
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 
