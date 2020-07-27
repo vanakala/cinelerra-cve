@@ -44,6 +44,16 @@ ColorThread::~ColorThread()
 	delete completion;
 }
 
+void ColorThread::start_window(int r, int g, int b, int alpha)
+{
+	CLAMP(r, 0, 0xffff);
+	CLAMP(g, 0, 0xffff);
+	CLAMP(b, 0, 0xffff);
+	CLAMP(alpha, 0, 0xffff);
+	start_window(((r << 8) & 0xff0000) | (g & 0xff00) | (b >> 8),
+		alpha >> 8);
+}
+
 void ColorThread::start_window(int output, int alpha)
 {
 	mutex->lock("ColorThread::start_window 1");
@@ -87,6 +97,16 @@ void ColorThread::run()
 	window = 0;
 	mutex->unlock();
 	completion->unlock();
+}
+
+void ColorThread::update_gui(int r, int g, int b, int alpha)
+{
+	CLAMP(r, 0, 0xffff);
+	CLAMP(g, 0, 0xffff);
+	CLAMP(b, 0, 0xffff);
+	CLAMP(alpha, 0, 0xffff);
+	update_gui(((r << 8) & 0xff0000) | (g & 0xff00) | (b >> 8),
+		alpha >> 8);
 }
 
 void ColorThread::update_gui(int output, int alpha)

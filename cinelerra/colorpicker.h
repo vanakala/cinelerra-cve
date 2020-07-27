@@ -34,10 +34,12 @@ public:
 	~ColorThread();
 
 	void run();
+	void start_window(int r, int g, int b, int alpha);
 	void start_window(int output, int alpha);
 	virtual int handle_new_color(int output, int alpha) { return 0; }
 	virtual int handle_new_color(int red, int green,
 		int blue, int alpha) { return 0; };
+	void update_gui(int r, int g, int b, int alpha);
 	void update_gui(int output, int alpha);
 
 private:
