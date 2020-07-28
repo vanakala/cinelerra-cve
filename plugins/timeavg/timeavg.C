@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "bchash.h"
@@ -74,7 +58,8 @@ TimeAvgMain::TimeAvgMain(PluginServer *server)
 
 TimeAvgMain::~TimeAvgMain()
 {
-	if(accumulation) delete [] accumulation;
+	if(accumulation)
+		delete [] accumulation;
 	if(history)
 	{
 		for(int i = 0; i < max_num_frames; i++)
@@ -84,6 +69,29 @@ TimeAvgMain::~TimeAvgMain()
 	}
 	if(history_valid) delete [] history_valid;
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void TimeAvgMain::reset_plugin()
+{
+	if(accumulation)
+	{
+		delete [] accumulation;
+		accumulation = 0;
+	}
+	if(history)
+	{
+		for(int i = 0; i < max_num_frames; i++)
+			if(history[i])
+				delete history[i];
+		delete [] history;
+		history = 0;
+		frames_accum = 0;
+	}
+	if(history_valid)
+	{
+		delete [] history_valid;
+		history_valid = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -96,14 +104,24 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 	ptstime history_start, history_end, cpts;
 	int got_frame = 0;
 
-	load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return frame;
+	}
+
+	if(load_configuration())
+		update_gui();
 
 // Allocate accumulation
 	if(!accumulation)
 	{
-		accumulation = new unsigned char[w * h *
-			ColorModels::components(color_model) *
-			MAX(sizeof(float), sizeof(int))];
+		accumulation = new int[w * h *
+			ColorModels::components(color_model)];
 		clear_accum(w, h, color_model);
 	}
 
@@ -126,7 +144,7 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 
 // Copy existing frames over
 				int i, j;
-				j = 0;
+
 				for(i = 0, j = 0; i < max_num_frames; i++)
 				{
 					if(history_valid[i])
@@ -270,7 +288,7 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 			else
 			{
 				temp_frame->set_pts(cpts);
-				get_frame(temp_frame);
+				temp_frame = get_frame(temp_frame);
 				add_accum(temp_frame);
 			}
 		}
@@ -299,128 +317,28 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 	return frame;
 }
 
-// Reset accumulation
-#define CLEAR_ACCUM(type, components, chroma) \
-{ \
-	type *row = (type*)accumulation; \
-	if(chroma) \
-	{ \
-		for(int i = 0; i < w * h; i++) \
-		{ \
-			*row++ = 0x0; \
-			*row++ = chroma; \
-			*row++ = chroma; \
-			if(components == 4) *row++ = 0x0; \
-		} \
-	} \
-	else \
-	{ \
-		memset(row, 0, w * h * sizeof(type) * components); \
-	} \
-}
-
 void TimeAvgMain::clear_accum(int w, int h, int color_model)
 {
 	frames_accum = 0;
+	int len = w * h;
+	int *row = accumulation;
 
 	switch(color_model)
 	{
-	case BC_RGB888:
-		CLEAR_ACCUM(int, 3, 0x0)
-		break;
-	case BC_RGB_FLOAT:
-		CLEAR_ACCUM(float, 3, 0x0)
-		break;
-	case BC_RGBA8888:
 	case BC_RGBA16161616:
-		CLEAR_ACCUM(int, 4, 0x0)
+		memset(row, 0, len * sizeof(uint16_t) * 4);
 		break;
-	case BC_RGBA_FLOAT:
-		CLEAR_ACCUM(float, 4, 0x0)
-		break;
-	case BC_YUV888:
-		CLEAR_ACCUM(int, 3, 0x80)
-		break;
-	case BC_YUVA8888:
-		CLEAR_ACCUM(int, 4, 0x80)
-		break;
-	case BC_YUV161616:
-		CLEAR_ACCUM(int, 3, 0x8000)
-		break;
-	case BC_YUVA16161616:
-		CLEAR_ACCUM(int, 4, 0x8000)
-		break;
-	case BC_AYUV16161616:
-		{
-			int *row = (int*)accumulation;
 
-			for(int i = 0; i < w * h; i++)
-			{
-				*row++ = 0x0;
-				*row++ = 0x0;
-				*row++ = 0x8000;
-				*row++ = 0x8000;
-			}
+	case BC_AYUV16161616:
+		for(int i = 0; i < w * h; i++)
+		{
+			*row++ = 0x0;
+			*row++ = 0x0;
+			*row++ = 0x8000;
+			*row++ = 0x8000;
 		}
 		break;
 	}
-}
-
-#define SUBTRACT_ACCUM(type, \
-	accum_type, \
-	components, \
-	chroma) \
-{ \
-	if(config.mode == TimeAvgConfig::OR) \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				if(components == 4) \
-				{ \
-					frame_row += 3; \
-					if(*frame_row++) \
-					{ \
-						*accum_row++ = 0; \
-						*accum_row++ = chroma; \
-						*accum_row++ = chroma; \
-						*accum_row++ = 0; \
-					} \
-				} \
-				else \
-				{ \
-					if(*frame_row++ != 0 || \
-						*frame_row++ != chroma || \
-						*frame_row++ != chroma) \
-					{ \
-						*accum_row++ = 0; \
-						*accum_row++ = chroma; \
-						*accum_row++ = chroma; \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*accum_row++ -= *frame_row++; \
-				*accum_row++ -= (accum_type)*frame_row++ - chroma; \
-				*accum_row++ -= (accum_type)*frame_row++ - chroma; \
-				if(components == 4) *accum_row++ -= *frame_row++; \
-			} \
-		} \
-	} \
 }
 
 void TimeAvgMain::subtract_accum(VFrame *frame)
@@ -438,39 +356,50 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		SUBTRACT_ACCUM(unsigned char, int, 3, 0x0)
-		break;
-	case BC_RGB_FLOAT:
-		SUBTRACT_ACCUM(float, float, 3, 0x0)
-		break;
-	case BC_RGBA8888:
-		SUBTRACT_ACCUM(unsigned char, int, 4, 0x0)
-		break;
-	case BC_RGBA_FLOAT:
-		SUBTRACT_ACCUM(float, float, 4, 0x0)
-		break;
-	case BC_YUV888:
-		SUBTRACT_ACCUM(unsigned char, int, 3, 0x80)
-		break;
-	case BC_YUVA8888:
-		SUBTRACT_ACCUM(unsigned char, int, 4, 0x80)
-		break;
-	case BC_YUV161616:
-		SUBTRACT_ACCUM(uint16_t, int, 3, 0x8000)
-		break;
 	case BC_RGBA16161616:
-		SUBTRACT_ACCUM(uint16_t, int, 4, 0)
-		break;
-	case BC_YUVA16161616:
-		SUBTRACT_ACCUM(uint16_t, int, 4, 0x8000)
+		if(config.mode == TimeAvgConfig::OR)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					frame_row += 3;
+					if(*frame_row++)
+					{
+						*accum_row++ = 0;
+						*accum_row++ = 0;
+						*accum_row++ = 0;
+						*accum_row++ = 0;
+					}
+				}
+			}
+		}
+		else
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*accum_row++ -= *frame_row++;
+					*accum_row++ -= *frame_row++;
+					*accum_row++ -= *frame_row++;
+					*accum_row++ -= *frame_row++;
+				}
+			}
+		}
 		break;
 	case BC_AYUV16161616:
 		if(config.mode == TimeAvgConfig::OR)
 		{
 			for(int i = 0; i < h; i++)
 			{
-				int *accum_row = (int*)accumulation + i * w * 4;
+				int *accum_row = accumulation + i * w * 4;
 				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
 
 				for(int j = 0; j < w; j++)
@@ -506,106 +435,6 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 	}
 }
 
-// The behavior has to be very specific to the color model because we rely on
-// the value of full black to determine what pixel to show.
-#define ADD_ACCUM(type, accum_type, components, chroma, max) \
-{ \
-	if(config.mode == TimeAvgConfig::OR) \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				if(components == 4) \
-				{ \
-					accum_type opacity = frame_row[3]; \
-					accum_type transparency = max - opacity; \
-					*accum_row = (opacity * *frame_row + transparency * *accum_row) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = chroma + (opacity * (*frame_row - chroma) + transparency * (*accum_row - chroma)) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = chroma + (opacity * (*frame_row - chroma) + transparency * (*accum_row - chroma)) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = MAX(*frame_row, *accum_row); \
-					accum_row++; \
-					frame_row++; \
-				} \
-				else \
-				if(sizeof(type) == 4) \
-				{ \
-					if(frame_row[0] > 0.001 || \
-						frame_row[1] > 0.001 || \
-						frame_row[2] > 0.001) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
-				} \
-				else \
-				if(chroma) \
-				{ \
-					if(frame_row[0]) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
-				} \
-				else \
-				{ \
-					if(frame_row[0] || \
-						frame_row[1] || \
-						frame_row[2]) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*accum_row++ += *frame_row++; \
-				*accum_row++ += (accum_type)*frame_row++ - chroma; \
-				*accum_row++ += (accum_type)*frame_row++ - chroma; \
-				if(components == 4) *accum_row++ += *frame_row++; \
-			} \
-		} \
-	} \
-}
-
-
 void TimeAvgMain::add_accum(VFrame *frame)
 {
 	int w = frame->get_w();
@@ -614,33 +443,52 @@ void TimeAvgMain::add_accum(VFrame *frame)
 	frames_accum++;
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		ADD_ACCUM(unsigned char, int, 3, 0x0, 0xff)
-		break;
-	case BC_RGB_FLOAT:
-		ADD_ACCUM(float, float, 3, 0x0, 1.0)
-		break;
-	case BC_RGBA8888:
-		ADD_ACCUM(unsigned char, int, 4, 0x0, 0xff)
-		break;
-	case BC_RGBA_FLOAT:
-		ADD_ACCUM(float, float, 4, 0x0, 1.0)
-		break;
-	case BC_YUV888:
-		ADD_ACCUM(unsigned char, int, 3, 0x80, 0xff)
-		break;
-	case BC_YUVA8888:
-		ADD_ACCUM(unsigned char, int, 4, 0x80, 0xff)
-		break;
-	case BC_YUV161616:
-		ADD_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
-		break;
 	case BC_RGBA16161616:
-		ADD_ACCUM(uint16_t, int, 4, 0x0, 0xffff)
+		if(config.mode == TimeAvgConfig::OR)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					int opacity = frame_row[3];
+					int transparency = 0xffff - opacity;
+
+					*accum_row = (opacity * *frame_row + transparency * *accum_row) / 0xffff;
+					accum_row++;
+					frame_row++;
+					*accum_row = (opacity * *frame_row + transparency * *accum_row) / 0xffff;
+					accum_row++;
+					frame_row++;
+					*accum_row = (opacity * *frame_row + transparency * *accum_row) / 0xffff;
+					accum_row++;
+					frame_row++;
+					*accum_row = MAX(*frame_row, *accum_row);
+					accum_row++;
+					frame_row++;
+				}
+			}
+		}
+		else
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*accum_row++ += *frame_row++;
+					*accum_row++ += *frame_row++;
+					*accum_row++ += *frame_row++;
+					*accum_row++ += *frame_row++;
+				}
+			}
+		}
 		break;
-	case BC_YUVA16161616:
-		ADD_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
-		break;
+
 	case BC_AYUV16161616:
 		if(config.mode == TimeAvgConfig::OR)
 		{
@@ -688,83 +536,6 @@ void TimeAvgMain::add_accum(VFrame *frame)
 	}
 }
 
-#define TRANSFER_ACCUM(type, accum_type, components, chroma, max) \
-{ \
-	if(config.mode == TimeAvgConfig::AVERAGE) \
-	{ \
-		if(!frames_accum) \
-			break; \
- \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*frame_row++ = *accum_row++ / frames_accum; \
-				*frame_row++ = (*accum_row++ - chroma) / frames_accum + chroma; \
-				*frame_row++ = (*accum_row++ - chroma) / frames_accum + chroma; \
-				if(components == 4) *frame_row++ = *accum_row++ / frames_accum; \
-			} \
-		} \
-	} \
-	else \
-	if(config.mode == TimeAvgConfig::ACCUMULATE) \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				if(sizeof(type) < 4) \
-				{ \
-					accum_type r = *accum_row++; \
-					accum_type g = *accum_row++ + chroma; \
-					accum_type b = *accum_row++ + chroma; \
-					*frame_row++ = CLIP(r, 0, max); \
-					*frame_row++ = CLIP(g, 0, max); \
-					*frame_row++ = CLIP(b, 0, max); \
-					if(components == 4) \
-					{ \
-						accum_type a = *accum_row++; \
-						*frame_row++ = CLIP(a, 0, max); \
-					} \
-				} \
-				else \
-				{ \
-					*frame_row++ = *accum_row++; \
-					*frame_row++ = *accum_row++ + chroma; \
-					*frame_row++ = *accum_row++ + chroma; \
-					if(components == 4) \
-					{ \
-						*frame_row++ = *accum_row++; \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_row_ptr(i); \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*frame_row++ = *accum_row++; \
-				*frame_row++ = *accum_row++; \
-				*frame_row++ = *accum_row++; \
-				if(components == 4) *frame_row++ = *accum_row++; \
-			} \
-		} \
-	} \
-}
-
-
 void TimeAvgMain::transfer_accum(VFrame *frame)
 {
 	int w = frame->get_w();
@@ -772,33 +543,65 @@ void TimeAvgMain::transfer_accum(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-		TRANSFER_ACCUM(unsigned char, int, 3, 0x0, 0xff)
-		break;
-	case BC_RGB_FLOAT:
-		TRANSFER_ACCUM(float, float, 3, 0x0, 1)
-		break;
-	case BC_RGBA8888:
-		TRANSFER_ACCUM(unsigned char, int, 4, 0x0, 0xff)
-		break;
-	case BC_RGBA_FLOAT:
-		TRANSFER_ACCUM(float, float, 4, 0x0, 1)
-		break;
-	case BC_YUV888:
-		TRANSFER_ACCUM(unsigned char, int, 3, 0x80, 0xff)
-		break;
-	case BC_YUVA8888:
-		TRANSFER_ACCUM(unsigned char, int, 4, 0x80, 0xff)
-		break;
-	case BC_YUV161616:
-		TRANSFER_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
-		break;
 	case BC_RGBA16161616:
-		TRANSFER_ACCUM(uint16_t, int, 4, 0x0, 0xffff)
+		if(config.mode == TimeAvgConfig::AVERAGE)
+		{
+			if(!frames_accum)
+				break;
+
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*frame_row++ = *accum_row++ / frames_accum;
+					*frame_row++ = *accum_row++ / frames_accum;
+					*frame_row++ = *accum_row++ / frames_accum;
+					*frame_row++ = *accum_row++ / frames_accum;
+				}
+			}
+		}
+		else
+		if(config.mode == TimeAvgConfig::ACCUMULATE)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					int r = *accum_row++;
+					int g = *accum_row++;
+					int b = *accum_row++;
+					int a = *accum_row++;
+					*frame_row++ = CLIP(r, 0, 0xffff);
+					*frame_row++ = CLIP(g, 0, 0xffff);
+					*frame_row++ = CLIP(b, 0, 0xffff);
+					*frame_row++ = CLIP(a, 0, 0xffff);
+				}
+			}
+		}
+		else
+		{
+			for(int i = 0; i < h; i++)
+			{
+				int *accum_row = accumulation + i * w * 4;
+				uint16_t *frame_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*frame_row++ = *accum_row++;
+					*frame_row++ = *accum_row++;
+					*frame_row++ = *accum_row++;
+					*frame_row++ = *accum_row++;
+				}
+			}
+		}
 		break;
-	case BC_YUVA16161616:
-		TRANSFER_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
-		break;
+
 	case BC_AYUV16161616:
 		if(config.mode == TimeAvgConfig::AVERAGE)
 		{
@@ -891,10 +694,10 @@ int TimeAvgMain::load_configuration()
 	old_config.copy_from(&config);
 
 	if(!(prev_keyframe = prev_keyframe_pts(source_pts)))
-		return 0;
+		return need_reconfigure;
 
 	read_data(prev_keyframe);
-	return !old_config.equivalent(&config);
+	return !old_config.equivalent(&config) || need_reconfigure;
 }
 
 void TimeAvgMain::save_data(KeyFrame *keyframe)
