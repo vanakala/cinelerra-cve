@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <math.h>
 #include <stdint.h>
@@ -163,13 +147,13 @@ void TimeFrontWindow::update()
 	show_grayscale->update(plugin->config.show_grayscale);
 	invert->update(plugin->config.invert);
 	shape->set_text(TimeFrontShape::to_text(plugin->config.shape));
-	if (rate)
+	if(rate)
 		rate->set_text(TimeFrontRate::to_text(plugin->config.rate));
-	if (in_radius)
+	if(in_radius)
 		in_radius->update(plugin->config.in_radius);
-	if (out_radius)
+	if(out_radius)
 		out_radius->update(plugin->config.out_radius);
-	if (track_usage)
+	if(track_usage)
 		track_usage->set_text(TimeFrontTrackUsage::to_text(plugin->config.track_usage));
 	if(angle)
 		angle->update(plugin->config.angle);
@@ -420,7 +404,6 @@ int TimeFrontTrackUsage::from_text(const char *text)
 int TimeFrontTrackUsage::handle_event()
 {
 	plugin->config.track_usage = from_text(get_text());
-	gui->update_shape();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -524,9 +507,9 @@ TimeFrontInRadius::TimeFrontInRadius(TimeFrontMain *plugin, int x, int y)
 	0,
 	200,
 	200,
-	(float)0,
-	(float)100,
-	(float)plugin->config.in_radius)
+	0.0,
+	100.0,
+	plugin->config.in_radius)
 {
 	this->plugin = plugin;
 }
@@ -545,9 +528,9 @@ TimeFrontOutRadius::TimeFrontOutRadius(TimeFrontMain *plugin, int x, int y)
 	0,
 	200,
 	200,
-	(float)0,
-	(float)100,
-	(float)plugin->config.out_radius)
+	0.0,
+	100.0,
+	plugin->config.out_radius)
 {
 	this->plugin = plugin;
 }
@@ -566,9 +549,9 @@ TimeFrontFrameRange::TimeFrontFrameRange(TimeFrontMain *plugin, int x, int y)
 	0,
 	200,
 	200,
-	(float)0,
-	(float)MAX_TIME_RANGE,
-	(float)plugin->config.time_range)
+	0.0,
+	MAX_TIME_RANGE,
+	plugin->config.time_range)
 {
 	this->plugin = plugin;
 }
@@ -629,133 +612,72 @@ TimeFrontMain::TimeFrontMain(PluginServer *server)
 
 TimeFrontMain::~TimeFrontMain()
 {
-	if(gradient) delete gradient;
-	if(engine) delete engine;
-	if(overlayer) delete overlayer;
+	delete gradient;
+	delete engine;
+	delete overlayer;
 	for(int i = 0; i < framelist_allocated; i++)
-		delete framelist[i];
+		release_vframe(framelist[i]);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void TimeFrontMain::reset_plugin()
+{
+	if(gradient)
+	{
+		delete gradient;
+		gradient = 0;
+	}
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
+	if(overlayer)
+	{
+		delete overlayer;
+		overlayer = 0;
+	}
+	for(int i = 0; i < framelist_allocated; i++)
+	{
+		release_vframe(framelist[i]);
+		framelist[i] = 0;
+	}
+	framelist_allocated = 0;
+	framelist_last = 0;
+	need_reconfigure = 1;
+}
+
 PLUGIN_CLASS_METHODS
-
-#define GRADIENTFROMAVG(type, inttype, components, maxval) \
-	for(int i = 0; i < tfframe->get_h(); i++) \
-	{ \
-		type *in_row = (type *)tfframe->get_row_ptr(i); \
-		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_row_ptr(i); \
-		for(int j = 0; j < tfframe->get_w(); j++) \
-		{ \
-			inttype tmp =	(inttype) in_row[j * components] + \
-						in_row[j * components + 1] + \
-						in_row[j * components + 2]; \
-			if (components == 3) \
-				grad_row[j] = (unsigned char) (CLIP(frames * tmp / maxval / 3, 0.0F, frames)); \
-			else if(components == 4) \
-				grad_row[j] = (unsigned char) (CLIP(frames * tmp * in_row[j * components + 3] / maxval / maxval / 3, 0.0F, frames)); \
-		} \
-	}
-
-#define GRADIENTFROMCHANNEL(type, components, max, channel) \
-	for(int i = 0; i < tfframe->get_h(); i++) \
-	{ \
-		type *in_row = (type *)tfframe->get_row_ptr(i); \
-		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_row_ptr(i); \
-		for(int j = 0; j < tfframe->get_w(); j++) \
-		{ \
-			if (components == 3) \
-				grad_row[j] = (unsigned char) (CLIP(frames * in_row[j * components + channel] / max, 0.0F, frames)); \
-			else if(components == 4) \
-				grad_row[j] = (unsigned char) (CLIP(frames * in_row[j * components + channel] * in_row[j * components + 3]/ max /max, 0.0F, frames)); \
-		} \
-	}
-
-#define SETALPHA(type, max) \
-	for(int i = 0; i < outframes[0]->get_h(); i++) \
-	{ \
-		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
-		for(int j = 0; j < outframes[0]->get_w(); j++) \
-		{ \
-			out_row[j * 4 + 3] = max; \
-		} \
-	}
-
-#define GRADIENTTOPICTURE(type, inttype, components, max, invertion) \
-	for(int i = 0; i < height; i++) \
-	{ \
-		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
-		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_row_ptr(i); \
-		for (int j = 0; j < width; j++) \
-		{ \
-			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
-			out_row[1] = (inttype)max * (invertion grad_row[0]) / frames; \
-			out_row[2] = (inttype)max * (invertion grad_row[0]) / frames; \
-			if (components == 4) \
-				out_row[3] = max; \
-			out_row += components; \
-			grad_row ++; \
-		} \
-	}
-
-#define GRADIENTTOYUVPICTURE(type, inttype, components, max, invertion) \
-	for(int i = 0; i < height; i++) \
-	{ \
-		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
-		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_row_ptr(i); \
-		for (int j = 0; j < width; j++) \
-		{ \
-			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
-			out_row[1] = max/2; \
-			out_row[2] = max/2; \
-			if (components == 4) \
-				out_row[3] = max; \
-			out_row += components; \
-			grad_row ++; \
-		} \
-	}
-
-#define COMPOSITEIMAGE(type, components, invertion) \
-	for (int i = 0; i < height; i++) \
-	{ \
-		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
-		unsigned char *gradient_row = gradient->get_row_ptr(i); \
-		for (int j = 0; j < width; j++) \
-		{ \
-			unsigned int choice = invertion gradient_row[j]; \
-			{ \
-				out_row[0] = framelist[choice]->get_row_ptr(i)[j * components + 0]; \
-				out_row[1] = framelist[choice]->get_row_ptr(i)[j * components + 1]; \
-				out_row[2] = framelist[choice]->get_row_ptr(i)[j * components + 2]; \
-				if (components == 4) \
-					out_row[3] = framelist[choice]->get_row_ptr(i)[j * components + 3]; \
-			} \
-			out_row += components; \
-		} \
-	}
-
 
 void TimeFrontMain::process_tmpframes(VFrame **frame)
 {
 	VFrame **outframes = frame;
 	double project_frame_rate = get_project_framerate();
+	int color_model = frame[0]->get_color_model();
 
-	need_reconfigure |= load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return;
+	}
+
+	if(need_reconfigure |= load_configuration())
+		update_gui();
+
 	if(config.time_range < (1 / project_frame_rate) + EPSILON)
 		return;
 
 	if(!framelist[0])
 	{
-		framelist[0] = new VFrame(0, outframes[0]->get_w(),
-			outframes[0]->get_h(), outframes[0]->get_color_model());
+		framelist[0] = clone_vframe(outframes[0]);
 		framelist_allocated = 1;
 	}
-	framelist[0]->copy_pts(outframes[0]);
-	get_frame(framelist[0]);
-	this->input = framelist[0];
+	framelist[0]->copy_from(outframes[0]);
+	input = framelist[0];
 	if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		if(total_in_buffers != 2)
@@ -772,55 +694,52 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 	}
 
 // Generate new gradient
-	if(need_reconfigure)
-	{
-		need_reconfigure = 0;
-		if(!gradient)
-			gradient = new VFrame(0,
-				outframes[0]->get_w(),
-				outframes[0]->get_h(),
-				BC_A8);
+	if(!gradient)
+		gradient = new VFrame(0,
+			outframes[0]->get_w(),
+			outframes[0]->get_h(),
+			BC_A8);
 
-		if(config.shape != TimeFrontConfig::OTHERTRACK &&
-			config.shape != TimeFrontConfig::ALPHA)
-		{
-			if(!engine)
-				engine = new TimeFrontServer(this,
-					get_project_smp() + 1,
-					get_project_smp() + 1);
-			engine->process_packages();
-		}
-	}
-	if (config.shape == TimeFrontConfig::ALPHA)
+	if(need_reconfigure && config.shape != TimeFrontConfig::OTHERTRACK &&
+		config.shape != TimeFrontConfig::ALPHA)
 	{
-		if(!gradient)
-			gradient = new VFrame(0,
-				outframes[0]->get_w(),
-				outframes[0]->get_h(),
-				BC_A8);
+		if(!engine)
+			engine = new TimeFrontServer(this,
+				get_project_smp(),
+				get_project_smp());
+		engine->process_packages();
+	}
+
+	if(config.shape == TimeFrontConfig::ALPHA)
+	{
 		VFrame *tfframe = framelist[0];
+		int frames = round(config.time_range * get_project_framerate());
+		int frame_h = tfframe->get_h();
+		int frame_w = tfframe->get_w();
+
 		switch(tfframe->get_color_model())
 		{
-		case BC_YUVA8888:
-		case BC_RGBA8888:
-			GRADIENTFROMCHANNEL(unsigned char, 4, 255, 3);
-			break;
-
-		case BC_RGBA_FLOAT:
-			GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
-			break;
-
 		case BC_RGBA16161616:
-			GRADIENTFROMCHANNEL(uint16_t, 4, 0xffff, 3);
+			for(int i = 0; i < frame_h; i++)
+			{
+				uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+				unsigned char *grad_row = gradient->get_row_ptr(i);
+
+				for(int j = 0; j < frame_w; j++)
+				{
+					grad_row[j] = (unsigned char)(CLIP(frames *
+						in_row[j * 4 + 3] *
+						in_row[j * 4 + 3 ] / 0xffff / 0xffff,
+						0, frames));
+				}
+			}
 			break;
 
 		case BC_AYUV16161616:
-			for(int i = 0; i < tfframe->get_h(); i++)
+			for(int i = 0; i < frame_h; i++)
 			{
 				uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
-				int frames = config.time_range * project_frame_rate;
 				unsigned char *grad_row = gradient->get_row_ptr(i);
-				int frame_w = tfframe->get_w();
 
 				for(int j = 0; j < frame_w; j++)
 					grad_row[j] = (unsigned char)(
@@ -829,57 +748,43 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 						0, frames));
 			}
 			break;
-
-		default:
-			abort_plugin(_("ALPHA used, but project color model does not have alpha"));
-			return;
 		}
 	}
 	else if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		if(!gradient)
-			gradient = new VFrame(0, 
-				outframes[0]->get_w(),
-				outframes[0]->get_h(),
-				BC_A8);
 		VFrame *tfframe = outframes[1];
+		int frame_h = outframes[1]->get_h();
+		int frame_w = outframes[1]->get_w();
+		int frames = round(config.time_range * get_project_framerate());
+
 		if(config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
 			switch(tfframe->get_color_model())
 			{
-			case BC_RGBA8888:
-// Has to be 2 ranges bigger, sice we need precision for alpha
-				GRADIENTFROMAVG(unsigned char, unsigned short, 4, 255);
-				break;
-			case BC_RGB888:
-				GRADIENTFROMAVG(unsigned char, unsigned short, 3, 255);
-				break;
-			case BC_RGB_FLOAT:
-				GRADIENTFROMAVG(float, float, 3, 1.0f);
-				break;
-			case BC_RGBA_FLOAT:
-				GRADIENTFROMAVG(float, float, 4, 1.0f);
-				break;
-
 			case BC_RGBA16161616:
-				GRADIENTFROMAVG(uint16_t, int, 4, 0xffff);
-				break;
+				for(int i = 0; i < frame_h; i++)
+				{
+					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+					unsigned char *grad_row = gradient->get_row_ptr(i);
 
-// We cheat and take Y component as intensity
-			case BC_YUV888:
-				GRADIENTFROMCHANNEL(unsigned char, 3, 255, 0);
-				break;
-			case BC_YUVA8888:
-				GRADIENTFROMCHANNEL(unsigned char, 4, 255, 0);
+					for(int j = 0; j < frame_w; j++)
+					{
+						int tmp = in_row[j * 4] +
+							in_row[j * 4 + 1] +
+							in_row[j * 4 + 2];
+						grad_row[j] = (unsigned char)(CLIP(
+							frames * tmp * 
+							in_row[j * 4 + 3] / 0xffff / 0xffff / 3,
+							0, frames));
+					}
+				}
 				break;
 
 			case BC_AYUV16161616:
-				for(int i = 0; i < tfframe->get_h(); i++)
+				for(int i = 0; i < frame_h; i++)
 				{
 					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
-					int frames = config.time_range * project_frame_rate;
 					unsigned char *grad_row = gradient->get_row_ptr(i);
-					int frame_w = tfframe->get_w();
 
 					for(int j = 0; j < frame_w; j++)
 						grad_row[j] =
@@ -887,43 +792,42 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 							in_row[j * 4 + 1] / 0xffff / 0xffff, 0, frames));
 				}
 				break;
-			default:
-				break;
 			}
 		}
 		else if(config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
 		{
-			switch (tfframe->get_color_model())
+			switch(tfframe->get_color_model())
 			{
-			case BC_YUVA8888:
-			case BC_RGBA8888:
-				GRADIENTFROMCHANNEL(unsigned char, 4, 255, 3);
-				break;
-
-			case BC_RGBA_FLOAT:
-				GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
-				break;
-
 			case BC_RGBA16161616:
-				GRADIENTFROMCHANNEL(uint16_t, 4, 0xffff, 3);
+				for(int i = 0; i < frame_h; i++)
+				{
+					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+
+					for(int j = 0; j < frame_w; j++)
+					{
+						grad_row[j] = (unsigned char)(CLIP(
+							frames * in_row[j * 4 + 3] *
+							in_row[j * 4 + 3] / 0xffff / 0xffff,
+							0, frames));
+					}
+				}
 				break;
 
 			case BC_AYUV16161616:
 				for(int i = 0; i < tfframe->get_h(); i++)
 				{
 					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
-					int frames = config.time_range * project_frame_rate;
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 					int frame_w = tfframe->get_w();
 
 					for(int j = 0; j < frame_w; j++)
-						grad_row[j] = (unsigned char)(CLIP(frames * in_row[j * 4] * in_row[j * 4] / 0xffff / 0xffff, 0, frames));
+						grad_row[j] = (unsigned char)(CLIP(
+							frames * in_row[j * 4] *
+							in_row[j * 4] / 0xffff / 0xffff,
+							0, frames));
 				}
 				break;
-
-			default:
-				abort_plugin(_("ALPHA track used, but project color model does not have alpha"));
-				return;
 			}
 		}
 		else
@@ -940,13 +844,11 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 		{
 			if(!framelist[1])
 			{
-				framelist[1] = new VFrame (0, outframes[0]->get_w(),
-					outframes[0]->get_h(),
-					outframes[0]->get_color_model());
+				framelist[1] = clone_vframe(outframes[0]);
 				framelist_allocated++;
 			}
 			framelist[1]->set_pts(cpts);
-			get_frame(framelist[1]);
+			framelist[1] = get_frame(framelist[1]);
 			cpts = framelist[1]->next_pts();
 			if(cpts < source_pts)
 			{
@@ -969,34 +871,31 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 	{
 		if(!config.invert)
 		{
-			switch (outframes[0]->get_color_model())
+			int frames = round(config.time_range * get_project_framerate());
+
+			switch(outframes[0]->get_color_model())
 			{
-			case BC_RGB888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 3, 255, );
-				break;
-			case BC_RGBA8888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 4, 255, );
-				break;
-			case BC_YUV888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 3, 255, );
-				break;
-			case BC_YUVA8888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 4, 255, );
-				break;
-			case BC_RGB_FLOAT:
-				GRADIENTTOPICTURE(float, float, 3, 1.0f, );
-				break;
-			case BC_RGBA_FLOAT:
-				GRADIENTTOPICTURE(float, float, 4, 1.0f, );
-				break;
 			case BC_RGBA16161616:
-				GRADIENTTOPICTURE(uint16_t, unsigned int, 4, 0xffff, );
+				for(int i = 0; i < height; i++)
+				{
+					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+
+					for(int j = 0; j < width; j++)
+					{
+						out_row[0] = 0xffff * grad_row[0] / frames;
+						out_row[1] = 0xffff * grad_row[0] / frames;
+						out_row[2] = 0xffff * grad_row[0] / frames;
+						out_row[3] = 0xffff;
+						out_row += 4;
+						grad_row++;
+					}
+				}
 				break;
 			case BC_AYUV16161616:
 				for(int i = 0; i < height; i++)
 				{
 					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
-					int frames = config.time_range * project_frame_rate;
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
 					for (int j = 0; j < width; j++)
@@ -1010,89 +909,60 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 					}
 				}
 				break;
-			default:
-				break;
 			}
 		}
 		else
 		{
-			int pframes = config.time_range * project_frame_rate;
+			int pframes = round(config.time_range * get_project_framerate());
+
 			switch(outframes[0]->get_color_model())
 			{
-			case BC_RGB888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
-				break;
-			case BC_RGBA8888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
-				outframes[0]->set_transparent();
-				break;
-			case BC_YUV888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
-				break;
-			case BC_YUVA8888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
-				outframes[0]->set_transparent();
-				break;
-			case BC_RGB_FLOAT:
-				GRADIENTTOPICTURE(float, float, 3, 1.0f, pframes -);
-				break;
-			case BC_RGBA_FLOAT:
-				GRADIENTTOPICTURE(float, float, 4, 1.0f, pframes -);
-				outframes[0]->set_transparent();
-				break;
 			case BC_RGBA16161616:
-				GRADIENTTOPICTURE(uint16_t, unsigned int, 4, 0xffff, pframes -);
-				outframes[0]->set_transparent();
+				for(int i = 0; i < height; i++)
+				{
+					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+
+					for (int j = 0; j < width; j++)
+					{
+						out_row[0] = 0xffff * (pframes - grad_row[0]) /
+							pframes;
+						out_row[1] = 0xffff * (pframes - grad_row[0]) /
+							pframes;
+						out_row[2] = 0xffff * (pframes - grad_row[0]) /
+							pframes;
+						out_row[3] = 0xffff;
+						out_row += 4;
+						grad_row++;
+					}
+				}
 				break;
+
 			case BC_AYUV16161616:
 				for(int i = 0; i < height; i++)
 				{
 					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
-					int frames = config.time_range * project_frame_rate;
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
 					for(int j = 0; j < width; j++)
 					{
-						out_row[3] = 0xffff;
-						out_row[0] = 0xffff * (pframes - grad_row[0]) / frames;
-						out_row[1] = 0x8000;
+						out_row[0] = 0xffff;
+						out_row[1] = 0xffff * (pframes - grad_row[0]) / pframes;
 						out_row[2] = 0x8000;
+						out_row[3] = 0x8000;
 						out_row += 4;
-						grad_row ++;
+						grad_row++;
 					}
 				}
-				outframes[0]->set_transparent();
-				break;
-			default:
 				break;
 			}
 		}
+		outframes[0]->clear_transparent();
 	}
 	else if(!config.invert)
 	{
 		switch(outframes[0]->get_color_model())
 		{
-		case BC_RGB888:
-			COMPOSITEIMAGE(unsigned char, 3, );
-			break;
-		case BC_RGBA8888:
-			COMPOSITEIMAGE(unsigned char, 4, );
-			outframes[0]->set_transparent();
-			break;
-		case BC_YUV888:
-			COMPOSITEIMAGE(unsigned char, 3, );
-			break;
-		case BC_YUVA8888:
-			COMPOSITEIMAGE(unsigned char, 4, );
-			outframes[0]->set_transparent();
-			break;
-		case BC_RGB_FLOAT:
-			COMPOSITEIMAGE(float, 3, );
-			break;
-		case BC_RGBA_FLOAT:
-			COMPOSITEIMAGE(float, 4, );
-			outframes[0]->set_transparent();
-			break;
 		case BC_RGBA16161616:
 		case BC_AYUV16161616:
 			for(int i = 0; i < height; i++)
@@ -1117,30 +987,13 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 		default:
 			break;
 		}
+		outframes[0]->set_transparent();
 	}
 	else
 	{
 		int pframes = framelist_last - 1;
 		switch(outframes[0]->get_color_model())
 		{
-		case BC_RGB888:
-			COMPOSITEIMAGE(unsigned char, 3, pframes -);
-			break;
-		case BC_RGBA8888:
-			COMPOSITEIMAGE(unsigned char, 4, pframes -);
-			break;
-		case BC_YUV888:
-			COMPOSITEIMAGE(unsigned char, 3, pframes -);
-			break;
-		case BC_YUVA8888:
-			COMPOSITEIMAGE(unsigned char, 4, pframes -);
-			break;
-		case BC_RGB_FLOAT:
-			COMPOSITEIMAGE(float, 3, pframes -);
-			break;
-		case BC_RGBA_FLOAT:
-			COMPOSITEIMAGE(float, 4, pframes -);
-			break;
 		case BC_RGBA16161616:
 		case BC_AYUV16161616:
 			for(int i = 0; i < height; i++)
@@ -1161,39 +1014,34 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				out_row += 4;
 			}
 			break;
-		default:
-			break;
 		}
+		outframes[0]->set_transparent();
 	}
 	if(config.shape == TimeFrontConfig::ALPHA)
 	{
+		int frame_w = outframes[0]->get_w();
+		int frame_h = outframes[0]->get_h();
+
 		// Set alpha to max
 		switch(outframes[0]->get_color_model())
 		{
-		case BC_YUVA8888:
-		case BC_RGBA8888:
-			SETALPHA(unsigned char, 255);
-			break;
-		case BC_RGBA_FLOAT:
-			SETALPHA(float, 1.0f);
-			break;
 		case BC_RGBA16161616:
-			SETALPHA(uint16_t, 0xffff);
+			for(int i = 0; i < frame_h; i++)
+			{
+				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					for(int j = 0; j < frame_w; j++)
+						out_row[j * 4 + 3] = 0xffff;
+			}
 			break;
 		case BC_AYUV16161616:
 			{
-				int oh = outframes[0]->get_h();
-				int ow = outframes[0]->get_w();
-
-				for(int i = 0; i < oh; i++)
+				for(int i = 0; i < frame_h; i++)
 				{
 					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
-					for(int j = 0; j < ow; j++)
+					for(int j = 0; j < frame_w; j++)
 						out_row[j * 4] = 0xffff;
 				}
 			}
-			break;
-		default:
 			break;
 		}
 		outframes[0]->set_transparent();
@@ -1301,95 +1149,8 @@ TimeFrontUnit::TimeFrontUnit(TimeFrontServer *server, TimeFrontMain *plugin)
 	this->server = server;
 }
 
-
 #define SQR(x) ((x) * (x))
 #define LOG_RANGE 1
-
-#define CREATE_GRADIENT \
-{ \
-/* Synthesize linear gradient for lookups */ \
- \
-	a_table = (unsigned char *)malloc(sizeof(unsigned char) * gradient_size); \
- \
-	for(int i = 0; i < gradient_size; i++) \
-	{ \
-		float opacity; \
-		float transparency; \
-		switch(plugin->config.rate) \
-		{ \
-		case TimeFrontConfig::LINEAR: \
-			if(i < in_radius) \
-				opacity = 0.0; \
-			else \
-			if(i >= out_radius) \
-				opacity = 1.0; \
-			else \
-				opacity = (float)(i - in_radius) / (out_radius - in_radius); \
-			break; \
-		case TimeFrontConfig::LOG: \
-			opacity = 1 - exp(LOG_RANGE * -(float)(i - in_radius) / (out_radius - in_radius)); \
-			break; \
-		case TimeFrontConfig::SQUARE: \
-			opacity = SQR((float)(i - in_radius) / (out_radius - in_radius)); \
-			break; \
-		} \
- \
-		CLAMP(opacity, 0, 1); \
-		transparency = 1.0 - opacity; \
-		a_table[i] = (unsigned char)(out4 * opacity + in4 * transparency); \
-	} \
- \
-	for(int i = pkg->y1; i < pkg->y2; i++) \
-	{ \
-		unsigned char *out_row = plugin->gradient->get_row_ptr(i); \
- \
-		switch(plugin->config.shape) \
-		{ \
-		case TimeFrontConfig::LINEAR: \
-			for(int j = 0; j < w; j++) \
-			{ \
-				int x = j - half_w; \
-				int y = -(i - half_h); \
-		 \
-/* Rotate by effect angle */ \
-				int input_y = (int)(gradient_size / 2 - \
-					(x * sin_angle + y * cos_angle) + \
-					0.5); \
-		 \
-/* Get gradient value from these coords */ \
-		 \
-				if(input_y < 0) \
-				{ \
-					out_row[0] = out4; \
-				} \
-				else \
-				if(input_y >= gradient_size) \
-				{ \
-					out_row[0] = in4; \
-				} \
-				else \
-				{ \
-					out_row[0] = a_table[input_y]; \
-				} \
-		 \
-				out_row ++; \
-			} \
-			break; \
- \
-		case TimeFrontConfig::RADIAL: \
-			for(int j = 0; j < w; j++) \
-			{ \
-				double x = j - center_x; \
-				double y = i - center_y; \
-				double magnitude = hypot(x, y); \
-				int input_y = (int)magnitude; \
-				out_row[0] = a_table[input_y]; \
-				out_row ++; \
-			} \
-			break; \
-		} \
-	} \
-}
 
 void TimeFrontUnit::process_package(LoadPackage *package)
 {
@@ -1398,9 +1159,9 @@ void TimeFrontUnit::process_package(LoadPackage *package)
 	int w = plugin->input->get_w();
 	int half_w = w / 2;
 	int half_h = h / 2;
-	int gradient_size = (int)(ceil(hypot(w, h)));
-	int in_radius = (int)(plugin->config.in_radius / 100 * gradient_size);
-	int out_radius = (int)(plugin->config.out_radius / 100 * gradient_size);
+	int gradient_size = ceil(hypot(w, h));
+	int in_radius = round(plugin->config.in_radius / 100 * gradient_size);
+	int out_radius = round(plugin->config.out_radius / 100 * gradient_size);
 	double sin_angle = sin(plugin->config.angle * (M_PI / 180));
 	double cos_angle = cos(plugin->config.angle * (M_PI / 180));
 	double center_x = plugin->config.center_x * w / 100;
@@ -1415,9 +1176,83 @@ void TimeFrontUnit::process_package(LoadPackage *package)
 	}
 	int in4 = plugin->config.time_range * plugin->get_project_framerate();
 	int out4 = 0;
-	CREATE_GRADIENT
 
-	if(a_table) free(a_table);
+	// Synthesize linear gradient for lookups
+	a_table = (unsigned char *)malloc(gradient_size);
+
+	for(int i = 0; i < gradient_size; i++)
+	{
+		double opacity;
+		double transparency;
+
+		switch(plugin->config.rate)
+		{
+		case TimeFrontConfig::LINEAR:
+			if(i < in_radius)
+				opacity = 0.0;
+			else
+			if(i >= out_radius)
+				opacity = 1.0;
+			else
+				opacity = (double)(i - in_radius) / (out_radius - in_radius);
+			break;
+		case TimeFrontConfig::LOG:
+			opacity = 1 - exp(LOG_RANGE * -(double)(i - in_radius) / (out_radius - in_radius));
+			break;
+		case TimeFrontConfig::SQUARE:
+			double v = (double)(i - in_radius) / (out_radius - in_radius);
+			opacity = SQR(v);
+			break;
+		}
+
+		CLAMP(opacity, 0, 1);
+		transparency = 1.0 - opacity;
+		a_table[i] = (unsigned char)(out4 * opacity + in4 * transparency);
+	}
+
+	for(int i = pkg->y1; i < pkg->y2; i++)
+	{
+		unsigned char *out_row = plugin->gradient->get_row_ptr(i);
+
+		switch(plugin->config.shape)
+		{
+		case TimeFrontConfig::LINEAR:
+			for(int j = 0; j < w; j++)
+			{
+				int x = j - half_w;
+				int y = -(i - half_h);
+				// Rotate by effect angle
+				int input_y = gradient_size / 2 -
+					(x * sin_angle + y * cos_angle) +
+					0.5;
+
+				// Get gradient value from these coords
+				if(input_y < 0)
+					out_row[0] = out4;
+				else
+				if(input_y >= gradient_size)
+					out_row[0] = in4; \
+				else
+					out_row[0] = a_table[input_y];
+				out_row ++;
+			}
+			break;
+
+		case TimeFrontConfig::RADIAL:
+			for(int j = 0; j < w; j++)
+			{
+				double x = j - center_x;
+				double y = i - center_y;
+				double magnitude = hypot(x, y);
+				int input_y = round(magnitude);
+
+				out_row[0] = a_table[input_y];
+				out_row ++;
+			}
+			break;
+		}
+	}
+	free(a_table);
 }
 
 
