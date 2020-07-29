@@ -112,6 +112,7 @@ public:
 	int get_status();
 	void clear_status();
 	void set_transparent();
+	void clear_transparent();
 	int is_transparent();
 	void merge_status(VFrame *that);
 	int pts_in_frame_source(ptstime pts, ptstime accuracy = FRAME_ACCURACY);

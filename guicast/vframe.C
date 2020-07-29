@@ -751,6 +751,11 @@ void VFrame::set_transparent()
 	status |= VFRAME_TRANSPARENT;
 }
 
+void VFrame::clear_transparent()
+{
+	status &= ~VFRAME_TRANSPARENT;
+}
+
 int VFrame::is_transparent()
 {
 	return status & VFRAME_TRANSPARENT;
