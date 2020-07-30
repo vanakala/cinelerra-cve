@@ -1,48 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcpot.h"
 #include "bcpopupmenu.h"
 #include "motion.h"
 #include "pluginwindow.h"
 
-class MasterLayer : public BC_PopupMenu
-{
-public:
-	MasterLayer(MotionMain *plugin, MotionWindow *gui, int x, int y);
-	int handle_event();
-	void create_objects();
-	static int calculate_w(MotionWindow *gui);
-	static int from_text(const char *text);
-	static const char* to_text(int mode);
-	MotionMain *plugin;
-	MotionWindow *gui;
-};
-
 class Mode1 : public BC_PopupMenu
 {
 public:
 	Mode1(MotionMain *plugin, MotionWindow *gui, int x, int y);
+
 	int handle_event();
-	void create_objects();
 	static int calculate_w(MotionWindow *gui);
 	static int from_text(const char *text);
 	static const char* to_text(int mode);
@@ -54,11 +25,12 @@ class Mode2 : public BC_PopupMenu
 {
 public:
 	Mode2(MotionMain *plugin, MotionWindow *gui, int x, int y);
+
 	int handle_event();
-	void create_objects();
 	static int calculate_w(MotionWindow *gui);
 	static int from_text(const char *text);
 	static const char* to_text(int mode);
+
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -67,11 +39,12 @@ class Mode3 : public BC_PopupMenu
 {
 public:
 	Mode3(MotionMain *plugin, MotionWindow *gui, int x, int y);
+
 	int handle_event();
-	void create_objects();
 	static int calculate_w(MotionWindow *gui);
 	static void from_text(int *horizontal_only, int *vertical_only, const char *text);
 	static const char* to_text(int horizontal_only, int vertical_only);
+
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -84,7 +57,9 @@ public:
 		MotionWindow *gui,
 		int x, 
 		int y);
+
 	int handle_event();
+
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -94,12 +69,12 @@ class Motion_FloatTextBox : public BC_TextBox
 {
 public:
 	Motion_FloatTextBox(MotionMain *plugin,
-		int x, int y, float *property);
+		int x, int y, double *property);
 
 	int handle_event();
 
 	MotionMain *plugin;
-	float *property;
+	double *property;
 };
 
 
@@ -228,7 +203,7 @@ public:
 		int x, 
 		int y,
 		int w);
-	void create_objects();
+
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -240,7 +215,7 @@ public:
 		int x, 
 		int y,
 		int w);
-	void create_objects();
+
 	int handle_event();
 	MotionMain *plugin;
 };
@@ -349,7 +324,6 @@ public:
 	TrackFrameNumber *track_frame_number;
 	TrackPreviousFrame *track_previous;
 	PreviousFrameSameBlock *previous_same;
-	MasterLayer *master_layer;
 	Mode2 *mode2;
 	Mode3 *mode3;
 

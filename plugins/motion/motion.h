@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef MOTION_H
 #define MOTION_H
@@ -26,6 +10,7 @@
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
 #define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_MAX_CHANNELS 2
 
 #define PLUGIN_TITLE N_("Motion")
 #define PLUGIN_CLASS MotionMain
@@ -45,7 +30,6 @@
 #include "guidelines.inc"
 #include "keyframe.inc"
 #include "loadbalance.h"
-#include "motionwindow.inc"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "rotateframe.inc"
@@ -144,10 +128,8 @@ public:
 // Pts of single frame to track relative to timeline start
 	ptstime track_pts;
 // Stablisation gains
-	float stab_gain_x;
-	float stab_gain_y;
-// Master layer
-	int bottom_is_master;
+	double stab_gain_x;
+	double stab_gain_y;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -159,6 +141,7 @@ public:
 	~MotionMain();
 
 	void process_tmpframes(VFrame **frame);
+	void reset_plugin();
 	void process_global();
 	void process_rotation();
 	void draw_vectors();
@@ -211,16 +194,12 @@ public:
 	int total_dy;
 
 // Rotation motion tracking
-	float total_angle;
+	double total_angle;
 
 // Current motion vector for drawing vectors
 	int current_dx;
 	int current_dy;
-	float current_angle;
-
-// Oversampled current frame for motion estimation
-	int32_t *search_area;
-	int search_size;
+	double current_angle;
 
 // The layer to track motion in.
 	int reference_layer;
@@ -359,7 +338,8 @@ class RotateScanPackage : public LoadPackage
 {
 public:
 	RotateScanPackage();
-	float angle;
+
+	double angle;
 	int64_t difference;
 };
 
@@ -367,8 +347,9 @@ public:
 class RotateScanCache
 {
 public:
-	RotateScanCache(float angle, int64_t difference);
-	float angle;
+	RotateScanCache(double angle, int64_t difference);
+
+	double angle;
 	int64_t difference;
 };
 
@@ -404,17 +385,17 @@ public:
 
 // Invoke the motion engine for a search
 // Frame before rotation
-	float scan_frame(VFrame *previous_frame,
+	double scan_frame(VFrame *previous_frame,
 // Frame after rotation
 		VFrame *current_frame,
 // Pivot
 		int block_x,
 		int block_y);
-	int64_t get_cache(float angle);
-	void put_cache(float angle, int64_t difference);
+	int64_t get_cache(double angle);
+	void put_cache(double angle, int64_t difference);
 
 // Angle result
-	float result;
+	double result;
 
 private:
 	VFrame *previous_frame;

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "affine.h"
 #include "clip.h"
@@ -82,7 +66,6 @@ MotionConfig::MotionConfig()
 	draw_vectors = 1;
 	mode3 = MotionConfig::TRACK_SINGLE;
 	track_pts = 0;
-	bottom_is_master = 1;
 	horizontal_only = 0;
 	vertical_only = 0;
 	stab_gain_x = 1;
@@ -124,12 +107,10 @@ int MotionConfig::equivalent(MotionConfig &that)
 		return_speed == that.return_speed &&
 		mode3 == that.mode3 &&
 		PTSEQU(track_pts, that.track_pts) &&
-		bottom_is_master == that.bottom_is_master &&
 		horizontal_only == that.horizontal_only &&
 		vertical_only == that.vertical_only &&
 		EQUIV(stab_gain_x, that.stab_gain_x) &&
 		EQUIV(stab_gain_y, that.stab_gain_y);
-
 }
 
 void MotionConfig::copy_from(MotionConfig &that)
@@ -156,7 +137,6 @@ void MotionConfig::copy_from(MotionConfig &that)
 	return_speed = that.return_speed;
 	mode3 = that.mode3;
 	track_pts = that.track_pts;
-	bottom_is_master = that.bottom_is_master;
 	horizontal_only = that.horizontal_only;
 	vertical_only = that.vertical_only;
 	stab_gain_x = that.stab_gain_x;
@@ -193,7 +173,6 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	return_speed = prev.return_speed;
 	mode3 = prev.mode3;
 	track_pts = prev.track_pts;
-	bottom_is_master = prev.bottom_is_master;
 	horizontal_only = prev.horizontal_only;
 	vertical_only = prev.vertical_only;
 	stab_gain_x = prev_scale * prev.stab_gain_x + next_scale * next.stab_gain_x;
@@ -211,8 +190,6 @@ MotionMain::MotionMain(PluginServer *server)
 	total_dy = 0;
 	total_angle = 0;
 	overlayer = 0;
-	search_area = 0;
-	search_size = 0;
 	prev_global_ref = 0;
 	current_global_ref = 0;
 	global_target_src = 0;
@@ -229,21 +206,65 @@ MotionMain::~MotionMain()
 {
 	delete engine;
 	delete overlayer;
-	delete [] search_area;
 	delete rotate_engine;
 	delete motion_rotate;
 
+	release_vframe(prev_global_ref);
+	release_vframe(current_global_ref);
+	release_vframe(global_target_src);
+	release_vframe(global_target_dst);
 
-	delete prev_global_ref;
-	delete current_global_ref;
-	delete global_target_src;
-	delete global_target_dst;
-
-	delete prev_rotate_ref;
-	delete current_rotate_ref;
-	delete rotate_target_src;
-	delete rotate_target_dst;
+	release_vframe(prev_rotate_ref);
+	release_vframe(current_rotate_ref);
+	release_vframe(rotate_target_src);
+	release_vframe(rotate_target_dst);
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void MotionMain::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
+	if(overlayer)
+	{
+		delete overlayer;
+		overlayer = 0;
+	}
+	if(motion_rotate)
+	{
+		delete motion_rotate;
+		motion_rotate = 0;
+	}
+	if(rotate_engine)
+	{
+		delete rotate_engine;
+		rotate_engine = 0;
+	}
+	if(prev_global_ref)
+	{
+		release_vframe(prev_global_ref);
+		prev_global_ref = 0;
+		release_vframe(prev_global_ref);
+		prev_global_ref = 0;
+		release_vframe(global_target_src);
+		global_target_src = 0;
+		release_vframe(global_target_dst);
+		global_target_dst = 0;
+	}
+	if(prev_rotate_ref)
+	{
+		release_vframe(prev_rotate_ref);
+		prev_rotate_ref = 0;
+		release_vframe(current_rotate_ref);
+		current_rotate_ref = 0;
+		release_vframe(rotate_target_src);
+		rotate_target_src = 0;
+		release_vframe(rotate_target_dst);
+		rotate_target_dst = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -276,7 +297,6 @@ void MotionMain::load_defaults()
 	if(track_frame >= 0)
 		config.track_pts = track_frame / get_project_framerate();
 	config.track_pts = defaults->get("TRACK_PTS", config.track_pts);
-	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
 	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
 	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
 	config.boundaries();
@@ -306,7 +326,7 @@ void MotionMain::save_defaults()
 	defaults->update("MODE3", config.mode3);
 	defaults->delete_key("TRACK_FRAME");
 	defaults->update("TRACK_PTS", config.track_pts);
-	defaults->update("BOTTOM_IS_MASTER", config.bottom_is_master);
+	defaults->delete_key("BOTTOM_IS_MASTER");
 	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
 	defaults->update("VERTICAL_ONLY", config.vertical_only);
 	defaults->save();
@@ -341,7 +361,6 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
 	output.tag.set_property("MODE3", config.mode3);
 	output.tag.set_property("TRACK_PTS", config.track_pts);
-	output.tag.set_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
@@ -387,7 +406,6 @@ void MotionMain::read_data(KeyFrame *keyframe)
 			if(track_frame > 0)
 				config.track_pts = track_frame / get_project_framerate();
 			config.track_pts = input.tag.get_property("TRACK_PTS", config.track_pts);
-			config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 			config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
 			config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
 		}
@@ -410,8 +428,8 @@ void MotionMain::process_global()
 	if(config.mode3 != MotionConfig::TRACK_SINGLE)
 	{
 // Retract over time
-		total_dx = (int64_t)total_dx * (100 - config.return_speed) / 100;
-		total_dy = (int64_t)total_dy * (100 - config.return_speed) / 100;
+		total_dx = total_dx * (100 - config.return_speed) / 100;
+		total_dy = total_dy * (100 - config.return_speed) / 100;
 		total_dx += engine->dx_result;
 		total_dy += engine->dy_result;
 	}
@@ -425,33 +443,23 @@ void MotionMain::process_global()
 // Clamp accumulation vector
 	if(config.magnitude < 100)
 	{
-		int block_w = (int64_t)config.global_block_w * 
+		int block_w = config.global_block_w *
 				current_global_ref->get_w() / 100;
-		int block_h = (int64_t)config.global_block_h * 
+		int block_h = config.global_block_h *
 				current_global_ref->get_h() / 100;
-		int block_x_orig = (int64_t)config.block_x * 
-			current_global_ref->get_w() / 
-			100;
-		int block_y_orig = (int64_t)config.block_y *
-			current_global_ref->get_h() / 
-			100;
+		int block_x_orig = config.block_x *
+			current_global_ref->get_w() / 100;
+		int block_y_orig = config.block_y *
+			current_global_ref->get_h() / 100;
 
 		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
+			OVERSAMPLE * config.magnitude / 100;
 		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig) *
-			OVERSAMPLE *
-			config.magnitude / 
-			100;
-		int min_block_x = (int64_t)-block_x_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
-		int min_block_y = (int64_t)-block_y_orig * 
-			OVERSAMPLE * 
-			config.magnitude / 
-			100;
+			OVERSAMPLE * config.magnitude / 100;
+		int min_block_x = (int64_t)-block_x_orig * OVERSAMPLE *
+			config.magnitude / 100;
+		int min_block_y = (int64_t)-block_y_orig *
+			OVERSAMPLE * config.magnitude / 100;
 
 		CLAMP(total_dx, min_block_x, max_block_x);
 		CLAMP(total_dy, min_block_y, max_block_y);
@@ -469,8 +477,9 @@ void MotionMain::process_global()
 
 // Decide what to do with target based on requested operation
 	int interpolation;
-	float dx;
-	float dy;
+	double dx;
+	double dy;
+
 	switch(config.mode1)
 	{
 	case MotionConfig::NOTHING:
@@ -478,23 +487,23 @@ void MotionMain::process_global()
 		break;
 	case MotionConfig::TRACK_PIXEL:
 		interpolation = NEAREST_NEIGHBOR;
-		dx = (int)(total_dx / OVERSAMPLE);
-		dy = (int)(total_dy / OVERSAMPLE);
+		dx = total_dx / OVERSAMPLE;
+		dy = total_dy / OVERSAMPLE;
 		break;
 	case MotionConfig::STABILIZE_PIXEL:
 		interpolation = NEAREST_NEIGHBOR;
-		dx = -(int)(total_dx / OVERSAMPLE);
-		dy = -(int)(total_dy / OVERSAMPLE);
+		dx = -total_dx / OVERSAMPLE;
+		dy = -total_dy / OVERSAMPLE;
 		break;
 	case MotionConfig::TRACK:
 		interpolation = CUBIC_LINEAR;
-		dx = (float)total_dx / OVERSAMPLE;
-		dy = (float)total_dy / OVERSAMPLE;
+		dx = (double)total_dx / OVERSAMPLE;
+		dy = (double)total_dy / OVERSAMPLE;
 		break;
 	case MotionConfig::STABILIZE:
 		interpolation = CUBIC_LINEAR;
-		dx = -(float)total_dx / OVERSAMPLE;
-		dy = -(float)total_dy / OVERSAMPLE;
+		dx = -(double)total_dx / OVERSAMPLE;
+		dy = -(double)total_dy / OVERSAMPLE;
 		break;
 	}
 
@@ -534,17 +543,19 @@ void MotionMain::process_rotation()
 	{
 		if(!overlayer) 
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
-		float dx;
-		float dy;
+
+		double dx;
+		double dy;
+
 		if(config.mode3 == MotionConfig::TRACK_SINGLE)
 		{
-			dx = (float)total_dx / OVERSAMPLE;
-			dy = (float)total_dy / OVERSAMPLE;
+			dx = (double)total_dx / OVERSAMPLE;
+			dy = (double)total_dy / OVERSAMPLE;
 		}
 		else
 		{
-			dx = (float)current_dx / OVERSAMPLE;
-			dy = (float)current_dy / OVERSAMPLE;
+			dx = (double)current_dx / OVERSAMPLE;
+			dy = (double)current_dy / OVERSAMPLE;
 		}
 
 		dx = config.stab_gain_x * dx;
@@ -559,22 +570,16 @@ void MotionMain::process_rotation()
 			prev_global_ref->get_h(),
 			dx,
 			dy,
-			(float)prev_global_ref->get_w() + dx,
-			(float)prev_global_ref->get_h() + dy,
+			prev_global_ref->get_w() + dx,
+			prev_global_ref->get_h() + dy,
 			1,
 			TRANSFER_REPLACE,
 			CUBIC_LINEAR);
 // Pivot is destination global position
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
-			100 +
-			(float)total_dx / 
-			OVERSAMPLE);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
-			100 +
-			(float)total_dy / 
-			OVERSAMPLE);
+		block_x = round(prev_rotate_ref->get_w() * config.block_x /
+			100 + (double)total_dx / OVERSAMPLE);
+		block_y = round(prev_rotate_ref->get_h() * config.block_y /
+			100 + (double)total_dy / OVERSAMPLE);
 		prev_rotate_ref->copy_pts(prev_global_ref);
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
@@ -587,19 +592,14 @@ void MotionMain::process_rotation()
 	else
 	{
 // Pivot is fixed
-		block_x = (int)(prev_rotate_ref->get_w() * 
-			config.block_x / 
-			100);
-		block_y = (int)(prev_rotate_ref->get_h() * 
-			config.block_y / 
-			100);
+		block_x = round(prev_rotate_ref->get_w() * config.block_x / 100);
+		block_y = round(prev_rotate_ref->get_h() * config.block_y / 100);
 	}
 
 // Get rotation
 	if(!motion_rotate)
-		motion_rotate = new RotateScan(this, 
-			get_project_smp() + 1, 
-			get_project_smp() + 1);
+		motion_rotate = new RotateScan(this, get_project_smp(),
+			get_project_smp());
 
 	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
 		current_rotate_ref,
@@ -626,7 +626,8 @@ void MotionMain::process_rotation()
 	}
 
 // Calculate rotation parameters based on requested operation
-	float angle;
+	double angle;
+
 	switch(config.mode1)
 	{
 	case MotionConfig::NOTHING:
@@ -685,20 +686,26 @@ void MotionMain::process_rotation()
 
 void MotionMain::process_tmpframes(VFrame **frame)
 {
-	need_reconfigure |= load_configuration();
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
 
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return;
+	}
+
+	if(need_reconfigure |= load_configuration())
+		update_gui();
+
 // Calculate the source and destination pointers for each of the operations.
-// Get the layer to track motion in.
-	reference_layer = config.bottom_is_master ?
-		PluginClient::total_in_buffers - 1 :
-		0;
-// Get the layer to apply motion in.
-	target_layer = config.bottom_is_master ?
-		0 :
-		PluginClient::total_in_buffers - 1;
+	reference_layer = PluginClient::total_in_buffers - 1;
+	target_layer = 0;
 
 	ptstime actual_previous_pts;
 
@@ -758,23 +765,23 @@ void MotionMain::process_tmpframes(VFrame **frame)
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
 		if(!prev_global_ref)
-			prev_global_ref = new VFrame(0, w, h, color_model);
+			prev_global_ref = clone_vframe(frame[0]);
 		if(!current_global_ref)
-			current_global_ref = new VFrame(0, w, h, color_model);
+			current_global_ref = clone_vframe(frame[0]);
 
 // Global loads the current target frame into the src and 
 // writes it to the dst frame with desired translation.
 		if(!global_target_src)
-			global_target_src = new VFrame(0, w, h, color_model);
+			global_target_src = clone_vframe(frame[0]);
 		if(!global_target_dst)
-			global_target_dst = new VFrame(0, w, h, color_model);
+			global_target_dst = clone_vframe(frame[0]);
 
 // Load the global frames
 		if(need_reload)
 		{
-			prev_global_ref->set_layer(reference_layer);
+			prev_global_ref->set_layer(frame[reference_layer]->get_layer());
 			prev_global_ref->set_pts(actual_previous_pts);
-			get_frame(prev_global_ref);
+			prev_global_ref = get_frame(prev_global_ref);
 		}
 		current_global_ref->copy_from(frame[reference_layer]);
 		global_target_src->copy_from(frame[target_layer]);
@@ -786,10 +793,10 @@ void MotionMain::process_tmpframes(VFrame **frame)
 // accumulation vector to match the current global reference.
 // The center of the search area is always the user value + the accumulation vector.
 			if(!prev_rotate_ref)
-				prev_rotate_ref = new VFrame(0, w, h, color_model);
+				prev_rotate_ref = clone_vframe(frame[0]);
 // The current global reference is the current rotation reference.
 			if(!current_rotate_ref)
-				current_rotate_ref = new VFrame(0, w, h, color_model);
+				current_rotate_ref = clone_vframe(frame[0]);
 
 // The global target destination is copied to the rotation target source
 // then written to the rotation output with rotation.
@@ -797,9 +804,9 @@ void MotionMain::process_tmpframes(VFrame **frame)
 // if we're tracking.
 // The pivot is fixed to the user position if we're compensating.
 			if(!rotate_target_src)
-				rotate_target_src = new VFrame(0, w, h, color_model);
+				rotate_target_src = clone_vframe(frame[0]);
 			if(!rotate_target_dst)
-				rotate_target_dst = new VFrame(0, w,h , color_model);
+				rotate_target_dst = clone_vframe(frame[0]);
 			rotate_target_src->copy_pts(frame[target_layer]);
 			rotate_target_dst->copy_pts(frame[target_layer]);
 		}
@@ -811,23 +818,23 @@ void MotionMain::process_tmpframes(VFrame **frame)
 // Rotation reads the previous reference frame and compares it with current 
 // reference frame.
 		if(!prev_rotate_ref)
-			prev_rotate_ref = new VFrame(0, w, h, color_model);
+			prev_rotate_ref = clone_vframe(frame[0]);
 		if(!current_rotate_ref)
-			current_rotate_ref = new VFrame(0, w, h, color_model);
+			current_rotate_ref = clone_vframe(frame[0]);
 
 // Rotation loads target frame to temporary, rotates it, and writes it to the
 // target frame.  The pivot is always fixed.
 		if(!rotate_target_src)
-			rotate_target_src = new VFrame(0, w, h, color_model);
+			rotate_target_src = clone_vframe(frame[0]);
 		if(!rotate_target_dst)
-			rotate_target_dst = new VFrame(0, w,h , color_model);
+			rotate_target_dst = clone_vframe(frame[0]);
 
 // Load the rotate frames
 		if(need_reload)
 		{
-			prev_rotate_ref->set_layer(reference_layer);
+			prev_rotate_ref->set_layer(frame[reference_layer]->get_layer());
 			prev_rotate_ref->set_pts(actual_previous_pts);
-			get_frame(prev_rotate_ref);
+			prev_rotate_ref = get_frame(prev_rotate_ref);
 		}
 		current_rotate_ref->copy_from(frame[reference_layer]);
 		rotate_target_src->copy_from(frame[target_layer]);
@@ -1121,42 +1128,11 @@ void MotionMain::draw_arrow(GuideFrame *gf, int x1, int y1, int x2, int y2)
 // Main vector
 	gf->add_line(x1, y1, x2, y2);
 // Arrow line
-
 	if(abs(y2 - y1) || abs(x2 - x1))
 		gf->add_line(x2, y2, x3, y3);
 // Arrow line
 	if(abs(y2 - y1) || abs(x2 - x1))
 		gf->add_line(x2, y2, x4, y4);
-}
-
-#define ABS_DIFF(type, temp_type, multiplier, components) \
-{ \
-	temp_type result_temp = 0; \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *prev_row = (type*)prev_ptr; \
-		type *current_row = (type*)current_ptr; \
-		for(int j = 0; j < w; j++) \
-		{ \
-			for(int k = 0; k < 3; k++) \
-			{ \
-				temp_type difference; \
-				difference = *prev_row++ - *current_row++; \
-				if(difference < 0) \
-					result_temp -= difference; \
-				else \
-					result_temp += difference; \
-			} \
-			if(components == 4) \
-			{ \
-				prev_row++; \
-				current_row++; \
-			} \
-		} \
-		prev_ptr += row_bytes; \
-		current_ptr += row_bytes; \
-	} \
-	result = (int64_t)(result_temp * multiplier); \
 }
 
 int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
@@ -1167,32 +1143,9 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 	int color_model)
 {
 	int64_t result = 0;
+
 	switch(color_model)
 	{
-	case BC_RGB888:
-		ABS_DIFF(unsigned char, int64_t, 1, 3)
-		break;
-	case BC_RGBA8888:
-		ABS_DIFF(unsigned char, int64_t, 1, 4)
-		break;
-	case BC_RGB_FLOAT:
-		ABS_DIFF(float, double, 0x10000, 3)
-		break;
-	case BC_RGBA_FLOAT:
-		ABS_DIFF(float, double, 0x10000, 4)
-		break;
-	case BC_YUV888:
-		ABS_DIFF(unsigned char, int64_t, 1, 3)
-		break;
-	case BC_YUVA8888:
-		ABS_DIFF(unsigned char, int64_t, 1, 4)
-		break;
-	case BC_YUV161616:
-		ABS_DIFF(uint16_t, int64_t, 1, 3)
-		break;
-	case BC_YUVA16161616:
-		ABS_DIFF(uint16_t, int64_t, 1, 4)
-		break;
 	case BC_RGBA16161616:
 		for(int i = 0; i < h; i++)
 		{
@@ -1218,6 +1171,7 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 			current_ptr += row_bytes;
 		}
 		break;
+
 	case BC_AYUV16161616:
 		for(int i = 0; i < h; i++)
 		{
@@ -1247,54 +1201,6 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 	return result;
 }
 
-#define ABS_DIFF_SUB(type, temp_type, multiplier, components) \
-{ \
-	temp_type result_temp = 0; \
-	temp_type y2_fraction = sub_y * 0x100 / OVERSAMPLE; \
-	temp_type y1_fraction = 0x100 - y2_fraction; \
-	temp_type x2_fraction = sub_x * 0x100 / OVERSAMPLE; \
-	temp_type x1_fraction = 0x100 - x2_fraction; \
-	for(int i = 0; i < h_sub; i++) \
-	{ \
-		type *prev_row1 = (type*)prev_ptr; \
-		type *prev_row2 = (type*)prev_ptr + components; \
-		type *prev_row3 = (type*)(prev_ptr + row_bytes); \
-		type *prev_row4 = (type*)(prev_ptr + row_bytes) + components; \
-		type *current_row = (type*)current_ptr; \
-		for(int j = 0; j < w_sub; j++) \
-		{ \
-			for(int k = 0; k < 3; k++) \
-			{ \
-				temp_type difference; \
-				temp_type prev_value = \
-					(*prev_row1++ * x1_fraction * y1_fraction + \
-					*prev_row2++ * x2_fraction * y1_fraction + \
-					*prev_row3++ * x1_fraction * y2_fraction + \
-					*prev_row4++ * x2_fraction * y2_fraction) / \
-					0x100 / 0x100; \
-				temp_type current_value = *current_row++; \
-				difference = prev_value - current_value; \
-				if(difference < 0) \
-					result_temp -= difference; \
-				else \
-					result_temp += difference; \
-			} \
- \
-			if(components == 4) \
-			{ \
-				prev_row1++; \
-				prev_row2++; \
-				prev_row3++; \
-				prev_row4++; \
-				current_row++; \
-			} \
-		} \
-		prev_ptr += row_bytes; \
-		current_ptr += row_bytes; \
-	} \
-	result = (int64_t)(result_temp * multiplier); \
-}
-
 int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 	unsigned char *current_ptr,
 	int row_bytes,
@@ -1310,30 +1216,6 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 
 	switch(color_model)
 	{
-	case BC_RGB888:
-		ABS_DIFF_SUB(unsigned char, int64_t, 1, 3)
-		break;
-	case BC_RGBA8888:
-		ABS_DIFF_SUB(unsigned char, int64_t, 1, 4)
-		break;
-	case BC_RGB_FLOAT:
-		ABS_DIFF_SUB(float, double, 0x10000, 3)
-		break;
-	case BC_RGBA_FLOAT:
-		ABS_DIFF_SUB(float, double, 0x10000, 4)
-		break;
-	case BC_YUV888:
-		ABS_DIFF_SUB(unsigned char, int64_t, 1, 3)
-		break;
-	case BC_YUVA8888:
-		ABS_DIFF_SUB(unsigned char, int64_t, 1, 4)
-		break;
-	case BC_YUV161616:
-		ABS_DIFF_SUB(uint16_t, int64_t, 1, 3)
-		break;
-	case BC_YUVA16161616:
-		ABS_DIFF_SUB(uint16_t, int64_t, 1, 4)
-		break;
 	case BC_RGBA16161616:
 		{
 			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
@@ -1371,11 +1253,12 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 					prev_row4++;
 					current_row++;
 				}
-				prev_ptr += row_bytes; \
-				current_ptr += row_bytes; \
+				prev_ptr += row_bytes;
+				current_ptr += row_bytes;
 			}
 		}
 		break;
+
 	case BC_AYUV16161616:
 		{
 			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
@@ -1400,9 +1283,9 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 					{
 						int64_t difference;
 						int64_t prev_value =
-							(*prev_row1++ * x1_fraction * y1_fraction + \
-							*prev_row2++ * x2_fraction * y1_fraction + \
-							*prev_row3++ * x1_fraction * y2_fraction + \
+							(*prev_row1++ * x1_fraction * y1_fraction +
+							*prev_row2++ * x2_fraction * y1_fraction +
+							*prev_row3++ * x1_fraction * y2_fraction +
 							*prev_row4++ * x2_fraction * y2_fraction) /
 							0x100 / 0x100;
 						int64_t current_value = *current_row++;
@@ -1413,8 +1296,8 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 							result += difference;
 					}
 				}
-				prev_ptr += row_bytes; \
-				current_ptr += row_bytes; \
+				prev_ptr += row_bytes;
+				current_ptr += row_bytes;
 			}
 		}
 		break;
@@ -1458,9 +1341,9 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	{
 		int search_x = pkg->scan_x1 + (pkg->pixel % (pkg->scan_x2 - pkg->scan_x1));
 		int search_y = pkg->scan_y1 + (pkg->pixel / (pkg->scan_x2 - pkg->scan_x1));
-
 // Try cache
 		pkg->difference1 = server->get_cache(search_x, search_y);
+
 		if(pkg->difference1 < 0)
 		{
 // Pointers to first pixel in each block
@@ -1619,10 +1502,10 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	int block_h = h * plugin->config.global_block_h / 100;
 
 // Location of block in previous frame
-	block_x1 = (int)(w * plugin->config.block_x / 100 - block_w / 2);
-	block_y1 = (int)(h * plugin->config.block_y / 100 - block_h / 2);
-	block_x2 = (int)(w * plugin->config.block_x / 100 + block_w / 2);
-	block_y2 = (int)(h * plugin->config.block_y / 100 + block_h / 2);
+	block_x1 = round(w * plugin->config.block_x / 100 - block_w / 2);
+	block_y1 = round(h * plugin->config.block_y / 100 - block_h / 2);
+	block_x2 = round(w * plugin->config.block_x / 100 + block_w / 2);
+	block_y2 = round(h * plugin->config.block_y / 100 + block_h / 2);
 
 // Offset to location of previous block.  This offset needn't be very accurate
 // since it's the offset of the previous image and current image we want.
@@ -1649,8 +1532,8 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	{
 // Load result from disk
 		char string[BCTEXTLEN];
-		sprintf(string, "%s%08d", MOTION_FILE, 
-			(int)round(plugin->source_pts));
+		sprintf(string, "%s%08d", MOTION_FILE,
+			(int)round(plugin->source_pts * 100));
 		FILE *input = fopen(string, "r");
 		if(input)
 		{
@@ -1736,6 +1619,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 // Get least difference
 				int64_t min_difference = -1;
+
 				for(int i = 0; i < get_total_packages(); i++)
 				{
 					MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
@@ -1857,6 +1741,10 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 				dy_result += tf_dy_result;
 				fclose(input);
 			}
+			else
+			{
+				plugin->abort_plugin(_("Failed to load coords %m"));
+			}
 		}
 	}
 
@@ -1864,22 +1752,19 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	if(plugin->config.mode2 == MotionConfig::SAVE)
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, 
-			"%s%08d", 
-			MOTION_FILE, 
+		sprintf(string, "%s%08d", MOTION_FILE,
 			(int)round(plugin->source_pts * 100));
+
 		FILE *output = fopen(string, "w");
 		if(output)
 		{
-			fprintf(output, 
-				"%d %d\n",
-				dx_result,
-				dy_result);
+			fprintf(output, "%d %d\n",
+				dx_result, dy_result);
 			fclose(output);
 		}
 		else
 		{
-			perror("MotionScan::scan_frame SAVE 1");
+			plugin->abort_plugin(_("Failed to save coords: %m"));
 		}
 	}
 }
@@ -1940,7 +1825,8 @@ RotateScanUnit::~RotateScanUnit()
 
 void RotateScanUnit::process_package(LoadPackage *package)
 {
-	if(server->skip) return;
+	if(server->skip)
+		return;
 	RotateScanPackage *pkg = (RotateScanPackage*)package;
 
 	if((pkg->difference = server->get_cache(pkg->angle)) < 0)
@@ -2031,7 +1917,7 @@ LoadPackage* RotateScan::new_package()
 	return new RotateScanPackage;
 }
 
-float RotateScan::scan_frame(VFrame *previous_frame,
+double RotateScan::scan_frame(VFrame *previous_frame,
 	VFrame *current_frame,
 	int block_x,
 	int block_y)
@@ -2050,18 +1936,16 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	case MotionConfig::LOAD:
 		{
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", ROTATION_FILE, (int)round(current_frame->get_pts() * 100));
+
+			sprintf(string, "%s%06d", ROTATION_FILE,
+				(int)round(current_frame->get_pts() * 100));
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
-				if(fscanf(input, "%f", &result) != 1)
+				if(fscanf(input, "%lf", &result) != 1)
 					result = 0;
 				fclose(input);
 				skip = 1;
-			}
-			else
-			{
-				perror("RotateScan::scan_frame LOAD");
 			}
 		break;
 		}
@@ -2090,8 +1974,8 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	double center_x = this->block_x;
 	double center_y = this->block_y;
 	double max_angle = plugin->config.rotation_range;
-	double base_angle1 = atan((float)block_h / block_w);
-	double base_angle2 = atan((float)block_w / block_h);
+	double base_angle1 = atan((double)block_h / block_w);
+	double base_angle2 = atan((double)block_w / block_h);
 	double target_angle1 = base_angle1 + max_angle * 2 * M_PI / 360;
 	double target_angle2 = base_angle2 + max_angle * 2 * M_PI / 360;
 	double radius = sqrt(block_w * block_w + block_h * block_h) / 2;
@@ -2145,10 +2029,10 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	max_y = max_y1;
 
 // Get reduced scan coords
-	scan_w = (int)(fabs(max_x - center_x) * 2);
-	scan_h = (int)(fabs(max_y - center_y) * 2);
-	scan_x = (int)(center_x - scan_w / 2);
-	scan_y = (int)(center_y - scan_h / 2);
+	scan_w = round(fabs(max_x - center_x) * 2);
+	scan_h = round(fabs(max_y - center_y) * 2);
+	scan_x = round(center_x - scan_w / 2);
+	scan_y = round(center_y - scan_h / 2);
 
 // Determine min angle from size of block
 	double angle1 = atan((double)block_h / block_w);
@@ -2160,7 +2044,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	if(!skip)
 	{
 // Initial search range
-		float angle_range = (float)plugin->config.rotation_range;
+		double angle_range = plugin->config.rotation_range;
 		result = 0;
 		total_steps = plugin->config.rotate_positions;
 
@@ -2189,11 +2073,11 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	if(!skip && plugin->config.mode2 == MotionConfig::SAVE)
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, 
-			"%s%06d", 
-			ROTATION_FILE, 
+		sprintf(string, "%s%06d", ROTATION_FILE,
 			(int)round(current_frame->get_pts() * 100));
+
 		FILE *output = fopen(string, "w");
+
 		if(output)
 		{
 			fprintf(output, "%f\n", result);
@@ -2201,14 +2085,14 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 		}
 		else
 		{
-			perror("RotateScan::scan_frame SAVE");
+			plugin->abort_plugin(_("Failed to save coords: %m"));
 		}
 	}
 
 	return result;
 }
 
-int64_t RotateScan::get_cache(float angle)
+int64_t RotateScan::get_cache(double angle)
 {
 	int64_t result = -1;
 
@@ -2226,7 +2110,7 @@ int64_t RotateScan::get_cache(float angle)
 	return result;
 }
 
-void RotateScan::put_cache(float angle, int64_t difference)
+void RotateScan::put_cache(double angle, int64_t difference)
 {
 	RotateScanCache *ptr = new RotateScanCache(angle, difference);
 	cache_lock->lock("RotateScan::put_cache");
@@ -2235,7 +2119,7 @@ void RotateScan::put_cache(float angle, int64_t difference)
 }
 
 
-RotateScanCache::RotateScanCache(float angle, int64_t difference)
+RotateScanCache::RotateScanCache(double angle, int64_t difference)
 {
 	this->angle = angle;
 	this->difference = difference;

@@ -8,9 +8,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-noinst_HEADERS = \
-	motion.h motion.inc \
-	motionwindow.h motionwindow.inc
+noinst_HEADERS = motion.h motionwindow.h
+
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 

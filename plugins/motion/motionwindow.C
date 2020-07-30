@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "bcmenuitem.h"
@@ -102,14 +86,12 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		x1 + title->get_w() + 10, 
 		y, 
 		80));
-	global_search_positions->create_objects();
 
 	add_subwindow(title = new BC_Title(x2, y, _("Rotation search steps:")));
 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin, 
 		x2 + title->get_w() + 10, 
 		y, 
 		80));
-	rotation_search_positions->create_objects();
 
 	y += 50;
 	add_subwindow(title = new BC_Title(x, y, _("Translation direction:")));
@@ -117,7 +99,6 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		this, 
 		x + title->get_w() + 10, 
 		y));
-	mode3->create_objects();
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
@@ -202,21 +183,12 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		y));
 
 	y += 40;
-	int y1 = y;
-	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
-	add_subwindow(master_layer = new MasterLayer(plugin, 
-		this,
-		x + title->get_w() + 10, 
-		y));
-	master_layer->create_objects();
-	y += 30;
 
 	add_subwindow(title = new BC_Title(x, y, _("Action:")));
 	add_subwindow(mode1 = new Mode1(plugin, 
 		this,
 		x + title->get_w() + 10, 
 		y));
-	mode1->create_objects();
 	y += 30;
 
 	add_subwindow(title = new BC_Title(x, y, _("Calculation:")));
@@ -224,7 +196,6 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		this, 
 		x + title->get_w() + 10, 
 		y));
-	mode2->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -244,14 +215,14 @@ void MotionWindow::update()
 	rotation_block_h->update(plugin->config.rotation_block_h);
 	block_x->update(plugin->config.block_x);
 	block_y->update(plugin->config.block_y);
-	block_x_text->update((float)plugin->config.block_x);
-	block_y_text->update((float)plugin->config.block_y);
+	block_x_text->update(plugin->config.block_x);
+	block_y_text->update(plugin->config.block_y);
 	stab_x_gain->update(plugin->config.stab_gain_x);
 	stab_y_gain->update(plugin->config.stab_gain_y);
 	magnitude->update(plugin->config.magnitude);
 	return_speed->update(plugin->config.return_speed);
 	track_single->update(plugin->config.mode3 == MotionConfig::TRACK_SINGLE);
-	track_frame_number->update((float)plugin->config.track_pts);
+	track_frame_number->update(plugin->config.track_pts);
 	track_previous->update(plugin->config.mode3 == MotionConfig::TRACK_PREVIOUS);
 	previous_same->update(plugin->config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK);
 	if(plugin->config.mode3 != MotionConfig::TRACK_SINGLE)
@@ -263,8 +234,6 @@ void MotionWindow::update()
 	mode2->set_text(Mode2::to_text(plugin->config.mode2));
 	mode3->set_text(Mode3::to_text(plugin->config.horizontal_only, 
 		plugin->config.vertical_only));
-	master_layer->set_text(MasterLayer::to_text(plugin->config.bottom_is_master));
-
 	update_mode();
 }
 
@@ -290,11 +259,10 @@ GlobalRange::GlobalRange(MotionMain *plugin,
 	int x, 
 	int y,
 	int *value)
- : BC_IPot(x, 
-		y, 
-		(int64_t)*value,
-		(int64_t)MIN_RADIUS,
-		(int64_t)MAX_RADIUS)
+ : BC_IPot(x, y,
+	*value,
+	MIN_RADIUS,
+	MAX_RADIUS)
 {
 	this->plugin = plugin;
 	this->value = value;
@@ -302,7 +270,7 @@ GlobalRange::GlobalRange(MotionMain *plugin,
 
 int GlobalRange::handle_event()
 {
-	*value = (int)get_value();
+	*value = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -311,18 +279,17 @@ int GlobalRange::handle_event()
 RotationRange::RotationRange(MotionMain *plugin, 
 	int x, 
 	int y)
- : BC_IPot(x, 
-		y, 
-		(int64_t)plugin->config.rotation_range,
-		(int64_t)MIN_ROTATION,
-		(int64_t)MAX_ROTATION)
+ : BC_IPot(x, y,
+	plugin->config.rotation_range,
+	MIN_ROTATION,
+	MAX_ROTATION)
 {
 	this->plugin = plugin;
 }
 
 int RotationRange::handle_event()
 {
-	plugin->config.rotation_range = (int)get_value();
+	plugin->config.rotation_range = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -332,11 +299,9 @@ BlockSize::BlockSize(MotionMain *plugin,
 	int x, 
 	int y,
 	int *value)
- : BC_IPot(x, 
-		y, 
-		(int64_t)*value,
-		(int64_t)MIN_BLOCK,
-		(int64_t)MAX_BLOCK)
+ : BC_IPot(x, y, *value,
+	MIN_BLOCK,
+	MAX_BLOCK)
 {
 	this->plugin = plugin;
 	this->value = value;
@@ -344,7 +309,7 @@ BlockSize::BlockSize(MotionMain *plugin,
 
 int BlockSize::handle_event()
 {
-	*value = (int)get_value();
+	*value = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -357,14 +322,10 @@ GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin,
  : BC_PopupMenu(x,
 	y,
 	w,
-	"",
+	0,
 	1)
 {
 	this->plugin = plugin;
-}
-
-void GlobalSearchPositions::create_objects()
-{
 	add_item(new BC_MenuItem("64"));
 	add_item(new BC_MenuItem("128"));
 	add_item(new BC_MenuItem("256"));
@@ -377,9 +338,6 @@ void GlobalSearchPositions::create_objects()
 	add_item(new BC_MenuItem("32768"));
 	add_item(new BC_MenuItem("65536"));
 	add_item(new BC_MenuItem("131072"));
-	char string[BCTEXTLEN];
-	sprintf(string, "%d", plugin->config.global_positions);
-	set_text(string);
 }
 
 int GlobalSearchPositions::handle_event()
@@ -397,21 +355,14 @@ RotationSearchPositions::RotationSearchPositions(MotionMain *plugin,
  : BC_PopupMenu(x,
 	y,
 	w,
-	"",
+	0,
 	1)
 {
 	this->plugin = plugin;
-}
-
-void RotationSearchPositions::create_objects()
-{
 	add_item(new BC_MenuItem("4"));
 	add_item(new BC_MenuItem("8"));
 	add_item(new BC_MenuItem("16"));
 	add_item(new BC_MenuItem("32"));
-	char string[BCTEXTLEN];
-	sprintf(string, "%d", plugin->config.rotate_positions);
-	set_text(string);
 }
 
 int RotationSearchPositions::handle_event()
@@ -425,18 +376,14 @@ int RotationSearchPositions::handle_event()
 MotionMagnitude::MotionMagnitude(MotionMain *plugin, 
 	int x, 
 	int y)
- : BC_IPot(x, 
-		y, 
-		(int64_t)plugin->config.magnitude,
-		(int64_t)0,
-		(int64_t)100)
+ : BC_IPot(x, y, plugin->config.magnitude, 0, 100)
 {
 	this->plugin = plugin;
 }
 
 int MotionMagnitude::handle_event()
 {
-	plugin->config.magnitude = (int)get_value();
+	plugin->config.magnitude = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -445,18 +392,14 @@ int MotionMagnitude::handle_event()
 MotionReturnSpeed::MotionReturnSpeed(MotionMain *plugin, 
 	int x, 
 	int y)
- : BC_IPot(x, 
-		y, 
-		(int64_t)plugin->config.return_speed,
-		(int64_t)0,
-		(int64_t)100)
+ : BC_IPot(x, y, plugin->config.return_speed, 0, 100)
 {
 	this->plugin = plugin;
 }
 
 int MotionReturnSpeed::handle_event()
 {
-	plugin->config.return_speed = (int)get_value();
+	plugin->config.return_speed = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -551,11 +494,10 @@ MotionBlockY::MotionBlockY(MotionMain *plugin,
 	MotionWindow *gui,
 	int x, 
 	int y)
- : BC_FPot(x,
-	y,
-	(float)plugin->config.block_y,
-	(float)0, 
-	(float)100)
+ : BC_FPot(x, y,
+	plugin->config.block_y,
+	0.0,
+	100)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -577,7 +519,7 @@ MotionBlockXText::MotionBlockXText(MotionMain *plugin,
 	y,
 	75,
 	1,
-	(float)plugin->config.block_x)
+	plugin->config.block_x)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -601,7 +543,7 @@ MotionBlockYText::MotionBlockYText(MotionMain *plugin,
 	y,
 	75,
 	1,
-	(float)plugin->config.block_y)
+	plugin->config.block_y)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -663,8 +605,8 @@ int TrackSingleFrame::handle_event()
 
 
 Motion_FloatTextBox::Motion_FloatTextBox(MotionMain *plugin,
-	int x, int y, float *property)
- : BC_TextBox(x, y, 100, 1,  *property)
+	int x, int y, double *property)
+ : BC_TextBox(x, y, 100, 1, *property)
 {
 	this->plugin = plugin;
 	this->property = property;
@@ -744,50 +686,6 @@ int PreviousFrameSameBlock::handle_event()
 	return 1;
 }
 
-
-MasterLayer::MasterLayer(MotionMain *plugin, MotionWindow *gui, int x, int y)
- : BC_PopupMenu(x, 
-	y, 
-	calculate_w(gui),
-	to_text(plugin->config.bottom_is_master))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int MasterLayer::handle_event()
-{
-	plugin->config.bottom_is_master = from_text(get_text());
-	plugin->send_configure_change();
-	return 1;
-}
-
-void MasterLayer::create_objects()
-{
-	add_item(new BC_MenuItem(to_text(0)));
-	add_item(new BC_MenuItem(to_text(1)));
-}
-
-int MasterLayer::from_text(const char *text)
-{
-	if(!strcmp(text, _("Top"))) return 0;
-	return 1;
-}
-
-const char* MasterLayer::to_text(int mode)
-{
-	return mode ? _("Bottom") : _("Top");
-}
-
-int MasterLayer::calculate_w(MotionWindow *gui)
-{
-	int result = 0;
-	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0)));
-	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1)));
-	return result + 50;
-}
-
-
 Mode1::Mode1(MotionMain *plugin, MotionWindow *gui, int x, int y)
  : BC_PopupMenu(x, 
 	y, 
@@ -796,6 +694,11 @@ Mode1::Mode1(MotionMain *plugin, MotionWindow *gui, int x, int y)
 {
 	this->plugin = plugin;
 	this->gui = gui;
+	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK_PIXEL)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE_PIXEL)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::NOTHING)));
 }
 
 int Mode1::handle_event()
@@ -803,15 +706,6 @@ int Mode1::handle_event()
 	plugin->config.mode1 = from_text(get_text());
 	plugin->send_configure_change();
 	return 1;
-}
-
-void Mode1::create_objects()
-{
-	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK_PIXEL)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE_PIXEL)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::NOTHING)));
 }
 
 int Mode1::from_text(const char *text)
@@ -848,6 +742,7 @@ const char* Mode1::to_text(int mode)
 int Mode1::calculate_w(MotionWindow *gui)
 {
 	int result = 0;
+
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::TRACK)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::TRACK_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::STABILIZE)));
@@ -865,6 +760,10 @@ Mode2::Mode2(MotionMain *plugin, MotionWindow *gui, int x, int y)
 {
 	this->plugin = plugin;
 	this->gui = gui;
+	add_item(new BC_MenuItem(to_text(MotionConfig::NO_CALCULATE)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::RECALCULATE)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::SAVE)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::LOAD)));
 }
 
 int Mode2::handle_event()
@@ -872,14 +771,6 @@ int Mode2::handle_event()
 	plugin->config.mode2 = from_text(get_text());
 	plugin->send_configure_change();
 	return 1;
-}
-
-void Mode2::create_objects()
-{
-	add_item(new BC_MenuItem(to_text(MotionConfig::NO_CALCULATE)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::RECALCULATE)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::SAVE)));
-	add_item(new BC_MenuItem(to_text(MotionConfig::LOAD)));
 }
 
 int Mode2::from_text(const char *text)
@@ -927,6 +818,9 @@ Mode3::Mode3(MotionMain *plugin, MotionWindow *gui, int x, int y)
 {
 	this->plugin = plugin;
 	this->gui = gui;
+	add_item(new BC_MenuItem(to_text(1, 0)));
+	add_item(new BC_MenuItem(to_text(0, 1)));
+	add_item(new BC_MenuItem(to_text(0, 0)));
 }
 
 int Mode3::handle_event()
@@ -934,13 +828,6 @@ int Mode3::handle_event()
 	from_text(&plugin->config.horizontal_only, &plugin->config.vertical_only, get_text());
 	plugin->send_configure_change();
 	return 1;
-}
-
-void Mode3::create_objects()
-{
-	add_item(new BC_MenuItem(to_text(1, 0)));
-	add_item(new BC_MenuItem(to_text(0, 1)));
-	add_item(new BC_MenuItem(to_text(0, 0)));
 }
 
 void Mode3::from_text(int *horizontal_only, int *vertical_only, const char *text)
