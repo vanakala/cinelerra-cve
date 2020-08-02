@@ -247,7 +247,6 @@ void BC_Pixmap::write_drawable(Drawable &pixmap,
 	}
 
 	top_level->lock_window("BC_Pixmap::write_drawable");
-	parent_window->set_current_color();
 	if(mode == PIXMAP_ALPHA)
 	{
 		XSetClipOrigin(top_level->display, alpha_gc, dest_x - src_x, dest_y - src_y);
