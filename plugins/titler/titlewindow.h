@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef TITLEWINDOW_H
 #define TITLEWINDOW_H
@@ -133,10 +117,10 @@ class TitleFontTumble : public BC_Tumbler
 {
 public:
 	TitleFontTumble(TitleMain *client, TitleWindow *window, int x, int y);
-	
+
 	void handle_up_event();
 	void handle_down_event();
-	
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -145,15 +129,20 @@ class TitleItalic : public BC_CheckBox
 {
 public:
 	TitleItalic(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleBold : public BC_CheckBox
 {
 public:
 	TitleBold(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -162,7 +151,9 @@ class TitleStroke : public BC_CheckBox
 {
 public:
 	TitleStroke(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -172,9 +163,10 @@ class TitleSize : public BC_PopupTextBox
 {
 public:
 	TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char *text);
-	~TitleSize();
+
 	int handle_event();
 	void update(int size);
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -183,7 +175,9 @@ class TitleColorButton : public BC_GenericButton
 {
 public:
 	TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -191,7 +185,9 @@ class TitleColorStrokeButton : public BC_GenericButton
 {
 public:
 	TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -199,52 +195,69 @@ class TitleMotion : public BC_PopupTextBox
 {
 public:
 	TitleMotion(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleLoop : public BC_CheckBox
 {
 public:
 	TitleLoop(TitleMain *client, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleTimecode : public BC_CheckBox
 {
 public:
 	TitleTimecode(TitleMain *client, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleTimecodeFormat : public BC_PopupTextBox
 {
 public:
 	TitleTimecodeFormat(TitleMain *client, TitleWindow *window, int x, int y);
-	~TitleTimecodeFormat();
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleFade : public BC_TextBox
 {
 public:
 	TitleFade(TitleMain *client, TitleWindow *window, double *value, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 	double *value;
 };
+
 class TitleFont : public BC_PopupTextBox
 {
 public:
 	TitleFont(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleText : public BC_ScrollTextBox
 {
 public:
@@ -254,39 +267,53 @@ public:
 		int y, 
 		int w, 
 		int h);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleX : public BC_TumbleTextBox
 {
 public:
 	TitleX(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleY : public BC_TumbleTextBox
 {
 public:
 	TitleY(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleStrokeW : public BC_TumbleTextBox
 {
 public:
 	TitleStrokeW(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleDropShadow : public BC_TumbleTextBox
 {
 public:
 	TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -295,6 +322,7 @@ class TitleSpeed : public BC_TumbleTextBox
 {
 public:
 	TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
 	TitleMain *client;
 };
@@ -303,23 +331,31 @@ class TitleLeft : public BC_Radial
 {
 public:
 	TitleLeft(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleCenter : public BC_Radial
 {
 public:
 	TitleCenter(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleRight : public BC_Radial
 {
 public:
 	TitleRight(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -328,23 +364,31 @@ class TitleTop : public BC_Radial
 {
 public:
 	TitleTop(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleMid : public BC_Radial
 {
 public:
 	TitleMid(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleBottom : public BC_Radial
 {
 public:
 	TitleBottom(TitleMain *client, TitleWindow *window, int x, int y);
+
 	int handle_event();
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -353,7 +397,9 @@ class TitleColorThread : public ColorThread
 {
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window);
-	virtual int handle_new_color(int output, int alpha);
+
+	int handle_new_color(int red, int green, int blue, int alpha);
+
 	TitleMain *client;
 	TitleWindow *window;
 };
@@ -362,7 +408,9 @@ class TitleColorStrokeThread : public ColorThread
 {
 public:
 	TitleColorStrokeThread(TitleMain *client, TitleWindow *window);
-	int handle_event(int output);
+
+	int handle_new_color(int red, int green, int blue, int alpha);
+
 	TitleMain *client;
 	TitleWindow *window;
 };

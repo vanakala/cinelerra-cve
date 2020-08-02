@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef TITLE_H
 #define TITLE_H
@@ -34,7 +18,6 @@
 #define PLUGIN_GUI_CLASS TitleWindow
 
 #include "pluginmacros.h"
-
 
 // Theory:
 
@@ -106,19 +89,25 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 	void text_to_ucs4(const char *from_enc);
+	int color();
+	int color_stroke();
 
 // Font information
 	char font[BCTEXTLEN];
 	int style;
 	int size;
-	int color;
-	int color_stroke;
+	int color_red;
+	int color_green;
+	int color_blue;
+	int color_stroke_red;
+	int color_stroke_green;
+	int color_stroke_blue;
 // Motion of title across frame
 	int motion_strategy;
 // Loop motion path
 	int loop;
 // Speed of motion
-	float pixels_per_second;
+	double pixels_per_second;
 	int hjustification;
 	int vjustification;
 // Number of seconds the fade in and fade out of the title take
@@ -191,7 +180,6 @@ public:
 	TitleMain *plugin;
 };
 
-
 // Copy a single character to the text mask
 class TitlePackage : public LoadPackage
 {
@@ -200,7 +188,6 @@ public:
 	int x, y;
 	wchar_t char_code;
 };
-
 
 class TitleUnit : public LoadClient
 {
@@ -221,7 +208,6 @@ public:
 	TitleMain *plugin;
 };
 
-
 // Overlay text mask with fractional translation
 // We don't use OverlayFrame to enable alpha blending on non alpha
 // output.
@@ -235,10 +221,10 @@ public:
 typedef struct
 {
 	int in_x1;
-	float in_fraction1;
 	int in_x2;       // Might be same as in_x1 for boundary
-	float in_fraction2;
-	float output_fraction;
+	double in_fraction1;
+	double in_fraction2;
+	double output_fraction;
 } transfer_table_f;
 
 
@@ -246,16 +232,18 @@ class TitleTranslateUnit : public LoadClient
 {
 public:
 	TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server);
+
 	static void translation_array_f(transfer_table_f* &table,
-		float out_x1,
-		float out_x2,
-		float in_x1,
-		float in_x2,
+		double out_x1,
+		double out_x2,
+		double in_x1,
+		double in_x2,
 		int in_total,
 		int out_total,
 		int &out_x1_int,
 		int &out_x2_int);
 	void process_package(LoadPackage *package);
+
 	TitleMain *plugin;
 };
 
@@ -264,9 +252,11 @@ class TitleTranslate : public LoadServer
 public:
 	TitleTranslate(TitleMain *plugin, int cpus);
 	~TitleTranslate();
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
+
 	TitleMain *plugin;
 	transfer_table_f *y_table;
 	transfer_table_f *x_table;
@@ -300,8 +290,8 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
 	VFrame *process_tmpframe(VFrame *input_ptr);
+	void reset_plugin();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -344,13 +334,13 @@ public:
 	int visible_char1;
 	int visible_char2;
 // relative position of all text to output
-	float text_y1;
-	float text_y2;
-	float text_x1;
-	float text_x2;
+	double text_y1;
+	double text_y2;
+	double text_x1;
+	double text_x2;
 // relative position of visible part of text to output
-	float mask_y1;
-	float mask_y2;
+	double mask_y1;
+	double mask_y2;
 
 // Fade value
 	int alpha;
@@ -373,9 +363,7 @@ public:
 	title_char_position_t *char_positions;
 // Positions of the bottom pixels of the rows
 	int *rows_bottom;
-	VFrame *input, *output;
-
-	int need_reconfigure;
+	VFrame *output;
 };
 
 #endif

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 // Originally developed by Heroine Virtual Ltd.
 // Support for multiple encodings, outline (stroke) by 
@@ -61,8 +45,12 @@ REGISTER_PLUGIN
 TitleConfig::TitleConfig()
 {
 	style = 0;
-	color = BLACK;
-	color_stroke = 0xff0000;
+	color_red = 0;
+	color_green = 0;
+	color_blue = 0;
+	color_stroke_red = 0xffff;
+	color_stroke_green = 0;
+	color_stroke_blue = 0;
 	size = 24;
 	motion_strategy = NO_MOTION;
 	loop = 0;
@@ -90,8 +78,12 @@ int TitleConfig::equivalent(TitleConfig &that)
 	return dropshadow == that.dropshadow &&
 		style == that.style &&
 		size == that.size &&
-		color == that.color &&
-		color_stroke == that.color_stroke &&
+		color_red == that.color_red &&
+		color_green == that.color_green &&
+		color_blue == that.color_blue &&
+		color_stroke_red == that.color_stroke_red &&
+		color_stroke_green == that.color_stroke_green &&
+		color_stroke_blue == that.color_stroke_blue &&
 		stroke_width == that.stroke_width &&
 		timecode == that.timecode && 
 		!strcasecmp(timecodeformat, that.timecodeformat) &&
@@ -109,8 +101,12 @@ void TitleConfig::copy_from(TitleConfig &that)
 	strcpy(font, that.font);
 	style = that.style;
 	size = that.size;
-	color = that.color;
-	color_stroke = that.color_stroke;
+	color_red = that.color_red;
+	color_green = that.color_green;
+	color_blue = that.color_blue;
+	color_stroke_red = that.color_stroke_red;
+	color_stroke_green = that.color_stroke_green;
+	color_stroke_blue = that.color_stroke_blue;
 	stroke_width = that.stroke_width;
 	pixels_per_second = that.pixels_per_second;
 	motion_strategy = that.motion_strategy;
@@ -139,8 +135,12 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	strcpy(encoding, prev.encoding);
 	style = prev.style;
 	size = prev.size;
-	color = prev.color;
-	color_stroke = prev.color_stroke;
+	color_red = prev.color_red;
+	color_green = prev.color_green;
+	color_blue = prev.color_blue;
+	color_stroke_red = prev.color_stroke_red;
+	color_stroke_green = prev.color_stroke_green;
+	color_stroke_blue = prev.color_stroke_blue;
 	stroke_width = prev.stroke_width;
 	motion_strategy = prev.motion_strategy;
 	loop = prev.loop;
@@ -164,6 +164,16 @@ void TitleConfig::text_to_ucs4(const char *from_enc)
 		text, (char *)wtext, sizeof(wtext)) / sizeof(wchar_t);
 }
 
+int TitleConfig::color()
+{
+	return ((color_red << 8) & 0xff0000) | (color_green & 0xff00) | color_blue >> 8;
+}
+
+int TitleConfig::color_stroke()
+{
+	return ((color_stroke_red << 8) & 0xff0000) | (color_stroke_green & 0xff00) |
+		color_stroke_blue >> 8;
+}
 
 TitleGlyph::TitleGlyph()
 {
@@ -195,7 +205,8 @@ GlyphUnit::GlyphUnit(TitleMain *plugin, GlyphEngine *server)
 
 GlyphUnit::~GlyphUnit()
 {
-	if(freetype_library) FT_Done_FreeType(freetype_library);
+	if(freetype_library)
+		FT_Done_FreeType(freetype_library);
 }
 
 void GlyphUnit::process_package(LoadPackage *package)
@@ -235,7 +246,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		if(gindex == 0)
 		{
 // carrige return
-			if (glyph->char_code != 10)
+			if (glyph->char_code != '\n')
 				errormsg(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
@@ -253,9 +264,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 				8);
 			glyph->data->clear_frame();
 			glyph->data_stroke = 0;
-
 // create outline glyph
-			if (plugin->config.stroke_width >= ZERO && 
+			if(plugin->config.stroke_width >= ZERO &&
 				(plugin->config.style & FONT_OUTLINE))
 			{
 				glyph->data_stroke = new VFrame(0,
@@ -268,8 +278,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 		}
 		else
 // char found and no outline desired
-		if (plugin->config.stroke_width < ZERO ||
-			!(plugin->config.style & FONT_OUTLINE)) 
+		if(plugin->config.stroke_width < ZERO ||
+			!(plugin->config.style & FONT_OUTLINE))
 		{
 			FT_Glyph glyph_image;
 			FT_BBox bbox;
@@ -287,7 +297,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 			bm.pixel_mode = FT_PIXEL_MODE_GRAY;
 			bm.num_grays = 256;
 			glyph->left = (bbox.xMin + 31) >> 6;
-			if (glyph->left < 0) glyph->left = 0;
+			if(glyph->left < 0)
+				glyph->left = 0;
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
 			glyph->advance_w = ((freetype_face->glyph->advance.x + 31) >> 6);
@@ -298,8 +309,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->pitch);
 			glyph->data->clear_frame();
 			bm.buffer = glyph->data->get_data();
-			FT_Outline_Get_Bitmap( freetype_library,
-				&((FT_OutlineGlyph) glyph_image)->outline,
+			FT_Outline_Get_Bitmap(freetype_library,
+				&((FT_OutlineGlyph)glyph_image)->outline,
 				&bm);
 			FT_Done_Glyph(glyph_image);
 		}
@@ -314,7 +325,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_BBox bbox;
 			FT_UInt npoints, ncontours;
 
-			typedef struct  FT_LibraryRec_ 
+			typedef struct FT_LibraryRec_
 			{
 				FT_Memory memory;
 			} FT_LibraryRec;
@@ -323,17 +334,17 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Get_Glyph(freetype_face->glyph, &glyph_image);
 
 // check if the outline is ok (non-empty);
-			FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph_image)->outline, &bbox);
-			if (bbox.xMin == 0 && bbox.xMax == 0 && bbox.yMin ==0 && bbox.yMax == 0)
+			FT_Outline_Get_BBox(&((FT_OutlineGlyph)glyph_image)->outline, &bbox);
+			if(bbox.xMin == 0 && bbox.xMax == 0 && bbox.yMin ==0 && bbox.yMax == 0)
 			{
 				FT_Done_Glyph(glyph_image);
-				glyph->data =  new VFrame(0, 0, BC_A8,0);
-				glyph->data_stroke =  new VFrame(0, 0, BC_A8,0);;
-				glyph->width=0;
-				glyph->height=0;
-				glyph->top=0;
-				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+				glyph->data = new VFrame(0, 0, BC_A8, 0);
+				glyph->data_stroke = new VFrame(0, 0, BC_A8, 0);
+				glyph->width = 0;
+				glyph->height = 0;
+				glyph->top = 0;
+				glyph->left = 0;
+				glyph->advance_w = ((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			}
@@ -345,46 +356,47 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width * 64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Stroker_ParseOutline(stroker, &((FT_OutlineGlyph) glyph_image)->outline,1);
 			FT_Stroker_GetCounts(stroker,&npoints, &ncontours);
-			if (npoints ==0 && ncontours == 0) 
+			if(npoints == 0 && ncontours == 0)
 			{
 // this never happens, but FreeType has a bug regarding Linotype's Palatino font
 				FT_Stroker_Done(stroker);
 				FT_Done_Glyph(glyph_image);
-				glyph->data =  new VFrame(0, 0, BC_A8,0);
-				glyph->data_stroke =  new VFrame(0, 0, BC_A8,0);;
-				glyph->width=0;
-				glyph->height=0;
-				glyph->top=0;
-				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+				glyph->data = new VFrame(0, 0, BC_A8, 0);
+				glyph->data_stroke = new VFrame(0, 0, BC_A8, 0);
+				glyph->width = 0;
+				glyph->height = 0;
+				glyph->top = 0;
+				glyph->left = 0;
+				glyph->advance_w = ((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			};
 
 			FT_Outline_New(freetype_library, npoints, ncontours, &outline);
-			outline.n_points=0;
-			outline.n_contours=0;
-			FT_Stroker_Export (stroker, &outline);
+			outline.n_points = 0;
+			outline.n_contours = 0;
+			FT_Stroker_Export(stroker, &outline);
 			FT_Outline_Get_BBox(&outline, &bbox);
 			FT_Outline_Translate(&outline,
 					- bbox.xMin,
 					- bbox.yMin);
-			FT_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
+			FT_Outline_Translate(&((FT_OutlineGlyph)glyph_image)->outline,
 					- bbox.xMin,
-					- bbox.yMin + (int)(plugin->config.stroke_width*32));
+					- bbox.yMin + (int)(plugin->config.stroke_width * 32));
 			glyph->width = bm.width = ((bbox.xMax - bbox.xMin) >> 6)+1;
 			glyph->height = bm.rows = ((bbox.yMax - bbox.yMin) >> 6) +1;
 			glyph->pitch = bm.pitch = bm.width;
 			bm.pixel_mode = FT_PIXEL_MODE_GRAY;
 			bm.num_grays = 256;
 			glyph->left = (bbox.xMin + 31) >> 6;
-			if (glyph->left < 0) glyph->left = 0;
+			if(glyph->left < 0)
+				glyph->left = 0;
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
-			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + 
+			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x +
 				plugin->config.stroke_width * 64) >> 6);
 			glyph->advance_w = glyph->width + glyph->left;
-			if (real_advance > glyph->advance_w) 
+			if(real_advance > glyph->advance_w)
 				glyph->advance_w = real_advance;
 			glyph->data = new VFrame(0,
 				glyph->width,
@@ -398,12 +410,12 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->pitch);
 			glyph->data->clear_frame();
 			glyph->data_stroke->clear_frame();
-			bm.buffer=glyph->data->get_data();
-			FT_Outline_Get_Bitmap( freetype_library,
-				&((FT_OutlineGlyph) glyph_image)->outline,
-				&bm);	
-			bm.buffer=glyph->data_stroke->get_data();
-			FT_Outline_Get_Bitmap( freetype_library,
+			bm.buffer = glyph->data->get_data();
+			FT_Outline_Get_Bitmap(freetype_library,
+				&((FT_OutlineGlyph)glyph_image)->outline,
+				&bm);
+			bm.buffer = glyph->data_stroke->get_data();
+			FT_Outline_Get_Bitmap(freetype_library,
 				&outline,
 				&bm);
 			FT_Outline_Done(freetype_library,&outline);
@@ -422,6 +434,7 @@ GlyphEngine::GlyphEngine(TitleMain *plugin, int cpus)
 void GlyphEngine::init_packages()
 {
 	int current_package = 0;
+
 	for(int i = 0; i < plugin->glyphs.total; i++)
 	{
 		if(!plugin->glyphs.values[i]->data)
@@ -488,7 +501,7 @@ void TitleUnit::process_package(LoadPackage *package)
 {
 	TitlePackage *pkg = (TitlePackage*)package;
 
-	if(pkg->char_code != 0xa)
+	if(pkg->char_code != '\n')
 	{
 		for(int i = 0; i < plugin->glyphs.total; i++)
 		{
@@ -496,8 +509,9 @@ void TitleUnit::process_package(LoadPackage *package)
 			if(glyph->char_code == pkg->char_code)
 			{
 				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
+
 				if(plugin->config.stroke_width >= ZERO &&
-					(plugin->config.style & FONT_OUTLINE)) 
+					(plugin->config.style & FONT_OUTLINE))
 				{
 					VFrame *tmp = glyph->data;
 					glyph->data = glyph->data_stroke;
@@ -510,6 +524,7 @@ void TitleUnit::process_package(LoadPackage *package)
 	}
 }
 
+
 TitleEngine::TitleEngine(TitleMain *plugin, int cpus)
  : LoadServer(cpus, cpus)
 {
@@ -520,6 +535,7 @@ void TitleEngine::init_packages()
 {
 	int visible_y1 = plugin->visible_row1 * plugin->get_char_height();
 	int current_package = 0;
+
 	for(int i = plugin->visible_char1; i < plugin->visible_char2; i++)
 	{
 		title_char_position_t *char_position = plugin->char_positions + i;
@@ -555,26 +571,25 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 }
 
 void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
-	float out_x1,
-	float out_x2,
-	float in_x1,
-	float in_x2,
+	double out_x1,
+	double out_x2,
+	double in_x1,
+	double in_x2,
 	int in_total,
 	int out_total,
 	int &out_x1_int,
 	int &out_x2_int)
 {
 	int out_w_int;
-	float offset = out_x1 - in_x1;
+	double offset = out_x1 - in_x1;
 
-	out_x1_int = (int)out_x1;
+	out_x1_int = round(out_x1);
 	out_x2_int = MIN((int)ceil(out_x2), out_total);
 	out_w_int = out_x2_int - out_x1_int;
-
 	table = new transfer_table_f[out_w_int];
 	memset(table, 0, sizeof(transfer_table_f) * out_w_int);
 
-	float in_x = in_x1;
+	double in_x = in_x1;
 
 	for(int out_x = out_x1_int; out_x < out_x2_int; out_x++)
 	{
@@ -587,18 +602,14 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 		entry->output_fraction = 1;
 
 		if(out_x1 > out_x)
-		{
 			entry->output_fraction -= out_x1 - out_x;
-		}
 
 		if(out_x2 < out_x + 1)
-		{
 			entry->output_fraction = (out_x2 - out_x);
-		}
 
 // Advance in_x until out_x_fraction is filled
-		float out_x_fraction = entry->output_fraction;
-		float in_x_fraction = floor(in_x + 1) - in_x;
+		double out_x_fraction = entry->output_fraction;
+		double in_x_fraction = floor(in_x + 1) - in_x;
 
 		if(out_x_fraction <= in_x_fraction)
 		{
@@ -628,246 +639,90 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 	}
 }
 
-
-#define TRANSLATE(type, max, components, r, g, b) \
-{ \
-	for(int i = pkg->y1; i < pkg->y2; i++) \
-	{ \
-		if(i + server->out_y1_int >= 0 && \
-			i + server->out_y1_int < server->output_h) \
-		{ \
-			int in_y1, in_y2; \
-			float y_fraction1, y_fraction2; \
-			float y_output_fraction; \
-			in_y1 = server->y_table[i].in_x1; \
-			in_y2 = server->y_table[i].in_x2; \
-			y_fraction1 = server->y_table[i].in_fraction1; \
-			y_fraction2 = server->y_table[i].in_fraction2; \
-			y_output_fraction = server->y_table[i].output_fraction; \
-			unsigned char *in_row1 = plugin->text_mask->get_row_ptr(in_y1); \
-			unsigned char *in_row2 = plugin->text_mask->get_row_ptr(in_y2); \
-			type *out_row = (type*)plugin->output->get_row_ptr(i + server->out_y1_int); \
- \
-			for(int j = server->out_x1_int; j < server->out_x2_int; j++) \
-			{ \
-				if(j >= 0 && j < server->output_w) \
-				{ \
-					int in_x1; \
-					int in_x2; \
-					float x_fraction1; \
-					float x_fraction2; \
-					float x_output_fraction; \
-					in_x1 =  \
-						server->x_table[j - server->out_x1_int].in_x1; \
-					in_x2 =  \
-						server->x_table[j - server->out_x1_int].in_x2; \
-					x_fraction1 =  \
-						server->x_table[j - server->out_x1_int].in_fraction1; \
-					x_fraction2 =  \
-						server->x_table[j - server->out_x1_int].in_fraction2; \
-					x_output_fraction =  \
-						server->x_table[j - server->out_x1_int].output_fraction; \
- \
-					float fraction1 = x_fraction1 * y_fraction1; \
-					float fraction2 = x_fraction2 * y_fraction1; \
-					float fraction3 = x_fraction1 * y_fraction2; \
-					float fraction4 = x_fraction2 * y_fraction2; \
-					int input = (int)(in_row1[in_x1] * fraction1 +  \
-								in_row1[in_x2] * fraction2 +  \
-								in_row2[in_x1] * fraction3 +  \
-								in_row2[in_x2] * fraction4 + 0.5); \
-					input *= plugin->alpha; \
-/* Alpha is 0 - 256 */ \
-					input >>= 8; \
- \
-					int anti_input = 0xff - input; \
-					if(components == 4) \
-					{ \
-						out_row[j * components + 0] =  \
-							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
-						out_row[j * components + 1] =  \
-							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
-						out_row[j * components + 2] =  \
-							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
-						if(max == 0xffff) \
-							out_row[j * components + 3] =  \
-								MAX((input << 8) | input, out_row[j * components + 3]); \
-						else \
-							out_row[j * components + 3] =  \
-								MAX(input, out_row[j * components + 3]); \
-					} \
-					else \
-					{ \
-						out_row[j * components + 0] =  \
-							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
-						out_row[j * components + 1] =  \
-							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
-						out_row[j * components + 2] =  \
-							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
-					} \
-				} \
-			} \
-		} \
-	} \
-}
-
-#define TRANSLATEA(type, max, components, r, g, b) \
-{ \
-	for(int i = pkg->y1; i < pkg->y2; i++) \
-	{ \
-		if(i + server->out_y1_int >= 0 && \
-			i + server->out_y1_int < server->output_h) \
-		{ \
-			unsigned char *in_row = plugin->text_mask->get_row_ptr(i); \
-			type *out_row = (type*)plugin->output->get_row_ptr(i + server->out_y1_int); \
- \
-			for(int j = server->out_x1; j < server->out_x2_int; j++) \
-			{ \
-				if(j  >= 0 && \
-					j < server->output_w) \
-				{ \
-					int input = (int)(in_row[j - server->out_x1]);  \
- \
-					input *= plugin->alpha; \
-/* Alpha is 0 - 256 */ \
-					input >>= 8; \
- \
-					int anti_input = 0xff - input; \
-					if(components == 4) \
-					{ \
-						out_row[j * components + 0] =  \
-							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
-						out_row[j * components + 1] =  \
-							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
-						out_row[j * components + 2] =  \
-							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
-						if(max == 0xffff) \
-							out_row[j * components + 3] =  \
-								MAX((input << 8) | input, out_row[j * components + 3]); \
-						else \
-							out_row[j * components + 3] =  \
-								MAX(input, out_row[j * components + 3]); \
-					} \
-					else \
-					{ \
-						out_row[j * components + 0] =  \
-							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
-						out_row[j * components + 1] =  \
-							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
-						out_row[j * components + 2] =  \
-							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
-					} \
-				} \
-			} \
-		} \
-	} \
-}
-
 void TitleTranslateUnit::process_package(LoadPackage *package)
 {
 	TitleTranslatePackage *pkg = (TitleTranslatePackage*)package;
 	TitleTranslate *server = (TitleTranslate*)this->server;
 	int r_in, g_in, b_in;
+	int y, u, v;
 
-	r_in = (plugin->config.color & 0xff0000) >> 16;
-	g_in = (plugin->config.color & 0xff00) >> 8;
-	b_in = plugin->config.color & 0xff;
+	r_in = plugin->config.color_red;
+	g_in = plugin->config.color_green;
+	b_in = plugin->config.color_blue;
+
 	switch(plugin->output->get_color_model())
 	{
-	case BC_RGB888:
-		TRANSLATE(unsigned char, 0xff, 3, r_in, g_in, b_in);
-		break;
-
-	case BC_RGB_FLOAT:
-	{
-		float r, g, b;
-		r = (float)r_in / 0xff;
-		g = (float)g_in / 0xff;
-		b = (float)b_in / 0xff;
-		TRANSLATE(float, 0xff, 3, r, g, b);
-		break;
-	}
-	case BC_YUV888:
-	{
-		unsigned char y, u, v;
-		ColorSpaces::rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
-		TRANSLATE(unsigned char, 0xff, 3, y, u, v);
-		break;
-	}
-	case BC_RGB161616:
-	{
-		uint16_t r, g, b;
-		r = (r_in << 8) | r_in;
-		g = (g_in << 8) | g_in;
-		b = (b_in << 8) | b_in;
-		TRANSLATE(uint16_t, 0xffff, 3, r, g, b);
-		break;
-	}
-	case BC_YUV161616:
-	{
-		uint16_t y, u, v;
-		ColorSpaces::rgb_to_yuv_16(
-			(r_in << 8) | r_in, 
-			(g_in << 8) | g_in, 
-			(b_in << 8) | b_in, 
-			y, 
-			u, 
-			v);
-		TRANSLATE(uint16_t, 0xffff, 3, y, u, v);
-		break;
-	}
-	case BC_RGBA_FLOAT:
-	{
-		float r, g, b;
-		r = (float)r_in / 0xff;
-		g = (float)g_in / 0xff;
-		b = (float)b_in / 0xff;
-		TRANSLATE(float, 0xff, 4, r, g, b);
-		break;
-	}
-	case BC_RGBA8888:
-	{
-		TRANSLATE(unsigned char, 0xff, 4, r_in, g_in, b_in);
-		break;
-	}
-	case BC_YUVA8888:
-	{
-		unsigned char y, u, v;
-		ColorSpaces::rgb_to_yuv_8(r_in, g_in, b_in, y, u, v);
-		TRANSLATE(unsigned char, 0xff, 4, y, u, v);
-		break;
-	}
 	case BC_RGBA16161616:
-	{
-		uint16_t r, g, b;
-		r = (r_in << 8) | r_in;
-		g = (g_in << 8) | g_in;
-		b = (b_in << 8) | b_in;
-		TRANSLATE(uint16_t, 0xffff, 4, r, g, b);
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			if(i + server->out_y1_int >= 0 &&
+				i + server->out_y1_int < server->output_h)
+			{
+				int in_y1, in_y2;
+				double y_fraction1, y_fraction2;
+				double y_output_fraction;
+
+				in_y1 = server->y_table[i].in_x1;
+				in_y2 = server->y_table[i].in_x2;
+				y_fraction1 = server->y_table[i].in_fraction1;
+				y_fraction2 = server->y_table[i].in_fraction2;
+				y_output_fraction = server->y_table[i].output_fraction;
+				unsigned char *in_row1 = plugin->text_mask->get_row_ptr(in_y1);
+				unsigned char *in_row2 = plugin->text_mask->get_row_ptr(in_y2);
+				uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(
+					i + server->out_y1_int);
+
+				for(int j = server->out_x1_int; j < server->out_x2_int; j++)
+				{
+					if(j >= 0 && j < server->output_w)
+					{
+						int in_x1;
+						int in_x2;
+						double x_fraction1;
+						double x_fraction2;
+						double x_output_fraction;
+						in_x1 =
+							server->x_table[j - server->out_x1_int].in_x1;
+						in_x2 =
+							server->x_table[j - server->out_x1_int].in_x2;
+						x_fraction1 =
+							server->x_table[j - server->out_x1_int].in_fraction1;
+						x_fraction2 =
+							server->x_table[j - server->out_x1_int].in_fraction2;
+						x_output_fraction =
+							server->x_table[j - server->out_x1_int].output_fraction;
+
+						double fraction1 = x_fraction1 * y_fraction1;
+						double fraction2 = x_fraction2 * y_fraction1;
+						double fraction3 = x_fraction1 * y_fraction2;
+						double fraction4 = x_fraction2 * y_fraction2;
+						int input = in_row1[in_x1] * fraction1 +
+							in_row1[in_x2] * fraction2 +
+							in_row2[in_x1] * fraction3 +
+							in_row2[in_x2] * fraction4 + 0.5;
+						input *= plugin->alpha;
+						input = input >> 8 | input >> 16;
+						int anti_input = 0xffff - input;
+
+						out_row[j * 4] =
+							(r_in * input + out_row[j * 4] *
+							anti_input) >> 16;
+						out_row[j * 4 + 1] =
+							(g_in * input + out_row[j * 4 + 1] *
+							anti_input) >> 16;
+						out_row[j * 4 + 2] =
+							(b_in * input + out_row[j * 4 + 2] *
+							anti_input) >> 16;
+						out_row[j * 4 + 3] =
+							MAX(input, out_row[j * 4 + 3]);
+					}
+				}
+			}
+		}
 		break;
-	}
-	case BC_YUVA16161616:
-	{
-		uint16_t y, u, v;
-		ColorSpaces::rgb_to_yuv_16(
-			(r_in << 8) | r_in, 
-			(g_in << 8) | g_in, 
-			(b_in << 8) | b_in, 
-			y, 
-			u, 
-			v);
-		TRANSLATE(uint16_t, 0xffff, 4, y, u, v);
-		break;
-	}
 	case BC_AYUV16161616:
 		{
-			uint16_t y, u, v;
-
-			ColorSpaces::rgb_to_yuv_16(
-				(r_in << 8) | r_in,
-				(g_in << 8) | g_in,
-				(b_in << 8) | b_in,
-				y, u, v);
+			ColorSpaces::rgb_to_yuv_16(r_in, g_in, b_in, y, u, v);
 
 			for(int i = pkg->y1; i < pkg->y2; i++)
 			{
@@ -875,8 +730,8 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 					i + server->out_y1_int < server->output_h)
 				{
 					int in_y1, in_y2;
-					float y_fraction1, y_fraction2;
-					float y_output_fraction;
+					double y_fraction1, y_fraction2;
+					double y_output_fraction;
 
 					in_y1 = server->y_table[i].in_x1;
 					in_y2 = server->y_table[i].in_x2;
@@ -885,43 +740,42 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 					y_output_fraction = server->y_table[i].output_fraction;
 					unsigned char *in_row1 = plugin->text_mask->get_row_ptr(in_y1);
 					unsigned char *in_row2 = plugin->text_mask->get_row_ptr(in_y2);
-					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(i + server->out_y1_int);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(
+						i + server->out_y1_int);
 
 					for(int j = server->out_x1_int; j < server->out_x2_int; j++)
 					{
 						if(j >= 0 && j < server->output_w)
 						{
 							int in_x1, in_x2;
-							float x_fraction1, x_fraction2;
-							float x_output_fraction;
+							double x_fraction1, x_fraction2;
 
 							in_x1 = server->x_table[j - server->out_x1_int].in_x1;
 							in_x2 = server->x_table[j - server->out_x1_int].in_x2;
 							x_fraction1 = server->x_table[j - server->out_x1_int].in_fraction1;
 							x_fraction2 = server->x_table[j - server->out_x1_int].in_fraction2;
-							x_output_fraction = server->x_table[j - server->out_x1_int].output_fraction;
 
-							float fraction1 = x_fraction1 * y_fraction1;
-							float fraction2 = x_fraction2 * y_fraction1;
-							float fraction3 = x_fraction1 * y_fraction2;
-							float fraction4 = x_fraction2 * y_fraction2;
-							int input = (int)(in_row1[in_x1] * fraction1 +
+							double fraction1 = x_fraction1 * y_fraction1;
+							double fraction2 = x_fraction2 * y_fraction1;
+							double fraction3 = x_fraction1 * y_fraction2;
+							double fraction4 = x_fraction2 * y_fraction2;
+							int input = (in_row1[in_x1] * fraction1 +
 								in_row1[in_x2] * fraction2 +
 								in_row2[in_x1] * fraction3 +
-							in_row2[in_x2] * fraction4 + 0.5);
-							input *= plugin->alpha;
-							// Alpha is 0 - 256
-							input >>= 8;
+								in_row2[in_x2] * fraction4 + 0.5);
 
-							int anti_input = 0xff - input;
+							input *= plugin->alpha;
+							input = input >> 8 | input >> 16;
+							int anti_input = 0xffff - input;
+
 							out_row[j * 4] =
-								MAX((input << 8) | input, out_row[j * 4]);
+								MAX(input, out_row[j * 4]);
 							out_row[j * 4 + 1] =
-								(y * input + out_row[j * 4 + 1] * anti_input) / 0xff;
+								(y * input + out_row[j * 4 + 1] * anti_input) >> 16;
 							out_row[j * 4 + 2] =
-								(u * input + out_row[j * 4 + 2] * anti_input) / 0xff;
+								(u * input + out_row[j * 4 + 2] * anti_input) >> 16;
 							out_row[j * 4 + 3] =
-								(v * input + out_row[j * 4 + 3] * anti_input) / 0xff;
+								(v * input + out_row[j * 4 + 3] * anti_input) >> 16;
 						}
 					}
 				}
@@ -982,6 +836,7 @@ void TitleTranslate::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		TitleTranslatePackage *pkg = (TitleTranslatePackage*)get_package(i);
+
 		pkg->y1 = i * increment;
 		pkg->y2 = i * increment + increment;
 		if(pkg->y1 > out_y2 - out_y1)
@@ -1020,21 +875,68 @@ TitleMain::TitleMain(PluginServer *server)
 
 TitleMain::~TitleMain()
 {
-	if(text_mask) delete text_mask;
-	if(text_mask_stroke) delete text_mask_stroke;
-	if(char_positions) delete [] char_positions;
-	if(rows_bottom) delete [] rows_bottom;
+	delete text_mask;
+	delete text_mask_stroke;
+	delete [] char_positions;
+	delete [] rows_bottom;
 	clear_glyphs();
-	if(glyph_engine) delete glyph_engine;
-	if(title_engine) delete title_engine;
+	delete glyph_engine;
+	delete title_engine;
 	if(freetype_face) FT_Done_Face(freetype_face);
 	if(freetype_library) FT_Done_FreeType(freetype_library);
-	if(translate) delete translate;
+	delete translate;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-PLUGIN_CLASS_METHODS
+void TitleMain::reset_plugin()
+{
+	if(text_mask)
+	{
+		delete text_mask;
+		delete text_mask_stroke;
+		text_mask = 0;
+		text_mask_stroke = 0;
+	}
+	if(char_positions)
+	{
+		delete [] char_positions;
+		char_positions = 0;
+	}
+	if(rows_bottom)
+	{
+		delete [] rows_bottom;
+		rows_bottom = 0;
+	}
+	clear_glyphs();
+	if(glyph_engine)
+	{
+		delete glyph_engine;
+		glyph_engine = 0;
+	}
+	if(title_engine)
+	{
+		delete title_engine;
+		title_engine = 0;
+	}
+	if(freetype_face)
+	{
+		FT_Done_Face(freetype_face);
+		freetype_face = 0;
+	}
+	if(freetype_library)
+	{
+		FT_Done_FreeType(freetype_library);
+		freetype_library = 0;
+	}
+	if(translate)
+	{
+		delete translate;
+		translate = 0;
+	}
+	need_reconfigure = 1;
+}
 
+PLUGIN_CLASS_METHODS
 
 int TitleMain::load_freetype_face(FT_Library &freetype_library,
 	FT_Face &freetype_face,
@@ -1055,10 +957,8 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 		freetype_face = 0;
 		freetype_library = 0;
 		return 1;
-	} else
-	{
-		return 0;
 	}
+	return 0;
 }
 
 BC_FontEntry* TitleMain::get_font()
@@ -1085,7 +985,9 @@ int TitleMain::get_char_height()
 {
 // this is height above the zero line, but does not include characters that go below
 	int result = config.size;
-	if((config.style & FONT_OUTLINE)) result += (int)ceil(config.stroke_width * 2);
+
+	if((config.style & FONT_OUTLINE))
+		result += (int)ceil(config.stroke_width * 2);
 	return result;
 }
 
@@ -1096,7 +998,8 @@ int TitleMain::get_char_advance(FT_ULong current, FT_ULong next)
 	TitleGlyph *current_glyph = 0;
 	TitleGlyph *next_glyph = 0;
 
-	if(current == 0xa) return 0;
+	if(current == '\n')
+		return 0;
 
 	for(int i = 0; i < glyphs.total; i++)
 	{
@@ -1162,7 +1065,7 @@ void TitleMain::draw_glyphs()
 	}
 
 	if(!glyph_engine)
-		glyph_engine = new GlyphEngine(this, PluginClient::smp + 1);
+		glyph_engine = new GlyphEngine(this, get_project_smp());
 
 	glyph_engine->set_package_count(total_packages);
 	glyph_engine->process_packages();
@@ -1175,23 +1078,29 @@ void TitleMain::get_total_extents()
 	int row_start = 0;
 	text_len = config.wtext_length;
 
-	if(!char_positions) char_positions = new title_char_position_t[text_len];
+	if(!char_positions)
+		char_positions = new title_char_position_t[text_len];
+
 	text_rows = 0;
 	text_w = 0;
 	ascent = 0;
 
 	for(int i = 0; i < glyphs.total; i++)
-		if(glyphs.values[i]->top > ascent) ascent = glyphs.values[i]->top;
+	{
+		if(glyphs.values[i]->top > ascent)
+			ascent = glyphs.values[i]->top;
+	}
 
 	// get the number of rows first
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.wtext[i] == 0xa || i == text_len - 1)
-		{
+		if(config.wtext[i] == '\n' || i == text_len - 1)
 			text_rows++;
-		}
 	}
-	if (!rows_bottom) rows_bottom = new int[text_rows+1];
+
+	if(!rows_bottom)
+		rows_bottom = new int[text_rows + 1];
+
 	text_rows = 0;
 	rows_bottom[0] = 0;
 
@@ -1201,6 +1110,7 @@ void TitleMain::get_total_extents()
 		char_positions[i].y = text_rows * get_char_height();
 		char_positions[i].w = get_char_advance(config.wtext[i], config.wtext[i + 1]);
 		TitleGlyph *current_glyph = 0;
+
 		for(int j = 0; j < glyphs.total; j++)
 		{
 			if(glyphs.values[j]->char_code == config.wtext[i])
@@ -1209,17 +1119,20 @@ void TitleMain::get_total_extents()
 				break;
 			}
 		}
+
 		int current_bottom = current_glyph->top - current_glyph->height;
+
 		if (current_bottom < rows_bottom[text_rows])
-			rows_bottom[text_rows] = current_bottom ;
+			rows_bottom[text_rows] = current_bottom;
 
 		current_w += char_positions[i].w;
 
-		if(config.wtext[i] == 0xa || i == text_len - 1)
+		if(config.wtext[i] == '\n' || i == text_len - 1)
 		{
 			text_rows++;
 			rows_bottom[text_rows] = 0;
-			if(current_w > text_w) text_w = current_w;
+			if(current_w > text_w)
+				text_w = current_w;
 			current_w = 0;
 		}
 	}
@@ -1232,7 +1145,7 @@ void TitleMain::get_total_extents()
 	row_start = 0;
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.wtext[i] == 0xa || i == text_len - 1)
+		if(config.wtext[i] == '\n' || i == text_len - 1)
 		{
 			for(int j = row_start; j <= i; j++)
 			{
@@ -1242,10 +1155,9 @@ void TitleMain::get_total_extents()
 					break;
 
 				case JUSTIFY_MID:
-					char_positions[j].x += (text_w - 
-							char_positions[i].x - 
-							char_positions[i].w) /
-						2;
+					char_positions[j].x += (text_w -
+							char_positions[i].x -
+							char_positions[i].w) / 2;
 					break;
 
 				case JUSTIFY_RIGHT:
@@ -1264,28 +1176,29 @@ int TitleMain::draw_mask()
 {
 	int old_visible_row1 = visible_row1;
 	int old_visible_row2 = visible_row2;
+
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
-		float magnitude = config.pixels_per_second *
+		double magnitude = config.pixels_per_second *
 			(source_pts - config.prev_border_pts);
 
 		if(config.loop)
 		{
-			int loop_size = text_h + input->get_h();
+			int loop_size = text_h + output->get_h();
 			magnitude -= (int)(magnitude / loop_size) * loop_size;
 		}
-		text_y1 = config.y + input->get_h() - magnitude;
+		text_y1 = config.y + output->get_h() - magnitude;
 	}
 	else
 	if(config.motion_strategy == TOP_TO_BOTTOM)
 	{
-		float magnitude = config.pixels_per_second *
+		double magnitude = config.pixels_per_second *
 			(source_pts - config.prev_border_pts);
 
 		if(config.loop)
 		{
-			int loop_size = text_h + input->get_h();
+			int loop_size = text_h + output->get_h();
 			magnitude -= (int)(magnitude / loop_size) * loop_size;
 		}
 		text_y1 = config.y + magnitude;
@@ -1293,72 +1206,66 @@ int TitleMain::draw_mask()
 	}
 	else
 	if(config.vjustification == JUSTIFY_TOP)
-	{
 		text_y1 = config.y;
-	}
 	else
 	if(config.vjustification == JUSTIFY_MID)
-	{
-		text_y1 = config.y + input->get_h() / 2 - text_h / 2;
-	}
+		text_y1 = config.y + output->get_h() / 2 - text_h / 2;
 	else
 	if(config.vjustification == JUSTIFY_BOTTOM)
-	{
-		text_y1 = config.y + input->get_h() - text_h;
-	}
+		text_y1 = config.y + output->get_h() - text_h;
 
 	text_y2 = text_y1 + text_h + 0.5;
 
 // Determine x of visible text
 	if(config.motion_strategy == RIGHT_TO_LEFT)
 	{
-		float magnitude = config.pixels_per_second *
+		double magnitude = config.pixels_per_second *
 			(source_pts - config.prev_border_pts);
 
 		if(config.loop)
 		{
-			int loop_size = text_w + input->get_w();
+			int loop_size = text_w + output->get_w();
 			magnitude -= (int)(magnitude / loop_size) * loop_size;
 		}
-		text_x1 = config.x + (float)input->get_w() - magnitude;
+		text_x1 = config.x + (double)output->get_w() - magnitude;
 	}
 	else
 	if(config.motion_strategy == LEFT_TO_RIGHT)
 	{
-		float magnitude = config.pixels_per_second *
+		double magnitude = config.pixels_per_second *
 			(source_pts - config.prev_border_pts);
 
 		if(config.loop)
 		{
-			int loop_size = text_w + input->get_w();
+			int loop_size = text_w + output->get_w();
 			magnitude -= (int)(magnitude / loop_size) * loop_size;
 		}
-		text_x1 = config.x + -(float)text_w + magnitude;
+		text_x1 = config.x + -(double)text_w + magnitude;
 	}
 	else
 	if(config.hjustification == JUSTIFY_LEFT)
-	{
 		text_x1 = config.x;
-	}
 	else
 	if(config.hjustification == JUSTIFY_MID)
-	{
-		text_x1 = config.x + input->get_w() / 2 - text_w / 2;
-	}
+		text_x1 = config.x + output->get_w() / 2 - text_w / 2;
 	else
 	if(config.hjustification == JUSTIFY_RIGHT)
-	{
-		text_x1 = config.x + input->get_w() - text_w;
-	}
+		text_x1 = config.x + output->get_w() - text_w;
 
 // Determine y extents just of visible text
 	visible_row1 = (int)(-text_y1 / get_char_height());
-	if(visible_row1 < 0) visible_row1 = 0;
 
-	visible_row2 = (int)((float)text_rows - (text_y2 - input->get_h()) / get_char_height() + 1);
-	if(visible_row2 > text_rows) visible_row2 = text_rows;
+	if(visible_row1 < 0)
+		visible_row1 = 0;
 
-	if(visible_row2 <= visible_row1) return 1;
+	visible_row2 = (int)((double)text_rows - (text_y2 - output->get_h()) /
+		get_char_height() + 1);
+
+	if(visible_row2 > text_rows)
+		visible_row2 = text_rows;
+
+	if(visible_row2 <= visible_row1)
+		return 1;
 
 	mask_y1 = text_y1 + visible_row1 * get_char_height();
 	mask_y2 = text_y1 + visible_row2 * get_char_height();
@@ -1366,10 +1273,12 @@ int TitleMain::draw_mask()
 
 	visible_char1 = visible_char2 = 0;
 	int got_char1 = 0;
+
 	for(int i = 0; i < text_len; i++)
 	{
 		title_char_position_t *char_position = char_positions + i;
 		int char_row = char_position->y / get_char_height();
+
 		if(char_row >= visible_row1 &&
 			char_row < visible_row2)
 		{
@@ -1385,9 +1294,11 @@ int TitleMain::draw_mask()
 
 	int visible_rows = visible_row2 - visible_row1;
 	int need_redraw = 0;
+
 	if(text_mask &&
 		(text_mask->get_w() != text_w ||
-		text_mask->get_h() != visible_rows * get_char_height() - rows_bottom[visible_row2 - 1]))
+		text_mask->get_h() != visible_rows * get_char_height() -
+			rows_bottom[visible_row2 - 1]))
 	{
 		delete text_mask;
 		delete text_mask_stroke;
@@ -1399,13 +1310,12 @@ int TitleMain::draw_mask()
 	{
 		text_mask = new VFrame(0,
 			text_w,
-			visible_rows * get_char_height() - rows_bottom[visible_row2-1],
+			visible_rows * get_char_height() - rows_bottom[visible_row2 - 1],
 			BC_A8);
 		text_mask_stroke = new VFrame(0,
 			text_w,
-			visible_rows * get_char_height() - rows_bottom[visible_row2-1],
+			visible_rows * get_char_height() - rows_bottom[visible_row2 - 1],
 			BC_A8);
-
 		need_redraw = 1;
 	}
 
@@ -1418,27 +1328,24 @@ int TitleMain::draw_mask()
 		text_mask_stroke->clear_frame();
 
 		if(!title_engine)
-			title_engine = new TitleEngine(this, PluginClient::smp + 1);
+			title_engine = new TitleEngine(this, get_project_smp());
 
 		title_engine->set_package_count(visible_char2 - visible_char1);
 		title_engine->process_packages();
 	}
-
 	return 0;
 }
 
-
 void TitleMain::overlay_mask()
 {
-	alpha = 0x100;
+	alpha = 0x10000;
+
 	if(!EQUIV(config.fade_in, 0))
 	{
 		ptstime fade_pts = source_pts - config.prev_border_pts;
 
 		if(fade_pts >= 0 && fade_pts < config.fade_in)
-		{
-			alpha = lroundf(256.0f * fade_pts / config.fade_in);
-		}
+			alpha = round(0x10000 * fade_pts / config.fade_in);
 	}
 
 	if(!EQUIV(config.fade_out, 0))
@@ -1447,7 +1354,7 @@ void TitleMain::overlay_mask()
 
 		if(fade_pts >= 0 && fade_pts < config.fade_out)
 		{
-			alpha = lroundf(256.0f * fade_pts / config.fade_out);
+			alpha = round(0x10000 * fade_pts / config.fade_out);
 		}
 	}
 
@@ -1457,15 +1364,22 @@ void TitleMain::overlay_mask()
 		text_x2 += config.dropshadow;
 		mask_y1 += config.dropshadow;
 		mask_y2 += config.dropshadow;
-		if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
-			mask_y1 < input->get_h() && mask_y2 > 0)
+		if(text_x1 < output->get_w() && text_x1 + text_w > 0 &&
+			mask_y1 < output->get_h() && mask_y2 > 0)
 		{
-			if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
+			if(!translate)
+				translate = new TitleTranslate(this, get_project_smp());
 // Do 2 passes if dropshadow.
-			int temp_color = config.color;
-			config.color = 0x0;
+			int temp_color_r = config.color_red;
+			int temp_color_g = config.color_green;
+			int temp_color_b = config.color_blue;
+			config.color_red = 0;
+			config.color_green = 0;
+			config.color_blue = 0;
 			translate->process_packages();
-			config.color = temp_color;
+			config.color_red = temp_color_r;
+			config.color_green = temp_color_g;
+			config.color_blue = temp_color_b;
 		}
 		text_x1 -= config.dropshadow;
 		text_x2 -= config.dropshadow;
@@ -1473,21 +1387,30 @@ void TitleMain::overlay_mask()
 		mask_y2 -= config.dropshadow;
 	}
 
-	if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
-		mask_y1 < input->get_h() && mask_y2 > 0)
+	if(text_x1 < output->get_w() && text_x1 + text_w > 0 &&
+		mask_y1 < output->get_h() && mask_y2 > 0)
 	{
-		if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
+		if(!translate)
+			translate = new TitleTranslate(this, get_project_smp());
 		translate->process_packages();
-		if (config.stroke_width >= ZERO &&
-			(config.style & FONT_OUTLINE)) 
+
+		if(config.stroke_width >= ZERO &&
+			(config.style & FONT_OUTLINE))
 		{
-			int temp_color = config.color;
+			int temp_color_r = config.color_red;
+			int temp_color_g = config.color_green;
+			int temp_color_b = config.color_blue;
 			VFrame *tmp_text_mask = this->text_mask;
-			config.color = config.color_stroke;
+
+			config.color_red = config.color_stroke_red;
+			config.color_green = config.color_stroke_green;
+			config.color_blue = config.color_stroke_blue;
 			this->text_mask = this->text_mask_stroke;
 
 			translate->process_packages();
-			config.color = temp_color;
+			config.color_red = temp_color_r;
+			config.color_green = temp_color_g;
+			config.color_blue = temp_color_b;
 			this->text_mask = tmp_text_mask;
 		}
 	}
@@ -1498,7 +1421,7 @@ void TitleMain::clear_glyphs()
 	glyphs.remove_all_objects();
 }
 
-const char* TitleMain::motion_to_text(int motion)
+const char *TitleMain::motion_to_text(int motion)
 {
 	switch(motion)
 	{
@@ -1513,36 +1436,50 @@ const char* TitleMain::motion_to_text(int motion)
 	case LEFT_TO_RIGHT:
 		return _("Left to right");
 	}
+	return "Unknown";
 }
 
 int TitleMain::text_to_motion(const char *text)
 {
 	for(int i = 0; i < TOTAL_PATHS; i++)
 	{
-		if(!strcasecmp(motion_to_text(i), text)) return i;
+		if(!strcasecmp(motion_to_text(i), text))
+			return i;
 	}
 	return 0;
 }
 
-
 VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 {
 	int result = 0;
-	input = input_ptr;
 	output = input_ptr;
+	int color_model = input_ptr->get_color_model();
 
-	need_reconfigure |= load_configuration();
+	switch(color_model)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(color_model);
+		return input_ptr;
+	}
+
+	if(need_reconfigure |= load_configuration())
+		update_gui();
 
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
 	{
 		int tcf = Units::timeformat_totype(config.timecodeformat);
-		if (tcf < 0) {
+
+		if(tcf < 0)
+		{
 			tcf = TIME_HMSF;
 			strcpy(config.timecodeformat, DEFAULT_TIMECODEFORMAT);
 		}
 		Units::totext(config.text, 
-				input->get_pts(),
+				output->get_pts(),
 				tcf, 
 				0,
 				get_project_framerate(),
@@ -1552,34 +1489,42 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 	}
 
 // Check boundaries
-	if(config.size <= 0 || config.size >= 2048) config.size = 72;
-	if(config.stroke_width < 0 || 
-		config.stroke_width >= 512) config.stroke_width = 0.0;
+	if(config.size <= 0 || config.size >= 2048)
+		config.size = 72;
+	if(config.stroke_width < 0 || config.stroke_width >= 512)
+		config.stroke_width = 0.0;
 	if(!config.wtext_length)
-		return input;
-	if(!config.encoding) strcpy(config.encoding, DEFAULT_ENCODING);
+		return output;
+	if(!config.encoding)
+		strcpy(config.encoding, DEFAULT_ENCODING);
 
 // Handle reconfiguration
 	if(need_reconfigure)
 	{
-		if(text_mask) delete text_mask;
-		if(text_mask_stroke) delete text_mask_stroke;
+		if(text_mask)
+			delete text_mask;
+		if(text_mask_stroke)
+			delete text_mask_stroke;
 		text_mask = 0;
 		text_mask_stroke = 0;
-		if(freetype_face) FT_Done_Face(freetype_face);
+		if(freetype_face)
+			FT_Done_Face(freetype_face);
 		freetype_face = 0;
-		if(glyph_engine) delete glyph_engine;
+		if(glyph_engine)
+			delete glyph_engine;
 		glyph_engine = 0;
-		if(char_positions) delete [] char_positions;
+		if(char_positions)
+			delete [] char_positions;
 		char_positions = 0;
-		if(rows_bottom) delete [] rows_bottom;
+		if(rows_bottom)
+			delete [] rows_bottom;
 		rows_bottom = 0;
 		clear_glyphs();
 		visible_row1 = 0;
 		visible_row2 = 0;
 		ascent = 0;
 
-		if(!freetype_library) 
+		if(!freetype_library)
 			FT_Init_FreeType(&freetype_library);
 
 		if(!freetype_face)
@@ -1594,14 +1539,14 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 				result = 1;
 			}
 
-			if(!result) FT_Set_Pixel_Sizes(freetype_face, config.size, 0);
+			if(!result)
+				FT_Set_Pixel_Sizes(freetype_face, config.size, 0);
 		}
 
 		if(!result)
 		{
 			draw_glyphs();
 			get_total_extents();
-			need_reconfigure = 0;
 		}
 	}
 
@@ -1621,6 +1566,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 
 void TitleMain::load_defaults()
 {
+	int color;
 	char text_path[1024];
 
 	defaults = load_defaults_file("title.rc");
@@ -1629,8 +1575,26 @@ void TitleMain::load_defaults()
 	defaults->get("ENCODING", config.encoding);
 	config.style = defaults->get("STYLE", config.style);
 	config.size = defaults->get("SIZE", config.size);
-	config.color = defaults->get("COLOR", config.color);
-	config.color_stroke = defaults->get("COLOR_STROKE", config.color_stroke);
+	color = defaults->get("COLOR", 0);
+	if(color)
+	{
+		config.color_red = (color >> 8) & 0xff00;
+		config.color_green = (color & 0xff00);
+		config.color_blue = (color << 8) & 0xff00;
+	}
+	config.color_red = defaults->get("COLOR_R", config.color_red);
+	config.color_green = defaults->get("COLOR_G", config.color_green);
+	config.color_blue = defaults->get("COLOR_B", config.color_blue);
+	color = defaults->get("COLOR_STROKE", 0);
+	if(color)
+	{
+		config.color_stroke_red = (color >> 8) & 0xff00;
+		config.color_stroke_green = (color & 0xff00);
+		config.color_stroke_blue = (color << 8) & 0xff00;
+	}
+	config.color_stroke_red = defaults->get("COLOR_STROKE_R", config.color_stroke_red);
+	config.color_stroke_green = defaults->get("COLOR_STROKE_G", config.color_stroke_green);
+	config.color_stroke_blue = defaults->get("COLOR_STROKE_B", config.color_stroke_blue);
 	config.stroke_width = defaults->get("STROKE_WIDTH", config.stroke_width);
 	config.motion_strategy = defaults->get("MOTION_STRATEGY", config.motion_strategy);
 	config.loop = defaults->get("LOOP", config.loop);
@@ -1680,8 +1644,14 @@ void TitleMain::save_defaults()
 	defaults->update("ENCODING", config.encoding);
 	defaults->update("STYLE", config.style);
 	defaults->update("SIZE", config.size);
-	defaults->update("COLOR", config.color);
-	defaults->update("COLOR_STROKE", config.color_stroke);
+	defaults->delete_key("COLOR");
+	defaults->update("COLOR_R", config.color_red);
+	defaults->update("COLOR_G", config.color_green);
+	defaults->update("COLOR_B", config.color_blue);
+	defaults->delete_key("COLOR_STROKE");
+	defaults->update("COLOR_STROKE_R", config.color_stroke_red);
+	defaults->update("COLOR_STROKE_G", config.color_stroke_green);
+	defaults->update("COLOR_STROKE_B", config.color_stroke_blue);
 	defaults->update("STROKE_WIDTH", config.stroke_width);
 	defaults->update("MOTION_STRATEGY", config.motion_strategy);
 	defaults->update("LOOP", config.loop);
@@ -1721,8 +1691,12 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ENCODING", config.encoding);
 	output.tag.set_property("STYLE", (int64_t)config.style);
 	output.tag.set_property("SIZE", config.size);
-	output.tag.set_property("COLOR", config.color);
-	output.tag.set_property("COLOR_STROKE", config.color_stroke);
+	output.tag.set_property("COLOR_R", config.color_red);
+	output.tag.set_property("COLOR_G", config.color_green);
+	output.tag.set_property("COLOR_B", config.color_blue);
+	output.tag.set_property("COLOR_STROKE_R", config.color_stroke_red);
+	output.tag.set_property("COLOR_STROKE_G", config.color_stroke_green);
+	output.tag.set_property("COLOR_STROKE_B", config.color_stroke_blue);
 	output.tag.set_property("STROKE_WIDTH", config.stroke_width);
 	output.tag.set_property("MOTION_STRATEGY", config.motion_strategy);
 	output.tag.set_property("LOOP", config.loop);
@@ -1748,15 +1722,11 @@ void TitleMain::save_data(KeyFrame *keyframe)
 
 void TitleMain::read_data(KeyFrame *keyframe)
 {
+	int color;
 	FileXML input;
 
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
-	int new_interlace = 0;
-	int new_horizontal = 0;
-	int new_luminance = 0;
-
-	config.prev_border_pts = keyframe->pos_time;
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("TITLE"))
@@ -1765,8 +1735,20 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			input.tag.get_property("ENCODING", config.encoding);
 			config.style = input.tag.get_property("STYLE", (int64_t)config.style);
 			config.size = input.tag.get_property("SIZE", config.size);
-			config.color = input.tag.get_property("COLOR", config.color);
-			config.color_stroke = input.tag.get_property("COLOR_STROKE", config.color_stroke);
+			color = input.tag.get_property("COLOR", 0);
+			if(color)
+			{
+				config.color_red = (color >> 8) & 0xff00;
+				config.color_green = (color & 0xff00);
+				config.color_blue = (color << 8) & 0xff00;
+			}
+			color = input.tag.get_property("COLOR_STROKE", 0);
+			if(color)
+			{
+				config.color_stroke_red = (color >> 8) & 0xff00;
+				config.color_stroke_green = (color & 0xff00);
+				config.color_stroke_blue = (color << 8) & 0xff00;
+			}
 			config.stroke_width = input.tag.get_property("STROKE_WIDTH", config.stroke_width);
 			config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
 			config.loop = input.tag.get_property("LOOP", config.loop);

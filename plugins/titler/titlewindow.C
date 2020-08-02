@@ -1,26 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bclistboxitem.h"
 #include "bctitle.h"
+#include "cinelerra.h"
 #include "titlewindow.h"
 #include "bcfontentry.h"
 #include "clip.h"
@@ -95,8 +80,8 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 			}
 		}
 
-		if(!exists) fonts.append(new 
-			BC_ListBoxItem(fontlist->values[i]->displayname));
+		if(!exists)
+			fonts.append(new BC_ListBoxItem(fontlist->values[i]->displayname));
 	}
 
 // Sort font list
@@ -244,7 +229,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 		get_h() - y - 10);
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_color();
-
 }
 
 TitleWindow::~TitleWindow()
@@ -296,14 +280,13 @@ void  TitleWindow::next_font()
 	plugin->send_configure_change();
 }
 
-
 void TitleWindow::update_color()
 {
-	set_color(plugin->config.color);
+	set_color(plugin->config.color());
 	draw_box(color_x, color_y, 100, 30);
 	flash(color_x, color_y, 100, 30);
 #ifdef USE_OUTLINE
-	set_color(plugin->config.color_stroke);
+	set_color(plugin->config.color_stroke());
 	draw_box(color_stroke_x, color_stroke_y, 100, 30);
 	flash(color_stroke_x, color_stroke_y, 100, 30);
 #endif
@@ -334,17 +317,18 @@ void TitleWindow::update()
 	motion->update(TitleMain::motion_to_text(plugin->config.motion_strategy));
 	loop->update(plugin->config.loop);
 	dropshadow->update(plugin->config.dropshadow);
-	fade_in->update((float)plugin->config.fade_in);
-	fade_out->update((float)plugin->config.fade_out);
+	fade_in->update(plugin->config.fade_in);
+	fade_out->update(plugin->config.fade_out);
 #ifdef USE_OUTLINE
-	stroke_width->update((float)plugin->config.stroke_width);
+	stroke_width->update(plugin->config.stroke_width);
 #endif
 	font->update(plugin->config.font);
 	text->update(plugin->config.text);
 	speed->update(plugin->config.pixels_per_second);
 	update_justification();
 	update_color();
-	color_thread->update_gui(plugin->config.color, 0);
+	color_thread->update_gui(plugin->config.color_red,
+		plugin->config.color_green, plugin->config.color_blue, 0);
 }
 
 
@@ -364,6 +348,7 @@ void TitleFontTumble::handle_down_event()
 	window->next_font();
 }
 
+
 TitleBold::TitleBold(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.style & FONT_BOLD, _("Bold"))
 {
@@ -378,6 +363,7 @@ int TitleBold::handle_event()
 	return 1;
 }
 
+
 TitleItalic::TitleItalic(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.style & FONT_ITALIC, _("Italic"))
 {
@@ -391,6 +377,7 @@ int TitleItalic::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleStroke::TitleStroke(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_CheckBox(x, y, client->config.style & FONT_OUTLINE, _("Outline"))
@@ -421,13 +408,9 @@ TitleSize::TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char 
 	this->window = window;
 }
 
-TitleSize::~TitleSize()
-{
-}
-
 int TitleSize::handle_event()
 {
-	client->config.size = atol(get_text());
+	client->config.size = atoi(get_text());
 	client->send_configure_change();
 	return 1;
 }
@@ -439,6 +422,7 @@ void TitleSize::update(int size)
 	BC_PopupTextBox::update(string);
 }
 
+
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Color..."))
 {
@@ -448,9 +432,11 @@ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x
 
 int TitleColorButton::handle_event()
 {
-	window->color_thread->start_window(client->config.color, 0);
+	window->color_thread->start_window(client->config.color_red,
+		client->config.color_green, client->config.color_blue, 0);
 	return 1;
 }
+
 
 TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Outline color..."))
@@ -462,7 +448,9 @@ TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *w
 int TitleColorStrokeButton::handle_event()
 {
 #ifdef USE_OUTLINE
-	window->color_stroke_thread->start_window(client->config.color_stroke, 0);
+	window->color_stroke_thread->start_window(client->config.color_stroke_red,
+		client->config.color_stroke_green,
+		client->config.color_stroke_blue, 0);
 #endif
 	return 1;
 }
@@ -487,6 +475,7 @@ int TitleMotion::handle_event()
 	return 1;
 }
 
+
 TitleLoop::TitleLoop(TitleMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.loop, _("Loop"))
 {
@@ -500,17 +489,20 @@ int TitleLoop::handle_event()
 	return 1;
 }
 
+
 TitleTimecode::TitleTimecode(TitleMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.timecode, _("Stamp timecode"))
 {
 	this->client = client;
 }
+
 int TitleTimecode::handle_event()
 {
 	client->config.timecode = get_value();
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleTimecodeFormat::TitleTimecodeFormat(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, 
@@ -525,9 +517,6 @@ TitleTimecodeFormat::TitleTimecodeFormat(TitleMain *client, TitleWindow *window,
 	this->window = window;
 }
 
-TitleTimecodeFormat::~TitleTimecodeFormat()
-{
-}
 int TitleTimecodeFormat::handle_event()
 {
 	strcpy(client->config.timecodeformat, get_text());
@@ -535,12 +524,13 @@ int TitleTimecodeFormat::handle_event()
 	return 1;
 }
 
+
 TitleFade::TitleFade(TitleMain *client, 
 	TitleWindow *window, 
 	double *value, 
 	int x, 
 	int y)
- : BC_TextBox(x, y, 90, 1, (float)*value)
+ : BC_TextBox(x, y, 90, 1, *value)
 {
 	this->client = client;
 	this->window = window;
@@ -553,6 +543,7 @@ int TitleFade::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, 
@@ -573,6 +564,7 @@ int TitleFont::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleText::TitleText(TitleMain *client, 
 	TitleWindow *window, 
@@ -614,7 +606,7 @@ TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, 
 
 int TitleDropShadow::handle_event()
 {
-	client->config.dropshadow = atol(get_text());
+	client->config.dropshadow = atoi(get_text());
 	client->send_configure_change();
 	return 1;
 }
@@ -623,8 +615,8 @@ int TitleDropShadow::handle_event()
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
 	client->config.x,
-	-2048.0,
-	2048.0,
+	(double)-MAX_FRAME_WIDTH,
+	(double)MAX_FRAME_WIDTH,
 	x, 
 	y, 
 	60)
@@ -635,16 +627,17 @@ TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
 
 int TitleX::handle_event()
 {
-	client->config.x = atol(get_text());
+	client->config.x = atof(get_text());
 	client->send_configure_change();
 	return 1;
 }
 
+
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
 	client->config.y,
-	-2048.0,
-	2048.0,
+	(double)-MAX_FRAME_WIDTH,
+	(double)MAX_FRAME_WIDTH,
 	x, 
 	y, 
 	60)
@@ -655,10 +648,11 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 
 int TitleY::handle_event()
 {
-	client->config.y = atol(get_text());
+	client->config.y = atof(get_text());
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleStrokeW::TitleStrokeW(TitleMain *client, 
 	TitleWindow *window, 
@@ -714,10 +708,10 @@ TitleLeft::TitleLeft(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleLeft::handle_event()
 {
 	client->config.hjustification = JUSTIFY_LEFT;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleCenter::TitleCenter(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_Radial(x, y, client->config.hjustification == JUSTIFY_CENTER, _("Center"))
@@ -725,13 +719,14 @@ TitleCenter::TitleCenter(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleCenter::handle_event()
 {
 	client->config.hjustification = JUSTIFY_CENTER;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleRight::TitleRight(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_Radial(x, y, client->config.hjustification == JUSTIFY_RIGHT, _("Right"))
@@ -743,11 +738,9 @@ TitleRight::TitleRight(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleRight::handle_event()
 {
 	client->config.hjustification = JUSTIFY_RIGHT;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
-
 
 
 TitleTop::TitleTop(TitleMain *client, TitleWindow *window, int x, int y)
@@ -760,10 +753,10 @@ TitleTop::TitleTop(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleTop::handle_event()
 {
 	client->config.vjustification = JUSTIFY_TOP;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleMid::TitleMid(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_Radial(x, y, client->config.vjustification == JUSTIFY_MID, _("Mid"))
@@ -775,10 +768,10 @@ TitleMid::TitleMid(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleMid::handle_event()
 {
 	client->config.vjustification = JUSTIFY_MID;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleBottom::TitleBottom(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_Radial(x, y, client->config.vjustification == JUSTIFY_BOTTOM, _("Bottom"))
@@ -790,7 +783,6 @@ TitleBottom::TitleBottom(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleBottom::handle_event()
 {
 	client->config.vjustification = JUSTIFY_BOTTOM;
-	window->update_justification();
 	client->send_configure_change();
 	return 1;
 }
@@ -803,14 +795,15 @@ TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window)
 	this->window = window;
 }
 
-int TitleColorThread::handle_new_color(int output, int /*alpha*/)
+int TitleColorThread::handle_new_color(int red, int green, int blue, int alpha)
 {
-	client->config.color = output;
-	window->update_color();
-	window->flush();
+	client->config.color_red = red;
+	client->config.color_green = green;
+	client->config.color_blue = blue;
 	client->send_configure_change();
 	return 1;
 }
+
 
 TitleColorStrokeThread::TitleColorStrokeThread(TitleMain *client, TitleWindow *window)
  : ColorThread(0, "Stroke", client->new_picon())
@@ -819,11 +812,11 @@ TitleColorStrokeThread::TitleColorStrokeThread(TitleMain *client, TitleWindow *w
 	this->window = window;
 }
 
-int TitleColorStrokeThread::handle_event(int output)
+int TitleColorStrokeThread::handle_new_color(int red, int green, int blue, int alpha)
 {
-	client->config.color_stroke = output;
-	window->update_color();
-	window->flush();
+	client->config.color_stroke_red = red;
+	client->config.color_stroke_green = green;
+	client->config.color_stroke_blue = blue;
 	client->send_configure_change();
 	return 1;
 }
