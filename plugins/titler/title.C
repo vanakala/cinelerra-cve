@@ -180,14 +180,38 @@ TitleGlyph::TitleGlyph()
 	char_code = 0;
 	data = 0;
 	data_stroke = 0;
+	width = 0;
+	height = 0;
+	pitch = 0;
+	advance_w = 0;
+	left = 0;
+	top = 0;
+	freetype_index = 0;
 }
 
 TitleGlyph::~TitleGlyph()
 {
-	if(data) delete data;
-	if(data_stroke) delete data_stroke;
+	delete data;
+	delete data_stroke;
 }
 
+void TitleGlyph::dump(int indent, int dumpdata)
+{
+	printf("%*sTitleGlyph %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*schar code %#lx\n", indent, "", char_code);
+	printf("%*s(%d,%d) [%d,%d] pitch %d adwance_w %d idx %d\n", indent, "",
+		left, top, width, height, pitch, advance_w, freetype_index);
+	printf("%*sdata %p data_stroke %p\n", indent, "", data, data_stroke);
+	if(dumpdata)
+	{
+		indent++;
+		if(data)
+			data->dump(indent, 1);
+		if(data_stroke)
+			data_stroke->dump(indent, 1);
+	}
+}
 
 GlyphPackage::GlyphPackage() : LoadPackage()
 {
@@ -220,11 +244,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 	current_font = plugin->get_font();
 
 	if(plugin->load_freetype_face(freetype_library,
-		freetype_face, current_font->path))
-	{
-		errormsg(_("GlyphUnit::process_package FT_New_Face failed"));
+			freetype_face, current_font->path))
 		result = 1;
-	}
 
 	if(!result)
 	{
@@ -242,12 +263,11 @@ void GlyphUnit::process_package(LoadPackage *package)
 			}
 		}
 		FT_Set_Pixel_Sizes(freetype_face, plugin->config.size, 0);
-
 		if(gindex == 0)
 		{
 // carrige return
-			if (glyph->char_code != '\n')
-				errormsg(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
+			if(glyph->char_code != '\n')
+				errormsg(_("Titler can't find glyph for code: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
@@ -257,24 +277,6 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->top = 9;
 			glyph->freetype_index = 0;
 			glyph->advance_w = 8;
-			glyph->data = new VFrame(0,
-				8,
-				8,
-				BC_A8,
-				8);
-			glyph->data->clear_frame();
-			glyph->data_stroke = 0;
-// create outline glyph
-			if(plugin->config.stroke_width >= ZERO &&
-				(plugin->config.style & FONT_OUTLINE))
-			{
-				glyph->data_stroke = new VFrame(0,
-					8,
-					8,
-					BC_A8,
-					8);
-				glyph->data_stroke->clear_frame();
-			}
 		}
 		else
 // char found and no outline desired
@@ -338,12 +340,6 @@ void GlyphUnit::process_package(LoadPackage *package)
 			if(bbox.xMin == 0 && bbox.xMax == 0 && bbox.yMin ==0 && bbox.yMax == 0)
 			{
 				FT_Done_Glyph(glyph_image);
-				glyph->data = new VFrame(0, 0, BC_A8, 0);
-				glyph->data_stroke = new VFrame(0, 0, BC_A8, 0);
-				glyph->width = 0;
-				glyph->height = 0;
-				glyph->top = 0;
-				glyph->left = 0;
 				glyph->advance_w = ((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
@@ -361,12 +357,6 @@ void GlyphUnit::process_package(LoadPackage *package)
 // this never happens, but FreeType has a bug regarding Linotype's Palatino font
 				FT_Stroker_Done(stroker);
 				FT_Done_Glyph(glyph_image);
-				glyph->data = new VFrame(0, 0, BC_A8, 0);
-				glyph->data_stroke = new VFrame(0, 0, BC_A8, 0);
-				glyph->width = 0;
-				glyph->height = 0;
-				glyph->top = 0;
-				glyph->left = 0;
 				glyph->advance_w = ((int)(freetype_face->glyph->advance.x +
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
@@ -393,7 +383,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->left = 0;
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
-			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x +
+			int real_advance = ((int)ceil((double)freetype_face->glyph->advance.x +
 				plugin->config.stroke_width * 64) >> 6);
 			glyph->advance_w = glyph->width + glyph->left;
 			if(real_advance > glyph->advance_w)
@@ -416,9 +406,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 				&bm);
 			bm.buffer = glyph->data_stroke->get_data();
 			FT_Outline_Get_Bitmap(freetype_library,
-				&outline,
-				&bm);
-			FT_Outline_Done(freetype_library,&outline);
+				&outline, &bm);
+			FT_Outline_Done(freetype_library, &outline);
 			FT_Stroker_Done(stroker);
 			FT_Done_Glyph(glyph_image);
 		}
@@ -506,12 +495,15 @@ void TitleUnit::process_package(LoadPackage *package)
 		for(int i = 0; i < plugin->glyphs.total; i++)
 		{
 			TitleGlyph *glyph = plugin->glyphs.values[i];
+
 			if(glyph->char_code == pkg->char_code)
 			{
-				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
+				if(glyph->data)
+					draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
 
 				if(plugin->config.stroke_width >= ZERO &&
-					(plugin->config.style & FONT_OUTLINE))
+					(plugin->config.style & FONT_OUTLINE) &&
+					glyph->data_stroke)
 				{
 					VFrame *tmp = glyph->data;
 					glyph->data = glyph->data_stroke;

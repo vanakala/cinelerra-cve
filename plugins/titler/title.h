@@ -139,9 +139,16 @@ public:
 	TitleGlyph();
 	~TitleGlyph();
 
+	void dump(int indent, int dumpdata = 0);
 	// character in UCS-4
 	FT_ULong char_code;
-	int width, height, pitch, advance_w, left, top, freetype_index;
+	int width;
+	int height;
+	int pitch;
+	int advance_w;
+	int left;
+	int top;
+	int freetype_index;
 	VFrame *data;
 	VFrame *data_stroke;
 };
