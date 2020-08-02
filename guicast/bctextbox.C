@@ -74,6 +74,7 @@ BC_TextBox::BC_TextBox(int x,
 			wtext_len = TEXTBOXLEN;
 		wcsncpy(wide_text, wtext, TEXTBOXLEN);
 		wide_text[TEXTBOXLEN] = 0;
+		ntext[0] = 0;
 	}
 	else if(text)
 	{
