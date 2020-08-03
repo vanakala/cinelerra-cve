@@ -591,15 +591,16 @@ int TitleDropShadow::handle_event()
 
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	client->config.x,
-	(double)-MAX_FRAME_WIDTH,
-	(double)MAX_FRAME_WIDTH,
+	(int)client->config.x,
+	-MAX_FRAME_WIDTH,
+	MAX_FRAME_WIDTH,
 	x, 
 	y, 
 	60)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(0);
 }
 
 int TitleX::handle_event()
@@ -612,15 +613,16 @@ int TitleX::handle_event()
 
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	client->config.y,
-	(double)-MAX_FRAME_WIDTH,
-	(double)MAX_FRAME_WIDTH,
+	(int)client->config.y,
+	-MAX_FRAME_HEIGHT,
+	MAX_FRAME_HEIGHT,
 	x, 
 	y, 
 	60)
 {
 	this->client = client;
 	this->window = window;
+	set_precision(0);
 }
 
 int TitleY::handle_event()
@@ -645,6 +647,7 @@ TitleStrokeW::TitleStrokeW(TitleMain *client,
 {
 	this->client = client;
 	this->window = window;
+	set_precision(2);
 }
 
 int TitleStrokeW::handle_event()
@@ -657,14 +660,15 @@ int TitleStrokeW::handle_event()
 
 TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
-	client->config.pixels_per_second,
-	0.0,
-	1000.0,
+	(int)client->config.pixels_per_second,
+	1,
+	2 * MAX_FRAME_HEIGHT,
 	x, 
 	y, 
 	70)
 {
 	this->client = client;
+	set_precision(0);
 }
 
 int TitleSpeed::handle_event()
