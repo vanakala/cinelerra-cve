@@ -117,10 +117,8 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	w1 = italic->get_w();
 	add_tool(bold = new TitleBold(plugin, this, x, y + 50));
 	w1 = MAX(bold->get_w(), w1);
-#ifdef USE_OUTLINE
 	add_tool(stroke = new TitleStroke(plugin, this, x, y + 80));
 	w1 = MAX(stroke->get_w(), w1);
-#endif
 	x += w1 + 10;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(plugin, this, x, y + 20));
@@ -181,28 +179,18 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	x = 10;
 	y += 50;
-#ifdef  USE_OUTLINE
 	y1 = y + 40;
-#else
-	y1 = y + 10;
-#endif
 	add_tool(text_title = new BC_Title(x, y1, _("Text:")));
 
 	x += MAX(100, text_title->get_w()) + 10;
 	add_tool(timecode = new TitleTimecode(plugin, x, y));
 
 	BC_SubWindow *thisw;
-#ifdef USE_OUTLINE
 	y1 = y + 30;
-#else
-	x += timecode->get_w() + 20;
-	y1 = y;
-#endif
 	add_tool(thisw = new BC_Title(x, y1, _("Format:")));
 	w1 = thisw->get_w() + 5;
 	timecodeformat = new TitleTimecodeFormat(plugin, this, x + w1, y1);
 
-#ifdef USE_OUTLINE
 	x += w1 + timecodeformat->get_w() + 10;
 	add_tool(strokewidth_title = new BC_Title(x, y, _("Outline width:")));
 	stroke_width = new TitleStrokeW(plugin,
@@ -217,7 +205,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	color_stroke_x = x + color_stroke_button->get_w() + 10;
 	color_stroke_y = y1;
 	color_stroke_thread = new TitleColorStrokeThread(plugin, this);
-#endif
 
 	x = 10;
 	y = y1 + 35;
@@ -237,9 +224,7 @@ TitleWindow::~TitleWindow()
 	timecodeformats.remove_all_objects();
 	delete timecodeformat;
 	delete color_thread;
-#ifdef USE_OUTLINE
 	delete color_stroke_thread;
-#endif
 	delete title_x;
 	delete title_y;
 }
@@ -284,12 +269,8 @@ void TitleWindow::update_color()
 {
 	set_color(plugin->config.color());
 	draw_box(color_x, color_y, 100, 30);
-	flash(color_x, color_y, 100, 30);
-#ifdef USE_OUTLINE
 	set_color(plugin->config.color_stroke());
 	draw_box(color_stroke_x, color_stroke_y, 100, 30);
-	flash(color_stroke_x, color_stroke_y, 100, 30);
-#endif
 }
 
 void TitleWindow::update_justification()
@@ -308,9 +289,7 @@ void TitleWindow::update()
 	title_y->update(plugin->config.y);
 	italic->update(plugin->config.style & FONT_ITALIC);
 	bold->update(plugin->config.style & FONT_BOLD);
-#ifdef USE_OUTLINE
 	stroke->update(plugin->config.style & FONT_OUTLINE);
-#endif
 	size->update(plugin->config.size);
 	timecode->update(plugin->config.timecode);
 	timecodeformat->update(plugin->config.timecodeformat);
@@ -319,9 +298,7 @@ void TitleWindow::update()
 	dropshadow->update(plugin->config.dropshadow);
 	fade_in->update(plugin->config.fade_in);
 	fade_out->update(plugin->config.fade_out);
-#ifdef USE_OUTLINE
 	stroke_width->update(plugin->config.stroke_width);
-#endif
 	font->update(plugin->config.font);
 	text->update(plugin->config.text);
 	speed->update(plugin->config.pixels_per_second);
@@ -329,6 +306,8 @@ void TitleWindow::update()
 	update_color();
 	color_thread->update_gui(plugin->config.color_red,
 		plugin->config.color_green, plugin->config.color_blue, 0);
+	color_stroke_thread->update_gui(plugin->config.color_stroke_red,
+		plugin->config.color_stroke_green, plugin->config.color_stroke_blue, 0);
 }
 
 
@@ -447,11 +426,9 @@ TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *w
 
 int TitleColorStrokeButton::handle_event()
 {
-#ifdef USE_OUTLINE
 	window->color_stroke_thread->start_window(client->config.color_stroke_red,
 		client->config.color_stroke_green,
 		client->config.color_stroke_blue, 0);
-#endif
 	return 1;
 }
 
@@ -660,8 +637,8 @@ TitleStrokeW::TitleStrokeW(TitleMain *client,
 	int y)
  : BC_TumbleTextBox(window,
 	client->config.stroke_width,
-	-2048.0,
-	2048.0,
+	0.5,
+	24.0,
 	x, 
 	y, 
 	60)

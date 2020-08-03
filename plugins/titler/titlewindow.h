@@ -6,8 +6,6 @@
 #ifndef TITLEWINDOW_H
 #define TITLEWINDOW_H
 
-class TitleInterlace;
-
 #include "colorpicker.h"
 #include "filexml.h"
 #include "mutex.h"
@@ -68,16 +66,12 @@ public:
 	BC_Title *style_title;
 	TitleItalic *italic;
 	TitleBold *bold;
-
-#ifdef USE_OUTLINE
 	TitleStroke *stroke;
 	TitleColorStrokeButton *color_stroke_button;
 	TitleColorStrokeThread *color_stroke_thread;
 	BC_Title *strokewidth_title;
 	TitleStrokeW *stroke_width;
 	int color_stroke_x, color_stroke_y;
-#endif
-
 	int color_x, color_y;
 	BC_Title *size_title;
 	TitleSize *size;
