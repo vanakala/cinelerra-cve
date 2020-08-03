@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcdelete.h"
 #include "bcfilebox.h"
@@ -76,10 +60,6 @@ BC_FileBoxListBox::BC_FileBoxListBox(int x, int y, BC_FileBox *filebox)
 	set_sort_column(filebox->sort_column);
 	set_sort_order(filebox->sort_order);
 	set_allow_drag_column(1);
-}
-
-BC_FileBoxListBox::~BC_FileBoxListBox()
-{
 }
 
 int BC_FileBoxListBox::handle_event()
@@ -144,10 +124,6 @@ BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
 	this->filebox = filebox; 
 }
 
-BC_FileBoxTextBox::~BC_FileBoxTextBox()
-{
-}
-
 int BC_FileBoxTextBox::handle_event()
 {
 	return 1;
@@ -163,6 +139,7 @@ BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *fileb
 int BC_FileBoxDirectoryText::handle_event()
 {
 	char *path;
+
 	path = get_text();
 	// is a directory, change directories
 	if(filebox->fs->is_dir(path))
@@ -186,8 +163,6 @@ int BC_FileBoxFilterText::handle_event()
 	filebox->update_filter(get_text());
 	return 0;
 }
-
-
 
 
 BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
@@ -219,10 +194,6 @@ BC_FileBoxCancel::BC_FileBoxCancel(BC_FileBox *filebox)
 	set_tooltip(_("Cancel the operation"));
 }
 
-BC_FileBoxCancel::~BC_FileBoxCancel()
-{
-}
-
 int BC_FileBoxCancel::handle_event()
 {
 	filebox->newfolder_thread->interrupt();
@@ -239,10 +210,6 @@ BC_FileBoxUseThis::BC_FileBoxUseThis(BC_FileBox *filebox)
 {
 	this->filebox = filebox; 
 	set_tooltip(_("Submit the directory"));
-}
-
-BC_FileBoxUseThis::~BC_FileBoxUseThis()
-{
 }
 
 int BC_FileBoxUseThis::handle_event()
@@ -263,10 +230,6 @@ BC_FileBoxOK::BC_FileBoxOK(BC_FileBox *filebox)
 		set_tooltip(_("Descend directory"));
 	else
 		set_tooltip(_("Submit the file"));
-}
-
-BC_FileBoxOK::~BC_FileBoxOK()
-{
 }
 
 int BC_FileBoxOK::handle_event()
@@ -309,6 +272,7 @@ BC_FileBoxNewfolder::BC_FileBoxNewfolder(int x, int y, BC_FileBox *filebox)
 	this->filebox = filebox; 
 	set_tooltip(_("Create new folder"));
 }
+
 int BC_FileBoxNewfolder::handle_event()
 {
 	filebox->newfolder_thread->start_new_folder();
@@ -326,10 +290,11 @@ BC_FileBoxUpdir::BC_FileBoxUpdir(int x, int y, BC_FileBox *filebox)
 int BC_FileBoxUpdir::handle_event()
 {
 // Need a temp so submit_file can expand it
-	sprintf(string, _(".."));
+	strcpy(string, _(".."));
 	filebox->submit_file(string);
 	return 1;
 }
+
 
 BC_FileBoxDelete::BC_FileBoxDelete(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_delete_images)
@@ -351,6 +316,7 @@ BC_FileBoxReload::BC_FileBoxReload(int x, int y, BC_FileBox *filebox)
 	this->filebox = filebox; 
 	set_tooltip(_("Refresh"));
 }
+
 int BC_FileBoxReload::handle_event()
 {
 	filebox->refresh();
@@ -412,7 +378,7 @@ BC_FileBox::BC_FileBox(int x,
 // Test directory
 	if(fs->update(directory))
 	{
-		sprintf(this->current_path, "~");
+		strcpy(this->current_path, "~");
 		fs->complete_path(this->current_path);
 		fs->update(this->current_path);
 		strcpy(directory, fs->get_current_dir());
@@ -443,7 +409,6 @@ BC_FileBox::BC_FileBox(int x,
 		filter_list.append(new BC_ListBoxItem("[*.ifo][*.vob]"));
 		filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3][*.wav]"));
 		filter_list.append(new BC_ListBoxItem("[*.avi][*.mpg][*.m2v][*.m1v][*.mov]"));
-		filter_list.append(new BC_ListBoxItem("heroine*"));
 		filter_list.append(new BC_ListBoxItem("*.xml"));
 		fs->set_filter(get_resources()->filebox_filter);
 	}
@@ -620,11 +585,6 @@ int BC_FileBox::keypress_event()
 	return 0;
 }
 
-int BC_FileBox::handle_event()
-{
-	return 0;
-}
-
 void BC_FileBox::extract_extension(char *out, const char *in)
 {
 	int i;
@@ -680,23 +640,23 @@ void BC_FileBox::create_tables()
 		{
 			static const char *month_text[13] = 
 			{
-				"Null",
-				"Jan",
-				"Feb",
-				"Mar",
-				"Apr",
-				"May",
-				"Jun",
-				"Jul",
-				"Aug",
-				"Sep",
-				"Oct",
-				"Nov",
-				"Dec"
+				N_("Null"),
+				N_("Jan"),
+				N_("Feb"),
+				N_("Mar"),
+				N_("Apr"),
+				N_("May"),
+				N_("Jun"),
+				N_("Jul"),
+				N_("Aug"),
+				N_("Sep"),
+				N_("Oct"),
+				N_("Nov"),
+				N_("Dec")
 			};
 			sprintf(string, 
 				"%s %d, %d", 
-				month_text[file_item->month],
+				_(month_text[file_item->month]),
 				file_item->day,
 				file_item->year);
 			new_item = new BC_ListBoxItem(string, get_resources()->file_color);
@@ -752,7 +712,6 @@ BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 			}
 		}
 	}
-
 	return icons[icon_type];
 }
 
@@ -782,7 +741,6 @@ int BC_FileBox::column_of_type(int type)
 	return 0;
 }
 
-
 void BC_FileBox::refresh()
 {
 	create_tables();
@@ -804,7 +762,6 @@ void BC_FileBox::update_filter(const char *filter)
 	refresh();
 	strcpy(get_resources()->filebox_filter, filter);
 }
-
 
 void BC_FileBox::move_column(int src, int dst)
 {
@@ -860,7 +817,6 @@ void BC_FileBox::move_column(int src, int dst)
 
 	refresh();
 }
-
 
 void BC_FileBox::submit_dir(char *dir)
 {
@@ -1079,6 +1035,7 @@ void BC_FileBox::delete_files()
 	int i = 1;
 	char *path;
 	FileSystem fs;
+
 	while((path = get_path(i)))
 	{
 // Not directory.  Remove it.

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCFILEBOX_H
 #define BCFILEBOX_H
@@ -40,7 +24,7 @@ class BC_FileBoxListBox : public BC_ListBox
 {
 public:
 	BC_FileBoxListBox(int x, int y, BC_FileBox *filebox);
-	virtual ~BC_FileBoxListBox();
+	virtual ~BC_FileBoxListBox() {};
 
 	int handle_event();
 	void selection_changed();
@@ -56,7 +40,6 @@ class BC_FileBoxTextBox : public BC_TextBox
 {
 public:
 	BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox);
-	~BC_FileBoxTextBox();
 
 	int handle_event();
 	BC_FileBox *filebox;
@@ -66,7 +49,6 @@ class BC_FileBoxOK : public BC_OKButton
 {
 public:
 	BC_FileBoxOK(BC_FileBox *filebox);
-	~BC_FileBoxOK();
 
 	int handle_event();
 
@@ -77,7 +59,7 @@ class BC_FileBoxUseThis : public BC_Button
 {
 public:
 	BC_FileBoxUseThis(BC_FileBox *filebox);
-	~BC_FileBoxUseThis();
+
 	int handle_event();
 
 	BC_FileBox *filebox;
@@ -87,7 +69,6 @@ class BC_FileBoxCancel : public BC_CancelButton
 {
 public:
 	BC_FileBoxCancel(BC_FileBox *filebox);
-	~BC_FileBoxCancel();
 
 	int handle_event();
 
@@ -168,7 +149,6 @@ public:
 };
 
 
-
 class BC_FileBoxRecent : public BC_ListBox
 {
 public:
@@ -176,8 +156,6 @@ public:
 	int handle_event();
 	BC_FileBox *filebox;
 };
-
-
 
 
 class BC_FileBox : public BC_Window
@@ -217,7 +195,7 @@ public:
 
 // When file is submitted this is called for the user to retrieve it before the
 // window is deleted.
-	virtual int handle_event();
+	virtual int handle_event() { return 0; };
 
 	void create_history();
 	void update_history();
