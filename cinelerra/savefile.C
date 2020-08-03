@@ -22,6 +22,7 @@
 #include "confirmsave.h"
 #include "bchash.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "glthread.h"
 #include "edl.h"
 #include "mainerror.h"
@@ -123,22 +124,19 @@ void SaveAs::run()
 {
 // ======================================= get path from user
 	int result;
-	char directory[1024], filename[1024];
+	char filename[BCTEXTLEN];
 	int cx, cy;
-	strcpy(directory, "~");
-	mwindow->defaults->get("DIRECTORY", directory);
 
 // Loop if file exists
 	do{
 		SaveFileWindow *window;
 
 		mwindow->get_abs_cursor_pos(&cx, &cy);
-		window = new SaveFileWindow(mwindow, cx, cy, directory);
+		window = new SaveFileWindow(mwindow, cx, cy, mainsession->filename);
 		result = window->run_window();
-		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
+		mwindow->defaults->delete_key("DIRECTORY");
 		strcpy(filename, window->get_submitted_path());
 		delete window;
-
 // Extend the filename with .xml
 		if(strlen(filename) < 4 || 
 			strcasecmp(&filename[strlen(filename) - 4], ".xml"))
