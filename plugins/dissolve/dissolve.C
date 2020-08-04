@@ -25,6 +25,12 @@ DissolveMain::~DissolveMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
+void DissolveMain::reset_plugin()
+{
+	delete overlayer;
+	overlayer = 0;
+}
+
 PLUGIN_CLASS_METHODS
 
 void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
@@ -32,6 +38,7 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = outgoing->get_w();
 	int h = outgoing->get_h();
 	ptstime length = get_length();
+	int cmodel = outgoing->get_color_model();
 
 	if(length < EPSILON)
 		return;
@@ -47,27 +54,12 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 // Use software
 	if(!overlayer)
-		overlayer = new OverlayFrame(get_project_smp() + 1);
+		overlayer = new OverlayFrame(get_project_smp());
 
 // There is a problem when dissolving from a big picture to a small picture.
 // In order to make it dissolve correctly, we have to manually decrese alpha of big picture.
-	switch (outgoing->get_color_model())
+	switch(cmodel)
 	{
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		for(int i = 0; i < h; i++)
-		{
-			uint8_t* alpha_chan = (uint8_t *)outgoing->get_row_ptr(i) + 3;
-
-			for(int j = 0; j < w; j++)
-			{
-				*alpha_chan = (uint8_t)(*alpha_chan * (1 - fade));
-				alpha_chan += 4;
-			}
-		}
-		break;
-
-	case BC_YUVA16161616:
 	case BC_RGBA16161616:
 		for(int i = 0; i < h; i++)
 		{
@@ -76,7 +68,7 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			for(int j = 0; j < w; j++)
 			{
 				*alpha_chan = (uint16_t)(*alpha_chan * (1 - fade));
-				alpha_chan += 8;
+				alpha_chan += 4;
 			}
 		}
 		break;
@@ -94,20 +86,9 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		}
 		break;
 
-	case BC_RGBA_FLOAT:
-		for(int i = 0; i < h; i++)
-		{
-			float* alpha_chan = (float*)outgoing->get_row_ptr(i) + 3;
-
-			for(int j = 0; j < w; j++)
-			{
-				*alpha_chan = *alpha_chan * (1 - fade);
-				alpha_chan += sizeof(float);
-			}
-		}
-		break;
 	default:
-		break;
+		unsupported(cmodel);
+		return;
 	}
 
 	overlayer->overlay(outgoing, 

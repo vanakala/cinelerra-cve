@@ -32,6 +32,7 @@ public:
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void reset_plugin();
 	void handle_opengl();
 
 	OverlayFrame *overlayer;
