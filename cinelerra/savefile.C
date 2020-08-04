@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "confirmsave.h"
 #include "bchash.h"
@@ -39,23 +23,22 @@
 #include <string.h>
 
 
-SaveBackup::SaveBackup(MWindow *mwindow)
+SaveBackup::SaveBackup()
  : BC_MenuItem(_("Save backup"))
 {
-	this->mwindow = mwindow;
 }
 
 int SaveBackup::handle_event()
 {
-	mwindow->save_backup(1);
-	mwindow->gui->show_message(_("Saved backup."));
+	mwindow_global->save_backup(1);
+	mwindow_global->gui->show_message(_("Saved backup."));
 	return 1;
 }
 
 
-Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
+Save::Save()
+ : BC_MenuItem(_("Save"), "s", 's')
 { 
-	this->mwindow = mwindow; 
 	quit_now = 0; 
 }
 
@@ -72,8 +55,6 @@ int Save::handle_event()
 	}
 	else
 	{
-// save it
-// TODO: Move this into mwindow.
 		FileXML file;
 		master_edl->save_xml(&file,
 			mainsession->filename,
@@ -86,11 +67,11 @@ int Save::handle_event()
 			return 1;
 		}
 		else
-			mwindow->gui->show_message(_("\"%s\" %dC written"), mainsession->filename, strlen(file.string));
+			mwindow_global->gui->show_message(_("\"%s\" %dC written"), mainsession->filename, strlen(file.string));
 
 		mainsession->changes_made = 0;
 		if(saveas->quit_now)
-			mwindow->glthread->quit();
+			mwindow_global->glthread->quit();
 	}
 	return 1;
 }
@@ -101,10 +82,9 @@ void Save::save_before_quit()
 	handle_event();
 }
 
-SaveAs::SaveAs(MWindow *mwindow)
+SaveAs::SaveAs()
  : BC_MenuItem(_("Save as..."), ""), Thread()
 { 
-	this->mwindow = mwindow; 
 	quit_now = 0;
 }
 
@@ -131,49 +111,49 @@ void SaveAs::run()
 	do{
 		SaveFileWindow *window;
 
-		mwindow->get_abs_cursor_pos(&cx, &cy);
-		window = new SaveFileWindow(mwindow, cx, cy, mainsession->filename);
+		mwindow_global->get_abs_cursor_pos(&cx, &cy);
+		window = new SaveFileWindow(cx, cy, mainsession->filename);
 		result = window->run_window();
-		mwindow->defaults->delete_key("DIRECTORY");
+		mwindow_global->defaults->delete_key("DIRECTORY");
 		strcpy(filename, window->get_submitted_path());
 		delete window;
 // Extend the filename with .xml
 		if(strlen(filename) < 4 || 
-			strcasecmp(&filename[strlen(filename) - 4], ".xml"))
-		{
+				strcasecmp(&filename[strlen(filename) - 4], ".xml"))
 			strcat(filename, ".xml");
-		}
 
 // ======================================= try to save it
-		if(filename[0] == 0) return;              // no filename given
-		if(result == 1) return;          // user cancelled
+		if(filename[0] == 0)
+			return;              // no filename given
+		if(result == 1)
+			return;          // user cancelled
 		result = ConfirmSave::test_file(filename);
 	}while(result);        // file exists so repeat
 
 // save it
 	FileXML file;
-	mwindow->set_filename(filename);      // update the project name
+	mwindow_global->set_filename(filename);      // update the project name
 	strcpy(master_edl->project_path, filename);
 	master_edl->save_xml(&file, filename, 0, 0);
 
 	if(file.write_to_file(filename))
 	{
-		mwindow->set_filename(0);      // update the project name
+		mwindow_global->set_filename(0);      // update the project name
 		errorbox(_("Couldn't open %s."), filename);
 		return;
 	}
 	else
-		mwindow->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
+		mwindow_global->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
 
 	mainsession->changes_made = 0;
 	mmenu->add_load(filename);
 	if(quit_now)
-		mwindow->glthread->quit();
+		mwindow_global->glthread->quit();
 	return;
 }
 
 
-SaveFileWindow::SaveFileWindow(MWindow *mwindow, int absx, int absy,
+SaveFileWindow::SaveFileWindow(int absx, int absy,
 	char *init_directory)
  : BC_FileBox(absx,
 	absy - BC_WindowBase::get_resources()->filebox_h / 2,
@@ -181,6 +161,5 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, int absx, int absy,
 	MWindow::create_title(N_("Save")),
 	_("Enter a filename to save as"))
 { 
-	this->mwindow = mwindow; 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 }

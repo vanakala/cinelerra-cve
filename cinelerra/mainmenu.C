@@ -75,9 +75,9 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
-	filemenu->add_item(save = new Save(mwindow));
+	filemenu->add_item(save = new Save());
 	SaveAs *saveas;
-	filemenu->add_item(saveas = new SaveAs(mwindow));
+	filemenu->add_item(saveas = new SaveAs());
 	save->set_saveas(saveas);
 	saveas->set_mainmenu(this);
 
@@ -90,7 +90,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	filemenu->add_item(new DumpPlugins(mwindow));
 	filemenu->add_item(new ShowStatus(mwindow));
 	filemenu->add_item(new LoadBackup());
-	filemenu->add_item(new SaveBackup(mwindow));
+	filemenu->add_item(new SaveBackup());
 
 	BC_Menu *editmenu;
 	add_menu(editmenu = new BC_Menu(_("Edit")));
