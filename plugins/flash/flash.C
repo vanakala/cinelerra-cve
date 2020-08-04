@@ -25,62 +25,10 @@ FlashMain::~FlashMain()
 
 PLUGIN_CLASS_METHODS
 
-#define FLASH(type, temp_type, components, max, chroma_offset) \
-{ \
-	float round_factor = (sizeof(type) < 4) ? 0.5 : 0; \
-	temp_type foreground = (temp_type)(fraction * max + round_factor); \
-	temp_type chroma_foreground = foreground; \
-	if(chroma_offset) chroma_foreground = foreground * chroma_offset / max; \
-	temp_type transparency = max - foreground; \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *in_row = (type*)incoming->get_row_ptr(i); \
-		type *out_row = (type*)outgoing->get_row_ptr(i); \
-		if(is_before) \
-		{ \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*out_row = foreground + transparency * *out_row / max; \
-				out_row++; \
-				*out_row = chroma_foreground + transparency * *out_row / max; \
-				out_row++; \
-				*out_row = chroma_foreground + transparency * *out_row / max; \
-				out_row++; \
-				if(components == 4) \
-				{ \
-					*out_row = foreground + transparency * *out_row / max; \
-					out_row++; \
-				} \
-			} \
-		} \
-		else \
-		{ \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*out_row = foreground + transparency * *in_row / max; \
-				out_row++; \
-				in_row++; \
-				*out_row = chroma_foreground + transparency * *in_row / max; \
-				out_row++; \
-				in_row++; \
-				*out_row = chroma_foreground + transparency * *in_row / max; \
-				out_row++; \
-				in_row++; \
-				if(components == 4) \
-				{ \
-					*out_row = foreground + transparency * *in_row / max; \
-					out_row++; \
-					in_row++; \
-				} \
-			} \
-		} \
-	} \
-}
-
 void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	ptstime length = get_length();
+	int cmodel = incoming->get_color_model();
 
 	if(length < EPSILON)
 		return;
@@ -91,84 +39,109 @@ void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int is_before = source_pts < half;
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+	int foreground = round(fraction * 0xffff);
+	int transparency = 0xffff - foreground;
+	int chroma_foreground = foreground * 0x8000 / 0xffff;
 
-	switch(incoming->get_color_model())
+
+	switch(cmodel)
 	{
-	case BC_RGB888:
-		FLASH(unsigned char, int, 3, 0xff, 0x0);
-		break;
-	case BC_RGB_FLOAT:
-		FLASH(float, float, 3, 1.0, 0x0);
-		break;
-	case BC_RGBA8888:
-		FLASH(unsigned char, int, 4, 0xff, 0x0);
-		break;
-	case BC_RGBA_FLOAT:
-		FLASH(float, float, 4, 1.0, 0x0);
-		break;
-	case BC_YUV888:
-		FLASH(unsigned char, int, 3, 0xff, 0x80);
-		break;
-	case BC_YUVA8888:
-		FLASH(unsigned char, int, 4, 0xff, 0x80);
-		break;
-	case BC_RGB161616:
-		FLASH(uint16_t, int, 3, 0xffff, 0x0);
-		break;
 	case BC_RGBA16161616:
-		FLASH(uint16_t, int, 4, 0xffff, 0x0);
-		break;
-	case BC_YUV161616:
-		FLASH(uint16_t, int, 3, 0xffff, 0x8000);
-		break;
-	case BC_YUVA16161616:
-		FLASH(uint16_t, int, 4, 0xffff, 0x8000);
-		break;
-
-	case BC_AYUV16161616:
+		if(is_before)
 		{
-			int foreground = (int)(fraction * 0xffff);
-			int chroma_foreground = foreground * 0x8000 / 0xffff;
-			int transparency = 0xffff - foreground;
-
 			for(int i = 0; i < h; i++)
 			{
 				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(i);
 				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(i);
-				if(is_before)
+
+				for(int j = 0; j < w; j++)
 				{
-					for(int j = 0; j < w; j++)
-					{
-						*out_row = foreground + transparency * *out_row / 0xffff;
-						out_row++;
-						*out_row = foreground + transparency * *out_row / 0xffff;
-						out_row++;
-						*out_row = chroma_foreground + transparency * *out_row / 0xffff;
-						out_row++;
-						*out_row = chroma_foreground + transparency * *out_row / 0xffff;
-						out_row++;
-					}
-				}
-				else
-				{
-					for(int j = 0; j < w; j++)
-					{
-						*out_row = foreground + transparency * *in_row / 0xffff;
-						out_row++;
-						in_row++;
-						*out_row = foreground + transparency * *in_row / 0xffff;
-						out_row++;
-						in_row++;
-						*out_row = chroma_foreground + transparency * *in_row / 0xffff;
-						out_row++;
-						in_row++;
-						*out_row = chroma_foreground + transparency * *in_row / 0xffff;
-						out_row++;
-						in_row++;
-					}
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++;
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++; \
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++;
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++;
 				}
 			}
 		}
+		else
+		{
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*out_row = foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row = foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row =  foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row = foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+				}
+			}
+		}
+		break;
+
+	case BC_AYUV16161616:
+		if(is_before)
+		{
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++;
+					*out_row = foreground + transparency * *out_row / 0xffff;
+					out_row++;
+					*out_row = chroma_foreground + transparency * *out_row / 0xffff;
+					out_row++;
+					*out_row = chroma_foreground + transparency * *out_row / 0xffff;
+					out_row++;
+				}
+			}
+		}
+		else
+		{
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					*out_row = foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row = foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row = chroma_foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+					*out_row = chroma_foreground + transparency * *in_row / 0xffff;
+					out_row++;
+					in_row++;
+				}
+			}
+		}
+		break;
+
+	default:
+		unsupported(cmodel);
 		break;
 	}
 }
