@@ -31,6 +31,33 @@ public:
 		int x,
 		int y);
 	int handle_event();
+
+	BandWipeMain *plugin;
+	BandWipeWindow *window;
+};
+
+class BandWipeIn : public BC_Radial
+{
+public:
+	BandWipeIn(BandWipeMain *plugin,
+		BandWipeWindow *window,
+		int x,
+		int y);
+	int handle_event();
+
+	BandWipeMain *plugin;
+	BandWipeWindow *window;
+};
+
+class BandWipeOut : public BC_Radial
+{
+public:
+	BandWipeOut(BandWipeMain *plugin,
+		BandWipeWindow *window,
+		int x,
+		int y);
+	int handle_event();
+
 	BandWipeMain *plugin;
 	BandWipeWindow *window;
 };
@@ -42,6 +69,8 @@ public:
 	BandWipeWindow(BandWipeMain *plugin, int x, int y);
 
 	BandWipeCount *count;
+	BandWipeIn *in;
+	BandWipeOut *out;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 

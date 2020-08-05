@@ -31,26 +31,84 @@ BandWipeCount::BandWipeCount(BandWipeMain *plugin,
 
 int BandWipeCount::handle_event()
 {
-	plugin->bands = atol(get_text());
+	plugin->bands = atoi(get_text());
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
+
+BandWipeIn::BandWipeIn(BandWipeMain *plugin,
+	BandWipeWindow *window,
+	int x,
+	int y)
+ : BC_Radial(x, y,
+	plugin->direction == 0,
+	_("In"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int BandWipeIn::handle_event()
+{
+	update(1);
+	plugin->direction = 0;
+	window->out->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+BandWipeOut::BandWipeOut(BandWipeMain *plugin,
+	BandWipeWindow *window,
+	int x,
+	int y)
+ : BC_Radial(x, y,
+	plugin->direction == 1,
+	_("Out"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int BandWipeOut::handle_event()
+{
+	update(1);
+	plugin->direction = 1;
+	window->in->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
 
 BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
-	320, 
-	50)
+	260,
+	100)
 {
+	BC_WindowBase *win;
+	int x1;
 	x = y = 10;
 
-	add_subwindow(new BC_Title(x, y, _("Bands:")));
-	x += 50;
+	win = add_subwindow(new BC_Title(x, y, _("Bands:")));
+	x1 = x + win->get_w() + 10;
 	count = new BandWipeCount(plugin, 
 		this,
-		x,
+		x1,
 		y);
+	y += count->get_h() + 8;
+	win = add_subwindow(new BC_Title(x, y, _("Direction:")));
+	x1 = x + win->get_w() + 20;
+	add_subwindow(in = new BandWipeIn(plugin,
+		this,
+		x1,
+		y));
+	x1 += in->get_w() + 20;
+	add_subwindow(out = new BandWipeOut(plugin,
+		this,
+		x1,
+		y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -125,125 +183,101 @@ int BandWipeMain::load_configuration()
 	return 0;
 }
 
-#define BANDWIPE(type, components) \
-{ \
-	if(direction == 0) \
-	{ \
-		int x = round(w * source_pts / get_length()); \
- \
-		for(int i = 0; i < bands; i++) \
-		{ \
-			for(int j = 0; j < band_h; j++) \
-			{ \
-				int row = i * band_h + j; \
-				 \
-				if(row >= 0 && row < h) \
-				{ \
-					type *in_row = (type*)incoming->get_row_ptr(row); \
-					type *out_row = (type*)outgoing->get_row_ptr(row); \
- \
-					if(i % 2) \
-					{ \
-						for(int k = 0; k < x; k++) \
-						{ \
-							out_row[k * components + 0] = in_row[k * components + 0]; \
-							out_row[k * components + 1] = in_row[k * components + 1]; \
-							out_row[k * components + 2] = in_row[k * components + 2]; \
-							if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-						} \
-					} \
-					else \
-					{ \
-						for(int k = w - x; k < w; k++) \
-						{ \
-							out_row[k * components + 0] = in_row[k * components + 0]; \
-							out_row[k * components + 1] = in_row[k * components + 1]; \
-							out_row[k * components + 2] = in_row[k * components + 2]; \
-							if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-						} \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		int x = w - (int)(round(w * source_pts / get_length())); \
- \
-		for(int i = 0; i < bands; i++) \
-		{ \
-			for(int j = 0; j < band_h; j++) \
-			{ \
-				int row = i * band_h + j; \
-				 \
-				if(row >= 0 && row < h) \
-				{ \
-					type *in_row = (type*)incoming->get_row_ptr(row); \
-					type *out_row = (type*)outgoing->get_row_ptr(row); \
- \
-					if(i % 2) \
-					{ \
-						for(int k = x; k < w; k++) \
-						{ \
-							out_row[k * components + 0] = in_row[k * components + 0]; \
-							out_row[k * components + 1] = in_row[k * components + 1]; \
-							out_row[k * components + 2] = in_row[k * components + 2]; \
-							if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-						} \
-					} \
-					else \
-					{ \
-						for(int k = 0; k < w - x; k++) \
-						{ \
-							out_row[k * components + 0] = in_row[k * components + 0]; \
-							out_row[k * components + 1] = in_row[k * components + 1]; \
-							out_row[k * components + 2] = in_row[k * components + 2]; \
-							if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-						} \
-					} \
-				} \
-			} \
-		} \
-	} \
-}
-
-
-
 void BandWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	load_configuration();
-
+	int cmodel = incoming->get_color_model();
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+
+	load_configuration();
+
 	int band_h = ((bands == 0) ? h : (h / bands + 1));
 
 	if(get_length() < EPSILON)
 		return;
 
-	switch(incoming->get_color_model())
+	switch(cmodel)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			BANDWIPE(unsigned char, 3)
-			break;
-		case BC_RGB_FLOAT:
-			BANDWIPE(float, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			BANDWIPE(unsigned char, 4)
-			break;
-		case BC_RGBA_FLOAT:
-			BANDWIPE(float, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			BANDWIPE(uint16_t, 3)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-		case BC_AYUV16161616:
-			BANDWIPE(uint16_t, 4)
-			break;
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		if(direction == 0)
+		{
+			int x = round(w * source_pts / get_length());
+
+			for(int i = 0; i < bands; i++)
+			{
+				for(int j = 0; j < band_h; j++)
+				{
+					int row = i * band_h + j;
+
+					if(row >= 0 && row < h)
+					{
+						uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(row);
+						uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(row);
+
+						if(i % 2)
+						{
+							for(int k = 0; k < x; k++)
+							{
+								out_row[k * 4 + 0] = in_row[k * 4 + 0];
+								out_row[k * 4 + 1] = in_row[k * 4 + 1];
+								out_row[k * 4 + 2] = in_row[k * 4 + 2];
+								out_row[k * 4 + 3] = in_row[k * 4 + 3];
+							}
+						}
+						else
+						{
+							for(int k = w - x; k < w; k++)
+							{
+								out_row[k * 4 + 0] = in_row[k * 4 + 0];
+								out_row[k * 4 + 1] = in_row[k * 4 + 1];
+								out_row[k * 4 + 2] = in_row[k * 4 + 2];
+								out_row[k * 4 + 3] = in_row[k * 4 + 3];
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			int x = w - (int)(round(w * source_pts / get_length()));
+
+			for(int i = 0; i < bands; i++)
+			{
+				for(int j = 0; j < band_h; j++)
+				{
+					int row = i * band_h + j;
+
+					if(row >= 0 && row < h)
+					{
+						uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(row);
+						uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(row);
+
+						if(i % 2)
+						{
+							for(int k = x; k < w; k++)
+							{
+								out_row[k * 4 + 0] = in_row[k * 4 + 0];
+								out_row[k * 4 + 1] = in_row[k * 4 + 1];
+								out_row[k * 4 + 2] = in_row[k * 4 + 2];
+								out_row[k * 4 + 3] = in_row[k * 4 + 3];
+							}
+						}
+						else
+						{
+							for(int k = 0; k < w - x; k++)
+							{
+								out_row[k * 4 + 0] = in_row[k * 4 + 0];
+								out_row[k * 4 + 1] = in_row[k * 4 + 1];
+								out_row[k * 4 + 2] = in_row[k * 4 + 2];
+								out_row[k * 4 + 3] = in_row[k * 4 + 3];
+							}
+						}
+					}
+				}
+			}
+		}
+		break;
 	}
 }
