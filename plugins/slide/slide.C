@@ -31,7 +31,7 @@ int SlideLeft::handle_event()
 	plugin->motion_direction = 0;
 	window->right->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 SlideRight::SlideRight(SlideMain *plugin, 
@@ -50,7 +50,7 @@ int SlideRight::handle_event()
 	plugin->motion_direction = 1;
 	window->left->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 SlideIn::SlideIn(SlideMain *plugin, 
@@ -69,7 +69,7 @@ int SlideIn::handle_event()
 	plugin->direction = 0;
 	window->out->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 SlideOut::SlideOut(SlideMain *plugin, 
@@ -88,7 +88,7 @@ int SlideOut::handle_event()
 	plugin->direction = 1;
 	window->in->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 
@@ -200,93 +200,81 @@ int SlideMain::load_configuration()
 	return 0;
 }
 
-#define SLIDE(type, components) \
-{ \
-	if(direction == 0) \
-	{ \
-		int in_add, out_add, cpy_len; \
-		if(motion_direction == 0) \
-		{ \
-			int x = round(w * source_pts / get_length()); \
-			out_add = 0; \
-			in_add = (w - x) * components * sizeof(type); \
-			cpy_len = x * components * sizeof(type); \
-		} \
-		else \
-		{ \
-			int x = w - (int)(round(w * source_pts / get_length())); \
-			out_add = x * components * sizeof(type); \
-			in_add = 0; \
-			cpy_len = (w - x) * components * sizeof(type); \
-		} \
- \
-		for(int j = 0; j < h; j++) \
-		{ \
-			memcpy( ((char *)outgoing->get_row_ptr(j)) + out_add, \
-				((char *)incoming->get_row_ptr(j)) + in_add, \
-				cpy_len); \
-		} \
-	} \
-	else \
-	{ \
-		if(motion_direction == 0) \
-		{ \
-			int x = w - (int)(round(w * source_pts / get_length())); \
-			for(int j = 0; j < h; j++) \
-			{ \
-				char *in_row = (char*)incoming->get_row_ptr(j); \
-				char *out_row = (char*)outgoing->get_row_ptr(j); \
-				memmove(out_row + 0, out_row + ((w - x) * components * sizeof(type)), x * components * sizeof(type)); \
-				memcpy (out_row + x * components * sizeof(type), in_row + x * components * sizeof (type), (w - x) * components * sizeof(type)); \
-			} \
-		} \
-		else \
-		{ \
-			int x = round(w * source_pts / get_length()); \
-			for(int j = 0; j < h; j++) \
-			{ \
-				char *in_row = (char*)incoming->get_row_ptr(j); \
-				char *out_row = (char*)outgoing->get_row_ptr(j); \
- \
-				memmove(out_row + (x * components *sizeof(type)), out_row + 0, (w - x) * components * sizeof(type)); \
-				memcpy (out_row + 0, in_row + 0, (x) * components * sizeof(type)); \
-			} \
-		} \
-	} \
-}
-
-
 void SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	load_configuration();
-
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+	int cmodel = incoming->get_color_model();
 
-	switch(incoming->get_color_model())
+	load_configuration();
+
+	switch(cmodel)
 	{
-	case BC_RGB_FLOAT:
-		SLIDE(float, 3)
-		break;
-	case BC_RGBA_FLOAT:
-		SLIDE(float, 4)
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		SLIDE(unsigned char, 3)
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		SLIDE(unsigned char, 4)
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		SLIDE(uint16_t, 3)
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
 	case BC_AYUV16161616:
-		SLIDE(uint16_t, 4)
+		if(direction == 0)
+		{
+			int in_add, out_add, cpy_len;
+
+			if(motion_direction == 0)
+			{
+				int x = round(w * source_pts / get_length());
+				out_add = 0;
+				in_add = (w - x) * 4 * sizeof(uint16_t);
+				cpy_len = x * 4 * sizeof(uint16_t);
+			}
+			else
+			{
+				int x = w - (int)(round(w * source_pts / get_length()));
+				out_add = x * 4 * sizeof(uint16_t);
+				in_add = 0;
+				cpy_len = (w - x) * 4 * sizeof(uint16_t);
+			}
+
+			for(int j = 0; j < h; j++)
+			{
+				memcpy(((char*)outgoing->get_row_ptr(j)) + out_add,
+					((char*)incoming->get_row_ptr(j)) + in_add,
+					cpy_len);
+			}
+		}
+		else
+		{
+			if(motion_direction == 0)
+			{
+				int x = w - (int)(round(w * source_pts / get_length()));
+
+				for(int j = 0; j < h; j++)
+				{
+					char *in_row = (char*)incoming->get_row_ptr(j);
+					char *out_row = (char*)outgoing->get_row_ptr(j);
+					memmove(out_row,
+						out_row + ((w - x) * 4 * sizeof(uint16_t)),
+						x * 4 * sizeof(uint16_t));
+					memcpy(out_row + x * 4 * sizeof(uint16_t),
+						in_row + x * 4 * sizeof(uint16_t),
+						(w - x) * 4 * sizeof(uint16_t));
+				}
+			}
+			else
+			{
+				int x = round(w * source_pts / get_length());
+
+				for(int j = 0; j < h; j++)
+				{
+					char *in_row = (char*)incoming->get_row_ptr(j);
+					char *out_row = (char*)outgoing->get_row_ptr(j);
+
+					memmove(out_row + (x * 4 *sizeof(uint16_t)),
+						out_row, (w - x) * 4 * sizeof(uint16_t));
+					memcpy(out_row, in_row,
+						x * 4 * sizeof(uint16_t));
+				}
+			}
+		}
+		break;
+	default:
+		unsupported(cmodel);
 		break;
 	}
 }
