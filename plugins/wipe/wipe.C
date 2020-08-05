@@ -3,7 +3,6 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-
 #include "bchash.h"
 #include "bctitle.h"
 #include "filexml.h"
@@ -32,7 +31,7 @@ int WipeLeft::handle_event()
 	plugin->direction = 0;
 	window->right->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 WipeRight::WipeRight(WipeMain *plugin, 
@@ -51,7 +50,7 @@ int WipeRight::handle_event()
 	plugin->direction = 1;
 	window->left->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 WipeWindow::WipeWindow(WipeMain *plugin, int x, int y)
@@ -142,75 +141,61 @@ int WipeMain::load_configuration()
 	return 0;
 }
 
-#define WIPE(type, components) \
-{ \
-	if(direction == 0) \
-	{ \
-		for(int j = 0; j < h; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
-			int x = round(w * source_pts / total_len_pts); \
- \
-			for(int k = 0; k < x; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		for(int j = 0; j < h; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
-			int x = w - (int)round(w * source_pts /  total_len_pts); \
- \
-			for(int k = x; k < w; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-	} \
-}
 
 void WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	load_configuration();
-
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 	ptstime total_len_pts = get_length();
+	int cmodel = incoming->get_color_model();
+
+	if(total_len_pts < EPSILON)
+		return;
+
+	load_configuration();
 
 	switch(incoming->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			WIPE(float, 3)
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			WIPE(unsigned char, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			WIPE(float, 4)
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			WIPE(unsigned char, 4)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			WIPE(uint16_t, 3)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			WIPE(uint16_t, 4)
-			break;
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		if(direction == 0)
+		{
+			for(int j = 0; j < h; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+
+				int x = round(w * source_pts / total_len_pts);
+
+				for(int k = 0; k < x; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+		}
+		else
+		{
+			for(int j = 0; j < h; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+				int x = w - (int)round(w * source_pts /  total_len_pts);
+
+				for(int k = x; k < w; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+		}
+		break;
+	default:
+		unsupported(cmodel);
+		break;
 	}
 }
