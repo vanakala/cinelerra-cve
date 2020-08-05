@@ -32,7 +32,7 @@ int IrisSquareIn::handle_event()
 	plugin->direction = 0;
 	window->out->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 IrisSquareOut::IrisSquareOut(IrisSquareMain *plugin, 
@@ -51,7 +51,7 @@ int IrisSquareOut::handle_event()
 	plugin->direction = 1;
 	window->in->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 
@@ -143,90 +143,10 @@ int IrisSquareMain::load_configuration()
 	return 0;
 }
 
-
-#define IRISSQUARE(type, components) \
-{ \
-	if(direction == 0) \
-	{ \
-		int x1 = w / 2 - dw; \
-		int x2 = w / 2 + dw; \
-		int y1 = h / 2 - dh; \
-		int y2 = h / 2 + dh; \
- \
-		for(int j = y1; j < y2; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
- \
-			for(int k = x1; k < x2; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		int x1 = dw; \
-		int x2 = w - dw; \
-		int y1 = dh; \
-		int y2 = h -dh; \
- \
-		for(int j = 0; j < y1; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
- \
-			for(int k = 0; k < w; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-		for(int j = y1; j < y2; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
- \
-			for(int k = 0; k < x1; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-			for(int k = x2; k < w; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-		for(int j = y2; j < h; j++) \
-		{ \
-			type *in_row = (type*)incoming->get_row_ptr(j); \
-			type *out_row = (type*)outgoing->get_row_ptr(j); \
- \
-			for(int k = 0; k < w; k++) \
-			{ \
-				out_row[k * components + 0] = in_row[k * components + 0]; \
-				out_row[k * components + 1] = in_row[k * components + 1]; \
-				out_row[k * components + 2] = in_row[k * components + 2]; \
-				if(components == 4) out_row[k * components + 3] = in_row[k * components + 3]; \
-			} \
-		} \
-	} \
-}
-
-
 void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	ptstime length = get_length();
+	int cmodel = incoming->get_color_model();
 
 	load_configuration();
 
@@ -238,30 +158,90 @@ void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int dw = round(w / 2 * source_pts / length);
 	int dh = round(h / 2 * source_pts / length);
 
-	switch(incoming->get_color_model())
+	switch(cmodel)
 	{
-	case BC_RGB_FLOAT:
-		IRISSQUARE(float, 3);
-		break;
-	case BC_RGB888:
-	case BC_YUV888:
-		IRISSQUARE(unsigned char, 3)
-		break;
-	case BC_RGBA_FLOAT:
-		IRISSQUARE(float, 4);
-		break;
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-		IRISSQUARE(unsigned char, 4)
-		break;
-	case BC_RGB161616:
-	case BC_YUV161616:
-		IRISSQUARE(uint16_t, 3)
-		break;
 	case BC_RGBA16161616:
-	case BC_YUVA16161616:
 	case BC_AYUV16161616:
-		IRISSQUARE(uint16_t, 4)
+		if(direction == 0)
+		{
+			int x1 = w / 2 - dw;
+			int x2 = w / 2 + dw;
+			int y1 = h / 2 - dh;
+			int y2 = h / 2 + dh;
+
+			for(int j = y1; j < y2; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+ 
+				for(int k = x1; k < x2; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+		}
+		else
+		{
+			int x1 = dw;
+			int x2 = w - dw;
+			int y1 = dh;
+			int y2 = h - dh;
+
+			for(int j = 0; j < y1; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+
+				for(int k = 0; k < w; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+			for(int j = y1; j < y2; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+
+				for(int k = 0; k < x1; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+
+				for(int k = x2; k < w; k++)
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+
+			for(int j = y2; j < h; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+
+				for(int k = 0; k < w; k++) \
+				{
+					out_row[k * 4 + 0] = in_row[k * 4 + 0];
+					out_row[k * 4 + 1] = in_row[k * 4 + 1];
+					out_row[k * 4 + 2] = in_row[k * 4 + 2];
+					out_row[k * 4 + 3] = in_row[k * 4 + 3];
+				}
+			}
+		}
+		break;
+	default:
+		unsupported(cmodel);
 		break;
 	}
 }

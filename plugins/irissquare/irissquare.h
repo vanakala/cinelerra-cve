@@ -67,7 +67,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
 	void load_defaults();
 	void save_defaults();
