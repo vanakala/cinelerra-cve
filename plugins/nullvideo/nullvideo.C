@@ -32,7 +32,7 @@ int NullVideoSwitch::handle_event()
 {
 	plugin->onoff = plugin->onoff ? 0 : 1;
 	update(plugin->onoff);
-	return 0;
+	return 1;
 }
 
 /*
@@ -100,7 +100,7 @@ void NullVideo::save_defaults()
 int NullVideo::process_loop(VFrame **frames)
 {
 	VFrame *frame = *frames;
-tracemsg("frame %.2f %.2f", frame->get_pts(), frame->get_duration());
+
 	if(onoff)
 		frame->clear_frame();
 
