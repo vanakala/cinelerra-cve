@@ -106,13 +106,24 @@ void SaveAs::run()
 	int result;
 	char filename[BCTEXTLEN];
 	int cx, cy;
+	char *nameptr;
 
 // Loop if file exists
 	do{
 		SaveFileWindow *window;
 
 		mwindow_global->get_abs_cursor_pos(&cx, &cy);
-		window = new SaveFileWindow(cx, cy, mainsession->filename);
+		if(mainsession->filename[0])
+			nameptr = mainsession->filename;
+		else
+		{
+			filename[0] = 0;
+			mwindow_global->defaults->get("DEFAULT_LOADPATH", filename);
+			if(nameptr = strrchr(filename, '/'))
+				*nameptr = 0;
+			nameptr = filename;
+		}
+		window = new SaveFileWindow(cx, cy, nameptr);
 		result = window->run_window();
 		mwindow_global->defaults->delete_key("DIRECTORY");
 		strcpy(filename, window->get_submitted_path());
@@ -154,7 +165,7 @@ void SaveAs::run()
 
 
 SaveFileWindow::SaveFileWindow(int absx, int absy,
-	char *init_directory)
+	const char *init_directory)
  : BC_FileBox(absx,
 	absy - BC_WindowBase::get_resources()->filebox_h / 2,
 	init_directory, 

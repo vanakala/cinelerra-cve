@@ -49,7 +49,7 @@ public:
 class SaveFileWindow : public BC_FileBox
 {
 public:
-	SaveFileWindow(int absx, int absy, char *init_directory);
+	SaveFileWindow(int absx, int absy, const char *init_directory);
 };
 
 #endif
