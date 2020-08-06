@@ -37,7 +37,7 @@ int ShapeWipeW2B::handle_event()
 	plugin->direction = 0;
 	window->right->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 ShapeWipeB2W::ShapeWipeB2W(ShapeWipeMain *plugin, 
@@ -56,7 +56,7 @@ int ShapeWipeB2W::handle_event()
 	plugin->direction = 1;
 	window->left->update(0);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 ShapeWipeAntiAlias::ShapeWipeAntiAlias(ShapeWipeMain *plugin,
@@ -73,7 +73,7 @@ int ShapeWipeAntiAlias::handle_event()
 {
 	plugin->antialias = get_value();
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 ShapeWipePreserveAspectRatio::ShapeWipePreserveAspectRatio(ShapeWipeMain *plugin,
@@ -90,7 +90,7 @@ int ShapeWipePreserveAspectRatio::handle_event()
 {
 	plugin->preserve_aspect = get_value();
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 ShapeWipeFilename::ShapeWipeFilename(
@@ -111,7 +111,7 @@ int ShapeWipeFilename::handle_event()
 	value = get_text();
 	strcpy(plugin->filename, get_text());
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 ShapeWipeBrowseButton::ShapeWipeBrowseButton(
@@ -134,13 +134,13 @@ int ShapeWipeBrowseButton::handle_event()
 	window.update_filter("*.png");
 	result = window.run_window();
 
-	if (!result)
+	if(!result)
 	{
 		filename->update(window.get_submitted_path());
 		strcpy(plugin->filename, window.get_submitted_path());
 		plugin->send_configure_change();
+		return 1;
 	}
-
 	return 0;
 }
 
@@ -232,6 +232,11 @@ ShapeWipeMain::~ShapeWipeMain()
 {
 	reset_pattern_image();
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void ShapeWipeMain::reset_plugin()
+{
+	reset_pattern_image();
 }
 
 PLUGIN_CLASS_METHODS
@@ -337,18 +342,18 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	if(!png_ptr)
 		goto erret;
 
-	/* Tell libpng we already checked the first 8 bytes */
+	// Tell libpng we already checked the first 8 bytes
 	png_set_sig_bytes(png_ptr, 8);
 
 	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
+	if(!info_ptr)
 	{
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		goto erret;
 	}
 
 	end_info = png_create_info_struct(png_ptr);
-	if (!end_info)
+	if(!end_info)
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 erret:
@@ -364,36 +369,36 @@ erret:
 	width  = png_get_image_width (png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
 
-/* Skip the alpha channel if present 
- * stripping alpha currently doesn't work in conjunction with 
- * converting to grayscale in libpng */
+// Skip the alpha channel if present
+// stripping alpha currently doesn't work in conjunction with
+// converting to grayscale in libpng
 	if(color_type & PNG_COLOR_MASK_ALPHA)
 		pixel_width = 2;
 	else
 		pixel_width = 1;
 
-/* Convert 16 bit data to 8 bit */
+	// Convert 16 bit data to 8 bit
 	if(bit_depth == 16)
 		png_set_strip_16(png_ptr);
 
-/* Expand to 1 pixel per byte if necessary */
+	// Expand to 1 pixel per byte if necessary
 	if(bit_depth < 8)
 		png_set_packing(png_ptr);
 
-/* Convert to grayscale */
+	// Convert to grayscale
 	if(color_type == PNG_COLOR_TYPE_RGB ||
 			color_type == PNG_COLOR_TYPE_RGB_ALPHA)
 		png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
 
-/* Allocate memory to hold the original png image */
+	// Allocate memory to hold the original png image
 	image = (png_bytep*)malloc(sizeof(png_bytep)*height);
 	for(row = 0; row < height; row++)
 	{
 		image[row] = (png_byte*)malloc(sizeof(png_byte)*width*pixel_width);
 	}
 
-/* Allocate memory for the pattern image that will actually be
- * used for the wipe */
+	// Allocate memory for the pattern image that will actually be
+	//  used for the wipe
 	pattern_image = (unsigned char**)malloc(sizeof(unsigned char*)*frame_height);
 
 	png_read_image(png_ptr, image);
@@ -428,9 +433,10 @@ erret:
 
 	for(scaled_row = 0; scaled_row < frame_height; scaled_row++)
 	{
-		row = (int)(row_factor*scaled_row + row_offset);
+		row = (int)(row_factor * scaled_row + row_offset);
 		pattern_image[scaled_row] =
-			(unsigned char*)malloc(sizeof(unsigned char) * frame_width);
+			(unsigned char*)malloc(frame_width);
+
 		for(scaled_col = 0; scaled_col < frame_width; scaled_col++)
 		{
 			col = (int)(col_factor * scaled_col + col_offset) * pixel_width;
@@ -440,7 +446,6 @@ erret:
 				min_value = value;
 			if(value > max_value)
 				max_value = value;
-
 		}
 	}
 
@@ -464,7 +469,7 @@ void ShapeWipeMain::reset_pattern_image()
 			free(pattern_image[row]);
 		}
 		free(pattern_image);
-		pattern_image = NULL;
+		pattern_image = 0;
 		min_value = 255, max_value = 0;  // are recalc'd in read_pattern_image
 	}
 }
@@ -507,115 +512,40 @@ void ShapeWipeMain::reset_pattern_image()
 		opacity++; \
 }
 
-// components is always 4
-#define BLEND_ONLY_4_NORMAL(temp_type, type, max, chroma_offset,x,y) \
-{ \
-	const int bits = sizeof(type) * 8; \
-	temp_type blend_opacity = (temp_type)(alpha * ((temp_type)1 << bits) + 0.5); \
-	temp_type blend_transparency = ((temp_type)1 << bits) - blend_opacity; \
- \
-	col = y * 4; \
-	type* in_row = (type*)incoming->get_row_ptr(x); \
-	type* output = (type*)outgoing->get_row_ptr(x); \
- \
-	output[col] = ((temp_type)in_row[col] * blend_opacity + output[col] * blend_transparency) >> bits; \
-	output[col+1] = ((temp_type)in_row[col+1] * blend_opacity + output[col+1] * blend_transparency) >> bits; \
-	output[col+2] = ((temp_type)in_row[col+2] * blend_opacity + output[col+2] * blend_transparency) >> bits; \
-}
-
-
-// components is always 3
-#define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset,x,y) \
-{ \
-	const int bits = sizeof(type) * 8; \
-	temp_type blend_opacity = (temp_type)(alpha * ((temp_type)1 << bits) + 0.5); \
-	temp_type blend_transparency = ((temp_type)1 << bits) - blend_opacity; \
- \
-	col = y * 3; \
-	type* in_row = (type*)incoming->get_row_ptr(x); \
-	type* output = (type*)outgoing->get_row_ptr(x); \
- \
-	output[col] = ((temp_type)in_row[col] * blend_opacity + output[col] * blend_transparency) >> bits; \
-	output[col+1] = ((temp_type)in_row[col+1] * blend_opacity + output[col+1] * blend_transparency) >> bits; \
-	output[col+2] = ((temp_type)in_row[col+2] * blend_opacity + output[col+2] * blend_transparency) >> bits; \
-}
-
 /* opacity is defined as opacity of incoming frame */
 #define BLEND(x,y,total) \
 { \
-	float pixel_opacity = (float)opacity / total; \
-	float alpha = pixel_opacity; \
-	float pixel_transparency = 1.0 - pixel_opacity; \
+	double alpha = (double)opacity / total;; \
 	int col; \
+	const int bits = sizeof(uint16_t) * 8; \
+	uint64_t blend_opacity = (uint64_t)(alpha * ((uint64_t)1 << bits) + 0.5); \
+	uint64_t blend_transparency = ((uint64_t)1 << bits) - blend_opacity; \
+	uint16_t* in_row = (uint16_t*)incoming->get_row_ptr(x); \
+	uint16_t* output = (uint16_t*)outgoing->get_row_ptr(x); \
  \
-	if(pixel_opacity > 0.0) \
+	if(alpha > 0.0) \
 	{ \
-		switch(incoming->get_color_model()) \
+		switch(cmodel) \
 		{ \
-		case BC_RGB_FLOAT: \
-		{ \
-			float  *in_row = (float*)incoming->get_row_ptr(x); \
-			float *out_row = (float*)outgoing->get_row_ptr(x); \
-			col = y * 3; \
-			out_row[col] = in_row[col] * pixel_opacity + \
-				out_row[col] * pixel_transparency; \
-			out_row[col+1] = in_row[col+1] * pixel_opacity + \
-				out_row[col+1] * pixel_transparency; \
-			out_row[col+2] = in_row[col+2] * pixel_opacity + \
-				out_row[col+2] * pixel_transparency; \
-			break; \
-		} \
-		case BC_RGBA_FLOAT: \
-		{ \
-			float  *in_row = (float*)incoming->get_row_ptr(x); \
-			float *out_row = (float*)outgoing->get_row_ptr(x); \
-			col = y * 4; \
-			out_row[col] = in_row[col] * pixel_opacity + \
-				out_row[col] * pixel_transparency; \
-			out_row[col+1] = in_row[col+1] * pixel_opacity + \
-				out_row[col+1] * pixel_transparency; \
-			out_row[col+2] = in_row[col+2] * pixel_opacity + \
-				out_row[col+2] * pixel_transparency; \
-			break; \
-		} \
-		case BC_RGB888: \
-			BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0,x,y); \
-			break; \
-		case BC_YUV888: \
-			BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0xff, 0x80,x,y); \
-			break; \
-		case BC_RGBA8888: \
-			BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0xff, 0,x,y); \
-			break; \
-		case BC_YUVA8888: \
-			BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0xff, 0x80,x,y); \
-			break; \
-		case BC_RGB161616: \
-			BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0xffff, 0,x,y); \
-			break; \
-		case BC_YUV161616: \
-			BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000,x,y); \
-			break; \
 		case BC_RGBA16161616: \
-			BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0xffff, 0,x,y); \
-			break; \
-		case BC_YUVA16161616: \
-			BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000,x,y); \
+			col = y * 4; \
+ \
+			output[col] = ((uint64_t)in_row[col] * blend_opacity + \
+				output[col] * blend_transparency) >> bits; \
+			output[col + 1] = ((uint64_t)in_row[col + 1] * blend_opacity + \
+				output[col+1] * blend_transparency) >> bits; \
+			output[col + 2] = ((uint64_t)in_row[col + 2] * blend_opacity + \
+				output[col+2] * blend_transparency) >> bits; \
 			break; \
 		case BC_AYUV16161616: \
-			{ \
-				const int bits = sizeof(uint16_t) * 8; \
-				int64_t blend_opacity = (int64_t)(alpha * ((int64_t)1 << bits) + 0.5); \
-				int64_t blend_transparency = ((int64_t)1 << bits) - blend_opacity; \
+			col = y * 4; \
  \
-				col = y * 4; \
-				uint16_t* in_row = (uint16_t*)incoming->get_row_ptr(x); \
-				uint16_t* output = (uint16_t*)outgoing->get_row_ptr(x); \
- \
-				output[col + 1] = ((int64_t)in_row[col + 1] * blend_opacity + output[col + 1] * blend_transparency) >> bits; \
-				output[col + 2] = ((int64_t)in_row[col + 2] * blend_opacity + output[col + 2] * blend_transparency) >> bits; \
-				output[col + 3] = ((int64_t)in_row[col + 3] * blend_opacity + output[col + 3] * blend_transparency) >> bits; \
-			} \
+			output[col + 1] = ((uint64_t)in_row[col + 1] * blend_opacity + \
+				output[col + 1] * blend_transparency) >> bits; \
+			output[col + 2] = ((int64_t)in_row[col + 2] * blend_opacity + \
+				output[col + 2] * blend_transparency) >> bits; \
+			output[col + 3] = ((int64_t)in_row[col + 3] * blend_opacity + \
+				output[col + 3] * blend_transparency) >> bits; \
 			break; \
 		} \
 	} \
@@ -627,16 +557,26 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int col_offset;
 	unsigned char threshold;
 	unsigned char value;
-	int i,j,k;
+	int i, j, k;
 	int opacity;
+	int w = incoming->get_w();
+	int h = incoming->get_h();
+	int cmodel = incoming->get_color_model();
+
+	switch(cmodel)
+	{
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
+		break;
+	default:
+		unsupported(cmodel);
+		return;
+	}
 
 	load_configuration();
 
 	if(get_length() < EPSILON)
 		return;
-
-	int w = incoming->get_w();
-	int h = incoming->get_h();
 
 	if(strncmp(filename, last_read_filename, BCTEXTLEN)
 			|| preserve_aspect != last_preserve_aspect)
@@ -883,30 +823,32 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	}
 	else
 	{
-		switch(incoming->get_color_model())
+		switch(cmodel)
 		{
-		case BC_RGB_FLOAT:
-			SHAPEWIPE(float, 3)
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			SHAPEWIPE(unsigned char, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			SHAPEWIPE(float, 4)
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			SHAPEWIPE(unsigned char, 4)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			SHAPEWIPE(uint16_t, 3)
-			break;
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
-			SHAPEWIPE(uint16_t, 4)
+			for(j = 0; j < h; j++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(j);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(j);
+
+				pattern_row = pattern_image[j];
+				col_offset = 0;
+
+				for(k = 0; k < w; k++)
+				{
+					value = pattern_row[k];
+					if((direction == 0 && value >= threshold) ||
+						(direction == 1 && value <= threshold))
+					{
+						out_row[col_offset] = in_row[col_offset];
+						out_row[col_offset + 1] = in_row[col_offset + 1];
+						out_row[col_offset + 2] = in_row[col_offset + 2];
+						out_row[col_offset + 3] = in_row[col_offset + 3];
+					}
+					col_offset += 4;
+				}
+			}
 			break;
 		}
 	}

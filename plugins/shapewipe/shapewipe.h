@@ -132,6 +132,7 @@ public:
 
 // required for all realtime plugins
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
+	void reset_plugin();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
