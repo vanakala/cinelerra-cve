@@ -30,7 +30,6 @@
 #include "file.h"
 #include "fileavlibs.h"
 #include "filebase.h"
-#include "fileexr.h"
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filepng.h"
@@ -157,15 +156,6 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
-#ifdef HAVE_OPENEXR
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-			FileEXR::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				options);
-			break;
-#endif
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 			FilePNG::get_parameters(parent_window, 
@@ -223,7 +213,6 @@ int File::is_imagelist(int format)
 	case FILE_TGA_LIST:
 	case FILE_TIFF_LIST:
 	case FILE_PNG_LIST:
-	case FILE_EXR_LIST:
 		return 1;
 	}
 	return 0;
@@ -253,7 +242,6 @@ int File::open_file(Asset *asset, int open_method)
 		{
 		case FILE_JPEG:
 		case FILE_PNG:
-		case FILE_EXR:
 		case FILE_TGA:
 		case FILE_TIFF:
 		case FILE_PCM:
@@ -297,12 +285,6 @@ int File::open_file(Asset *asset, int open_method)
 // JPEG list
 			file = new FileJPEG(asset, this);
 		else
-#ifdef HAVE_OPENEXR
-		if(FileEXR::check_sig(asset, test))
-// EXR list
-			file = new FileEXR(asset, this);
-		else
-#endif
 		if(FileTGA::check_sig(asset))
 // TGA list
 			file = new FileTGA(asset, this);
@@ -337,12 +319,6 @@ int File::open_file(Asset *asset, int open_method)
 	case FILE_JPEG_LIST:
 		file = new FileJPEG(asset, this);
 		break;
-#ifdef HAVE_OPENEXR
-	case FILE_EXR:
-	case FILE_EXR_LIST:
-		file = new FileEXR(asset, this);
-		break;
-#endif
 	case FILE_TGA_LIST:
 	case FILE_TGA:
 		file = new FileTGA(asset, this);
@@ -719,18 +695,12 @@ int File::supports(int format)
 	case FILE_JPEG:
 	case FILE_PNG:
 	case FILE_TIFF:
-#ifdef HAVE_OPENEXR
-	case FILE_EXR:
-#endif
 	case FILE_TGA:
 		return SUPPORTS_VIDEO | SUPPORTS_STILL;
 
 	case FILE_JPEG_LIST:
 	case FILE_PNG_LIST:
 	case FILE_TIFF_LIST:
-#ifdef HAVE_OPENEXR
-	case FILE_EXR_LIST:
-#endif
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 

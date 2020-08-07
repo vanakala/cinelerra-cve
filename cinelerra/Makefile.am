@@ -1,7 +1,4 @@
 BUILDDATE=$(shell date)
-if NEED_OPENEXR
-    EXR_FILE_NAME=fileexr.C
-endif
 
 if BUILDINFO_RECOMPILE
 BUILDINFO_NONRC_S=
@@ -105,7 +102,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    fileavlibs.C \
 		    filebase.C \
 		    file.C \
-		    $(EXR_FILE_NAME) \
 		    fileformat.C \
 		    filejpeg.C \
 		    filelist.C \
@@ -261,7 +257,6 @@ AM_CXXFLAGS = \
 	$(SOUND_CFLAGS) \
 	$(XIPH_CFLAGS) \
 	$(MJPEG_CFLAGS) \
-	$(OPENEXR_CFLAGS) \
 	$(LIBDV_CFLAGS) \
 	-DPLUGIN_DIR=\"$(plugindir)\" \
 	-DLOCALE_DIR=\"$(localedir)\"
@@ -330,7 +325,6 @@ noinst_HEADERS = aautomation.h \
 		 filebase.h \
 		 fileformat.h \
 		 file.h \
-		 fileexr.h \
 		 filejpeg.h \
 		 filelist.h \
 		 filepng.h \
@@ -479,7 +473,6 @@ cinelerracve_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/guicast/libguicastcve.la \
 	@FFMPEG_LIBS@ \
-	$(OPENEXR_LIBS) \
 	-lsndfile -lfftw3 \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \

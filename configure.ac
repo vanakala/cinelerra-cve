@@ -164,18 +164,6 @@ AC_CHECK_LIB(sndfile, sf_open,[libsndfile=yes])
 AC_CHECK_HEADERS(sndfile.h,[libsndfileh=yes])
 ############## END OF LIBSNDFILE
 
-############## OpenEXR
-AH_TEMPLATE(HAVE_OPENEXR, [Define 1 if OpenEXR is used])
-PKG_CHECK_MODULES(OPENEXR, OpenEXR,[libOpenEXR=yes],:)
-if test "$libOpenEXR" = "yes"; then
-    AC_SUBST(OPENEXR_CFLAGS)
-    AC_SUBST(OPENEXR_LIBS)
-    AC_DEFINE(HAVE_OPENEXR)
-fi
-AM_CONDITIONAL(NEED_OPENEXR, test "x$libOpenEXR" = "xyes")
-############## END OF OpenEXR
-
-
 ############# BUILDINFO display, (for displaying version / date)
 AC_ARG_WITH(buildinfo,
 		AC_HELP_STRING(
@@ -572,7 +560,6 @@ ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )
 ORPT(enable_ladspa,Support of LADSPA plugins,--disable-ladspa,RPT(ladspa_h,LADSPA header))
-RPT(libOpenEXR,OpenEXR)
 RPT(libfdkaac,Fraunhofer FDK AAC)
 RPT(libmp3lame,LAME MP3 Encoder)
 RPT(libx264,H.264/MPEG-4 AVC)

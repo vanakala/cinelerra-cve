@@ -138,9 +138,6 @@ int FileList::open_file(int open_mode)
 		case FILE_TIFF:
 			strcpy(asset->vcodec, "tiff");
 			break;
-		case FILE_EXR:
-			strcpy(asset->vcodec, "exr");
-			break;
 		case FILE_TGA:
 			break;
 		default:

@@ -255,11 +255,6 @@ public:
 
 // PNG video compression
 	int png_use_alpha;
-#ifdef HAVE_OPENEXR
-// EXR video compression
-	int exr_use_alpha;
-	int exr_compression;
-#endif
 // TIFF video compression.  An enumeration from filetiff.h
 	int tiff_cmodel;
 	int tiff_compression;

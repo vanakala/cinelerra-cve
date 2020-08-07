@@ -133,10 +133,6 @@ void Asset::init_values()
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
 	png_use_alpha = 0;
-#ifdef HAVE_OPENEXR
-	exr_use_alpha = 0;
-	exr_compression = 0;
-#endif
 	tiff_cmodel = 0;
 	tiff_compression = 0;
 
@@ -378,10 +374,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	}
 
 	png_use_alpha = asset->png_use_alpha;
-#ifdef HAVE_OPENEXR
-	exr_use_alpha = asset->exr_use_alpha;
-	exr_compression = asset->exr_compression;
-#endif
+
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
 
@@ -1193,10 +1186,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
 
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
-#ifdef HAVE_OPENEXR
-	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
-	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
-#endif
+
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
@@ -1439,10 +1429,10 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 		remove_prefixed_default(defaults, "PATH", string);
 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
-#ifdef HAVE_OPENEXR
-		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
-		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
-#endif
+
+		remove_prefixed_default(defaults, "EXR_USE_ALPHA", string);
+		remove_prefixed_default(defaults, "EXR_COMPRESSION", string);
+
 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
