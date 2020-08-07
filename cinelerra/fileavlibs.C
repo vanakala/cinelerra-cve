@@ -422,8 +422,13 @@ int FileAVlibs::probe_input(Asset *asset)
 			asset->set_audio_stream(asset->audio_streamno - 1);
 			asset->set_video_stream(asset->video_streamno - 1);
 		}
-		if(asset->format == FILE_SVG)
+		switch(asset->format)
+		{
+		case FILE_SVG:
+		case FILE_EXR:
 			asset->set_single_image();
+			break;
+		}
 		if(asset->video_data || asset->audio_data)
 			return 1;
 		return -1;

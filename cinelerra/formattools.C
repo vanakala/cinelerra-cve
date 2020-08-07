@@ -107,7 +107,6 @@ int FormatPopup::frender_menu2[] = {
 	FILE_PNG_LIST,
 	FILE_TGA_LIST,
 	FILE_TIFF_LIST,
-	FILE_EXR,
 	FILE_MPEGTS,
 	FILE_PSP,
 	FILE_3GP,
