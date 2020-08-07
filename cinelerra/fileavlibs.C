@@ -341,7 +341,6 @@ int FileAVlibs::probe_input(Asset *asset)
 					stact = asset->nb_streams;
 				}
 				asset->nb_streams++;
-
 				// correct type of image
 				if(asset->format == FILE_IMAGE)
 				{
@@ -395,7 +394,16 @@ int FileAVlibs::probe_input(Asset *asset)
 
 // disable unsupported streams
 		for(int i = 0; i < asset->nb_streams; i++)
+		{
 			asset->streams[i].options &= rdsc;
+			if(asset->streams[i].options & STRDSC_AUDIO &&
+					(asset->streams[i].sample_rate < MIN_SAMPLE_RATE))
+				asset->streams[i].options &= ~STRDSC_AUDIO;
+			if(asset->streams[i].options & STRDSC_VIDEO &&
+					(asset->streams[i].width < MIN_FRAME_WIDTH ||
+					asset->streams[i].height < MIN_FRAME_HEIGHT))
+				asset->streams[i].options &= ~STRDSC_VIDEO;
+		}
 		if(!asset->audio_streamno && !asset->video_streamno)
 		{
 			// Asset is completely unprobed
@@ -416,9 +424,9 @@ int FileAVlibs::probe_input(Asset *asset)
 		}
 		if(asset->format == FILE_SVG)
 			asset->set_single_image();
-
 		if(asset->video_data || asset->audio_data)
 			return 1;
+		return -1;
 	}
 	return 0;
 }
