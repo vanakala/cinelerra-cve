@@ -63,8 +63,7 @@ TimeAvgMain::~TimeAvgMain()
 	if(history)
 	{
 		for(int i = 0; i < max_num_frames; i++)
-			if(history[i])
-				delete history[i];
+			release_vframe(history[i]);
 		delete [] history;
 	}
 	if(history_valid) delete [] history_valid;
@@ -81,8 +80,7 @@ void TimeAvgMain::reset_plugin()
 	if(history)
 	{
 		for(int i = 0; i < max_num_frames; i++)
-			if(history[i])
-				delete history[i];
+			release_vframe(history[i]);
 		delete [] history;
 		history = 0;
 		frames_accum = 0;
@@ -154,7 +152,7 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 						if(++j >= new_num_frames)
 							break;
 					} else if(history[i])
-						delete history[i];
+						release_vframe(history[i]);
 				}
 
 // Delete extra previous frames and subtract from accumulation
@@ -163,7 +161,7 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 					if(history_valid[i])
 						subtract_accum(history[i]);
 					if(history[i])
-						delete history[j];
+						release_vframe(history[j]);
 				}
 				delete [] history;
 				delete [] history_valid;
@@ -246,10 +244,10 @@ VFrame *TimeAvgMain::process_tmpframe(VFrame *frame)
 					{
 // Load new frame into it
 						if(!history[j])
-							history[j] = new VFrame(0, w, h, color_model);
+							history[j] = clone_vframe(frame);
 						history[j]->set_pts(cpts);
 						history_valid[j] = 1;
-						get_frame(history[j]);
+						history[j] = get_frame(history[j]);
 						add_accum(history[j]);
 						break;
 					}
