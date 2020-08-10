@@ -86,6 +86,8 @@ void AssetEdit::run()
 	{
 		new_asset = new Asset(asset->path);
 		*new_asset = *asset;
+		new_asset->change_decoder_format_parameters();
+
 		mwindow->get_abs_cursor_pos(&absx, &absy);
 		window = new AssetEditWindow(mwindow, this, absx, absy);
 		window->raise_window();
@@ -104,7 +106,6 @@ void AssetEdit::run()
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);
 				asset->set_decoder_parameters();
-
 				mwindow->gui->update(WUPD_CANVREDRAW);
 
 // Start index rebuilding
