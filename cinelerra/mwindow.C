@@ -1189,7 +1189,12 @@ void MWindow::reset_caches()
 
 void MWindow::remove_asset_from_caches(Asset *asset)
 {
+	cwindow->stop_playback();
+	vwindow->stop_playback();
+
 	gui->canvas->remove_asset_from_caches(asset);
+	cwindow->playback_engine->release_asset(asset);
+	vwindow->playback_engine->release_asset(asset);
 }
 
 void MWindow::remove_assets_from_project(int push_undo)
