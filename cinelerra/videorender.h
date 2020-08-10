@@ -7,6 +7,7 @@
 #define VIDEORENDER_H
 
 #include "arraylist.h"
+#include "asset.inc"
 #include "bctimer.h"
 #include "edl.inc"
 #include "file.inc"
@@ -27,6 +28,7 @@ public:
 	void pass_vframes(Plugin *plugin, VFrame *current_frame,
 		VTrackRender *current_renderer);
 	VFrame *take_vframes(Plugin *plugin, VTrackRender *current_renderer);
+	void release_asset(Asset *asset);
 
 private:
 	void process_frame(ptstime pts);

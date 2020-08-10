@@ -292,3 +292,13 @@ VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer
 	}
 	return current_frame;
 }
+
+void VideoRender::release_asset(Asset *asset)
+{
+	for(Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if(track->data_type != TRACK_VIDEO || !track->renderer)
+			continue;
+		track->renderer->release_asset(asset);
+	}
+}
