@@ -49,6 +49,7 @@ public:
 	void pass_aframes(Plugin *plugin, AFrame *current_frame,
 		ATrackRender *current_renderer);
 	AFrame *take_aframes(Plugin *plugin, ATrackRender *current_renderer);
+	void release_asset(Asset *asset);
 
 private:
 	void init_frames();

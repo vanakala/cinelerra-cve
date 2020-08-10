@@ -560,6 +560,34 @@ AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer
 	return current_frame;
 }
 
+void AudioRender::release_asset(Asset *asset)
+{
+	File *files[MAXCHANNELS];
+	int last_file = 0;
+	int j;
+
+	for(int i = 0; i < input_frames.total; i++)
+	{
+		InFrame *infile = input_frames.values[i];
+
+		if(infile->file->asset == asset)
+		{
+			for(j = 0; j < last_file; j++)
+			{
+				if(files[j] == infile->file)
+					break;
+			}
+			if(j == last_file)
+				files[last_file++] = infile->file;
+			input_frames.remove_number(i);
+			i--;
+			delete infile;
+		}
+	}
+
+	for(int i = 0; i < last_file; i++)
+		delete files[i];
+}
 
 InFrame::InFrame(File *file, int out_length, int filenum)
 {
