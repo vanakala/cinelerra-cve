@@ -86,7 +86,7 @@ void AssetEdit::run()
 	{
 		new_asset = new Asset(asset->path);
 		*new_asset = *asset;
-		new_asset->change_decoder_format_parameters();
+		new_asset->update_decoder_format_defaults();
 
 		mwindow->get_abs_cursor_pos(&absx, &absy);
 		window = new AssetEditWindow(mwindow, this, absx, absy);

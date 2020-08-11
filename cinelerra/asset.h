@@ -30,7 +30,7 @@
 #define MAX_DEC_PARAMLISTS 8
 // Library & Format option lists
 #define ASSET_FMT_IX (MAX_ENC_PARAMLISTS - 1)
-// Positon of decoding library, format and codec options
+// Positon of decoding library, format and codec defaults
 #define ASSET_DFORMAT_IX (MAX_DEC_PARAMLISTS - 1)
 #define ASSET_DFDEFLT_IX (MAX_DEC_PARAMLISTS - 2)
 
@@ -114,7 +114,7 @@ public:
 	void set_format_params();
 	void save_render_options();
 	void set_decoder_parameters();
-	void change_decoder_format_parameters();
+	void update_decoder_format_defaults();
 	void delete_decoder_parameters();
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix,

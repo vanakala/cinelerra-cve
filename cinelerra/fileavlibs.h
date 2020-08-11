@@ -73,7 +73,7 @@ public:
 	static void get_format_params(Asset *asset, int options);
 	static void set_format_params(Asset *asset);
 	static void get_decoder_format_defaults(Asset *asset, AVFormatContext *ctx);
-	static void change_decoder_format_parameters(Asset *asset);
+	static void update_decoder_format_defaults(Asset *asset);
 	static void set_decoder_format_parameters(Asset *asset);
 	static void set_stream_decoder_parameters(struct streamdesc *stream);
 	static Paramlist *get_decoder_params(AVCodec *codec);

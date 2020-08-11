@@ -647,7 +647,7 @@ void Asset::read(FileXML *file,
 			}
 		}
 	}
-	FileAVlibs::change_decoder_format_parameters(this);
+	FileAVlibs::update_decoder_format_defaults(this);
 }
 
 void Asset::read_audio(FileXML *file)
@@ -1209,9 +1209,9 @@ void Asset::set_decoder_parameters()
 		FileAVlibs::set_stream_decoder_parameters(&streams[i]);
 }
 
-void Asset::change_decoder_format_parameters()
+void Asset::update_decoder_format_defaults()
 {
-	FileAVlibs::change_decoder_format_parameters(this);
+	FileAVlibs::update_decoder_format_defaults(this);
 }
 
 void Asset::delete_decoder_parameters()

@@ -2991,7 +2991,7 @@ void FileAVlibs::get_decoder_format_defaults(Asset *asset, AVFormatContext *ctx)
 	}
 }
 
-void FileAVlibs::change_decoder_format_parameters(Asset *asset)
+void FileAVlibs::update_decoder_format_defaults(Asset *asset)
 {
 	if(asset->decoder_parameters[ASSET_DFORMAT_IX] &&
 			asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX])
