@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "aframe.h"
@@ -83,7 +67,6 @@ void File::reset_parameters()
 	format_window = 0;
 	temp_frame = 0;
 	resample = 0;
-	resample_float = 0;
 	last_frame = 0;
 }
 
@@ -397,7 +380,6 @@ void File::close_file(int ignore_thread)
 	}
 
 	if(resample) delete resample;
-	if(resample_float) delete resample_float;
 
 	reset_parameters();
 }
@@ -558,30 +540,15 @@ int File::get_samples(AFrame *aframe)
 	// Resample
 	if(aframe->get_samplerate() != asset->sample_rate)
 	{
-		if(!file->prefer_samples_float())
-		{
-			if(!resample)
-				resample = new Resample(this, asset->channels);
+		if(!resample)
+			resample = new Resample(this, asset->channels);
 
-			samples = resample->resample(aframe->buffer,
-					aframe->get_source_length(),
-					asset->sample_rate,
-					aframe->get_samplerate(),
-					aframe->channel,
-					aframe->position);
-		}
-		else
-		{
-			if(!resample_float)
-				resample_float = new Resample_float(this, asset->channels);
-
-			samples = resample_float->resample(aframe->buffer,
-					aframe->get_source_length(),
-					asset->sample_rate,
-					aframe->get_samplerate(),
-					aframe->channel,
-					aframe->position);
-		}
+		samples = resample->resample(aframe->buffer,
+				aframe->get_source_length(),
+				asset->sample_rate,
+				aframe->get_samplerate(),
+				aframe->channel,
+				aframe->position);
 		aframe->set_source_length(samples);
 		aframe->set_filled_length();
 	}
