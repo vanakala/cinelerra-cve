@@ -538,7 +538,7 @@ int File::get_samples(AFrame *aframe)
 		return 0;
 
 	// Resample
-	if(aframe->get_samplerate() != asset->sample_rate)
+	if(!file->converts_samples() && aframe->get_samplerate() != asset->sample_rate)
 	{
 		if(!resample)
 			resample = new Resample(this, asset->channels);

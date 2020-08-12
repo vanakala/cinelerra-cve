@@ -63,6 +63,7 @@ public:
 	int read_aframe(AFrame *frame);
 	int write_frames(VFrame ***frames, int len);
 	int converts_frame();
+	int converts_samples() { return 1; };
 	static void versionifo(int indent);
 	int write_aframes(AFrame **frames);
 	static void get_parameters(BC_WindowBase *parent_window,

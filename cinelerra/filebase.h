@@ -44,6 +44,8 @@ public:
 	virtual int write_aframes(AFrame **buffer) { return 1; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };
 	virtual int read_aframe(AFrame *aframe)  { return 1; };
+// Can convert samplerate and channels of audio
+	virtual int converts_samples() { return 0; };
 
 // Can convert colormodel and size
 	virtual int converts_frame() { return 0; };
