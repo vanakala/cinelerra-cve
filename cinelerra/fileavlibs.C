@@ -1513,19 +1513,22 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 
 	if(!swr_ctx)
 	{
-		int64_t ch_layout = decoder_context->channel_layout;
+		swr_ch_layout = decoder_context->channel_layout;
 
-		if(!ch_layout)
-			ch_layout = av_get_default_channel_layout(num_ch);
+		if(!swr_ch_layout)
+			swr_ch_layout = av_get_default_channel_layout(num_ch);
+
+		swr_samplerate = aframe->get_samplerate();
 
 		swr_ctx = swr_alloc_set_opts(NULL,
-			ch_layout,
+			swr_ch_layout,
 			AV_SAMPLE_FMT_DBLP,           // out sample format
 			aframe->get_samplerate(),     // out samplerate
-			ch_layout,
+			swr_ch_layout,
 			decoder_context->sample_fmt,  // in sample fmt
 			decoder_context->sample_rate, // in sample rate
 			0, 0);
+
 		if(!swr_ctx)
 		{
 			errormsg(_("Failed to allocate resampler context for audio decoding"));
@@ -1535,6 +1538,31 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		if(error = swr_init(swr_ctx))
 		{
 			errormsg(_("Failed to initalize resampler context when decoding (%d)"), error);
+			avlibs_lock->unlock();
+			return -1;
+		}
+	}
+	else if(swr_samplerate != aframe->get_samplerate())
+	{
+		swr_samplerate = aframe->get_samplerate();
+
+		swr_ctx = swr_alloc_set_opts(swr_ctx,
+			swr_ch_layout,
+			AV_SAMPLE_FMT_DBLP,           // out sample format
+			swr_samplerate,               // out samplerate
+			swr_ch_layout,
+			decoder_context->sample_fmt,  // in sample fmt
+			decoder_context->sample_rate, // in sample rate
+			0, 0);
+		if(!swr_ctx)
+		{
+			errormsg(_("Failed to reconfigure resampler context for audio decoding"));
+			avlibs_lock->unlock();
+			return -1;
+		}
+		if(error = swr_init(swr_ctx))
+		{
+			errormsg(_("Failed to reinitalize resampler context when decoding (%d)"), error);
 			avlibs_lock->unlock();
 			return -1;
 		}

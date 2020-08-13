@@ -178,6 +178,8 @@ private:
 	int64_t buffer_end;
 	int audio_eof;
 	int fresh_open;
+	int swr_samplerate;
+	int64_t swr_ch_layout;
 	double *abuffer[MAXCHANNELS];
 
 	// rendering audio
