@@ -19,12 +19,12 @@
 #include "pluginmacros.h"
 
 #include "aframe.inc"
+#include "avresample.inc"
 #include "bcpot.h"
 #include "fourier.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"
-#include "resample.inc"
 
 
 class TimeStretchScale : public BC_FPot
@@ -82,7 +82,7 @@ public:
 	ptstime prev_frame;
 	ptstime prev_input;
 	Pitch *pitch;
-	Resample *resample;
+	AVResample *resample;
 	AFrame *input_frame;
 };
 

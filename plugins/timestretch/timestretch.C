@@ -4,11 +4,11 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
+#include "avresample.h"
 #include "clip.h"
 #include "bchash.h"
 #include "bctitle.h"
 #include "picon_png.h"
-#include "resample.h"
 #include "timestretch.h"
 #include "filexml.h"
 
@@ -119,7 +119,7 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 	{
 		pitch = new Pitch(aframe->get_samplerate(),
 			aframe->get_buffer_length() / 4);
-		resample = new Resample(0, 1);
+		resample = new AVResample();
 		need_reconfigure = 1;
 	}
 	calculate_pts();
@@ -128,7 +128,7 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 	if(need_reconfigure || input_pts < prev_frame || input_pts > prev_input + EPSILON)
 	{
 		pitch->set_scale(config.scale);
-		resample->reset(0);
+		resample->reset();
 		need_reconfigure = 0;
 		prev_input = -1;
 	}
@@ -141,20 +141,22 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 	{
 		if(src_frame)
 		{
-			resample->resample_chunk(src_frame->buffer,
-				src_frame->get_length(),
-				src_frame->get_samplerate(),
-				round(src_frame->get_samplerate() * config.scale), 0);
+			if(resample->resample_frame(src_frame, config.scale))
+			{
+				abort_plugin(_("Reasmpling failed"));
+				release_aframe(tmp_frame);
+				return aframe;
+			}
 			prev_frame = src_frame->get_pts();
 			prev_input = src_frame->get_end_pts();
 		}
-		fragment_size = resample->get_output_size(0);
+		fragment_size = resample->get_output_size();
 
 		if(fragment_size > 0)
 		{
 			if(fragment_size > aframe->get_length() - output_pos)
 				fragment_size = aframe->get_length() - output_pos;
-			resample->read_output(aframe->buffer + output_pos, 0,
+			resample->read_output(aframe->buffer + output_pos,
 				fragment_size);
 			output_pos += fragment_size;
 		}
