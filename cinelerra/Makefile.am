@@ -66,6 +66,7 @@ cinelerracve_SOURCES = aautomation.C \
 		    automation.C \
 		    autos.C \
 		    avlibsconfig.C \
+		    avresample.C \
 		    awindow.C \
 		    awindowgui.C \
 		    awindowmenu.C \
@@ -286,6 +287,7 @@ noinst_HEADERS = aautomation.h \
 		 automation.h \
 		 autos.h \
 		 avlibsconfig.h \
+		 avresample.h \
 		 awindowgui.h \
 		 awindow.h \
 		 awindowmenu.h \
