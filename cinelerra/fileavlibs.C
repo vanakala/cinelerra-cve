@@ -753,6 +753,7 @@ int FileAVlibs::open_file(int open_mode)
 		case FILE_OGG:
 		case FILE_WAV:
 		case FILE_AIFF:
+		case FILE_AU:
 		case FILE_MP3:
 		case FILE_FLAC:
 		case FILE_MPEG:
