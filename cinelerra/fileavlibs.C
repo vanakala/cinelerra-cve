@@ -63,6 +63,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
+	{ FILE_AIFF, "aiff", "aiff", SUPPORTS_AUDIO },
 	{ FILE_3GP, 0, "3gp", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MP4, 0, "mp4", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_PSP, 0, "psp", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
@@ -751,6 +752,7 @@ int FileAVlibs::open_file(int open_mode)
 		case FILE_AC3:
 		case FILE_OGG:
 		case FILE_WAV:
+		case FILE_AIFF:
 		case FILE_MP3:
 		case FILE_FLAC:
 		case FILE_MPEG:
