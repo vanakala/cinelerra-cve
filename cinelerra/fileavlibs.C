@@ -3133,6 +3133,9 @@ int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
 	const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO :
 			AVL_PARAM_CODEC_AUDIO;
 
+	if(!codecs)
+		return 0;
+
 	if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
 	{
 		Param *q = codecs->find(p->stringvalue);
