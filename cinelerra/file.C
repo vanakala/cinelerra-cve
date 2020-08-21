@@ -26,7 +26,6 @@
 #include "mainerror.h"
 #include "mutex.h"
 #include "pluginserver.h"
-#include "resample.h"
 #include "tmpframecache.h"
 #include "vframe.h"
 
@@ -65,7 +64,6 @@ void File::reset_parameters()
 	getting_options = 0;
 	format_window = 0;
 	temp_frame = 0;
-	resample = 0;
 	last_frame = 0;
 }
 
@@ -364,9 +362,6 @@ void File::close_file(int ignore_thread)
 		file->close_file();
 		delete file;
 	}
-
-	if(resample) delete resample;
-
 	reset_parameters();
 }
 
@@ -504,9 +499,6 @@ VFrame*** File::get_video_buffer()
 
 int File::get_samples(AFrame *aframe)
 {
-	int result;
-	int samples;
-
 	if(!file)
 		return 0;
 
@@ -523,31 +515,11 @@ int File::get_samples(AFrame *aframe)
 	if(aframe->get_source_length() <= 0)
 		return 0;
 
-	// Resample
-	if(!file->converts_samples() && aframe->get_samplerate() != asset->sample_rate)
-	{
-		if(!resample)
-			resample = new Resample(this, asset->channels);
-
-		samples = resample->resample(aframe->buffer,
-				aframe->get_source_length(),
-				asset->sample_rate,
-				aframe->get_samplerate(),
-				aframe->channel,
-				aframe->position);
-		aframe->set_source_length(samples);
-		aframe->set_filled_length();
-	}
-	else
-// Load directly
-	{
 // Never try to read more samples than exist in the file
-		if(aframe->position + aframe->get_source_length() > asset->audio_length)
-			aframe->set_source_length(asset->audio_length - aframe->position);
+	if(aframe->position + aframe->get_source_length() > asset->audio_length)
+		aframe->set_source_length(asset->audio_length - aframe->position);
 
-		result = file->read_aframe(aframe);
-	}
-	return result;
+	return file->read_aframe(aframe);
 }
 
 int File::get_frame(VFrame *frame)

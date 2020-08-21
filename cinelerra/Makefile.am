@@ -203,7 +203,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    renderfarm.C \
 		    renderfarmclient.C \
 		    renderprofiles.C \
-		    resample.C \
 		    resizetrackthread.C \
 		    resourcepixmap.C \
 		    resourcethread.C \
@@ -424,7 +423,6 @@ noinst_HEADERS = aautomation.h \
 		 renderfarm.h \
 		 render.h \
 		 renderbase.h \
-		 resample.h \
 		 renderprofiles.h \
 		 resizetrackthread.h \
 		 resourcepixmap.h \

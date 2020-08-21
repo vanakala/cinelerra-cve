@@ -21,13 +21,9 @@
 #include "framecache.inc"
 #include "mutex.inc"
 #include "pluginserver.inc"
-#include "resample.inc"
 #include "vframe.inc"
 
 // ======================================= include file types here
-
-
-
 // generic file opened by user
 class File
 {
@@ -127,9 +123,6 @@ public:
 
 // Temporary storage for color conversions
 	VFrame *temp_frame;
-
-// Resampling engine
-	Resample *resample;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.
