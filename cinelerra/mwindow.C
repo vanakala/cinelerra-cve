@@ -734,10 +734,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				new_asset->format = FILE_PCM;
 				new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
 				new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
-				new_asset->bits = defaults->get("AUDIO_BITS", 16);
-				new_asset->byte_order = defaults->get("BYTE_ORDER", 1);
-				new_asset->signed_ = defaults->get("SIGNED_", 1);
-				new_asset->header = defaults->get("HEADER", 0);
+				new_asset->pcm_format = defaults->get("PCM_FORMAT", "s16le");
 				new_asset->nb_streams = 0;
 
 				get_abs_cursor_pos(&cx, &cy);
@@ -751,12 +748,12 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 					defaults->update("AUDIO_CHANNELS", new_asset->channels);
 					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
-					defaults->update("AUDIO_BITS", new_asset->bits);
-					defaults->update("BYTE_ORDER", new_asset->byte_order);
-					defaults->update("SIGNED_", new_asset->signed_);
-					defaults->update("HEADER", new_asset->header);
+					defaults->update("PCM_FORMAT", new_asset->pcm_format);
+					defaults->delete_key("AUDIO_BITS");
+					defaults->delete_key("BYTE_ORDER");
+					defaults->delete_key("SIGNED_");
+					defaults->delete_key("HEADER");
 					save_defaults();
-					new_asset->init_streams();
 				}
 			}
 

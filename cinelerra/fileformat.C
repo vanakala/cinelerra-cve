@@ -1,26 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bctitle.h"
+#include "bclistboxitem.h"
+#include "bcsignals.h"
 #include "fileformat.h"
 #include "language.h"
 #include "mwindow.h"
@@ -28,56 +14,82 @@
 #include "theme.h"
 #include "new.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+}
+
+// Names copied from libavformat/pcmdec.c
+struct format_names
+{
+	const char *name;
+	const char *longname;
+}
+FileFormatPCMFormat::pcm_formats[] =
+{
+	{ "f64be", 0 },
+	{ "f64le", 0 },
+	{ "f32be", 0 },
+	{ "f32le", 0 },
+	{ "s32le", 0 },
+	{ "s24be", 0 },
+	{ "s24le", 0 },
+	{ "s16be", 0 },
+	{ "s16le", 0 },
+	{ "s8", 0 },
+	{ "u32be", 0 },
+	{ "u32le", 0 },
+	{ "u24be", 0 },
+	{ "u24le", 0 },
+	{ "u16be", 0 },
+	{ "u16le", 0 },
+	{ "u8", 0 },
+	{ "alaw", 0 },
+	{ "mulaw", 0 },
+	{ "sln", 0 },
+	{ 0, 0 }
+};
 
 FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("File Format")),
-		absx,
-		absy,
-		375, 
-		300, 
-		375, 
-		300)
+	absx, absy, 500, 220, 500, 220)
 {
-	int x1 = 10, x2 = 180;
-	int x = x1, y = 10;
-	SampleBitsSelection *bitspopup;
+	int x = 10;
+	int y = 10;
+	BC_Title *title;
+	int text_w = 0;
+	int y1, y2, y3, w;
 
 	this->asset = asset;
 
 	set_icon(mwindow_global->get_window_icon());
 
-	add_subwindow(new BC_Title(x, y, string2));
-	y += 20;
-	add_subwindow(new BC_Title(x, y, _("Assuming raw PCM:")));
+	add_subwindow(title = new BC_Title(x, y, string2));
+	y += title->get_h() + 8;
+	add_subwindow(title = new BC_Title(x, y, _("Assuming raw PCM:")));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Channels:")));
-	channels_button = new FileFormatChannels(x2, y, this, asset->channels);
+	y1 = y += title->get_h() + 8;
+	add_subwindow(title = new BC_Title(x, y, _("Channels:")));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Sample rate:")));
-	add_subwindow(rate_button = new SampleRateSelection(x2, y, this,
+	text_w = title->get_w();
+	y2 = y += title->get_h() + 8;
+	add_subwindow(title = new BC_Title(x, y, _("Sample rate:")));
+
+	if(text_w < (w = title->get_w()))
+		text_w = w;
+	y3 = y += title->get_h() + 8;
+	add_subwindow(title = new BC_Title(x, y, _("Sample format:")));
+
+	if(text_w < (w = title->get_w()))
+		text_w = w;
+
+	x += text_w + 10;
+	channels_button = new FileFormatChannels(x, y1, this, asset->channels);
+	add_subwindow(rate_button = new SampleRateSelection(x, y2, this,
 		&asset->sample_rate));
+	pcmformat = new FileFormatPCMFormat(x, y3, this,
+		asset->pcm_format);
 	rate_button->update(asset->sample_rate);
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Bits:")));
-	add_subwindow(bitspopup = new SampleBitsSelection(x2, y, this, &asset->bits,
-		SBITS_LINEAR| SBITS_ULAW | SBITS_ADPCM));
-	bitspopup->update_size(asset->bits);
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Header length:")));
-	add_subwindow(header_button = new FileFormatHeader(x2, y, this, asset->header));
-
-	y += 30;
-
-	add_subwindow(new BC_Title(x, y, _("Byte order:")));
-	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2, y, this, asset->byte_order));
-	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, !asset->byte_order));
-
-	y += 30;
-	add_subwindow(signed_button = new FileFormatSigned(x, y, this, asset->signed_));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -85,12 +97,9 @@ FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
 
 FileFormat::~FileFormat()
 {
-	delete lohi;
-	delete hilo;
-	delete signed_button;
-	delete header_button;
 	delete rate_button;
 	delete channels_button;
+	delete pcmformat;
 }
 
 
@@ -113,57 +122,54 @@ int FileFormatChannels::handle_event()
 }
 
 
-FileFormatHeader::FileFormatHeader(int x, int y, FileFormat *fwindow, int value)
- : BC_TextBox(x, y, 100, 1, value)
+FileFormatPCMFormat::FileFormatPCMFormat(int x, int y, FileFormat *fwindow,
+	const char *selected)
+ : BC_PopupTextBox(fwindow, 0, 0, x, y, 300, 300)
 {
 	this->fwindow = fwindow;
+
+	if(!pcm_formats[0].longname)
+	{
+		AVInputFormat *ifmt;
+
+		for(int i = 0; pcm_formats[i].name; i++)
+		{
+			ifmt = av_find_input_format(pcm_formats[i].name);
+			pcm_formats[i].longname = ifmt->long_name;
+		}
+	}
+
+	for(int i = 0; pcm_formats[i].name; i++)
+	{
+		if(!pcm_formats[i].longname)
+			continue;
+		if(selected && !strcmp(pcm_formats[i].name, selected))
+			update(pcm_formats[i].longname);
+		formats.append(new BC_ListBoxItem(pcm_formats[i].longname));
+	}
+	update_list(&formats);
 }
 
-int FileFormatHeader::handle_event()
+int FileFormatPCMFormat::handle_event()
 {
-	fwindow->asset->header = atol(get_text());
+	int num = get_number();
+
+	for(int i = 0; pcm_formats[i].name; i++)
+	{
+		if(!pcm_formats[i].longname)
+			continue;
+		if(i == num)
+			fwindow->asset->pcm_format = pcm_formats[i].name;
+	}
 	return 1;
 }
 
-
-FileFormatByteOrderLOHI::FileFormatByteOrderLOHI(int x, int y, FileFormat *fwindow, int value)
- : BC_Radial(x, y, value, _("Lo Hi"))
+const char *FileFormatPCMFormat::pcm_format(const char *fmt_txt)
 {
-	this->fwindow = fwindow;
-}
-
-int FileFormatByteOrderLOHI::handle_event()
-{
-	update(1);
-	fwindow->asset->byte_order = 1;
-	fwindow->hilo->update(0);
-	return 1;
-}
-
-
-FileFormatByteOrderHILO::FileFormatByteOrderHILO(int x, int y, FileFormat *fwindow, int value)
- : BC_Radial(x, y, value, _("Hi Lo"))
-{
-	this->fwindow = fwindow;
-}
-
-int FileFormatByteOrderHILO::handle_event()
-{
-	update(1);
-	fwindow->asset->byte_order = 0;
-	fwindow->lohi->update(0);
-	return 1;
-}
-
-
-FileFormatSigned::FileFormatSigned(int x, int y, FileFormat *fwindow, int value)
- : BC_CheckBox(x, y, value, _("Values are signed"))
-{
-	this->fwindow = fwindow;
-}
-
-int FileFormatSigned::handle_event()
-{
-	fwindow->asset->signed_ = get_value();
-	return 1;
+	for(int i = 0; pcm_formats[i].name; i++)
+	{
+		if(strcmp(pcm_formats[i].name, fmt_txt) == 0)
+			return pcm_formats[i].name;
+	}
+	return 0;
 }
