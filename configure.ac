@@ -159,11 +159,6 @@ CINELERRA_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=
  -D__STDC_FORMAT_MACROS  -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS"
 AC_SUBST(CINELERRA_CFLAGS)
 
-############## LIBSNDFILE
-AC_CHECK_LIB(sndfile, sf_open,[libsndfile=yes])
-AC_CHECK_HEADERS(sndfile.h,[libsndfileh=yes])
-############## END OF LIBSNDFILE
-
 ############# BUILDINFO display, (for displaying version / date)
 AC_ARG_WITH(buildinfo,
 		AC_HELP_STRING(
@@ -541,8 +536,6 @@ RPT(libuuid,libuuid libraries)
 RPT(libuuidh,libuuid headers)
 RPT(libfftw3,libfftw3 libraries)
 RPT(libfftw3h,libfftw3 headers)
-RPT(libsndfile,libsndfile libraries)
-RPT(libsndfileh,libsndfile headers)
 mandatory="$succeeded"
 
 echo

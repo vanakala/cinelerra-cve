@@ -17,7 +17,6 @@
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filepng.h"
-#include "filesndfile.h"
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
@@ -97,12 +96,6 @@ void File::get_options(FormatTools *format, int options)
 	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
-		case FILE_SND:
-			FileSndFile::get_parameters(parent_window, 
-				asset,
-				format_window,
-				options);
-			break;
 		case FILE_AC3:
 		case FILE_AVI:
 		case FILE_MOV:
@@ -284,10 +277,6 @@ int File::open_file(Asset *asset, int open_method)
 		break;
 
 // format already determined
-	case FILE_SND:
-		file = new FileSndFile(asset, this);
-		break;
-
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		file = new FilePNG(asset, this);

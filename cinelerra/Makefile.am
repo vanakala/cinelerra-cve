@@ -107,7 +107,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    filejpeg.C \
 		    filelist.C \
 		    filepng.C \
-		    filesndfile.C \
 		    filetga.C \
 		    filethread.C \
 		    filetiff.C \
@@ -330,7 +329,6 @@ noinst_HEADERS = aautomation.h \
 		 filejpeg.h \
 		 filelist.h \
 		 filepng.h \
-		 filesndfile.h \
 		 filetga.h \
 		 filethread.h \
 		 filetiff.h \
@@ -475,7 +473,7 @@ cinelerracve_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/guicast/libguicastcve.la \
 	@FFMPEG_LIBS@ \
-	-lsndfile -lfftw3 \
+	-lfftw3 \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(OPENGL_LIBS) \
