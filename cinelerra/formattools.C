@@ -102,7 +102,6 @@ int FormatPopup::frender_menu1[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 };
 
 int FormatPopup::frender_menu2[] = {
-	FILE_PCM,
 	FILE_JPEG_LIST,
 	FILE_PNG_LIST,
 	FILE_TGA_LIST,

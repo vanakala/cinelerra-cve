@@ -97,7 +97,6 @@ void File::get_options(FormatTools *format, int options)
 	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
-		case FILE_PCM:
 		case FILE_SND:
 			FileSndFile::get_parameters(parent_window, 
 				asset,
@@ -112,6 +111,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_MP3:
 		case FILE_AIFF:
 		case FILE_AU:
+		case FILE_PCM:
 		case FILE_FLAC:
 		case FILE_MPEG:
 		case FILE_MPEGTS:
@@ -228,7 +228,6 @@ int File::open_file(Asset *asset, int open_method)
 		case FILE_PNG:
 		case FILE_TGA:
 		case FILE_TIFF:
-		case FILE_PCM:
 		case FILE_SND:
 			asset->delete_decoder_parameters();
 			break;
@@ -285,7 +284,6 @@ int File::open_file(Asset *asset, int open_method)
 		break;
 
 // format already determined
-	case FILE_PCM:
 	case FILE_SND:
 		file = new FileSndFile(asset, this);
 		break;
@@ -318,6 +316,7 @@ int File::open_file(Asset *asset, int open_method)
 	case FILE_WAV:
 	case FILE_AIFF:
 	case FILE_AU:
+	case FILE_PCM:
 	case FILE_FLAC:
 	case FILE_MPEGTS:
 	case FILE_MPEG:
@@ -671,7 +670,6 @@ int File::supports(int format)
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 
-	case FILE_PCM:
 	case FILE_SND:
 		return SUPPORTS_AUDIO;
 
@@ -684,6 +682,7 @@ int File::supports(int format)
 	case FILE_WAV:
 	case FILE_AIFF:
 	case FILE_AU:
+	case FILE_PCM:
 	case FILE_FLAC:
 	case FILE_MPEG:
 	case FILE_MPEGTS:

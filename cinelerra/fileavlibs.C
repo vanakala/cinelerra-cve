@@ -61,6 +61,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_MXF, "mxf", "mxf", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MKV, "matroska,webm", "matroska", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
+	{ FILE_PCM, "s16le", "s16le", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
 	{ FILE_AIFF, "aiff", "aiff", SUPPORTS_AUDIO },
@@ -230,7 +231,17 @@ int FileAVlibs::probe_input(Asset *asset)
 	avcodec_register_all();
 	av_register_all();
 
-	if(avformat_open_input(&ctx, asset->path, 0, NULL) == 0)
+	AVInputFormat *infmt = 0;
+	AVDictionary *pcm_opts = 0;
+
+	if(asset->format == FILE_PCM && asset->pcm_format)
+	{
+		infmt = av_find_input_format(asset->pcm_format);
+		av_dict_set_int(&pcm_opts, "sample_rate", asset->sample_rate, 0);
+		av_dict_set_int(&pcm_opts, "channels", asset->channels, 0);
+	}
+
+	if(avformat_open_input(&ctx, asset->path, infmt, &pcm_opts) == 0)
 	{
 		if(avformat_find_stream_info(ctx, NULL) < 0)
 		{
@@ -238,7 +249,8 @@ int FileAVlibs::probe_input(Asset *asset)
 			avlibs_lock->unlock();
 			return 0;
 		}
-		asset->format = streamformat(ctx);
+		if(asset->format != FILE_PCM)
+			asset->format = streamformat(ctx);
 		if(asset->format != FILE_SVG)
 			get_decoder_format_defaults(asset, ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
@@ -385,6 +397,7 @@ int FileAVlibs::probe_input(Asset *asset)
 		}
 		avformat_close_input(&ctx);
 	}
+	av_dict_free(&pcm_opts);
 	avlibs_lock->unlock();
 
 	if(asset->format != FILE_UNKNOWN)
@@ -525,7 +538,8 @@ int FileAVlibs::open_file(int open_mode)
 	int rv;
 	int streamno;
 
-	if(asset->format == FILE_UNKNOWN)
+	if(asset->format == FILE_UNKNOWN ||
+			(asset->format == FILE_PCM && !asset->pcm_format))
 		return 1;
 
 	avlibs_lock->lock("FileAVlibs::open_file");
@@ -547,10 +561,18 @@ int FileAVlibs::open_file(int open_mode)
 	if(reading)
 	{
 		AVDictionary *dict = 0;
+		AVInputFormat *infmt = 0;
 
 		list2dictionary(&dict, asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX]);
 
-		if(avformat_open_input(&context, asset->path, 0, &dict) == 0)
+		if(asset->format == FILE_PCM && asset->pcm_format)
+		{
+			infmt = av_find_input_format(asset->pcm_format);
+			av_dict_set_int(&dict, "sample_rate", asset->sample_rate, 0);
+			av_dict_set_int(&dict, "channels", asset->channels, 0);
+		}
+
+		if(avformat_open_input(&context, asset->path, infmt, &dict) == 0)
 			result = avformat_find_stream_info(context, NULL);
 		else
 		{
@@ -558,6 +580,7 @@ int FileAVlibs::open_file(int open_mode)
 			avlibs_lock->unlock();
 			return 1;
 		}
+		av_dict_free(&dict);
 		if(result >= 0)
 		{
 			for(streamno = 0; streamno < context->nb_streams; streamno++)
