@@ -12,6 +12,7 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "fileavlibs.h"
+#include "fileformat.h"
 #include "filexml.h"
 #include "formattools.h"
 #include "formatpresets.h"
@@ -90,6 +91,7 @@ void Asset::init_values()
 	signed_ = 0;
 	header = 0;
 	dither = 0;
+	pcm_format = 0;
 	audio_data = 0;
 	video_data = 0;
 	audio_length = 0;
@@ -296,6 +298,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	audio_data = asset->audio_data;
 	audio_streamno = asset->audio_streamno;
 	format = asset->format;
+	pcm_format = asset->pcm_format;
 	channels = asset->channels;
 	sample_rate = asset->sample_rate;
 	bits = asset->bits;
@@ -619,6 +622,10 @@ void Asset::read(FileXML *file,
 					file->tag.get_property("USE_HEADER", use_header);
 				program_id =
 					file->tag.get_property("PROGRAM", program_id);
+				pcm_format = file->tag.get_property("PCM_FORMAT");
+				// pcm_format must point to string constant
+				if(pcm_format)
+					pcm_format = FileFormatPCMFormat::pcm_format(pcm_format);
 			}
 			else
 			if(file->tag.title_is("VIDEO"))
@@ -815,7 +822,8 @@ void Asset::write(FileXML *file,
 	file->tag.set_property("USE_HEADER", use_header);
 	if(nb_programs && program_id)
 		file->tag.set_property("PROGRAM", program_id);
-
+	if(format == FILE_PCM && pcm_format)
+		file->tag.set_property("PCM_FORMAT", pcm_format);
 	file->append_tag();
 	file->tag.set_title("/FORMAT");
 	file->append_tag();
@@ -1490,8 +1498,11 @@ void Asset::dump(int indent, int options)
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
 	printf("%*sindex_status %d id %d inuse %d\n", indent, "", index_status, id, global_inuse);
-	printf("%*sfile format '%s', length %" PRId64 "\n", indent, "",
-		ContainerSelection::container_to_text(format), file_length);
+	printf("%*sfile format '%s'", indent, "",
+		ContainerSelection::container_to_text(format));
+	if(format == FILE_PCM)
+		printf(" pcm_format '%s',", pcm_format);
+	printf(" length %" PRId64 "\n", file_length);
 	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, audio_streamno, channels, sample_rate, bits, byte_order);
 	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",

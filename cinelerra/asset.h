@@ -204,6 +204,7 @@ public:
 	int signed_;
 	int header;
 	int dither;
+	const char *pcm_format;
 // String or FourCC describing compression
 	char acodec[MAX_LEN_CODECNAME];
 
