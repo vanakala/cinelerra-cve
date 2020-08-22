@@ -507,17 +507,16 @@ int File::get_samples(AFrame *aframe)
 	if(aframe->get_buffer_length() <= 0)
 		return 0;
 	if(aframe->get_source_duration() <= 0)
-			return 0;
+		return 0;
 
 	aframe->position = round(aframe->get_source_pts() * aframe->get_samplerate());
 	if(aframe->get_length() + aframe->get_source_length() > aframe->get_buffer_length())
 		aframe->set_source_length(aframe->get_buffer_length() - aframe->get_length());
 	if(aframe->get_source_length() <= 0)
 		return 0;
-
 // Never try to read more samples than exist in the file
-	if(aframe->position + aframe->get_source_length() > asset->audio_length)
-		aframe->set_source_length(asset->audio_length - aframe->position);
+	if(aframe->get_source_pts() + aframe->get_source_duration() > asset->audio_duration)
+		aframe->set_source_duration(asset->audio_duration - aframe->get_source_pts());
 
 	return file->read_aframe(aframe);
 }
