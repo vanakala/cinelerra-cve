@@ -31,7 +31,6 @@
 #include "bcsignals.h"
 #include "bcsubwindow.h"
 #include "bctimer.h"
-#include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
 #include "colormodels.h"
 #include "colors.h"
@@ -111,16 +110,6 @@ BC_WindowBase::~BC_WindowBase()
 		subwindows = 0;
 	}
 
-	if(widgetgrids)
-	{
-		while (widgetgrids->total)
-		{
-			delete widgetgrids->last();
-			widgetgrids->remove();
-		}
-		delete widgetgrids;
-	}
-
 	delete pixmap;
 
 	XDestroyWindow(top_level->display, win);
@@ -183,7 +172,6 @@ void BC_WindowBase::initialize()
 	top_level = 0;
 	parent_window = 0;
 	subwindows = 0;
-	widgetgrids = 0;
 	xvideo_port_id = -1;
 	video_on = 0;
 	motion_events = 0;
@@ -310,7 +298,6 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	if(parent_window) top_level = parent_window->top_level;
 
 	subwindows = new BC_SubWindowList;
-	widgetgrids = new BC_WidgetGridList;
 
 // Mandatory setup
 	if(window_type == MAIN_WINDOW)
@@ -2452,13 +2439,6 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 {
 	return add_subwindow(subwindow);
 }
-
-BC_WidgetGrid* BC_WindowBase::add_widgetgrid(BC_WidgetGrid *widgetgrid)
-{
-	widgetgrids->append(widgetgrid);
-	return widgetgrid;
-}
-
 
 void BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {

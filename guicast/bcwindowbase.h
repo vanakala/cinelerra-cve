@@ -58,7 +58,6 @@
 #include "bcpopupmenu.inc"
 #include "bcpot.inc"
 #include "bcprogress.inc"
-#include "bcrelocatablewidget.h"
 #include "bcrepeater.inc"
 #include "bcresources.inc"
 #include "bcscrollbar.inc"
@@ -69,7 +68,6 @@
 #include "bctitle.inc"
 #include "bctoggle.inc"
 #include "bctumble.inc"
-#include "bcwidgetgrid.inc"
 #include "bcwindow.inc"
 #include "bcwindowbase.inc"
 #include "condition.inc"
@@ -102,7 +100,7 @@ public:
 
 
 // Windows, subwindows, popupwindows inherit from this
-class BC_WindowBase : public BC_RelocatableWidget
+class BC_WindowBase
 {
 public:
 	BC_WindowBase();
@@ -215,7 +213,6 @@ public:
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
-	BC_WidgetGrid* add_widgetgrid(BC_WidgetGrid *widgetgrid);
 
 
 	static BC_Resources* get_resources();
@@ -608,8 +605,6 @@ private:
 	BC_WindowBase* parent_window;
 // list of window bases in this window
 	BC_SubWindowList* subwindows;
-// list of window bases in this window
-	BC_WidgetGridList* widgetgrids;
 // Position of window
 	int x, y, w, h;
 // Default colors

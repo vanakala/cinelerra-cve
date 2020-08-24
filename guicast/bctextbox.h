@@ -245,7 +245,7 @@ public:
 class BC_PopupTextBoxText;
 class BC_PopupTextBoxList;
 
-class BC_PopupTextBox : public BC_RelocatableWidget
+class BC_PopupTextBox
 {
 public:
 	BC_PopupTextBox(BC_WindowBase *parent_window, 
@@ -304,7 +304,7 @@ class BC_TumbleTextBoxText;
 class BC_TumbleTextBoxTumble;
 
 
-class BC_TumbleTextBox : public BC_RelocatableWidget
+class BC_TumbleTextBox
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window, 

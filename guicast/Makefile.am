@@ -30,9 +30,8 @@ libguicastcve_la_SOURCES = \
 	bcpopupmenu.C \
 	bcpot.C \
 	bcprogress.C \
-	bcprogressbox.C	\
+	bcprogressbox.C \
 	bcrecentlist.C \
-	bcrelocatablewidget.C \
 	bcrepeater.C \
 	bcresources.C \
 	bcscrollbar.C \
@@ -45,7 +44,6 @@ libguicastcve_la_SOURCES = \
 	bctitle.C \
 	bctoggle.C \
 	bctumble.C \
-	bcwidgetgrid.C \
 	bcwindow.C \
 	bcwindowGL.C \
 	bcwindowbase.C \
@@ -120,8 +118,6 @@ noinst_HEADERS = \
 	bcprogress.h \
 	bcprogress.inc \
 	bcrecentlist.h \
-	bcrelocatablewidget.h \
-	bcrelocatablewidget.inc \
 	bcrepeater.h \
 	bcrepeater.inc \
 	bcresources.h \
@@ -146,8 +142,6 @@ noinst_HEADERS = \
 	bctoggle.inc \
 	bctumble.h \
 	bctumble.inc \
-	bcwidgetgrid.h \
-	bcwidgetgrid.inc \
 	bcwindowbase.h \
 	bcwindowbase.inc \
 	bcwindow.h \
