@@ -94,6 +94,7 @@ SUBDIRS= \
 	unsharp \
 	videoscope \
 	wave \
+	waveform \
 	whirl \
 	wipe \
 	yuv \

@@ -500,6 +500,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/unsharp/Makefile
 	plugins/videoscope/Makefile
 	plugins/wave/Makefile
+	plugins/waveform/Makefile
 	plugins/whirl/Makefile
 	plugins/wipe/Makefile
 	plugins/yuv/Makefile
