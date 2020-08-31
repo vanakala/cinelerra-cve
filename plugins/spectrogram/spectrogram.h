@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef SPECTROGRAM_H
 #define SPECTROGRAM_H
@@ -27,6 +11,7 @@
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_USES_TMPFRAME
+#define PLUGIN_NOT_KEYFRAMEABLE
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 #define PLUGIN_CLASS Spectrogram
 #define PLUGIN_CONFIG_CLASS SpectrogramConfig
@@ -68,12 +53,17 @@ class SpectrogramWindow : public PluginWindow
 {
 public:
 	SpectrogramWindow(Spectrogram *plugin, int x, int y);
+	~SpectrogramWindow();
 
 	void update();
+	void update_canvas();
 
 	SpectrogramLevel *level;
 	SpectrogramBW *blackwhite;
 	BC_SubWindow *canvas;
+	int gui_tmp_size;
+	double *gui_tmp;
+
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
@@ -114,15 +104,12 @@ public:
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void render_gui(void *data);
 
 	int window_size;
 	int data_size;
-	int gui_tmp_size;
 	int window_num;
 	AFrame *frame;
 	double *data;
-	double *gui_tmp;
 
 private:
 	SpectrogramFFT *fft;

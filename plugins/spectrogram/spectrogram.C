@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctitle.h"
 #include "clip.h"
@@ -79,6 +63,8 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 	char string[BCTEXTLEN];
 	BC_WindowBase *win;
 
+	gui_tmp = 0;
+	gui_tmp_size = 0;
 	x = 60;
 	y = 10;
 	add_subwindow(canvas = new BC_SubWindow(x, 
@@ -107,10 +93,109 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
+SpectrogramWindow::~SpectrogramWindow()
+{
+	delete [] gui_tmp;
+}
+
 void SpectrogramWindow::update()
 {
 	level->update(plugin->config.level);
 	blackwhite->update(plugin->config.blackwhite);
+	update_canvas();
+}
+
+void SpectrogramWindow::update_canvas()
+{
+	int h = canvas->get_h();
+	int input1 = plugin->data_size - 1;
+
+	if(!plugin->data_size)
+		return;
+
+	if(gui_tmp_size < h)
+	{
+		delete [] gui_tmp;
+		gui_tmp = 0;
+	}
+	if(!gui_tmp)
+	{
+		gui_tmp = new double[h];
+		gui_tmp_size = h;
+	}
+
+// Scale frame to canvas height
+	for(int i = 0; i < h; i++)
+	{
+		int input2 = (int)((h - 1 - i) * TOTALFREQS / h);
+
+		input2 = Freq::tofreq(input2) *
+			plugin->window_size / plugin->frame->get_samplerate();
+		input2 = MIN(plugin->data_size - 1, input2);
+
+		double sum = 0;
+		if(input1 > input2)
+		{
+			for(int j = input1 - 1; j >= input2; j--)
+				sum += plugin->data[j];
+
+			sum /= input1 - input2;
+		}
+		else
+			sum = plugin->data[input2];
+
+		if(plugin->config.blackwhite)
+			gui_tmp[i] = (10. * log(sum + 1e-6) + 96) / 96;
+		else
+			gui_tmp[i] = sum;
+
+		input1 = input2;
+	}
+
+	int w = canvas->get_w();
+	double wipts = (double)plugin->window_size / plugin->frame->get_samplerate();
+	double x_scale = (double)w / plugin->get_length();
+	int x_pos = round(((plugin->window_num - 1) * wipts +
+		plugin->frame->get_pts() - plugin->plugin->get_pts()) * x_scale);
+	int slice = round(wipts * x_scale);
+	if(slice + x_pos > w)
+		slice = w - x_pos;
+	int x = x_pos;
+
+	if(slice > 0)
+	{
+		double scale = (double)(plugin->config.blackwhite ?
+			0xff : 0xffffff);
+
+		for(int i = 0; i < h; i++)
+		{
+			int color = round(scale * gui_tmp[i]);
+
+			if(color < 0)
+				color = 0;
+
+			if(plugin->config.blackwhite)
+			{
+				if(color > 0xff)
+					color = 0xff;
+				color = color << 16 | color << 8 | color;
+			}
+			else if(color > 0xffffff)
+				color = 0xffffff;
+
+			if(slice == 1)
+			{
+				canvas->set_current_color(color);
+				canvas->draw_pixel(x_pos, i);
+			}
+			else
+			{
+				canvas->set_color(color);
+				canvas->draw_line(x_pos, i, x_pos + slice, i);
+			}
+		}
+	}
+	canvas->flash();
 }
 
 PLUGIN_THREAD_METHODS
@@ -151,7 +236,7 @@ int SpectrogramFFT::signal_process()
 			sqrt(re * re + im * im);
 	}
 	plugin->window_num++;
-	plugin->render_gui(plugin->data);
+	plugin->update_gui();
 	return 0;
 }
 
@@ -161,8 +246,6 @@ Spectrogram::Spectrogram(PluginServer *server)
 	fft = 0;
 	data = 0;
 	data_size = 0;
-	gui_tmp = 0;
-	gui_tmp_size = 0;
 	frame = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -173,7 +256,6 @@ Spectrogram::~Spectrogram()
 
 	delete fft;
 	delete [] data;
-	delete [] gui_tmp;
 }
 
 PLUGIN_CLASS_METHODS
@@ -194,106 +276,13 @@ AFrame *Spectrogram::process_tmpframe(AFrame *aframe)
 	return aframe;
 }
 
-void Spectrogram::render_gui(void *odata)
-{
-	if(thread)
-	{
-		BC_SubWindow *canvas = thread->window->canvas;
-		int h = canvas->get_h();
-		int input1 = data_size - 1;
-
-		if(gui_tmp_size < h)
-		{
-			delete [] gui_tmp;
-			gui_tmp = 0;
-		}
-		if(!gui_tmp)
-		{
-			gui_tmp = new double[h];
-			gui_tmp_size = h;
-		}
-// Scale frame to canvas height
-		for(int i = 0; i < h; i++)
-		{
-			int input2 = (int)((h - 1 - i) * TOTALFREQS / h);
-
-			input2 = Freq::tofreq(input2) *
-				window_size / frame->get_samplerate();
-			input2 = MIN(data_size - 1, input2);
-
-			double sum = 0;
-			if(input1 > input2)
-			{
-				for(int j = input1 - 1; j >= input2; j--)
-					sum += data[j];
-
-				sum /= input1 - input2;
-			}
-			else
-				sum = data[input2];
-
-			if(config.blackwhite)
-				gui_tmp[i] = (10. * log(sum + 1e-6) + 96) / 96;
-			else
-				gui_tmp[i] = sum;
-
-			input1 = input2;
-		}
-
-		int w = canvas->get_w();
-		double wipts = (double)window_size / frame->get_samplerate();
-		double x_scale = (double)w / plugin->get_length();
-		int x_pos = round(((window_num - 1) * wipts +
-			frame->get_pts() - plugin->get_pts()) * x_scale);
-		int slice = round(wipts * x_scale);
-		if(slice + x_pos > w)
-			slice = w - x_pos;
-		int x = x_pos;
-
-		if(slice > 0)
-		{
-			double scale = (double)(config.blackwhite ?
-				0xff : 0xffffff);
-
-			for(int i = 0; i < h; i++)
-			{
-				int color = round(scale * gui_tmp[i]);
-
-				if(color < 0)
-					color = 0;
-				if(config.blackwhite)
-				{
-					if(color > 0xff)
-						color = 0xff;
-					color = color << 16 | color << 8 | color;
-				}
-				else if(color > 0xffffff)
-					color = 0xffffff;
-
-				if(slice == 1)
-				{
-					canvas->set_current_color(color);
-					canvas->draw_pixel(x_pos, i);
-				}
-				else
-				{
-					canvas->set_color(color);
-					canvas->draw_line(x_pos, i, x_pos + slice, i);
-				}
-			}
-		}
-		canvas->flash();
-		canvas->flush();
-	}
-}
-
 int Spectrogram::load_configuration()
 {
-	KeyFrame *prev_keyframe;
+	KeyFrame *keyframe = get_first_keyframe();
 
-	if(prev_keyframe = prev_keyframe_pts(source_pts))
-		read_data(prev_keyframe);
-	return 0;
+	if(keyframe)
+		read_data(keyframe);
+	return need_reconfigure;
 }
 
 void Spectrogram::read_data(KeyFrame *keyframe)
