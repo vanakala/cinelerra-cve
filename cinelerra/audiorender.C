@@ -448,6 +448,15 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	channel = edit->channel;
 	asset = edit->asset;
 
+	if(!asset)
+	{
+		cur = audio_frames.get_tmpframe(out_length);
+		cur->set_samplerate(out_samplerate);
+		cur->channel = channel;
+		cur->clear_frame(pts, duration);
+		return cur;
+	}
+
 	for(int i = 0; i < input_frames.total; i++)
 	{
 		InFrame *infile = input_frames.values[i];
@@ -455,7 +464,7 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		if(infile->file->asset == asset && infile->channel == channel &&
 			infile->filenum == filenum)
 		{
-			AFrame *cur = infile->get_aframe(channel);
+			cur = infile->get_aframe(channel);
 
 			if(PTSEQU(cur->get_pts(), pts) &&
 					PTSEQU(cur->get_duration(), duration))
