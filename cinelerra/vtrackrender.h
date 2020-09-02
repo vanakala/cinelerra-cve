@@ -36,7 +36,6 @@ public:
 
 // Frames for multichannel plugin
 	ArrayList<VFrame*> vframes;
-	int initialized_buffers;
 
 private:
 	void read_vframe(VFrame *vframe, Edit *edit, int filenum = 0);

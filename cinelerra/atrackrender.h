@@ -35,7 +35,6 @@ public:
 
 // Frames for multichannel plugin
 	ArrayList<AFrame*> aframes;
-	int initialized_buffers;
 
 private:
 	void render_fade(AFrame *aframe);

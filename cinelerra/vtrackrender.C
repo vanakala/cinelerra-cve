@@ -41,7 +41,6 @@ VTrackRender::VTrackRender(Track *track, VideoRender *vrender)
 	overlayer = 0;
 	videorender = vrender;
 	track_frame = 0;
-	initialized_buffers = 0;
 }
 
 VTrackRender::~VTrackRender()
