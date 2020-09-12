@@ -316,6 +316,7 @@ public:
 	void select_point(ptstime position);
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 	int stop_composer();             // stop composer playback
+	int stop_playback();             // stop viewer and composer playback
 	// Get absolute cursor position
 	void get_abs_cursor_pos(int *abs_x, int *abs_y);
 	// Get icon for window

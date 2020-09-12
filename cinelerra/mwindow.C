@@ -1230,6 +1230,11 @@ int MWindow::stop_composer()
 	return cwindow->stop_playback();
 }
 
+int MWindow::stop_playback()
+{
+	return vwindow->stop_playback() | cwindow->stop_playback();
+}
+
 void MWindow::get_abs_cursor_pos(int *abs_x, int *abs_y)
 {
 	gui->get_abs_cursor_pos(abs_x, abs_y);
