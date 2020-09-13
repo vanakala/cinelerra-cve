@@ -36,7 +36,7 @@ BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
 
 int BC_FileBoxRecent::handle_event()
 {
-	if(get_selection(0, 0) >= 0)
+	if(get_selection(0, 0))
 	{
 		filebox->submit_dir(get_selection(0, 0)->get_text());
 	}
