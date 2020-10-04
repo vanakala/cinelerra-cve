@@ -1,24 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru at gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru at gmail dot com>
 
 #include "bcsignals.h"
 #include "bcwindowbase.inc"
@@ -35,6 +19,8 @@
 #include <stdarg.h>
 #include <math.h>
 #include <values.h>
+
+#define EPSILON (2e-6)
 
 BC_Signals* BC_Signals::global_signals = 0;
 int BC_Signals::catch_X_errors = 0;
@@ -967,4 +953,37 @@ void BC_Signals::dumpGC(Display *dpy, GC gc, int indent)
 	}
 	else
 		printf("GC dump FAIL\n");
+}
+
+void BC_Signals::dump_double_array2file(const char *filename,
+	double *array, size_t length, double x_step, double x_start)
+{
+	FILE *fp;
+	double xval;
+	int k;
+
+	if(length < 2)
+		return;
+	if(fabs(x_step) < EPSILON)
+		x_step = 1;
+
+	if(fp = fopen(filename, "wb"))
+	{
+		xval = x_start;
+		for(int i = 0; i < length; i++)
+		{
+			k = fwrite(&xval, 1, sizeof(double), fp);
+			k += fwrite(&array[i], 1, sizeof(double), fp);
+			if(k != 2 * sizeof(double))
+			{
+				fprintf(stderr, "Failed to write to file double array at %d\n",
+					i);
+				break;
+			}
+			xval += x_step;
+		}
+		fclose(fp);
+	}
+	else
+		fprintf(stderr, "Failed to create %s", filename);
 }
