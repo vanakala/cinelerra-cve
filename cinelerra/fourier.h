@@ -14,24 +14,35 @@
 class Fourier
 {
 public:
-	Fourier(int win_size = 4096);
+	Fourier(int win_size = 4096, int oversample = 0);
 	~Fourier();
 
 	AFrame *process_frame(AFrame *aframe);
 	int get_window_size() { return window_size; };
+	int get_oversample() { return oversample; };
 	// called when fftw_window contains fourier transformation
 	// return nz when inverse transformation is needed
 	virtual int signal_process() { return 0; };
+	void clear_accumulator();
 	void dump(int indent = 0);
 	void dump_file(const char *filename, int samplerate = 0, int append = 0);
 
 	fftw_complex *fftw_window;
+protected:
+	int latency;
+	int step_size;
 private:
 	fftw_plan plan_forward;
 	fftw_plan plan_backward;
 	int window_size;
 	int half_size;
+	int oversample;
 	static Mutex plans_lock;
+	double *pre_window;
+	double *post_window;
+	double *accumulator;
+	double *pre_shift_buffer;
+	ptstime prev_frame_end;
 };
 
 class Pitch : public Fourier
