@@ -70,6 +70,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
+	void reset_plugin();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 
@@ -78,7 +79,6 @@ public:
 	void load_defaults();
 	void save_defaults();
 
-	AFrame *input_frame;
 	Pitch *fft;
 };
 

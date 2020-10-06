@@ -11,12 +11,8 @@
 #include "pitch.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
 
-#include <math.h>
-#include <string.h>
-
-#define OVERSAMPLE 0
+#define WINDOW_SIZE 2048
 
 REGISTER_PLUGIN
 
@@ -26,13 +22,21 @@ PitchEffect::PitchEffect(PluginServer *server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	fft = 0;
-	input_frame = 0;
 }
 
 PitchEffect::~PitchEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 	delete fft;
+}
+
+void PitchEffect::reset_plugin()
+{
+	if(fft)
+	{
+		delete fft;
+		fft = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -86,11 +90,10 @@ void PitchEffect::save_defaults()
 AFrame *PitchEffect::process_tmpframe(AFrame *aframe)
 {
 	load_configuration();
-	input_frame = aframe;
 
 	if(!fft)
 	{
-		fft = new Pitch(aframe->get_samplerate(), aframe->get_buffer_length() / 2);
+		fft = new Pitch(aframe->get_samplerate(), WINDOW_SIZE);
 		fft->set_scale(config.scale);
 	}
 	else if(need_reconfigure)
@@ -150,7 +153,7 @@ void PitchWindow::update()
 
 
 PitchScale::PitchScale(PitchEffect *plugin, int x, int y)
- : BC_FPot(x, y, (float)plugin->config.scale, .5, 1.5)
+ : BC_FPot(x, y, plugin->config.scale, .5, 1.5)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
