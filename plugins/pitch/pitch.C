@@ -89,14 +89,10 @@ void PitchEffect::save_defaults()
 
 AFrame *PitchEffect::process_tmpframe(AFrame *aframe)
 {
-	load_configuration();
-
 	if(!fft)
-	{
 		fft = new Pitch(aframe->get_samplerate(), WINDOW_SIZE);
-		fft->set_scale(config.scale);
-	}
-	else if(need_reconfigure)
+
+	if(load_configuration())
 		fft->set_scale(config.scale);
 
 	aframe = fft->process_frame(aframe);
@@ -124,8 +120,7 @@ void PitchConfig::interpolate(PitchConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	PLUGIN_CONFIG_INTERPOLATE_MACRO
-	scale = prev.scale * prev_scale + next.scale * next_scale;
+	scale = prev.scale;
 }
 
 
