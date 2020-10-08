@@ -69,7 +69,7 @@ public:
 	~TimeStretch();
 
 	PLUGIN_CLASS_MEMBERS
-
+	void reset_plugin();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	AFrame *process_tmpframe(AFrame *aframe);

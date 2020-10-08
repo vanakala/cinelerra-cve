@@ -35,6 +35,17 @@ TimeStretch::~TimeStretch()
 	delete resample;
 }
 
+void TimeStretch::reset_plugin()
+{
+	if(pitch)
+	{
+		delete pitch;
+		pitch = 0;
+		delete resample;
+		resample = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 void TimeStretch::read_data(KeyFrame *keyframe)
@@ -67,7 +78,6 @@ void TimeStretch::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.tag.set_title("/TIMESTRETCH");
 	output.append_tag();
-	output.append_newline();
 	keyframe->set_data(output.string);
 }
 
@@ -103,7 +113,7 @@ void TimeStretchConfig::copy_from(TimeStretchConfig &that)
 
 int TimeStretch::load_configuration()
 {
-	return 0;
+	return need_reconfigure;
 }
 
 AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
@@ -111,6 +121,7 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 	int output_pos = 0;
 	int fragment_size;
 	AFrame *src_frame, *tmp_frame;
+	int do_reconfigure = load_configuration();
 
 	input_frame = aframe;
 	src_frame = aframe;
@@ -120,17 +131,18 @@ AFrame *TimeStretch::process_tmpframe(AFrame *aframe)
 		pitch = new Pitch(aframe->get_samplerate(),
 			aframe->get_buffer_length() / 4);
 		resample = new AVResample();
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 	calculate_pts();
 	input_pts = aframe->round_to_sample(input_pts);
 
-	if(need_reconfigure || input_pts < prev_frame || input_pts > prev_input + EPSILON)
+	if(do_reconfigure || input_pts < prev_frame || input_pts > prev_input + EPSILON)
 	{
 		pitch->set_scale(config.scale);
 		resample->reset();
-		need_reconfigure = 0;
+		do_reconfigure = 0;
 		prev_input = -1;
+		update_gui();
 	}
 
 	if(!PTSEQU(aframe->get_pts(), input_pts))
