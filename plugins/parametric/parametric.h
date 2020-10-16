@@ -62,8 +62,8 @@ public:
 	};
 
 	int freq;
-	float quality;
-	float magnitude;
+	double quality;
+	double magnitude;
 	int mode;
 };
 
@@ -82,7 +82,7 @@ public:
 		ptstime current_pts);
 
 	ParametricBand band[BANDS];
-	float wetness;
+	double wetness;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -93,50 +93,59 @@ PLUGIN_THREAD_HEADER
 class ParametricFreq : public BC_QPot
 {
 public:
-	ParametricFreq(ParametricEQ *plugin, int x, int y, int band);
+	ParametricFreq(ParametricEQ *plugin, ParametricWindow *window,
+		int x, int y, int band);
 
 	int handle_event();
 
 	int band;
 	ParametricEQ *plugin;
+	ParametricWindow *window;
 };
 
 
 class ParametricQuality : public BC_FPot
 {
 public:
-	ParametricQuality(ParametricEQ *plugin, int x, int y, int band);
+	ParametricQuality(ParametricEQ *plugin, ParametricWindow *window,
+		int x, int y, int band);
 
 	int handle_event();
 
 	int band;
 	ParametricEQ *plugin;
+	ParametricWindow *window;
 };
 
 
 class ParametricMagnitude : public BC_FPot
 {
 public:
-	ParametricMagnitude(ParametricEQ *plugin, int x, int y, int band);
+	ParametricMagnitude(ParametricEQ *plugin, ParametricWindow *window,
+		int x, int y, int band);
 
 	int handle_event();
 
 	int band;
 	ParametricEQ *plugin;
+	ParametricWindow *window;
 };
 
 
 class ParametricMode : public BC_PopupMenu
 {
 public:
-	ParametricMode(ParametricEQ *plugin, int x, int y, int band);
+	ParametricMode(ParametricEQ *plugin, ParametricWindow *window,
+		int x, int y, int band);
 
 	int handle_event();
 	static int text_to_mode(const char *text);
 	static const char* mode_to_text(int mode);
+	void update(int mode);
 
 	int band;
 	ParametricEQ *plugin;
+	ParametricWindow *window;
 };
 
 
@@ -164,9 +173,13 @@ public:
 class ParametricWetness : public BC_FPot
 {
 public:
-	ParametricWetness(ParametricEQ *plugin, int x, int y);
+	ParametricWetness(ParametricEQ *plugin, ParametricWindow *window,
+		int x, int y);
+
 	int handle_event();
+
 	ParametricEQ *plugin;
+	ParametricWindow *window;
 };
 
 
@@ -179,6 +192,7 @@ public:
 	void update();
 	void update_canvas();
 
+	double *window_envelope;
 	BC_SubWindow *canvas;
 	ParametricBandGUI* bands[BANDS];
 	ParametricWetness *wetness;
@@ -209,12 +223,12 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void reconfigure();
 
-	void calculate_envelope();
+	double *calculate_envelope(double *envelope);
 	double gauss(double sigma, double a, double x);
 
-	double *envelope;
+	int niquist;
+	double *plugin_envelope;
 	PLUGIN_CLASS_MEMBERS
 	ParametricFFT *fft;
 };
