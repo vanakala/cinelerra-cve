@@ -432,7 +432,7 @@ PLUGIN_THREAD_METHODS
 
 
 ParametricFFT::ParametricFFT(ParametricEQ *plugin, int window_size)
- : Fourier(window_size)
+ : Fourier(window_size, 4)
 {
 	this->plugin = plugin;
 }
