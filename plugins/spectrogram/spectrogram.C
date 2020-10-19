@@ -258,6 +258,21 @@ Spectrogram::~Spectrogram()
 	delete [] data;
 }
 
+void Spectrogram::reset_plugin()
+{
+	if(fft)
+	{
+		delete fft;
+		fft = 0;
+		if(data)
+		{
+			delete [] data;
+			data = 0;
+			data_size = 0;
+		}
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 AFrame *Spectrogram::process_tmpframe(AFrame *aframe)

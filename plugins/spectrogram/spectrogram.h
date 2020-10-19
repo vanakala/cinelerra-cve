@@ -99,6 +99,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS;
 
+	void reset_plugin();
 	AFrame *process_tmpframe(AFrame *aframe);
 	void load_defaults();
 	void save_defaults();
