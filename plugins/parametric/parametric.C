@@ -469,6 +469,17 @@ ParametricEQ::~ParametricEQ()
 	delete [] plugin_envelope;
 }
 
+void ParametricEQ::reset_plugin()
+{
+	if(fft)
+	{
+		delete fft;
+		fft = 0;
+		delete [] plugin_envelope;
+		plugin_envelope = 0;
+	}
+}
+
 PLUGIN_CLASS_METHODS
 
 void ParametricEQ::read_data(KeyFrame *keyframe)

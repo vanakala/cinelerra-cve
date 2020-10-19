@@ -217,6 +217,7 @@ public:
 	ParametricEQ(PluginServer *server);
 	~ParametricEQ();
 
+	void reset_plugin();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	AFrame *process_tmpframe(AFrame *aframe);
