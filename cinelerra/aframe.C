@@ -341,11 +341,11 @@ void AFrame::dump(int indent, int dumpdata)
 {
 	double avg, min, max;
 
-	printf("%*sAFrame::dump: %p\n", indent, "", this);
+	printf("%*sAFrame %p dump: trackno %d\n", indent, "", this, trackno);
 	indent += 2;
-	printf("%*spts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %" PRId64 " no %d\n", indent, "",
+	printf("%*spts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %" PRId64 "\n", indent, "",
 		pts, duration, length, source_pts, source_duration, source_length,
-		channel, samplerate, position, trackno);
+		channel, samplerate, position);
 	printf("%*sbuffer %p float_buffer %p buffer_length %d shared %d float_data %d\n", indent, "",
 		buffer, float_buffer, buffer_length, shared, float_data);
 	if(dumpdata && length > 0)
