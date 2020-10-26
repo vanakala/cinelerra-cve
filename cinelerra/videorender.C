@@ -250,6 +250,8 @@ void VideoRender::flash_output()
 void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
 	VTrackRender *current_renderer)
 {
+	VFrame *vframe;
+
 	current_renderer->vframes.remove_all();
 	current_renderer->vframes.append(current_frame);
 
@@ -261,9 +263,11 @@ void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
 		for(int i = 0; i < track->plugins.total; i++)
 		{
 			if(track->plugins.values[i]->shared_plugin == plugin &&
-					track->plugins.values[i]->on)
-				current_renderer->vframes.append(
-				((VTrackRender*)track->renderer)->handover_trackframe());
+				track->plugins.values[i]->on)
+			{
+				if(vframe = ((VTrackRender*)track->renderer)->handover_trackframe())
+					current_renderer->vframes.append(vframe);
+			}
 		}
 	}
 	if(current_renderer->initialized_buffers != current_renderer->vframes.total)
@@ -284,10 +288,17 @@ VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
-			if(track->plugins.values[i]->shared_plugin == plugin &&
-					track->plugins.values[i]->on)
-				((VTrackRender*)track->renderer)->take_vframe(
-					current_renderer->vframes.values[k++]);
+			if(track->plugins.values[i]->shared_plugin == plugin)
+			{
+				if(k >= current_renderer->vframes.total)
+					break;
+				VFrame *frame = current_renderer->vframes.values[k];
+				if(frame->get_layer() == track->number_of())
+				{
+					((VTrackRender*)track->renderer)->take_vframe(frame);
+					k++;
+				}
+			}
 		}
 	}
 	return current_frame;
