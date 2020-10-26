@@ -525,6 +525,8 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 	ATrackRender *current_renderer)
 {
+	AFrame *aframe;
+
 	current_renderer->aframes.remove_all();
 	current_renderer->aframes.append(current_frame);
 
@@ -536,9 +538,11 @@ void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 		for(int i = 0; i < track->plugins.total; i++)
 		{
 			if(track->plugins.values[i]->shared_plugin == plugin &&
-					track->plugins.values[i]->on)
-				current_renderer->aframes.append(
-					((ATrackRender*)track->renderer)->handover_trackframe());
+				track->plugins.values[i]->on)
+			{
+				if(aframe = ((ATrackRender*)track->renderer)->handover_trackframe())
+					current_renderer->aframes.append(aframe);
+			}
 		}
 	}
 
@@ -560,10 +564,17 @@ AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
-			if(track->plugins.values[i]->shared_plugin == plugin &&
-					track->plugins.values[i]->on)
-				((ATrackRender*)track->renderer)->take_aframe(
-					current_renderer->aframes.values[k++]);
+			if(track->plugins.values[i]->shared_plugin == plugin)
+			{
+				if(k >= current_renderer->aframes.total)
+					break;
+				AFrame *aframe = current_renderer->aframes.values[k];
+				if(aframe->get_track() == track->number_of())
+				{
+					((ATrackRender*)track->renderer)->take_aframe(aframe);
+					k++;
+				}
+			}
 		}
 	}
 	return current_frame;
