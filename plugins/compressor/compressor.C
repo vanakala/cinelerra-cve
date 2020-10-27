@@ -48,7 +48,7 @@ CompressorEffect::CompressorEffect(PluginServer *server)
 		input_buffer[i] = 0;
 	input_size = 0;
 	input_allocated = 0;
-	input_start = 0;
+	input_start = -1;
 
 	next_target = 1.0;
 	previous_target = 1.0;
@@ -60,13 +60,36 @@ CompressorEffect::CompressorEffect(PluginServer *server)
 
 CompressorEffect::~CompressorEffect()
 {
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+	int total_buffers = get_total_buffers();
+
+	for(int i = 0; i < total_buffers; i++)
 	{
 		if(input_buffer[i])
 			delete [] input_buffer[i];
 	}
 	levels.remove_all();
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void CompressorEffect::reset_plugin()
+{
+	int total_buffers;
+
+	if(input_allocated)
+	{
+		for(int i = 0; i < MAXCHANNELS; i++)
+		{
+			delete [] input_buffer[i];
+			input_buffer[i] = 0;
+		}
+		input_allocated = 0;
+		input_start = -1;
+		next_target = 1.0;
+		previous_target = 1.0;
+		target_samples = 1;
+		target_current_sample = -1;
+		current_value = 1.0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -188,7 +211,8 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 	int size = aframe->get_length();
 	int total_buffers = get_total_buffers();
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 // Calculate linear transfer from db 
 	levels.remove_all();
@@ -205,16 +229,12 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 
 	int reaction_samples = aframe->to_samples(config.reaction_len);
 	int decay_samples = aframe->to_samples(config.decay_len);
-	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
+	int trigger = CLIP(config.trigger, 0, total_buffers);
 
 // FIXIT: Clamping must be done in gui
 	CLAMP(reaction_samples, -1000000, 1000000);
 	CLAMP(decay_samples, reaction_samples, 1000000);
 	CLAMP(decay_samples, 1, 1000000);
-	if(abs(reaction_samples) < 1)
-		reaction_samples = 1;
-	if(abs(decay_samples) < 1)
-		decay_samples = 1;
 
 	if(reaction_samples > 0)
 	{
@@ -339,20 +359,17 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 		if(start_position > input_start &&
 			start_position < input_start + input_size)
 		{
-			if(input_buffer)
-			{
-				int len = input_start + input_size - start_position;
+			int len = input_start + input_size - start_position;
 
-				for(int i = 0; i < total_buffers; i++)
-				{
-					memcpy(input_buffer[i],
-						input_buffer[i] +
-							(start_position - input_start),
-						len * sizeof(double));
-				}
-				input_size = len;
-				input_start = start_position;
+			for(int i = 0; i < total_buffers; i++)
+			{
+				memmove(input_buffer[i],
+					input_buffer[i] +
+						(start_position - input_start),
+					len * sizeof(double));
 			}
+			input_size = len;
+			input_start = start_position;
 		}
 
 // Expand buffer to handle preview size
@@ -377,7 +394,7 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 			for(int i = 0; i < total_buffers; i++)
 				mempcpy(input_buffer[i], aframes[i]->buffer,
 					size * sizeof(double));
-			input_start += size;
+			input_size = size;
 		}
 
 // Append data to input buffer to construct readahead area.
@@ -406,8 +423,10 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 				tmp_frame->set_fill_request(input_start + input_size,
 					fragment_size);
 				tmp_frame = get_frame(tmp_frame);
+
 				memcpy(&input_buffer[i][input_size],
-					tmp_frame->buffer, tmp_frame->get_length());
+					tmp_frame->buffer,
+					tmp_frame->get_length() * sizeof(double));
 			}
 			input_size += tmp_frame->get_length();
 		}

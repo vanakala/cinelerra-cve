@@ -214,6 +214,7 @@ public:
 	CompressorEffect(PluginServer *server);
 	~CompressorEffect();
 
+	void reset_plugin();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_tmpframes(AFrame **aframes);
