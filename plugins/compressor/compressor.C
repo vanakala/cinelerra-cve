@@ -19,6 +19,11 @@
 #include <math.h>
 #include <string.h>
 
+#define MIN_REACTION (-2.0)
+#define MAX_REACTION (2.0)
+#define MIN_DECAY    (0.01)
+#define MAX_DECAY    MAX_REACTION
+
 REGISTER_PLUGIN
 
 // More potential compressor algorithms:
@@ -230,11 +235,6 @@ void CompressorEffect::process_tmpframes(AFrame **aframes)
 	int reaction_samples = aframe->to_samples(config.reaction_len);
 	int decay_samples = aframe->to_samples(config.decay_len);
 	int trigger = CLIP(config.trigger, 0, total_buffers);
-
-// FIXIT: Clamping must be done in gui
-	CLAMP(reaction_samples, -1000000, 1000000);
-	CLAMP(decay_samples, reaction_samples, 1000000);
-	CLAMP(decay_samples, 1, 1000000);
 
 	if(reaction_samples > 0)
 	{
@@ -783,6 +783,8 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, x, y, 650, 480)
 {
 	int control_margin = 130;
+	BC_WindowBase *win;
+	int title_h, pot_x;
 	x = 35;
 	y = 10;
 
@@ -791,14 +793,17 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
 		get_h() - y - 70));
 	canvas->set_cursor(CROSS_CURSOR);
 	x = get_w() - control_margin;
-	add_subwindow(new BC_Title(x, y, _("Reaction secs:")));
-	y += 20;
-	add_subwindow(reaction = new CompressorReaction(plugin, x, y));
-	y += 30;
+	pot_x = x + 20;
+	add_subwindow(win = new BC_Title(x, y, _("Reaction secs:")));
+	title_h = win->get_h() + 5;
+	y += title_h;
+	add_subwindow(reaction = new CompressorReaction(plugin, pot_x, y));
+	y += reaction->get_h() + 8;
 	add_subwindow(new BC_Title(x, y, _("Decay secs:")));
-	y += 20;
-	add_subwindow(decay = new CompressorDecay(plugin, x, y));
-	y += 30;
+	y += title_h;
+	add_subwindow(decay = new CompressorDecay(plugin, pot_x, y));
+	y += decay->get_h() + 8;
+	reaction->decay = decay;
 	add_subwindow(new BC_Title(x, y, _("Trigger Type:")));
 	y += 20;
 	add_subwindow(input = new CompressorInput(plugin, x, y));
@@ -905,11 +910,10 @@ void CompressorWindow::update_textboxes()
 	if(plugin->config.input == CompressorConfig::TRIGGER && !trigger->get_enabled())
 		trigger->enable();
 
-	if(!EQUIV(atof(reaction->get_text()), plugin->config.reaction_len))
-		reaction->update(plugin->config.reaction_len);
-	if(!EQUIV(atof(decay->get_text()), plugin->config.decay_len))
-		decay->update(plugin->config.decay_len);
+	reaction->update(plugin->config.reaction_len);
+	decay->update(plugin->config.decay_len);
 	smooth->update(plugin->config.smoothing_only);
+
 	if(canvas->current_operation == CompressorCanvas::DRAG)
 	{
 		x_text->update(plugin->config.levels.values[canvas->current_point].x);
@@ -1060,66 +1064,44 @@ int CompressorCanvas::cursor_motion_event()
 }
 
 
-CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, 100, 1, (float)plugin->config.reaction_len)
+CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y)
+ : BC_FPot(x, y, plugin->config.reaction_len, MIN_REACTION, MAX_REACTION)
 {
 	this->plugin = plugin;
+	decay = 0;
 }
 
 int CompressorReaction::handle_event()
 {
-	plugin->config.reaction_len = atof(get_text());
+	double min_decay = MIN_DECAY;
+
+	plugin->config.reaction_len = get_value();
+
+	if(plugin->config.decay_len < plugin->config.reaction_len)
+		plugin->config.decay_len = plugin->config.reaction_len;
+	if(plugin->config.decay_len < MIN_DECAY)
+		plugin->config.decay_len = MIN_DECAY;
+	if(min_decay < plugin->config.reaction_len)
+		min_decay = plugin->config.reaction_len;
+
+	if(min_decay < MAX_DECAY - EPSILON)
+		decay->update(plugin->config.decay_len, min_decay, MAX_DECAY);
+
 	plugin->send_configure_change();
 	return 1;
 }
 
-int CompressorReaction::button_press_event()
-{
-	if(is_event_win())
-	{
-		if(get_buttonpress() < 4)
-			return BC_TextBox::button_press_event();
-		if(get_buttonpress() == 4)
-			plugin->config.reaction_len += 0.1;
-		else if(get_buttonpress() == 5)
-			plugin->config.reaction_len -= 0.1;
-
-		update(plugin->config.reaction_len);
-		plugin->send_configure_change();
-		return 1;
-	}
-	return 0;
-}
-
 CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, 100, 1, (float)plugin->config.decay_len)
+ : BC_FPot(x, y, plugin->config.reaction_len, MIN_DECAY, MAX_DECAY)
 {
 	this->plugin = plugin;
 }
 
 int CompressorDecay::handle_event()
 {
-	plugin->config.decay_len = atof(get_text());
+	plugin->config.decay_len = get_value();
 	plugin->send_configure_change();
 	return 1;
-}
-
-int CompressorDecay::button_press_event()
-{
-	if(is_event_win())
-	{
-		if(get_buttonpress() < 4)
-			return BC_TextBox::button_press_event();
-		if(get_buttonpress() == 4)
-			plugin->config.decay_len += 0.1;
-		else if(get_buttonpress() == 5)
-			plugin->config.decay_len -= 0.1;
-
-		update(plugin->config.decay_len);
-		plugin->send_configure_change();
-		return 1;
-	}
-	return 0;
 }
 
 

@@ -19,6 +19,7 @@
 #include "aframe.inc"
 #include "bcbutton.h"
 #include "bcpopupmenu.h"
+#include "bcpot.h"
 #include "bctextbox.h"
 #include "bctoggle.h"
 #include "pluginmacros.h"
@@ -50,15 +51,26 @@ public:
 };
 
 
-class CompressorReaction : public BC_TextBox
+class CompressorDecay : public BC_FPot
+{
+public:
+	CompressorDecay(CompressorEffect *plugin, int x, int y);
+
+	int handle_event();
+
+	CompressorEffect *plugin;
+};
+
+
+class CompressorReaction : public BC_FPot
 {
 public:
 	CompressorReaction(CompressorEffect *plugin, int x, int y);
 
 	int handle_event();
-	int button_press_event();
 
 	CompressorEffect *plugin;
+	CompressorDecay *decay;
 };
 
 class CompressorClear : public BC_GenericButton
@@ -95,17 +107,6 @@ class CompressorTrigger : public BC_TextBox
 {
 public:
 	CompressorTrigger(CompressorEffect *plugin, int x, int y);
-
-	int handle_event();
-	int button_press_event();
-
-	CompressorEffect *plugin;
-};
-
-class CompressorDecay : public BC_TextBox
-{
-public:
-	CompressorDecay(CompressorEffect *plugin, int x, int y);
 
 	int handle_event();
 	int button_press_event();
