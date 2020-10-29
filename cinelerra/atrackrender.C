@@ -59,8 +59,6 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 			else
 				return;
 		}
-		if(!next_plugin)
-			module_levels.fill(&track_frame);
 	}
 	else
 		next_plugin = 0;
@@ -117,6 +115,8 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 	if(!track_frame)
 		return;
+
+	module_levels.fill(&track_frame);
 
 	if(track_frame->channel >= 0)
 	{
