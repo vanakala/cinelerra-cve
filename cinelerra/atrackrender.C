@@ -62,7 +62,10 @@ void ATrackRender::process_aframes(AFrame **output, int out_channels, int rstep)
 		}
 	}
 	else
+	{
+		module_levels.clear();
 		next_plugin = 0;
+	}
 }
 
 AFrame *ATrackRender::get_atmpframe(AFrame *buffer, PluginClient *client)
@@ -119,14 +122,14 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 	ptstime pts = track_frame->get_pts();
 
+	module_levels.fill(&track_frame);
+
 	if(((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts))
 	{
 		audio_frames.release_frame(track_frame);
 		track_frame = 0;
 		return;
 	}
-
-	module_levels.fill(&track_frame);
 
 	if(track_frame->channel >= 0)
 	{
