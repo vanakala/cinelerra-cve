@@ -197,6 +197,12 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 	if(!input)
 		input = &track_frame;
 
+	if(((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(output->get_pts()))
+	{
+		BC_Resources::tmpframes.release_frame(*input);
+		return output;
+	}
+
 	if(!*input || *input == output)
 	{
 		*input = 0;

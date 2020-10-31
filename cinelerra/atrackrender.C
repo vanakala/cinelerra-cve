@@ -14,6 +14,7 @@
 #include "edit.h"
 #include "file.h"
 #include "floatautos.h"
+#include "intautos.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "plugin.h"
@@ -116,12 +117,20 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 	if(!track_frame)
 		return;
 
+	ptstime pts = track_frame->get_pts();
+
+	if(((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts))
+	{
+		audio_frames.release_frame(track_frame);
+		track_frame = 0;
+		return;
+	}
+
 	module_levels.fill(&track_frame);
 
 	if(track_frame->channel >= 0)
 	{
 		PanAutos *panautos = (PanAutos*)autos_track->automation->autos[AUTOMATION_PAN];
-		ptstime pts = track_frame->get_pts();
 
 		for(int i = 0; i < out_channels; i++)
 		{

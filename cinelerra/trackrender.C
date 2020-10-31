@@ -93,10 +93,7 @@ int TrackRender::is_playable(ptstime pts, Edit *edit)
 	if(!edit || !media_track->play)
 		return 0;
 
-	if(edit->asset || edit->transition || media_track->is_synthesis(pts))
-		return !((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
-
-	return 0;
+	return edit->asset || edit->transition || media_track->is_synthesis(pts);
 }
 
 int TrackRender::is_muted(ptstime pts)
