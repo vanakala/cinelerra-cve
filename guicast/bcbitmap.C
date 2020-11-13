@@ -71,6 +71,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 		xv_image[i] = 0;
 		data[i] = 0;
 		busyflag[i] = 0;
+		pixmaps[i] = 0;
 	}
 	last_pixmap_used = 0;
 	last_pixmap = 0;
