@@ -1,24 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
-
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "bchash.h"
@@ -84,6 +67,43 @@ DenoiseEffect::~DenoiseEffect()
 	if(dsp_in) delete [] dsp_in;
 	if(dsp_out) delete [] dsp_out;
 	if(dsp_iteration) delete [] dsp_iteration;
+}
+
+void DenoiseEffect::reset_plugin()
+{
+	if(initialized)
+	{
+		delete ex_coeff_d;
+		ex_coeff_d = 0;
+		delete ex_coeff_r;
+		ex_coeff_r = 0;
+		delete ex_coeff_rn;
+		ex_coeff_rn = 0;
+		delete wave_coeff_d;
+		wave_coeff_d = 0;
+		delete wave_coeff_r;
+		wave_coeff_r = 0;
+		delete decomp_filter;
+		decomp_filter = 0;
+		delete recon_filter;
+		recon_filter = 0;
+		delete [] input_buffer;
+		input_buffer = 0;
+		delete [] output_buffer;
+		output_buffer = 0;
+		delete [] dsp_in;
+		dsp_in = 0;
+		delete [] dsp_out;
+		dsp_out = 0;
+		delete [] dsp_iteration;
+		dsp_iteration = 0;
+		input_size = 0;
+		output_size = 0;
+		input_allocation = 0;
+		output_allocation = 0;
+		initialized = 0;
+		first_window = 1;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -401,7 +421,8 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 {
 	int size = input->get_length();
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	if(!initialized)
 	{
