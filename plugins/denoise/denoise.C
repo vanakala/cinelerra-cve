@@ -55,18 +55,18 @@ DenoiseEffect::DenoiseEffect(PluginServer *server)
 DenoiseEffect::~DenoiseEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	if(ex_coeff_d) delete ex_coeff_d;
-	if(ex_coeff_r) delete ex_coeff_r;
-	if(ex_coeff_rn) delete ex_coeff_rn;
-	if(wave_coeff_d) delete wave_coeff_d;
-	if(wave_coeff_r) delete wave_coeff_r;
-	if(decomp_filter) delete decomp_filter;
-	if(recon_filter) delete recon_filter;
-	if(input_buffer) delete [] input_buffer;
-	if(output_buffer) delete [] output_buffer;
-	if(dsp_in) delete [] dsp_in;
-	if(dsp_out) delete [] dsp_out;
-	if(dsp_iteration) delete [] dsp_iteration;
+	delete ex_coeff_d;
+	delete ex_coeff_r;
+	delete ex_coeff_rn;
+	delete wave_coeff_d;
+	delete wave_coeff_r;
+	delete decomp_filter;
+	delete recon_filter;
+	delete [] input_buffer;
+	delete [] output_buffer;
+	delete [] dsp_in;
+	delete [] dsp_out;
+	delete [] dsp_iteration;
 }
 
 void DenoiseEffect::reset_plugin()
@@ -154,13 +154,12 @@ void DenoiseEffect::save_defaults()
 	defaults->save();
 }
 
-double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
+double DenoiseEffect::dot_product(double *data, double *filter, int filtlen)
 {
-	static int i;
-	static double sum;
+	double sum = 0.0;
 
-	sum = 0.0;
-	for(i = 0; i < filtlen; i++) sum += *data-- * *filter++;
+	for(int i = 0; i < filtlen; i++)
+		sum += *data-- * *filter++;
 	return sum;
 }
 
@@ -195,7 +194,7 @@ void DenoiseEffect::convolve_dec_2(double *input_sequence,
 	}
 }
 
-int DenoiseEffect::decompose_branches(double *in_data, 
+void DenoiseEffect::decompose_branches(double *in_data,
 	int length, 
 	WaveletFilters *decomp_filter, 
 	double *out_low, 
@@ -205,7 +204,6 @@ int DenoiseEffect::decompose_branches(double *in_data,
 // original length. Length of branches is returned.
 	convolve_dec_2(in_data, length, decomp_filter->h, decomp_filter->length, out_low);
 	convolve_dec_2(in_data, length, decomp_filter->g, decomp_filter->length, out_high);
-	return(length / 2);
 }
 
 void DenoiseEffect::wavelet_decomposition(double *in_data, 
@@ -214,7 +212,7 @@ void DenoiseEffect::wavelet_decomposition(double *in_data,
 {
 	for(int i = 0; i < levels; i++)
 	{
-		in_length = decompose_branches(in_data, 
+		decompose_branches(in_data,
 			in_length, 
 			decomp_filter, 
 			out_data[2 * i], 
@@ -581,14 +579,10 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 	int i, j, k;
 
 // find the first non-zero wavelet coefficient
-	i = 0;
-	while(wave_coeffs->values[i] == 0.0)
-		i++;
+	for(i = 0; wave_coeffs->values[i] == 0.0 && i < 6; i++);
 
 // find the last non-zero wavelet coefficient
-	j = 5;
-	while(wave_coeffs->values[j] == 0.0)
-		j--;
+	for(j = 5; wave_coeffs->values[j] == 0.0 && i >= 0; j--);
 
 // Form the decomposition filters h~ and g~ or the reconstruction
 // filters h and g.  The division by 2 in the construction
@@ -599,14 +593,16 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 		if(transform == DECOMP)
 		{
 			h[k] = wave_coeffs->values[j--] / 2.0;
-			g[k] = (double)(((i++ & 0x01) * 2) - 1) *
+			g[k] = (double)(((i & 0x01) * 2) - 1) *
 				wave_coeffs->values[i] / 2.0;
+			i++;
 		}
 		else
 		{
 			h[k] = wave_coeffs->values[i++];
-			g[k] = (double) (((j-- & 0x01) * 2) - 1) *
+			g[k] = (double) (((j & 0x01) * 2) - 1) *
 				wave_coeffs->values[j];
+			j--;
 		}
 	}
 
@@ -669,7 +665,7 @@ void DenoiseWindow::update()
 
 
 DenoiseLevel::DenoiseLevel(DenoiseEffect *plugin, int x, int y)
- : BC_FPot(x, y, (float)plugin->config.level, 0, 1.0)
+ : BC_FPot(x, y, plugin->config.level, 0, 1.0)
 {
 	this->plugin = plugin;
 	set_precision(0.01);

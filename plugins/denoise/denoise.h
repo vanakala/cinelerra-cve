@@ -110,13 +110,13 @@ public:
 	void save_defaults();
 
 	void process_window();
-	double dot_product(double *data, double *filter, char filtlen);
+	double dot_product(double *data, double *filter, int filtlen);
 	void convolve_dec_2(double *input_sequence, 
 		int length,
 		double *filter, 
 		int filtlen, 
 		double *output_sequence);
-	int decompose_branches(double *in_data, 
+	void decompose_branches(double *in_data,
 		int length,
 		WaveletFilters *decomp_filter, 
 		double *out_low, 
