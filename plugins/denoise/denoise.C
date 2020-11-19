@@ -224,37 +224,6 @@ void DenoiseEffect::wavelet_decomposition(double *in_data,
 	}
 }
 
-void DenoiseEffect::tree_copy(double **output, 
-	double **input, 
-	int length, 
-	int levels)
-{
-	register int i, j, k, l, m;
-
-	for(i = 0, k = 1; k < levels; i++, k++)
-	{
-		length /= 2;
-		l = 2 * i;
-		m = l + 1;
-
-		for(j = 0; j < length + 5; j++)
-		{
-			output[l][j] = 0.0;
-			output[m][j] = input[m][j];
-		}
-	}
-
-	length /= 2;
-	l = 2 * i;
-	m = l + 1;
-
-	for(j = 0; j < length + 5; j++)
-	{
-		output[l][j] = input[l][j];
-		output[m][j] = input[m][j];
-	}
-}
-
 void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 {
 	int i, j;
@@ -403,8 +372,8 @@ void DenoiseEffect::process_window()
 	{
 		wavelet_decomposition(dsp_in, window_size, ex_coeff_d->values);
 
-		tree_copy(ex_coeff_r->values, ex_coeff_d->values, window_size, levels);
-		tree_copy(ex_coeff_rn->values, ex_coeff_d->values, window_size, levels);
+		ex_coeff_r->copy_values(ex_coeff_d);
+		ex_coeff_rn->copy_values(ex_coeff_d);
 
 // qualify coeffs
 		threshold(window_size, config.level * 10.0, levels);
@@ -540,32 +509,40 @@ Tree::Tree(int input_length, int levels)
 {
 	this->input_length = input_length;
 	this->levels = levels;
-	int i, j;
+	values_allocated = 2 * levels;
 
 // create decomposition tree
-	values = new double*[2 * levels];
-	j = input_length;
-	for(i = 0; i < levels; i++)
+	values = new double*[values_allocated];
+
+	for(int i = 0; i < levels; i++)
 	{
-		j /= 2;
-		if(j == 0)
-		{
-			levels = i;
-			continue;
-		}
-		values[2 * i] = new double[j + 5];
-		values[2 * i + 1] = new double[j + 5];
+		input_length /= 2;
+		if(input_length == 0)
+			break;
+		values[2 * i] = new double[input_length + 5];
+		values[2 * i + 1] = new double[input_length + 5];
 	}
 }
 
 Tree::~Tree()
 {
-	int i;
-
-	for(i = 2 * levels - 1; i >= 0; i--)
+	for(int i = 0; i < values_allocated; i++)
 		delete values[i];
 
 	delete values;
+}
+
+void Tree::copy_values(Tree *that)
+{
+	int length = input_length;
+
+	for(int i = 0; i < levels; i++)
+	{
+		length /= 2;
+		int copy_length = (length + 5) * sizeof(double);
+		memcpy(values[2 * i], that->values[2 * i], copy_length);
+		memcpy(values[2 * i + 1], that->values[2 * i + 1], copy_length);
+	}
 }
 
 WaveletCoeffs::WaveletCoeffs(double alpha, double beta)

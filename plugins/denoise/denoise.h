@@ -67,9 +67,14 @@ public:
 	Tree(int input_length, int levels);
 	~Tree();
 
+	void copy_values(Tree *that);
+
 	int input_length;
 	int levels;
 	double **values;
+
+private:
+	int values_allocated;
 };
 
 class WaveletCoeffs
