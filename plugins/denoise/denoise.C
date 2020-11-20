@@ -170,24 +170,20 @@ void DenoiseEffect::convolve_dec_2(double *input_sequence,
 	double *output_sequence)
 {
 // convolve the input sequence with the filter and decimate by two
-	int i, shortlen, offset;
-	int lengthp4 = length + 4;
-	int lengthm4 = length - 4;
-	int lengthp5 = length + 5;
-	int lengthp8 = length + 8;
+	int offset;
+	int nearend = length - filtlen;
 
-	for(i = 0; (i <= lengthp8) && ((i - filtlen) <= lengthp8); i += 2)
+	for(int i = 0; i < length; i += 2)
 	{
 		if(i < filtlen)
 			*output_sequence++ = dot_product(input_sequence + i,
 				filter, i + 1);
 		else 
-		if(i > lengthp5)
+		if(i >= nearend)
 		{
-			offset = i - lengthm4;
-			shortlen = filtlen - offset;
-			*output_sequence++ = dot_product(input_sequence + lengthp4,
-				filter + offset, shortlen);
+			offset = i - nearend;
+			*output_sequence++ = dot_product(input_sequence + i,
+				filter + offset, filtlen - offset);
 		}
 		else
 			*output_sequence++ = dot_product(input_sequence + i, filter, filtlen);
