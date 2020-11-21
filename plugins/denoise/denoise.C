@@ -379,6 +379,7 @@ void DenoiseEffect::process_window()
 AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 {
 	int size = input->get_length();
+	int new_allocation;
 
 	if(load_configuration())
 		update_gui();
@@ -403,19 +404,22 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 	}
 
 // Append input buffer
-	if(input_size + size > input_allocation)
+	if(!input_buffer)
+		new_allocation = input->get_buffer_length() * 2;
+	else
+		new_allocation = input_size + size;
+	if(new_allocation > input_allocation)
 	{
-		double *new_input = new double[input_size + size];
+		double *new_input = new double[new_allocation];
 		if(input_buffer)
 		{
 			memcpy(new_input, input_buffer, sizeof(double) * input_size);
 			delete [] input_buffer;
 		}
 		input_buffer = new_input;
-		input_allocation = input_size + size;
+		input_allocation = new_allocation;
 	}
-	memcpy(input_buffer + input_size, 
-		input->buffer,
+	memcpy(input_buffer + input_size, input->buffer,
 		size * sizeof(double));
 	input_size += size;
 
@@ -435,7 +439,11 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		first_window = 0;
 
 // Crossfade into the output buffer
-		int new_allocation = output_size + window_size;
+		if(!output_buffer)
+			new_allocation = input->get_buffer_length() * 2;
+		else
+			new_allocation = output_size + window_size;
+
 		if(new_allocation > output_allocation)
 		{
 			double *new_output = new double[new_allocation];
@@ -451,41 +459,38 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 
 		if(output_size >= WINDOW_BORDER)
 		{
-			for(int i = 0, j = output_size - WINDOW_BORDER; 
-				i < WINDOW_BORDER; 
-				i++, j++)
+			for(int i = 0, j = output_size - WINDOW_BORDER;
+				i < WINDOW_BORDER; i++, j++)
 			{
 				double src_level = (double)i / WINDOW_BORDER;
 				double dst_level = (double)(WINDOW_BORDER - i) / WINDOW_BORDER;
-				output_buffer[j] = output_buffer[j] * dst_level + out_scale * dsp_out[i] * src_level;
+				output_buffer[j] = output_buffer[j] * dst_level +
+					out_scale * dsp_out[i] * src_level;
 			}
 
 			for(int i = 0; i < window_size - WINDOW_BORDER; i++)
-				output_buffer[output_size + i] = dsp_out[WINDOW_BORDER + i] * out_scale;
+				output_buffer[output_size + i] =
+					dsp_out[WINDOW_BORDER + i] * out_scale;
 			output_size += window_size - WINDOW_BORDER;
 		}
 		else
 		{
 // First buffer has no crossfade
-			memcpy(output_buffer + output_size, 
-				dsp_out, 
+			memcpy(output_buffer + output_size, dsp_out,
 				sizeof(double) * window_size);
 			output_size += window_size;
 		}
 // Shift input buffer forward
-		for(int i = window_size - WINDOW_BORDER, j = 0; 
-			i < input_size; 
-			i++, j++)
-			input_buffer[j] = input_buffer[i];
 		input_size -= window_size - WINDOW_BORDER;
+		memmove(input_buffer, &input_buffer[window_size - WINDOW_BORDER],
+			input_size * sizeof(double));
 	}
 // Have enough to send to output
 	if(output_size - WINDOW_BORDER >= size)
 	{
 		memcpy(input->buffer, output_buffer, sizeof(double) * size);
-		for(int i = size, j = 0; i < output_size; i++, j++)
-			output_buffer[j] = output_buffer[i];
 		output_size -= size;
+		memmove(output_buffer, &output_buffer[size], output_size * sizeof(double));
 	}
 	else
 	{
