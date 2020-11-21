@@ -256,22 +256,18 @@ void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 
 double DenoiseEffect::dot_product_even(double *data, double *filter, int filtlen)
 {
-	static int i;
-	static double sum;
+	double sum = 0.0;
 
-	sum = 0.0;
-	for(i = 0; i < filtlen; i += 2)
+	for(int i = 0; i < filtlen; i += 2)
 		sum += *data-- * filter[i];
 	return sum;
 }
 
 double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 {
-	static int i;
-	static double sum;
+	double sum = 0.0;
 
-	sum = 0.0;
-	for(i = 1; i < filtlen; i += 2)
+	for(int i = 1; i < filtlen; i += 2)
 		sum += *data-- * filter[i];
 	return sum;
 }
@@ -285,10 +281,10 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 // insert zeros between each element of the input sequence and
 // convolve with the filter to interpolate the data
 {
-	register int i, j;
+	int i, j;
 	int endpoint = length + filtlen - 2;
 
-	if (sum_output)
+	if(sum_output)
 	{
 // summation with previous convolution
 // every other dot product interpolates the data
