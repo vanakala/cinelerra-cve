@@ -15,6 +15,8 @@
 #define WINDOW_BORDER (window_size / 2)
 #define SGN(x) ((x) < 0 ? -1: 1)
 
+#define NUM_WAVELET_COEFFS 6
+
 REGISTER_PLUGIN
 
 DenoiseEffect::DenoiseEffect(PluginServer *server)
@@ -542,11 +544,13 @@ void Tree::copy_values(Tree *that)
 
 WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 {
-	int i;
-	double tcosa = cos(alpha);
-	double tcosb = cos(beta);
-	double tsina = sin(alpha);
-	double tsinb = sin(beta);
+	double tcosa;
+	double tcosb;
+	double tsina;
+	double tsinb;
+
+	sincos(alpha, &tsina, &tcosa);
+	sincos(beta, &tsinb, &tcosb);
 
 // calculate first two wavelet coefficients  a = a(-2) and b = a(-1)
 	values[0] = ((1.0 + tcosa + tsina) * (1.0 - tcosb - tsinb)
@@ -554,8 +558,7 @@ WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 	values[1] = ((1.0 - tcosa + tsina) * (1.0 + tcosb - tsinb)
 		- 2.0 * tsinb * tcosa) / 4.0;
 
-	tcosa = cos(alpha - beta);
-	tsina = sin(alpha - beta);
+	sincos(alpha - beta, &tsina, &tcosa);
 
 // calculate last four wavelet coefficients  c = a(0), d = a(1), 
 // e = a(2), and f = a(3)
@@ -565,9 +568,10 @@ WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 	values[5]  = 1 - values[1] - values[3];
 
 // zero out very small coefficient values caused by truncation error
-	for (i = 0; i < 6; i++)
+	for(int i = 0; i < NUM_WAVELET_COEFFS; i++)
 	{
-		if (fabs(values[i]) < 1.0e-15) values[i] = 0.0;
+		if(fabs(values[i]) < 1.0e-15)
+			values[i] = 0.0;
 	}
 }
 
@@ -576,10 +580,10 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 	int i, j, k;
 
 // find the first non-zero wavelet coefficient
-	for(i = 0; i < 6 && wave_coeffs->values[i] == 0.0 ; i++);
+	for(i = 0; i < NUM_WAVELET_COEFFS && wave_coeffs->values[i] == 0.0 ; i++);
 
 // find the last non-zero wavelet coefficient
-	for(j = 5; j >= 0 && wave_coeffs->values[j] == 0.0; j--);
+	for(j = NUM_WAVELET_COEFFS - 1; j >= 0 && wave_coeffs->values[j] == 0.0; j--);
 
 // Form the decomposition filters h~ and g~ or the reconstruction
 // filters h and g.  The division by 2 in the construction
@@ -597,14 +601,14 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 		else
 		{
 			h[k] = wave_coeffs->values[i++];
-			g[k] = (double) (((j & 0x01) * 2) - 1) *
+			g[k] = (double)(((j & 0x01) * 2) - 1) *
 				wave_coeffs->values[j];
 			j--;
 		}
 	}
 
 // clear out the additional array locations, if any
-	while (k < 6)
+	while (k < NUM_WAVELET_COEFFS)
 	{
 		h[k] = 0.0;
 		g[k++] = 0.0;

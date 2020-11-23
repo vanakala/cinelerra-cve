@@ -25,6 +25,8 @@
 
 typedef enum { DECOMP, RECON } wavetype;
 
+#define NUM_WAVELET_COEFFS 6
+
 class DenoiseLevel : public BC_FPot
 {
 public:
@@ -82,8 +84,7 @@ class WaveletCoeffs
 public:
 	WaveletCoeffs(double alpha, double beta);
 
-	double values[6];
-	int length;
+	double values[NUM_WAVELET_COEFFS];
 };
 
 class WaveletFilters
@@ -91,7 +92,8 @@ class WaveletFilters
 public:
 	WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform);
 
-	double g[6], h[6];
+	double g[NUM_WAVELET_COEFFS];
+	double h[NUM_WAVELET_COEFFS];
 	int length;
 };
 
