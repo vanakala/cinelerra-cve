@@ -576,10 +576,10 @@ WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 	int i, j, k;
 
 // find the first non-zero wavelet coefficient
-	for(i = 0; wave_coeffs->values[i] == 0.0 && i < 6; i++);
+	for(i = 0; i < 6 && wave_coeffs->values[i] == 0.0 ; i++);
 
 // find the last non-zero wavelet coefficient
-	for(j = 5; wave_coeffs->values[j] == 0.0 && i >= 0; j--);
+	for(j = 5; j >= 0 && wave_coeffs->values[j] == 0.0; j--);
 
 // Form the decomposition filters h~ and g~ or the reconstruction
 // filters h and g.  The division by 2 in the construction
