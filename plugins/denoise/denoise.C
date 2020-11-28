@@ -229,7 +229,7 @@ void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 
 	for(i = 0; i < levels; i++) 
 	{
-		length = (window_size >> (i + 1)) + 5;
+		length = (window_size >> (i + 1));
 		threshold = sqrt(2 * log(length) / log(2)) * gammas / sqrt(length);
 
 		for(j = 0; j < length; j++) 
@@ -284,33 +284,68 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 // convolve with the filter to interpolate the data
 {
 	int i, j;
-	int endpoint = length + filtlen - 2;
+	int endpoint = length - filtlen / 2;
+	int startpoint = (filtlen / 2) - 1;
 
 	if(sum_output)
 	{
 // summation with previous convolution
 // every other dot product interpolates the data
-		for(i = (filtlen / 2) - 1, j = (filtlen / 2); i < endpoint; i++, j++)
+		for(i = 0, j = 1; i < startpoint; i++, j++)
+		{
+			*output_sequence++ += dot_product_odd(input_sequence + startpoint,
+				filter, filtlen);
+			*output_sequence++ += dot_product_even(input_sequence + startpoint +1,
+				filter, filtlen);
+		}
+		for(; i < endpoint; i++, j++)
 		{
 			*output_sequence++ += dot_product_odd(input_sequence + i,
 				filter, filtlen);
 			*output_sequence++ += dot_product_even(input_sequence + j,
 				filter, filtlen);
 		}
+		for(; j < length; i++, j++)
+		{
+			int flen = filtlen - (i - endpoint);
+
+			*output_sequence++ += dot_product_odd(input_sequence + i,
+				filter, filtlen);
+			*output_sequence++ += dot_product_even(input_sequence + j,
+				filter, filtlen);
+		}
 		*output_sequence++ += dot_product_odd(input_sequence + i, filter, filtlen);
+		*output_sequence++ = dot_product_even(input_sequence + i, filter, filtlen);
 	}
 	else
 	{
 // first convolution of pair
 // every other dot product interpolates the data
-		for(i = (filtlen / 2) - 1, j = (filtlen / 2); i < endpoint; i++, j++)
+		for(i = 0, j = 1; i < startpoint; i++, j++)
+		{
+			*output_sequence++ += dot_product_odd(input_sequence + startpoint,
+				filter, filtlen);
+			*output_sequence++ += dot_product_even(input_sequence + startpoint +1,
+				filter, filtlen);
+		}
+		for(; i < endpoint; i++, j++)
 		{
 			*output_sequence++ = dot_product_odd(input_sequence + i,
 				filter, filtlen);
 			*output_sequence++ = dot_product_even(input_sequence + j,
 				filter, filtlen);
 		}
+		for(; j < length; i++, j++)
+		{
+			int flen = filtlen - (i - endpoint);
+
+			*output_sequence++ += dot_product_odd(input_sequence + i,
+				filter, filtlen);
+			*output_sequence++ += dot_product_even(input_sequence + j,
+				filter, filtlen);
+		}
 		*output_sequence++ = dot_product_odd(input_sequence + i, filter, filtlen);
+		*output_sequence++ = dot_product_even(input_sequence + i, filter, filtlen);
 	}
 }
 
@@ -360,6 +395,7 @@ void DenoiseEffect::wavelet_reconstruction(double **in_data,
 void DenoiseEffect::process_window()
 {
 	int i, j;
+
 	for(j = 0; j < iterations; j++)
 	{
 		wavelet_decomposition(dsp_in, window_size, ex_coeff_d->values);
@@ -392,7 +428,6 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		dsp_in = new double[window_size * size_factor];
 		dsp_out = new double[window_size * 2];
 		dsp_iteration = new double[window_size * 2];
-
 		ex_coeff_d = new Tree(window_size, levels);
 		ex_coeff_r = new Tree(window_size, levels);
 		ex_coeff_rn = new Tree(window_size, levels);
@@ -413,6 +448,7 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 	if(new_allocation > input_allocation)
 	{
 		double *new_input = new double[new_allocation];
+
 		if(input_buffer)
 		{
 			memcpy(new_input, input_buffer, sizeof(double) * input_size);
@@ -514,10 +550,12 @@ Tree::Tree(int input_length, int levels)
 	for(int i = 0; i < levels; i++)
 	{
 		input_length /= 2;
+
 		if(input_length == 0)
 			break;
-		values[2 * i] = new double[input_length + 5];
-		values[2 * i + 1] = new double[input_length + 5];
+
+		values[2 * i] = new double[input_length];
+		values[2 * i + 1] = new double[input_length];
 	}
 }
 
@@ -536,7 +574,7 @@ void Tree::copy_values(Tree *that)
 	for(int i = 0; i < levels; i++)
 	{
 		length /= 2;
-		int copy_length = (length + 5) * sizeof(double);
+		int copy_length = length * sizeof(double);
 		memcpy(values[2 * i], that->values[2 * i], copy_length);
 		memcpy(values[2 * i + 1], that->values[2 * i + 1], copy_length);
 	}
