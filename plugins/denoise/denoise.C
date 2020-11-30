@@ -424,10 +424,9 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 
 	if(!initialized)
 	{
-		int size_factor = (int)(pow(2, levels));
-		dsp_in = new double[window_size * size_factor];
-		dsp_out = new double[window_size * 2];
-		dsp_iteration = new double[window_size * 2];
+		dsp_in = new double[window_size];
+		dsp_out = new double[window_size];
+		dsp_iteration = new double[window_size];
 		ex_coeff_d = new Tree(window_size, levels);
 		ex_coeff_r = new Tree(window_size, levels);
 		ex_coeff_rn = new Tree(window_size, levels);
