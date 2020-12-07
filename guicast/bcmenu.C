@@ -148,13 +148,7 @@ int BC_Menu::dispatch_motion_event()
 
 	if(!result)
 	{
-		top_level->translate_coordinates(top_level->event_win, 
-			menu_bar->win,
-			top_level->cursor_x,
-			top_level->cursor_y,
-			&cursor_x,
-			&cursor_y);
-
+		menu_bar->get_relative_cursor_pos(&cursor_x, &cursor_y);
 // change focus from other menu
 		if(menu_bar->active && !active &&
 			cursor_x >= x && cursor_x < x + w &&
