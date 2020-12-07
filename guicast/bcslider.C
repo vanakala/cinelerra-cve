@@ -42,6 +42,7 @@ BC_Slider::BC_Slider(int x,
 	{
 		pixmaps[i] = 0;
 	}
+	keypress_tooltip_timer = 0;
 	button_down = 0;
 	enabled = 1;
 	active = 0;
