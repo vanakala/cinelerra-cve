@@ -14,7 +14,6 @@
 
 #define WINDOW_SIZE 4096
 #define WINDOW_BORDER (WINDOW_SIZE / 2)
-#define SGN(x) ((x) < 0 ? -1: 1)
 
 #define NUM_WAVELET_COEFFS 6
 
@@ -221,9 +220,10 @@ void DenoiseEffect::wavelet_decomposition(double *in_data,
 void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 {
 	int i, j;
-	double threshold, cv, cvb, abs_coeff_r;
+	double threshold, cv, abs_coeff_r;
 	double *coeff_r, *coeff_l;
 	int length;
+	int sign;
 
 	for(i = 0; i < levels; i++) 
 	{
@@ -235,10 +235,12 @@ void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 			coeff_r = &(ex_coeff_r->values[(2 * i) + 1][j]);
 			coeff_l = &(ex_coeff_rn->values[(2 * i) + 1][j]);
 
-			cv = SGN(*coeff_r);
+			sign = signbit(*coeff_r);
 			abs_coeff_r = fabs(*coeff_r);
-			cvb = abs_coeff_r - threshold;
-			cv *= cvb;
+			cv = abs_coeff_r - threshold;
+
+			if(sign)
+				cv = -cv;
 
 			if(abs_coeff_r > threshold) 
 			{
