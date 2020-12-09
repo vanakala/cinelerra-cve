@@ -22,7 +22,6 @@ REGISTER_PLUGIN
 DenoiseEffect::DenoiseEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	first_window = 1;
 	thread = 0;
 	ex_coeff_d = 0;
 	ex_coeff_r = 0;
@@ -104,7 +103,6 @@ void DenoiseEffect::reset_plugin()
 		input_allocation = 0;
 		output_allocation = 0;
 		initialized = 0;
-		first_window = 1;
 	}
 }
 
@@ -180,7 +178,7 @@ void DenoiseEffect::convolve_dec_2(double *input_sequence,
 		if(i < filtlen)
 			*output_sequence++ = dot_product(input_sequence + i,
 				filter, i + 1);
-		else 
+		else
 		if(i >= nearend)
 		{
 			offset = i - nearend;
@@ -315,7 +313,7 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 				filter, filtlen);
 		}
 		*output_sequence++ += dot_product_odd(input_sequence + i, filter, filtlen);
-		*output_sequence++ = dot_product_even(input_sequence + i, filter, filtlen);
+		*output_sequence++ += dot_product_even(input_sequence + i, filter, filtlen);
 	}
 	else
 	{
@@ -323,9 +321,9 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 // every other dot product interpolates the data
 		for(i = 0, j = 1; i < startpoint; i++, j++)
 		{
-			*output_sequence++ += dot_product_odd(input_sequence + startpoint,
+			*output_sequence++ = dot_product_odd(input_sequence + startpoint,
 				filter, filtlen);
-			*output_sequence++ += dot_product_even(input_sequence + startpoint +1,
+			*output_sequence++ = dot_product_even(input_sequence + startpoint +1,
 				filter, filtlen);
 		}
 		for(; i < endpoint; i++, j++)
@@ -339,9 +337,9 @@ void DenoiseEffect::convolve_int_2(double *input_sequence,
 		{
 			int flen = filtlen - (i - endpoint);
 
-			*output_sequence++ += dot_product_odd(input_sequence + i,
+			*output_sequence++ = dot_product_odd(input_sequence + i,
 				filter, filtlen);
-			*output_sequence++ += dot_product_even(input_sequence + j,
+			*output_sequence++ = dot_product_even(input_sequence + j,
 				filter, filtlen);
 		}
 		*output_sequence++ = dot_product_odd(input_sequence + i, filter, filtlen);
@@ -383,7 +381,6 @@ void DenoiseEffect::wavelet_reconstruction(double **in_data,
 			recon_filter, 
 			output);
 	}
-
 // destination of the last branch reconstruction is the output data
 	reconstruct_branches(in_data[0], 
 		in_data[1], 
@@ -438,12 +435,17 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		out_scale = output_level / 65535 * sqrt(window_size);
 		initialized = 1;
 	}
+	else if(PTSEQU(input->get_pts(), get_start()))
+	{
+		input_size = 0;
+		output_size = 0;
+	}
 
-// Append input buffer
 	if(!input_buffer)
 		new_allocation = input->get_buffer_length() * 2;
 	else
 		new_allocation = input_size + size;
+
 	if(new_allocation > input_allocation)
 	{
 		double *new_input = new double[new_allocation];
@@ -456,6 +458,7 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		input_buffer = new_input;
 		input_allocation = new_allocation;
 	}
+// Append input buffer
 	memcpy(input_buffer + input_size, input->buffer,
 		size * sizeof(double));
 	input_size += size;
@@ -468,14 +471,11 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		{
 			dsp_in[i] = input_buffer[i] * in_scale;
 		}
+
 		memset(dsp_out, 0, sizeof(double) * window_size);
 
-// First window produces garbage
-		if(!first_window)
-			process_window();
-		first_window = 0;
+		process_window();
 
-// Crossfade into the output buffer
 		if(!output_buffer)
 			new_allocation = input->get_buffer_length() * 2;
 		else
@@ -490,10 +490,14 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 				memcpy(new_output, output_buffer, sizeof(double) * output_size);
 				delete [] output_buffer;
 			}
+			else
+				memset(new_output, 0, new_allocation * sizeof(double));
+
 			output_buffer = new_output;
 			output_allocation = new_allocation;
 		}
 
+// Crossfade into the output buffer
 		if(output_size >= WINDOW_BORDER)
 		{
 			for(int i = 0, j = output_size - WINDOW_BORDER;
@@ -513,26 +517,43 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 		else
 		{
 // First buffer has no crossfade
-			memcpy(output_buffer + output_size, dsp_out,
-				sizeof(double) * window_size);
+			for(int i = 0; i < window_size; i++)
+				output_buffer[output_size + i] =
+					dsp_out[i] * out_scale;
 			output_size += window_size;
 		}
+
 // Shift input buffer forward
 		input_size -= window_size - WINDOW_BORDER;
 		memmove(input_buffer, &input_buffer[window_size - WINDOW_BORDER],
 			input_size * sizeof(double));
 	}
-// Have enough to send to output
+// Last frame - copy all to output
+	if(PTSEQU(input->get_end_pts(), get_end()))
+	{
+		memcpy(input->buffer, output_buffer, size * sizeof(double));
+		output_size = 0;
+	}
+	else
 	if(output_size - WINDOW_BORDER >= size)
 	{
 		memcpy(input->buffer, output_buffer, sizeof(double) * size);
 		output_size -= size;
 		memmove(output_buffer, &output_buffer[size], output_size * sizeof(double));
 	}
-	else
+	else if(output_size > WINDOW_BORDER)
 	{
-		memset(input->buffer, 0, sizeof(double) * size);
+// delay in first frame
+		int copy_size = output_size - WINDOW_BORDER;
+		int new_start = size - copy_size;
+		memset(input->buffer, 0, sizeof(double) * new_start);
+		memcpy(&input_buffer[new_start], output_buffer, sizeof(double) * copy_size);
+		output_size -= copy_size;
+		memmove(output_buffer, &output_buffer[copy_size], output_size * sizeof(double));
 	}
+	else
+		memset(input->buffer, 0, sizeof(double) * size);
+
 	return input;
 }
 
@@ -569,11 +590,11 @@ Tree::~Tree()
 void Tree::copy_values(Tree *that)
 {
 	int length = input_length;
-
 	for(int i = 0; i < levels; i++)
 	{
 		length /= 2;
 		int copy_length = length * sizeof(double);
+
 		memcpy(values[2 * i], that->values[2 * i], copy_length);
 		memcpy(values[2 * i + 1], that->values[2 * i + 1], copy_length);
 	}
@@ -611,6 +632,7 @@ WaveletCoeffs::WaveletCoeffs(double alpha, double beta)
 			values[i] = 0.0;
 	}
 }
+
 
 WaveletFilters::WaveletFilters(WaveletCoeffs *wave_coeffs, wavetype transform)
 {

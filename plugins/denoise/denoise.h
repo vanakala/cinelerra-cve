@@ -183,7 +183,6 @@ public:
 // higher number kills more noise at the expense of more aliasing
 	double noise_level;
 	int window_size;
-	int first_window;
 	int initialized;
 };
 
