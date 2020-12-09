@@ -12,7 +12,8 @@
 #include "picon_png.h"
 #include "units.h"
 
-#define WINDOW_BORDER (window_size / 2)
+#define WINDOW_SIZE 4096
+#define WINDOW_BORDER (WINDOW_SIZE / 2)
 #define SGN(x) ((x) < 0 ? -1: 1)
 
 #define NUM_WAVELET_COEFFS 6
@@ -45,7 +46,6 @@ DenoiseEffect::DenoiseEffect(PluginServer *server)
 
 	alpha = 1.359803732;
 	beta = -0.782106385;
-	window_size = 4096;
 	output_level = 1.0;
 	levels = 1;
 	iterations = 1;
@@ -395,18 +395,18 @@ void DenoiseEffect::process_window()
 
 	for(j = 0; j < iterations; j++)
 	{
-		wavelet_decomposition(dsp_in, window_size, ex_coeff_d->values);
+		wavelet_decomposition(dsp_in, WINDOW_SIZE, ex_coeff_d->values);
 
 		ex_coeff_r->copy_values(ex_coeff_d);
 		ex_coeff_rn->copy_values(ex_coeff_d);
 
 // qualify coeffs
-		threshold(window_size, config.level * 10.0, levels);
+		threshold(WINDOW_SIZE, config.level * 10.0, levels);
 
-		wavelet_reconstruction(ex_coeff_r->values, window_size, dsp_iteration);
-		wavelet_reconstruction(ex_coeff_rn->values, window_size, dsp_in);
+		wavelet_reconstruction(ex_coeff_r->values, WINDOW_SIZE, dsp_iteration);
+		wavelet_reconstruction(ex_coeff_rn->values, WINDOW_SIZE, dsp_in);
 
-		for(i = 0; i < window_size; i++)
+		for(i = 0; i < WINDOW_SIZE; i++)
 			dsp_out[i] += dsp_iteration[i];
 	}
 }
@@ -421,18 +421,18 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 
 	if(!initialized)
 	{
-		dsp_in = new double[window_size];
-		dsp_out = new double[window_size];
-		dsp_iteration = new double[window_size];
-		ex_coeff_d = new Tree(window_size, levels);
-		ex_coeff_r = new Tree(window_size, levels);
-		ex_coeff_rn = new Tree(window_size, levels);
+		dsp_in = new double[WINDOW_SIZE];
+		dsp_out = new double[WINDOW_SIZE];
+		dsp_iteration = new double[WINDOW_SIZE];
+		ex_coeff_d = new Tree(WINDOW_SIZE, levels);
+		ex_coeff_r = new Tree(WINDOW_SIZE, levels);
+		ex_coeff_rn = new Tree(WINDOW_SIZE, levels);
 		wave_coeff_d = new WaveletCoeffs(alpha, beta);
 		wave_coeff_r = new WaveletCoeffs(alpha, beta);
 		decomp_filter = new WaveletFilters(wave_coeff_d, DECOMP);
 		recon_filter = new WaveletFilters(wave_coeff_r, RECON);
-		in_scale = 65535 / sqrt(window_size) / iterations;
-		out_scale = output_level / 65535 * sqrt(window_size);
+		in_scale = 65535 / sqrt(WINDOW_SIZE) / iterations;
+		out_scale = output_level / 65535 * sqrt(WINDOW_SIZE);
 		initialized = 1;
 	}
 	else if(PTSEQU(input->get_pts(), get_start()))
@@ -464,22 +464,22 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 	input_size += size;
 
 // Have enough to do some windows
-	while(input_size >= window_size)
+	while(input_size >= WINDOW_SIZE)
 	{
 // Load dsp_in
-		for(int i = 0; i < window_size; i++)
+		for(int i = 0; i < WINDOW_SIZE; i++)
 		{
 			dsp_in[i] = input_buffer[i] * in_scale;
 		}
 
-		memset(dsp_out, 0, sizeof(double) * window_size);
+		memset(dsp_out, 0, sizeof(double) * WINDOW_SIZE);
 
 		process_window();
 
 		if(!output_buffer)
 			new_allocation = input->get_buffer_length() * 2;
 		else
-			new_allocation = output_size + window_size;
+			new_allocation = output_size + WINDOW_SIZE;
 
 		if(new_allocation > output_allocation)
 		{
@@ -509,23 +509,23 @@ AFrame *DenoiseEffect::process_tmpframe(AFrame *input)
 					out_scale * dsp_out[i] * src_level;
 			}
 
-			for(int i = 0; i < window_size - WINDOW_BORDER; i++)
+			for(int i = 0; i < WINDOW_SIZE - WINDOW_BORDER; i++)
 				output_buffer[output_size + i] =
 					dsp_out[WINDOW_BORDER + i] * out_scale;
-			output_size += window_size - WINDOW_BORDER;
+			output_size += WINDOW_SIZE - WINDOW_BORDER;
 		}
 		else
 		{
 // First buffer has no crossfade
-			for(int i = 0; i < window_size; i++)
+			for(int i = 0; i < WINDOW_SIZE; i++)
 				output_buffer[output_size + i] =
 					dsp_out[i] * out_scale;
-			output_size += window_size;
+			output_size += WINDOW_SIZE;
 		}
 
 // Shift input buffer forward
-		input_size -= window_size - WINDOW_BORDER;
-		memmove(input_buffer, &input_buffer[window_size - WINDOW_BORDER],
+		input_size -= WINDOW_SIZE - WINDOW_BORDER;
+		memmove(input_buffer, &input_buffer[WINDOW_SIZE - WINDOW_BORDER],
 			input_size * sizeof(double));
 	}
 // Last frame - copy all to output

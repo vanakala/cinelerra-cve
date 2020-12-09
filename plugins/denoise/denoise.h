@@ -180,9 +180,6 @@ public:
 	double beta;
 // power
 	double output_level;
-// higher number kills more noise at the expense of more aliasing
-	double noise_level;
-	int window_size;
 	int initialized;
 };
 
