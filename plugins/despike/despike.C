@@ -33,7 +33,8 @@ AFrame *Despike::process_tmpframe(AFrame *input)
 	double *ipp = input->buffer;
 	double *opp;
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	double threshold = db.fromdb(config.level);
 	double change = db.fromdb(config.slope);
