@@ -12,9 +12,7 @@
 #include "picon_png.h"
 #include "plugin.h"
 #include "units.h"
-#include "vframe.h"
 
-#include <errno.h>
 #include <math.h>
 #include <string.h>
 
@@ -31,7 +29,7 @@ DenoiseFFTConfig::DenoiseFFTConfig()
 
 
 DenoiseFFTLevel::DenoiseFFTLevel(DenoiseFFTEffect *plugin, int x, int y)
- : BC_FPot(x, y, (float)plugin->config.level, INFINITYGAIN, 6.0)
+ : BC_FPot(x, y, plugin->config.level, INFINITYGAIN, 6.0)
 {
 	this->plugin = plugin;
 	set_precision(0.1);
@@ -40,6 +38,7 @@ DenoiseFFTLevel::DenoiseFFTLevel(DenoiseFFTEffect *plugin, int x, int y)
 int DenoiseFFTLevel::handle_event()
 {
 	plugin->config.level = get_value();
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -106,8 +105,7 @@ DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
 	remove_engine = 0;
 	collect_engine = 0;
 	need_reconfigure = 1;
-	collection_pts = 0;
-	input_frame = 0;
+	collection_pts = -1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -117,6 +115,17 @@ DenoiseFFTEffect::~DenoiseFFTEffect()
 	delete [] reference;
 	delete remove_engine;
 	delete collect_engine;
+}
+
+void DenoiseFFTEffect::reset_plugin()
+{
+	delete [] reference;
+	reference = 0;
+	delete remove_engine;
+	remove_engine = 0;
+	delete collect_engine;
+	collect_engine = 0;
+	collection_pts = -1;
 }
 
 PLUGIN_CLASS_METHODS
@@ -186,7 +195,7 @@ int DenoiseFFTEffect::load_configuration()
 	KeyFrame *prev_keyframe = prev_keyframe_pts(source_pts);
 
 	if(!prev_keyframe)
-		return 0;
+		return need_reconfigure;
 
 	ptstime prev_pts = prev_keyframe->pos_time;
 
@@ -197,20 +206,19 @@ int DenoiseFFTEffect::load_configuration()
 	if(!PTSEQU(prev_pts, collection_pts))
 	{
 		collection_pts = prev_pts;
-		need_reconfigure = 1;
+		return 1;
 	}
-	return 0;
+	return need_reconfigure;
 }
 
 AFrame *DenoiseFFTEffect::process_tmpframe(AFrame *aframe)
 {
-	load_configuration();
 	input_frame = aframe;
 
 // Do noise collection
-	if(need_reconfigure)
+	if(load_configuration())
 	{
-		need_reconfigure = 0;
+		update_gui();
 		collect_noise();
 	}
 
