@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "clip.h"
@@ -85,10 +69,10 @@ SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin, int x, int y)
 	add_subwindow(duration = new SoundLevelDuration(plugin, x + 150, y));
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Max soundlevel (dB):")));
-	add_subwindow(soundlevel_max = new BC_Title(x + 150, y, "0.0"));
+	add_subwindow(soundlevel_max = new BC_Title(x + 150, y, (const char*)0));
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("RMS soundlevel (dB):")));
-	add_subwindow(soundlevel_rms = new BC_Title(x + 150, y, "0.0"));
+	add_subwindow(soundlevel_rms = new BC_Title(x + 150, y, (const char*)0));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -165,7 +149,8 @@ AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 {
 	int size = input->get_length();
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	accum_size += size;
 	for(int i = 0; i < size; i++)
@@ -178,9 +163,7 @@ AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 	if(accum_size > input->to_samples(config.duration))
 	{
 		rms_accum = sqrt(rms_accum / accum_size);
-		gui_args[0] = max_accum;
-		gui_args[1] = rms_accum;
-		render_gui(gui_args);
+		render_gui();
 		rms_accum = 0;
 		max_accum = 0;
 		accum_size = 0;
@@ -188,16 +171,12 @@ AFrame *SoundLevelEffect::process_tmpframe(AFrame *input)
 	return input;
 }
 
-void SoundLevelEffect::render_gui(void *data)
+void SoundLevelEffect::render_gui()
 {
 	if(thread)
 	{
-		char string[BCTEXTLEN];
-		double *arg = (double*)data;
-		sprintf(string, "%.2f", DB::todb(max_accum));
-		thread->window->soundlevel_max->update(string);
-		sprintf(string, "%.2f", DB::todb(rms_accum));
-		thread->window->soundlevel_rms->update(string);
+		thread->window->soundlevel_max->update(DB::todb(max_accum));
+		thread->window->soundlevel_rms->update(DB::todb(rms_accum));
 		thread->window->flush();
 	}
 }
