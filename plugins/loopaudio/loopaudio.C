@@ -92,6 +92,9 @@ AFrame *LoopAudio::process_tmpframe(AFrame *aframe)
 	double period, q;
 	ptstime loop_pts;
 
+	if(load_configuration())
+		update_gui();
+
 	if(aframe->get_end_pts() - plugin_start > config.duration)
 	{
 		q = modf(aframe->get_pts() - plugin_start / config.duration, &period);
@@ -128,9 +131,11 @@ int LoopAudio::load_configuration()
 {
 	KeyFrame *keyframe = get_first_keyframe();
 	ptstime old_pts = config.duration;
+
 	if(keyframe)
 		read_data(keyframe);
-	return !PTSEQU(old_pts, config.duration);
+
+	return need_reconfigure || !PTSEQU(old_pts, config.duration);
 }
 
 void LoopAudio::load_defaults()
