@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2012 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "aframe.h"
 #include "bchash.h"
@@ -37,10 +21,7 @@ NRTAudioConfig::NRTAudioConfig()
 NRTAudioSwitch::NRTAudioSwitch(NRTAudio *plugin, 
 	int x,
 	int y)
- : BC_Radial(x,
-		y,
-		plugin->config.onoff,
-		_("Clear"))
+ : BC_Radial(x, y, plugin->config.onoff, _("Clear"))
 {
 	this->plugin = plugin;
 }
@@ -48,8 +29,9 @@ NRTAudioSwitch::NRTAudioSwitch(NRTAudio *plugin,
 int NRTAudioSwitch::handle_event()
 {
 	plugin->config.onoff = plugin->config.onoff ? 0 : 1;
+	update(plugin->config.onoff);
 	plugin->send_configure_change();
-	return 0;
+	return 1;
 }
 
 /*
@@ -157,8 +139,9 @@ void NRTAudio::read_data(KeyFrame *keyframe)
 int NRTAudio::load_configuration()
 {
 	int prev_val = config.onoff;
+
 	read_data(prev_keyframe_pts(source_pts));
-	return !(prev_val == config.onoff);
+	return need_reconfigure || !(prev_val == config.onoff);
 }
 
 /*
@@ -169,7 +152,8 @@ int NRTAudio::load_configuration()
  */
 AFrame *NRTAudio::process_tmpframe(AFrame *frame)
 {
-	load_configuration();
+	if(load_configuration())
+		update_gui();
 
 	if(config.onoff)
 		memset(frame->buffer, 0, frame->get_length() * sizeof(double));
