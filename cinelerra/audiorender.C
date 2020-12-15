@@ -149,7 +149,7 @@ ptstime AudioRender::calculate_render_duration()
 				{
 					// Plugin starts in frame
 					if(plugin->get_pts() > start_pts)
-						end_pts = plugin->get_pts();
+						end_pts = plugin->get_pts() - track->one_unit;
 					// Plugin ends in frame
 					else if(plugin->end_pts() < end_pts)
 						end_pts = plugin->end_pts();
@@ -199,7 +199,7 @@ ptstime AudioRender::calculate_render_duration()
 				{
 					// Plugin starts in frame
 					if(plugin->get_pts() > end_pts)
-						end_pts = plugin->get_pts();
+						end_pts = plugin->get_pts() - track->one_unit;
 					// Plugin ends in frame
 					else if(plugin->end_pts() > end_pts)
 						end_pts = plugin->end_pts();
