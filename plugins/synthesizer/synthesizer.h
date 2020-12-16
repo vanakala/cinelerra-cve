@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef SYNTHESIZER_H
 #define SYNTHESIZER_H
@@ -418,7 +402,7 @@ public:
 	int handle_event();
 	Synth *synth;
 private:
-	float get_next_prime(float number);
+	double get_next_prime(double number);
 };
 
 PLUGIN_THREAD_HEADER
@@ -482,29 +466,16 @@ public:
 	void add_oscillator();
 	void delete_oscillator();
 	double get_total_power();
-	double get_oscillator_point(float x, 
+	double get_oscillator_point(double x,
 		double normalize_constant, 
 		int oscillator);
-	double solve_eqn(double *output, 
-		double x1, 
-		double x2, 
-		double normalize_constant,
-		int oscillator);
-	double get_point(float x, double normalize_constant);
+	double get_point(double x, double normalize_constant);
 	double function_square(double x);
 	double function_pulse(double x);
 	double function_noise();
 	double function_sawtooth(double x);
 	double function_triangle(double x);
-	void reconfigure();
-	int overlay_synth(samplenum start, int length, double *output);
-
-	double *dsp_buffer;
-	DB db;
-	int waveform_length;           // length of loop buffer
-	int samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
-	samplenum waveform_sample;     // current sample in waveform of loop
-	double period;                 // number of samples in a period for this frequency
+	void overlay_synth(AFrame *frame);
 };
 
 #endif

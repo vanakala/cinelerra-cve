@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "clip.h"
@@ -36,16 +20,12 @@ REGISTER_PLUGIN
 Synth::Synth(PluginServer *server)
  : PluginAClient(server)
 {
-	need_reconfigure = 1;
-	dsp_buffer = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 Synth::~Synth()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-
-	if(dsp_buffer) delete [] dsp_buffer;
 }
 
 PLUGIN_CLASS_METHODS
@@ -66,7 +46,6 @@ void Synth::load_defaults()
 		config.oscillator_config.values[i]->load_defaults(defaults);
 	}
 }
-
 
 void Synth::read_data(KeyFrame *keyframe)
 {
@@ -159,97 +138,35 @@ double Synth::get_total_power()
 {
 	double result = 0;
 
-	if(config.wavefunction == DC) return 1.0;
+	if(config.wavefunction == DC)
+		return 1.0;
 
 	for(int i = 0; i < config.oscillator_config.total; i++)
 	{
-		result += db.fromdb(config.oscillator_config.values[i]->level);
+		result += DB::fromdb(config.oscillator_config.values[i]->level);
 	}
 
-	if(result == 0) result = 1;  // prevent division by 0
+	if(result == 0)
+		result = 1;  // prevent division by 0
 	return result;
 }
 
-double Synth::solve_eqn(double *output, 
-	double x1, 
-	double x2, 
-	double normalize_constant,
-	int oscillator)
-{
-	SynthOscillatorConfig *config = this->config.oscillator_config.values[oscillator];
-	if(config->level <= INFINITYGAIN) return 0;
-
-	double result;
-	register double x;
-	double power = this->db.fromdb(config->level) * normalize_constant;
-	double phase_offset = config->phase * this->period;
-	double x3 = x1 + phase_offset;
-	double x4 = x2 + phase_offset;
-	double period = this->period / config->freq_factor;
-	int sample;
-
-	switch(this->config.wavefunction)
-	{
-	case DC:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += power;
-		}
-		break;
-	case SINE:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += sin(x / period * 2 * M_PI) * power;
-		}
-		break;
-	case SAWTOOTH:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += function_sawtooth(x / period) * power;
-		}
-		break;
-	case SQUARE:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += function_square(x / period) * power;
-		}
-		break;
-	case TRIANGLE:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += function_triangle(x / period) * power;
-		}
-		break;
-	case PULSE:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += function_pulse(x / period) * power;
-		}
-		break;
-	case NOISE:
-		for(sample = (int)x1, x = x3; x < x4; x++, sample++)
-		{
-			output[sample] += function_noise() * power;
-		}
-		break;
-	}
-}
-
-double Synth::get_point(float x, double normalize_constant)
+double Synth::get_point(double x, double normalize_constant)
 {
 	double result = 0;
+
 	for(int i = 0; i < config.oscillator_config.total; i++)
 		result += get_oscillator_point(x, normalize_constant, i);
 
 	return result;
 }
 
-double Synth::get_oscillator_point(float x, 
-		double normalize_constant, 
-		int oscillator)
+double Synth::get_oscillator_point(double x, double normalize_constant,
+	int oscillator)
 {
 	SynthOscillatorConfig *config = this->config.oscillator_config.values[oscillator];
-	double power = db.fromdb(config->level) * normalize_constant;
+	double power = DB::fromdb(config->level) * normalize_constant;
+
 	switch(this->config.wavefunction)
 	{
 	case DC:
@@ -272,19 +189,19 @@ double Synth::get_oscillator_point(float x,
 
 	case NOISE:
 		return function_noise() * power;
-
 	}
+	return 0;
 }
 
 double Synth::function_square(double x)
 {
-	x -= (int)x; // only fraction counts
+	x -= trunc(x); // only fraction counts
 	return (x < .5) ? -1 : 1;
 }
 
 double Synth::function_pulse(double x)
 {
-	x -= (int)x; // only fraction counts
+	x -= trunc(x); // only fraction counts
 	return (x < .5) ? 0 : 1;
 }
 
@@ -295,13 +212,13 @@ double Synth::function_noise()
 
 double Synth::function_sawtooth(double x)
 {
-	x -= (int)x;
+	x -= trunc(x);
 	return 1 - x * 2;
 }
 
 double Synth::function_triangle(double x)
 {
-	x -= (int)x;
+	x -= trunc(x);
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
@@ -311,10 +228,8 @@ AFrame *Synth::process_tmpframe(AFrame *input)
 	int fragment_len;
 	double wetness;
 
-	need_reconfigure |= load_configuration();
-
-	if(need_reconfigure)
-		reconfigure();
+	if(load_configuration())
+		update_gui();
 
 	if(config.wetness < (INFINITYGAIN + EPSILON)) 
 		wetness = 0;
@@ -324,67 +239,62 @@ AFrame *Synth::process_tmpframe(AFrame *input)
 	for(int j = 0; j < size; j++)
 		input->buffer[j] *= wetness;
 
-	for(int i = 0; i < size; i += fragment_len)
-	{
-		fragment_len = size;
-		if(i + fragment_len > size)
-			fragment_len = size - i;
+	overlay_synth(input);
 
-		fragment_len = overlay_synth(i, fragment_len,
-			input->buffer);
-	}
 	return input;
 }
 
-int Synth::overlay_synth(samplenum start, int length, double *output)
+void Synth::overlay_synth(AFrame *frame)
 {
-	if(waveform_sample + length > waveform_length) 
-		length = waveform_length - waveform_sample;
+	int size = frame->get_length();
+	double period = frame->get_samplerate() / config.base_freq;
 
-// calculate some more data
-// only calculate what's needed to speed it up
-	if(waveform_sample + length > samples_rendered)
+	for(int i = 0; i < config.oscillator_config.total; i++)
 	{
-		samplenum start = waveform_sample, end = waveform_sample + length;
-		for(int i = start; i < end; i++)
-			dsp_buffer[i] = 0;
+		SynthOscillatorConfig *osc = config.oscillator_config.values[i];
+
+		if(osc->level <= INFINITYGAIN)
+			continue;
 
 		double normalize_constant = 1.0 / get_total_power();
-		for(int i = 0; i < config.oscillator_config.total; i++)
-			solve_eqn(dsp_buffer, start, end,
-				normalize_constant, i);
+		double power = DB::fromdb(osc->level) * normalize_constant;
+		double osc_period = period / osc->freq_factor;
+		double x = ((frame->get_pts() - get_start()) * frame->get_samplerate()) +
+			osc->phase * period;
+		x = fmod(x, osc_period);
 
-		samples_rendered = end;
+		switch(config.wavefunction)
+		{
+		case DC:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += power;
+			break;
+		case SINE:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += sin(x++ / osc_period * 2 * M_PI) * power;
+			break;
+		case SAWTOOTH:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += function_sawtooth(x++ / osc_period) * power;
+			break;
+		case SQUARE:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += function_square(x++ / osc_period) * power;
+			break;
+		case TRIANGLE:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += function_triangle(x++ / period) * power;
+			break;
+		case PULSE:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] += function_pulse(x++ / period) * power;
+			break;
+		case NOISE:
+			for(int j = 0; j < size; j++)
+				frame->buffer[j] +=  function_noise() * power;
+			break;
+		}
 	}
-
-	double *buffer_out = &output[start];
-
-	for(int i = 0; i < length; i++)
-	{
-		buffer_out[i] += dsp_buffer[waveform_sample++];
-	}
-
-	if(waveform_sample >= waveform_length)
-		waveform_sample = 0;
-
-	return length;
-}
-
-void Synth::reconfigure()
-{
-	need_reconfigure = 0;
-
-	if(dsp_buffer)
-	{
-		delete [] dsp_buffer;
-	}
-
-	waveform_length = get_project_samplerate();
-	period = (double)get_project_samplerate() / config.base_freq;
-	dsp_buffer = new double[waveform_length + 1];
-
-	samples_rendered = 0;     // do some calculations on the next process_realtime
-	waveform_sample = 0;
 }
 
 PLUGIN_THREAD_METHODS
@@ -492,8 +402,7 @@ void SynthWindow::update()
 void SynthWindow::update_scrollbar()
 {
 	scroll->update_length(plugin->config.oscillator_config.total * OSCILLATORHEIGHT, 
-		scroll->get_position(), 
-		subwindow->get_h());
+		scroll->get_position(), subwindow->get_h());
 }
 
 void SynthWindow::update_oscillators()
@@ -501,9 +410,7 @@ void SynthWindow::update_oscillators()
 	int i, y = -scroll->get_position();
 
 // Add new oscillators
-	for(i = 0; 
-		i < plugin->config.oscillator_config.total; 
-		i++)
+	for(i = 0; i < plugin->config.oscillator_config.total; i++)
 	{
 		SynthOscGUI *gui;
 		SynthOscillatorConfig *config = plugin->config.oscillator_config.values[i];
@@ -532,9 +439,7 @@ void SynthWindow::update_oscillators()
 	}
 
 // Delete old oscillators
-	for( ; 
-		i < oscillators.total;
-		i++)
+	for(; i < oscillators.total; i++)
 		oscillators.remove_object();
 }
 
@@ -588,7 +493,7 @@ void SynthOscGUI::create_objects(int y)
 SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
  : BC_FPot(50, 
 	y, 
-	synth->config.oscillator_config.values[gui->number]->level, 
+	synth->config.oscillator_config.values[gui->number]->level,
 	INFINITYGAIN, 
 	0)
 {
@@ -600,7 +505,6 @@ int SynthOscGUILevel::handle_event()
 {
 	SynthOscillatorConfig *config = synth->config.oscillator_config.values[gui->number];
 	config->level = get_value();
-	gui->window->canvas->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -609,7 +513,7 @@ int SynthOscGUILevel::handle_event()
 SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
  : BC_IPot(125, 
 	y,
-	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360), 
+	synth->config.oscillator_config.values[gui->number]->phase * 360,
 	0, 
 	360)
 {
@@ -620,8 +524,7 @@ SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
 int SynthOscGUIPhase::handle_event()
 {
 	SynthOscillatorConfig *config = synth->config.oscillator_config.values[gui->number];
-	config->phase = (float)get_value() / 360;
-	gui->window->canvas->update();
+	config->phase = (double)get_value() / 360;
 	synth->send_configure_change();
 	return 1;
 }
@@ -630,7 +533,7 @@ int SynthOscGUIPhase::handle_event()
 SynthOscGUIFreq::SynthOscGUIFreq(Synth *synth, SynthOscGUI *gui, int y)
  : BC_IPot(200, 
 	y,
-	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor), 
+	synth->config.oscillator_config.values[gui->number]->freq_factor,
 	1, 
 	100)
 {
@@ -643,7 +546,6 @@ int SynthOscGUIFreq::handle_event()
 	SynthOscillatorConfig *config = synth->config.oscillator_config.values[gui->number];
 
 	config->freq_factor = get_value();
-	gui->window->canvas->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -837,11 +739,11 @@ void SynthCanvas::update()
 	set_color(GREEN);
 
 	double normalize_constant = (double)1 / synth->get_total_power();
-	y1 = (int)(synth->get_point((float)0, normalize_constant) * get_h() / 2);
+	y1 = synth->get_point(0, normalize_constant) * get_h() / 2;
 
 	for(int i = 1; i < get_w(); i++)
 	{
-		y2 = (int)(synth->get_point((float)i / get_w(), normalize_constant) * get_h() / 2);
+		y2 = synth->get_point((double)i / get_w(), normalize_constant) * get_h() / 2;
 		draw_line(i - 1, get_h() / 2 - y1, i, get_h() / 2 - y2);
 		y1 = y2;
 	}
@@ -879,8 +781,8 @@ int SynthLevelMax::handle_event()
 	{
 		synth->config.oscillator_config.values[i]->level = 0;
 	}
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthLevelNormalize::SynthLevelNormalize(Synth *synth)
@@ -892,26 +794,24 @@ SynthLevelNormalize::SynthLevelNormalize(Synth *synth)
 int SynthLevelNormalize::handle_event()
 {
 // get total power
-	float total = 0;
+	double total = 0;
 
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		total += synth->db.fromdb(synth->config.oscillator_config.values[i]->level);
+		total += DB::fromdb(synth->config.oscillator_config.values[i]->level);
 	}
 
-	float scale = 1 / total;
-	float new_value;
+	double scale = 1 / total;
+	double new_value;
 
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		new_value = synth->db.fromdb(synth->config.oscillator_config.values[i]->level);
+		new_value = DB::fromdb(synth->config.oscillator_config.values[i]->level);
 		new_value *= scale;
-		new_value = synth->db.todb(new_value);
+		new_value = DB::todb(new_value);
 
 		synth->config.oscillator_config.values[i]->level = new_value;
 	}
-
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -924,15 +824,15 @@ SynthLevelSlope::SynthLevelSlope(Synth *synth)
 
 int SynthLevelSlope::handle_event()
 {
-	float slope = (float)INFINITYGAIN / synth->config.oscillator_config.total;
+	double slope = (double)INFINITYGAIN / synth->config.oscillator_config.total;
 
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->level = i * slope;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthLevelRandom::SynthLevelRandom(Synth *synth)
@@ -943,14 +843,13 @@ SynthLevelRandom::SynthLevelRandom(Synth *synth)
 
 int SynthLevelRandom::handle_event()
 {
-	srand(time(0));
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->level = -(rand() % -INFINITYGAIN);
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthLevelInvert::SynthLevelInvert(Synth *synth)
@@ -967,8 +866,8 @@ int SynthLevelInvert::handle_event()
 			INFINITYGAIN - synth->config.oscillator_config.values[i]->level;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthLevelSine::SynthLevelSine(Synth *synth)
@@ -979,16 +878,15 @@ SynthLevelSine::SynthLevelSine(Synth *synth)
 
 int SynthLevelSine::handle_event()
 {
-	float new_value;
+	double new_value;
 
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		new_value = (float)i / synth->config.oscillator_config.total * 2 * M_PI;
+		new_value = (double)i / synth->config.oscillator_config.total * 2 * M_PI;
 		new_value = sin(new_value) * INFINITYGAIN / 2 + INFINITYGAIN / 2;
 		synth->config.oscillator_config.values[i]->level = new_value;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1009,7 +907,6 @@ int SynthPhaseInvert::handle_event()
 			1 - synth->config.oscillator_config.values[i]->phase;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1027,8 +924,8 @@ int SynthPhaseZero::handle_event()
 		synth->config.oscillator_config.values[i]->phase = 0;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 
@@ -1040,16 +937,17 @@ SynthPhaseSine::SynthPhaseSine(Synth *synth)
 
 int SynthPhaseSine::handle_event()
 {
-	float new_value;
+	double new_value;
+
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		new_value = (float)i / synth->config.oscillator_config.total * 2 * M_PI;
+		new_value = (double)i / synth->config.oscillator_config.total * 2 * M_PI;
 		new_value = sin(new_value) / 2 + .5;
 		synth->config.oscillator_config.values[i]->phase = new_value;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthPhaseRandom::SynthPhaseRandom(Synth *synth)
@@ -1060,14 +958,12 @@ SynthPhaseRandom::SynthPhaseRandom(Synth *synth)
 
 int SynthPhaseRandom::handle_event()
 {
-	srand(time(0));
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->phase = 
-			(float)(rand() % 360) / 360;
+			(double)(rand() % 360) / 360;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1083,13 +979,11 @@ SynthFreqRandom::SynthFreqRandom(Synth *synth)
 
 int SynthFreqRandom::handle_event()
 {
-	srand(time(0));
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->freq_factor = rand() % 100;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1104,10 +998,9 @@ int SynthFreqEnum::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->freq_factor = (float)i + 1;
+		synth->config.oscillator_config.values[i]->freq_factor = i + 1;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1121,14 +1014,13 @@ SynthFreqEven::SynthFreqEven(Synth *synth)
 int SynthFreqEven::handle_event()
 {
 	if(synth->config.oscillator_config.total)
-		synth->config.oscillator_config.values[0]->freq_factor = (float)1;
+		synth->config.oscillator_config.values[0]->freq_factor = 1;
 
 	for(int i = 1; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->freq_factor = (float)i * 2;
+		synth->config.oscillator_config.values[i]->freq_factor = i * 2;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1143,13 +1035,13 @@ int SynthFreqOdd::handle_event()
 {
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
-		synth->config.oscillator_config.values[i]->freq_factor = (float)1 + i * 2;
+		synth->config.oscillator_config.values[i]->freq_factor = 1 + i * 2;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
+
 
 SynthFreqFibonacci::SynthFreqFibonacci(Synth *synth)
  : BC_MenuItem(_("Fibonnacci"))
@@ -1159,16 +1051,16 @@ SynthFreqFibonacci::SynthFreqFibonacci(Synth *synth)
 
 int SynthFreqFibonacci::handle_event()
 {
-	float last_value1 = 0, last_value2 = 1;
+	double last_value1 = 0, last_value2 = 1;
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->freq_factor = last_value1 + last_value2;
-		if(synth->config.oscillator_config.values[i]->freq_factor > 100) synth->config.oscillator_config.values[i]->freq_factor = 100;
+		if(synth->config.oscillator_config.values[i]->freq_factor > 100)
+			synth->config.oscillator_config.values[i]->freq_factor = 100;
 		last_value1 = last_value2;
 		last_value2 = synth->config.oscillator_config.values[i]->freq_factor;
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1181,19 +1073,19 @@ SynthFreqPrime::SynthFreqPrime(Synth *synth)
 
 int SynthFreqPrime::handle_event()
 {
-	float number = 1;
+	double number = 1;
+
 	for(int i = 0; i < synth->config.oscillator_config.total; i++)
 	{
 		synth->config.oscillator_config.values[i]->freq_factor = number;
 		number = get_next_prime(number);
 	}
 
-	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
 
-float SynthFreqPrime::get_next_prime(float number)
+double SynthFreqPrime::get_next_prime(double number)
 {
 	int result = 1;
 
@@ -1201,13 +1093,13 @@ float SynthFreqPrime::get_next_prime(float number)
 	{
 		result = 0;
 		number++;
-		
-		for(float i = number - 1; i > 1 && !result; i--)
+
+		for(double i = number - 1; i > 1 && !result; i--)
 		{
-			if((number / i) - (int)(number / i) == 0) result = 1;
+			if((number / i) - (int)(number / i) == 0)
+				result = 1;
 		}
 	}
-
 	return number;
 }
 
@@ -1268,12 +1160,9 @@ void SynthOscillatorConfig::save_data(FileXML *file)
 
 int SynthOscillatorConfig::equivalent(SynthOscillatorConfig &that)
 {
-	if(EQUIV(level, that.level) && 
+	return EQUIV(level, that.level) &&
 		EQUIV(phase, that.phase) &&
-		EQUIV(freq_factor, that.freq_factor))
-		return 1;
-	else
-		return 0;
+		EQUIV(freq_factor, that.freq_factor);
 }
 
 void SynthOscillatorConfig::copy_from(SynthOscillatorConfig& that)
@@ -1300,9 +1189,7 @@ void SynthConfig::reset()
 	base_freq = 440;
 	wavefunction = SINE;
 	for(int i = 0; i < oscillator_config.total; i++)
-	{
 		oscillator_config.values[i]->reset();
-	}
 }
 
 int SynthConfig::equivalent(SynthConfig &that)
@@ -1327,24 +1214,20 @@ void SynthConfig::copy_from(SynthConfig& that)
 	wavefunction = that.wavefunction;
 
 	int i;
-	for(i = 0; 
-		i < oscillator_config.total && i < that.oscillator_config.total;
+
+	for(i = 0; i < oscillator_config.total && i < that.oscillator_config.total;
 		i++)
 	{
 		oscillator_config.values[i]->copy_from(*that.oscillator_config.values[i]);
 	}
 
-	for( ;
-		i < that.oscillator_config.total;
-		i++)
+	for(; i < that.oscillator_config.total; i++)
 	{
 		oscillator_config.append(new SynthOscillatorConfig(i));
 		oscillator_config.values[i]->copy_from(*that.oscillator_config.values[i]);
 	}
 
-	for( ;
-		i < oscillator_config.total;
-		i++)
+	for(; i < oscillator_config.total; i++)
 	{
 		oscillator_config.remove_object();
 	}
@@ -1359,6 +1242,6 @@ void SynthConfig::interpolate(SynthConfig &prev,
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	copy_from(prev);
-	wetness = (int)(prev.wetness * prev_scale + next.wetness * next_scale);
-	base_freq = (int)(prev.base_freq * prev_scale + next.base_freq * next_scale);
+	wetness = prev.wetness * prev_scale + next.wetness * next_scale;
+	base_freq = prev.base_freq * prev_scale + next.base_freq * next_scale;
 }
