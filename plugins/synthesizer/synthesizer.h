@@ -80,10 +80,8 @@ class SynthOscGUIFreq;
 class SynthOscGUI
 {
 public:
-	SynthOscGUI(SynthWindow *window, int number);
+	SynthOscGUI(SynthWindow *window, int number, int y);
 	~SynthOscGUI();
-
-	void create_objects(int view_y);
 
 	SynthOscGUILevel *level;
 	SynthOscGUIPhase *phase;

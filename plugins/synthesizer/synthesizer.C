@@ -417,8 +417,7 @@ void SynthWindow::update_oscillators()
 
 		if(oscillators.total <= i)
 		{
-			oscillators.append(gui = new SynthOscGUI(this, i));
-			gui->create_objects(y);
+			oscillators.append(gui = new SynthOscGUI(this, i, y));
 		}
 		else
 		{
@@ -465,10 +464,20 @@ const char* SynthWindow::waveform_to_text(int waveform)
 	return "";
 }
 
-SynthOscGUI::SynthOscGUI(SynthWindow *window, int number)
+
+SynthOscGUI::SynthOscGUI(SynthWindow *window, int number, int y)
 {
+	char text[BCTEXTLEN];
+
 	this->window = window;
 	this->number = number;
+
+	sprintf(text, "%d:", number + 1);
+	window->subwindow->add_subwindow(title = new BC_Title(10, y + 15, text));
+
+	window->subwindow->add_subwindow(level = new SynthOscGUILevel(window->plugin, this, y));
+	window->subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->plugin, this, y));
+	window->subwindow->add_subwindow(freq = new SynthOscGUIFreq(window->plugin, this, y));
 }
 
 SynthOscGUI::~SynthOscGUI()
@@ -479,16 +488,6 @@ SynthOscGUI::~SynthOscGUI()
 	delete freq;
 }
 
-void SynthOscGUI::create_objects(int y)
-{
-	char text[BCTEXTLEN];
-	sprintf(text, "%d:", number + 1);
-	window->subwindow->add_subwindow(title = new BC_Title(10, y + 15, text));
-
-	window->subwindow->add_subwindow(level = new SynthOscGUILevel(window->plugin, this, y));
-	window->subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->plugin, this, y));
-	window->subwindow->add_subwindow(freq = new SynthOscGUIFreq(window->plugin, this, y));
-}
 
 SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
  : BC_FPot(50, 
