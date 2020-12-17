@@ -72,10 +72,8 @@ public:
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
-class SynthOscGUILevel;
-class SynthOscGUIPhase;
-class SynthOscGUIFreq;
+class SynthOscGUIFpot;
+class SynthOscGUIpot;
 
 class SynthOscGUI
 {
@@ -83,46 +81,38 @@ public:
 	SynthOscGUI(SynthWindow *window, int number, int y);
 	~SynthOscGUI();
 
-	SynthOscGUILevel *level;
-	SynthOscGUIPhase *phase;
-	SynthOscGUIFreq *freq;
+	SynthOscGUIFpot *level;
+	SynthOscGUIpot *phase;
+	SynthOscGUIpot *freq;
 	BC_Title *title;
 
 	int number;
 	SynthWindow *window;
 };
 
-class SynthOscGUILevel : public BC_FPot
+class SynthOscGUIFpot :  public BC_FPot
 {
 public:
-	SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y);
+	SynthOscGUIFpot(int x, int y, double *value, Synth *synth, SynthWindow *window);
 
 	int handle_event();
-
+private:
+	double *value;
+	SynthWindow *window;
 	Synth *synth;
-	SynthOscGUI *gui;
 };
 
-class SynthOscGUIPhase : public BC_IPot
+class SynthOscGUIpot : public BC_IPot
 {
 public:
-	SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y);
+	SynthOscGUIpot(int x, int y, int *value, Synth *synth,
+		SynthWindow *window, int maximum);
 
 	int handle_event();
-
+private:
+	int *value;
+	SynthWindow *window;
 	Synth *synth;
-	SynthOscGUI *gui;
-};
-
-class SynthOscGUIFreq : public BC_IPot
-{
-public:
-	SynthOscGUIFreq(Synth *synth, SynthOscGUI *gui, int y);
-
-	int handle_event();
-
-	Synth *synth;
-	SynthOscGUI *gui;
 };
 
 class SynthScroll : public BC_ScrollBar
@@ -146,7 +136,6 @@ public:
 	Synth *synth;
 	SynthWindow *window;
 };
-
 
 class SynthDelOsc : public BC_GenericButton
 {
@@ -225,7 +214,6 @@ public:
 	int handle_event();
 	Synth *synth;
 };
-
 
 class SynthCanvas : public BC_SubWindow
 {
@@ -419,8 +407,8 @@ public:
 	void save_data(FileXML *file);
 
 	double level;
-	double phase;
-	double freq_factor;
+	int phase_deg;
+	int freq_fact;
 	int number;
 };
 
