@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "bchash.h"
@@ -119,7 +103,7 @@ int FreeverbWidth::handle_event()
 }
 
 FreeverbMode::FreeverbMode(FreeverbEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, (int)plugin->config.mode, _("Freeze"))
+ : BC_CheckBox(x, y, plugin->config.mode, _("Freeze"))
 {
 	this->plugin = plugin;
 }
@@ -199,7 +183,7 @@ int FreeverbConfig::equivalent(FreeverbConfig &that)
 		EQUIV(dry, that.dry) &&
 		EQUIV(damp, that.damp) &&
 		EQUIV(width, that.width) &&
-		EQUIV(mode, that.mode);
+		mode == that.mode;
 }
 
 void FreeverbConfig::copy_from(FreeverbConfig &that)
@@ -244,7 +228,7 @@ FreeverbEffect::FreeverbEffect(PluginServer *server)
 
 FreeverbEffect::~FreeverbEffect()
 {
-	if(engine) delete engine;
+	delete engine;
 	if(temp)
 	{
 		for(int i = 0; i < total_in_buffers; i++)
@@ -256,6 +240,28 @@ FreeverbEffect::~FreeverbEffect()
 		delete [] temp_out;
 	}
 	PLUGIN_DESTRUCTOR_MACRO
+}
+
+void FreeverbEffect::reset_plugin()
+{
+	if(engine)
+	{
+		delete engine;
+		engine = 0;
+	}
+	if(temp)
+	{
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			delete [] temp[i];
+			delete [] temp_out[i];
+		}
+		delete [] temp;
+		temp = 0;
+		delete [] temp_out;
+		temp_out = 0;
+		temp_allocated = 0;
+	}
 }
 
 PLUGIN_CLASS_METHODS
@@ -334,7 +340,9 @@ void FreeverbEffect::process_tmpframes(AFrame **input)
 {
 	int size = input[0]->get_length();
 
-	load_configuration();
+	if(load_configuration())
+		update_gui();
+
 	if(!engine)
 		engine = new revmodel;
 
