@@ -8,7 +8,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-noinst_HEADERS = reverb.h reverb.inc reverbwindow.h reverbwindow.inc
+noinst_HEADERS = reverb.h reverbwindow.h
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
 

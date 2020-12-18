@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "clip.h"
@@ -37,8 +21,6 @@ REGISTER_PLUGIN
 Reverb::Reverb(PluginServer *server)
  : PluginAClient(server)
 {
-	srand(time(0));
-	redo_buffers = 1;       // set to redo buffers before the first render
 	dsp_in_length = 0;
 	ref_channels = 0;
 	ref_offsets = 0;
@@ -47,7 +29,8 @@ Reverb::Reverb(PluginServer *server)
 	dsp_in = 0;
 	lowpass_in1 = 0;
 	lowpass_in2 = 0;
-	initialized = 0;
+	allocated_buffers = 0;
+	allocated_refs = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -55,9 +38,9 @@ Reverb::~Reverb()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 
-	if(initialized)
+	if(dsp_in)
 	{
-		for(int i = 0; i < total_in_buffers; i++)
+		for(int i = 0; i < allocated_buffers; i++)
 		{
 			delete [] dsp_in[i];
 			delete [] ref_channels[i];
@@ -76,12 +59,51 @@ Reverb::~Reverb()
 		delete [] lowpass_in1;
 		delete [] lowpass_in2;
 
-		for(int i = 0; i < (smp + 1); i++)
+		for(int i = 0; i < smp_num; i++)
 		{
 			delete engine[i];
 		}
 		delete [] engine;
-		initialized = 0;
+	}
+}
+
+void Reverb::reset_plugin()
+{
+	if(dsp_in)
+	{
+		for(int i = 0; i < allocated_buffers; i++)
+		{
+			delete [] dsp_in[i];
+			delete [] ref_channels[i];
+			delete [] ref_offsets[i];
+			delete [] ref_levels[i];
+			delete [] ref_lowpass[i];
+			delete [] lowpass_in1[i];
+			delete [] lowpass_in2[i];
+		}
+
+		delete [] dsp_in;
+		dsp_in = 0;
+		dsp_in_length = 0;
+		delete [] ref_channels;
+		ref_channels = 0;
+		delete [] ref_offsets;
+		ref_offsets = 0;
+		delete [] ref_levels;
+		ref_levels = 0;
+		delete [] ref_lowpass;
+		ref_lowpass = 0;
+		delete [] lowpass_in1;
+		lowpass_in1 = 0;
+		delete [] lowpass_in2;
+		lowpass_in2 = 0;
+		allocated_buffers = 0;
+		allocated_refs = 0;
+
+		for(int i = 0; i < smp_num; i++)
+			delete engine[i];
+
+		delete [] engine;
 	}
 }
 
@@ -90,51 +112,56 @@ PLUGIN_CLASS_METHODS
 void Reverb::process_tmpframes(AFrame **input)
 {
 	int new_dsp_length, i, j;
-	main_in = input;
-	main_out = input;
 	int size = input[0]->get_length();
-	redo_buffers |= load_configuration();
 
-	if(!config.ref_total) return;
+	main_in = input;
 
-	if(!initialized)
+	if(load_configuration())
+		update_gui();
+
+	if(!config.ref_total)
+		return;
+
+	if(!dsp_in)
 	{
-		dsp_in = new double*[total_in_buffers];
-		ref_channels = new int*[total_in_buffers];
-		ref_offsets = new int*[total_in_buffers];
-		ref_levels = new double*[total_in_buffers];
-		ref_lowpass = new int*[total_in_buffers];
-		lowpass_in1 = new double*[total_in_buffers];
-		lowpass_in2 = new double*[total_in_buffers];
+		allocated_buffers = total_in_buffers;
 
-		for(i = 0; i < total_in_buffers; i++)
+		dsp_in = new double*[allocated_buffers];
+		ref_channels = new int*[allocated_buffers];
+		ref_offsets = new int*[allocated_buffers];
+		ref_levels = new double*[allocated_buffers];
+		ref_lowpass = new int*[allocated_buffers];
+		lowpass_in1 = new double*[allocated_buffers];
+		lowpass_in2 = new double*[allocated_buffers];
+
+		for(i = 0; i < allocated_buffers; i++)
 		{
-			dsp_in[i] = new double[1];
-			ref_channels[i] = new int[1];
-			ref_offsets[i] = new int[1];
-			ref_levels[i] = new double[1];
-			ref_lowpass[i] = new int[1];
-			lowpass_in1[i] = new double[1];
-			lowpass_in2[i] = new double[1];
+			dsp_in[i] = 0;
+			ref_channels[i] = 0;
+			ref_offsets[i] = 0;
+			ref_levels[i] = 0;
+			ref_lowpass[i] = 0;
+			lowpass_in1[i] = 0;
+			lowpass_in2[i] = 0;
 		}
 
-		engine = new ReverbEngine*[(smp + 1)];
-		for(i = 0; i < (smp + 1); i++)
+		smp_num = get_project_smp();
+
+		engine = new ReverbEngine*[smp_num];
+		for(i = 0; i < smp_num; i++)
 		{
 			engine[i] = new ReverbEngine(this);
 			engine[i]->start();
 		}
-		initialized = 1;
-		redo_buffers = 1;
 	}
 
 	new_dsp_length = size + 
 		(config.delay_init + config.ref_length) * 
 		get_project_samplerate() / 1000 + 1;
 
-	if(redo_buffers || new_dsp_length != dsp_in_length)
+	if(new_dsp_length != dsp_in_length)
 	{
-		for(i = 0; i < total_in_buffers; i++)
+		for(i = 0; i < allocated_buffers; i++)
 		{
 			double *old_dsp = dsp_in[i];
 			double *new_dsp = new double[new_dsp_length];
@@ -147,12 +174,12 @@ void Reverb::process_tmpframes(AFrame **input)
 		}
 
 		dsp_in_length = new_dsp_length;
-		redo_buffers = 1;
+		allocated_refs = 0;
 	}
 
-	if(redo_buffers)
+	if(config.ref_total != allocated_refs)
 	{
-		for(i = 0; i < total_in_buffers; i++)
+		for(i = 0; i < allocated_buffers; i++)
 		{
 			delete [] ref_channels[i];
 			delete [] ref_offsets[i];
@@ -161,12 +188,14 @@ void Reverb::process_tmpframes(AFrame **input)
 			delete [] lowpass_in1[i];
 			delete [] lowpass_in2[i];
 
-			ref_channels[i] = new int[config.ref_total + 1];
-			ref_offsets[i] = new int[config.ref_total + 1];
-			ref_lowpass[i] = new int[config.ref_total + 1];
-			ref_levels[i] = new double[config.ref_total + 1];
-			lowpass_in1[i] = new double[config.ref_total + 1];
-			lowpass_in2[i] = new double[config.ref_total + 1];
+			allocated_refs = config.ref_total;
+
+			ref_channels[i] = new int[allocated_refs + 1];
+			ref_offsets[i] = new int[allocated_refs + 1];
+			ref_lowpass[i] = new int[allocated_refs + 1];
+			ref_levels[i] = new double[allocated_refs + 1];
+			lowpass_in1[i] = new double[allocated_refs + 1];
+			lowpass_in2[i] = new double[allocated_refs + 1];
 
 // set channels
 			ref_channels[i][0] = i;         // primary noise
@@ -176,8 +205,8 @@ void Reverb::process_tmpframes(AFrame **input)
 			ref_offsets[i][1] = config.delay_init *
 				get_project_samplerate() / 1000;
 // set levels
-			ref_levels[i][0] = db.fromdb(config.level_init);
-			ref_levels[i][1] = db.fromdb(config.ref_level1);
+			ref_levels[i][0] = DB::fromdb(config.level_init);
+			ref_levels[i][1] = DB::fromdb(config.ref_level1);
 // set lowpass
 			ref_lowpass[i][0] = -1;     // ignore first noise
 			ref_lowpass[i][1] = config.lowpass1;
@@ -187,9 +216,9 @@ void Reverb::process_tmpframes(AFrame **input)
 			lowpass_in2[i][1] = 0;
 
 			int ref_division = config.ref_length *
-				get_project_samplerate() / 1000 / (config.ref_total + 1);
+				get_project_samplerate() / 1000 / (allocated_refs + 1);
 
-			for(j = 2; j < config.ref_total + 1; j++)
+			for(j = 2; j < allocated_refs + 1; j++)
 			{
 // set random channels for remaining reflections
 				ref_channels[i][j] = rand() % total_in_buffers;
@@ -197,51 +226,54 @@ void Reverb::process_tmpframes(AFrame **input)
 // set random offsets after first reflection
 				ref_offsets[i][j] = ref_offsets[i][1];
 				if(ref_division > 0)
-					ref_offsets[i][j] += ref_division * j - (rand() % ref_division) / 2;
+					ref_offsets[i][j] += ref_division * j -
+						(rand() % ref_division) / 2;
 
 // set changing levels
-				ref_levels[i][j] = db.fromdb(config.ref_level1 + (config.ref_level2 - config.ref_level1) / (config.ref_total - 1) * (j - 2));
+				ref_levels[i][j] = DB::fromdb(config.ref_level1 +
+					(config.ref_level2 - config.ref_level1) /
+					(allocated_refs - 1) * (j - 2));
 
 // set changing lowpass as linear
-				ref_lowpass[i][j] = config.lowpass1 + (double)(config.lowpass2 - config.lowpass1) / (config.ref_total - 1) * (j - 2);
+				ref_lowpass[i][j] = config.lowpass1 +
+					(double)(config.lowpass2 - config.lowpass1) /
+					(allocated_refs - 1) * (j - 2);
+
 				lowpass_in1[i][j] = 0;
 				lowpass_in2[i][j] = 0;
 			}
 		}
-		redo_buffers = 0;
 	}
 
-	for(i = 0; i < total_in_buffers; )
+	for(i = 0; i < allocated_buffers; )
 	{
-		for(j = 0; j < (smp + 1) && (i + j) < total_in_buffers; j++)
+		for(j = 0; j < smp_num && (i + j) < allocated_buffers; j++)
 		{
 			engine[j]->process_overlays(i + j, size);
 		}
 
-		for(j = 0; j < (smp + 1) && i < total_in_buffers; j++, i++)
+		for(j = 0; j < smp_num && i < allocated_buffers; j++, i++)
 		{
 			engine[j]->wait_process_overlays();
 		}
 	}
 
-	for(i = 0; i < total_in_buffers; i++)
+	for(i = 0; i < allocated_buffers; i++)
 	{
-		if(main_out[i] != main_in[i])
-			main_out[i]->copy_of(main_in[i]);
-
-		double *current_out = main_out[i]->buffer;
+		double *current_out = input[i]->buffer;
 		double *current_in = dsp_in[i];
 
-		for(j = 0; j < size; j++) current_out[j] = current_in[j];
+		for(j = 0; j < size; j++)
+			current_out[j] = current_in[j];
 
 		int k;
 		for(k = 0; j < dsp_in_length; j++, k++) 
 			current_in[k] = current_in[j];
 
-		for(; k < dsp_in_length; k++) current_in[k] = 0;
+		for(; k < dsp_in_length; k++)
+			current_in[k] = 0;
 	}
 }
-
 
 void Reverb::load_defaults()
 {
