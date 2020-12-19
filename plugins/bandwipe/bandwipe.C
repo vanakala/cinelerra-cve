@@ -179,7 +179,7 @@ void BandWipeMain::read_data(KeyFrame *keyframe)
 
 int BandWipeMain::load_configuration()
 {
-	read_data(prev_keyframe_pts(source_pts));
+	read_data(get_prev_keyframe(source_pts));
 	return 0;
 }
 

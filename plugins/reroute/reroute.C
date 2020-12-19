@@ -219,7 +219,7 @@ int Reroute::load_configuration()
 	KeyFrame *prev_keyframe;
 	RerouteConfig old_config;
 
-	if(prev_keyframe = prev_keyframe_pts(source_pts))
+	if(prev_keyframe = get_prev_keyframe(source_pts))
 	{
 		old_config.copy_from(config);
 		read_data(prev_keyframe);

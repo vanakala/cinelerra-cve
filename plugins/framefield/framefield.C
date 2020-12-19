@@ -239,7 +239,7 @@ int FrameField::load_configuration()
 	KeyFrame *prev_keyframe;
 	FrameFieldConfig old_config = config;
 
-	prev_keyframe = prev_keyframe_pts(source_pts);
+	prev_keyframe = get_prev_keyframe(source_pts);
 
 	if(!prev_keyframe)
 		return 0;

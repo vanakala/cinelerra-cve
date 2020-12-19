@@ -726,7 +726,7 @@ void MotionMain::process_tmpframes(VFrame **frame)
 			skip_current = 1;
 		else
 		{
-			KeyFrame *keyframe = prev_keyframe_pts(source_pts);
+			KeyFrame *keyframe = get_prev_keyframe(source_pts);
 			if(keyframe->pos_time > 0 &&
 				actual_previous_pts < keyframe->pos_time)
 				skip_current = 1;

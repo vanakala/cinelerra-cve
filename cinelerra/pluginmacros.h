@@ -240,10 +240,10 @@ int PLUGIN_CLASS::load_configuration() \
 { \
 	KeyFrame *prev_keyframe, *next_keyframe; \
  \
-	prev_keyframe = prev_keyframe_pts(source_pts); \
-	next_keyframe = next_keyframe_pts(source_pts); \
+	prev_keyframe = get_prev_keyframe(source_pts); \
+	next_keyframe = get_next_keyframe(source_pts); \
  \
-	if(!prev_keyframe) \
+	if(!prev_keyframe || prev_keyframe == next_keyframe) \
 		return need_reconfigure; \
  \
 	ptstime next_pts = next_keyframe->pos_time; \

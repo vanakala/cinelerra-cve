@@ -691,7 +691,7 @@ int TimeAvgMain::load_configuration()
 	TimeAvgConfig old_config;
 	old_config.copy_from(&config);
 
-	if(!(prev_keyframe = prev_keyframe_pts(source_pts)))
+	if(!(prev_keyframe = get_prev_keyframe(source_pts)))
 		return need_reconfigure;
 
 	read_data(prev_keyframe);

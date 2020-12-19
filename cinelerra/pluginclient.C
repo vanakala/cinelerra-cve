@@ -380,7 +380,7 @@ void PluginClient::unsupported(int cmodel)
 	abort_plugin(_("Unsupported colormodel '%s'."), ColorModels::name(cmodel));
 }
 
-KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
+KeyFrame* PluginClient::get_prev_keyframe(ptstime pts)
 {
 	if(plugin)
 	{
@@ -391,7 +391,7 @@ KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
 	return keyframe;
 }
 
-KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
+KeyFrame* PluginClient::get_next_keyframe(ptstime pts)
 {
 	if(plugin)
 	{

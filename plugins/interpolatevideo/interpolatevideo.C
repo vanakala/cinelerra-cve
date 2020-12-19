@@ -243,9 +243,9 @@ int InterpolateVideo::load_configuration()
 
 	old_config.copy_from(&config);
 
-	if(!(next_keyframe = next_keyframe_pts(source_pts)))
+	if(!(next_keyframe = get_next_keyframe(source_pts)))
 		return 0;
-	if(!(prev_keyframe = prev_keyframe_pts(source_pts)))
+	if(!(prev_keyframe = get_prev_keyframe(source_pts)))
 		return 0;
 
 // Previous keyframe stays in config object.

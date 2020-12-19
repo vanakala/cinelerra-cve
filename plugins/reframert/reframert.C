@@ -210,7 +210,7 @@ VFrame *ReframeRT::process_tmpframe(VFrame *frame)
 {
 	ptstime input_pts = get_start();
 	ReframeRTConfig prev_config, next_config;
-	KeyFrame *tmp_keyframe, *next_keyframe = prev_keyframe_pts(input_pts);
+	KeyFrame *tmp_keyframe, *next_keyframe = get_prev_keyframe(input_pts);
 	ptstime duration;
 	ptstime tmp_pts, next_pts;
 	int is_current_keyframe;
@@ -222,7 +222,7 @@ VFrame *ReframeRT::process_tmpframe(VFrame *frame)
 	do
 	{
 		tmp_keyframe = next_keyframe;
-		next_keyframe = next_keyframe_pts(tmp_keyframe->pos_time + EPSILON);
+		next_keyframe = get_next_keyframe(tmp_keyframe->pos_time + EPSILON);
 
 		tmp_pts = tmp_keyframe->pos_time;
 		next_pts = next_keyframe->pos_time;

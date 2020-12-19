@@ -153,7 +153,7 @@ void NRTVideo::read_data(KeyFrame *keyframe)
 int NRTVideo::load_configuration()
 {
 	int prev_val = config.onoff;
-	read_data(prev_keyframe_pts(source_pts));
+	read_data(get_prev_keyframe(source_pts));
 	return !(prev_val == config.onoff);
 }
 

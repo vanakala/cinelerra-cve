@@ -166,8 +166,8 @@ public:
 	char* get_path();
 
 // Return keyframe objects.
-	KeyFrame* prev_keyframe_pts(ptstime postime);
-	KeyFrame* next_keyframe_pts(ptstime postime);
+	KeyFrame* get_prev_keyframe(ptstime postime);
+	KeyFrame* get_next_keyframe(ptstime postime);
 	KeyFrame *get_first_keyframe();
 
 	void set_keyframe(KeyFrame *keyframe);

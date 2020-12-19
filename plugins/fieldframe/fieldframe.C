@@ -113,7 +113,7 @@ int FieldFrame::load_configuration()
 	KeyFrame *prev_keyframe;
 	FieldFrameConfig old_config = config;
 
-	if(prev_keyframe = prev_keyframe_pts(source_pts))
+	if(prev_keyframe = get_prev_keyframe(source_pts))
 		read_data(prev_keyframe);
 
 	return !old_config.equivalent(config);

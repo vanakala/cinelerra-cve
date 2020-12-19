@@ -156,7 +156,7 @@ void ColorSpace::read_data(KeyFrame *keyframe)
 int ColorSpace::load_configuration()
 {
 	int prev_val = config.onoff;
-	KeyFrame *prev_keyframe = prev_keyframe_pts(source_pts);
+	KeyFrame *prev_keyframe = get_prev_keyframe(source_pts);
 
 	if(prev_keyframe)
 	{

@@ -28,7 +28,7 @@ int DelayAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 
-	if(prev_keyframe = prev_keyframe_pts(source_pts))
+	if(prev_keyframe = get_prev_keyframe(source_pts))
 		read_data(prev_keyframe);
 	return 0;
 }
