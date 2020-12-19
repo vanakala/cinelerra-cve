@@ -108,9 +108,9 @@ VFrame *AgingMain::process_tmpframe(VFrame *input_ptr)
 
 	input = input_ptr;
 
-	if(!aging_server) aging_server = new AgingServer(this, 
-		PluginClient::smp,
-		PluginClient::smp);
+	if(!aging_server) aging_server = new AgingServer(this,
+		get_project_smp(),
+		get_project_smp());
 	aging_server->process_packages();
 	return input;
 }

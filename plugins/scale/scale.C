@@ -162,7 +162,7 @@ VFrame *ScaleMain::process_tmpframe(VFrame *frame)
 	output = clone_vframe(frame);
 
 	if(!overlayer)
-		overlayer = new OverlayFrame(smp + 1);
+		overlayer = new OverlayFrame(get_project_smp());
 
 // Perform scaling
 	double in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;

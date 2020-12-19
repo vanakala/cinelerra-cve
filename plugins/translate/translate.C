@@ -182,7 +182,7 @@ VFrame *TranslateMain::process_tmpframe(VFrame *input)
 		update_gui();
 
 	if(!overlayer)
-		overlayer = new OverlayFrame(smp + 1);
+		overlayer = new OverlayFrame(get_project_smp());
 
 	output = clone_vframe(input);
 	output->clear_frame();
