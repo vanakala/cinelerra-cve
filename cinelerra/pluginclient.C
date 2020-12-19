@@ -34,7 +34,6 @@ PluginClient::PluginClient(PluginServer *server)
 	source_pts = 0;
 	plugin = 0;
 	prompt = 0;
-	keyframe = 0;
 	need_reconfigure = 0;
 	audio_buffer_size = AUDIO_BUFFER_SIZE;
 	this->server = server;
@@ -371,7 +370,7 @@ KeyFrame* PluginClient::get_prev_keyframe(ptstime pts)
 			return plugin->shared_plugin->get_prev_keyframe(pts);
 		return plugin->get_prev_keyframe(pts);
 	}
-	return keyframe;
+	return 0;
 }
 
 KeyFrame* PluginClient::get_next_keyframe(ptstime pts)
@@ -382,7 +381,7 @@ KeyFrame* PluginClient::get_next_keyframe(ptstime pts)
 			return plugin->shared_plugin->get_next_keyframe(pts);
 		return plugin->get_next_keyframe(pts);
 	}
-	return keyframe;
+	return 0;
 }
 
 KeyFrame *PluginClient::get_first_keyframe()
@@ -393,12 +392,7 @@ KeyFrame *PluginClient::get_first_keyframe()
 			return (KeyFrame*)plugin->shared_plugin->keyframes->first;
 		return (KeyFrame*)plugin->keyframes->first;
 	}
-	return keyframe;
-}
-
-void PluginClient::set_keyframe(KeyFrame *keyframe)
-{
-	this->keyframe = keyframe;
+	return 0;
 }
 
 KeyFrame* PluginClient::get_keyframe()
@@ -406,7 +400,7 @@ KeyFrame* PluginClient::get_keyframe()
 	if(plugin)
 		return plugin->get_keyframe(
 			master_edl->local_session->get_selectionstart(1));
-	return keyframe;
+	return 0;
 }
 
 void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)

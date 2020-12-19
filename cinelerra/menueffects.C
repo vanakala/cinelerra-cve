@@ -295,7 +295,6 @@ void MenuEffectThread::run()
 // Open a prompt GUI
 			MenuEffectPrompt prompt(cx, cy);
 
-			client->set_keyframe(&plugin_data);
 			client->set_prompt(&prompt);
 // Must set parameters since there is no plugin object to draw from.
 			client->plugin_get_parameters(1);

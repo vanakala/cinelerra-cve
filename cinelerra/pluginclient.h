@@ -221,8 +221,6 @@ public:
 	MenuEffectPrompt *prompt;
 // Plugin of EDL
 	Plugin *plugin;
-// Keyframe when plugin is not avalilable
-	KeyFrame *keyframe;
 
 protected:
 	TrackRender *renderer;
