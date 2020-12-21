@@ -297,7 +297,7 @@ int Spectrogram::load_configuration()
 
 	if(keyframe)
 		read_data(keyframe);
-	return need_reconfigure;
+	return get_need_reconfigure();
 }
 
 void Spectrogram::read_data(KeyFrame *keyframe)

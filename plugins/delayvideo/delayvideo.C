@@ -100,9 +100,7 @@ VFrame *DelayVideo::process_tmpframe(VFrame *frame)
 {
 	ptstime pts = frame->get_pts();
 
-	need_reconfigure += load_configuration();
-
-	if(need_reconfigure)
+	if(load_configuration())
 		update_gui();
 
 	if(config.length < pts)

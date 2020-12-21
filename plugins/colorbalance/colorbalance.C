@@ -215,7 +215,6 @@ void ColorBalanceEngine::run()
 ColorBalanceMain::ColorBalanceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	need_reconfigure = 1;
 	total_engines = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -321,6 +320,7 @@ void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, double dif
 
 VFrame *ColorBalanceMain::process_tmpframe(VFrame *frame)
 {
+	int do_reconfigure = 0;
 	int cmodel = frame->get_color_model();
 
 	switch(cmodel)
@@ -333,7 +333,7 @@ VFrame *ColorBalanceMain::process_tmpframe(VFrame *frame)
 		return frame;
 	}
 
-	need_reconfigure |= load_configuration();
+	do_reconfigure |= load_configuration();
 
 	if(!total_engines)
 	{
@@ -344,15 +344,13 @@ VFrame *ColorBalanceMain::process_tmpframe(VFrame *frame)
 			engines[i] = new ColorBalanceEngine(this);
 			engines[i]->start();
 		}
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
-	if(need_reconfigure)
+	if(do_reconfigure)
 	{
 		update_gui();
-
 		reconfigure();
-		need_reconfigure = 0;
 	}
 
 	if(!EQUIV(config.cyan, 0) || !EQUIV(config.magenta, 0) ||

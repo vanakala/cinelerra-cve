@@ -286,7 +286,6 @@ RotateEffect::RotateEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	need_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 

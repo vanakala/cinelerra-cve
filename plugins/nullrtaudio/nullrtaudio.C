@@ -141,7 +141,7 @@ int NRTAudio::load_configuration()
 	int prev_val = config.onoff;
 
 	read_data(get_prev_keyframe(source_pts));
-	return need_reconfigure || !(prev_val == config.onoff);
+	return get_need_reconfigure() || !(prev_val == config.onoff);
 }
 
 /*

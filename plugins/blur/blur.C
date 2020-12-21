@@ -72,7 +72,6 @@ BlurMain::BlurMain(PluginServer *server)
 {
 	defaults = 0;
 	temp = 0;
-	need_reconfigure = 1;
 	engine = 0;
 	num_engines = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
@@ -106,10 +105,11 @@ PLUGIN_CLASS_METHODS
 VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 {
 	int i, j, k, l;
+	int do_reconfigure = 0;
 	int color_model = input_ptr->get_color_model();
 
 	this->input = input_ptr;
-	need_reconfigure |= load_configuration();
+	do_reconfigure |= load_configuration();
 
 	switch(color_model)
 	{
@@ -121,7 +121,7 @@ VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 		return input_ptr;
 	}
 
-	if(need_reconfigure)
+	if(do_reconfigure)
 		update_gui();
 
 	if(!engine)
@@ -136,14 +136,13 @@ VFrame *BlurMain::process_tmpframe(VFrame *input_ptr)
 				input->get_h() * (i + 1) / num_engines);
 			engine[i]->start();
 		}
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
-	if(need_reconfigure)
+	if(do_reconfigure)
 	{
 		for(i = 0; i < num_engines; i++)
 			engine[i]->reconfigure();
-		need_reconfigure = 0;
 	}
 	temp = clone_vframe(input);
 

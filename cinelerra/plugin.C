@@ -695,7 +695,7 @@ void Plugin::reset_plugin()
 {
 	if(!idle && client)
 	{
-		client->reset_plugin();
+		client->plugin_reset();
 		idle = 1;
 	}
 }

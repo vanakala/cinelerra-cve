@@ -58,7 +58,6 @@ DotMain::DotMain(PluginServer *server)
 	dot_server = 0;
 	pattern_allocated = 0;
 	pattern_size = 0;
-	need_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -161,14 +160,13 @@ void DotMain::reconfigure()
 
 	make_pattern();
 	init_sampxy_table();
-
-	need_reconfigure = 0;
 }
 
 VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 {
 	int color_model = input_ptr->get_color_model();
 	int new_size;
+	int do_reconfigure = 0;
 
 	switch(color_model)
 	{
@@ -184,7 +182,7 @@ VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 	if(load_configuration())
 	{
 		update_gui();
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
 	if(!dot_server)
@@ -199,7 +197,7 @@ VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 		delete [] pattern;
 		pattern = new uint32_t[new_size];
 		pattern_allocated = new_size;
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 	pattern_size = new_size;
 
@@ -207,10 +205,10 @@ VFrame *DotMain::process_tmpframe(VFrame *input_ptr)
 	{
 		sampx = new int[input_ptr->get_w()];
 		sampy = new int[input_ptr->get_h()];
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
-	if(need_reconfigure)
+	if(do_reconfigure)
 		reconfigure();
 
 	dot_server->process_packages();

@@ -409,6 +409,7 @@ void HistogramMain::calculate_automatic(VFrame *data)
 VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 {
 	int color_model = frame->get_color_model();
+	int do_reconfigure = 0;
 
 	switch(color_model)
 	{
@@ -420,7 +421,7 @@ VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 		return frame;
 	}
 
-	need_reconfigure |= load_configuration();
+	do_reconfigure |= load_configuration();
 
 	if(!engine)
 		engine = new HistogramEngine(this,
@@ -431,7 +432,7 @@ VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure || !lookup[0] ||
+	if(do_reconfigure || !lookup[0] ||
 		!linear[0] || config.automatic)
 	{
 // Calculate new curves
@@ -447,9 +448,8 @@ VFrame *HistogramMain::process_tmpframe(VFrame *frame)
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input);
 // Always plot to set the curves if automatic
-	if(need_reconfigure || config.plot || config.automatic)
+	if(do_reconfigure || config.plot || config.automatic)
 		update_gui();
-	need_reconfigure = 0;
 	return frame;
 }
 

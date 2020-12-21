@@ -600,7 +600,6 @@ int TimeFrontShowGrayscale::handle_event()
 TimeFrontMain::TimeFrontMain(PluginServer *server)
  : PluginVClient(server)
 {
-	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
 	overlayer = 0;
@@ -644,7 +643,6 @@ void TimeFrontMain::reset_plugin()
 	}
 	framelist_allocated = 0;
 	framelist_last = 0;
-	need_reconfigure = 1;
 }
 
 PLUGIN_CLASS_METHODS
@@ -654,6 +652,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 	VFrame **outframes = frame;
 	double project_frame_rate = get_project_framerate();
 	int color_model = frame[0]->get_color_model();
+	int do_reconfigure = 0;
 
 	switch(color_model)
 	{
@@ -665,8 +664,11 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 		return;
 	}
 
-	if(need_reconfigure |= load_configuration())
+	if(load_configuration())
+	{
 		update_gui();
+		do_reconfigure = 1;
+	}
 
 	if(config.time_range < (1 / project_frame_rate) + EPSILON)
 		return;
@@ -700,7 +702,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 			outframes[0]->get_h(),
 			BC_A8);
 
-	if(need_reconfigure && config.shape != TimeFrontConfig::OTHERTRACK &&
+	if(do_reconfigure && config.shape != TimeFrontConfig::OTHERTRACK &&
 		config.shape != TimeFrontConfig::ALPHA)
 	{
 		if(!engine)

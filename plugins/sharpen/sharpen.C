@@ -99,6 +99,7 @@ PLUGIN_CLASS_METHODS
 VFrame *SharpenMain::process_tmpframe(VFrame *input)
 {
 	int color_model = input->get_color_model();
+	int do_reconfigure = 0;
 
 	switch(color_model)
 	{
@@ -113,7 +114,7 @@ VFrame *SharpenMain::process_tmpframe(VFrame *input)
 	if(load_configuration())
 	{
 		update_gui();
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
 	if(!total_engines)
@@ -129,7 +130,7 @@ VFrame *SharpenMain::process_tmpframe(VFrame *input)
 
 	if(config.sharpness)
 	{
-		if(need_reconfigure || !pos_lut)
+		if(do_reconfigure || !pos_lut)
 			get_luts();
 // Arm first row
 		row_step = (config.interlace) ? 2 : 1;

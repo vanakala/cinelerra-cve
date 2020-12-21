@@ -852,7 +852,6 @@ TitleMain::TitleMain(PluginServer *server)
 	char_positions = 0;
 	rows_bottom = 0;
 	translate = 0;
-	need_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -916,7 +915,6 @@ void TitleMain::reset_plugin()
 		delete translate;
 		translate = 0;
 	}
-	need_reconfigure = 1;
 }
 
 PLUGIN_CLASS_METHODS
@@ -1435,6 +1433,7 @@ int TitleMain::text_to_motion(const char *text)
 VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 {
 	int result = 0;
+	int do_reconfigure = 0;
 	output = input_ptr;
 	int color_model = input_ptr->get_color_model();
 
@@ -1448,7 +1447,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 		return input_ptr;
 	}
 
-	if(need_reconfigure |= load_configuration())
+	if(load_configuration())
 		update_gui();
 
 // Always synthesize text and redraw it for timecode
@@ -1468,7 +1467,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 				get_project_framerate(),
 				0);
 		config.text_to_ucs4(DEFAULT_ENCODING);
-		need_reconfigure = 1;
+		do_reconfigure = 1;
 	}
 
 // Check boundaries
@@ -1482,7 +1481,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 		strcpy(config.encoding, DEFAULT_ENCODING);
 
 // Handle reconfiguration
-	if(need_reconfigure)
+	if(do_reconfigure)
 	{
 		if(text_mask)
 			delete text_mask;

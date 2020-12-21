@@ -113,7 +113,7 @@ void TimeStretchConfig::copy_from(TimeStretchConfig &that)
 
 int TimeStretch::load_configuration()
 {
-	return need_reconfigure;
+	return get_need_reconfigure();
 }
 
 AFrame *TimeStretch::process_tmpframe(AFrame *aframe)

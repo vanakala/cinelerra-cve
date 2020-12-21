@@ -135,7 +135,7 @@ int LoopAudio::load_configuration()
 	if(keyframe)
 		read_data(keyframe);
 
-	return need_reconfigure || !PTSEQU(old_pts, config.duration);
+	return get_need_reconfigure() || !PTSEQU(old_pts, config.duration);
 }
 
 void LoopAudio::load_defaults()

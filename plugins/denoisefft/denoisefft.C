@@ -104,7 +104,6 @@ DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
 	reference = 0;
 	remove_engine = 0;
 	collect_engine = 0;
-	need_reconfigure = 1;
 	collection_pts = -1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -195,7 +194,7 @@ int DenoiseFFTEffect::load_configuration()
 	KeyFrame *prev_keyframe = get_prev_keyframe(source_pts);
 
 	if(!prev_keyframe)
-		return need_reconfigure;
+		return get_need_reconfigure();
 
 	ptstime prev_pts = prev_keyframe->pos_time;
 
@@ -208,7 +207,7 @@ int DenoiseFFTEffect::load_configuration()
 		collection_pts = prev_pts;
 		return 1;
 	}
-	return need_reconfigure;
+	return get_need_reconfigure();
 }
 
 AFrame *DenoiseFFTEffect::process_tmpframe(AFrame *aframe)

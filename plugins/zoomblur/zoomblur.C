@@ -204,7 +204,6 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	layer_table = 0;
 	table_entries = 0;
 	accum = 0;
-	need_reconfigure = 1;
 	accum_size = 0;
 	entries_in_use = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
@@ -227,6 +226,7 @@ void ZoomBlurMain::reset_plugin()
 		delete_tables();
 		delete [] accum;
 		accum = 0;
+		accum_size = 0;
 	}
 }
 
@@ -271,13 +271,10 @@ VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 		return frame;
 	}
 
-	need_reconfigure |= load_configuration();
-	need_reconfigure |= accum_size < new_accum_size;
-
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure || !table_entries)
+	if(load_configuration() || accum_size < new_accum_size || !table_entries)
 	{
 		double w = frame->get_w();
 		double h = frame->get_h();
@@ -362,7 +359,6 @@ VFrame *ZoomBlurMain::process_tmpframe(VFrame *frame)
 			}
 		}
 		update_gui();
-		need_reconfigure = 0;
 	}
 
 	if(!engine)

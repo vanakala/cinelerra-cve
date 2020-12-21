@@ -266,10 +266,10 @@ int WaveForm::load_configuration()
 	KeyFrame *keyframe = get_first_keyframe();
 
 	if(!keyframe)
-		return need_reconfigure;
+		return get_need_reconfigure();
 
 	read_data(keyframe);
-	return !EQUIV(prev_val, config.scale) || need_reconfigure;
+	return !EQUIV(prev_val, config.scale) || get_need_reconfigure();
 }
 
 void WaveForm::process_tmpframes(AFrame **frames)

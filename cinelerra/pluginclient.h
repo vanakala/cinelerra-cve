@@ -122,6 +122,9 @@ public:
 	AFrame *get_frame(AFrame *frame);
 	VFrame *get_frame(VFrame *buffer);
 
+// reset the current plugin
+	void plugin_reset();
+
 // Get, release tmpframes
 	VFrame *clone_vframe(VFrame *orig);
 	void release_vframe(VFrame *frame);
@@ -142,7 +145,8 @@ public:
 	ptstime get_length();
 // Get the end position of the plugin
 	ptstime get_end();
-
+// Get request to reconfigure
+	inline int get_need_reconfigure() { return need_reconfigure; };
 	char* get_gui_string();
 
 // Used by themes
@@ -209,7 +213,6 @@ public:
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
 
-	int success;
 	int total_in_buffers;           // total buffers allocated by the server
 
 // The currrent position relative to start of EDL.
@@ -224,6 +227,8 @@ public:
 
 protected:
 	TrackRender *renderer;
+
+private:
 	int need_reconfigure;
 };
 

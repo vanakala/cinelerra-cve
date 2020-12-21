@@ -34,7 +34,7 @@ PluginClient::PluginClient(PluginServer *server)
 	source_pts = 0;
 	plugin = 0;
 	prompt = 0;
-	need_reconfigure = 0;
+	need_reconfigure = 1;
 	audio_buffer_size = AUDIO_BUFFER_SIZE;
 	this->server = server;
 }
@@ -228,6 +228,15 @@ void PluginClient::send_configure_change()
 	}
 }
 
+void PluginClient::plugin_reset()
+{
+	if(!need_reconfigure)
+	{
+		reset_plugin();
+		need_reconfigure = 1;
+	}
+}
+
 void PluginClient::process_transition(VFrame *input, VFrame *output,
 	ptstime current_postime)
 {
@@ -342,6 +351,7 @@ void PluginClient::plugin_show_gui()
 	update_display_title();
 	show_gui();
 }
+
 
 void PluginClient::abort_plugin(const char *fmt, ...)
 {

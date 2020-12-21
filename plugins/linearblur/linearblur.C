@@ -203,7 +203,6 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	table_entries = 0;
 	steps_in_table = 0;
 	accum = 0;
-	need_reconfigure = 1;
 // FIXIT layer_table = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -268,12 +267,10 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 		return frame;
 	}
 
-	need_reconfigure |= load_configuration();
-
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
-	if(need_reconfigure)
+	if(load_configuration())
 	{
 		int w = frame->get_w();
 		int h = frame->get_h();
@@ -356,7 +353,6 @@ VFrame *LinearBlurMain::process_tmpframe(VFrame *frame)
 				CLAMP(x_table[j], 0, w - 1);
 			}
 		}
-		need_reconfigure = 0;
 	}
 
 	if(!engine)

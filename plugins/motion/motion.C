@@ -687,6 +687,7 @@ void MotionMain::process_rotation()
 void MotionMain::process_tmpframes(VFrame **frame)
 {
 	int color_model = frame[0]->get_color_model();
+	int do_reconfigure = 0;
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
 
@@ -700,8 +701,11 @@ void MotionMain::process_tmpframes(VFrame **frame)
 		return;
 	}
 
-	if(need_reconfigure |= load_configuration())
+	if(load_configuration())
+	{
 		update_gui();
+		do_reconfigure = 1;
+	}
 
 // Calculate the source and destination pointers for each of the operations.
 	reference_layer = PluginClient::total_in_buffers - 1;
@@ -738,7 +742,7 @@ void MotionMain::process_tmpframes(VFrame **frame)
 
 	int need_reload = !skip_current &&
 		(!prev_global_ref || !prev_global_ref->pts_in_frame(actual_previous_pts) ||
-			need_reconfigure);
+			do_reconfigure);
 	if(need_reload)
 	{
 		total_dx = 0;
@@ -756,7 +760,6 @@ void MotionMain::process_tmpframes(VFrame **frame)
 		current_angle = 0;
 	}
 
-	need_reconfigure = 0;
 // Get the global pointers.  Here we walk through the sequence of events.
 	if(config.global)
 	{
