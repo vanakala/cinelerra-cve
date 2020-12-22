@@ -1,29 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef ADEVICEPREFS_H
 #define ADEVICEPREFS_H
 
 
-class OSSEnable;
 class ALSADevice;
 
 #include "arraylist.h"
@@ -60,11 +43,9 @@ public:
 	PreferencesWindow *pwindow;
 
 private:
-	void create_oss_objs();
 	void create_esound_objs();
 	void create_alsa_objs();
 
-	void delete_oss_objs(int creation);
 	void delete_esound_objs();
 	void delete_alsa_objs(int creation);
 
@@ -77,9 +58,6 @@ private:
 	ADriverMenu *menu;
 	BC_Title *driver_title, *path_title, *bits_title;
 	BC_Title *server_title, *port_title, *channel_title, *syt_title;
-	OSSEnable *oss_enable[MAXDEVICES];
-	ADeviceTextBox *oss_path[MAXDEVICES];
-	SampleBitsSelection *oss_bits;
 	ADeviceTextBox *esound_server;
 	ADeviceIntBox *esound_port;
 
@@ -112,17 +90,6 @@ public:
 
 	ADriverMenu *popup;
 	int driver;
-};
-
-
-class OSSEnable : public BC_CheckBox
-{
-public:
-	OSSEnable(int x, int y, int *output);
-
-	int handle_event();
-
-	int *output;
 };
 
 

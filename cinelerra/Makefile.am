@@ -59,7 +59,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    audiodevice.C \
 		    audioesound.C \
 		    audioodevice.C \
-		    audiooss.C \
 		    audiorender.C \
 		    auto.C \
 		    autoconf.C \
@@ -278,7 +277,6 @@ noinst_HEADERS = aautomation.h \
 		 audioalsa.h \
 		 audiodevice.h \
 		 audioesound.h \
-		 audiooss.h \
 		 audiorender.h \
 		 autoconf.h \
 		 auto.h \

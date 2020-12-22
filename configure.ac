@@ -102,8 +102,6 @@ fi
 
 ############## SOUND
 # the sound options are propagated by SOUND_CFLAGS and SOUND_LDFLAGS
-AC_ARG_ENABLE(oss,
-	AC_HELP_STRING([--disable-oss], [disable support for oss (default=enabled)]))
 AC_ARG_ENABLE(alsa,
 	AC_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
 	[enable_alsa=$enableval],[enable_alsa=yes])
@@ -111,9 +109,6 @@ AC_ARG_ENABLE(esd,
 	AC_HELP_STRING([--disable-esd], [disable support for ESD (default=autodetect)]),
 	[enable_esd=$enableval],[enable_esd=yes])
 
-if test "x$enable_oss" = "xyes" || test "x$enable_oss" = "x"; then
-	SOUND_CFLAGS="-DHAVE_OSS $SOUND_CFLAGS"
-fi
 if test "x$enable_alsa" = "xyes"; then
 	AM_PATH_ALSA(1.0.2,[alsa=yes])
 	if test "x$alsa" = "xyes"; then
@@ -537,6 +532,7 @@ RPT(libuuid,libuuid libraries)
 RPT(libuuidh,libuuid headers)
 RPT(libfftw3,libfftw3 libraries)
 RPT(libfftw3h,libfftw3 headers)
+RPT(alsa,ALSA subsystem)
 mandatory="$succeeded"
 
 echo
@@ -549,7 +545,6 @@ else
 	echo "$2 is $component"
 fi])
 ORPT(enable_esd,ESD (Enlightenment Sound Daemon),--disable-esd,RPT(esound,ESD subsystem))
-ORPT(enable_alsa,ALSA,--disable-alsa,RPT(alsa,ALSA subsystem))
 ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )

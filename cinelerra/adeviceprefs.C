@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "adeviceprefs.h"
 #include "audioalsa.h"
@@ -76,10 +60,6 @@ void ADevicePrefs::initialize(int creation)
 
 	switch(driver)
 	{
-	case AUDIO_OSS:
-	case AUDIO_OSS_ENVY24:
-		create_oss_objs();
-		break;
 	case AUDIO_ALSA:
 		create_alsa_objs();
 		break;
@@ -101,10 +81,6 @@ void ADevicePrefs::delete_objects(int creation)
 {
 	switch(driver)
 	{
-	case AUDIO_OSS:
-	case AUDIO_OSS_ENVY24:
-		delete_oss_objs(creation);
-		break;
 	case AUDIO_ALSA:
 		delete_alsa_objs(creation);
 		break;
@@ -115,27 +91,9 @@ void ADevicePrefs::delete_objects(int creation)
 	driver = -1;
 }
 
-void ADevicePrefs::delete_oss_objs(int creation)
-{
-	delete path_title;
-	path_title = 0;
-	delete bits_title;
-	bits_title = 0;
-	if(!creation && oss_bits)
-	{
-		oss_bits->delete_subwindows();
-		delete oss_bits;
-		oss_bits = 0;
-	}
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		delete oss_path[i];
-		break;
-	}
-}
-
 void ADevicePrefs::delete_esound_objs()
 {
+#ifdef HAVE_ESOUND
 	delete server_title;
 	server_title = 0;
 	delete port_title;
@@ -144,6 +102,7 @@ void ADevicePrefs::delete_esound_objs()
 	esound_server = 0;
 	delete esound_port;
 	esound_port = 0;
+#endif
 }
 
 void ADevicePrefs::delete_alsa_objs(int creation)
@@ -165,40 +124,6 @@ void ADevicePrefs::delete_alsa_objs(int creation)
 		alsa_bits = 0;
 	}
 #endif
-}
-
-void ADevicePrefs::create_oss_objs()
-{
-	char *output_char;
-	int *output_int;
-	int y1 = y;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		int x1 = x + menu->get_w() + 5;
-		output_char = out_config->oss_out_device[i];
-
-		if(i == 0) dialog->add_subwindow(path_title = new BC_Title(x1, 
-			y, 
-			_("Device path:"), 
-			MEDIUMFONT, 
-			resources->text_default));
-		dialog->add_subwindow(oss_path[i] = new ADeviceTextBox(x1, 
-			y1 + 20, 
-			output_char));
-
-		x1 += oss_path[i]->get_w() + 5;
-		if(i == 0)
-		{
-			output_int = &out_config->oss_out_bits;
-			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
-			dialog->add_subwindow(oss_bits = new SampleBitsSelection(x1, y1 + 20,
-				dialog, output_int, SBITS_LINEAR));
-			oss_bits->update_size(*output_int);
-		}
-		break;
-	}
 }
 
 void ADevicePrefs::create_alsa_objs()
@@ -241,6 +166,7 @@ void ADevicePrefs::create_alsa_objs()
 
 void ADevicePrefs::create_esound_objs()
 {
+#ifdef HAVE_ESOUND
 	int x1 = x + menu->get_w() + 5;
 	char *output_char;
 	int *output_int;
@@ -254,6 +180,7 @@ void ADevicePrefs::create_esound_objs()
 	x1 += esound_server->get_w() + 5;
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
+#endif
 }
 
 ADriverMenu::ADriverMenu(int x, 
@@ -264,39 +191,24 @@ ADriverMenu::ADriverMenu(int x,
 {
 	this->output = output;
 	this->device_prefs = device_prefs;
-	add_item(new ADriverItem(this, AUDIO_OSS_TITLE, AUDIO_OSS));
-	add_item(new ADriverItem(this, AUDIO_OSS_ENVY24_TITLE, AUDIO_OSS_ENVY24));
 
 #ifdef HAVE_ALSA
 	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
 #endif
-
+#ifdef HAVE_ESOUND
 	add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
-
-	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
+#endif
 }
 
 const char *ADriverMenu::adriver_to_string(int driver)
 {
 	switch(driver)
 	{
-	case AUDIO_OSS:
-		return AUDIO_OSS_TITLE;
-
-	case AUDIO_OSS_ENVY24:
-		return AUDIO_OSS_ENVY24_TITLE;
-
 	case AUDIO_ESOUND:
 		return AUDIO_ESOUND_TITLE;
 
-	case AUDIO_NAS:
-		return AUDIO_NAS_TITLE;
-
 	case AUDIO_ALSA:
 		return AUDIO_ALSA_TITLE;
-
-	case AUDIO_DVB:
-		return AUDIO_DVB_TITLE;
 	}
 	return "";
 }
@@ -314,19 +226,6 @@ int ADriverItem::handle_event()
 	popup->set_text(get_text());
 	*(popup->output) = driver;
 	popup->device_prefs->initialize(0);
-	return 1;
-}
-
-
-OSSEnable::OSSEnable(int x, int y, int *output)
- : BC_CheckBox(x, y, *output)
-{
-	this->output = output;
-}
-
-int OSSEnable::handle_event()
-{
-	*output = get_value();
 	return 1;
 }
 

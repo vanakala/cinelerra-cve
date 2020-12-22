@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "clip.h"
@@ -33,18 +17,13 @@ AudioOutConfig::AudioOutConfig(int duplex)
 
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
+#elif defined(HAVE_ESOUND)
+	driver = AUDIO_ESOUND;
 #else
-	driver = AUDIO_OSS;
+	driver = 0;
 #endif
 
 	audio_offset = 0.0;
-
-	oss_out_bits = 16;
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		oss_enable[i] = (i == 0);
-		sprintf(oss_out_device[i], "/dev/dsp");
-	}
 
 	esound_out_server[0] = 0;
 	esound_out_port = 0;
@@ -62,9 +41,7 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 {
 	return driver == that.driver &&
 		EQUIV(audio_offset, that.audio_offset) &&
-		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
-		(oss_out_bits == that.oss_out_bits) && 
-		!strcmp(esound_out_server, that.esound_out_server) && 
+		!strcmp(esound_out_server, that.esound_out_server) &&
 		(esound_out_port == that.esound_out_port) && 
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_bits == that.alsa_out_bits);
@@ -83,12 +60,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 
 	strcpy(esound_out_server, src->esound_out_server);
 	esound_out_port = src->esound_out_port;
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		oss_enable[i] = src->oss_enable[i];
-		strcpy(oss_out_device[i], src->oss_out_device[i]);
-	}
-	oss_out_bits = src->oss_out_bits;
 
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_bits = src->alsa_out_bits;
@@ -101,16 +72,6 @@ void AudioOutConfig::load_defaults(BC_Hash *defaults)
 	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
 	driver = defaults->get(string, driver);
-
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		sprintf(string, "OSS_ENABLE_%d_%d", i, duplex);
-		oss_enable[i] = defaults->get(string, oss_enable[i]);
-		sprintf(string, "OSS_OUT_DEVICE_%d_%d", i, duplex);
-		defaults->get(string, oss_out_device[i]);
-	}
-	sprintf(string, "OSS_OUT_BITS_%d", duplex);
-	oss_out_bits = defaults->get(string, oss_out_bits);
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
@@ -131,16 +92,9 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
 	defaults->update(string, driver);
 
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		sprintf(string, "OSS_ENABLE_%d_%d", i, duplex);
-		defaults->update(string, oss_enable[i]);
-		sprintf(string, "OSS_OUT_DEVICE_%d_%d", i, duplex);
-		defaults->update(string, oss_out_device[i]);
-	}
-	sprintf(string, "OSS_OUT_BITS_%d", duplex);
-	defaults->update(string, oss_out_bits);
-
+	defaults->delete_keys_prefix("OSS_ENABLE_");
+	defaults->delete_keys_prefix("OSS_OUT_DEVICE_");
+	defaults->delete_keys_prefix("OSS_OUT_BITS_");
 
 	defaults->update("ALSA_OUT_DEVICE", alsa_out_device);
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
