@@ -16,7 +16,7 @@
 class AudioOutConfig
 {
 public:
-	AudioOutConfig(int duplex);
+	AudioOutConfig();
 
 	int operator!=(AudioOutConfig &that);
 	int operator==(AudioOutConfig &that);
@@ -29,7 +29,6 @@ public:
 	ptstime audio_offset;
 
 // Change default titles for duplex
-	int duplex;
 	int driver;
 
 	char esound_out_server[BCTEXTLEN];
@@ -38,9 +37,6 @@ public:
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_bits;
-private:
-	int fragment_size;
-	char frag_text[32];
 };
 
 // This structure is passed to the driver

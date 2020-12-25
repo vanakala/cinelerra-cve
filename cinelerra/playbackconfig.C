@@ -11,10 +11,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-AudioOutConfig::AudioOutConfig(int duplex)
+AudioOutConfig::AudioOutConfig()
 {
-	this->duplex = duplex;
-
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
 #elif defined(HAVE_ESOUND)
@@ -67,30 +65,26 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 
 void AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
-	char string[BCTEXTLEN];
-
 	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
-	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
-	driver = defaults->get(string, driver);
+	driver = defaults->get("AUDIO_OUT_DRIVER_0", driver);
+	driver = defaults->get("AUDIO_OUT_DRIVER", driver);
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
 
-	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
-	defaults->get(string, esound_out_server);
-	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
-	esound_out_port = defaults->get(string, esound_out_port);
+	defaults->get("ESOUND_OUT_SERVER_0", esound_out_server);
+	defaults->get("ESOUND_OUT_SERVER", esound_out_server);
+	esound_out_port = defaults->get("ESOUND_OUT_PORT_0", esound_out_port);
+	esound_out_port = defaults->get("ESOUND_OUT_PORT", esound_out_port);
 }
 
 void AudioOutConfig::save_defaults(BC_Hash *defaults)
 {
-	char string[BCTEXTLEN];
-
 	defaults->delete_key("FRAGMENT_SIZE");
 	defaults->update("AUDIO_OFFSET", audio_offset);
 
-	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
-	defaults->update(string, driver);
+	defaults->delete_keys_prefix("AUDIO_OUT_DRIVER_");
+	defaults->update("AUDIO_OUT_DRIVER", driver);
 
 	defaults->delete_keys_prefix("OSS_ENABLE_");
 	defaults->delete_keys_prefix("OSS_OUT_DEVICE_");
@@ -99,10 +93,10 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("ALSA_OUT_DEVICE", alsa_out_device);
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
 
-	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
-	defaults->update(string, esound_out_server);
-	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
-	defaults->update(string, esound_out_port);
+	defaults->delete_keys_prefix("ESOUND_OUT_SERVER_");
+	defaults->update("ESOUND_OUT_SERVER", esound_out_server);
+	defaults->delete_keys_prefix("ESOUND_OUT_PORT_");
+	defaults->update("ESOUND_OUT_PORT", esound_out_port);
 }
 
 
@@ -170,7 +164,7 @@ void VideoOutConfig::save_defaults(BC_Hash *defaults)
 
 PlaybackConfig::PlaybackConfig()
 {
-	aconfig = new AudioOutConfig(0);
+	aconfig = new AudioOutConfig();
 	vconfig = new VideoOutConfig;
 	sprintf(hostname, "localhost");
 	port = 23456;
