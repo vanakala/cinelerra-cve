@@ -387,6 +387,19 @@ void EDLSession::boundaries()
 	CLAMP(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 
 	CLAMP(backup_interval, 0, 3600);
+	switch(color_model)
+	{
+	case BC_RGB888:
+	case BC_RGBA8888:
+	case BC_RGB_FLOAT:
+	case BC_RGBA_FLOAT:
+		color_model = BC_RGBA16161616;
+		break;
+	case BC_YUV888:
+	case BC_YUVA8888:
+		color_model = BC_AYUV16161616;
+		break;
+	}
 }
 
 void EDLSession::load_video_config(FileXML *file)
