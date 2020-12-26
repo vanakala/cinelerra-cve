@@ -236,7 +236,7 @@ void MenuEffectThread::run()
 			plugin_server = local_plugindb.values[plugin_number];
 	}
 	else
-		plugin_server = plugindb.get_pluginserver(title, track_type);
+		plugin_server = plugindb.get_pluginserver(title, track_type, 0);
 
 // Update the  most recently used effects and copy the plugin server.
 	if(plugin_server)

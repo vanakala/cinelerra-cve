@@ -639,7 +639,7 @@ void MWindow::insert_effect(const char *title,
 		return;
 
 	if(plugin_type == PLUGIN_STANDALONE)
-		server = plugindb.get_pluginserver(title, track->data_type);
+		server = plugindb.get_pluginserver(title, track->data_type, 0);
 
 	if(EQUIV(length, 0))
 	{
@@ -1218,7 +1218,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 			break;
 		}
 		if(name)
-			server = plugindb.get_pluginserver(name, data_type);
+			server = plugindb.get_pluginserver(name, data_type, 1);
 
 		if(!server)
 		{

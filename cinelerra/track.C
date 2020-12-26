@@ -386,7 +386,7 @@ void Track::load_pluginset(FileXML *file, ptstime start)
 					char string[BCTEXTLEN];
 					string[0] = 0;
 					file->tag.get_property("TITLE", string);
-					server = plugindb.get_pluginserver(string, data_type);
+					server = plugindb.get_pluginserver(string, data_type, 0);
 				}
 				plugin = new Plugin(edl, this, server);
 				plugins.append(plugin);
