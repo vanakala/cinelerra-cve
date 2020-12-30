@@ -1606,89 +1606,22 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 		{
 			int in_x = round(CLIP(cursor_x, 0, refresh_frame->get_w() - 1));
 			int in_y = round(CLIP(cursor_y, 0, refresh_frame->get_h() - 1));
+			uint16_t *pixel;
 
 			switch(refresh_frame->get_color_model())
 			{
-			case BC_YUV888:
-				{
-					unsigned char *pixel =
-						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
-					master_edl->local_session->set_picker_yuv(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_YUVA8888:
-				{
-					unsigned char *pixel =
-						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_yuv(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_YUV161616:
-				{
-					uint16_t *pixel =
-						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
-					master_edl->local_session->set_picker_yuv(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_YUVA16161616:
-				{
-					uint16_t *pixel =
-						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_yuv(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_RGB888:
-				{
-					unsigned char *pixel =
-						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
-					master_edl->local_session->set_picker_rgb(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_RGBA8888:
-				{
-					unsigned char *pixel =
-						&((unsigned char*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_rgb(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_RGB_FLOAT:
-				{
-					float *pixel =
-						&((float*)refresh_frame->get_row_ptr(in_y))[in_x * 3];
-					master_edl->local_session->set_picker_rgb(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
-			case BC_RGBA_FLOAT:
-				{
-					float *pixel =
-						&((float*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_rgb(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
 			case BC_RGBA16161616:
-				{
-					uint16_t *pixel =
-						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_rgb(
-						pixel[0], pixel[1], pixel[2]);
-					break;
-				}
+				pixel =
+					&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+				master_edl->local_session->set_picker_rgb(
+					pixel[0], pixel[1], pixel[2]);
+				break;
 			case BC_AYUV16161616:
-				{
-					uint16_t *pixel =
-						&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
-					master_edl->local_session->set_picker_yuv(
-						pixel[1], pixel[2], pixel[3]);
-					break;
-				}
+				pixel =
+					&((uint16_t*)refresh_frame->get_row_ptr(in_y))[in_x * 4];
+				master_edl->local_session->set_picker_yuv(
+					pixel[1], pixel[2], pixel[3]);
+				break;
 			}
 		}
 		else

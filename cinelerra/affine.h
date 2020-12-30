@@ -1,27 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef AFFINE_H
 #define AFFINE_H
-
 
 #include "affine.inc"
 #include "loadbalance.h"
@@ -35,6 +18,7 @@ class AffineMatrix
 {
 public:
 	AffineMatrix();
+
 	void identity();
 	void translate(double x, double y);
 	void scale(double x, double y);
@@ -42,9 +26,10 @@ public:
 	void multiply(AffineMatrix *dst);
 	void copy_from(AffineMatrix *src);
 	void invert(AffineMatrix *dst);
-	void transform_point(float x, float y, float *newx, float *newy);
+	void transform_point(double x, double y, double *newx, double *newy);
 	double determinant();
 	void dump();
+
 	double values[3][3];
 };
 
@@ -59,6 +44,7 @@ class AffineUnit : public LoadClient
 {
 public:
 	AffineUnit(AffineEngine *server);
+
 	void process_package(LoadPackage *package);
 	void calculate_matrix(
 		double in_x1,
@@ -74,11 +60,12 @@ public:
 		double out_x4,
 		double out_y4,
 		AffineMatrix *result);
-	float transform_cubic(float dx,
-		float jm1,
-		float j,
-		float jp1,
-		float jp2);
+	double transform_cubic(double dx,
+		double jm1,
+		double j,
+		double jp1,
+		double jp2);
+
 	AffineEngine *server;
 };
 
@@ -92,23 +79,15 @@ public:
 // Range of coords is 0 to 100 for coordinates in the image.
 // The coordinate locations are clockwise around the image.
 	void process(VFrame *output,
-		VFrame *input, 
-		VFrame *temp,
-		int mode,
-		float x1, 
-		float y1, 
-		float x2, 
-		float y2, 
-		float x3, 
-		float y3, 
-		float x4, 
-		float y4,
+		VFrame *input, VFrame *temp, int mode,
+		double x1, double y1,
+		double x2, double y2,
+		double x3, double y3,
+		double x4, double y4,
 		int forward);
 // Do rotation with the affine/perspective transform.
 // This removes some of the extremely faint artifacts in the trig rotation.
-	void rotate(VFrame *output,
-		VFrame *input, 
-		float angle);
+	void rotate(VFrame *output, VFrame *input, double angle);
 // Set the viewport to transform.  All operations are clamped to this area
 // instead of the frame dimensions.  The rotation operation centers on this
 // area.
@@ -131,7 +110,7 @@ public:
 		STRETCH,
 		ROTATE
 	};
-	float x1, y1, x2, y2, x3, y3, x4, y4;
+	double x1, y1, x2, y2, x3, y3, x4, y4;
 	int x, y, w, h;
 	int pivot_x, pivot_y;
 	int user_pivot;
