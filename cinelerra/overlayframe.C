@@ -1,24 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * Copyright (C) 2012 Monty <monty@xiph.org>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+// Copyright (C) 2012 Monty <monty@xiph.org>
 
 #include <math.h>
 #include <stdio.h>
@@ -49,29 +33,9 @@ struct transfers OverlayFrame::transfer_names[] =
 
 // Easy abstraction of the float and int types.  Most of these are never used
 // but GCC expects them.
-static int my_abs(int32_t x)
-{
-	return abs(x);
-}
-
-static int my_abs(uint32_t x)
-{
-	return x;
-}
-
 static int my_abs(int64_t x)
 {
 	return llabs(x);
-}
-
-static int my_abs(uint64_t x)
-{
-	return x;
-}
-
-static float my_abs(float x)
-{
-	return fabsf(x);
 }
 
 /*
@@ -115,17 +79,17 @@ static float my_abs(float x)
 #define TRANSFORM_SPP    (4096)    /* number of data pts per unit x in lookup table */
 #define INDEX_FRACTION   (8)       /* bits of fraction past TRANSFORM_SPP on kernel
                                       index accumulation */
-#define TRANSFORM_MIN    (.5/TRANSFORM_SPP)
+#define TRANSFORM_MIN    (.5 / TRANSFORM_SPP)
 
 /* Sinc needed for Lanczos kernel */
-static float sinc(const float x)
+static double sinc(const double x)
 {
-	float y = x * M_PI;
+	double y = x * M_PI;
 
-	if(fabsf(x) < TRANSFORM_MIN)
-		return 1.0f;
+	if(fabs(x) < TRANSFORM_MIN)
+		return 1.0;
 
-	return sinf (y) / y;
+	return sin(y) / y;
 }
 
 /*
@@ -140,37 +104,37 @@ OverlayKernel::OverlayKernel(int interpolation_type)
 	switch(interpolation_type)
 	{
 	case BILINEAR:
-		width = 1.f;
-		lookup = new float[(n = TRANSFORM_SPP)+1];
+		width = 1;
+		lookup = new double[(n = TRANSFORM_SPP) + 1];
 		for (i = 0; i <= TRANSFORM_SPP; i++)
-			lookup[i] = (float)(TRANSFORM_SPP-i)/TRANSFORM_SPP;
+			lookup[i] = (double)(TRANSFORM_SPP - i) / TRANSFORM_SPP;
 		break;
 
 	/* Use a Catmull-Rom filter (not b-spline) */
 	case BICUBIC:
-		width = 2.;
-		lookup = new float[(n = 2*TRANSFORM_SPP)+1];
+		width = 2;
+		lookup = new double[(n = 2 * TRANSFORM_SPP) + 1];
 		for(i = 0; i <= TRANSFORM_SPP; i++)
 		{
-			float x = i/(float)TRANSFORM_SPP;
-			lookup[i] = 1.f - 2.5f*x*x + 1.5f*x*x*x;
+			double x = i / (double)TRANSFORM_SPP;
+			lookup[i] = 1.0 - 2.5* x * x + 1.5 * x * x * x;
 		}
-		for(; i <= 2*TRANSFORM_SPP; i++)
+		for(; i <= 2 * TRANSFORM_SPP; i++)
 		{
-			float x = i/(float)TRANSFORM_SPP;
-			lookup[i] = 2.f - 4.f*x  + 2.5f*x*x - .5f*x*x*x;
+			double x = i / (double)TRANSFORM_SPP;
+			lookup[i] = 2.0 - 4.0 * x  + 2.5 * x * x - .5* x * x * x;
 		}
 		break;
 
 	case LANCZOS:
-		width = 3.;
-		lookup = new float[(n = 3*TRANSFORM_SPP)+1];
-		for (i = 0; i <= 3*TRANSFORM_SPP; i++)
-			lookup[i] = sinc((float)i/TRANSFORM_SPP) * sinc((float)i/TRANSFORM_SPP/3.0f);
+		width = 3;
+		lookup = new double[(n = 3 * TRANSFORM_SPP) + 1];
+		for (i = 0; i <= 3 * TRANSFORM_SPP; i++)
+			lookup[i] = sinc((double) i / TRANSFORM_SPP) * sinc((double) i / TRANSFORM_SPP / 3.0);
 		break;
 
 	default:
-		width = 0.;
+		width = 0;
 		lookup = 0;
 		n = 0;
 		break;
@@ -179,7 +143,7 @@ OverlayKernel::OverlayKernel(int interpolation_type)
 
 OverlayKernel::~OverlayKernel()
 {
-	if(lookup) delete[] lookup;
+	delete[] lookup;
 }
 
 OverlayFrame::OverlayFrame(int cpus)
@@ -194,34 +158,34 @@ OverlayFrame::OverlayFrame(int cpus)
 
 OverlayFrame::~OverlayFrame()
 {
-	if(temp_frame) delete temp_frame;
+	delete temp_frame;
 
-	if(direct_engine) delete direct_engine;
-	if(nn_engine) delete nn_engine;
-	if(sample_engine) delete sample_engine;
+	delete direct_engine;
+	delete nn_engine;
+	delete sample_engine;
 
-	if(kernel[NEAREST_NEIGHBOR]) delete kernel[NEAREST_NEIGHBOR];
-	if(kernel[BILINEAR]) delete kernel[BILINEAR];
-	if(kernel[BICUBIC]) delete kernel[BICUBIC];
-	if(kernel[LANCZOS]) delete kernel[LANCZOS];
+	delete kernel[NEAREST_NEIGHBOR];
+	delete kernel[BILINEAR];
+	delete kernel[BICUBIC];
+	delete kernel[LANCZOS];
 }
 
-static float epsilon_snap(float f)
+static double epsilon_snap(double f)
 {
-	return rintf(f * 1024) / 1024.;
+	return rint(f * 1024) / 1024.;
 }
 
 int OverlayFrame::overlay(VFrame *output,
 	VFrame *input,
-	float in_x1,
-	float in_y1,
-	float in_x2,
-	float in_y2,
-	float out_x1,
-	float out_y1,
-	float out_x2,
-	float out_y2,
-	float alpha,
+	double in_x1,
+	double in_y1,
+	double in_x2,
+	double in_y2,
+	double out_x1,
+	double out_y1,
+	double out_x2,
+	double out_y2,
+	double alpha,
 	int mode,
 	int interpolation_type)
 {
@@ -234,7 +198,7 @@ int OverlayFrame::overlay(VFrame *output,
 	out_y1 = epsilon_snap(out_y1);
 	out_y2 = epsilon_snap(out_y2);
 
-	if (isnan(in_x1) ||
+	if(isnan(in_x1) ||
 		isnan(in_x2) ||
 		isnan(in_y1) ||
 		isnan(in_y2) ||
@@ -247,8 +211,8 @@ int OverlayFrame::overlay(VFrame *output,
 			out_x2 <= out_x1 || out_y2 <= out_y1)
 		return 1;
 
-	float xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
-	float yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
+	double xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
+	double yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
 
 // Limit values
 	if(in_x1 < 0)
@@ -357,7 +321,8 @@ int OverlayFrame::overlay(VFrame *output,
 		(int)out_x1 == out_x1 && (int)out_x2 == out_x2 &&
 		(int)out_y1 == out_y1 && (int)out_y2 == out_y2)
 	{
-		if(!direct_engine) direct_engine = new DirectEngine(cpus);
+		if(!direct_engine)
+			direct_engine = new DirectEngine(cpus);
 
 		direct_engine->output = output;
 		direct_engine->input = input;
@@ -371,9 +336,11 @@ int OverlayFrame::overlay(VFrame *output,
 		direct_engine->mode = mode;
 		direct_engine->process_packages();
 	}
-	else if (interpolation_type == NEAREST_NEIGHBOR)
+	else if(interpolation_type == NEAREST_NEIGHBOR)
 	{
-		if(!nn_engine) nn_engine = new NNEngine(cpus);
+		if(!nn_engine)
+			nn_engine = new NNEngine(cpus);
+
 		nn_engine->output = output;
 		nn_engine->input = input;
 		nn_engine->in_x1 = in_x1;
@@ -420,26 +387,26 @@ int OverlayFrame::overlay(VFrame *output,
 		if(yscale == 1. && (int)in_y1 == in_y1 && (int)in_y2 == in_y2 &&
 				(int)out_y1 == out_y1 && (int)out_y2 == out_y2)
 			ytype = DIRECT_COPY;
+
 		if(!kernel[xtype])
 			kernel[xtype] = new OverlayKernel(xtype);
 		if(!kernel[ytype])
 			kernel[ytype] = new OverlayKernel(ytype);
 
-/*
- * horizontal and vertical are separately resampled.  First we
- * resample the input along X into a transposed, temporary frame,
- * then resample/transpose the temporary space along X into the
- * output.  Fractional pixels along the edge are handled in the X
- * direction of each step
- */
+// horizontal and vertical are separately resampled.  First we
+// resample the input along X into a transposed, temporary frame,
+// then resample/transpose the temporary space along X into the
+// output.  Fractional pixels along the edge are handled in the X
+// direction of each step
+
 		// resampled dimension matches the transposed output space
-		float temp_y1 = out_x1 - floor(out_x1);
-		float temp_y2 = temp_y1 + (out_x2 - out_x1);
+		double temp_y1 = out_x1 - floor(out_x1);
+		double temp_y2 = temp_y1 + (out_x2 - out_x1);
 		int temp_h = ceil(temp_y2);
 
 		// non-resampled dimension merely cropped
-		float temp_x1 = in_y1 - floor(in_y1);
-		float temp_x2 = temp_x1 + (in_y2-in_y1);
+		double temp_x1 = in_y1 - floor(in_y1);
+		double temp_x2 = temp_x1 + (in_y2-in_y1);
 		int temp_w = ceil(temp_x2);
 
 		if(temp_frame && (temp_frame->get_w() != temp_w ||
@@ -521,133 +488,18 @@ int OverlayFrame::transfer_mode(const char *text)
 
 
 // Permutation 4 U
-
-#define BLEND_3(max, temp_type, type, chroma_offset) \
-{ \
-	temp_type r, g, b; \
- \
-	switch(mode) \
-	{ \
-		case TRANSFER_DIVIDE: \
-			r = input1 ? (((temp_type)out_row[0] * max) / input1) : max; \
-			if(chroma_offset) \
-			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)out_row[1] - chroma_offset) ? input2 : out_row[1]; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)out_row[2] - chroma_offset) ? input3 : out_row[2]; \
-			} \
-			else \
-			{ \
-				g = input2 ? (temp_type)out_row[1] * max / (temp_type)input2 : max; \
-				b = input3 ? (temp_type)out_row[2] * max / (temp_type)input3 : max; \
-			} \
-			r = (r * opacity + (temp_type)out_row[0] * transparency) / max; \
-			g = (g * opacity + (temp_type)out_row[1] * transparency) / max; \
-			b = (b * opacity + (temp_type)out_row[2] * transparency) / max; \
-			break; \
-		case TRANSFER_MULTIPLY: \
-			r = ((temp_type)input1 * out_row[0]) / max; \
-			if(chroma_offset) \
-			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)out_row[1] - chroma_offset) ? input2 : out_row[1]; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)out_row[2] - chroma_offset) ? input3 : out_row[2]; \
-			} \
-			else \
-			{ \
-				g = (temp_type)input2 * (temp_type)out_row[1] / max; \
-				b = (temp_type)input3 * (temp_type)out_row[2] / max; \
-			} \
-			r = (r * opacity + (temp_type)out_row[0] * transparency) / max; \
-			g = (g * opacity + (temp_type)out_row[1] * transparency) / max; \
-			b = (b * opacity + (temp_type)out_row[2] * transparency) / max; \
-			break; \
-		case TRANSFER_SUBTRACT: \
-			r = (temp_type)out_row[0] - (temp_type)input1; \
-			g = ((temp_type)out_row[1] - (temp_type)chroma_offset) - \
-				((temp_type)input2 - (temp_type)chroma_offset) + \
-				(temp_type)chroma_offset; \
-			b = ((temp_type)out_row[2] - (temp_type)chroma_offset) - \
-				((temp_type)input3 - (temp_type)chroma_offset) + \
-				(temp_type)chroma_offset; \
-			if(r < 0) r = 0; \
-			if(g < 0) g = 0; \
-			if(b < 0) b = 0; \
-			r = (r * opacity + out_row[0] * transparency) / max; \
-			g = (g * opacity + out_row[1] * transparency) / max; \
-			b = (b * opacity + out_row[2] * transparency) / max; \
-			break; \
-		case TRANSFER_ADDITION: \
-			r = (temp_type)input1 + out_row[0]; \
-			g = ((temp_type)input2 - chroma_offset) + \
-				((temp_type)out_row[1] - chroma_offset) + \
-				(temp_type)chroma_offset; \
-			b = ((temp_type)input3 - chroma_offset) + \
-				((temp_type)out_row[2] - chroma_offset) + \
-				(temp_type)chroma_offset; \
-			r = (r * opacity + out_row[0] * transparency) / max; \
-			g = (g * opacity + out_row[1] * transparency) / max; \
-			b = (b * opacity + out_row[2] * transparency) / max; \
-			break; \
-		case TRANSFER_MAX: \
-		{ \
-			r = (temp_type)MAX(input1, out_row[0]); \
-			temp_type g1 = ((temp_type)input2 - chroma_offset); \
-			if(g1 < 0) g1 = -g1; \
-			temp_type g2 = ((temp_type)out_row[1] - chroma_offset); \
-			if(g2 < 0) g2 = -g2; \
-			if(g1 > g2) \
-				g = input2; \
-			else \
-				g = out_row[1]; \
-			temp_type b1 = ((temp_type)input3 - chroma_offset); \
-			if(b1 < 0) b1 = -b1; \
-			temp_type b2 = ((temp_type)out_row[2] - chroma_offset); \
-			if(b2 < 0) b2 = -b2; \
-			if(b1 > b2) \
-				b = input3; \
-			else \
-				b = out_row[2]; \
-			r = (r * opacity + out_row[0] * transparency) / max; \
-			g = (g * opacity + out_row[1] * transparency) / max; \
-			b = (b * opacity + out_row[2] * transparency) / max; \
-			break; \
-		} \
-		case TRANSFER_REPLACE: \
-			r = input1; \
-			g = input2; \
-			b = input3; \
-			break; \
-		case TRANSFER_NORMAL: \
-			r = ((temp_type)input1 * opacity + out_row[0] * transparency) / max; \
-			g = ((temp_type)input2 * opacity + out_row[1] * transparency) / max; \
-			b = ((temp_type)input3 * opacity + out_row[2] * transparency) / max; \
-			break; \
-	} \
- \
- 	if(sizeof(type) != 4) \
-	{ \
-		out_row[0] = (type)CLIP(r, 0, max); \
-		out_row[1] = (type)CLIP(g, 0, max); \
-		out_row[2] = (type)CLIP(b, 0, max); \
-	} \
-	else \
-	{ \
-		out_row[0] = r; \
-		out_row[1] = g; \
-		out_row[2] = b; \
-	} \
-}
-
 // Blending equations are drastically different for 3 and 4 components
-#define BLEND_4(max, temp_type, type, chroma_offset) \
+#define BLEND(chroma_offset) \
 { \
-	temp_type r, g, b, a; \
-	temp_type pixel_opacity, pixel_transparency; \
-	temp_type output1; \
-	temp_type output2; \
-	temp_type output3; \
-	temp_type output4; \
+	int64_t r, g, b, a; \
+	int64_t g1, g2, b1, b2; \
+	int64_t pixel_opacity, pixel_transparency; \
+	int64_t output1; \
+	int64_t output2; \
+	int64_t output3; \
+	int64_t output4; \
  \
-	if(alpha_pos) \
+	if(!chroma_offset) \
 	{ \
 		output1 = out_row[0]; \
 		output2 = out_row[1]; \
@@ -663,309 +515,130 @@ int OverlayFrame::transfer_mode(const char *text)
 	} \
  \
 	pixel_opacity = opacity * input4; \
-	pixel_transparency = (temp_type)max * max - pixel_opacity; \
-	a = output4 + ((max - output4) * input4) / max; \
+	pixel_transparency = (int64_t)0xffff * 0xffff - pixel_opacity; \
+	a = output4 + ((0xffff - output4) * input4) / 0xffff; \
  \
 	switch(mode) \
 	{ \
-		case TRANSFER_DIVIDE: \
-			r = input1 ? (((temp_type)output1 * max) / input1) : max; \
-			if(chroma_offset) \
-			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output2 - chroma_offset) ? input2 : output2; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output3 - chroma_offset) ? input3 : output3; \
-			} \
-			else \
-			{ \
-				g = input2 ? (temp_type)output2 * max / (temp_type)input2 : max; \
-				b = input3 ? (temp_type)output3 * max / (temp_type)input3 : max; \
-			} \
-			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
-			break; \
-		case TRANSFER_MULTIPLY: \
-			r = ((temp_type)input1 * output1) / max; \
-			if(chroma_offset) \
-			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output2 - chroma_offset) ? input2 : output2; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output3 - chroma_offset) ? input3 : output3; \
-			} \
-			else \
-			{ \
-				g = (temp_type)input2 * (temp_type)output2 / max; \
-				b = (temp_type)input3 * (temp_type)output3 / max; \
-			} \
-			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
-			break; \
-		case TRANSFER_SUBTRACT: \
-			r = (temp_type)output1 - input1; \
-			g = ((temp_type)output2 - chroma_offset) - \
-				((temp_type)input2 - (temp_type)chroma_offset) + \
-				(temp_type)chroma_offset; \
-			b = ((temp_type)output3 - chroma_offset) - \
-				((temp_type)input3 - (temp_type)chroma_offset) + \
-				(temp_type)chroma_offset; \
-			if(r < 0) r = 0; \
-			if(g < 0) g = 0; \
-			if(b < 0) b = 0; \
-			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
-			break; \
-		case TRANSFER_ADDITION: \
-			r = (temp_type)input1 + output1; \
-			g = ((temp_type)input2 - chroma_offset) + \
-				((temp_type)output2 - chroma_offset) + \
-				chroma_offset; \
-			b = ((temp_type)input3 - chroma_offset) + \
-				((temp_type)output3 - chroma_offset) + \
-				chroma_offset; \
-			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
-			break; \
-		case TRANSFER_MAX: \
+	case TRANSFER_DIVIDE: \
+		r = input1 ? ((output1 * 0xffff) / input1) : 0xffff; \
+		if(chroma_offset) \
 		{ \
-			r = (temp_type)MAX(input1, output1); \
-			temp_type g1 = ((temp_type)input2 - chroma_offset); \
-			if(g1 < 0) g1 = -g1; \
-			temp_type g2 = ((temp_type)output2 - chroma_offset); \
-			if(g2 < 0) g2 = -g2; \
-			if(g1 > g2) \
-				g = input2; \
-			else \
-				g = output2; \
-			temp_type b1 = ((temp_type)input3 - chroma_offset); \
-			if(b1 < 0) b1 = -b1; \
-			temp_type b2 = ((temp_type)output3 - chroma_offset); \
-			if(b2 < 0) b2 = -b2; \
-			if(b1 > b2) \
-				b = input3; \
-			else \
-				b = output3; \
-			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
-			break; \
-		} \
-		case TRANSFER_REPLACE: \
-			r = input1; \
-			g = input2; \
-			b = input3; \
-			a = input4; \
-			break; \
-		case TRANSFER_NORMAL: \
-			r = (input1 * pixel_opacity + \
-				output1 * pixel_transparency) / max / max; \
-			g = ((input2 - chroma_offset) * pixel_opacity + \
-				(output2 - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			b = ((input3 - chroma_offset) * pixel_opacity + \
-				(output3 - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			break; \
-	} \
- \
-	if(sizeof(type) != 4) \
-	{ \
-		if(alpha_pos) \
-		{ \
-			out_row[0] = (type)CLIP(r, 0, max); \
-			out_row[1] = (type)CLIP(g, 0, max); \
-			out_row[2] = (type)CLIP(b, 0, max); \
-			out_row[3] = (type)CLIP(a, 0, max); \
+			g = my_abs(input2 - chroma_offset) > my_abs(output2 - chroma_offset) ? input2 : output2; \
+			b = my_abs(input3 - chroma_offset) > my_abs(output3 - chroma_offset) ? input3 : output3; \
 		} \
 		else \
 		{ \
-			out_row[0] = (type)CLIP(a, 0, max); \
-			out_row[1] = (type)CLIP(r, 0, max); \
-			out_row[2] = (type)CLIP(g, 0, max); \
-			out_row[3] = (type)CLIP(b, 0, max); \
+			g = input2 ? output2 * 0xffff / input2 : 0xffff; \
+			b = input3 ? output3 * 0xffff / input3 : 0xffff; \
 		} \
+		r = (r * pixel_opacity + output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = (g * pixel_opacity + output2 * pixel_transparency) / 0xffff / 0xffff; \
+		b = (b * pixel_opacity + output3 * pixel_transparency) / 0xffff / 0xffff; \
+		break; \
+	case TRANSFER_MULTIPLY: \
+		r = (input1 * output1) / 0xffff; \
+		if(chroma_offset) \
+		{ \
+			g = my_abs(input2 - chroma_offset) > my_abs(output2 - chroma_offset) ? input2 : output2; \
+			b = my_abs(input3 - chroma_offset) > my_abs(output3 - chroma_offset) ? input3 : output3; \
+		} \
+		else \
+		{ \
+			g = input2 * output2 / 0xffff; \
+			b = input3 * output3 / 0xffff; \
+		} \
+		r = (r * pixel_opacity + output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = (g * pixel_opacity + output2 * pixel_transparency) / 0xffff / 0xffff; \
+		b = (b * pixel_opacity + output3 * pixel_transparency) / 0xffff / 0xffff; \
+		break; \
+	case TRANSFER_SUBTRACT: \
+		r = output1 - input1; \
+		g = (output2 - chroma_offset) - \
+			(input2 - chroma_offset) + \
+			chroma_offset; \
+		b = (output3 - chroma_offset) - \
+			(input3 - chroma_offset) + \
+			chroma_offset; \
+		if(r < 0) r = 0; \
+		if(g < 0) g = 0; \
+		if(b < 0) b = 0; \
+		r = (r * pixel_opacity + output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = (g * pixel_opacity + output2 * pixel_transparency) / 0xffff / 0xffff; \
+		b = (b * pixel_opacity + output3 * pixel_transparency) / 0xffff / 0xffff; \
+		break; \
+	case TRANSFER_ADDITION: \
+		r = input1 + output1; \
+		g = (input2 - chroma_offset) + \
+			(output2 - chroma_offset) + \
+			chroma_offset; \
+		b = (input3 - chroma_offset) + \
+			(output3 - chroma_offset) + \
+			chroma_offset; \
+		r = (r * pixel_opacity + output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = (g * pixel_opacity + output2 * pixel_transparency) / 0xffff / 0xffff; \
+		b = (b * pixel_opacity + output3 * pixel_transparency) / 0xffff / 0xffff; \
+		break; \
+	case TRANSFER_MAX: \
+		r = MAX(input1, output1); \
+		g1 = input2 - chroma_offset; \
+		if(g1 < 0) \
+			g1 = -g1; \
+		g2 = output2 - chroma_offset; \
+		if(g2 < 0) \
+			g2 = -g2; \
+		if(g1 > g2) \
+			g = input2; \
+		else \
+			g = output2; \
+		b1 = input3 - chroma_offset; \
+		if(b1 < 0) \
+			b1 = -b1; \
+		b2 = output3 - chroma_offset; \
+		if(b2 < 0) \
+			b2 = -b2; \
+		if(b1 > b2) \
+			b = input3; \
+		else \
+			b = output3; \
+		r = (r * pixel_opacity + output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = (g * pixel_opacity + output2 * pixel_transparency) / 0xffff / 0xffff; \
+		b = (b * pixel_opacity + output3 * pixel_transparency) / 0xffff / 0xffff; \
+		break; \
+	case TRANSFER_REPLACE: \
+		r = input1; \
+		g = input2; \
+		b = input3; \
+		a = input4; \
+		break; \
+	case TRANSFER_NORMAL: \
+		r = (input1 * pixel_opacity + \
+			output1 * pixel_transparency) / 0xffff / 0xffff; \
+		g = ((input2 - chroma_offset) * pixel_opacity + \
+			(output2 - chroma_offset) * pixel_transparency) / \
+			0xffff / 0xffff + chroma_offset; \
+		b = ((input3 - chroma_offset) * pixel_opacity + \
+			(output3 - chroma_offset) * pixel_transparency) / \
+			0xffff / 0xffff + chroma_offset; \
+		break; \
+	} \
+ \
+	if(!chroma_offset) \
+	{ \
+		out_row[0] = CLIP(r, 0, 0xffff); \
+		out_row[1] = CLIP(g, 0, 0xffff); \
+		out_row[2] = CLIP(b, 0, 0xffff); \
+		out_row[3] = CLIP(a, 0, 0xffff); \
 	} \
 	else \
 	{ \
-		out_row[0] = r; \
-		out_row[1] = g; \
-		out_row[2] = b; \
-		out_row[3] = a; \
+		out_row[0] = CLIP(a, 0, 0xffff); \
+		out_row[1] = CLIP(r, 0, 0xffff); \
+		out_row[2] = CLIP(g, 0, 0xffff); \
+		out_row[3] = CLIP(b, 0, 0xffff); \
 	} \
 }
 
-#define BLEND_ONLY(temp_type, type, max, components, chroma_offset) \
-{ \
-	temp_type opacity; \
-	if(sizeof(type) != 4) \
-		opacity = (temp_type)(alpha * max + 0.5); \
-	else \
-		opacity = (temp_type)(alpha * max); \
-	temp_type transparency = max - opacity; \
- \
-	ix *= components; \
-	ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			temp_type input1, input2, input3, input4; \
-			if(components == 4) \
-			{ \
-				if(alpha_pos) \
-				{ \
-					input1 = in_row[0]; \
-					input2 = in_row[1]; \
-					input3 = in_row[2]; \
-					input4 = in_row[3]; \
-				} \
-				else \
-				{ \
-					input4 = in_row[0]; \
-					input1 = in_row[1]; \
-					input2 = in_row[2]; \
-					input3 = in_row[3]; \
-				} \
-				BLEND_4(max, temp_type, type, chroma_offset); \
-			} \
-			else \
-			{ \
-				input1 = in_row[0]; \
-				input2 = in_row[1]; \
-				input3 = in_row[2]; \
-				BLEND_3(max, temp_type, type, chroma_offset); \
-			} \
- \
-			in_row += components; \
-			out_row += components; \
-		} \
-	} \
-}
-
-
-#define BLEND_ONLY_TRANSFER_REPLACE(type, components) \
-{ \
- \
-	int line_len = ow * sizeof(type) * components; \
-	ix *= components; \
-	ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		memcpy((type*)output->get_row_ptr(i) + ox, \
-			(type*)input->get_row_ptr(i + iy) + ix, line_len); \
-	} \
-}
-
-// components is always 4
-#define BLEND_ONLY_4_NORMAL(temp_type, type, max, chroma_offset) \
-{ \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
-	temp_type max_squared = ((temp_type)max) * max; \
- \
-	ix *= 4; \
-	ox *= 4; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			temp_type pixel_opacity, pixel_transparency; \
-			pixel_opacity = opacity * in_row[3]; \
-			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
- \
-			temp_type r,g,b; \
-			out_row[0] = ((temp_type)in_row[0] * pixel_opacity + \
-				(temp_type)out_row[0] * pixel_transparency) / max / max; \
-			out_row[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
-				((temp_type)out_row[1] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
-				((temp_type)out_row[2] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			out_row[3] += ((temp_type)(max - out_row[3]) * in_row[3]) / max; \
- \
-			in_row += 4; \
-			out_row += 4; \
-		} \
-	} \
-}
-
-// components is always 4, alpha is at pos 0
-#define BLEND_ONLY_4_NORMAL_A(temp_type, type, max, chroma_offset) \
-{ \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
-	temp_type max_squared = ((temp_type)max) * max; \
- \
-	ix *= 4; \
-	ox *= 4; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			temp_type pixel_opacity, pixel_transparency; \
-			pixel_opacity = opacity * in_row[0]; \
-			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
- \
-			out_row[0] += ((temp_type)(max - out_row[0]) * in_row[0]) / max; \
-			out_row[1] = ((temp_type)in_row[1] * pixel_opacity + \
-				(temp_type)out_row[1] * pixel_transparency) / max / max; \
-			out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
-				((temp_type)out_row[2] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			out_row[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_opacity + \
-				((temp_type)out_row[3] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
- \
-			in_row += 4; \
-			out_row += 4; \
-		} \
-	} \
-}
-
-// components is always 3
-#define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
-{ \
-	const int bits = sizeof(type) * 8; \
-	temp_type opacity = (temp_type)(alpha * ((temp_type)1 << bits) + 0.5); \
-	temp_type transparency = ((temp_type)1 << bits) - opacity; \
- \
-	ix *= 3; \
-	ox *= 3; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow * 3; j++) \
-		{ \
-			*out_row = ((temp_type)*in_row * opacity + *out_row * transparency) >> bits; \
-			in_row ++; \
-			out_row ++; \
-		} \
-	} \
-}
 
 /* Direct translate / blend **********************************************/
 
@@ -989,163 +662,158 @@ void DirectUnit::process_package(LoadPackage *package)
 
 	VFrame *output = engine->output;
 	VFrame *input = engine->input;
-	float alpha = engine->alpha;
+	double alpha = engine->alpha;
 	int mode = engine->mode;
 
 	int ix = engine->in_x1;
 	int ox = engine->out_x1;
 	int ow = engine->out_x2 - ox;
 	int iy = engine->in_y1 - engine->out_y1;
-	int alpha_pos = 3;
 
-	if (mode == TRANSFER_REPLACE)
+	int64_t opacity = alpha * 0xffff + 0.5;
+	int64_t transparency = 0xffff - opacity;
+	int64_t max_squared = ((uint64_t)0xffff) * 0xffff;
+
+	if(mode == TRANSFER_REPLACE)
 	{
 		switch(input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_ONLY_TRANSFER_REPLACE(float, 3);
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_ONLY_TRANSFER_REPLACE(float, 4);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			BLEND_ONLY_TRANSFER_REPLACE(unsigned char, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			BLEND_ONLY_TRANSFER_REPLACE(unsigned char, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 3);
-			break;
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
-			BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 4);
+			int line_len = ow * sizeof(uint16_t) * 4;
+
+			ix *= 4;
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				memcpy((uint16_t*)output->get_row_ptr(i) + ox,
+					(uint16_t*)input->get_row_ptr(i + iy) + ix, line_len);
+			}
 			break;
 		}
 	}
 	else if(mode == TRANSFER_NORMAL)
 	{
-		switch(input->get_color_model()){
-		case BC_RGB_FLOAT:
+		switch(input->get_color_model())
 		{
-			float opacity = alpha;
-			float transparency = 1.0 - alpha;
+		case BC_RGBA16161616:
+			ix *= 4;
+			ox *= 4;
 
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
-				float* in_row = (float*)input->get_row_ptr(i + iy) + ix;
-				float* out_row = (float*)output->get_row_ptr(i) + ox;
-
-				for(int j = 0; j < ow * 3; j++)
-				{
-					*out_row = *in_row * opacity + *out_row * transparency;
-					in_row++;
-					output++;
-				}
-			}
-			break;
-		}
-
-		case BC_RGBA_FLOAT:
-		{
-			float opacity = alpha;
-			float transparency = 1.0 - alpha;
-
-			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
-			{
-				float* in_row = (float*)input->get_row_ptr(i + iy) + ix;
-				float* out_row = (float*)output->get_row_ptr(i) + ox;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i + iy) + ix;
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow; j++)
 				{
-					float pixel_opacity, pixel_transparency;
-					pixel_opacity = opacity * in_row[3];
-					pixel_transparency = 1.0 - pixel_opacity;
+					uint64_t pixel_opacity, pixel_transparency;
 
-					out_row[0] = in_row[0] * pixel_opacity +
-						out_row[0] * pixel_transparency;
-					out_row[1] = in_row[1] * pixel_opacity +
-						out_row[1] * pixel_transparency;
-					out_row[2] = in_row[2] * pixel_opacity +
-						out_row[2] * pixel_transparency;
-					out_row[3] += (1. - out_row[3]) * in_row[3];
+					pixel_opacity = opacity * in_row[3];
+					pixel_transparency = max_squared - pixel_opacity;
+
+					out_row[0] = ((int64_t)in_row[0] * pixel_opacity +
+						(int64_t)out_row[0] * pixel_transparency) /
+						0xffff / 0xffff;
+					out_row[1] = ((int64_t)in_row[1] * pixel_opacity +
+						(int64_t)out_row[1] * pixel_transparency) /
+						0xffff / 0xffff;
+					out_row[2] = ((int64_t)in_row[2] * pixel_opacity +
+						(uint64_t)out_row[2] * pixel_transparency) /
+						0xffff / 0xffff;
+					out_row[3] += ((int64_t)(0xffff - out_row[3]) *
+						in_row[3]) / 0xffff;
 
 					in_row += 4;
 					out_row += 4;
 				}
 			}
 			break;
-		}
-
-		case BC_RGB888:
-			BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
-			break;
-		case BC_YUV888:
-			BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0xff, 0x80);
-			break;
-		case BC_RGBA8888:
-			BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0xff, 0);
-			break;
-		case BC_YUVA8888:
-			BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0xff, 0x80);
-			break;
-		case BC_RGB161616:
-			BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0xffff, 0);
-			break;
-		case BC_YUV161616:
-			BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
-			break;
-		case BC_RGBA16161616:
-			BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0xffff, 0);
-			break;
-		case BC_YUVA16161616:
-			BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
-			break;
 		case BC_AYUV16161616:
-			BLEND_ONLY_4_NORMAL_A(int64_t, uint16_t, 0xffff, 0x8000);
+			ix *= 4;
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i + iy) + ix;
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t pixel_opacity, pixel_transparency;
+
+					pixel_opacity = opacity * in_row[0];
+					pixel_transparency = max_squared - pixel_opacity;
+
+					out_row[0] += ((int64_t)(0xffff - out_row[0]) *
+						in_row[0]) / 0xffff;
+					out_row[1] = ((int64_t)in_row[1] * pixel_opacity +
+						(int64_t)out_row[1] * pixel_transparency) /
+						0xffff / 0xffff;
+					out_row[2] = (((int64_t)in_row[2] - 0x8000) * pixel_opacity +
+						((int64_t)out_row[2] - 0x8000) * pixel_transparency) /
+						0xffff / 0xffff + 0x8000;
+					out_row[3] = (((int64_t)in_row[3] - 0x8000) * pixel_opacity +
+						((int64_t)out_row[3] - 0x8000) * pixel_transparency) /
+						0xffff / 0xffff + 0x8000;
+
+						in_row += 4;
+						out_row += 4;
+				}
+			}
 			break;
 		}
 	}
 	else
 		switch(input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_ONLY(float, float, 1.0, 3, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_ONLY(float, float, 1.0, 4, 0);
-			break;
-		case BC_RGB888:
-			BLEND_ONLY(int32_t, unsigned char, 0xff, 3, 0);
-			break;
-		case BC_YUV888:
-			BLEND_ONLY(int32_t, unsigned char, 0xff, 3, 0x80);
-			break;
-		case BC_RGBA8888:
-			BLEND_ONLY(int32_t, unsigned char, 0xff, 4, 0);
-			break;
-		case BC_YUVA8888:
-			BLEND_ONLY(int32_t, unsigned char, 0xff, 4, 0x80);
-			break;
-		case BC_RGB161616:
-			BLEND_ONLY(int64_t, uint16_t, 0xffff, 3, 0);
-			break;
-		case BC_YUV161616:
-			BLEND_ONLY(int64_t, uint16_t, 0xffff, 3, 0x8000);
-			break;
 		case BC_RGBA16161616:
-			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			ix *= 4;
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i + iy) + ix;
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t input1, input2, input3, input4;
+					input1 = in_row[0];
+					input2 = in_row[1];
+					input3 = in_row[2];
+					input4 = in_row[3];
+					BLEND(0);
+
+					in_row += 4;
+					out_row += 4;
+				}
+			}
 			break;
 		case BC_AYUV16161616:
-			alpha_pos = 0;
-			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			ix *= 4;
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i + iy) + ix;
+				uint16_t* out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t input1, input2, input3, input4;
+
+					input4 = in_row[0];
+					input1 = in_row[1];
+					input2 = in_row[2];
+					input3 = in_row[3];
+					BLEND(0x8000);
+
+					in_row += 4;
+					out_row += 4;
+				}
+			}
 			break;
 		}
 }
@@ -1215,159 +883,6 @@ LoadPackage* DirectEngine::new_package()
 }
 
 /* Nearest Neighbor scale / translate / blend ********************/
-
-#define BLEND_NN(temp_type, type, max, components, chroma_offset) \
-{ \
-	temp_type opacity; \
- \
-	if(sizeof(type) != 4) \
-		opacity = (temp_type)(alpha * max + 0.5); \
-	else \
-		opacity = (temp_type)(alpha * max); \
-	temp_type transparency = max - opacity; \
- \
-	ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		int *lx = engine->in_lookup_x; \
-		type* in_row = (type*)input->get_row_ptr(*ly++); \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			temp_type input1, input2, input3, input4; \
-			in_row += *lx++; \
-			if(alpha_pos) \
-			{ \
-				input1 = in_row[0]; \
-				input2 = in_row[1]; \
-				input3 = in_row[2]; \
-			} \
-			else \
-			{ \
-				input1 = in_row[1]; \
-				input2 = in_row[2]; \
-				input3 = in_row[3]; \
-			} \
-\
-			if(components == 3) \
-			{ \
-				BLEND_3(max, temp_type, type, chroma_offset); \
-			} \
-			else \
-			{ \
-				input4 = in_row[alpha_pos]; \
-				BLEND_4(max, temp_type, type, chroma_offset); \
-			} \
- \
-			out_row += components; \
-		} \
-	} \
-}
-
-#define BLEND_NN_TRANSFER_REPLACE(type, components) \
-{ \
-	ox *= components; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		int *lx = engine->in_lookup_x; \
-		type* in_row = (type*)input->get_row_ptr(*ly++); \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			in_row += *lx++; \
-			*out_row++ = in_row[0]; \
-			*out_row++ = in_row[1]; \
-			*out_row++ = in_row[2]; \
- \
-			if(components==4) \
-				*out_row++ = in_row[3]; \
-		} \
-	} \
-}
-
-#define BLEND_NN_4_NORMAL(temp_type, type, max, chroma_offset) \
-{ \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
-	temp_type max_squared = ((temp_type)max) * max; \
- \
-	ox *= 4; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		int *lx = engine->in_lookup_x; \
-		type* in_row = (type*)input->get_row_ptr(*ly++); \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			temp_type pixel_o, pixel_t, r, g, b; \
- \
-			in_row += *lx++; \
-			pixel_o = opacity * in_row[alpha_pos]; \
-			pixel_t = (temp_type)max_squared - pixel_o; \
-			if(alpha_pos) \
-			{ \
-				out_row[0] = ((temp_type)in_row[0] * pixel_o + \
-					(temp_type)out_row[0] * pixel_t) / max / max; \
-				out_row[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_o + \
-					((temp_type)out_row[1] - chroma_offset) * pixel_t)  \
-					/ max / max + chroma_offset; \
-				out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
-					((temp_type)out_row[2] - chroma_offset) * pixel_t) \
-					/ max / max + chroma_offset; \
-				out_row[3] += ((temp_type)(max - out_row[3]) * in_row[3]) / max; \
-			} \
-			else \
-			{ \
-				out_row[0] += ((temp_type)(max - out_row[0]) * in_row[0]) / max; \
-				out_row[1] = ((temp_type)in_row[1] * pixel_o + \
-					(temp_type)out_row[1] * pixel_t) / max / max; \
-				out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
-					((temp_type)out_row[2] - chroma_offset) * pixel_t)  \
-					/ max / max + chroma_offset; \
-				out_row[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_o + \
-					((temp_type)out_row[3] - chroma_offset) * pixel_t) \
-					/ max / max + chroma_offset; \
-			} \
- \
-			out_row += 4; \
-		} \
-	} \
-}
-
-#define BLEND_NN_3_NORMAL(temp_type, type, max, chroma_offset) \
-{ \
-	const int bits = sizeof(type) * 8; \
-	temp_type opacity = (temp_type)(alpha*((temp_type)1 << bits) + 0.5); \
-	temp_type transparency = ((temp_type)1 << bits) - opacity; \
-	ox *= 3; \
- \
-	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
-	{ \
-		int *lx = engine->in_lookup_x; \
-		type* in_row = (type*)input->get_row_ptr(*ly++); \
-		type* out_row = (type*)output->get_row_ptr(i) + ox; \
- \
-		for(int j = 0; j < ow; j++) \
-		{ \
-			in_row += *lx++; \
-			out_row[0] = ((temp_type)in_row[0] * opacity + \
-				out_row[0] * transparency) >> bits; \
-			out_row[1] = ((temp_type)in_row[1] * opacity + \
-				out_row[1] * transparency) >> bits; \
-			out_row[2] = ((temp_type)in_row[2] * opacity + \
-				out_row[2] * transparency) >> bits; \
- \
-			out_row += 3; \
-		} \
-	} \
-}
-
 NNPackage::NNPackage()
 {
 }
@@ -1387,171 +902,161 @@ void NNUnit::process_package(LoadPackage *package)
 	NNPackage *pkg = (NNPackage*)package;
 	VFrame *output = engine->output;
 	VFrame *input = engine->input;
-	float alpha = engine->alpha;
+	double alpha = engine->alpha;
 	int mode = engine->mode;
-	int alpha_pos = 3;
 
 	int ox = engine->out_x1i;
 	int ow = engine->out_x2i - ox;
 	int *ly = engine->in_lookup_y + pkg->out_row1;
 
-	if (mode == TRANSFER_REPLACE)
+	int64_t opacity = alpha * 0xffff + 0.5;
+	int64_t transparency = 0xffff - opacity;
+	int64_t max_squared = (uint64_t)0xffff * 0xffff;
+
+	if(mode == TRANSFER_REPLACE)
 	{
 		switch(input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_NN_TRANSFER_REPLACE(float, 3);
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_NN_TRANSFER_REPLACE(float, 4);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			BLEND_NN_TRANSFER_REPLACE(unsigned char, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			BLEND_NN_TRANSFER_REPLACE(unsigned char, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			BLEND_NN_TRANSFER_REPLACE(uint16_t, 3);
-			break;
 		case BC_RGBA16161616:
-		case BC_YUVA16161616:
 		case BC_AYUV16161616:
-			BLEND_NN_TRANSFER_REPLACE(uint16_t, 4);
-			break;
-		}
-	}
-	else if (mode == TRANSFER_NORMAL)
-	{
-		switch(input->get_color_model())
-		{
-		case BC_RGB_FLOAT:
-		{
-			float opacity = alpha;
-			float transparency = 1.0 - alpha;
-
-			ox *= 3;
-
-			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
-			{
-				int *lx = engine->in_lookup_x;
-				float *in_row = (float*)input->get_row_ptr(*ly++);
-				float* out_row = (float*)output->get_row_ptr(i) + ox;
-
-				for(int j = 0; j < ow; j++)
-				{
-					in_row += *lx++;
-					out_row[0] = in_row[0] * opacity + out_row[0] * transparency;
-					out_row[1] = in_row[1] * opacity + out_row[1] * transparency;
-					out_row[2] = in_row[2] * opacity + out_row[2] * transparency;
-					out_row += 3;
-				}
-			}
-			break;
-		}
-		case BC_RGBA_FLOAT:
-		{
-			float opacity = alpha;
-			float transparency = 1.0 - alpha;
-
 			ox *= 4;
 
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
 				int *lx = engine->in_lookup_x;
-				float *in_row = (float*)input->get_row_ptr(*ly++);
-				float* out_row = (float*)output->get_row_ptr(i) + ox;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(*ly++);
+				uint16_t* out_row = (uint16_t*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow; j++)
 				{
-					float pixel_opacity, pixel_transparency;
+					in_row += *lx++;
+					*out_row++ = in_row[0];
+					*out_row++ = in_row[1];
+					*out_row++ = in_row[2];
+					*out_row++ = in_row[3];
+				}
+			}
+			break;
+		}
+	}
+	else if(mode == TRANSFER_NORMAL)
+	{
+		switch(input->get_color_model())
+		{
+		case BC_RGBA16161616:
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				int *lx = engine->in_lookup_x;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(*ly++);
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t pixel_o, pixel_t, r, g, b;
 
 					in_row += *lx++;
-					pixel_opacity = opacity * in_row[3];
-					pixel_transparency = 1.0 - pixel_opacity;
+					pixel_o = opacity * in_row[3];
+					pixel_t = (int64_t)max_squared - pixel_o;
 
-					out_row[0] = in_row[0] * pixel_opacity +
-						out_row[0] * pixel_transparency;
-					out_row[1] = in_row[1] * pixel_opacity +
-						out_row[1] * pixel_transparency;
-					out_row[2] = in_row[2] * pixel_opacity +
-						out_row[2] * pixel_transparency;
-					out_row[3] += (1. - out_row[3]) * in_row[3];
+					out_row[0] = ((int64_t)in_row[0] * pixel_o +
+						(int64_t)out_row[0] * pixel_t) /
+						0xffff / 0xffff;
+					out_row[1] = ((int64_t)in_row[1] * pixel_o +
+						(int64_t)out_row[1] * pixel_t) /
+						0xffff / 0xffff;
+					out_row[2] = ((int64_t)in_row[2] * pixel_o +
+						(int64_t)out_row[2] * pixel_t) /
+						0xffff / 0xffff;
+					out_row[3] += ((int64_t)(0xffff - out_row[3]) *
+						in_row[3]) / 0xffff;
+
+					out_row += 4;
+				}
+			}
+			break;
+		case BC_AYUV16161616:
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				int *lx = engine->in_lookup_x;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(*ly++);
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t pixel_o, pixel_t, r, g, b;
+
+					in_row += *lx++;
+					pixel_o = opacity * in_row[0];
+					pixel_t = max_squared - pixel_o;
+					out_row[0] += ((int64_t)(0xffff - out_row[0]) *
+						in_row[0]) / 0xffff;
+					out_row[1] = ((int64_t)in_row[1] * pixel_o +
+						(int64_t)out_row[1] * pixel_t) / 0xffff / 0xffff;
+					out_row[2] = (((int64_t)in_row[2] - 0x8000) * pixel_o +
+						((int64_t)out_row[2] - 0x8000) * pixel_t) /
+						0xffff / 0xffff + 0x8000;
+					out_row[3] = (((int64_t)in_row[3] - 0x8000) * pixel_o +
+						((int64_t)out_row[3] - 0x8000) * pixel_t) /
+						0xffff / 0xffff + 0x8000;
 
 					out_row += 4;
 				}
 			}
 			break;
 		}
-		case BC_RGB888:
-			BLEND_NN_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
-			break;
-		case BC_YUV888:
-			BLEND_NN_3_NORMAL(int32_t, unsigned char, 0xff, 0x80);
-			break;
-		case BC_RGBA8888:
-			BLEND_NN_4_NORMAL(uint32_t, unsigned char, 0xff, 0);
-			break;
-		case BC_YUVA8888:
-			BLEND_NN_4_NORMAL(int32_t, unsigned char, 0xff, 0x80);
-			break;
-		case BC_RGB161616:
-			BLEND_NN_3_NORMAL(uint64_t, uint16_t, 0xffff, 0);
-			break;
-		case BC_YUV161616:
-			BLEND_NN_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
-			break;
-		case BC_RGBA16161616:
-			BLEND_NN_4_NORMAL(uint64_t, uint16_t, 0xffff, 0);
-			break;
-		case BC_YUVA16161616:
-			BLEND_NN_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
-			break;
-		case BC_AYUV16161616:
-			alpha_pos = 0;
-			BLEND_NN_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
-			break;
-		}
 	}
 	else
 		switch(input->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-			BLEND_NN(float, float, 1.0, 3, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_NN(float, float, 1.0, 4, 0);
-			break;
-		case BC_RGB888:
-			BLEND_NN(int32_t, unsigned char, 0xff, 3, 0);
-			break;
-		case BC_YUV888:
-			BLEND_NN(int32_t, unsigned char, 0xff, 3, 0x80);
-			break;
-		case BC_RGBA8888:
-			BLEND_NN(int32_t, unsigned char, 0xff, 4, 0);
-			break;
-		case BC_YUVA8888:
-			BLEND_NN(int32_t, unsigned char, 0xff, 4, 0x80);
-			break;
-		case BC_RGB161616:
-			BLEND_NN(int64_t, uint16_t, 0xffff, 3, 0);
-			break;
-		case BC_YUV161616:
-			BLEND_NN(int64_t, uint16_t, 0xffff, 3, 0x8000);
-			break;
 		case BC_RGBA16161616:
-			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				int *lx = engine->in_lookup_x;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(*ly++);
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t input1, input2, input3, input4;
+					in_row += *lx++;
+
+					input1 = in_row[0];
+					input2 = in_row[1];
+					input3 = in_row[2];
+					input4 = in_row[3];
+					BLEND(0x8000);
+					out_row += 4;
+				}
+			}
 			break;
 		case BC_AYUV16161616:
-			alpha_pos = 0;
-			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			ox *= 4;
+
+			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+			{
+				int *lx = engine->in_lookup_x;
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(*ly++);
+				uint16_t* out_row = (uint16_t*)output->get_row_ptr(i) + ox;
+
+				for(int j = 0; j < ow; j++)
+				{
+					int64_t input1, input2, input3, input4;
+
+					in_row += *lx++;
+					input1 = in_row[1];
+					input2 = in_row[2];
+					input3 = in_row[3];
+					input4 = in_row[0];
+					BLEND(0x8000);
+					out_row += 4;
+				}
+			}
 			break;
 		}
 }
@@ -1565,10 +1070,8 @@ NNEngine::NNEngine(int cpus)
 
 NNEngine::~NNEngine()
 {
-	if(in_lookup_x)
-		delete[] in_lookup_x;
-	if(in_lookup_y)
-		delete[] in_lookup_y;
+	delete[] in_lookup_x;
+	delete[] in_lookup_y;
 }
 
 void NNEngine::init_packages()
@@ -1578,12 +1081,11 @@ void NNEngine::init_packages()
 	int out_w = output->get_w();
 	int out_h = output->get_h();
 
-	float in_subw = in_x2 - in_x1;
-	float in_subh = in_y2 - in_y1;
-	float out_subw = out_x2 - out_x1;
-	float out_subh = out_y2 - out_y1;
+	double in_subw = in_x2 - in_x1;
+	double in_subh = in_y2 - in_y1;
+	double out_subw = out_x2 - out_x1;
+	double out_subh = out_y2 - out_y1;
 	int first, last, count, i;
-	int components;
 
 	out_x1i = rint(out_x1);
 	out_x2i = rint(out_x2);
@@ -1598,31 +1100,11 @@ void NNEngine::init_packages()
 
 	if(in_lookup_x)
 		delete[] in_lookup_x;
-	in_lookup_x = new int[out_x2i-out_x1i];
+	in_lookup_x = new int[out_x2i - out_x1i];
 
 	if(in_lookup_y)
 		delete[] in_lookup_y;
 	in_lookup_y = new int[out_h];
-
-	switch(input->get_color_model())
-	{
-	case BC_RGB_FLOAT:
-	case BC_RGB888:
-	case BC_YUV888:
-	case BC_RGB161616:
-	case BC_YUV161616:
-		components = 3;
-		break;
-
-	case BC_RGBA_FLOAT:
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-	case BC_AYUV16161616:
-		components = 4;
-		break;
-	}
 
 	first = count = 0;
 
@@ -1639,11 +1121,11 @@ void NNEngine::init_packages()
 			if(count == 0)
 			{
 				first = i;
-				in_lookup_x[0] = in * components;
+				in_lookup_x[0] = in * 4;
 			}
 			else
 			{
-				in_lookup_x[count] = (in-last)*components;
+				in_lookup_x[count] = (in-last) * 4;
 			}
 			last = in;
 			count++;
@@ -1658,7 +1140,7 @@ void NNEngine::init_packages()
 
 	for(i = out_y1; i < out_y2; i++)
 	{
-		int in = (i - out_y1+.5) * in_subh / out_subh + in_y1;
+		int in = (i - out_y1 + .5) * in_subh / out_subh + in_y1;
 		if(in < in_y1)
 			in = in_y1;
 		if(in > in_y2)
@@ -1696,252 +1178,6 @@ LoadPackage* NNEngine::new_package()
 }
 
 /* Fully resampled scale / translate / blend ******************************/
-
-#define SAMPLE_3(max, temp_type, type, chroma_offset, round) \
-{ \
-	float temp[oh*3]; \
-	temp_type opacity = (alpha * max + round); \
-	temp_type transparency = max - opacity; \
- \
-	for(int i = pkg->out_col1; i < pkg->out_col2; i++) \
-	{ \
- \
-		if(opacity == 0) \
-		{ \
-			/* don't bother resampling if the frame is invisible */ \
-			temp_type input1 = 0; \
-			temp_type input2 = chroma_offset; \
-			temp_type input3 = chroma_offset; \
-			temp_type input4 = 0; \
-			for(int j = 0; j < oh; j++) \
-			{ \
-				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
-				BLEND_4(max, temp_type, type, chroma_offset); \
-			} \
-		} \
-		else \
-		{ \
-			type *in_row = (type*)vinput->get_row_ptr(i - engine->col_out1 + engine->row_in); \
-			float *tempp = temp; \
- \
-			if(!k) \
-			{ \
-				/* direct copy case */ \
-				type *ip = in_row + i1i * 3; \
-				for(int j = 0; j < oh; j++) \
-				{ \
-					*tempp++ = *ip++; \
-					*tempp++ = (*ip++) - chroma_offset; \
-					*tempp++ = (*ip++) - chroma_offset; \
-				} \
-			} \
-			else \
-			{ \
-				/* resample */ \
-				for(int j = 0; j < oh; j++) \
-				{ \
-					float racc=0.f, gacc=0.f, bacc=0.f; \
-					int ki = lookup_sk[j]; \
-					int x = lookup_sx0[j]; \
-					type *ip = in_row + x * 3; \
-					float wacc = 0; \
-					while(x++ < lookup_sx1[j]) \
-					{ \
-						float kv = k[abs(ki >> INDEX_FRACTION)]; \
- \
-						/* handle fractional pixels on edges of input */ \
-						if(x == i1i) kv *= i1f; \
-						if(x + 1 == i2i) kv *= i2f; \
- \
-						wacc += kv; \
-						racc += kv * *ip++; \
-						gacc += kv * ((*ip++) - chroma_offset); \
-						bacc += kv * ((*ip++) - chroma_offset); \
-						ki+=kd; \
-					} \
-					if(wacc > 0.) \
-						wacc = 1. / wacc; \
-					*tempp++ = racc * wacc; \
-					*tempp++ = gacc * wacc; \
-					*tempp++ = bacc * wacc; \
-				} \
-			} \
- \
-			/* handle fractional pixels on edges of output */ \
-			temp[0] *= o1f; \
-			temp[1] *= o1f; \
-			temp[2] *= o1f; \
-			temp[oh * 3 - 3] *= o2f; \
-			temp[oh * 3 - 2] *= o2f; \
-			temp[oh * 3 - 1] *= o2f; \
-			tempp = temp; \
- \
-			/* blend output */ \
-			for(int j = 0; j < oh; j++) \
-			{ \
-				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 3; \
-				temp_type input1 = *tempp++ + round; \
-				temp_type input2 = (*tempp++) + chroma_offset + round; \
-				temp_type input3 = (*tempp++) + chroma_offset + round; \
-				BLEND_3(max, temp_type, type, chroma_offset); \
-			} \
-		} \
-	} \
-}
-
-#define SAMPLE_4(max, temp_type, type, chroma_offset, round) \
-{ \
-	float temp[oh * 4]; \
-	temp_type opacity = (alpha * max + round); \
-	temp_type transparency = max - opacity; \
- \
-	for(int i = pkg->out_col1; i < pkg->out_col2; i++) \
-	{ \
- \
-		if(opacity == 0) \
-		{ \
- \
-			/* don't bother resampling if the frame is invisible */ \
-			temp_type input1 = 0; \
-			temp_type input2 = chroma_offset; \
-			temp_type input3 = chroma_offset; \
-			temp_type input4 = 0; \
-			for(int j = 0; j < oh; j++) \
-			{ \
-				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
-				BLEND_4(max, temp_type, type, chroma_offset); \
-			} \
-		} \
-		else \
-		{ \
-			type *input = (type*)vinput->get_row_ptr(i - engine->col_out1 + engine->row_in); \
-			float *tempp = temp; \
- \
-			if(!k) \
-			{ \
-				/* direct copy case */ \
-				type *ip = input + i1i * 4; \
-				if(alpha_pos) \
-				{ \
-					for(int j = 0; j < oh; j++) \
-					{ \
-						*tempp++ = *ip++; \
-						*tempp++ = (*ip++) - chroma_offset; \
-						*tempp++ = (*ip++) - chroma_offset; \
-						*tempp++ = *ip++; \
-					} \
-				} \
-				else \
-				{ \
-					for(int j = 0; j < oh; j++) \
-					{ \
-						*tempp++ = *ip++; \
-						*tempp++ = *ip++; \
-						*tempp++ = (*ip++) - chroma_offset; \
-						*tempp++ = (*ip++) - chroma_offset; \
-					} \
-				} \
-			} \
-			else \
-			{ \
-				/* resample */ \
-				for(int j = 0; j < oh; j++) \
-				{ \
-					float racc=0.f, gacc=0.f, bacc=0.f, aacc=0.f; \
-					int ki = lookup_sk[j]; \
-					int x = lookup_sx0[j]; \
-					type *ip = input + x * 4; \
-					float wacc = 0; \
-					float awacc = 0; \
-					while(x++ < lookup_sx1[j]) \
-					{ \
-						float kv = k[abs(ki >> INDEX_FRACTION)]; \
- \
-						/* handle fractional pixels on edges of input */ \
-						if(x == i1i) kv *= i1f; \
-						if(x + 1 == i2i) kv *= i2f; \
- \
-						float a = ip[alpha_pos] * kv; \
-						awacc += kv; \
-						kv = a; \
-						wacc += kv; \
- \
-						if(alpha_pos) \
-						{ \
-							racc += kv * *ip++; \
-							gacc += kv * (*ip++ - chroma_offset); \
-							bacc += kv * (*ip++ - chroma_offset); \
-							aacc += kv; ip++; \
-						} \
-						else \
-						{ \
-							aacc += kv; ip++; \
-							racc += kv * *ip++; \
-							gacc += kv * (*ip++ - chroma_offset); \
-							bacc += kv * (*ip++ - chroma_offset); \
-						} \
-						ki += kd; \
- \
-					} \
-					if(wacc > 0) wacc = 1. / wacc; \
-					if(awacc > 0) awacc = 1. / awacc; \
-					if(alpha_pos) \
-					{ \
-						*tempp++ = racc * wacc; \
-						*tempp++ = gacc * wacc; \
-						*tempp++ = bacc * wacc; \
-						*tempp++ = aacc * awacc; \
-					} \
-					else \
-					{ \
-						*tempp++ = aacc * awacc; \
-						*tempp++ = racc * wacc; \
-						*tempp++ = gacc * wacc; \
-						*tempp++ = bacc * wacc; \
-					} \
-				} \
-			} \
- \
-			/* handle fractional pixels on edges of output */ \
-			temp[0] *= o1f; \
-			temp[1] *= o1f; \
-			temp[2] *= o1f; \
-			temp[3] *= o1f; \
-			temp[oh * 4 - 4] *= o2f; \
-			temp[oh * 4 - 3] *= o2f; \
-			temp[oh * 4 - 2] *= o2f; \
-			temp[oh * 4 - 1] *= o2f; \
-			tempp = temp; \
- \
-			/* blend output */ \
-			if(alpha_pos) \
-			{ \
-				for(int j = 0; j < oh; j++) \
-				{ \
-					type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
-					temp_type input1 = *tempp++ + round; \
-					temp_type input2 = (*tempp++) + chroma_offset + round; \
-					temp_type input3 = (*tempp++) + chroma_offset + round; \
-					temp_type input4 = *tempp++ + round; \
-					BLEND_4(max, temp_type, type, chroma_offset); \
-				} \
-			} \
-			else \
-			{ \
-				for(int j = 0; j < oh; j++) \
-				{ \
-					type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
-					temp_type input4 = *tempp++ + round; \
-					temp_type input1 = *tempp++ + round; \
-					temp_type input2 = (*tempp++) + chroma_offset + round; \
-					temp_type input3 = (*tempp++) + chroma_offset + round; \
-					BLEND_4(max, temp_type, type, chroma_offset); \
-				} \
-			} \
-		} \
-	} \
-}
-
 SamplePackage::SamplePackage()
 {
 }
@@ -1959,83 +1195,260 @@ SampleUnit::~SampleUnit()
 void SampleUnit::process_package(LoadPackage *package)
 {
 	SamplePackage *pkg = (SamplePackage*)package;
-	int alpha_pos = 3;
 
-	float i1  = engine->in1;
-	float i2  = engine->in2;
-	float o1  = engine->out1;
-	float o2  = engine->out2;
+	double i1  = engine->in1;
+	double i2  = engine->in2;
+	double o1  = engine->out1;
+	double o2  = engine->out2;
 
 	if(i2 - i1 <= 0 || o2 - o1 <= 0)
 		return;
 
 	VFrame *voutput = engine->output;
 	VFrame *vinput = engine->input;
-	float alpha = engine->alpha;
+	double alpha = engine->alpha;
 	int mode = engine->mode;
-	float opacity = alpha;
-	float transparency = 1.0 - alpha;
 
 	int   iw  = vinput->get_w();
 	int   i1i = floor(i1);
 	int   i2i = ceil(i2);
-	float i1f = 1.f - i1 + i1i;
-	float i2f = 1.f - i2i + i2;
+	double i1f = 1.0 - i1 + i1i;
+	double i2f = 1.0 - i2i + i2;
 
 	int   o1i = floor(o1);
 	int   o2i = ceil(o2);
-	float o1f = 1.f - o1 + o1i;
-	float o2f = 1.f - o2i + o2;
+	double o1f = 1.f - o1 + o1i;
+	double o2f = 1.f - o2i + o2;
 	int   oh  = o2i - o1i;
 
-	float *k  = engine->kernel->lookup;
-	float kw  = engine->kernel->width;
+	double *k  = engine->kernel->lookup;
+	double kw  = engine->kernel->width;
 	int   kn  = engine->kernel->n;
 	int   kd = engine->kd;
 
 	int *lookup_sx0 = engine->lookup_sx0;
 	int *lookup_sx1 = engine->lookup_sx1;
 	int *lookup_sk = engine->lookup_sk;
-	float *lookup_wacc = engine->lookup_wacc;
+	double *lookup_wacc = engine->lookup_wacc;
 
-	/* resample into a temporary row vector, then blend */
+	double temp[oh * 4];
+	int64_t opacity = alpha * 0xffff + .5;
+	int64_t transparency = 0xffff - opacity;
+
+	// resample into a temporary row vector, then blend
 	switch(vinput->get_color_model())
 	{
-	case BC_RGB_FLOAT:
-		SAMPLE_3(1.f, float, float, 0.f, 0.f);
-		break;
-	case BC_RGBA_FLOAT:
-		SAMPLE_4(1.f, float, float, 0.f, 0.f);
-		break;
-	case BC_RGB888:
-		SAMPLE_3(255, int32_t, unsigned char, 0.f, .5f);
-		break;
-	case BC_YUV888:
-		SAMPLE_3(255, int32_t, unsigned char, 128.f, .5f);
-		break;
-	case BC_RGBA8888:
-		SAMPLE_4(255, int32_t, unsigned char, 0.f, .5f);
-		break;
-	case BC_YUVA8888:
-		SAMPLE_4(255, int32_t, unsigned char, 128.f, .5f);
-		break;
-	case BC_RGB161616:
-		SAMPLE_3(0xffff, int64_t, uint16_t, 0.f, .5f);
-		break;
-	case BC_YUV161616:
-		SAMPLE_3(0xffff, int64_t, uint16_t, 32768.f, .5f);
-		break;
 	case BC_RGBA16161616:
-		SAMPLE_4(0xffff, int64_t, uint16_t, 0.f, .5f);
-		break;
-	case BC_YUVA16161616:
-		SAMPLE_4(0xffff, int64_t, uint16_t, 32768.f, .5f);
+
+		for(int i = pkg->out_col1; i < pkg->out_col2; i++)
+		{
+			if(opacity == 0)
+			{
+				// don't bother resampling if the frame is invisible
+				int64_t input1 = 0;
+				int64_t input2 = 0;
+				int64_t input3 = 0;
+				int64_t input4 = 0;
+
+				for(int j = 0; j < oh; j++)
+				{
+					uint16_t *out_row = (uint16_t*)voutput->get_row_ptr(o1i + j) + i * 4;
+					BLEND(0);
+				}
+			}
+			else
+			{
+				uint16_t *input = (uint16_t*)vinput->get_row_ptr(i -
+					engine->col_out1 + engine->row_in);
+				double *tempp = temp;
+
+				if(!k)
+				{
+					// direct copy case
+					uint16_t *ip = input + i1i * 4;
+
+					for(int j = 0; j < oh; j++)
+					{
+						*tempp++ = *ip++;
+						*tempp++ = *ip++;
+						*tempp++ = *ip++;
+						*tempp++ = *ip++;
+					}
+				}
+				else
+				{
+					// resample
+					for(int j = 0; j < oh; j++)
+					{
+						double racc=0., gacc=0., bacc=0., aacc=0.;
+						int ki = lookup_sk[j];
+						int x = lookup_sx0[j];
+						uint16_t *ip = input + x * 4;
+						double wacc = 0;
+						double awacc = 0;
+
+						while(x++ < lookup_sx1[j])
+						{
+							double kv = k[abs(ki >> INDEX_FRACTION)];
+
+							// handle fractional pixels on edges of input
+							if(x == i1i)
+								kv *= i1f;
+							if(x + 1 == i2i)
+								kv *= i2f;
+
+							double a = ip[3] * kv;
+							awacc += kv;
+							kv = a;
+							wacc += kv;
+
+							racc += kv * *ip++;
+							gacc += kv * *ip++;
+							bacc += kv * *ip++;
+							aacc += kv; ip++;
+							ki += kd;
+
+						}
+						if(wacc > 0)
+							wacc = 1. / wacc;
+						if(awacc > 0)
+							awacc = 1. / awacc;
+						*tempp++ = racc * wacc;
+						*tempp++ = gacc * wacc;
+						*tempp++ = bacc * wacc;
+						*tempp++ = aacc * awacc;
+					}
+				}
+
+				// handle fractional pixels on edges of output
+				temp[0] *= o1f;
+				temp[1] *= o1f;
+				temp[2] *= o1f;
+				temp[3] *= o1f;
+				temp[oh * 4 - 4] *= o2f;
+				temp[oh * 4 - 3] *= o2f;
+				temp[oh * 4 - 2] *= o2f;
+				temp[oh * 4 - 1] *= o2f;
+				tempp = temp;
+
+				// blend output
+				for(int j = 0; j < oh; j++)
+				{
+					uint16_t *out_row = (uint16_t*)voutput->get_row_ptr(o1i + j) + i * 4;
+					int64_t input1 = *tempp++ + 0.5;
+					int64_t input2 = *tempp++ + 0.5;
+					int64_t input3 = *tempp++ + 0.5;
+					int64_t input4 = *tempp++ + 0.5;
+					BLEND(0);
+				}
+			}
+		}
 		break;
 	case BC_AYUV16161616:
-		alpha_pos = 0;
-		SAMPLE_4(0xffff, int64_t, uint16_t, 32768.f, .5f);
-		break;
+		for(int i = pkg->out_col1; i < pkg->out_col2; i++)
+		{
+			if(opacity == 0)
+			{
 
+				// don't bother resampling if the frame is invisible
+				int64_t input1 = 0;
+				int64_t input2 = 0x8000;
+				int64_t input3 = 0x8000;
+				int64_t input4 = 0;
+
+				for(int j = 0; j < oh; j++)
+				{
+					uint16_t *out_row = (uint16_t*)voutput->get_row_ptr(o1i + j) + i * 4;
+					BLEND(0x8000);
+				}
+			}
+			else
+			{
+				uint16_t *input = (uint16_t*)vinput->get_row_ptr(i - engine->col_out1 + engine->row_in);
+				double *tempp = temp;
+
+				if(!k)
+				{
+					// direct copy case
+					uint16_t *ip = input + i1i * 4;
+
+					for(int j = 0; j < oh; j++)
+					{
+						*tempp++ = *ip++;
+						*tempp++ = *ip++;
+						*tempp++ = (*ip++) - 0x8000;
+						*tempp++ = (*ip++) - 0x8000;
+					}
+				}
+				else
+				{
+					// resample
+					for(int j = 0; j < oh; j++)
+					{
+						double racc=0, gacc=0, bacc=0, aacc=0;
+						int ki = lookup_sk[j];
+						int x = lookup_sx0[j];
+						uint16_t *ip = input + x * 4;
+						double wacc = 0;
+						double awacc = 0;
+
+						while(x++ < lookup_sx1[j])
+						{
+							double kv = k[abs(ki >> INDEX_FRACTION)];
+
+							// handle fractional pixels on edges of input
+							if(x == i1i)
+								kv *= i1f;
+							if(x + 1 == i2i)
+								kv *= i2f;
+
+							double a = ip[0] * kv;
+							awacc += kv;
+							kv = a;
+							wacc += kv;
+
+							aacc += kv; ip++;
+							racc += kv * *ip++;
+							gacc += kv * (*ip++ - 0x8000);
+							bacc += kv * (*ip++ - 0x8000);
+							ki += kd;
+						}
+
+						if(wacc > 0)
+							wacc = 1. / wacc;
+						if(awacc > 0)
+							awacc = 1. / awacc;
+						*tempp++ = aacc * awacc;
+						*tempp++ = racc * wacc;
+						*tempp++ = gacc * wacc;
+						*tempp++ = bacc * wacc;
+					}
+				}
+
+				// handle fractional pixels on edges of output
+				temp[0] *= o1f;
+				temp[1] *= o1f;
+				temp[2] *= o1f;
+				temp[3] *= o1f;
+				temp[oh * 4 - 4] *= o2f;
+				temp[oh * 4 - 3] *= o2f;
+				temp[oh * 4 - 2] *= o2f;
+				temp[oh * 4 - 1] *= o2f;
+				tempp = temp;
+
+				// blend output
+				for(int j = 0; j < oh; j++)
+				{
+					uint16_t *out_row = (uint16_t*)voutput->get_row_ptr(o1i + j) + i * 4;
+					int64_t input4 = *tempp++ + 0.5;
+					int64_t input1 = *tempp++ + 0.5;
+					int64_t input2 = (*tempp++) + 0x8000 + 0.5;
+					int64_t input3 = (*tempp++) + 0x8000 + 0.5;
+					BLEND(0x8000);
+				}
+			}
+		}
+		break;
 	}
 }
 
@@ -2052,73 +1465,70 @@ SampleEngine::SampleEngine(int cpus)
 
 SampleEngine::~SampleEngine()
 {
-	if(lookup_sx0) delete [] lookup_sx0;
-	if(lookup_sx1) delete [] lookup_sx1;
-	if(lookup_sk) delete [] lookup_sk;
-	if(lookup_wacc) delete [] lookup_wacc;
+	delete [] lookup_sx0;
+	delete [] lookup_sx1;
+	delete [] lookup_sk;
+	delete [] lookup_wacc;
 }
 
-/*
- * unlike the Direct and NN engines, the Sample engine works across
- * output columns (it makes for more economical memory addressing
- * during convolution)
- */
+// unlike the Direct and NN engines, the Sample engine works across
+// output columns (it makes for more economical memory addressing
+// during convolution)
 void SampleEngine::init_packages()
 {
 	int   iw  = input->get_w();
 	int   i1i = floor(in1);
 	int   i2i = ceil(in2);
-	float i1f = 1.f - in1 + i1i;
-	float i2f = 1.f - i2i + in2;
+	double i1f = 1.f - in1 + i1i;
+	double i2f = 1.f - i2i + in2;
 
-	int   oy  = floor(out1);
-	float oyf = out1 - oy;
-	int   oh  = ceil(out2) - oy;
+	int    oy  = floor(out1);
+	double oyf = out1 - oy;
+	int    oh  = ceil(out2) - oy;
 
-	float *k  = kernel->lookup;
-	float kw  = kernel->width;
+	double *k  = kernel->lookup;
+	double kw  = kernel->width;
 	int   kn  = kernel->n;
 
 	if(in2 - in1 <= 0 || out2 - out1 <= 0)
 		return;
 
 	/* determine kernel spatial coverage */
-	float scale = (out2 - out1) / (in2 - in1);
-	float iscale = (in2 - in1) / (out2 - out1);
-	float coverage = fabs(1.f / scale);
-	float bound = (coverage < 1.f ? kw : kw * coverage) - (.5f / TRANSFORM_SPP);
-	float coeff = (coverage < 1.f ? 1.f : scale) * TRANSFORM_SPP;
+	double scale = (out2 - out1) / (in2 - in1);
+	double iscale = (in2 - in1) / (out2 - out1);
+	double coverage = fabs(1.f / scale);
+	double bound = (coverage < 1 ? kw : kw * coverage) - (.5 / TRANSFORM_SPP);
+	double coeff = (coverage < 1 ? 1 : scale) * TRANSFORM_SPP;
 
-	if(lookup_sx0) delete [] lookup_sx0;
-	if(lookup_sx1) delete [] lookup_sx1;
-	if(lookup_sk) delete [] lookup_sk;
-	if(lookup_wacc) delete [] lookup_wacc;
+	delete [] lookup_sx0;
+	delete [] lookup_sx1;
+	delete [] lookup_sk;
+	delete [] lookup_wacc;
 
 	lookup_sx0 = new int[oh];
 	lookup_sx1 = new int[oh];
 	lookup_sk = new int[oh];
-	lookup_wacc = new float[oh];
+	lookup_wacc = new double[oh];
 
-	kd = (double)coeff * (1 << INDEX_FRACTION) + .5;
+	kd = coeff * (1 << INDEX_FRACTION) + .5;
 
-	/* precompute kernel values and weight sums */
+	// precompute kernel values and weight sums
 	for(int i = 0; i < oh; i++)
 	{
-		/* map destination back to source */
+		// map destination back to source
 		double sx = (i - oyf + .5) * iscale + in1 - .5;
 
-		/*
-		 * clip iteration to source area but not source plane. Points
-		 * outside the source plane count as transparent. Points outside
-		 * the source area don't count at all.  The actual convolution
-		 * later will be clipped to both, but we need to compute
-		 * weights.
-		 */
+		// clip iteration to source area but not source plane. Points
+		// outside the source plane count as transparent. Points outside
+		// the source area don't count at all.  The actual convolution
+		// later will be clipped to both, but we need to compute
+		// weights.
+
 		int sx0 = MAX((int)floor(sx - bound) + 1, i1i);
 		int sx1 = MIN((int)ceil(sx + bound), i2i);
 		int ki = (double)(sx0 - sx) * coeff * (1 << INDEX_FRACTION)
 				+ (1 << (INDEX_FRACTION - 1)) + .5;
-		float wacc=0.;
+		double wacc = 0.;
 
 		lookup_sx0[i] = -1;
 		lookup_sx1[i] = -1;
@@ -2126,25 +1536,21 @@ void SampleEngine::init_packages()
 		for(int j= sx0; j < sx1; j++)
 		{
 			int kv = (ki >> INDEX_FRACTION);
-			if(kv > kn) break;
+
+			if(kv > kn)
+				break;
 			if(kv >= -kn)
 			{
-				/*
-				 * the contribution of the first and last input pixel (if
-				 * fractional) are linearly weighted by the fraction
-				 */
+				// the contribution of the first and last input pixel (if
+				// fractional) are linearly weighted by the fraction
 				if(j == i1i)
-				{
 					wacc += k[abs(kv)] * i1f;
-				}
 				else if(j + 1 == i2i)
-				{
 					wacc += k[abs(kv)] * i2f;
-				}
 				else
 					wacc += k[abs(kv)];
 
-				/* this is where we clip the kernel convolution to the source plane */
+				// this is where we clip the kernel convolution to the source plane
 				if(j >= 0 && j < iw)
 				{
 					if(lookup_sx0[i] == -1)

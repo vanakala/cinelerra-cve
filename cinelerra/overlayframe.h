@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef OVERLAYFRAME_H
 #define OVERLAYFRAME_H
@@ -43,8 +27,8 @@ public:
 	OverlayKernel(int interpolation_type);
 	~OverlayKernel();
 
-	float *lookup;
-	float width;
+	double *lookup;
+	double width;
 	int n;
 	int type;
 };
@@ -84,6 +68,7 @@ class DirectUnit : public LoadClient
 public:
 	DirectUnit(DirectEngine *server);
 	~DirectUnit();
+
 	void process_package(LoadPackage *package);
 	DirectEngine *engine;
 };
@@ -125,7 +110,7 @@ public:
 	int out_x2;
 	int out_y1;
 	int out_y2;
-	float alpha;
+	double alpha;
 	int mode;
 };
 
@@ -141,17 +126,17 @@ public:
 
 	VFrame *output;
 	VFrame *input;
-	float in_x1;
-	float in_x2;
-	float in_y1;
-	float in_y2;
-	float out_x1;
-	float out_x2;
+	double in_x1;
+	double in_x2;
+	double in_y1;
+	double in_y2;
+	double out_x1;
+	double out_x2;
 	int out_x1i;
 	int out_x2i;
-	float out_y1;
-	float out_y2;
-	float alpha;
+	double out_y1;
+	double out_y2;
+	double alpha;
 	int mode;
 
 	int *in_lookup_x;
@@ -176,18 +161,18 @@ public:
 	int col_out2;
 	int row_in;
 
-	float in1;
-	float in2;
-	float out1;
-	float out2;
+	double in1;
+	double in2;
+	double out1;
+	double out2;
 
-	float alpha;
+	double alpha;
 	int mode;
 
 	int *lookup_sx0;
 	int *lookup_sx1;
 	int *lookup_sk;
-	float *lookup_wacc;
+	double *lookup_wacc;
 	int kd;
 };
 
@@ -199,15 +184,15 @@ public:
 
 	int overlay(VFrame *output,
 		VFrame *input,
-		float in_x1,
-		float in_y1,
-		float in_x2,
-		float in_y2,
-		float out_x1,
-		float out_y1,
-		float out_x2,
-		float out_y2,
-		float alpha,
+		double in_x1,
+		double in_y1,
+		double in_x2,
+		double in_y2,
+		double out_x1,
+		double out_y1,
+		double out_x2,
+		double out_y2,
+		double alpha,
 		int mode,
 		int interpolation_type);
 
