@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -42,25 +26,22 @@ FilePNG::FilePNG(Asset *asset, File *file)
 
 int FilePNG::check_sig(Asset *asset)
 {
-	int l;
 	FILE *stream = fopen(asset->path, "rb");
 
 	if(stream)
 	{
 		char test[16];
-		l = fread(test, 16, 1, stream);
+
+		int l = fread(test, 16, 1, stream);
 		fclose(stream);
-		if (!l) return 0;
-		if(png_check_sig((unsigned char*)test, 8))
-		{
+		if(!l)
+			return 0;
+
+		if(png_check_sig((png_const_bytep)test, 8))
 			return 1;
-		}
 		else
-		if(test[0] == 'P' && test[1] == 'N' && test[2] == 'G' && 
-			test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && test[6] == 'T')
-		{
+		if(!strncmp("PNGLIST", test, 7))
 			return 1;
-		}
 	}
 	return 0;
 }
@@ -84,20 +65,7 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 
 int FilePNG::colormodel_supported(int colormodel)
 {
-	if (((colormodel == BC_RGBA8888) && (native_cmodel == BC_RGBA16161616))
-		|| ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616))
-		|| (colormodel == BC_RGB888))
-	{
-		return colormodel;
-	}
-	else if ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888))
-	{
-		return BC_RGB888;
-	}
-	else
-	{
-		return native_cmodel;
-	}
+	return native_cmodel;
 }
 
 int FilePNG::read_frame_header(const char *path)
@@ -134,27 +102,17 @@ int FilePNG::read_frame_header(const char *path)
 
 	png_get_tRNS(png_ptr, info_ptr, NULL, &num_trans, NULL);
 
-	if (color_depth == 16)
+	if(color_depth == 16)
 	{
 		if (color_type & PNG_COLOR_MASK_ALPHA)
-		{
 			native_cmodel = BC_RGBA16161616;
-		}
 		else
-		{
 			native_cmodel = BC_RGB161616;
-		}
 	}
-	else 
-	if ((color_type & PNG_COLOR_MASK_ALPHA)
-		|| (num_trans > 0))
-	{
+	else if((color_type & PNG_COLOR_MASK_ALPHA) || (num_trans > 0))
 		native_cmodel = BC_RGBA8888;
-	}
 	else
-	{
 		native_cmodel = BC_RGB888;
-	}
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(stream);
@@ -257,70 +215,37 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_read_info(png_ptr, info_ptr);
 
 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
-	if (png_color_type == PNG_COLOR_TYPE_GRAY ||
-		png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-	{
+	if(png_color_type == PNG_COLOR_TYPE_GRAY ||
+			png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 		png_set_gray_to_rgb(png_ptr);
-	}
 
 	colormodel = output->get_color_model();
 	color_type = png_get_color_type(png_ptr, info_ptr);
-	color_depth = png_get_bit_depth(png_ptr,info_ptr);
+	color_depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGB161616))
-		&& ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
-	{
-		png_set_strip_16(png_ptr);
-	}
-
-/* If we're dropping the alpha channel, use the background color of the image
-   otherwise, use black */
-	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGBA8888))
-		&& ((colormodel == BC_RGB161616)||(colormodel == BC_RGB888)))
-	{
-		png_color_16 my_background;
-		png_color_16p image_background;
-
-		memset(&my_background, 0, sizeof(png_color_16));
-
-		if (png_get_bKGD(png_ptr, info_ptr, &image_background))
-		{
-			png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-		}
-		else
-		{
-			png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-		}
-	}
-
-	/* Little endian */
-	if ((color_depth == 16)
-		&&((colormodel == BC_RGBA16161616)||(colormodel == BC_RGB161616)))
-	{
+	// Little endian
+	if((color_depth == 16) && ((colormodel == BC_RGBA16161616) ||
+			(colormodel == BC_RGB161616)))
 		png_set_swap(png_ptr);
-	}
 
-	if (!(color_type & PNG_COLOR_MASK_COLOR))
-	{
+	if(!(color_type & PNG_COLOR_MASK_COLOR))
 		png_set_gray_to_rgb(png_ptr);
-	}
 
-	if (color_type & PNG_COLOR_MASK_PALETTE)
-	{
+	if(color_type & PNG_COLOR_MASK_PALETTE)
 		png_set_palette_to_rgb(png_ptr);
-	}
 
-	if (color_depth <= 8)
-	{
+	if(color_depth <= 8)
 		png_set_expand(png_ptr);
-	}
 
-/* read the image */
 	png_read_image(png_ptr, output->get_rows());
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	input->set_compressed_size(size);
 	output->delete_row_ptrs();
+
+	if(ColorModels::has_alpha(native_cmodel))
+		output->set_transparent();
+
 	return result;
 }
 
@@ -339,7 +264,7 @@ PNGUnit::PNGUnit(FilePNG *file, FrameWriter *writer)
 
 PNGUnit::~PNGUnit()
 {
-	if(temp_frame) delete temp_frame;
+	delete temp_frame;
 }
 
 
