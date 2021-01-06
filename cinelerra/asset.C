@@ -117,7 +117,6 @@ void Asset::init_values()
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
-	png_use_alpha = 0;
 	tiff_cmodel = 0;
 	tiff_compression = 0;
 
@@ -358,8 +357,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 		set_audio_stream(audio_streamno - 1);
 		set_video_stream(video_streamno - 1);
 	}
-
-	png_use_alpha = asset->png_use_alpha;
 
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
@@ -1176,8 +1173,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
 
-	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
-
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
@@ -1424,7 +1419,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		}
 
 		remove_prefixed_default(defaults, "PATH", string);
-		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+		remove_prefixed_default(defaults, "PNG_USE_ALPHA", string);
 
 		remove_prefixed_default(defaults, "EXR_USE_ALPHA", string);
 		remove_prefixed_default(defaults, "EXR_COMPRESSION", string);

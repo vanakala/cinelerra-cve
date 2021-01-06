@@ -239,8 +239,6 @@ public:
 // for jpeg compression
 	int jpeg_quality;
 
-// PNG video compression
-	int png_use_alpha;
 // TIFF video compression.  An enumeration from filetiff.h
 	int tiff_cmodel;
 	int tiff_compression;
