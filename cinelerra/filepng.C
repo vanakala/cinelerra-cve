@@ -5,18 +5,24 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "edit.h"
 #include "file.h"
 #include "filepng.h"
 #include "interlacemodes.h"
 #include "language.h"
-#include "mwindow.h"
+#include "paramlist.h"
+#include "paramlistwindow.h"
 #include "vframe.h"
-#include "videodevice.inc"
 #include "mainerror.h"
 
 #include <png.h>
 
+#define FILEPNG_VCODEC_IX 0
+
+struct paramlist_defaults FilePNG::encoder_params[] =
+{
+	{ "use_alpha", N_("Use alpha"), PARAMTYPE_INT | PARAMTYPE_BOOL, 0 },
+	{ 0, 0, 0, 0 }
+};
 
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
@@ -52,14 +58,18 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	int options)
 {
 	int cx, cy;
+	Param *param;
 
 	if(options & SUPPORTS_VIDEO)
 	{
-		parent_window->get_abs_cursor_pos(&cx, &cy);
-		PNGConfigVideo *window = new PNGConfigVideo(parent_window, asset, cx, cy);
-		format_window = window;
-		window->run_window();
-		delete window;
+		if(!asset->encoder_parameters[FILEPNG_VCODEC_IX])
+		{
+			asset->encoder_parameters[FILEPNG_VCODEC_IX] =
+				Paramlist::construct("FilePNG", encoder_params);
+		}
+		ParamlistThread thread(&asset->encoder_parameters[FILEPNG_VCODEC_IX],
+			_("PNG compression"), 0, &format_window);
+		thread.run();
 	}
 }
 
@@ -151,8 +161,13 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int result = 0;
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_infop end_info = 0;	
+	png_infop end_info = 0;
 	VFrame *output_frame;
+	int use_alpha = 0;
+
+	if(asset->encoder_parameters[FILEPNG_VCODEC_IX])
+		use_alpha = asset->encoder_parameters[FILEPNG_VCODEC_IX]->get("use_alpha", (int64_t)0);
+
 	data->set_compressed_size(0);
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
@@ -168,15 +183,13 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		asset->width, 
 		asset->height,
 		8,
-		asset->png_use_alpha ? 
-		PNG_COLOR_TYPE_RGB_ALPHA :
-		PNG_COLOR_TYPE_RGB, 
+		use_alpha ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, 
 		PNG_COMPRESSION_TYPE_DEFAULT, 
 		PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png_ptr, info_ptr);
 
-	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
+	native_cmodel = use_alpha ? BC_RGBA8888 : BC_RGB888;
 	if(frame->get_color_model() != native_cmodel)
 	{
 		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0, 
@@ -265,34 +278,4 @@ PNGUnit::PNGUnit(FilePNG *file, FrameWriter *writer)
 PNGUnit::~PNGUnit()
 {
 	delete temp_frame;
-}
-
-
-PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset,
-	int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Video Compression")),
-	absx,
-	absy,
-	200,
-	100)
-{
-	int x = 10, y = 10;
-
-	set_icon(mwindow_global->get_window_icon());
-	this->asset = asset;
-	add_subwindow(new PNGUseAlpha(this, x, y));
-	add_subwindow(new BC_OKButton(this));
-}
-
-
-PNGUseAlpha::PNGUseAlpha(PNGConfigVideo *gui, int x, int y)
- : BC_CheckBox(x, y, gui->asset->png_use_alpha, _("Use alpha"))
-{
-	this->gui = gui;
-}
-
-int PNGUseAlpha::handle_event()
-{
-	gui->asset->png_use_alpha = get_value();
-	return 1;
 }

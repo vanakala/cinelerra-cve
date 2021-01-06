@@ -29,7 +29,9 @@ public:
 
 	int read_frame_header(const char *path);
 
+private:
 	int native_cmodel;
+	static struct paramlist_defaults encoder_params[];
 };
 
 
@@ -41,24 +43,6 @@ public:
 
 	FilePNG *file;
 	VFrame *temp_frame;
-};
-
-class PNGConfigVideo : public BC_Window
-{
-public:
-	PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset, int absx, int absy);
-
-	Asset *asset;
-};
-
-
-class PNGUseAlpha : public BC_CheckBox
-{
-public:
-	PNGUseAlpha(PNGConfigVideo *gui, int x, int y);
-
-	int handle_event();
-	PNGConfigVideo *gui;
 };
 
 #endif
