@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bcwindowbase.inc"
 #include "clip.h"
@@ -94,6 +78,7 @@ void Param::initialize(const char *name)
 	defaultint = 0;
 	defaultlong = 0;
 	defaultfloat = 0;
+	prompt = 0;
 }
 
 Param::~Param()
@@ -128,6 +113,7 @@ void Param::copy_all(Param *that)
 void Param::copy_top_level(Param *that)
 {
 	type |= that->type;
+	prompt = that->prompt;
 
 	if(that->type & PARAMTYPE_INT)
 		intvalue = that->intvalue;
@@ -862,6 +848,22 @@ void Paramlist::reset_defaults()
 
 	for(current = first; current; current = current->next)
 		current->reset_defaults();
+}
+
+Paramlist *Paramlist::construct(const char *name,
+	struct paramlist_defaults *defaults)
+{
+	Paramlist *plb = new Paramlist(name);
+
+	for(int i = 0; defaults[i].name; i++)
+	{
+		Param *p = plb->append_param(defaults[i].name,
+			defaults[i].value);
+		p->type |= defaults[i].type & ~PARAMTYPE_MASK;
+		p->prompt = defaults[i].prompt;
+	}
+	plb->store_defaults();
+	return plb;
 }
 
 void Paramlist::dump(int indent)

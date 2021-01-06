@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #ifndef PARAMLIST_H
 #define PARAMLIST_H
@@ -26,6 +10,14 @@
 #include "paramlist.inc"
 #include "linklist.h"
 #include "stdint.h"
+
+struct paramlist_defaults
+{
+	const char *name;
+	const char *prompt;
+	int type;
+	int64_t value;
+};
 
 class Param : public ListItem<Param>
 {
@@ -66,6 +58,7 @@ public:
 	int string_allocated;
 	char *helptext;
 	char *stringvalue;
+	const char *prompt;
 	int intvalue;
 	int64_t longvalue;
 	double floatvalue;
@@ -128,6 +121,8 @@ public:
 	int equiv(Paramlist *that, int sublvl = 0);
 	void store_defaults();
 	void reset_defaults();
+	static Paramlist *construct(const char *name,
+		struct paramlist_defaults *defaults);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
