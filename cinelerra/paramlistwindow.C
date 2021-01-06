@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "asset.h"
 #include "bcsubwindow.h"
@@ -292,12 +276,13 @@ ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname,
 }
 
 ParamlistThread::ParamlistThread(Paramlist **paramp, const char *name,
-	VFrame *window_icon)
+	VFrame *window_icon, BC_WindowBase **list_window)
  : Thread()
 {
 	strcpy(window_title, name);
 	this->paramp = paramp;
 	this->window_icon = window_icon;
+	this->list_window = list_window;
 	window = 0;
 	win_result = 1;
 	window_lock = new Mutex("ParamlistThread::window_lock");
@@ -313,6 +298,8 @@ void ParamlistThread::run()
 	window_lock->lock("ParamlistThread::run");
 	win_result = 1;
 	window = new ParamlistWindow(*paramp, window_title, window_icon);
+	if(list_window)
+		*list_window = window;
 	win_result = window->run_window();
 	delete window;
 	window = 0;
