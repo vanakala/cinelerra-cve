@@ -36,6 +36,7 @@ void ParamlistSubWindow::draw_list()
 	BC_WindowBase *win = 0;
 	int w1 = 0, h1 = 0, tw;
 	int name_width;
+	const char *str;
 
 	top = left = PARAMLIST_WIN_MARGIN;
 	base_w = 0;
@@ -46,7 +47,11 @@ void ParamlistSubWindow::draw_list()
 
 	for(current = params->first; current; current = current->next)
 	{
-		if((tw = get_text_width(MEDIUMFONT, current->name)) > name_width)
+		if(current->prompt)
+			str = _(current->prompt);
+		else
+			str = current->name;
+		if((tw = get_text_width(MEDIUMFONT, str)) > name_width)
 			name_width = tw;
 	}
 
@@ -67,31 +72,37 @@ void ParamlistSubWindow::draw_list()
 				w1 = win->get_w();
 			}
 			else
-			if(current->type & PARAMTYPE_BOOL)
 			{
-				add_subwindow(new BC_Title(left, top, current->name));
-				add_subwindow(win = new ParamChkBox(left + name_width,
-				top, current, &current->longvalue));
-				w1 = name_width + win->get_w();
-			}
-			else
-			{
-				add_subwindow(new BC_Title(left, top, current->name));
-				add_subwindow(win = new Parami64Txtbx(left + name_width,
-					top, current, &current->longvalue));
+				if(current->prompt)
+					add_subwindow(new BC_Title(left, top, _(current->prompt)));
+				else
+					add_subwindow(new BC_Title(left, top, current->name));
+
+				if(current->type & PARAMTYPE_BOOL)
+					add_subwindow(win = new ParamChkBox(left + name_width,
+						top, current, &current->longvalue));
+				else
+					add_subwindow(win = new Parami64Txtbx(left + name_width,
+						top, current, &current->longvalue));
 				w1 = name_width + win->get_w();
 			}
 			h1 = win->get_h();
 			break;
 		case PARAMTYPE_STR:
-			add_subwindow(new BC_Title(left, top, current->name));
+			if(current->prompt)
+				add_subwindow(new BC_Title(left, top, _(current->prompt)));
+			else
+				add_subwindow(new BC_Title(left, top, current->name));
 			add_subwindow(win = new ParamStrTxtbx(left + name_width,
 				top, current, current->stringvalue));
 			w1 = name_width + win->get_w();
 			h1 = win->get_h();
 			break;
 		case PARAMTYPE_DBL:
-			add_subwindow(new BC_Title(left, top, current->name));
+			if(current->prompt)
+				add_subwindow(new BC_Title(left, top, _(current->prompt)));
+			else
+				add_subwindow(new BC_Title(left, top, current->name));
 			add_subwindow(win = new ParamDblTxtbx(left + name_width,
 				top, current, &current->floatvalue));
 			w1 = name_width + win->get_w();
