@@ -369,6 +369,17 @@ void Param::store_defaults()
 	}
 }
 
+void Param::set_default(int64_t defaultvalue)
+{
+	defaulttype = type;
+
+// STR and DBL are not implemented
+	if(type & PARAMTYPE_INT)
+		defaultint = defaultvalue;
+	if(type & PARAMTYPE_LNG)
+		defaultlong = defaultvalue;
+}
+
 void Param::reset_defaults()
 {
 	if(defaulttype)
@@ -393,6 +404,8 @@ void Param::dump(int indent)
 		type, intvalue, longvalue, floatvalue);
 	if(stringvalue)
 		printf(" '%s'", stringvalue);
+	if(prompt)
+		printf(" prompt: '%s'", prompt);
 	putchar('\n');
 	if(helptext)
 		printf("%*sHelp:'%s'\n", indent, "", helptext);
@@ -850,20 +863,34 @@ void Paramlist::reset_defaults()
 		current->reset_defaults();
 }
 
-Paramlist *Paramlist::construct(const char *name,
+Paramlist *Paramlist::construct(const char *name, Paramlist *plist,
 	struct paramlist_defaults *defaults)
 {
-	Paramlist *plb = new Paramlist(name);
+	Param *parm;
+
+	if(!plist)
+		plist = new Paramlist(name);
 
 	for(int i = 0; defaults[i].name; i++)
 	{
-		Param *p = plb->append_param(defaults[i].name,
-			defaults[i].value);
-		p->type |= defaults[i].type & ~PARAMTYPE_MASK;
-		p->prompt = defaults[i].prompt;
+		if(parm = plist->find(defaults[i].name))
+		{
+			if(plist->type & (PARAMTYPE_MASK | PARAMTYPE_BITS | PARAMTYPE_BOOL) !=
+					defaults[i].type)
+			{
+				delete parm;
+				parm = 0;
+			}
+		}
+		if(!parm)
+			parm = plist->append_param(defaults[i].name,
+				defaults[i].value);
+		parm->type |= defaults[i].type & ~PARAMTYPE_MASK;
+		parm->prompt = defaults[i].prompt;
+		// set default to initial default
+		parm->set_default(defaults[i].value);
 	}
-	plb->store_defaults();
-	return plb;
+	return plist;
 }
 
 void Paramlist::dump(int indent)

@@ -9,6 +9,7 @@
 #include "filepng.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
 #include "vframe.h"
@@ -62,13 +63,14 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 
 	if(options & SUPPORTS_VIDEO)
 	{
-		if(!asset->encoder_parameters[FILEPNG_VCODEC_IX])
-		{
-			asset->encoder_parameters[FILEPNG_VCODEC_IX] =
-				Paramlist::construct("FilePNG", encoder_params);
-		}
+		asset->encoder_parameters[FILEPNG_VCODEC_IX] =
+			Paramlist::construct("FilePNG",
+				asset->encoder_parameters[FILEPNG_VCODEC_IX],
+				encoder_params);
+
 		ParamlistThread thread(&asset->encoder_parameters[FILEPNG_VCODEC_IX],
-			_("PNG compression"), 0, &format_window);
+			_("PNG compression"), mwindow_global->get_window_icon(),
+			&format_window);
 		thread.run();
 	}
 }

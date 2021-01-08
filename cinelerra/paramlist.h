@@ -50,6 +50,7 @@ public:
 	int equiv(Param *that);
 	void store_defaults();
 	void reset_defaults();
+	void set_default(int64_t defaultvalue);
 	void dump(int indent = 0);
 
 	int type;
@@ -121,7 +122,7 @@ public:
 	int equiv(Paramlist *that, int sublvl = 0);
 	void store_defaults();
 	void reset_defaults();
-	static Paramlist *construct(const char *name,
+	static Paramlist *construct(const char *name, Paramlist *plist,
 		struct paramlist_defaults *defaults);
 	void dump(int indent = 0);
 
