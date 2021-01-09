@@ -13,6 +13,7 @@
 #include "filesystem.h"
 #include "fileavlibs.h"
 #include "fileformat.h"
+#include "filepng.h"
 #include "filexml.h"
 #include "formattools.h"
 #include "formatpresets.h"
@@ -1202,7 +1203,17 @@ void Asset::set_format_params()
 void Asset::save_render_options()
 {
 	if(renderprofile_path[0])
-		FileAVlibs::save_render_options(this);
+	{
+		switch(format)
+		{
+		case FILE_PNG:
+			FilePNG::save_render_optios(this);
+			break;
+		default:
+			FileAVlibs::save_render_options(this);
+			break;
+		}
+	}
 }
 
 void Asset::set_decoder_parameters()

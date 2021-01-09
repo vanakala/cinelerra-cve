@@ -6,6 +6,7 @@
 #ifndef FILEPNG_H
 #define FILEPNG_H
 
+#include "asset.inc"
 #include "datatype.h"
 #include "file.inc"
 #include "filebase.h"
@@ -26,6 +27,7 @@ public:
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+	static void save_render_optios(Asset *asset);
 
 	int read_frame_header(const char *path);
 
