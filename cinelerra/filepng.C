@@ -310,6 +310,24 @@ void FilePNG::save_render_optios(Asset *asset)
 	}
 }
 
+void FilePNG::get_render_defaults(Asset *asset)
+{
+	Paramlist *tmp = 0;
+	FileXML file;
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(PNG_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, PNG_CONFIG_EXT);
+
+	if(!file.read_from_file(pathbuf, 1) && !file.read_tag())
+	{
+		tmp = new Paramlist();
+		tmp->load_list(&file);
+	}
+
+	delete asset->encoder_parameters[FILEPNG_VCODEC_IX];
+	asset->encoder_parameters[FILEPNG_VCODEC_IX] = tmp;
+}
 
 FrameWriterUnit* FilePNG::new_writer_unit(FrameWriter *writer)
 {

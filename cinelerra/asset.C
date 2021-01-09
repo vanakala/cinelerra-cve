@@ -1185,19 +1185,47 @@ void Asset::load_defaults(BC_Hash *defaults,
 void Asset::format_changed()
 {
 	if(renderprofile_path[0])
-		FileAVlibs::get_render_defaults(this);
+	{
+		switch(format)
+		{
+		case FILE_PNG:
+			FilePNG::get_render_defaults(this);
+			break;
+		default:
+			FileAVlibs::get_render_defaults(this);
+			break;
+		}
+	}
 }
 
 void Asset::get_format_params(int options)
 {
 	if(renderprofile_path[0])
-		FileAVlibs::get_format_params(this, options);
+	{
+		switch(format)
+		{
+		case FILE_PNG:
+			break;
+		default:
+			FileAVlibs::get_format_params(this, options);
+			break;
+		}
+	}
 }
 
 void Asset::set_format_params()
 {
 	if(renderprofile_path[0])
-		FileAVlibs::set_format_params(this);
+	{
+		switch(format)
+		{
+		case FILE_PNG:
+			break;
+		default:
+			FileAVlibs::set_format_params(this);
+			break;
+		}
+	}
 }
 
 void Asset::save_render_options()
