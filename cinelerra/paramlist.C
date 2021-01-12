@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 
 const char *Param::known_properties[] =
 {
@@ -891,6 +892,81 @@ Paramlist *Paramlist::construct(const char *name, Paramlist *plist,
 		parm->set_default(defaults[i].value);
 	}
 	return plist;
+}
+
+void Paramlist::save_paramlist(Paramlist *list, const char *filepath,
+	struct paramlist_defaults *defaults)
+{
+	Paramlist *tmp = 0;
+	FileXML file;
+	Param *parm;
+
+	if(!list)
+	{
+		unlink(filepath);
+		return;
+	}
+
+	if(!file.read_from_file(filepath, 1) && !file.read_tag())
+	{
+		tmp = new Paramlist();
+		tmp->load_list(&file);
+		if(tmp->equiv(list))
+		{
+			// nothing changed
+			delete tmp;
+			return;
+		}
+		delete tmp;
+		tmp = 0;
+	}
+
+	file.rewind();
+
+	for(int i = 0; defaults[i].name; i++)
+	{
+		if(parm = list->find(defaults[i].name))
+		{
+			switch(parm->type & PARAMTYPE_MASK)
+			{
+			case PARAMTYPE_INT:
+				if(parm->intvalue == (int)defaults[i].value)
+					continue;
+				if(!tmp)
+					tmp = new Paramlist(list->name);
+				tmp->append_param(parm->name, parm->intvalue);
+				break;
+			case PARAMTYPE_LNG:
+				if(parm->longvalue == defaults[i].value)
+					continue;
+				if(!tmp)
+					tmp = new Paramlist(list->name);
+				tmp->append_param(parm->name, parm->longvalue);
+				break;
+			}
+		}
+	}
+	if(!tmp)
+		unlink(filepath);
+	else
+	{
+		tmp->save_list(&file);
+		file.write_to_file(filepath);
+		delete tmp;
+	}
+}
+
+Paramlist *Paramlist::load_paramlist(const char *filepath)
+{
+	FileXML file;
+	Paramlist *list = 0;
+
+	if(!file.read_from_file(filepath, 1) && !file.read_tag())
+	{
+		list = new Paramlist();
+		list->load_list(&file);
+	}
+	return list;
 }
 
 void Paramlist::dump(int indent)

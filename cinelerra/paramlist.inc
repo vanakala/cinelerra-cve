@@ -25,4 +25,7 @@ struct paramlist_defaults;
 #define PARAMTYPE_CODK 0x800
 #define PARAMTYPE_CHNG 0x8000
 
+// Extension of the onfiguration file
+#define XML_CONFIG_EXT ".xml"
+
 #endif

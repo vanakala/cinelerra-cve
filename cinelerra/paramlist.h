@@ -124,6 +124,9 @@ public:
 	void reset_defaults();
 	static Paramlist *construct(const char *name, Paramlist *plist,
 		struct paramlist_defaults *defaults);
+	static void save_paramlist(Paramlist *list, const char *filepath,
+		struct paramlist_defaults *defaults);
+	static Paramlist *load_paramlist(const char *filepath);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];

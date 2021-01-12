@@ -7,7 +7,6 @@
 #include "bcsignals.h"
 #include "file.h"
 #include "filepng.h"
-#include "filexml.h"
 #include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.h"
@@ -17,12 +16,10 @@
 #include "mainerror.h"
 
 #include <png.h>
-#include <unistd.h>
 #include <string.h>
 
 #define FILEPNG_VCODEC_IX 0
 #define PNG_ENC_CONFIG_NAME "png:enc"
-#define PNG_CONFIG_EXT ".xml"
 
 
 struct paramlist_defaults FilePNG::encoder_params[] =
@@ -66,7 +63,6 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 {
 	int cx, cy;
 	Param *param;
-
 	if(options & SUPPORTS_VIDEO)
 	{
 		asset->encoder_parameters[FILEPNG_VCODEC_IX] =
@@ -272,61 +268,25 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 
 void FilePNG::save_render_optios(Asset *asset)
 {
-	Paramlist *plist  = asset->encoder_parameters[FILEPNG_VCODEC_IX];
-	Param *parm, *p;
-	Paramlist *tmp = 0;
-	FileXML file;
 	char pathbuf[BCTEXTLEN];
 
 	asset->profile_config_path(PNG_ENC_CONFIG_NAME, pathbuf);
-	strcat(pathbuf, PNG_CONFIG_EXT);
+	strcat(pathbuf, XML_CONFIG_EXT);
 
-	if(!plist)
-	{
-		unlink(pathbuf);
-		return;
-	}
-
-	for(int i = 0; encoder_params[i].name; i++)
-	{
-		if(parm = plist->find(encoder_params[i].name))
-		{
-			if(parm->longvalue == encoder_params[i].value)
-				continue;
-			if(!tmp)
-				tmp = new Paramlist("FilePNG");
-			p = tmp->append_param(encoder_params[i].name,
-				parm->longvalue);
-			p->type = parm->type;
-		}
-	}
-	if(!tmp)
-		unlink(pathbuf);
-	else
-	{
-		tmp->save_list(&file);
-		file.write_to_file(pathbuf);
-		delete tmp;
-	}
+	Paramlist::save_paramlist(asset->encoder_parameters[FILEPNG_VCODEC_IX],
+		pathbuf, encoder_params);
 }
 
 void FilePNG::get_render_defaults(Asset *asset)
 {
-	Paramlist *tmp = 0;
-	FileXML file;
 	char pathbuf[BCTEXTLEN];
 
 	asset->profile_config_path(PNG_ENC_CONFIG_NAME, pathbuf);
-	strcat(pathbuf, PNG_CONFIG_EXT);
-
-	if(!file.read_from_file(pathbuf, 1) && !file.read_tag())
-	{
-		tmp = new Paramlist();
-		tmp->load_list(&file);
-	}
+	strcat(pathbuf, XML_CONFIG_EXT);
 
 	delete asset->encoder_parameters[FILEPNG_VCODEC_IX];
-	asset->encoder_parameters[FILEPNG_VCODEC_IX] = tmp;
+	asset->encoder_parameters[FILEPNG_VCODEC_IX] =
+		Paramlist::load_paramlist(pathbuf);
 }
 
 FrameWriterUnit* FilePNG::new_writer_unit(FrameWriter *writer)
