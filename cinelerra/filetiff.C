@@ -1,39 +1,58 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
-#include "bctitle.h"
 #include "bcsignals.h"
-#include "edit.h"
-#include "file.h"
 #include "filetiff.h"
 #include "interlacemodes.h"
 #include "language.h"
-#include "mwindow.h"
-#include "vframe.h"
 #include "mainerror.h"
+#include "mwindow.h"
+#include "paramlist.h"
+#include "paramlistwindow.h"
+#include "selection.h"
+#include "vframe.h"
 
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+
+#define FILETIFF_VCODEC_IX 0
+
+#define PARAM_COMPRESSION "compression"
+#define PARAM_CMODEL "cmodel"
+
+const struct selection_int FileTIFF::tiff_compression[] =
+{
+	{ "None", FileTIFF::NONE },
+	{ "LZW", FileTIFF::LZW },
+	{ "Pack Bits", FileTIFF::PACK_BITS },
+	{ "Deflate", FileTIFF::DEFLATE },
+	{ "JPEG", FileTIFF::JPEG },
+	{ 0, 0 }
+};
+
+const struct selection_int FileTIFF::tiff_cmodels[] =
+{
+	{ "Greyscale", FileTIFF::GREYSCALE },
+	{ "RGB-8 Bit", FileTIFF::RGB_888 },
+	{ "RGB-16 Bit", FileTIFF::RGB_161616 },
+	{ "RGBA-8 Bit", FileTIFF::RGBA_8888 },
+	{ "RGBA-16 Bit", FileTIFF::RGBA_16161616 },
+	{ "RGB-FLOAT", FileTIFF::RGB_FLOAT },
+	{ "RGBA-FLOAT", FileTIFF::RGBA_FLOAT},
+	{ 0, 0 }
+};
+
+struct paramlist_defaults FileTIFF::encoder_params[] =
+{
+	{ PARAM_CMODEL, N_("Colormodel"), PARAMTYPE_INT, FileTIFF::RGB_888 },
+	{ PARAM_COMPRESSION, N_("Compression"), PARAMTYPE_INT, FileTIFF::NONE },
+	{ 0, 0, 0, 0 }
+};
+
 
 FileTIFF::FileTIFF(Asset *asset, File *file)
  : FileList(asset, file, "TIFFLIST", ".tif", FILE_TIFF, FILE_TIFF_LIST)
@@ -46,16 +65,29 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
-	int cx, cy;
+	Param *parm;
 
 	if(options & SUPPORTS_VIDEO)
 	{
-		parent_window->get_abs_cursor_pos(&cx, &cy);
-		TIFFConfigVideo *window = new TIFFConfigVideo(parent_window,
-			asset, cx, cy);
-		format_window = window;
-		window->run_window();
-		delete window;
+		asset->encoder_parameters[FILETIFF_VCODEC_IX] =
+			Paramlist::construct("FileTIFF",
+				asset->encoder_parameters[FILETIFF_VCODEC_IX],
+			encoder_params);
+
+		parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->first;
+		parm->subparams = Paramlist::construct_from_selection(PARAM_CMODEL,
+			parm->subparams, tiff_cmodels);
+		parm->subparams->set_selected(parm->intvalue);
+		parm = parm->next;
+		parm->subparams = Paramlist::construct_from_selection(PARAM_COMPRESSION,
+			parm->subparams, tiff_compression);
+		parm->subparams->set_selected(parm->intvalue);
+
+		ParamlistThread thread(&asset->encoder_parameters[FILETIFF_VCODEC_IX],
+			_("TIFF compression"), mwindow_global->get_window_icon(),
+			&format_window);
+
+		thread.run();
 	}
 }
 
@@ -100,58 +132,24 @@ int FileTIFF::check_sig(Asset *asset)
 	return 0;
 }
 
-const char* FileTIFF::compression_to_str(int value)
+const char* FileTIFF::compression_name(int value)
 {
-	switch(value)
+	for(int i = 0; tiff_compression[i].text; i++)
 	{
-	case FileTIFF::NONE:
-		return _("None");
-
-	case FileTIFF::LZW:
-		return "LZW";
-
-	case FileTIFF::PACK_BITS:
-		return "Pack Bits";
-
-	case FileTIFF::DEFLATE:
-		return "Deflate";
-
-	case FileTIFF::JPEG:
-		return "JPEG";
-
-	default:
-		return _("None");
+		if(tiff_compression[i].value == value)
+			return tiff_compression[i].text;
 	}
+	return tiff_compression[0].text;
 }
 
-const char* FileTIFF::cmodel_to_str(int value)
+const char* FileTIFF::cmodel_name(int value)
 {
-	switch(value)
+	for(int i = 0; tiff_cmodels[i].text; i++)
 	{
-	case FileTIFF::GREYSCALE:
-		return "Greyscale";
-
-	case FileTIFF::RGB_888:
-		return "RGB-8 Bit";
-
-	case FileTIFF::RGB_161616:
-		return "RGB-16 Bit";
-
-	case FileTIFF::RGBA_8888:
-		return "RGBA-8 Bit";
-
-	case FileTIFF::RGBA_16161616:
-		return "RGBA-16 Bit";
-
-	case FileTIFF::RGB_FLOAT:
-		return "RGB-FLOAT";
-
-	case FileTIFF::RGBA_FLOAT:
-		return "RGBA-FLOAT";
-
-	default:
-		return "RGB-8 Bit"; 
+		if(tiff_cmodels[i].value == value)
+			return tiff_cmodels[i].text;
 	}
+	return tiff_cmodels[0].text;
 }
 
 int FileTIFF::read_frame_header(const char *path)
@@ -178,28 +176,28 @@ int FileTIFF::read_frame_header(const char *path)
 	TIFFGetField(stream, TIFFTAG_SAMPLEFORMAT, &sampleformat);
 
 	if(bitspersample == 8 && components == 3)
-		asset->tiff_cmodel = FileTIFF::RGB_888;
+		tiff_cmodel = FileTIFF::RGB_888;
 	else
 	if(bitspersample == 16 && components == 3)
-		asset->tiff_cmodel = FileTIFF::RGB_161616;
+		tiff_cmodel = FileTIFF::RGB_161616;
 	else
 	if(bitspersample == 8 && components == 4)
-		asset->tiff_cmodel = FileTIFF::RGBA_8888;
+		tiff_cmodel = FileTIFF::RGBA_8888;
 	else
 	if(bitspersample == 16 && components == 4)
-		asset->tiff_cmodel = FileTIFF::RGBA_16161616;
+		tiff_cmodel = FileTIFF::RGBA_16161616;
 	else
 	if(bitspersample == 32 && components == 3)
-		asset->tiff_cmodel = FileTIFF::RGB_FLOAT;
+		tiff_cmodel = FileTIFF::RGB_FLOAT;
 	else
 	if(bitspersample == 32 && components == 4)
-		asset->tiff_cmodel = FileTIFF::RGBA_FLOAT;
+		tiff_cmodel = FileTIFF::RGBA_FLOAT;
 	else
 	if(bitspersample == 8 && (components == 1 || components == 0))
-		asset->tiff_cmodel = FileTIFF::GREYSCALE;
+		tiff_cmodel = FileTIFF::GREYSCALE;
 	else
 	if(bitspersample == 1)
-		asset->tiff_cmodel = FileTIFF::BLACKWHITE;
+		tiff_cmodel = FileTIFF::BLACKWHITE;
 
 	TIFFClose(stream);
 
@@ -210,7 +208,7 @@ int FileTIFF::read_frame_header(const char *path)
 
 int FileTIFF::colormodel_supported(int colormodel)
 {
-	switch(asset->tiff_cmodel)
+	switch(tiff_cmodel)
 	{
 	case FileTIFF::BLACKWHITE:
 	case FileTIFF::RGB_888:
@@ -326,7 +324,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 		TIFFReadScanline(stream, output->get_row_ptr(i), i, 0);
 
 // For the greyscale model, the output is RGB888 but the input must be expanded
-		if(asset->tiff_cmodel == FileTIFF::GREYSCALE)
+		if(tiff_cmodel == FileTIFF::GREYSCALE)
 		{
 			unsigned char *row = output->get_row_ptr(i);
 			for(int j = output->get_w() - 1; j >= 0; j--)
@@ -338,7 +336,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 			}
 		}
 		else
-		if(asset->tiff_cmodel == FileTIFF::BLACKWHITE)
+		if(tiff_cmodel == FileTIFF::BLACKWHITE)
 		{
 			unsigned char *row = output->get_row_ptr(i);
 			for(int j = output->get_w() - 1; j >= 0;)
@@ -384,7 +382,8 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int components, color_model, bits, type, compression;
 	int sampleformat = SAMPLEFORMAT_UINT;
 	int bytesperrow;
-	switch(asset->tiff_cmodel)
+
+	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_CMODEL, (int64_t)0))
 	{
 	case FileTIFF::RGB_888:
 		components = 3;
@@ -439,8 +438,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	}
 
-
-	switch(asset->tiff_compression)
+	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_COMPRESSION, (int64_t)0))
 	{
 	case FileTIFF::LZW:
 		compression = COMPRESSION_LZW;
@@ -525,84 +523,3 @@ FileTIFFUnit::~FileTIFFUnit()
 	if(temp) delete temp;
 }
 
-
-TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset,
-	int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Video Compression")),
-	absx,
-	absy,
-	400,
-	200)
-{
-	int x = 10, y = 10;
-
-	set_icon(mwindow_global->get_window_icon());
-	this->asset = asset;
-
-	add_subwindow(new BC_Title(x, y, "Colorspace:"));
-	add_subwindow(new TIFFColorspace(this, x + 150, y, 200));
-	y += 40;
-	add_subwindow(new BC_Title(x, y, "Compression:"));
-	add_subwindow(new TIFFCompression(this, x + 150, y, 200));
-
-	add_subwindow(new BC_OKButton(this));
-}
-
-
-TIFFColorspace::TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w)
- : BC_PopupMenu(x,
-	y,
-	w,
-	FileTIFF::cmodel_to_str(gui->asset->tiff_cmodel))
-{
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_888));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_8888));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_FLOAT));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_FLOAT));
-}
-
-int TIFFColorspace::handle_event()
-{
-	return 1;
-}
-
-
-TIFFColorspaceItem::TIFFColorspaceItem(TIFFConfigVideo *gui, int value)
- : BC_MenuItem(FileTIFF::cmodel_to_str(value))
-{
-	this->gui = gui;
-	this->value = value;
-}
-
-int TIFFColorspaceItem::handle_event()
-{
-	gui->asset->tiff_cmodel = value;
-	return 0;
-}
-
-
-TIFFCompression::TIFFCompression(TIFFConfigVideo *gui, int x, int y, int w)
- : BC_PopupMenu(x, y, w, FileTIFF::compression_to_str(gui->asset->tiff_compression))
-{
-	this->gui = gui;
-	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
-	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
-}
-
-int TIFFCompression::handle_event()
-{
-	return 1;
-}
-
-TIFFCompressionItem::TIFFCompressionItem(TIFFConfigVideo *gui, int value)
- : BC_MenuItem(FileTIFF::compression_to_str(value))
-{
-	this->gui = gui;
-	this->value = value;
-}
-
-int TIFFCompressionItem::handle_event()
-{
-	gui->asset->tiff_compression = value;
-	return 0;
-}
