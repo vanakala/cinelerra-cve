@@ -21,10 +21,11 @@
 #define FILEPNG_VCODEC_IX 0
 #define PNG_ENC_CONFIG_NAME "png:enc"
 
+#define PARAM_ALPHA "use_alpha"
 
 struct paramlist_defaults FilePNG::encoder_params[] =
 {
-	{ "use_alpha", N_("Use alpha"), PARAMTYPE_INT | PARAMTYPE_BOOL, 0 },
+	{ PARAM_ALPHA, N_("Use alpha"), PARAMTYPE_INT | PARAMTYPE_BOOL, 0 },
 	{ 0, 0, 0, 0 }
 };
 
@@ -170,7 +171,7 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int use_alpha = 0;
 
 	if(asset->encoder_parameters[FILEPNG_VCODEC_IX])
-		use_alpha = asset->encoder_parameters[FILEPNG_VCODEC_IX]->get("use_alpha", (int64_t)0);
+		use_alpha = asset->encoder_parameters[FILEPNG_VCODEC_IX]->get(PARAM_ALPHA, 0);
 
 	data->set_compressed_size(0);
 
