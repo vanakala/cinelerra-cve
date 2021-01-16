@@ -14,6 +14,7 @@
 #include "fileavlibs.h"
 #include "fileformat.h"
 #include "filepng.h"
+#include "filetiff.h"
 #include "filexml.h"
 #include "formattools.h"
 #include "formatpresets.h"
@@ -1182,6 +1183,9 @@ void Asset::format_changed()
 		case FILE_PNG:
 			FilePNG::get_render_defaults(this);
 			break;
+		case FILE_TIFF:
+			FileTIFF::get_render_defaults(this);
+			break;
 		default:
 			FileAVlibs::get_render_defaults(this);
 			break;
@@ -1196,6 +1200,7 @@ void Asset::get_format_params(int options)
 		switch(format)
 		{
 		case FILE_PNG:
+		case FILE_TIFF:
 			break;
 		default:
 			FileAVlibs::get_format_params(this, options);
@@ -1211,6 +1216,7 @@ void Asset::set_format_params()
 		switch(format)
 		{
 		case FILE_PNG:
+		case FILE_TIFF:
 			break;
 		default:
 			FileAVlibs::set_format_params(this);
@@ -1227,6 +1233,9 @@ void Asset::save_render_options()
 		{
 		case FILE_PNG:
 			FilePNG::save_render_optios(this);
+			break;
+		case FILE_TIFF:
+			FileTIFF::save_render_optios(this);
 			break;
 		default:
 			FileAVlibs::save_render_options(this);

@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #define FILETIFF_VCODEC_IX 0
+#define TIFF_ENC_CONFIG_NAME "tiff:enc"
 
 #define PARAM_COMPRESSION "compression"
 #define PARAM_CMODEL "cmodel"
@@ -88,6 +89,14 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 			&format_window);
 
 		thread.run();
+
+		if(!thread.win_result)
+		{
+			parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->first;
+			parm->intvalue = parm->subparams->selectedint;
+			parm = parm->next;
+			parm->intvalue = parm->subparams->selectedint;
+		}
 	}
 }
 
@@ -503,6 +512,29 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	TIFFClose(stream);
 
 	return result;
+}
+
+void FileTIFF::save_render_optios(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(TIFF_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	Paramlist::save_paramlist(asset->encoder_parameters[FILETIFF_VCODEC_IX],
+		pathbuf, encoder_params);
+}
+
+void FileTIFF::get_render_defaults(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(TIFF_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	delete asset->encoder_parameters[FILETIFF_VCODEC_IX];
+	asset->encoder_parameters[FILETIFF_VCODEC_IX] =
+		Paramlist::load_paramlist(pathbuf);
 }
 
 FrameWriterUnit* FileTIFF::new_writer_unit(FrameWriter *writer)
