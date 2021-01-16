@@ -118,9 +118,6 @@ void Asset::init_values()
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
-	tiff_cmodel = 0;
-	tiff_compression = 0;
-
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
 	memset(decoder_parameters, 0, MAX_DEC_PARAMLISTS * sizeof(Paramlist *));
 	memset(active_streams, 0, MAXCHANNELS * sizeof(struct streamdesc *));
@@ -358,9 +355,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 		set_audio_stream(audio_streamno - 1);
 		set_video_stream(video_streamno - 1);
 	}
-
-	tiff_cmodel = asset->tiff_cmodel;
-	tiff_compression = asset->tiff_compression;
 
 	strcpy(pipe, asset->pipe);
 	use_pipe = asset->use_pipe;
@@ -1174,9 +1168,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
 
-	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
-	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
-
 // this extra 'FORMAT_' prefix is just here for legacy reasons
 	use_pipe = GET_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
 	GET_DEFAULT("FORMAT_YUV_PIPE", pipe);
@@ -1463,8 +1454,8 @@ void Asset::save_defaults(BC_Hash *defaults,
 		remove_prefixed_default(defaults, "EXR_USE_ALPHA", string);
 		remove_prefixed_default(defaults, "EXR_COMPRESSION", string);
 
-		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
-		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+		remove_prefixed_default(defaults, "TIFF_CMODEL", string);
+		remove_prefixed_default(defaults, "TIFF_COMPRESSION", string);
 
 		UPDATE_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
 		UPDATE_DEFAULT("FORMAT_YUV_PIPE", pipe);

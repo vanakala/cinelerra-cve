@@ -239,10 +239,6 @@ public:
 // for jpeg compression
 	int jpeg_quality;
 
-// TIFF video compression.  An enumeration from filetiff.h
-	int tiff_cmodel;
-	int tiff_compression;
-
 // File modification time
 	struct timespec file_mtime;
 // Render profile path
