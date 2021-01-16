@@ -955,14 +955,14 @@ void Paramlist::save_paramlist(Paramlist *list, const char *filepath,
 			switch(parm->type & PARAMTYPE_MASK)
 			{
 			case PARAMTYPE_INT:
-				if(parm->intvalue == (int)defaults[i].value)
+				if(parm->intvalue == defaults[i].value)
 					continue;
 				if(!tmp)
 					tmp = new Paramlist(list->name);
 				tmp->append_param(parm->name, parm->intvalue);
 				break;
 			case PARAMTYPE_LNG:
-				if(parm->longvalue == defaults[i].value)
+				if(parm->longvalue == (int64_t)defaults[i].value)
 					continue;
 				if(!tmp)
 					tmp = new Paramlist(list->name);
