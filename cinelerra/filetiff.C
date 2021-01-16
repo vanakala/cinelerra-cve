@@ -37,13 +37,10 @@ const struct selection_int FileTIFF::tiff_compression[] =
 
 const struct selection_int FileTIFF::tiff_cmodels[] =
 {
-	{ "Greyscale", FileTIFF::GREYSCALE },
 	{ "RGB-8 Bit", FileTIFF::RGB_888 },
 	{ "RGB-16 Bit", FileTIFF::RGB_161616 },
 	{ "RGBA-8 Bit", FileTIFF::RGBA_8888 },
 	{ "RGBA-16 Bit", FileTIFF::RGBA_16161616 },
-	{ "RGB-FLOAT", FileTIFF::RGB_FLOAT },
-	{ "RGBA-FLOAT", FileTIFF::RGBA_FLOAT},
 	{ 0, 0 }
 };
 
@@ -75,11 +72,11 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 				asset->encoder_parameters[FILETIFF_VCODEC_IX],
 			encoder_params);
 
-		parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->first;
+		parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->find(PARAM_CMODEL);
 		parm->subparams = Paramlist::construct_from_selection(PARAM_CMODEL,
 			parm->subparams, tiff_cmodels);
 		parm->subparams->set_selected(parm->intvalue);
-		parm = parm->next;
+		parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->find(PARAM_COMPRESSION);
 		parm->subparams = Paramlist::construct_from_selection(PARAM_COMPRESSION,
 			parm->subparams, tiff_compression);
 		parm->subparams->set_selected(parm->intvalue);
@@ -139,26 +136,6 @@ int FileTIFF::check_sig(Asset *asset)
 		}
 	}
 	return 0;
-}
-
-const char* FileTIFF::compression_name(int value)
-{
-	for(int i = 0; tiff_compression[i].text; i++)
-	{
-		if(tiff_compression[i].value == value)
-			return tiff_compression[i].text;
-	}
-	return tiff_compression[0].text;
-}
-
-const char* FileTIFF::cmodel_name(int value)
-{
-	for(int i = 0; tiff_cmodels[i].text; i++)
-	{
-		if(tiff_cmodels[i].value == value)
-			return tiff_cmodels[i].text;
-	}
-	return tiff_cmodels[0].text;
 }
 
 int FileTIFF::read_frame_header(const char *path)
@@ -392,7 +369,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int sampleformat = SAMPLEFORMAT_UINT;
 	int bytesperrow;
 
-	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_CMODEL, (int64_t)0))
+	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_CMODEL, 0))
 	{
 	case FileTIFF::RGB_888:
 		components = 3;
@@ -403,7 +380,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	case FileTIFF::RGB_161616:
 		components = 3;
-		color_model = BC_RGB_FLOAT;
+		color_model = BC_RGB161616;
 		bits = 16;
 		type = TIFF_SHORT;
 		bytesperrow = 6 * asset->width;
@@ -417,26 +394,10 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	case FileTIFF::RGBA_16161616: 
 		components = 4;
-		color_model = BC_RGBA_FLOAT;
+		color_model = BC_RGBA16161616;
 		bits = 16;
 		type = TIFF_SHORT;
 		bytesperrow = 8 * asset->width;
-		break;
-	case FileTIFF::RGB_FLOAT: 
-		components = 3;
-		color_model = BC_RGB_FLOAT;
-		bits = 32;
-		type = TIFF_FLOAT;
-		sampleformat = SAMPLEFORMAT_IEEEFP;
-		bytesperrow = 12 * asset->width;
-		break;
-	case FileTIFF::RGBA_FLOAT: 
-		components = 4;
-		color_model = BC_RGBA_FLOAT;
-		bits = 32;
-		type = TIFF_FLOAT;
-		sampleformat = SAMPLEFORMAT_IEEEFP;
-		bytesperrow = 16 * asset->width;
 		break;
 	default: 
 		components = 3;
@@ -447,7 +408,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	}
 
-	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_COMPRESSION, (int64_t)0))
+	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_COMPRESSION, 0))
 	{
 	case FileTIFF::LZW:
 		compression = COMPRESSION_LZW;
@@ -460,12 +421,13 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	case FileTIFF::JPEG:
 		compression = COMPRESSION_JPEG;
+		bits = 8;
+		type = TIFF_BYTE;
 		break;
 	default:
 		compression = COMPRESSION_NONE;
 		break;
 	}
-
 	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
 	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, asset->height);
 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);

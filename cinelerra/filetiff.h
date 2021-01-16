@@ -26,8 +26,6 @@ public:
 		BC_WindowBase* &format_window,
 		int options);
 	static int check_sig(Asset *asset);
-	static const char* compression_name(int value);
-	static const char* cmodel_name(int value);
 	int colormodel_supported(int colormodel);
 	int read_frame_header(const char *path);
 	int read_frame(VFrame *output, VFrame *input);
