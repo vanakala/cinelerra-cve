@@ -884,12 +884,37 @@ Paramlist *Paramlist::construct(const char *name, Paramlist *plist,
 			}
 		}
 		if(!parm)
-			parm = plist->append_param(defaults[i].name,
-				defaults[i].value);
+		{
+			if(defaults[i].type & PARAMTYPE_INT)
+				parm = plist->append_param(defaults[i].name,
+					defaults[i].value);
+			else if(defaults[i].type & PARAMTYPE_LNG)
+				parm = plist->append_param(defaults[i].name,
+					(int64_t)defaults[i].value);
+			else
+				continue;
+		}
 		parm->type |= defaults[i].type & ~PARAMTYPE_MASK;
 		parm->prompt = defaults[i].prompt;
 		// set default to initial default
 		parm->set_default(defaults[i].value);
+	}
+	return plist;
+}
+
+Paramlist *Paramlist::construct_from_selection(const char *name, Paramlist *plist,
+    const struct selection_int *selection)
+{
+	Param *parm;
+
+	if(!plist)
+		plist = new Paramlist(name);
+
+	for(int i = 0; selection[i].text; i++)
+	{
+		if(plist->find(selection[i].text))
+			continue;
+		plist->append_param(selection[i].text, selection[i].value);
 	}
 	return plist;
 }

@@ -9,6 +9,7 @@
 #include "filexml.inc"
 #include "paramlist.inc"
 #include "linklist.h"
+#include "selection.h"
 #include "stdint.h"
 
 struct paramlist_defaults
@@ -16,7 +17,7 @@ struct paramlist_defaults
 	const char *name;
 	const char *prompt;
 	int type;
-	int64_t value;
+	int value;
 };
 
 class Param : public ListItem<Param>
@@ -124,6 +125,8 @@ public:
 	void reset_defaults();
 	static Paramlist *construct(const char *name, Paramlist *plist,
 		struct paramlist_defaults *defaults);
+	static Paramlist *construct_from_selection(const char *name, Paramlist *plist,
+		const struct selection_int *selection);
 	static void save_paramlist(Paramlist *list, const char *filepath,
 		struct paramlist_defaults *defaults);
 	static Paramlist *load_paramlist(const char *filepath);
