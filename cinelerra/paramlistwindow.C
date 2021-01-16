@@ -82,7 +82,7 @@ void ParamlistSubWindow::draw_list()
 					add_subwindow(win = new ParamChkBox(left + name_width,
 						top, current, &current->longvalue));
 				else
-					add_subwindow(win = new Parami64Txtbx(left + name_width,
+					add_subwindow(win = new ParamIntTxtbx(left + name_width,
 						top, current, &current->longvalue));
 				w1 = name_width + win->get_w();
 			}
@@ -107,6 +107,30 @@ void ParamlistSubWindow::draw_list()
 				top, current, &current->floatvalue));
 			w1 = name_width + win->get_w();
 			h1 = win->get_h();
+			break;
+		case PARAMTYPE_INT:
+			if(current->prompt)
+				add_subwindow(new BC_Title(left, top, _(current->prompt)));
+			else
+				add_subwindow(new BC_Title(left, top, current->name));
+			if(current->subparams)
+			{
+				SubSelectionPopup *pop = new SubSelectionPopup(left + name_width,
+					top, name_width, this, current->subparams);
+				w1 = pop->get_w() + name_width;
+				h1 = pop->get_h();
+			}
+			else
+			{
+				if(current->type & PARAMTYPE_BOOL)
+					add_subwindow(win = new ParamChkBox(left + name_width,
+						top, current, &current->intvalue));
+				else
+					add_subwindow(win = new ParamIntTxtbx(left + name_width,
+						top, current, &current->intvalue));
+				w1 = name_width + win->get_w();
+				h1 = win->get_h();
+			}
 			break;
 		default:
 			break;
@@ -173,18 +197,32 @@ int ParamlistSubWindow::handle_reset()
 	return 1;
 }
 
-Parami64Txtbx::Parami64Txtbx(int x, int y, Param *param, int64_t *val)
+ParamIntTxtbx::ParamIntTxtbx(int x, int y, Param *param, int64_t *val)
  : BC_TextBox(x, y, 100, 1, *val)
 {
-	this->param = param;
+	if(param->helptext)
+		set_tooltip(param->helptext);
+	val64ptr = val;
+	valptr = 0;
+}
+
+ParamIntTxtbx::ParamIntTxtbx(int x, int y, Param *param, int *val)
+ : BC_TextBox(x, y, 100, 1, *val)
+{
 	if(param->helptext)
 		set_tooltip(param->helptext);
 	valptr = val;
+	val64ptr = 0;
 }
 
-int Parami64Txtbx::handle_event()
+int ParamIntTxtbx::handle_event()
 {
-	*valptr = atol(get_text());
+	int64_t val = atol(get_text());
+
+	if(valptr)
+		*valptr = val;
+	else
+		*val64ptr = val;
 	return 1;
 }
 
@@ -220,20 +258,30 @@ int ParamDblTxtbx::handle_event()
 ParamChkBox::ParamChkBox(int x, int y, Param *param, int64_t *val)
  : BC_CheckBox(x, y, (int)(*val & 0xff))
 {
-	this->param = param;
+	if(param->helptext)
+		set_tooltip(param->helptext);
+	val64ptr = val;
+	valptr = 0;
+}
+
+ParamChkBox::ParamChkBox(int x, int y, Param *param, int *val)
+ : BC_CheckBox(x, y, *val & 0xff)
+{
 	if(param->helptext)
 		set_tooltip(param->helptext);
 	valptr = val;
+	val64ptr = 0;
 }
 
 int ParamChkBox::handle_event()
 {
 	int val = get_value();
 
-	if(val)
-		*valptr = (int64_t)1;
+	if(valptr)
+		*valptr = !!val;
 	else
-		*valptr = 0;
+		*val64ptr = !!val;
+
 	return 1;
 }
 

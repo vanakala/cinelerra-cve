@@ -57,15 +57,16 @@ private:
 	double zoom;
 };
 
-class Parami64Txtbx : public BC_TextBox
+class ParamIntTxtbx : public BC_TextBox
 {
 public:
-	Parami64Txtbx(int x, int y, Param *param, int64_t *val);
+	ParamIntTxtbx(int x, int y, Param *param, int64_t *val);
+	ParamIntTxtbx(int x, int y, Param *param, int *val);
 
 	int handle_event();
 private:
-	Param *param;
-	int64_t *valptr;
+	int64_t *val64ptr;
+	int *valptr;
 };
 
 
@@ -95,12 +96,13 @@ class ParamChkBox : public BC_CheckBox
 {
 public:
 	ParamChkBox(int x, int y, Param *param, int64_t *val);
+	ParamChkBox(int x, int y, Param *param, int *val);
 
 	int handle_event();
 
 private:
-	Param *param;
-	int64_t *valptr;
+	int64_t *val64ptr;
+	int *valptr;
 };
 
 
