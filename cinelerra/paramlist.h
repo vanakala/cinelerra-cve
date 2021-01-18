@@ -127,6 +127,7 @@ public:
 		struct paramlist_defaults *defaults);
 	static Paramlist *construct_from_selection(const char *name, Paramlist *plist,
 		const struct selection_int *selection);
+	static Paramlist *clone(Paramlist *that);
 	static void save_paramlist(Paramlist *list, const char *filepath,
 		struct paramlist_defaults *defaults);
 	static Paramlist *load_paramlist(const char *filepath);

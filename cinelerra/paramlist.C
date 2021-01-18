@@ -994,6 +994,18 @@ Paramlist *Paramlist::load_paramlist(const char *filepath)
 	return list;
 }
 
+Paramlist *Paramlist::clone(Paramlist *that)
+{
+	Paramlist *plist;
+
+	if(!that)
+		return 0;
+
+	plist = new Paramlist(that->name);
+	plist->copy_all(that);
+	return plist;
+}
+
 void Paramlist::dump(int indent)
 {
 	Param *current;
