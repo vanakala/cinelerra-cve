@@ -1,39 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "bcslider.h"
-#include "bctitle.h"
 #include "edit.h"
 #include "file.h"
 #include "filejpeg.h"
 #include "interlacemodes.h"
 #include "language.h"
-#include "mwindow.h"
-#include "vframe.h"
-#include "videodevice.inc"
 #include "mainerror.h"
+#include "mwindow.h"
+#include "paramlist.h"
+#include "paramlistwindow.h"
+#include "vframe.h"
 
 #include <setjmp.h>
+#include <string.h>
+
+#define FILEJPEG_VCODEC_IX 0
+
+#define PARAM_QUALITY "quality"
+
+struct paramlist_defaults FileJPEG::encoder_params[] =
+{
+	{ PARAM_QUALITY, N_("Quality:"), PARAMTYPE_INT, 100 },
+	{ 0, 0, 0, 0 }
+};
 
 #if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 struct my_src_mgr
@@ -157,16 +151,36 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
-	int cx, cy;
+	Paramlist *plist;
 
 	if(options & SUPPORTS_VIDEO)
 	{
-		parent_window->get_abs_cursor_pos(&cx, &cy);
-		JPEGConfigVideo *window = new JPEGConfigVideo(parent_window, asset,
-			cx, cy);
-		format_window = window;
-		window->run_window();
-		delete window;
+		asset->encoder_parameters[FILEJPEG_VCODEC_IX] =
+			Paramlist::construct("FileJPEG",
+				asset->encoder_parameters[FILEJPEG_VCODEC_IX],
+				encoder_params);
+
+		plist = Paramlist::clone(asset->encoder_parameters[FILEJPEG_VCODEC_IX]);
+
+		ParamlistThread thread(&plist,
+			_("JPEG compression"), mwindow_global->get_window_icon(),
+			&format_window);
+		thread.run();
+
+		if(!thread.win_result)
+		{
+			Param *parm;
+
+			parm = plist->find(PARAM_QUALITY);
+
+			if(parm->intvalue < 0)
+				parm->intvalue = 0;
+			if(parm->intvalue > 100)
+				parm->intvalue = 100;
+
+			if(!plist->equiv(asset->encoder_parameters[FILEJPEG_VCODEC_IX]))
+				asset->encoder_parameters[FILEJPEG_VCODEC_IX]->copy_values(plist);
+		}
 	}
 }
 
@@ -186,6 +200,7 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	struct error_mgr jpeg_error;
 	unsigned long clength;
 	JPEGUnit *jpeg_unit = (JPEGUnit*)unit;
+	int jpeg_quality = 100;
 
 	if(frame->get_color_model() != BC_RGB888)
 	{
@@ -243,7 +258,9 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	cinfo.in_color_space = JCS_RGB;
 
 	jpeg_set_defaults(&cinfo);
-	jpeg_set_quality(&cinfo, asset->jpeg_quality, TRUE);
+	if(asset->encoder_parameters[FILEJPEG_VCODEC_IX])
+		jpeg_quality = asset->encoder_parameters[FILEJPEG_VCODEC_IX]->get(PARAM_QUALITY, jpeg_quality);
+	jpeg_set_quality(&cinfo, jpeg_quality, TRUE);
 	jpeg_start_compress(&cinfo, TRUE);
 	for(int i; i < cinfo.image_height; i++)
 	{
@@ -389,33 +406,4 @@ JPEGUnit::~JPEGUnit()
 {
 	delete temp_frame;
 	free(compressed);
-}
-
-
-JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset, 
-	int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Video Compression")),
-	absx,
-	absy,
-	400,
-	100)
-{
-	int x = 10, y = 10;
-
-	set_icon(mwindow_global->get_window_icon());
-
-	add_subwindow(new BC_Title(x, y, _("Quality:")));
-	add_subwindow(new BC_ISlider(x + 80, 
-		y,
-		0,
-		200,
-		200,
-		0,
-		100,
-		asset->jpeg_quality,
-		0,
-		0,
-		&asset->jpeg_quality));
-
-	add_subwindow(new BC_OKButton(this));
 }
