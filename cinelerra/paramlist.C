@@ -869,6 +869,11 @@ Paramlist *Paramlist::construct(const char *name, Paramlist *plist,
 {
 	Param *parm;
 
+	if(plist && strcmp(name, plist->name))
+	{
+		delete plist;
+		plist = 0;
+	}
 	if(!plist)
 		plist = new Paramlist(name);
 
