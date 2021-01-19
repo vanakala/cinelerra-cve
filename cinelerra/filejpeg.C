@@ -20,6 +20,7 @@
 #include <string.h>
 
 #define FILEJPEG_VCODEC_IX 0
+#define JPEG_ENC_CONFIG_NAME "jpeg:enc"
 
 #define PARAM_QUALITY "quality"
 
@@ -388,6 +389,30 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	jpeg_destroy_decompress(&jpeg_decompress);
 	return 0;
 }
+
+void FileJPEG::save_render_optios(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(JPEG_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	Paramlist::save_paramlist(asset->encoder_parameters[FILEJPEG_VCODEC_IX],
+		pathbuf, encoder_params);
+}
+
+void FileJPEG::get_render_defaults(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(JPEG_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	delete asset->encoder_parameters[FILEJPEG_VCODEC_IX];
+	asset->encoder_parameters[FILEJPEG_VCODEC_IX] =
+		Paramlist::load_paramlist(pathbuf);
+}
+
 
 FrameWriterUnit* FileJPEG::new_writer_unit(FrameWriter *writer)
 {

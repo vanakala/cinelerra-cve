@@ -6,6 +6,7 @@
 #ifndef FILEJPEG_H
 #define FILEJPEG_H
 
+#include "asset.inc"
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"
@@ -27,6 +28,8 @@ public:
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	int read_frame_header(const char *path);
+	static void save_render_optios(Asset *asset);
+	static void get_render_defaults(Asset *asset);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
 private:
