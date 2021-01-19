@@ -1,45 +1,56 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
 #include "edit.h"
 #include "filetga.h"
-#include "mwindow.h"
 #include "language.h"
-#include "vframe.h"
 #include "mainerror.h"
+#include "mwindow.h"
+#include "selection.h"
+#include "paramlist.h"
+#include "paramlistwindow.h"
+#include "vframe.h"
 
 #include <string.h>
 #include <unistd.h>
 
-/* Known image types. */
+// Known image types.
 #define TGA_TYPE_MAPPED      1
 #define TGA_TYPE_COLOR       2
 #define TGA_TYPE_GRAY        3
 
-/* Only known compression is RLE */
+// Only known compression is RLE
 #define TGA_COMP_NONE        0 
 #define TGA_COMP_RLE         1 
 
+#define RGB_RLE  0
+#define RGBA_RLE 1
+#define RGB_NC   2
+#define RGBA_NC  3
+
+#define FILETGA_VCODEC_IX 0
+#define TIFF_ENC_CONFIG_NAME "tga:enc"
+
+#define PARAM_COMPRESSION "compression"
+
+const struct selection_int FileTGA::tga_compression[] =
+{
+	{ "RGB compressed", RGB_RLE },
+	{ "RGBA compressed", RGBA_RLE },
+	{ "RGB uncompressed", RGB_NC },
+	{ "RGBA uncompressed", RGBA_NC },
+	{ 0, 0 }
+};
+
+struct paramlist_defaults FileTGA::encoder_params[] =
+{
+	{ PARAM_COMPRESSION, N_("Compression"), PARAMTYPE_INT, RGB_RLE },
+	{ 0, 0, 0, 0 }
+};
 
 FileTGA::FileTGA(Asset *asset, File *file)
  : FileList(asset, file, "TGALIST", ".tga", FILE_TGA, FILE_TGA_LIST)
@@ -49,7 +60,7 @@ FileTGA::FileTGA(Asset *asset, File *file)
 
 FileTGA::~FileTGA()
 {
-	if(temp) delete temp;
+	delete temp;
 }
 
 int FileTGA::check_sig(Asset *asset)
@@ -96,16 +107,30 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window,
 		BC_WindowBase* &format_window,
 		int options)
 {
-	int cx, cy;
+	Param *parm;
 
 	if(options & SUPPORTS_VIDEO)
 	{
-		parent_window->get_abs_cursor_pos(&cx, &cy);
-		TGAConfigVideo *window = new TGAConfigVideo(parent_window,
-			asset, cx, cy);
-		format_window = window;
-		window->run_window();
-		delete window;
+		asset->encoder_parameters[FILETGA_VCODEC_IX] =
+			Paramlist::construct("FileTGA",
+				asset->encoder_parameters[FILETGA_VCODEC_IX],
+			encoder_params);
+		parm = asset->encoder_parameters[FILETGA_VCODEC_IX]->find(PARAM_COMPRESSION);
+		parm->subparams = Paramlist::construct_from_selection(PARAM_COMPRESSION,
+			parm->subparams, tga_compression);
+		parm->subparams->set_selected(parm->intvalue);
+
+		ParamlistThread thread(&asset->encoder_parameters[FILETGA_VCODEC_IX],
+			_("TGA compression"), mwindow_global->get_window_icon(),
+			&format_window);
+
+		thread.run();
+
+		if(!thread.win_result)
+		{
+			parm = asset->encoder_parameters[FILETGA_VCODEC_IX]->first;
+			parm->intvalue = parm->subparams->selectedint;
+		}
 	}
 }
 
@@ -379,47 +404,52 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 	int out_bpp = 0;
 	int rle = 0;
 	int dest_cmodel = BC_RGB888;
+	int tga_mode = RGB_RLE;
+
+	if(asset->encoder_parameters[FILETGA_VCODEC_IX])
+		tga_mode = asset->encoder_parameters[FILETGA_VCODEC_IX]->get(PARAM_COMPRESSION, tga_mode);
 
 	header[0] = 0;
 	header[1] = 0;
-	if(!strcasecmp(asset->vcodec, TGA_RGBA_RLE))
+	switch(tga_mode)
 	{
+	case RGBA_RLE:
 		header[2] = 10;
 		out_bpp = 4;
 		rle = 1;
 		header[16] = 32; /* bpp */
 		header[17] = 0x28; /* alpha + orientation */
 		dest_cmodel = BC_RGBA8888;
-	}
-	else
-	if(!strcasecmp(asset->vcodec, TGA_RGBA))
-	{
+		break;
+
+	case RGBA_NC:
 		header[2] = 2;
 		out_bpp = 4;
 		rle = 0;
 		header[16] = 32; /* bpp */
 		header[17] = 0x28; /* alpha + orientation */
 		dest_cmodel = BC_RGBA8888;
-	}
-	else
-	if(!strcasecmp(asset->vcodec, TGA_RGB_RLE))
-	{
+		break;
+
+	case RGB_RLE:
 		header[2] = 10;
 		out_bpp = 3;
 		rle = 1;
 		header[16] = 24; /* bpp */
 		header[17] = 0x20; /* alpha + orientation */
 		dest_cmodel = BC_RGB888;
-	}
-	else
-	{
+		break;
+
+	default:
 		header[2] = 2;
 		out_bpp = 3;
 		rle = 0;
 		header[16] = 24; /* bpp */
 		header[17] = 0x20; /* alpha + orientation */
 		dest_cmodel = BC_RGB888;
+		break;
 	}
+
 	header[3] = header[4] = header[5] = header[6] = header[7] = 0;
 
 	VFrame *input_frame;
@@ -434,7 +464,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 			delete temp;
 			temp = 0;
 		}
-		
+
 		if(!temp)
 		{
 			temp = new VFrame(0, frame->get_w(), frame->get_h(), dest_cmodel);
@@ -457,6 +487,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 	write_data(header, data, file_offset, sizeof(header));
 
 	unsigned char *output = new unsigned char[out_bpp * input_frame->get_w()];
+
 	for(int i = 0; i < input_frame->get_h(); i++)
 	{
 		bgr2rgb(output, input_frame->get_row_ptr(i), input_frame->get_w(), out_bpp, (out_bpp == 4));
@@ -777,60 +808,5 @@ TGAUnit::TGAUnit(FileTGA *file, FrameWriter *writer)
 
 TGAUnit::~TGAUnit()
 {
-	if(temp) delete temp;
-}
-
-
-TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset, int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Video Compression")),
-	absx,
-	absy,
-	400,
-	100)
-{
-	int x = 10, y = 10;
-
-	set_icon(mwindow_global->get_window_icon());
-	this->asset = asset;
-
-	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB_RLE)));
-	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA_RLE)));
-	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB)));
-	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA)));
-
-	add_subwindow(new BC_Title(x, y, _("Compression:")));
-	TGACompression *textbox = new TGACompression(this, 
-		x + 110, 
-		y, 
-		asset, 
-		&compression_items);
-	add_subwindow(new BC_OKButton(this));
-}
-
-TGAConfigVideo::~TGAConfigVideo()
-{
-	compression_items.remove_all_objects();
-}
-
-
-TGACompression::TGACompression(TGAConfigVideo *gui,
-	int x, 
-	int y, 
-	Asset *asset, 
-	ArrayList<BC_ListBoxItem*> *compression_items)
- : BC_PopupTextBox(gui,
-	compression_items,
-	FileTGA::compression_to_str(gui->asset->vcodec),
-	x, 
-	y, 
-	200,
-	200)
-{
-	this->asset = asset;
-}
-
-int TGACompression::handle_event()
-{
-	strcpy(asset->vcodec, FileTGA::str_to_compression(get_text()));
-	return 1;
+	delete temp;
 }
