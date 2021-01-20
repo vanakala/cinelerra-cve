@@ -116,7 +116,8 @@ void ParamlistSubWindow::draw_list()
 			if(current->subparams)
 			{
 				SubSelectionPopup *pop = new SubSelectionPopup(left + name_width,
-					top, name_width, this, current->subparams);
+					top, max_name_size(current->subparams, this, name_width) + 10,
+					this, current->subparams);
 				w1 = pop->get_w() + name_width;
 				h1 = pop->get_h();
 			}
