@@ -15,6 +15,7 @@
 #include "fileformat.h"
 #include "filejpeg.h"
 #include "filepng.h"
+#include "filetga.h"
 #include "filetiff.h"
 #include "filexml.h"
 #include "formattools.h"
@@ -1181,6 +1182,9 @@ void Asset::format_changed()
 	{
 		switch(format)
 		{
+		case FILE_TGA:
+			FileTGA::get_render_defaults(this);
+			break;
 		case FILE_JPEG:
 			FileJPEG::get_render_defaults(this);
 			break;
@@ -1203,6 +1207,7 @@ void Asset::get_format_params(int options)
 	{
 		switch(format)
 		{
+		case FILE_TGA:
 		case FILE_JPEG:
 		case FILE_PNG:
 		case FILE_TIFF:
@@ -1220,6 +1225,7 @@ void Asset::set_format_params()
 	{
 		switch(format)
 		{
+		case FILE_TGA:
 		case FILE_JPEG:
 		case FILE_PNG:
 		case FILE_TIFF:
@@ -1237,6 +1243,9 @@ void Asset::save_render_options()
 	{
 		switch(format)
 		{
+		case FILE_TGA:
+			FileTGA::save_render_optios(this);
+			break;
 		case FILE_JPEG:
 			FileJPEG::save_render_optios(this);
 			break;

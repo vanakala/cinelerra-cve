@@ -33,7 +33,7 @@
 #define RGBA_NC  3
 
 #define FILETGA_VCODEC_IX 0
-#define TIFF_ENC_CONFIG_NAME "tga:enc"
+#define TGA_ENC_CONFIG_NAME "tga:enc"
 
 #define PARAM_COMPRESSION "compression"
 
@@ -798,6 +798,28 @@ void FileTGA::upsample(unsigned char *dest,
 	}
 }
 
+void FileTGA::save_render_optios(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(TGA_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	Paramlist::save_paramlist(asset->encoder_parameters[FILETGA_VCODEC_IX],
+		pathbuf, encoder_params);
+}
+
+void FileTGA::get_render_defaults(Asset *asset)
+{
+	char pathbuf[BCTEXTLEN];
+
+	asset->profile_config_path(TGA_ENC_CONFIG_NAME, pathbuf);
+	strcat(pathbuf, XML_CONFIG_EXT);
+
+	delete asset->encoder_parameters[FILETGA_VCODEC_IX];
+	asset->encoder_parameters[FILETGA_VCODEC_IX] =
+		Paramlist::load_paramlist(pathbuf);
+}
 
 TGAUnit::TGAUnit(FileTGA *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
