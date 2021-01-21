@@ -6,11 +6,7 @@
 #ifndef FILETGA_H
 #define FILETGA_H
 
-#include "bcbutton.h"
-#include "bctitle.h"
-#include "bclistboxitem.h"
-#include "bctextbox.h"
-#include "bcwindow.h"
+#include "filetga.inc"
 #include "filelist.h"
 
 class FileTGA : public FileList
@@ -25,8 +21,6 @@ public:
 		BC_WindowBase* &format_window,
 		int options);
 	int read_frame_header(const char *path);
-	static const char* compression_to_str(const char *compression);
-	static const char* str_to_compression(const char *string);
 
 	size_t get_memory_usage();
 // To be used in single frame FileTGA

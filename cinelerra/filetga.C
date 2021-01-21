@@ -27,6 +27,11 @@
 #define TGA_COMP_NONE        0 
 #define TGA_COMP_RLE         1 
 
+#define TGA_RGB_RLE "rle"
+#define TGA_RGBA_RLE "rlea"
+#define TGA_RGB "raw"
+#define TGA_RGBA "rawa"
+
 #define RGB_RLE  0
 #define RGBA_RLE 1
 #define RGB_NC   2
@@ -132,34 +137,6 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window,
 			parm->intvalue = parm->subparams->selectedint;
 		}
 	}
-}
-
-#define TGA_RGB_RLE "rle "
-#define TGA_RGBA_RLE "rlea"
-#define TGA_RGB "raw "
-#define TGA_RGBA "rawa"
-
-#define TGA_RGB_RLE_NAME "RGB compressed"
-#define TGA_RGBA_RLE_NAME "RGBA compressed"
-#define TGA_RGB_NAME "RGB uncompressed"
-#define TGA_RGBA_NAME "RGBA uncompressed"
-
-const char* FileTGA::compression_to_str(const char *compression)
-{
-	if(!strcasecmp(compression, TGA_RGB_RLE)) return _(TGA_RGB_RLE_NAME);
-	if(!strcasecmp(compression, TGA_RGBA_RLE)) return _(TGA_RGBA_RLE_NAME);
-	if(!strcasecmp(compression, TGA_RGB)) return _(TGA_RGB_NAME);
-	if(!strcasecmp(compression, TGA_RGBA)) return _(TGA_RGBA_NAME);
-	return TGA_RGB_NAME;
-}
-
-const char* FileTGA::str_to_compression(const char *string)
-{
-	if(!strcasecmp(compression_to_str(TGA_RGB_RLE), string)) return TGA_RGB_RLE;
-	if(!strcasecmp(compression_to_str(TGA_RGBA_RLE), string)) return TGA_RGBA_RLE;
-	if(!strcasecmp(compression_to_str(TGA_RGB), string)) return TGA_RGB;
-	if(!strcasecmp(compression_to_str(TGA_RGBA), string)) return TGA_RGBA;
-	return TGA_RGB;
 }
 
 int FileTGA::colormodel_supported(int colormodel)
