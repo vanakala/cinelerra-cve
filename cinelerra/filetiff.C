@@ -368,8 +368,20 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	int components, color_model, bits, type, compression;
 	int sampleformat = SAMPLEFORMAT_UINT;
 	int bytesperrow;
+	int compression_param = FileTIFF::NONE;
+	int cmodel_param = FileTIFF::RGB_888;
 
-	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_CMODEL, 0))
+	if(asset->encoder_parameters[FILETIFF_VCODEC_IX])
+	{
+		cmodel_param =
+			asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_CMODEL,
+				cmodel_param);
+		compression_param =
+			asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_COMPRESSION,
+				compression_param);
+	}
+
+	switch(cmodel_param)
 	{
 	case FileTIFF::RGB_888:
 		components = 3;
@@ -408,7 +420,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	}
 
-	switch(asset->encoder_parameters[FILETIFF_VCODEC_IX]->get(PARAM_COMPRESSION, 0))
+	switch(compression_param)
 	{
 	case FileTIFF::LZW:
 		compression = COMPRESSION_LZW;
@@ -428,6 +440,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		compression = COMPRESSION_NONE;
 		break;
 	}
+
 	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
 	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, asset->height);
 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
