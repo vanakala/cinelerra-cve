@@ -62,8 +62,8 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
-	int cx, cy;
-	Param *param;
+	Paramlist *plist;
+
 	if(options & SUPPORTS_VIDEO)
 	{
 		asset->encoder_parameters[FILEPNG_VCODEC_IX] =
@@ -71,10 +71,18 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 				asset->encoder_parameters[FILEPNG_VCODEC_IX],
 				encoder_params);
 
-		ParamlistThread thread(&asset->encoder_parameters[FILEPNG_VCODEC_IX],
-			_("PNG compression"), mwindow_global->get_window_icon(),
-			&format_window);
+		plist = Paramlist::clone(asset->encoder_parameters[FILEPNG_VCODEC_IX]);
+
+		ParamlistThread thread(&plist, _("PNG compression"),
+			mwindow_global->get_window_icon(), &format_window);
 		thread.run();
+
+		if(!thread.win_result)
+		{
+			if(!plist->equiv(asset->encoder_parameters[FILEPNG_VCODEC_IX]))
+				asset->encoder_parameters[FILEPNG_VCODEC_IX]->copy_values(plist);
+		}
+		delete plist;
 	}
 }
 
