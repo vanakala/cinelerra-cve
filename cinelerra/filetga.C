@@ -282,7 +282,6 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	default:
 		image_type = 0;
 	}
-
 	int idlength = header[0];
 	int colormaptype = header[1];
 	int colormapindex = header[3] + header[4] * 256;
@@ -299,7 +298,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	int flipvert = (header[17] & 0x20) ? 0 : 1;
 	int data_size = data->get_compressed_size();
 
-	if(idlength) file_offset += idlength;
+	file_offset += idlength;
 
 // Get colormap
 	unsigned char *tga_cmap;
@@ -310,7 +309,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 		int cmap_bytes = (colormapsize + 7) / 8;
 		tga_cmap = data->get_data() + file_offset;
 		file_offset += colormaplength * cmap_bytes;
-		
+
 		switch(colormapsize)
 		{
 		case 32:
@@ -349,7 +348,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 			delete temp;
 			temp = 0;
 		}
-		
+
 		if(!temp)
 		{
 			temp = new VFrame(0, width, height, source_cmodel);
@@ -538,14 +537,13 @@ void FileTGA::read_line(unsigned char *row,
 	int alphabits,
 	int data_size)
 {
-	if(file_offset >= data_size) return;
+	if(file_offset >= data_size)
+		return;
+
 	if(image_compression == TGA_COMP_RLE)
 	{
-		rle_read(row,
-			data,
-			file_offset,
-			bytes,
-			width);
+		rle_read(row, data, file_offset,
+			bytes, width);
 	}
 	else
 	{
@@ -567,7 +565,7 @@ void FileTGA::read_line(unsigned char *row,
 		}
 		else
 		{
-			bgr2rgb(row, row, width, bytes, alphabits);
+			bgr2rgb(row, row, width, bytes, bpp == 32);
 		}
 	}
 }
@@ -640,7 +638,6 @@ void FileTGA::rle_read(unsigned char *row,
 		{
 			bcopy(data + file_offset, row, bytes);
 			file_offset += bytes;
-			
 			direct--;
 		}
 
