@@ -182,6 +182,7 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 			if(!plist->equiv(asset->encoder_parameters[FILEJPEG_VCODEC_IX]))
 				asset->encoder_parameters[FILEJPEG_VCODEC_IX]->copy_values(plist);
 		}
+		delete plist;
 	}
 }
 
