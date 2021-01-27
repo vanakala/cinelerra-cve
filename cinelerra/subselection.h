@@ -16,9 +16,11 @@ public:
 	SubSelection(int x, int y, int h, BC_WindowBase *base, Param *param);
 	~SubSelection();
 
+	void update_value();
 private:
 	BC_Button *button;
 	BC_PopupMenu *popupmenu;
+	Param *parent_param;
 };
 
 class SubSelectionItem : public BC_MenuItem
@@ -42,6 +44,7 @@ public:
 
 	virtual int handle_event();
 
+	void update_value();
 protected:
 	Paramlist *list;
 	ArrayList<BC_ListBoxItem*> *codecs;

@@ -37,6 +37,7 @@ void ParamlistSubWindow::draw_list()
 	int w1 = 0, h1 = 0, tw;
 	int name_width;
 	const char *str;
+	struct elem_window elem;
 
 	top = left = PARAMLIST_WIN_MARGIN;
 	base_w = 0;
@@ -70,6 +71,7 @@ void ParamlistSubWindow::draw_list()
 				add_subwindow(win = new SubSelection(left,
 					top, name_width, this, current));
 				w1 = win->get_w();
+				elem.type = current->type | PARAMTYPE_SUBS;
 			}
 			else
 			{
@@ -85,8 +87,11 @@ void ParamlistSubWindow::draw_list()
 					add_subwindow(win = new ParamIntTxtbx(left + name_width,
 						top, current, &current->longvalue));
 				w1 = name_width + win->get_w();
+				elem.type = current->type;
 			}
 			h1 = win->get_h();
+			elem.ptr = (void *)win;
+			elems.append(elem);
 			break;
 		case PARAMTYPE_STR:
 			if(current->prompt)
@@ -97,6 +102,9 @@ void ParamlistSubWindow::draw_list()
 				top, current, current->stringvalue));
 			w1 = name_width + win->get_w();
 			h1 = win->get_h();
+			elem.type = current->type;
+			elem.ptr = (void *)win;
+			elems.append(elem);
 			break;
 		case PARAMTYPE_DBL:
 			if(current->prompt)
@@ -107,6 +115,9 @@ void ParamlistSubWindow::draw_list()
 				top, current, &current->floatvalue));
 			w1 = name_width + win->get_w();
 			h1 = win->get_h();
+			elem.type = current->type;
+			elem.ptr = (void *)win;
+			elems.append(elem);
 			break;
 		case PARAMTYPE_INT:
 			if(current->prompt)
@@ -120,6 +131,8 @@ void ParamlistSubWindow::draw_list()
 					this, current->subparams);
 				w1 = pop->get_w() + name_width;
 				h1 = pop->get_h();
+				elem.ptr = (void *)pop;
+				elem.type = current->type | PARAMTYPE_SUBS;
 			}
 			else
 			{
@@ -131,7 +144,10 @@ void ParamlistSubWindow::draw_list()
 						top, current, &current->intvalue));
 				w1 = name_width + win->get_w();
 				h1 = win->get_h();
+				elem.ptr = (void *)win;
+				elem.type = current->type;
 			}
+			elems.append(elem);
 			break;
 		default:
 			break;
@@ -195,6 +211,59 @@ int ParamlistSubWindow::max_name_size(Paramlist *list, BC_WindowBase *win, int m
 int ParamlistSubWindow::handle_reset()
 {
 	params->reset_defaults();
+
+	for(int i = 0; i < elems.total; i++)
+	{
+		switch(elems.values[i].type & PARAMTYPE_MASK)
+		{
+		case PARAMTYPE_LNG:
+			if(elems.values[i].type & PARAMTYPE_SUBS)
+			{
+				SubSelection *win = (SubSelection*)elems.values[i].ptr;
+				win->update_value();
+			}
+			else if(elems.values[i].type & PARAMTYPE_BOOL)
+			{
+				ParamChkBox *win = (ParamChkBox*)elems.values[i].ptr;
+				win->update_value();
+			}
+			else
+			{
+				ParamIntTxtbx *win = (ParamIntTxtbx*)elems.values[i].ptr;
+				win->update_value();
+			}
+			break;
+		case PARAMTYPE_STR:
+		{
+			ParamStrTxtbx *win = (ParamStrTxtbx*)elems.values[i].ptr;
+			win->update_value();
+			break;
+		}
+		case PARAMTYPE_DBL:
+		{
+			ParamDblTxtbx *win = (ParamDblTxtbx*)elems.values[i].ptr;
+			win->update_value();
+			break;
+		}
+		case PARAMTYPE_INT:
+			if(elems.values[i].type & PARAMTYPE_SUBS)
+			{
+				SubSelectionPopup *win = (SubSelectionPopup*)elems.values[i].ptr;
+				win->update_value();
+			}
+			else if(elems.values[i].type & PARAMTYPE_BOOL)
+			{
+				ParamChkBox *win = (ParamChkBox*)elems.values[i].ptr;
+				win->update_value();
+			}
+			else
+			{
+				ParamIntTxtbx *win = (ParamIntTxtbx*)elems.values[i].ptr;
+				win->update_value();
+			}
+			break;
+		}
+	}
 	return 1;
 }
 
@@ -227,6 +296,14 @@ int ParamIntTxtbx::handle_event()
 	return 1;
 }
 
+void ParamIntTxtbx::update_value()
+{
+	if(valptr)
+		update(*valptr);
+	else
+		update((int)*val64ptr);
+}
+
 
 ParamStrTxtbx::ParamStrTxtbx(int x, int y, Param *param, const char *str)
  : BC_TextBox(x, y, 100, 1, str)
@@ -241,8 +318,14 @@ ParamStrTxtbx::~ParamStrTxtbx()
 	param->set_string(get_text());
 }
 
+void ParamStrTxtbx::update_value()
+{
+	update(param->stringvalue);
+}
+
+
 ParamDblTxtbx::ParamDblTxtbx(int x, int y, Param *param, double *val)
- : BC_TextBox(x, y, 100, 1, (float)*val)
+ : BC_TextBox(x, y, 100, 1, *val)
 {
 	this->param = param;
 	if(param->helptext)
@@ -254,6 +337,11 @@ int ParamDblTxtbx::handle_event()
 {
 	*valptr = atof(get_text());
 	return 1;
+}
+
+void ParamDblTxtbx::update_value()
+{
+	update(*valptr);
 }
 
 ParamChkBox::ParamChkBox(int x, int y, Param *param, int64_t *val)
@@ -285,6 +373,15 @@ int ParamChkBox::handle_event()
 
 	return 1;
 }
+
+void ParamChkBox::update_value()
+{
+	if(valptr)
+		set_value(*valptr & 0xff);
+	else
+		set_value((int)(*valptr & 0xff));
+}
+
 
 ParamWindowScroll::ParamWindowScroll(ParamlistSubWindow *listwin,
 	int x, int y, int pixels, int length)

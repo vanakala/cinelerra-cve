@@ -76,10 +76,12 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 		parm->subparams = Paramlist::construct_from_selection(PARAM_CMODEL,
 			parm->subparams, tiff_cmodels);
 		parm->subparams->set_selected(parm->intvalue);
+		parm->subparams->parent = parm;
 		parm = asset->encoder_parameters[FILETIFF_VCODEC_IX]->find(PARAM_COMPRESSION);
 		parm->subparams = Paramlist::construct_from_selection(PARAM_COMPRESSION,
 			parm->subparams, tiff_compression);
 		parm->subparams->set_selected(parm->intvalue);
+		parm->subparams->parent = parm;
 
 		ParamlistThread thread(&asset->encoder_parameters[FILETIFF_VCODEC_IX],
 			_("TIFF compression"), mwindow_global->get_window_icon(),

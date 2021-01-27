@@ -16,6 +16,12 @@
 #include "subselection.h"
 #include "thread.h"
 
+struct elem_window
+{
+	int type;
+	void *ptr;
+};
+
 
 class ParamlistSubWindow : public BC_SubWindow
 {
@@ -40,6 +46,7 @@ private:
 	int bottom_margin;
 	int new_column;
 	int bot_max;
+	ArrayList<struct elem_window> elems;
 };
 
 
@@ -64,6 +71,7 @@ public:
 	ParamIntTxtbx(int x, int y, Param *param, int *val);
 
 	int handle_event();
+	void update_value();
 private:
 	int64_t *val64ptr;
 	int *valptr;
@@ -76,6 +84,7 @@ public:
 	ParamStrTxtbx(int x, int y, Param *param, const char *str);
 	~ParamStrTxtbx();
 
+	void update_value();
 private:
 	Param *param;
 };
@@ -86,6 +95,7 @@ public:
 	ParamDblTxtbx(int x, int y, Param *param, double *val);
 
 	int handle_event();
+	void update_value();
 private:
 	Param *param;
 	double *valptr;
@@ -99,7 +109,7 @@ public:
 	ParamChkBox(int x, int y, Param *param, int *val);
 
 	int handle_event();
-
+	void update_value();
 private:
 	int64_t *val64ptr;
 	int *valptr;

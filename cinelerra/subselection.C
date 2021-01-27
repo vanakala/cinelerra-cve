@@ -24,6 +24,7 @@ SubSelection::SubSelection(int x, int y, int w, BC_WindowBase *base, Param *para
 	int x1 = x + w;
 	int y1 = y + get_resources()->listbox_button[0]->get_h();
 
+	parent_param = param;
 	base->add_subwindow(popupmenu = new BC_PopupMenu(x, y1, 0,
 		"", POPUPMENU_USE_COORDS));
 	base->add_subwindow(button = new SelectionButton(x1, y, popupmenu,
@@ -50,6 +51,41 @@ SubSelection::~SubSelection()
 	}
 }
 
+void SubSelection::update_value()
+{
+	// BC_PopupMenu itemid on vaja kätte saada
+	if(parent_param->subparams)
+	{
+		int i = 0;
+		BC_MenuItem *item;
+		Param *current;
+
+		for(current = parent_param->subparams->first; current; current = current->next)
+		{
+			switch(parent_param->type & PARAMTYPE_MASK)
+			{
+			case PARAMTYPE_LNG:
+				item = popupmenu->get_item(i);
+				if(parent_param->type & PARAMTYPE_BITS)
+				{
+					if(parent_param->longvalue & current->longvalue)
+						item->set_checked(1);
+					else
+						item->set_checked(0);
+				}
+				else
+				{
+					if(parent_param->longvalue == current->longvalue)
+						item->set_checked(1);
+					else
+						item->set_checked(0);
+				}
+				break;
+			}
+			i++;
+		}
+	}
+}
 
 SubSelectionItem::SubSelectionItem(Param *curitem, Param *parent, BC_PopupMenu *menu)
  : BC_MenuItem(curitem->name)
@@ -161,4 +197,18 @@ int SubSelectionPopup::handle_event()
 		i++;
 	}
 	return 1;
+}
+
+void SubSelectionPopup::update_value()
+{
+	Param *current;
+
+	if(list->parent)
+	{
+		for(current = list->first; current; current = current->next)
+		{
+			if(list->parent->is_default(current))
+				update(current->name);
+		}
+	}
 }
