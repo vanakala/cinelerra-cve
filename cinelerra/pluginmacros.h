@@ -209,12 +209,7 @@ PluginClient* new_plugin(PluginServer *server) \
 		} \
 		delete thread; \
 	} \
- \
-	if(defaults) \
-	{ \
-		save_defaults(); \
-		delete defaults; \
-	}
+	delete defaults;
 #else
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	defaults = 0; \
@@ -222,7 +217,8 @@ PluginClient* new_plugin(PluginServer *server) \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
-	if(defaults) { \
+	if(defaults) \
+	{ \
 		save_defaults(); \
 		delete defaults; \
 	}
@@ -303,6 +299,8 @@ void PLUGIN_CLASS::hide_gui() \
 	if(old_thread && old_thread->window) \
 		old_thread->window->close_event(); \
 	delete old_thread; \
+	if(defaults) \
+		save_defaults(); \
 }
 
 #define PLUGIN_CLASS_SET_STRING \
