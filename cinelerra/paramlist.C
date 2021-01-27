@@ -397,6 +397,20 @@ void Param::reset_defaults()
 	}
 }
 
+int Param::is_default(Param *that)
+{
+	if(defaulttype)
+	{
+		if((type & PARAMTYPE_INT) && that->intvalue == defaultint)
+			return 1;
+		if((type & PARAMTYPE_LNG) && that->longvalue == defaultlong)
+			return 1;
+		if((type & PARAMTYPE_DBL) && EQUIV(that->floatvalue, defaultfloat))
+			return 1;
+	}
+	return 0;
+}
+
 void Param::dump(int indent)
 {
 	printf("%*sParam '%s' (%p) dump:\n", indent, "", name, this);
@@ -438,6 +452,7 @@ Paramlist::Paramlist(const char *name)
 	selectedint = 0;
 	selectedlong = 0;
 	selectedfloat = 0;
+	parent = 0;
 }
 
 Paramlist::~Paramlist()
@@ -1014,7 +1029,7 @@ Paramlist *Paramlist::clone(Paramlist *that)
 void Paramlist::dump(int indent)
 {
 	Param *current;
-	printf("%*sParamlist '%s' (%p) dump\n", indent, "", name, this);
+	printf("%*sParamlist '%s' (%p) parent %p dump\n", indent, "", name, this, parent);
 	printf("%*s type: %#x Selected: int:%d long: %" PRId64 " float:%.2f\n",
 		indent, "", type, selectedint, selectedlong, selectedfloat);
 	for(current = first; current; current = current->next)

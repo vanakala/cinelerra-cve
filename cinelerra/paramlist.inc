@@ -19,6 +19,7 @@ struct paramlist_defaults;
 
 #define PARAMTYPE_MASK 0xf
 
+#define PARAMTYPE_SUBS 0x80
 #define PARAMTYPE_BITS 0x100
 #define PARAMTYPE_BOOL 0x200
 #define PARAMTYPE_HIDN 0x400

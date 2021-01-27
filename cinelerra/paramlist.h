@@ -52,6 +52,7 @@ public:
 	void store_defaults();
 	void reset_defaults();
 	void set_default(int64_t defaultvalue);
+	int is_default(Param *that);
 	void dump(int indent = 0);
 
 	int type;
@@ -139,6 +140,8 @@ public:
 	int selectedint;
 	int64_t selectedlong;
 	double selectedfloat;
+	// Optional pointer to parent param
+	Param *parent;
 };
 
 #endif
