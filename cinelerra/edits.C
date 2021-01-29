@@ -817,7 +817,8 @@ void Edits::cleanup()
 				remove(current);
 				current = next;
 			}
-			else if(!current->asset && !current->next->asset)
+			else if(!current->asset && !current->next->asset &&
+					current->next != last)
 				remove(current->next);
 			else if(current->asset == current->next->asset &&
 					PTSEQU(current->get_source_pts() + current->length(), current->next->get_source_pts()))
