@@ -250,7 +250,6 @@ ptstime Track::get_length()
 {
 	ptstime total_length = 0;
 	ptstime length;
-
 // Test edits
 	if(edits->last)
 		total_length = edits->last->get_pts();
@@ -1144,9 +1143,31 @@ void Track::cleanup()
 
 ptstime Track::plugin_max_start(Plugin *plugin)
 {
+	ptstime length, mstart;
+
 	if(master && plugin->plugin_server &&
 			plugin->plugin_server->synthesis)
-		return get_length();
+	{
+		if(edits->last)
+			length = edits->last->get_pts();
+		else
+			length = 0;
+		if(length < plugin->end_pts())
+		{
+			if(!edits->first)
+			{
+				edits->append(edits->create_edit());
+				plugin->set_pts(0);
+			}
+			else if(plugin->get_pts() > length)
+				plugin->set_pts(length);
+
+			Edit *new_edit = edits->append(edits->create_edit());
+			new_edit->set_pts(plugin->end_pts());
+			return plugin->get_pts();
+		}
+		return plugin->get_pts();
+	}
 	else
 		return tracks->length() - plugin->get_length();
 }

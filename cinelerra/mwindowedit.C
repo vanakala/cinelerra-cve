@@ -665,6 +665,8 @@ void MWindow::insert_effect(const char *title,
 		shared_plugin, shared_track);
 // Adjust plugin length
 	ptstime max_start = track->plugin_max_start(new_plugin);
+// Synthetic plugin may change start
+	start = new_plugin->get_pts();
 	if(start > max_start)
 	{
 		ptstime new_length = length - (start - max_start);
