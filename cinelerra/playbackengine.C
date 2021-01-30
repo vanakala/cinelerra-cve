@@ -96,7 +96,7 @@ void PlaybackEngine::wait_render_engine()
 
 void PlaybackEngine::perform_change()
 {
-	if(command->change_type & CHANGE_EDL)
+	if(command->change_type & CHANGE_EDL || !render_engine)
 		create_render_engine();
 }
 
