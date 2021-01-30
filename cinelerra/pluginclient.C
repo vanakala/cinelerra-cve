@@ -117,8 +117,7 @@ void PluginClient::client_side_close()
 {
 // Last command executed
 	if(plugin)
-		mwindow_global->hide_plugin(plugin, 1);
-	else
+		plugin->show = 0;
 	if(prompt)
 		prompt->set_done(1);
 }
