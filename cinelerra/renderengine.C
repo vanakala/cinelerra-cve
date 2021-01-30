@@ -75,10 +75,9 @@ int RenderEngine::arm_command(TransportCommand *new_command)
 // Prevent this renderengine from accepting another command until finished.
 // Since the renderengine is often deleted after the input_lock command it must
 // be locked here as well as in the calling routine.
-
 	input_lock->lock("RenderEngine::arm_command");
 
-	if(new_command->change_type & CHANGE_EDL)
+	if(new_command->change_type & CHANGE_EDL || !edl)
 		edl = new_command->get_edl();
 
 	command.copy_from(new_command);
