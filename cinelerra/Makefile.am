@@ -75,7 +75,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    cache.C \
 		    cachebase.C \
 		    canvas.C \
-		    canvastools.C \
 		    clipedit.C \
 		    cliplist.C \
 		    colorpicker.C \
@@ -294,7 +293,6 @@ noinst_HEADERS = aautomation.h \
 		 cache.h \
 		 cachebase.h \
 		 canvas.h \
-		 canvastools.h \
 		 clipedit.h \
 		 cliplist.h \
 		 colorpicker.h \
