@@ -1088,7 +1088,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 
 	if(lock) plugin_gui_lock->unlock();
 
-	gui->update(WUPD_CANVINCR);
+	update_gui(WUPD_CANVINCR);
 }
 
 void MWindow::update_plugin_guis()
@@ -1111,7 +1111,7 @@ void MWindow::update_project(int load_mode)
 	restart_brender();
 	master_edl->tracks->update_y_pixels(theme);
 
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 
 	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR | WUPD_OVERLAYS);
@@ -1218,11 +1218,42 @@ void MWindow::remove_assets_from_project(int push_undo)
 	save_backup();
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
 
 	awindow->gui->async_update_assets();
 	sync_parameters();
+}
+
+void MWindow::update_gui(int options)
+{
+	master_edl->tracks->update_y_pixels(theme);
+
+	if(options & WUPD_SCROLLBARS)
+		gui->get_scrollbars();
+	if(options & WUPD_ZOOMBAR)
+		gui->zoombar->update();
+	if(options & WUPD_PATCHBAY)
+		gui->patchbay->update();
+	if(options & (WUPD_CLOCK | WUPD_TIMEBAR))
+		gui->update(options & (WUPD_CLOCK | WUPD_TIMEBAR));
+
+	if(options & WUPD_CANVAS)
+	{
+		gui->canvas->draw(options & WUPD_CANVAS);
+		gui->canvas->flash();
+// Activate causes the menubar to deactivate.  Don't want this for
+// picon thread.
+		if(!(options & WUPD_CANVPICIGN))
+			gui->canvas->activate();
+	}
+
+	if(options & WUPD_BUTTONBAR)
+		gui->mbuttons->update();
+
+// Can't age if the cache called this to draw missing picons
+	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
+			age_caches();
 }
 
 int MWindow::stop_composer()
