@@ -17,7 +17,6 @@
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "patchbay.h"
 #include "patchgui.h"
 #include "mainsession.h"
@@ -34,7 +33,6 @@ PatchBay::PatchBay()
 	theme_global->patchbay_w,
 	theme_global->patchbay_h)
 {
-	this->gui = mwindow_global->gui;
 	button_down = 0;
 	reconfigure_trigger = 0;
 	drag_operation = Tracks::NONE;

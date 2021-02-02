@@ -48,8 +48,6 @@ public:
 	void resize_event(int top, int bottom);
 	Track *is_over_track();     // called from trackcanvas!
 
-	MWindowGUI *gui;
-
 	int button_down;
 	int new_status;
 	int drag_operation;
