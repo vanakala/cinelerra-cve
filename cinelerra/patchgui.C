@@ -17,7 +17,6 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "patchbay.h"
 #include "patchgui.h"
 #include "theme.h"
@@ -285,7 +284,7 @@ void PatchGUI::toggle_behavior(int type,
 
 	case Tracks::DRAW:
 		mwindow_global->undo->update_undo(_("draw patch"), LOAD_PATCHES);
-		mwindow_global->gui->update(WUPD_CANVINCR);
+		mwindow_global->update_gui(WUPD_CANVINCR);
 		break;
 
 	case Tracks::EXPAND:
