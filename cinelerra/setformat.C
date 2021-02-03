@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "clip.h"
 #include "cinelerra.h"
@@ -38,7 +22,6 @@
 #include "meterpanel.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "new.h"
 #include "preferences.h"
 #include "rotateframe.h"
@@ -157,7 +140,7 @@ void SetFormatThread::apply_changes()
 
 // Update GUIs
 	mwindow->restart_brender();
-	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	mwindow->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 
 	mwindow->cwindow->update(WUPD_TIMEBAR | WUPD_OVERLAYS | WUPD_ACHANNELS);
