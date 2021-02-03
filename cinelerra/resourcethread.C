@@ -221,7 +221,7 @@ void ResourceThread::run()
 			delete item;
 		}
 		if(do_update)
-			mwindow_global->gui->update(WUPD_CANVPICIGN);
+			mwindow_global->update_gui(WUPD_CANVPICIGN);
 	}
 }
 
