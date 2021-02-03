@@ -1,30 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "cinelerra.h"
 #include "bcsignals.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "plugin.h"
 #include "plugindialog.h"
 #include "pluginpopup.h"
@@ -127,7 +110,7 @@ int PluginPopupDetach::handle_event()
 	popup->plugin->track->remove_plugin(popup->plugin);
 	mwindow_global->save_backup();
 	mwindow_global->undo->update_undo(_("detach effect"), LOAD_ALL);
-	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->update_gui(WUPD_CANVINCR);
 	mwindow_global->sync_parameters();
 	return 1;
 }
@@ -145,7 +128,7 @@ int PluginPopupShow::handle_event()
 		mwindow_global->show_plugin(popup->plugin);
 	else
 		mwindow_global->hide_plugin(popup->plugin, 1);
-	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->update_gui(WUPD_CANVINCR);
 	return 1;
 }
 
@@ -166,7 +149,7 @@ int PluginPopupOn::handle_event()
 	if(mwindow_global->stop_composer())
 		return 0;
 	popup->plugin->on = !get_checked();
-	mwindow_global->gui->update(WUPD_CANVINCR);
+	mwindow_global->update_gui(WUPD_CANVINCR);
 	mwindow_global->sync_parameters();
 	return 1;
 }
