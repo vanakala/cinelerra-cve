@@ -35,7 +35,6 @@
 #include "mainsession.h"
 #include "mbuttons.h"
 #include "meterpanel.h"
-#include "mwindowgui.h"
 #include "mwindow.h"
 #include "overlayframe.h"
 #include "patchbay.h"

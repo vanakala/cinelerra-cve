@@ -25,7 +25,6 @@
 #include "language.h"
 #include "mainerror.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "question.h"
 
 

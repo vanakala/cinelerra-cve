@@ -27,7 +27,6 @@
 #include "indexfile.h"
 #include "indexthread.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "preferences.h"
 #include "mainsession.h"
 #include <unistd.h>

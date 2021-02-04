@@ -25,7 +25,6 @@
 #include "filexml.h"
 #include "labels.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "patchbay.h"
 #include "mainsession.h"
 #include "theme.h"

@@ -32,7 +32,6 @@
 #include "mainprogress.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "preferences.h"
 
 #include <string.h>

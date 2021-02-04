@@ -42,7 +42,6 @@
 #include "maskautos.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "theme.h"
 #include "track.h"
 #include "transportcommand.h"

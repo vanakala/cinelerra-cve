@@ -36,7 +36,6 @@
 #include "asset.h"
 #include "mainerror.h"
 #include "language.h"
-#include "mwindowgui.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

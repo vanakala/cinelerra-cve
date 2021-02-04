@@ -21,7 +21,6 @@
 #include "mainsession.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "paramlist.h"

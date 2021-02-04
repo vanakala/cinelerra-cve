@@ -35,7 +35,6 @@
 #include "indexfile.h"
 #include "language.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "packagerenderer.h"
 #include "playbackconfig.h"
 #include "preferences.h"

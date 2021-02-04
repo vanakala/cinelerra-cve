@@ -23,7 +23,6 @@
 #include "filesystem.h"
 #include "language.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "question.h"
