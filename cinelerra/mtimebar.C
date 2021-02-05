@@ -13,7 +13,6 @@
 #include "localsession.h"
 #include "maincursor.h"
 #include "mainsession.h"
-#include "mbuttons.h"
 #include "mtimebar.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
@@ -43,7 +42,7 @@ int MTimeBar::position_to_pixel(ptstime position)
 
 void MTimeBar::stop_playback()
 {
-	gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+	mwindow->stop_composer();
 }
 
 #define TEXT_MARGIN 4
@@ -365,7 +364,7 @@ void MTimeBar::select_label(ptstime position)
 {
 	EDL *edl = master_edl;
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+	mwindow->stop_composer();
 
 	position = master_edl->align_to_frame(position);
 

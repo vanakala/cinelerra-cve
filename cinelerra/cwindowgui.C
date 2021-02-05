@@ -38,8 +38,6 @@
 #include "maskautos.h"
 #include "mbuttons.h"
 #include "meterpanel.h"
-#include "mwindowgui.h"
-#include "mwindow.h"
 #include "mwindow.h"
 #include "playtransport.h"
 #include "theme.h"
@@ -393,7 +391,7 @@ int CWindowGUI::keypress_event()
 			if (alt_down())
 			{
 				int shift_down = this->shift_down();
-				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+				mwindow->stop_composer();
 				mwindow->prev_edit_handle(shift_down);
 			}
 			else
@@ -408,7 +406,7 @@ int CWindowGUI::keypress_event()
 			if(alt_down())
 			{
 				int shift_down = this->shift_down();
-				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+				mwindow->stop_composer();
 				mwindow->next_edit_handle(shift_down);
 			}
 			else

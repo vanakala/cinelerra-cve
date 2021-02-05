@@ -11,9 +11,7 @@
 #include "edl.h"
 #include "localsession.h"
 #include "maincursor.h"
-#include "mbuttons.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "theme.h"
 
 
@@ -58,7 +56,7 @@ void CTimeBar::select_label(ptstime position)
 {
 	EDL *edl = master_edl;
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+	mwindow->stop_composer();
 
 	position = master_edl->align_to_frame(position);
 
