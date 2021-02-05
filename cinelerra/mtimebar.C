@@ -390,7 +390,7 @@ void MTimeBar::select_label(ptstime position)
 // Que the CWindow
 	mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	mwindow->gui->cursor->update();
-	mwindow->gui->canvas->activate();
+	mwindow->activate_canvas();
 	mwindow->update_gui(WUPD_ZOOMBAR | WUPD_PATCHBAY);
 	mwindow->update_plugin_guis();
 	update_highlights();

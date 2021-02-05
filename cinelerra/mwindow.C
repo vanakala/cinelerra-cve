@@ -1481,6 +1481,16 @@ ptstime MWindow::trackcanvas_visible()
 	return gui->canvas->time_visible();
 }
 
+void MWindow::activate_canvas()
+{
+	gui->canvas->activate();
+}
+
+void MWindow::deactivate_canvas()
+{
+	gui->canvas->deactivate();
+}
+
 void MWindow::show_program_status()
 {
 	size_t mc;

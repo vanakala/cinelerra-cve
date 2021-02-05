@@ -331,6 +331,9 @@ public:
 	// Length of visible trackcanvas
 	ptstime trackcanvas_visible();
 
+	void activate_canvas();
+	void deactivate_canvas();
+
 	SplashGUI *splash_window;
 	GLThread *glthread;
 
