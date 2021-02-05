@@ -100,6 +100,9 @@ public:
 	void tile_windows();
 	void set_titles(int value);
 
+// Mark window hidden
+	void mark_awindow_hidden();
+
 // Entry point to insert assets and insert edls.  Called by TrackCanvas 
 // and AssetPopup when assets are dragged in from AWindow.
 // Takes the drag vectors from MainSession and

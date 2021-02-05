@@ -940,6 +940,12 @@ void MWindow::show_awindow()
 	gui->mainmenu->show_awindow->set_checked(1);
 }
 
+void MWindow::mark_awindow_hidden()
+{
+	mainsession->show_awindow = 0;
+	gui->mainmenu->show_awindow->set_checked(0);
+}
+
 void MWindow::show_cwindow()
 {
 	mainsession->show_cwindow = 1;
