@@ -953,6 +953,12 @@ void MWindow::show_cwindow()
 	gui->mainmenu->show_cwindow->set_checked(1);
 }
 
+void MWindow::mark_cwindow_hidden()
+{
+	mainsession->show_cwindow = 0;
+	gui->mainmenu->show_cwindow->set_checked(0);
+}
+
 void MWindow::show_gwindow()
 {
 	mainsession->show_gwindow = 1;
