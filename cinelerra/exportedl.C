@@ -1,48 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2006 Andraz Tori
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2006 Andraz Tori
 
 #include "asset.h"
 #include "bchash.h"
 #include "bctitle.h"
-#include "condition.h"
+#include "bcresources.h"
+#include "bcrecentlist.h"
+#include "browsebutton.h"
 #include "confirmsave.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "file.h"
-#include "filesystem.h"
-#include "filexml.h"
-#include "language.h"
-#include "localsession.h"
-#include "mainsession.h"
-#include "mainerror.h"
-#include "mutex.h"
-#include "mwindowgui.h"
-#include "mwindow.h"
 #include "exportedl.h"
+#include "filesystem.h"
+#include "language.h"
+#include "mwindow.h"
 #include "plugin.h"
 #include "track.h"
 
 #include <ctype.h>
 #include <string.h>
+
+#define WIN_WIDTH 410
+#define WIN_HEIGHT 400
 
 ExportEDLAsset::ExportEDLAsset(MWindow *mwindow, EDL *edl)
 {
@@ -242,36 +224,41 @@ void ExportEDL::start_interactive()
 void ExportEDL::run()
 {
 	int result = 0;
+	int root_w, root_h;
 	exportasset = new ExportEDLAsset(mwindow, master_edl);
 
 	exportasset->load_defaults();
 
+	BC_Resources::get_root_size(&root_w, &root_h);
+
 // Get format from user
-		result = 0;
-		int filesok;
+	result = 0;
+	int filesok;
 
-		do {
-		// FIX
-			filesok = 0;
-			exportedl_window = new ExportEDLWindow(mwindow, this, exportasset);
-			result = exportedl_window->run_window();
-			if (! result) {
-				// add to recentlist only on OK
-				// Fix "EDL"!
-				exportedl_window->path_recent->add_item("EDLPATH", exportasset->path);
-			}
-			exportasset->track_number = exportedl_window->track_list->get_selection_number(0, 0);
-			delete exportedl_window;
-			exportedl_window = 0;
-			if (!result)
-			{
-				ArrayList<char*> paths;
+	do {
+	// FIX
+		filesok = 0;
+		exportedl_window = new ExportEDLWindow(root_w / 2 - WIN_WIDTH / 2,
+			root_h / 2 - WIN_HEIGHT / 2,
+			mwindow, this, exportasset);
+		result = exportedl_window->run_window();
+		if(!result)
+		{
+			// add to recentlist only on OK
+			// Fix "EDL"!
+			exportedl_window->path_recent->add_item("EDLPATH", exportasset->path);
+		}
+		exportasset->track_number = exportedl_window->track_list->get_selection_number(0, 0);
+		delete exportedl_window;
+		exportedl_window = 0;
+		if(!result)
+		{
+			ArrayList<char*> paths;
 
-				paths.append(exportasset->path);
-				filesok = ConfirmSave::test_files(mwindow, &paths);
-			}
-			
-		} while (!result && filesok);
+			paths.append(exportasset->path);
+			filesok = ConfirmSave::test_files(mwindow, &paths);
+		}
+	} while(!result && filesok);
 	mwindow->save_defaults();
 	exportasset->save_defaults();
 
@@ -279,9 +266,6 @@ void ExportEDL::run()
 	if(!result) exportasset->export_it();
 	delete exportasset;
 }
-
-#define WIDTH 410
-#define HEIGHT 400
 
 static const char *list_titles[] = 
 {
@@ -295,19 +279,17 @@ static int list_widths[] =
 	200
 };
 
-ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
+ExportEDLWindow::ExportEDLWindow(int x, int y, MWindow *mwindow,
+	ExportEDL *exportedl, ExportEDLAsset *exportasset)
  : BC_Window(MWindow::create_title(N_("Export EDL")),
-	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
-	WIDTH, 
-	HEIGHT,
-	(int)BC_INFINITY,
-	(int)BC_INFINITY,
+	x, y, WIN_WIDTH, WIN_HEIGHT,
+	BC_INFINITY,
+	BC_INFINITY,
 	0,
 	0,
 	1)
 {
-	int x = 5, y = 5;
+	x = y = 5;
 
 	this->mwindow = mwindow;
 	this->exportasset = exportasset;
