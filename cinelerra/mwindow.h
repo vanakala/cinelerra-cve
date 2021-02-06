@@ -103,6 +103,7 @@ public:
 // Mark window hidden
 	void mark_awindow_hidden();
 	void mark_cwindow_hidden();
+	void mark_gwindow_hidden();
 
 // Entry point to insert assets and insert edls.  Called by TrackCanvas 
 // and AssetPopup when assets are dragged in from AWindow.

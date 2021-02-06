@@ -365,7 +365,7 @@ void MWindow::init_awindow()
 
 void MWindow::init_gwindow()
 {
-	gwindow = new GWindow(this);
+	gwindow = new GWindow(gui);
 }
 
 void MWindow::init_tipwindow()
@@ -962,12 +962,17 @@ void MWindow::mark_cwindow_hidden()
 void MWindow::show_gwindow()
 {
 	mainsession->show_gwindow = 1;
-
 	gwindow->gui->show_window();
 	gwindow->gui->raise_window();
 	gwindow->gui->flush();
 
 	gui->mainmenu->show_gwindow->set_checked(1);
+}
+
+void MWindow::mark_gwindow_hidden()
+{
+	mainsession->show_gwindow = 0;
+	gui->mainmenu->show_gwindow->set_checked(0);
 }
 
 void MWindow::show_lwindow()
@@ -1262,6 +1267,9 @@ void MWindow::update_gui(int options)
 
 	if(options & WUPD_BUTTONBAR)
 		gui->mbuttons->update();
+
+	if(options & WUPD_TOGGLES)
+		gui->mainmenu->update_toggles();
 
 // Can't age if the cache called this to draw missing picons
 	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)

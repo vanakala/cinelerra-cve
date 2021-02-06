@@ -9,7 +9,6 @@
 #include "automation.inc"
 #include "bcwindow.h"
 #include "bctoggle.h"
-#include "mwindow.inc"
 
 class GWindowToggle;
 
@@ -30,33 +29,30 @@ struct toggleinfo
 class GWindowGUI : public BC_Window
 {
 public:
-	GWindowGUI(MWindow *mwindow, int w, int h);
+	GWindowGUI(int w, int h);
 
 	static void calculate_extents(BC_WindowBase *gui, int *w, int *h);
 	void translation_event();
 	void close_event();
 	int keypress_event();
 	void update_toggles();
-	void update_mwindow();
 
-	MWindow *mwindow;
 	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];
 };
 
 class GWindowToggle : public BC_CheckBox
 {
 public:
-	GWindowToggle(MWindow *mwindow, 
-		GWindowGUI *gui, 
+	GWindowToggle(GWindowGUI *gui,
 		int x, 
 		int y, 
 		toggleinfo toggleinf);
+
 	int handle_event();
 	void update();
 
-	static int* get_main_value(MWindow *mwindow, toggleinfo toggleinf);
+	static int* get_main_value(toggleinfo toggleinf);
 
-	MWindow *mwindow;
 	GWindowGUI *gui;
 	toggleinfo toggleinf;
 };
