@@ -95,7 +95,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	{
 		int index_zoom = 0;
 		int need_redraw = 0;
-		IndexFile indexfile(mwindow_global);
+		IndexFile indexfile;
 
 		if(!indexfile.open_index(edit->asset))
 		{
@@ -392,7 +392,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 	case INDEX_BUILDING:
 	case INDEX_READY:
 		{
-			IndexFile indexfile(mwindow_global);
+			IndexFile indexfile;
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 

@@ -47,7 +47,7 @@ MainIndexes::MainIndexes(MWindow *mwindow)
 	interrupt_lock = new Condition(1, "MainIndexes::interrupt_lock");
 	interrupt_flag = 0;
 	done = 0;
-	indexfile = new IndexFile(mwindow);
+	indexfile = new IndexFile();
 }
 
 MainIndexes::~MainIndexes()
@@ -65,7 +65,7 @@ void MainIndexes::add_next_asset(Asset *asset)
 	next_lock->lock("MainIndexes::add_next_asset");
 
 // Test current asset
-	IndexFile indexfile(mwindow);
+	IndexFile indexfile;
 
 	int got_it = 0;
 

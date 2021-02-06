@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -36,7 +20,6 @@
 #include "mainerror.h"
 #include "mainprogress.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "preferences.h"
 #include "resourcepixmap.h"
 #include "theme.h"
@@ -49,18 +32,16 @@
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.
 
-IndexFile::IndexFile(MWindow *mwindow)
+IndexFile::IndexFile()
 {
-	this->mwindow = mwindow;
 	file = 0;
 	interrupt_flag = 0;
 	redraw_timer = new Timer;
 }
 
-IndexFile::IndexFile(MWindow *mwindow, Asset *asset)
+IndexFile::IndexFile(Asset *asset)
 {
 	file = 0;
-	this->mwindow = mwindow;
 	this->asset = asset;
 	interrupt_flag = 0;
 	redraw_timer = new Timer;
@@ -112,7 +93,7 @@ int IndexFile::open_file()
 	int result = 0;
 
 	get_index_filename(source_filename, 
-		mwindow->preferences->index_directory,
+		preferences_global->index_directory,
 		index_filename, 
 		asset->path, asset->audio_streamno - 1);
 
@@ -176,7 +157,7 @@ int IndexFile::get_required_scale(File *source)
 
 	if(length_source > 0)
 	{
-		samplenum peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
+		samplenum peak_count = preferences_global->index_size / (2 * sizeof(float) * asset->channels);
 		for(result = 1;
 			length_source / result > peak_count;
 			result *= 2);
@@ -236,7 +217,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	if(open_source(&source)) return 1;
 
 	get_index_filename(source_filename, 
-		mwindow->preferences->index_directory, 
+		preferences_global->index_directory,
 		index_filename, 
 		asset->path, asset->audio_streamno - 1);
 
@@ -264,7 +245,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		redraw_timer->update();
 
 // thread out index thread
-		IndexThread *index_thread = new IndexThread(mwindow, 
+		IndexThread *index_thread = new IndexThread(mwindow_global,
 			this, 
 			asset, 
 			index_filename, 
@@ -336,7 +317,7 @@ void IndexFile::redraw_edits(int force)
 	if(difference > 250 || force)
 	{
 		redraw_timer->update();
-		mwindow->gui->canvas->draw_indexes(asset);
+		mwindow_global->draw_indexes(asset);
 		asset->old_index_end = asset->index_end;
 	}
 }
@@ -392,7 +373,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int buffer_shared = 0;
 	int i;
 	int center_pixel = master_edl->local_session->zoom_track / 2;
-	if(edlsession->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+	if(edlsession->show_titles) center_pixel += theme_global->get_image("title_bg_data")->get_h();
 	int miny = center_pixel - master_edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + master_edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;
@@ -457,7 +438,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
-			pixmap->canvas->set_color(mwindow->theme->audio_color);
+			pixmap->canvas->set_color(theme_global->audio_color);
 			if(master_edl->local_session->zoom_time * edlsession->sample_rate == 1)
 			{
 				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);

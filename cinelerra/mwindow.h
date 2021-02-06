@@ -145,6 +145,8 @@ public:
 
 	void interrupt_indexes();  // Stop index building
 
+	void draw_indexes(Asset *asset);
+
 	int redraw_time_dependancies();     // after reconfiguring the time format, sample rate, frame rate
 
 	void update_gui(int options);

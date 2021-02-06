@@ -698,7 +698,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		case FILE_UNRECOGNIZED_CODEC:
 		{
 // Test index file
-			IndexFile indexfile(this);
+			IndexFile indexfile;
 			new_asset->nb_streams = 0;
 			new_asset->audio_streamno = 1;
 			result = indexfile.open_index(new_asset);
@@ -1352,6 +1352,11 @@ void MWindow::save_defaults()
 void MWindow::interrupt_indexes()
 {
 	mainindexes->interrupt_build();
+}
+
+void MWindow::draw_indexes(Asset *asset)
+{
+	gui->canvas->draw_indexes(asset);
 }
 
 void MWindow::next_time_format()
