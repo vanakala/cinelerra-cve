@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bchash.h"
 #include "bcresources.h"
@@ -29,7 +13,6 @@
 #include "mainundo.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "theme.h"
 
 #include <string.h>
@@ -118,7 +101,7 @@ void LoadFileThread::run()
 
 	mwindow_global->interrupt_indexes();
 	mwindow_global->load_filenames(&path_list, load_mode);
-	mwindow_global->gui->mainmenu->add_load(path_list.values[0]);
+	mwindow_global->add_load_path(path_list.values[0]);
 	path_list.remove_all_objects();
 
 	mwindow_global->save_backup();
@@ -279,7 +262,7 @@ int LoadPrevious::handle_event()
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
 	mwindow_global->load_filenames(&path_list, LOADMODE_REPLACE);
-	mwindow_global->gui->mainmenu->add_load(path_list.values[0]);
+	mwindow_global->add_load_path(path_list.values[0]);
 	path_list.remove_all_objects();
 
 	mwindow_global->undo->update_undo(_("load previous"), LOAD_ALL);

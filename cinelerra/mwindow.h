@@ -86,6 +86,8 @@ public:
 	int load_defaults();
 	void save_defaults();
 	void set_filename(const char *filename);
+// Add path to recetly loaded files
+	void add_load_path(const char *path);
 // Total vertical pixels in timeline
 	int get_tracks_height();
 // Total horizontal pixels in timeline

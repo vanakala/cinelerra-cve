@@ -1458,6 +1458,11 @@ void MWindow::set_filename(const char *filename)
 	}
 }
 
+void MWindow::add_load_path(const char *path)
+{
+	gui->mainmenu->add_load(path);
+}
+
 void MWindow::set_loop_boundaries()
 {
 	ptstime start = master_edl->local_session->get_selectionstart();

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "arraylist.h"
 #include "assetlist.h"
@@ -36,7 +20,6 @@
 #include "mainmenu.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "plugindb.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -296,7 +279,7 @@ int main(int argc, char *argv[])
 		{
 			mwindow_global->load_filenames(&filenames, LOADMODE_REPLACE);
 			if(filenames.total == 1)
-				mwindow_global->gui->mainmenu->add_load(filenames.values[0]);
+				mwindow_global->add_load_path(filenames.values[0]);
 		}
 
 // run the program
