@@ -52,6 +52,7 @@
 #include "mainundo.h"
 #include "maplist.h"
 #include "mbuttons.h"
+#include "mtimebar.h"
 #include "mutex.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
@@ -1277,6 +1278,9 @@ void MWindow::update_gui(int options)
 
 	if(options & WUPD_TOGGLES)
 		gui->mainmenu->update_toggles();
+
+	if(options & WUPD_LABELS)
+		gui->timebar->update_labels();
 
 // Can't age if the cache called this to draw missing picons
 	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)

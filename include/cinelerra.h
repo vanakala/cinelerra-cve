@@ -23,6 +23,7 @@
 #define WUPD_CANVPICIGN    0x2000
 #define WUPD_ACHANNELS     0x4000
 #define WUPD_TOGGLES       0x8000
+#define WUPD_LABELS       0x10000
 #define WUPD_CANVAS        (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
 
 // Audio buffer size

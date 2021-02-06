@@ -139,7 +139,7 @@ TimeBar::TimeBar(MWindow *mwindow, BC_WindowBase *gui,
 	in_point = 0;
 	out_point = 0;
 	current_operation = TIMEBAR_NONE;
-	label_edit = new LabelEdit(mwindow, mwindow->awindow, 0);
+	label_edit = new LabelEdit(mwindow->awindow);
 }
 
 TimeBar::~TimeBar()

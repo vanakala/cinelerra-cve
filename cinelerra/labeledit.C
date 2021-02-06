@@ -1,27 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2006 Pierre Dumuid
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2006 Pierre Dumuid
 
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bctitle.h"
+#include "bcbutton.h"
 #include "cinelerra.h"
 #include "labeledit.h"
 #include "fonts.h"
@@ -29,19 +14,13 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
-#include "mtimebar.h"
 #include "theme.h"
-#include "vwindow.h"
-#include "vwindowgui.h"
 
 
-LabelEdit::LabelEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
+LabelEdit::LabelEdit(AWindow *awindow)
  : Thread()
 {
-	this->mwindow = mwindow;
 	this->awindow = awindow;
-	this->vwindow = vwindow;
 	this->label = 0;
 }
 
@@ -61,13 +40,14 @@ void LabelEdit::run()
 
 	if(label)
 	{
-		mwindow->get_abs_cursor_pos(&cx, &cy);
-		LabelEditWindow *window = new LabelEditWindow(mwindow, this, cx, cy);
+		mwindow_global->get_abs_cursor_pos(&cx, &cy);
+		LabelEditWindow *window = new LabelEditWindow(this, cx, cy);
+
 		if(!window->run_window())
 		{
 			strcpy(label->textstr, window->textbox->get_utf8text());
-			if(mwindow)
-				mwindow->gui->timebar->update_labels();
+			if(mwindow_global)
+				mwindow_global->update_gui(WUPD_LABELS);
 			if(awindow)
 				awindow->gui->async_update_assets();
 		}
@@ -76,7 +56,7 @@ void LabelEdit::run()
 }
 
 
-LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int absx, int absy)
+LabelEditWindow::LabelEditWindow(LabelEdit *thread, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Label Info")),
 	absx - 400 / 2,
 	absy - 350 / 2,
@@ -93,9 +73,8 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread, int absx, 
 	BC_TextBox *titlebox;
 	BC_Title *title;
 
-	this->mwindow = mwindow;
 	this->label = thread->label;
-	set_icon(mwindow->awindow->get_window_icon());
+	set_icon(mwindow_global->awindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new LabelEditComments(this, 

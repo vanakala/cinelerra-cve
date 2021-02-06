@@ -32,7 +32,7 @@ AWindow::AWindow(MWindow *mwindow) : Thread()
 	gui = new AWindowGUI(mwindow, this);
 	gui->async_update_assets();
 	asset_edit = new AssetEdit(mwindow);
-	label_edit = new LabelEdit(mwindow, this, 0);
+	label_edit = new LabelEdit(this);
 }
 
 AWindow::~AWindow()
