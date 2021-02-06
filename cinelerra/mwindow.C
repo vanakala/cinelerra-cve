@@ -428,7 +428,7 @@ void MWindow::init_compositor()
 
 void MWindow::init_levelwindow()
 {
-	lwindow = new LevelWindow(this);
+	lwindow = new LevelWindow;
 }
 
 void MWindow::init_viewer()
@@ -982,6 +982,13 @@ void MWindow::show_lwindow()
 	lwindow->gui->raise_window();
 	lwindow->gui->flush();
 	gui->mainmenu->show_lwindow->set_checked(1);
+}
+
+void MWindow::mark_lwindow_hidden()
+{
+	mainsession->show_lwindow = 0;
+	gui->mainmenu->show_lwindow->set_checked(0);
+	save_defaults();
 }
 
 void MWindow::tile_windows()
