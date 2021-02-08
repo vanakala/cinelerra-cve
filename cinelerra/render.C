@@ -464,7 +464,7 @@ void Render::stop_progress()
 		progress->stop_progress();
 		delete progress;
 
-		mwindow_global->gui->show_message(_("Rendering took %s"), string);
+		mwindow_global->show_message(_("Rendering took %s"), string);
 		mwindow_global->gui->stop_hourglass();
 	}
 	progress = 0;
@@ -558,7 +558,7 @@ int Render::render(int test_overwrite,
 // Start dispatching external jobs
 		if(mwindow_global)
 		{
-			mwindow_global->gui->show_message(_("Starting render farm"));
+			mwindow_global->show_message(_("Starting render farm"));
 			mwindow_global->gui->start_hourglass();
 		}
 		else

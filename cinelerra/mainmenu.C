@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "autoconf.h"
 #include "automation.inc"
@@ -39,7 +23,6 @@
 #include "mainundo.h"
 #include "menuaeffects.h"
 #include "menuveffects.h"
-#include "mwindowgui.h"
 #include "mwindow.h"
 #include "new.h"
 #include "plugindb.h"
@@ -55,13 +38,12 @@
 #include <string.h>
 
 
-MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
+MainMenu::MainMenu(MWindow *mwindow, BC_WindowBase *gui)
  : BC_MenuBar(0, 0, gui->get_w())
 {
 	BC_Menu *viewmenu, *windowmenu, *settingsmenu, *trackmenu;
 	PreferencesMenuitem *preferences;
 
-	this->gui = gui;
 	this->mwindow = mwindow;
 
 	recent_load = new BC_RecentList("PATH", mwindow->defaults);
@@ -903,7 +885,7 @@ int SaveSettingsNow::handle_event()
 {
 	mwindow->save_defaults();
 	mwindow->save_backup();
-	mwindow->gui->show_message(_("Saved settings."));
+	mwindow->show_message(_("Saved settings."));
 	return 1;
 }
 

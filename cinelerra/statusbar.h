@@ -35,7 +35,6 @@ public:
 	StatusBar(MWindow *mwindow, MWindowGUI *gui);
 
 	void set_message(const char *text);
-	void default_message();
 	void show();
 	void resize_event();
 

@@ -257,19 +257,6 @@ int MWindowGUI::visible(int x1, int x2, int view_x1, int view_x2)
 		(x1 <= view_x1 && x2 >= view_x2);
 }
 
-void MWindowGUI::show_message(const char *fmt, ...)
-{
-	char bufr[1024];
-	va_list ap;
-
-	va_start(ap, fmt);
-	vsnprintf(bufr, 1024, fmt, ap);
-	va_end(ap);
-
-	statusbar->status_text->set_color(mwindow->theme->message_normal);
-	statusbar->status_text->update(bufr);
-}
-
 // Drag motion called from other window
 void MWindowGUI::drag_motion()
 {

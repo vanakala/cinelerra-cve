@@ -92,6 +92,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -583,7 +584,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		else
 		{
 			new_asset = new Asset(filenames->values[i]);
-			gui->show_message("Loading %s", new_asset->path);
+			show_message("Loading %s", new_asset->path);
 		}
 // Fill asset data
 		result = assetlist_global.check_asset(new_asset);
@@ -869,7 +870,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		}
 	}
 
-	gui->statusbar->default_message();
+	default_message();
 
 	mainindexes->start_build();
 	master_edl->check_master_track();
@@ -1199,7 +1200,7 @@ void MWindow::save_backup(int is_manual)
 	fs.complete_path(path);
 
 	if(file.write_to_file(path))
-		gui->show_message(_("Couldn't open %s for writing."), path);
+		show_message(_("Couldn't open %s for writing."), path);
 }
 
 void MWindow::reset_caches()
@@ -1428,7 +1429,7 @@ void MWindow::time_format_common()
 {
 	gui->redraw_time_dependancies();
 	char string[BCTEXTLEN];
-	gui->show_message(_("Using %s."), Units::print_time_format(edlsession->time_format, string));
+	show_message(_("Using %s."), Units::print_time_format(edlsession->time_format, string));
 	gui->flush();
 }
 
@@ -1524,6 +1525,25 @@ void MWindow::activate_canvas()
 void MWindow::deactivate_canvas()
 {
 	gui->canvas->deactivate();
+}
+
+void MWindow::show_message(const char *fmt, ...)
+{
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, 1024, fmt, ap);
+	va_end(ap);
+
+	gui->statusbar->status_text->set_color(theme->message_normal);
+	gui->statusbar->status_text->update(bufr);
+}
+
+void MWindow::default_message()
+{
+	gui->statusbar->status_text->set_color(theme->message_normal);
+	gui->statusbar->status_text->update(_("Welcome to " PROGRAM_NAME));
 }
 
 void MWindow::show_program_status()

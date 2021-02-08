@@ -3271,7 +3271,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 			char string[BCTEXTLEN];
 			edlsession->ptstotext(string, current->pos_time);
-			gui->show_message("%s, %.2f", string, current->get_value());
+			mwindow->show_message("%s, %.2f", string, current->get_value());
 		}
 		break;
 
@@ -3296,7 +3296,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				char string[BCTEXTLEN];
 				edlsession->ptstotext(string,
 					current->get_control_in_pts());
-				gui->show_message("%s, %.2f", string, current->get_control_in_value());
+				mwindow->show_message("%s, %.2f", string, current->get_control_in_value());
 			}
 		}
 		break;
@@ -3318,7 +3318,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				char string[BCTEXTLEN];
 				edlsession->ptstotext(string,
 					((FloatAuto*)current)->get_control_out_pts());
-				gui->show_message("%s, %.2f", string, 
+				mwindow->show_message("%s, %.2f", string, 
 					((FloatAuto*)current)->get_control_out_value());
 			}
 		}
@@ -3343,7 +3343,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 
 		char string[BCTEXTLEN];
 		edlsession->ptstotext(string, current->pos_time);
-		gui->show_message("%s, %d", string, current->value);
+		mwindow->show_message("%s, %d", string, current->value);
 	}
 	return result;
 }
@@ -3387,7 +3387,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 
 		char string[BCTEXTLEN];
 		edlsession->ptstotext(string, current->pos_time);
-		gui->show_message(string);
+		mwindow->show_message(string);
 
 		ptstime position_f = current->pos_time;
 		ptstime center_f = (master_edl->local_session->get_selectionstart(1) +

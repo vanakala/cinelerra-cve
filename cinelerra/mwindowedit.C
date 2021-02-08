@@ -1224,7 +1224,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 
 		if(!server)
 		{
-			gui->show_message(_("No default transition '%s' found."),
+			show_message(_("No default transition '%s' found."),
 				name);
 			return;
 		}

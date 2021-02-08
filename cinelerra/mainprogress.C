@@ -77,7 +77,7 @@ void MainProgressBar::stop_progress()
 	if(progress_bar)
 	{
 		progress_bar->update(0);
-		mwindow->gui->statusbar->default_message();
+		mwindow->default_message();
 	}
 }
 
@@ -111,7 +111,7 @@ void MainProgressBar::update_current_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-		mwindow->gui->show_message(bufr);
+		mwindow->show_message(bufr);
 }
 
 void MainProgressBar::update_title(const char *fmt, ...)
@@ -131,7 +131,7 @@ void MainProgressBar::update_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-		mwindow->gui->show_message(bufr);
+		mwindow->show_message(bufr);
 }
 
 void MainProgressBar::update_length(int64_t length)

@@ -101,6 +101,8 @@ public:
 	void show_ruler();
 	void tile_windows();
 	void set_titles(int value);
+	void show_message(const char *fmt, ...);
+	void default_message();
 
 // Mark window hidden
 	void mark_awindow_hidden();

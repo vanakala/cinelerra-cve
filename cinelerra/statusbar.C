@@ -59,7 +59,7 @@ void StatusBar::show()
 		new StatusBarCancel(mwindow, 
 			mwindow->theme->mstatus_cancel_x, 
 			mwindow->theme->mstatus_cancel_y));
-	default_message();
+	mwindow->default_message();
 	flash();
 }
 
@@ -87,12 +87,6 @@ void StatusBar::resize_event()
 void StatusBar::set_message(const char *text)
 {
 	status_text->update(text);
-}
-
-void StatusBar::default_message()
-{
-	status_text->set_color(mwindow->theme->message_normal);
-	status_text->update(_("Welcome to Cinelerra-CVE."));
 }
 
 

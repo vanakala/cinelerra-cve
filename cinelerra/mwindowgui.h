@@ -71,8 +71,7 @@ public:
 	void close_event();
 	void save_defaults(BC_Hash *defaults);
 	int menu_h();
-// Draw on the status bar only.
-	void show_message(const char *fmt, ...);
+
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
 	void repeat_event(int duration);

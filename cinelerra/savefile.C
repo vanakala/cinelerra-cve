@@ -31,7 +31,7 @@ SaveBackup::SaveBackup()
 int SaveBackup::handle_event()
 {
 	mwindow_global->save_backup(1);
-	mwindow_global->gui->show_message(_("Saved backup."));
+	mwindow_global->show_message(_("Saved backup."));
 	return 1;
 }
 
@@ -67,7 +67,7 @@ int Save::handle_event()
 			return 1;
 		}
 		else
-			mwindow_global->gui->show_message(_("\"%s\" %dC written"), mainsession->filename, strlen(file.string));
+			mwindow_global->show_message(_("\"%s\" %dC written"), mainsession->filename, strlen(file.string));
 
 		mainsession->changes_made = 0;
 		if(saveas->quit_now)
@@ -154,7 +154,7 @@ void SaveAs::run()
 		return;
 	}
 	else
-		mwindow_global->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
+		mwindow_global->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
 
 	mainsession->changes_made = 0;
 	mmenu->add_load(filename);
