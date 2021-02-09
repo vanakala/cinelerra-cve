@@ -50,7 +50,7 @@ MainMenu::MainMenu(MWindow *mwindow, BC_WindowBase *gui)
 	recent_load->set_options(RECENT_OPT_BASEUNQ);
 
 	add_menu(filemenu = new BC_Menu(_("File")));
-	filemenu->add_item(new_project = new New(mwindow));
+	filemenu->add_item(new_project = new New);
 
 // file loaders
 	filemenu->add_item(load_file = new Load(this));

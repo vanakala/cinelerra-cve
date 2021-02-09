@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef NEW_H
 #define NEW_H
@@ -36,13 +20,12 @@ class NewPresets;
 class New : public BC_MenuItem
 {
 public:
-	New(MWindow *mwindow);
+	New();
 
 	int handle_event();
 
 	void create_new_project();
 
-	MWindow *mwindow;
 	NewThread *thread;
 	EDLSession *new_edlsession;
 
@@ -54,14 +37,13 @@ private:
 class NewThread : public Thread
 {
 public:
-	NewThread(MWindow *mwindow, New *new_project);
+	NewThread(New *new_project);
 	~NewThread();
 
 	void run();
 
 	int auto_sizes;
 	NewWindow *nwindow;
-	MWindow *mwindow;
 	New *new_project;
 	Mutex *window_lock;
 };
@@ -70,7 +52,7 @@ public:
 class NewWindow : public BC_Window
 {
 public:
-	NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y);
+	NewWindow(NewThread *new_thread, int x, int y);
 	~NewWindow();
 
 	void update();

@@ -1,26 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "assetlist.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "cwindow.h"
@@ -33,7 +18,6 @@
 #include "mainmenu.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "new.h"
 #include "mainsession.h"
 #include "preferences.h"
@@ -49,11 +33,10 @@
 #define HEIGHT 400
 
 
-New::New(MWindow *mwindow)
+New::New()
  : BC_MenuItem(_("New..."), "n", 'n')
 {
-	this->mwindow = mwindow;
-	thread = new NewThread(mwindow, this);
+	thread = new NewThread(this);
 }
 
 int New::handle_event() 
@@ -66,7 +49,7 @@ int New::handle_event()
 		thread->window_lock->unlock();
 		return 1;
 	}
-	master_edl->save_defaults(mwindow->defaults, edlsession);
+	master_edl->save_defaults(mwindow_global->defaults, edlsession);
 	create_new_edl();
 	thread->start(); 
 
@@ -76,20 +59,20 @@ int New::handle_event()
 void New::create_new_edl()
 {
 	new_edlsession = new EDLSession();
-	new_edlsession->load_defaults(mwindow->defaults);
+	new_edlsession->load_defaults(mwindow_global->defaults);
 }
 
 void New::create_new_project()
 {
-	if(mwindow->cwindow->stop_playback() || mwindow->vwindow->stop_playback())
+	if(mwindow_global->cwindow->stop_playback() || mwindow_global->vwindow->stop_playback())
 		return;
 
-	mwindow->vwindow->remove_source();
+	mwindow_global->vwindow->remove_source();
 
-	mwindow->reset_caches();
+	mwindow_global->reset_caches();
 
 	memcpy(new_edlsession->achannel_positions,
-		&mwindow->preferences->channel_positions[
+		&preferences_global->channel_positions[
 			MAXCHANNELS * (new_edlsession->audio_channels - 1)],
 		sizeof(int) * MAXCHANNELS);
 	if(SampleRateSelection::limits(&new_edlsession->sample_rate) < 0)
@@ -103,26 +86,25 @@ void New::create_new_project()
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
 	new_edlsession->boundaries();
-	new_edlsession->save_defaults(mwindow->defaults);
-	mwindow->set_filename(0);
-	mwindow->undo->update_undo(_("New"), LOAD_ALL);
+	new_edlsession->save_defaults(mwindow_global->defaults);
+	mwindow_global->set_filename(0);
+	mwindow_global->undo->update_undo(_("New"), LOAD_ALL);
 
 	assetlist_global.delete_all();
 	master_edl->reset_instance();
 	edlsession->copy(new_edlsession);
 	master_edl->create_default_tracks();
-	mwindow->save_defaults();
+	mwindow_global->save_defaults();
 
 // Load file sequence
-	mwindow->update_project(LOADMODE_REPLACE);
+	mwindow_global->update_project(LOADMODE_REPLACE);
 	mainsession->changes_made = 0;
 	delete new_edlsession;
 }
 
-NewThread::NewThread(MWindow *mwindow, New *new_project)
+NewThread::NewThread(New *new_project)
  : Thread()
 {
-	this->mwindow = mwindow;
 	this->new_project = new_project;
 	window_lock = new Mutex("NewThread::window_lock");
 }
@@ -135,12 +117,14 @@ NewThread::~NewThread()
 void NewThread::run()
 {
 	int result = 0;
+	int x, y;
 
-	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
-	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
+	BC_Resources::get_root_size(&x, &y);
+	x = x / 2 - WIDTH / 2;
+	y = y / 2 - HEIGHT / 2;
 
 	window_lock->lock("NewThread::run 1\n");
-	nwindow = new NewWindow(mwindow, this, x, y);
+	nwindow = new NewWindow(this, x, y);
 	window_lock->unlock();
 
 	result = nwindow->run_window();
@@ -155,7 +139,7 @@ void NewThread::run()
 }
 
 
-NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
+NewWindow::NewWindow(NewThread *new_thread, int x, int y)
  : BC_Window(MWindow::create_title(N_("New Project")),
 		x,
 		y,
@@ -169,7 +153,6 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 {
 	int  x1, y1;
 
-	this->mwindow = mwindow;
 	this->new_thread = new_thread;
 	this->new_edlsession = new_thread->new_project->new_edlsession;
 
@@ -177,8 +160,8 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	y = 10;
 	BC_TextBox *textbox;
 
-	set_icon(mwindow->get_window_icon());
-	mwindow->theme->draw_new_bg(this);
+	set_icon(mwindow_global->get_window_icon());
+	theme_global->draw_new_bg(this);
 
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));
 	y += 20;
@@ -264,9 +247,9 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	y += interlace_selection->get_h() + 5;
 
 	add_subwindow(new BC_OKButton(this, 
-		mwindow->theme->get_image_set("new_ok_images")));
+		theme_global->get_image_set("new_ok_images")));
 	add_subwindow(new BC_CancelButton(this, 
-		mwindow->theme->get_image_set("new_cancel_images")));
+		theme_global->get_image_set("new_cancel_images")));
 	flash();
 	update();
 	show_window();
