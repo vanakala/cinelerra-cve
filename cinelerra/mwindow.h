@@ -103,6 +103,8 @@ public:
 	void set_titles(int value);
 	void show_message(const char *fmt, ...);
 	void default_message();
+	void change_meter_format(int min_db, int max_db);
+	void redraw_time_dependancies();
 
 // Mark window hidden
 	void mark_awindow_hidden();
@@ -151,8 +153,6 @@ public:
 	void interrupt_indexes();  // Stop index building
 
 	void draw_indexes(Asset *asset);
-
-	int redraw_time_dependancies();     // after reconfiguring the time format, sample rate, frame rate
 
 	void update_gui(int options);
 

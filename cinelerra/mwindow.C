@@ -43,6 +43,7 @@
 #include "loadfile.inc"
 #include "loadmode.h"
 #include "localsession.h"
+#include "mainclock.h"
 #include "maincursor.h"
 #include "mainerror.h"
 #include "mainindexes.h"
@@ -1085,6 +1086,20 @@ void MWindow::age_caches()
 		memory_usage > preferences->cache_size);
 }
 
+void MWindow::change_meter_format(int min_db, int max_db)
+{
+	gui->patchbay->change_meter_format(
+		edlsession->min_meter_db,
+		edlsession->max_meter_db);
+}
+
+void MWindow::redraw_time_dependancies()
+{
+	gui->zoombar->redraw_time_dependancies();
+	gui->timebar->update();
+	gui->mainclock->update(master_edl->local_session->get_selectionstart(1));
+}
+
 void MWindow::show_plugin(Plugin *plugin)
 {
 	int new_win = 0;
@@ -1116,6 +1131,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 
 	update_gui(WUPD_CANVINCR);
 }
+
 
 void MWindow::update_plugin_guis()
 {
@@ -1427,7 +1443,7 @@ void MWindow::prev_time_format()
 
 void MWindow::time_format_common()
 {
-	gui->redraw_time_dependancies();
+	redraw_time_dependancies();
 	char string[BCTEXTLEN];
 	show_message(_("Using %s."), Units::print_time_format(edlsession->time_format, string));
 	gui->flush();

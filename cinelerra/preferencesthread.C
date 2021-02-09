@@ -7,6 +7,8 @@
 #include "asset.h"
 #include "audiodevice.inc"
 #include "bclistboxitem.h"
+#include "bcresources.h"
+#include "preferencesthread.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "cinelerra.h"
@@ -28,8 +30,6 @@
 #include "miscprefs.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
-#include "patchbay.h"
 #include "performanceprefs.h"
 #include "playbackengine.h"
 #include "playbackprefs.h"
@@ -98,6 +98,7 @@ PreferencesThread::~PreferencesThread()
 void PreferencesThread::run()
 {
 	int need_new_indexes;
+	int x, y;
 
 	preferences = new Preferences;
 	edl = new EDL(0);
@@ -115,8 +116,9 @@ void PreferencesThread::run()
 	need_new_indexes = 0;
 	rerender = 0;
 
-	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
-	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
+	BC_Resources::get_root_size(&x, &y);
+	x = x / 2 - WIDTH / 2;
+	y = y / 2 - HEIGHT / 2;
 
 	window_lock->lock("PreferencesThread::run 1");
 	window = new PreferencesWindow(mwindow, this, x, y);
@@ -238,7 +240,7 @@ void PreferencesThread::apply_settings()
 			edlsession->min_meter_db,
 			edlsession->max_meter_db);
 
-		mwindow->gui->patchbay->change_meter_format(
+		mwindow->change_meter_format(
 			edlsession->min_meter_db,
 			edlsession->max_meter_db);
 
@@ -253,7 +255,7 @@ void PreferencesThread::apply_settings()
 	if(redraw_times)
 	{
 		mwindow->update_gui(WUPD_TIMEBAR | WUPD_CLOCK);
-		mwindow->gui->redraw_time_dependancies();
+		mwindow->redraw_time_dependancies();
 	}
 
 	if(rerender)
@@ -264,9 +266,6 @@ void PreferencesThread::apply_settings()
 				master_edl, CHANGE_ALL);
 		mwindow->vwindow->change_source();
 	}
-
-	if(redraw_times || redraw_overlays)
-		mwindow->gui->flush();
 }
 
 const char* PreferencesThread::category_to_text(int category)
