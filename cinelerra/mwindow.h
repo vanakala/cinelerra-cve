@@ -155,6 +155,8 @@ public:
 	void draw_indexes(Asset *asset);
 
 	void update_gui(int options);
+	void start_hourglass();
+	void stop_hourglass();
 
 // =========================================== movement
 

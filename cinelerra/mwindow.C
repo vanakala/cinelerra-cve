@@ -1100,6 +1100,16 @@ void MWindow::redraw_time_dependancies()
 	gui->mainclock->update(master_edl->local_session->get_selectionstart(1));
 }
 
+void MWindow::stop_hourglass()
+{
+	gui->stop_hourglass();
+}
+
+void MWindow::start_hourglass()
+{
+	gui->start_hourglass();
+}
+
 void MWindow::show_plugin(Plugin *plugin)
 {
 	int new_win = 0;

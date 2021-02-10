@@ -29,7 +29,6 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mutex.h"
-#include "mwindowgui.h"
 #include "mwindow.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
@@ -474,7 +473,7 @@ void Render::stop_progress()
 		delete progress;
 
 		mwindow_global->show_message(_("Rendering took %s"), string);
-		mwindow_global->gui->stop_hourglass();
+		mwindow_global->stop_hourglass();
 	}
 	progress = 0;
 }
@@ -568,7 +567,7 @@ int Render::render(int test_overwrite,
 		if(mwindow_global)
 		{
 			mwindow_global->show_message(_("Starting render farm"));
-			mwindow_global->gui->start_hourglass();
+			mwindow_global->start_hourglass();
 		}
 		else
 		{
@@ -590,7 +589,7 @@ int Render::render(int test_overwrite,
 			if(result)
 			{
 				if(mwindow_global)
-					mwindow_global->gui->stop_hourglass();
+					mwindow_global->stop_hourglass();
 				errormsg(_("Failed to start render farm"));
 			}
 		}
@@ -672,7 +671,7 @@ int Render::render(int test_overwrite,
 
 // Disable hourglass
 	if(mwindow_global)
-		mwindow_global->gui->stop_hourglass();
+		mwindow_global->stop_hourglass();
 
 // Need to restart because brender always stops before render.
 	if(mwindow_global)
