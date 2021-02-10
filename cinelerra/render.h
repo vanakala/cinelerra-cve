@@ -201,7 +201,7 @@ public:
 class RenderWindow : public BC_Window
 {
 public:
-	RenderWindow(Render *render, Asset *asset);
+	RenderWindow(int x, int y, Render *render, Asset *asset);
 	~RenderWindow();
 
 	void update_range_type(int range_type);

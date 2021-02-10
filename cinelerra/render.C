@@ -6,6 +6,7 @@
 #include "asset.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "bctitle.h"
@@ -45,6 +46,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+
+#define WIN_WIDTH 410
+#define WIN_HEIGHT 500
+
 
 RenderItem::RenderItem()
  : BC_MenuItem(_("Render..."), "Shift+R", 'R')
@@ -271,7 +276,11 @@ void Render::run()
 		}
 		check_asset(render_edl, *asset);
 // Get format from user
-		render_window = new RenderWindow(this, asset);
+		int x, y;
+		BC_Resources::get_root_size(&x, &y);
+		x = x / 2 - WIN_WIDTH / 2;
+		y = y / 2 - WIN_HEIGHT / 2;
+		render_window = new RenderWindow(x, y , this, asset);
 		result = render_window->run_window();
 		if(!result)
 		{
@@ -830,22 +839,17 @@ void Render::save_defaults(Asset *asset)
 	mwindow_global->defaults->delete_key("RENDER_RANGE_TYPE");
 }
 
-#define WIDTH 410
-#define HEIGHT 500
 
-RenderWindow::RenderWindow(Render *render, Asset *asset)
+RenderWindow::RenderWindow(int x, int y, Render *render, Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render")),
-	mwindow_global->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
-	mwindow_global->gui->get_root_h(1) / 2 - HEIGHT / 2,
-	WIDTH, 
-	HEIGHT,
-	(int)BC_INFINITY,
-	(int)BC_INFINITY,
+	x, y, WIN_WIDTH, WIN_HEIGHT,
+	BC_INFINITY,
+	BC_INFINITY,
 	0,
 	0,
 	1)
 {
-	int x = 5, y = 5;
+	x = y = 5;
 
 	this->render = render;
 	this->asset = asset;
