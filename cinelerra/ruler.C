@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2013 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2013 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -26,14 +10,13 @@
 #include "mainsession.h"
 #include "mainmenu.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "ruler.h"
 #include "thread.h"
 
-Ruler::Ruler(MWindow *mwindow)
+Ruler::Ruler()
  : Thread()
 {
-	gui = new RulerGUI(mwindow, this);
+	gui = new RulerGUI(this);
 }
 
 Ruler::~Ruler()
@@ -51,7 +34,7 @@ void Ruler::run()
 	gui->run_window();
 }
 
-RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
+RulerGUI::RulerGUI(Ruler *thread)
  : BC_Window(MWindow::create_title(N_("Ruler")),
 	mainsession->ruler_x,
 	mainsession->ruler_y,
@@ -67,8 +50,7 @@ RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
 	0, // group_it
 	WINDOW_SPLASH) // splash
 {
-	this->mwindow = mwindow;
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 	width = 0;
 	height = 0;
 	resize = 0;
@@ -194,8 +176,7 @@ void RulerGUI::translation_event()
 void RulerGUI::close_event()
 {
 	hide_window();
-	mainsession->show_ruler = 0;
-	mwindow->gui->mainmenu->show_ruler->set_checked(0);
+	mwindow_global->mark_ruler_hidden();
 }
 
 int RulerGUI::keypress_event()

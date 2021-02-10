@@ -441,7 +441,7 @@ void MWindow::init_viewer()
 
 void MWindow::init_ruler()
 {
-	ruler = new Ruler(this);
+	ruler = new Ruler;
 }
 
 void MWindow::init_indexes()
@@ -1007,6 +1007,12 @@ void MWindow::show_ruler()
 	ruler->gui->raise_window();
 	ruler->gui->flush();
 	gui->mainmenu->show_ruler->set_checked(1);
+}
+
+void MWindow::mark_ruler_hidden()
+{
+	mainsession->show_ruler = 0;
+	gui->mainmenu->show_ruler->set_checked(0);
 }
 
 void MWindow::toggle_loop_playback()
