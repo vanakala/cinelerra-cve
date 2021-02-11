@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef VWINDOWGUI_H
 #define VWINDOWGUI_H
@@ -50,7 +34,7 @@ class VWindowMeters;
 class VWindowGUI : public BC_Window
 {
 public:
-	VWindowGUI(MWindow *mwindow, VWindow *vwindow);
+	VWindowGUI(VWindow *vwindow);
 	~VWindowGUI();
 
 	void resize_event(int w, int h);
@@ -68,7 +52,6 @@ public:
 	void drag_motion();
 	int drag_stop();
 
-	MWindow *mwindow;
 	VWindow *vwindow;
 
 // Meters are numbered from right to left
@@ -91,11 +74,10 @@ private:
 class VWindowMeters : public MeterPanel
 {
 public:
-	VWindowMeters(MWindow *mwindow, VWindowGUI *gui, int x, int y, int h);
+	VWindowMeters(VWindowGUI *gui, int x, int y, int h);
 
 	int change_status_event();
 
-	MWindow *mwindow;
 	VWindowGUI *gui;
 };
 
@@ -103,7 +85,7 @@ public:
 class VWindowCanvas : public Canvas
 {
 public:
-	VWindowCanvas(MWindow *mwindow, VWindowGUI *gui);
+	VWindowCanvas(VWindowGUI *gui);
 
 	void zoom_resize_window(double percentage);
 	void draw_refresh();
@@ -113,7 +95,6 @@ public:
 	void set_fullscreen(int value);
 	double sample_aspect_ratio();
 
-	MWindow *mwindow;
 	VWindowGUI *gui;
 };
 
@@ -121,7 +102,7 @@ public:
 class VWindowEditing : public EditPanel
 {
 public:
-	VWindowEditing(MWindow *mwindow, VWindow *vwindow,
+	VWindowEditing(VWindow *vwindow,
 		MeterPanel *meter_panel, VWindowGUI *gui);
 
 	void copy_selection();
@@ -134,15 +115,13 @@ public:
 	void prev_label();
 	void next_label();
 
-	MWindow *mwindow;
 	VWindow *vwindow;
 };
 
 class VWindowSlider : public BC_PercentageSlider
 {
 public:
-	VWindowSlider(MWindow *mwindow, 
-		VWindow *vwindow, 
+	VWindowSlider(VWindow *vwindow,
 		VWindowGUI *gui, 
 		int x, 
 		int y, 
@@ -159,8 +138,7 @@ public:
 class VWindowTransport : public PlayTransport
 {
 public:
-	VWindowTransport(MWindow *mwindow, 
-		VWindowGUI *gui, 
+	VWindowTransport(VWindowGUI *gui,
 		int x, 
 		int y);
 	void goto_start();

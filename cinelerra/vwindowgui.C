@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "awindowgui.h"
@@ -40,7 +24,6 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "meterpanel.h"
-#include "mwindowgui.h"
 #include "mwindow.h"
 #include "playtransport.h"
 #include "preferences.h"
@@ -53,7 +36,7 @@
 #include "vwindow.h"
 
 
-VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
+VWindowGUI::VWindowGUI(VWindow *vwindow)
  : BC_Window(MWindow::create_title(N_("Viewer")),
 	mainsession->vwindow_x,
 	mainsession->vwindow_y,
@@ -65,50 +48,46 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	1,
 	1)
 {
-	this->mwindow = mwindow;
 	this->vwindow = vwindow;
 	loaded_title[0] = 0;
 
 	set_icon(vwindow->get_window_icon());
 
-	mwindow->theme->get_vwindow_sizes(this);
-	mwindow->theme->draw_vwindow_bg(this);
+	theme_global->get_vwindow_sizes(this);
+	theme_global->draw_vwindow_bg(this);
 	flash();
 
-	meters = new VWindowMeters(mwindow, 
-		this,
-		mwindow->theme->vmeter_x,
-		mwindow->theme->vmeter_y,
-		mwindow->theme->vmeter_h);
+	meters = new VWindowMeters(this,
+		theme_global->vmeter_x,
+		theme_global->vmeter_y,
+		theme_global->vmeter_h);
 
 // Requires meters to build
-	edit_panel = new VWindowEditing(mwindow, vwindow, meters, this);
+	edit_panel = new VWindowEditing(vwindow, meters, this);
 
-	add_subwindow(slider = new VWindowSlider(mwindow, 
-			vwindow,
-			this,
-			mwindow->theme->vslider_x,
-			mwindow->theme->vslider_y,
-			mwindow->theme->vslider_w));
+	add_subwindow(slider = new VWindowSlider(vwindow,
+		this,
+		theme_global->vslider_x,
+		theme_global->vslider_y,
+		theme_global->vslider_w));
 
-	transport = new VWindowTransport(mwindow, 
-		this, 
-		mwindow->theme->vtransport_x, 
-		mwindow->theme->vtransport_y);
+	transport = new VWindowTransport(this,
+		theme_global->vtransport_x,
+		theme_global->vtransport_y);
 
 	add_subwindow(clock = new MainClock(
-		mwindow->theme->vtime_x,
-		mwindow->theme->vtime_y,
-		mwindow->theme->vtime_w));
+		theme_global->vtime_x,
+		theme_global->vtime_y,
+		theme_global->vtime_w));
 
-	canvas = new VWindowCanvas(mwindow, this);
+	canvas = new VWindowCanvas(this);
 
-	add_subwindow(timebar = new VTimeBar(mwindow, 
+	add_subwindow(timebar = new VTimeBar(mwindow_global,
 		this,
-		mwindow->theme->vtimebar_x,
-		mwindow->theme->vtimebar_y,
-		mwindow->theme->vtimebar_w, 
-		mwindow->theme->vtimebar_h));
+		theme_global->vtimebar_x,
+		theme_global->vtimebar_y,
+		theme_global->vtimebar_w,
+		theme_global->vtimebar_h));
 	timebar->update();
 
 	deactivate();
@@ -147,31 +126,31 @@ void VWindowGUI::resize_event(int w, int h)
 	mainsession->vwindow_w = w;
 	mainsession->vwindow_h = h;
 
-	mwindow->theme->get_vwindow_sizes(this);
-	mwindow->theme->draw_vwindow_bg(this);
+	theme_global->get_vwindow_sizes(this);
+	theme_global->draw_vwindow_bg(this);
 	flash();
 
-	edit_panel->reposition_buttons(mwindow->theme->vedit_x, 
-		mwindow->theme->vedit_y);
-	slider->reposition_window(mwindow->theme->vslider_x, 
-		mwindow->theme->vslider_y,
-		mwindow->theme->vslider_w);
+	edit_panel->reposition_buttons(theme_global->vedit_x,
+		theme_global->vedit_y);
+	slider->reposition_window(theme_global->vslider_x,
+		theme_global->vslider_y,
+		theme_global->vslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
 	timebar->resize_event();
-	transport->reposition_buttons(mwindow->theme->vtransport_x, 
-		mwindow->theme->vtransport_y);
-	clock->reposition_window(mwindow->theme->vtime_x, 
-		mwindow->theme->vtime_y,
-		mwindow->theme->vtime_w);
+	transport->reposition_buttons(theme_global->vtransport_x,
+		theme_global->vtransport_y);
+	clock->reposition_window(theme_global->vtime_x,
+		theme_global->vtime_y,
+		theme_global->vtime_w);
 	canvas->reposition_window(0,
-		mwindow->theme->vcanvas_x, 
-		mwindow->theme->vcanvas_y, 
-		mwindow->theme->vcanvas_w, 
-		mwindow->theme->vcanvas_h);
-	meters->reposition_window(mwindow->theme->vmeter_x,
-		mwindow->theme->vmeter_y,
-		mwindow->theme->vmeter_h);
+		theme_global->vcanvas_x,
+		theme_global->vcanvas_y,
+		theme_global->vcanvas_w,
+		theme_global->vcanvas_h);
+	meters->reposition_window(theme_global->vmeter_x,
+		theme_global->vmeter_y,
+		theme_global->vmeter_h);
 
 	BC_WindowBase::resize_event(w, h);
 }
@@ -186,11 +165,7 @@ void VWindowGUI::close_event()
 {
 	vwindow->playback_engine->send_command(STOP);
 	hide_window();
-	mainsession->show_vwindow = 0;
-
-	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
-
-	mwindow->save_defaults();
+	mwindow_global->mark_vwindow_hidden();
 }
 
 int VWindowGUI::keypress_event()
@@ -205,10 +180,10 @@ int VWindowGUI::keypress_event()
 		result = 1;
 		break;
 	case 'z':
-		mwindow->undo_entry();
+		mwindow_global->undo_entry();
 		break;
 	case 'Z':
-		mwindow->redo_entry();
+		mwindow_global->redo_entry();
 		break;
 	case 'f':
 		if(mainsession->vwindow_fullscreen)
@@ -314,12 +289,11 @@ int VWindowGUI::drag_stop()
 }
 
 
-VWindowMeters::VWindowMeters(MWindow *mwindow, 
-	VWindowGUI *gui, 
+VWindowMeters::VWindowMeters(VWindowGUI *gui,
 	int x, 
 	int y, 
 	int h)
- : MeterPanel(mwindow, 
+ : MeterPanel(mwindow_global,
 		gui,
 		x,
 		y,
@@ -327,29 +301,27 @@ VWindowMeters::VWindowMeters(MWindow *mwindow,
 		edlsession->audio_channels,
 		edlsession->vwindow_meter)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 int VWindowMeters::change_status_event()
 {
 	edlsession->vwindow_meter = use_meters;
-	mwindow->theme->get_vwindow_sizes(gui);
+	theme_global->get_vwindow_sizes(gui);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
 }
 
 
-VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow, 
+VWindowEditing::VWindowEditing(VWindow *vwindow,
 	MeterPanel *meter_panel, VWindowGUI *gui)
- : EditPanel(mwindow, 
+ : EditPanel(mwindow_global,
 		gui,
-		mwindow->theme->vedit_x, 
-		mwindow->theme->vedit_y,
+		theme_global->vedit_x,
+		theme_global->vedit_y,
 		EDTP_SPLICE | EDTP_OVERWRITE | EDTP_COPY | EDTP_LABELS | EDTP_TOCLIP,
 		meter_panel)
 {
-	this->mwindow = mwindow;
 	this->vwindow = vwindow;
 }
 
@@ -360,12 +332,12 @@ void VWindowEditing::copy_selection()
 
 void VWindowEditing::splice_selection()
 {
-	mwindow->splice(vwindow_edl);
+	mwindow_global->splice(vwindow_edl);
 }
 
 void VWindowEditing::overwrite_selection()
 {
-	mwindow->overwrite(vwindow_edl);
+	mwindow_global->overwrite(vwindow_edl);
 }
 
 void VWindowEditing::toggle_label()
@@ -448,8 +420,7 @@ void VWindowEditing::to_clip()
 }
 
 
-VWindowSlider::VWindowSlider(MWindow *mwindow, 
-	VWindow *vwindow, 
+VWindowSlider::VWindowSlider(VWindow *vwindow,
 	VWindowGUI *gui,
 	int x, 
 	int y, 
@@ -463,7 +434,6 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 			0, 
 			0)
 {
-	this->mwindow = mwindow;
 	this->vwindow = vwindow;
 	this->gui = gui;
 	set_precision(0.00001);
@@ -489,18 +459,17 @@ void VWindowSlider::set_position()
 	if(vwindow_edl->local_session->preview_start > new_length)
 		vwindow_edl->local_session->preview_start = 0;
 
-	update(mwindow->theme->vslider_w,
+	update(theme_global->vslider_w,
 		vwindow_edl->local_session->get_selectionstart(1),
 		vwindow_edl->local_session->preview_start,
 		vwindow_edl->local_session->preview_end);
 }
 
 
-VWindowTransport::VWindowTransport(MWindow *mwindow, 
-	VWindowGUI *gui, 
+VWindowTransport::VWindowTransport(VWindowGUI *gui,
 	int x, 
 	int y)
- : PlayTransport(mwindow, 
+ : PlayTransport(mwindow_global,
 	gui, 
 	x, 
 	y)
@@ -525,17 +494,16 @@ EDL* VWindowTransport::get_edl()
 	return vwindow_edl;
 }
 
-VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
- : Canvas(mwindow,
+VWindowCanvas::VWindowCanvas(VWindowGUI *gui)
+ : Canvas(mwindow_global,
 	0,
 	gui,
-	mwindow->theme->vcanvas_x, 
-	mwindow->theme->vcanvas_y, 
-	mwindow->theme->vcanvas_w, 
-	mwindow->theme->vcanvas_h,
+	theme_global->vcanvas_x,
+	theme_global->vcanvas_y,
+	theme_global->vcanvas_w,
+	theme_global->vcanvas_h,
 	0)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
@@ -549,8 +517,8 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 		percentage,
 		canvas_w,
 		canvas_h);
-	new_w = canvas_w + (gui->get_w() - mwindow->theme->vcanvas_w);
-	new_h = canvas_h + (gui->get_h() - mwindow->theme->vcanvas_h);
+	new_w = canvas_w + (gui->get_w() - theme_global->vcanvas_w);
+	new_h = canvas_h + (gui->get_h() - theme_global->vcanvas_h);
 	gui->resize_window(new_w, new_h);
 	gui->resize_event(new_w, new_h);
 }

@@ -436,7 +436,7 @@ void MWindow::init_levelwindow()
 
 void MWindow::init_viewer()
 {
-	vwindow = new VWindow(this);
+	vwindow = new VWindow();
 }
 
 void MWindow::init_ruler()
@@ -932,6 +932,12 @@ void MWindow::show_vwindow()
 	vwindow->gui->raise_window();
 	vwindow->gui->flush();
 	gui->mainmenu->show_vwindow->set_checked(1);
+}
+
+void MWindow::mark_vwindow_hidden()
+{
+	mainsession->show_vwindow = 0;
+	gui->mainmenu->show_vwindow->set_checked(0);
 }
 
 void MWindow::show_awindow()
