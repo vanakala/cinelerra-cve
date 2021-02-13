@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
@@ -43,8 +27,10 @@ BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 {
 	reset();
 
-	if(text) set_text(text);
-	if(hotkey_text) set_hotkey_text(hotkey_text);
+	if(text)
+		set_text(text);
+	if(hotkey_text)
+		set_hotkey_text(hotkey_text);
 
 	this->hotkey = hotkey;
 	checked = 0;
@@ -58,18 +44,17 @@ BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 
 BC_MenuItem::~BC_MenuItem()
 {
-	if(text) delete [] text;
-	if(hotkey_text) delete [] hotkey_text;
-	if(submenu) delete submenu;
-	if(menu_popup) menu_popup->remove_item(this);
+	delete [] text;
+	delete [] hotkey_text;
+	delete submenu;
+	if(menu_popup)
+		menu_popup->remove_item(this);
 }
 
 void BC_MenuItem::reset()
 {
-	text = new char[1];
-	hotkey_text = new char[1];
-	text[0] = 0;
-	hotkey_text[0] = 0;
+	text = 0;
+	hotkey_text = 0;
 	icon = 0;
 }
 
@@ -102,16 +87,26 @@ BC_Pixmap* BC_MenuItem::get_icon()
 
 void BC_MenuItem::set_text(const char *text)
 {
-	if(this->text) delete [] this->text;
-	this->text = new char[strlen(text) + 1];
-	strcpy(this->text, text);
+	delete [] this->text;
+	this->text = 0;
+
+	if(text)
+	{
+		this->text = new char[strlen(text) + 1];
+		strcpy(this->text, text);
+	}
 }
 
 void BC_MenuItem::set_hotkey_text(const char *text)
 {
-	if(this->hotkey_text) delete [] this->hotkey_text;
-	this->hotkey_text = new char[strlen(text) + 1];
-	strcpy(this->hotkey_text, text);
+	delete [] hotkey_text;
+	hotkey_text = 0;
+
+	if(text)
+	{
+		hotkey_text = new char[strlen(text) + 1];
+		strcpy(hotkey_text, text);
+	}
 }
 
 void BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
@@ -182,12 +177,11 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 	int cursor_x, cursor_y;
 	Window tempwin;
 
-	if(!strcmp(text, "-")) return 0;
+	if(!text || !strcmp(text, "-"))
+		return 0;
 
 	if(submenu)
-	{
 		result = submenu->dispatch_button_release();
-	}
 
 	if(!result)
 	{
@@ -310,6 +304,10 @@ void BC_MenuItem::draw()
 	BC_Resources *resources = top_level->get_resources();
 
 	top_level->lock_window("BC_MenuItem::draw");
+
+	if(!text)
+		return;
+
 	if(!strcmp(text, "-"))
 	{
 		menu_popup->get_popup()->set_color(DKGREY);
@@ -377,18 +375,28 @@ void BC_MenuItem::draw()
 		{
 			menu_popup->get_popup()->set_color(resources->menu_item_text);
 		}
+
 		if(checked)
 		{
 			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(30 + offset, y + h - text_line - 2 + offset, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
+			menu_popup->get_popup()->draw_text(30 + offset,
+				y + h - text_line - 2 + offset, text);
+
+			if(hotkey_text)
+				menu_popup->get_popup()->draw_text(
+					menu_popup->get_key_x() + offset,
+					y + h - text_line - 2 + offset, hotkey_text);
 		}
 		else
 		{
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(10 + offset, y + h - text_line - 2 + offset, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
+			menu_popup->get_popup()->draw_text(10 + offset,
+				y + h - text_line - 2 + offset, text);
+
+			if(hotkey_text)
+				menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset,
+					y + h - text_line - 2 + offset, hotkey_text);
 		}
 	}
 	top_level->unlock_window();
