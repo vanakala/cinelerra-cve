@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bctimer.h"
 #include "edl.h"
@@ -28,7 +12,6 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include <string.h>
 
 // Minimum number of undoable operations on the undo stack
@@ -36,9 +19,8 @@
 // Limits the bytes of memory used by the undo stack
 #define UNDOMEMORY 50000000
 
-MainUndo::MainUndo(MWindow *mwindow)
+MainUndo::MainUndo()
 {
-	this->mwindow = mwindow;
 	new_entry = 0;
 	data_after = 0;
 	last_update = new Timer;
@@ -83,8 +65,8 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 	capture_state();
 
 	mainsession->changes_made = 1;
-	mwindow->gui->mainmenu->undo->update_caption(item->description);
-	mwindow->gui->mainmenu->redo->update_caption("");
+	mwindow_global->update_undo_text(item->description);
+	mwindow_global->update_redo_text(0);
 }
 
 void MainUndo::capture_state()
@@ -141,14 +123,14 @@ void MainUndo::undo()
 		redo_stack.append(current_entry);
 		capture_state();
 
-		if(mwindow->gui)
+		if(mwindow_global)
 		{
-			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
+			mwindow_global->update_redo_text(current_entry->description);
 
 			if(undo_stack.last)
-				mwindow->gui->mainmenu->undo->update_caption(undo_stack.last->description);
+				mwindow_global->update_undo_text(undo_stack.last->description);
 			else
-				mwindow->gui->mainmenu->undo->update_caption("");
+				mwindow_global->update_undo_text(0);
 		}
 	}
 	reset_creators();
@@ -166,14 +148,14 @@ void MainUndo::redo()
 		undo_stack.append(current_entry);
 		capture_state();
 
-		if(mwindow->gui)
+		if(mwindow_global)
 		{
-			mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
+			mwindow_global->update_undo_text(current_entry->description);
 
 			if(redo_stack.last)
-				mwindow->gui->mainmenu->redo->update_caption(redo_stack.last->description);
+				mwindow_global->update_redo_text(redo_stack.last->description);
 			else
-				mwindow->gui->mainmenu->redo->update_caption("");
+				mwindow_global->update_redo_text(0);
 		}
 	}
 	reset_creators();
@@ -251,13 +233,12 @@ size_t MainUndoStackItem::get_size()
 // Here the master EDL loads 
 void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 {
-	MWindow* mwindow = main_undo->mwindow;
 	master_edl->load_xml(file, edlsession);
 	for(int i = 0; i < master_edl->assets->total; i++)
 	{
-		mwindow->mainindexes->add_next_asset(master_edl->assets->values[i]);
+		mwindow_global->mainindexes->add_next_asset(master_edl->assets->values[i]);
 	}
-	mwindow->mainindexes->start_build();
+	mwindow_global->mainindexes->start_build();
 }
 
 void MainUndo::reset_creators()
