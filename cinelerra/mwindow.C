@@ -1132,6 +1132,16 @@ void MWindow::update_redo_text(const char *text)
 	gui->mainmenu->redo->update_caption(text);
 }
 
+void MWindow::add_aeffect_menu(const char *title)
+{
+	gui->mainmenu->add_aeffect(title);
+}
+
+void MWindow::add_veffect_menu(const char *title)
+{
+	gui->mainmenu->add_veffect(title);
+}
+
 void MWindow::show_plugin(Plugin *plugin)
 {
 	int new_win = 0;
