@@ -144,7 +144,7 @@ MWindow::MWindow(const char *config_path)
 	init_brender();
 	init_exportedl();
 	mainprogress = new MainProgress(this, gui);
-	undo = new MainUndo(this);
+	undo = new MainUndo();
 	clip_edit = new ClipEdit();
 
 	if(mainsession->show_vwindow) vwindow->gui->show_window();
@@ -1120,6 +1120,16 @@ void MWindow::stop_hourglass()
 void MWindow::start_hourglass()
 {
 	gui->start_hourglass();
+}
+
+void MWindow::update_undo_text(const char *text)
+{
+	gui->mainmenu->undo->update_caption(text);
+}
+
+void MWindow::update_redo_text(const char *text)
+{
+	gui->mainmenu->redo->update_caption(text);
 }
 
 void MWindow::show_plugin(Plugin *plugin)

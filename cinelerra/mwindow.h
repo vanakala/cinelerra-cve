@@ -105,6 +105,8 @@ public:
 	void default_message();
 	void change_meter_format(int min_db, int max_db);
 	void redraw_time_dependancies();
+	void update_undo_text(const char *text);
+	void update_redo_text(const char *text);
 
 // Mark window hidden
 	void mark_awindow_hidden();
