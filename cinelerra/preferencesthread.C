@@ -253,10 +253,7 @@ void PreferencesThread::apply_settings()
 		mwindow->draw_canvas_overlays();
 
 	if(redraw_times)
-	{
-		mwindow->update_gui(WUPD_TIMEBAR | WUPD_CLOCK);
-		mwindow->redraw_time_dependancies();
-	}
+		mwindow->update_gui(WUPD_TIMEBAR | WUPD_CLOCK | WUPD_TIMEDEPS);
 
 	if(rerender)
 	{

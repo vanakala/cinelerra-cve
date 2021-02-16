@@ -1105,13 +1105,6 @@ void MWindow::change_meter_format(int min_db, int max_db)
 		edlsession->max_meter_db);
 }
 
-void MWindow::redraw_time_dependancies()
-{
-	gui->zoombar->redraw_time_dependancies();
-	gui->timebar->update();
-	gui->mainclock->update(master_edl->local_session->get_selectionstart(1));
-}
-
 void MWindow::stop_hourglass()
 {
 	gui->stop_hourglass();
@@ -1310,6 +1303,8 @@ void MWindow::update_gui(int options)
 
 	if(options & WUPD_SCROLLBARS)
 		gui->get_scrollbars();
+	if(options & WUPD_TIMEDEPS)
+		gui->zoombar->redraw_time_dependancies();
 	if(options & WUPD_TIMEBAR)
 		gui->timebar->update();
 	if(options & WUPD_ZOOMBAR)
@@ -1483,10 +1478,10 @@ void MWindow::prev_time_format()
 
 void MWindow::time_format_common()
 {
-	redraw_time_dependancies();
 	char string[BCTEXTLEN];
+
+	update_gui(WUPD_TIMEBAR | WUPD_CLOCK | WUPD_TIMEDEPS);
 	show_message(_("Using %s."), Units::print_time_format(edlsession->time_format, string));
-	gui->flush();
 }
 
 

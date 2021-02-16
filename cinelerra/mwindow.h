@@ -105,7 +105,6 @@ public:
 	void show_message(const char *fmt, ...);
 	void default_message();
 	void change_meter_format(int min_db, int max_db);
-	void redraw_time_dependancies();
 	void update_undo_text(const char *text);
 	void update_redo_text(const char *text);
 	void add_aeffect_menu(const char *title);
@@ -173,6 +172,7 @@ public:
 //          WUPD_BUTTONBAR  - update buttonbar
 //          WUPD_TOGGLES    - update toggles
 //          WUPD_LABELS     - update labels
+//          WUPD_TIMEDEPS   - update time dependencies of zoombar
 	void update_gui(int options);
 	void start_hourglass();
 	void stop_hourglass();
