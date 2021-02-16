@@ -218,7 +218,6 @@ public:
 // Update plugins with configuration changes.
 // Called by TrackCanvas::cursor_motion_event.
 	void update_plugin_guis();
-	void update_plugin_titles();
 
 // ============================= editing commands ========================
 

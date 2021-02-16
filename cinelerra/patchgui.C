@@ -504,7 +504,7 @@ TitlePatch::TitlePatch(PatchGUI *patch, int x, int y)
 int TitlePatch::handle_event()
 {
 	strcpy(patch->track->title, get_utf8text());
-	mwindow_global->update_plugin_titles();
+	master_edl->update_plugin_titles();
 	mwindow_global->draw_canvas_overlays();
 	mwindow_global->undo->update_undo(_("track title"), LOAD_PATCHES);
 	return 1;

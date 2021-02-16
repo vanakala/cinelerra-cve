@@ -1184,11 +1184,6 @@ void MWindow::update_plugin_guis()
 	plugin_gui_lock->unlock();
 }
 
-void MWindow::update_plugin_titles()
-{
-	master_edl->update_plugin_titles();
-}
-
 // Reset everything after a load.
 void MWindow::update_project(int load_mode)
 {
