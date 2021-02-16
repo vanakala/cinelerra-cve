@@ -50,7 +50,6 @@
 #include "plugin.h"
 #include "plugindb.h"
 #include "pluginclient.h"
-#include "samplescroll.h"
 #include "selection.h"
 #include "trackcanvas.h"
 #include "track.h"
@@ -77,11 +76,7 @@ void MWindow::add_track(int track_type, int above, Track *dst)
 	undo->update_undo(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->get_scrollbars();
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->canvas->flash();
-	gui->canvas->activate();
+	update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY | WUPD_CANVREDRAW);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 	save_backup();
 }
