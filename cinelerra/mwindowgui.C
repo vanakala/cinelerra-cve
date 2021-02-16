@@ -203,30 +203,6 @@ void MWindowGUI::resize_event(int w, int h)
 	zoombar->resize_event();
 }
 
-void MWindowGUI::update(int options)
-{
-	master_edl->tracks->update_y_pixels(mwindow->theme);
-	if(options & WUPD_SCROLLBARS) this->get_scrollbars();
-	if(options & WUPD_TIMEBAR) this->timebar->update();
-	if(options & WUPD_ZOOMBAR) this->zoombar->update();
-	if(options & WUPD_PATCHBAY) this->patchbay->update();
-	if(options & WUPD_CLOCK) this->mainclock->update(
-		master_edl->local_session->get_selectionstart(1));
-	if(options & WUPD_CANVAS)
-	{
-		this->canvas->draw(options & WUPD_CANVAS);
-		this->canvas->flash();
-// Activate causes the menubar to deactivate.  Don't want this for
-// picon thread.
-		if(!(options & WUPD_CANVPICIGN)) this->canvas->activate();
-	}
-	if(options & WUPD_BUTTONBAR) mbuttons->update();
-
-// Can't age if the cache called this to draw missing picons
-	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
-		mwindow->age_caches();
-}
-
 int MWindowGUI::visible(int x1, int x2, int view_x1, int view_x2)
 {
 	return (x1 >= view_x1 && x1 < view_x2) ||
@@ -498,7 +474,7 @@ int MWindowGUI::keypress_event()
 
 			}
 
-			update (WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_BUTTONBAR);
+			mwindow->update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_BUTTONBAR);
 			mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
 
 			result = 1;

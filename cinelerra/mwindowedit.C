@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "assetlist.h"
@@ -150,7 +134,7 @@ void MWindow::asset_to_rate(Asset *asset)
 		save_backup();
 
 		undo->update_undo(_("asset to rate"), LOAD_ALL);
-		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+		update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		sync_parameters();
 	}
@@ -166,7 +150,7 @@ void MWindow::clear_entry()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
@@ -245,7 +229,7 @@ void MWindow::concatenate_tracks()
 	undo->update_undo(_("concatenate tracks"), LOAD_EDITS);
 
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 }
 
@@ -378,7 +362,7 @@ void MWindow::paste_keyframe(Track *track, Plugin *plugin)
 				save_backup();
 				undo->update_undo(_("paste keyframe"), LOAD_ALL);
 
-				gui->update(WUPD_CANVINCR);
+				update_gui(WUPD_CANVINCR);
 				update_plugin_guis();
 				sync_parameters();
 			}
@@ -453,7 +437,7 @@ void MWindow::clear_keyframes(Plugin *plugin)
 		save_backup();
 		undo->update_undo(_("paste keyframe"), LOAD_ALL);
 
-		gui->update(WUPD_CANVINCR);
+		update_gui(WUPD_CANVINCR);
 		update_plugin_guis();
 		sync_parameters();
 	}
@@ -475,7 +459,7 @@ void MWindow::cut()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 }
@@ -518,7 +502,7 @@ void MWindow::delete_tracks()
 	save_backup();
 
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 }
 
@@ -531,7 +515,7 @@ void MWindow::delete_track(Track *track)
 	undo->update_undo(_("delete track"), LOAD_ALL);
 
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 	save_backup();
 }
@@ -547,7 +531,7 @@ void MWindow::detach_transition(Plugin *transition)
 	save_backup();
 	undo->update_undo(_("detach transition"), LOAD_ALL);
 
-	gui->update(WUPD_CANVINCR);
+	update_gui(WUPD_CANVINCR);
 	sync_parameters(is_video);
 }
 
@@ -620,7 +604,7 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 	save_backup();
 	undo->update_undo(_("insert effect"), LOAD_EDITS | LOAD_PATCHES);
 	sync_parameters();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 }
 
 void MWindow::insert_effect(const char *title, 
@@ -725,7 +709,7 @@ void MWindow::finish_modify_handles()
 	undo->update_undo(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 	sync_parameters();
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
@@ -802,7 +786,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR);
 }
 
 void MWindow::move_effect(Plugin *plugin,
@@ -824,7 +808,7 @@ void MWindow::move_effect(Plugin *plugin,
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR);
 }
 
 void MWindow::move_plugin_up(Plugin *plugin)
@@ -835,7 +819,7 @@ void MWindow::move_plugin_up(Plugin *plugin)
 	plugin->track->move_plugin_up(plugin);
 	save_backup();
 	undo->update_undo(_("move effect up"), LOAD_ALL);
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR);
 	sync_parameters();
 }
 
@@ -847,7 +831,7 @@ void MWindow::move_plugin_down(Plugin *plugin)
 	plugin->track->move_plugin_down(plugin);
 	save_backup();
 	undo->update_undo(_("move effect down"), LOAD_ALL);
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR);
 	sync_parameters();
 }
 
@@ -860,7 +844,7 @@ void MWindow::move_track_down(Track *track)
 	save_backup();
 	undo->update_undo(_("move track down"), LOAD_ALL);
 
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
 }
@@ -874,7 +858,7 @@ void MWindow::move_tracks_down()
 	save_backup();
 	undo->update_undo(_("move tracks down"), LOAD_ALL);
 
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
 }
@@ -887,7 +871,7 @@ void MWindow::move_track_up(Track *track)
 	master_edl->tracks->move_track_up(track);
 	save_backup();
 	undo->update_undo(_("move track up"), LOAD_ALL);
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 	save_backup();
 }
@@ -900,7 +884,7 @@ void MWindow::move_tracks_up()
 	master_edl->tracks->move_tracks_up();
 	save_backup();
 	undo->update_undo(_("move tracks up"), LOAD_ALL);
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	sync_parameters();
 }
 
@@ -923,7 +907,7 @@ void MWindow::mute_selection()
 
 		restart_brender();
 		update_plugin_guis();
-		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+		update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
 	}
@@ -953,7 +937,7 @@ void MWindow::overwrite(EDL *source)
 	undo->update_undo(_("overwrite"), LOAD_EDITS);
 
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
 	sync_parameters();
 }
@@ -988,7 +972,7 @@ void MWindow::paste()
 		undo->update_undo(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
 
 		update_plugin_guis();
-		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+		update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_CLOCK);
 		awindow->gui->async_update_assets();
 		sync_parameters();
@@ -1023,7 +1007,7 @@ void MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 	save_backup();
 
 	undo->update_undo(_("paste assets"), LOAD_EDITS);
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR | WUPD_CLOCK |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR | WUPD_CLOCK |
 		WUPD_ZOOMBAR);
 	sync_parameters();
 }
@@ -1073,7 +1057,7 @@ void MWindow::paste_effects(int operation)
 		undo->update_undo(_("paste effects"), LOAD_AUTOMATION);
 		delete [] string;
 
-		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
+		update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
 		update_plugin_guis();
 		sync_parameters();
 		cwindow->update(WUPD_POSITION);
@@ -1163,7 +1147,7 @@ void MWindow::paste_silence()
 
 	update_plugin_guis();
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
@@ -1253,7 +1237,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 
 	sync_parameters(data_type == TRACK_VIDEO);
 
-	gui->update(WUPD_CANVINCR);
+	update_gui(WUPD_CANVINCR);
 }
 
 void MWindow::redo_entry()
@@ -1266,7 +1250,7 @@ void MWindow::redo_entry()
 	save_backup();
 	update_plugin_guis();
 	restart_brender();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
 		WUPD_OPERATION | WUPD_TIMEBAR);
@@ -1414,7 +1398,7 @@ void MWindow::splice(EDL *source)
 	save_backup();
 	undo->update_undo(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
 	sync_parameters();
 }
@@ -1524,7 +1508,7 @@ void MWindow::trim_selection()
 	save_backup();
 	undo->update_undo(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	restart_brender();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_EDL);
@@ -1540,7 +1524,7 @@ void MWindow::undo_entry()
 	save_backup();
 	restart_brender();
 	update_plugin_guis();
-	gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
 		WUPD_OPERATION | WUPD_TIMEBAR);
@@ -1635,5 +1619,5 @@ void MWindow::map_audio(int pattern)
 	undo->update_undo(pattern == MWindow::AUDIO_1_TO_1 ? _("map 1:1") : _("map 5.1:2"),
 		LOAD_AUTOMATION, 0);
 	sync_parameters(0);
-	gui->update(WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_CANVINCR | WUPD_PATCHBAY);
 }

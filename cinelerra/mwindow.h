@@ -161,6 +161,18 @@ public:
 
 	void draw_indexes(Asset *asset);
 
+// options (bits):
+//          WUPD_SCROLLBARS - update scrollbars
+//          WUPD_CANVINCR   - incremental drawing of resources
+//          WUPD_CANVREDRAW - delete and redraw of resources
+//          WUPD_CANVPICIGN - ignore picon thread
+//          WUPD_TIMEBAR    - update timebar
+//          WUPD_ZOOMBAR    - update zoombar
+//          WUPD_PATCHBAY   - update patchbay
+//          WUPD_CLOCK      - update clock
+//          WUPD_BUTTONBAR  - update buttonbar
+//          WUPD_TOGGLES    - update toggles
+//          WUPD_LABELS     - update labels
 	void update_gui(int options);
 	void start_hourglass();
 	void stop_hourglass();

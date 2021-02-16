@@ -1315,12 +1315,15 @@ void MWindow::update_gui(int options)
 
 	if(options & WUPD_SCROLLBARS)
 		gui->get_scrollbars();
+	if(options & WUPD_TIMEBAR)
+		gui->timebar->update();
 	if(options & WUPD_ZOOMBAR)
 		gui->zoombar->update();
 	if(options & WUPD_PATCHBAY)
 		gui->patchbay->update();
-	if(options & (WUPD_CLOCK | WUPD_TIMEBAR))
-		gui->update(options & (WUPD_CLOCK | WUPD_TIMEBAR));
+	if(options & WUPD_CLOCK)
+		gui->mainclock->update(
+			master_edl->local_session->get_selectionstart(1));
 
 	if(options & WUPD_CANVAS)
 	{
@@ -1343,7 +1346,7 @@ void MWindow::update_gui(int options)
 
 // Can't age if the cache called this to draw missing picons
 	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
-			age_caches();
+		age_caches();
 }
 
 int MWindow::stop_composer()

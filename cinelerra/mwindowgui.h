@@ -36,17 +36,6 @@ public:
 
 	void focus_out_event();
 
-// options (bits):
-//          WUPD_SCROLLBARS - update scrollbars
-//          WUPD_CANVINCR   - incremental drawing of resources
-//          WUPD_CANVREDRAW - delete and redraw of resources
-//          WUPD_CANVPICIGN -  ignore picon thread
-//          WUPD_TIMEBAR    - update timebar
-//          WUPD_ZOOMBAR    - update zoombar
-//          WUPD_PATCHBAY   - update patchbay
-//          WUPD_CLOCK      - update clock
-//          WUPD_BUTTONBAR  - update buttonbar
-	void update(int options);
 	void translation_event();
 	void resize_event(int w, int h);          // handle a resize event
 	int keypress_event();
