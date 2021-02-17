@@ -997,7 +997,6 @@ void MWindow::mark_lwindow_hidden()
 {
 	mainsession->show_lwindow = 0;
 	gui->mainmenu->show_lwindow->set_checked(0);
-	save_defaults();
 }
 
 void MWindow::tile_windows()

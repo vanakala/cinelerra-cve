@@ -119,7 +119,6 @@ void GWindowGUI::close_event()
 {
 	hide_window();
 	mwindow_global->mark_gwindow_hidden();
-	mwindow_global->save_defaults();
 }
 
 int GWindowGUI::keypress_event()

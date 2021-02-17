@@ -455,7 +455,6 @@ void AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->mark_awindow_hidden();
-	mwindow->save_defaults();
 }
 
 int AWindowGUI::keypress_event()
