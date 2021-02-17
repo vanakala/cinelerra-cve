@@ -225,7 +225,7 @@ void VWindow::copy()
 
 int VWindow::stop_playback()
 {
-	playback_engine->send_command(STOP, 0, CMDOPT_WAITTRACKING);
+	playback_engine->send_command(STOP);
 
 	for(int i = 0; playback_engine->is_playing_back && i < 5; i++)
 		usleep(50000);

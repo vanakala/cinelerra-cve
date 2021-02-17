@@ -217,9 +217,8 @@ void PlayTransport::handle_transport(int command,
 	int do_stop = 0;
 	int prev_command = engine->command->command;
 	int prev_single_frame = engine->command->single_frame();
-	int options;
+	int options = 0;
 
-	options = wait_tracking ? CMDOPT_WAITTRACKING : 0;
 	if(use_inout)
 		options |= CMDOPT_USEINOUT;
 
