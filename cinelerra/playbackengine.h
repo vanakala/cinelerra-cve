@@ -39,7 +39,7 @@ public:
 	void release_asset(Asset *asset);
 // Set wait_tracking for events that change the cursor location but
 // be sure to unlock the windows
-	void interrupt_playback(int wait_tracking = 0);
+	void interrupt_playback();
 // Get levels for tracking.  Return 0 if no audio.
 	int get_output_levels(double *levels, ptstime pts);
 	int get_module_levels(double *levels, ptstime pts);

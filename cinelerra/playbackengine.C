@@ -100,13 +100,12 @@ void PlaybackEngine::perform_change()
 		create_render_engine();
 }
 
-void PlaybackEngine::interrupt_playback(int wait_tracking)
+void PlaybackEngine::interrupt_playback()
 {
 	if(render_engine)
 		render_engine->interrupt_playback();
 
-// Wait for tracking to finish if it is running
-	if(wait_tracking)
+	if(tracking_active)
 	{
 		tracking_done->lock("PlaybackEngine::interrupt_playback");
 		tracking_done->unlock();
@@ -250,7 +249,7 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 		else
 			new_cmd = cmds[0];
 		used_cmds = 1;
-		interrupt_playback(options & CMDOPT_WAITTRACKING);
+		interrupt_playback();
 	}
 	else
 	{

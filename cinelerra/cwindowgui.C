@@ -605,7 +605,7 @@ CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, i
 
 int CWindowSlider::handle_event()
 {
-	cwindow->playback_engine->interrupt_playback(1);
+	cwindow->playback_engine->interrupt_playback();
 
 	mwindow->select_point(get_value());
 	return 1;

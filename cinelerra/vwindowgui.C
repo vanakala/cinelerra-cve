@@ -349,7 +349,7 @@ void VWindowEditing::toggle_label()
 
 void VWindowEditing::prev_label()
 {
-	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->playback_engine->interrupt_playback();
 
 	Label *current = vwindow_edl->labels->prev_label(
 			vwindow_edl->local_session->get_selectionstart(1));
@@ -370,7 +370,7 @@ void VWindowEditing::next_label()
 {
 	Label *current = vwindow_edl->labels->next_label(
 		vwindow_edl->local_session->get_selectionstart(1));
-	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->playback_engine->interrupt_playback();
 
 	if(!current)
 	{
@@ -442,7 +442,7 @@ VWindowSlider::VWindowSlider(VWindow *vwindow,
 
 int VWindowSlider::handle_event()
 {
-	vwindow->playback_engine->interrupt_playback(1);
+	vwindow->playback_engine->interrupt_playback();
 
 	vwindow->update_position(CHANGE_NONE, 1, 0);
 	return 1;
@@ -525,7 +525,7 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 
 void VWindowCanvas::close_source()
 {
-	gui->vwindow->playback_engine->interrupt_playback(1);
+	gui->vwindow->playback_engine->interrupt_playback();
 	gui->vwindow->remove_source();
 }
 
