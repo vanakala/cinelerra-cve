@@ -29,12 +29,9 @@ public:
 	PlaybackEngine(Canvas *output);
 	virtual ~PlaybackEngine();
 
-	void create_render_engine();
-	void delete_render_engine();
 	void arm_render_engine();
 	void start_render_engine();
 	void wait_render_engine();
-	void perform_change();
 // Close all files related to asset
 	void release_asset(Asset *asset);
 // Set wait_tracking for events that change the cursor location but

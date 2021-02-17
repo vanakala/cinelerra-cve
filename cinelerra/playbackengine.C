@@ -26,10 +26,10 @@ PlaybackEngine::PlaybackEngine(Canvas *output)
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 	playback_lock = new Condition(0, "PlaybackEngine::playback_lock");
 	cmds_lock = new Mutex("PlaybackEngine::cmds_lock");
-	render_engine = 0;
 	command = new TransportCommand;
 	used_cmds = 0;
 	memset(cmds, 0, sizeof(cmds));
+	render_engine = new RenderEngine(this, output);
 
 	done = 0;
 	Thread::start();
@@ -46,64 +46,38 @@ PlaybackEngine::~PlaybackEngine()
 	for(int i = 0; i < MAX_COMMAND_QUEUE; i++)
 		if(cmds[i])
 			delete cmds[i];
-	delete_render_engine();
+	delete render_engine;
 	delete tracking_done;
 	delete start_lock;
 	delete cmds_lock;
 	delete playback_lock;
 }
 
-void PlaybackEngine::create_render_engine()
-{
-	delete_render_engine();
-
-	render_engine = new RenderEngine(this, output);
-}
-
-void PlaybackEngine::delete_render_engine()
-{
-	delete render_engine;
-	render_engine = 0;
-}
-
 void PlaybackEngine::release_asset(Asset *asset)
 {
-	if(render_engine)
-		render_engine->release_asset(asset);
+	render_engine->release_asset(asset);
 }
 
 void PlaybackEngine::arm_render_engine()
 {
-	if(render_engine)
-	{
-		render_engine->copy_playbackconfig();
-		render_engine->arm_command(command);
-	}
+	render_engine->copy_playbackconfig();
+	render_engine->arm_command(command);
 }
 
 void PlaybackEngine::start_render_engine()
 {
-	if(render_engine) render_engine->start_command();
+	render_engine->start_command();
 }
 
 void PlaybackEngine::wait_render_engine()
 {
-	if(command->realtime && render_engine)
-	{
+	if(command->realtime)
 		render_engine->join();
-	}
-}
-
-void PlaybackEngine::perform_change()
-{
-	if(command->change_type & CHANGE_EDL || !render_engine)
-		create_render_engine();
 }
 
 void PlaybackEngine::interrupt_playback()
 {
-	if(render_engine)
-		render_engine->interrupt_playback();
+	render_engine->interrupt_playback();
 
 	if(tracking_active)
 	{
@@ -115,14 +89,14 @@ void PlaybackEngine::interrupt_playback()
 // Return number of existing channels
 int PlaybackEngine::get_output_levels(double *levels, ptstime pts)
 {
-	if(render_engine && render_engine->do_audio)
+	if(render_engine->do_audio)
 		return render_engine->get_output_levels(levels, pts);
 	return 0;
 }
 
 int PlaybackEngine::get_module_levels(double *levels, ptstime pts)
 {
-	if(render_engine && render_engine->do_audio)
+	if(render_engine->do_audio)
 		return render_engine->get_module_levels(levels, pts);
 	return 0;
 }
@@ -159,7 +133,7 @@ void PlaybackEngine::set_tracking_position(ptstime pts)
 
 ptstime PlaybackEngine::get_tracking_position()
 {
-	if(render_engine && tracking_active && !render_engine->do_video)
+	if(tracking_active && !render_engine->do_video)
 	{
 		ptstime tpts = render_engine->sync_postime() *
 			render_engine->command.get_speed();
@@ -206,7 +180,6 @@ void PlaybackEngine::run()
 		{
 // Parameter change only
 		case COMMAND_NONE:
-			perform_change();
 			break;
 
 		case STOP:
@@ -214,7 +187,6 @@ void PlaybackEngine::run()
 			break;
 
 		case CURRENT_FRAME:
-			perform_change();
 			arm_render_engine();
 // Dispatch the command
 			start_render_engine();
@@ -222,7 +194,6 @@ void PlaybackEngine::run()
 
 		default:
 			is_playing_back = 1;
-			perform_change();
 			arm_render_engine();
 
 // Start tracking after arming so the tracking position doesn't change.
