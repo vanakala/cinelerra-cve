@@ -5,9 +5,6 @@
 
 #include "bcsignals.h"
 #include "condition.h"
-#include "edl.h"
-#include "edlsession.h"
-#include "localsession.h"
 #include "mutex.h"
 #include "playbackengine.h"
 #include "renderengine.h"
@@ -206,7 +203,7 @@ void PlaybackEngine::run()
 	} while(!done);
 }
 
-void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
+void PlaybackEngine::send_command(int cmd, int options)
 {
 	TransportCommand *new_cmd;
 
@@ -241,13 +238,8 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 	new_cmd->realtime = cmd != STOP;
 	new_cmd->change_type = options & CHANGE_ALL;
 
-	if(new_edl)
-	{
-		new_cmd->set_edl(new_edl);
-		options |= CHANGE_EDL;
-	}
-	else
-		options &= ~CHANGE_EDL;
+	new_cmd->set_edl(edl);
+	options |= CHANGE_EDL;
 
 	new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 

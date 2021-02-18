@@ -143,7 +143,6 @@ public:
 		int y);
 	void goto_start();
 	void goto_end();
-	EDL *get_edl();
 
 	VWindowGUI *gui;
 };

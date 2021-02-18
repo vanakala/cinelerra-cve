@@ -1076,8 +1076,7 @@ void MWindow::sync_parameters(int brender_restart)
 {
 	master_edl->reset_plugins();
 	if(!cwindow->playback_engine->is_playing_back)
-		cwindow->playback_engine->send_command(CURRENT_FRAME,
-			master_edl);
+		cwindow->playback_engine->send_command(CURRENT_FRAME);
 	if(brender_restart)
 		restart_brender();
 }
@@ -1194,7 +1193,7 @@ void MWindow::update_project(int load_mode)
 	}
 
 	cwindow->gui->slider->set_position();
-	cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl, CHANGE_ALL);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, CHANGE_ALL);
 
 	awindow->gui->async_update_assets();
 

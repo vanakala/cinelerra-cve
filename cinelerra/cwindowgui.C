@@ -646,11 +646,6 @@ CWindowTransport::CWindowTransport(MWindow *mwindow,
 	this->gui = gui;
 }
 
-EDL* CWindowTransport::get_edl()
-{
-	return master_edl;
-}
-
 void CWindowTransport::goto_start()
 {
 	handle_transport(REWIND, 1);
@@ -2569,7 +2564,7 @@ int CWindowCanvas::button_press_event()
 	if(rerender)
 	{
 		mwindow->restart_brender();
-		gui->cwindow->playback_engine->send_command(CURRENT_FRAME, master_edl);
+		gui->cwindow->playback_engine->send_command(CURRENT_FRAME);
 		if(!redraw) gui->update_tool();
 	}
 	return result;

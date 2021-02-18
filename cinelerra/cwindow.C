@@ -159,7 +159,7 @@ void CWindow::update(int options)
 	{
 		gui->slider->set_position();
 
-		playback_engine->send_command(CURRENT_FRAME, master_edl);
+		playback_engine->send_command(CURRENT_FRAME);
 	}
 
 // Create tool window

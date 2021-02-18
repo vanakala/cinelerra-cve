@@ -52,7 +52,7 @@ public:
 // The playback cursor calls this to calculate the current tracking position
 	ptstime get_tracking_position();
 	void set_tracking_position(ptstime pts);
-	void send_command(int command, EDL *new_edl = 0, int options = 0);
+	void send_command(int command, int options = 0);
 
 	void run();
 

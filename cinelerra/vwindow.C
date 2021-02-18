@@ -188,7 +188,7 @@ void VWindow::update_position(int change_type,
 		gui->slider->set_position();
 
 	gui->timebar->update();
-	playback_engine->send_command(CURRENT_FRAME, vwindow_edl, change_type);
+	playback_engine->send_command(CURRENT_FRAME, change_type);
 
 	gui->clock->update(vwindow_edl->local_session->get_selectionstart(1));
 }
