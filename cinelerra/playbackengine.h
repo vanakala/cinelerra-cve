@@ -71,6 +71,9 @@ public:
 
 // Used by label commands to get current position
 	int is_playing_back;
+protected:
+// Current EDL
+	EDL *edl;
 private:
 // Tracking variables updated from rendering position
 	ptstime tracking_position;

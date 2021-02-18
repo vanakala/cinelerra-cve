@@ -16,6 +16,7 @@ CPlayback::CPlayback(CWindow *cwindow, Canvas *output)
  : PlaybackEngine(output)
 {
 	this->cwindow = cwindow;
+	edl = master_edl;
 }
 
 void CPlayback::init_cursor()
