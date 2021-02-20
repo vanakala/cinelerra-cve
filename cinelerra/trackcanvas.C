@@ -4308,7 +4308,7 @@ int TrackCanvas::button_press_event()
 
 		if(get_buttonpress() == 1)
 		{
-			gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+			gui->mbuttons->transport->handle_transport(STOP);
 		}
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;

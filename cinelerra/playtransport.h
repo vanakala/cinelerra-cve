@@ -35,13 +35,9 @@ public:
 	int keypress_event();
 
 // Abstract TransportQue::send_command.
-// wait_tracking - causes stop to wail until the final tracking position 
-// is updated before returning
 // use_inout - causes the in/out points to determine the beginning and end 
 // of playback
-	void handle_transport(int command, 
-		int wait_tracking = 0, 
-		int use_inout = 0);
+	void handle_transport(int command, int use_inout = 0);
 
 	int get_w();
 

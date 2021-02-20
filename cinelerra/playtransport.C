@@ -135,37 +135,37 @@ int PlayTransport::keypress_event()
 	switch(subwindow->get_keypress())
 	{
 	case KPPLUS:
-		handle_transport(FAST_REWIND, 0, use_inout);
+		handle_transport(FAST_REWIND, use_inout);
 		break;
 	case KP6:
-		handle_transport(NORMAL_REWIND, 0, use_inout);
+		handle_transport(NORMAL_REWIND, use_inout);
 		break;
 	case KP5:
-		handle_transport(SLOW_REWIND, 0, use_inout);
+		handle_transport(SLOW_REWIND, use_inout);
 		break;
 	case KP4:
-		handle_transport(SINGLE_FRAME_REWIND, 0, use_inout);
+		handle_transport(SINGLE_FRAME_REWIND, use_inout);
 		break;
 	case KP1:
-		handle_transport(SINGLE_FRAME_FWD, 0, use_inout);
+		handle_transport(SINGLE_FRAME_FWD, use_inout);
 		break;
 	case KP2:
-		handle_transport(SLOW_FWD, 0, use_inout);
+		handle_transport(SLOW_FWD, use_inout);
 		break;
 	case KP3:
-		handle_transport(NORMAL_FWD, 0, use_inout);
+		handle_transport(NORMAL_FWD, use_inout);
 		break;
 	case KPENTER:
-		handle_transport(FAST_FWD, 0, use_inout);
+		handle_transport(FAST_FWD, use_inout);
 		break;
 	case KPINS:
-		handle_transport(STOP, 0, use_inout);
+		handle_transport(STOP, use_inout);
 		break;
 	case ' ':
-		handle_transport(NORMAL_FWD, 0, use_inout);
+		handle_transport(NORMAL_FWD, use_inout);
 		break;
 	case 'k':
-		handle_transport(STOP, 0, use_inout);
+		handle_transport(STOP, use_inout);
 		break;
 	case END:
 		goto_end();
@@ -182,18 +182,16 @@ int PlayTransport::keypress_event()
 
 void PlayTransport::goto_start()
 {
-	handle_transport(REWIND, 1, 0);
+	handle_transport(REWIND);
 }
 
 void PlayTransport::goto_end()
 {
-	handle_transport(GOTO_END, 1, 0);
+	handle_transport(GOTO_END);
 }
 
 
-void PlayTransport::handle_transport(int command, 
-	int wait_tracking,
-	int use_inout)
+void PlayTransport::handle_transport(int command, int use_inout)
 {
 // Stop requires transferring the output buffer to a refresh buffer.
 	int do_stop = 0;
@@ -289,7 +287,7 @@ FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport,
 
 int FastReverseButton::handle_event() 
 {
-	transport->handle_transport(FAST_REWIND, 0, ctrl_down());
+	transport->handle_transport(FAST_REWIND, ctrl_down());
 	return 1;
 }
 
@@ -303,7 +301,7 @@ ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, 
 
 int ReverseButton::handle_event()
 {
-	transport->handle_transport(NORMAL_REWIND, 0, ctrl_down());
+	transport->handle_transport(NORMAL_REWIND, ctrl_down());
 	return 1;
 }
 
@@ -317,7 +315,7 @@ FrameReverseButton::FrameReverseButton(MWindow *mwindow, PlayTransport *transpor
 
 int FrameReverseButton::handle_event()
 {
-	transport->handle_transport(SINGLE_FRAME_REWIND, 0, ctrl_down());
+	transport->handle_transport(SINGLE_FRAME_REWIND, ctrl_down());
 	return 1;
 }
 
@@ -331,7 +329,7 @@ PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 
 int PlayButton::handle_event()
 {
-	transport->handle_transport(NORMAL_FWD, 0, ctrl_down());
+	transport->handle_transport(NORMAL_FWD, ctrl_down());
 	return 1;
 }
 
@@ -345,7 +343,7 @@ FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int
 
 int FramePlayButton::handle_event()
 {
-	transport->handle_transport(SINGLE_FRAME_FWD, 0, ctrl_down());
+	transport->handle_transport(SINGLE_FRAME_FWD, ctrl_down());
 	return 1;
 }
 
@@ -358,7 +356,7 @@ FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x
 
 int FastPlayButton::handle_event() 
 {
-	transport->handle_transport(FAST_FWD, 0, ctrl_down());
+	transport->handle_transport(FAST_FWD, ctrl_down());
 	return 1;
 }
 
@@ -382,6 +380,6 @@ StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 
 int StopButton::handle_event()
 {
-	transport->handle_transport(STOP, 0, 0);
+	transport->handle_transport(STOP);
 	return 1;
 }
