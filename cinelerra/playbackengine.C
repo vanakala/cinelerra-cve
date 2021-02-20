@@ -203,7 +203,7 @@ void PlaybackEngine::run()
 	} while(!done);
 }
 
-void PlaybackEngine::send_command(int cmd, int options)
+void PlaybackEngine::send_command(int cmd)
 {
 	TransportCommand *new_cmd;
 	int cmd_range;
@@ -242,7 +242,6 @@ void PlaybackEngine::send_command(int cmd, int options)
 	new_cmd->realtime = cmd != STOP;
 
 	new_cmd->set_edl(edl);
-	options |= CHANGE_EDL;
 
 	new_cmd->set_playback_range(cmd_range);
 

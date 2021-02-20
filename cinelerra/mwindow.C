@@ -1193,7 +1193,7 @@ void MWindow::update_project(int load_mode)
 	}
 
 	cwindow->gui->slider->set_position();
-	cwindow->playback_engine->send_command(CURRENT_FRAME, CHANGE_ALL);
+	cwindow->playback_engine->send_command(CURRENT_FRAME);
 
 	awindow->gui->async_update_assets();
 

@@ -257,10 +257,7 @@ void PreferencesThread::apply_settings()
 
 	if(rerender)
 	{
-// This doesn't stop and restart, only reloads the assets before
-// the next play command.
-		mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME,
-			CHANGE_ALL);
+		mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME);
 		mwindow->vwindow->change_source();
 	}
 }
