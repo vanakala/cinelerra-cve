@@ -122,7 +122,7 @@ void ManualGoto::run()
 			if(!PTSEQU(current_position, new_position))
 			{
 				vwindow_edl->local_session->set_selection(new_position);
-				vwindow->update_position(CHANGE_NONE, 0, 1);
+				vwindow->update_position(0, 1);
 			}
 		}
 	}

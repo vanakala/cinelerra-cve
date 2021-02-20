@@ -86,5 +86,5 @@ void VTimeBar::select_label(ptstime position)
 	else
 		vwindow_edl->local_session->set_selection(position);
 
-	mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
+	mwindow->vwindow->update_position(0, 1);
 }

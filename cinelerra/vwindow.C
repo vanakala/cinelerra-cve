@@ -55,7 +55,7 @@ void VWindow::change_source()
 	if(vwindow_edl)
 	{
 		gui->change_source(vwindow_edl->local_session->clip_title);
-		update_position(CHANGE_ALL, 1, 1);
+		update_position(1, 1);
 	}
 }
 
@@ -88,7 +88,7 @@ void VWindow::change_source(Asset *asset)
 
 // Update GUI
 	gui->change_source(title);
-	update_position(CHANGE_ALL, 1, 1);
+	update_position(1, 1);
 }
 
 void VWindow::change_source(EDL *edl)
@@ -111,7 +111,7 @@ void VWindow::change_source(EDL *edl)
 			vedlsession->copy(edlsession);
 // Update GUI
 		gui->change_source(edl->local_session->clip_title);
-		update_position(CHANGE_ALL, 1, 1);
+		update_position(1, 1);
 	}
 	else
 	{
@@ -156,7 +156,7 @@ void VWindow::remove_source(Asset *asset)
 void VWindow::goto_start()
 {
 	vwindow_edl->local_session->set_selection(0);
-	update_position(CHANGE_NONE, 0, 1);
+	update_position(0, 1);
 }
 
 void VWindow::goto_end()
@@ -164,7 +164,7 @@ void VWindow::goto_end()
 	ptstime position = vwindow_edl->total_length();
 
 	vwindow_edl->local_session->set_selection(position);
-	update_position(CHANGE_NONE, 0, 1);
+	update_position(0, 1);
 }
 
 void VWindow::update(int options)
@@ -177,9 +177,7 @@ void VWindow::update(int options)
 	}
 }
 
-void VWindow::update_position(int change_type, 
-	int use_slider, 
-	int update_slider)
+void VWindow::update_position(int use_slider, int update_slider)
 {
 	if(use_slider)
 		vwindow_edl->local_session->set_selection(gui->slider->get_value());

@@ -30,8 +30,7 @@ public:
 	void change_source();
 // Remove source
 	void remove_source(Asset *asset = 0);
-	void update_position(int change_type = CHANGE_NONE,
-		int use_slider = 1,
+	void update_position(int use_slider = 1,
 		int update_slider = 0);
 	void set_inpoint();
 	void set_outpoint();

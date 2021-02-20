@@ -357,12 +357,12 @@ void VWindowEditing::prev_label()
 	if(!current)
 	{
 		vwindow_edl->local_session->set_selection(0);
-		vwindow->update_position(CHANGE_NONE, 0, 1);
+		vwindow->update_position(0, 1);
 	}
 	else
 	{
 		vwindow_edl->local_session->set_selection(current->position);
-		vwindow->update_position(CHANGE_NONE, 0, 1);
+		vwindow->update_position(0, 1);
 	}
 }
 
@@ -377,12 +377,12 @@ void VWindowEditing::next_label()
 		ptstime position = vwindow_edl->total_length();
 
 		vwindow_edl->local_session->set_selection(position);
-		vwindow->update_position(CHANGE_NONE, 0, 1);
+		vwindow->update_position(0, 1);
 	}
 	else
 	{
 		vwindow_edl->local_session->set_selection(current->position);
-		vwindow->update_position(CHANGE_NONE, 0, 1);
+		vwindow->update_position(0, 1);
 	}
 }
 
@@ -444,7 +444,7 @@ int VWindowSlider::handle_event()
 {
 	vwindow->playback_engine->interrupt_playback();
 
-	vwindow->update_position(CHANGE_NONE, 1, 0);
+	vwindow->update_position(1, 0);
 	return 1;
 }
 

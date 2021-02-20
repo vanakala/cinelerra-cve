@@ -25,15 +25,7 @@
 #define GOTO_END             12
 #define CURRENT_FRAME        13
 
-// Level of change.  Changes have to be inclusive of all the lesser changes.
-// Delete cache
-#define CHANGE_ALL            0xf
-// Delete render engines
-#define CHANGE_EDL            0x2
-// Search EDL and synchronize parameters.
-#define CHANGE_PARAMS         0x1
-#define CHANGE_NONE           0x0
-
+// Command options
 #define CMDOPT_CMD            0x0f
 #define CMDOPT_USEINOUT       0x80
 
