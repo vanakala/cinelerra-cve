@@ -240,7 +240,6 @@ void PlaybackEngine::send_command(int cmd, int options)
 
 	new_cmd->command = cmd;
 	new_cmd->realtime = cmd != STOP;
-	new_cmd->change_type = options & CHANGE_ALL;
 
 	new_cmd->set_edl(edl);
 	options |= CHANGE_EDL;
@@ -252,15 +251,9 @@ void PlaybackEngine::send_command(int cmd, int options)
 	{
 		if(cmds[used_cmds - 2]->command == CURRENT_FRAME)
 		{
-			if(new_cmd->change_type == CHANGE_NONE)
-				used_cmds--;
-			else
-			if(new_cmd->change_type >= cmds[used_cmds - 2]->change_type)
-			{
-				cmds[used_cmds - 1] = cmds[used_cmds -2];
-				cmds[used_cmds - 2] = new_cmd;
-				used_cmds--;
-			}
+			cmds[used_cmds - 1] = cmds[used_cmds -2];
+			cmds[used_cmds - 2] = new_cmd;
+			used_cmds--;
 		}
 	}
 	cmds_lock->unlock();

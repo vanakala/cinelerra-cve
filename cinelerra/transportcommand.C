@@ -15,8 +15,6 @@
 TransportCommand::TransportCommand()
 {
 	edl = 0;
-	command = 0;
-	change_type = 0;
 	reset();
 }
 
@@ -27,8 +25,6 @@ void TransportCommand::reset()
 	end_position = 0;
 	realtime = 0;
 	loop_playback = 0;
-// Don't reset the change type for commands which don't perform the change
-	if(command != STOP) change_type = 0;
 	command = COMMAND_NONE;
 }
 
@@ -45,7 +41,6 @@ void TransportCommand::set_edl(EDL *edl)
 void TransportCommand::copy_from(TransportCommand *cmd)
 {
 	command = cmd->command;
-	change_type = cmd->change_type;
 	edl = cmd->edl;
 	start_position = cmd->start_position;
 	end_position = cmd->end_position;
@@ -259,7 +254,6 @@ const char* TransportCommand::commandstr(int cmd)
 // Debug
 void TransportCommand::dump(int indent)
 {
-	const char *tps;
 	char b[64];
 
 	printf("%*sTransportCommand %p dump: '%s' %s\n", indent, "",
@@ -267,19 +261,6 @@ void TransportCommand::dump(int indent)
 	indent += 2;
 	printf("%*splayback %.3f; positions start=%.3f, end=%.3f loop %d\n", indent, "",
 		playbackstart, start_position, end_position, loop_playback);
-	if(change_type == CHANGE_ALL)
-		tps = " All";
-	else if(change_type == CHANGE_NONE)
-		tps = " None";
-	else
-	{
-		b[0] = 0;
-		if(change_type & CHANGE_EDL)
-			strcat(b, " EDL");
-		if(change_type & CHANGE_PARAMS)
-			strcat(b, " PAR");
-		tps = b;
-	}
-	printf("%*schange_type:%s, edl: %p\n",  indent, "", tps, edl);
+	printf("%*sedl: %p\n",  indent, "", edl);
 }
 

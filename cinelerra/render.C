@@ -499,7 +499,6 @@ int Render::render(int test_overwrite,
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->set_edl(edl);
-	command->change_type = CHANGE_ALL;
 
 	switch(range_type)
 	{

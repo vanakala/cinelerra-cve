@@ -109,7 +109,6 @@ int PackageRenderer::initialize(EDL *edl,
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->set_edl(edl);
-	command->change_type = CHANGE_ALL;
 	command->set_playback_range();
 
 	default_asset->frame_rate = edlsession->frame_rate;

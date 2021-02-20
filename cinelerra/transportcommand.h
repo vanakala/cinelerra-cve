@@ -38,7 +38,6 @@ public:
 	void dump(int indent = 0);
 
 	int command;
-	int change_type;
 // lowest numbered second in playback range
 	ptstime start_position;
 // highest numbered second in playback range
