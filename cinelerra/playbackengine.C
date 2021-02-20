@@ -206,8 +206,12 @@ void PlaybackEngine::run()
 void PlaybackEngine::send_command(int cmd, int options)
 {
 	TransportCommand *new_cmd;
+	int cmd_range;
 
 	cmds_lock->lock("PlaybackEngine:send_command");
+
+	cmd_range = cmd & ~CMDOPT_CMD;
+	cmd &= CMDOPT_CMD;
 
 	if(cmd == STOP)
 	{
@@ -241,7 +245,7 @@ void PlaybackEngine::send_command(int cmd, int options)
 	new_cmd->set_edl(edl);
 	options |= CHANGE_EDL;
 
-	new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
+	new_cmd->set_playback_range(cmd_range);
 
 	// Drop previous CURRENT_FRAMEs
 	if(new_cmd->command == CURRENT_FRAME && used_cmds > 1)

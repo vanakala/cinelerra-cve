@@ -230,12 +230,12 @@ void PlayTransport::handle_transport(int command,
 			prev_command != SINGLE_FRAME_REWIND)
 		{
 			engine->send_command(STOP);
-			engine->send_command(command, options);
+			engine->send_command(command | options);
 		}
 		else
 // Start from scratch
 		{
-			engine->send_command(command, options);
+			engine->send_command(command | options);
 		}
 		break;
 
