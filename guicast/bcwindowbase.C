@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcbitmap.h"
 #include "bcclipboard.h"
@@ -3148,39 +3132,6 @@ int BC_WindowBase::set_h(int h)
 	this->h = h;
 	return 0;
 }
-
-void BC_WindowBase::load_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
-	{
-		sprintf(string, "FILEBOX_HISTORY%d", i);
-		resources.filebox_history[i][0] = 0;
-		defaults->get(string, resources.filebox_history[i]);
-	}
-	resources.filebox_mode = defaults->get("FILEBOX_MODE", resources.filebox_mode);
-	resources.filebox_w = defaults->get("FILEBOX_W", resources.filebox_w);
-	resources.filebox_h = defaults->get("FILEBOX_H", resources.filebox_h);
-	defaults->get("FILEBOX_FILTER", resources.filebox_filter);
-}
-
-void BC_WindowBase::save_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
-	{
-		sprintf(string, "FILEBOX_HISTORY%d", i);
-		defaults->update(string, resources.filebox_history[i]);
-	}
-	defaults->update("FILEBOX_MODE", resources.filebox_mode);
-	defaults->update("FILEBOX_W", resources.filebox_w);
-	defaults->update("FILEBOX_H", resources.filebox_h);
-	defaults->update("FILEBOX_FILTER", resources.filebox_filter);
-}
-
-
 
 // For some reason XTranslateCoordinates can take a long time to return.
 // We work around this by only calling it when the event windows are different.

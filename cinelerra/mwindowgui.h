@@ -41,6 +41,7 @@ public:
 	int keypress_event();
 	void close_event();
 	void save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
 	int menu_h();
 
 // Pop up a box if the statusbar is taken and show an error.

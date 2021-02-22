@@ -6,6 +6,7 @@
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cinelerra.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
@@ -271,10 +272,39 @@ void MWindowGUI::translation_event()
 
 void MWindowGUI::save_defaults(BC_Hash *defaults)
 {
+	BC_Resources *resources = get_resources();
+	char string[BCTEXTLEN];
+
 	defaults->update("MWINDOWWIDTH", get_w());
 	defaults->update("MWINDOWHEIGHT", get_h());
 	mainmenu->save_defaults(defaults);
-	BC_WindowBase::save_defaults(defaults);
+
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+	{
+		sprintf(string, "FILEBOX_HISTORY%d", i);
+		defaults->update(string, resources->filebox_history[i]);
+	}
+	defaults->update("FILEBOX_MODE", resources->filebox_mode);
+	defaults->update("FILEBOX_W", resources->filebox_w);
+	defaults->update("FILEBOX_H", resources->filebox_h);
+	defaults->update("FILEBOX_FILTER", resources->filebox_filter);
+}
+
+void MWindowGUI::load_defaults(BC_Hash *defaults)
+{
+	BC_Resources *resources = get_resources();
+	char string[BCTEXTLEN];
+
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+	{
+		sprintf(string, "FILEBOX_HISTORY%d", i);
+		resources->filebox_history[i][0] = 0;
+		defaults->get(string, resources->filebox_history[i]);
+	}
+	resources->filebox_mode = defaults->get("FILEBOX_MODE", resources->filebox_mode);
+	resources->filebox_w = defaults->get("FILEBOX_W", resources->filebox_w);
+	resources->filebox_h = defaults->get("FILEBOX_H", resources->filebox_h);
+	defaults->get("FILEBOX_FILTER", resources->filebox_filter);
 }
 
 int MWindowGUI::keypress_event()
