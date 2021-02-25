@@ -1332,6 +1332,9 @@ void MWindow::update_gui(int options)
 	if(options & WUPD_LABELS)
 		gui->timebar->update_labels();
 
+	if(options & WUPD_CURSOR)
+		gui->cursor->update();
+
 // Can't age if the cache called this to draw missing picons
 	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
 		age_caches();

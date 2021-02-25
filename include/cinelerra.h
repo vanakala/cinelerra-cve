@@ -7,25 +7,26 @@
 #define CINELERRA_H
 
 // Cwindow, MWindow and Trackcanvas update bits
-#define WUPD_SCROLLBARS    0x0001
-#define WUPD_INDEXES       0x0002
-#define WUPD_POSITION      0x0004
-#define WUPD_OVERLAYS      0x0008
-#define WUPD_TOOLWIN       0x0010
-#define WUPD_OPERATION     0x0020
-#define WUPD_TIMEBAR       0x0040
-#define WUPD_ZOOMBAR       0x0080
-#define WUPD_PATCHBAY      0x0100
-#define WUPD_CLOCK         0x0200
-#define WUPD_BUTTONBAR     0x0400
-#define WUPD_CANVINCR      0x0800
-#define WUPD_CANVREDRAW    0x1000
-#define WUPD_CANVPICIGN    0x2000
-#define WUPD_ACHANNELS     0x4000
-#define WUPD_TOGGLES       0x8000
+#define WUPD_SCROLLBARS   0x00001
+#define WUPD_INDEXES      0x00002
+#define WUPD_POSITION     0x00004
+#define WUPD_OVERLAYS     0x00008
+#define WUPD_TOOLWIN      0x00010
+#define WUPD_OPERATION    0x00020
+#define WUPD_TIMEBAR      0x00040
+#define WUPD_ZOOMBAR      0x00080
+#define WUPD_PATCHBAY     0x00100
+#define WUPD_CLOCK        0x00200
+#define WUPD_BUTTONBAR    0x00400
+#define WUPD_CANVINCR     0x00800
+#define WUPD_CANVREDRAW   0x01000
+#define WUPD_CANVPICIGN   0x02000
+#define WUPD_ACHANNELS    0x04000
+#define WUPD_TOGGLES      0x08000
 #define WUPD_LABELS       0x10000
 #define WUPD_TIMEDEPS     0x20000
-#define WUPD_CANVAS        (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
+#define WUPD_CURSOR       0x40000
+#define WUPD_CANVAS       (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
 
 // Audio buffer size
 // Must be multiple of 4096

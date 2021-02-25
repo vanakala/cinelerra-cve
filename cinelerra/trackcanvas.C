@@ -479,8 +479,8 @@ int TrackCanvas::drag_stop()
 	if(redraw)
 	{
 		master_edl->tracks->update_y_pixels(mwindow->theme);
-		mwindow->update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY | WUPD_CANVREDRAW);
-		gui->cursor->update();
+		mwindow->update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY |
+			WUPD_CANVREDRAW | WUPD_CURSOR);
 	}
 
 	return result;
