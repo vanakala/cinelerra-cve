@@ -15,7 +15,6 @@
 #include "language.h"
 #include "mainmenu.h"
 #include "mwindow.h"
-#include "mwindowgui.h"
 #include "savefile.h"
 #include "mainsession.h"
 #include "theme.h"
