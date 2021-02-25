@@ -1,36 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
-#include "edlsession.h"
 #include "filexml.h"
 #include "labels.h"
-#include "mwindow.h"
-#include "patchbay.h"
-#include "mainsession.h"
-#include "theme.h"
-#include "timebar.h"
 #include <string.h>
-
 
 
 Labels::Labels(EDL *edl, const char *xml_tag)
@@ -99,9 +77,9 @@ void Labels::insert_labels(Labels *labels, ptstime start, ptstime length, int pa
 		if(!exists)
 		{
 			if(old_label)
-				insert_before(old_label, new Label(edl, this, new_label->position + start, new_label->textstr));
+				insert_before(old_label, new Label(new_label->position + start, new_label->textstr));
 			else
-				append(new Label(edl, this, new_label->position + start, new_label->textstr));
+				append(new Label(new_label->position + start, new_label->textstr));
 		}
 	}
 }
@@ -124,12 +102,12 @@ void Labels::toggle_label(ptstime start, ptstime end)
 		}
 		else
 		{        // insert before it
-			current = insert_before(current, new Label(edl, this, start, ""));
+			current = insert_before(current, new Label(start));
 		}
 	}
 	else
 	{           // insert after last
-		current = append(new Label(edl, this, start, ""));
+		current = append(new Label(start));
 	}
 
 // handle selection end
@@ -147,12 +125,12 @@ void Labels::toggle_label(ptstime start, ptstime end)
 			}
 			else
 			{
-				current = insert_before(current, new Label(edl, this, end, ""));
+				current = insert_before(current, new Label(end));
 			}
 		}
 		else
 		{
-			current = append(new Label(edl, this, end, ""));
+			current = append(new Label(end));
 		}
 	}
 }
@@ -203,7 +181,7 @@ void Labels::copy(Labels *that, ptstime start, ptstime end)
 	{
 		if(current->position < start + EPSILON || current->position > end - EPSILON)
 			continue;
-		append(new Label(edl, this, current->position - start, current->textstr));
+		append(new Label(current->position - start, current->textstr));
 	}
 }
 
@@ -213,7 +191,7 @@ void Labels::copy_from(Labels *labels)
 
 	for(Label *current = labels->first; current; current = NEXT)
 	{
-		append(new Label(edl, this, current->position, current->textstr));
+		append(new Label(current->position, current->textstr));
 	}
 }
 
@@ -250,7 +228,7 @@ void Labels::load(FileXML *xml)
 				if(position > -1)
 				{
 					Label *current = label_of(position);
-					current = insert_before(current, new Label(edl, this, position, ""));
+					current = insert_before(current, new Label(position));
 					xml->tag.get_property("TEXTSTR", current->textstr);
 				}
 			}
@@ -443,13 +421,11 @@ size_t Labels::get_size()
 	return size;
 }
 
-Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
+Label::Label(ptstime position, const char *textstr)
  : ListItem<Label>()
 {
-	this->edl = edl;
-	this->labels = labels;
 	this->position = position;
-	if (textstr)
+	if(textstr)
 		strcpy(this->textstr, textstr);
 	else
 		this->textstr[0] = 0;
