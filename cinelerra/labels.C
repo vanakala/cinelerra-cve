@@ -39,51 +39,6 @@ void Labels::dump(int indent)
 	}
 }
 
-void Labels::insert_labels(Labels *labels, ptstime start, ptstime length, int paste_silence)
-{
-	Label *new_label;
-	Label *old_label;
-
-// Insert silence in old labels
-	if(paste_silence)
-	{
-		for(old_label = first; old_label; old_label = old_label->next)
-		{
-			if(old_label->position > start ||
-				edl->equivalent(old_label->position, start))
-				old_label->position += length;
-		}
-	}
-
-
-// Insert one new label at a time
-	for(new_label = labels->first; new_label; new_label = new_label->next)
-	{
-		int exists = 0;
-
-// Check every old label for existence
-		for(old_label = first; old_label; old_label = old_label->next)
-		{
-			if(edl->equivalent(old_label->position, new_label->position + start))
-			{
-				exists = 1;
-				break;
-			}
-			else
-			if(old_label->position > new_label->position + start)
-				break;
-		}
-
-		if(!exists)
-		{
-			if(old_label)
-				insert_before(old_label, new Label(new_label->position + start, new_label->textstr));
-			else
-				append(new Label(new_label->position + start, new_label->textstr));
-		}
-	}
-}
-
 void Labels::toggle_label(ptstime start, ptstime end)
 {
 	Label *current;

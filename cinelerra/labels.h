@@ -42,11 +42,6 @@ public:
 	void toggle_label(ptstime start, ptstime end);
 	void delete_all();
 	void load(FileXML *xml);
-	void insert_labels(Labels *labels, 
-		ptstime start,
-		ptstime length,
-		int paste_silence = 1);
-
 	void modify_handles(double oldposition, 
 		double newposition, 
 		int currentend, 
