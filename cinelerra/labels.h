@@ -22,6 +22,7 @@ public:
 	Label(ptstime position, const char *textstr = 0);
 
 	size_t get_size();
+	void dump(int indent = 0);
 
 	char textstr[BCTEXTLEN];
 // Seconds
@@ -42,8 +43,8 @@ public:
 	void toggle_label(ptstime start, ptstime end);
 	void delete_all();
 	void load(FileXML *xml);
-	void modify_handles(double oldposition, 
-		double newposition, 
+	void modify_handles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels);

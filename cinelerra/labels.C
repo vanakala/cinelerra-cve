@@ -32,11 +32,9 @@ void Labels::dump(int indent)
 {
 	printf("%*sLabels %p dump(%d):\n", indent, "", this, total());
 	indent += 2;
+
 	for(Label *current = first; current; current = NEXT)
-	{
-		printf("%*slabel: %.3f '%s'\n", indent, "",
-			current->position, current->textstr);
-	}
+		current->dump(indent);
 }
 
 void Labels::toggle_label(ptstime start, ptstime end)
@@ -384,6 +382,12 @@ Label::Label(ptstime position, const char *textstr)
 		strcpy(this->textstr, textstr);
 	else
 		this->textstr[0] = 0;
+}
+
+void Label::dump(int indent)
+{
+	printf("%*slabel: %p %.2f '%s'\n", indent, "", this,
+		position, textstr);
 }
 
 size_t Label::get_size()
