@@ -29,17 +29,17 @@ public:
 class LabelEditWindow : public BC_Window
 {
 public:
-	LabelEditWindow(LabelEdit *thread, int absx, int absy);
+	LabelEditWindow(Label *label, int absx, int absy);
 
-	Label *label;
 	BC_TextBox *textbox;
+	Label *label;
 };
 
 
 class LabelEditComments : public BC_TextBox
 {
 public:
-	LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows);
+	LabelEditComments(Label *label, int x, int y, int w, int rows);
 };
 
 #endif

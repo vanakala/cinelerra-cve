@@ -382,12 +382,13 @@ Label::Label(ptstime position, const char *textstr)
 		strcpy(this->textstr, textstr);
 	else
 		this->textstr[0] = 0;
+	is_edited = 0;
 }
 
 void Label::dump(int indent)
 {
-	printf("%*slabel: %p %.2f '%s'\n", indent, "", this,
-		position, textstr);
+	printf("%*sLabel: %p %.2f edited %d '%s'\n", indent, "", this,
+		 position, is_edited, textstr);
 }
 
 size_t Label::get_size()

@@ -24,9 +24,9 @@ public:
 	size_t get_size();
 	void dump(int indent = 0);
 
-	char textstr[BCTEXTLEN];
-// Seconds
 	ptstime position;
+	int is_edited;
+	char textstr[BCTEXTLEN];
 };
 
 class Labels : public List<Label>

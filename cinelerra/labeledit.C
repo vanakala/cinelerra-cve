@@ -5,6 +5,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bcsignals.h"
 #include "bctitle.h"
 #include "bcbutton.h"
 #include "cinelerra.h"
@@ -27,7 +28,7 @@ LabelEdit::LabelEdit(AWindow *awindow)
 void LabelEdit::edit_label(Label *label)
 {
 // Allow more than one window so we don't have to delete the clip in handle_event
-	if(label)
+	if(label && !this->label)
 	{
 		this->label = label;
 		Thread::start();
@@ -37,26 +38,30 @@ void LabelEdit::edit_label(Label *label)
 void LabelEdit::run()
 {
 	int cx, cy;
+	Label *current;
 
-	if(label)
+	if(label && !label->is_edited)
 	{
+		current = label;
+		label = 0;
+		current->is_edited = 1;
 		mwindow_global->get_abs_cursor_pos(&cx, &cy);
-		LabelEditWindow *window = new LabelEditWindow(this, cx, cy);
+		LabelEditWindow *window = new LabelEditWindow(current, cx, cy);
 
 		if(!window->run_window())
 		{
-			strcpy(label->textstr, window->textbox->get_utf8text());
+			strcpy(window->label->textstr, window->textbox->get_utf8text());
 			if(mwindow_global)
 				mwindow_global->update_gui(WUPD_LABELS);
-			if(awindow)
-				awindow->gui->async_update_assets();
 		}
+		window->label->is_edited = 0;
 		delete window;
 	}
+	label = 0;
 }
 
 
-LabelEditWindow::LabelEditWindow(LabelEdit *thread, int absx, int absy)
+LabelEditWindow::LabelEditWindow(Label *label, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Label Info")),
 	absx - 400 / 2,
 	absy - 350 / 2,
@@ -73,11 +78,11 @@ LabelEditWindow::LabelEditWindow(LabelEdit *thread, int absx, int absy)
 	BC_TextBox *titlebox;
 	BC_Title *title;
 
-	this->label = thread->label;
+	this->label = label;
 	set_icon(mwindow_global->awindow->get_window_icon());
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
-	add_subwindow(textbox = new LabelEditComments(this, 
+	add_subwindow(textbox = new LabelEditComments(label,
 		x1, 
 		y, 
 		get_w() - x1 * 2, 
@@ -90,7 +95,7 @@ LabelEditWindow::LabelEditWindow(LabelEdit *thread, int absx, int absy)
 }
 
 
-LabelEditComments::LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows)
- : BC_TextBox(x, y, w, rows, window->label->textstr, 1, MEDIUMFONT, 1)
+LabelEditComments::LabelEditComments(Label *label, int x, int y, int w, int rows)
+ : BC_TextBox(x, y, w, rows, label->textstr, 1, MEDIUMFONT, 1)
 {
 }
