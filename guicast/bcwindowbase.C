@@ -276,7 +276,10 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	this->bg_pixmap = bg_pixmap;
 	this->allow_resize = allow_resize;
-	strcpy(this->title, title);
+	if(title)
+		strcpy(this->title, title);
+	else
+		this->title[0] = 0;
 	if(bg_pixmap) shared_bg_pixmap = 1;
 
 	if(parent_window) top_level = parent_window->top_level;
@@ -3044,7 +3047,10 @@ void BC_WindowBase::set_title(const char *text)
 	XTextProperty titleprop;
 	char *txlist[2];
 
-	strcpy(this->title, text);
+	if(text)
+		strcpy(this->title, text);
+	else
+		this->title[0] = 0;
 	txlist[0] = this->title;
 	txlist[1] = 0;
 
@@ -3062,7 +3068,10 @@ void BC_WindowBase::set_utf8title(const char *text)
 	XTextProperty titleprop;
 	char *txlist[2];
 
-	strcpy(this->title, text);
+	if(text)
+		strcpy(this->title, text);
+	else
+		this->title[0] = 0;
 	txlist[0] = this->title;
 	txlist[1] = 0;
 
