@@ -62,7 +62,7 @@ void LabelEdit::run()
 
 
 LabelEditWindow::LabelEditWindow(Label *label, int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Label Info")),
+ : BC_Window(0,
 	absx - 400 / 2,
 	absy - 350 / 2,
 	400, 
@@ -77,6 +77,7 @@ LabelEditWindow::LabelEditWindow(Label *label, int absx, int absy)
 	int x1 = x;
 	BC_TextBox *titlebox;
 	BC_Title *title;
+	char string[BCTEXTLEN];
 
 	this->label = label;
 	set_icon(mwindow_global->awindow->get_window_icon());
@@ -87,7 +88,8 @@ LabelEditWindow::LabelEditWindow(Label *label, int absx, int absy)
 		y, 
 		get_w() - x1 * 2, 
 		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
-
+	sprintf(string, N_("Label %.2f"), label->position);
+	set_title(MWindow::create_title(string));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
