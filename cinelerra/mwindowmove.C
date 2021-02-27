@@ -287,11 +287,8 @@ void MWindow::trackmovement(int track_start)
 	master_edl->local_session->track_start = track_start;
 	if(master_edl->local_session->track_start < 0)
 		master_edl->local_session->track_start = 0;
-	gui->get_scrollbars();
 	master_edl->tracks->update_y_pixels(theme);
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->canvas->flash(1);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
 }
 
 void MWindow::move_up(int distance)
