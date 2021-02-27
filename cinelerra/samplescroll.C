@@ -78,7 +78,7 @@ int SampleScroll::handle_event()
 	lock->lock("handle_event");
 	master_edl->local_session->view_start_pts = get_value() *
 		master_edl->local_session->zoom_time;
-	mwindow->update_gui(WUPD_CANVAS | WUPD_PATCHBAY | WUPD_TIMEBAR);
+	mwindow->update_gui(WUPD_CANVREDRAW | WUPD_PATCHBAY | WUPD_TIMEBAR);
 	lock->unlock();
 	return 1;
 }
