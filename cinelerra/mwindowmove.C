@@ -307,62 +307,42 @@ void MWindow::move_down(int distance)
 	trackmovement(master_edl->local_session->track_start);
 }
 
-void MWindow::goto_end(void)
+void MWindow::goto_end()
 {
 	ptstime new_view_start;
 
 	if(master_edl->total_length() > (ptstime)gui->canvas->get_w() *
-		master_edl->local_session->zoom_time)
-	{
+			master_edl->local_session->zoom_time)
 		new_view_start = master_edl->total_length() -
 			(gui->canvas->get_w() * master_edl->local_session->zoom_time) / 2;
-	}
 	else
-	{
 		new_view_start = 0;
-	}
 
 	if(gui->shift_down())
-	{
 		master_edl->local_session->set_selectionend(master_edl->total_length());
-	}
 	else
-	{
 		master_edl->local_session->set_selection(master_edl->total_length());
-	}
-
-	samplemovement(new_view_start);
 
 	gui->cursor->hide();
+	samplemovement(new_view_start);
+	update_gui(WUPD_PATCHBAY);
 	update_plugin_guis();
-	gui->patchbay->update();
 	gui->cursor->show();
-	gui->canvas->activate();
-	gui->zoombar->update();
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
 
-void MWindow::goto_start(void)
+void MWindow::goto_start()
 {
-	ptstime new_view_start = 0;
-
 	if(gui->shift_down())
-	{
 		master_edl->local_session->set_selectionstart(0);
-	}
 	else
-	{
 		master_edl->local_session->set_selection(0);
-	}
-
-	samplemovement(new_view_start);
 
 	gui->cursor->hide();
+	samplemovement(0);
+	update_gui(WUPD_PATCHBAY);
 	update_plugin_guis();
-	gui->patchbay->update();
 	gui->cursor->show();
-	gui->canvas->activate();
-	gui->zoombar->update();
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
 
@@ -375,14 +355,9 @@ void MWindow::samplemovement(ptstime view_start, int force_redraw)
 	if(master_edl->local_session->view_start_pts < 0)
 		master_edl->local_session->view_start_pts = 0;
 
-	gui->get_scrollbars();
 	if(force_redraw || !PTSEQU(old_pts, master_edl->local_session->view_start_pts))
-	{
-		gui->canvas->draw();
-		gui->canvas->flash();
-		gui->timebar->update();
-		gui->zoombar->update();
-	}
+		update_gui(WUPD_CANVREDRAW | WUPD_TIMEBAR |
+			WUPD_ZOOMBAR | WUPD_SCROLLBARS);
 }
 
 void MWindow::move_left(int distance)

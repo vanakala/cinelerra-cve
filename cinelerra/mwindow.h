@@ -205,8 +205,8 @@ public:
 	void trackmovement(int track_start);
 	void samplemovement(ptstime view_start, int force_redraw = 0);
 	void select_all(void);
-	void goto_start(void);
-	void goto_end(void);
+	void goto_start();
+	void goto_end();
 	void expand_y(void);
 	void zoom_in_y(void);
 	void expand_t(void);
