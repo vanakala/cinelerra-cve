@@ -100,7 +100,6 @@ public:
 	void show_gwindow();
 	void show_ruler();
 	void tile_windows();
-	void set_titles(int value);
 // Gui functions
 	void show_message(const char *fmt, ...);
 	void default_message();

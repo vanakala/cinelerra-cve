@@ -1031,12 +1031,6 @@ void MWindow::toggle_loop_playback()
 	sync_parameters(0);
 }
 
-void MWindow::set_titles(int value)
-{
-	edlsession->show_titles = value;
-	trackmovement(master_edl->local_session->track_start);
-}
-
 void MWindow::set_auto_keyframes(int value)
 {
 	edlsession->auto_keyframes = value;
