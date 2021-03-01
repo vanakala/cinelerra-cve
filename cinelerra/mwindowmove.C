@@ -288,7 +288,7 @@ void MWindow::trackmovement(int track_start)
 	if(master_edl->local_session->track_start < 0)
 		master_edl->local_session->track_start = 0;
 	master_edl->tracks->update_y_pixels(theme);
-	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_PATCHBAY);
+	update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 }
 
 void MWindow::move_up(int distance)
@@ -356,7 +356,7 @@ void MWindow::samplemovement(ptstime view_start, int force_redraw)
 		master_edl->local_session->view_start_pts = 0;
 
 	if(force_redraw || !PTSEQU(old_pts, master_edl->local_session->view_start_pts))
-		update_gui(WUPD_CANVREDRAW | WUPD_TIMEBAR |
+		update_gui(WUPD_CANVINCR | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_SCROLLBARS);
 }
 
