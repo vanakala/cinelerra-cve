@@ -98,8 +98,8 @@ int IntAutos::get_value(ptstime position)
 	return default_value;
 }
 
-void IntAutos::get_extents(float *min, 
-	float *max,
+void IntAutos::get_extents(double *min,
+	double *max,
 	int *coords_undefined,
 	ptstime start,
 	ptstime end)

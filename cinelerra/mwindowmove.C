@@ -98,9 +98,8 @@ void MWindow::fit_selection(void)
 
 void MWindow::fit_autos(int doall)
 {
-	float min = 0, max = 0;
+	double min = 0, max = 0;
 	ptstime start, end;
-
 // Test all autos
 	if(EQUIV(master_edl->local_session->get_selectionstart(1),
 		master_edl->local_session->get_selectionend(1)))
@@ -118,40 +117,48 @@ void MWindow::fit_autos(int doall)
 	int forstart = master_edl->local_session->zoombar_showautotype;
 	int forend   = master_edl->local_session->zoombar_showautotype + 1;
 
-	if (doall) {
+	if(doall)
+	{
 		forstart = 0;
 		forend   = AUTOGROUPTYPE_COUNT;
 	}
 
-	for (int i = forstart; i < forend; i++)
+	for(int i = forstart; i < forend; i++)
 	{
 // Adjust min and max
 		master_edl->tracks->get_automation_extents(&min, &max, start, end, i);
 
-		float range = max - min;
-		switch (i) 
+		double range = max - min;
+
+		switch(i)
 		{
 		case AUTOGROUPTYPE_AUDIO_FADE:
 		case AUTOGROUPTYPE_VIDEO_FADE:
-			if (range < 0.1) {
+			if(range < 0.1)
+			{
 				min = MIN(min, master_edl->local_session->automation_mins[i]);
 				max = MAX(max, master_edl->local_session->automation_maxs[i]);
 			}
 			break;
+
 		case AUTOGROUPTYPE_ZOOM:
-			if (range < 0.001) {
-				min = floor(min*50)/100;
-				max = floor(max*200)/100;
+			if(range < 0.001)
+			{
+				min = floor(min * 50) / 100;
+				max = floor(max * 200) / 100;
 			}
 			break;
+
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
-			if (range < 5) {
-				min = floor((min+max)/2) - 50;
-				max = floor((min+max)/2) + 50;
+			if(range < 5)
+			{
+				min = floor((min + max) / 2) - 50;
+				max = floor((min + max) / 2) + 50;
 			}
 			break;
 		}
+
 		if(!Automation::autogrouptypes[i].fixedrange)
 		{
 			master_edl->local_session->automation_mins[i] = min;
@@ -160,7 +167,7 @@ void MWindow::fit_autos(int doall)
 	}
 
 // Show range in zoombar
-	gui->zoombar->update();
+	update_gui(WUPD_ZOOMBAR);
 
 // Draw
 	draw_canvas_overlays();
