@@ -50,25 +50,29 @@ void SampleScroll::resize_event(void)
 
 void SampleScroll::set_position(void)
 {
+	ptstime new_pos = master_edl->local_session->view_start_pts;
+
 	if(mwindow->gui->canvas)
 	{
 		lock->lock("set_position");
-		int64_t length = round(master_edl->total_length() /
-			master_edl->local_session->zoom_time);
-		int64_t position = round(master_edl->local_session->view_start_pts /
-			master_edl->local_session->zoom_time);
-		int handle_size = mwindow->theme->mcanvas_w -
-			BC_ScrollBar::get_span(SCROLL_VERT);
+		ptstime handle_dur = (mwindow->theme->mcanvas_w -
+			BC_ScrollBar::get_span(SCROLL_VERT)) *
+			master_edl->local_session->zoom_time;
 
-		if(position > length - handle_size)
+		if(master_edl->local_session->view_start_pts >
+				master_edl->total_length() - handle_dur)
 		{
-			position = length - handle_size;
-			if(position < 0)
-				position = 0;
-			master_edl->local_session->view_start_pts =
-				(ptstime)position * master_edl->local_session->zoom_time;
+			new_pos = master_edl->total_length() - handle_dur;
+			if(new_pos < 0)
+				new_pos = 0;
+
+			master_edl->local_session->view_start_pts = new_pos;
 		}
-		update_length(length, position, handle_size);
+		update_length(round(master_edl->total_length() /
+			master_edl->local_session->zoom_time),
+			round(master_edl->local_session->view_start_pts /
+			master_edl->local_session->zoom_time),
+			round(handle_dur / master_edl->local_session->zoom_time));
 		lock->unlock();
 	}
 }
