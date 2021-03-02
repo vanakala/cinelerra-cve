@@ -288,9 +288,7 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 void MWindow::zoom_amp(int zoom_amp)
 {
 	master_edl->local_session->zoom_y = zoom_amp;
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->canvas->flash(1);
+	update_gui(WUPD_CANVINCR | WUPD_PATCHBAY);
 }
 
 void MWindow::zoom_track(int zoom_track)
