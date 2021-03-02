@@ -175,7 +175,7 @@ void MWindow::fit_autos(int doall)
 
 void MWindow::change_currentautorange(int autogrouptype, int increment, int changemax)
 {
-	float val;
+	double val;
 
 	if(changemax)
 		val = master_edl->local_session->automation_maxs[autogrouptype];
@@ -184,7 +184,8 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 
 	if(increment)
 	{
-		switch (autogrouptype) {
+		switch(autogrouptype)
+		{
 		case AUTOGROUPTYPE_AUDIO_FADE:
 			val += 2;
 			break;
@@ -192,10 +193,10 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			val += 1;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
-			if (val == 0) 
+			if(EQUIV(val,0))
 				val = 0.001;
 			else 
-				val = val*2;
+				val = val * 2;
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
@@ -205,7 +206,8 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 	}
 	else 
 	{ // decrement
-		switch (autogrouptype) {
+		switch (autogrouptype)
+		{
 		case AUTOGROUPTYPE_AUDIO_FADE:
 			val -= 2;
 			break;
@@ -213,11 +215,12 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			val -= 1;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
-			if (val > 0) val = val/2;
+			if(val > 0)
+				val = val / 2;
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
-			val = floor(val-5);
+			val = floor(val - 5);
 			break;
 		}
 	}
@@ -226,12 +229,12 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 
 	if(changemax)
 	{
-		if (val > master_edl->local_session->automation_mins[autogrouptype])
+		if(val > master_edl->local_session->automation_mins[autogrouptype])
 			master_edl->local_session->automation_maxs[autogrouptype] = val;
 	}
 	else
 	{
-		if (val < master_edl->local_session->automation_maxs[autogrouptype])
+		if(val < master_edl->local_session->automation_maxs[autogrouptype])
 			master_edl->local_session->automation_mins[autogrouptype] = val;
 	}
 }
@@ -239,35 +242,46 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 void MWindow::expand_autos(int changeall, int domin, int domax)
 {
 	if(changeall)
+	{
 		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
 		{
-			if(domin) change_currentautorange(i, 1, 0);
-			if(domax) change_currentautorange(i, 1, 1);
+			if(domin)
+				change_currentautorange(i, 1, 0);
+			if(domax)
+				change_currentautorange(i, 1, 1);
 		}
+	}
 	else
 	{
-		if(domin) change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, 0);
-		if(domax) change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, 1);
+		if(domin)
+			change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, 0);
+		if(domax)
+			change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, 1);
 	}
-	gui->zoombar->update_autozoom();
-	gui->patchbay->update();
+	update_gui(WUPD_ZOOMBAR | WUPD_PATCHBAY);
 	draw_canvas_overlays();
 }
 
 void MWindow::shrink_autos(int changeall, int domin, int domax)
 {
 	if(changeall)
-		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-			if(domin) change_currentautorange(i, 0, 0);
-			if(domax) change_currentautorange(i, 0, 1);
+	{
+		for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+		{
+			if(domin)
+				change_currentautorange(i, 0, 0);
+			if(domax)
+				change_currentautorange(i, 0, 1);
 		}
+	}
 	else
 	{
-		if(domin) change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, 0);
-		if(domax) change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, 1);
+		if(domin)
+			change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, 0);
+		if(domax)
+			change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, 1);
 	}
-	gui->zoombar->update_autozoom();
-	gui->patchbay->update();
+	update_gui(WUPD_ZOOMBAR | WUPD_PATCHBAY);
 	draw_canvas_overlays();
 }
 
