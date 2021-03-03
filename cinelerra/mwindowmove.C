@@ -484,21 +484,22 @@ void MWindow::next_edit_handle(int shift_down)
 {
 	ptstime position = master_edl->local_session->get_selectionend(1);
 	ptstime new_position = INFINITY;
+
 // Test for edit handles after cursor position
-	for (Track *track = master_edl->first_track(); track; track = track->next)
+	for(Track *track = master_edl->first_track(); track; track = track->next)
 	{
-		if (track->record)
+		if(track->record)
 		{
-			for (Edit *edit = track->edits->first; edit; edit = edit->next)
+			for(Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
 				ptstime edit_end = edit->end_pts();
-				if (edit_end > position && edit_end < new_position)
+				if(edit_end > position && edit_end < new_position)
 					new_position = edit_end;
 			}
 		}
 	}
 
-	if(new_position != INFINITY)
+	if(!isinf(new_position))
 	{
 		master_edl->local_session->set_selectionend(new_position);
 		if(!shift_down) 
@@ -506,29 +507,24 @@ void MWindow::next_edit_handle(int shift_down)
 				master_edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
-		gui->patchbay->update();
+		update_gui(WUPD_PATCHBAY);
+
 		if(master_edl->local_session->get_selectionend(1) >=
 			master_edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
 			master_edl->local_session->get_selectionend(1) < master_edl->local_session->view_start_pts)
 		{
 			samplemovement(master_edl->local_session->get_selectionend(1) -
-				gui->canvas->get_w() * master_edl->local_session->zoom_time /
-				2);
+				gui->canvas->get_w() *
+				master_edl->local_session->zoom_time / 2);
 		}
 		else
-		{
-			gui->timebar->update();
-			gui->cursor->update();
-			gui->zoombar->update();
-			gui->canvas->flash(1);
-		}
+			update_gui(WUPD_TIMEBAR | WUPD_CURSOR | WUPD_ZOOMBAR);
+
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
-	{
 		goto_end();
-	}
 }
 
 void MWindow::prev_edit_handle(int shift_down)
@@ -537,11 +533,11 @@ void MWindow::prev_edit_handle(int shift_down)
 	ptstime new_position = -1;
 
 // Test for edit handles before cursor position
-	for (Track *track = master_edl->first_track(); track; track = track->next)
+	for(Track *track = master_edl->first_track(); track; track = track->next)
 	{
-		if (track->record)
+		if(track->record)
 		{
-			for (Edit *edit = track->edits->first; edit; edit = edit->next)
+			for(Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
 				ptstime edit_end = edit->get_pts();
 				if (edit_end < position && edit_end > new_position)
@@ -559,7 +555,7 @@ void MWindow::prev_edit_handle(int shift_down)
 				master_edl->local_session->get_selectionstart(1));
 
 		update_plugin_guis();
-		gui->patchbay->update();
+		update_gui(WUPD_PATCHBAY);
 // Scroll the display
 		if(master_edl->local_session->get_selectionstart(1) >= master_edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
@@ -571,18 +567,12 @@ void MWindow::prev_edit_handle(int shift_down)
 		}
 		else
 // Don't scroll the display
-		{
-			gui->timebar->update();
-			gui->cursor->update();
-			gui->zoombar->update();
-			gui->canvas->flash(1);
-		}
+			update_gui(WUPD_TIMEBAR | WUPD_CURSOR | WUPD_ZOOMBAR);
+
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
-	{
 		goto_start();
-	}
 }
 
 void MWindow::expand_y(void)
