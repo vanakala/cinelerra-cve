@@ -406,7 +406,6 @@ void MWindow::select_all(void)
 	master_edl->local_session->set_selectionstart(0);
 	master_edl->local_session->set_selectionend(master_edl->total_length());
 	update_gui(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_CLOCK);
-	gui->canvas->activate();
 	cwindow->update(WUPD_POSITION);
 }
 
@@ -417,14 +416,14 @@ void MWindow::next_label(int shift_down)
 
 	if(current)
 	{
-
 		master_edl->local_session->set_selectionend(current->position);
-		if(!shift_down) 
+		if(!shift_down)
 			master_edl->local_session->set_selectionstart(
 				master_edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
-		gui->patchbay->update();
+		update_gui(WUPD_PATCHBAY);
+
 		if(master_edl->local_session->get_selectionend(1) >=
 			master_edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
@@ -436,12 +435,8 @@ void MWindow::next_label(int shift_down)
 				2));
 		}
 		else
-		{
-			gui->timebar->update();
-			gui->cursor->update();
-			gui->zoombar->update();
-			gui->canvas->flash(1);
-		}
+			update_gui(WUPD_TIMEBAR | WUPD_CURSOR | WUPD_ZOOMBAR);
+
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
@@ -462,12 +457,13 @@ void MWindow::prev_label(int shift_down)
 			master_edl->local_session->set_selectionend(master_edl->local_session->get_selectionstart(1));
 
 		update_plugin_guis();
-		gui->patchbay->update();
+		update_gui(WUPD_PATCHBAY);
 // Scroll the display
-		if(master_edl->local_session->get_selectionstart(1) >= master_edl->local_session->view_start_pts +
-			gui->canvas->time_visible()
-			||
-			master_edl->local_session->get_selectionstart(1) < master_edl->local_session->view_start_pts)
+		if(master_edl->local_session->get_selectionstart(1) >=
+			master_edl->local_session->view_start_pts +
+			gui->canvas->time_visible() ||
+			master_edl->local_session->get_selectionstart(1) <
+			master_edl->local_session->view_start_pts)
 		{
 			samplemovement(master_edl->local_session->get_selectionstart(1) -
 				gui->canvas->get_w() * master_edl->local_session->zoom_time /
@@ -475,12 +471,7 @@ void MWindow::prev_label(int shift_down)
 		}
 		else
 // Don't scroll the display
-		{
-			gui->timebar->update();
-			gui->cursor->update();
-			gui->zoombar->update();
-			gui->canvas->flash(1);
-		}
+			update_gui(WUPD_TIMEBAR | WUPD_CURSOR | WUPD_ZOOMBAR);
 		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
