@@ -76,7 +76,7 @@ void MWindow::add_track(int track_type, int above, Track *dst)
 	undo->update_undo(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY | WUPD_CANVREDRAW);
+	update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY | WUPD_CANVINCR);
 	cwindow->playback_engine->send_command(CURRENT_FRAME);
 	save_backup();
 }
