@@ -129,7 +129,7 @@ void MWindow::asset_to_rate(Asset *asset)
 		save_backup();
 
 		undo->update_undo(_("asset to rate"), LOAD_ALL);
-		update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+		update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 			WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		sync_parameters();
 	}
