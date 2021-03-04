@@ -299,6 +299,7 @@ void MWindow::zoom_track(int zoom_track)
 	CLAMP(master_edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
 	master_edl->local_session->zoom_track = zoom_track;
 	trackmovement(master_edl->local_session->track_start);
+	update_gui(WUPD_ZOOMBAR);
 }
 
 void MWindow::trackmovement(int track_start)
@@ -592,15 +593,15 @@ void MWindow::zoom_in_y(void)
 void MWindow::expand_t(void)
 {
 	int result = master_edl->local_session->zoom_track * 2;
+
 	result = MIN(result, MAX_TRACK_ZOOM);
 	zoom_track(result);
-	gui->zoombar->update();
 }
 
 void MWindow::zoom_in_t(void)
 {
 	int result = master_edl->local_session->zoom_track / 2;
+
 	result = MAX(result, MIN_TRACK_ZOOM);
 	zoom_track(result);
-	gui->zoombar->update();
 }
