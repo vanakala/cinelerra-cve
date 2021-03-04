@@ -288,7 +288,7 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 void MWindow::zoom_amp(int zoom_amp)
 {
 	master_edl->local_session->zoom_y = zoom_amp;
-	update_gui(WUPD_CANVINCR | WUPD_PATCHBAY);
+	update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_ZOOMBAR);
 }
 
 void MWindow::zoom_track(int zoom_track)
@@ -580,7 +580,6 @@ void MWindow::expand_y(void)
 	int result = master_edl->local_session->zoom_y * 2;
 	result = MIN(result, MAX_AMP_ZOOM);
 	zoom_amp(result);
-	gui->zoombar->update();
 }
 
 void MWindow::zoom_in_y(void)
@@ -588,7 +587,6 @@ void MWindow::zoom_in_y(void)
 	int result = master_edl->local_session->zoom_y / 2;
 	result = MAX(result, MIN_AMP_ZOOM);
 	zoom_amp(result);
-	gui->zoombar->update();
 }
 
 void MWindow::expand_t(void)
