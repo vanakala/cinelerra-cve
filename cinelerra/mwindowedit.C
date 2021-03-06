@@ -474,7 +474,7 @@ void MWindow::cut_effects()
 		update_plugin_guis();
 		draw_canvas_overlays();
 		sync_parameters();
-		gui->patchbay->update();
+		update_gui(WUPD_PATCHBAY);
 		cwindow->update(WUPD_POSITION);
 	}
 }
