@@ -1459,12 +1459,12 @@ void TrackCanvas::draw_plugins()
 // Update plugin toggles
 					int toggle_x = total_x + total_w;
 					toggle_x = MIN(get_w() - right_margin, toggle_x);
-					toggle_x -= PluginOn::calculate_w(mwindow) + 10;
+					toggle_x -= PluginOn::calculate_w() + 10;
 					int toggle_y = y;
 
 					if(onoff_toggle >= plugin_on_toggles.total)
 					{
-						PluginOn *plugin_on = new PluginOn(mwindow, toggle_x, toggle_y, plugin);
+						PluginOn *plugin_on = new PluginOn(toggle_x, toggle_y, plugin);
 						add_subwindow(plugin_on);
 						plugin_on_toggles.append(plugin_on);
 					}
@@ -1476,10 +1476,10 @@ void TrackCanvas::draw_plugins()
 
 					if(plugin->plugin_type == PLUGIN_STANDALONE)
 					{
-						toggle_x -= PluginShow::calculate_w(mwindow) + 10;
+						toggle_x -= PluginShow::calculate_w() + 10;
 						if(show_toggle >= plugin_show_toggles.total)
 						{
-							PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
+							PluginShow *plugin_off = new PluginShow(toggle_x, toggle_y, plugin);
 							add_subwindow(plugin_off);
 							plugin_show_toggles.append(plugin_off);
 						}
