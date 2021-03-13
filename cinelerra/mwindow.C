@@ -1289,7 +1289,7 @@ void MWindow::remove_assets_from_project(int push_undo)
 	sync_parameters();
 }
 
-void MWindow::update_gui(int options)
+void MWindow::update_gui(int options, ptstime new_position)
 {
 	master_edl->tracks->update_y_pixels(theme);
 
@@ -1304,8 +1304,13 @@ void MWindow::update_gui(int options)
 	if(options & WUPD_PATCHBAY)
 		gui->patchbay->update();
 	if(options & WUPD_CLOCK)
-		gui->mainclock->update(
-			master_edl->local_session->get_selectionstart(1));
+	{
+		if(new_position < 0)
+			gui->mainclock->update(
+				master_edl->local_session->get_selectionstart(1));
+		else
+			gui->mainclock->update(new_position);
+	}
 
 	if(options & WUPD_CANVAS)
 	{

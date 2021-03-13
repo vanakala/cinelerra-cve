@@ -173,7 +173,7 @@ public:
 //          WUPD_LABELS     - update labels
 //          WUPD_TIMEDEPS   - update time dependencies of zoombar
 //          WUPD_CURSOR     - update cursor
-	void update_gui(int options);
+	void update_gui(int options, ptstime new_position = -1);
 	void start_hourglass();
 	void stop_hourglass();
 
