@@ -19,7 +19,6 @@
 #include "intautos.inc"
 #include "keyframe.inc"
 #include "keyframepopup.inc"
-#include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "mutex.inc"
 #include "resourcethread.inc"
@@ -36,7 +35,7 @@
 class TrackCanvas : public BC_SubWindow
 {
 public:
-	TrackCanvas(MWindow *mwindow, MWindowGUI *gui);
+	TrackCanvas(MWindowGUI *gui);
 	~TrackCanvas();
 
 	void show();
@@ -187,7 +186,7 @@ public:
 // if is_toggle is 1, the result is either 0 or 1.
 // if reference is nonzero and a FloatAuto, 
 //     the result is made relative to the value in reference.
-	float percentage_to_value(float percentage, 
+	double percentage_to_value(double percentage,
 		int is_toggle,
 		Auto *reference,
 		int autogrouptype);
@@ -204,7 +203,8 @@ public:
 		double zoom,
 		double yscale,
 		int autogrouptype);
-	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);
+	void synchronize_autos(double change, Track *skip,
+		FloatAuto *fauto, int fill_gangs);
 
 	void draw_brender_start();
 	void draw_loop_points();
@@ -303,7 +303,6 @@ public:
 	void remove_asset_from_caches(Asset *asset);
 	void show_cache_status(int indent);
 
-	MWindow *mwindow;
 	MWindowGUI *gui;
 	ArrayList<ResourcePixmap*> resource_pixmaps;
 // Allows overlays to get redrawn without redrawing the resources
@@ -348,7 +347,7 @@ private:
 
 // transforms automation value into current display coords
 // dependant on current automation display range for given kind of automation
-	float value_to_percentage(float auto_value, int autogrouptype);
+	double value_to_percentage(double auto_value, int autogrouptype);
 
 // ====================================== cursor selection type
 	int auto_selected;               // 1 if automation selected

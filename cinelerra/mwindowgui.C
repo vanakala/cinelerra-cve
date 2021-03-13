@@ -162,7 +162,7 @@ void MWindowGUI::show()
 
 	cursor = new MainCursor(this);
 
-	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
+	mwindow->gui->add_subwindow(canvas = new TrackCanvas(this));
 	canvas->show();
 
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
