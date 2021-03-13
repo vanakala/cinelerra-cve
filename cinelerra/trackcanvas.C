@@ -3394,14 +3394,13 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 int TrackCanvas::cursor_motion_event()
 {
 	int result, cursor_x, cursor_y;
-	int update_clock = 0;
-	int update_zoom = 0;
 	int update_scroll = 0;
 	int update_overlay = 0;
 	int update_cursor = 0;
 	int new_cursor = 0;
 	int rerender = 0;
-	ptstime position = 0;
+	int mwindow_mode = 0;
+	ptstime position = -1;
 	result = 0;
 
 // Default cursor
@@ -3437,7 +3436,7 @@ int TrackCanvas::cursor_motion_event()
 			mainsession->current_operation = DRAG_PLUGINHANDLE2;
 			update_overlay = 1;
 		}
-			break;
+		break;
 
 	case DRAG_PLUGINHANDLE2:
 		update_drag_handle();
@@ -3507,7 +3506,7 @@ int TrackCanvas::cursor_motion_event()
 			mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update the faders
 			mwindow_global->update_plugin_guis();
-			mwindow_global->update_gui(WUPD_PATCHBAY);
+			mwindow_mode |= WUPD_PATCHBAY;
 		}
 		else
 		{
@@ -3515,10 +3514,8 @@ int TrackCanvas::cursor_motion_event()
 			master_edl->local_session->set_selectionend(position);
 // Don't que the CWindow
 		}
-		mwindow_global->update_gui(WUPD_CURSOR);
+		mwindow_mode |= WUPD_CURSOR | WUPD_CLOCK | WUPD_ZOOMBAR;
 		result = 1;
-		update_clock = 1;
-		update_zoom = 1;
 		update_scroll = 1;
 		break;
 	}
@@ -3531,7 +3528,7 @@ int TrackCanvas::cursor_motion_event()
 			position = cursor_x * master_edl->local_session->zoom_time +
 				master_edl->local_session->view_start_pts;
 			position = master_edl->align_to_frame(position);
-			update_clock = 1;
+			mwindow_mode |= WUPD_CLOCK;
 
 // Update cursor
 			if(do_transitions(get_cursor_x(), 
@@ -3605,28 +3602,26 @@ int TrackCanvas::cursor_motion_event()
 		mwindow_global->update_plugin_guis();
 		mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update faders
-		mwindow_global->update_gui(WUPD_PATCHBAY);
+		mwindow_mode |= WUPD_PATCHBAY;
 	}
 
-	if(update_clock)
+	if(mwindow_mode & WUPD_CLOCK)
 	{
-		if(!mwindow_global->cwindow->playback_engine->is_playing_back)
-			gui->mainclock->update(position);
+		if(mwindow_global->cwindow->playback_engine->is_playing_back)
+			mwindow_mode &= ~WUPD_CLOCK;
 	}
 
-	if(update_zoom)
-	{
-		mwindow_global->update_gui(WUPD_ZOOMBAR);
-	}
+	if(mwindow_mode)
+		mwindow_global->update_gui(mwindow_mode, position);
 
 	if(update_scroll)
 	{
-		if(!drag_scroll && 
-			(cursor_x >= get_w() || cursor_x < 0 || cursor_y >= get_h() || cursor_y < 0))
+		if(!drag_scroll && (cursor_x >= get_w() || cursor_x < 0 ||
+				cursor_y >= get_h() || cursor_y < 0))
 			start_dragscroll();
 		else
-		if(drag_scroll &&
-			(cursor_x < get_w() && cursor_x >= 0 && cursor_y < get_h() && cursor_y >= 0))
+		if(drag_scroll && (cursor_x < get_w() && cursor_x >= 0 &&
+				cursor_y < get_h() && cursor_y >= 0))
 			stop_dragscroll();
 	}
 	if(update_overlay)
@@ -3636,7 +3631,6 @@ int TrackCanvas::cursor_motion_event()
 		flash();
 		gui->cursor->show();
 	}
-
 	return result;
 }
 
