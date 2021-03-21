@@ -6,6 +6,7 @@
 #ifndef PLUGINTOGGLES_INC
 #define PLUGINTOGGLES_INC
 
+class TrackPlugin;
 class PluginOn;
 class PluginShow;
 

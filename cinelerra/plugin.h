@@ -17,6 +17,7 @@
 #include "pluginpopup.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
+#include "plugintoggles.h"
 #include "track.inc"
 #include "vframe.inc"
 
@@ -113,6 +114,8 @@ public:
 	PluginClient *client;
 // Apiversion of client
 	int apiversion;
+// TrackPlugin of the plugin
+	TrackPlugin *trackplugin;
 
 private:
 	int shared_track_num;

@@ -24,7 +24,6 @@
 #include "resourcethread.inc"
 #include "plugin.inc"
 #include "pluginpopup.inc"
-#include "plugintoggles.inc"
 #include "resourcepixmap.inc"
 #include "track.inc"
 #include "tracks.inc"
@@ -211,7 +210,6 @@ public:
 	void draw_transitions();
 	void draw_drag_handle();
 	void draw_plugins();
-	void refresh_plugintoggles();
 
 // Draw everything to synchronize with the view.
 // modebits - WUPD_CANVREDRAW causes all resource pixmaps to be redrawn from scratch
@@ -325,10 +323,6 @@ public:
 	VFrame *temp_picon;
 // Timer for hourglass
 	Timer *resource_timer;
-
-// Plugin toggle interfaces
-	ArrayList<PluginOn*> plugin_on_toggles;
-	ArrayList<PluginShow*> plugin_show_toggles;
 
 	ResourceThread *resource_thread;
 

@@ -1401,15 +1401,6 @@ void TrackCanvas::draw_highlighting()
 
 void TrackCanvas::draw_plugins()
 {
-	char string[BCTEXTLEN];
-	int onoff_toggle = 0;
-	int show_toggle = 0;
-
-	for(int i = 0; i < plugin_on_toggles.total; i++)
-		plugin_on_toggles.values[i]->in_use = 0;
-	for(int i = 0; i < plugin_show_toggles.total; i++)
-		plugin_show_toggles.values[i]->in_use = 0;
-
 	for(Track *track = master_edl->first_track();
 		track;
 		track = track->next)
@@ -1424,106 +1415,23 @@ void TrackCanvas::draw_plugins()
 
 				plugin_dimensions(plugin, total_x, y, total_w, h);
 
+				if(plugin->trackplugin)
+				{
+					plugin->trackplugin->update(total_x, y, total_w, h);
+					continue;
+				}
+
 				if(plugin->plugin_type != PLUGIN_NONE &&
 					MWindowGUI::visible(total_x, total_x + total_w, 0, get_w()) &&
 					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
-					int x = total_x, w = total_w, left_margin = 5;
-					int right_margin = 5;
-
-					if(x < 0)
-					{
-						w -= -x;
-						x = 0;
-					}
-					if(w + x > get_w())
-						w -= (w + x) - get_w();
-					draw_3segmenth(x, y, w,
-						total_x, total_w,
-						theme_global->get_image("plugin_bg_data"),
-						0);
-					plugin->calculate_title(string);
-
-// Truncate string visible in background
-					int len = strlen(string), j;
-					for(j = len; j >= 0; j--)
-					{
-						if(left_margin + get_text_width(MEDIUMFONT_3D, string) > w)
-						{
-							string[j] = 0;
-						}
-						else
-							break;
-					}
-
-// Justify the text on the left boundary of the edit if it is visible.
-// Otherwise justify it on the left side of the screen.
-					int text_x = total_x + left_margin;
-					text_x = MAX(left_margin, text_x);
-					set_color(get_resources()->default_text_color);
-					set_font(MEDIUMFONT_3D);
-					draw_text(text_x,
-						y + get_text_ascent(MEDIUMFONT_3D) + 2,
-						string,
-						strlen(string),
-						0);
-// Update plugin toggles
-					int toggle_x = total_x + total_w;
-					toggle_x = MIN(get_w() - right_margin, toggle_x);
-					toggle_x -= PluginOn::calculate_w() + 10;
-					int toggle_y = y;
-
-					if(onoff_toggle >= plugin_on_toggles.total)
-					{
-						PluginOn *plugin_on = new PluginOn(toggle_x, toggle_y, plugin);
-						add_subwindow(plugin_on);
-						plugin_on_toggles.append(plugin_on);
-					}
-					else
-					{
-						plugin_on_toggles.values[onoff_toggle]->update(toggle_x, toggle_y, plugin);
-					}
-					onoff_toggle++;
-
-					if(plugin->plugin_type == PLUGIN_STANDALONE)
-					{
-						toggle_x -= PluginShow::calculate_w() + 10;
-						if(show_toggle >= plugin_show_toggles.total)
-						{
-							PluginShow *plugin_off = new PluginShow(toggle_x, toggle_y, plugin);
-							add_subwindow(plugin_off);
-							plugin_show_toggles.append(plugin_off);
-						}
-						else
-						{
-							plugin_show_toggles.values[show_toggle]->update(toggle_x, toggle_y, plugin);
-						}
-						show_toggle++;
-					}
+					add_subwindow(plugin->trackplugin = new TrackPlugin(
+						total_x, y, total_w, h, plugin));
+					plugin->trackplugin->show();
 				}
 			}
 			pixmaps_lock->unlock();
 		}
-	}
-
-	while(onoff_toggle < plugin_on_toggles.total)
-		plugin_on_toggles.remove_object_number(onoff_toggle);
-
-	while(show_toggle < plugin_show_toggles.total)
-		plugin_show_toggles.remove_object_number(show_toggle);
-}
-
-void TrackCanvas::refresh_plugintoggles()
-{
-	for(int i = 0; i < plugin_on_toggles.total; i++)
-	{
-		PluginOn *on = plugin_on_toggles.values[i];
-		on->reposition_window(on->get_x(), on->get_y());
-	}
-	for(int i = 0; i < plugin_show_toggles.total; i++)
-	{
-		PluginShow *show = plugin_show_toggles.values[i];
-		show->reposition_window(show->get_x(), show->get_y());
 	}
 }
 

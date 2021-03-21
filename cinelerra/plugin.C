@@ -59,6 +59,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	shared_track_id = shared_plugin_id = -1;
 	shared_track_num = shared_plugin_num = -1;
 	client = 0;
+	trackplugin = 0;
 	if(server)
 		apiversion = server->apiversion;
 	else
@@ -87,6 +88,7 @@ Plugin::~Plugin()
 	delete keyframes;
 	track->tracks->reset_plugins();
 	delete guideframe;
+	delete trackplugin;
 	plugin_server->close_plugin(client);
 }
 

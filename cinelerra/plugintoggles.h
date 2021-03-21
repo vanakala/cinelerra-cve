@@ -6,19 +6,42 @@
 #ifndef PLUGINTOGGLES_H
 #define PLUGINTOGGLES_H
 
+#include "bcsubwindow.h"
+#include "bctoggle.h"
+#include "plugintoggles.inc"
 #include "plugin.inc"
 
+class TrackPlugin : public BC_SubWindow
+{
+public:
+	TrackPlugin(int x, int y, int w, int h, Plugin *plugin);
+	~TrackPlugin();
+
+	void show();
+	void update(int x, int y, int w, int h);
+private:
+	void redraw(int x, int y, int w, int h);
+
+	int drawn_x;
+	int drawn_y;
+	int drawn_w;
+	int drawn_h;
+
+	Plugin *plugin;
+	PluginOn *plugin_on;
+	PluginShow *plugin_show;
+	BC_Pixmap *background;
+};
 
 class PluginOn : public BC_Toggle
 {
 public:
-	PluginOn(int x, int y, Plugin *plugin);
+	PluginOn(int x, Plugin *plugin);
 
 	static int calculate_w();
-	void update(int x, int y, Plugin *plugin);
+	void update(int x);
 	int handle_event();
-
-	int in_use;
+private:
 	Plugin *plugin;
 };
 
@@ -26,13 +49,12 @@ public:
 class PluginShow : public BC_Toggle
 {
 public:
-	PluginShow(int x, int y, Plugin *plugin);
+	PluginShow(int x, Plugin *plugin);
 
 	static int calculate_w();
-	void update(int x, int y, Plugin *plugin);
+	void update(int x);
 	int handle_event();
-
-	int in_use;
+private:
 	Plugin *plugin;
 };
 
