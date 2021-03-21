@@ -3,8 +3,8 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#ifndef PLUGINTOGGLES_INC
-#define PLUGINTOGGLES_INC
+#ifndef TRACKPLUGIN_INC
+#define TRACKPLUGIN_INC
 
 class TrackPlugin;
 class PluginOn;

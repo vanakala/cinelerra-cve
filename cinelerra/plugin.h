@@ -17,7 +17,7 @@
 #include "pluginpopup.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
-#include "plugintoggles.h"
+#include "trackplugin.inc"
 #include "track.inc"
 #include "vframe.inc"
 

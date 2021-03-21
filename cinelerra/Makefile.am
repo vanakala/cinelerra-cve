@@ -188,7 +188,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    pluginpopup.C \
 		    pluginserver.C \
 		    plugintclient.C \
-		    plugintoggles.C \
 		    pluginvclient.C \
 		    pluginwindow.C \
 		    preferences.C \
@@ -220,6 +219,7 @@ cinelerracve_SOURCES = aautomation.C \
 		    trackcanvas.C \
 		    tracking.C \
 		    trackrender.C \
+		    trackplugin.C \
 		    tracks.C \
 		    trackscroll.C \
 		    tracksedit.C \
@@ -407,7 +407,6 @@ noinst_HEADERS = aautomation.h \
 		 pluginpopup.h \
 		 pluginserver.h \
 		 plugintclient.h \
-		 plugintoggles.h \
 		 pluginvclient.h \
 		 pluginwindow.h \
 		 preferences.h \
@@ -438,6 +437,7 @@ noinst_HEADERS = aautomation.h \
 		 trackcanvas.h \
 		 track.h \
 		 tracking.h \
+		 trackplugin.h \
 		 trackrender.h \
 		 trackscroll.h \
 		 tracks.h \

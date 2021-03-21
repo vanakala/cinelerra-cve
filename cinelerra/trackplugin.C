@@ -9,7 +9,7 @@
 #include "bcresources.h"
 #include "mwindow.h"
 #include "plugin.h"
-#include "plugintoggles.h"
+#include "trackplugin.h"
 #include "theme.h"
 #include "vframe.h"
 

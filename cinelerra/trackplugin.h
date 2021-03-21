@@ -3,12 +3,12 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#ifndef PLUGINTOGGLES_H
-#define PLUGINTOGGLES_H
+#ifndef TRACKPLUGIN_H
+#define TRACKPLUGIN_H
 
 #include "bcsubwindow.h"
 #include "bctoggle.h"
-#include "plugintoggles.inc"
+#include "trackplugin.inc"
 #include "plugin.inc"
 
 class TrackPlugin : public BC_SubWindow

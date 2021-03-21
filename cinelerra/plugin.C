@@ -36,6 +36,7 @@
 #include "preferences.inc"
 #include "track.h"
 #include "tracks.h"
+#include "trackplugin.h"
 #include "tmpframecache.h"
 #include "vframe.h"
 
