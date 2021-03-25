@@ -95,7 +95,7 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	230, 

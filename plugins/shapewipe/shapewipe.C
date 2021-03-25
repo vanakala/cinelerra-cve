@@ -159,7 +159,7 @@ ShapeWipeLoad::ShapeWipeLoad(
 }
 
 ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x, 
 	y, 
 	450, 

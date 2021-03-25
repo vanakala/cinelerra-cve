@@ -40,7 +40,7 @@ int NASwitch::handle_event()
  * creating the elements of gui.
  */
 NATransitionWindow::NATransitionWindow(NATransition *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	200,

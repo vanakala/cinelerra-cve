@@ -24,7 +24,7 @@ WaveFormConfig::WaveFormConfig()
 }
 
 WaveFormWindow::WaveFormWindow(WaveForm *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 800, 430)
+ : PluginWindow(plugin, x, y, 800, 430)
 {
 	BC_WindowBase *win;
 

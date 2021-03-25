@@ -7,11 +7,12 @@
 #define PLUGINWINDOW_H
 
 #include "bcwindow.h"
+#include "pluginclient.inc"
 
 class PluginWindow : public BC_Window
 {
 public:
-	PluginWindow(const char *title, int x, int y, int w, int h);
+	PluginWindow(PluginClient *pluginclient, int x, int y, int w, int h);
 
 	virtual void update() {};
 	void close_event();
@@ -19,5 +20,7 @@ public:
 		__attribute__ ((format (printf, 4, 5)));
 
 	int window_done;
+private:
+	PluginClient *pluginclient;
 };
 #endif

@@ -94,7 +94,7 @@ PLUGIN_THREAD_METHODS
 
 
 TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	350, 

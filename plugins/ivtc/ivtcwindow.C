@@ -20,7 +20,7 @@ PLUGIN_THREAD_METHODS
 
 
 IVTCWindow::IVTCWindow(IVTCMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string,
+ : PluginWindow(plugin,
 	x,
 	y,
 	210, 

@@ -5,15 +5,17 @@
 
 #include "bcsignals.h"
 #include "bctitle.h"
+#include "pluginclient.h"
 #include "pluginwindow.h"
 
 #include <stdarg.h>
 
-PluginWindow::PluginWindow(const char *title, int x, int y, int w, int h)
- : BC_Window(title, x, y, w, h, w, h,
+PluginWindow::PluginWindow(PluginClient *pluginclient, int x, int y, int w, int h)
+ : BC_Window(pluginclient->gui_string, x, y, w, h, w, h,
 	0, 0, 1, -1, 0, 1, WINDOW_UTF8)
 {
 	window_done = 0;
+	this->pluginclient = pluginclient;
 };
 
 void PluginWindow::close_event()

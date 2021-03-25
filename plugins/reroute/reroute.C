@@ -74,7 +74,7 @@ const char *RerouteSelection::name(int value)
 }
 
 RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 300, 100)
+ : PluginWindow(plugin, x, y, 300, 100)
 {
 	BC_Title *title;
 

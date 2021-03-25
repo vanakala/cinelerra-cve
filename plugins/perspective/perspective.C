@@ -81,7 +81,7 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
 PLUGIN_THREAD_METHODS
 
 PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	450,

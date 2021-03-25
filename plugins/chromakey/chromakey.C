@@ -78,7 +78,7 @@ int ChromaKeyConfig::get_color()
 
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x, 
 	y, 
 	320, 

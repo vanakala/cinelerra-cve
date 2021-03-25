@@ -53,7 +53,7 @@ int SpectrogramBW::handle_event()
 }
 
 SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	640, 

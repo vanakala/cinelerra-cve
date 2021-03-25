@@ -11,7 +11,7 @@
 PLUGIN_THREAD_METHODS
 
 ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	240,

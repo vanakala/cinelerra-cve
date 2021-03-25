@@ -44,7 +44,7 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 
 DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	210, 

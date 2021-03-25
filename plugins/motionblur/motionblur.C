@@ -58,7 +58,7 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	260, 

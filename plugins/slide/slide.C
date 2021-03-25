@@ -93,7 +93,7 @@ int SlideOut::handle_event()
 
 
 SlideWindow::SlideWindow(SlideMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x, 
 	y, 
 	320, 

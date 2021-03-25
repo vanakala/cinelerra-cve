@@ -41,7 +41,7 @@ int NVSwitch::handle_event()
  * creating the elements of gui.
  */
 NVTransitionWindow::NVTransitionWindow(NVTransition *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	200,

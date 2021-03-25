@@ -26,7 +26,7 @@ const char *BlurWindow::blur_chn_ayuv[] =
 };
 
 BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string,
+ : PluginWindow(plugin,
 	x,
 	y,
 	150, 

@@ -9,7 +9,7 @@ PLUGIN_THREAD_METHODS
 
 
 FlipWindow::FlipWindow(FlipMain *plugin, int x, int y)
- : PluginWindow(plugin->get_gui_string(),
+ : PluginWindow(plugin,
 	x,
 	y,
 	250,

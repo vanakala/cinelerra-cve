@@ -41,7 +41,7 @@ int NRTAudioSwitch::handle_event()
  * creating the elements of gui.
  */
 NRTAudioWindow::NRTAudioWindow(NRTAudio *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	200,

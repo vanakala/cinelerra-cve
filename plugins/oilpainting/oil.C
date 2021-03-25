@@ -87,7 +87,7 @@ int OilIntensity::handle_event()
 PLUGIN_THREAD_METHODS
 
 OilWindow::OilWindow(OilEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 300, 160)
+ : PluginWindow(plugin, x, y, 300, 160)
 {
 	x = y = 10;
 

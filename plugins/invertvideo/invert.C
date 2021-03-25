@@ -92,7 +92,7 @@ int InvertVideoEnable::handle_event()
 
 
 InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x, 
 	y, 
 	260, 

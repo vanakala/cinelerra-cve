@@ -16,7 +16,7 @@ PLUGIN_THREAD_METHODS
 
 
 ReverbWindow::ReverbWindow(Reverb *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	250, 

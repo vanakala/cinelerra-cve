@@ -9,7 +9,7 @@
 
 
 NormalizeWindow::NormalizeWindow(NormalizeMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string,
+ : PluginWindow(plugin,
 	x - 160,
 	y - 75,
 	320,

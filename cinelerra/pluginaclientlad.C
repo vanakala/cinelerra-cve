@@ -289,7 +289,7 @@ int PluginACLientFreq::handle_event()
 PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin, 
 	int x, 
 	int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	500, 

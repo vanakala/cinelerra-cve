@@ -13,7 +13,7 @@
 PLUGIN_THREAD_METHODS
 
 MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	610, 

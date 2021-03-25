@@ -127,7 +127,7 @@ void PitchConfig::interpolate(PitchConfig &prev,
 PLUGIN_THREAD_METHODS
 
 PitchWindow::PitchWindow(PitchEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x, 
 	y, 
 	150, 

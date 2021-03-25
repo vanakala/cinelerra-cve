@@ -141,7 +141,7 @@ int DenoiseVideoToggle::handle_event()
 
 
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 210, 270)
+ : PluginWindow(plugin, x, y, 210, 270)
 {
 	BC_WindowBase *win;
 	int cmodel = plugin->get_project_color_model();

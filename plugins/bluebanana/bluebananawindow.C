@@ -2307,7 +2307,7 @@ public:
 
 // --------------------------------------- Main GUI window --------------------------------------
 BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 1000, 1000)
+ : PluginWindow(plugin, x, y, 1000, 1000)
 {
 	int xmargin = 20, ymargin = 10;
 	float row_padding = .1;

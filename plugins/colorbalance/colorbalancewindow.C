@@ -11,7 +11,7 @@ PLUGIN_THREAD_METHODS
 
 
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x,
+ : PluginWindow(plugin, x,
 	y,
 	330, 
 	250)

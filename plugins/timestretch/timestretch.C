@@ -218,7 +218,7 @@ void TimeStretch::calculate_pts()
 PLUGIN_THREAD_METHODS
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	150, 

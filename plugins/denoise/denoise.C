@@ -706,7 +706,7 @@ void DenoiseConfig::interpolate(DenoiseConfig &prev,
 PLUGIN_THREAD_METHODS
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	280,

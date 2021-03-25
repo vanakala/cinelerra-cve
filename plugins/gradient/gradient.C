@@ -127,7 +127,7 @@ PLUGIN_THREAD_METHODS
 #define COLOR_H 30
 
 GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	350, 

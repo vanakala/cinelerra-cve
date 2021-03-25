@@ -10,7 +10,7 @@
 PLUGIN_THREAD_METHODS
 
 AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 230, 245)
+ : PluginWindow(plugin, x, y, 230, 245)
 {
 	BC_WindowBase *win;
 	int title_h;

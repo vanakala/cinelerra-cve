@@ -42,7 +42,7 @@ int NullVideoSwitch::handle_event()
  * creating the elements of gui.
  */
 NullVideoWindow::NullVideoWindow(NullVideo *plugin, int x, int y)
- : PluginWindow(plugin->gui_string,
+ : PluginWindow(plugin,
 	x,
 	y,
 	200,

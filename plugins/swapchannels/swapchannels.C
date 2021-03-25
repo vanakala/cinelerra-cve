@@ -76,7 +76,7 @@ void SwapConfig::copy_from(SwapConfig &that)
 
 
 SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	250,

@@ -11,7 +11,7 @@ PLUGIN_THREAD_METHODS
 
 
 RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	235,

@@ -14,7 +14,7 @@ PLUGIN_THREAD_METHODS
 
 
 GammaWindow::GammaWindow(GammaMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x,
+ : PluginWindow(plugin, x,
 	y,
 	400, 
 	400)

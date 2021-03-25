@@ -301,7 +301,7 @@ void Synth::overlay_synth(AFrame *frame)
 PLUGIN_THREAD_METHODS
 
 SynthWindow::SynthWindow(Synth *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	440,

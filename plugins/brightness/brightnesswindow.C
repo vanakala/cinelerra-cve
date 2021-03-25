@@ -10,7 +10,7 @@ PLUGIN_THREAD_METHODS
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x,
+ : PluginWindow(plugin, x,
 	y,
 	330, 
 	160)

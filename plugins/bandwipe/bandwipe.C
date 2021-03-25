@@ -81,7 +81,7 @@ int BandWipeOut::handle_event()
 
 
 BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	260,

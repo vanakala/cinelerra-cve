@@ -46,7 +46,7 @@ int NRTVideoSwitch::handle_event()
  * creating the elements of gui.
  */
 NRTVideoWindow::NRTVideoWindow(NRTVideo *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	200,

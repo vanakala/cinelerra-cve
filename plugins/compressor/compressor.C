@@ -780,7 +780,7 @@ PLUGIN_THREAD_METHODS
 
 
 CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 650, 480)
+ : PluginWindow(plugin, x, y, 650, 480)
 {
 	int control_margin = 130;
 	BC_WindowBase *win;

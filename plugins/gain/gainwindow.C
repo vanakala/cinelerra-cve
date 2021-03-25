@@ -12,7 +12,7 @@ PLUGIN_THREAD_METHODS
 
 
 GainWindow::GainWindow(Gain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string,
+ : PluginWindow(plugin,
 	x,
 	y, 
 	230, 

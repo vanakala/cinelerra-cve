@@ -93,7 +93,7 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y,
 	230, 

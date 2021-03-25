@@ -60,7 +60,7 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 
 
 WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, 
+ : PluginWindow(plugin,
 	x,
 	y, 
 	220, 

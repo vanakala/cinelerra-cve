@@ -222,7 +222,7 @@ PLUGIN_THREAD_METHODS
 
 // C41Window
 C41Window::C41Window(C41Effect *plugin, int x, int y)
- : PluginWindow(plugin->gui_string, x, y, 500, 510)
+ : PluginWindow(plugin, x, y, 500, 510)
 {
 	x = y = 10;
 
