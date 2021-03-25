@@ -19,6 +19,7 @@ public:
 
 	void show();
 	void update(int x, int y, int w, int h);
+	void update_toggles();
 private:
 	void redraw(int x, int y, int w, int h);
 

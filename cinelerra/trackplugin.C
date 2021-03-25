@@ -104,6 +104,16 @@ void TrackPlugin::update(int x, int y, int w, int h)
 	redraw(x, y, w, h);
 }
 
+void TrackPlugin::update_toggles()
+{
+	int x = get_x();
+
+	if(plugin_on)
+		plugin_on->update(x);
+	if(plugin_show)
+		plugin_show->update(x);
+}
+
 PluginOn::PluginOn(int x, Plugin *plugin)
  : BC_Toggle(x, 0, theme_global->get_image_set("plugin_on"), plugin->on)
 {
