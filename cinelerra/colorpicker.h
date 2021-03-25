@@ -8,11 +8,11 @@
 
 #include "bcsubwindow.h"
 #include "bcslider.h"
+#include "bcwindow.h"
 #include "condition.inc"
 #include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
-#include "pluginwindow.h"
 #include "thread.h"
 
 class ColorWindow;
@@ -57,7 +57,7 @@ private:
 	VFrame *icon;
 };
 
-class ColorWindow : public PluginWindow
+class ColorWindow : public BC_Window
 {
 public:
 	ColorWindow(ColorThread *thread, int x, int y, const char *title);

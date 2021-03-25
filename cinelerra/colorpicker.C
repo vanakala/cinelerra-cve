@@ -126,11 +126,8 @@ void ColorThread::update_gui(int output, int alpha)
 
 
 ColorWindow::ColorWindow(ColorThread *thread, int x, int y, const char *title)
- : PluginWindow(title, 
-	x,
-	y,
-	410, 
-	320)
+ : BC_Window(title, x, y, 410, 320, 410, 320,
+	0, 0, 1, -1, 0, 1, WINDOW_UTF8)
 {
 	int init_x = 10, init_y = 10;
 	x = y = 10;
