@@ -520,7 +520,6 @@ void MWindow::detach_transition(Plugin *transition)
 	if(cwindow->stop_playback())
 		return;
 
-	hide_plugin(transition, 1);
 	int is_video = (transition->track->data_type == TRACK_VIDEO);
 	transition->track->detach_transition(transition);
 	save_backup();
