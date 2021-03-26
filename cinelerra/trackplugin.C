@@ -64,7 +64,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 		else
 		{
 			if(plugin_on)
-				plugin_on->update(toggle_x);
+				plugin_on->reposition_window(toggle_x, 0);
 			else
 				add_subwindow(plugin_on = new PluginOn(toggle_x, plugin));
 		}
@@ -80,7 +80,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 			else
 			{
 				if(plugin_show)
-					plugin_show->update(toggle_x);
+					plugin_show->reposition_window(toggle_x, 0);
 				else
 					add_subwindow(plugin_show = new PluginShow(toggle_x, plugin));
 			}
@@ -106,12 +106,10 @@ void TrackPlugin::update(int x, int y, int w, int h)
 
 void TrackPlugin::update_toggles()
 {
-	int x = get_x();
-
 	if(plugin_on)
-		plugin_on->update(x);
+		plugin_on->update();
 	if(plugin_show)
-		plugin_show->update(x);
+		plugin_show->update();
 }
 
 PluginOn::PluginOn(int x, Plugin *plugin)
@@ -125,10 +123,9 @@ int PluginOn::calculate_w()
 	return theme_global->get_image_set("plugin_on")[0]->get_w();
 }
 
-void PluginOn::update(int x)
+void PluginOn::update()
 {
-	set_value(plugin->on, 0);
-	reposition_window(x, 0);
+	set_value(plugin->on, 1);
 }
 
 int PluginOn::handle_event()
@@ -150,10 +147,9 @@ int PluginShow::calculate_w()
 	return theme_global->get_image_set("plugin_show")[0]->get_w();
 }
 
-void PluginShow::update(int x)
+void PluginShow::update()
 {
-	set_value(plugin->show, 0);
-	reposition_window(x, 0);
+	set_value(plugin->show, 1);
 }
 
 int PluginShow::handle_event()

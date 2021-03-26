@@ -40,7 +40,7 @@ public:
 	PluginOn(int x, Plugin *plugin);
 
 	static int calculate_w();
-	void update(int x);
+	void update();
 	int handle_event();
 private:
 	Plugin *plugin;
@@ -53,7 +53,7 @@ public:
 	PluginShow(int x, Plugin *plugin);
 
 	static int calculate_w();
-	void update(int x);
+	void update();
 	int handle_event();
 private:
 	Plugin *plugin;
