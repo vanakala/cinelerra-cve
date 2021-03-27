@@ -3433,14 +3433,16 @@ int TrackCanvas::cursor_motion_event()
 		{
 // Update clocks
 			cursor_x = get_cursor_x();
+			cursor_y = get_cursor_y();
+
 			position = cursor_x * master_edl->local_session->zoom_time +
 				master_edl->local_session->view_start_pts;
 			position = master_edl->align_to_frame(position);
 			mwindow_mode |= WUPD_CLOCK;
 
 // Update cursor
-			if(do_transitions(get_cursor_x(), 
-					get_cursor_y(), 
+			if(do_transitions(cursor_x,
+					cursor_y,
 					0, 
 					new_cursor, 
 					update_cursor))
@@ -3449,8 +3451,8 @@ int TrackCanvas::cursor_motion_event()
 			}
 			else
 // Update cursor
-			if(do_keyframes(get_cursor_x(), 
-				get_cursor_y(), 
+			if(do_keyframes(cursor_x,
+				cursor_y,
 				0, 
 				0, 
 				new_cursor,
@@ -3461,8 +3463,8 @@ int TrackCanvas::cursor_motion_event()
 			}
 			else
 // Edit boundaries
-			if(do_edit_handles(get_cursor_x(), 
-				get_cursor_y(), 
+			if(do_edit_handles(cursor_x,
+				cursor_y,
 				0, 
 				rerender,
 				update_overlay,
@@ -3473,8 +3475,8 @@ int TrackCanvas::cursor_motion_event()
 			}
 			else
 // Plugin boundaries
-			if(do_plugin_handles(get_cursor_x(), 
-				get_cursor_y(), 
+			if(do_plugin_handles(cursor_x,
+				cursor_y,
 				0, 
 				rerender,
 				update_overlay,
@@ -3484,8 +3486,8 @@ int TrackCanvas::cursor_motion_event()
 				break;
 			}
 			else
-			if(do_edits(get_cursor_x(), 
-				get_cursor_y(), 
+			if(do_edits(cursor_x,
+				cursor_y,
 				0, 
 				0, 
 				update_overlay, 
