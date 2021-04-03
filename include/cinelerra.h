@@ -26,6 +26,7 @@
 #define WUPD_LABELS       0x10000
 #define WUPD_TIMEDEPS     0x20000
 #define WUPD_CURSOR       0x40000
+#define WUPD_TOGLIGHTS    0x80000
 #define WUPD_CANVAS       (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
 
 // Audio buffer size

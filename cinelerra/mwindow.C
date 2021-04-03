@@ -1331,6 +1331,9 @@ void MWindow::update_gui(int options, ptstime new_position)
 	if(options & WUPD_LABELS)
 		gui->timebar->update_labels();
 
+	if(options & WUPD_TOGLIGHTS)
+		gui->timebar->update_highlights();
+
 	if(options & WUPD_CURSOR)
 		gui->cursor->update();
 
