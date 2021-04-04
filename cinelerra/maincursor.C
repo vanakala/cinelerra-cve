@@ -115,8 +115,10 @@ void MainCursor::update()
 	if(enabled)
 	{
 		if(visible)
+		{
 			draw();
-
+			flash();
+		}
 		draw();
 		flash();
 	}
