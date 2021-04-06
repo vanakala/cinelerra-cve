@@ -652,8 +652,7 @@ void Plugin::update_display_title()
 void Plugin::hide_plugin_gui()
 {
 	show = 0;
-	if(trackplugin)
-		trackplugin->update_toggles();
+	update_toggles();
 	if(client)
 		client->hide_gui();
 }
@@ -675,9 +674,16 @@ int Plugin::show_plugin_gui()
 			}
 			client->plugin_show_gui();
 			result = show = 1;
+			update_toggles();
 		}
 	}
 	return result;
+}
+
+void Plugin::update_toggles()
+{
+	if(trackplugin)
+		trackplugin->update_toggles();
 }
 
 void Plugin::reset_plugin()

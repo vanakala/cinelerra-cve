@@ -7,7 +7,6 @@
 #include "bctitle.h"
 #include "pluginclient.h"
 #include "plugin.h"
-#include "trackplugin.h"
 #include "pluginwindow.h"
 
 #include <stdarg.h>
@@ -28,8 +27,7 @@ void PluginWindow::close_event()
 	if(pluginclient && pluginclient->plugin)
 	{
 		pluginclient->plugin->show = 0;
-		if(pluginclient->plugin->trackplugin)
-			pluginclient->plugin->trackplugin->update_toggles();
+		pluginclient->plugin->update_toggles();
 	}
 	BC_Window::close_event();
 }

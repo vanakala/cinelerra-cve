@@ -127,7 +127,7 @@ int PluginPopupShow::handle_event()
 	if(!get_checked())
 		mwindow_global->show_plugin(popup->plugin);
 	else
-		mwindow_global->hide_plugin(popup->plugin, 1);
+		popup->plugin->hide_plugin_gui();
 	mwindow_global->update_gui(WUPD_CANVINCR);
 	return 1;
 }
@@ -150,6 +150,7 @@ int PluginPopupOn::handle_event()
 		return 0;
 	popup->plugin->on = !get_checked();
 	mwindow_global->update_gui(WUPD_CANVINCR);
+	popup->plugin->update_toggles();
 	mwindow_global->sync_parameters();
 	return 1;
 }
