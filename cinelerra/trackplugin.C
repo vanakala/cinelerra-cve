@@ -7,24 +7,33 @@
 #include "bcpixmap.h"
 #include "bcsubwindow.h"
 #include "bcresources.h"
+#include "edl.h"
+#include "keyframe.h"
+#include "keyframes.h"
+#include "localsession.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "trackplugin.h"
+#include "trackcanvas.h"
 #include "theme.h"
 #include "vframe.h"
 
-TrackPlugin::TrackPlugin(int x, int y, int w, int h, Plugin *plugin)
+TrackPlugin::TrackPlugin(int x, int y, int w, int h,
+	Plugin *plugin, TrackCanvas *canvas)
  : BC_SubWindow(x, y, w, h)
 {
 	this->plugin = plugin;
+	this->canvas = canvas;
 	plugin_on = 0;
 	plugin_show = 0;
-	background = 0;
+	keyframe_pixmap = 0;
+	num_keyframes = 0;
 	drawn_x = drawn_y = drawn_w = drawn_h = -1;
 }
 
 void TrackPlugin::show()
 {
+	set_cursor(canvas->get_cursor());
 	redraw(get_x(), get_y(), get_w(), get_h());
 }
 
@@ -35,6 +44,7 @@ TrackPlugin::~TrackPlugin()
 		delete plugin_on;
 		delete plugin_show;
 	}
+	delete keyframe_pixmap;
 	if(plugin)
 		plugin->trackplugin = 0;
 }
@@ -43,8 +53,28 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 {
 	char string[BCTEXTLEN];
 	int text_left = 5;
+	int redraw = 0;
+	int kcount = 0;
+	int kx;
 
-	if(drawn_w != w || drawn_h != h)
+	if(plugin->keyframes->first &&
+		plugin->keyframes->first != plugin->keyframes->last)
+	{
+		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+			keyframe; keyframe = (KeyFrame*)keyframe->next)
+		{
+			kx = (keyframe->pos_time - master_edl->local_session->view_start_pts) /
+				master_edl->local_session->zoom_time - x;
+			if(!keyframe->has_drawn(kx))
+			{
+				redraw++;
+				break;
+			}
+			kcount++;
+		}
+	}
+
+	if(drawn_w != w || drawn_h != h || redraw)
 	{
 		reposition_window(x, y, w, h);
 		draw_3segmenth(0, 0, w, theme_global->get_image("plugin_bg_data"), 0);
@@ -53,7 +83,35 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 		set_font(MEDIUMFONT_3D);
 		draw_text(text_left, get_text_ascent(MEDIUMFONT_3D) + 2,
 			string, strlen(string), 0);
+		redraw = 1;
+	}
 
+	if(kcount != num_keyframes || redraw)
+	{
+		if(!keyframe_pixmap)
+			keyframe_pixmap = new BC_Pixmap(this,
+				theme_global->keyframe_data, PIXMAP_ALPHA);
+
+		int ky = (h - keyframe_pixmap->get_h()) / 2;
+
+		num_keyframes = 0;
+
+		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+			keyframe; keyframe = (KeyFrame*)keyframe->next)
+		{
+			kx = (keyframe->pos_time - master_edl->local_session->view_start_pts) /
+				master_edl->local_session->zoom_time - x;
+			if(redraw || !keyframe->has_drawn(kx))
+			{
+				draw_pixmap(keyframe_pixmap, kx, ky);
+				keyframe->drawing(kx);
+				num_keyframes++;
+			}
+		}
+	}
+
+	if(drawn_w != w || drawn_h != h || redraw)
+	{
 		int toggle_x = w - PluginOn::calculate_w() - 10;
 
 		if(toggle_x < 0)

@@ -8,13 +8,15 @@
 
 #include "bcsubwindow.h"
 #include "bctoggle.h"
+#include "trackcanvas.inc"
 #include "trackplugin.inc"
 #include "plugin.inc"
 
 class TrackPlugin : public BC_SubWindow
 {
 public:
-	TrackPlugin(int x, int y, int w, int h, Plugin *plugin);
+	TrackPlugin(int x, int y, int w, int h,
+		Plugin *plugin, TrackCanvas *canvas);
 	~TrackPlugin();
 
 	void show();
@@ -27,11 +29,13 @@ private:
 	int drawn_y;
 	int drawn_w;
 	int drawn_h;
+	int num_keyframes;
 
+	TrackCanvas *canvas;
 	Plugin *plugin;
 	PluginOn *plugin_on;
 	PluginShow *plugin_show;
-	BC_Pixmap *background;
+	BC_Pixmap *keyframe_pixmap;
 };
 
 class PluginOn : public BC_Toggle
