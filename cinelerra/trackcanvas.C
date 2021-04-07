@@ -4428,8 +4428,7 @@ int TrackCanvas::button_press_event()
 
 		if(update_cursor)
 		{
-			gui->timebar->update_highlights();
-			mwindow_global->update_gui(WUPD_CURSOR | WUPD_ZOOMBAR);
+			mwindow_global->update_gui(WUPD_CURSOR | WUPD_ZOOMBAR | WUPD_TOGLIGHTS);
 			result = 1;
 		}
 	}
