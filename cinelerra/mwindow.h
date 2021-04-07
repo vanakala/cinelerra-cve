@@ -215,7 +215,6 @@ public:
 // Call after every edit operation
 	void save_backup(int is_manual = 0);
 	void show_plugin(Plugin *plugin);
-	void hide_plugin(Plugin *plugin, int lock);
 // Update plugins with configuration changes.
 // Called by TrackCanvas::cursor_motion_event.
 	void update_plugin_guis();
