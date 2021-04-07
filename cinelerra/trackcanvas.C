@@ -1405,12 +1405,13 @@ void TrackCanvas::draw_plugins()
 		track;
 		track = track->next)
 	{
-		if(track->expand_view)
+		pixmaps_lock->lock("TrackCanvas::draw_plugins");
+		for(int i = 0; i < track->plugins.total; i++)
 		{
-			pixmaps_lock->lock("TrackCanvas::draw_plugins");
-			for(int i = 0; i < track->plugins.total; i++)
+			Plugin *plugin = track->plugins.values[i];
+
+			if(track->expand_view)
 			{
-				Plugin *plugin = track->plugins.values[i];
 				int total_x, y, total_w, h;
 
 				plugin_dimensions(plugin, total_x, y, total_w, h);
@@ -1426,12 +1427,17 @@ void TrackCanvas::draw_plugins()
 					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
 					add_subwindow(plugin->trackplugin = new TrackPlugin(
-						total_x, y, total_w, h, plugin));
+						total_x, y, total_w, h, plugin, this));
 					plugin->trackplugin->show();
 				}
 			}
-			pixmaps_lock->unlock();
+			else
+			{
+				delete plugin->trackplugin;
+				plugin->trackplugin = 0;
+			}
 		}
+		pixmaps_lock->unlock();
 	}
 }
 
