@@ -181,7 +181,7 @@ void MainMenu::update_toggles()
 	project_x->update_toggle();
 	project_y->update_toggle();
 	project_z->update_toggle();
-	plugin_automation->set_checked(edlsession->auto_conf->plugins_visible);
+	plugin_automation->set_checked(edlsession->keyframes_visible);
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
 }

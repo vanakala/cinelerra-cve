@@ -91,6 +91,7 @@ EDLSession::EDLSession()
 	automatic_backups = 1;
 	backup_interval = 60;
 	shrink_plugin_tracks = 0;
+	keyframes_visible = 1;
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -247,7 +248,9 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	automatic_backups = defaults->get("AUTOMATIC_BACKUPS", automatic_backups);
 	shrink_plugin_tracks = defaults->get("SHRINK_TRACKS", shrink_plugin_tracks);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
-
+	// backward compatibility
+	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
+	keyframes_visible = defaults->get("SHOW_KEYFRAMES", keyframes_visible);
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", vwindow_zoom);
 	boundaries();
 }
@@ -362,6 +365,8 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("AUTOMATIC_BACKUPS", automatic_backups);
 	defaults->update("BACKUP_INTERVAL", backup_interval);
 	defaults->update("SHRINK_TRACKS", shrink_plugin_tracks);
+	defaults->delete_key("SHOW_PLUGINS");
+	defaults->update("SHOW_KEYFRAMES", keyframes_visible);
 }
 
 void EDLSession::boundaries()
@@ -495,6 +500,9 @@ void EDLSession::load_xml(FileXML *file)
 	file->tag.get_property("METADATA_AUTHOR", metadata_author);
 	file->tag.get_property("METADATA_TITLE", metadata_title);
 	file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
+	// backward compatibility
+	keyframes_visible = file->tag.get_property("SHOW_PLUGINS", keyframes_visible);
+	keyframes_visible = file->tag.get_property("SHOW_KEYFRAMES", keyframes_visible);
 	boundaries();
 }
 
@@ -549,6 +557,7 @@ void EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("METADATA_AUTHOR", metadata_author);
 	file->tag.set_property("METADATA_TITLE", metadata_title);
 	file->tag.set_property("METADATA_COPYRIGHT", metadata_copyright);
+	file->tag.set_property("SHOW_KEYFRAMES", keyframes_visible);
 
 	file->append_tag();
 	file->tag.set_title("/SESSION");
@@ -653,6 +662,7 @@ void EDLSession::copy(EDLSession *session)
 	playback_config->copy_from(session->playback_config);
 	playback_cursor_visible = session->playback_cursor_visible;
 	playback_software_position = session->playback_software_position;
+	keyframes_visible = session->keyframes_visible;
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
 	si_useduration = session->si_useduration;

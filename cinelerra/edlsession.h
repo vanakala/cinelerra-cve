@@ -126,6 +126,7 @@ public:
 	int output_h;
 	int playback_cursor_visible;
 	int playback_software_position;
+	int keyframes_visible;
 // Show title and action safe regions in CWindow
 	int safe_regions;
 	int sample_rate;

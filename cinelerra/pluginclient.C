@@ -224,7 +224,7 @@ void PluginClient::send_configure_change()
 		{
 			mwindow_global->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
 			mwindow_global->sync_parameters(server->video);
-			if(edlsession->auto_conf->plugins_visible)
+			if(edlsession->keyframes_visible)
 				mwindow_global->draw_canvas_overlays();
 		}
 	}

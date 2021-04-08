@@ -199,7 +199,7 @@ int* GWindowToggle::get_main_value(toggleinfo toggleinf)
 			return &edlsession->auto_conf->transitions_visible;
 
 		case NONAUTOTOGGLES_PLUGIN_AUTOS:
-			return &edlsession->auto_conf->plugins_visible;
+			return &edlsession->keyframes_visible;
 		}
 	}
 }

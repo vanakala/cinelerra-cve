@@ -343,7 +343,7 @@ void MWindow::paste_keyframe(Track *track, Plugin *plugin)
 				new_auto = track->automation->autos[id]->insert_auto(position);
 			}
 			else if(plugin && !strcmp(type, "KeyFrame") &&
-					edlsession->auto_conf->plugins_visible)
+					edlsession->keyframes_visible)
 			{
 				if(!plugin->plugin_server ||
 						strcmp(plugin->plugin_server->title, title))
@@ -411,7 +411,7 @@ int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
 			{
 				if(!plugin->plugin_server ||
 						strcmp(plugin->plugin_server->title, title) ||
-						!edlsession->auto_conf->plugins_visible)
+						!edlsession->keyframes_visible)
 					return 0;
 				if(plugin->get_pts() > position || plugin->end_pts() < position)
 					return 0;
@@ -424,7 +424,7 @@ int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
 
 void MWindow::clear_keyframes(Plugin *plugin)
 {
-	if(edlsession->auto_conf->plugins_visible)
+	if(edlsession->keyframes_visible)
 	{
 		if(cwindow->stop_playback())
 			return;

@@ -100,7 +100,7 @@ PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
 int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
-	edlsession->auto_conf->plugins_visible = get_checked();
+	edlsession->keyframes_visible = get_checked();
 	mwindow->draw_canvas_overlays();
 	mwindow->gwindow->gui->update_toggles();
 	return 1;

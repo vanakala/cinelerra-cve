@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "autoconf.h"
 #include "bchash.h"
@@ -30,7 +14,6 @@ void AutoConf::load_defaults(BC_Hash* defaults)
 			Automation::automation_tbl[i].is_visble);
 
 	transitions_visible = defaults->get("SHOW_TRANSITIONS", 1);
-	plugins_visible = defaults->get("SHOW_PLUGINS", 1);
 }
 
 void AutoConf::load_xml(FileXML *file)
@@ -41,7 +24,6 @@ void AutoConf::load_xml(FileXML *file)
 			Automation::automation_tbl[i].is_visble);
 
 	transitions_visible = file->tag.get_property("SHOW_TRANSITIONS", 1);
-	plugins_visible = file->tag.get_property("SHOW_PLUGINS", 1);
 }
 
 void AutoConf::save_defaults(BC_Hash* defaults)
@@ -51,7 +33,6 @@ void AutoConf::save_defaults(BC_Hash* defaults)
 			auto_visible[i]);
 
 	defaults->update("SHOW_TRANSITIONS", transitions_visible);
-	defaults->update("SHOW_PLUGINS", plugins_visible);
 }
 
 void AutoConf::save_xml(FileXML *file)
@@ -61,7 +42,6 @@ void AutoConf::save_xml(FileXML *file)
 			auto_visible[i]);
 
 	file->tag.set_property("SHOW_TRANSITIONS", transitions_visible);
-	file->tag.set_property("SHOW_PLUGINS", plugins_visible);
 }
 
 void AutoConf::set_all(int value)
@@ -70,7 +50,6 @@ void AutoConf::set_all(int value)
 		auto_visible[i] = value;
 
 	transitions_visible = value;
-	plugins_visible = value;
 }
 
 AutoConf& AutoConf::operator=(AutoConf &that)
@@ -86,7 +65,4 @@ void AutoConf::copy_from(AutoConf *src)
 		auto_visible[i] = src->auto_visible[i];
 	}
 	transitions_visible = src->transitions_visible;
-	plugins_visible = src->plugins_visible;
 }
-
-

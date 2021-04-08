@@ -1686,7 +1686,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(!result && session->auto_conf->plugins_visible)
+		if(!result && session->keyframes_visible)
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
