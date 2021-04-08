@@ -22,6 +22,7 @@ public:
 	void show();
 	void update(int x, int y, int w, int h);
 	void update_toggles();
+	int cursor_motion_event();
 private:
 	void redraw(int x, int y, int w, int h);
 
@@ -30,6 +31,7 @@ private:
 	int drawn_w;
 	int drawn_h;
 	int num_keyframes;
+	int keyframe_width;
 
 	TrackCanvas *canvas;
 	Plugin *plugin;

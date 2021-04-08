@@ -7,10 +7,12 @@
 #include "bcpixmap.h"
 #include "bcsubwindow.h"
 #include "bcresources.h"
+#include "cursors.h"
 #include "edl.h"
 #include "keyframe.h"
 #include "keyframes.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "trackplugin.h"
@@ -28,6 +30,7 @@ TrackPlugin::TrackPlugin(int x, int y, int w, int h,
 	plugin_show = 0;
 	keyframe_pixmap = 0;
 	num_keyframes = 0;
+	keyframe_width = 0;
 	drawn_x = drawn_y = drawn_w = drawn_h = -1;
 }
 
@@ -89,9 +92,11 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 	if(kcount != num_keyframes || redraw)
 	{
 		if(!keyframe_pixmap)
+		{
 			keyframe_pixmap = new BC_Pixmap(this,
 				theme_global->keyframe_data, PIXMAP_ALPHA);
-
+			keyframe_width = keyframe_pixmap->get_w();
+		}
 		int ky = (h - keyframe_pixmap->get_h()) / 2;
 
 		num_keyframes = 0;
@@ -169,6 +174,39 @@ void TrackPlugin::update_toggles()
 	if(plugin_show)
 		plugin_show->update();
 }
+
+int TrackPlugin::cursor_motion_event()
+{
+	if(is_event_win() && mainsession->current_operation == NO_OPERATION)
+	{
+		int new_cursor = canvas->get_cursor();
+		int cursor_x = get_cursor_x();
+
+		if(cursor_x < HANDLE_W)
+			new_cursor = LEFT_CURSOR;
+		else if(cursor_x >= drawn_w - HANDLE_W)
+			new_cursor = RIGHT_CURSOR;
+		else if(num_keyframes)
+		{
+			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+				keyframe; keyframe = (KeyFrame*)keyframe->next)
+			{
+				int kx = keyframe->get_pos_x();
+				if(cursor_x >= kx && cursor_x <= kx + keyframe_width)
+				{
+					new_cursor = ARROW_CURSOR;
+					break;
+				}
+			}
+		}
+
+		if(new_cursor != get_cursor())
+			set_cursor(new_cursor);
+		return 1;
+	}
+	return 0;
+}
+
 
 PluginOn::PluginOn(int x, Plugin *plugin)
  : BC_Toggle(x, 0, theme_global->get_image_set("plugin_on"), plugin->on)
