@@ -23,6 +23,7 @@ public:
 	void update(int x, int y, int w, int h);
 	void update_toggles();
 	int cursor_motion_event();
+	int button_press_event();
 private:
 	void redraw(int x, int y, int w, int h);
 

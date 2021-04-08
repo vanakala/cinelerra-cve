@@ -7,14 +7,18 @@
 #include "bcpixmap.h"
 #include "bcsubwindow.h"
 #include "bcresources.h"
+#include "cinelerra.h"
 #include "cursors.h"
+#include "cwindow.h"
 #include "edl.h"
 #include "keyframe.h"
+#include "keyframepopup.h"
 #include "keyframes.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
 #include "plugin.h"
+#include "pluginpopup.h"
 #include "trackplugin.h"
 #include "trackcanvas.h"
 #include "theme.h"
@@ -198,6 +202,65 @@ int TrackPlugin::cursor_motion_event()
 					break;
 				}
 			}
+		}
+
+		if(new_cursor != get_cursor())
+			set_cursor(new_cursor);
+		return 1;
+	}
+	return 0;
+}
+
+int TrackPlugin::button_press_event()
+{
+	int cursor_x, cursor_y;
+
+	cursor_x = get_cursor_x();
+	cursor_y = get_cursor_y();
+
+	if(is_event_win())
+	{
+		int new_cursor = canvas->get_cursor();
+		int cursor_x = get_cursor_x();
+
+		if(cursor_x < HANDLE_W)
+			new_cursor = LEFT_CURSOR;
+		else if(cursor_x >= drawn_w - HANDLE_W)
+			new_cursor = RIGHT_CURSOR;
+		else
+		{
+			if(get_buttonpress() == 3)
+			{
+				if(num_keyframes)
+				{
+					for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+						keyframe; keyframe = (KeyFrame*)keyframe->next)
+					{
+						int kx = keyframe->get_pos_x();
+
+						if(cursor_x >= kx && cursor_x <= kx + keyframe_width)
+						{
+							canvas->keyframe_menu->update(plugin, keyframe);
+							canvas->keyframe_menu->activate_menu();
+							return 1;
+						}
+					}
+				}
+				canvas->plugin_menu->update(plugin);
+				canvas->plugin_menu->activate_menu();
+				return 1;
+			}
+			else if(get_double_click())
+			{
+				master_edl->local_session->set_selectionstart(plugin->get_pts());
+				master_edl->local_session->set_selectionend(plugin->end_pts());
+				mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
+				mwindow_global->update_plugin_guis();
+				mwindow_global->update_gui(WUPD_PATCHBAY |
+					WUPD_CURSOR | WUPD_ZOOMBAR | WUPD_TOGLIGHTS);
+				return 1;
+			}
+			return 0;
 		}
 
 		if(new_cursor != get_cursor())

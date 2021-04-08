@@ -329,6 +329,8 @@ public:
 	void draw_paste_destination();
 
 	Mutex *pixmaps_lock;
+	PluginPopup *plugin_menu;
+	KeyframePopup *keyframe_menu;
 
 private:
 	void draw_floatauto_ctrlpoint(int x,
@@ -358,8 +360,6 @@ private:
 
 // Popup menus
 	EditPopup *edit_menu;
-	PluginPopup *plugin_menu;
-	KeyframePopup *keyframe_menu;
 	TransitionPopup *transition_menu;
 };
 
