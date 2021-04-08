@@ -32,6 +32,7 @@ public:
 	void dump(int indent = 0);
 	int identical(KeyFrame *src);
 	inline int has_drawn(int pos_x) { return pos_x == drawn_x; };
+	inline int get_pos_x() { return drawn_x; };
 	void drawing(int pos_x);
 	size_t get_size();
 
