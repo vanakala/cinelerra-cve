@@ -11,6 +11,7 @@
 #include "cursors.h"
 #include "cwindow.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "keyframe.h"
 #include "keyframepopup.h"
 #include "keyframes.h"
@@ -64,20 +65,31 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 	int kcount = 0;
 	int kx;
 
-	if(plugin->keyframes->first &&
-		plugin->keyframes->first != plugin->keyframes->last)
+	if(!edlsession->keyframes_visible && num_keyframes)
 	{
+		redraw++;
+		num_keyframes = 0;
 		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
-			keyframe; keyframe = (KeyFrame*)keyframe->next)
+				keyframe; keyframe = (KeyFrame*)keyframe->next)
+			keyframe->drawing(-1);
+	}
+	else
+	{
+		if(plugin->keyframes->first &&
+			plugin->keyframes->first != plugin->keyframes->last)
 		{
-			kx = (keyframe->pos_time - master_edl->local_session->view_start_pts) /
-				master_edl->local_session->zoom_time - x;
-			if(!keyframe->has_drawn(kx))
+			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+				keyframe; keyframe = (KeyFrame*)keyframe->next)
 			{
-				redraw++;
-				break;
+				kx = (keyframe->pos_time - master_edl->local_session->view_start_pts) /
+					master_edl->local_session->zoom_time - x;
+				if(!keyframe->has_drawn(kx))
+				{
+					redraw++;
+					break;
+				}
+				kcount++;
 			}
-			kcount++;
 		}
 	}
 
@@ -93,7 +105,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 		redraw = 1;
 	}
 
-	if(kcount != num_keyframes || redraw)
+	if(edlsession->keyframes_visible && (kcount != num_keyframes || redraw))
 	{
 		if(!keyframe_pixmap)
 		{
@@ -113,7 +125,6 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 			if(redraw || !keyframe->has_drawn(kx))
 			{
 				draw_pixmap(keyframe_pixmap, kx, ky);
-				keyframe->drawing(kx);
 				num_keyframes++;
 			}
 		}
