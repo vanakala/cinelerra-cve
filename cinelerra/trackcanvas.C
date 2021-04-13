@@ -57,10 +57,8 @@
 #include <string.h>
 
 TrackCanvas::TrackCanvas(MWindowGUI *gui)
- : BC_SubWindow(theme_global->mcanvas_x,
-	theme_global->mcanvas_y,
-	gui->view_w,
-	gui->view_h)
+ : BC_SubWindow(theme_global->mcanvas_x, theme_global->mcanvas_y,
+	gui->view_w, gui->view_h)
 {
 	this->gui = gui;
 	selection_midpoint1 = selection_midpoint2 = 0;
@@ -142,10 +140,8 @@ void TrackCanvas::drag_motion()
 		return;
 
 	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
-		cursor_x >= 0 && 
-		cursor_y >= 0 && 
-		cursor_x < get_w() && 
-		cursor_y < get_h())
+		cursor_x >= 0 &&  cursor_y >= 0 &&
+		cursor_x < get_w() && cursor_y < get_h())
 	{
 // Find the edit and track the cursor is over
 		for(Track *track = master_edl->first_track(); track; track = track->next)
@@ -163,6 +159,7 @@ void TrackCanvas::drag_motion()
 							mainsession->current_operation != DRAG_VTRANSITION &&
 							edit == track->edits->last)
 						break;
+
 					int edit_x, edit_y, edit_w, edit_h;
 					edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 						edit_x, edit_y, edit_w, edit_h);
@@ -252,27 +249,13 @@ int TrackCanvas::drag_start_event()
 
 	if(is_event_win())
 	{
-		if(do_plugins(get_drag_x(), 
-			get_drag_y(), 
-			1,
-			0,
-			redraw,
-			rerender))
-		{
+		if(do_plugins(get_drag_x(), get_drag_y(), 1, 0,
+				redraw, rerender))
 			result = 1;
-		}
 		else
-		if(do_edits(get_drag_x(),
-			get_drag_y(),
-			0,
-			1,
-			redraw,
-			rerender,
-			new_cursor,
-			update_cursor))
-		{
+		if(do_edits(get_drag_x(), get_drag_y(), 0, 1,
+				redraw, rerender, new_cursor, update_cursor))
 			result = 1;
-		}
 	}
 
 	return result;
@@ -423,15 +406,16 @@ int TrackCanvas::drag_stop()
 			{
 				printf("DRAG_ASSET error: Asset dropped, but both drag_clips and drag_assets total is zero\n");
 			}
-			position = get_drop_position (&insertion, NULL, asset_length_float);
+			position = get_drop_position(&insertion, NULL, asset_length_float);
+
 			if(position == -1)
 			{
 				result = 1;
-				break;         // Do not do anything
+				break;
 			}
-			Track *track = mainsession->track_highlighted;
 
-			mwindow_global->paste_assets(position, track, !insertion);
+			mwindow_global->paste_assets(position,
+				mainsession->track_highlighted, !insertion);
 			result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 		}
 		break;
@@ -449,15 +433,13 @@ int TrackCanvas::drag_stop()
 				if(position < -0.5)
 				{
 					result = 1;
-					break;		// Do not do anything
+					break;
 				}
-				Track *track = mainsession->track_highlighted;
-				mwindow_global->move_edits(mainsession->drag_edits,
-					track,
-					position,
-					!insertion);
-			}
 
+				mwindow_global->move_edits(mainsession->drag_edits,
+					mainsession->track_highlighted,
+					position, !insertion);
+			}
 			result = 1;
 		}
 		break;
@@ -528,8 +510,6 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	{
 		for(Edit *edit = track->edits->first; edit; edit = edit->next)
 		{
-// See edit liikus ja on eelmine asset
-// Või puudub asset ja eelmine edit liikus
 			if(edit && ((moved_edit && edit == moved_edit &&
 				edit->previous && !edit->previous->asset) ||
 				(moved_edit && edit->previous == moved_edit &&
@@ -563,7 +543,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 					cursor_position + moved_edit_length)
 				{
 // we have enough empty space to position the edit where user wants 
-					position = cursor_position; 
+					position = cursor_position;
 				}
 				else if(!span_asset & real_cursor_position >= span_start &&
 					real_cursor_position < span_start + span_length &&
@@ -585,7 +565,8 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 					*is_insertion = 1;
 					position = span_start;
 				}
-				else if(cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w)
+				else if(cursor_x > edit_x + edit_w / 2 &&
+					cursor_x <= edit_x + edit_w)
 				{
 // we are inside an nonempty edit, - snap to right
 					*is_insertion = 1;
@@ -656,8 +637,7 @@ void TrackCanvas::update_cursor()
 
 void TrackCanvas::test_timer()
 {
-	if(resource_timer->get_difference() > 1000 && 
-		!hourglass_enabled)
+	if(resource_timer->get_difference() > 1000 && !hourglass_enabled)
 	{
 		start_hourglass();
 		hourglass_enabled = 1;
@@ -677,10 +657,10 @@ void TrackCanvas::draw_indexes(Asset *asset)
 	gui->cursor->show();
 }
 
-void TrackCanvas::draw_resources(int mode, 
-	Asset *index_asset)
+void TrackCanvas::draw_resources(int mode, Asset *index_asset)
 {
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
+
 	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
 		resource_thread->stop_draw(!(mode & WUPD_INDEXES));
 
@@ -695,17 +675,18 @@ void TrackCanvas::draw_resources(int mode,
 		resource_pixmaps.remove_all_objects();
 
 // Search every edit
-	for(Track *current = master_edl->first_track();
-		current;
-		current = NEXT)
+	for(Track *current = master_edl->first_track(); current; current = NEXT)
 	{
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
-			if(!edit->asset) continue;
+			if(!edit->asset)
+				continue;
+
 			if(mode & WUPD_INDEXES)
 			{
-				if(edit->track->data_type != TRACK_AUDIO) continue;
-				if(!edit->asset->test_path(index_asset)) continue;
+				if(edit->track->data_type != TRACK_AUDIO ||
+						!edit->asset->test_path(index_asset))
+					continue;
 			}
 
 			int edit_x, edit_y, edit_w, edit_h;
@@ -731,43 +712,31 @@ void TrackCanvas::draw_resources(int mode,
 				}
 
 // Get new size, offset of pixmap needed
-				get_pixmap_size(edit, 
-					edit_x, 
-					edit_w, 
-					pixmap_x, 
-					pixmap_w, 
-					pixmap_h);
+				get_pixmap_size(edit, edit_x, edit_w,
+					pixmap_x, pixmap_w, pixmap_h);
 
 // Draw new data
 				if(pixmap_w && pixmap_h)
 				{
 // Create pixmap if it doesn't exist
-					ResourcePixmap* pixmap = create_pixmap(edit, 
-						pixmap_w, 
-						pixmap_h);
+					ResourcePixmap* pixmap = create_pixmap(edit,
+						pixmap_w, pixmap_h);
 // Resize it if it's bigger
 					if(pixmap_w > pixmap->pixmap_w ||
 							pixmap_h > pixmap->pixmap_h)
 						pixmap->resize(pixmap_w, pixmap_h);
-					pixmap->draw_data(edit,
-						edit_x, 
-						edit_w, 
-						pixmap_x, 
-						pixmap_w, 
-						pixmap_h, 
-						mode,
-						mode & WUPD_INDEXES);
+					pixmap->draw_data(edit, edit_x, edit_w,
+						pixmap_x, pixmap_w, pixmap_h,
+						mode, mode & WUPD_INDEXES);
 // Resize it if it's smaller
 					if(pixmap_w < pixmap->pixmap_w ||
-						pixmap_h < pixmap->pixmap_h)
+							pixmap_h < pixmap->pixmap_h)
 						pixmap->resize(pixmap_w, pixmap_h);
 
 // Copy pixmap to background canvas
-					background_pixmap->draw_pixmap(pixmap, 
-						pixmap->pixmap_x, 
-						current->y_pixel,
-						pixmap->pixmap_w,
-						edit_h);
+					background_pixmap->draw_pixmap(pixmap,
+						pixmap->pixmap_x, current->y_pixel,
+						pixmap->pixmap_w, edit_h);
 				}
 			}
 		}
@@ -794,8 +763,7 @@ void TrackCanvas::draw_resources(int mode,
 }
 
 ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
-	int pixmap_w, 
-	int pixmap_h)
+	int pixmap_w, int pixmap_h)
 {
 	ResourcePixmap *result = 0;
 
@@ -810,28 +778,21 @@ ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
 
 	if(!result)
 	{
-		result = new ResourcePixmap(resource_thread,
-			this,
-			edit,
-			pixmap_w,
-			pixmap_h);
+		result = new ResourcePixmap(resource_thread, this,
+			edit, pixmap_w, pixmap_h);
 		resource_pixmaps.append(result);
 	}
 
 	return result;
 }
 
-void TrackCanvas::get_pixmap_size(Edit *edit, 
-	int edit_x,
-	int edit_w, 
-	int &pixmap_x, 
-	int &pixmap_w,
-	int &pixmap_h)
+void TrackCanvas::get_pixmap_size(Edit *edit, int edit_x, int edit_w,
+	int &pixmap_x, int &pixmap_w, int &pixmap_h)
 {
-
 // Align x on frame boundaries
 	pixmap_x = edit_x;
 	pixmap_w = edit_w;
+
 	if(pixmap_x < 0)
 	{
 		pixmap_w -= -edit_x;
@@ -849,10 +810,7 @@ void TrackCanvas::get_pixmap_size(Edit *edit,
 }
 
 void TrackCanvas::edit_dimensions(Track *track, ptstime start, ptstime end,
-	int &x,
-	int &y,
-	int &w,
-	int &h)
+	int &x, int &y, int &w, int &h)
 {
 	h = resource_h();
 
@@ -869,7 +827,7 @@ void TrackCanvas::edit_dimensions(Track *track, ptstime start, ptstime end,
 		h += theme_global->get_image("title_bg_data")->get_h();
 }
 
-void TrackCanvas::track_dimensions(Track *track, 
+void TrackCanvas::track_dimensions(Track *track,
 	int &x, int &y, int &w, int &h)
 {
 	x = 0;
@@ -900,7 +858,7 @@ void TrackCanvas::draw_paste_destination()
 		int draw_box = 0;
 
 		if(mainsession->current_operation == DRAG_ASSET &&
-			mainsession->drag_assets->total)
+				mainsession->drag_assets->total)
 			asset = mainsession->drag_assets->values[0];
 
 		if(mainsession->current_operation == DRAG_ASSET &&
@@ -916,10 +874,8 @@ void TrackCanvas::draw_paste_destination()
 		if(asset)
 		{
 			if(edlsession->cursor_on_frames)
-			{
 				paste_video_length = paste_audio_length =
 					asset->total_length_framealigned(edlsession->frame_rate);
-			} 
 			else 
 			{
 				paste_audio_length = asset->audio_duration;
@@ -935,29 +891,32 @@ void TrackCanvas::draw_paste_destination()
 					asset_length = paste_video_length;
 				else
 					asset_length = paste_audio_length;
-				desta_position = get_drop_position(&insertion, NULL, asset_length);
+				desta_position = get_drop_position(&insertion, NULL,
+					asset_length);
 			}
 
 			if(asset->video_data)
 			{
 				asset_length = paste_video_length;
-				destv_position = get_drop_position(&insertion, NULL, asset_length);
+				destv_position = get_drop_position(&insertion, NULL,
+					asset_length);
 			}
 		}
 
 		if(clip)
 		{
 			if(edlsession->cursor_on_frames)
-				paste_audio_length = paste_video_length = clip->total_length_framealigned();
+				paste_audio_length = paste_video_length =
+					clip->total_length_framealigned();
 			else
-				paste_audio_length = paste_video_length = clip->total_length();
+				paste_audio_length = paste_video_length =
+					clip->total_length();
 
 			desta_position = get_drop_position(&insertion, NULL, clip->total_length());
 		}
 
 // Get destination track
-		for(Track *dest = mainsession->track_highlighted;
-			dest; 
+		for(Track *dest = mainsession->track_highlighted; dest;
 			dest = dest->next)
 		{
 			if(dest->record)
@@ -979,8 +938,8 @@ void TrackCanvas::draw_paste_destination()
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
-					if( (asset && current_atrack < asset->channels)
-						|| (clip  && current_atrack < clip->total_tracks_of(TRACK_AUDIO)) )
+					if((asset && current_atrack < asset->channels)
+						|| (clip  && current_atrack < clip->total_tracks_of(TRACK_AUDIO)))
 					{
 						w = round(paste_audio_length /
 							master_edl->local_session->zoom_time);
@@ -1021,14 +980,14 @@ void TrackCanvas::draw_paste_destination()
 				else
 				if(dest->data_type == TRACK_VIDEO)
 				{
-					if( (asset && current_vtrack < asset->layers)
-						|| (clip && current_vtrack < clip->total_tracks_of(TRACK_VIDEO)) )
+					if((asset && current_vtrack < asset->layers)
+						|| (clip && current_vtrack < clip->total_tracks_of(TRACK_VIDEO)))
 					{
-						// Images have length -1
 						w = round(paste_video_length /
 							master_edl->local_session->zoom_time);
 
 						position = destv_position;
+
 						if(position < 0)
 							w = -1;
 						else
@@ -1084,7 +1043,7 @@ void TrackCanvas::draw_paste_destination()
 	}
 }
 
-void TrackCanvas::plugin_dimensions(Plugin *plugin, 
+void TrackCanvas::plugin_dimensions(Plugin *plugin,
 	int &x, int &y, int &w, int &h)
 {
 	int number;
@@ -1115,19 +1074,21 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 
 	if(x + w <= 0)
 	{
-		draw_triangle_left(0, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		draw_triangle_left(0, y + h / 6, h * 2 / 3, h * 2 / 3,
+			BLACK, GREEN, YELLOW, RED, BLUE);
 		return;
 	}
 	else if(x >= get_w())
 	{
-		draw_triangle_right(get_w() - h * 2/3, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		draw_triangle_right(get_w() - h * 2 / 3, y + h / 6, h * 2 / 3, h * 2 / 3,
+			BLACK, GREEN, YELLOW, RED, BLUE);
 		return;
 	}
 
 // If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
 	if(w >= 0 && w < 3)
 	{
-		x -= w /2;
+		x -= w / 2;
 		w = 3;
 	}
 	if(x < -10)
@@ -1161,17 +1122,17 @@ void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
 	set_inverse();
 
 	draw_triangle_right(x - h2, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-	draw_triangle_right(x - h2, y + h1*5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+	draw_triangle_right(x - h2, y + h1 * 5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
 
 	draw_triangle_left(x, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-	draw_triangle_left(x, y + h1*5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+	draw_triangle_left(x, y + h1 * 5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
 
 // draw the box centred around x
 	x -= w / 2;
 // If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
-	if (w >= 0 && w < 3) 
+	if (w >= 0 && w < 3)
 	{
-		x -= w /2;
+		x -= w / 2;
 		w = 3;
 	}
 	if(x < -10)
@@ -1251,21 +1212,13 @@ void TrackCanvas::draw_highlighting()
 		{
 // Put it before another plugin
 			if(mainsession->plugin_highlighted)
-			{
 				plugin_dimensions(mainsession->plugin_highlighted,
-					x, 
-					y, 
-					w, 
-					h);
-			}
+					x, y, w, h);
 			else
-// Put it after a plugin set
 			{
+// Put it after a plugin set
 				track_dimensions(mainsession->track_highlighted,
-					x,
-					y,
-					w,
-					h);
+					x, y, w, h);
 
 // Put it in a new plugin set determined by the selected range
 				if(master_edl->local_session->get_selectionend() >
@@ -1286,19 +1239,14 @@ void TrackCanvas::draw_highlighting()
 					edit_dimensions(mainsession->edit_highlighted->track,
 						mainsession->edit_highlighted->get_pts(),
 						mainsession->edit_highlighted->end_pts(),
-						x,
-						temp_y,
-						w,
-						temp_h);
+						x, temp_y, w, temp_h);
 				}
 // Put it at the beginning of the track in a new plugin set
 			}
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-				MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
+					MWindowGUI::visible(y, y + h, 0, get_h()))
 				draw_box = 1;
-			}
 		}
 		break;
 
@@ -1308,9 +1256,7 @@ void TrackCanvas::draw_highlighting()
 			track_dimensions(mainsession->track_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
 				draw_paste_destination();
-			}
 		}
 		break;
 
@@ -1373,10 +1319,8 @@ void TrackCanvas::draw_highlighting()
 			plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-				MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
+					MWindowGUI::visible(y, y + h, 0, get_h()))
 				draw_box = 1;
-			}
 		}
 		break;
 
@@ -1386,17 +1330,13 @@ void TrackCanvas::draw_highlighting()
 			track_dimensions(mainsession->track_highlighted, x, y, w, h);
 
 			if(MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
 				draw_paste_destination();
-			}
 		}
 		break;
 	}
 
 	if(draw_box)
-	{
 		draw_highlight_rectangle(x, y, w, h);
-	}
 }
 
 void TrackCanvas::draw_plugins()
@@ -1505,12 +1445,7 @@ void TrackCanvas::draw_transitions()
 					}
 					if(w + x > get_w()) w -= (w + x) - get_w();
 
-					draw_3segmenth(
-						x, 
-						strip_y, 
-						w, 
-						strip_x,
-						strip_w,
+					draw_3segmenth(x, strip_y, w, strip_x, strip_w,
 						theme_global->get_image("plugin_bg_data"),
 						0);
 				}
@@ -1534,7 +1469,7 @@ void TrackCanvas::draw_loop_points()
 			draw_line(x, 0, x, get_h());
 		}
 
-		x = Units::round((master_edl->local_session->loop_end -
+		x = round((master_edl->local_session->loop_end -
 			master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
 
@@ -1562,13 +1497,8 @@ void TrackCanvas::draw_brender_start()
 	}
 }
 
-int TrackCanvas::do_keyframes(int cursor_x, 
-	int cursor_y, 
-	int draw, 
-	int buttonpress, 
-	int &new_cursor,
-	int &update_cursor,
-	int &rerender)
+int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpress,
+	int &new_cursor, int &update_cursor, int &rerender)
 {
 // Note: button 3 (right mouse button) is not eaten to allow
 // track context menu to appear
@@ -1576,8 +1506,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	int result = 0;
 	EDLSession *session = edlsession;
 
-	for(Track *track = master_edl->first_track();
-		track && !result;
+	for(Track *track = master_edl->first_track(); track && !result;
 		track = track->next)
 	{
 		Auto *auto_keyframe;
@@ -1629,23 +1558,18 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					switch(autos->get_type())
 					{
 					case AUTOMATION_TYPE_FLOAT:
-						result = do_float_autos(track,
-							autos,
-							cursor_x,
-							cursor_y,
-							draw,
-							buttonpress,
+						result = do_float_autos(track, autos,
+							cursor_x, cursor_y,
+							draw, buttonpress,
 							Automation::automation_tbl[i].color,
 							auto_keyframe);
 						break;
 
 					case AUTOMATION_TYPE_INT:
-						result = do_toggle_autos(track, 
+						result = do_toggle_autos(track,
 							(IntAutos*)autos,
-							cursor_x,
-							cursor_y,
-							draw, 
-							buttonpress,
+							cursor_x, cursor_y,
+							draw, buttonpress,
 							Automation::automation_tbl[i].color,
 							auto_keyframe);
 						break;
@@ -1674,7 +1598,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						}
 						else
 						{
-							keyframe_menu->update(automation, autos, auto_keyframe);
+							keyframe_menu->update(automation,
+								autos, auto_keyframe);
 							keyframe_menu->activate_menu();
 							rerender = 1; // the position changes
 						}
@@ -1690,17 +1615,12 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
-			result = do_plugin_autos(track,
-				cursor_x, 
-				cursor_y, 
-				draw, 
-				buttonpress,
-				plugin,
-				keyframe);
+			result = do_plugin_autos(track, cursor_x, cursor_y,
+				draw, buttonpress, plugin, keyframe);
+
 			if(result && mainsession->current_operation == DRAG_PLUGINKEY)
-			{
 				rerender = 1;
-			}
+
 			if(result && (buttonpress == 1))
 			{
 				mainsession->current_operation = DRAG_PLUGINKEY_PRE;
@@ -1726,26 +1646,18 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	}
 
 	if(mainsession->current_operation == DRAG_PLUGINKEY ||
-		mainsession->current_operation == DRAG_PLUGINKEY_PRE)
-	{
+			mainsession->current_operation == DRAG_PLUGINKEY_PRE)
 		result = 1;
-	}
 
 	update_cursor = 1;
 	if(result)
-	{
 		new_cursor = UPRIGHT_ARROW_CURSOR;
-	}
 
 	return result;
 }
 
-void TrackCanvas::draw_auto(Auto *current, 
-	int x, 
-	int y, 
-	int center_pixel, 
-	int zoom_track,
-	int color)
+void TrackCanvas::draw_auto(Auto *current, int x, int y,
+	int center_pixel, int zoom_track, int color)
 {
 	int x1, y1, x2, y2;
 
@@ -1754,8 +1666,10 @@ void TrackCanvas::draw_auto(Auto *current,
 	y1 = center_pixel + y - HANDLE_W / 2;
 	y2 = center_pixel + y + HANDLE_W / 2;
 
-	if(y1 < center_pixel + -zoom_track / 2) y1 = center_pixel + -zoom_track / 2;
-	if(y2 > center_pixel + zoom_track / 2) y2 = center_pixel + zoom_track / 2;
+	if(y1 < center_pixel + -zoom_track / 2)
+		y1 = center_pixel + -zoom_track / 2;
+	if(y2 > center_pixel + zoom_track / 2)
+		y2 = center_pixel + zoom_track / 2;
 
 	set_color(BLACK);
 	draw_box(x1 + 1, y1 + 1, x2 - x1, y2 - y1);
@@ -1763,16 +1677,9 @@ void TrackCanvas::draw_auto(Auto *current,
 	draw_box(x1, y1, x2 - x1, y2 - y1);
 }
 
-void TrackCanvas::draw_floatauto(FloatAuto *current, 
-	int x, 
-	int y, 
-	int in_x, 
-	int in_y, 
-	int out_x, 
-	int out_y, 
-	int center_pixel, 
-	int zoom_track,
-	int color)
+void TrackCanvas::draw_floatauto(FloatAuto *current, int x, int y,
+	int in_x, int in_y, int out_x, int out_y,
+	int center_pixel, int zoom_track, int color)
 {
 	int x1, y1, x2, y2;
 
@@ -1810,14 +1717,9 @@ inline int quantize(double f)
 	return floor(f + 0.5);
 }
 
-inline void TrackCanvas::draw_floatauto_ctrlpoint(int x,
-	int y,
-	int cp_x,
-	int cp_y,
-	int center_pixel,
-	int zoom_track,
-	int color)
 // draw the tangent and a handle for given bézier ctrl point
+inline void TrackCanvas::draw_floatauto_ctrlpoint(int x, int y, int cp_x, int cp_y,
+	int center_pixel, int zoom_track, int color)
 {
 	bool handle_visible = (abs(cp_y) <= zoom_track / 2); // abs(cp_y+HANDLE_W/2) would be more precise...
 	double slope = (double)(cp_y - y) / (cp_x - x);
@@ -1868,13 +1770,9 @@ inline void TrackCanvas::draw_floatauto_ctrlpoint(int x,
 	}
 }
 
-int TrackCanvas::test_auto(Auto *current, 
-	int x, 
-	int y, 
-	int center_pixel, 
-	int zoom_track, 
-	int cursor_x, 
-	int cursor_y, 
+int TrackCanvas::test_auto(Auto *current, int x, int y,
+	int center_pixel, int zoom_track,
+	int cursor_x, int cursor_y,
 	int buttonpress)
 {
 	int x1, y1, x2, y2;
@@ -1885,8 +1783,10 @@ int TrackCanvas::test_auto(Auto *current,
 	y1 = center_pixel + y - HANDLE_W / 2;
 	y2 = center_pixel + y + HANDLE_W / 2;
 
-	if(y1 < center_pixel + -zoom_track / 2) y1 = center_pixel + -zoom_track / 2;
-	if(y2 > center_pixel + zoom_track / 2) y2 = center_pixel + zoom_track / 2;
+	if(y1 < center_pixel + -zoom_track / 2)
+		y1 = center_pixel + -zoom_track / 2;
+	if(y2 > center_pixel + zoom_track / 2)
+		y2 = center_pixel + zoom_track / 2;
 
 	if(cursor_x >= x1 && cursor_x < x2 && cursor_y >= y1 && cursor_y < y2)
 	{
@@ -1902,7 +1802,6 @@ int TrackCanvas::test_auto(Auto *current,
 		}
 		result = 1;
 	}
-
 	return result;
 }
 
@@ -1963,19 +1862,10 @@ double TrackCanvas::value_to_percentage(double auto_value, int autogrouptype)
 		return (auto_value - automation_min) / automation_range;
 }
 
-int TrackCanvas::test_floatauto(FloatAuto *current, 
-	int x, 
-	int y, 
-	int in_x,
-	int in_y,
-	int out_x,
-	int out_y,
-	int center_pixel, 
-	int zoom_track, 
-	int cursor_x, 
-	int cursor_y, 
-	int buttonpress,
-	int autogrouptype)
+int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y,
+	int in_x, int in_y, int out_x, int out_y,
+	int center_pixel, int zoom_track,
+	int cursor_x, int cursor_y, int buttonpress, int autogrouptype)
 {
 	int x1, y1, x2, y2;
 	int in_x1, in_y1, in_x2, in_y2;
@@ -2007,8 +1897,10 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 	out_y1 = center_pixel + out_y - HANDLE_W / 2;
 	out_y2 = center_pixel + out_y + HANDLE_W / 2;
 
-	if(out_y1 < center_pixel + -zoom_track / 2) out_y1 = center_pixel + -zoom_track / 2;
-	if(out_y2 > center_pixel + zoom_track / 2) out_y2 = center_pixel + zoom_track / 2;
+	if(out_y1 < center_pixel + -zoom_track / 2)
+		out_y1 = center_pixel + -zoom_track / 2;
+	if(out_y2 > center_pixel + zoom_track / 2)
+		out_y2 = center_pixel + zoom_track / 2;
 
 // buttonpress could be the start of a drag operation
 #define INIT_DRAG(POS, VAL) \
@@ -2116,18 +2008,9 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 	return result;
 }
 
-void TrackCanvas::draw_floatline(int center_pixel, 
-	FloatAuto *previous,
-	FloatAuto *next,
-	FloatAutos *autos,
-	ptstime view_start,
-	double xzoom,
-	double yscale,
-	int x1,
-	int y1,
-	int x2,
-	int y2,
-	int color)
+void TrackCanvas::draw_floatline(int center_pixel, FloatAuto *previous, FloatAuto *next,
+	FloatAutos *autos, ptstime view_start, double xzoom, double yscale,
+	int x1, int y1, int x2, int y2, int color)
 {
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
@@ -2174,9 +2057,7 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 			current = NEXT)
 		{
 			if(current->data_type == skip->data_type &&
-				current->gang && 
-				current->record && 
-				current != skip)
+				current->gang && current->record && current != skip)
 			{
 				FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
 				ptstime position = fauto->pos_time;
@@ -2219,15 +2100,9 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 		mainsession->drag_auto_gang->remove_all();
 }
 
-int TrackCanvas::test_floatline(int center_pixel, 
-	FloatAutos *autos,
-	ptstime view_start,
-	double xzoom,
-	double yscale,
-	int x1,
-	int x2,
-	int cursor_x,
-	int cursor_y,
+int TrackCanvas::test_floatline(int center_pixel, FloatAutos *autos,
+	ptstime view_start, double xzoom, double yscale,
+	int x1, int x2, int cursor_x, int cursor_y,
 	int buttonpress)
 {
 	int result = 0;
@@ -2244,10 +2119,8 @@ int TrackCanvas::test_floatline(int center_pixel,
 	int y = center_pixel + 
 		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
 
-	if(cursor_x >= x1 && 
-		cursor_x < x2 &&
-		cursor_y >= y - HANDLE_W / 2 && 
-		cursor_y < y + HANDLE_W / 2 &&
+	if(cursor_x >= x1 && cursor_x < x2 &&
+		cursor_y >= y - HANDLE_W / 2 && cursor_y < y + HANDLE_W / 2 &&
 		!ctrl_down())
 	{
 		result = 1;
@@ -2263,15 +2136,11 @@ int TrackCanvas::test_floatline(int center_pixel,
 			mainsession->drag_handle = HANDLE_MAIN;
 		}
 	}
-
 	return result;
 }
 
-void TrackCanvas::draw_toggleline(int center_pixel, 
-	int x1,
-	int y1,
-	int x2,
-	int y2,
+void TrackCanvas::draw_toggleline(int center_pixel,
+	int x1, int y1, int x2, int y2,
 	int color)
 {
 	set_color(BLACK);
@@ -2288,14 +2157,8 @@ void TrackCanvas::draw_toggleline(int center_pixel,
 	}
 }
 
-int TrackCanvas::test_toggleline(Autos *autos,
-	int center_pixel, 
-	int x1,
-	int y1,
-	int x2,
-	int y2, 
-	int cursor_x, 
-	int cursor_y, 
+int TrackCanvas::test_toggleline(Autos *autos, int center_pixel,
+	int x1, int y1, int x2, int y2, int cursor_x, int cursor_y,
 	int buttonpress)
 {
 	int result = 0;
@@ -2303,6 +2166,7 @@ int TrackCanvas::test_toggleline(Autos *autos,
 	{
 		int miny = center_pixel + y1 - HANDLE_W / 2;
 		int maxy = center_pixel + y1 + HANDLE_W / 2;
+
 		if(cursor_y >= miny && cursor_y < maxy) 
 		{
 			result = 1;
@@ -2322,16 +2186,13 @@ int TrackCanvas::test_toggleline(Autos *autos,
 				mainsession->drag_origin_y = cursor_y;
 			}
 		}
-	};
+	}
 	return result;
 }
 
-void TrackCanvas::calculate_viewport(Track *track, 
-	ptstime &view_start,   // Seconds
-	ptstime &view_end,     // Seconds
-	double &yscale,
-	double &xzoom,
-	int &center_pixel)
+void TrackCanvas::calculate_viewport(Track *track,
+	ptstime &view_start, ptstime &view_end,
+	double &yscale, double &xzoom, int &center_pixel)
 {
 	view_start = master_edl->local_session->view_start_pts;
 	view_end = master_edl->local_session->view_start_pts +
@@ -2343,17 +2204,13 @@ void TrackCanvas::calculate_viewport(Track *track,
 			theme_global->get_image("title_bg_data")->get_h() : 0);
 }
 
-double TrackCanvas::percentage_to_value(double percentage,
-	int is_toggle,
-	Auto *reference,
-	int autogrouptype)
+double TrackCanvas::percentage_to_value(double percentage, int is_toggle,
+	Auto *reference, int autogrouptype)
 {
 	double result;
 
 	if(is_toggle)
-	{
 		result = round(percentage);
-	}
 	else
 	{
 		double automation_min = master_edl->local_session->automation_mins[autogrouptype];
@@ -2370,16 +2227,9 @@ double TrackCanvas::percentage_to_value(double percentage,
 	return result;
 }
 
-void TrackCanvas::calculate_auto_position(double *x, 
-	double *y,
-	double *in_x,
-	double *in_y,
-	double *out_x,
-	double *out_y,
-	Auto *current,
-	ptstime start,
-	double zoom,
-	double yscale,
+void TrackCanvas::calculate_auto_position(double *x, double *y,
+	double *in_x, double *in_y, double *out_x, double *out_y,
+	Auto *current, ptstime start, double zoom, double yscale,
 	int autogrouptype)
 {
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
@@ -2414,14 +2264,9 @@ void TrackCanvas::calculate_auto_position(double *x,
 	}
 }
 
-int TrackCanvas::do_float_autos(Track *track, 
-	Autos *autos,
-	int cursor_x,
-	int cursor_y,
-	int draw,
-	int buttonpress,
-	int color,
-	Auto* &auto_instance)
+int TrackCanvas::do_float_autos(Track *track, Autos *autos,
+	int cursor_x, int cursor_y, int draw, int buttonpress,
+	int color, Auto* &auto_instance)
 {
 	int result = 0;
 
@@ -2440,31 +2285,18 @@ int TrackCanvas::do_float_autos(Track *track,
 	int empty = autos->first == autos->last;
 	auto_instance = 0;
 
-	calculate_viewport(track, 
-		view_start,
-		view_end,
-		yscale,
-		xzoom,
-		center_pixel);
+	calculate_viewport(track, view_start, view_end,
+		yscale, xzoom, center_pixel);
 
 // Get first auto before start
-	for(current = autos->last; 
-		current && current->pos_time >= view_start;
+	for(current = autos->last; current && current->pos_time >= view_start;
 		current = PREVIOUS);
 
 	if(current)
 	{
-		calculate_auto_position(&ax, 
-			&ay,
-			0,
-			0,
-			0,
-			0,
-			current,
-			view_start,
-			xzoom,
-			yscale,
-			autos->autogrouptype);
+		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+			current, view_start,
+			xzoom, yscale, autos->autogrouptype);
 		current = NEXT;
 	}
 	else
@@ -2472,16 +2304,8 @@ int TrackCanvas::do_float_autos(Track *track,
 		current = autos->first; 
 		if(current)
 		{
-			calculate_auto_position(&ax, 
-				&ay,
-				0,
-				0,
-				0,
-				0,
-				current,
-				view_start,
-				xzoom,
-				yscale,
+			calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+				current, view_start, xzoom, yscale,
 				autos->autogrouptype);
 			ax = 0;
 		}
@@ -2499,17 +2323,10 @@ int TrackCanvas::do_float_autos(Track *track,
 
 		if(current)
 		{
-			calculate_auto_position(&ax2, 
-				&ay2,
-				&in_x2,
-				&in_y2,
-				&out_x2,
-				&out_y2,
-				current,
-				view_start,
-				xzoom,
-				yscale,
-				autos->autogrouptype);
+			calculate_auto_position(&ax2, &ay2,
+				&in_x2,&in_y2, &out_x2, &out_y2,
+				current, view_start, xzoom,
+				yscale, autos->autogrouptype);
 		}
 		else
 		{
@@ -2540,32 +2357,22 @@ int TrackCanvas::do_float_autos(Track *track,
 			{
 				if(track->record)
 					result = test_floatauto((FloatAuto*)current,
-						round(ax2),
-						round(ay2),
-						round(in_x2),
-						round(in_y2),
-						round(out_x2),
-						round(out_y2),
-						round(center_pixel),
-						round(yscale),
-						cursor_x,
-						cursor_y,
-						buttonpress,
-						autos->autogrouptype);
+						round(ax2), round(ay2),
+						round(in_x2), round(in_y2),
+						round(out_x2), round(out_y2),
+						round(center_pixel), round(yscale),
+						cursor_x, cursor_y,
+						buttonpress, autos->autogrouptype);
+
 				if(result)
 					auto_instance = current;
 			}
-			else
-			if(draw_auto)
+			else if(draw_auto)
 				draw_floatauto((FloatAuto *)current,
-					round(ax2),
-					round(ay2),
-					round(in_x2),
-					round(in_y2),
-					round(out_x2),
-					round(out_y2),
-					round(center_pixel),
-					round(yscale),
+					round(ax2), round(ay2),
+					round(in_x2), round(in_y2),
+					round(out_x2), round(out_y2),
+					round(center_pixel), round(yscale),
 					color);
 		}
 
@@ -2576,32 +2383,21 @@ int TrackCanvas::do_float_autos(Track *track,
 			{
 				if(track->record && buttonpress != 3)
 				{
-					result = test_floatline(center_pixel, 
+					result = test_floatline(center_pixel,
 						(FloatAutos*)autos,
-						view_start,
-						xzoom,
-						yscale,
+						view_start, xzoom, yscale,
 						round(ax),
-// Exclude auto coverage from the end of the line.  The auto overlaps
+// Exclude auto coverage from the end of the line. The auto overlaps
 						(int)round(ax2) - HANDLE_W / 2,
-						cursor_x, 
-						cursor_y, 
-						buttonpress);
+						cursor_x, cursor_y, buttonpress);
 				}
 			}
 		}
 		else
-			draw_floatline(center_pixel,
-				(FloatAuto*)previous,
-				(FloatAuto*)current,
-				(FloatAutos*)autos,
-				view_start,
-				xzoom,
-				yscale,
-				round(ax),
-				round(ay),
-				round(ax2),
-				round(ay2),
+			draw_floatline(center_pixel, (FloatAuto*)previous,
+				(FloatAuto*)current, (FloatAutos*)autos,
+				view_start, xzoom, yscale,
+				round(ax), round(ay), round(ax2), round(ay2),
 				color);
 
 		if(current)
@@ -2622,43 +2418,28 @@ int TrackCanvas::do_float_autos(Track *track,
 		{
 			if(track->record && buttonpress != 3)
 			{
-				result = test_floatline(center_pixel, 
+				result = test_floatline(center_pixel,
 					(FloatAutos*)autos,
-					view_start,
-					xzoom,
-					yscale,
-					round(ax),
-					round(ax2),
-					cursor_x, 
-					cursor_y, 
+					view_start, xzoom, yscale,
+					round(ax), round(ax2),
+					cursor_x, cursor_y,
 					buttonpress);
 			}
 		}
 		else
-			draw_floatline(center_pixel, 
-				(FloatAuto*)previous,
-				(FloatAuto*)current,
-				(FloatAutos*)autos,
-				view_start,
-				xzoom,
-				yscale,
-				round(ax),
-				round(ay),
-				round(ax2),
-				round(ay2),
+			draw_floatline(center_pixel, (FloatAuto*)previous,
+				(FloatAuto*)current,(FloatAutos*)autos,
+				view_start, xzoom, yscale,
+				round(ax), round(ay), round(ax2), round(ay2),
 				color);
 	}
 	return result;
 }
 
-int TrackCanvas::do_toggle_autos(Track *track, 
-		IntAutos *autos,
-		int cursor_x, 
-		int cursor_y, 
-		int draw, 
-		int buttonpress,
-		int color,
-		Auto * &auto_instance)
+int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,
+	int cursor_x, int cursor_y,
+	int draw, int buttonpress, int color,
+	Auto * &auto_instance)
 {
 	int result = 0;
 	ptstime view_start;
@@ -2671,18 +2452,15 @@ int TrackCanvas::do_toggle_autos(Track *track,
 
 	auto_instance = 0;
 
-	calculate_viewport(track,
-		view_start,
-		view_end,
-		yscale,
-		xzoom,
-		center_pixel);
+	calculate_viewport(track, view_start, view_end,
+		yscale, xzoom, center_pixel);
 
 	int high = round(-yscale * 0.8 / 2);
 	int low = round(yscale * 0.8 / 2);
 
 // Get first auto before start
 	IntAuto *current;
+
 	for(current = (IntAuto*)autos->last; current &&
 		current->pos_time >= view_start;
 		current = (IntAuto*)current->previous);
@@ -2731,23 +2509,18 @@ int TrackCanvas::do_toggle_autos(Track *track,
 				if(track->record)
 				{
 					result = test_auto(current,
-						ax2,
-						ay2,
-						center_pixel,
-						round(yscale),
-						cursor_x,
-						cursor_y,
+						ax2, ay2,
+						center_pixel, round(yscale),
+						cursor_x, cursor_y,
 						buttonpress);
+
 					if(result)
 						auto_instance = current;
 				}
 			}
-			else
-			if(!empty)
+			else if(!empty)
 				draw_auto(current, ax2, ay2,
-					center_pixel,
-					round(yscale),
-					color);
+					center_pixel, round(yscale), color);
 			current = (IntAuto*)current->next;
 		}
 
@@ -2798,14 +2571,10 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	return result;
 }
 
-int TrackCanvas::do_autos(Track *track, 
-		Autos *autos, 
-		int cursor_x, 
-		int cursor_y, 
-		int draw, 
-		int buttonpress,
-		BC_Pixmap *pixmap,
-		Auto * &auto_instance)
+int TrackCanvas::do_autos(Track *track, Autos *autos,
+	int cursor_x, int cursor_y,
+	int draw, int buttonpress,
+	BC_Pixmap *pixmap, Auto * &auto_instance)
 {
 	int result = 0;
 
@@ -2819,12 +2588,8 @@ int TrackCanvas::do_autos(Track *track,
 	if(autos->first == autos->last)
 		return 0;
 
-	calculate_viewport(track, 
-		view_start,
-		view_end,
-		yscale,
-		xzoom,
-		center_pixel);
+	calculate_viewport(track, view_start, view_end, yscale,
+		xzoom, center_pixel);
 
 	auto_instance = 0;
 
@@ -2859,10 +2624,7 @@ int TrackCanvas::do_autos(Track *track,
 							master_edl->local_session->get_selectionend(1)) / 2;
 
 						if(!shift_down())
-						{
-							master_edl->local_session->set_selectionstart(position);
-							master_edl->local_session->set_selectionend(position);
-						}
+							master_edl->local_session->set_selection(position);
 						else
 						if(position < center)
 						{
@@ -2883,13 +2645,9 @@ int TrackCanvas::do_autos(Track *track,
 }
 
 // so this means it is always >0 when keyframe is found 
-int TrackCanvas::do_plugin_autos(Track *track, 
-	int cursor_x,
-	int cursor_y,
-	int draw,
-	int buttonpress,
-	Plugin* &keyframe_plugin,
-	KeyFrame* &keyframe_instance)
+int TrackCanvas::do_plugin_autos(Track *track, int cursor_x, int cursor_y,
+	int draw, int buttonpress,
+	Plugin* &keyframe_plugin, KeyFrame* &keyframe_instance)
 {
 	int result = 0;
 
@@ -2899,14 +2657,11 @@ int TrackCanvas::do_plugin_autos(Track *track,
 	int center_pixel;
 	double xzoom;
 
-	if(!track->expand_view) return 0;
+	if(!track->expand_view)
+		return 0;
 
-	calculate_viewport(track, 
-		view_start,
-		view_end,
-		yscale,
-		xzoom,
-		center_pixel);
+	calculate_viewport(track, view_start,view_end,
+		yscale, xzoom, center_pixel);
 
 	for(int i = 0; i < track->plugins.total && !result; i++)
 	{
@@ -2919,6 +2674,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 
 		if(plugin->keyframes->first == plugin->keyframes->last)
 			continue;
+
 		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
 			keyframe && !result;
 			keyframe = (KeyFrame*)keyframe->next)
@@ -2950,10 +2706,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 								master_edl->local_session->get_selectionend(1)) / 2;
 
 							if(!shift_down())
-							{
-								master_edl->local_session->set_selectionstart(position);
-								master_edl->local_session->set_selectionend(position);
-							}
+								master_edl->local_session->set_selection(position);
 							else
 							if(position < center)
 								master_edl->local_session->set_selectionstart(position);
@@ -2976,13 +2729,7 @@ void TrackCanvas::draw_overlays()
 
 	overlays_lock->lock("TrackCanvas::draw_overlays");
 // Move background pixmap to foreground pixmap
-	draw_pixmap(background_pixmap, 
-		0, 
-		0,
-		get_w(),
-		get_h(),
-		0,
-		0);
+	draw_pixmap(background_pixmap, 0, 0, get_w(), get_h(), 0, 0);
 
 // Transitions
 	if(edlsession->auto_conf->transitions_visible)
@@ -2999,13 +2746,7 @@ void TrackCanvas::draw_overlays()
 	draw_highlighting();
 
 // Automation
-	do_keyframes(0, 
-		0, 
-		1, 
-		0, 
-		new_cursor, 
-		update_cursor,
-		rerender);
+	do_keyframes(0, 0, 1, 0, new_cursor, update_cursor, rerender);
 
 // Handle dragging
 	draw_drag_handle();
@@ -3062,15 +2803,11 @@ void TrackCanvas::update_drag_handle()
 	ptstime min_pts, max_pts; \
  \
 	calculate_viewport(current->autos->track,  \
-		view_start, \
-		view_end, \
-		yscale, \
-		xzoom, \
-		center_pixel); \
+		view_start, view_end, \
+		yscale, xzoom, center_pixel); \
  \
 	double percentage = (double)(mainsession->drag_origin_y - cursor_y) / \
-		yscale +  \
-		mainsession->drag_start_percentage; \
+		yscale +  mainsession->drag_start_percentage; \
  \
 	ptstime postime = ((cursor_x - mainsession->drag_origin_x) / xzoom + \
 		mainsession->drag_start_postime); \
@@ -3446,71 +3183,30 @@ int TrackCanvas::cursor_motion_event()
 			position = master_edl->align_to_frame(position);
 			mwindow_mode |= WUPD_CLOCK;
 
-// Update cursor
-			if(do_transitions(cursor_x,
-					cursor_y,
-					0, 
-					new_cursor, 
+			if(do_transitions(cursor_x, cursor_y,
+					0, new_cursor, update_cursor))
+				break;
+			else if(do_keyframes(cursor_x, cursor_y, 0, 0,
+					new_cursor, update_cursor, rerender))
+				break;
+			else if(do_edit_handles(cursor_x, cursor_y,
+					0, rerender, update_overlay,
+					new_cursor, update_cursor))
+				break;
+			else if(do_plugin_handles(cursor_x, cursor_y,
+					0, rerender, update_overlay,
+					new_cursor, update_cursor))
+				break;
+			else if(do_edits(cursor_x, cursor_y, 0, 0,
+					update_overlay, rerender, new_cursor,
 					update_cursor))
-			{
 				break;
-			}
-			else
-// Update cursor
-			if(do_keyframes(cursor_x,
-				cursor_y,
-				0, 
-				0, 
-				new_cursor,
-				update_cursor,
-				rerender))
-			{
-				break;
-			}
-			else
-// Edit boundaries
-			if(do_edit_handles(cursor_x,
-				cursor_y,
-				0, 
-				rerender,
-				update_overlay,
-				new_cursor,
-				update_cursor))
-			{
-				break;
-			}
-			else
-// Plugin boundaries
-			if(do_plugin_handles(cursor_x,
-				cursor_y,
-				0, 
-				rerender,
-				update_overlay,
-				new_cursor,
-				update_cursor))
-			{
-				break;
-			}
-			else
-			if(do_edits(cursor_x,
-				cursor_y,
-				0, 
-				0, 
-				update_overlay, 
-				rerender,
-				new_cursor,
-				update_cursor))
-			{
-				break;
-			}
 		}
 		break;
 	}
 
 	if(update_cursor && new_cursor != get_cursor())
-	{
 		set_cursor(new_cursor);
-	}
 
 	if(rerender)
 	{
@@ -3522,10 +3218,8 @@ int TrackCanvas::cursor_motion_event()
 	}
 
 	if(mwindow_mode & WUPD_CLOCK)
-	{
 		if(mwindow_global->cwindow->playback_engine->is_playing_back)
 			mwindow_mode &= ~WUPD_CLOCK;
-	}
 
 	if(mwindow_mode)
 		mwindow_global->update_gui(mwindow_mode, position);
@@ -3570,8 +3264,10 @@ void TrackCanvas::stop_dragscroll()
 
 void TrackCanvas::repeat_event(int duration)
 {
-	if(!drag_scroll) return;
-	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return;
+	if(!drag_scroll)
+		return;
+	if(duration != BC_WindowBase::get_resources()->scroll_repeat)
+		return;
 
 	int sample_movement = 0;
 	int track_movement = 0;
@@ -3744,27 +3440,21 @@ int TrackCanvas::button_release_event()
 	return result;
 }
 
-int TrackCanvas::do_edit_handles(int cursor_x, 
-	int cursor_y, 
-	int button_press, 
-	int &rerender,
-	int &update_overlay,
-	int &new_cursor,
-	int &update_cursor)
+int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
+	int &rerender, int &update_overlay, int &new_cursor, int &update_cursor)
 {
 	Edit *edit_result = 0;
 	int handle_result = 0;
 	int result = 0;
 
 	for(Track *track = master_edl->first_track();
-		track && !result;
-		track = track->next)
+		track && !result; track = track->next)
 	{
 		for(Edit *edit = track->edits->first;
-			edit && !result;
-			edit = edit->next)
+			edit && !result; edit = edit->next)
 		{
 			int edit_x, edit_y, edit_w, edit_h;
+
 			edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 				edit_x, edit_y, edit_w, edit_h);
 
@@ -3826,26 +3516,22 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 	return result;
 }
 
-int TrackCanvas::do_plugin_handles(int cursor_x, 
-	int cursor_y, 
-	int button_press,
-	int &rerender,
-	int &update_overlay,
-	int &new_cursor,
-	int &update_cursor)
+int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
+	int &rerender, int &update_overlay,
+	int &new_cursor, int &update_cursor)
 {
 	Plugin *plugin_result = 0;
 	int handle_result = 0;
 	int result = 0;
 
 	for(Track *track = master_edl->first_track();
-		track && !result;
-		track = track->next)
+		track && !result; track = track->next)
 	{
 		for(int i = 0; i < track->plugins.total && !result; i++)
 		{
 			Plugin *plugin = track->plugins.values[i];
 			int plugin_x, plugin_y, plugin_w, plugin_h;
+
 			plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
 
 			if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
@@ -3872,6 +3558,7 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	if(result)
 	{
 		ptstime position;
+
 		if(handle_result == 0)
 		{
 			position = plugin_result->get_pts();
@@ -3902,23 +3589,19 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	return result;
 }
 
-int TrackCanvas::do_tracks(int cursor_x, 
-	int cursor_y,
-	int button_press)
+int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 {
 	int result = 0;
 
 	for(Track *track = master_edl->first_track();
-		track && !result;
-		track = track->next)
+		track && !result; track = track->next)
 	{
 		int track_x, track_y, track_w, track_h;
+
 		track_dimensions(track, track_x, track_y, track_w, track_h);
 
-		if(button_press && 
-			get_buttonpress() == 3 &&
-			cursor_y >= track_y && 
-			cursor_y < track_y + track_h)
+		if(button_press && get_buttonpress() == 3 &&
+			cursor_y >= track_y && cursor_y < track_y + track_h)
 		{
 			edit_menu->update(track);
 			edit_menu->activate_menu();
@@ -3928,25 +3611,18 @@ int TrackCanvas::do_tracks(int cursor_x,
 	return result;
 }
 
-int TrackCanvas::do_edits(int cursor_x, 
-	int cursor_y, 
-	int button_press,
-	int drag_start,
-	int &redraw,
-	int &rerender,
-	int &new_cursor,
+int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press,
+	int drag_start, int &redraw, int &rerender, int &new_cursor,
 	int &update_cursor)
 {
 	int result = 0;
 	int over_edit_handle = 0;
 
 	for(Track *track = master_edl->first_track();
-		track && !result;
-		track = track->next)
+		track && !result; track = track->next)
 	{
 		for(Edit *edit = track->edits->first;
-			edit != track->edits->last && !result;
-			edit = edit->next)
+			edit != track->edits->last && !result; edit = edit->next)
 		{
 			int edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(track, edit->get_pts(), edit->end_pts(), 
@@ -3969,8 +3645,7 @@ int TrackCanvas::do_edits(int cursor_x,
 						result = 1;
 					}
 				}
-				else
-				if(drag_start && track->record)
+				else if(drag_start && track->record)
 				{
 					if(edlsession->editing_mode == EDITING_ARROW)
 					{
@@ -4014,12 +3689,8 @@ int TrackCanvas::do_edits(int cursor_x,
 	return result;
 }
 
-int TrackCanvas::do_plugins(int cursor_x, 
-	int cursor_y, 
-	int drag_start,
-	int button_press,
-	int &redraw,
-	int &rerender)
+int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
+	int button_press, int &redraw, int &rerender)
 {
 	Plugin *plugin = 0;
 	int result = 0;
@@ -4028,14 +3699,15 @@ int TrackCanvas::do_plugins(int cursor_x,
 	Track *track = 0;
 
 	for(track = master_edl->first_track();
-		track && !done;
-		track = track->next)
+		track && !done; track = track->next)
 	{
-		if(!track->expand_view) continue;
+		if(!track->expand_view)
+			continue;
 
 		for(int i = 0; i < track->plugins.total && !done; i++)
 		{
 			Plugin *current = track->plugins.values[i];
+
 			plugin_dimensions(current, x, y, w, h);
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 				MWindowGUI::visible(y, y + h, 0, get_h()))
@@ -4124,11 +3796,8 @@ int TrackCanvas::do_plugins(int cursor_x,
 	return result;
 }
 
-int TrackCanvas::do_transitions(int cursor_x, 
-	int cursor_y, 
-	int button_press,
-	int &new_cursor,
-	int &update_cursor)
+int TrackCanvas::do_transitions(int cursor_x, int cursor_y, int button_press,
+	int &new_cursor, int &update_cursor)
 {
 	Plugin *transition = 0;
 	int result = 0;
@@ -4138,17 +3807,16 @@ int TrackCanvas::do_transitions(int cursor_x,
 		return 0;
 
 	for(Track *track = master_edl->first_track();
-		track && !result;
-		track = track->next)
+		track && !result; track = track->next)
 	{
 		for(Edit *edit = track->edits->first;
-			edit;
-			edit = edit->next)
+			edit; edit = edit->next)
 		{
 			if(edit->transition)
 			{
 				edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 					x, y, w, h);
+
 				get_transition_coords(x, y, w, h);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -4170,11 +3838,8 @@ int TrackCanvas::do_transitions(int cursor_x,
 	if(transition)
 	{
 		if(!button_press)
-		{
 			new_cursor = UPRIGHT_ARROW_CURSOR;
-		}
-		else
-		if(get_buttonpress() == 3)
+		else if(get_buttonpress() == 3)
 		{
 			transition_menu->update(transition);
 			transition_menu->activate_menu();
@@ -4197,15 +3862,12 @@ int TrackCanvas::button_press_event()
 		ptstime position = cursor_x *
 			master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
+
 		if(!active)
-		{
 			activate();
-		}
 
 		if(get_buttonpress() == 1)
-		{
 			gui->mbuttons->transport->handle_transport(STOP);
-		}
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;
 
@@ -4219,8 +3881,7 @@ int TrackCanvas::button_press_event()
 				mwindow_global->move_up(get_h() / 10);
 			result = 1;
 		}
-		else
-		if(get_buttonpress() == 5)
+		else if(get_buttonpress() == 5)
 		{
 			if(shift_down())
 				mwindow_global->zoom_in_sample();
@@ -4230,8 +3891,7 @@ int TrackCanvas::button_press_event()
 				mwindow_global->move_down(get_h() / 10);
 			result = 1;
 		}
-		else
-		if(get_buttonpress() == 6)
+		else if(get_buttonpress() == 6)
 		{
 			if(ctrl_down())
 				mwindow_global->move_left(get_w());
@@ -4241,8 +3901,7 @@ int TrackCanvas::button_press_event()
 				mwindow_global->move_left(get_w() / 5);
 			result = 1;
 		}
-		else
-		if(get_buttonpress() == 7)
+		else if(get_buttonpress() == 7)
 		{
 			if(ctrl_down())
 				mwindow_global->move_right(get_w());
@@ -4257,147 +3916,62 @@ int TrackCanvas::button_press_event()
 		{
 // Test handles and resource boundaries and highlight a track
 		case EDITING_ARROW:
-		{
-			Edit *edit;
-			int handle;
 			if(edlsession->auto_conf->transitions_visible &&
-				do_transitions(cursor_x, 
-					cursor_y, 
-					1, 
-					new_cursor, 
-					update_cursor))
-			{
+					do_transitions(cursor_x, cursor_y, 1,
+						new_cursor, update_cursor))
 				break;
-			}
-			else
-			if(do_keyframes(cursor_x, 
-				cursor_y, 
-				0, 
-				get_buttonpress(), 
-				new_cursor, 
-				update_cursor,
-				rerender))
-			{
+			else if(do_keyframes(cursor_x, cursor_y,
+					0, get_buttonpress(),
+					new_cursor, update_cursor,rerender))
 				break;
-			}
-			else
 // Test edit boundaries
-			if(do_edit_handles(cursor_x, 
-				cursor_y, 
-				1, 
-				rerender,
-				update_overlay,
-				new_cursor, 
-				update_cursor))
-			{
+			else if(do_edit_handles(cursor_x, cursor_y, 1,
+					rerender, update_overlay,
+					new_cursor, update_cursor))
 				break;
-			}
-			else
 // Test plugin boundaries
-			if(do_plugin_handles(cursor_x, 
-				cursor_y, 
-				1, 
-				rerender,
-				update_overlay,
-				new_cursor, 
-				update_cursor))
-			{
+			else if(do_plugin_handles(cursor_x, cursor_y, 1,
+					rerender, update_overlay, new_cursor,
+					update_cursor))
 				break;
-			}
-			else
-			if(do_edits(cursor_x, cursor_y, 1, 0, update_cursor,
-				rerender, new_cursor, update_cursor))
-			{
+			else if(do_edits(cursor_x, cursor_y, 1, 0, update_cursor,
+					rerender, new_cursor, update_cursor))
 				break;
-			}
-			else
-			if(do_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
-			{
+			else if(do_plugins(cursor_x, cursor_y, 0, 1,
+					update_cursor, rerender))
 				break;
-			}
-			else
-			if(do_tracks(cursor_x, cursor_y, 1))
-			{
+			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
-			}
 			break;
-		}
 
 // Test handles only and select a region
 		case EDITING_IBEAM:
-		{
 			if(edlsession->auto_conf->transitions_visible &&
-				do_transitions(cursor_x, 
-					cursor_y, 
-					1, 
-					new_cursor, 
-					update_cursor))
-			{
+					do_transitions(cursor_x, cursor_y, 1,
+						new_cursor, update_cursor))
 				break;
-			}
-			else
-			if(do_keyframes(cursor_x, 
-				cursor_y, 
-				0, 
-				get_buttonpress(), 
-				new_cursor, 
-				update_cursor,
-				rerender))
+			else if(do_keyframes(cursor_x, cursor_y, 0,
+				get_buttonpress(), new_cursor,
+				update_cursor, rerender))
 			{
 				update_overlay = 1;
 				break;
 			}
-			else
-// Test edit boundaries
-			if(do_edit_handles(cursor_x, 
-				cursor_y, 
-				1, 
-				rerender,
-				update_overlay,
-				new_cursor, 
-				update_cursor))
-			{
+			else if(do_edit_handles(cursor_x, cursor_y, 1, rerender,
+					update_overlay, new_cursor, update_cursor))
 				break;
-			}
-			else
-// Test plugin boundaries
-			if(do_plugin_handles(cursor_x, 
-				cursor_y, 
-				1, 
-				rerender,
-				update_overlay,
-				new_cursor, 
-				update_cursor))
-			{
+			else if(do_plugin_handles(cursor_x, cursor_y, 1, rerender,
+					update_overlay, new_cursor, update_cursor))
 				break;
-			}
-			else
-			if(do_edits(cursor_x, 
-				cursor_y, 
-				1, 
-				0, 
-				update_cursor, 
-				rerender, 
-				new_cursor, 
-				update_cursor))
-			{
+			else if(do_edits(cursor_x, cursor_y, 1, 0,
+					update_cursor, rerender, new_cursor,
+					update_cursor))
 				break;
-			}
-			else
-			if(do_plugins(cursor_x, 
-				cursor_y, 
-				0, 
-				1, 
-				update_cursor, 
-				rerender))
-			{
+			else if(do_plugins(cursor_x, cursor_y, 0, 1,
+					update_cursor, rerender))
 				break;
-			}
-			else
-			if(do_tracks(cursor_x, cursor_y, 1))
-			{
+			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
-			}
 // Highlight selection
 			else
 			{
@@ -4407,7 +3981,6 @@ int TrackCanvas::button_press_event()
 			}
 
 			break;
-		}
 		}
 
 		if(rerender)
@@ -4474,8 +4047,7 @@ int TrackCanvas::start_selection(ptstime position)
 
 ptstime TrackCanvas::time_visible(void)
 {
-	return (ptstime)get_w() * 
-		master_edl->local_session->zoom_time;
+	return (ptstime)get_w() * master_edl->local_session->zoom_time;
 }
 
 size_t TrackCanvas::get_cache_size()
