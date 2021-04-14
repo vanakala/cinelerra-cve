@@ -41,7 +41,7 @@ TrackPlugin::TrackPlugin(int x, int y, int w, int h,
 
 void TrackPlugin::show()
 {
-	set_cursor(canvas->get_cursor());
+	set_cursor(canvas->default_cursor());
 	redraw(get_x(), get_y(), get_w(), get_h());
 }
 
@@ -194,7 +194,7 @@ int TrackPlugin::cursor_motion_event()
 {
 	if(is_event_win() && mainsession->current_operation == NO_OPERATION)
 	{
-		int new_cursor = canvas->get_cursor();
+		int new_cursor = canvas->default_cursor();
 		int cursor_x = get_cursor_x();
 
 		if(cursor_x < HANDLE_W)
@@ -231,7 +231,7 @@ int TrackPlugin::button_press_event()
 
 	if(is_event_win())
 	{
-		int new_cursor = canvas->get_cursor();
+		int new_cursor = canvas->default_cursor();
 		int cursor_x = get_cursor_x();
 
 		if(cursor_x < HANDLE_W)
