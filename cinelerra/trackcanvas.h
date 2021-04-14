@@ -227,6 +227,8 @@ public:
 	void get_pixmap_size(Edit *edit, int edit_x, int edit_w, int &pixmap_x, int &pixmap_w, int &pixmap_h);
 	ResourcePixmap* create_pixmap(Edit *edit, int pixmap_w, int pixmap_h);
 	void update_cursor();
+	// Returns default cursor depending on editing_mode
+	int default_cursor();
 
 // Get edit and handle the cursor is over
 	int do_edit_handles(int cursor_x, 

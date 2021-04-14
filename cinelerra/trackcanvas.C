@@ -624,15 +624,20 @@ void TrackCanvas::draw(int mode)
 
 void TrackCanvas::update_cursor()
 {
+	set_cursor(default_cursor());
+}
+
+int TrackCanvas::default_cursor()
+{
 	switch(edlsession->editing_mode)
 	{
 	case EDITING_ARROW:
-		set_cursor(ARROW_CURSOR);
-		break;
-	case EDITING_IBEAM: 
-		set_cursor(IBEAM_CURSOR);
+		return ARROW_CURSOR;
+	case EDITING_IBEAM:
+		return IBEAM_CURSOR;
 		break;
 	}
+	return ARROW_CURSOR;
 }
 
 void TrackCanvas::test_timer()
@@ -3054,16 +3059,7 @@ int TrackCanvas::cursor_motion_event()
 	ptstime position = -1;
 	result = 0;
 
-// Default cursor
-	switch(edlsession->editing_mode)
-	{
-	case EDITING_ARROW:
-		new_cursor = ARROW_CURSOR;
-		break;
-	case EDITING_IBEAM:
-		new_cursor = IBEAM_CURSOR;
-		break;
-	}
+	new_cursor = default_cursor();
 
 	switch(mainsession->current_operation)
 	{
