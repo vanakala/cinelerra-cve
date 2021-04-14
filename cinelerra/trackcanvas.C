@@ -3516,73 +3516,45 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
 	int &rerender, int &update_overlay,
 	int &new_cursor, int &update_cursor)
 {
-	Plugin *plugin_result = 0;
-	int handle_result = 0;
 	int result = 0;
 
 	for(Track *track = master_edl->first_track();
 		track && !result; track = track->next)
 	{
-		for(int i = 0; i < track->plugins.total && !result; i++)
+		for(int i = 0; i < track->plugins.total; i++)
 		{
 			Plugin *plugin = track->plugins.values[i];
-			int plugin_x, plugin_y, plugin_w, plugin_h;
+			TrackPlugin *trackplugin = plugin->trackplugin;
+			int plugin_x1, plugin_y1, plugin_x2, plugin_y2;
 
-			plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
+			plugin_x1 = trackplugin->get_x();
+			plugin_x2 = plugin_x1 + trackplugin->get_w();
+			plugin_y1 = trackplugin->get_y();
+			plugin_y2 = plugin_y1 + trackplugin->get_h();
 
-			if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
-				cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h)
+			if(cursor_y >= plugin_y1 && cursor_y <= plugin_y2)
 			{
-				if(cursor_x < plugin_x + HANDLE_W)
+				if(cursor_x <= plugin_x1 && cursor_x >= plugin_x1 - HANDLE_W)
 				{
-					plugin_result = plugin;
-					handle_result = 0;
+					new_cursor = RIGHT_CURSOR;
 					result = 1;
+					break;
 				}
-				else
-				if(cursor_x >= plugin_x + plugin_w - HANDLE_W)
+				else if(cursor_x >= plugin_x2 && cursor_x <= plugin_x2 + HANDLE_W)
 				{
-					plugin_result = plugin;
-					handle_result = 1;
+					new_cursor = LEFT_CURSOR;
 					result = 1;
+					break;
 				}
 			}
 		}
 	}
-
-	update_cursor = 1;
-	if(result)
+	if(get_cursor() != new_cursor)
 	{
-		ptstime position;
-
-		if(handle_result == 0)
-		{
-			position = plugin_result->get_pts();
-			new_cursor = LEFT_CURSOR;
-		}
-		else
-		if(handle_result == 1)
-		{
-			position = plugin_result->end_pts();
-			new_cursor = RIGHT_CURSOR;
-		}
-
-		if(button_press)
-		{
-			mainsession->drag_plugin = plugin_result;
-			mainsession->drag_handle = handle_result;
-			mainsession->drag_button = get_buttonpress() - 1;
-			mainsession->drag_position = position;
-			mainsession->current_operation = DRAG_PLUGINHANDLE1;
-			mainsession->drag_origin_x = get_cursor_x();
-			mainsession->drag_origin_y = get_cursor_y();
-			mainsession->drag_start = position;
-
-			rerender = start_selection(position);
-			update_overlay = 1;
-		}
+		update_cursor = 1;
+		return 1;
 	}
-	return result;
+	return 0;
 }
 
 int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
