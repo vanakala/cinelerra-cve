@@ -227,11 +227,6 @@ int TrackPlugin::cursor_motion_event()
 
 int TrackPlugin::button_press_event()
 {
-	int cursor_x, cursor_y;
-
-	cursor_x = get_cursor_x();
-	cursor_y = get_cursor_y();
-
 	if(is_event_win())
 	{
 		int new_cursor = canvas->default_cursor();

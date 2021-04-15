@@ -3550,10 +3550,7 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
 		}
 	}
 	if(get_cursor() != new_cursor)
-	{
 		update_cursor = 1;
-		return 1;
-	}
 	return 0;
 }
 
@@ -3822,11 +3819,12 @@ int TrackCanvas::button_press_event()
 	int cursor_x, cursor_y;
 	int new_cursor, update_cursor;
 
-	cursor_x = get_cursor_x();
-	cursor_y = get_cursor_y();
-
 	if(is_event_win() && cursor_inside())
 	{
+		cursor_x = get_cursor_x();
+		cursor_y = get_cursor_y();
+		new_cursor = default_cursor();
+
 		ptstime position = cursor_x *
 			master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
