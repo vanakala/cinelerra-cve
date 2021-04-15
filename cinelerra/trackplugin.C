@@ -3,6 +3,7 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "bcdragwindow.h"
 #include "bcsignals.h"
 #include "bcpixmap.h"
 #include "bcsubwindow.h"
@@ -18,8 +19,10 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginpopup.h"
+#include "track.h"
 #include "trackplugin.h"
 #include "trackcanvas.h"
 #include "theme.h"
@@ -281,6 +284,65 @@ int TrackPlugin::button_press_event()
 	return 0;
 }
 
+int TrackPlugin::drag_start_event()
+{
+	if(is_event_win() && plugin->track->record)
+	{
+		if(edlsession->editing_mode == EDITING_ARROW)
+		{
+			int cx, cy;
+			PluginServer *server;
+			VFrame *frame;
+
+			switch(plugin->track->data_type)
+			{
+			case TRACK_AUDIO:
+				mainsession->current_operation = DRAG_AEFFECT_COPY;
+				break;
+			case TRACK_VIDEO:
+				mainsession->current_operation = DRAG_VEFFECT_COPY;
+				break;
+			}
+
+			mainsession->drag_plugin = plugin;
+// Create picon
+			switch(plugin->plugin_type)
+			{
+			case PLUGIN_STANDALONE:
+				if(server = plugin->plugin_server)
+				{
+					frame = server->picon;
+					break;
+
+				}
+				// Fall through
+			case PLUGIN_SHAREDPLUGIN:
+			case PLUGIN_SHAREDMODULE:
+				frame = theme_global->get_image("clip_icon");
+				break;
+			}
+			BC_Resources::get_abs_cursor(&cx, &cy);
+			canvas->drag_popup = new BC_DragWindow(canvas->gui,
+				frame,
+				cx - frame->get_w() / 2,
+				cy - frame->get_h() / 2);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void TrackPlugin::drag_motion_event()
+{
+	canvas->drag_motion();
+}
+
+void TrackPlugin::drag_stop_event()
+{
+	canvas->drag_stop();
+	delete canvas->drag_popup;
+	canvas->drag_popup = 0;
+}
 
 PluginOn::PluginOn(int x, Plugin *plugin)
  : BC_Toggle(x, 0, theme_global->get_image_set("plugin_on"), plugin->on)

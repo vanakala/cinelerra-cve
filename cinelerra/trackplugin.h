@@ -24,6 +24,9 @@ public:
 	void update_toggles();
 	int cursor_motion_event();
 	int button_press_event();
+	int drag_start_event();
+	void drag_motion_event();
+	void drag_stop_event();
 private:
 	void redraw(int x, int y, int w, int h);
 
