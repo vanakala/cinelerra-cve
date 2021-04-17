@@ -139,7 +139,6 @@ public:
 		int draw, 
 		int buttonpress, 
 		int &new_cursor,
-		int &update_cursor,
 		int &rerender);
 
 	int do_float_autos(Track *track, 
@@ -236,25 +235,21 @@ public:
 		int button_press,
 		int &rerender,
 		int &update_overlay,
-		int &new_cursor,
-		int &update_cursor);
+		int &new_cursor);
 // Get plugin and handle the cursor if over
 	int do_plugin_handles(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int &rerender,
 		int &update_overlay,
-		int &new_cursor,
-		int &update_cursor);
+		int &new_cursor);
 // Get edit the cursor is over
 	int do_edits(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int drag_start,
 		int &redraw,
-		int &rerender,
-		int &new_cursor,
-		int &update_cursor);
+		int &rerender);
 	int do_tracks(int cursor_x, 
 		int cursor_y,
 		int button_press);
@@ -267,8 +262,7 @@ public:
 	int do_transitions(int cursor_x, 
 		int cursor_y, 
 		int button_press,
-		int &new_cursor,
-		int &update_cursor);
+		int &new_cursor);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();

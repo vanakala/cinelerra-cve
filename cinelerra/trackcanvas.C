@@ -242,7 +242,6 @@ int TrackCanvas::drag_start_event()
 	int result = 0;
 	int redraw = 0;
 	int rerender = 0;
-	int new_cursor, update_cursor;
 
 	if(mainsession->current_operation != NO_OPERATION)
 		return 0;
@@ -254,7 +253,7 @@ int TrackCanvas::drag_start_event()
 			result = 1;
 		else
 		if(do_edits(get_drag_x(), get_drag_y(), 0, 1,
-				redraw, rerender, new_cursor, update_cursor))
+				redraw, rerender))
 			result = 1;
 	}
 
@@ -1503,7 +1502,7 @@ void TrackCanvas::draw_brender_start()
 }
 
 int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpress,
-	int &new_cursor, int &update_cursor, int &rerender)
+	int &new_cursor, int &rerender)
 {
 // Note: button 3 (right mouse button) is not eaten to allow
 // track context menu to appear
@@ -1654,7 +1653,6 @@ int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpr
 			mainsession->current_operation == DRAG_PLUGINKEY_PRE)
 		result = 1;
 
-	update_cursor = 1;
 	if(result)
 		new_cursor = UPRIGHT_ARROW_CURSOR;
 
@@ -2730,7 +2728,7 @@ int TrackCanvas::do_plugin_autos(Track *track, int cursor_x, int cursor_y,
 
 void TrackCanvas::draw_overlays()
 {
-	int new_cursor, update_cursor, rerender;
+	int new_cursor, rerender;
 
 	overlays_lock->lock("TrackCanvas::draw_overlays");
 // Move background pixmap to foreground pixmap
@@ -2751,7 +2749,7 @@ void TrackCanvas::draw_overlays()
 	draw_highlighting();
 
 // Automation
-	do_keyframes(0, 0, 1, 0, new_cursor, update_cursor, rerender);
+	do_keyframes(0, 0, 1, 0, new_cursor, rerender);
 
 // Handle dragging
 	draw_drag_handle();
@@ -3052,8 +3050,7 @@ int TrackCanvas::cursor_motion_event()
 	int result, cursor_x, cursor_y;
 	int update_scroll = 0;
 	int update_overlay = 0;
-	int update_cursor = 0;
-	int new_cursor = 0;
+	int new_cursor;
 	int rerender = 0;
 	int mwindow_mode = 0;
 	ptstime position = -1;
@@ -3180,28 +3177,27 @@ int TrackCanvas::cursor_motion_event()
 			mwindow_mode |= WUPD_CLOCK;
 
 			if(do_transitions(cursor_x, cursor_y,
-					0, new_cursor, update_cursor))
+					0, new_cursor))
 				break;
 			else if(do_keyframes(cursor_x, cursor_y, 0, 0,
-					new_cursor, update_cursor, rerender))
+					new_cursor, rerender))
 				break;
 			else if(do_edit_handles(cursor_x, cursor_y,
 					0, rerender, update_overlay,
-					new_cursor, update_cursor))
+					new_cursor))
 				break;
 			else if(do_plugin_handles(cursor_x, cursor_y,
 					0, rerender, update_overlay,
-					new_cursor, update_cursor))
+					new_cursor))
 				break;
 			else if(do_edits(cursor_x, cursor_y, 0, 0,
-					update_overlay, rerender, new_cursor,
-					update_cursor))
+					update_overlay, rerender))
 				break;
 		}
 		break;
 	}
 
-	if(update_cursor && new_cursor != get_cursor())
+	if(new_cursor != get_cursor())
 		set_cursor(new_cursor);
 
 	if(rerender)
@@ -3437,7 +3433,7 @@ int TrackCanvas::button_release_event()
 }
 
 int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
-	int &rerender, int &update_overlay, int &new_cursor, int &update_cursor)
+	int &rerender, int &update_overlay, int &new_cursor)
 {
 	Edit *edit_result = 0;
 	int handle_result = 0;
@@ -3478,7 +3474,6 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 		}
 	}
 
-	update_cursor = 1;
 	if(result)
 	{
 		ptstime position;
@@ -3513,8 +3508,7 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 }
 
 int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
-	int &rerender, int &update_overlay,
-	int &new_cursor, int &update_cursor)
+	int &rerender, int &update_overlay, int &new_cursor)
 {
 	int result = 0;
 
@@ -3549,8 +3543,6 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
 			}
 		}
 	}
-	if(get_cursor() != new_cursor)
-		update_cursor = 1;
 	return 0;
 }
 
@@ -3577,8 +3569,7 @@ int TrackCanvas::do_tracks(int cursor_x, int cursor_y, int button_press)
 }
 
 int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press,
-	int drag_start, int &redraw, int &rerender, int &new_cursor,
-	int &update_cursor)
+	int drag_start, int &redraw, int &rerender)
 {
 	int result = 0;
 	int over_edit_handle = 0;
@@ -3762,7 +3753,7 @@ int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
 }
 
 int TrackCanvas::do_transitions(int cursor_x, int cursor_y, int button_press,
-	int &new_cursor, int &update_cursor)
+	int &new_cursor)
 {
 	Plugin *transition = 0;
 	int result = 0;
@@ -3799,7 +3790,6 @@ int TrackCanvas::do_transitions(int cursor_x, int cursor_y, int button_press,
 		}
 	}
 
-	update_cursor = 1;
 	if(transition)
 	{
 		if(!button_press)
@@ -3817,7 +3807,8 @@ int TrackCanvas::button_press_event()
 {
 	int result = 0;
 	int cursor_x, cursor_y;
-	int new_cursor, update_cursor;
+	int new_cursor;
+	int update_opts = 0;
 
 	if(is_event_win() && cursor_inside())
 	{
@@ -3835,7 +3826,7 @@ int TrackCanvas::button_press_event()
 		if(get_buttonpress() == 1)
 			gui->mbuttons->transport->handle_transport(STOP);
 
-		int update_overlay = 0, update_cursor = 0, rerender = 0;
+		int update_overlay = 0, rerender = 0;
 
 		if(get_buttonpress() == 4)
 		{
@@ -3884,27 +3875,26 @@ int TrackCanvas::button_press_event()
 		case EDITING_ARROW:
 			if(edlsession->auto_conf->transitions_visible &&
 					do_transitions(cursor_x, cursor_y, 1,
-						new_cursor, update_cursor))
+						new_cursor))
 				break;
 			else if(do_keyframes(cursor_x, cursor_y,
 					0, get_buttonpress(),
-					new_cursor, update_cursor,rerender))
+					new_cursor, rerender))
 				break;
 // Test edit boundaries
 			else if(do_edit_handles(cursor_x, cursor_y, 1,
 					rerender, update_overlay,
-					new_cursor, update_cursor))
+					new_cursor))
 				break;
 // Test plugin boundaries
 			else if(do_plugin_handles(cursor_x, cursor_y, 1,
-					rerender, update_overlay, new_cursor,
-					update_cursor))
+					rerender, update_overlay, new_cursor))
 				break;
-			else if(do_edits(cursor_x, cursor_y, 1, 0, update_cursor,
-					rerender, new_cursor, update_cursor))
+			else if(do_edits(cursor_x, cursor_y, 1, 0, rerender,
+					rerender))
 				break;
 			else if(do_plugins(cursor_x, cursor_y, 0, 1,
-					update_cursor, rerender))
+					rerender, rerender))
 				break;
 			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
@@ -3914,27 +3904,24 @@ int TrackCanvas::button_press_event()
 		case EDITING_IBEAM:
 			if(edlsession->auto_conf->transitions_visible &&
 					do_transitions(cursor_x, cursor_y, 1,
-						new_cursor, update_cursor))
+						new_cursor))
 				break;
 			else if(do_keyframes(cursor_x, cursor_y, 0,
-				get_buttonpress(), new_cursor,
-				update_cursor, rerender))
+				get_buttonpress(), new_cursor, rerender))
 			{
 				update_overlay = 1;
 				break;
 			}
 			else if(do_edit_handles(cursor_x, cursor_y, 1, rerender,
-					update_overlay, new_cursor, update_cursor))
+					update_overlay, new_cursor))
 				break;
 			else if(do_plugin_handles(cursor_x, cursor_y, 1, rerender,
-					update_overlay, new_cursor, update_cursor))
+					update_overlay, new_cursor))
 				break;
 			else if(do_edits(cursor_x, cursor_y, 1, 0,
-					update_cursor, rerender, new_cursor,
-					update_cursor))
+					rerender, rerender))
 				break;
-			else if(do_plugins(cursor_x, cursor_y, 0, 1,
-					update_cursor, rerender))
+			else if(do_plugins(cursor_x, cursor_y, 0, 1, rerender, rerender))
 				break;
 			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
@@ -3943,7 +3930,6 @@ int TrackCanvas::button_press_event()
 			{
 				rerender = start_selection(position);
 				mainsession->current_operation = SELECT_REGION;
-				update_cursor = 1;
 			}
 
 			break;
@@ -3954,7 +3940,8 @@ int TrackCanvas::button_press_event()
 			mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update faders
 			mwindow_global->update_plugin_guis();
-			mwindow_global->update_gui(WUPD_PATCHBAY);
+			update_opts = WUPD_PATCHBAY | WUPD_CURSOR | WUPD_ZOOMBAR |
+				WUPD_TOGLIGHTS;
 		}
 
 		if(update_overlay)
@@ -3965,9 +3952,9 @@ int TrackCanvas::button_press_event()
 			gui->cursor->show();
 		}
 
-		if(update_cursor)
+		if(update_opts)
 		{
-			mwindow_global->update_gui(WUPD_CURSOR | WUPD_ZOOMBAR | WUPD_TOGLIGHTS);
+			mwindow_global->update_gui(update_opts);
 			result = 1;
 		}
 	}
