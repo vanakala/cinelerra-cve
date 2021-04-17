@@ -158,7 +158,10 @@ size_t KeyFrame::get_size()
 
 void KeyFrame::dump(int indent)
 {
-	printf("%*sKeyFrame %p: pos_time %.3f\n", indent, "", this, pos_time);
+	printf("%*sKeyFrame %p: pos_time %.3f", indent, "", this, pos_time);
+	if(drawn_x >= 0)
+		printf(" drawn %d", drawn_x);
+	putchar('\n');
 	if(data)
 		printf("%*sdata: %s\n", indent + 2, "", data);
 }

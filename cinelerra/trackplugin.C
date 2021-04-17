@@ -128,6 +128,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 			if(redraw || !keyframe->has_drawn(kx))
 			{
 				draw_pixmap(keyframe_pixmap, kx, ky);
+				keyframe->drawing(kx);
 				num_keyframes++;
 			}
 		}
