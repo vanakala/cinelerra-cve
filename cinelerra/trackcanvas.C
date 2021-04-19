@@ -1315,19 +1315,6 @@ void TrackCanvas::draw_highlighting()
 		}
 		break;
 
-	case DRAG_PLUGINKEY:
-		if(mainsession->plugin_highlighted &&
-			mainsession->current_operation == DRAG_PLUGINKEY)
-		{
-// Just highlight the plugin
-			plugin_dimensions(mainsession->plugin_highlighted, x, y, w, h);
-
-			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-					MWindowGUI::visible(y, y + h, 0, get_h()))
-				draw_box = 1;
-		}
-		break;
-
 	case DRAG_EDIT:
 		if(mainsession->track_highlighted)
 		{
@@ -1622,15 +1609,7 @@ int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpr
 			result = do_plugin_autos(track, cursor_x, cursor_y,
 				draw, buttonpress, plugin, keyframe);
 
-			if(result && mainsession->current_operation == DRAG_PLUGINKEY)
-				rerender = 1;
-
-			if(result && (buttonpress == 1))
-			{
-				mainsession->current_operation = DRAG_PLUGINKEY_PRE;
-				rerender = 1;
-			}
-			else if(result && (buttonpress == 3))
+			if(result && (buttonpress == 3))
 			{
 				keyframe_menu->update(plugin, keyframe);
 				keyframe_menu->activate_menu();
@@ -1648,10 +1627,6 @@ int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpr
 					Automation::automation_tbl[i].operation)
 			result = 1;
 	}
-
-	if(mainsession->current_operation == DRAG_PLUGINKEY ||
-			mainsession->current_operation == DRAG_PLUGINKEY_PRE)
-		result = 1;
 
 	if(result)
 		new_cursor = UPRIGHT_ARROW_CURSOR;
@@ -3112,7 +3087,6 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_PAN_PRE:
 	case DRAG_MASK_PRE:
 	case DRAG_MODE_PRE:
-	case DRAG_PLUGINKEY_PRE:
 		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
 		{
 			mainsession->current_operation++;
@@ -3123,11 +3097,6 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_PAN:
 	case DRAG_MASK:
 	case DRAG_MODE:
-		rerender = update_overlay = 
-			update_drag_pluginauto(get_cursor_x(), get_cursor_y());
-		break;
-
-	case DRAG_PLUGINKEY:
 		rerender = update_overlay = 
 			update_drag_pluginauto(get_cursor_x(), get_cursor_y());
 		break;
@@ -3387,7 +3356,6 @@ int TrackCanvas::button_release_event()
 	case DRAG_PROJECTOR_X:
 	case DRAG_PROJECTOR_Y:
 	case DRAG_PROJECTOR_Z:
-	case DRAG_PLUGINKEY:
 		mainsession->current_operation = NO_OPERATION;
 		mainsession->drag_handle = HANDLE_MAIN;
 		if(mainsession->drag_auto)
@@ -3399,6 +3367,7 @@ int TrackCanvas::button_release_event()
 	case DRAG_EDIT:
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
+	case DRAG_PLUGINKEY:
 // Trap in drag stop
 		break;
 
@@ -3409,7 +3378,6 @@ int TrackCanvas::button_release_event()
 			{
 				mwindow_global->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
 			}
-
 			mainsession->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 		}

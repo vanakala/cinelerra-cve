@@ -9,6 +9,7 @@
 #include "bcsubwindow.h"
 #include "bcresources.h"
 #include "cinelerra.h"
+#include "clip.h"
 #include "cursors.h"
 #include "cwindow.h"
 #include "edl.h"
@@ -39,6 +40,7 @@ TrackPlugin::TrackPlugin(int x, int y, int w, int h,
 	keyframe_pixmap = 0;
 	num_keyframes = 0;
 	keyframe_width = 0;
+	drag_box = 0;
 	drawn_x = drawn_y = drawn_w = drawn_h = -1;
 }
 
@@ -324,20 +326,77 @@ int TrackPlugin::drag_start_event()
 				cy - frame->get_h() / 2);
 			return 1;
 		}
+		else if(edlsession->editing_mode == EDITING_IBEAM && num_keyframes)
+		{
+			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+				keyframe; keyframe = (KeyFrame*)keyframe->next)
+			{
+				if(keyframe == plugin->keyframes->first)
+					continue;
+				int cursor_x = get_cursor_x();
+				int kx = keyframe->get_pos_x();
+
+				if(cursor_x >= kx && cursor_x <= kx + keyframe_width)
+				{
+					mainsession->current_operation = DRAG_PLUGINKEY;
+					mainsession->drag_auto = keyframe;
+					return 1;
+				}
+			}
+		}
 	}
 	return 0;
 }
 
 void TrackPlugin::drag_motion_event()
 {
-	canvas->drag_motion();
+	if(mainsession->current_operation == DRAG_PLUGINKEY)
+	{
+		if(!drag_box)
+		{
+			KeyFrame *keyframe = (KeyFrame*)mainsession->drag_auto;
+			int kx = keyframe->get_pos_x();
+
+			draw_keyframe_box(kx);
+			drag_box = 1;
+		}
+	}
+	else
+		canvas->drag_motion();
 }
 
 void TrackPlugin::drag_stop_event()
 {
-	canvas->drag_stop();
-	delete canvas->drag_popup;
-	canvas->drag_popup = 0;
+	if(mainsession->current_operation == DRAG_PLUGINKEY)
+	{
+		KeyFrame *keyframe = (KeyFrame*)mainsession->drag_auto;
+		int cx = get_cursor_x();
+		ptstime minpos, maxpos;
+
+		plugin->keyframes->drag_limits(keyframe, &minpos, &maxpos);
+		keyframe->pos_time += (cx - get_drag_x()) *
+			master_edl->local_session->zoom_time;
+		keyframe->pos_time =
+			CLIP(master_edl->align_to_frame(keyframe->pos_time), minpos, maxpos);
+		keyframe->drawing(-1);
+		mainsession->current_operation = NO_OPERATION;
+		redraw(drawn_x, drawn_y, drawn_w, drawn_h);
+		drag_box = 0;
+	}
+	else
+	{
+		canvas->drag_stop();
+		delete canvas->drag_popup;
+		canvas->drag_popup = 0;
+	}
+}
+
+void TrackPlugin::draw_keyframe_box(int x)
+{
+	set_color(WHITE);
+	draw_rectangle(x, 1, keyframe_width - 1, get_h() - 1);
+	draw_rectangle(x + 1, 2, keyframe_width - 3, get_h() - 3);
+	flash();
 }
 
 PluginOn::PluginOn(int x, Plugin *plugin)

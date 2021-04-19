@@ -29,6 +29,7 @@ public:
 	void drag_stop_event();
 private:
 	void redraw(int x, int y, int w, int h);
+	void draw_keyframe_box(int x);
 
 	int drawn_x;
 	int drawn_y;
@@ -36,6 +37,7 @@ private:
 	int drawn_h;
 	int num_keyframes;
 	int keyframe_width;
+	int drag_box;
 
 	TrackCanvas *canvas;
 	Plugin *plugin;
