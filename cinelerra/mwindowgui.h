@@ -49,7 +49,7 @@ public:
 	void repeat_event(int duration);
 // Entry point for drag events in all windows
 	void drag_motion();
-	int drag_stop();
+	void drag_stop();
 	void default_positions();
 
 // Return if the area bounded by x1 and x2 is visible between view_x1 and view_x2

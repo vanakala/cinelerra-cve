@@ -326,21 +326,38 @@ int TrackPlugin::drag_start_event()
 				cy - frame->get_h() / 2);
 			return 1;
 		}
-		else if(edlsession->editing_mode == EDITING_IBEAM && num_keyframes)
+		else if(edlsession->editing_mode == EDITING_IBEAM)
 		{
-			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
-				keyframe; keyframe = (KeyFrame*)keyframe->next)
-			{
-				if(keyframe == plugin->keyframes->first)
-					continue;
-				int cursor_x = get_cursor_x();
-				int kx = keyframe->get_pos_x();
+			int cursor_x = get_cursor_x();
 
-				if(cursor_x >= kx && cursor_x <= kx + keyframe_width)
+			if(cursor_x < HANDLE_W)
+			{
+				canvas->start_pluginhandle_drag(plugin->get_pts(),
+					DRAG_PLUGINHANDLE1, 0, plugin);
+				return 1;
+			}
+			if(cursor_x >= drawn_w - HANDLE_W)
+			{
+				canvas->start_pluginhandle_drag(plugin->end_pts(),
+					DRAG_PLUGINHANDLE1, 1, plugin);
+				return 1;
+			}
+			if(num_keyframes)
+			{
+				for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
+					keyframe; keyframe = (KeyFrame*)keyframe->next)
 				{
-					mainsession->current_operation = DRAG_PLUGINKEY;
-					mainsession->drag_auto = keyframe;
-					return 1;
+					if(keyframe == plugin->keyframes->first)
+						continue;
+
+					int kx = keyframe->get_pos_x();
+
+					if(cursor_x >= kx && cursor_x <= kx + keyframe_width)
+					{
+						mainsession->current_operation = DRAG_PLUGINKEY;
+						mainsession->drag_auto = keyframe;
+						return 1;
+					}
 				}
 			}
 		}

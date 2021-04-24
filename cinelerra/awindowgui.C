@@ -1092,11 +1092,9 @@ void AWindowAssets::drag_stop_event()
 {
 	int result = 0;
 
-	if(!result)
-		result = mwindow->gui->drag_stop();
+	mwindow->gui->drag_stop();
 
-	if(!result)
-		result = mwindow->vwindow->gui->drag_stop();
+	result = mwindow->vwindow->gui->drag_stop();
 
 	if(!result)
 		result = mwindow->cwindow->gui->drag_stop();

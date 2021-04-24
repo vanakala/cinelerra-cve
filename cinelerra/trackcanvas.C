@@ -62,6 +62,7 @@ TrackCanvas::TrackCanvas(MWindowGUI *gui)
 {
 	this->gui = gui;
 	selection_midpoint1 = selection_midpoint2 = 0;
+	drag_handle_pixel = -1;
 	handle_selected = 0;
 	auto_selected = 0;
 	translate_selected = 0;
@@ -127,17 +128,27 @@ void TrackCanvas::drag_motion()
 	int cursor_x, cursor_y;
 	Track *over_track = 0;
 	Edit *over_edit = 0;
-	Plugin *over_plugin = 0;
 	int redraw = 0;
 
-	if(drag_popup)
+	switch(mainsession->current_operation)
 	{
-		drag_popup->cursor_motion_event();
-	}
-
-// there's no point in drawing highlights has until drag operation has been set
-	if(!mainsession->current_operation)
+	case NO_OPERATION:
 		return;
+
+	case DRAG_PLUGINHANDLE1:
+	case DRAG_PLUGINHANDLE2:
+		update_drag_handle();
+		draw_drag_handle();
+		break;
+
+	case DRAG_AEFFECT_COPY:
+	case DRAG_VEFFECT_COPY:
+		if(drag_popup)
+		{
+			drag_popup->cursor_motion_event();
+		}
+		return;
+	}
 
 	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
 		cursor_x >= 0 &&  cursor_y >= 0 &&
@@ -173,25 +184,6 @@ void TrackCanvas::drag_motion()
 						break;
 					}
 				}
-
-				for(int i = 0; i < track->plugins.total; i++)
-				{
-					Plugin *plugin = track->plugins.values[i];
-
-					int plugin_x, plugin_y, plugin_w, plugin_h;
-					plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
-
-					if(cursor_y >= plugin_y &&
-						cursor_y < plugin_y + plugin_h)
-					{
-						if(cursor_x >= plugin_x &&
-							cursor_x < plugin_x + plugin_w)
-						{
-							over_plugin = plugin;
-							break;
-						}
-					}
-				}
 				break;
 			}
 		}
@@ -214,12 +206,6 @@ void TrackCanvas::drag_motion()
 		redraw = 1;
 	}
 
-	if(mainsession->plugin_highlighted != over_plugin)
-	{
-		mainsession->plugin_highlighted = over_plugin;
-		redraw = 1;
-	}
-
 	if(mainsession->current_operation == DRAG_ASSET ||
 			mainsession->current_operation == DRAG_EDIT ||
 			mainsession->current_operation == DRAG_AEFFECT_COPY ||
@@ -239,25 +225,71 @@ void TrackCanvas::drag_motion()
 
 int TrackCanvas::drag_start_event()
 {
-	int result = 0;
 	int redraw = 0;
 	int rerender = 0;
+	int cursor_x, cursor_y;
 
 	if(mainsession->current_operation != NO_OPERATION)
 		return 0;
 
 	if(is_event_win())
 	{
-		if(do_plugins(get_drag_x(), get_drag_y(), 1, 0,
-				redraw, rerender))
-			result = 1;
-		else
-		if(do_edits(get_drag_x(), get_drag_y(), 0, 1,
-				redraw, rerender))
-			result = 1;
-	}
+		cursor_x = get_cursor_x();
+		cursor_y = get_cursor_y();
 
-	return result;
+		for(Track *track = master_edl->first_track();
+			track; track = track->next)
+		{
+			if(!track->expand_view)
+				continue;
+
+			for(int i = 0; i < track->plugins.total; i++)
+			{
+				Plugin *plugin = track->plugins.values[i];
+				TrackPlugin *trackplugin = plugin->trackplugin;
+
+				if(!trackplugin)
+					continue;
+
+				int pc = trackplugin->get_y();
+
+				if(cursor_y < pc ||
+						cursor_y > pc + trackplugin->get_h())
+					continue;
+
+				pc = trackplugin->get_x();
+
+				if(cursor_x < pc && cursor_x > pc - HANDLE_W)
+				{
+					start_pluginhandle_drag(plugin->get_pts(),
+						DRAG_PLUGINHANDLE2, 0, plugin);
+					return 1;
+				}
+				pc += trackplugin->get_w();
+				if(cursor_x > pc && cursor_x < pc + HANDLE_W)
+				{
+					start_pluginhandle_drag(plugin->end_pts(),
+						DRAG_PLUGINHANDLE2, 1, plugin);
+					return 1;
+				}
+			}
+		}
+
+		if(do_edits(cursor_x, cursor_y, 0, 1,
+				redraw, rerender))
+			return 1;
+	}
+	return 0;
+}
+
+void TrackCanvas::start_pluginhandle_drag(ptstime position, int drag_cmd,
+	int handle, Plugin *plugin)
+{
+	mainsession->drag_start = mainsession->drag_position = position;
+	mainsession->current_operation = drag_cmd;
+	mainsession->drag_handle = handle;
+	mainsession->drag_button = get_buttonpress() - 1;
+	mainsession->drag_plugin = plugin;
 }
 
 void TrackCanvas::drag_motion_event()
@@ -276,12 +308,12 @@ void TrackCanvas::drag_stop_event()
 	}
 }
 
-int TrackCanvas::drag_stop()
+void TrackCanvas::drag_stop()
 {
 // In most cases the editing routine redraws and not the drag_stop
 	int result = 0, redraw = 0;
-
 	int insertion = 0;           // used in drag and drop mode
+
 	switch(mainsession->current_operation)
 	{
 	case DRAG_VTRANSITION:
@@ -442,6 +474,13 @@ int TrackCanvas::drag_stop()
 			result = 1;
 		}
 		break;
+	case DRAG_PLUGINHANDLE1:
+	case DRAG_PLUGINHANDLE2:
+		mainsession->current_operation = NO_OPERATION;
+		drag_scroll = 0;
+		clear_drag_handle();
+		mwindow_global->modify_pluginhandles();
+		break;
 	}
 
 // since we don't have subwindows we have to terminate any drag operation
@@ -463,8 +502,6 @@ int TrackCanvas::drag_stop()
 		mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_PATCHBAY |
 			WUPD_CANVREDRAW | WUPD_CURSOR);
 	}
-
-	return result;
 }
 
 ptstime TrackCanvas::get_drop_position(int *is_insertion,
@@ -1375,15 +1412,39 @@ void TrackCanvas::draw_plugins()
 void TrackCanvas::draw_drag_handle()
 {
 	if(mainsession->current_operation == DRAG_EDITHANDLE2 ||
+		mainsession->current_operation == DRAG_PLUGINHANDLE1 ||
 		mainsession->current_operation == DRAG_PLUGINHANDLE2)
 	{
 		int pixel1 = round((mainsession->drag_position -
 			master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
+
+		if(pixel1 != drag_handle_pixel)
+		{
+			set_color(GREEN);
+			set_inverse();
+			if(drag_handle_pixel >= 0)
+				draw_line(drag_handle_pixel, 0, drag_handle_pixel, get_h());
+			draw_line(pixel1, 0, pixel1, get_h());
+			set_opaque();
+			flash();
+			drag_handle_pixel = pixel1;
+		}
+	}
+	else
+		drag_handle_pixel = -1;
+}
+
+void TrackCanvas::clear_drag_handle()
+{
+	if(drag_handle_pixel >= 0)
+	{
 		set_color(GREEN);
 		set_inverse();
-		draw_line(pixel1, 0, pixel1, get_h());
+		draw_line(drag_handle_pixel, 0, drag_handle_pixel, get_h());
 		set_opaque();
+		flash();
+		drag_handle_pixel = -1;
 	}
 }
 
@@ -2753,12 +2814,17 @@ void TrackCanvas::deactivate()
 
 void TrackCanvas::update_drag_handle()
 {
-	ptstime new_position;
+	ptstime new_position, cursor_base = 0;
+
+	if(mainsession->current_operation == DRAG_PLUGINHANDLE1)
+		cursor_base = mainsession->drag_plugin->get_pts() -
+			master_edl->local_session->view_start_pts;
+	else
+		cursor_base = 0;
 
 	new_position = get_cursor_x() * master_edl->local_session->zoom_time +
-		master_edl->local_session->view_start_pts;
-	new_position = 
-		master_edl->align_to_frame(new_position);
+		master_edl->local_session->view_start_pts + cursor_base;
+	new_position = master_edl->align_to_frame(new_position);
 
 	if(new_position != mainsession->drag_position)
 	{
@@ -3049,19 +3115,6 @@ int TrackCanvas::cursor_motion_event()
 		update_overlay = 1;
 		break;
 
-	case DRAG_PLUGINHANDLE1:
-		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
-		{
-			mainsession->current_operation = DRAG_PLUGINHANDLE2;
-			update_overlay = 1;
-		}
-		break;
-
-	case DRAG_PLUGINHANDLE2:
-		update_drag_handle();
-		update_overlay = 1;
-		break;
-
 // Rubber band curves
 	case DRAG_FADE:
 	case DRAG_CZOOM:
@@ -3327,19 +3380,6 @@ int TrackCanvas::button_release_event()
 		result = 1;
 		break;
 
-	case DRAG_PLUGINHANDLE2:
-		mainsession->current_operation = NO_OPERATION;
-		drag_scroll = 0;
-		result = 1;
-		mwindow_global->modify_pluginhandles();
-		break;
-
-	case DRAG_PLUGINHANDLE1:
-		mainsession->current_operation = NO_OPERATION;
-		drag_scroll = 0;
-		result = 1;
-		break;
-
 	case DRAG_FADE:
 // delete the drag_auto_gang first and remove out of order keys
 		synchronize_autos(0, 0, 0, -1); 
@@ -3368,6 +3408,8 @@ int TrackCanvas::button_release_event()
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
 	case DRAG_PLUGINKEY:
+	case DRAG_PLUGINHANDLE1:
+	case DRAG_PLUGINHANDLE2:
 // Trap in drag stop
 		break;
 
@@ -3894,7 +3936,7 @@ int TrackCanvas::button_press_event()
 			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
 // Highlight selection
-			else
+			else if(get_cursor() == IBEAM_CURSOR)
 			{
 				rerender = start_selection(position);
 				mainsession->current_operation = SELECT_REGION;

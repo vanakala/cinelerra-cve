@@ -207,7 +207,6 @@ public:
 	void draw_brender_start();
 	void draw_loop_points();
 	void draw_transitions();
-	void draw_drag_handle();
 	void draw_plugins();
 
 // Draw everything to synchronize with the view.
@@ -273,7 +272,9 @@ public:
 	void stop_dragscroll();
 	int start_selection(double position);
 	void drag_motion();
-	int drag_stop();
+	void drag_stop();
+	void start_pluginhandle_drag(ptstime position, int drag_cmd,
+		int handle, Plugin *plugin);
 	ptstime get_drop_position (int *is_insertion, Edit *moved_edit,
 		ptstime moved_edit_length);
 
@@ -329,6 +330,8 @@ public:
 	KeyframePopup *keyframe_menu;
 
 private:
+	void draw_drag_handle();
+	void clear_drag_handle();
 	void draw_floatauto_ctrlpoint(int x,
 		int y,
 		int cp_x,
@@ -351,6 +354,7 @@ private:
 	int which_handle;	// 1 left or 2 right handle
 	double selection_midpoint1, selection_midpoint2;        // division between current ends
 	int region_selected;	// 1 if region selected
+	int drag_handle_pixel;
 	Mutex *canvas_lock;
 	Mutex *overlays_lock;
 

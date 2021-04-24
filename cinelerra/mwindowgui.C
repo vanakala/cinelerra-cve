@@ -218,11 +218,10 @@ void MWindowGUI::drag_motion()
 		canvas->drag_motion();
 }
 
-int MWindowGUI::drag_stop()
+void MWindowGUI::drag_stop()
 {
-	if(get_hidden()) return 0;
-
-	return canvas->drag_stop();
+	if(!get_hidden())
+		canvas->drag_stop();
 }
 
 void MWindowGUI::default_positions()
