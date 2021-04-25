@@ -43,7 +43,6 @@ private:
 	Plugin *plugin;
 	PluginOn *plugin_on;
 	PluginShow *plugin_show;
-	BC_Pixmap *keyframe_pixmap;
 };
 
 class PluginOn : public BC_Toggle

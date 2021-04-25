@@ -37,9 +37,8 @@ TrackPlugin::TrackPlugin(int x, int y, int w, int h,
 	this->canvas = canvas;
 	plugin_on = 0;
 	plugin_show = 0;
-	keyframe_pixmap = 0;
 	num_keyframes = 0;
-	keyframe_width = 0;
+	keyframe_width = canvas->keyframe_pixmap->get_w();
 	drag_box = 0;
 	drawn_x = drawn_y = drawn_w = drawn_h = -1;
 }
@@ -57,7 +56,6 @@ TrackPlugin::~TrackPlugin()
 		delete plugin_on;
 		delete plugin_show;
 	}
-	delete keyframe_pixmap;
 	if(plugin)
 		plugin->trackplugin = 0;
 }
@@ -112,14 +110,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 
 	if(edlsession->keyframes_visible && (kcount != num_keyframes || redraw))
 	{
-		if(!keyframe_pixmap)
-		{
-			keyframe_pixmap = new BC_Pixmap(this,
-				theme_global->keyframe_data, PIXMAP_ALPHA);
-			keyframe_width = keyframe_pixmap->get_w();
-		}
-		int ky = (h - keyframe_pixmap->get_h()) / 2;
-
+		int ky = (h - canvas->keyframe_pixmap->get_h()) / 2;
 		num_keyframes = 0;
 
 		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
@@ -129,7 +120,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 				master_edl->local_session->zoom_time - x;
 			if(redraw || !keyframe->has_drawn(kx))
 			{
-				draw_pixmap(keyframe_pixmap, kx, ky);
+				draw_pixmap(canvas->keyframe_pixmap, kx, ky);
 				keyframe->drawing(kx);
 				num_keyframes++;
 			}
