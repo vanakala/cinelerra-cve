@@ -165,13 +165,6 @@ public:
 		int buttonpress,
 		BC_Pixmap *pixmap,
 		Auto * &auto_instance);
-	int do_plugin_autos(Track *track,
-		int cursor_x, 
-		int cursor_y, 
-		int draw, 
-		int buttonpress,
-		Plugin* &keyframe_plugin,
-		KeyFrame* &keyframe_instance);
 
 	void calculate_viewport(Track *track, 
 		ptstime &view_start,
@@ -252,12 +245,6 @@ public:
 	int do_tracks(int cursor_x, 
 		int cursor_y,
 		int button_press);
-	int do_plugins(int cursor_x, 
-		int cursor_y, 
-		int drag_start,
-		int button_press,
-		int &redraw,
-		int &rerender);
 	int do_transitions(int cursor_x, 
 		int cursor_y, 
 		int button_press,
@@ -284,7 +271,6 @@ public:
 	void update_drag_handle();
 	int update_drag_floatauto(int cursor_x, int cursor_y);
 	int update_drag_toggleauto(int cursor_x, int cursor_y);
-	int update_drag_pluginauto(int cursor_x, int cursor_y);
 
 	int resource_h();
 

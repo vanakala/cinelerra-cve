@@ -1662,21 +1662,6 @@ int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpr
 				}
 			}
 		}
-
-		if(!result && session->keyframes_visible)
-		{
-			Plugin *plugin;
-			KeyFrame *keyframe;
-			result = do_plugin_autos(track, cursor_x, cursor_y,
-				draw, buttonpress, plugin, keyframe);
-
-			if(result && (buttonpress == 3))
-			{
-				keyframe_menu->update(plugin, keyframe);
-				keyframe_menu->activate_menu();
-				rerender = 1; // the position changes
-			}
-		}
 	}
 
 // Final pass to trap event
@@ -2683,85 +2668,6 @@ int TrackCanvas::do_autos(Track *track, Autos *autos,
 	return result;
 }
 
-// so this means it is always >0 when keyframe is found 
-int TrackCanvas::do_plugin_autos(Track *track, int cursor_x, int cursor_y,
-	int draw, int buttonpress,
-	Plugin* &keyframe_plugin, KeyFrame* &keyframe_instance)
-{
-	int result = 0;
-
-	ptstime view_start;
-	ptstime view_end;
-	double yscale;
-	int center_pixel;
-	double xzoom;
-
-	if(!track->expand_view)
-		return 0;
-
-	calculate_viewport(track, view_start,view_end,
-		yscale, xzoom, center_pixel);
-
-	for(int i = 0; i < track->plugins.total && !result; i++)
-	{
-		Plugin *plugin = track->plugins.values[i];
-
-		int center_pixel = round(track->y_pixel +
-			master_edl->local_session->zoom_track +
-			(i + 0.5) * theme_global->get_image("plugin_bg_data")->get_h() +
-			(edlsession->show_titles ? theme_global->get_image("title_bg_data")->get_h() : 0));
-
-		if(plugin->keyframes->first == plugin->keyframes->last)
-			continue;
-
-		for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
-			keyframe && !result;
-			keyframe = (KeyFrame*)keyframe->next)
-		{
-			if(keyframe->pos_time >= view_start && keyframe->pos_time < view_end)
-			{
-				int x = round((keyframe->pos_time - view_start) * xzoom);
-				int y = center_pixel - keyframe_pixmap->get_h() / 2;
-
-				if(!draw)
-				{
-					if(cursor_x >= x && cursor_y >= y &&
-						cursor_x < x + keyframe_pixmap->get_w() &&
-						cursor_y < y + keyframe_pixmap->get_h())
-					{
-						result = 1;
-						keyframe_plugin = plugin;
-						keyframe_instance = keyframe;
-
-						if(buttonpress)
-						{
-							mainsession->drag_auto = keyframe;
-							mainsession->drag_start_postime = keyframe->pos_time;
-							mainsession->drag_origin_x = cursor_x;
-							mainsession->drag_origin_y = cursor_y;
-
-							ptstime position = keyframe->pos_time;
-							ptstime center = (master_edl->local_session->get_selectionstart(1) +
-								master_edl->local_session->get_selectionend(1)) / 2;
-
-							if(!shift_down())
-								master_edl->local_session->set_selection(position);
-							else
-							if(position < center)
-								master_edl->local_session->set_selectionstart(position);
-							else
-								master_edl->local_session->set_selectionend(position);
-						}
-					}
-				}
-				else
-					draw_pixmap(keyframe_pixmap, x, y);
-			}
-		}
-	}
-	return result;
-}
-
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, rerender;
@@ -3029,63 +2935,6 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 	return result;
 }
 
-int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
-{
-	KeyFrame *current = (KeyFrame*)mainsession->drag_auto;
-
-	UPDATE_DRAG_HEAD(1)
-
-	if(!PTSEQU(postime, current->pos_time))
-	{
-		Track *track = current->autos->track;
-		Plugin *plugin = 0;
-// figure out the correct plugin 
-		int found = 0;
-		for(int i = 0; i < track->plugins.total; i++)
-		{
-			plugin = track->plugins.values[i];
-
-			KeyFrames *keyframes = plugin->keyframes;
-			for(KeyFrame *currentkeyframe = (KeyFrame *)keyframes->first; currentkeyframe; currentkeyframe = (KeyFrame *) currentkeyframe->next)
-			{
-				if(currentkeyframe == current)
-				{
-					found = 1;
-					break;
-				}
-			}
-			if(found)
-				break;
-		}
-
-		if(PTSEQU(postime, current->pos_time))
-			return 0;
-
-		mainsession->plugin_highlighted = plugin;
-		mainsession->track_highlighted = track;
-		result = 1;
-		current->pos_time = postime;
-
-		char string[BCTEXTLEN];
-		edlsession->ptstotext(string, current->pos_time);
-		mwindow_global->show_message(string);
-
-		ptstime position_f = current->pos_time;
-		ptstime center_f = (master_edl->local_session->get_selectionstart(1) +
-			master_edl->local_session->get_selectionend(1)) / 2;
-		if(!shift_down())
-			master_edl->local_session->set_selection(position_f);
-		else
-		if(position_f < center_f)
-		{
-			master_edl->local_session->set_selectionstart(position_f);
-		}
-		else
-			master_edl->local_session->set_selectionend(position_f);
-	}
-	return result;
-}
-
 int TrackCanvas::cursor_motion_event()
 {
 	int result, cursor_x, cursor_y;
@@ -3145,13 +2994,6 @@ int TrackCanvas::cursor_motion_event()
 			mainsession->current_operation++;
 			update_overlay = 1;
 		}
-		break;
-
-	case DRAG_PAN:
-	case DRAG_MASK:
-	case DRAG_MODE:
-		rerender = update_overlay = 
-			update_drag_pluginauto(get_cursor_x(), get_cursor_y());
 		break;
 
 	case SELECT_REGION:
@@ -3655,112 +3497,6 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press,
 	return result;
 }
 
-int TrackCanvas::do_plugins(int cursor_x, int cursor_y, int drag_start,
-	int button_press, int &redraw, int &rerender)
-{
-	Plugin *plugin = 0;
-	int result = 0;
-	int done = 0;
-	int x, y, w, h;
-	Track *track = 0;
-
-	for(track = master_edl->first_track();
-		track && !done; track = track->next)
-	{
-		if(!track->expand_view)
-			continue;
-
-		for(int i = 0; i < track->plugins.total && !done; i++)
-		{
-			Plugin *current = track->plugins.values[i];
-
-			plugin_dimensions(current, x, y, w, h);
-			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
-				MWindowGUI::visible(y, y + h, 0, get_h()))
-			{
-				if(cursor_x >= x && cursor_x < x + w &&
-					cursor_y >= y && cursor_y < y + h)
-				{
-					plugin = current;
-					done = 1;
-					break;
-				}
-			}
-		}
-	}
-
-	if(plugin)
-	{
-// Start plugin popup
-		if(button_press)
-		{
-			if(get_buttonpress() == 3)
-			{
-				plugin_menu->update(plugin);
-				plugin_menu->activate_menu();
-				result = 1;
-			} 
-			else
-// Select range of plugin on doubleclick over plugin
-			if(get_double_click() && !drag_start)
-			{
-				master_edl->local_session->set_selectionstart(plugin->get_pts());
-				master_edl->local_session->set_selectionend(plugin->end_pts());
-				rerender = 1;
-				redraw = 1;
-				result = 1;
-			}
-		}
-		else
-// Move plugin
-		if(drag_start && plugin->track->record)
-		{
-			if(edlsession->editing_mode == EDITING_ARROW)
-			{
-				int cx, cy;
-
-				if(plugin->track->data_type == TRACK_AUDIO)
-					mainsession->current_operation = DRAG_AEFFECT_COPY;
-				else
-				if(plugin->track->data_type == TRACK_VIDEO)
-					mainsession->current_operation = DRAG_VEFFECT_COPY;
-
-				mainsession->drag_plugin = plugin;
-// Create picon
-				switch(plugin->plugin_type)
-				{
-				case PLUGIN_STANDALONE:
-				{
-					PluginServer *server = plugin->plugin_server;
-
-					if(server)
-					{
-						VFrame *frame = server->picon;
-
-						BC_Resources::get_abs_cursor(&cx, &cy);
-						drag_popup = new BC_DragWindow(gui, 
-							frame, 
-							cx - frame->get_w() / 2,
-							cy - frame->get_h() / 2);
-					}
-					break;
-				}
-
-				case PLUGIN_SHAREDPLUGIN:
-				case PLUGIN_SHAREDMODULE:
-					BC_Resources::get_abs_cursor(&cx, &cy);
-					drag_popup = new BC_DragWindow(gui, 
-						theme_global->get_image("clip_icon"), 
-						cx - theme_global->get_image("clip_icon")->get_w() / 2,
-						cy - theme_global->get_image("clip_icon")->get_h() / 2);
-					break;
-				}
-				result = 1;
-			}
-		}
-	}
-	return result;
-}
 
 int TrackCanvas::do_transitions(int cursor_x, int cursor_y, int button_press,
 	int &new_cursor)
@@ -3903,9 +3639,6 @@ int TrackCanvas::button_press_event()
 			else if(do_edits(cursor_x, cursor_y, 1, 0, rerender,
 					rerender))
 				break;
-			else if(do_plugins(cursor_x, cursor_y, 0, 1,
-					rerender, rerender))
-				break;
 			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
 			break;
@@ -3930,8 +3663,6 @@ int TrackCanvas::button_press_event()
 				break;
 			else if(do_edits(cursor_x, cursor_y, 1, 0,
 					rerender, rerender))
-				break;
-			else if(do_plugins(cursor_x, cursor_y, 0, 1, rerender, rerender))
 				break;
 			else if(do_tracks(cursor_x, cursor_y, 1))
 				break;
