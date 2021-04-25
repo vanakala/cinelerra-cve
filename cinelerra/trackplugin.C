@@ -66,6 +66,7 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 	int text_left = 5;
 	int redraw = 0;
 	int kcount = 0;
+	int total_kf;
 	int kx;
 
 	if(!edlsession->keyframes_visible && num_keyframes)
@@ -78,8 +79,9 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 	}
 	else
 	{
-		if(plugin->keyframes->first &&
-			plugin->keyframes->first != plugin->keyframes->last)
+		total_kf = plugin->keyframes->total();
+
+		if(total_kf > 1)
 		{
 			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first;
 				keyframe; keyframe = (KeyFrame*)keyframe->next)
@@ -107,8 +109,8 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 			string, strlen(string), 0);
 		redraw = 1;
 	}
-
-	if(edlsession->keyframes_visible && (kcount != num_keyframes || redraw))
+	if(edlsession->keyframes_visible && total_kf > 1 &&
+		(kcount != num_keyframes || redraw))
 	{
 		int ky = (h - canvas->keyframe_pixmap->get_h()) / 2;
 		num_keyframes = 0;
