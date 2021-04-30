@@ -52,7 +52,7 @@ public:
 	virtual ~MenuEffectThread() {};
 
 	void run();
-	int set_title(const char *text);  // set the effect to be run by a menuitem
+	void set_title(const char *text);  // set the effect to be run by a menuitem
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
 	void get_derived_attributes(Asset *asset);
 	void save_derived_attributes(Asset *asset);

@@ -202,6 +202,7 @@ int* GWindowToggle::get_main_value(toggleinfo toggleinf)
 			return &edlsession->keyframes_visible;
 		}
 	}
+	return 0;
 }
 
 void GWindowToggle::update()

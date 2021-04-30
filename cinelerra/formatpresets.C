@@ -192,6 +192,7 @@ FormatSelection::FormatSelection(int x, int y,
 int FormatSelection::handle_event()
 {
 	presets->update_edlsession(get_text());
+	return 1;
 }
 
 

@@ -139,7 +139,7 @@ public:
 	LoadPrevious();
 
 	int handle_event();
-	int set_path(const char *path);
+	void set_path(const char *path);
 private:
 	char path[BCTEXTLEN];
 };

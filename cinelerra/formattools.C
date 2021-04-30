@@ -589,7 +589,7 @@ FormatPathText::FormatPathText(int x, int y, FormatTools *format)
 int FormatPathText::handle_event() 
 {
 	strcpy(format->asset->path, get_text());
-	format->handle_event();
+	return format->handle_event();
 }
 
 
@@ -621,6 +621,7 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
 int FormatVideo::handle_event()
 {
 	format->asset->video_data = get_value();
+	return 1;
 }
 
 

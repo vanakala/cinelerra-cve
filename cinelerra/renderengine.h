@@ -49,7 +49,7 @@ public:
 // Synchronizes Playcackconfig with edlsession
 	void copy_playbackconfig();
 // Sends the command sequence, compensating for network latency
-	int arm_command(TransportCommand *command);
+	void arm_command(TransportCommand *command);
 // Start the command
 	void start_command();
 

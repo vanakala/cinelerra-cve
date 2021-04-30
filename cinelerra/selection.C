@@ -713,6 +713,7 @@ int SwapValues::handle_event()
 	*value1 = *value2;
 	*value2 = v;
 	output->handle_swapvalues(*value1, *value2);
+	return 1;
 }
 
 
@@ -725,6 +726,7 @@ SelectionLeftBox::SelectionLeftBox(int x, int y, Selection *selection)
 int SelectionLeftBox::handle_event()
 {
 	selection->handle_event();
+	return 1;
 }
 
 SampleBitsSelection::SampleBitsSelection(int x, int y, BC_WindowBase *base, int *value, int bits)
@@ -739,6 +741,7 @@ int SampleBitsSelection::handle_event()
 	{
 		*intvalue = current_2int->value2;
 	}
+	return 1;
 }
 
 void SampleBitsSelection::update_size(int size)

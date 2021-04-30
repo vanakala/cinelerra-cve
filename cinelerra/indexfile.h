@@ -36,8 +36,8 @@ public:
 	void update_edl_asset();
 	void redraw_edits(int force);
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);
-	int close_index();
-	int remove_index();
+	void close_index();
+	void remove_index();
 	int read_info();
 	int write_info();
 

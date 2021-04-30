@@ -280,7 +280,7 @@ int FileThread::write_buffer(int size)
 	return return_value;
 }
 
-int FileThread::swap_buffer()
+void FileThread::swap_buffer()
 {
 	current_buffer++;
 	if(current_buffer >= ring_buffers) current_buffer = 0;

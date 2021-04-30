@@ -629,6 +629,7 @@ double PerspectiveMain::get_current_x()
 	case 3:
 		return config.x4;
 	}
+	return 0;
 }
 
 double PerspectiveMain::get_current_y()
@@ -647,6 +648,7 @@ double PerspectiveMain::get_current_y()
 	case 3:
 		return config.y4;
 	}
+	return 0;
 }
 
 void PerspectiveMain::set_current_x(double value)

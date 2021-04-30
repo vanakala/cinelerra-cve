@@ -117,7 +117,7 @@ public:
 	Undo(MWindow *mwindow);
 
 	int handle_event();
-	int update_caption(const char *new_caption = "");
+	void update_caption(const char *new_caption = "");
 
 	MWindow *mwindow;
 };
@@ -146,7 +146,7 @@ public:
 	Redo(MWindow *mwindow);
 
 	int handle_event();
-	int update_caption(const char *new_caption = "");
+	void update_caption(const char *new_caption = "");
 
 	MWindow *mwindow;
 };

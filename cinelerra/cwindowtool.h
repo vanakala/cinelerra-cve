@@ -80,7 +80,7 @@ public:
 		int h);
 
 // Update the keyframe from text boxes
-	virtual int handle_event() {};
+	virtual int handle_event() { return 0; };
 // Update text boxes from keyframe here
 	virtual void update() {};
 // Update EDL and preview only

@@ -37,7 +37,7 @@ public:
 
 	// We are currently exporting a track at once
 	int track_number;
-	int export_it();
+	void export_it();
 	MWindow *mwindow;
 
 	void load_defaults();

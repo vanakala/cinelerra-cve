@@ -254,6 +254,7 @@ IndexPathText::IndexPathText(int x,
 int IndexPathText::handle_event()
 {
 	strcpy(pwindow->thread->preferences->index_directory, get_text());
+	return 1;
 }
 
 

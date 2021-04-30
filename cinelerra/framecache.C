@@ -111,6 +111,7 @@ VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset)
 
 	put_item(item);
 	lock->unlock();
+	return frame;
 }
 
 FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset)

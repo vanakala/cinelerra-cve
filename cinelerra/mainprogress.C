@@ -191,7 +191,7 @@ int MainProgressBar::update(int64_t value)
 
 int MainProgressBar::update(ptstime value)
 {
-	update((int64_t)(value * MAINPROGRESS_COEF));
+	return update((int64_t)(value * MAINPROGRESS_COEF));
 }
 
 void MainProgressBar::get_time(char *text)

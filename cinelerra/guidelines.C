@@ -336,7 +336,7 @@ size_t GuideFrame::get_size()
 {
 	size_t size = sizeof(*this);
 
-	size += allocated * sizeof(uint16_t);
+	return size += allocated * sizeof(uint16_t);
 }
 
 void GuideFrame::dump(int indent)

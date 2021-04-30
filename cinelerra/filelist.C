@@ -507,6 +507,7 @@ int FileList::get_units()
 FrameWriterUnit* FileList::get_unit(int number)
 {
 	if(writer) return (FrameWriterUnit*)writer->get_client(number);
+	return 0;
 }
 
 FrameWriterPackage::FrameWriterPackage()

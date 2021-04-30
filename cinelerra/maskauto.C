@@ -360,6 +360,7 @@ size_t MaskAuto::get_size()
 
 	for(int i = 0; i < masks.total; i++)
 		size += masks.values[i]->get_size();
+	return size;
 }
 
 void MaskAuto::dump(int indent)

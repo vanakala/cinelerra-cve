@@ -112,4 +112,5 @@ int ScaleConstrain::handle_event()
 {
 	client->config.constrain = get_value();
 	client->send_configure_change();
+	return 1;
 }

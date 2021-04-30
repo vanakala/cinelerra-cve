@@ -483,7 +483,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	return 0;
 }
 
-int IndexFile::close_index()
+void IndexFile::close_index()
 {
 	if(file)
 	{
@@ -492,7 +492,7 @@ int IndexFile::close_index()
 	}
 }
 
-int IndexFile::remove_index()
+void IndexFile::remove_index()
 {
 	if(asset->index_status == INDEX_READY || asset->index_status == INDEX_NOTTESTED)
 	{

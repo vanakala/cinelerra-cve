@@ -271,7 +271,7 @@ int LoadPrevious::handle_event()
 	return 1;
 }
 
-int LoadPrevious::set_path(const char *path)
+void LoadPrevious::set_path(const char *path)
 {
 	strcpy(this->path, path);
 }

@@ -441,7 +441,7 @@ int Undo::handle_event()
 	return 1;
 }
 
-int Undo::update_caption(const char *new_caption)
+void Undo::update_caption(const char *new_caption)
 {
 	char string[1024];
 
@@ -467,7 +467,7 @@ int Redo::handle_event()
 	return 1;
 }
 
-int Redo::update_caption(const char *new_caption)
+void Redo::update_caption(const char *new_caption)
 {
 	char string[1024];
 
@@ -869,6 +869,7 @@ int LabelsFollowEdits::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->set_labels_follow_edits(get_checked());
+	return 1;
 }
 
 

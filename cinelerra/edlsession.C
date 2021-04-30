@@ -705,7 +705,7 @@ char *EDLSession::configuration_path(const char *filename, char *outbuf)
 
 	strcpy(outbuf, plugin_configuration_directory);
 	fs.complete_path(outbuf);
-	strcat(outbuf, filename);
+	return strcat(outbuf, filename);
 }
 
 ptstime EDLSession::frame_duration()

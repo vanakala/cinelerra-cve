@@ -442,6 +442,7 @@ int AutoTypeMenu::from_text(const char *text)
 		return AUTOGROUPTYPE_X;
 	if(!strcmp(text, to_text(AUTOGROUPTYPE_Y)))
 		return AUTOGROUPTYPE_Y;
+	return AUTOGROUPTYPE_COUNT;
 }
 
 int AutoTypeMenu::handle_event()

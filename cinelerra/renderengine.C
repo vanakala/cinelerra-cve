@@ -70,7 +70,7 @@ void RenderEngine::copy_playbackconfig()
 	config->copy_from(edlsession->playback_config);
 }
 
-int RenderEngine::arm_command(TransportCommand *new_command)
+void RenderEngine::arm_command(TransportCommand *new_command)
 {
 // Prevent this renderengine from accepting another command until finished.
 // Since the renderengine is often deleted after the input_lock command it must

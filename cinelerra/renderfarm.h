@@ -214,7 +214,7 @@ public:
 	int write_int64(int64_t value);
 	int64_t read_int64(int *error);
 // Inserts header and writes string to socket
-	int write_string(char *string);
+	void write_string(char *string);
 	static int open_client(const char *hostname, int port);
 
 

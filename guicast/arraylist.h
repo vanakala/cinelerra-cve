@@ -158,7 +158,7 @@ TYPE ArrayList<TYPE>::insert(TYPE value, int number)
 	{
 		values[i] = values[i - 1];
 	}
-	values[number] = value;
+	return values[number] = value;
 }
 
 template<class TYPE>

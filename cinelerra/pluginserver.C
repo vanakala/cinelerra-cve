@@ -48,7 +48,7 @@ PluginServer::~PluginServer()
 }
 
 // Done only once at creation
-int PluginServer::reset_parameters()
+void PluginServer::reset_parameters()
 {
 	plugin_fd = 0;
 	title = 0;

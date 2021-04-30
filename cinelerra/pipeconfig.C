@@ -143,6 +143,7 @@ int PipeCheckBox::handle_event()
 		else
 			textbox->disable();
 	}
+	return 1;
 }
 
 PipeButton::PipeButton(int x, int y, YUVPreset *preset)

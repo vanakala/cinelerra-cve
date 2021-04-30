@@ -92,7 +92,7 @@ public:
 	VFrame *picon;
 
 private:
-	int reset_parameters();
+	void reset_parameters();
 
 // Handle from dlopen.  Plugins are opened once at startup and stored in the master
 // plugindb.

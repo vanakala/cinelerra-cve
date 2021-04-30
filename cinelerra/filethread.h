@@ -56,7 +56,7 @@ public:
 	VFrame*** get_video_buffer();
 
 	void run();
-	int swap_buffer();
+	void swap_buffer();
 
 	AFrame ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]

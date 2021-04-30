@@ -361,19 +361,19 @@ ReverbEngine::~ReverbEngine()
 	join();
 }
 
-int ReverbEngine::process_overlays(int output_buffer, int size)
+void ReverbEngine::process_overlays(int output_buffer, int size)
 {
 	this->output_buffer = output_buffer;
 	this->size = size;
 	input_lock.unlock();
 }
 
-int ReverbEngine::wait_process_overlays()
+void ReverbEngine::wait_process_overlays()
 {
 	output_lock.lock();
 }
 
-int ReverbEngine::process_overlay(double *in, double *out, double &out1, 
+void ReverbEngine::process_overlay(double *in, double *out, double &out1,
 	double &out2, double level, 
 	int lowpass, int samplerate, int size)
 {

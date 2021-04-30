@@ -436,7 +436,7 @@ void RenderFarmServerThread::run()
 	}
 }
 
-int RenderFarmServerThread::write_string(char *string)
+void RenderFarmServerThread::write_string(char *string)
 {
 	int i, len;
 	i = 0;

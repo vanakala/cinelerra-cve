@@ -342,6 +342,7 @@ static int xerrorhdlr(Display *display, XErrorEvent *event)
 		string);
 	fprintf(stderr, "Display %p XID %#08lx\n", event->display, event->resourceid);
 	signal_entry(0, NULL, NULL);
+	return 0;
 }
 
 // XIO error handler
@@ -351,6 +352,7 @@ static int xioerrhdlr(Display *display)
 		errno, strerror(errno), DisplayString(display));
 	fprintf(stderr, "    with %d events remaining\n", QLength(display));
 	signal_entry(0, NULL, NULL);
+	return 0;
 }
 
 // X protocol watcher

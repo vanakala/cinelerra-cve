@@ -114,6 +114,7 @@ StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int val
 int StillImageUseDuration::handle_event()
 {
 	pwindow->thread->this_edlsession->si_useduration = get_value();
+	return 1;
 }
 
 
@@ -138,6 +139,7 @@ ToggleButton::ToggleButton(int x, int y, const char *text, int *value)
 int ToggleButton::handle_event()
 {
 	*valueptr = get_value();
+	return 1;
 }
 
 MiscText::MiscText(int x, int y, char *boxtext)

@@ -94,7 +94,7 @@ void ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *so
 	double_to_CMX3600(edit_destend, frame_rate, destoutpoint);
 }
 
-int ExportEDLAsset::export_it()
+void ExportEDLAsset::export_it()
 {
 	FILE *fh;
 	fh = fopen(path, "w+");
