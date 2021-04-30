@@ -36,7 +36,7 @@
 #include "vwindow.h"
 
 #include <string.h>
-
+#include <inttypes.h>
 
 AssetEdit::AssetEdit(MWindow *mwindow)
  : Thread()

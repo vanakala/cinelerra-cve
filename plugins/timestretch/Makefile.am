@@ -4,9 +4,8 @@ timestretch_la_LIBADD =
 timestretch_la_SOURCES = timestretch.C
 AM_CXXFLAGS = $(CINELERRA_CFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/guicast \
-	-I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
+	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = timestretch.h

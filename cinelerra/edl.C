@@ -33,6 +33,8 @@
 #include "vtrack.h"
 #include "versioninfo.h"
 
+#include <string.h>
+
 Mutex* EDL::id_lock = 0;
 
 

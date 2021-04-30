@@ -150,6 +150,7 @@ noinst_HEADERS = \
 	colors.h \
 	colormodels.h \
 	colormodels.inc \
+	colormodels_private.h \
 	colorspaces.h \
 	colorspaces.inc \
 	condition.inc \

@@ -1,21 +1,8 @@
-/*
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
- * USA
- */
- 
- 
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
+
 #ifndef COLORMODELS_H
 #define COLORMODELS_H
 
@@ -30,15 +17,10 @@
 #define DUMP_FRAME_COMB 0x10  // Combine nibbels
 #define DUMP_FRAME_MASK 7     // Value type
 
-extern "C"
+struct cm_names
 {
-#include <libswscale/swscale.h>
-#include <libavutil/avutil.h>
-}
-
-struct cm_names {
-    int value;
-    const char *name;
+	int value;
+	const char *name;
 };
 
 struct intp_types
@@ -94,7 +76,6 @@ public:
 		int out_colormodel,
 		int out_rowspan);
 
-	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static int inter_color_model(int color_model);
 
 	static void fill_linesizes(int colormodel, int rowspan,
@@ -117,7 +98,6 @@ public:
 		int bytes_per_line, int colormodel, int opts = DUMP_FRAME_AVG);
 
 private:
-	static void transfer_details(struct SwsContext *sws_ctx, int srange);
 	static struct cm_names color_model_names[];
 	static struct intp_types interpolation_types[];
 };

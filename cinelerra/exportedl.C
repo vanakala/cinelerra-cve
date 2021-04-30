@@ -21,6 +21,7 @@
 #include "track.h"
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <string.h>
 
 #define WIN_WIDTH 410

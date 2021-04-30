@@ -9,6 +9,8 @@
 #include "bcresources.h"
 #include "byteorder.h"
 #include "clip.h"
+#include "colormodels.h"
+#include "colormodels_private.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -1876,7 +1878,7 @@ int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
 {
 	int cmodel_out = frame_out->get_color_model();
-	AVPixelFormat pix_fmt_out = ColorModels::color_model_to_pix_fmt(cmodel_out);
+	AVPixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
 	AVPixelFormat pix_fmt_in;
 	unsigned char *out_data[4];
 	int out_linesizes[4];
@@ -1987,7 +1989,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 {
 	int size;
 	int rv;
-	AVPixelFormat pix_fmt_in = ColorModels::color_model_to_pix_fmt(frame_in->get_color_model());
+	AVPixelFormat pix_fmt_in = color_model_to_pix_fmt(frame_in->get_color_model());
 	VFrame *temp_frame;
 	AVPixelFormat pix_fmt_out;
 	unsigned char *in_data[4];

@@ -1,26 +1,14 @@
-/*
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
- * USA
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
 
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bcbitmap.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "language.h"
 #include "colormodels.h"
+#include "colormodels_private.h"
 #include "tmpframecache.h"
 #include "vframe.h"
 #include <stdlib.h>
@@ -30,6 +18,7 @@ extern "C"
 {
 #include <libswscale/swscale.h>
 #include <libavutil/pixdesc.h>
+#include <libavutil/avutil.h>
 }
 
 struct cm_names ColorModels::color_model_names[] =
@@ -67,6 +56,7 @@ struct intp_types ColorModels::interpolation_types[] =
 	{ LANCZOS_LANCZOS, SWS_LANCZOS }
 };
 
+static void transfer_details(struct SwsContext *sws_ctx, int srange);
 
 ColorModels::ColorModels()
 {
@@ -438,7 +428,7 @@ void ColorModels::fill_data(int colormodel, unsigned char **data,
 	}
 }
 
-AVPixelFormat ColorModels::color_model_to_pix_fmt(int color_model)
+AVPixelFormat color_model_to_pix_fmt(int color_model)
 {
 	switch(color_model)
 	{
@@ -638,7 +628,7 @@ void ColorModels::copy_colors(int w, int h,
 	}
 }
 
-void ColorModels::transfer_details(struct SwsContext *sws_ctx, int srange)
+void transfer_details(struct SwsContext *sws_ctx, int srange)
 {
 	int *inv_table, *table;
 	int srcRange, dstRange;
