@@ -180,11 +180,13 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 
 int GLThread::have_context(Display *dpy, int screen)
 {
+#ifdef HAVE_GL
 	for(int i = 0; i < last_context; i++)
 	{
 		if(contexts[i].dpy == dpy && contexts[i].screen == screen)
 			return i;
 	}
+#endif
 	return -1;
 }
 
