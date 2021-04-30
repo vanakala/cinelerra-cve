@@ -20,3 +20,12 @@ Makefile.in
 ffmpeg
 cinelerra-cvs-current.spec
 *.data
+*.[oa]
+*~
+*.lo
+*.la
+.deps
+.libs
+list.*
+po/remove-potcdate.sed
+po/stamp-po
