@@ -147,6 +147,7 @@ void RGB601Main::process(VFrame *input_ptr)
 	{
 		switch(cmodel)
 		{
+		case BC_RGBA16161616:
 			for(int i = 0; i < h; i++)
 			{
 				uint16_t *in_row = (uint16_t*)input_ptr->get_row_ptr(i);
@@ -175,6 +176,7 @@ void RGB601Main::process(VFrame *input_ptr)
 	{
 		switch(cmodel)
 		{
+		case BC_RGBA16161616:
 			for(int i = 0; i < h; i++)
 			{
 				uint16_t *in_row = (uint16_t*)input_ptr->get_row_ptr(i);
