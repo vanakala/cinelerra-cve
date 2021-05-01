@@ -377,13 +377,6 @@ void TrackCanvas::drag_stop()
 			ptstime start = 0;
 			ptstime length = track->get_length();
 
-			if(mainsession->plugin_highlighted)
-			{
-				start = mainsession->plugin_highlighted->get_pts();
-				length = mainsession->plugin_highlighted->get_length();
-				if(length <= 0) length = track->get_length();
-			}
-			else
 			if(master_edl->local_session->get_selectionend() >
 				master_edl->local_session->get_selectionstart())
 			{
@@ -487,12 +480,10 @@ void TrackCanvas::drag_stop()
 	if(result)
 	{
 		if(mainsession->track_highlighted
-				|| mainsession->edit_highlighted
-				|| mainsession->plugin_highlighted)
+				|| mainsession->edit_highlighted)
 			redraw = 1;
 		mainsession->track_highlighted = 0;
 		mainsession->edit_highlighted = 0;
-		mainsession->plugin_highlighted = 0;
 		mainsession->current_operation = NO_OPERATION;
 	}
 
@@ -1251,38 +1242,29 @@ void TrackCanvas::draw_highlighting()
 			(mainsession->current_operation == DRAG_VEFFECT &&
 			mainsession->track_highlighted->data_type == TRACK_VIDEO)))
 		{
-// Put it before another plugin
-			if(mainsession->plugin_highlighted)
-				plugin_dimensions(mainsession->plugin_highlighted,
-					x, y, w, h);
-			else
-			{
-// Put it after a plugin set
-				track_dimensions(mainsession->track_highlighted,
-					x, y, w, h);
+			track_dimensions(mainsession->track_highlighted,
+				x, y, w, h);
 
 // Put it in a new plugin set determined by the selected range
-				if(master_edl->local_session->get_selectionend() >
-					master_edl->local_session->get_selectionstart())
-				{
-					x = round((master_edl->local_session->get_selectionstart() -
-						master_edl->local_session->view_start_pts) /
-						master_edl->local_session->zoom_time);
-					w = round((master_edl->local_session->get_selectionend() -
-						master_edl->local_session->get_selectionstart()) /
-						master_edl->local_session->zoom_time);
-				}
+			if(master_edl->local_session->get_selectionend() >
+				master_edl->local_session->get_selectionstart())
+			{
+				x = round((master_edl->local_session->get_selectionstart() -
+					master_edl->local_session->view_start_pts) /
+					master_edl->local_session->zoom_time);
+				w = round((master_edl->local_session->get_selectionend() -
+					master_edl->local_session->get_selectionstart()) /
+					master_edl->local_session->zoom_time);
+			}
 // Put it in a new plugin set determined by an edit boundary
-				else
-				if(mainsession->edit_highlighted)
-				{
-					int temp_y, temp_h;
-					edit_dimensions(mainsession->edit_highlighted->track,
-						mainsession->edit_highlighted->get_pts(),
-						mainsession->edit_highlighted->end_pts(),
-						x, temp_y, w, temp_h);
-				}
-// Put it at the beginning of the track in a new plugin set
+			else
+			if(mainsession->edit_highlighted)
+			{
+				int temp_y, temp_h;
+				edit_dimensions(mainsession->edit_highlighted->track,
+					mainsession->edit_highlighted->get_pts(),
+					mainsession->edit_highlighted->end_pts(),
+					x, temp_y, w, temp_h);
 			}
 
 			if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
@@ -1304,7 +1286,7 @@ void TrackCanvas::draw_highlighting()
 // Dragging an effect from the timeline
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
-		if((mainsession->plugin_highlighted || mainsession->track_highlighted) &&
+		if((mainsession->track_highlighted) &&
 			((mainsession->current_operation == DRAG_AEFFECT_COPY &&
 				mainsession->track_highlighted->data_type == TRACK_AUDIO) ||
 			(mainsession->current_operation == DRAG_VEFFECT_COPY &&
