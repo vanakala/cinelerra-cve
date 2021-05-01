@@ -1531,7 +1531,7 @@ void TrackCanvas::draw_brender_start()
 	}
 }
 
-int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpress,
+int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int buttonpress,
 	int &new_cursor, int &rerender)
 {
 // Note: button 3 (right mouse button) is not eaten to allow
@@ -1553,7 +1553,7 @@ int TrackCanvas::do_keyframes(int cursor_x, int cursor_y, int draw, int buttonpr
 			Autos *autos = automation->autos[i];
 			if(!result && session->auto_conf->auto_visible[i] && autos)
 			{
-				pixmaps_lock->lock("TrackCanvas::do_keyframes");
+				pixmaps_lock->lock("TrackCanvas::do_track_autos");
 				switch(i)
 				{
 				case AUTOMATION_MODE:
@@ -2673,7 +2673,7 @@ void TrackCanvas::draw_overlays()
 	draw_highlighting();
 
 // Automation
-	do_keyframes(0, 0, 1, 0, new_cursor, rerender);
+	do_track_autos(0, 0, 1, 0, new_cursor, rerender);
 
 // Handle dragging
 	draw_drag_handle();
@@ -3025,7 +3025,7 @@ int TrackCanvas::cursor_motion_event()
 			if(do_transitions(cursor_x, cursor_y,
 					0, new_cursor))
 				break;
-			else if(do_keyframes(cursor_x, cursor_y, 0, 0,
+			else if(do_track_autos(cursor_x, cursor_y, 0, 0,
 					new_cursor, rerender))
 				break;
 			else if(do_edit_handles(cursor_x, cursor_y,
@@ -3605,7 +3605,7 @@ int TrackCanvas::button_press_event()
 					do_transitions(cursor_x, cursor_y, 1,
 						new_cursor))
 				break;
-			else if(do_keyframes(cursor_x, cursor_y,
+			else if(do_track_autos(cursor_x, cursor_y,
 					0, get_buttonpress(),
 					new_cursor, rerender))
 				break;
@@ -3631,7 +3631,7 @@ int TrackCanvas::button_press_event()
 					do_transitions(cursor_x, cursor_y, 1,
 						new_cursor))
 				break;
-			else if(do_keyframes(cursor_x, cursor_y, 0,
+			else if(do_track_autos(cursor_x, cursor_y, 0,
 				get_buttonpress(), new_cursor, rerender))
 			{
 				update_overlay = 1;

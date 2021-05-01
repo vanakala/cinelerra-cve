@@ -134,12 +134,6 @@ public:
 		int cursor_x, 
 		int cursor_y, 
 		int buttonpress);
-	int do_keyframes(int cursor_x, 
-		int cursor_y, 
-		int draw, 
-		int buttonpress, 
-		int &new_cursor,
-		int &rerender);
 
 	int do_float_autos(Track *track, 
 		Autos *autos, 
@@ -316,6 +310,9 @@ public:
 	KeyframePopup *keyframe_menu;
 
 private:
+	int do_track_autos(int cursor_x, int cursor_y,
+		int draw, int buttonpress,
+		int &new_cursor, int &rerender);
 	void draw_drag_handle();
 	void clear_drag_handle();
 	void draw_floatauto_ctrlpoint(int x,
