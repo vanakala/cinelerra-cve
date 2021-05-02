@@ -47,6 +47,7 @@ enum
 	DRAG_PLUGINHANDLE1, // Dragging started inside plugin
 	DRAG_PLUGINHANDLE2, // Dragging strtaed outside plugin
 	DRAG_NUDGE,
+	DRAG_CROP_PRE,
 	DRAG_CROP
 };
 

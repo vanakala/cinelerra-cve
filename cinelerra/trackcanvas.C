@@ -2989,6 +2989,7 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_PAN_PRE:
 	case DRAG_MASK_PRE:
 	case DRAG_MODE_PRE:
+	case DRAG_CROP_PRE:
 		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
 		{
 			mainsession->current_operation++;
@@ -2999,6 +3000,7 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_PAN:
 	case DRAG_MASK:
 	case DRAG_MODE:
+	case DRAG_CROP:
 		rerender = update_overlay = drag_track_auto(get_cursor_x());
 		break;
 
