@@ -1662,6 +1662,24 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 	return result;
 }
 
+int TrackCanvas::drag_track_auto(int cursor_x)
+{
+	Auto *current = mainsession->drag_auto;
+	ptstime new_pos, min_pos, max_pos;
+
+	if(abs(mainsession->drag_origin_x - cursor_x) > HANDLE_W)
+	{
+		new_pos = mainsession->drag_start_postime +
+			(cursor_x - mainsession->drag_origin_x) *
+			master_edl->local_session->zoom_time;
+		new_pos = master_edl->align_to_frame(new_pos);
+		current->autos->drag_limits(current, &min_pos, &max_pos);
+		current->pos_time = CLIP(new_pos, min_pos, max_pos);
+		return 1;
+	}
+	return 0;
+}
+
 void TrackCanvas::draw_auto(Auto *current, int x, int y,
 	int center_pixel, int zoom_track, int color)
 {
@@ -2976,6 +2994,12 @@ int TrackCanvas::cursor_motion_event()
 			mainsession->current_operation++;
 			update_overlay = 1;
 		}
+		break;
+
+	case DRAG_PAN:
+	case DRAG_MASK:
+	case DRAG_MODE:
+		rerender = update_overlay = drag_track_auto(get_cursor_x());
 		break;
 
 	case SELECT_REGION:

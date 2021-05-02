@@ -313,6 +313,7 @@ private:
 	int do_track_autos(int cursor_x, int cursor_y,
 		int draw, int buttonpress,
 		int &new_cursor, int &rerender);
+	int drag_track_auto(int cursor_x);
 	void draw_drag_handle();
 	void clear_drag_handle();
 	void draw_floatauto_ctrlpoint(int x,
