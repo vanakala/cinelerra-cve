@@ -2693,8 +2693,6 @@ void TrackCanvas::draw_overlays()
 // Automation
 	do_track_autos(0, 0, 1, 0, new_cursor, rerender);
 
-// Handle dragging
-	draw_drag_handle();
 	overlays_lock->unlock();
 }
 
@@ -2952,16 +2950,16 @@ int TrackCanvas::cursor_motion_event()
 	{
 	case DRAG_EDITHANDLE1:
 // Outside threshold.  Upgrade status
-		if(abs(get_cursor_x() - mainsession->drag_origin_x) > HANDLE_W)
+		if(abs(get_cursor_x() - mainsession->drag_origin_x) < HANDLE_W)
 		{
-			mainsession->current_operation = DRAG_EDITHANDLE2;
-			update_overlay = 1;
+			new_cursor = UPRIGHT_ARROW_CURSOR;
+			break;
 		}
-		break;
-
+		mainsession->current_operation = DRAG_EDITHANDLE2;
+		// fall through
 	case DRAG_EDITHANDLE2:
 		update_drag_handle();
-		update_overlay = 1;
+		draw_drag_handle();
 		new_cursor = UPRIGHT_ARROW_CURSOR;
 		break;
 
@@ -3224,6 +3222,7 @@ int TrackCanvas::button_release_event()
 	{
 	case DRAG_EDITHANDLE2:
 		mainsession->current_operation = NO_OPERATION;
+		clear_drag_handle();
 		drag_scroll = 0;
 		result = 1;
 		mwindow_global->modify_edithandles();
