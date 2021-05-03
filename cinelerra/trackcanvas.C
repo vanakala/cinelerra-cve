@@ -2962,6 +2962,7 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_EDITHANDLE2:
 		update_drag_handle();
 		update_overlay = 1;
+		new_cursor = UPRIGHT_ARROW_CURSOR;
 		break;
 
 // Rubber band curves
@@ -2974,14 +2975,17 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_PROJECTOR_X:
 	case DRAG_PROJECTOR_Y:
 	case DRAG_PROJECTOR_Z:
+		new_cursor = UPRIGHT_ARROW_CURSOR;
 		rerender = update_overlay = update_drag_floatauto(get_cursor_x(), get_cursor_y());
 		break;
 
 	case DRAG_PLAY:
+		new_cursor = UPRIGHT_ARROW_CURSOR;
 		rerender = update_overlay = update_drag_toggleauto(get_cursor_x(), get_cursor_y());
 		break;
 
 	case DRAG_MUTE:
+		new_cursor = UPRIGHT_ARROW_CURSOR;
 		rerender = update_overlay = update_drag_toggleauto(get_cursor_x(), get_cursor_y());
 		break;
 
@@ -3002,6 +3006,7 @@ int TrackCanvas::cursor_motion_event()
 	case DRAG_MODE:
 	case DRAG_CROP:
 		rerender = update_overlay = drag_track_auto(get_cursor_x());
+		new_cursor = UPRIGHT_ARROW_CURSOR;
 		break;
 
 	case SELECT_REGION:
