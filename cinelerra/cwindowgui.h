@@ -59,7 +59,7 @@ public:
 	void set_operation(int value);
 	void update_tool();
 	void drag_motion();
-	int drag_stop();
+	void drag_stop();
 	void draw_status();
 // Zero out pointers to affected auto
 	void reset_affected();

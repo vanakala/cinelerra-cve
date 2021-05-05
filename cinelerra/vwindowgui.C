@@ -262,9 +262,10 @@ void VWindowGUI::drag_motion()
 		canvas->draw_refresh();
 }
 
-int VWindowGUI::drag_stop()
+void VWindowGUI::drag_stop()
 {
-	if(get_hidden()) return 0;
+	if(get_hidden())
+		return;
 
 	if(mainsession->vcanvas_highlighted &&
 		mainsession->current_operation == DRAG_ASSET)
@@ -282,10 +283,8 @@ int VWindowGUI::drag_stop()
 		else
 		if(edl)
 			vwindow->change_source(edl);
-		return 1;
+		return;
 	}
-
-	return 0;
 }
 
 

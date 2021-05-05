@@ -1090,19 +1090,14 @@ void AWindowAssets::drag_motion_event()
 
 void AWindowAssets::drag_stop_event()
 {
-	int result = 0;
-
 	mwindow->gui->drag_stop();
-
-	result = mwindow->vwindow->gui->drag_stop();
-
-	if(!result)
-		result = mwindow->cwindow->gui->drag_stop();
-
-	if(result) get_drag_popup()->set_animation(0);
-
+	mwindow->vwindow->gui->drag_stop();
+	mwindow->cwindow->gui->drag_stop();
+	get_drag_popup()->set_animation(0);
 	BC_ListBox::drag_stop_event();
-	mainsession->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
+	// since NO_OPERATION is also defined in listbox,
+	//  we have to reach for global scope...
+	mainsession->current_operation = ::NO_OPERATION;
 }
 
 int AWindowAssets::column_resize_event()

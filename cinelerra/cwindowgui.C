@@ -463,10 +463,10 @@ void CWindowGUI::drag_motion()
 	}
 }
 
-int CWindowGUI::drag_stop()
+void CWindowGUI::drag_stop()
 {
-	int result = 0;
-	if(get_hidden()) return 0;
+	if(get_hidden())
+		return;
 
 	if((mainsession->current_operation == DRAG_ASSET ||
 		mainsession->current_operation == DRAG_VTRANSITION ||
@@ -476,10 +476,9 @@ int CWindowGUI::drag_stop()
 // Hide highlighting
 		mainsession->ccanvas_highlighted = 0;
 		canvas->draw_refresh();
-		result = 1;
 	}
 	else
-		return 0;
+		return;
 
 	if(mainsession->current_operation == DRAG_ASSET)
 	{
@@ -527,8 +526,6 @@ int CWindowGUI::drag_stop()
 			mainsession->drag_pluginservers->values[0]);
 		mainsession->current_operation = NO_OPERATION;
 	}
-
-	return result;
 }
 
 
