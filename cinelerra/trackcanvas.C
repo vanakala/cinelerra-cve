@@ -474,6 +474,15 @@ void TrackCanvas::drag_stop()
 		clear_drag_handle();
 		mwindow_global->modify_pluginhandles();
 		break;
+
+	case DRAG_PLUGINKEY:
+		if(mainsession->drag_plugin->plugin_server)
+			mwindow_global->sync_parameters(
+				mainsession->drag_plugin->plugin_server->video);
+		else
+			mwindow_global->sync_parameters();
+		result = 1;
+		break;
 	}
 
 // since we don't have subwindows we have to terminate any drag operation

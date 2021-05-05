@@ -39,7 +39,6 @@ TrackPlugin::TrackPlugin(int x, int y, int w, int h,
 	plugin_show = 0;
 	num_keyframes = 0;
 	keyframe_width = canvas->keyframe_pixmap->get_w();
-	drag_box = 0;
 	drawn_x = drawn_y = drawn_w = drawn_h = -1;
 }
 
@@ -349,6 +348,8 @@ int TrackPlugin::drag_start_event()
 					{
 						mainsession->current_operation = DRAG_PLUGINKEY;
 						mainsession->drag_auto = keyframe;
+						mainsession->drag_start_postime = keyframe->pos_time;
+						mainsession->drag_plugin = plugin;
 						return 1;
 					}
 				}
@@ -362,13 +363,20 @@ void TrackPlugin::drag_motion_event()
 {
 	if(mainsession->current_operation == DRAG_PLUGINKEY)
 	{
-		if(!drag_box)
-		{
-			KeyFrame *keyframe = (KeyFrame*)mainsession->drag_auto;
-			int kx = keyframe->get_pos_x();
+		KeyFrame *keyframe = (KeyFrame*)mainsession->drag_auto;
+		int cx = get_cursor_x();
+		ptstime minpos, maxpos, new_pos;
 
-			draw_keyframe_box(kx);
-			drag_box = 1;
+		plugin->keyframes->drag_limits(keyframe, &minpos, &maxpos);
+		new_pos = (cx - get_drag_x()) *
+			master_edl->local_session->zoom_time;
+		new_pos = master_edl->align_to_frame(mainsession->drag_start_postime + new_pos);
+		CLAMP(new_pos , minpos, maxpos);
+		if(!EQUIV(new_pos, keyframe->pos_time))
+		{
+			keyframe->pos_time = new_pos;
+			keyframe->drawing(-1);
+			redraw(drawn_x, drawn_y, drawn_w, drawn_h);
 		}
 	}
 	else
@@ -377,37 +385,11 @@ void TrackPlugin::drag_motion_event()
 
 void TrackPlugin::drag_stop_event()
 {
-	if(mainsession->current_operation == DRAG_PLUGINKEY)
-	{
-		KeyFrame *keyframe = (KeyFrame*)mainsession->drag_auto;
-		int cx = get_cursor_x();
-		ptstime minpos, maxpos;
-
-		plugin->keyframes->drag_limits(keyframe, &minpos, &maxpos);
-		keyframe->pos_time += (cx - get_drag_x()) *
-			master_edl->local_session->zoom_time;
-		keyframe->pos_time =
-			CLIP(master_edl->align_to_frame(keyframe->pos_time), minpos, maxpos);
-		keyframe->drawing(-1);
-		mainsession->current_operation = NO_OPERATION;
-		redraw(drawn_x, drawn_y, drawn_w, drawn_h);
-		drag_box = 0;
-	}
-	else
-	{
-		canvas->drag_stop();
-		delete canvas->drag_popup;
-		canvas->drag_popup = 0;
-	}
+	canvas->drag_stop();
+	delete canvas->drag_popup;
+	canvas->drag_popup = 0;
 }
 
-void TrackPlugin::draw_keyframe_box(int x)
-{
-	set_color(WHITE);
-	draw_rectangle(x, 1, keyframe_width - 1, get_h() - 1);
-	draw_rectangle(x + 1, 2, keyframe_width - 3, get_h() - 3);
-	flash();
-}
 
 PluginOn::PluginOn(int x, Plugin *plugin)
  : BC_Toggle(x, 0, theme_global->get_image_set("plugin_on"), plugin->on)
