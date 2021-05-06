@@ -482,6 +482,7 @@ void TrackCanvas::drag_stop()
 		else
 			mwindow_global->sync_parameters();
 		result = 1;
+		mwindow_global->undo->update_undo(_("plugin keyframe"), LOAD_AUTOMATION);
 		break;
 	}
 
