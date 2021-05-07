@@ -243,7 +243,7 @@ void MWindow::copy(ptstime start, ptstime end)
 	EDL edl(0);
 
 	edl.copy(master_edl, start, end);
-	edl.save_xml(&file, "", 0, 0, 1);
+	edl.save_xml(&file, 0, EDL_CLIPBRD);
 
 	gui->get_clipboard()->to_clipboard(file.string, strlen(file.string), SECONDARY_SELECTION);
 	save_backup();

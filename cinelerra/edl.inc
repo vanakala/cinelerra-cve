@@ -103,4 +103,10 @@ extern EDL *render_edl;
 #define MAX_PAN 1.0
 #define PAN_RADIUS 50
 
+// Flags of save_xml
+#define EDL_CLIP      1
+#define EDL_VWINDOW   2
+#define EDL_CLIPBRD   4
+#define EDL_UNDO      8
+
 #endif

@@ -76,8 +76,7 @@ void ClipList::save_xml(FileXML *file, const char *output_path)
 		file->append_tag();
 		file->append_newline();
 
-		values[i]->save_xml(file,
-			output_path, 1, 0);
+		values[i]->save_xml(file, output_path, EDL_CLIP);
 
 		file->tag.set_title("/CLIP_EDL");
 		file->append_tag();

@@ -55,10 +55,8 @@ int Save::handle_event()
 	else
 	{
 		FileXML file;
-		master_edl->save_xml(&file,
-			mainsession->filename,
-			0,
-			0);
+
+		master_edl->save_xml(&file, mainsession->filename);
 
 		if(file.write_to_file(mainsession->filename))
 		{
@@ -144,7 +142,7 @@ void SaveAs::run()
 	FileXML file;
 	mwindow_global->set_filename(filename);      // update the project name
 	strcpy(master_edl->project_path, filename);
-	master_edl->save_xml(&file, filename, 0, 0);
+	master_edl->save_xml(&file, filename);
 
 	if(file.write_to_file(filename))
 	{

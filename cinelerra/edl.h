@@ -56,8 +56,8 @@ public:
 // Create tracks using existing configuration
 	void create_default_tracks();
 	void load_xml(FileXML *file, EDLSession *session);
-	void save_xml(FileXML *xml, const char *output_path,
-		int is_clip, int is_vwindow, int to_clipboard = 0);
+	void save_xml(FileXML *xml, const char *output_path = 0,
+		int save_flags = 0);
 
 // Convert position to frames if cursor alignment is enabled
 	ptstime align_to_frame(ptstime position, int round = 1);

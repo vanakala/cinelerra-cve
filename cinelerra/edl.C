@@ -291,14 +291,14 @@ void EDL::copy_assets(ptstime start,
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 void EDL::save_xml(FileXML *file, const char *output_path,
-	int is_clip, int is_vwindow, int to_clipboard)
+	int save_flags)
 {
 	ptstime start = 0;
 	ptstime end = total_length();
 // begin file
-	if(!is_clip)    // Cliplist writes tag itself
+	if(!(save_flags & EDL_CLIP))    // Cliplist writes tag itself
 	{
-		if(is_vwindow)
+		if(save_flags & EDL_VWINDOW)
 			file->tag.set_title("VWINDOW_EDL");
 		else
 		{
@@ -330,17 +330,16 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 // Media
 // Don't replicate all assets for every clip.
-	if(!is_clip && !is_vwindow)
+	if((save_flags & (EDL_CLIP | EDL_VWINDOW)) == 0)
 		copy_assets(start, end, file, 1, output_path);
 
 // Clips
 // Don't want this if using clipboard
-	if(!to_clipboard && vwindow_edl->total_tracks() && this != vwindow_edl)
+	if(!(save_flags & EDL_CLIPBRD) && vwindow_edl->total_tracks() &&
+		this != vwindow_edl)
 	{
 		vwindow_edl->save_xml(file,
-			output_path,
-			0,
-			1);
+			output_path, EDL_VWINDOW);
 	}
 	if(this == master_edl)
 		cliplist_global.save_xml(file, output_path);
@@ -351,9 +350,9 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 	tracks->save_xml(file, output_path);
 
 // terminate file
-	if(!is_clip)
+	if(!(save_flags & EDL_CLIP))
 	{
-		if(is_vwindow)
+		if(save_flags & EDL_VWINDOW)
 			file->tag.set_title("/VWINDOW_EDL");
 		else
 			file->tag.set_title("/EDL");

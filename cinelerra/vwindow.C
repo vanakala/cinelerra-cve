@@ -215,7 +215,7 @@ void VWindow::copy()
 	EDL edl(0);
 
 	edl.copy(vwindow_edl, start, end);
-	edl.save_xml(&file, "", 0, 0);
+	edl.save_xml(&file);
 	mwindow_global->gui->get_clipboard()->to_clipboard(file.string,
 		strlen(file.string),
 		SECONDARY_SELECTION);

@@ -72,7 +72,8 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 void MainUndo::capture_state()
 {
 	FileXML file;
-	master_edl->save_xml(&file, "", 0, 0);
+
+	master_edl->save_xml(&file);
 	delete [] data_after;
 	data_after = new char[strlen(file.string)+1];
 	strcpy(data_after, file.string);
