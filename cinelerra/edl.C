@@ -335,13 +335,13 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 
 // Clips
 // Don't want this if using clipboard
-	if(!(save_flags & EDL_CLIPBRD) && vwindow_edl->total_tracks() &&
+	if(!(save_flags & (EDL_CLIPBRD | EDL_UNDO)) && vwindow_edl->total_tracks() &&
 		this != vwindow_edl)
 	{
 		vwindow_edl->save_xml(file,
 			output_path, EDL_VWINDOW);
 	}
-	if(this == master_edl)
+	if(this == master_edl && !(save_flags & EDL_UNDO))
 		cliplist_global.save_xml(file, output_path);
 
 	file->append_newline();

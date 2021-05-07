@@ -73,9 +73,9 @@ void MainUndo::capture_state()
 {
 	FileXML file;
 
-	master_edl->save_xml(&file);
+	master_edl->save_xml(&file, 0, EDL_UNDO);
 	delete [] data_after;
-	data_after = new char[strlen(file.string)+1];
+	data_after = new char[strlen(file.string) + 1];
 	strcpy(data_after, file.string);
 }
 
