@@ -16,6 +16,8 @@
 #include "filexml.inc"
 #include "playbackconfig.inc"
 
+#define MAX_HANNDLE_MODES 3
+
 // Session shared between all clips
 class EDLSession
 {
@@ -109,7 +111,7 @@ public:
 // Length in seconds
 	ptstime default_transition_length;
 // Edit mode to use for each mouse button
-	int edit_handle_mode[3];
+	int edit_handle_mode[MAX_HANNDLE_MODES];
 // Editing mode
 	int editing_mode;
 // AWindow format

@@ -289,6 +289,9 @@ void TrackCanvas::start_pluginhandle_drag(ptstime position, int drag_cmd,
 	mainsession->current_operation = drag_cmd;
 	mainsession->drag_handle = handle;
 	mainsession->drag_button = get_buttonpress() - 1;
+	if(mainsession->drag_button >= MAX_HANNDLE_MODES ||
+			mainsession->drag_button < 0)
+		mainsession->drag_button = 0;
 	mainsession->drag_plugin = plugin;
 }
 
@@ -3369,6 +3372,9 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 			mainsession->drag_edit = edit_result;
 			mainsession->drag_handle = handle_result;
 			mainsession->drag_button = get_buttonpress() - 1;
+			if(mainsession->drag_button >= MAX_HANNDLE_MODES ||
+					mainsession->drag_button < 0)
+				mainsession->drag_button = 0;
 			mainsession->drag_position = position;
 			mainsession->current_operation = DRAG_EDITHANDLE1;
 			mainsession->drag_origin_x = get_cursor_x();
