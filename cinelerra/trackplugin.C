@@ -325,13 +325,13 @@ int TrackPlugin::drag_start_event()
 			if(cursor_x < HANDLE_W)
 			{
 				canvas->start_pluginhandle_drag(plugin->get_pts(),
-					DRAG_PLUGINHANDLE1, 0, plugin);
+					DRAG_PLUGINHANDLE1, HANDLE_LEFT, plugin);
 				return 1;
 			}
 			if(cursor_x >= drawn_w - HANDLE_W)
 			{
 				canvas->start_pluginhandle_drag(plugin->end_pts(),
-					DRAG_PLUGINHANDLE1, 1, plugin);
+					DRAG_PLUGINHANDLE1, HANDLE_RIGHT, plugin);
 				return 1;
 			}
 			if(num_keyframes)

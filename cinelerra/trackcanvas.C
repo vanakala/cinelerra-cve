@@ -262,14 +262,14 @@ int TrackCanvas::drag_start_event()
 				if(cursor_x < pc && cursor_x > pc - HANDLE_W)
 				{
 					start_pluginhandle_drag(plugin->get_pts(),
-						DRAG_PLUGINHANDLE2, 0, plugin);
+						DRAG_PLUGINHANDLE2, HANDLE_LEFT, plugin);
 					return 1;
 				}
 				pc += trackplugin->get_w();
 				if(cursor_x > pc && cursor_x < pc + HANDLE_W)
 				{
 					start_pluginhandle_drag(plugin->end_pts(),
-						DRAG_PLUGINHANDLE2, 1, plugin);
+						DRAG_PLUGINHANDLE2, HANDLE_RIGHT, plugin);
 					return 1;
 				}
 			}
