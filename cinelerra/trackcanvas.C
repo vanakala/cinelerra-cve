@@ -3074,9 +3074,7 @@ int TrackCanvas::cursor_motion_event()
 					0, rerender, update_overlay,
 					new_cursor))
 				break;
-			else if(do_plugin_handles(cursor_x, cursor_y,
-					0, rerender, update_overlay,
-					new_cursor))
+			else if(do_plugin_handles(cursor_x, cursor_y, &new_cursor))
 				break;
 			else if(do_edits(cursor_x, cursor_y, 0, 0,
 					update_overlay, rerender))
@@ -3387,13 +3385,10 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 	return result;
 }
 
-int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
-	int &rerender, int &update_overlay, int &new_cursor)
+int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int *new_cursor)
 {
-	int result = 0;
-
 	for(Track *track = master_edl->first_track();
-		track && !result; track = track->next)
+		track; track = track->next)
 	{
 		for(int i = 0; i < track->plugins.total; i++)
 		{
@@ -3410,15 +3405,13 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int button_press,
 			{
 				if(cursor_x <= plugin_x1 && cursor_x >= plugin_x1 - HANDLE_W)
 				{
-					new_cursor = RIGHT_CURSOR;
-					result = 1;
-					break;
+					*new_cursor = RIGHT_CURSOR;
+					return 1;
 				}
 				else if(cursor_x >= plugin_x2 && cursor_x <= plugin_x2 + HANDLE_W)
 				{
-					new_cursor = LEFT_CURSOR;
-					result = 1;
-					break;
+					*new_cursor = LEFT_CURSOR;
+					return 1;
 				}
 			}
 		}
@@ -3660,10 +3653,6 @@ int TrackCanvas::button_press_event()
 					rerender, update_overlay,
 					new_cursor))
 				break;
-// Test plugin boundaries
-			else if(do_plugin_handles(cursor_x, cursor_y, 1,
-					rerender, update_overlay, new_cursor))
-				break;
 			else if(do_edits(cursor_x, cursor_y, 1, 0, rerender,
 					rerender))
 				break;
@@ -3684,9 +3673,6 @@ int TrackCanvas::button_press_event()
 				break;
 			}
 			else if(do_edit_handles(cursor_x, cursor_y, 1, rerender,
-					update_overlay, new_cursor))
-				break;
-			else if(do_plugin_handles(cursor_x, cursor_y, 1, rerender,
 					update_overlay, new_cursor))
 				break;
 			else if(do_edits(cursor_x, cursor_y, 1, 0,
