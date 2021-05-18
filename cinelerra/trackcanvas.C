@@ -218,7 +218,9 @@ void TrackCanvas::drag_motion()
 	{
 		gui->cursor->hide();
 		draw_overlays();
-		gui->cursor->show();
+		if(drag_handle_pixel < 0)
+			gui->cursor->show();
+		drag_handle_pixel = -1;
 		flash();
 	}
 }
@@ -293,6 +295,8 @@ void TrackCanvas::start_pluginhandle_drag(ptstime position, int drag_cmd,
 			mainsession->drag_button < 0)
 		mainsession->drag_button = 0;
 	mainsession->drag_plugin = plugin;
+	gui->cursor->hide();
+	draw_drag_handle();
 }
 
 void TrackCanvas::drag_motion_event()
@@ -1410,6 +1414,7 @@ void TrackCanvas::draw_drag_handle()
 		mainsession->current_operation == DRAG_PLUGINHANDLE1 ||
 		mainsession->current_operation == DRAG_PLUGINHANDLE2)
 	{
+		overlays_lock->lock("TrackCanvas::draw_drag_handle");
 		int pixel1 = round((mainsession->drag_position -
 			master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
@@ -1425,6 +1430,7 @@ void TrackCanvas::draw_drag_handle()
 			flash();
 			drag_handle_pixel = pixel1;
 		}
+		overlays_lock->unlock();
 	}
 	else
 		drag_handle_pixel = -1;
@@ -1434,12 +1440,14 @@ void TrackCanvas::clear_drag_handle()
 {
 	if(drag_handle_pixel >= 0)
 	{
+		overlays_lock->lock("TrackCanvas::clear_drag_handle");
 		set_color(GREEN);
 		set_inverse();
 		draw_line(drag_handle_pixel, 0, drag_handle_pixel, get_h());
 		set_opaque();
 		flash();
 		drag_handle_pixel = -1;
+		overlays_lock->unlock();
 	}
 }
 
@@ -3055,10 +3063,12 @@ int TrackCanvas::cursor_motion_event()
 	default:
 		if(is_event_win() && cursor_inside())
 		{
-// Update clocks
 			cursor_x = get_cursor_x();
 			cursor_y = get_cursor_y();
 
+			if(do_plugin_handles(cursor_x, cursor_y, &new_cursor))
+				break;
+// Update clocks
 			position = cursor_x * master_edl->local_session->zoom_time +
 				master_edl->local_session->view_start_pts;
 			position = master_edl->align_to_frame(position);
@@ -3073,8 +3083,6 @@ int TrackCanvas::cursor_motion_event()
 			else if(do_edit_handles(cursor_x, cursor_y,
 					0, rerender, update_overlay,
 					new_cursor))
-				break;
-			else if(do_plugin_handles(cursor_x, cursor_y, &new_cursor))
 				break;
 			else if(do_edits(cursor_x, cursor_y, 0, 0,
 					update_overlay, rerender))
@@ -3574,14 +3582,13 @@ int TrackCanvas::button_press_event()
 {
 	int result = 0;
 	int cursor_x, cursor_y;
-	int new_cursor;
+	int new_cursor = default_cursor();
 	int update_opts = 0;
 
-	if(is_event_win() && cursor_inside())
+	if(is_event_win() && cursor_inside() && get_cursor() == new_cursor)
 	{
 		cursor_x = get_cursor_x();
 		cursor_y = get_cursor_y();
-		new_cursor = default_cursor();
 
 		ptstime position = cursor_x *
 			master_edl->local_session->zoom_time +
