@@ -3421,6 +3421,21 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int *new_cursor)
 					*new_cursor = LEFT_CURSOR;
 					return 1;
 				}
+				else if(get_button_down())
+				{
+					if(cursor_x < plugin_x1 &&
+						cursor_x > plugin_x1 - HANDLE_W * 2)
+					{
+						*new_cursor = RIGHT_CURSOR;
+						return 1;
+					}
+					else if(cursor_x >= plugin_x2 &&
+						cursor_x <= plugin_x2 + HANDLE_W * 2)
+					{
+						*new_cursor = LEFT_CURSOR;
+						return 1;
+					}
+				}
 			}
 		}
 	}
