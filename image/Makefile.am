@@ -1,8 +1,8 @@
 desktopdir = $(datadir)/applications
-desktop_DATA = cinelerra-cve.desktop
+desktop_DATA = cinelerracve.desktop
 
-pixmapdir = $(datadir)/pixmaps
-pixmap_DATA = cinelerra-cve.xpm
+pixmapdir = $(datadir)/icons/hicolor/48x48/apps
+pixmap_DATA = cinelerracve.png
 
 EXTRA_DIST = \
-        cinelerra-cve.desktop cinelerra-cve.xpm
+        cinelerracve.desktop cinelerracve.png

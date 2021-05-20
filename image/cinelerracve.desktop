@@ -4,6 +4,6 @@ Comment=Video Editor
 Categories=Application;AudioVideo;Multimedia;
 Encoding=UTF-8
 Exec=cinelerracve
-Icon=cinelerra-cve.xpm
+Icon=cinelerracve.png
 Terminal=false
 Type=Application
