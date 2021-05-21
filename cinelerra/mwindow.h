@@ -341,7 +341,7 @@ public:
 
 	void modify_edithandles(void);
 	void modify_pluginhandles(void);
-	void finish_modify_handles();
+	void finish_modify_handles(int upd_option = 0);
 
 // Send new EDL to caches
 	void age_caches();

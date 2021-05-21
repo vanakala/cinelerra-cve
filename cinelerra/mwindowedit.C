@@ -673,7 +673,7 @@ void MWindow::modify_edithandles(void)
 		edlsession->edit_handle_mode[mainsession->drag_button],
 		edlsession->labels_follow_edits);
 
-	finish_modify_handles();
+	finish_modify_handles(WUPD_CANVREDRAW);
 }
 
 void MWindow::modify_pluginhandles()
@@ -687,7 +687,7 @@ void MWindow::modify_pluginhandles()
 }
 
 // Common to edithandles and plugin handles
-void MWindow::finish_modify_handles()
+void MWindow::finish_modify_handles(int upd_option)
 {
 	int edit_mode = edlsession->edit_handle_mode[mainsession->drag_button];
 
@@ -703,7 +703,7 @@ void MWindow::finish_modify_handles()
 	undo->update_undo(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 	sync_parameters();
 	update_plugin_guis();
-	update_gui(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+	update_gui(upd_option | WUPD_SCROLLBARS | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }

@@ -480,6 +480,13 @@ void TrackCanvas::drag_stop()
 		drag_scroll = 0;
 		clear_drag_handle();
 		mwindow_global->modify_pluginhandles();
+		if(mainsession->drag_plugin->trackplugin)
+		{
+			int px, py, pw, ph;
+
+			plugin_dimensions(mainsession->drag_plugin, px, py, pw, ph);
+			mainsession->drag_plugin->trackplugin->update(px, py, pw, ph);
+		}
 		break;
 
 	case DRAG_PLUGINKEY:
@@ -3597,13 +3604,14 @@ int TrackCanvas::button_press_event()
 {
 	int result = 0;
 	int cursor_x, cursor_y;
-	int new_cursor = default_cursor();
+	int new_cursor;
 	int update_opts = 0;
 
-	if(is_event_win() && cursor_inside() && get_cursor() == new_cursor)
+	if(is_event_win() && cursor_inside())
 	{
 		cursor_x = get_cursor_x();
 		cursor_y = get_cursor_y();
+		new_cursor = default_cursor();
 
 		ptstime position = cursor_x *
 			master_edl->local_session->zoom_time +
