@@ -210,7 +210,7 @@ void MWindow::clear_labels()
 		master_edl->local_session->get_selectionend(), 0);
 	undo->update_undo(_("clear labels"), LOAD_TIMEBAR);
 
-	gui->timebar->update();
+	update_gui(WUPD_TIMEBAR);
 	cwindow->update(WUPD_TIMEBAR);
 	save_backup();
 }
@@ -1316,11 +1316,8 @@ void MWindow::set_inpoint()
 	master_edl->set_inpoint(master_edl->local_session->get_selectionstart(1));
 	save_backup();
 
-	gui->timebar->update();
-	gui->flush();
-
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	update_gui(WUPD_TIMEBAR);
+	cwindow->update(WUPD_TIMEBAR);
 }
 
 class OutPointUndoItem : public UndoStackItem
@@ -1369,11 +1366,8 @@ void MWindow::set_outpoint()
 	master_edl->set_outpoint(master_edl->local_session->get_selectionend(1));
 	save_backup();
 
-	gui->timebar->update();
-	gui->flush();
-
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	update_gui(WUPD_TIMEBAR);
+	cwindow->update(WUPD_TIMEBAR);
 }
 
 void MWindow::splice(EDL *source)
@@ -1481,12 +1475,9 @@ void MWindow::toggle_label()
 	master_edl->labels->toggle_label(position1, position2);
 	save_backup();
 
-	gui->timebar->update();
+	update_gui(WUPD_TIMEBAR);
 	gui->canvas->activate();
-	gui->flush();
-
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	cwindow->update(WUPD_TIMEBAR);
 	awindow->gui->async_update_assets();
 }
 
