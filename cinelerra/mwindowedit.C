@@ -1521,16 +1521,9 @@ void MWindow::undo_entry()
 void MWindow::select_point(ptstime position)
 {
 	master_edl->local_session->set_selection(position);
-
-// Que the CWindow
 	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	update_plugin_guis();
-	gui->patchbay->update();
-	gui->cursor->update();
-	gui->mainclock->update(master_edl->local_session->get_selectionstart(1));
-	gui->zoombar->update();
-	gui->canvas->flash();
-	gui->flush();
+	update_gui(WUPD_PATCHBAY | WUPD_CURSOR | WUPD_CLOCK | WUPD_ZOOMBAR);
 }
 
 void MWindow::map_audio(int pattern)
