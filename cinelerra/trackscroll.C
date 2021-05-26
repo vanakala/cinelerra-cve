@@ -40,8 +40,8 @@ void TrackScroll::set_position(int handle_length)
 {
 	if(mwindow->gui->canvas)
 	{
-		int64_t length = master_edl->get_tracks_height(mwindow->theme);
-		int64_t position = master_edl->local_session->track_start;
+		int length = master_edl->get_tracks_height(mwindow->theme);
+		int position = master_edl->local_session->track_start;
 
 		if(position > length - handle_length)
 		{

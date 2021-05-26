@@ -79,7 +79,7 @@ public:
 	ptstime loop_start;
 	ptstime loop_end;
 // Vertical start of track view
-	int64_t track_start;
+	int track_start;
 // Horizontal start of view in seconds
 	ptstime view_start_pts;
 // Zooming of the timeline. Length of media per pixel
