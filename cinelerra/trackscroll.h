@@ -7,19 +7,15 @@
 #define TRACKSCROLL_H
 
 #include "bcscrollbar.h"
-#include "mwindow.inc"
 
 class TrackScroll : public BC_ScrollBar
 {
 public:
-	TrackScroll(MWindow *mwindow, int x, int y, int h);
+	TrackScroll();
 
 	void resize_event();
 	void set_position(int handle_length);
 	int handle_event();
-
-private:
-	MWindow *mwindow;
 };
 
 #endif

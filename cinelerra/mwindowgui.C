@@ -118,10 +118,7 @@ void MWindowGUI::get_scrollbars()
 	if(need_yscroll)
 	{
 		if(!trackscroll)
-			add_subwindow(trackscroll = new TrackScroll(mwindow, 
-				mwindow->theme->mvscroll_x,
-				mwindow->theme->mvscroll_y,
-				mwindow->theme->mvscroll_h));
+			add_subwindow(trackscroll = new TrackScroll());
 		else
 			trackscroll->resize_event();
 
