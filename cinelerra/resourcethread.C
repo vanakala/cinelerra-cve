@@ -15,8 +15,6 @@
 #include "file.h"
 #include "framecache.h"
 #include "mutex.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
 #include "trackcanvas.h"
@@ -76,9 +74,10 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 }
 
 
-ResourceThread::ResourceThread()
+ResourceThread::ResourceThread(TrackCanvas *canvas)
 {
 	interrupted = 1;
+	trackcanvas = canvas;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	aframe = 0;
@@ -221,7 +220,10 @@ void ResourceThread::run()
 			delete item;
 		}
 		if(do_update)
-			mwindow_global->update_gui(WUPD_CANVPICIGN);
+		{
+			trackcanvas->draw(0);
+			trackcanvas->flash();
+		}
 	}
 }
 
@@ -229,7 +231,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 {
 	VFrame *picon_frame;
 
-	mwindow_global->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
+	trackcanvas->pixmaps_lock->lock("ResourceThread::do_video");
 	if(!(picon_frame = frame_cache->get_frame_ptr(item->postime,
 		item->layer,
 		BC_RGB888,
@@ -263,9 +265,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
 	{
-		for(int i = 0; i < mwindow_global->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
 		{
-			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] ==
+			if(trackcanvas->resource_pixmaps.values[i] ==
 				item->pixmap)
 			{
 				item->pixmap->draw_vframe(picon_frame,
@@ -278,7 +280,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	}
 
 	frame_cache->unlock();
-	mwindow_global->gui->canvas->pixmaps_lock->unlock();
+	trackcanvas->pixmaps_lock->unlock();
 
 	if(frame_cache->total() > MAX_FRAME_CACHE_ITEMS)
 		frame_cache->delete_oldest();
@@ -376,9 +378,9 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 // Test for pixmap existence first
 		int exists = 0;
-		for(int i = 0; i < mwindow_global->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
 		{
-			if(mwindow_global->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(trackcanvas->resource_pixmaps.values[i] == item->pixmap)
 				exists = 1;
 		}
 

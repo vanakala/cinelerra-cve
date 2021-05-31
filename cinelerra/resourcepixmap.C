@@ -84,9 +84,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 	int y = 0;
 	Track *track = edit->edits->track;
 
-// Ignore if called by resourcethread.
-	if(mode & WUPD_CANVPICIGN) return;
-
 	if(edlsession->show_titles)
 		y += theme_global->get_image("title_bg_data")->get_h();
 
@@ -628,14 +625,11 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		else
 		{
 // Set picon thread to display from file
-			if(!(mode & WUPD_CANVPICIGN))
-			{
-				canvas->resource_thread->add_picon(this,
-					x, y, picon_w, picon_h,
-					source_pts, picon_len,
-					edit->channel,
-					edit->asset);
-			}
+			canvas->resource_thread->add_picon(this,
+				x, y, picon_w, picon_h,
+				source_pts, picon_len,
+				edit->channel,
+				edit->asset);
 		}
 		picon_src += picon_len;
 		x += picon_w;

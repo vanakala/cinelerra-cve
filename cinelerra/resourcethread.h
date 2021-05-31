@@ -18,10 +18,12 @@
 #include "arraylist.h"
 #include "condition.inc"
 #include "datatype.h"
+#include "resourcethread.inc"
 #include "resourcepixmap.inc"
 #include "thread.h"
+#include "trackcanvas.inc"
 #include "vframe.inc"
-
+#include "wavecache.inc"
 
 class ResourceThreadItem
 {
@@ -85,7 +87,7 @@ public:
 class ResourceThread : public Thread
 {
 public:
-	ResourceThread();
+	ResourceThread(TrackCanvas *canvas);
 	~ResourceThread();
 
 // reset - delete all picons.  Used for index building.
@@ -142,6 +144,7 @@ public:
 	CICache *video_cache;
 	FrameCache *frame_cache;
 	WaveCache *wave_cache;
+	TrackCanvas *trackcanvas;
 };
 
 #endif

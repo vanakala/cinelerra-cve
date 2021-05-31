@@ -163,7 +163,6 @@ public:
 //          WUPD_SCROLLBARS - update scrollbars
 //          WUPD_CANVINCR   - incremental drawing of resources
 //          WUPD_CANVREDRAW - delete and redraw of resources
-//          WUPD_CANVPICIGN - ignore picon thread
 //          WUPD_TIMEBAR    - update timebar
 //          WUPD_ZOOMBAR    - update zoombar
 //          WUPD_PATCHBAY   - update patchbay

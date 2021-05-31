@@ -82,7 +82,7 @@ TrackCanvas::TrackCanvas(MWindowGUI *gui)
 	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
 	canvas_lock = new Mutex("TrackCanvas::canvas_lock");
 	overlays_lock = new Mutex("TrackCanvas::overlays_lock");
-	resource_thread = new ResourceThread();
+	resource_thread = new ResourceThread(this);
 }
 
 TrackCanvas::~TrackCanvas()
@@ -717,16 +717,14 @@ void TrackCanvas::draw_resources(int mode, Asset *index_asset)
 {
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
 
-	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
-		resource_thread->stop_draw(!(mode & WUPD_INDEXES));
-
 	resource_timer->update();
 
 // Age resource pixmaps for deletion
 	if(!(mode & WUPD_INDEXES))
+	{
 		for(int i = 0; i < resource_pixmaps.total; i++)
 			resource_pixmaps.values[i]->visible--;
-
+	}
 	if(mode & WUPD_CANVREDRAW)
 		resource_pixmaps.remove_all_objects();
 
@@ -814,7 +812,7 @@ void TrackCanvas::draw_resources(int mode, Asset *index_asset)
 		hourglass_enabled = 0;
 	}
 
-	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
+	if(mode && (mode & WUPD_INDEXES) == 0)
 		resource_thread->start_draw();
 }
 

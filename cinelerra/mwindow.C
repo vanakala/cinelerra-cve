@@ -1304,10 +1304,7 @@ void MWindow::update_gui(int options, ptstime new_position)
 	{
 		gui->canvas->draw(options & WUPD_CANVAS);
 		gui->canvas->flash();
-// Activate causes the menubar to deactivate.  Don't want this for
-// picon thread.
-		if(!(options & WUPD_CANVPICIGN))
-			gui->canvas->activate();
+		gui->canvas->activate();
 	}
 
 	if(options & WUPD_BUTTONBAR)
@@ -1326,7 +1323,7 @@ void MWindow::update_gui(int options, ptstime new_position)
 		gui->cursor->update();
 
 // Can't age if the cache called this to draw missing picons
-	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
+	if((options & WUPD_CANVREDRAW) == 0)
 		age_caches();
 }
 
