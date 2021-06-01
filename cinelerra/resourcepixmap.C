@@ -5,7 +5,6 @@
 
 #include "aframe.h"
 #include "asset.h"
-#include "asset.inc"
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
@@ -22,7 +21,6 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainerror.h"
-#include "mwindow.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
 #include "theme.h"
@@ -33,10 +31,7 @@
 
 
 ResourcePixmap::ResourcePixmap(ResourceThread *resource_thread,
-	TrackCanvas *canvas, 
-	Edit *edit, 
-	int w, 
-	int h)
+	TrackCanvas *canvas, Edit *edit, int w, int h)
  : BC_Pixmap(canvas, w, h)
 {
 	edit_x = 0;
@@ -69,13 +64,9 @@ void ResourcePixmap::resize(int w, int h)
 }
 
 void ResourcePixmap::draw_data(Edit *edit,
-	int edit_x,
-	int edit_w,
-	int pixmap_x,
-	int pixmap_w,
-	int pixmap_h,
-	int mode,
-	int indexes_only)
+	int edit_x, int edit_w,
+	int pixmap_x, int pixmap_w, int pixmap_h,
+	int mode, int indexes_only)
 {
 // Get new areas to fill in relative to pixmap
 // Area to redraw relative to pixmap
@@ -338,7 +329,8 @@ void ResourcePixmap::draw_title(Edit *edit,
 		w -= -x;
 		x = 0;
 	}
-	if(w > pixmap_w) w -= w - pixmap_w;
+	if(w > pixmap_w)
+		w -= w - pixmap_w;
 
 	canvas->draw_3segmenth(x, 
 		0, 
@@ -376,7 +368,9 @@ void ResourcePixmap::draw_title(Edit *edit,
 // Need to draw one more x
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
-	if(w <= 0) return;
+	if(w <= 0)
+		return;
+
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		edlsession->sample_rate;
 
@@ -390,6 +384,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 	case INDEX_READY:
 		{
 			IndexFile indexfile;
+
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 
@@ -438,12 +433,11 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		ptstime len_pts = w * master_edl->local_session->zoom_time * 1.6;
 		int total_source_samples = round(len_pts * edit->asset->sample_rate);
 
-		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+		samplenum source_start = (((pixmap_x - edit_x + x) *
 			round(master_edl->local_session->zoom_time *
 				edlsession->sample_rate) +
 			edit->track->to_units(edit->get_source_pts())) *
 			asset_over_session);
-		double oldsample, newsample;
 
 		if(!aframe)
 			aframe = new AFrame(total_source_samples);
@@ -458,17 +452,20 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 		if(!source->get_samples(aframe))
 		{
+			double oldsample, newsample;
+
 			oldsample = newsample = *aframe->buffer;
-			for(int x1 = x, x2 = x + w, i = 0; 
-				x1 < x2; 
-				x1++, i++)
+			for(int x1 = x, x2 = x + w, i = 0; x1 < x2; x1++, i++)
 			{
 				oldsample = newsample;
-				newsample = aframe->buffer[(int)(i * asset_over_session)];
-				canvas->draw_line(x1 - 1, 
-					(int)(center_pixel - oldsample * master_edl->local_session->zoom_y / 2),
+				newsample = aframe->buffer[(int)round(i *
+						asset_over_session)];
+				canvas->draw_line(x1 - 1,
+					round(center_pixel - oldsample *
+						master_edl->local_session->zoom_y / 2),
 					x1,
-					(int)(center_pixel - newsample * master_edl->local_session->zoom_y / 2),
+					round(center_pixel - newsample *
+						master_edl->local_session->zoom_y / 2),
 					this);
 			}
 		}
@@ -499,31 +496,24 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					edlsession->sample_rate) +
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
-			WaveCacheItem *item = resource_thread->wave_cache->get_wave(edit->asset,
-					edit->channel,
-					source_start,
-					source_end);
+			WaveCacheItem *item = resource_thread->wave_cache->get_wave(
+					edit->asset, edit->channel,
+					source_start, source_end);
 			if(item)
 			{
-				y1 = (int)(center_pixel - 
+				y1 = round(center_pixel -
 					item->low * master_edl->local_session->zoom_y / 2);
-				y2 = (int)(center_pixel - 
+				y2 = round(center_pixel -
 					item->high * master_edl->local_session->zoom_y / 2);
 				if(first_pixel)
 				{
-					canvas->draw_line(x, 
-						y1,
-						x,
-						y2,
-						this);
+					canvas->draw_line(x, y1, x, y2, this);
 					first_pixel = 0;
 				}
 				else
-					canvas->draw_line(x, 
-						MIN(y1, prev_y2),
-						x,
-						MAX(y2, prev_y1),
-						this);
+					canvas->draw_line(x, MIN(y1, prev_y2),
+						x, MAX(y2, prev_y1), this);
+
 				prev_y1 = y1;
 				prev_y2 = y2;
 				first_pixel = 0;
@@ -549,22 +539,20 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 void ResourcePixmap::draw_wave(int x, double high, double low)
 {
 	int top_pixel = 0;
+
 	if(edlsession->show_titles)
 		top_pixel = theme_global->get_image("title_bg_data")->get_h();
 	int center_pixel = master_edl->local_session->zoom_track / 2 + top_pixel;
 	int bottom_pixel = top_pixel + master_edl->local_session->zoom_track;
-	int y1 = (int)(center_pixel - 
+	int y1 = round(center_pixel -
 		low * master_edl->local_session->zoom_y / 2);
-	int y2 = (int)(center_pixel - 
+	int y2 = round(center_pixel -
 		high * master_edl->local_session->zoom_y / 2);
+
 	CLAMP(y1, top_pixel, bottom_pixel);
 	CLAMP(y2, top_pixel, bottom_pixel);
 	canvas->set_color(theme_global->audio_color);
-	canvas->draw_line(x, 
-		y1,
-		x,
-		y2,
-		this);
+	canvas->draw_line(x, y1, x, y2, this);
 }
 
 void ResourcePixmap::draw_video_resource(Edit *edit, 
@@ -587,6 +575,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	double picons, picount;
 // Start and duration of a picon
 	ptstime picon_src, picon_len;
+
 // Don't draw video if edit is tiny
 	if(edit_w < 2)
 		return;
@@ -607,19 +596,11 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		VFrame *picon_frame;
 
 		if(picon_frame = resource_thread->frame_cache->get_frame_ptr(source_pts,
-			edit->channel,
-			BC_RGB888,
-			picon_w,
-			picon_h,
+			edit->channel, BC_RGB888, picon_w, picon_h,
 			edit->asset))
 		{
-			draw_vframe(picon_frame, 
-				x, 
-				y, 
-				picon_w, 
-				picon_h, 
-				0, 
-				0);
+			draw_vframe(picon_frame, x, y, picon_w, picon_h,
+				0, 0);
 			resource_thread->frame_cache->unlock();
 		}
 		else
