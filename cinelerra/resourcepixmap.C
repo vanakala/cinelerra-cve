@@ -302,8 +302,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 				pixmap_x,
 				pixmap_w,
 				refresh_x,
-				refresh_w,
-				mode);
+				refresh_w);
 			break;
 		}
 	}
@@ -561,8 +560,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int pixmap_x,
 	int pixmap_w,
 	int refresh_x,
-	int refresh_w,
-	int mode)
+	int refresh_w)
 {
 // pixels spanned by a picon
 	int picon_w = round(edit->picon_w());

@@ -40,9 +40,8 @@ public:
 		int edit_w,
 		int pixmap_x,
 		int pixmap_w,
-		int refresh_x, 
-		int refresh_w,
-		int mode);
+		int refresh_x,
+		int refresh_w);
 	void draw_audio_source(Edit *edit, int x, int w);
 // Called by ResourceThread to update pixmap
 	void draw_wave(int x, double high, double low);
