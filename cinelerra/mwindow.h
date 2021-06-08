@@ -173,6 +173,7 @@ public:
 //          WUPD_TIMEDEPS   - update time dependencies of zoombar
 //          WUPD_CURSOR     - update cursor
 //          WUPD_TOGLIGHTS  - update highlights of timebar toggles
+//          WUPD_ZCLOCKS    - update clocks of zoombar
 	void update_gui(int options, ptstime new_position = -1);
 	void start_hourglass();
 	void stop_hourglass();

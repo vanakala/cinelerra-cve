@@ -1322,6 +1322,9 @@ void MWindow::update_gui(int options, ptstime new_position)
 	if(options & WUPD_CURSOR)
 		gui->cursor->update();
 
+	if(options & WUPD_ZCLOCKS)
+		gui->zoombar->update_clocks();
+
 // Can't age if the cache called this to draw missing picons
 	if((options & WUPD_CANVREDRAW) == 0)
 		age_caches();
