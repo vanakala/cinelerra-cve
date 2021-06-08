@@ -143,11 +143,10 @@ void CTracking::update_tracker(ptstime position)
 
 	if(!updated_scroll)
 	{
-		mwindow->gui->cursor->update();
-		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
+		int opts = WUPD_CURSOR | WUPD_ZCLOCKS;
 		if(single_frame)
-			mwindow->gui->timebar->update_highlights();
-		mwindow->gui->canvas->flash(1);
+			opts |= WUPD_TOGLIGHTS;
+		mwindow->update_gui(opts);
 	}
 	master_edl->reset_plugins();
 	update_meters(position);
