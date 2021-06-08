@@ -51,19 +51,21 @@ public:
 
 	void dump(int indent);
 
-	ResourceThread *resource_thread;
 	TrackCanvas *canvas;
+	int edit_x, pixmap_x, pixmap_w, pixmap_h;
 // Visible in entire track canvas
 	int visible;
-// Section drawn
 	int edit_id;
-	int edit_x, pixmap_x, pixmap_w, pixmap_h;
+
+private:
+	ResourceThread *resource_thread;
 	int zoom_track, zoom_y;
 	ptstime zoom_time;
 	ptstime source_pts;
 	int data_type;
-// Timer to cause an hourglass to appear
 	AFrame *aframe;
+	ptstime last_picon_size;
+	int num_picons;
 };
 
 #endif

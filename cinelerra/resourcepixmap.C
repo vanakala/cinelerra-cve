@@ -48,6 +48,8 @@ ResourcePixmap::ResourcePixmap(ResourceThread *resource_thread,
 	source_pts = edit->get_source_pts();
 	data_type = edit->track->data_type;
 	edit_id = 0;
+	last_picon_size = -1;
+	num_picons = 0;
 }
 
 ResourcePixmap::~ResourcePixmap()
@@ -588,6 +590,16 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	picon_src = picount * picon_len;
 // Draw only cached frames
 	refresh_end = refresh_x + refresh_w;
+
+	if(!PTSEQU(last_picon_size, picon_len))
+	{
+		resource_thread->frame_cache->change_duration(picon_len,
+			edit->channel, BC_RGB888, picon_w, picon_h,
+			edit->asset);
+		last_picon_size = picon_len;
+	}
+	num_picons = pixmap_w / picon_w + 1;
+
 	while(x < refresh_end)
 	{
 		ptstime source_pts = edit->get_source_pts() + picon_src;
@@ -618,7 +630,28 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 
 void ResourcePixmap::dump(int indent)
 {
-	printf("%*sResourcePixmap %p dump:\n", indent, "", this);
-	printf("%*sedit_id %d edit_x %d pixmap_x %d pixmap_w %d visible %d\n",
-		indent + 1, "", edit_id, edit_x, pixmap_x, pixmap_w, visible);
+	const char *type;
+
+	switch(data_type)
+	{
+	case TRACK_AUDIO:
+		type = "Audio";
+		break;
+
+	case TRACK_VIDEO:
+		type = "Video";
+		break;
+
+	default:
+		type = "Unknown";
+		break;
+	}
+
+	printf("%*sResourcePixmap %p (%s) dump:\n", indent, "", this, type);
+	indent += 2;
+	printf("%*sedit_id %d edit_x %d pixmap_x %d [%d,%d] visible %d\n",
+		indent, "", edit_id, edit_x, pixmap_x, pixmap_w, pixmap_h, visible);
+	if(data_type == TRACK_VIDEO)
+		printf("%*spicon_size %.2f num_picons %d\n", indent, "",
+			last_picon_size, num_picons);
 }
