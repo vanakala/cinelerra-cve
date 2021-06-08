@@ -1,32 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef FRAMECACHE_H
 #define FRAMECACHE_H
 
-
 #include "cachebase.h"
 #include "mutex.inc"
 #include "vframe.inc"
-
 
 #include <stdint.h>
 
@@ -70,6 +52,9 @@ public:
 // The frame is deleted by FrameCache in a future delete_oldest.
 // asset - supplied by user if the cache is not part of a file.
 	VFrame *put_frame(VFrame *frame, Asset *asset = 0);
+// Change the duration of cached frames
+	void change_duration(ptstime new_dur, int layer,
+		int color_model, int w, int h, Asset *asset);
 
 private:
 // Returns item if found
