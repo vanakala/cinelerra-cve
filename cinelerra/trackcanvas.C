@@ -739,7 +739,7 @@ void TrackCanvas::draw_resources(int mode, Asset *index_asset)
 			if(mode & WUPD_INDEXES)
 			{
 				if(edit->track->data_type != TRACK_AUDIO ||
-						!edit->asset->test_path(index_asset))
+						!edit->asset->check_stream(index_asset))
 					continue;
 			}
 

@@ -552,8 +552,11 @@ int Asset::operator!=(Asset &asset)
 	return !(*this == asset);
 }
 
-int Asset::test_path(Asset *asset)
+int Asset::check_stream(Asset *asset)
 {
+	if(asset == this)
+		return 1;
+
 	if(video_streamno != asset->video_streamno ||
 			audio_streamno != asset->audio_streamno)
 		return 0;
@@ -561,7 +564,7 @@ int Asset::test_path(Asset *asset)
 	return !strcmp(asset->path, path);
 }
 
-int Asset::test_path(const char *path, int stream)
+int Asset::check_stream(const char *path, int stream)
 {
 	if(stream > 0 && (stream == audio_streamno || stream == video_streamno))
 		return !strcmp(this->path, path);
