@@ -5,34 +5,18 @@
 
 #include "bcsignals.h"
 #include "condition.h"
-#include "cplayback.h"
-#include "cwindow.h"
-#include "cwindowgui.h"
-#include "edl.h"
 #include "edlsession.h"
-#include "localsession.h"
-#include "mainclock.h"
-#include "meterpanel.h"
 #include "mwindow.h"
-#include "tracking.h"
-#include "patchbay.h"
 #include "playbackengine.h"
-#include "renderengine.h"
-#include "mainsession.h"
-#include "trackcanvas.h"
-
-
+#include "tracking.h"
 
 // States
 #define PLAYING 0
 #define DONE 1
 
-
-
-Tracking::Tracking(MWindow *mwindow)
+Tracking::Tracking()
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow; 
 	follow_loop = 0; 
 	visible = 0;
 	pixel = 0;

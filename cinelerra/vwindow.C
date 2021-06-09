@@ -23,6 +23,7 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
+#include <unistd.h>
 
 VWindow::VWindow()
  : Thread()
@@ -33,7 +34,7 @@ VWindow::VWindow()
 
 // Start command loop
 	gui->transport->set_engine(playback_engine);
-	playback_cursor = new VTracking(mwindow_global, this);
+	playback_cursor = new VTracking(this);
 	vedlsession = new EDLSession();
 }
 

@@ -24,8 +24,8 @@
 #include "transportcommand.h"
 #include "zoombar.h"
 
-CTracking::CTracking(MWindow *mwindow, CWindow *cwindow)
- : Tracking(mwindow)
+CTracking::CTracking(CWindow *cwindow)
+ : Tracking()
 {
 	this->cwindow = cwindow;
 	memset(selections, 0, sizeof(selections));
@@ -38,7 +38,7 @@ PlaybackEngine* CTracking::get_playback_engine()
 
 void CTracking::start_playback(ptstime new_position)
 {
-	mwindow->gui->cursor->playing_back = 1;
+	mwindow_global->gui->cursor->playing_back = 1;
 	master_edl->local_session->get_selections(selections);
 
 	Tracking::start_playback(new_position);
@@ -48,7 +48,7 @@ void CTracking::stop_playback()
 {
 	ptstime epos;
 
-	mwindow->gui->cursor->playing_back = 0;
+	mwindow_global->gui->cursor->playing_back = 0;
 
 	Tracking::stop_playback();
 
@@ -58,7 +58,7 @@ void CTracking::stop_playback()
 	{
 		// restore highligt while reached end of highligt
 		master_edl->local_session->set_selection(selections[0], selections[1]);
-		mwindow->gui->cursor->update();
+		mwindow_global->update_gui(WUPD_CURSOR);
 	}
 	selections[0] = selections[1] = 0;
 	cwindow->gui->update_tool();
@@ -73,12 +73,12 @@ int CTracking::update_scroll(ptstime position)
 	ptstime seconds_per_pixel = master_edl->local_session->zoom_time;
 	ptstime view_start = master_edl->local_session->view_start_pts;
 	ptstime view_end = view_start +
-		seconds_per_pixel * mwindow->gui->canvas->get_w();
+		seconds_per_pixel * mwindow_global->gui->canvas->get_w();
 
 	if(edlsession->view_follows_playback)
 	{
 		ptstime half_canvas = seconds_per_pixel *
-			mwindow->gui->canvas->get_w()/ 2;
+			mwindow_global->gui->canvas->get_w()/ 2;
 		ptstime midpoint = view_start + half_canvas;
 
 		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD &&
@@ -94,7 +94,7 @@ int CTracking::update_scroll(ptstime position)
 					master_edl->local_session->zoom_time);
 				if(pixels) 
 				{
-					mwindow->move_right(pixels);
+					mwindow_global->move_right(pixels);
 					updated_scroll = 1;
 				}
 			}
@@ -112,7 +112,7 @@ int CTracking::update_scroll(ptstime position)
 						master_edl->local_session->zoom_time);
 				if(pixels) 
 				{
-					mwindow->move_left(pixels);
+					mwindow_global->move_left(pixels);
 					updated_scroll = 1;
 				}
 			}
@@ -126,6 +126,7 @@ void CTracking::update_tracker(ptstime position)
 {
 	int updated_scroll;
 	int single_frame;
+	int opts;
 
 	master_edl->local_session->set_selection(position);
 	single_frame = get_playback_engine()->command->single_frame();
@@ -138,16 +139,16 @@ void CTracking::update_tracker(ptstime position)
 // Update mwindow cursor
 	updated_scroll = update_scroll(position);
 
-	mwindow->gui->mainclock->update(position);
-	mwindow->update_gui(WUPD_PATCHBAY);
+	opts = WUPD_PATCHBAY | WUPD_CLOCK | WUPD_PATCHBAY;
 
 	if(!updated_scroll)
 	{
-		int opts = WUPD_CURSOR | WUPD_ZCLOCKS;
+		opts |= WUPD_CURSOR | WUPD_ZCLOCKS;
 		if(single_frame)
 			opts |= WUPD_TOGLIGHTS;
-		mwindow->update_gui(opts);
 	}
+	mwindow_global->update_gui(opts);
+
 	master_edl->reset_plugins();
 	update_meters(position);
 }
@@ -161,17 +162,17 @@ void CTracking::update_meters(ptstime pts)
 	{
 		int n = get_playback_engine()->get_module_levels(module_levels, pts);
 
-		mwindow->cwindow->gui->meters->update(output_levels);
-		mwindow->lwindow->gui->panel->update(output_levels);
-		mwindow->gui->patchbay->update_meters(module_levels, n);
+		cwindow->gui->meters->update(output_levels);
+		mwindow_global->lwindow->gui->panel->update(output_levels);
+		mwindow_global->gui->patchbay->update_meters(module_levels, n);
 	}
 }
 
 void CTracking::stop_meters()
 {
-	mwindow->cwindow->gui->meters->stop_meters();
-	mwindow->gui->patchbay->stop_meters();
-	mwindow->lwindow->gui->panel->stop_meters();
+	cwindow->gui->meters->stop_meters();
+	mwindow_global->gui->patchbay->stop_meters();
+	mwindow_global->lwindow->gui->panel->stop_meters();
 }
 
 void CTracking::set_delays(float over_delay, float peak_delay)
@@ -179,7 +180,7 @@ void CTracking::set_delays(float over_delay, float peak_delay)
 	int over = over_delay * tracking_rate;
 	int peak = peak_delay * tracking_rate;
 
-	mwindow->cwindow->gui->meters->set_delays(over, peak);
-	mwindow->gui->patchbay->set_delays(over, peak);
-	mwindow->lwindow->gui->panel->set_delays(over, peak);
+	cwindow->gui->meters->set_delays(over, peak);
+	mwindow_global->gui->patchbay->set_delays(over, peak);
+	mwindow_global->lwindow->gui->panel->set_delays(over, peak);
 }

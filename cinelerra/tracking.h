@@ -6,21 +6,16 @@
 #ifndef TRACKING_H
 #define TRACKING_H
 
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-
+#include "bctimer.h"
 #include "condition.inc"
 #include "datatype.h"
-#include "mwindow.inc"
 #include "playbackengine.inc"
 #include "thread.h"
-#include "bctimer.h"
 
 class Tracking : public Thread
 {
 public:
-	Tracking(MWindow *mwindow);
+	Tracking();
 	virtual ~Tracking();
 
 	virtual void start_playback(ptstime new_position);
@@ -42,7 +37,6 @@ public:
 	int view_follows_playback;
 // Delay until startup
 	Condition *startup_lock;
-	MWindow *mwindow;
 	ptstime last_position;
 	int follow_loop;
 	int reverse;

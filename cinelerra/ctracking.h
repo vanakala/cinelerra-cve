@@ -7,14 +7,13 @@
 #define CPLAYBACKCURSOR_H
 
 #include "cwindow.inc"
-#include "mwindow.inc"
 #include "tracking.h"
 #include "playbackengine.inc"
 
 class CTracking : public Tracking
 {
 public:
-	CTracking(MWindow *mwindow, CWindow *cwindow);
+	CTracking(CWindow *cwindow);
 
 	PlaybackEngine* get_playback_engine();
 	void update_tracker(ptstime position);
