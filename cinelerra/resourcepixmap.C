@@ -471,7 +471,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			}
 		}
 
-		canvas->test_timer();
+		canvas->check_hourglass();
 	}
 	else
 // Multiple sample zoom
@@ -624,7 +624,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		}
 		picon_src += picon_len;
 		x += picon_w;
-		canvas->test_timer();
+		canvas->check_hourglass();
 	}
 }
 

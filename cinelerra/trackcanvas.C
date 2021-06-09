@@ -691,7 +691,7 @@ int TrackCanvas::default_cursor()
 	return ARROW_CURSOR;
 }
 
-void TrackCanvas::test_timer()
+void TrackCanvas::check_hourglass()
 {
 	if(resource_timer->get_difference() > 1000 && !hourglass_enabled)
 	{

@@ -264,7 +264,7 @@ public:
 	int resource_h();
 
 // Display hourglass if timer expired
-	void test_timer();
+	void check_hourglass();
 
 // Cache managing
 	size_t get_cache_size();
