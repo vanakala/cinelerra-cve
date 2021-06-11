@@ -34,7 +34,7 @@ Asset* AssetList::add_asset(Asset *asset)
 			current->global_inuse = 1;
 			return current;
 		}
-		if(current->check_stream(asset))
+		if(current->check_programs(asset))
 		{
 			current->global_inuse = 1;
 			delete asset;

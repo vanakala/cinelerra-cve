@@ -574,6 +574,20 @@ int Asset::check_stream(const char *path, int stream)
 	return 0;
 }
 
+int Asset::check_programs(Asset *asset)
+{
+	if(asset == this)
+		return 1;
+
+	if(nb_programs != asset->nb_programs)
+		return 0;
+
+	if(nb_programs && program_id != asset->program_id)
+		return 0;
+
+	return !strcmp(this->path, path);
+}
+
 void Asset::read(FileXML *file, 
 	int expand_relative)
 {

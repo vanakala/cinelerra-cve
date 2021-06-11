@@ -140,6 +140,7 @@ public:
 	int operator!=(Asset &asset);
 	int check_stream(Asset *asset);
 	int check_stream(const char *path, int stream);
+	int check_programs(Asset *asset);
 	void set_single_image();
 	void read(FileXML *file, int expand_relative = 1);
 	void read_audio(FileXML *xml);
