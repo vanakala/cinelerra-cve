@@ -266,7 +266,6 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 {
 	Edit* current;
 	posnum length;
-	int streamno;
 
 	current = append(create_edit());
 
@@ -288,7 +287,7 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 
 				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
-				streamno = file->tag.get_property("STREAMNO", -1);
+				current->stream = file->tag.get_property("STREAMNO", current->stream);
 // Extend path
 				if(filename[0])
 				{
@@ -303,14 +302,19 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 					}
 					else
 						filepath = filename;
-					current->asset = assetlist_global.get_asset(filepath, streamno);
-
-					if(length > 0 && current->asset)
-						project_time += current->asset->from_units(track->data_type, length);
+					current->asset = assetlist_global.get_asset(filepath, current->stream);
+					if(current->asset)
+					{
+						if(length > 0)
+							project_time += current->asset->from_units(track->data_type, length);
+					}
+					else
+						current->stream = -1;
 				}
 				else
 				{
 					current->asset = 0;
+					current->stream = -1;
 				}
 			}
 			else
