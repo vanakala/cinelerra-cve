@@ -266,6 +266,7 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 {
 	Edit* current;
 	posnum length;
+	int streamno;
 
 	current = append(create_edit());
 
@@ -287,7 +288,10 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 
 				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
-				current->stream = file->tag.get_property("STREAMNO", current->stream);
+				streamno = file->tag.get_property("STREAMNO", -1);
+// Stream of edit starts with 0, sreamno in xml starts with 1
+				if(streamno > 0)
+					current->stream = streamno - 1;
 // Extend path
 				if(filename[0])
 				{

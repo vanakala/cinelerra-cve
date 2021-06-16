@@ -566,12 +566,30 @@ int Asset::check_stream(Asset *asset)
 
 int Asset::check_stream(const char *path, int stream)
 {
-	if(stream > 0 && (stream == audio_streamno || stream == video_streamno))
-		return !strcmp(this->path, path);
-	else
-	if(stream <= 0)
-		return !strcmp(this->path, path);
-	return 0;
+	if(stream >= 0)
+	{
+		if(nb_streams < stream)
+			return 0;
+		if(nb_programs)
+		{
+			for(int i = 0; i < nb_programs; i++)
+			{
+				if(program_id == programs[i].program_id)
+				{
+					int pg_streams = programs[i].nb_streams;
+
+					for(int j = 0; j < pg_streams; j++)
+					{
+						if(programs[i].streams[j] == stream)
+							return !strcmp(this->path, path);
+					}
+					return 0;
+				}
+			}
+			return 0;
+		}
+	}
+	return !strcmp(this->path, path);
 }
 
 int Asset::check_programs(Asset *asset)
