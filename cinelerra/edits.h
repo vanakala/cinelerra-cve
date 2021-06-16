@@ -6,7 +6,6 @@
 #ifndef EDITS_H
 #define EDITS_H
 
-
 #include "asset.inc"
 #include "edl.inc"
 #include "edit.h"
@@ -14,17 +13,15 @@
 #include "linklist.h"
 #include "track.inc"
 
-
 // Generic list of edits of something
-
 class Edits : public List<Edit>
 {
 public:
 	Edits(EDL *edl, Track *track);
 
 	void equivalent_output(Edits *edits, ptstime *result);
-	virtual void copy_from(Edits *edits);
-	virtual Edits& operator=(Edits& edits);
+	void copy_from(Edits *edits);
+	Edits& operator=(Edits& edits);
 // Editing
 	void insert_edits(Edits *edits, ptstime position,
 		ptstime duration = -1, int insert = 0);
@@ -39,35 +36,32 @@ public:
 		ptstime end,
 		int actions,
 		ptstime &distance);
-	virtual Edit* create_edit();
+	Edit* create_edit();
 	void save_xml(FileXML *xml, const char *output_path);
 	void copy(Edits *edits, ptstime start, ptstime end);
 // Clear region of edits
-	virtual void clear(ptstime start, ptstime end);
+	void clear(ptstime start, ptstime end);
 // Clear edit after
-	virtual void clear_after(ptstime pts);
+	void clear_after(ptstime pts);
 // Shift edits starting from edit
 	void shift_edits(Edit *edit, ptstime diff);
 // Does not return an edit - does what it says, nothing more or less
 	void paste_silence(ptstime start, ptstime end);
 
 // Sanitize edits
-	virtual void cleanup();
+	void cleanup();
 
 	EDL *edl;
 	Track *track;
 
-
 // ==================================== accounting
-
 	Edit* editof(ptstime postime);
 // Return an edit if position is over an edit and the edit has a source file
 	Edit* get_playable_edit(ptstime postime);
 	ptstime length();         // end position of last edit
-	virtual void dump(int indent = 0);
+	void dump(int indent = 0);
 
 // ==================================== editing
-
 	void modify_handles(ptstime oldposition,
 		ptstime newposition,
 		int edit_handle,
@@ -79,7 +73,6 @@ public:
 	ptstime limit_source_move(Edit *edit, ptstime newposition);
 
 // ================================== file operations
-
 	void load(FileXML *xml);
 // Returns the size of data in bytes
 	size_t get_size();
