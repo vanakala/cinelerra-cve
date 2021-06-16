@@ -32,7 +32,7 @@ public:
 	ptstime end_pts(void);
 	void copy_from(Edit *edit);
 	Edit& operator=(Edit& edit);
-// Called by Edits and PluginSet
+// Called by Edits
 	void equivalent_output(Edit *edit, ptstime *result);
 // Get size of frame to draw on timeline
 	double picon_w(void);

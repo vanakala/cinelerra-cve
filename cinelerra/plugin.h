@@ -27,12 +27,9 @@ public:
 	Plugin(EDL *edl, Track *track, PluginServer *server);
 	~Plugin();
 
-// Called by Edits::equivalent_output to override the keyframe behavior and check
-// title.
+// Called by Edits::equivalent_output
 	void equivalent_output(Plugin *plugin, ptstime *result);
 
-// Called by playable tracks to test for playable server.
-// Descends the plugin tree without creating a virtual console.
 	int is_synthesis();
 
 	void copy(Plugin *plugin, ptstime start, ptstime end);

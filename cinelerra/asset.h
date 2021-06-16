@@ -258,8 +258,6 @@ public:
 // for editing would create new assets for every image.
 	int use_header;
 
-// Edits store data for the transition
-
 // index info
 	int index_status;     // Macro from asset.inc
 	int index_zoom;      // zoom factor of index data
