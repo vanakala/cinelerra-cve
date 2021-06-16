@@ -113,10 +113,16 @@ void Edits::insert_asset(Asset *asset,
 	new_edit->set_source_pts(0);
 
 	if(asset->audio_data)
+	{
 		new_edit->channel = track_number % asset->channels;
+		new_edit->stream = asset->audio_streamno - 1;
+	}
 	else
 	if(asset->video_data)
+	{
 		new_edit->channel = track_number % asset->layers;
+		new_edit->stream = asset->video_streamno - 1;
+	}
 }
 
 
@@ -801,6 +807,7 @@ void Edits::paste_silence(ptstime start, ptstime end)
 		split_edit(start);
 		new_edit = split_edit(start, 1);
 		new_edit->asset = 0;
+		new_edit->stream = -1;
 		new_edit->set_source_pts(0);
 	}
 	if(new_edit->next)
@@ -812,7 +819,10 @@ void Edits::cleanup()
 	for(Edit *current = first; current; current = current->next)
 	{
 		if(fabs(current->length()) < EPSILON)
+		{
 			current->asset = 0;
+			current->stream = -1;
+		}
 		if(!current->asset)
 			current->set_source_pts(0);
 		if(current == first)
