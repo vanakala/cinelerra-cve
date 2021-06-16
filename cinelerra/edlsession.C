@@ -136,21 +136,6 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(playback_software_position != ptr->playback_software_position);
 }
 
-void EDLSession::equivalent_output(EDLSession *session, double *result)
-{
-	if(session->output_w != output_w ||
-			session->output_h != output_h ||
-			session->frame_rate != frame_rate ||
-			session->color_model != color_model)
-		*result = 0;
-
-// If it's before the current brender_start, render extra data.
-// If it's after brender_start, check brender map.
-	if(brender_start != session->brender_start &&
-			(*result < 0 || *result > brender_start))
-		*result = brender_start;
-}
-
 void EDLSession::clear()
 {
 	defaults_loaded = 0;

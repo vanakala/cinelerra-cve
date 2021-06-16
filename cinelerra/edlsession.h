@@ -45,8 +45,7 @@ public:
 // Called by PreferencesThread to determine if preference changes need to be
 // rendered.
 	int need_rerender(EDLSession *ptr);
-// Called by BRender to determine if any background rendered frames are valid.
-	void equivalent_output(EDLSession *session, double *result);
+
 	void dump(int indent = 0);
 
 // calculates the frame offset for programme timecode
