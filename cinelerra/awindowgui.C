@@ -34,6 +34,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "plugindb.h"
+#include "pluginserver.h"
 #include "preferences.h"
 #include "theme.h"
 #include "vframe.h"

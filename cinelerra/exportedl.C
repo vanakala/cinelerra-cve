@@ -18,6 +18,7 @@
 #include "language.h"
 #include "mwindow.h"
 #include "plugin.h"
+#include "pluginserver.h"
 #include "track.h"
 
 #include <ctype.h>

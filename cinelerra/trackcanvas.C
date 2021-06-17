@@ -42,6 +42,7 @@
 #include "resourcethread.h"
 #include "plugin.h"
 #include "pluginpopup.h"
+#include "pluginserver.h"
 #include "preferences.h"
 #include "resourcepixmap.h"
 #include "mainsession.h"

@@ -7,6 +7,8 @@
 #define EDL_H
 
 #include "asset.inc"
+#include "datatype.h"
+#include "bcwindowbase.inc"
 #include "arraylist.h"
 #include "autoconf.inc"
 #include "bchash.inc"
@@ -17,8 +19,7 @@
 #include "labels.inc"
 #include "localsession.inc"
 #include "mutex.inc"
-#include "playbackconfig.h"
-#include "pluginserver.h"
+#include "plugin.inc"
 #include "preferences.inc"
 #include "theme.inc"
 #include "track.inc"

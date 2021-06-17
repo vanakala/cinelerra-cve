@@ -26,11 +26,12 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
+#include "interfaceprefs.h"
 #include "mwindow.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "plugindb.h"
-#include "interfaceprefs.h"
+#include "pluginserver.h"
 #include "theme.h"
 #include "units.h"
 

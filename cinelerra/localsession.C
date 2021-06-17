@@ -538,7 +538,7 @@ void LocalSession::dump(int indent)
 	indent += 2;
 	printf("%*sselections %.3f..%.3f, points in %.3f out %.3f\n", indent, "",
 		selectionstart, selectionend, in_point, out_point);
-	printf("%*strack start %" PRId64 " view start %.3f preview %.3f..%.3f\n", indent, "",
+	printf("%*strack start %d view start %.3f preview %.3f..%.3f\n", indent, "",
 		track_start, view_start_pts, preview_start, preview_end);
 	printf("%*sloop_playback %d %.3f..%.3f\n", indent, "",
 		loop_playback, loop_start, loop_end);

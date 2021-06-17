@@ -31,6 +31,7 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "performanceprefs.h"
+#include "playbackconfig.h"
 #include "playbackengine.h"
 #include "playbackprefs.h"
 #include "preferences.h"

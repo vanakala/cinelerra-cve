@@ -13,6 +13,7 @@
 #include "levelhist.h"
 #include "mutex.h"
 #include "mwindow.h"
+#include "playbackconfig.h"
 #include "playbackengine.h"
 #include "preferences.h"
 #include "preferencesthread.h"

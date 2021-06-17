@@ -59,6 +59,7 @@
 #include "mwindow.h"
 #include "new.h"
 #include "patchbay.h"
+#include "playbackconfig.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "plugindb.h"

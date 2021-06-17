@@ -23,6 +23,7 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "new.h"
+#include "playbackconfig.h"
 #include "preferences.h"
 #include "rotateframe.h"
 #include "selection.h"

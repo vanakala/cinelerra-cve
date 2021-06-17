@@ -28,6 +28,7 @@
 #include "panautos.h"
 #include "playbackconfig.h"
 #include "plugin.h"
+#include "pluginserver.h"
 #include "theme.h"
 #include "tracks.h"
 #include "vtrack.h"

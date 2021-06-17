@@ -23,6 +23,7 @@
 #include "mwindowgui.h"
 #include "plugin.h"
 #include "pluginpopup.h"
+#include "pluginserver.h"
 #include "track.h"
 #include "trackplugin.h"
 #include "trackcanvas.h"

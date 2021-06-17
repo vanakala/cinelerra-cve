@@ -18,6 +18,7 @@
 #include "panauto.h"
 #include "panautos.h"
 #include "plugin.h"
+#include "pluginserver.h"
 #include "theme.inc"
 #include "track.h"
 #include "tracks.h"

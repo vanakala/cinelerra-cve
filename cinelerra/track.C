@@ -20,6 +20,7 @@
 #include "mwindow.h"
 #include "plugin.h"
 #include "plugindb.h"
+#include "pluginserver.h"
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"

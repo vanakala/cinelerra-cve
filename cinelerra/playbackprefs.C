@@ -32,6 +32,7 @@
 #include "language.h"
 #include "mwindow.h"
 #include "playbackprefs.h"
+#include "playbackconfig.h"
 #include "preferences.h"
 #include "theme.h"
 #include "vdeviceprefs.h"
