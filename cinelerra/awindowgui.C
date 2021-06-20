@@ -1001,7 +1001,7 @@ void AWindowAssets::selection_changed()
 			if(asset = ((AssetPicon*)get_selection(0, 0))->asset)
 				gui->asset_menu->update(asset, 0);
 			else
-			if(((AssetPicon*)get_selection(0, 0))->edl)
+			if(edl = ((AssetPicon*)get_selection(0, 0))->edl)
 				gui->asset_menu->update(0, edl);
 			gui->asset_menu->activate_menu();
 		}
