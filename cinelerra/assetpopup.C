@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "assetedit.h"
@@ -25,6 +9,7 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "awindowmenu.h"
+#include "bcsignals.h"
 #include "clipedit.h"
 #include "edl.h"
 #include "mainerror.h"
@@ -36,11 +21,7 @@
 
 
 AssetPopup::AssetPopup(AWindow *awindow, AWindowGUI *gui)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
+ : BC_PopupMenu(0, 0, 0)
 {
 	this->gui = gui;
 	add_item(format = new AssetListFormat(gui));
@@ -138,14 +119,15 @@ int AssetPopupInfo::handle_event()
 			awindow->asset_edit->edit_asset(
 				popup->current_asset);
 		}
+		return 1;
 	}
-	else
-	if(popup->current_edl)
+	else if(popup->current_edl)
 	{
 		mwindow_global->clip_edit->edit_clip(
 			popup->current_edl);
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 
