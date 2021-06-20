@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
@@ -46,7 +30,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		int options,
 		VFrame **data,
 		int margin)
- : BC_SubWindow(x, y, 0, 0, -1)
+ : BC_SubWindow(x, y, w, 0, -1)
 {
 	highlighted = popup_down = 0;
 	icon = 0;
@@ -55,11 +39,14 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	else
 		this->margin = resources.popupmenu_margin;
 
-	use_title = options & POPUPMENU_USE_TITLE;
-	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
+	use_coords = options & POPUPMENU_USE_COORDS;
+	use_title = 0;
 	this->text[0] = 0;
 	if(text && *text)
+	{
 		strcpy(this->text, text);
+		use_title = 1;
+	}
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
@@ -75,13 +62,18 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		const char *text, 
 		int options,
 		VFrame **data)
- : BC_SubWindow(x, y, w, -1, -1)
+ : BC_SubWindow(x, y, 0, 0, -1)
 {
 	highlighted = popup_down = 0;
 	icon = 0;
-	use_title = options & POPUPMENU_USE_TITLE;
-	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
-	strcpy(this->text, text);
+	use_title = 0;
+	use_coords = options & POPUPMENU_USE_COORDS;
+	this->text[0] = 0;
+	if(text && *text)
+	{
+		strcpy(this->text, text);
+		use_title = 1;
+	}
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
