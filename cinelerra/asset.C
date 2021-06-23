@@ -603,7 +603,7 @@ int Asset::check_programs(Asset *asset)
 	if(nb_programs && program_id != asset->program_id)
 		return 0;
 
-	return !strcmp(this->path, path);
+	return !strcmp(asset->path, path);
 }
 
 void Asset::read(FileXML *file, 
