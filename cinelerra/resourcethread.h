@@ -30,14 +30,12 @@ class ResourceThreadItem
 public:
 	ResourceThreadItem(ResourcePixmap *pixmap, 
 		Asset *asset,
-		int data_type,
-		int operation_count);
+		int data_type);
 	virtual ~ResourceThreadItem() {};
 
 	ResourcePixmap *pixmap;
 	Asset *asset;
 	int data_type;
-	int operation_count;
 	int last;
 };
 
@@ -50,8 +48,7 @@ public:
 		int x,
 		int channel,
 		samplenum start,
-		samplenum end,
-		int operation_count);
+		samplenum end);
 
 	int x;
 	int channel;
@@ -71,8 +68,7 @@ public:
 		ptstime postime,
 		ptstime duration,
 		int layer,
-		Asset *asset,
-		int operation_count);
+		Asset *asset);
 
 	int picon_x;
 	int picon_y;
@@ -92,8 +88,6 @@ public:
 
 	void start_draw();
 
-// Be sure to stop_draw before changing the asset table, 
-// closing files.
 	void add_picon(ResourcePixmap *pixmap, 
 		int picon_x, 
 		int picon_y, 
@@ -126,7 +120,6 @@ public:
 	Condition *draw_lock;
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;
-	int interrupted;
 
 // Current audio buffer for spanning multiple pixels
 	AFrame *aframe;
@@ -136,8 +129,7 @@ public:
 	int prev_x;
 	double prev_h;
 	double prev_l;
-// Incremented after every start_draw to prevent overlapping operations
-	int operation_count;
+
 	CICache *audio_cache;
 	CICache *video_cache;
 	FrameCache *frame_cache;

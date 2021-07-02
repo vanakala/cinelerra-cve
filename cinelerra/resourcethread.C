@@ -26,13 +26,11 @@
 
 ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
-	int data_type,
-	int operation_count)
+	int data_type)
 {
 	this->data_type = data_type;
 	this->pixmap = pixmap;
 	this->asset = asset;
-	this->operation_count = operation_count;
 	last = 0;
 }
 
@@ -44,9 +42,8 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	ptstime postime,
 	ptstime duration,
 	int layer,
-	Asset *asset,
-	int operation_count)
- : ResourceThreadItem(pixmap, asset, TRACK_VIDEO, operation_count)
+	Asset *asset)
+ : ResourceThreadItem(pixmap, asset, TRACK_VIDEO)
 {
 	this->picon_x = picon_x;
 	this->picon_y = picon_y;
@@ -63,9 +60,8 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 	int x,
 	int channel,
 	samplenum start,
-	samplenum end,
-	int operation_count)
- : ResourceThreadItem(pixmap, asset, TRACK_AUDIO, operation_count)
+	samplenum end)
+ : ResourceThreadItem(pixmap, asset, TRACK_AUDIO)
 {
 	this->x = x;
 	this->channel = channel;
@@ -76,7 +72,6 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 
 ResourceThread::ResourceThread(TrackCanvas *canvas)
 {
-	interrupted = 1;
 	trackcanvas = canvas;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
@@ -84,7 +79,6 @@ ResourceThread::ResourceThread(TrackCanvas *canvas)
 	prev_x = -1;
 	prev_h = 0;
 	prev_l = 0;
-	operation_count = 0;
 	audio_cache = new CICache(FILE_OPEN_AUDIO);
 	video_cache = new CICache(FILE_OPEN_VIDEO);
 	frame_cache = new FrameCache;
@@ -123,8 +117,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 		postime,
 		duration,
 		layer,
-		asset,
-		operation_count));
+		asset));
 	item_lock->unlock();
 }
 
@@ -142,24 +135,12 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 		x,
 		channel,
 		source_start,
-		source_end,
-		operation_count));
+		source_end));
 	item_lock->unlock();
 }
 
 void ResourceThread::start_draw()
 {
-	interrupted = 0;
-// Tag last audio item to cause refresh.
-	for(int i = items.total - 1; i >= 0; i--)
-	{
-		ResourceThreadItem *item = items.values[i];
-		if(item->data_type == TRACK_AUDIO)
-		{
-			item->last = 1;
-			break;
-		}
-	}
 	draw_lock->unlock();
 }
 
@@ -169,14 +150,12 @@ void ResourceThread::run()
 
 	while(1)
 	{
-
 		draw_lock->lock("ResourceThread::run");
 
 		do_update = 0;
 
-		while(!interrupted)
+		while(1)
 		{
-
 // Pull off item
 			item_lock->lock("ResourceThread::run");
 			int total_items = items.total;
@@ -201,9 +180,9 @@ void ResourceThread::run()
 				do_audio((AResourceThreadItem*)item);
 				do_update = 1;
 			}
-
 			delete item;
 		}
+
 		if(do_update)
 		{
 			trackcanvas->draw(0);
@@ -239,28 +218,18 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		video_cache->check_in(item->asset);
 	}
 
-// Allow escape here
-	if(interrupted)
-	{
-		frame_cache->unlock();
-		return;
-	}
-
 // Draw the picon
 // Test for pixmap existence first
-	if(item->operation_count == operation_count)
+	for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
 	{
-		for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
+		if(trackcanvas->resource_pixmaps.values[i] ==
+			item->pixmap)
 		{
-			if(trackcanvas->resource_pixmaps.values[i] ==
-				item->pixmap)
-			{
-				item->pixmap->draw_vframe(picon_frame,
-					item->picon_x, item->picon_y,
-					item->picon_w, item->picon_h,
-					0, 0);
-				break;
-			}
+			item->pixmap->draw_vframe(picon_frame,
+				item->picon_x, item->picon_y,
+				item->picon_w, item->picon_h,
+				0, 0);
+			break;
 		}
 	}
 
@@ -353,34 +322,26 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			low);
 	}
 
-// Allow escape here
-	if(interrupted)
-		return;
-
-// Draw the column
-	if(item->operation_count == operation_count)
-	{
-
 // Test for pixmap existence first
-		int exists = 0;
-		for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
-		{
-			if(trackcanvas->resource_pixmaps.values[i] == item->pixmap)
-				exists = 1;
-		}
+	int exists = 0;
 
-		if(exists)
+	for(int i = 0; i < trackcanvas->resource_pixmaps.total; i++)
+	{
+		if(trackcanvas->resource_pixmaps.values[i] == item->pixmap)
+			exists = 1;
+	}
+
+	if(exists)
+	{
+		if(prev_x == item->x - 1)
 		{
-			if(prev_x == item->x - 1)
-			{
-				high = MAX(high, prev_l);
-				low = MIN(low, prev_h);
-			}
-			prev_x = item->x;
-			prev_h = high;
-			prev_l = low;
-			item->pixmap->draw_wave(item->x, high, low);
+			high = MAX(high, prev_l);
+			low = MIN(low, prev_h);
 		}
+		prev_x = item->x;
+		prev_h = high;
+		prev_l = low;
+		item->pixmap->draw_wave(item->x, high, low);
 	}
 }
 
