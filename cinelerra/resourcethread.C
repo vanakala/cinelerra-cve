@@ -152,22 +152,18 @@ void ResourceThread::run()
 	{
 		draw_lock->lock("ResourceThread::run");
 
+		trackcanvas->pixmaps_lock->lock("ResourceThread::run");
 		do_update = 0;
 
-		while(1)
+		while(items.total)
 		{
 // Pull off item
 			item_lock->lock("ResourceThread::run");
-			int total_items = items.total;
-			ResourceThreadItem *item = 0;
-			if(items.total) 
-			{
-				item = items.values[0];
-				items.remove_number(0);
-			}
-			item_lock->unlock();
 
-			if(!total_items) break;
+			ResourceThreadItem *item = items.values[0];
+			items.remove_number(0);
+
+			item_lock->unlock();
 
 			if(item->data_type == TRACK_VIDEO)
 			{
@@ -183,6 +179,8 @@ void ResourceThread::run()
 			delete item;
 		}
 
+		trackcanvas->pixmaps_lock->unlock();
+
 		if(do_update)
 		{
 			trackcanvas->draw(0);
@@ -195,7 +193,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 {
 	VFrame *picon_frame;
 
-	trackcanvas->pixmaps_lock->lock("ResourceThread::do_video");
 	if(!(picon_frame = frame_cache->get_frame_ptr(item->postime,
 		item->layer,
 		BC_RGB888,
@@ -234,7 +231,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	}
 
 	frame_cache->unlock();
-	trackcanvas->pixmaps_lock->unlock();
 
 	if(frame_cache->total() > MAX_FRAME_CACHE_ITEMS)
 		frame_cache->delete_oldest();
