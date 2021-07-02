@@ -147,21 +147,6 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	item_lock->unlock();
 }
 
-void ResourceThread::stop_draw(int reset)
-{
-	if(!interrupted)
-	{
-		interrupted = 1;
-		item_lock->lock("ResourceThread::stop_draw");
-		if(reset) items.remove_all_objects();
-		operation_count++;
-		item_lock->unlock();
-		prev_x = -1;
-		prev_h = 0;
-		prev_l = 0;
-	}
-}
-
 void ResourceThread::start_draw()
 {
 	interrupted = 0;

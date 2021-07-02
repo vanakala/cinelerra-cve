@@ -90,8 +90,6 @@ public:
 	ResourceThread(TrackCanvas *canvas);
 	~ResourceThread();
 
-// reset - delete all picons.  Used for index building.
-	void stop_draw(int reset);
 	void start_draw();
 
 // Be sure to stop_draw before changing the asset table, 
