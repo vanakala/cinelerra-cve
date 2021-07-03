@@ -80,13 +80,8 @@ MWindowGUI::~MWindowGUI()
 
 void MWindowGUI::get_scrollbars()
 {
-	int need_xscroll;
-	int need_yscroll;
 	view_w = mwindow->theme->mcanvas_w;
 	view_h = mwindow->theme->mcanvas_h;
-
-// Scrollbars are constitutive
-	need_xscroll = need_yscroll = 1;
 
 	if(canvas && (view_w != canvas->get_w() || view_h != canvas->get_h()))
 	{
@@ -96,40 +91,22 @@ void MWindowGUI::get_scrollbars()
 			view_h);
 	}
 
-	if(need_xscroll)
-	{
-		if(!samplescroll)
-			add_subwindow(samplescroll = new SampleScroll(mwindow, 
-				mwindow->theme->mhscroll_x, 
-				mwindow->theme->mhscroll_y, 
-				mwindow->theme->mhscroll_w));
-		else
-			samplescroll->resize_event();
-
-		samplescroll->set_position();
-	}
+	if(!samplescroll)
+		add_subwindow(samplescroll = new SampleScroll(mwindow,
+			mwindow->theme->mhscroll_x,
+			mwindow->theme->mhscroll_y,
+			mwindow->theme->mhscroll_w));
 	else
-	{
-		if(samplescroll) delete samplescroll;
-		samplescroll = 0;
-		master_edl->local_session->view_start_pts = 0;
-	}
+		samplescroll->resize_event();
 
-	if(need_yscroll)
-	{
-		if(!trackscroll)
-			add_subwindow(trackscroll = new TrackScroll());
-		else
-			trackscroll->resize_event();
+	samplescroll->set_position();
 
-		trackscroll->set_position(view_h);
-	}
+	if(!trackscroll)
+		add_subwindow(trackscroll = new TrackScroll());
 	else
-	{
-		if(trackscroll) delete trackscroll;
-		trackscroll = 0;
-		master_edl->local_session->track_start = 0;
-	}
+		trackscroll->resize_event();
+
+	trackscroll->set_position(view_h);
 }
 
 void MWindowGUI::show()
