@@ -112,13 +112,13 @@ void Edits::insert_asset(Asset *asset,
 	new_edit->asset = asset;
 	new_edit->set_source_pts(0);
 
-	if(asset->audio_data)
+	if(track->data_type == TRACK_AUDIO)
 	{
 		new_edit->channel = track_number % asset->channels;
 		new_edit->stream = asset->audio_streamno - 1;
 	}
 	else
-	if(asset->video_data)
+	if(track->data_type == TRACK_VIDEO)
 	{
 		new_edit->channel = track_number % asset->layers;
 		new_edit->stream = asset->video_streamno - 1;
