@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcpixmap.h"
 #include "bcresources.h"
@@ -28,13 +12,8 @@
 
 #include <string.h>
 
-BC_ScrollBar::BC_ScrollBar(int x, 
-	int y, 
-	int orientation, 
-	int pixels, 
-	int64_t length, 
-	int64_t position, 
-	int64_t handlelength,
+BC_ScrollBar::BC_ScrollBar(int x, int y, int orientation, int pixels,
+	int length, int position, int handlelength,
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
@@ -298,19 +277,15 @@ void BC_ScrollBar::get_handle_dimensions()
 
 	if(length > 0)
 	{
-		handle_pixels = (int64_t)((double)handlelength / 
-			length * 
-			total_pixels + 
-			.5);
+		handle_pixels = round((double)handlelength / length *
+			total_pixels);
 
 		if(handle_pixels < resources.scroll_minhandle)
 			handle_pixels = resources.scroll_minhandle;
 
 
-		handle_pixel = (int64_t)((double)position / 
-				length * 
-				total_pixels + .5) + 
-			get_arrow_pixels();
+		handle_pixel = round((double)position / length *
+				total_pixels) + get_arrow_pixels();
 
 // Handle pixels is beyond minimum right position.  Clamp it.
 		if(handle_pixel > pixels - get_arrow_pixels() - resources.scroll_minhandle)
@@ -383,10 +358,9 @@ int BC_ScrollBar::cursor_motion_event()
 		if(selection_status == SCROLL_HANDLE)
 		{
 			double total_pixels = pixels - get_arrow_pixels() * 2;
-			int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? 
-				top_level->cursor_x : 
-				top_level->cursor_y;
-			int64_t new_position = (int64_t)((double)(cursor_pixel - min_pixel) / 
+			int cursor_pixel = (orientation == SCROLL_HORIZ) ?
+				top_level->cursor_x : top_level->cursor_y;
+			int new_position = round((double)(cursor_pixel - min_pixel) /
 				total_pixels * length);
 
 			if(new_position > length - handlelength) 
@@ -433,9 +407,11 @@ int BC_ScrollBar::button_press_event()
 			if(selection_status == SCROLL_HANDLE)
 			{
 				double total_pixels = pixels - get_arrow_pixels() * 2;
-				int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? top_level->cursor_x : top_level->cursor_y;
-				min_pixel = cursor_pixel - (int64_t)((double)position / length * total_pixels + .5);
-				max_pixel = (int)(cursor_pixel + total_pixels);
+				int cursor_pixel = (orientation == SCROLL_HORIZ) ?
+					top_level->cursor_x : top_level->cursor_y;
+				min_pixel = cursor_pixel - (int)((double)position / length
+					* total_pixels + .5);
+				max_pixel = round(cursor_pixel + total_pixels);
 				draw();
 			}
 			else
@@ -459,7 +435,7 @@ void BC_ScrollBar::repeat_event(int duration)
 	{
 		repeat_count++;
 		if(repeat_count == 2) return;
-		int64_t new_position = position;
+		int new_position = position;
 		switch(selection_status)
 		{
 		case SCROLL_BACKPAGE:
@@ -534,17 +510,17 @@ void BC_ScrollBar::activate()
 	top_level->active_subwindow = this;
 }
 
-int64_t BC_ScrollBar::get_value()
+int BC_ScrollBar::get_value()
 {
 	return position;
 }
 
-int64_t BC_ScrollBar::get_position()
+int BC_ScrollBar::get_position()
 {
 	return position;
 }
 
-int64_t BC_ScrollBar::get_length()
+int BC_ScrollBar::get_length()
 {
 	return length;
 }
@@ -559,18 +535,18 @@ int BC_ScrollBar::in_use()
 	return selection_status != 0;
 }
 
-int64_t BC_ScrollBar::get_handlelength()
+int BC_ScrollBar::get_handlelength()
 {
 	return handlelength;
 }
 
-void BC_ScrollBar::update_value(int64_t value)
+void BC_ScrollBar::update_value(int value)
 {
 	this->position = value;
 	draw();
 }
 
-void BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength)
+void BC_ScrollBar::update_length(int length, int position, int handlelength)
 {
 	this->length = length;
 	this->position = position;
