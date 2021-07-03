@@ -663,8 +663,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					case LOADMODE_REPLACE:
 						master_edl->init_edl();
 						load_mode = LOADMODE_NEW_TRACKS;
-							if(!master_edl->local_session->clip_title[0])
-								master_edl->local_session->set_clip_title(new_asset->path);
+						if(!master_edl->local_session->clip_title[0])
+							master_edl->local_session->set_clip_title(new_asset->path);
 						break;
 					case LOADMODE_CONCATENATE:
 						master_edl->tracks->append_asset(new_asset);
