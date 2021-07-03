@@ -11,22 +11,16 @@
 class PluginClient;
 
 #include "aframe.inc"
-#include "arraylist.h"
-#include "autos.h"
-#include "bcdisplayinfo.h"
-#include "bcsignals.h"
-#include "bchash.h"
-#include "condition.h"
-#include "edlsession.inc"
+#include "bchash.inc"
+#include "bcwindowbase.inc"
+#include "datatype.h"
 #include "keyframe.inc"
 #include "menueffects.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
-#include "pluginwindow.h"
-#include "preferences.inc"
 #include "theme.inc"
 #include "trackrender.inc"
-#include "vframe.h"
+#include "vframe.inc"
 
 extern "C"
 {

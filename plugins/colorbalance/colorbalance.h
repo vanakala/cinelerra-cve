@@ -17,6 +17,7 @@
 #define PLUGIN_GUI_CLASS ColorBalanceWindow
 
 #include "pluginmacros.h"
+#include "condition.h"
 
 class ColorBalanceMain;
 

@@ -27,8 +27,11 @@
  * PLUGIN_GUI_CLASS class_name
  * PLUGIN_MAX_CHANNELS number
  */
+
+#include "bchash.h"
 #include "bcresources.h"
 #include "keyframe.h"
+#include "vframe.h"
 
 class PLUGIN_CLASS;
 

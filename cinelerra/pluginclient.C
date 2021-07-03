@@ -25,6 +25,7 @@
 #include "tmpframecache.h"
 #include "track.h"
 #include "trackrender.h"
+#include "vframe.h"
 #include <string.h>
 
 PluginClient::PluginClient(PluginServer *server)

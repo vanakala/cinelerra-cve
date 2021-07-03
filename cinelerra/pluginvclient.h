@@ -22,7 +22,8 @@
 #ifndef PLUGINVCLIENT_H
 #define PLUGINVCLIENT_H
 
-#include "bcfontentry.h"
+#include "arraylist.h"
+#include "bcfontentry.inc"
 #include "guidelines.inc"
 #include "pluginclient.h"
 
