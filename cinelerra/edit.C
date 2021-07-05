@@ -90,8 +90,7 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 
 			file->tag.set_title("FILE");
 			file->tag.set_property("SRC", store_path);
-			file->tag.set_property("STREAMNO", track_type == TRACK_AUDIO ?
-				asset->audio_streamno : asset->video_streamno);
+			file->tag.set_property("STREAMNO", stream + 1);
 			file->append_tag();
 			file->tag.set_title("/FILE");
 			file->append_tag();
