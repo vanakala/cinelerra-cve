@@ -317,6 +317,7 @@ int FileAVlibs::probe_input(Asset *asset)
 
 			case AVMEDIA_TYPE_VIDEO:
 				asset->streams[asset->nb_streams].stream_index = i;
+				asset->streams[asset->nb_streams].channels = 1;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				asset->streams[asset->nb_streams].width = decoder_ctx->width;
 				asset->streams[asset->nb_streams].height = decoder_ctx->height;
