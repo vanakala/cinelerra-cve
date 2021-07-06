@@ -39,7 +39,7 @@ struct streamdesc
 	int stream_index; // index of stream in file
 	ptstime start;    // lowest pts in file
 	ptstime end;      // highest pts in file
-	int channels;     // audo channels
+	int channels;     // auido channels or video layers
 	int sample_rate;  // audio sample rate
 	int bits;         // bits per sample
 	int signedsample; // audio sample is signed

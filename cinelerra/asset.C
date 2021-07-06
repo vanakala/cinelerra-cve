@@ -181,7 +181,7 @@ void Asset::set_video_stream(int stream)
 	desc = &streams[stream];
 	video_data = 1;
 	video_streamno = stream + 1;
-	layers = 1;
+	layers = desc->channels;
 	frame_rate = desc->frame_rate;
 	sample_aspect_ratio = desc->sample_aspect_ratio;
 	width = desc->width;
@@ -218,6 +218,7 @@ void Asset::init_streams()
 		{
 			desc = &streams[nb_streams];
 			desc->stream_index = nb_streams;
+			desc->channels = layers;
 			desc->frame_rate = frame_rate;
 			desc->sample_aspect_ratio = sample_aspect_ratio;
 			desc->width = width;
@@ -1633,10 +1634,11 @@ void Asset::dump(int indent, int options)
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate:%.2f SAR:%.2f frames:%" PRId64 " tocitm %d codec:'%s' '%s'\n",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] lyrs:%d rate:%.2f SAR:%.2f frames:%" PRId64 " tocitm %d codec:'%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
+					streams[i].channels,
 					streams[i].frame_rate, streams[i].sample_aspect_ratio,
 					streams[i].length, streams[i].toc_items,
 					streams[i].codec, streams[i].samplefmt);
