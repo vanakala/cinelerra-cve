@@ -98,12 +98,15 @@ public:
 	void init_streams();
 	int set_program(int pgm);
 	int set_program_id(int program_id);
+	struct progdesc *get_program(int program_id);
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
 	off_t get_index_offset(int channel);
 	samplenum get_index_size(int channel);
+// Returns index of the next requested type stream
+	int get_stream_ix(int stream_type, int prev_stream = -1);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences

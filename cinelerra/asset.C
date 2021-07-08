@@ -244,6 +244,16 @@ int Asset::set_program_id(int program_id)
 	return -1;
 }
 
+struct progdesc *Asset::get_program(int program_id)
+{
+	for(int i = 0; i < nb_programs; i++)
+	{
+		if(programs[i].program_id == program_id)
+			return &programs[i];
+	}
+	return 0;
+}
+
 int Asset::set_program(int pgm)
 {
 	struct progdesc *pdesc;
@@ -605,6 +615,48 @@ int Asset::check_programs(Asset *asset)
 		return 0;
 
 	return !strcmp(asset->path, path);
+}
+
+int Asset::get_stream_ix(int stream_type, int prev_stream)
+{
+	if(nb_programs)
+	{
+		struct progdesc *prog = get_program(program_id);
+		int prev_ix;
+
+		if(prev_stream >= 0)
+		{
+			prev_ix = -1;
+
+			for(int i = 0; i < prog->nb_streams; i++)
+			{
+				if(prev_stream == prog->streams[i])
+				{
+					prev_ix = i + 1;
+					break;
+				}
+			}
+			if(prev_ix < 0)
+				return -1;
+		}
+		else
+			prev_ix = 0;
+
+		for(int i = prev_ix; i < prog->nb_streams; i++)
+		{
+			if(streams[prog->streams[i]].options & stream_type)
+				return prog->streams[i];
+		}
+	}
+	else
+	{
+		for(int i = prev_stream + 1; i < nb_streams; i++)
+		{
+			if(streams[i].options & stream_type)
+				return i;
+		}
+	}
+	return -1;
 }
 
 void Asset::read(FileXML *file, 
