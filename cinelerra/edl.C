@@ -672,6 +672,7 @@ void EDL::insert_asset(Asset *asset,
 {
 	Track *current = first_track ? first_track : tracks->first;
 	ptstime length;
+	int stream;
 
 // Insert asset into asset table
 	update_assets(asset);
@@ -688,34 +689,40 @@ void EDL::insert_asset(Asset *asset,
 		length = asset->total_length_framealigned(edlsession->frame_rate);
 
 // Paste video
-	for(int vtrack = 0; current && vtrack < asset->layers;
-		current = NEXT)
+	stream = -1;
+	while((stream = asset->get_stream_ix(STRDSC_VIDEO, stream)) >= 0)
 	{
-		if(!current->record || 
-			current->data_type != TRACK_VIDEO)
-			continue;
+		int layers = asset->streams[stream].channels;
 
-		current->insert_asset(asset,
-			length, 
-			position, 
-			vtrack);
+		for(int vtrack = 0; current && vtrack < layers;
+			current = NEXT)
+		{
+			if(!current->record ||
+					current->data_type != TRACK_VIDEO)
+				continue;
 
-		vtrack++;
+			current->insert_asset(asset, length,
+				position, vtrack);
+			vtrack++;
+		}
 	}
 
-	for(int atrack = 0; current && atrack < asset->channels;
-		current = NEXT)
+	stream = -1;
+	while((stream = asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
 	{
-		if(!current->record ||
-			current->data_type != TRACK_AUDIO)
-			continue;
+		int channels = asset->streams[stream].channels;
 
-		current->insert_asset(asset,
-			length,
-			position, 
-			atrack);
+		for(int atrack = 0; current && atrack < channels;
+			current = NEXT)
+		{
+			if(!current->record ||
+					current->data_type != TRACK_AUDIO)
+				continue;
 
-		atrack++;
+			current->insert_asset(asset, length,
+				position, atrack);
+			atrack++;
+		}
 	}
 }
 
@@ -844,6 +851,7 @@ void EDL::update_plugin_titles()
 void EDL::init_edl()
 {
 	Asset *new_asset;
+	int stream;
 
 	if(tracks && tracks->total())
 		return;
@@ -856,19 +864,25 @@ void EDL::init_edl()
 // Edl has only one asset here
 	new_asset = assets->values[0];
 
-	if(new_asset->video_data)
+	stream = -1;
+	while((stream = new_asset->get_stream_ix(STRDSC_VIDEO, stream)) >= 0)
 	{
-		edlsession->video_tracks += new_asset->layers;
+		int layers = new_asset->streams[stream].channels;
+		edlsession->video_tracks += layers;
 
-		for(int k = 0; k < new_asset->layers; k++)
+		for(int k = 0; k < layers; k++)
 			tracks->add_track(TRACK_VIDEO, 0, 0);
 	}
 
-	if(new_asset->audio_data)
-	{
-		edlsession->audio_tracks += new_asset->channels;
+	stream = -1;
 
-		for(int k = 0; k < new_asset->channels; k++)
+	while((stream = new_asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
+	{
+		int channels = new_asset->streams[stream].channels;
+
+		edlsession->audio_tracks += channels;
+
+		for(int k = 0; k < channels; k++)
 			tracks->add_track(TRACK_AUDIO, 0, 0);
 	}
 	insert_asset(new_asset, 0);
