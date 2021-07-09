@@ -264,17 +264,13 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 {
 	Track *master = 0;
 	int atracks, vtracks;
+	int astream, vstream;
 	ptstime alength = 0;
 	ptstime start = 0;
 	ptstime dur, pasted_length;
 
 	atracks = vtracks = 0;
-
-	if(asset->video_data)
-		vtracks = asset->layers;
-
-	if(asset->audio_data)
-		atracks = asset->channels;
+	astream = vstream = -1;
 
 	alength = asset->total_length_framealigned(edlsession->frame_rate);
 
@@ -289,6 +285,12 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 			continue;
 
 		dur = 0;
+
+		if(!vtracks && (vstream = asset->get_stream_ix(STRDSC_VIDEO, vstream)) >= 0)
+			vtracks = asset->streams[vstream].channels;
+
+		if(!atracks && (astream = asset->get_stream_ix(STRDSC_AUDIO, astream)) >= 0)
+			atracks = asset->streams[astream].channels;
 
 		if(vtracks && current->data_type == TRACK_VIDEO)
 		{
@@ -328,12 +330,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 	}
 
 	atracks = vtracks = 0;
-
-	if(asset->video_data)
-		vtracks = asset->layers;
-
-	if(asset->audio_data)
-		atracks = asset->channels;
+	astream = vstream = -1;
 
 	pasted_length  = 0;
 
@@ -343,22 +340,33 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 	for(Track *current = first_track ? first_track : first;
 		current; current = current->next)
 	{
+		int achannels, vchannels;
+		ptstime sdur;
 		dur = 0;
+
 		if(!current->record)
 			continue;
 
+		if(!vtracks && (vstream = asset->get_stream_ix(STRDSC_VIDEO, vstream)) >= 0)
+			vchannels = vtracks = asset->streams[vstream].channels;
+
+		if(!atracks && (astream = asset->get_stream_ix(STRDSC_AUDIO, astream)) >= 0)
+			achannels = atracks = asset->streams[astream].channels;
+
 		if(vtracks && current->data_type == TRACK_VIDEO)
 		{
-			dur = MIN(alength, asset->video_duration);
+			sdur = asset->stream_duration(vstream);
+			dur = MIN(alength, sdur);
 			current->insert_asset(asset, dur,
-				start, asset->layers - vtracks, overwrite);
+				start, vchannels - vtracks, overwrite);
 			vtracks--;
 		}
 		if(atracks && current->data_type == TRACK_AUDIO)
 		{
+			sdur = asset->stream_duration(astream);
 			dur = MIN(alength, asset->audio_duration);
-			current->insert_asset(asset, MIN(alength, asset->audio_duration),
-				start, asset->layers - vtracks, overwrite);
+			current->insert_asset(asset, dur,
+				start, achannels - atracks, overwrite);
 			atracks--;
 		}
 		if(dur > pasted_length)
