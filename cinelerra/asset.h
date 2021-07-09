@@ -107,6 +107,7 @@ public:
 	samplenum get_index_size(int channel);
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
+	ptstime stream_duration(int stream);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences

@@ -659,6 +659,11 @@ int Asset::get_stream_ix(int stream_type, int prev_stream)
 	return -1;
 }
 
+ptstime Asset::stream_duration(int stream)
+{
+	return streams[stream].end - streams[stream].start;
+}
+
 void Asset::read(FileXML *file, 
 	int expand_relative)
 {
