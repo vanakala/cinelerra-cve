@@ -576,37 +576,53 @@ void Tracks::create_new_tracks(Asset *asset)
 	ptstime len;
 	Track *new_track;
 	int atracks, vtracks;
+	int astream, vstream;
 
-	atracks = vtracks = 0;
-
-	if(asset->video_data)
-		vtracks = asset->layers;
-
-	if(asset->audio_data)
-		atracks = asset->channels;
+	atracks = 0;
+	astream = -1;
 
 	if(master_length < EPSILON)
-		master_length = MIN(asset->video_duration, asset->audio_duration);
-
-	if(!atracks && !vtracks || master_length < EPSILON)
-		return;
-
-	for(int i = 0; i < vtracks; i++)
 	{
-		new_track = add_track(TRACK_VIDEO, 0, 0);
-		len = asset->total_length_framealigned(edlsession->frame_rate);
-		if(len > master_length)
-			len = master_length;
-		new_track->insert_asset(asset, len, 0, i);
+		master_length = MAX_PTSTIME;
+
+		while((astream = asset->get_stream_ix(STRDSC_VIDEO | STRDSC_AUDIO, astream)) >= 0)
+		{
+			len = asset->stream_duration(astream);
+			master_length = MIN(len, master_length);
+			atracks++;
+		}
+		if(!atracks || master_length < EPSILON)
+			return;
 	}
 
-	for(int i = 0; i < atracks; i++)
+	astream = vstream = -1;
+
+	while((vstream = asset->get_stream_ix(STRDSC_VIDEO, vstream)) >= 0)
 	{
-		new_track = add_track(TRACK_AUDIO, 0, 0);
-		len = asset->total_length_framealigned(edlsession->frame_rate);
-		if(len > master_length)
-			len = master_length;
-		new_track->insert_asset(asset, len, 0, i);
+		vtracks = asset->streams[vstream].channels;
+
+		for(int i = 0; i < vtracks; i++)
+		{
+			new_track = add_track(TRACK_VIDEO, 0, 0);
+			len = asset->total_length_framealigned(edlsession->frame_rate);
+			if(len > master_length)
+				len = master_length;
+			new_track->insert_asset(asset, vstream, i, len, 0);
+		}
+	}
+
+	while((astream = asset->get_stream_ix(STRDSC_AUDIO, astream)) >= 0)
+	{
+		atracks = asset->streams[astream].channels;
+
+		for(int i = 0; i < atracks; i++)
+		{
+			new_track = add_track(TRACK_AUDIO, 0, 0);
+			len = asset->total_length_framealigned(edlsession->frame_rate);
+			if(len > master_length)
+				len = master_length;
+			new_track->insert_asset(asset, astream, i, len, 0);
+		}
 	}
 }
 
