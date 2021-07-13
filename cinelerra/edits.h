@@ -25,8 +25,9 @@ public:
 // Editing
 	void insert_edits(Edits *edits, ptstime position,
 		ptstime duration = -1, int insert = 0);
-	void insert_asset(Asset *asset, ptstime length_time,
-		ptstime postime, int track_number, int overwrite = 0);
+	void insert_asset(Asset *asset, int stream, int channel,
+		ptstime length_time,
+		ptstime postime, int overwrite = 0);
 // Split edit containing position.
 // Return the second edit in the split.
 // if force is set create new edit always 

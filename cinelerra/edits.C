@@ -84,10 +84,9 @@ Edits& Edits::operator=(Edits& edits)
 	return *this;
 }
 
-void Edits::insert_asset(Asset *asset,
+void Edits::insert_asset(Asset *asset, int stream, int channel,
 	ptstime len_time,
 	ptstime postime,
-	int track_number,
 	int overwrite)
 {
 	Edit *new_edit, *last_edit, *edit;
@@ -111,20 +110,9 @@ void Edits::insert_asset(Asset *asset,
 	}
 	new_edit->asset = asset;
 	new_edit->set_source_pts(0);
-
-	if(track->data_type == TRACK_AUDIO)
-	{
-		new_edit->channel = track_number % asset->channels;
-		new_edit->stream = asset->audio_streamno - 1;
-	}
-	else
-	if(track->data_type == TRACK_VIDEO)
-	{
-		new_edit->channel = track_number % asset->layers;
-		new_edit->stream = asset->video_streamno - 1;
-	}
+	new_edit->stream = stream;
+	new_edit->channel = channel;
 }
-
 
 void Edits::insert_edits(Edits *source_edits, ptstime postime,
 	ptstime duration, int replace)

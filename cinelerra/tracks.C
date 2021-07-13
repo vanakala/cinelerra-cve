@@ -357,16 +357,16 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		{
 			sdur = asset->stream_duration(vstream);
 			dur = MIN(alength, sdur);
-			current->insert_asset(asset, dur,
-				start, vchannels - vtracks, overwrite);
+			current->insert_asset(asset, vstream, vchannels - vtracks,
+				dur, start,  overwrite);
 			vtracks--;
 		}
 		if(atracks && current->data_type == TRACK_AUDIO)
 		{
 			sdur = asset->stream_duration(astream);
-			dur = MIN(alength, asset->audio_duration);
-			current->insert_asset(asset, dur,
-				start, achannels - atracks, overwrite);
+			dur = MIN(alength, sdur);
+			current->insert_asset(asset, astream, achannels - atracks,
+				dur, start, overwrite);
 			atracks--;
 		}
 		if(dur > pasted_length)

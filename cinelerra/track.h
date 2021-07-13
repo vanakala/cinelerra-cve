@@ -56,10 +56,8 @@ public:
 	void get_source_dimensions(ptstime position, int &w, int &h);
 
 // Editing
-	void insert_asset(Asset *asset, 
-		ptstime length,
-		ptstime position,
-		int track_number,
+	void insert_asset(Asset *asset, int stream, int channel,
+		ptstime length, ptstime position,
 		int overwrite = 0);
 	Plugin* insert_effect(PluginServer *server,
 		ptstime start,

@@ -701,8 +701,8 @@ void EDL::insert_asset(Asset *asset,
 					current->data_type != TRACK_VIDEO)
 				continue;
 
-			current->insert_asset(asset, length,
-				position, vtrack);
+			current->insert_asset(asset, stream, vtrack,
+				length, position);
 			vtrack++;
 		}
 	}
@@ -719,8 +719,8 @@ void EDL::insert_asset(Asset *asset,
 					current->data_type != TRACK_AUDIO)
 				continue;
 
-			current->insert_asset(asset, length,
-				position, atrack);
+			current->insert_asset(asset, stream, atrack,
+				length, position);
 			atrack++;
 		}
 	}

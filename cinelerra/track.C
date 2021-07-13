@@ -418,16 +418,15 @@ void Track::init_shared_pointers()
 		plugins.values[i]->init_shared_pointers();
 }
 
-void Track::insert_asset(Asset *asset,
+void Track::insert_asset(Asset *asset, int stream, int channel,
 		ptstime length,
 		ptstime position,
-		int track_number,
 		int overwrite)
 {
-	edits->insert_asset(asset, 
+	edits->insert_asset(asset, stream, channel,
 		length,
 		position,
-		track_number, overwrite);
+		overwrite);
 
 	if(!overwrite)
 	{
