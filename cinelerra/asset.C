@@ -664,6 +664,31 @@ ptstime Asset::stream_duration(int stream)
 	return streams[stream].end - streams[stream].start;
 }
 
+int Asset::stream_count(int stream_type)
+{
+	int count = 0;
+
+	if(nb_programs)
+	{
+		struct progdesc *prog = get_program(program_id);
+
+		for(int i = 0; i < prog->nb_streams; i++)
+		{
+			if(streams[prog->streams[i]].options & stream_type)
+				count++;
+		}
+	}
+	else
+	{
+		for(int i = 0; i < nb_streams; i++)
+		{
+			if(streams[i].options & stream_type)
+				count++;
+		}
+	}
+	return count;
+}
+
 void Asset::read(FileXML *file, 
 	int expand_relative)
 {
@@ -1757,6 +1782,18 @@ ptstime Asset::from_units(int track_type, posnum position)
 		return (ptstime)position / sample_rate;
 	case TRACK_VIDEO:
 		return (ptstime)position / frame_rate;
+	}
+	return 0;
+}
+
+int Asset::stream_type(int track_type)
+{
+	switch(track_type)
+	{
+	case TRACK_AUDIO:
+		return STRDSC_AUDIO;
+	case TRACK_VIDEO:
+		return STRDSC_VIDEO;
 	}
 	return 0;
 }

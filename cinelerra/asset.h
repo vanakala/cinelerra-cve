@@ -108,6 +108,8 @@ public:
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
 	ptstime stream_duration(int stream);
+// Number of streams with stream_type
+	int stream_count(int stream_type);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
@@ -179,6 +181,7 @@ public:
 
 	ptstime total_length_framealigned(double fps);
 	ptstime from_units(int track_type, posnum position);
+	static int stream_type(int track_type);
 
 // Path to file
 	char path[BCTEXTLEN];
