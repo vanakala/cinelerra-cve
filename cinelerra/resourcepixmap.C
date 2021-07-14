@@ -324,6 +324,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 	int total_x = edit_x - pixmap_x, total_w = edit_w;
 	int x = total_x, w = total_w;
 	int left_margin = 10;
+	int stream_type = edit->asset->stream_type(data_type);
 
 	if(x < 0) 
 	{
@@ -343,13 +344,16 @@ void ResourcePixmap::draw_title(Edit *edit,
 
 	if(total_x > -BC_INFINITY)
 	{
-		char title[BCTEXTLEN], channel[BCTEXTLEN];
+		char title[BCTEXTLEN];
 		FileSystem fs;
 
 		fs.extract_name(title, edit->asset->path);
+		char *s = &title[strlen(title)];
 
-		sprintf(channel, " #%d", edit->channel + 1);
-		strcat(title, channel);
+		if(edit->asset->stream_count(stream_type) > 1)
+			sprintf(s, " %d:%d", edit->stream + 1, edit->channel + 1);
+		else
+			sprintf(s, " #%d", edit->channel + 1);
 
 		canvas->set_color(theme_global->title_color);
 		canvas->set_font(theme_global->title_font);
