@@ -67,6 +67,7 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 		{
 			file->tag.set_property("SOURCE_PTS", source_pts);
 			file->tag.set_property("CHANNEL", channel);
+			file->tag.set_property("STREAMNO", stream + 1);
 		}
 
 		file->append_tag();
@@ -90,7 +91,6 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 
 			file->tag.set_title("FILE");
 			file->tag.set_property("SRC", store_path);
-			file->tag.set_property("STREAMNO", stream + 1);
 			file->append_tag();
 			file->tag.set_title("/FILE");
 			file->append_tag();
@@ -261,6 +261,7 @@ posnum Edit::load_properties(FileXML *file, ptstime project_pts)
 	posnum startsource;
 	posnum length = -1;
 	ptstime cur_pts;
+	int streamno;
 
 	startsource = file->tag.get_property("STARTSOURCE", (posnum)0);
 	if(startsource)
@@ -274,7 +275,10 @@ posnum Edit::load_properties(FileXML *file, ptstime project_pts)
 	}
 	else
 		this->project_pts = cur_pts;
-	channel = file->tag.get_property("CHANNEL", (int32_t)0);
+	channel = file->tag.get_property("CHANNEL", 0);
+	streamno = file->tag.get_property("STREAMNO", -1);
+	if(streamno > 0)
+		stream = streamno - 1;
 	return length;
 }
 

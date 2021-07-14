@@ -282,6 +282,7 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 
 				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
+// Backward compatibility
 				streamno = file->tag.get_property("STREAMNO", -1);
 // Stream of edit starts with 0, sreamno in xml starts with 1
 				if(streamno > 0)
