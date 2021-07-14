@@ -806,8 +806,11 @@ void Track::save_xml(FileXML *file, const char *output_path)
 	file->tag.set_property("EXPAND", expand_view);
 	if(master)
 		file->tag.set_property("MASTER", master);
-	file->tag.set_property("TRACK_W", track_w);
-	file->tag.set_property("TRACK_H", track_h);
+	if(data_type == TRACK_VIDEO)
+	{
+		file->tag.set_property("TRACK_W", track_w);
+		file->tag.set_property("TRACK_H", track_h);
+	}
 	save_header(file);
 	file->append_tag();
 	file->append_newline();
