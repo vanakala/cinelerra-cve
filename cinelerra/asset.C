@@ -772,25 +772,24 @@ void Asset::read(FileXML *file,
 
 void Asset::read_audio(FileXML *file)
 {
-	int streamno;
+	if(format == FILE_PCM && file->tag.title_is("AUDIO"))
+	{
+		struct streamdesc *sdc = &streams[0];
 
-	if(file->tag.title_is("AUDIO")) audio_data = 1;
-	channels = file->tag.get_property("CHANNELS", 2);
-	sample_rate = file->tag.get_property("SAMPLERATE", 48000);
-
-	streamno = file->tag.get_property("STREAMNO", 0);
-	if(streamno > 0)
-		audio_streamno = streamno;
-
-	bits = file->tag.get_property("BITS", 16);
-	byte_order = file->tag.get_property("BYTE_ORDER", 0);
-	signed_ = file->tag.get_property("SIGNED", 0);
-	header = file->tag.get_property("HEADER", 0);
-	dither = file->tag.get_property("DITHER", 0);
-
-	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
-	if(audio_length && sample_rate)
-		audio_duration = (ptstime)audio_length / sample_rate;
+		if(!nb_streams)
+		{
+			sdc->channels = 2;
+			sdc->sample_rate = 44100;
+		}
+		sdc->options = STRDSC_AUDIO;
+		nb_streams = 1;
+		sdc->channels = file->tag.get_property("CHANNELS", sdc->channels);
+		sdc->sample_rate = file->tag.get_property("SAMPLERATE", sdc->sample_rate);
+		sdc->length = file->tag.get_property("SAMPLES", sdc->length);
+		sdc->start = 0;
+		if(sdc->length && sdc->sample_rate)
+			sdc->end = (ptstime)sdc->length / sdc->sample_rate;
+	}
 }
 
 void Asset::read_video(FileXML *file)
@@ -830,32 +829,19 @@ void Asset::read_index(FileXML *file)
 	index_zoom = file->tag.get_property("ZOOM", 1);
 	index_bytes = file->tag.get_property("BYTES", (int64_t)0);
 
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-		if(!result)
-		{
-			if(file->tag.title_is("/INDEX"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("OFFSET"))
-			{
-				if(current_offset < channels)
-				{
-					index_offsets[current_offset++] = file->tag.get_property("FLOAT", 0);
-				}
-			}
-			else
-			if(file->tag.title_is("SIZE"))
-			{
-				if(current_size < channels)
-				{
-					index_sizes[current_size++] = file->tag.get_property("FLOAT", 0);
-				}
-			}
-		}
+		if(file->tag.title_is("/INDEX"))
+			break;
+
+		if(file->tag.title_is("OFFSET"))
+			index_offsets[current_offset++] =
+				file->tag.get_property("FLOAT", 0);
+		else if(file->tag.title_is("SIZE"))
+			index_sizes[current_size++] =
+				file->tag.get_property("FLOAT", 0);
+		if(current_offset >= MAX_CHANNELS || current_size >= MAX_CHANNELS)
+			break;
 	}
 }
 
@@ -1122,37 +1108,22 @@ void Asset::read_params(FileXML *file)
 
 void Asset::write_audio(FileXML *file)
 {
-// Let the reader know if the asset has the data by naming the block.
-	if(audio_data)
+	if(format == FILE_PCM && pcm_format)
 	{
+		struct streamdesc *sdc = &streams[0];
+
 		file->tag.set_title("AUDIO");
-		file->tag.set_property("STREAMNO", audio_streamno);
-	}
-	else
-		file->tag.set_title("AUDIO_OMIT");
-// Necessary for PCM audio
-	file->tag.set_property("CHANNELS", channels);
-	file->tag.set_property("SAMPLERATE", sample_rate);
 
-	if(bits)
-		file->tag.set_property("BITS", bits);
-	if(byte_order)
-		file->tag.set_property("BYTE_ORDER", byte_order);
-	if(signed_)
-		file->tag.set_property("SIGNED", signed_);
-	if(header)
-		file->tag.set_property("HEADER", header);
-	if(dither)
-		file->tag.set_property("DITHER", dither);
-	file->tag.set_property("AUDIO_LENGTH", audio_length);
+		// Raw pcm has only one stream
+		file->tag.set_property("CHANNELS", sdc->channels);
+		file->tag.set_property("SAMPLERATE", sdc->sample_rate);
+		file->tag.set_property("SAMPLES", sdc->length);
 
-	file->append_tag();
-	if(audio_data)
+		file->append_tag();
 		file->tag.set_title("/AUDIO");
-	else
-		file->tag.set_title("/AUDIO_OMIT");
-	file->append_tag();
-	file->append_newline();
+		file->append_tag();
+		file->append_newline();
+	}
 }
 
 void Asset::write_video(FileXML *file)
@@ -1667,7 +1638,7 @@ void Asset::dump(int indent, int options)
 	printf("%*sAsset %p dump:\n", indent, "", this);
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
-	printf("%*sindex_status %d id %d inuse %d\n", indent, "", index_status, id, global_inuse);
+	printf("%*sid %d inuse %d\n", indent, "", id, global_inuse);
 	printf("%*sfile format '%s'", indent, "",
 		ContainerSelection::container_to_text(format));
 	if(format == FILE_PCM)
@@ -1685,6 +1656,33 @@ void Asset::dump(int indent, int options)
 		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
 		video_duration, video_length, single_image, use_pipe);
+	if(options & ASSETDUMP_INDEXDATA)
+	{
+		const char *stxt;
+		switch(index_status)
+		{
+		case INDEX_READY:
+			stxt = "Ready";
+			break;
+		case INDEX_NOTTESTED:
+			stxt = "Not Tested";
+			break;
+		case INDEX_BUILDING:
+			stxt = "Building";
+			break;
+		case INDEX_TOOSMALL:
+			stxt = "Too Small";
+			break;
+		default:
+			stxt = "Unk";
+			break;
+		}
+		printf("%*sindex: status '%s' zoom %d start %zu bytes %zu\n", indent, "",
+			stxt, index_zoom, index_start, index_bytes);
+		for(int i = 0; i < channels; i++)
+			printf("%*s  %2d %zu %ld\n", indent, "",
+				i, index_offsets[i], index_sizes[i]);
+	}
 
 	if(options & ASSETDUMP_DECODERPTRS)
 	{
