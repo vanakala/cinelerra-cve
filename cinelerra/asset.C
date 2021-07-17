@@ -794,24 +794,21 @@ void Asset::read_audio(FileXML *file)
 
 void Asset::read_video(FileXML *file)
 {
-	int streamno;
 	char string[BCTEXTLEN];
 
-	if(file->tag.title_is("VIDEO")) video_data = 1;
+	if(file->tag.title_is("VIDEO"))
+	{
+		interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX", 0);
 
-	streamno = file->tag.get_property("STREAMNO", 0);
-	if(streamno > 0)
-		video_streamno = streamno;
+		strcpy(string, AInterlaceModeSelection::xml_text(BC_ILACE_MODE_UNDETECTED));
+		interlace_mode = AInterlaceModeSelection::xml_value(
+			file->tag.get_property("INTERLACE_MODE", string));
 
-	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
-	strcpy(string, AInterlaceModeSelection::xml_text(BC_ILACE_MODE_NOTINTERLACED));
-	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE",
-			string));
-
-	strcpy(string, InterlaceFixSelection::xml_text(BC_ILACE_FIXMETHOD_NONE));
-	interlace_fixmethod = InterlaceFixSelection::xml_value(
-		file->tag.get_property("INTERLACE_FIXMETHOD",
+		strcpy(string, InterlaceFixSelection::xml_text(BC_ILACE_FIXMETHOD_NONE));
+		interlace_fixmethod = InterlaceFixSelection::xml_value(
+			file->tag.get_property("INTERLACE_FIXMETHOD",
 				string));
+	}
 }
 
 void Asset::read_index(FileXML *file)
@@ -1128,30 +1125,23 @@ void Asset::write_audio(FileXML *file)
 
 void Asset::write_video(FileXML *file)
 {
-	if(video_data)
+	if(stream_count(STRDSC_VIDEO) &&
+		interlace_autofixoption && interlace_mode != BC_ILACE_MODE_UNDETECTED)
 	{
 		file->tag.set_title("VIDEO");
-		file->tag.set_property("STREAMNO", video_streamno);
-	}
-	else
-		file->tag.set_title("VIDEO_OMIT");
+		file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
-	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
+		file->tag.set_property("INTERLACE_MODE",
+			AInterlaceModeSelection::xml_text(interlace_mode));
 
-	file->tag.set_property("INTERLACE_MODE",
-		AInterlaceModeSelection::xml_text(interlace_mode));
+		file->tag.set_property("INTERLACE_FIXMETHOD",
+			InterlaceFixSelection::xml_text(interlace_fixmethod));
 
-	file->tag.set_property("INTERLACE_FIXMETHOD",
-		InterlaceFixSelection::xml_text(interlace_fixmethod));
-
-	file->append_tag();
-	if(video_data)
+		file->append_tag();
 		file->tag.set_title("/VIDEO");
-	else
-		file->tag.set_title("/VIDEO_OMIT");
-
-	file->append_tag();
-	file->append_newline();
+		file->append_tag();
+		file->append_newline();
+	}
 }
 
 void Asset::write_index(FileXML *file)
