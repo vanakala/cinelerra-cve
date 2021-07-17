@@ -689,11 +689,8 @@ int Asset::stream_count(int stream_type)
 	return count;
 }
 
-void Asset::read(FileXML *file, 
-	int expand_relative)
+void Asset::read(FileXML *file, int expand_relative)
 {
-	int result = 0;
-
 // Check for relative path.
 	if(expand_relative && path[0] != '/')
 	{
@@ -705,67 +702,35 @@ void Asset::read(FileXML *file,
 		strcat(path, new_path);
 	}
 
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-		if(!result)
+		if(file->tag.title_is("/ASSET"))
+			break;
+		else if(file->tag.title_is("AUDIO"))
+			read_audio(file);
+		else if(file->tag.title_is("FORMAT"))
 		{
-			if(file->tag.title_is("/ASSET"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("AUDIO"))
-			{
-				read_audio(file);
-			}
-			else
-			if(file->tag.title_is("AUDIO_OMIT"))
-			{
-				read_audio(file);
-			}
-			else
-			if(file->tag.title_is("FORMAT"))
-			{
-				char *string = file->tag.get_property("TYPE");
-				format = ContainerSelection::prefix_to_container(string);
-				if(format == FILE_UNKNOWN)
-					format = ContainerSelection::text_to_container(string);
-				use_header = 
-					file->tag.get_property("USE_HEADER", use_header);
-				program_id =
-					file->tag.get_property("PROGRAM", program_id);
-				pcm_format = file->tag.get_property("PCM_FORMAT");
-				// pcm_format must point to string constant
-				if(pcm_format)
-					pcm_format = FileFormatPCMFormat::pcm_format(pcm_format);
-			}
-			else
-			if(file->tag.title_is("VIDEO"))
-			{
-				read_video(file);
-			}
-			else
-			if(file->tag.title_is("VIDEO_OMIT"))
-			{
-				read_video(file);
-			}
-			else
-			if(file->tag.title_is("INDEX"))
-			{
-				read_index(file);
-			}
-			else
-			if(strncmp(file->tag.get_title(), decfmt_tag, sizeof(decfmt_tag) - 1) == 0)
-			{
-				read_decoder_params(file);
-			}
-			else
-			if(strncmp(file->tag.get_title(), stream_tag, sizeof(stream_tag) - 1) == 0)
-			{
-				read_stream_params(file);
-			}
+			char *string = file->tag.get_property("TYPE");
+			format = ContainerSelection::prefix_to_container(string);
+			if(format == FILE_UNKNOWN)
+				format = ContainerSelection::text_to_container(string);
+			use_header =
+				file->tag.get_property("USE_HEADER", use_header);
+			program_id =
+				file->tag.get_property("PROGRAM", program_id);
+			pcm_format = file->tag.get_property("PCM_FORMAT");
+			// pcm_format must point to string constant
+			if(pcm_format)
+				pcm_format = FileFormatPCMFormat::pcm_format(pcm_format);
 		}
+		else if(file->tag.title_is("VIDEO"))
+			read_video(file);
+		else if(file->tag.title_is("INDEX"))
+			read_index(file);
+		else if(strncmp(file->tag.get_title(), decfmt_tag, sizeof(decfmt_tag) - 1) == 0)
+			read_decoder_params(file);
+		else if(strncmp(file->tag.get_title(), stream_tag, sizeof(stream_tag) - 1) == 0)
+			read_stream_params(file);
 	}
 	FileAVlibs::update_decoder_format_defaults(this);
 }
