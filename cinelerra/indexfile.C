@@ -5,6 +5,7 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "clip.h"
 #include "condition.h"
 #include "edit.h"
@@ -23,11 +24,11 @@
 #include "preferences.h"
 #include "resourcepixmap.h"
 #include "theme.h"
-#include "bctimer.h"
 #include "track.h"
 #include "trackcanvas.h"
-#include <unistd.h>
 #include "vframe.h"
+
+#include <unistd.h>
 
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.
@@ -36,20 +37,7 @@ IndexFile::IndexFile()
 {
 	file = 0;
 	interrupt_flag = 0;
-	redraw_timer = new Timer;
-}
-
-IndexFile::IndexFile(Asset *asset)
-{
-	file = 0;
-	this->asset = asset;
-	interrupt_flag = 0;
-	redraw_timer = new Timer;
-}
-
-IndexFile::~IndexFile()
-{
-	delete redraw_timer;
+	asset = 0;
 }
 
 int IndexFile::open_index(Asset *asset)
@@ -137,16 +125,13 @@ int IndexFile::open_file()
 
 int IndexFile::open_source(File *source)
 {
-	if(source->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO))
-	{
-		return 1;
-	}
-	else
+	if(!source->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO))
 	{
 		FileSystem fs;
 		asset->index_bytes = fs.get_size(asset->path);
 		return 0;
 	}
+	return 1;
 }
 
 int IndexFile::get_required_scale(File *source)
@@ -158,13 +143,12 @@ int IndexFile::get_required_scale(File *source)
 	if(length_source > 0)
 	{
 		samplenum peak_count = preferences_global->index_size / (2 * sizeof(float) * asset->channels);
+
 		for(result = 1;
 			length_source / result > peak_count;
 			result *= 2);
 	} else
 		return 0;
-// Takes too long to draw from source on a CDROM.  Make indexes for
-// everything.
 
 	return result;
 }
@@ -209,12 +193,13 @@ void IndexFile::interrupt_index()
 int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 {
 	int result = 0;
+	File source;
 
 	this->asset = asset;
 	interrupt_flag = 0;
-// open the source file
-	File source;
-	if(open_source(&source)) return 1;
+
+	if(open_source(&source))
+		return 1;
 
 	get_index_filename(source_filename, 
 		preferences_global->index_directory,
@@ -230,10 +215,6 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 // Build index from scratch
 	{
 		asset->index_zoom = get_required_scale(&source);
-
-// Indexes are now built for everything since it takes too long to draw
-// from CDROM source.
-
 // total length of input file
 		samplenum length_source = source.get_audio_length();
 
@@ -242,7 +223,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 		progress->update_title(_("Creating %s."), index_filename);
 		progress->update_length(length_source);
-		redraw_timer->update();
+		redraw_timer.update();
 
 // thread out index thread
 		IndexThread *index_thread = new IndexThread(mwindow_global,
@@ -266,6 +247,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 			index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
 			int cancelled = progress->update(position);
+
 			if(cancelled || 
 				index_thread->interrupt_flag || 
 				interrupt_flag)
@@ -286,13 +268,12 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 			{
 				index_thread->output_lock[current_buffer]->unlock();
 				current_buffer++;
-				if(current_buffer >= TOTAL_BUFFERS) current_buffer = 0;
+				if(current_buffer >= TOTAL_BUFFERS)
+					current_buffer = 0;
 				position += fragment_size;
 			}
 			else
-			{
 				index_thread->input_lock[current_buffer]->unlock();
-			}
 		}
 
 // end thread cleanly
@@ -312,11 +293,11 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 void IndexFile::redraw_edits(int force)
 {
-	int64_t difference = redraw_timer->get_scaled_difference(1000);
+	int64_t difference = redraw_timer.get_scaled_difference(1000);
 
 	if(difference > 250 || force)
 	{
-		redraw_timer->update();
+		redraw_timer.update();
 		mwindow_global->draw_indexes(asset);
 		asset->old_index_end = asset->index_end;
 	}
@@ -332,7 +313,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	}
 
 // test channel number
-	if(edit->channel > asset->channels) return 1;
+	if(edit->channel >= asset->channels)
+		return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
 	double virtual_edit_x = round((edit->get_pts() - master_edl->local_session->view_start_pts) /
@@ -340,15 +322,16 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		edlsession->sample_rate;
-	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) * 
+	int64_t startsource = round(((pixmap->pixmap_x - virtual_edit_x + x) *
 		(master_edl->local_session->zoom_time * edlsession->sample_rate) +
 		edit->track->to_units(edit->get_source_pts())) *
 		asset_over_session);
 // just in case we get a numerical error 
-	if (startsource < 0) startsource = 0;
-	int64_t length = (int64_t)(w * 
-		master_edl->local_session->zoom_time * edlsession->sample_rate *
-		asset_over_session);
+	if(startsource < 0)
+		startsource = 0;
+
+	int64_t length = round(w * master_edl->local_session->zoom_time *
+		edlsession->sample_rate * asset_over_session);
 
 	if(asset->index_status == INDEX_BUILDING)
 	{
@@ -359,11 +342,12 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // length of index to read in samples * 2
 	int64_t lengthindex = length / asset->index_zoom * 2;
 // start of data in samples
-	int64_t startindex = startsource / asset->index_zoom * 2;  
+	int64_t startindex = startsource / asset->index_zoom * 2;
 // Clamp length of index to read by available data
 	if(startindex + lengthindex > asset->get_index_size(edit->channel))
 		lengthindex = asset->get_index_size(edit->channel) - startindex;
-	if(lengthindex <= 0) return 0;
+	if(lengthindex <= 0)
+		return 0;
 
 // Actual length read from file in bytes
 	int length_read;
@@ -373,9 +357,13 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int buffer_shared = 0;
 	int i;
 	int center_pixel = master_edl->local_session->zoom_track / 2;
-	if(edlsession->show_titles) center_pixel += theme_global->get_image("title_bg_data")->get_h();
+
+	if(edlsession->show_titles)
+		center_pixel += theme_global->get_image("title_bg_data")->get_h();
+
 	int miny = center_pixel - master_edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + master_edl->local_session->zoom_track / 2;
+
 	int x1 = 0, y1, y2;
 
 	double index_frames_per_pixel = master_edl->local_session->zoom_time *
@@ -420,8 +408,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	}
 
 	double current_frame = 0;
-	float highsample = buffer[0];
-	float lowsample = buffer[1];
+	double highsample = buffer[0];
+	double lowsample = buffer[1];
 	int prev_y1 = center_pixel;
 	int prev_y2 = center_pixel;
 	int first_frame = 1;
@@ -431,8 +419,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	{
 		if(current_frame >= index_frames_per_pixel)
 		{
-			int next_y1 = (int)(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
-			int next_y2 = (int)(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
+			int next_y1 = round(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
+			int next_y2 = round(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
 			int y1 = next_y1;
 			int y2 = next_y2;
 
@@ -473,13 +461,13 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // Get last column
 	if(current_frame)
 	{
-		y1 = (int)(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
-		y2 = (int)(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
+		y1 = round(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
+		y2 = round(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
 		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
 
-	if(!buffer_shared) delete [] buffer;
-
+	if(!buffer_shared)
+		delete [] buffer;
 	return 0;
 }
 
@@ -514,6 +502,7 @@ int IndexFile::read_info()
 		if(fread(data, asset->index_start - sizeof(off_t), 1, file))
 		{
 			FileXML xml;
+
 			data[asset->index_start - sizeof(off_t)] = 0;
 			xml.read_from_string(data);
 			asset->read(&xml);

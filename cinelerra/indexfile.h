@@ -13,15 +13,13 @@
 #include "mainprogress.inc"
 #include "preferences.inc"
 #include "resourcepixmap.inc"
-#include "bctimer.inc"
+#include "bctimer.h"
 #include "tracks.inc"
 
 class IndexFile
 {
 public:
 	IndexFile();
-	IndexFile(Asset *asset);
-	~IndexFile();
 
 	int open_index(Asset *asset);
 	int create_index(Asset *asset, MainProgressBar *progress);
@@ -44,14 +42,13 @@ public:
 	char index_filename[BCTEXTLEN];
 	char source_filename[BCTEXTLEN];
 	Asset *asset;
-	Timer *redraw_timer;
+	Timer redraw_timer;
 
 private:
-	void update_mainasset();
-
 	int open_file();
 	int open_source(File *source);
 	int get_required_scale(File *source);
+
 	FILE *file;
 	off_t file_length;   // Length of index file in bytes
 	int interrupt_flag;    // Flag set when index building is interrupted
