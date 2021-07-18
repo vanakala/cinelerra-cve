@@ -30,8 +30,7 @@ public:
 		int pixmap_x,
 		int pixmap_w,
 		int pixmap_h,
-		int mode,
-		int indexes_only);
+		int mode);
 	void draw_audio_resource(Edit *edit, 
 		int x, 
 		int w);

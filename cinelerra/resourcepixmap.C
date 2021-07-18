@@ -68,7 +68,7 @@ void ResourcePixmap::resize(int w, int h)
 void ResourcePixmap::draw_data(Edit *edit,
 	int edit_x, int edit_w,
 	int pixmap_x, int pixmap_w, int pixmap_h,
-	int mode, int indexes_only)
+	int mode)
 {
 // Get new areas to fill in relative to pixmap
 // Area to redraw relative to pixmap
@@ -81,7 +81,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		y += theme_global->get_image("title_bg_data")->get_h();
 
 // If index can't be drawn, don't do anything.
-	if(indexes_only)
+	if(mode & WUPD_INDEXES)
 	{
 		int index_zoom = 0;
 		int need_redraw = 0;

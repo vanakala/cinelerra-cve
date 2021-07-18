@@ -782,7 +782,7 @@ void TrackCanvas::draw_resources(int mode, Asset *index_asset)
 						pixmap->resize(pixmap_w, pixmap_h);
 					pixmap->draw_data(edit, edit_x, edit_w,
 						pixmap_x, pixmap_w, pixmap_h,
-						mode, mode & WUPD_INDEXES);
+						mode);
 // Resize it if it's smaller
 					if(pixmap_w < pixmap->pixmap_w ||
 							pixmap_h < pixmap->pixmap_h)
