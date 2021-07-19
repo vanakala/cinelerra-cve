@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -37,11 +21,9 @@
 #include <string.h>
 
 
-MainIndexes::MainIndexes(MWindow *mwindow)
- : Thread()
+MainIndexes::MainIndexes()
+ : Thread(THREAD_SYNCHRONOUS)
 {
-	set_synchronous(1);
-	this->mwindow = mwindow;
 	input_lock = new Condition(0, "MainIndexes::input_lock");
 	next_lock = new Mutex("MainIndexes::next_lock");
 	interrupt_lock = new Condition(1, "MainIndexes::interrupt_lock");
@@ -52,7 +34,7 @@ MainIndexes::MainIndexes(MWindow *mwindow)
 
 MainIndexes::~MainIndexes()
 {
-	mwindow->mainprogress->cancelled = 1;
+	mwindow_global->mainprogress->cancelled = 1;
 	stop_loop();
 	delete indexfile;
 	delete next_lock;
@@ -86,7 +68,7 @@ void MainIndexes::add_next_asset(Asset *asset)
 		char source_filename[BCTEXTLEN];
 
 		IndexFile::get_index_filename(source_filename, 
-			mwindow->preferences->index_directory, 
+			preferences_global->index_directory,
 			index_filename, 
 			asset->path, asset->audio_streamno - 1);
 		if(!this_file->get_index(index_filename))
@@ -184,10 +166,12 @@ void MainIndexes::run()
 				{
 // Try to create index now.
 					if(!progress)
-						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), (int64_t)1);
+						progress = mwindow_global->mainprogress->start_progress(
+							_("Building Indexes..."), (int64_t)1);
 
 					indexfile->create_index(current_asset, progress);
-					if(progress->is_cancelled()) interrupt_flag = 1;
+					if(progress->is_cancelled())
+						interrupt_flag = 1;
 				}
 				else
 				{
