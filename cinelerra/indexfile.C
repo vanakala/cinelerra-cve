@@ -79,6 +79,7 @@ int IndexFile::open_file()
 {
 	struct stat file_stat, idx_stat;
 	int result = 0;
+	char source_filename[BCTEXTLEN];
 
 	get_index_filename(source_filename, 
 		preferences_global->index_directory,
@@ -194,6 +195,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 {
 	int result = 0;
 	File source;
+	char source_filename[BCTEXTLEN];
 
 	this->asset = asset;
 	interrupt_flag = 0;
@@ -370,7 +372,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		edlsession->sample_rate /
 		asset->index_zoom * 
 		asset_over_session;
-
 // get channel offset
 	startindex += asset->get_index_offset(edit->channel);
 

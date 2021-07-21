@@ -447,7 +447,7 @@ void MWindow::init_ruler()
 
 void MWindow::init_indexes()
 {
-	mainindexes = new MainIndexes(this);
+	mainindexes = new MainIndexes();
 	mainindexes->start_loop();
 }
 

@@ -32,7 +32,6 @@
 #include "mainerror.h"
 #include "file.h"
 #include "filesystem.h"
-#include "indexfile.h"
 #include "language.h"
 #include "mwindow.h"
 #include "packagerenderer.h"

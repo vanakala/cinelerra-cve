@@ -83,32 +83,21 @@ void ResourcePixmap::draw_data(Edit *edit,
 // If index can't be drawn, don't do anything.
 	if(mode & WUPD_INDEXES)
 	{
-		int index_zoom = 0;
 		int need_redraw = 0;
-		IndexFile indexfile;
 
-		if(!indexfile.open_index(edit->asset))
-		{
-			index_zoom = edit->asset->index_zoom;
-			indexfile.close_index();
-		}
-
-		if(index_zoom)
+		if(int index_zoom = edit->asset->index_zoom)
 		{
 			if(data_type == TRACK_AUDIO)
 			{
 				double asset_over_session =
 					(double)edit->asset->sample_rate /
 					edlsession->sample_rate;
-				if(index_zoom <= edlsession->sample_rate *
+				if(index_zoom > edlsession->sample_rate *
 						master_edl->local_session->zoom_time *
 						asset_over_session)
-					need_redraw = 1;
+					return;
 			}
 		}
-
-		if(!need_redraw)
-			return;
 	}
 
 // Redraw everything
@@ -118,7 +107,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		this->pixmap_h != pixmap_h ||
 		(data_type == TRACK_AUDIO &&
 			master_edl->local_session->zoom_y != zoom_y) ||
-		(mode & WUPD_CANVREDRAW))
+		(mode & (WUPD_CANVREDRAW | WUPD_INDEXES)))
 	{
 // Shouldn't draw at all if zoomed in below index zoom.
 		refresh_x = 0;
@@ -291,7 +280,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Draw media
 	if(track->draw && edlsession->show_assets)
 	{
-		switch(track->data_type)
+		switch(data_type)
 		{
 		case TRACK_AUDIO:
 			draw_audio_resource(edit, refresh_x, refresh_w);
@@ -373,6 +362,8 @@ void ResourcePixmap::draw_title(Edit *edit,
 // Need to draw one more x
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
+	Asset *asset;
+
 	if(w <= 0)
 		return;
 
@@ -387,24 +378,16 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 	case INDEX_BUILDING:
 	case INDEX_READY:
-		{
-			IndexFile indexfile;
+		asset = edit->asset;
+		asset->indexfile.open_index(asset);
 
-			if(!indexfile.open_index(edit->asset))
-			{
-				if(edit->asset->index_zoom > 
-					master_edl->local_session->zoom_time *
-					edlsession->sample_rate *
-					asset_over_session)
-				{
-					draw_audio_source(edit, x, w);
-				}
-				else
-					indexfile.draw_index(this, edit, x, w);
-				indexfile.close_index();
-			}
-			break;
-		}
+		if(asset->index_zoom >
+				master_edl->local_session->zoom_time *
+				edlsession->sample_rate * asset_over_session)
+			draw_audio_source(edit, x, w);
+		else
+			asset->indexfile.draw_index(this, edit, x, w);
+		break;
 	}
 }
 

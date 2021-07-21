@@ -40,7 +40,6 @@ public:
 	int write_info();
 
 	char index_filename[BCTEXTLEN];
-	char source_filename[BCTEXTLEN];
 	Asset *asset;
 	Timer redraw_timer;
 

@@ -38,7 +38,6 @@ public:
 	Condition *input_lock;              // Lock until new data is to be indexed
 	Mutex *next_lock;                   // Lock changes to next assets
 	Condition *interrupt_lock;          // Force blocking until thread is finished
-	IndexFile *indexfile;
 };
 
 #endif

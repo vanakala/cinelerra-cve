@@ -13,6 +13,7 @@
 #include "cinelerra.h"
 #include "datatype.h"
 #include "filexml.inc"
+#include "indexfile.h"
 #include "linklist.h"
 #include "pluginserver.inc"
 #include "paramlist.inc"
@@ -266,6 +267,7 @@ public:
 	int use_header;
 
 // index info
+	IndexFile indexfile;
 	int index_status;     // Macro from asset.inc
 	int index_zoom;      // zoom factor of index data
 	off_t index_start;     // byte start of index data in the index file

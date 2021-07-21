@@ -4,14 +4,13 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "assetlist.h"
 #include "bcsignals.h"
-#include "bchash.h"
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
 #include "condition.h"
 #include "language.h"
-#include "loadfile.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
 #include "mutex.h"
@@ -29,14 +28,12 @@ MainIndexes::MainIndexes()
 	interrupt_lock = new Condition(1, "MainIndexes::interrupt_lock");
 	interrupt_flag = 0;
 	done = 0;
-	indexfile = new IndexFile();
 }
 
 MainIndexes::~MainIndexes()
 {
 	mwindow_global->mainprogress->cancelled = 1;
 	stop_loop();
-	delete indexfile;
 	delete next_lock;
 	delete input_lock;
 	delete interrupt_lock;
@@ -46,18 +43,14 @@ void MainIndexes::add_next_asset(Asset *asset)
 {
 	next_lock->lock("MainIndexes::add_next_asset");
 
-// Test current asset
-	IndexFile indexfile;
-
 	int got_it = 0;
 
-	if(!indexfile.open_index(asset))
+	if(!asset->indexfile.open_index(asset))
 	{
 		asset->index_status = INDEX_READY;
-		indexfile.close_index();
+		asset->indexfile.close_index();
 		got_it = 1;
 	}
-
 	if(!got_it)
 	{
 		File *this_file = new File;
@@ -73,9 +66,9 @@ void MainIndexes::add_next_asset(Asset *asset)
 			asset->path, asset->audio_streamno - 1);
 		if(!this_file->get_index(index_filename))
 		{
-			if(!indexfile.open_index(asset))
+			if(!asset->indexfile.open_index(asset))
 			{
-				indexfile.close_index();
+				asset->indexfile.close_index();
 				asset->index_status = INDEX_READY;
 				got_it = 1;
 			}
@@ -121,7 +114,9 @@ void MainIndexes::start_build()
 void MainIndexes::interrupt_build()
 {
 	interrupt_flag = 1;
-	indexfile->interrupt_index();
+
+	for(Asset *asset = assetlist_global.first; asset; asset = asset->next)
+		asset->indexfile.interrupt_index();
 	interrupt_lock->lock("MainIndexes::interrupt_build");
 	interrupt_lock->unlock();
 }
@@ -162,21 +157,22 @@ void MainIndexes::run()
 			{
 
 // Doesn't exist if this returns 1.
-				if(indexfile->open_index(current_asset))
+				if(current_asset->indexfile.open_index(current_asset))
 				{
 // Try to create index now.
 					if(!progress)
 						progress = mwindow_global->mainprogress->start_progress(
 							_("Building Indexes..."), (int64_t)1);
 
-					indexfile->create_index(current_asset, progress);
+					current_asset->indexfile.create_index(current_asset,
+						progress);
 					if(progress->is_cancelled())
 						interrupt_flag = 1;
 				}
 				else
 				{
 					current_asset->index_status = INDEX_READY;
-					indexfile->close_index();
+					current_asset->indexfile.close_index();
 				}
 			}
 		}
