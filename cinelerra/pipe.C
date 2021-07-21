@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2004 Nathan Kurz
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2004 Nathan Kurz
 
 #include <fcntl.h>
 #include <string.h>
@@ -26,14 +10,12 @@
 
 #include "bchash.h"
 #include "bcsignals.h"
-#include "file.h"
 #include "mainerror.h"
 #include "pipe.h"
 
 #include <unistd.h>
 
-
-Pipe::Pipe(const char *command, const char *sub_str, char sub_char) 
+Pipe::Pipe(const char *command, const char *sub_str, char sub_char)
 {
 	this->command = command;
 	this->sub_str = sub_str;
@@ -46,20 +28,20 @@ Pipe::Pipe(const char *command, const char *sub_str, char sub_char)
 	signal(SIGPIPE, SIG_IGN);
 }
 
-Pipe::~Pipe() 
+Pipe::~Pipe()
 {
 	close();
 }
 
-int Pipe::substitute() 
+int Pipe::substitute()
 {
-	if (command == NULL) 
+	if(command == NULL)
 	{
 		complete[0] = 0;
 		return 0;
 	}
 
-	if (sub_str == NULL || sub_char == '\0') 
+	if(sub_str == NULL || sub_char == '\0')
 	{
 		strcpy(complete, command);
 		return 0;
@@ -68,26 +50,28 @@ int Pipe::substitute()
 	int count = 0;
 	const char *c = command;
 	char *f = complete;
-	while (*c) 
+
+	while (*c)
 	{
 		// directly copy anything substitution char
-		if (*c != sub_char) 
+		if(*c != sub_char)
 		{
 			*f++ = *c++;
 			continue;
 		}
-		
+
 		// move over the substitution character
 		c++;
 
 		// two substitution characters in a row is literal
-		if (*c == sub_char) {
+		if(*c == sub_char)
+		{
 			*f++ = *c++;
 			continue;
 		}
 
 		// insert the file string at the substitution point
-		if (f + strlen(sub_str) - complete > sizeof(complete) - 1)
+		if(f + strlen(sub_str) - complete > sizeof(complete) - 1)
 		{
 			errorbox("Pipe::substitute(): max length exceeded\n");
 			return -1;
@@ -102,27 +86,23 @@ int Pipe::substitute()
 }
 
 
-int Pipe::open(const char *mode) 
+int Pipe::open(const char *mode)
 {
-	if (file) close();
+	if(file)
+		close();
 
-	if (mode == NULL) 
-	{
-		printf("Pipe::open(): no mode given\n");
-		return 1;
-	}
-
-	if (substitute() < 0) 
+	if(substitute() < 0)
 		return 1;
 
-	if (complete == NULL || strlen(complete) == 0) 
+	if(complete == NULL || strlen(complete) == 0)
 	{
 		errorbox("Pipe::open(): no pipe to open\n");
 		return 1;
 	}
 
 	file = popen(complete, mode);
-	if (file != NULL) 
+
+	if(file != NULL)
 	{
 		fd = fileno(file);
 		return 0;
@@ -136,7 +116,7 @@ int Pipe::open(const char *mode)
 	return 1;
 }
 
-int Pipe::open_read() 
+int Pipe::open_read()
 {
 	return open("r");
 }
@@ -146,9 +126,10 @@ int Pipe::open_write()
 	return open("w");
 }
 
-void Pipe::close() 
+void Pipe::close()
 {
-	if(file){
+	if(file)
+	{
 		pclose(file);
 		file = 0;
 		fd = -1;
