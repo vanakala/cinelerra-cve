@@ -54,16 +54,30 @@ void AssetPopup::paste_assets()
 		0);   // do not overwrite
 }
 
-void AssetPopup::update(Asset *asset, EDL *edl)
+void AssetPopup::update(Asset *asset,  EDL *edl)
 {
 	current_asset = asset;
 	current_edl = edl;
+	int need_size = 0, need_rate = 0;
 
-	if(asset && asset->video_data &&
-		asset->width >= MIN_FRAME_WIDTH &&
-		asset->height >= MIN_FRAME_HEIGHT &&
-		asset->width <= MAX_FRAME_WIDTH &&
-		asset->height <= MAX_FRAME_HEIGHT)
+	if(asset && asset->stream_count(STRDSC_VIDEO) == 1)
+	{
+		int stream = -1;
+		stream = asset->get_stream_ix(STRDSC_VIDEO);
+		struct streamdesc *sdsc = &asset->streams[stream];
+
+		if(sdsc->width >= MIN_FRAME_WIDTH &&
+				sdsc->height >= MIN_FRAME_HEIGHT &&
+				sdsc->width <= MAX_FRAME_WIDTH &&
+				sdsc->height <= MAX_FRAME_HEIGHT)
+			need_size = 1;
+
+		if(sdsc->frame_rate >= MIN_FRAME_RATE &&
+				sdsc->frame_rate <= MAX_FRAME_RATE)
+			need_rate = 1;
+	}
+
+	if(need_size)
 	{
 		if(!show_size)
 		{
@@ -77,9 +91,7 @@ void AssetPopup::update(Asset *asset, EDL *edl)
 		show_size = 0;
 	}
 
-	if(asset && asset->video_data &&
-		asset->frame_rate >= MIN_FRAME_RATE &&
-		asset->frame_rate <= MAX_FRAME_RATE)
+	if(need_rate)
 	{
 		if(!show_rate)
 		{
