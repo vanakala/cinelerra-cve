@@ -85,29 +85,30 @@ void MWindow::add_track(int track_type, int above, Track *dst)
 
 void MWindow::asset_to_size(Asset *asset)
 {
-	if(asset && asset->video_data)
+	if(asset && asset->stream_count(STRDSC_VIDEO) == 1)
 	{
 		int w, h;
 
 		if(cwindow->stop_playback())
 			return;
 
-// Get w and h
-		w = asset->width;
-		h = asset->height;
+		int stream = asset->get_stream_ix(STRDSC_VIDEO);
+		struct streamdesc *sdsc = &asset->streams[stream];
+
+		w = sdsc->width;
+		h = sdsc->height;
 
 		edlsession->output_w = w;
 		edlsession->output_h = h;
 
-		if(((edlsession->output_w % 4) ||
-			(edlsession->output_h % 4)) &&
+		if(((w % 4) || (h % 4)) &&
 			edlsession->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 		{
 			errormsg(_("This project's dimensions are not multiples of 4 so\n"
 				"it can't be rendered by OpenGL."));
 		}
 
-		edlsession->sample_aspect_ratio = asset->sample_aspect_ratio;
+		edlsession->sample_aspect_ratio = sdsc->sample_aspect_ratio;
 		AspectRatioSelection::limits(&edlsession->sample_aspect_ratio);
 		save_backup();
 
@@ -118,15 +119,18 @@ void MWindow::asset_to_size(Asset *asset)
 
 void MWindow::asset_to_rate(Asset *asset)
 {
-	if(asset && asset->video_data)
+	if(asset && asset->stream_count(STRDSC_VIDEO) == 1)
 	{
-		if(EQUIV(edlsession->frame_rate, asset->frame_rate))
+		int stream = asset->get_stream_ix(STRDSC_VIDEO);
+		struct streamdesc *sdsc = &asset->streams[stream];
+
+		if(EQUIV(edlsession->frame_rate, sdsc->frame_rate))
 			return;
 
 		if(cwindow->stop_playback())
 			return;
 
-		edlsession->frame_rate = asset->frame_rate;
+		edlsession->frame_rate = sdsc->frame_rate;
 
 		save_backup();
 
