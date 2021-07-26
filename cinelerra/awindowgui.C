@@ -161,7 +161,7 @@ void AssetPicon::init_object()
 	{
 		fs.extract_name(name, asset->path);
 		set_text(name);
-		if(asset->video_data)
+		if(asset->stream_count(STRDSC_VIDEO))
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
@@ -198,7 +198,7 @@ void AssetPicon::init_object()
 			}
 		}
 		else
-		if(asset->audio_data)
+		if(asset->stream_count(STRDSC_AUDIO))
 		{
 			icon = gui->audio_icon;
 			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_SOUND];
