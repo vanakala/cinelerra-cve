@@ -595,17 +595,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		{
 // Convert media file to EDL
 		case FILE_OK:
-// Warn about odd image dimensions
-			if(!new_asset->single_image && new_asset->video_data &&
-				((new_asset->width % 2) ||
-				(new_asset->height % 2)))
-			{
-				errormsg("%s's\nresolution is %dx%d. Images with odd dimensions may not decode properly.",
-					new_asset->path,
-					new_asset->width,
-					new_asset->height);
-			}
-
 			if(new_asset->nb_programs)
 			{
 				for(i = 0; i < new_asset->nb_programs; i++)
