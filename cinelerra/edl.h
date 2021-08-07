@@ -165,6 +165,7 @@ public:
 	void init_edl();
 
 	ptstime total_length();
+	ptstime duration();
 	ptstime total_length_of(int type);
 	ptstime total_length_framealigned();
 	int total_tracks();

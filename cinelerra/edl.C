@@ -897,6 +897,19 @@ ptstime EDL::total_length()
 	return 0;
 }
 
+ptstime EDL::duration()
+{
+	if(tracks && tracks->total())
+	{
+		ptstime len = tracks->total_length();
+
+		if(edlsession->cursor_on_frames && len > 0)
+			len = floor(len * edlsession->frame_rate) / edlsession->frame_rate;
+		return len;
+	}
+	return 0;
+}
+
 ptstime EDL::total_length_of(int type)
 {
 	if(tracks && tracks->total())
