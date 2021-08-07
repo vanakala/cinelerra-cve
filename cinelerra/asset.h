@@ -109,6 +109,7 @@ public:
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
 	ptstime stream_duration(int stream);
+	ptstime duration();
 // Number of streams with stream_type
 	int stream_count(int stream_type);
 

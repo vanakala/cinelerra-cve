@@ -664,6 +664,38 @@ ptstime Asset::stream_duration(int stream)
 	return streams[stream].end - streams[stream].start;
 }
 
+ptstime Asset::duration()
+{
+	ptstime dur = 0;
+
+	if(nb_programs)
+	{
+		struct progdesc *prog = get_program(program_id);
+
+		for(int i = 0; i < prog->nb_streams; i++)
+		{
+			ptstime cur = stream_duration(prog->streams[i]);
+
+			if(cur > dur)
+				cur = dur;
+		}
+	}
+	else
+	{
+		for(int i = 0; i < nb_streams; i++)
+		{
+			ptstime cur = stream_duration(i);
+
+			if(cur > dur)
+				cur = dur;
+		}
+	}
+	if(edlsession->cursor_on_frames && dur > 0)
+		dur = floor(dur * edlsession->frame_rate) / edlsession->frame_rate;
+
+	return dur;
+}
+
 int Asset::stream_count(int stream_type)
 {
 	int count = 0;
