@@ -1,24 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "asset.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "edl.h"
@@ -288,6 +273,69 @@ void Tracks::concatenate_tracks()
 void Tracks::delete_all_tracks()
 {
 	while(last) delete last;
+}
+
+ptstime Tracks::paste_duration(ptstime position, Asset *asset,
+	Track *first_track, ptstime prev_duration)
+{
+	ptstime paste_end = position + prev_duration;
+
+	for(Track *dest = first_track; dest; dest = dest->next)
+	{
+		if(dest->record)
+		{
+			int stream, channel, chtype;
+			int astream = -1;
+			int vstream = -1;
+			int achannel = -1;
+			int vchannel = -1;
+
+			switch(dest->data_type)
+			{
+			case TRACK_AUDIO:
+				stream = astream;
+				channel = achannel;
+				chtype = STRDSC_AUDIO;
+				break;
+			case TRACK_VIDEO:
+				stream = vstream;
+				channel = vchannel;
+				chtype = STRDSC_VIDEO;
+				break;
+			}
+			if(asset)
+			{
+				if(stream < 0 || channel < 0)
+				{
+					if((stream = asset->get_stream_ix(
+							chtype, stream)) >= 0)
+						channel = 0;
+				}
+
+				if(channel >= 0)
+				{
+					if(dest->master)
+						paste_end = position +
+							asset->stream_duration(stream);
+					channel++;
+					if(channel > asset->streams[stream].channels)
+						channel = -1;
+				}
+			}
+			switch(dest->data_type)
+			{
+			case TRACK_AUDIO:
+				astream = stream;
+				achannel = channel;
+				break;
+			case TRACK_VIDEO:
+				vstream = stream;
+				vchannel = channel;
+				break;
+			}
+		}
+	}
+	return paste_end - position;
 }
 
 // =========================================== EDL editing

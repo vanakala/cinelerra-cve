@@ -110,6 +110,8 @@ public:
 
 	int delete_tracks(void);     // delete all the recordable tracks
 	void delete_all_tracks();      // delete just the tracks
+	ptstime paste_duration(ptstime position, Asset *asset,
+		Track *first_track, ptstime prev_duration);
 
 	void copy_from(Tracks *tracks);
 // Get master track
