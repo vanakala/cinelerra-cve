@@ -338,6 +338,51 @@ ptstime Tracks::paste_duration(ptstime position, Asset *asset,
 	return paste_end - position;
 }
 
+ptstime Tracks::paste_duration(ptstime position, EDL *clip,
+	Track *first_track, ptstime prev_duration)
+{
+	Track *clipatrack, *clipvtrack, *cliptrack;
+	ptstime paste_end = position + prev_duration;
+
+	clipvtrack = clipatrack = clip->tracks->first;
+
+	for(Track *dest = first_track; dest; dest = dest->next)
+	{
+		if(dest->record)
+		{
+			switch(dest->data_type)
+			{
+			case TRACK_AUDIO:
+				cliptrack = clipatrack;
+				break;
+			case TRACK_VIDEO:
+				cliptrack = clipvtrack;
+				break;
+			}
+			while(cliptrack && cliptrack->data_type != dest->data_type)
+				cliptrack = cliptrack->next;
+
+			if(cliptrack)
+			{
+				if(dest->master)
+					paste_end = position + cliptrack->get_length();
+				cliptrack = cliptrack->next;
+			}
+
+			switch(dest->data_type)
+			{
+			case TRACK_AUDIO:
+				clipatrack = cliptrack;
+				break;
+			case TRACK_VIDEO:
+				clipvtrack = cliptrack;
+				break;
+			}
+		}
+	}
+	return paste_end - position;
+}
+
 // =========================================== EDL editing
 
 void Tracks::save_xml(FileXML *file, const char *output_path)
