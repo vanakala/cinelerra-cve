@@ -410,37 +410,27 @@ void TrackCanvas::drag_stop()
 	case DRAG_ASSET:
 		if(mainsession->track_highlighted)
 		{
-			ptstime asset_length_float;
+			ptstime paste_length;
 			ptstime position = 0;
 
-			if(mainsession->current_operation == DRAG_ASSET &&
-				mainsession->drag_assets->total)
+			if(mainsession->drag_assets->total)
 			{
 				Asset *asset = mainsession->drag_assets->values[0];
-				// we use video if we are over video and audio if we are over audio
-				if(asset->video_data && mainsession->track_highlighted->data_type == TRACK_VIDEO)
-					asset_length_float = asset->video_duration;
-				else if(asset->audio_data && mainsession->track_highlighted->data_type == TRACK_AUDIO)
-					asset_length_float = asset->audio_duration;
-				else
-				{
-					result = 1;
-					break; // Do not do anything
-				}
+				paste_length = asset->duration();
 			}
-			else if(mainsession->current_operation == DRAG_ASSET &&
-				mainsession->drag_clips->total)
+			else if(mainsession->drag_clips->total)
 			{
 				EDL *clip = mainsession->drag_clips->values[0];
-				asset_length_float = clip->total_length();
+				paste_length = clip->duration();
 			}
 			else
 			{
-				printf("DRAG_ASSET error: Asset dropped, but both drag_clips and drag_assets total is zero\n");
+				result = 1;
+				break;
 			}
-			position = get_drop_position(&insertion, NULL, asset_length_float);
+			position = get_drop_position(&insertion, NULL, paste_length);
 
-			if(position == -1)
+			if(position < 0)
 			{
 				result = 1;
 				break;
@@ -893,13 +883,8 @@ void TrackCanvas::track_dimensions(Track *track,
 
 void TrackCanvas::draw_paste_destination()
 {
-	int current_atrack = 0;
-	int current_vtrack = 0;
-	int current_aedit = 0;
-	int current_vedit = 0;
 	int w = 0;
 	int x;
-	ptstime position;
 	int insertion  = 0;
 
 	if((mainsession->current_operation == DRAG_ASSET &&
@@ -910,176 +895,51 @@ void TrackCanvas::draw_paste_destination()
 	{
 		Asset *asset = 0;
 		EDL *clip = 0;
-		int draw_box = 0;
+		ptstime position, paste_length = 0;
 
-		if(mainsession->current_operation == DRAG_ASSET &&
-				mainsession->drag_assets->total)
-			asset = mainsession->drag_assets->values[0];
+		if(mainsession->current_operation == DRAG_ASSET)
+		{
+			if(mainsession->drag_assets->total)
+			{
+				asset = mainsession->drag_assets->values[0];
+				paste_length = asset->duration();
+			}
 
-		if(mainsession->current_operation == DRAG_ASSET &&
-				mainsession->drag_clips->total)
-			clip = mainsession->drag_clips->values[0];
+			if(mainsession->drag_clips->total)
+			{
+				clip = mainsession->drag_clips->values[0];
+				paste_length = clip->duration();
+			}
+		}
+		else if(mainsession->current_operation == DRAG_EDIT)
+			paste_length = mainsession->drag_edits->values[0]->length();
 
-// 'Align cursor of frame' lengths calculations
-		ptstime paste_audio_length, paste_video_length;
-		ptstime asset_length;
-		ptstime desta_position = 0;
-		ptstime destv_position = 0;
+		position = get_drop_position(&insertion, NULL,
+			paste_length);
+
+		if(position < 0)
+			return;
+
+		if(position > master_edl->duration())
+			position = master_edl->duration();
 
 		if(asset)
-		{
-			if(edlsession->cursor_on_frames)
-				paste_video_length = paste_audio_length =
-					asset->total_length_framealigned(edlsession->frame_rate);
-			else 
-			{
-				paste_audio_length = asset->audio_duration;
-				paste_video_length = asset->video_duration;
-			}
-
-			ptstime asset_length = 0;
-
-			if(asset->audio_data)
-			{
-				// we use video if we are over video and audio if we are over audio
-				if(asset->video_data && mainsession->track_highlighted->data_type == TRACK_VIDEO)
-					asset_length = paste_video_length;
-				else
-					asset_length = paste_audio_length;
-				desta_position = get_drop_position(&insertion, NULL,
-					asset_length);
-			}
-
-			if(asset->video_data)
-			{
-				asset_length = paste_video_length;
-				destv_position = get_drop_position(&insertion, NULL,
-					asset_length);
-			}
-		}
-
+			paste_length = mainsession->track_highlighted->tracks->paste_duration(
+				position, asset, mainsession->track_highlighted,
+				paste_length);
 		if(clip)
-		{
-			if(edlsession->cursor_on_frames)
-				paste_audio_length = paste_video_length =
-					clip->total_length_framealigned();
-			else
-				paste_audio_length = paste_video_length =
-					clip->total_length();
+			paste_length = mainsession->track_highlighted->tracks->paste_duration(
+				position, clip, mainsession->track_highlighted,
+				paste_length);
 
-			desta_position = get_drop_position(&insertion, NULL, clip->total_length());
-		}
-
-// Get destination track
-		for(Track *dest = mainsession->track_highlighted; dest;
-			dest = dest->next)
-		{
-			if(dest->record)
-			{
 // Get source width in pixels
-				w = -1;
-
-// Use start of highlighted edit
-				if(mainsession->edit_highlighted)
-					position = mainsession->edit_highlighted->get_pts();
-				else
-				{
-// Use end of highlighted track, disregarding effects
-					if(mainsession->track_highlighted->edits->last)
-						position = mainsession->track_highlighted->edits->last->get_pts();
-					else
-						position = 0;
-				}
-
-				if(dest->data_type == TRACK_AUDIO)
-				{
-					if((asset && current_atrack < asset->channels)
-						|| (clip  && current_atrack < clip->total_tracks_of(TRACK_AUDIO)))
-					{
-						w = round(paste_audio_length /
-							master_edl->local_session->zoom_time);
-
-						position = desta_position;
-						if(position < 0)
-							w = -1;
-						else
-						{
-							current_atrack++;
-							draw_box = 1;
-						}
-					}
-					else
-					if(mainsession->current_operation == DRAG_EDIT &&
-						current_aedit < mainsession->drag_edits->total)
-					{
-						Edit *edit;
-						while(current_aedit < mainsession->drag_edits->total &&
-								mainsession->drag_edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
-							current_aedit++;
-
-						if(current_aedit < mainsession->drag_edits->total)
-						{
-							edit = mainsession->drag_edits->values[current_aedit];
-							w = round(edit->length() / master_edl->local_session->zoom_time);
-							position = get_drop_position(&insertion, mainsession->drag_edit, mainsession->drag_edit->length());
-							if(position < 0)
-								w = -1;
-							else
-							{
-								current_aedit++;
-								draw_box = 1;
-							}
-						}
-					}
-				}
-				else
-				if(dest->data_type == TRACK_VIDEO)
-				{
-					if((asset && current_vtrack < asset->layers)
-						|| (clip && current_vtrack < clip->total_tracks_of(TRACK_VIDEO)))
-					{
-						w = round(paste_video_length /
-							master_edl->local_session->zoom_time);
-
-						position = destv_position;
-
-						if(position < 0)
-							w = -1;
-						else
-						{
-							current_vtrack++;
-							draw_box = 1;
-						}
-					}
-					else
-					if(mainsession->current_operation == DRAG_EDIT &&
-						current_vedit < mainsession->drag_edits->total)
-					{
-						Edit *edit;
-						while(current_vedit < mainsession->drag_edits->total &&
-								mainsession->drag_edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
-							current_vedit++;
-
-						if(current_vedit < mainsession->drag_edits->total)
-						{
-							edit = mainsession->drag_edits->values[current_vedit];
-							w = round(edit->length() /
-								master_edl->local_session->zoom_time);
-							position = get_drop_position(&insertion,
-								mainsession->drag_edit,
-								mainsession->drag_edit->length());
-							if(position < 0)
-								w = -1;
-							else
-							{
-								current_vedit++;
-								draw_box = 1;
-							}
-						}
-					}
-				}
-
-				if(w >= 0)
+		if((w = round(paste_length / master_edl->local_session->zoom_time)) > 0)
+		{
+// Get destination track
+			for(Track *dest = mainsession->track_highlighted; dest;
+				dest = dest->next)
+			{
+				if(dest->record)
 				{
 // Get the x coordinate
 					x = round((position - master_edl->local_session->view_start_pts) /
