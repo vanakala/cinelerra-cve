@@ -2068,10 +2068,16 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	double center_z;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
-	track->automation->get_projector(&center_x, 
-		&center_y, 
-		&center_z, 
-		position);
+	if(do_camera)
+		track->automation->get_camera(&center_x,
+			&center_y,
+			&center_z,
+			position);
+	else
+		track->automation->get_projector(&center_x,
+			&center_y,
+			&center_z,
+			position);
 
 	center_x += edlsession->output_w / 2;
 	center_y += edlsession->output_h / 2;
