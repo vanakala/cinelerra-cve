@@ -110,6 +110,8 @@ void MWindow::asset_to_size(Asset *asset)
 
 		edlsession->sample_aspect_ratio = sdsc->sample_aspect_ratio;
 		AspectRatioSelection::limits(&edlsession->sample_aspect_ratio);
+		cwindow->gui->canvas->update_guidelines();
+		cwindow->gui->canvas->clear_canvas();
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);
