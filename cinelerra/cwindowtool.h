@@ -42,7 +42,7 @@ public:
 	void raise_window();
 	void update_values();
 
-	CWindowGUI *gui;
+	CWindowGUI *cwindowgui;
 	CWindowToolGUI *tool_gui;
 	int done;
 	int current_tool;

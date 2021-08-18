@@ -39,13 +39,12 @@ struct tool_names CWindowMaskMode::modenames[] =
 };
 
 CWindowTool::CWindowTool(CWindowGUI *gui)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
-	this->gui = gui;
+	cwindowgui = gui;
 	tool_gui = 0;
 	done = 0;
 	current_tool = CWINDOW_NONE;
-	set_synchronous(1);
 	input_lock = new Condition(0, "CWindowTool::input_lock");
 	output_lock = new Condition(1, "CWindowTool::output_lock");
 	tool_gui_lock = new Mutex("CWindowTool::tool_gui_lock");
@@ -103,8 +102,8 @@ void CWindowTool::start_tool(int operation)
 			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 
-			if(edlsession->tool_window &&
-				mainsession->show_cwindow) tool_gui->show_window();
+			if(edlsession->tool_window && mainsession->show_cwindow)
+				tool_gui->show_window();
 			tool_gui->flush();
 
 // Signal thread to run next tool GUI
@@ -216,8 +215,8 @@ void CWindowToolGUI::close_event()
 	flush();
 	edlsession->tool_window = 0;
 
-	thread->gui->composite_panel->set_operation(edlsession->cwindow_operation);
-	thread->gui->flush();
+	thread->cwindowgui->composite_panel->set_operation(edlsession->cwindow_operation);
+	thread->cwindowgui->flush();
 }
 
 void CWindowToolGUI::translation_event()
@@ -324,7 +323,7 @@ int CWindowCropBeforePlugins::handle_event()
 
 	keyframe->apply_before_plugins = get_value();
 	mwindow_global->sync_parameters();
-	mwindow_global->cwindow->gui->canvas->draw_refresh();
+	gui->thread->cwindowgui->canvas->draw_refresh();
 	return 1;
 }
 
@@ -402,7 +401,7 @@ int CWindowCropGUI::handle_event()
 		keyframe->top;
 	update();
 	mwindow_global->sync_parameters();
-	mwindow_global->cwindow->gui->canvas->draw_refresh();
+	thread->cwindowgui->canvas->draw_refresh();
 	return 1;
 }
 
@@ -662,7 +661,7 @@ void CWindowCamProjGUI::update_preview()
 	mwindow_global->sync_parameters();
 
 	mwindow_global->draw_canvas_overlays();
-	mwindow_global->cwindow->gui->canvas->draw_refresh();
+	thread->cwindowgui->canvas->draw_refresh();
 }
 
 int CWindowCamProjGUI::handle_event()
@@ -1097,7 +1096,7 @@ int CWindowMaskDelete::handle_event()
 		{
 			SubMask *submask = current->get_submask(edlsession->cwindow_mask);
 
-			for(int i = mwindow_global->cwindow->gui->affected_point;
+			for(int i = gui->thread->cwindowgui->affected_point;
 				i < submask->points.total - 1; i++)
 			{
 				*submask->points.values[i] = *submask->points.values[i + 1];
@@ -1389,7 +1388,7 @@ int CWindowMaskGUI::handle_event()
 void CWindowMaskGUI::update_preview()
 {
 	mwindow_global->sync_parameters();
-	mwindow_global->cwindow->gui->canvas->draw_refresh();
+	thread->cwindowgui->canvas->draw_refresh();
 }
 
 CWindowRulerGUI::CWindowRulerGUI(CWindowTool *thread)
