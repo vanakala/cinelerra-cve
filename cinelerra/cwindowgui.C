@@ -150,7 +150,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 		zoom_panel->update(_("Auto"));
 
 // Must create after meter panel
-	tool_panel = new CWindowTool(mwindow, this);
+	tool_panel = new CWindowTool(this);
 	tool_panel->Thread::start();
 
 	set_operation(edlsession->cwindow_operation);

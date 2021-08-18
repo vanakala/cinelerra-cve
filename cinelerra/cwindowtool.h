@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef CWINDOWTOOL_H
 #define CWINDOWTOOL_H
@@ -27,7 +11,6 @@
 #include "cwindowgui.inc"
 #include "floatauto.inc"
 #include "maskauto.inc"
-#include "mwindow.inc"
 
 class CWindowToolGUI;
 class CWindowCoord;
@@ -43,7 +26,7 @@ struct tool_names
 class CWindowTool : public Thread
 {
 public:
-	CWindowTool(MWindow *mwindow, CWindowGUI *gui);
+	CWindowTool(CWindowGUI *gui);
 	~CWindowTool();
 
 // Called depending on state of toggle button
@@ -59,7 +42,6 @@ public:
 	void raise_window();
 	void update_values();
 
-	MWindow *mwindow;
 	CWindowGUI *gui;
 	CWindowToolGUI *tool_gui;
 	int done;
@@ -73,8 +55,7 @@ public:
 class CWindowToolGUI : public BC_Window
 {
 public:
-	CWindowToolGUI(MWindow *mwindow, 
-		CWindowTool *thread, 
+	CWindowToolGUI(CWindowTool *thread,
 		const char *title,
 		int w, 
 		int h);
@@ -90,7 +71,6 @@ public:
 	void translation_event();
 
 	int current_operation;
-	MWindow *mwindow;
 	CWindowTool *thread;
 	CWindowCoord *event_caller;
 
@@ -111,7 +91,7 @@ protected:
 class CWindowCoord : public BC_TumbleTextBox
 {
 public:
-	CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int logincrement);
+	CWindowCoord(CWindowToolGUI *gui, int x, int y, double value, int logincrement);
 	CWindowCoord(CWindowToolGUI *gui, int x, int y, int value);
 
 // Calls the window's handle_event
@@ -124,7 +104,7 @@ public:
 class CWindowCropGUI : public CWindowToolGUI
 {
 public:
-	CWindowCropGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowCropGUI(CWindowTool *thread);
 
 	void update();
 // Update the gui
@@ -155,7 +135,7 @@ public:
 class CWindowMaskMode : public BC_PopupMenu
 {
 public:
-	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
+	CWindowMaskMode(CWindowToolGUI *gui, int x, int y, const char *text);
 
 	int handle_event();
 	static const char *name(int mode);
@@ -163,51 +143,47 @@ public:
 
 private:
 	static struct tool_names modenames[];
-	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
 class CWindowMaskDelete : public BC_GenericButton
 {
 public:
-	CWindowMaskDelete(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskDelete(CWindowToolGUI *gui, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
 class CWindowMaskNumber : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskNumber(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskNumber(CWindowToolGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
 class CWindowMaskFeather : public BC_TumbleTextBox
 {
 public:
-	CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskFeather(CWindowToolGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
 class CWindowMaskValue : public BC_ISlider
 {
 public:
-	CWindowMaskValue(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+	CWindowMaskValue(CWindowToolGUI *gui, int x, int y);
 
 	int handle_event();
-	MWindow *mwindow;
+
 	CWindowToolGUI *gui;
 };
 
@@ -225,7 +201,7 @@ public:
 class CWindowMaskGUI : public CWindowToolGUI
 {
 public:
-	CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowMaskGUI(CWindowTool *thread);
 	~CWindowMaskGUI();
 
 	void update();
@@ -253,7 +229,7 @@ private:
 class CWindowEyedropGUI : public CWindowToolGUI
 {
 public:
-	CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowEyedropGUI(CWindowTool *thread);
 
 	void update();
 
@@ -282,7 +258,7 @@ struct _TGD
 class CWindowTangentToggle : public BC_Toggle
 {
 public:
-	CWindowTangentToggle(_TGD mode, MWindow *mwindow, CWindowToolGUI *gui,
+	CWindowTangentToggle(_TGD mode, CWindowToolGUI *gui,
 		int x, int y);
 
 	void check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z);
@@ -290,7 +266,6 @@ public:
 
 private:
 	_TGD cfg;
-	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
 
@@ -298,7 +273,7 @@ private:
 class CWindowCamProjGUI : public CWindowToolGUI
 {
 public:
-	CWindowCamProjGUI(MWindow *mwindow, CWindowTool *thread,
+	CWindowCamProjGUI(CWindowTool *thread,
 		const char *tooltitle, int camera);
 	~CWindowCamProjGUI();
 
@@ -321,85 +296,79 @@ private:
 class CWindowCameraGUI : public CWindowCamProjGUI
 {
 public:
-	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowCameraGUI(CWindowTool *thread);
 };
 
 class CWindowProjectorGUI : public CWindowCamProjGUI
 {
 public:
-	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowProjectorGUI(CWindowTool *thread);
 };
 
 class CWindowCPLeft : public BC_Button
 {
 public:
-	CWindowCPLeft(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPLeft(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowCPCenter : public BC_Button
 {
 public:
-	CWindowCPCenter(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPCenter(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowCPRight : public BC_Button
 {
 public:
-	CWindowCPRight(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPRight(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowCPTop : public BC_Button
 {
 public:
-	CWindowCPTop(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPTop(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowCPMiddle : public BC_Button
 {
 public:
-	CWindowCPMiddle(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPMiddle(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowCPBottom : public BC_Button
 {
 public:
-	CWindowCPBottom(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+	CWindowCPBottom(CWindowCamProjGUI *gui, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	CWindowCamProjGUI *gui;
 };
 
 class CWindowRulerGUI : public CWindowToolGUI
 {
 public:
-	CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread);
+	CWindowRulerGUI(CWindowTool *thread);
 
 	void update();
 
