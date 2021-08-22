@@ -100,20 +100,20 @@ char* BC_PopupMenu::get_text()
 
 void BC_PopupMenu::set_text(const char *text)
 {
-	if(use_title)
-	{
+	this->text[0] = 0;
+	if(text && *text)
 		strcpy(this->text, text);
+	if(top_level)
 		draw_title();
-	}
+	use_title = 1;
 }
 
 void BC_PopupMenu::set_icon(BC_Pixmap *icon)
 {
-	if(use_title)
-	{
-		this->icon = icon;
-		if(top_level) draw_title();
-	}
+	this->icon = icon;
+	if(top_level)
+		draw_title();
+	use_title = 1;
 }
 
 void BC_PopupMenu::initialize()
