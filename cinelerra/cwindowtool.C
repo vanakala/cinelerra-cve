@@ -1016,21 +1016,20 @@ int CWindowCPBottom::handle_event()
 }
 
 
-CWindowMaskMode::CWindowMaskMode(CWindowToolGUI *gui,
-	int x, 
-	int y,
-	const char *text)
+CWindowMaskMode::CWindowMaskMode(CWindowMaskGUI *gui,
+	int x, int y)
  : BC_PopupMenu(x,
 	y,
 	220,
-	text,
-	1)
+	0,
+	POPUPMENU_USE_COORDS)
 {
 	this->gui = gui;
 	add_item(new BC_MenuItem(name(MASK_MULTIPLY_ALPHA)));
 	add_item(new BC_MenuItem(name(MASK_SUBTRACT_ALPHA)));
 	add_item(new BC_MenuItem(name(MASK_MULTIPLY_COLOR)));
 	add_item(new BC_MenuItem(name(MASK_SUBTRACT_COLOR)));
+	set_text(0);
 }
 
 const char* CWindowMaskMode::name(int mode)
@@ -1059,11 +1058,8 @@ int CWindowMaskMode::handle_event()
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe, 
-		mask,
-		point,
-		0);
+
+	gui->get_keyframe(track, keyframe, mask, point, 0);
 
 	if(track)
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(mode(get_text()));
@@ -1253,7 +1249,7 @@ CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
 
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new CWindowMaskMode(this,
-		x + title->get_w(), y, ""));
+		x + title->get_w(), y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new CWindowMaskValue(this, x + 80, y));

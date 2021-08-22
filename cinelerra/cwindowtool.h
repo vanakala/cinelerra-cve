@@ -15,6 +15,7 @@
 class CWindowToolGUI;
 class CWindowCoord;
 class CWindowCropBeforePlugins;
+class CWindowMaskGUI;
 
 struct tool_names
 {
@@ -135,7 +136,7 @@ public:
 class CWindowMaskMode : public BC_PopupMenu
 {
 public:
-	CWindowMaskMode(CWindowToolGUI *gui, int x, int y, const char *text);
+	CWindowMaskMode(CWindowMaskGUI *gui, int x, int y);
 
 	int handle_event();
 	static const char *name(int mode);
@@ -143,7 +144,7 @@ public:
 
 private:
 	static struct tool_names modenames[];
-	CWindowToolGUI *gui;
+	CWindowMaskGUI *gui;
 };
 
 class CWindowMaskDelete : public BC_GenericButton
