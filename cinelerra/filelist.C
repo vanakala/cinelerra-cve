@@ -9,6 +9,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filelist.h"
+#include "filesystem.h"
 #include "interlacemodes.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -158,23 +159,40 @@ void FileList::close_file()
 void FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
+	FileSystem fs;
+	int dir_len;
+	char *path;
+	char output_directory[BCTEXTLEN];
 
-	fprintf(stream, "%s\n", list_prefix);
-	fprintf(stream, "# First line is always %s\n", list_prefix);
-	fprintf(stream, "# Frame rate:\n%f\n", asset->frame_rate);
-	fprintf(stream, "# Width:\n%d\n", asset->width);
-	fprintf(stream, "# Height:\n%d\n", asset->height);
-	fprintf(stream, "# List of image files follows\n");
+	if(stream)
+	{
+		fs.extract_dir(output_directory, asset->path);
+		dir_len = strlen(output_directory);
 
-	for(int i = 0; i < path_list.total; i++)
-		fprintf(stream, "%s\n", path_list.values[i]);
+		fprintf(stream, "%s\n", list_prefix);
+		fprintf(stream, "# First line is always %s\n", list_prefix);
+		fprintf(stream, "# Frame rate:\n%f\n", asset->frame_rate);
+		fprintf(stream, "# Width:\n%d\n", asset->width);
+		fprintf(stream, "# Height:\n%d\n", asset->height);
+		fprintf(stream, "# List of image files follows\n");
 
-	fclose(stream);
+		for(int i = 0; i < path_list.total; i++)
+		{
+			path = path_list.values[i];
+			if(strncmp(path, output_directory, dir_len) == 0)
+				path = &path[dir_len];
+			fprintf(stream, "%s\n", path);
+		}
+		fclose(stream);
+	}
+	else
+		errormsg("Can't create '%s': %m\n", asset->path);
 }
 
 int FileList::read_list_header()
 {
 	char string[BCTEXTLEN], *new_entry;
+	char path[BCTEXTLEN];
 	double frame_rate = 0;
 	int width = 0;
 	int height = 0;
@@ -211,10 +229,22 @@ int FileList::read_list_header()
 // Get all the paths
 		while(!feof(stream))
 		{
+			int l;
+
 			if(fgets(string, BCTEXTLEN, stream) &&
-				strlen(string) && string[0] != '#' && string[0] != ' ' && !feof(stream))
+				(l = strlen(string)) && string[0] != '#' &&
+				string[0] != ' ')
 			{
-				string[strlen(string) - 1] = 0;
+				string[l - 1] = 0;
+				if(string[0] != '/')
+				{
+					char new_path[BCTEXTLEN];
+					FileSystem fs;
+
+					strcpy(new_path, string);
+					fs.extract_dir(string, asset->path);
+					strcat(string, new_path);
+				}
 				path_list.append(new_entry = new char[strlen(string) + 1]);
 				strcpy(new_entry, string);
 			}
