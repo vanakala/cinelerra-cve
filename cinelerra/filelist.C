@@ -49,6 +49,7 @@ FileList::~FileList()
 	close_file();
 	delete table_lock;
 }
+
 int FileList::open_file(int open_mode)
 {
 	writing = open_mode & FILE_OPEN_WRITE;
@@ -137,7 +138,6 @@ int FileList::open_file(int open_mode)
 
 // Compressed data storage
 	data = new VFrame;
-
 	return result;
 }
 
@@ -145,7 +145,8 @@ void FileList::close_file()
 {
 	if(asset->format == list_type && path_list.total)
 	{
-		if(writing && asset->use_header) write_list_header();
+		if(writing && asset->use_header)
+			write_list_header();
 		path_list.remove_all_objects();
 	}
 	delete data;
@@ -157,26 +158,13 @@ void FileList::close_file()
 void FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
-// Use sprintf instead of fprintf for VFS.
-	char string[BCTEXTLEN];
-	sprintf(string, "%s\n", list_prefix);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# First line is always %s\n", list_prefix);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Frame rate:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%f\n", asset->frame_rate);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Width:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%d\n", asset->width);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# Height:\n");
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "%d\n", asset->height);
-	fwrite(string, strlen(string), 1, stream);
-	sprintf(string, "# List of image files follows\n");
-	fwrite(string, strlen(string), 1, stream);
+
+	fprintf(stream, "%s\n", list_prefix);
+	fprintf(stream, "# First line is always %s\n", list_prefix);
+	fprintf(stream, "# Frame rate:\n%f\n", asset->frame_rate);
+	fprintf(stream, "# Width:\n%d\n", asset->width);
+	fprintf(stream, "# Height:\n%d\n", asset->height);
+	fprintf(stream, "# List of image files follows\n");
 
 	for(int i = 0; i < path_list.total; i++)
 		fprintf(stream, "%s\n", path_list.values[i]);
@@ -266,22 +254,19 @@ int FileList::read_frame(VFrame *frame)
 	char string[BCTEXTLEN];
 
 	current_frame = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
-	if(current_frame < 0 || 
-		(asset->use_header && current_frame >= path_list.total &&
+	if(current_frame < 0 ||
+			(asset->use_header && current_frame >= path_list.total &&
 			asset->format == list_type))
 		goto noframe;
 
 	if(asset->format == list_type)
 	{
 		char *path;
+
 		if(asset->use_header)
-		{
 			path = path_list.values[current_frame];
-		}
 		else
-		{
 			path = calculate_path(current_frame, string);
-		}
 
 		strcpy(string, path);
 
@@ -318,6 +303,7 @@ int FileList::read_frame(VFrame *frame)
 	else
 	{
 		current_frame = 0;
+
 		if(fp = fopen(asset->path, "rb"))
 		{
 			struct stat ostat;
@@ -348,13 +334,11 @@ int FileList::read_frame(VFrame *frame)
 			goto noframe;
 		}
 		frame->set_source_pts(0);
-		if(mwindow_global)
-		{
-			if(edlsession->si_useduration)
-				frame->set_duration(edlsession->si_duration);
-			else
-				frame->set_duration((ptstime)1 / edlsession->frame_rate);
-		}
+
+		if(edlsession->si_useduration)
+			frame->set_duration(edlsession->si_duration);
+		else
+			frame->set_duration((ptstime)1 / edlsession->frame_rate);
 	}
 	frame->set_frame_number(current_frame);
 	return result;
@@ -420,13 +404,12 @@ char* FileList::calculate_path(int number, char *string)
 	{
 		int k;
 		strcpy(string, asset->path);
-		for(k = strlen(string) - 1; k > 0 && string[k] != '.'; k--)
-			;
-		if(k <= 0) k = strlen(string);
+		for(k = strlen(string) - 1; k > 0 && string[k] != '.'; k--);
 
-		sprintf(&string[k], "%06d%s", 
-			number, 
-			file_extension);
+		if(k <= 0)
+			k = strlen(string);
+
+		sprintf(&string[k], "%06d%s", number, file_extension);
 	}
 	else
 // Without a header, the original filename can be altered.
@@ -443,7 +426,8 @@ char* FileList::calculate_path(int number, char *string)
 
 char* FileList::create_path(int number_override)
 {
-	if(asset->format != list_type) return asset->path;
+	if(asset->format != list_type)
+		return asset->path;
 
 	table_lock->lock("FileList::create_path");
 
@@ -452,13 +436,11 @@ char* FileList::create_path(int number_override)
 
 	if(number_override >= path_list.total || !asset->use_header)
 	{
-		int number;
-		number = number_override;
+		int number = number_override;
 
 		if(!asset->use_header)
-		{
 			number += first_number;
-		}
+
 		calculate_path(number, output);
 
 		path = new char[strlen(output) + 1];
@@ -484,27 +466,27 @@ FrameWriterUnit* FileList::new_writer_unit(FrameWriter *writer)
 size_t FileList::get_memory_usage()
 {
 	size_t result = 0;
-	if(data) result += data->get_compressed_allocated();
+
+	if(data)
+		result += data->get_compressed_allocated();
 	return result;
 }
 
 int FileList::get_units()
 {
-	if(writer) return writer->get_total_clients();
+	if(writer)
+		return writer->get_total_clients();
 	return 0;
 }
 
 FrameWriterUnit* FileList::get_unit(int number)
 {
-	if(writer) return (FrameWriterUnit*)writer->get_client(number);
+	if(writer)
+		return (FrameWriterUnit*)writer->get_client(number);
 	return 0;
 }
 
 FrameWriterPackage::FrameWriterPackage()
-{
-}
-
-FrameWriterPackage::~FrameWriterPackage()
 {
 }
 
@@ -535,10 +517,11 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 		return;
 	}
 
-
 	int result = server->file->write_frame(ptr->input, output, this);
 
-	if(!result) result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
+	if(!result)
+		result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
+
 	fclose(file);
 	server->file->add_return_value(result);
 }
@@ -550,15 +533,10 @@ FrameWriter::FrameWriter(FileList *file, int cpus)
 	this->file = file;
 }
 
-FrameWriter::~FrameWriter()
-{
-}
-
 void FrameWriter::init_packages()
 {
-	for(int i = 0, layer = 0, number = 0; 
-		i < get_total_packages(); 
-		i++)
+	for(int i = 0, layer = 0, number = 0;
+		i < get_total_packages(); i++)
 	{
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 

@@ -84,7 +84,6 @@ class FrameWriterPackage : public LoadPackage
 {
 public:
 	FrameWriterPackage();
-	~FrameWriterPackage();
 
 	VFrame *input;
 	char *path;
@@ -108,7 +107,6 @@ class FrameWriter : public LoadServer
 {
 public:
 	FrameWriter(FileList *file, int cpus);
-	~FrameWriter();
 
 	void write_frames(VFrame ***frames, int len);
 	void init_packages();
