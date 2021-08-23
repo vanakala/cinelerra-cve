@@ -62,6 +62,7 @@ void VWindow::change_source()
 
 void VWindow::change_source(Asset *asset)
 {
+	int stream;
 	char title[BCTEXTLEN];
 	FileSystem fs;
 	fs.extract_name(title, asset->path);
@@ -75,18 +76,17 @@ void VWindow::change_source(Asset *asset)
 	vwindow_edl->id = vwindow_edl->next_id();
 	vwindow_edl->this_edlsession = vedlsession;
 	vedlsession->copy(edlsession);
-	if(asset->audio_data)
-		vedlsession->audio_channels = asset->channels;
+	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+		vedlsession->audio_channels = asset->streams[stream].channels;
 	else
 		vedlsession->audio_channels = 0;
-	if(asset->video_data)
+	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
-		vedlsession->sample_aspect_ratio = asset->sample_aspect_ratio;
-		vedlsession->frame_rate = asset->frame_rate;
-		vedlsession->output_w = asset->width;
-		vedlsession->output_h = asset->height;
+		vedlsession->sample_aspect_ratio = asset->streams[stream].sample_aspect_ratio;
+		vedlsession->frame_rate = asset->streams[stream].frame_rate;
+		vedlsession->output_w = asset->streams[stream].width;
+		vedlsession->output_h = asset->streams[stream].height;
 	}
-
 // Update GUI
 	gui->change_source(title);
 	update_position(1, 1);
