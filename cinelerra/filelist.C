@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -53,7 +37,6 @@ FileList::FileList(Asset *asset,
 	writing = 0;
 	first_number = 0;
 	path_list.set_array_delete();
-	asset->video_data = 1;
 	this->list_prefix = list_prefix;
 	this->file_extension = file_extension;
 	this->frame_type = frame_type;
@@ -127,22 +110,28 @@ int FileList::open_file(int open_mode)
 				number_digits,
 				6);
 		}
-		switch(frame_type)
+		if(asset->nb_streams)
 		{
-		case FILE_JPEG:
-			strcpy(asset->vcodec, "jpeg");
-			break;
-		case FILE_PNG:
-			strcpy(asset->vcodec, "png");
-			break;
-		case FILE_TIFF:
-			strcpy(asset->vcodec, "tiff");
-			break;
-		case FILE_TGA:
-			break;
-		default:
-			asset->vcodec[0] = 0;
-			break;
+			struct streamdesc *sdsc = &asset->streams[0];
+
+			switch(frame_type)
+			{
+			case FILE_JPEG:
+				strcpy(sdsc->codec, "jpeg");
+				break;
+			case FILE_PNG:
+				strcpy(sdsc->codec, "png");
+				break;
+			case FILE_TIFF:
+				strcpy(sdsc->codec, "tiff");
+				break;
+			case FILE_TGA:
+				break;
+			default:
+				sdsc->codec[0] = 0;
+				break;
+			}
+			strcpy(asset->vcodec, sdsc->codec);
 		}
 	}
 
@@ -198,6 +187,9 @@ void FileList::write_list_header()
 int FileList::read_list_header()
 {
 	char string[BCTEXTLEN], *new_entry;
+	double frame_rate = 0;
+	int width = 0;
+	int height = 0;
 
 	FILE *stream = fopen(asset->path, "r");
 
@@ -209,29 +201,24 @@ int FileList::read_list_header()
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
 				return 1;
 		}while(string[0] == '#' || string[0] == ' ' || isalpha(string[0]));
-
-// Don't want a user configured frame rate to get destroyed
-		if(asset->frame_rate == 0)
-			asset->frame_rate = atof(string);
+		frame_rate = atof(string);
 
 		do
 		{
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
 				return 1;
 		}while(string[0] == '#' || string[0] == ' ');
-		asset->width = atol(string);
+		width = atoi(string);
 
 		do
 		{
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
 				return 1;
 		}while(string[0] == '#' || string[0] == ' ');
-		asset->height = atol(string);
+		height = atoi(string);
 
 		asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;  // May be good to store the info in the list?
-		asset->layers = 1;
 		asset->audio_data = 0;
-		asset->video_data = 1;
 
 // Get all the paths
 		while(!feof(stream))
@@ -246,21 +233,24 @@ int FileList::read_list_header()
 		}
 		asset->file_length = ftell(stream);
 		fclose(stream);
-		asset->video_length = path_list.total;
-		asset->video_duration = (ptstime)path_list.total / asset->frame_rate;
-		// Fill stream info
-		struct streamdesc *sdsc = &asset->streams[0];
-		sdsc->end = asset->video_duration;
-		sdsc->width = asset->width;
-		sdsc->height = asset->height;
-		sdsc->length = asset->video_length;
-		sdsc->frame_rate = asset->frame_rate;
-		sdsc->sample_aspect_ratio = asset->sample_aspect_ratio;
-		sdsc->options = STRDSC_VIDEO;
-		strncpy(sdsc->codec, asset->vcodec, MAX_LEN_CODECNAME);
-		asset->nb_streams = 1;
-		asset->video_streamno = 1;
-		asset->audio_streamno = 0;
+
+		if(!asset->nb_streams)
+		{
+// Fill stream info
+			struct streamdesc *sdsc = &asset->streams[0];
+			sdsc->channels = 1;
+			sdsc->width = width;
+			sdsc->height = height;
+			sdsc->length = path_list.total;
+			sdsc->frame_rate = frame_rate;
+			sdsc->end = (ptstime)path_list.total / frame_rate;
+			sdsc->sample_aspect_ratio = 1;
+			sdsc->options = STRDSC_VIDEO;
+			asset->nb_streams = 1;
+			asset->last_active = 0;
+			asset->set_video_stream(0);
+			asset->audio_streamno = 0;
+		}
 	}
 	else
 		return 1;
