@@ -445,20 +445,12 @@ int File::write_aframes(AFrame **frames)
 	return 1;
 }
 
-// Can't put any cmodel abstraction here because the filebase couldn't be
-// parallel.
 int File::write_frames(VFrame ***frames, int len)
 {
-// Store the counters in temps so the filebase can choose to overwrite them.
 	int result;
 
-	int video_length_temp = asset->video_length;
-
 	write_lock->lock("File::write_frames");
-
 	result = file->write_frames(frames, len);
-
-	asset->video_length = video_length_temp + len;
 	write_lock->unlock();
 
 	return result;
