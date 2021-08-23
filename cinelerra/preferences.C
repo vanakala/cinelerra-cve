@@ -66,7 +66,6 @@ Preferences::Preferences()
 	brender_asset->video_data = 1;
 	strcpy(brender_asset->path, "/tmp/brender");
 	brender_asset->format = FILE_JPEG_LIST;
-	brender_asset->jpeg_quality = 80;
 
 	use_brender = 0;
 	brender_fragment = 1;

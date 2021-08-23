@@ -115,7 +115,6 @@ void Asset::init_values()
 	height = 0;
 	vcodec[0] = 0;
 	acodec[0] = 0;
-	jpeg_quality = 100;
 	sample_aspect_ratio = 1;
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
@@ -355,7 +354,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 		}
 	}
 	memcpy(this->programs, asset->programs, sizeof(programs));
-	jpeg_quality = asset->jpeg_quality;
 
 	// Set active streams
 	last_active = 0;
@@ -1241,8 +1239,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
 	}
 
-	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
-
 	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
@@ -1387,7 +1383,6 @@ void Asset::load_defaults(Paramlist *list, int options)
 		list->get("audio_codec", acodec);
 		list->get("video_codec", vcodec);
 		format_changed();
-		jpeg_quality = list->get("jpeg_quality", jpeg_quality);
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
 	}
@@ -1421,7 +1416,6 @@ void Asset::save_defaults(Paramlist *list, int options)
 	{
 		list->set("audio_codec", acodec);
 		list->set("video_codec", vcodec);
-		list->set("jpeg_quality", jpeg_quality);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
 	}
@@ -1503,7 +1497,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 		remove_prefixed_default(defaults, "ASPECT_RATIO", string);
 		remove_prefixed_default(defaults, "SAMPLEASPECT", string);
-		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
+		remove_prefixed_default(defaults, "JPEG_QUALITY", string);
 
 // MPEG format information
 		remove_prefixed_default(defaults, "VMPEG_IFRAME_DISTANCE", string);

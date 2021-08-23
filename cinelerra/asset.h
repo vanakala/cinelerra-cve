@@ -246,9 +246,6 @@ public:
 	int interlace_mode;
 	int interlace_fixmethod;
 
-// for jpeg compression
-	int jpeg_quality;
-
 // File modification time
 	struct timespec file_mtime;
 // Render profile path
