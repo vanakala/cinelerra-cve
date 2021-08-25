@@ -167,6 +167,9 @@ void Asset::set_audio_stream(int stream)
 	audio_duration = desc->end - desc->start;
 	strcpy(acodec, desc->codec);
 	active_streams[last_active++] = desc;
+	// should not happen
+	if(last_active >= MAXCHANNELS)
+		last_active = MAXCHANNELS - 1;
 }
 
 void Asset::set_video_stream(int stream)
@@ -189,6 +192,9 @@ void Asset::set_video_stream(int stream)
 	video_duration = desc->end - desc->start;
 	strcpy(vcodec, desc->codec);
 	active_streams[last_active++] = desc;
+	// should not happen
+	if(last_active >= MAXCHANNELS)
+		last_active = MAXCHANNELS - 1;
 }
 
 void Asset::init_streams()
