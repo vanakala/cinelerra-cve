@@ -81,7 +81,7 @@ void AssetEdit::run()
 			{
 				int newidx = 0;
 
-				newidx = asset->audio_data
+				newidx = asset->stream_count(STRDSC_AUDIO)
 					&& !asset->equivalent(*new_asset, STRDSC_AUDIO);
 
 				mwindow->remove_asset_from_caches(asset);
