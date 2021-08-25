@@ -11,6 +11,7 @@
 #include "filelist.h"
 #include "filesystem.h"
 #include "interlacemodes.h"
+#include "language.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "render.h"
@@ -186,7 +187,7 @@ void FileList::write_list_header()
 		fclose(stream);
 	}
 	else
-		errormsg("Can't create '%s': %m\n", asset->path);
+		errormsg(_("Can't create '%s': %m\n"), asset->path);
 }
 
 int FileList::read_list_header()
@@ -254,6 +255,18 @@ int FileList::read_list_header()
 
 		if(!asset->nb_streams)
 		{
+			if(width < MIN_FRAME_WIDTH || width > MAX_FRAME_WIDTH ||
+				height < MIN_FRAME_HEIGHT || height > MAX_FRAME_HEIGHT)
+			{
+				errormsg(_("Image list frame size is outside limits"));
+				return 1;
+			}
+
+			if(frame_rate < MIN_FRAME_RATE || frame_rate > MAX_FRAME_RATE)
+			{
+				errormsg(_("Image list frame rate is outside limits"));
+				return 1;
+			}
 // Fill stream info
 			struct streamdesc *sdsc = &asset->streams[0];
 			sdsc->channels = 1;
@@ -302,7 +315,7 @@ int FileList::read_frame(VFrame *frame)
 
 		if(!(fp = fopen(string, "rb")))
 		{
-			errormsg("Error while opening \"%s\" for reading. \n%m\n", string);
+			errormsg(_("Error while opening \"%s\" for reading. \n%m\n"), string);
 		}
 		else
 		{
@@ -360,7 +373,7 @@ int FileList::read_frame(VFrame *frame)
 		}
 		else
 		{
-			errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+			errormsg(_("Error while opening \"%s\" for reading. \n%m\n"), asset->path);
 			goto noframe;
 		}
 		frame->set_source_pts(0);
@@ -375,7 +388,7 @@ int FileList::read_frame(VFrame *frame)
 
 emptyfile:
 	fclose(fp);
-	errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+	errormsg(_("Error while opening \"%s\" for reading. \n"), asset->path);
 noframe:
 	frame->clear_frame();
 	frame->set_duration(1 / asset->frame_rate);
@@ -408,7 +421,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 				}
 				else
 				{
-					errormsg("Error while opening \"%s\" for writing. \n%m\n", asset->path);
+					errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
 					return_value++;
 				}
 			}
@@ -542,7 +555,7 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 
 	if(!(file = fopen(ptr->path, "wb")))
 	{
-		errormsg("Failed to open \"%s\" for writing. \n%m\n", ptr->path);
+		errormsg(_("Failed to open \"%s\" for writing. \n%m\n"), ptr->path);
 		server->file->add_return_value(1);
 		return;
 	}

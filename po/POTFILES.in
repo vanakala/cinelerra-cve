@@ -28,6 +28,7 @@ cinelerra/fileavlibs.C
 cinelerra/fileexr.C
 cinelerra/fileformat.C
 cinelerra/filejpeg.C
+cinelerra/filelist.C
 cinelerra/filepng.C
 cinelerra/filesndfile.C
 cinelerra/filetga.C
