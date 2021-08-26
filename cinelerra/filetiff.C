@@ -153,9 +153,6 @@ int FileTIFF::read_frame_header(const char *path)
 
 // The raw format for certain cameras deviates from TIFF here.
 
-	TIFFGetField(stream, TIFFTAG_IMAGEWIDTH, &(asset->width));
-	TIFFGetField(stream, TIFFTAG_IMAGELENGTH, &(asset->height));
-
 	int components = 0;
 	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &components);
 	int bitspersample = 0;
