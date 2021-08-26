@@ -287,6 +287,7 @@ int FileJPEG::read_frame_header(const char *path)
 	FILE *stream;
 	struct jpeg_decompress_struct jpeg_decompress;
 	struct error_mgr jpeg_error;
+
 	if(!(stream = fopen(path, "rb")))
 	{
 		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
@@ -307,9 +308,6 @@ int FileJPEG::read_frame_header(const char *path)
 
 	jpeg_stdio_src(&jpeg_decompress, stream);
 	jpeg_read_header(&jpeg_decompress, TRUE);
-
-	asset->width = jpeg_decompress.image_width;
-	asset->height = jpeg_decompress.image_height;
 
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
