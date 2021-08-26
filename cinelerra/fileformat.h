@@ -24,6 +24,7 @@ public:
 	~FileFormat();
 
 	Asset *asset;
+	struct streamdesc *sdsc;
 	Selection *rate_button;
 	FileFormatChannels *channels_button;
 	FileFormatPCMFormat *pcmformat;

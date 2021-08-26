@@ -25,6 +25,7 @@ struct format_names
 	const char *name;
 	const char *longname;
 }
+
 FileFormatPCMFormat::pcm_formats[] =
 {
 	{ "f64be", 0 },
@@ -60,6 +61,7 @@ FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
 	int text_w = 0;
 	int y1, y2, y3, w;
 
+	sdsc = &asset->streams[0];
 	this->asset = asset;
 
 	set_icon(mwindow_global->get_window_icon());
@@ -84,12 +86,12 @@ FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
 		text_w = w;
 
 	x += text_w + 10;
-	channels_button = new FileFormatChannels(x, y1, this, asset->channels);
+	channels_button = new FileFormatChannels(x, y1, this, sdsc->channels);
 	add_subwindow(rate_button = new SampleRateSelection(x, y2, this,
-		&asset->sample_rate));
+		&sdsc->sample_rate));
 	pcmformat = new FileFormatPCMFormat(x, y3, this,
 		asset->pcm_format);
-	rate_button->update(asset->sample_rate);
+	rate_button->update(sdsc->sample_rate);
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -117,7 +119,7 @@ FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, int va
 
 int FileFormatChannels::handle_event()
 {
-	fwindow->asset->channels = atol(get_text());
+	fwindow->sdsc->channels = atol(get_text());
 	return 1;
 }
 

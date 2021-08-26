@@ -7,6 +7,7 @@
 #define ASSET_INC
 
 class Asset;
+struct streamdesc;
 
 // Index statuses
 #define INDEX_READY     0

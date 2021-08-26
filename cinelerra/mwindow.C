@@ -719,17 +719,21 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				char string[BCTEXTLEN];
 				FileSystem fs;
 				int cx, cy;
+				struct streamdesc *sdsc = &new_asset->streams[0];
 
 				fs.extract_name(string, new_asset->path);
 
 				strcat(string, _("'s format couldn't be determined."));
-				new_asset->audio_data = 1;
 				new_asset->format = FILE_PCM;
-				new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
-				new_asset->sample_rate = defaults->get("SAMPLE_RATE", 44100);
+				sdsc->channels = defaults->get("AUDIO_CHANNELS", 2);
+				sdsc->sample_rate = defaults->get("SAMPLE_RATE", 44100);
 				new_asset->pcm_format = defaults->get("PCM_FORMAT", "s16le");
-				new_asset->nb_streams = 0;
-
+				strcpy(sdsc->codec, new_asset->pcm_format);
+				sdsc->options = STRDSC_AUDIO;
+				new_asset->nb_streams = 1;
+				new_asset->last_active = 0;
+				new_asset->set_audio_stream(0);
+new_asset->dump(4);
 				get_abs_cursor_pos(&cx, &cy);
 				FileFormat fwindow(new_asset, string, cx, cy);
 				result = fwindow.run_window();
@@ -739,9 +743,15 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
 							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
 
-					defaults->update("AUDIO_CHANNELS", new_asset->channels);
-					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
+					defaults->update("AUDIO_CHANNELS", sdsc->channels);
+					defaults->update("SAMPLE_RATE", sdsc->sample_rate);
 					defaults->update("PCM_FORMAT", new_asset->pcm_format);
+					strcpy(sdsc->codec, new_asset->pcm_format);
+					new_asset->nb_streams = 1;
+					new_asset->last_active = 0;
+					new_asset->set_audio_stream(0);
+tracemsg("after:");
+new_asset->dump(4);
 					defaults->delete_key("AUDIO_BITS");
 					defaults->delete_key("BYTE_ORDER");
 					defaults->delete_key("SIGNED_");
