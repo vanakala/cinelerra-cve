@@ -115,9 +115,6 @@ int FilePNG::read_frame_header(const char *path)
 
 	png_read_info(png_ptr, info_ptr);
 
-	asset->width = png_get_image_width(png_ptr, info_ptr);
-	asset->height = png_get_image_height(png_ptr, info_ptr);
-
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
 	color_type = png_get_color_type(png_ptr, info_ptr);
