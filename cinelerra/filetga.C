@@ -190,27 +190,8 @@ int FileTGA::read_frame_header(const char *path)
 		result = 1;
 	fclose(stream);
 
-	if(result) return 1;
-
-	asset->width = header[12] | (header[13] << 8);
-	asset->height = header[14] | (header[15] << 8);
-	int bpp = header[16];
-	int rle = header[2] & 0x8;
-	switch(bpp)
-	{
-	case 32:
-		if(rle) 
-			strcpy(asset->vcodec, TGA_RGBA_RLE);
-		else
-			strcpy(asset->vcodec, TGA_RGBA);
-		break;
-	case 24:
-		if(rle) 
-			strcpy(asset->vcodec, TGA_RGB_RLE);
-		else
-			strcpy(asset->vcodec, TGA_RGB);
-		break;
-	}
+	if(result)
+		return 1;
 
 	return result;
 }
