@@ -63,7 +63,7 @@ void MainIndexes::add_next_asset(Asset *asset)
 		IndexFile::get_index_filename(source_filename, 
 			preferences_global->index_directory,
 			index_filename, 
-			asset->path, asset->audio_streamno - 1);
+			asset->path, asset->get_stream_ix(STRDSC_AUDIO));
 		if(!this_file->get_index(index_filename))
 		{
 			if(!asset->indexfile.open_index(asset))
@@ -153,7 +153,7 @@ void MainIndexes::run()
 			Asset *current_asset = current_assets.values[i];
 
 			if(current_asset->index_status == INDEX_NOTTESTED && 
-				current_asset->audio_data)
+				current_asset->stream_count(STRDSC_AUDIO))
 			{
 
 // Doesn't exist if this returns 1.
