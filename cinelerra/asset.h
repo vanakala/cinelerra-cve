@@ -104,11 +104,10 @@ public:
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
-	off_t get_index_offset(int channel);
-	samplenum get_index_size(int channel);
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
 	ptstime stream_duration(int stream);
+	samplenum stream_samples(int stream);
 	ptstime duration();
 // Number of streams with stream_type
 	int stream_count(int stream_type);
@@ -154,15 +153,15 @@ public:
 	void read_audio(FileXML *xml);
 	void read_video(FileXML *xml);
 	void read_index(FileXML *xml);
-	void reset_index();  // When the index file is wrong, reset the asset values
+	void interrupt_index();
+	void remove_indexes();
 
 // Output path is the path of the output file if name truncation is desired.
-// It is a "" if; complete names should be used.
-	void write(FileXML *file, 
-		int include_index, 
+// It is empty if complete names should be used.
+	void write(FileXML *file, int include_index, int stream,
 		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
-	void write_index(const char *path, int data_bytes);
+	void write_index(const char *path, int data_bytes, int stream);
 
 // Write decoding parameters to xml
 	void write_decoder_params(FileXML *file);
@@ -178,7 +177,7 @@ public:
 // Necessary for renderfarm to get encoding parameters
 	void write_audio(FileXML *xml);
 	void write_video(FileXML *xml);
-	void write_index(FileXML *xml);
+	void write_index(FileXML *xml, int stream);
 	void update_path(const char *new_path);
 
 	ptstime total_length_framealigned(double fps);
@@ -265,21 +264,9 @@ public:
 	int use_header;
 
 // index info
-	IndexFile indexfile;
-	int index_status;     // Macro from asset.inc
-	int index_zoom;      // zoom factor of index data
-	off_t index_start;     // byte start of index data in the index file
+	IndexFile indexfiles[MAXCHANNELS];
 // Total bytes in source file when the index was buillt
 	off_t index_bytes;
-	off_t index_end, old_index_end;    // values for index build
-// offsets of channels in index buffer in floats
-	off_t index_offsets[MAX_CHANNELS];
-// Sizes of channels in index buffer in floats.  This allows
-// variable channel size.
-	samplenum index_sizes[MAX_CHANNELS];
-// [ index channel      ][ index channel      ]
-// [high][low][high][low][high][low][high][low]
-	float *index_buffer;
 	int id;
 // Used by assetlist
 	int global_inuse;

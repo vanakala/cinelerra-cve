@@ -281,7 +281,7 @@ void EDL::copy_assets(ptstime start,
 
 // Paths relativised here
 	for(int i = 0; i < listp->total; i++)
-		listp->values[i]->write(file, 0, output_path);
+		listp->values[i]->write(file, 0, -1, output_path);
 
 	file->tag.set_title("/ASSETS");
 	file->append_tag();

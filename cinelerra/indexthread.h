@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef INDEXTHREAD_H
 #define INDEXTHREAD_H
@@ -26,7 +10,6 @@
 #include "asset.inc"
 #include "condition.inc"
 #include "indexfile.inc"
-#include "mwindow.inc"
 #include "thread.h"
 
 #define TOTAL_BUFFERS 2
@@ -36,12 +19,11 @@
 class IndexThread : public Thread
 {
 public:
-	IndexThread(MWindow *mwindow, 
-		IndexFile *index_file, 
-		Asset *asset,
+	IndexThread(IndexFile *index_file,
+		Asset *asset, int stream,
 		char *index_filename,
 		int buffer_size,
-		int64_t length_source);
+		samplenum length_source);
 	~IndexThread();
 
 	friend class IndexFile;
@@ -51,17 +33,18 @@ public:
 	void run();
 
 	IndexFile *index_file;
-	MWindow *mwindow;
 	Asset *asset;
 	char *index_filename;
-	int buffer_size;
 	samplenum length_source;
+	int buffer_size;
 	int current_buffer;
+	int stream;
 
 private:
 	int interrupt_flag;
 	AFrame *frames_in[TOTAL_BUFFERS][MAX_CHANNELS];
-	Condition *input_lock[TOTAL_BUFFERS], *output_lock[TOTAL_BUFFERS];
+	Condition *input_lock[TOTAL_BUFFERS];
+	Condition *output_lock[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];
 };
 

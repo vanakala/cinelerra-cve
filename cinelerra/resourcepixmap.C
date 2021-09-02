@@ -85,7 +85,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	{
 		int need_redraw = 0;
 
-		if(int index_zoom = edit->asset->index_zoom)
+		if(int index_zoom = edit->asset->indexfiles[edit->stream].zoom)
 		{
 			if(data_type == TRACK_AUDIO)
 			{
@@ -362,31 +362,31 @@ void ResourcePixmap::draw_title(Edit *edit,
 // Need to draw one more x
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
-	Asset *asset;
+	Asset *asset = edit->asset;
+	int stream = edit->stream;
 
 	if(w <= 0)
 		return;
 
-	double asset_over_session = (double)edit->asset->sample_rate / 
+	double asset_over_session = (double)asset->streams[stream].sample_rate /
 		edlsession->sample_rate;
 
 // Develop strategy for drawing
-	switch(edit->asset->index_status)
+	switch(asset->indexfiles[stream].status)
 	{
 	case INDEX_NOTTESTED:
 		return;
 
 	case INDEX_BUILDING:
 	case INDEX_READY:
-		asset = edit->asset;
-		asset->indexfile.open_index(asset);
+		asset->indexfiles[stream].open_index(asset, stream);
 
-		if(asset->index_zoom >
+		if(asset->indexfiles[stream].zoom >
 				master_edl->local_session->zoom_time *
 				edlsession->sample_rate * asset_over_session)
 			draw_audio_source(edit, x, w);
 		else
-			asset->indexfile.draw_index(this, edit, x, w);
+			asset->indexfiles[stream].draw_index(this, edit, x, w);
 		break;
 	}
 }

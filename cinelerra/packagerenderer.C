@@ -141,7 +141,7 @@ int PackageRenderer::create_output()
 		if(result)
 			errormsg(_("Couldn't open output file %s"), asset->path);
 		mwindow_global->sighandler->push_file(file);
-		IndexFile::delete_index(preferences, asset);
+		asset->remove_indexes();
 	}
 	return result;
 }

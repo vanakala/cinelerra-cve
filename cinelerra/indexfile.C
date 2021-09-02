@@ -38,15 +38,29 @@ IndexFile::IndexFile()
 	file = 0;
 	interrupt_flag = 0;
 	asset = 0;
+	index_filename = 0;
+	status = INDEX_NOTTESTED;
+	start = index_end = old_index_end = 0;
+	memset(offsets, 0, sizeof(offsets));
+	memset(sizes, 0, sizeof(sizes));
+	index_buffer = 0;
+	buffer_allocated = 0;
 }
 
-int IndexFile::open_index(Asset *asset)
+IndexFile::~IndexFile()
+{
+	delete [] index_filename;
+	delete [] index_buffer;
+}
+
+int IndexFile::open_index(Asset *asset, int stream)
 {
 	int result = 0;
 // use buffer if being built
 	this->asset = asset;
+	this->stream = stream;
 
-	if(asset->index_status == INDEX_BUILDING)
+	if(status == INDEX_BUILDING)
 	{
 // use buffer
 		result = 0;
@@ -54,7 +68,7 @@ int IndexFile::open_index(Asset *asset)
 	else
 	if(!(result = open_file()))
 // opened existing file
-		asset->index_status = INDEX_READY;
+		status = INDEX_READY;
 	else
 	{
 		result = 1;
@@ -63,16 +77,12 @@ int IndexFile::open_index(Asset *asset)
 	return result;
 }
 
-void IndexFile::delete_index(Preferences *preferences, Asset *asset)
+void IndexFile::delete_index()
 {
-	char index_filename[BCTEXTLEN];
-	char source_filename[BCTEXTLEN];
-
-	get_index_filename(source_filename, 
-		preferences->index_directory,
-		index_filename, 
-		asset->path, asset->audio_streamno - 1);
-	remove(index_filename);
+	if(index_filename)
+		remove(index_filename);
+	delete [] index_filename;
+	index_filename = 0;
 }
 
 int IndexFile::open_file()
@@ -81,10 +91,13 @@ int IndexFile::open_file()
 	int result = 0;
 	char source_filename[BCTEXTLEN];
 
+	if(!index_filename)
+		index_filename = new char[BCTEXTLEN];
+
 	get_index_filename(source_filename, 
 		preferences_global->index_directory,
 		index_filename, 
-		asset->path, asset->audio_streamno - 1);
+		asset->path, stream);
 
 	if(file = fopen(index_filename, "rb"))
 	{
@@ -138,12 +151,15 @@ int IndexFile::open_source(File *source)
 int IndexFile::get_required_scale(File *source)
 {
 	int result;
-// total length of input file
-	samplenum length_source = source->get_audio_length();
+
+	samplenum length_source =
+		source->asset->stream_samples(stream);
 
 	if(length_source > 0)
 	{
-		samplenum peak_count = preferences_global->index_size / (2 * sizeof(float) * asset->channels);
+		int peak_count =
+			preferences_global->index_size /
+			(2 * sizeof(float) * asset->streams[stream].channels);
 
 		for(result = 1;
 			length_source / result > peak_count;
@@ -189,24 +205,48 @@ void IndexFile::interrupt_index()
 	interrupt_flag = 1;
 }
 
+void IndexFile::allocate_buffer(int index_size)
+{
+	if(index_buffer && buffer_allocated > index_size)
+		return;
+
+	delete [] index_buffer;
+	index_buffer = new float[index_size];
+
+	memset(index_buffer, 0, index_size * sizeof(float));
+	memset(offsets, 0, sizeof(offsets));
+	memset(sizes, 0, sizeof(sizes));
+}
+
+void IndexFile::release_buffer()
+{
+	delete [] index_buffer;
+	index_buffer = 0;
+}
+
+
 // Read data into buffers
 
-int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
+int IndexFile::create_index(Asset *asset, int stream, MainProgressBar *progress)
 {
 	int result = 0;
 	File source;
 	char source_filename[BCTEXTLEN];
 
 	this->asset = asset;
+	this->stream = stream;
 	interrupt_flag = 0;
 
 	if(open_source(&source))
 		return 1;
 
+	if(!index_filename)
+		index_filename = new char[BCTEXTLEN];
+
 	get_index_filename(source_filename, 
 		preferences_global->index_directory,
 		index_filename, 
-		asset->path, asset->audio_streamno - 1);
+		asset->path, stream);
 
 // Test for index in stream table of contents
 	if(!source.get_index(index_filename))
@@ -216,9 +256,9 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	else
 // Build index from scratch
 	{
-		asset->index_zoom = get_required_scale(&source);
+		zoom = get_required_scale(&source);
 // total length of input file
-		samplenum length_source = source.get_audio_length();
+		samplenum length_source = source.asset->stream_samples(stream);
 
 // get amount to read at a time in floats
 		int buffersize = 65536;
@@ -228,12 +268,9 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		redraw_timer.update();
 
 // thread out index thread
-		IndexThread *index_thread = new IndexThread(mwindow_global,
-			this, 
-			asset, 
-			index_filename, 
-			buffersize, 
-			length_source);
+		IndexThread *index_thread = new IndexThread(this,
+			asset, stream, index_filename,
+			buffersize, length_source);
 		index_thread->start_build();
 
 // current sample in source file
@@ -250,14 +287,15 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 			index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
 			int cancelled = progress->update(position);
 
-			if(cancelled || 
-				index_thread->interrupt_flag || 
+			if(cancelled || index_thread->interrupt_flag ||
 				interrupt_flag)
 			{
 				result = 3;
 			}
 
-			for(int channel = 0; !result && channel < asset->channels; channel++)
+			int nb_channels =  asset->streams[stream].channels;
+
+			for(int channel = 0; !result && channel < nb_channels; channel++)
 			{
 				index_thread->frames_in[current_buffer][channel]->set_fill_request(position, fragment_size);
 // Read from source file
@@ -288,7 +326,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	}
 
 	source.close_file();
-	open_index(asset);
+	open_index(asset, stream);
 	close_index();
 	return 0;
 }
@@ -301,30 +339,31 @@ void IndexFile::redraw_edits(int force)
 	{
 		redraw_timer.update();
 		mwindow_global->draw_indexes(asset);
-		asset->old_index_end = asset->index_end;
+		old_index_end = index_end;
 	}
 }
 
 int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 {
+// test channel number
+	if(edit->channel >= asset->streams[stream].channels)
+		return 1;
+
 // check against index_end when being built
-	if(asset->index_zoom == 0)
+	if(zoom == 0)
 	{
-		errorbox(_("IndexFile::draw_index: index has 0 zoom"));
+		errorbox(_("IndexFile::draw_index: index of stream %d has 0 zoom"),
+			stream);
 		return 0;
 	}
-
-// test channel number
-	if(edit->channel >= asset->channels)
-		return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
 	double virtual_edit_x = round((edit->get_pts() - master_edl->local_session->view_start_pts) /
 			master_edl->local_session->zoom_time);
 // samples in segment to draw relative to asset
-	double asset_over_session = (double)edit->asset->sample_rate / 
+	double asset_over_session = (double)asset->streams[stream].sample_rate /
 		edlsession->sample_rate;
-	int64_t startsource = round(((pixmap->pixmap_x - virtual_edit_x + x) *
+	samplenum startsource = round(((pixmap->pixmap_x - virtual_edit_x + x) *
 		(master_edl->local_session->zoom_time * edlsession->sample_rate) +
 		edit->track->to_units(edit->get_source_pts())) *
 		asset_over_session);
@@ -332,29 +371,30 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(startsource < 0)
 		startsource = 0;
 
-	int64_t length = round(w * master_edl->local_session->zoom_time *
+	int length = round(w * master_edl->local_session->zoom_time *
 		edlsession->sample_rate * asset_over_session);
 
-	if(asset->index_status == INDEX_BUILDING)
+	if(status == INDEX_BUILDING)
 	{
-		if(startsource + length > asset->index_end)
-			length = asset->index_end - startsource;
+		if(startsource + length > index_end)
+			length = index_end - startsource;
 	}
 
 // length of index to read in samples * 2
-	int64_t lengthindex = length / asset->index_zoom * 2;
+	int lengthindex = length / zoom * 2;
 // start of data in samples
-	int64_t startindex = startsource / asset->index_zoom * 2;
+	int startindex = startsource / zoom * 2;
 // Clamp length of index to read by available data
-	if(startindex + lengthindex > asset->get_index_size(edit->channel))
-		lengthindex = asset->get_index_size(edit->channel) - startindex;
+	if(startindex + lengthindex > sizes[edit->channel])
+		lengthindex = sizes[edit->channel] - startindex;
+
 	if(lengthindex <= 0)
 		return 0;
 
 // Actual length read from file in bytes
 	int length_read;
 // Start and length of fragment to read from file in bytes.
-	int64_t startfile, lengthfile;
+	int startfile, lengthfile;
 	float *buffer = 0;
 	int buffer_shared = 0;
 	int i;
@@ -370,15 +410,14 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 	double index_frames_per_pixel = master_edl->local_session->zoom_time *
 		edlsession->sample_rate /
-		asset->index_zoom * 
-		asset_over_session;
+		zoom * asset_over_session;
 // get channel offset
-	startindex += asset->get_index_offset(edit->channel);
+	startindex += offsets[edit->channel];
 
-	if(asset->index_status == INDEX_BUILDING)
+	if(status == INDEX_BUILDING)
 	{
 // index is in RAM, being built
-		buffer = &(asset->index_buffer[startindex]);
+		buffer = &index_buffer[startindex];
 		buffer_shared = 1;
 	}
 	else
@@ -386,7 +425,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // index is stored in a file
 		buffer = new float[lengthindex + 1];
 		buffer_shared = 0;
-		startfile = asset->index_start + startindex * sizeof(float);
+		startfile = start + startindex * sizeof(float);
 		lengthfile = lengthindex * sizeof(float);
 		length_read = 0;
 
@@ -483,7 +522,7 @@ void IndexFile::close_index()
 
 void IndexFile::remove_index()
 {
-	if(asset->index_status == INDEX_READY || asset->index_status == INDEX_NOTTESTED)
+	if(status == INDEX_READY || status == INDEX_NOTTESTED)
 	{
 		close_index();
 		remove(index_filename);
@@ -492,19 +531,19 @@ void IndexFile::remove_index()
 
 int IndexFile::read_info()
 {
-	if(asset->index_status == INDEX_NOTTESTED)
+	if(status == INDEX_NOTTESTED)
 	{
 // read start of index data
-		if(fread((char*)&(asset->index_start), sizeof(off_t), 1, file) < 1)
+		if(fread((char*)&start, sizeof(off_t), 1, file) < 1)
 			return 1;
 // read test_asset info from index
-		char *data = new char[asset->index_start];
+		char *data = new char[start];
 
-		if(fread(data, asset->index_start - sizeof(off_t), 1, file))
+		if(fread(data, start - sizeof(off_t), 1, file))
 		{
 			FileXML xml;
 
-			data[asset->index_start - sizeof(off_t)] = 0;
+			data[start - sizeof(off_t)] = 0;
 			xml.read_from_string(data);
 			asset->read(&xml);
 			delete [] data;
@@ -515,4 +554,41 @@ int IndexFile::read_info()
 			return 1;
 	}
 	return 0;
+}
+
+void IndexFile::dump(int indent)
+{
+	const char *stxt;
+	int channels = asset->streams[stream].channels;
+
+	printf("%*sIndexFile %p dump:\n", indent, "", this);
+
+	indent += 2;
+
+	switch(status)
+	{
+	case INDEX_READY:
+		stxt = "Ready";
+		break;
+	case INDEX_NOTTESTED:
+		stxt = "Not Tested";
+		break;
+	case INDEX_BUILDING:
+		stxt = "Building";
+		break;
+	case INDEX_TOOSMALL:
+		stxt = "Too Small";
+		break;
+	default:
+		stxt = "Unk";
+		break;
+	}
+	if(index_filename)
+		printf("'%s'\n", index_filename);
+	printf("%*sstream %d start %zu '%s' zoom %d channels %d\n", indent, "",
+		stream, start, stxt, zoom, channels);
+
+	for(int i = 0; i < channels; i++)
+		printf("%*s%2d %10d %10d\n", indent + 2, "",
+			i, offsets[i], sizes[i]);
 }

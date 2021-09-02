@@ -21,6 +21,7 @@ public:
 	~MainIndexes();
 
 	void add_next_asset(Asset *asset);
+	void add_next_asset(Asset *asset, int stream);
 
 	void start_loop();
 	void stop_loop();

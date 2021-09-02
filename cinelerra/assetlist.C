@@ -98,11 +98,24 @@ void AssetList::remove_unused()
 
 	for(Asset *current = first; current;)
 	{
-		if(!current->global_inuse && current->index_status == INDEX_READY)
+		if(!current->global_inuse)
 		{
-			asset = current->next;
-			remove_asset(current);
-			current = asset;
+			int inuse = 0;
+
+			for(int i = 0; i < current->nb_streams; i++)
+			{
+				if((current->streams[i].options & STRDSC_AUDIO) &&
+						current->indexfiles[i].status != INDEX_READY)
+					inuse++;
+			}
+			if(!inuse)
+			{
+				asset = current->next;
+				remove_asset(current);
+				current = asset;
+			}
+			else
+				current = current->next;
 		}
 		else
 			current = current->next;

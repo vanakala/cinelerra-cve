@@ -64,6 +64,8 @@ void AssetEdit::set_asset(Asset *asset)
 void AssetEdit::run()
 {
 	int absx, absy;
+// FIXIT
+	int stream = 0;
 
 	if(asset)
 	{
@@ -100,10 +102,10 @@ void AssetEdit::run()
 					IndexFile::get_index_filename(source_filename, 
 						mwindow->preferences->index_directory,
 						index_filename, 
-						asset->path, asset->audio_streamno - 1);
+						asset->path, stream);
 					remove(index_filename);
-					asset->index_status = INDEX_NOTTESTED;
-					mwindow->mainindexes->add_next_asset(asset);
+					asset->indexfiles[stream].status = INDEX_NOTTESTED;
+					mwindow->mainindexes->add_next_asset(asset, stream);
 					mwindow->mainindexes->start_build();
 				}
 

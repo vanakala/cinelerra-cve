@@ -130,22 +130,11 @@ void Asset::init_values()
 
 	use_header = 1;
 
-	reset_index();
+	index_bytes = 0;
 	id = EDL::next_id();
 
 	pipe[0] = 0;
 	use_pipe = 0;
-}
-
-void Asset::reset_index()
-{
-	index_status = INDEX_NOTTESTED;
-	index_start = old_index_end = index_end = 0;
-	memset(index_offsets, 0, sizeof(index_offsets));
-	memset(index_sizes, 0, sizeof(index_sizes));
-	index_zoom = 0;
-	index_bytes = 0;
-	index_buffer = 0;
 }
 
 void Asset::set_audio_stream(int stream)
@@ -401,22 +390,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	strcpy(renderprofile_path, asset->renderprofile_path);
 }
 
-off_t Asset::get_index_offset(int channel)
-{
-	if(channel < channels)
-		return index_offsets[channel];
-	else
-		return 0;
-}
-
-samplenum Asset::get_index_size(int channel)
-{
-	if(channel < channels)
-		return index_sizes[channel];
-	else
-		return 0;
-}
-
 Asset& Asset::operator=(Asset &asset)
 {
 	copy_location(&asset);
@@ -668,6 +641,12 @@ ptstime Asset::stream_duration(int stream)
 	return streams[stream].end - streams[stream].start;
 }
 
+samplenum Asset::stream_samples(int stream)
+{
+	return round((streams[stream].end - streams[stream].start) *
+		streams[stream].sample_rate);
+}
+
 ptstime Asset::duration()
 {
 	ptstime dur = 0;
@@ -814,17 +793,34 @@ void Asset::read_video(FileXML *file)
 
 void Asset::read_index(FileXML *file)
 {
-	for(int i = 0; i < MAX_CHANNELS; i++) 
-	{
-		index_offsets[i] = 0;
-		index_sizes[i] = 0;
-	}
-
+	int zoom = 0;
+	int stream = -1;
 	int current_offset = 0;
 	int current_size = 0;
 	int result = 0;
+	IndexFile *index;
 
-	index_zoom = file->tag.get_property("ZOOM", 1);
+	stream = file->tag.get_property("STREAM", stream);
+	zoom = file->tag.get_property("ZOOM", zoom);
+
+	if(stream < 0 || stream >= MAXCHANNELS)
+	{
+		stream = get_stream_ix(STRDSC_AUDIO);
+
+		if(stream < 0)
+			return;
+	}
+
+	index = &indexfiles[stream];
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		index->offsets[i] = 0;
+		index->sizes[i] = 0;
+	}
+
+	index->zoom = zoom;
+
 	index_bytes = file->tag.get_property("BYTES", (int64_t)0);
 
 	while(!file->read_tag())
@@ -833,19 +829,21 @@ void Asset::read_index(FileXML *file)
 			break;
 
 		if(file->tag.title_is("OFFSET"))
-			index_offsets[current_offset++] =
+			index->offsets[current_offset++] =
 				file->tag.get_property("FLOAT", 0);
 		else if(file->tag.title_is("SIZE"))
-			index_sizes[current_size++] =
+			index->sizes[current_size++] =
 				file->tag.get_property("FLOAT", 0);
 		if(current_offset >= MAX_CHANNELS || current_size >= MAX_CHANNELS)
 			break;
 	}
 }
 
-void Asset::write_index(const char *path, int data_bytes)
+void Asset::write_index(const char *path, int data_bytes, int stream)
 {
 	FILE *file;
+	IndexFile *index = &indexfiles[stream];
+
 	if(!(file = fopen(path, "wb")))
 	{
 // failed to create it
@@ -855,40 +853,33 @@ void Asset::write_index(const char *path, int data_bytes)
 	{
 		FileXML xml;
 // Pad index start position
-		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
+		fwrite((char*)&index->start, sizeof(index->start), 1, file);
 
-		index_status = INDEX_READY;
+		index->status = INDEX_READY;
 // Write encoding information
-		write(&xml, 
-			1, 
-			"");
+		write(&xml, 1, stream, 0);
 		xml.write_to_file(file);
-		index_start = ftell(file);
+		index->start = ftell(file);
 		fseek(file, 0, SEEK_SET);
 // Write index start
-		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
-		fseek(file, index_start, SEEK_SET);
+		fwrite((char*)&index->start, sizeof(index->start), 1, file);
+		fseek(file, index->start, SEEK_SET);
 
 // Write index data
-		fwrite(index_buffer, 
-			data_bytes, 
-			1, 
-			file);
+		fwrite(index->index_buffer, data_bytes, 1, file);
 		fclose(file);
 	}
 
 // Force reread of header
-	index_status = INDEX_NOTTESTED;
-	index_end = audio_length;
-	old_index_end = 0;
-	index_start = 0;
+	index->status = INDEX_NOTTESTED;
+	index->old_index_end = 0;
+	index->start = 0;
 }
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 
-void Asset::write(FileXML *file, 
-	int include_index, 
+void Asset::write(FileXML *file, int include_index, int stream,
 	const char *output_path)
 {
 	char *new_path;
@@ -933,11 +924,31 @@ void Asset::write(FileXML *file,
 	write_audio(file);
 	write_video(file);
 	write_decoder_params(file);
-	if(index_status == 0 && include_index) 
-		write_index(file);  // index goes after source
+	if(include_index && indexfiles[stream].status == INDEX_READY)
+		write_index(file, stream);  // index goes after source
 	file->tag.set_title("/ASSET");
 	file->append_tag();
 	file->append_newline();
+}
+
+void Asset::interrupt_index()
+{
+	for(int i = 0; i < nb_streams; i++)
+	{
+		if(streams[i].options & STRDSC_AUDIO)
+			indexfiles[i].interrupt_index();
+	}
+}
+
+void Asset::remove_indexes()
+{
+	for(int i = 0; i < nb_streams; i++)
+	{
+		if(streams[i].options & STRDSC_AUDIO)
+		{
+			indexfiles[i].remove_index();
+		}
+	}
 }
 
 void Asset::set_single_image()
@@ -1145,10 +1156,13 @@ void Asset::write_video(FileXML *file)
 	}
 }
 
-void Asset::write_index(FileXML *file)
+void Asset::write_index(FileXML *file, int stream)
 {
+	IndexFile *index = &indexfiles[stream];
+
 	file->tag.set_title("INDEX");
-	file->tag.set_property("ZOOM", index_zoom);
+	file->tag.set_property("STREAM", stream);
+	file->tag.set_property("ZOOM", index->zoom);
 	file->tag.set_property("BYTES", index_bytes);
 	file->append_tag();
 	file->append_newline();
@@ -1156,12 +1170,12 @@ void Asset::write_index(FileXML *file)
 	for(int i = 0; i < channels; i++)
 	{
 		file->tag.set_title("OFFSET");
-		file->tag.set_property("FLOAT", index_offsets[i]);
+		file->tag.set_property("FLOAT", index->offsets[i]);
 		file->append_tag();
 		file->tag.set_title("/OFFSET");
 		file->append_tag();
 		file->tag.set_title("SIZE");
-		file->tag.set_property("FLOAT", index_sizes[i]);
+		file->tag.set_property("FLOAT", index->sizes[i]);
 		file->append_tag();
 		file->tag.set_title("/SIZE");
 		file->append_tag();
@@ -1602,20 +1616,25 @@ ptstime Asset::total_length_framealigned(double fps)
 
 void Asset::update_index(Asset *asset)
 {
-	index_status = asset->index_status;
-	index_zoom = asset->index_zoom; 	 // zoom factor of index data
-	index_start = asset->index_start;	 // byte start of index data in the index file
-	index_bytes = asset->index_bytes;	 // Total bytes in source file for comparison before rebuilding the index
-	index_end = asset->index_end;
-	old_index_end = asset->old_index_end;	 // values for index build
+	index_bytes = asset->index_bytes;
 
-	for(int i = 0; i < MAX_CHANNELS; i++)
+	for(int j = 0; j < MAXCHANNELS; j++)
 	{
-// offsets of channels in index file in floats
-		index_offsets[i] = asset->index_offsets[i];
-		index_sizes[i] = asset->index_sizes[i];
+		IndexFile *src = &asset->indexfiles[j];
+		IndexFile *dst = &indexfiles[j];
+
+		dst->start = src->start;
+		dst->index_end = src->index_end;
+		dst->old_index_end = src->old_index_end;
+		dst->status = src->status;
+		dst->zoom = src->zoom;
+
+		for(int i = 0; i < MAXCHANNELS; i++)
+		{
+			dst->offsets[i] = src->offsets[i];
+			dst->sizes[i] = src->sizes[i];
+		}
 	}
-	index_buffer = asset->index_buffer;    // pointer
 }
 
 void Asset::dump(int indent, int options)
@@ -1643,32 +1662,16 @@ void Asset::dump(int indent, int options)
 		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
 		video_duration, video_length, single_image, use_pipe);
+
 	if(options & ASSETDUMP_INDEXDATA)
 	{
-		const char *stxt;
-		switch(index_status)
+		printf("%*sIndexFiles: size %zu\n", indent, "", index_bytes);
+
+		for(int i = 0; i < nb_streams; i++)
 		{
-		case INDEX_READY:
-			stxt = "Ready";
-			break;
-		case INDEX_NOTTESTED:
-			stxt = "Not Tested";
-			break;
-		case INDEX_BUILDING:
-			stxt = "Building";
-			break;
-		case INDEX_TOOSMALL:
-			stxt = "Too Small";
-			break;
-		default:
-			stxt = "Unk";
-			break;
+			if(indexfiles[i].asset)
+				indexfiles[i].dump(indent + 2);
 		}
-		printf("%*sindex: status '%s' zoom %d start %zu bytes %zu\n", indent, "",
-			stxt, index_zoom, index_start, index_bytes);
-		for(int i = 0; i < channels; i++)
-			printf("%*s  %2d %zu %ld\n", indent, "",
-				i, index_offsets[i], index_sizes[i]);
 	}
 
 	if(options & ASSETDUMP_DECODERPTRS)

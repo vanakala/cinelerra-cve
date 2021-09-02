@@ -694,7 +694,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 			IndexFile indexfile;
 			new_asset->nb_streams = 0;
 			new_asset->audio_streamno = 1;
-			result = indexfile.open_index(new_asset);
+			result = indexfile.open_index(new_asset, 0);
 
 			if(!result)
 			{
@@ -733,7 +733,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				new_asset->nb_streams = 1;
 				new_asset->last_active = 0;
 				new_asset->set_audio_stream(0);
-new_asset->dump(4);
 				get_abs_cursor_pos(&cx, &cy);
 				FileFormat fwindow(new_asset, string, cx, cy);
 				result = fwindow.run_window();
@@ -750,8 +749,6 @@ new_asset->dump(4);
 					new_asset->nb_streams = 1;
 					new_asset->last_active = 0;
 					new_asset->set_audio_stream(0);
-tracemsg("after:");
-new_asset->dump(4);
 					defaults->delete_key("AUDIO_BITS");
 					defaults->delete_key("BYTE_ORDER");
 					defaults->delete_key("SIGNED_");
@@ -1188,15 +1185,7 @@ void MWindow::rebuild_indices()
 
 	for(int i = 0; i < mainsession->drag_assets->total; i++)
 	{
-// Erase file
-		IndexFile::get_index_filename(source_filename, 
-			preferences->index_directory,
-			index_filename, 
-			mainsession->drag_assets->values[i]->path,
-			mainsession->drag_assets->values[i]->audio_streamno - 1);
-		remove(index_filename);
-// Schedule index build
-		mainsession->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
+		mainsession->drag_assets->values[i]->remove_indexes();
 		mainindexes->add_next_asset(mainsession->drag_assets->values[i]);
 	}
 	mainindexes->start_build();

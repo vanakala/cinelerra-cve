@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "asset.h"
@@ -26,7 +10,6 @@
 #include "filexml.h"
 #include "indexfile.h"
 #include "indexthread.h"
-#include "mwindow.h"
 #include "preferences.h"
 #include "mainsession.h"
 #include <unistd.h>
@@ -34,31 +17,24 @@
 
 // Read data from buffers and calculate peaks
 
-IndexThread::IndexThread(MWindow *mwindow, 
-			IndexFile *index_file,
-			Asset *asset,
-			char *index_filename,
-			int buffer_size, 
-			samplenum length_source)
+IndexThread::IndexThread(IndexFile *index_file,
+	Asset *asset,
+	int stream,
+	char *index_filename,
+	int buffer_size,
+	samplenum length_source)
 {
 	this->asset = asset;
+	this->stream = stream;
 	this->buffer_size = buffer_size;
 	this->length_source = length_source;
-	this->mwindow = mwindow;
 	this->index_filename = index_filename;
 	this->index_file = index_file;
 
 // initialize output data
-	int index_size = mwindow->preferences->index_size / 
+	int index_size = preferences_global->index_size /
 		sizeof(float) + 1;      // size of output file in floats
-	delete [] asset->index_buffer;
-
-// buffer used for drawing during the build.  This is not deleted in the asset
-	asset->index_buffer = new float[index_size];
-
-	memset(asset->index_buffer, 0, index_size * sizeof(float));
-	memset(asset->index_offsets, 0, sizeof(asset->index_offsets));
-	memset(asset->index_sizes, 0, sizeof(asset->index_sizes));
+	index_file->allocate_buffer(index_size);
 
 // initialization is completed in run
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
@@ -69,6 +45,7 @@ IndexThread::IndexThread(MWindow *mwindow,
 		{
 			frames_in[i][j] = new AFrame(buffer_size);
 			frames_in[i][j]->channel = j;
+			frames_in[i][j]->stream = stream;
 			frames_in[i][j]->set_samplerate(asset->sample_rate);
 		}
 	}
@@ -88,8 +65,7 @@ IndexThread::~IndexThread()
 		delete input_lock[i];
 	}
 
-	delete [] asset->index_buffer;
-	asset->index_buffer = 0;
+	index_file->release_buffer();
 }
 
 void IndexThread::start_build()
@@ -109,33 +85,33 @@ void IndexThread::stop_build()
 void IndexThread::run()
 {
 	int done = 0;
+	int nb_channels = asset->streams[stream].channels;
 
 // current high samples in index
-	int highpoint[asset->channels];
+	int highpoint[nb_channels];
 // current low samples in the index
-	int lowpoint[asset->channels];
+	int lowpoint[nb_channels];
 // position in current indexframe
-	samplenum frame_position[asset->channels];
+	samplenum frame_position[nb_channels];
 	int first_point = 1;
 
-
 // predict first highpoint for each channel plus padding and initialize it
-	for(int channel = 0; channel < asset->channels; channel++)
+	for(int channel = 0; channel < nb_channels; channel++)
 	{
 		highpoint[channel] = 
-			asset->index_offsets[channel] = 
-			(length_source / asset->index_zoom * 2 + 1) * channel;
+			index_file->offsets[channel] =
+			(length_source / index_file->zoom * 2 + 1) * channel;
 		lowpoint[channel] = highpoint[channel] + 1;
 
 		frame_position[channel] = 0;
 	}
 
 	off_t index_start = 0;    // end of index during last edit update
-	asset->index_end = 0;      // samples in source completed
-	asset->old_index_end = 0;
-	asset->index_status = INDEX_BUILDING;
-	int zoomx = asset->index_zoom;
-	float *index_buffer = asset->index_buffer;    // output of index build
+	index_file->index_end = 0;      // samples in source completed
+	index_file->old_index_end = 0;
+	index_file->status = INDEX_BUILDING;
+	int zoomx = index_file->zoom;
+	float *index_buffer = index_file->index_buffer;    // output of index build
 	int fragment_size = 0;
 
 	while(!interrupt_flag && !done)
@@ -166,8 +142,9 @@ void IndexThread::run()
 						index_buffer[*highpoint_channel] = 
 							index_buffer[*lowpoint_channel] = 
 							buffer_source[i];
-						asset->index_sizes[channel] = *lowpoint_channel - 
-							asset->index_offsets[channel] + 
+						index_file->sizes[channel] =
+							*lowpoint_channel -
+							index_file->offsets[channel] +
 							1;
 					}
 					else
@@ -192,11 +169,11 @@ void IndexThread::run()
 				} // end index one buffer
 			}
 
-			asset->index_end += fragment_size;
+			index_file->index_end += fragment_size;
 
 // draw simultaneously with build
 			index_file->redraw_edits(0);
-			index_start = asset->index_end;
+			index_start = index_file->index_end;
 		}
 
 		input_lock[current_buffer]->unlock();
@@ -208,5 +185,5 @@ void IndexThread::run()
 
 // write the index file to disk
 	asset->write_index(index_filename, 
-		(lowpoint[asset->channels - 1] + 1) * sizeof(float));
+		(lowpoint[asset->channels - 1] + 1) * sizeof(float), stream);
 }

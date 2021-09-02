@@ -693,10 +693,6 @@ void TrackCanvas::check_hourglass()
 
 void TrackCanvas::draw_indexes(Asset *asset)
 {
-// Don't redraw raw samples
-	if(asset->index_zoom > master_edl->local_session->zoom_time *
-			edlsession->sample_rate)
-		return;
 	gui->cursor->hide();
 	draw_resources(WUPD_INDEXES, asset);
 	draw_overlays();
