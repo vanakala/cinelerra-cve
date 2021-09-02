@@ -106,6 +106,8 @@ public:
 
 // Audio channel
 	int channel;
+// Stream of asset
+	int stream;
 // Sample position in source
 	samplenum position;
 

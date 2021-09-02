@@ -13,6 +13,7 @@ AFrame::AFrame(int buflen, int float_data)
 {
 	reset_buffer();
 	channel = 0;
+	stream = 0;
 	samplerate = 0;
 	shared = 0;
 	buffer = 0;
