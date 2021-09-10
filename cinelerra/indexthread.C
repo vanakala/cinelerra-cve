@@ -41,12 +41,12 @@ IndexThread::IndexThread(IndexFile *index_file,
 	{
 		output_lock[i] = new Condition(0, "IndexThread::output_lock");
 		input_lock[i] = new Condition(1, "IndexThread::input_lock");
-		for(int j = 0; j < asset->channels; j++)
+		for(int j = 0; j < asset->streams[j].channels; j++)
 		{
 			frames_in[i][j] = new AFrame(buffer_size);
 			frames_in[i][j]->channel = j;
 			frames_in[i][j]->stream = stream;
-			frames_in[i][j]->set_samplerate(asset->sample_rate);
+			frames_in[i][j]->set_samplerate(asset->streams[stream].sample_rate);
 		}
 	}
 
@@ -57,7 +57,7 @@ IndexThread::~IndexThread()
 {
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		for(int j = 0; j < asset->channels; j++)
+		for(int j = 0; j < asset->streams[stream].channels; j++)
 		{
 			delete frames_in[i][j];
 		}
@@ -123,7 +123,7 @@ void IndexThread::run()
 		if(!interrupt_flag && !done)
 		{
 // process buffer
-			for(int channel = 0; channel < asset->channels; channel++)
+			for(int channel = 0; channel < asset->streams[stream].channels; channel++)
 			{
 				int *highpoint_channel = &highpoint[channel];
 				int *lowpoint_channel = &lowpoint[channel];
