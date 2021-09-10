@@ -41,11 +41,10 @@ MainIndexes::~MainIndexes()
 
 void MainIndexes::add_next_asset(Asset *asset)
 {
-	for(int i = 0; i < asset->nb_streams; i++)
-	{
-		if(asset->streams[i].options & STRDSC_AUDIO)
-			add_next_asset(asset, i);
-	}
+	int stream = -1;
+
+	while((stream = asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
+		add_next_asset(asset, stream);
 }
 
 void MainIndexes::add_next_asset(Asset *asset, int stream)
@@ -58,34 +57,8 @@ void MainIndexes::add_next_asset(Asset *asset, int stream)
 	{
 		asset->indexfiles[stream].status = INDEX_READY;
 		asset->indexfiles[stream].close_index();
-		got_it = 1;
 	}
-	if(!got_it)
-	{
-		File *this_file = new File;
-
-		this_file->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO);
-
-		char index_filename[BCTEXTLEN];
-		char source_filename[BCTEXTLEN];
-
-		IndexFile::get_index_filename(source_filename, 
-			preferences_global->index_directory,
-			index_filename, 
-			asset->path, asset->get_stream_ix(STRDSC_AUDIO));
-		if(!this_file->get_index(index_filename))
-		{
-			if(!asset->indexfiles[stream].open_index(asset, stream))
-			{
-				asset->indexfiles[stream].close_index();
-				asset->indexfiles[stream].status = INDEX_READY;
-				got_it = 1;
-			}
-		}
-		delete this_file;
-	}
-
-	if(!got_it)
+	else
 	{
 		asset->indexfiles[stream].status = INDEX_NOTTESTED;
 		next_assets.append(asset);
@@ -160,30 +133,27 @@ void MainIndexes::run()
 		for(int i = 0; i < current_assets.total && !interrupt_flag; i++)
 		{
 			Asset *current_asset = current_assets.values[i];
+			int stream = -1;
 
-			for(int j = 0; j < current_asset->nb_streams; j++)
+			while((stream = current_asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
 			{
-				if(current_asset->streams[j].options & STRDSC_AUDIO &&
-					current_asset->indexfiles[j].status == INDEX_NOTTESTED)
+				if(current_asset->indexfiles[stream].status == INDEX_NOTTESTED)
 				{
 // Doesn't exist if this returns 1.
-					if(current_asset->indexfiles[j].open_index(current_asset, j))
+					if(current_asset->indexfiles[stream].open_index(current_asset, stream))
 					{
 // Try to create index now.
 						if(!progress)
 							progress = mwindow_global->mainprogress->start_progress(
 								_("Building Indexes..."), (int64_t)1);
 
-						current_asset->indexfiles[j].create_index(current_asset,
-							j, progress);
+						current_asset->indexfiles[stream].create_index(current_asset,
+							stream, progress);
 						if(progress->is_cancelled())
 							interrupt_flag = 1;
 					}
 					else
-					{
-						current_asset->indexfiles[j].status = INDEX_READY;
-						current_asset->indexfiles[j].close_index();
-					}
+						current_asset->indexfiles[stream].close_index();
 				}
 			}
 		}
