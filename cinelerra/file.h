@@ -44,8 +44,11 @@ public:
 // Detect image list
 	int is_imagelist(int format);
 
+// Probe the file type
+	int probe_file(Asset *asset);
+
 // Format may be preset if the asset format is not 0.
-	int open_file(Asset *asset, int open_method);
+	int open_file(Asset *asset, int open_method, int stream);
 
 // Get index from the file if one exists.  Returns 0 on success.
 	int get_index(const char *index_path);

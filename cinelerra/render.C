@@ -344,9 +344,7 @@ void Render::run()
 				{
 					Asset *ap = edl->assets->values[i];
 
-					if(assetfile.open_file(ap, FILE_OPEN_READ | FILE_OPEN_ALL) == FILE_OK)
-						assetfile.close_file(0);
-					else
+					if(assetfile.probe_file(ap) != FILE_OK)
 					{
 						errorbox("Failed to open '%s'", basename(ap->path));
 						result = 1;

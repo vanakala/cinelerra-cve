@@ -28,7 +28,7 @@
 class CICacheItem : public ListItem<CICacheItem>
 {
 public:
-	CICacheItem(CICache *cache, Asset *asset);
+	CICacheItem(CICache *cache, Asset *asset, int stream);
 	CICacheItem();
 	~CICacheItem();
 
@@ -38,6 +38,7 @@ public:
 // Number of last get or put operation involving this object.
 	int age;
 	Asset *asset;
+	int stream;
 	int checked_out;
 private:
 	CICache *cache;
@@ -47,7 +48,7 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(int open_mode);
+	CICache();
 	~CICache();
 
 	friend class CICacheItem;
@@ -55,10 +56,10 @@ public:
 // open it, lock it and add it to the cache if it isn't here already
 // If it's already checked out, the value of block causes it to wait
 // until it's checked in.
-	File* check_out(Asset *asset, int block = 1);
+	File* check_out(Asset *asset, int stream, int block = 1);
 
 // unlock a file from the cache
-	void check_in(Asset *asset);
+	void check_in(Asset *asset, int stream);
 
 // delete an entry from the cache
 // before deleting an asset, starting a new project or something

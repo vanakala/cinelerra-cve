@@ -151,7 +151,7 @@ void VideoRender::get_frame(ptstime pts)
 		{
 			brender_file = new File;
 			if(brender_file->open_file(preferences_global->brender_asset,
-					FILE_OPEN_READ | FILE_OPEN_VIDEO))
+					FILE_OPEN_READ | FILE_OPEN_VIDEO, 0))
 			{
 				delete brender_file;
 				brender_file = 0;

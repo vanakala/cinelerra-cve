@@ -154,6 +154,7 @@ void AssetPicon::init_object()
 	FileSystem fs;
 	char name[BCTEXTLEN];
 	int pixmap_w, pixmap_h;
+	int stream;
 
 	pixmap_h = 50;
 
@@ -161,13 +162,13 @@ void AssetPicon::init_object()
 	{
 		fs.extract_name(name, asset->path);
 		set_text(name);
-		if(asset->stream_count(STRDSC_VIDEO))
+		if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
 				File file;
 
-				if(!file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_VIDEO))
+				if(!file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_VIDEO, stream))
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
 					icon_vframe = new VFrame(0, 

@@ -155,12 +155,9 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 {
 	avvframe = 0;
 	avaframe = 0;
-	audio_index = -1;
-	video_index = -1;
 	context = 0;
 	sws_ctx = 0;
 	swr_ctx = 0;
-	tocfile = 0;
 	stream_pipe = 0;
 	if(mwindow_global && edlsession->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
@@ -178,6 +175,9 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	avio_buffer = 0;
 	avio_fd = -1;
 	fresh_open = 0;
+	video_index = -1;
+	audio_index = -1;
+	current_stream = -1;
 	memset(resampled_data, 0, sizeof(resampled_data));
 	memset(codec_contexts, 0, sizeof(codec_contexts));
 }
@@ -196,15 +196,12 @@ FileAVlibs::~FileAVlibs()
 //           1 - avlibs file
 int FileAVlibs::probe_input(Asset *asset)
 {
-	AVFormatContext *ctx = 0;
 	struct stat stbuf;
 	enum AVCodecID codec_id;
 	AVCodec *codec;
 	AVStream *stream;
 	AVMediaType codec_type;
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 	AVCodecContext *decoder_ctx;
-#endif
 	double testfr;
 	int stact;
 
@@ -236,29 +233,24 @@ int FileAVlibs::probe_input(Asset *asset)
 	AVInputFormat *infmt = 0;
 	AVDictionary *pcm_opts = 0;
 
-	if(asset->format == FILE_PCM && asset->pcm_format)
+	if(avformat_open_input(&context, asset->path, infmt, &pcm_opts) == 0)
 	{
-		infmt = av_find_input_format(asset->pcm_format);
-		av_dict_set_int(&pcm_opts, "sample_rate", asset->sample_rate, 0);
-		av_dict_set_int(&pcm_opts, "channels", asset->channels, 0);
-	}
-
-	if(avformat_open_input(&ctx, asset->path, infmt, &pcm_opts) == 0)
-	{
-		if(avformat_find_stream_info(ctx, NULL) < 0)
+		if(avformat_find_stream_info(context, NULL) < 0)
 		{
-			avformat_close_input(&ctx);
+			avformat_close_input(&context);
 			avlibs_lock->unlock();
 			return 0;
 		}
-		if(asset->format != FILE_PCM)
-			asset->format = streamformat(ctx);
+
+		asset->format = streamformat(context);
+
 		if(asset->format != FILE_SVG)
-			get_decoder_format_defaults(asset, ctx);
-		for(int i = 0; i < ctx->nb_streams; i++)
+			get_decoder_format_defaults(asset, context);
+
+		for(int i = 0; i < context->nb_streams; i++)
 		{
 			stact = -1;
-			stream = ctx->streams[i];
+			stream = context->streams[i];
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 			decoder_ctx = stream->codec;
 			codec_id = decoder_ctx->codec_id;
@@ -274,7 +266,11 @@ int FileAVlibs::probe_input(Asset *asset)
 			codec_type = decoder_ctx->codec_type;
 #else
 			codec_type = stream->codecpar->codec_type;
+			if(!(decoder_ctx = avcodec_alloc_context3(codec)))
+				continue;
 #endif
+			codec_contexts[i] = decoder_ctx;
+
 			switch(codec_type)
 			{
 			case AVMEDIA_TYPE_AUDIO:
@@ -379,10 +375,10 @@ int FileAVlibs::probe_input(Asset *asset)
 				asset->streams[stact].decoding_params[ASSET_DFDEFLT_IX] = pl;
 			}
 		}
-		asset->nb_programs = ctx->nb_programs;
-		for(int i = 0; i < ctx->nb_programs; i++)
+		asset->nb_programs = context->nb_programs;
+		for(int i = 0; i < context->nb_programs; i++)
 		{
-			AVProgram *prg = ctx->programs[i];
+			AVProgram *prg = context->programs[i];
 
 			asset->programs[i].program_index = i;
 			asset->programs[i].program_id = prg->id;
@@ -398,58 +394,120 @@ int FileAVlibs::probe_input(Asset *asset)
 			if(asset->set_program_id(asset->program_id) < 0)
 				asset->set_program(0);
 		}
-		avformat_close_input(&ctx);
-	}
-	av_dict_free(&pcm_opts);
-	avlibs_lock->unlock();
+		av_dict_free(&pcm_opts);
 
-	if(asset->format != FILE_UNKNOWN)
-	{
-		int fsup = supports(asset->format, 1);
-		int rdsc = fsup & SUPPORTS_AUDIO ? STRDSC_AUDIO : 0;
-		rdsc |= fsup & SUPPORTS_VIDEO ? STRDSC_VIDEO : 0;
+		if(asset->format != FILE_UNKNOWN)
+		{
+			int fsup = supports(asset->format, 1);
+			int rdsc = fsup & SUPPORTS_AUDIO ? STRDSC_AUDIO : 0;
+			rdsc |= fsup & SUPPORTS_VIDEO ? STRDSC_VIDEO : 0;
 
 // disable unsupported streams
-		for(int i = 0; i < asset->nb_streams; i++)
-		{
-			asset->streams[i].options &= rdsc;
-			if(asset->streams[i].options & STRDSC_AUDIO &&
-					(asset->streams[i].sample_rate < MIN_SAMPLE_RATE))
-				asset->streams[i].options &= ~STRDSC_AUDIO;
-			if(asset->streams[i].options & STRDSC_VIDEO &&
-					(asset->streams[i].width < MIN_FRAME_WIDTH ||
-					asset->streams[i].height < MIN_FRAME_HEIGHT))
-				asset->streams[i].options &= ~STRDSC_VIDEO;
-		}
-		if(!asset->audio_streamno && !asset->video_streamno)
-		{
-			// Asset is completely unprobed
-			asset->audio_data = asset->video_data = 0;
 			for(int i = 0; i < asset->nb_streams; i++)
 			{
-				if((asset->streams[i].options & STRDSC_AUDIO) && !asset->audio_data)
-					asset->set_audio_stream(i);
-				if((asset->streams[i].options & STRDSC_VIDEO) && !asset->video_data)
-					asset->set_video_stream(i);
+				asset->streams[i].options &= rdsc;
+				if(asset->streams[i].options & STRDSC_AUDIO &&
+						(asset->streams[i].sample_rate < MIN_SAMPLE_RATE))
+					asset->streams[i].options &= ~STRDSC_AUDIO;
+				if(asset->streams[i].options & STRDSC_VIDEO &&
+						(asset->streams[i].width < MIN_FRAME_WIDTH ||
+						asset->streams[i].height < MIN_FRAME_HEIGHT))
+					asset->streams[i].options &= ~STRDSC_VIDEO;
 			}
+			asset->audio_data = asset->video_data = 0;
+
+			switch(asset->format)
+			{
+			case FILE_SVG:
+			case FILE_EXR:
+				asset->set_single_image();
+				break;
+			}
+			if(asset->single_image)
+			{
+				avformat_close_input(&context);
+				avlibs_lock->unlock();
+				return 1;
+			}
+
+			asset->tocfile = new FileTOC(this, preferences_global->index_directory,
+				asset->path, asset->file_length, asset->file_mtime.tv_sec);
+			asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
+
+			for(int i = 0; i < asset->nb_streams; i++)
+			{
+				int fileix = asset->streams[i].stream_index;
+
+				asset->streams[i].start = (ptstime)asset->tocfile->toc_streams[i].min_index *
+					av_q2d(context->streams[fileix]->time_base);
+				asset->streams[i].end = (ptstime)asset->tocfile->toc_streams[i].max_index *
+					av_q2d(context->streams[fileix]->time_base);
+				if(asset->streams[i].options & STRDSC_VIDEO)
+				{
+					if(asset->tocfile->toc_streams[i].data2)
+					{
+						// Use number of frames from TOC
+						asset->streams[i].length =
+							asset->tocfile->toc_streams[i].data2;
+						// Average frame rate
+						asset->streams[i].frame_rate =
+							(double)asset->streams[i].length /
+							(asset->streams[i].end -
+								asset->streams[i].start);
+					}
+					else
+					{
+						asset->streams[i].length =
+							av_rescale_q(asset->tocfile->toc_streams[i].max_index -
+								asset->tocfile->toc_streams[i].min_index,
+								context->streams[fileix]->time_base,
+								av_inv_q(context->streams[fileix]->r_frame_rate));
+					}
+				}
+				else
+				if(asset->streams[i].options & STRDSC_AUDIO)
+				{
+					asset->streams[i].length = (samplenum)round((asset->tocfile->toc_streams[i].max_index -
+						asset->tocfile->toc_streams[i].min_index) *
+						av_q2d(context->streams[fileix]->time_base) *
+						asset->streams[i].sample_rate);
+				}
+				asset->streams[i].toc_items = asset->tocfile->toc_streams[i].max_items;
+				asset->set_base_pts(i);
+			}
+			for(int i = 0; i < context->nb_streams; i++)
+			{
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
+				if(codec_contexts[i])
+					avcodec_close(codec_contexts[i]);
+				codec_contexts[i] = 0;
+#else
+				avcodec_free_context(&codec_contexts[i]);
+#endif
+			}
+			avformat_close_input(&context);
+			avlibs_lock->unlock();
+
+			int stream;
+			int has_audio = 0, has_video = 0;
+
+			if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+			{
+				asset->set_audio_stream(stream);
+				has_audio = 1;
+			}
+			if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
+			{
+				asset->set_video_stream(stream);
+				has_video = 1;
+			}
+
+			if(has_audio || has_video)
+				return 1;
 		}
-		else
-		{
-			// Copy parameters from stream to asset
-			asset->set_audio_stream(asset->audio_streamno - 1);
-			asset->set_video_stream(asset->video_streamno - 1);
-		}
-		switch(asset->format)
-		{
-		case FILE_SVG:
-		case FILE_EXR:
-			asset->set_single_image();
-			break;
-		}
-		if(asset->video_data || asset->audio_data)
-			return 1;
 		return -1;
 	}
+	avlibs_lock->unlock();
 	return 0;
 }
 
@@ -535,11 +593,10 @@ int FileAVlibs::supports(int format, int decoding)
 	return support;
 }
 
-int FileAVlibs::open_file(int open_mode)
+int FileAVlibs::open_file(int open_mode, int streamix)
 {
 	int result = 0;
 	int rv;
-	int streamno;
 
 	if(asset->format == FILE_UNKNOWN ||
 			(asset->format == FILE_PCM && !asset->pcm_format))
@@ -556,10 +613,9 @@ int FileAVlibs::open_file(int open_mode)
 	vpkt_pos = 0;
 	apkt_pos = 0;
 	apkt_duration = 0;
-	video_eof = 0;
-	audio_eof = 0;
-	pts_base = -1;
+	file_eof = 0;
 	headers_written = 0;
+	write_pts_base = -1;
 
 	if(reading)
 	{
@@ -586,175 +642,100 @@ int FileAVlibs::open_file(int open_mode)
 		av_dict_free(&dict);
 		if(result >= 0)
 		{
-			for(streamno = 0; streamno < context->nb_streams; streamno++)
-			{
-				AVStream *stream;
-				AVCodecContext *decoder_context;
-				AVCodec *codec;
-				AVMediaType codec_type;
-				enum AVCodecID codec_id;
-				const char *mediatype;
+			AVStream *stream;
+			AVCodecContext *decoder_context;
+			AVCodec *codec;
+			AVMediaType codec_type;
+			enum AVCodecID codec_id;
+			const char *mediatype;
 
-				result = 0;
+			result = 0;
 
-				stream = context->streams[streamno];
+			current_stream = asset->streams[streamix].stream_index;
+			stream = context->streams[current_stream];
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				decoder_context = stream->codec;
-				codec_id = decoder_context->codec_id;
-				codec_type = decoder_context->codec_type;
+			decoder_context = stream->codec;
+			codec_id = decoder_context->codec_id;
+			codec_type = decoder_context->codec_type;
 #else
-				codec_id = stream->codecpar->codec_id;
-				codec_type = stream->codecpar->codec_type;
+			codec_id = stream->codecpar->codec_id;
+			codec_type = stream->codecpar->codec_type;
 #endif
-				switch(codec_type)
+			switch(codec_type)
+			{
+			case AVMEDIA_TYPE_AUDIO:
+				mediatype = _("Audio");
+				if(!(open_mode & FILE_OPEN_AUDIO))
+					printf("Not audio stream");
+				break;
+			case AVMEDIA_TYPE_VIDEO:
+				mediatype = _("Video");
+				if(!(open_mode & FILE_OPEN_VIDEO))
+					printf("Not video stream");
+				break;
+			}
+			if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
+			{
+				if(codec_id != AV_CODEC_ID_NONE)
 				{
-				case AVMEDIA_TYPE_AUDIO:
-					mediatype = _("Audio");
-					if(!(open_mode & FILE_OPEN_AUDIO))
-						continue;
-					break;
-				case AVMEDIA_TYPE_VIDEO:
-					mediatype = _("Video");
-					if(!(open_mode & FILE_OPEN_VIDEO))
-						continue;
-					break;
-				default:
-					continue;
-				}
-				if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
-				{
-					if(codec_id != AV_CODEC_ID_NONE)
-						errormsg(_("%s decoder id %#x not found"),
-							mediatype, codec_id);
-						continue;
-				}
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-				if(!(decoder_context = avcodec_alloc_context3(codec)))
-				{
-					errormsg(_("%s decoder context allocation failed"),
-						mediatype);
+					errormsg(_("%s decoder id %#x not found"),
+						mediatype, codec_id);
 					avlibs_lock->unlock();
 					return 1;
 				}
-				avcodec_parameters_to_context(decoder_context, stream->codecpar);
-#endif
-				codec_contexts[streamno] = decoder_context;
-
-				if(asset->audio_streamno > 0 &&
-					asset->streams[asset->audio_streamno - 1].stream_index == streamno)
-				{
-					audio_index = streamno;
-					list2dictionary(&dict, asset->streams[asset->audio_streamno - 1].decoding_params[FILEAVLIBS_DFORMAT_IX]);
-					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
-					{
-						liberror(rv, _("Failed to open audio decoder"));
-						asset->audio_data = 0;
-						asset->audio_streamno = 0;
-						audio_index = -1;
-					}
-					else
-					{
-						audio_delay = 0;
-						buffer_start = buffer_end = 0;
-#ifdef AVLIBS_BYTE_SEEK
-						if(!(context->iformat->flags & AVFMT_NO_BYTE_SEEK))
-							asset->streams[asset->audio_streamno - 1].options |= STRDSC_SEEKBYTES;
-#endif
-					}
-					av_dict_free(&dict);
-				}
-				if(asset->video_streamno > 0 &&
-					asset->streams[asset->video_streamno - 1].stream_index == streamno)
-				{
-					video_index = streamno;
-					list2dictionary(&dict, asset->streams[asset->video_streamno - 1].decoding_params[FILEAVLIBS_DFORMAT_IX]);
-					if((rv = avcodec_open2(decoder_context, codec, &dict)) < 0)
-					{
-						liberror(rv, _("Failed to open video decoder"));
-						asset->video_data = 0;
-						asset->video_streamno = 0;
-						video_index = -1;
-					}
-#ifdef AVLIBS_BYTE_SEEK
-					else
-					{
-						if(!(context->iformat->flags & AVFMT_NO_BYTE_SEEK))
-							asset->streams[asset_video_data - 1].options |= STRDSC_SEEKBYTES;
-					}
-#endif
-					av_dict_free(&dict);
-				}
 			}
-			if(asset->single_image)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+			if(!(decoder_context = avcodec_alloc_context3(codec)))
 			{
-				fresh_open = 1;
+				errormsg(_("%s decoder context allocation failed"),
+					mediatype);
 				avlibs_lock->unlock();
-				return 0;
+				return 1;
 			}
-			tocfile = new FileTOC(this, preferences_global->index_directory,
-				asset->path, asset->file_length, asset->file_mtime.tv_sec);
-			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
-			for(int i = 0; i < asset->nb_streams; i++)
-			{
-				int fileix = asset->streams[i].stream_index;
+			avcodec_parameters_to_context(decoder_context, stream->codecpar);
+#endif
+			codec_contexts[current_stream] = decoder_context;
 
-				asset->streams[i].start = (ptstime)tocfile->toc_streams[i].min_index *
-					av_q2d(context->streams[fileix]->time_base);
-				asset->streams[i].end = (ptstime)tocfile->toc_streams[i].max_index *
-					av_q2d(context->streams[fileix]->time_base);
-				if(asset->streams[i].options & STRDSC_VIDEO)
-				{
-					if(tocfile->toc_streams[i].data2)
-					{
-						// Use number of frames from TOC
-						asset->streams[i].length = tocfile->toc_streams[i].data2;
-						// Average frame rate
-						asset->streams[i].frame_rate =
-							(double)asset->streams[i].length /
-							(asset->streams[i].end -
-								asset->streams[i].start);
-					}
-					else
-					{
-						asset->streams[i].length = av_rescale_q(tocfile->toc_streams[i].max_index -
-							tocfile->toc_streams[i].min_index,
-							context->streams[fileix]->time_base,
-							av_inv_q(context->streams[fileix]->r_frame_rate));
-					}
-				}
-				else
-				if(asset->streams[i].options & STRDSC_AUDIO)
-				{
-					asset->streams[i].length = (samplenum)round((tocfile->toc_streams[i].max_index -
-						tocfile->toc_streams[i].min_index) *
-						av_q2d(context->streams[fileix]->time_base) *
-						asset->sample_rate);
-				}
-				asset->streams[i].toc_items = tocfile->toc_streams[i].max_items;
-			}
-			pts_base = (ptstime)INT64_MAX;
-			// Set audio duration and length from active stream
-			if(asset->audio_data && asset->audio_streamno)
+			if(asset->streams[streamix].options & STRDSC_AUDIO)
 			{
-				asset->audio_duration =
-					asset->streams[asset->audio_streamno - 1].end -
-					asset->streams[asset->audio_streamno - 1].start;
-				asset->audio_length = asset->streams[asset->audio_streamno - 1].length;
-				pts_base = asset->streams[asset->audio_streamno - 1].start;
+				audio_delay = 0;
+				buffer_start = buffer_end = 0;
 			}
-			// Set video duration and length from active stream
-			// Single image has length already set in probe
-			if(asset->video_data && asset->video_streamno)
+			else if(!asset->streams[streamix].options & STRDSC_VIDEO)
 			{
-				asset->video_duration =
-					asset->streams[asset->video_streamno - 1].end -
-					asset->streams[asset->video_streamno - 1].start;
-				asset->video_length = asset->streams[asset->video_streamno - 1].length;
-				if(pts_base > asset->streams[asset->video_streamno - 1].start)
-					pts_base = asset->streams[asset->video_streamno - 1].start;
+				// should not happen
+				printf("Uninitalized stream %d\n", streamix);
+				return 1;
 			}
+			list2dictionary(&dict, asset->streams[streamix].decoding_params[FILEAVLIBS_DFORMAT_IX]);
+			if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
+			{
+				liberror(rv, _("Failed to open %s decoder"), mediatype);
+				if(asset->streams[streamix].options & STRDSC_AUDIO)
+				{
+					asset->audio_data = 0;
+					asset->audio_streamno = 0;
+				}
+				if(asset->streams[streamix].options & STRDSC_AUDIO)
+				{
+					asset->video_data = 0;
+					asset->video_streamno = 0;
+				}
+				asset->streams[streamix].options = 0;
+				current_stream = -1;
+			}
+			else
+			{
+#ifdef AVLIBS_BYTE_SEEK
+				if(!(context->iformat->flags & AVFMT_NO_BYTE_SEEK))
+					asset->streams[streamix].options |= STRDSC_SEEKBYTES;
+#endif
+			}
+			av_dict_free(&dict);
 			fresh_open = 1;
+			avlibs_lock->unlock();
+			return 0;
 		}
 		else
 		{
@@ -1146,11 +1127,7 @@ void FileAVlibs::close_file()
 #endif
 			}
 			sws_freeContext(sws_ctx);
-			audio_index = -1;
-			video_index = -1;
 			avformat_close_input(&context);
-			delete tocfile;
-			tocfile = 0;
 		}
 		else if(writing)
 		{
@@ -1388,14 +1365,14 @@ int FileAVlibs::read_frame(VFrame *frame)
 	AVPacket pkt = {0};
 
 	avlibs_lock->lock("AVlibs::read_frame");
-	AVStream *stream = context->streams[video_index];
-	AVCodecContext *decoder_context = codec_contexts[video_index];
+	AVStream *stream = context->streams[current_stream];
+	AVCodecContext *decoder_context = codec_contexts[current_stream];
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
 
 	if(!asset->single_image)
-		rqpos = round((frame->get_source_pts() + pts_base) / av_q2d(stream->time_base));
+		rqpos = round((frame->get_source_pts() + asset->base_pts()) / av_q2d(stream->time_base));
 	else
 		rqpos = 0;
 
@@ -1403,7 +1380,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	sres = 0;
 	if(rqpos < video_pos || rqpos > vpkt_pos)
 	{
-		if((sres = media_seek(video_index, rqpos, &pkt, vpkt_pos)) < 0)
+		if((sres = media_seek(current_stream, rqpos, &pkt, vpkt_pos)) < 0)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
@@ -1417,33 +1394,33 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	for(;;)
 	{
-		if(!video_eof && sres <= 0)
+		if(!file_eof && sres <= 0)
 			error = av_read_frame(context, &pkt);
 
 		if(error)
 		{
 			if(error != AVERROR_EOF)
 				break;
-			video_eof = 1;
+			file_eof = 1;
 			error = 0;
 		}
 		sres = 0;
 
-		if(video_eof)
+		if(file_eof)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
 #else
 			av_packet_unref(&pkt);
 #endif
-			pkt.stream_index = video_index;
+			pkt.stream_index = current_stream;
 			pkt.data = 0;
 			pkt.size = 0;
 		}
 
-		if(pkt.stream_index == video_index)
+		if(pkt.stream_index == current_stream)
 		{
-			if(!video_eof)
+			if(!file_eof)
 			{
 				if(pkt.pts != AV_NOPTS_VALUE)
 					vpkt_pos = pkt.pts + pkt.duration;
@@ -1462,7 +1439,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 					break;
 			}
 #else
-			if(!video_eof && (res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+			if(!file_eof && (res = avcodec_send_packet(decoder_context, &pkt)) < 0)
 			{
 				liberror(res, _("Failed to send packet to video decoder"));
 				av_packet_unref(&pkt);
@@ -1488,7 +1465,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 				return 1;
 			}
 #endif
-			if(video_eof)
+			if(file_eof)
 				break;
 		}
 	}
@@ -1505,7 +1482,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 		convert_cmodel(avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
 		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) *
-			av_q2d(stream->time_base) - pts_base);
+			av_q2d(stream->time_base) - asset->base_pts());
 		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
 		frame->set_frame_number(round(frame->get_source_pts() * av_q2d(stream->avg_frame_rate)));
 		frame->clear_status();
@@ -1533,8 +1510,8 @@ int FileAVlibs::read_frame(VFrame *frame)
 int FileAVlibs::read_aframe(AFrame *aframe)
 {
 	int64_t rqpos, rqlen;
-	AVStream *stream = context->streams[audio_index];
-	AVCodecContext *decoder_context = codec_contexts[audio_index];
+	AVStream *stream = context->streams[current_stream];
+	AVCodecContext *decoder_context = codec_contexts[current_stream];
 	int num_ch = decoder_context->channels;
 	int error;
 
@@ -1618,10 +1595,10 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		buffer_start = buffer_end = 0;
 		buffer_pos = 0;
 	}
-	rqpos = round((aframe->get_source_pts() + pts_base) / av_q2d(stream->time_base));
+	rqpos = round((aframe->get_source_pts() + asset->base_pts()) / av_q2d(stream->time_base));
 	rqlen = round(aframe->get_source_duration() / av_q2d(stream->time_base));
 
-	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end && !audio_eof))
+	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end && !file_eof))
 	{
 		buffer_start = buffer_end = rqpos;
 		buffer_pos = 0;
@@ -1652,7 +1629,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	int got_it, sres;
 	int res = 0;
 	AVPacket pkt = {0};
-	AVCodecContext *decoder_context = codec_contexts[audio_index];
+	AVCodecContext *decoder_context = codec_contexts[current_stream];
 
 	if(!avaframe)
 		avaframe = av_frame_alloc();
@@ -1660,7 +1637,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
 
-		if((sres = media_seek(audio_index, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
+		if((sres = media_seek(current_stream, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
 			return -1;
 
 		if(sres > 0)
@@ -1673,7 +1650,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 		{
 			sres = 0;
 
-			if(pkt.stream_index == audio_index)
+			if(pkt.stream_index == current_stream)
 			{
 				apkt_duration = pkt.duration;
 
@@ -1722,7 +1699,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					if(audio_pos > rqpos)
 					{
 						int inpos = round((audio_pos - rqpos) *
-							av_q2d(context->streams[audio_index]->time_base) /
+							av_q2d(context->streams[current_stream]->time_base) /
 							decoder_context->sample_rate);
 
 						res = fill_buffer(avaframe, inpos,
@@ -1745,29 +1722,29 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	for(;;)
 	{
-		if(!audio_eof && (error = av_read_frame(context, &pkt)))
+		if(!file_eof && (error = av_read_frame(context, &pkt)))
 		{
 			if(error != AVERROR_EOF)
 				break;
 			error = 0;
-			audio_eof = 1;
+			file_eof = 1;
 		}
 
-		if(audio_eof)
+		if(file_eof)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
 #else
 			av_packet_unref(&pkt);
 #endif
-			pkt.stream_index = audio_index;
+			pkt.stream_index = current_stream;
 			pkt.data = 0;
 			pkt.size = 0;
 		}
 
-		if(pkt.stream_index == audio_index)
+		if(pkt.stream_index == current_stream)
 		{
-			if(!audio_eof && pkt.pts != AV_NOPTS_VALUE)
+			if(!file_eof && pkt.pts != AV_NOPTS_VALUE)
 			{
 				apkt_duration = pkt.duration;
 				apkt_pos = pkt.pts + pkt.duration;
@@ -1788,7 +1765,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				got_it = 1;
 			else
 			if(res == AVERROR_EOF)
-				audio_eof = 1;
+				file_eof = 1;
 			else
 			if(res != AVERROR(EAGAIN))
 #endif
@@ -1819,7 +1796,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					break;
 				}
 			}
-			if(audio_eof)
+			if(file_eof)
 				break;
 		}
 	}
@@ -2138,8 +2115,8 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 	{
 		VFrame *frame = frames[0][j];
 
-		if(pts_base < 0)
-			pts_base = frame->get_pts();
+		if(write_pts_base < 0)
+			write_pts_base = frame->get_pts();
 
 		if(convert_cmodel(frame, video_ctx->pix_fmt,
 				video_ctx->width, video_ctx->height, avvframe))
@@ -2147,7 +2124,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			avlibs_lock->unlock();
 			return 1;
 		}
-		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(video_ctx->time_base));
+		avvframe->pts = round((frame->get_pts() - write_pts_base) / av_q2d(video_ctx->time_base));
 
 		if(asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST)
 		{
@@ -2256,8 +2233,8 @@ int FileAVlibs::write_aframes(AFrame **frames)
 
 	avlibs_lock->lock("FileAVlibs::write_aframes");
 
-	if(pts_base < 0)
-		pts_base = frames[0]->get_pts();
+	if(write_pts_base < 0)
+		write_pts_base = frames[0]->get_pts();
 
 	stream = context->streams[audio_index];
 	audio_ctx = codec_contexts[audio_index];
@@ -2308,7 +2285,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	}
 
 	rv = write_samples(resampled_length + resample_fill, audio_ctx,
-		frames[0]->get_pts() - pts_base);
+		frames[0]->get_pts() - write_pts_base);
 	avlibs_lock->unlock();
 	return rv;
 }
@@ -2451,27 +2428,24 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 			return -1;
 		}
 		avcodec_flush_buffers(codec_contexts[stream_index]);
-		video_eof = 0;
+		file_eof = 0;
 		return 0;
 	}
-	toc_ix = tocfile->id_to_index(stream_index);
-	itm = tocfile->get_item(toc_ix, rqpos, &nxtitm);
+	toc_ix = asset->tocfile->id_to_index(stream_index);
+	itm = asset->tocfile->get_item(toc_ix, rqpos, &nxtitm);
 
 	if(itm)
 	{
 		int fl = AVSEEK_FLAG_ANY;
 
-		if(stream_index == video_index)
-			video_eof = 0;
-		if(stream_index == audio_index)
-			audio_eof = 0;
+		file_eof = 0;
 
 		// No need to seek forward before next keyframe
 		if(nxtitm && pktpos <= nxtitm->index && pktpos > itm->index &&
 				rqpos > pktpos)
 			return 0;
 
-		if(tocfile->toc_streams[toc_ix].data1 & STRDSC_SEEKBYTES)
+		if(asset->tocfile->toc_streams[toc_ix].data1 & STRDSC_SEEKBYTES)
 			fl |= AVSEEK_FLAG_BYTE;
 
 		avio_flush(context->pb);
@@ -2573,7 +2547,6 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	nb_frames = 0;
 
 	kf.kf = 0;
-
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
 		if(pkt.stream_index == trid)
@@ -2642,7 +2615,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			}
 			if(kf.kf && kf.offs != AV_NOPTS_VALUE)
 			{
-				interrupt = tocfile->append_item(kf.pts,
+				interrupt = asset->tocfile->append_item(kf.pts,
 					kf.offs, pkt.pos);
 				kf.kf = 0;
 				if(track_data.min_index > kf.pts)

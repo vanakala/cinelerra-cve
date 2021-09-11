@@ -134,7 +134,7 @@ int PackageRenderer::create_output()
 
 	file->set_processors(preferences->processors);
 
-	result = file->open_file(asset, FILE_OPEN_WRITE);
+	result = file->open_file(asset, FILE_OPEN_WRITE, 0);
 
 	if(mwindow_global)
 	{

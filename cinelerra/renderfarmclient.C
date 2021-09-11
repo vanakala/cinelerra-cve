@@ -446,7 +446,7 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 		{
 			Asset *current = edl->assets->values[i];
 
-			if(file.open_file(current, FILE_OPEN_READ | FILE_OPEN_ALL) == FILE_OK)
+			if(file.probe_file(current) == FILE_OK)
 			{
 				new_asset = new Asset();
 				new_asset->copy_from(current, 0);
@@ -454,7 +454,6 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 			}
 			else
 				result |= 1;
-			file.close_file(0);
 		}
 	}
 	unlock();

@@ -393,7 +393,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-	File *source = resource_thread->audio_cache->check_out(edit->asset);
+	File *source = resource_thread->audio_cache->check_out(edit->asset, edit->stream);
 
 	if(!source)
 	{
@@ -512,6 +512,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				first_pixel = 1;
 				resource_thread->add_wave(this,
 					edit->asset,
+					edit->stream,
 					x,
 					edit->channel,
 					source_start,
@@ -521,7 +522,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			x++;
 		}
 	}
-	resource_thread->audio_cache->check_in(edit->asset);
+	resource_thread->audio_cache->check_in(edit->asset, edit->stream);
 }
 
 void ResourcePixmap::draw_wave(int x, double high, double low)
@@ -607,7 +608,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 				x, y, picon_w, picon_h,
 				source_pts, picon_len,
 				edit->channel,
-				edit->asset);
+				edit->asset, edit->channel);
 		}
 		picon_src += picon_len;
 		x += picon_w;

@@ -193,24 +193,23 @@ int File::is_imagelist(int format)
 	return 0;
 }
 
-int File::open_file(Asset *asset, int open_method)
+int File::probe_file(Asset *asset)
 {
-	int probe_result, rs;
-	int rd, wr;
+	FILE *stream;
+	int probe_result = 0;
+	int rs;
+	FileBase *file = 0;
 
-	rd = open_method & FILE_OPEN_READ;
-	wr = open_method & FILE_OPEN_WRITE;
-
-	this->asset = asset;
-	file = 0;
-
-	probe_result = 0;
-	if(rd && !is_imagelist(asset->format))
+	if(!asset->probed)
 	{
-		probe_result = FileAVlibs::probe_input(asset);
+		FileAVlibs *probe = new FileAVlibs(asset, this);
+		probe_result = probe->probe_input(asset);
+		delete probe;
 
 		if(probe_result < 0)
 			return FILE_NOT_FOUND;
+
+		asset->probed = 1;
 // Probe input fills decoder parameters what
 // are not used with some formats
 		switch(asset->format)
@@ -222,58 +221,66 @@ int File::open_file(Asset *asset, int open_method)
 		case FILE_SND:
 			asset->delete_decoder_parameters();
 			break;
+
+		case FILE_UNKNOWN:
+			if(!(stream = fopen(asset->path, "rb")))
+			{
+				return FILE_NOT_FOUND;
+			}
+
+			char test[16];
+			rs = fread(test, 16, 1, stream) != 1;
+			fclose(stream);
+
+			if(rs)
+				return FILE_NOT_FOUND;
+
+			if(strncmp(test, "TOC ", 4) == 0)
+			{
+				errormsg(_("Can't open TOC files directly"));
+				return FILE_NOT_FOUND;
+			}
+			if(FilePNG::check_sig(asset))
+// PNG list
+				file = new FilePNG(asset, this);
+			else if(FileJPEG::check_sig(asset))
+// JPEG list
+				file = new FileJPEG(asset, this);
+			else if(FileTGA::check_sig(asset))
+// TGA list
+				file = new FileTGA(asset, this);
+			else if(FileTIFF::check_sig(asset))
+// TIFF list
+				file = new FileTIFF(asset, this);
+			else if(strncmp(test, "<EDL", 4) == 0 ||
+						strncmp(test, "<?xml", 5) == 0)
+// XML file
+				return FILE_IS_XML;
+			else
+				return FILE_UNRECOGNIZED_CODEC;
+			break;
 		}
+		delete file;
 	}
+	return FILE_OK;
+}
+
+int File::open_file(Asset *asset, int open_method, int stream)
+{
+	int probe_result, rs;
+	int rd, wr;
+
+	rd = open_method & FILE_OPEN_READ;
+	wr = open_method & FILE_OPEN_WRITE;
+
+	this->asset = asset;
+	file = 0;
 
 	switch(asset->format)
 	{
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
-	case FILE_UNKNOWN:
-		FILE *stream;
-		if(!(stream = fopen(asset->path, "rb")))
-		{
-			return FILE_NOT_FOUND;
-		}
-
-		char test[16];
-		rs = fread(test, 16, 1, stream) != 1;
-		fclose(stream);
-
-		if(rs)
-			return FILE_NOT_FOUND;
-
-		if(strncmp(test, "TOC ", 4) == 0)
-		{
-			errormsg(_("Can't open TOC files directly"));
-			return FILE_NOT_FOUND;
-		}
-		if(FilePNG::check_sig(asset))
-// PNG list
-			file = new FilePNG(asset, this);
-		else
-		if(FileJPEG::check_sig(asset))
-// JPEG list
-			file = new FileJPEG(asset, this);
-		else
-		if(FileTGA::check_sig(asset))
-// TGA list
-			file = new FileTGA(asset, this);
-		else
-		if(FileTIFF::check_sig(asset))
-// TIFF list
-			file = new FileTIFF(asset, this);
-		else
-		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
-			test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
-			test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
-// XML file
-			return FILE_IS_XML;
-		else
-			return FILE_UNRECOGNIZED_CODEC;
-		break;
-
 // format already determined
 	case FILE_PNG:
 	case FILE_PNG_LIST:
@@ -329,8 +336,7 @@ int File::open_file(Asset *asset, int open_method)
 		return 1;
 	}
 
-// Reopen file with correct parser and get header.
-	if(file->open_file(open_method))
+	if(file->open_file(open_method, stream))
 	{
 		delete file;
 		file = 0;

@@ -30,11 +30,13 @@ class ResourceThreadItem
 public:
 	ResourceThreadItem(ResourcePixmap *pixmap, 
 		Asset *asset,
+		int stream,
 		int data_type);
 	virtual ~ResourceThreadItem() {};
 
 	ResourcePixmap *pixmap;
 	Asset *asset;
+	int stream;
 	int data_type;
 	int last;
 };
@@ -45,6 +47,7 @@ class AResourceThreadItem : public ResourceThreadItem
 public:
 	AResourceThreadItem(ResourcePixmap *pixmap,
 		Asset *asset,
+		int stream,
 		int x,
 		int channel,
 		samplenum start,
@@ -68,7 +71,8 @@ public:
 		ptstime postime,
 		ptstime duration,
 		int layer,
-		Asset *asset);
+		Asset *asset,
+		int stream);
 
 	int picon_x;
 	int picon_y;
@@ -96,10 +100,12 @@ public:
 		ptstime position,
 		ptstime duration,
 		int layer,
-		Asset *asset);
+		Asset *asset,
+		int stream);
 
 	void add_wave(ResourcePixmap *pixmap,
 		Asset *asset,
+		int stream,
 		int x,
 		int channel,
 // samples relative to asset rate

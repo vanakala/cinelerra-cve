@@ -51,12 +51,12 @@ public:
 	friend class AVlibsConfig;
 
 	// Probe file and fill asset
-	static int probe_input(Asset *asset);
+	int probe_input(Asset *asset);
 	static double convert_framerate(AVRational frate, double dflt = -1);
 	// Supported streams of format
 	static int supports(int format, int deoding = 0);
 
-	int open_file(int open_mode);
+	int open_file(int open_mode, int stream);
 	void close_file();
 
 	int read_frame(VFrame *frame);
@@ -145,19 +145,20 @@ private:
 	AVFrame *avaframe;
 	struct SwsContext *sws_ctx;
 	SwrContext *swr_ctx;
-	FileTOC *tocfile;
 
 	int reading;
 	int writing;
 	int headers_written;
-	ptstime pts_base;
-	// Streams to decode
+	int file_eof;
+	ptstime write_pts_base;
+	// Streams to encode;
 	int audio_index;
 	int video_index;
+	// Stream to decode
+	int current_stream;
 	// Next video read position
 	int64_t video_pos;
 	int64_t vpkt_pos;
-	int video_eof;
 	// Audio positsions
 	int64_t audio_pos;
 	int64_t apkt_pos;
@@ -176,7 +177,6 @@ private:
 	int64_t audio_delay;
 	int64_t buffer_start;
 	int64_t buffer_end;
-	int audio_eof;
 	int fresh_open;
 	int swr_samplerate;
 	int64_t swr_ch_layout;

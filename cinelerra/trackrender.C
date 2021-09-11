@@ -58,7 +58,7 @@ File *TrackRender::media_file(Edit *edit, int filenum)
 				media_type = FILE_OPEN_VIDEO;
 				break;
 			}
-			if(file->open_file(edit->asset, FILE_OPEN_READ | media_type))
+			if(file->open_file(edit->asset, FILE_OPEN_READ | media_type, edit->stream))
 			{
 				errormsg("TrackRender::media_file: Failed to open media %s\n",
 					edit->asset->path);

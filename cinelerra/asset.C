@@ -15,6 +15,7 @@
 #include "fileformat.h"
 #include "filejpeg.h"
 #include "filepng.h"
+#include "filetoc.h"
 #include "filetga.h"
 #include "filetiff.h"
 #include "filexml.h"
@@ -75,6 +76,7 @@ Asset::~Asset()
 		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
 			delete streams[i].decoding_params[j];
 	}
+	delete tocfile;
 }
 
 void Asset::init_values()
@@ -108,6 +110,9 @@ void Asset::init_values()
 	audio_duration = 0;
 	video_duration = 0;
 	global_inuse = 0;
+	pts_base = INT64_MAX;
+	probed = 0;
+	tocfile = 0;
 
 	layers = 0;
 	frame_rate = 0;
@@ -263,6 +268,7 @@ int Asset::set_program(int pgm)
 
 	audio_data = video_data = 0;
 	audio_streamno = video_streamno = 0;
+	pts_base = INT64_MAX;
 
 	for(int i = 0; i < pdesc->nb_streams; i++)
 	{
@@ -279,6 +285,8 @@ int Asset::set_program(int pgm)
 			set_video_stream(stream);
 			mask |= STRDSC_VIDEO;
 		}
+		if(pts_base > pdesc->start)
+			pts_base = pdesc->start;
 	}
 	return 0;
 }
@@ -329,8 +337,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
 	this->single_image = asset->single_image;
+	this->probed = asset->probed;
 	this->audio_duration = asset->audio_duration;
 	this->video_duration = asset->video_duration;
+	this->pts_base = asset->pts_base;
 	this->nb_streams = asset->nb_streams;
 	this->nb_programs = asset->nb_programs;
 	this->program_id = asset->program_id;
@@ -388,6 +398,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 		render_parameters->copy_from(asset->render_parameters);
 	}
 	strcpy(renderprofile_path, asset->renderprofile_path);
+	tocfile = 0;
 }
 
 Asset& Asset::operator=(Asset &asset)
@@ -704,6 +715,17 @@ int Asset::stream_count(int stream_type)
 	return count;
 }
 
+void Asset::set_base_pts(int stream)
+{
+	if(streams[stream].start < pts_base)
+		pts_base = streams[stream].start;
+}
+
+ptstime Asset::base_pts()
+{
+	return pts_base;
+}
+
 void Asset::read(FileXML *file, int expand_relative)
 {
 // Check for relative path.
@@ -805,7 +827,9 @@ void Asset::read_index(FileXML *file)
 
 	if(stream < 0 || stream >= MAXCHANNELS)
 	{
-		stream = get_stream_ix(STRDSC_AUDIO);
+		stream = -1;
+		while((stream = get_stream_ix(STRDSC_AUDIO, stream)) >= 0 &&
+			indexfiles[stream].status != INDEX_NOTTESTED);
 
 		if(stream < 0)
 			return;
@@ -971,6 +995,7 @@ void Asset::set_single_image()
 	}
 	video_length = 1;
 	single_image = 1;
+	pts_base = 0;
 	// Fill stream info
 	int ix = video_streamno - 1;
 	streams[ix].end = video_duration;
@@ -1644,12 +1669,13 @@ void Asset::dump(int indent, int options)
 	printf("%*sAsset %p dump:\n", indent, "", this);
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
-	printf("%*sid %d inuse %d\n", indent, "", id, global_inuse);
+	printf("%*sid %d inuse %d tocfile %p\n", indent, "", id, global_inuse, tocfile);
 	printf("%*sfile format '%s'", indent, "",
 		ContainerSelection::container_to_text(format));
 	if(format == FILE_PCM)
 		printf(" pcm_format '%s',", pcm_format);
-	printf(" length %" PRId64 "\n", file_length);
+	printf(" length %" PRId64 " base_pts %.3f probed: %d\n", file_length, pts_base,
+		probed);
 	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, audio_streamno, channels, sample_rate, bits, byte_order);
 	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",

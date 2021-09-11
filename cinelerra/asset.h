@@ -12,6 +12,7 @@
 #include "bchash.inc"
 #include "cinelerra.h"
 #include "datatype.h"
+#include "filetoc.inc"
 #include "filexml.inc"
 #include "indexfile.h"
 #include "linklist.h"
@@ -21,8 +22,6 @@
 #include <stdint.h>
 #include <time.h>
 
-// Maximum number of audio streams
-#define MAX_ASTREAMS 64 
 // Maximum length of codecname (mostly fourcc)
 #define MAX_LEN_CODECNAME  64
 // Maximum nummber of encoder paramlists
@@ -109,6 +108,10 @@ public:
 	ptstime stream_duration(int stream);
 	samplenum stream_samples(int stream);
 	ptstime duration();
+// Set pts_base from stream
+	void set_base_pts(int stream);
+// Get base pts of asset or program
+	ptstime base_pts();
 // Number of streams with stream_type
 	int stream_count(int stream_type);
 
@@ -237,8 +240,13 @@ public:
 // Video is a single image
 	int single_image;
 
+// Asset is probed
+	int probed;
+
 // Pixel aspect ratio
 	double sample_aspect_ratio;
+
+	FileTOC *tocfile;
 
 // for the interlace mode 
 	int interlace_autofixoption;
@@ -270,7 +278,9 @@ public:
 	int id;
 // Used by assetlist
 	int global_inuse;
+private:
+// Minimal pts over all streams
+	ptstime pts_base;
 };
-
 
 #endif

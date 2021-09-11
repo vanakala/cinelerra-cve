@@ -32,7 +32,7 @@ public:
 	friend class FrameWriter;
 
 	virtual int get_index(const char *index_path) { return 1; };
-	virtual int open_file(int open_method) { return 1; };
+	virtual int open_file(int open_method, int streamix) { return 1; };
 	virtual void close_file() {};
 
 	void set_dither();

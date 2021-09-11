@@ -13,10 +13,9 @@
 #include "mutex.h"
 #include "preferences.h"
 
-CICache::CICache(int open_mode)
+CICache::CICache()
  : List<CICacheItem>()
 {
-	this->open_mode = open_mode;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
 }
@@ -30,7 +29,7 @@ CICache::~CICache()
 	delete total_lock;
 }
 
-File* CICache::check_out(Asset *asset, int block)
+File* CICache::check_out(Asset *asset, int stream, int block)
 {
 	CICacheItem *current, *new_item = 0;
 
@@ -63,7 +62,7 @@ File* CICache::check_out(Asset *asset, int block)
 		else
 		{
 // Create new item
-			new_item = append(new CICacheItem(this, asset));
+			new_item = append(new CICacheItem(this, asset, stream));
 
 			if(new_item->file)
 			{
@@ -93,7 +92,7 @@ File* CICache::check_out(Asset *asset, int block)
 	return 0;
 }
 
-void CICache::check_in(Asset *asset)
+void CICache::check_in(Asset *asset, int stream)
 {
 	CICacheItem *current;
 	int got_it = 0;
@@ -101,7 +100,7 @@ void CICache::check_in(Asset *asset)
 	total_lock->lock("CICache::check_in");
 	for(current = first; current; current = NEXT)
 	{
-		if(current->asset == asset)
+		if(current->asset == asset && current->stream == stream)
 		{
 			current->checked_out = 0;
 // Pointer no longer valid here
@@ -259,19 +258,20 @@ CICacheItem::CICacheItem()
 }
 
 
-CICacheItem::CICacheItem(CICache *cache, Asset *asset)
+CICacheItem::CICacheItem(CICache *cache, Asset *asset, int stream)
  : ListItem<CICacheItem>()
 {
 	int result = 0;
 	age = EDL::next_id();
 
 	this->asset = asset;
+	this->stream = stream;
 	this->cache = cache;
 	checked_out = 0;
 
 	file = new File;
 	file->set_processors(preferences_global->processors);
-	if(result = file->open_file(this->asset, FILE_OPEN_READ | cache->open_mode))
+	if(result = file->open_file(this->asset, FILE_OPEN_READ, stream))
 	{
 		delete file;
 		file = 0;
@@ -287,7 +287,7 @@ void CICacheItem::dump(int indent)
 {
 	printf("%*sCICacheItem %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*sfile %p checked out %d age %d\n", indent, "",
-		file, checked_out, age);
+	printf("%*sfile %p checked out %d age %d stream %d\n", indent, "",
+		file, checked_out, age, stream);
 	asset->dump(indent + 2);
 }

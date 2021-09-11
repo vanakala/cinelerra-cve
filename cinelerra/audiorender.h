@@ -6,7 +6,7 @@
 #ifndef AUDIORENDER_H
 #define AUDIORENDER_H
 
-#include "aframe.h"
+#include "aframe.inc"
 #include "atrackrender.inc"
 #include "arraylist.h"
 #include "cinelerra.h"
@@ -23,12 +23,13 @@ public:
 	InFrame(File *file, int out_length, int filenum);
 	~InFrame();
 
-	AFrame *get_aframe(int channel);
+	AFrame *get_aframe(int stream, int channel);
 	AFrame *handover_aframe();
 
 	File *file;
 	int filenum;
 	int channel;
+	int stream;
 private:
 	int out_length;
 	AFrame *aframe;

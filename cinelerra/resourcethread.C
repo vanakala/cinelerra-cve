@@ -26,11 +26,13 @@
 
 ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
+	int stream,
 	int data_type)
 {
 	this->data_type = data_type;
 	this->pixmap = pixmap;
 	this->asset = asset;
+	this->stream = stream;
 	last = 0;
 }
 
@@ -42,8 +44,9 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	ptstime postime,
 	ptstime duration,
 	int layer,
-	Asset *asset)
- : ResourceThreadItem(pixmap, asset, TRACK_VIDEO)
+	Asset *asset,
+	int stream)
+ : ResourceThreadItem(pixmap, asset, stream, TRACK_VIDEO)
 {
 	this->picon_x = picon_x;
 	this->picon_y = picon_y;
@@ -57,11 +60,12 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
+	int stream,
 	int x,
 	int channel,
 	samplenum start,
 	samplenum end)
- : ResourceThreadItem(pixmap, asset, TRACK_AUDIO)
+ : ResourceThreadItem(pixmap, asset, stream, TRACK_AUDIO)
 {
 	this->x = x;
 	this->channel = channel;
@@ -79,8 +83,8 @@ ResourceThread::ResourceThread(TrackCanvas *canvas)
 	prev_x = -1;
 	prev_h = 0;
 	prev_l = 0;
-	audio_cache = new CICache(FILE_OPEN_AUDIO);
-	video_cache = new CICache(FILE_OPEN_VIDEO);
+	audio_cache = new CICache();
+	video_cache = new CICache();
 	frame_cache = new FrameCache;
 	wave_cache = new WaveCache;
 	Thread::start();
@@ -105,24 +109,20 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	ptstime postime,
 	ptstime duration,
 	int layer,
-	Asset *asset)
+	Asset *asset,
+	int stream)
 {
 	item_lock->lock("ResourceThread::add_picon");
 
-	items.append(new VResourceThreadItem(pixmap, 
-		picon_x, 
-		picon_y, 
-		picon_w,
-		picon_h,
-		postime,
-		duration,
-		layer,
-		asset));
+	items.append(new VResourceThreadItem(pixmap,
+		picon_x, picon_y, picon_w, picon_h,
+		postime, duration, layer, asset, stream));
 	item_lock->unlock();
 }
 
 void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	Asset *asset,
+	int stream,
 	int x,
 	int channel,
 	samplenum source_start,
@@ -131,7 +131,7 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	item_lock->lock("ResourceThread::add_wave");
 
 	items.append(new AResourceThreadItem(pixmap, 
-		asset,
+		asset, stream,
 		x,
 		channel,
 		source_start,
@@ -200,7 +200,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		item->picon_h,
 		item->asset)))
 	{
-		File *source = video_cache->check_out(item->asset);
+		File *source = video_cache->check_out(item->asset, item->stream);
 
 		if(!source)
 			return;
@@ -212,7 +212,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		picon_frame->set_source_pts(item->postime);
 		picon_frame->set_duration(item->duration);
 		frame_cache->put_frame(picon_frame, item->asset);
-		video_cache->check_in(item->asset);
+		video_cache->check_in(item->asset, item->stream);
 	}
 
 // Draw the picon
@@ -265,12 +265,13 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 // Get value from previous buffer
 			if(!(aframe &&
 				item->channel == aframe->channel &&
+				item->stream == aframe->stream &&
 				item->asset->id == audio_asset_id &&
 				sample >= aframe->position &&
 				sample < aframe->position + aframe->get_length()))
 			{
 // Load new buffer
-				File *source = audio_cache->check_out(item->asset);
+				File *source = audio_cache->check_out(item->asset, item->stream);
 
 				if(!source)
 					return;
@@ -284,6 +285,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 				aframe->set_samplerate(item->asset->sample_rate);
 				aframe->channel = item->channel;
+				aframe->stream = item->stream;
 
 				if(fragment + sample > total_samples)
 					fragment = total_samples - sample;
@@ -291,7 +293,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 				source->get_samples(aframe);
 				audio_asset_id = item->asset->id;
-				audio_cache->check_in(item->asset);
+				audio_cache->check_in(item->asset, item->stream);
 			}
 
 			value = aframe->buffer[sample - aframe->position];
