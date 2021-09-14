@@ -76,7 +76,6 @@ Asset::~Asset()
 		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
 			delete streams[i].decoding_params[j];
 	}
-	delete tocfile;
 }
 
 void Asset::init_values()
@@ -265,7 +264,6 @@ int Asset::set_program(int pgm)
 	last_active = 0;
 	pdesc = &programs[pgm];
 	program_id = pdesc->program_id;
-
 	audio_data = video_data = 0;
 	audio_streamno = video_streamno = 0;
 	pts_base = INT64_MAX;
@@ -398,7 +396,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 		render_parameters->copy_from(asset->render_parameters);
 	}
 	strcpy(renderprofile_path, asset->renderprofile_path);
-	tocfile = 0;
+	tocfile = asset->tocfile;
 }
 
 Asset& Asset::operator=(Asset &asset)
@@ -728,6 +726,8 @@ ptstime Asset::base_pts()
 
 void Asset::read(FileXML *file, int expand_relative)
 {
+	int program = -1;
+	int have_index = 0;
 // Check for relative path.
 	if(expand_relative && path[0] != '/')
 	{
@@ -753,8 +753,8 @@ void Asset::read(FileXML *file, int expand_relative)
 				format = ContainerSelection::text_to_container(string);
 			use_header =
 				file->tag.get_property("USE_HEADER", use_header);
-			program_id =
-				file->tag.get_property("PROGRAM", program_id);
+			program =
+				file->tag.get_property("PROGRAM", program);
 			pcm_format = file->tag.get_property("PCM_FORMAT");
 			// pcm_format must point to string constant
 			if(pcm_format)
@@ -763,12 +763,18 @@ void Asset::read(FileXML *file, int expand_relative)
 		else if(file->tag.title_is("VIDEO"))
 			read_video(file);
 		else if(file->tag.title_is("INDEX"))
+		{
 			read_index(file);
+			have_index = 1;
+		}
 		else if(strncmp(file->tag.get_title(), decfmt_tag, sizeof(decfmt_tag) - 1) == 0)
 			read_decoder_params(file);
 		else if(strncmp(file->tag.get_title(), stream_tag, sizeof(stream_tag) - 1) == 0)
 			read_stream_params(file);
 	}
+	// Ignore program_id from indexfile
+	if(!have_index && program >= 0)
+		set_program_id(program);
 	FileAVlibs::update_decoder_format_defaults(this);
 }
 
@@ -932,7 +938,7 @@ void Asset::write(FileXML *file, int include_index, int stream,
 	file->tag.set_property("TYPE", 
 		ContainerSelection::container_prefix(format));
 	file->tag.set_property("USE_HEADER", use_header);
-	if(nb_programs && program_id)
+	if(!include_index && nb_programs && program_id)
 		file->tag.set_property("PROGRAM", program_id);
 	if(format == FILE_PCM && pcm_format)
 		file->tag.set_property("PCM_FORMAT", pcm_format);
@@ -1192,7 +1198,7 @@ void Asset::write_index(FileXML *file, int stream)
 	file->append_tag();
 	file->append_newline();
 
-	for(int i = 0; i < channels; i++)
+	for(int i = 0; i < streams[stream].channels; i++)
 	{
 		file->tag.set_title("OFFSET");
 		file->tag.set_property("FLOAT", index->offsets[i]);
@@ -1761,10 +1767,10 @@ void Asset::dump(int indent, int options)
 	}
 	if(nb_programs)
 	{
-		printf("%*s%d programs (active %d):\n", indent + 2, "", nb_programs, program_id);
+		printf("%*s%d programs (active id %d):\n", indent + 2, "", nb_programs, program_id);
 		for(int i = 0; i < nb_programs; i++)
 		{
-			printf("%*s%d. program id %d %.2f..%.2f %d streams:",
+			printf("%*s%d. id %d %.2f..%.2f %d streams:",
 				indent + 4, "", programs[i].program_index,
 				programs[i].program_id, programs[i].start,
 				programs[i].end, programs[i].nb_streams);
