@@ -6,6 +6,7 @@
 #include "asset.h"
 #include "assetlist.h"
 #include "bcsignals.h"
+#include "filetoc.h"
 #include "filexml.h"
 #include "file.h"
 
@@ -78,7 +79,19 @@ Asset* AssetList::get_asset(const char *filename, int stream)
 
 void AssetList::remove_asset(Asset *asset)
 {
+	FileTOC *tocfile = asset->tocfile;
+
 	remove(asset);
+	// tocfiles of multiprogram assets are shared
+	for(Asset* current = first; current; current = current->next)
+	{
+		if(current->tocfile == tocfile)
+		{
+			tocfile = 0;
+			break;
+		}
+	}
+	delete tocfile;
 }
 
 void AssetList::reset_inuse()
