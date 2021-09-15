@@ -40,7 +40,7 @@ File* CICache::check_out(Asset *asset, int stream, int block)
 		total_lock->lock("CICache::check_out");
 		for(current = first; current && !got_it; current = NEXT)
 		{
-			if(current->asset == asset)
+			if(current->asset == asset && current->stream == stream)
 			{
 				got_it = 1;
 				break;
@@ -119,6 +119,7 @@ void CICache::remove_all()
 {
 	total_lock->lock("CICache::remove_all");
 	CICacheItem *current, *temp;
+
 	for(current = first; current; current = temp)
 	{
 		temp = current->next;
@@ -262,6 +263,7 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset, int stream)
  : ListItem<CICacheItem>()
 {
 	int result = 0;
+	int open_mode = 0;
 	age = EDL::next_id();
 
 	this->asset = asset;
@@ -270,8 +272,13 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset, int stream)
 	checked_out = 0;
 
 	file = new File;
+	if(asset->streams[stream].options & STRDSC_AUDIO)
+		open_mode = FILE_OPEN_AUDIO;
+	else if(asset->streams[stream].options & STRDSC_VIDEO)
+		open_mode = FILE_OPEN_VIDEO;
 	file->set_processors(preferences_global->processors);
-	if(result = file->open_file(this->asset, FILE_OPEN_READ, stream))
+	if(!open_mode ||
+		(result = file->open_file(this->asset, FILE_OPEN_READ | open_mode, stream)))
 	{
 		delete file;
 		file = 0;

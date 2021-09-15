@@ -87,7 +87,6 @@ private:
 // use a seperate mutex for checkouts and checkins
 	Mutex *total_lock;
 	Condition *check_out_lock;
-	int open_mode;
 };
 
 #endif
