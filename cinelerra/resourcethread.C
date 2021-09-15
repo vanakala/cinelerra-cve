@@ -198,7 +198,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
-		item->asset)))
+		item->asset,
+		item->stream)))
 	{
 		File *source = video_cache->check_out(item->asset, item->stream);
 
@@ -211,7 +212,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		source->get_frame(picon_frame);
 		picon_frame->set_source_pts(item->postime);
 		picon_frame->set_duration(item->duration);
-		frame_cache->put_frame(picon_frame, item->asset);
+		frame_cache->put_frame(picon_frame, item->asset, item->stream);
 		video_cache->check_in(item->asset, item->stream);
 	}
 

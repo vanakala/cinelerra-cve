@@ -40,32 +40,32 @@ public:
 // If a frame is found, the frame cache is left in the locked state until 
 // unlock is called.  If nothing is found, the frame cache is unlocked before
 // returning.  This keeps the item from being deleted.
-// asset - supplied by user if the cache is not part of a file.
 	VFrame* get_frame_ptr(ptstime postime,
 		int layer,
 		int color_model,
 		int w,
 		int h,
-		Asset *asset = 0);
+		Asset *asset,
+		int stream);
 // Puts the frame in cache.
 //  The frame cache remains locked
 // The frame is deleted by FrameCache in a future delete_oldest.
-// asset - supplied by user if the cache is not part of a file.
-	VFrame *put_frame(VFrame *frame, Asset *asset = 0);
+	VFrame *put_frame(VFrame *frame, Asset *asset, int stream);
 // Change the duration of cached frames
 	void change_duration(ptstime new_dur, int layer,
-		int color_model, int w, int h, Asset *asset);
+		int color_model, int w, int h, Asset *asset, int stream);
 
 private:
 // Returns item if found
 	FrameCacheItem *frame_exists(VFrame *format,
-		Asset *asset);
+		Asset *asset, int stream);
 	FrameCacheItem *frame_exists(ptstime postime,
 		int layer,
 		int color_model,
 		int w,
 		int h,
-		Asset *asset);
+		Asset *asset,
+		int stream);
 };
 
 #endif

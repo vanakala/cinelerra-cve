@@ -583,7 +583,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	{
 		resource_thread->frame_cache->change_duration(picon_len,
 			edit->channel, BC_RGB888, picon_w, picon_h,
-			edit->asset);
+			edit->asset, edit->stream);
 		last_picon_size = picon_len;
 	}
 	num_picons = pixmap_w / picon_w + 1;
@@ -595,7 +595,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 
 		if(picon_frame = resource_thread->frame_cache->get_frame_ptr(source_pts,
 			edit->channel, BC_RGB888, picon_w, picon_h,
-			edit->asset))
+			edit->asset, edit->stream))
 		{
 			draw_vframe(picon_frame, x, y, picon_w, picon_h,
 				0, 0);
@@ -608,7 +608,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 				x, y, picon_w, picon_h,
 				source_pts, picon_len,
 				edit->channel,
-				edit->asset, edit->channel);
+				edit->asset, edit->stream);
 		}
 		picon_src += picon_len;
 		x += picon_w;

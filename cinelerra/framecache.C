@@ -16,7 +16,6 @@ FrameCacheItem::FrameCacheItem()
  : CacheItemBase()
 {
 	data = 0;
-	asset = 0;
 }
 
 FrameCacheItem::~FrameCacheItem()
@@ -52,13 +51,14 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 	int color_model,
 	int w,
 	int h,
-	Asset *asset)
+	Asset *asset,
+	int stream)
 {
 	lock->lock("FrameCache::get_frame_ptr");
 	FrameCacheItem *item;
 
 	if(item = frame_exists(postime, layer, color_model,
-		w, h, asset))
+		w, h, asset, stream))
 	{
 		item->age = get_age();
 		return item->data;
@@ -69,12 +69,12 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 }
 
 // Puts frame in cache if the frame doesn't already exist.
-VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset)
+VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset, int stream)
 {
 	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item;
 
-	if(item = frame_exists(frame, asset))
+	if(item = frame_exists(frame, asset, stream))
 	{
 		delete frame;
 		item->age = get_age();
@@ -88,6 +88,7 @@ VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset)
 // Copy metadata
 	item->position = frame->get_source_pts();
 	item->asset = asset;
+	item->stream = stream;
 	item->age = get_age();
 
 	put_item(item);
@@ -95,7 +96,7 @@ VFrame *FrameCache::put_frame(VFrame *frame, Asset *asset)
 	return frame;
 }
 
-FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset)
+FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset, int stream)
 {
 	ptstime postime = format->get_source_pts();
 
@@ -105,7 +106,7 @@ FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset)
 	{
 		if(format->get_layer() == item->data->get_layer() &&
 				format->equivalent(item->data) &&
-				asset == item->asset)
+				asset == item->asset && stream == item->stream)
 			return item;
 
 		item = (FrameCacheItem*)item->next;
@@ -113,12 +114,13 @@ FrameCacheItem *FrameCache::frame_exists(VFrame *format, Asset *asset)
 	return 0;
 }
 
-FrameCacheItem  *FrameCache::frame_exists(ptstime postime,
+FrameCacheItem *FrameCache::frame_exists(ptstime postime,
 	int layer,
 	int color_model,
 	int w,
 	int h,
-	Asset *asset)
+	Asset *asset,
+	int stream)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
 
@@ -128,7 +130,7 @@ FrameCacheItem  *FrameCache::frame_exists(ptstime postime,
 				color_model == item->data->get_color_model() &&
 				w == item->data->get_w() &&
 				h == item->data->get_h() &&
-				asset == item->asset)
+				asset == item->asset && stream == item->stream)
 			return item;
 
 		item = (FrameCacheItem*)item->next;
@@ -137,7 +139,7 @@ FrameCacheItem  *FrameCache::frame_exists(ptstime postime,
 }
 
 void FrameCache::change_duration(ptstime new_dur, int layer,
-	int color_model, int w, int h, Asset *asset)
+	int color_model, int w, int h, Asset *asset, int stream)
 {
 	lock->lock("FrameCache::change_duration");
 	for(FrameCacheItem *current = (FrameCacheItem*)first; current;
@@ -146,6 +148,7 @@ void FrameCache::change_duration(ptstime new_dur, int layer,
 		VFrame *frame = current->data;
 
 		if(current->asset == asset && layer == frame->get_layer() &&
+			stream == current->stream &&
 			color_model == frame->get_color_model() &&
 			h == frame->get_h() && w == frame->get_w())
 		{
