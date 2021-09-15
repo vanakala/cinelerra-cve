@@ -388,12 +388,8 @@ int FileAVlibs::probe_input(Asset *asset)
 			for(int j = 0; j < prg->nb_stream_indexes; j++)
 				asset->programs[i].streams[j] = prg->stream_index[j];
 		}
-// set the default program
 		if(asset->nb_programs)
-		{
-			if(asset->set_program_id(asset->program_id) < 0)
-				asset->set_program(0);
-		}
+			asset->set_program(0);
 		av_dict_free(&pcm_opts);
 
 		if(asset->format != FILE_UNKNOWN)
@@ -667,12 +663,12 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 			case AVMEDIA_TYPE_AUDIO:
 				mediatype = _("Audio");
 				if(!(open_mode & FILE_OPEN_AUDIO))
-					printf("Not audio stream");
+					printf("%d is not an audio stream.\n", streamix);
 				break;
 			case AVMEDIA_TYPE_VIDEO:
 				mediatype = _("Video");
 				if(!(open_mode & FILE_OPEN_VIDEO))
-					printf("Not video stream");
+					printf("%d is not a video stream.\n", streamix);
 				break;
 			}
 			if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
