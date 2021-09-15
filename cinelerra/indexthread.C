@@ -30,7 +30,6 @@ IndexThread::IndexThread(IndexFile *index_file,
 	this->length_source = length_source;
 	this->index_filename = index_filename;
 	this->index_file = index_file;
-
 // initialize output data
 	int index_size = preferences_global->index_size /
 		sizeof(float) + 1;      // size of output file in floats
@@ -41,7 +40,7 @@ IndexThread::IndexThread(IndexFile *index_file,
 	{
 		output_lock[i] = new Condition(0, "IndexThread::output_lock");
 		input_lock[i] = new Condition(1, "IndexThread::input_lock");
-		for(int j = 0; j < asset->streams[j].channels; j++)
+		for(int j = 0; j < asset->streams[stream].channels; j++)
 		{
 			frames_in[i][j] = new AFrame(buffer_size);
 			frames_in[i][j]->channel = j;
