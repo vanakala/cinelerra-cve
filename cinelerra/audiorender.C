@@ -478,9 +478,10 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	{
 		InFrame *infile = input_frames.values[i];
 
-		if(infile->file->asset == asset && infile->filenum == filenum)
+		if(infile->file->asset == asset && infile->filenum == filenum &&
+			infile->stream == stream)
 		{
-			int channels = asset->channels;
+			int channels = asset->streams[stream].channels;
 
 			for(int j = 0; j < channels; j++)
 			{
@@ -497,11 +498,11 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 		}
 	}
 
-	channels = edit->asset->channels;
+	channels = edit->asset->streams[stream].channels;
 	last_file = input_frames.total;
 	file = new File();
 
-	if(file->open_file(edit->asset, FILE_OPEN_READ | FILE_OPEN_AUDIO, edit->stream))
+	if(file->open_file(asset, FILE_OPEN_READ | FILE_OPEN_AUDIO, stream))
 	{
 		errormsg("AudioRender::get_file_frame:Failed to open media %s",
 			asset->path);
