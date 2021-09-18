@@ -274,14 +274,11 @@ int File::open_file(Asset *asset, int open_method, int stream)
 	wr = open_method & FILE_OPEN_WRITE;
 
 	this->asset = asset;
+	asset_stream = stream;
 	file = 0;
 
 	switch(asset->format)
 	{
-// get the format now
-// If you add another format to case 0, you also need to add another case for the
-// file format #define.
-// format already determined
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		file = new FilePNG(asset, this);
@@ -291,6 +288,7 @@ int File::open_file(Asset *asset, int open_method, int stream)
 	case FILE_JPEG_LIST:
 		file = new FileJPEG(asset, this);
 		break;
+
 	case FILE_TGA_LIST:
 	case FILE_TGA:
 		file = new FileTGA(asset, this);
@@ -550,12 +548,15 @@ int File::get_frame(VFrame *frame)
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			!file->converts_frame() &&
 			(supported_colormodel != frame->get_color_model() ||
-			frame->get_w() != asset->width ||
-			frame->get_h() != asset->height))
+			frame->get_w() != asset->streams[asset_stream].width ||
+			frame->get_h() != asset->streams[asset_stream].height))
 		{
 			if(temp_frame)
 			{
-				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
+				if(!temp_frame->params_match(
+					asset->streams[asset_stream].width,
+					asset->streams[asset_stream].height,
+					supported_colormodel))
 				{
 					delete temp_frame;
 					temp_frame = 0;
@@ -565,8 +566,8 @@ int File::get_frame(VFrame *frame)
 			if(!temp_frame)
 			{
 				temp_frame = new VFrame(0,
-					asset->width,
-					asset->height,
+					asset->streams[asset_stream].width,
+					asset->streams[asset_stream].height,
 					supported_colormodel);
 			}
 			temp_frame->copy_pts(frame);
@@ -580,7 +581,7 @@ int File::get_frame(VFrame *frame)
 		if(asset->single_image)
 		{
 			frame->set_source_pts(0);
-			frame->set_duration(asset->video_duration);
+			frame->set_duration(asset->stream_duration(asset_stream));
 			frame->set_frame_number(0);
 		}
 

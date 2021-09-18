@@ -133,6 +133,7 @@ public:
 	int cpus;
 
 private:
+	int asset_stream;
 	void reset_parameters();
 	int get_this_frame(framenum pos, VFrame *frame, int is_thread = 0);
 
