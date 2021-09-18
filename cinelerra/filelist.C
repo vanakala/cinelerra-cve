@@ -52,7 +52,7 @@ FileList::~FileList()
 	delete table_lock;
 }
 
-int FileList::open_file(int open_mode)
+int FileList::open_file(int open_mode, int streamix)
 {
 	writing = open_mode & FILE_OPEN_WRITE;
 	int result = 0;
@@ -95,7 +95,8 @@ int FileList::open_file(int open_mode)
 
 // Open index here or get frame size from file.
 					result = read_list_header();
-					if(!result) result = read_frame_header(path_list.values[0]);
+					if(!result)
+						result = read_frame_header(path_list.values[0]);
 				}
 				else
 				{
@@ -115,7 +116,7 @@ int FileList::open_file(int open_mode)
 		}
 		if(asset->nb_streams)
 		{
-			struct streamdesc *sdsc = &asset->streams[0];
+			struct streamdesc *sdsc = &asset->streams[streamix];
 
 			switch(frame_type)
 			{

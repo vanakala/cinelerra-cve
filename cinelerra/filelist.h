@@ -31,7 +31,7 @@ public:
 	virtual ~FileList();
 
 // basic commands for every file interpreter
-	int open_file(int open_mode);
+	int open_file(int open_mode, int streamix);
 	void close_file();
 
 	char* calculate_path(int number, char *string);
