@@ -20,7 +20,6 @@
 #include "awindowmenu.inc"
 #include "edl.inc"
 #include "labels.h"
-#include "mwindow.inc"
 #include "pluginserver.inc"
 
 #include <X11/Xatom.h>
@@ -37,14 +36,13 @@ class AWindowGUI;
 class AssetPicon : public BC_ListBoxItem
 {
 public:
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, Asset *asset);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, EDL *edl);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, PluginServer *plugin);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, Label *plugin);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, int folder);
+	AssetPicon(AWindowGUI *gui, Asset *asset);
+	AssetPicon(AWindowGUI *gui, EDL *edl);
+	AssetPicon(AWindowGUI *gui, PluginServer *plugin);
+	AssetPicon(AWindowGUI *gui, Label *plugin);
+	AssetPicon(AWindowGUI *gui, int folder);
 	virtual ~AssetPicon();
 
-	MWindow *mwindow;
 	AWindowGUI *gui;
 	BC_Pixmap *icon;
 	VFrame *icon_vframe;
@@ -72,7 +70,7 @@ private:
 class AWindowGUI : public BC_Window
 {
 public:
-	AWindowGUI(MWindow *mwindow, AWindow *awindow);
+	AWindowGUI(AWindow *awindow);
 	~AWindowGUI();
 
 	void resize_event(int w, int h);
@@ -97,7 +95,6 @@ public:
 	PluginServer* selected_plugin();
 	AssetPicon* selected_folder();
 
-	MWindow *mwindow;
 	AWindow *awindow;
 
 	AWindowAssets *asset_list;
@@ -156,7 +153,7 @@ private:
 class AWindowAssets : public BC_ListBox
 {
 public:
-	AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
+	AWindowAssets(AWindowGUI *gui, int x, int y, int w, int h);
 
 	int handle_event();
 	void selection_changed();
@@ -167,44 +164,40 @@ public:
 	int button_press_event();
 	int column_resize_event();
 
-	MWindow *mwindow;
 	AWindowGUI *gui;
 };
 
 class AWindowDivider : public BC_SubWindow
 {
 public:
-	AWindowDivider(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
+	AWindowDivider(AWindowGUI *gui, int x, int y, int w, int h);
 
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
 
-	MWindow *mwindow;
 	AWindowGUI *gui;
 };
 
 class AWindowFolders : public BC_ListBox
 {
 public:
-	AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
+	AWindowFolders(AWindowGUI *gui, int x, int y, int w, int h);
 
 	void selection_changed();
 	int button_press_event();
 
-	MWindow *mwindow;
 	AWindowGUI *gui;
 };
 
 class LabelPopup : public BC_PopupMenu
 {
 public:
-	LabelPopup(MWindow *mwindow, AWindowGUI *gui);
+	LabelPopup(AWindowGUI *gui);
 
 // Set mainsession with the current selections
 	int update();
 
-	MWindow *mwindow;
 	AWindowGUI *gui;
 
 	LabelPopupEdit *editlabel;
@@ -213,11 +206,10 @@ public:
 class LabelPopupEdit : public BC_MenuItem
 {
 public:
-	LabelPopupEdit(MWindow *mwindow, LabelPopup *popup);
+	LabelPopupEdit(LabelPopup *popup);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	LabelPopup *popup;
 };
 

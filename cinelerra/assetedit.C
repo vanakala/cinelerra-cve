@@ -38,10 +38,9 @@
 #include <string.h>
 #include <inttypes.h>
 
-AssetEdit::AssetEdit(MWindow *mwindow)
+AssetEdit::AssetEdit()
  : Thread()
 {
-	this->mwindow = mwindow;
 	asset = 0;
 	window = 0;
 }
@@ -73,8 +72,8 @@ void AssetEdit::run()
 		*new_asset = *asset;
 		new_asset->update_decoder_format_defaults();
 
-		mwindow->get_abs_cursor_pos(&absx, &absy);
-		window = new AssetEditWindow(mwindow, this, absx, absy);
+		mwindow_global->get_abs_cursor_pos(&absx, &absy);
+		window = new AssetEditWindow(this, absx, absy);
 		window->raise_window();
 
 		if(!window->run_window())
@@ -86,12 +85,12 @@ void AssetEdit::run()
 				newidx = asset->stream_count(STRDSC_AUDIO)
 					&& !asset->equivalent(*new_asset, STRDSC_AUDIO);
 
-				mwindow->remove_asset_from_caches(asset);
+				mwindow_global->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);
 				asset->set_decoder_parameters();
-				mwindow->update_gui(WUPD_CANVREDRAW);
+				mwindow_global->update_gui(WUPD_CANVREDRAW);
 
 // Start index rebuilding
 				if(newidx)
@@ -100,19 +99,19 @@ void AssetEdit::run()
 					char index_filename[BCTEXTLEN];
 
 					IndexFile::get_index_filename(source_filename, 
-						mwindow->preferences->index_directory,
+						preferences_global->index_directory,
 						index_filename, 
 						asset->path, stream);
 					remove(index_filename);
 					asset->indexfiles[stream].status = INDEX_NOTTESTED;
-					mwindow->mainindexes->add_next_asset(asset, stream);
-					mwindow->mainindexes->start_build();
+					mwindow_global->mainindexes->add_next_asset(asset, stream);
+					mwindow_global->mainindexes->start_build();
 				}
 
-				mwindow->awindow->gui->async_update_assets();
-				mwindow->vwindow->change_source();
+				mwindow_global->awindow->gui->async_update_assets();
+				mwindow_global->vwindow->change_source();
 
-				mwindow->sync_parameters();
+				mwindow_global->sync_parameters();
 			}
 		}
 
@@ -123,7 +122,7 @@ void AssetEdit::run()
 }
 
 
-AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
+AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 	int abs_x, int abs_y)
  : BC_Window(MWindow::create_title(N_("Asset Info")),
 	abs_x - 400 / 2,
@@ -149,14 +148,12 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 	ptstime l, length = 0;
 	uintmax_t bitrate;
 
-	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
 	this->asset = asset_edit->new_asset;
 
-	set_icon(mwindow->awindow->get_window_icon());
+	set_icon(mwindow_global->awindow->get_window_icon());
 	add_subwindow(path_text = new AssetEditPathText(this, x0, y, 300));
-	win = add_subwindow(new AssetEditPath(mwindow,
-		this, 
+	win = add_subwindow(new AssetEditPath(this,
 		path_text,
 		x0 + path_text->get_w() + 5, y,
 		asset->path, 
@@ -165,7 +162,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 
 	add_subwindow(new BC_Title(x1, y, _("File format:")));
 	win = add_subwindow(new BC_Title(x2, y, _(ContainerSelection::container_to_text(asset->format)),
-		MEDIUMFONT, mwindow->theme->edit_font_color));
+		MEDIUMFONT, theme_global->edit_font_color));
 
 	if(asset->decoder_parameters[ASSET_DFORMAT_IX])
 	{
@@ -181,7 +178,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 	sprintf(string, "%" PRId64, asset->file_length);
 	Units::punctuate(string);
 
-	win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+	win = add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT,
+		theme_global->edit_font_color));
 	y += win->get_h() + 5;
 
 	numaudio = numvideo = 0;
@@ -192,14 +190,14 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 		{
 			add_subwindow(aiwin[numaudio] =
 				new AudioInfoWindow(asset->active_streams[i],
-				mwindow->theme->edit_font_color));
+				theme_global->edit_font_color));
 			numaudio++;
 		}
 		if(asset->active_streams[i]->options & STRDSC_VIDEO)
 		{
 			add_subwindow(viwin[numvideo] =
 				new VideoInfoWindow(asset->active_streams[i],
-				mwindow->theme->edit_font_color));
+				theme_global->edit_font_color));
 			numvideo++;
 		}
 		l = asset->active_streams[i]->end - asset->active_streams[i]->start;
@@ -213,7 +211,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 		sprintf(string, "%jd", bitrate);
 		Units::punctuate(string);
 		win = add_subwindow(new BC_Title(x2, y, string,
-			MEDIUMFONT, mwindow->theme->edit_font_color));
+			MEDIUMFONT, theme_global->edit_font_color));
 		y += win->get_h() + 5;
 	}
 	y += 2;
@@ -270,7 +268,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit,
 	if(numvideo)
 	{
 		add_subwindow(new BC_Title(x1, y, _("Fix interlacing:")));
-		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow, this, x2, y));
+		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(this,
+			x2, y));
 		y += ilacefixoption_chkboxw->get_h() + 5;
 
 // --------------------
@@ -468,11 +467,10 @@ void VideoInfoWindow::draw_window()
 	show_line(_("Length (sec):"), desc->start, desc->end);
 }
 
-Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
+Interlaceautofix::Interlaceautofix(AssetEditWindow *fwindow, int x, int y)
  : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically"))
 {
 	this->fwindow = fwindow;
-	this->mwindow = mwindow;
 }
 
 int Interlaceautofix::handle_event()
@@ -528,10 +526,10 @@ int AssetEditPathText::handle_event()
 	return 1;
 }
 
-AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
+AssetEditPath::AssetEditPath(AssetEditWindow *fwindow,
 	BC_TextBox *textbox, int x, int y, const char *text,
 	const char *window_title, const char *window_caption)
- : BrowseButton(mwindow, fwindow, textbox, x, y, text, window_title, window_caption, 0)
+ : BrowseButton(mwindow_global, fwindow, textbox, x, y, text, window_title, window_caption, 0)
 { 
 	this->fwindow = fwindow; 
 }

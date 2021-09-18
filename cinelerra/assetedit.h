@@ -12,9 +12,9 @@
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "cinelerra.h"
+#include "datatype.h"
 #include "formatpresets.h"
 #include "language.h"
-#include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.inc"
 #include "thread.h"
@@ -30,14 +30,13 @@ class AssetEditConfigButton;
 class AssetEdit : public Thread
 {
 public:
-	AssetEdit(MWindow *mwindow);
+	AssetEdit();
 
 	void edit_asset(Asset *asset);
 	void set_asset(Asset *asset);
 	void run();
 
 	Asset *asset, *new_asset;
-	MWindow *mwindow;
 	AssetEditWindow *window;
 };
 
@@ -48,12 +47,11 @@ public:
 class AssetEditWindow : public BC_Window
 {
 public:
-	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit, int absx, int absy);
+	AssetEditWindow(AssetEdit *asset_edit, int absx, int absy);
 	~AssetEditWindow();
 
 	Asset *asset;
 	AssetEditPath *path_button;
-	MWindow *mwindow;
 	AssetEdit *asset_edit;
 	AssetInterlaceMode *ilacemode_selection;
 	InterlaceFixSelection *ilacefix_selection;
@@ -115,12 +113,11 @@ public:
 class AssetEditPath : public BrowseButton
 {
 public:
-	AssetEditPath(MWindow *mwindow, 
-		AssetEditWindow *fwindow, 
-		BC_TextBox *textbox, 
+	AssetEditPath(AssetEditWindow *fwindow,
+		BC_TextBox *textbox,
 		int x,
-		int y, 
-		const char *text, 
+		int y,
+		const char *text,
 		const char *window_title,
 		const char *window_caption);
 
@@ -142,14 +139,13 @@ public:
 class Interlaceautofix : public BC_CheckBox
 {
 public:
-	Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y);
+	Interlaceautofix(AssetEditWindow *fwindow, int x, int y);
 
 	int handle_event();
 
 	void showhideotherwidgets();
 
 	AssetEditWindow* fwindow;
-	MWindow *mwindow;
 };
 
 

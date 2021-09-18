@@ -55,65 +55,50 @@ const char *AWindowGUI::folder_names[] =
 };
 
 
-AssetPicon::AssetPicon(MWindow *mwindow, 
-	AWindowGUI *gui, 
-	Asset *asset)
+AssetPicon::AssetPicon(AWindowGUI *gui, Asset *asset)
  : BC_ListBoxItem()
 {
 	reset();
-	this->mwindow = mwindow;
 	this->gui = gui;
 	this->asset = asset;
 	id = asset->id;
 	init_object();
 }
 
-AssetPicon::AssetPicon(MWindow *mwindow, 
-	AWindowGUI *gui, 
-	EDL *edl)
+AssetPicon::AssetPicon(AWindowGUI *gui, EDL *edl)
  : BC_ListBoxItem()
 {
 	reset();
-	this->mwindow = mwindow;
 	this->gui = gui;
 	this->edl = edl;
 	id = edl->id;
 	init_object();
 }
 
-AssetPicon::AssetPicon(MWindow *mwindow, 
-	AWindowGUI *gui, 
-	int folder)
+AssetPicon::AssetPicon(AWindowGUI *gui, int folder)
  : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]), gui->folder_icon)
 {
 	reset();
 	foldernum = folder;
-	this->mwindow = mwindow;
 	this->gui = gui;
 	persistent = 1;
 	init_object();
 }
 
-AssetPicon::AssetPicon(MWindow *mwindow, 
-	AWindowGUI *gui, 
-	PluginServer *plugin)
+AssetPicon::AssetPicon(AWindowGUI *gui, PluginServer *plugin)
  : BC_ListBoxItem()
 {
 	reset();
-	this->mwindow = mwindow;
 	this->gui = gui;
 	this->plugin = plugin;
 	init_object();
 }
 
-AssetPicon::AssetPicon(MWindow *mwindow, 
-	AWindowGUI *gui, 
-	Label *label)
+AssetPicon::AssetPicon(AWindowGUI *gui, Label *label)
  : BC_ListBoxItem()
 {
 	reset();
 	foldernum = -1;
-	this->mwindow = mwindow;
 	this->gui = gui;
 	this->label = label;
 	init_object();
@@ -164,7 +149,7 @@ void AssetPicon::init_object()
 		set_text(name);
 		if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 		{
-			if(mwindow->preferences->use_thumbnails)
+			if(preferences_global->use_thumbnails)
 			{
 				File file;
 
@@ -214,7 +199,7 @@ void AssetPicon::init_object()
 		strcpy(name, edl->local_session->clip_title);
 		set_text(name);
 		set_icon(gui->clip_icon);
-		set_icon_vframe(mwindow->theme->get_image("clip_icon"));
+		set_icon_vframe(theme_global->get_image("clip_icon"));
 	}
 	else
 	if(plugin)
@@ -265,7 +250,7 @@ void AssetPicon::init_object()
 }
 
 
-AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
+AWindowGUI::AWindowGUI(AWindow *awindow)
  : BC_Window(MWindow::create_title(N_("Resources")),
 	mainsession->awindow_x,
 	mainsession->awindow_y,
@@ -280,7 +265,6 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	int x, y;
 	AssetPicon *picon;
 
-	this->mwindow = mwindow;
 	this->awindow = awindow;
 
 	asset_titles[0] = _("Title");
@@ -304,30 +288,23 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 		PIXMAP_ALPHA);
 
 	clip_icon = new BC_Pixmap(this, 
-		mwindow->theme->get_image("clip_icon"),
+		theme_global->get_image("clip_icon"),
 		PIXMAP_ALPHA);
 
 // Mandatory folders
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_AEFFECT_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_VEFFECT_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_ATRANSITION_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_VTRANSITION_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_LABEL_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_CLIP_FOLDER));
-	folders.append(new AssetPicon(mwindow,
-		this,
+	folders.append(new AssetPicon(this,
 		AW_MEDIA_FOLDER));
 
 	create_label_folder();
@@ -337,37 +314,34 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	create_persistent_folder(&atransitions, 1, 0, 0, 1);
 	create_persistent_folder(&vtransitions, 0, 1, 0, 1);
 
-	mwindow->theme->get_awindow_sizes(this);
+	theme_global->get_awindow_sizes(this);
 
-	add_subwindow(asset_list = new AWindowAssets(mwindow,
-		this,
-		mwindow->theme->alist_x,
-		mwindow->theme->alist_y,
-		mwindow->theme->alist_w,
-		mwindow->theme->alist_h));
+	add_subwindow(asset_list = new AWindowAssets(this,
+		theme_global->alist_x,
+		theme_global->alist_y,
+		theme_global->alist_w,
+		theme_global->alist_h));
 
-	add_subwindow(divider = new AWindowDivider(mwindow,
-		this,
-		mwindow->theme->adivider_x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h));
+	add_subwindow(divider = new AWindowDivider(this,
+		theme_global->adivider_x,
+		theme_global->adivider_y,
+		theme_global->adivider_w,
+		theme_global->adivider_h));
 
 	divider->set_cursor(HSEPARATE_CURSOR);
 
-	add_subwindow(folder_list = new AWindowFolders(mwindow,
-		this,
-		mwindow->theme->afolders_x, 
-		mwindow->theme->afolders_y,
-		mwindow->theme->afolders_w,
-		mwindow->theme->afolders_h));
+	add_subwindow(folder_list = new AWindowFolders(this,
+		theme_global->afolders_x,
+		theme_global->afolders_y,
+		theme_global->afolders_w,
+		theme_global->afolders_h));
 
-	x = mwindow->theme->abuttons_x;
-	y = mwindow->theme->abuttons_y;
+	x = theme_global->abuttons_x;
+	y = theme_global->abuttons_y;
 
 	add_subwindow(asset_menu = new AssetPopup(awindow, this));
 
-	add_subwindow(label_menu = new LabelPopup(mwindow, this));
+	add_subwindow(label_menu = new LabelPopup(this));
 
 	add_subwindow(assetlist_menu = new AssetListMenu(this));
 
@@ -403,13 +377,13 @@ void AWindowGUI::resize_event(int w, int h)
 	mainsession->awindow_w = w;
 	mainsession->awindow_h = h;
 
-	mwindow->theme->get_awindow_sizes(this);
-	mwindow->theme->draw_awindow_bg(this);
+	theme_global->get_awindow_sizes(this);
+	theme_global->draw_awindow_bg(this);
 
 	reposition_objects();
 
-	int x = mwindow->theme->abuttons_x;
-	int y = mwindow->theme->abuttons_y;
+	int x = theme_global->abuttons_x;
+	int y = theme_global->abuttons_y;
 
 	BC_WindowBase::resize_event(w, h);
 }
@@ -422,41 +396,41 @@ void AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	int wmax = mainsession->awindow_w-mwindow->theme->adivider_w;
-	int x = mwindow->theme->afolders_x;
-	int w = mwindow->theme->afolders_w;
+	int wmax = mainsession->awindow_w - theme_global->adivider_w;
+	int x = theme_global->afolders_x;
+	int w = theme_global->afolders_w;
 	if (w > wmax)
 		w = wmax;
 	if (w <= 0)
 		w = 1;
-	folder_list->reposition_window(x, mwindow->theme->afolders_y,
-		w, mwindow->theme->afolders_h);
-	x = mwindow->theme->adivider_x;
+	folder_list->reposition_window(x, theme_global->afolders_y,
+		w, theme_global->afolders_h);
+	x = theme_global->adivider_x;
 	if (x > wmax)
 		x = wmax;
 	if (x < 0)
 		x = 0;
 	divider->reposition_window(x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h);
-	int x2 = mwindow->theme->alist_x;
-	if (x2 < x+mwindow->theme->adivider_w)
-		x2 = x+mwindow->theme->adivider_w;
-	w = mwindow->theme->alist_w;
+		theme_global->adivider_y,
+		theme_global->adivider_w,
+		theme_global->adivider_h);
+	int x2 = theme_global->alist_x;
+	if (x2 < x + theme_global->adivider_w)
+		x2 = x + theme_global->adivider_w;
+	w = theme_global->alist_w;
 	if (w > wmax)
 		w = wmax;
 	if (w <= 0)
 		w = 1;
-	asset_list->reposition_window(x2, mwindow->theme->alist_y,
-		w, mwindow->theme->alist_h);
+	asset_list->reposition_window(x2, theme_global->alist_y,
+		w, theme_global->alist_h);
 	flush();
 }
 
 void AWindowGUI::close_event()
 {
 	hide_window();
-	mwindow->mark_awindow_hidden();
+	mwindow_global->mark_awindow_hidden();
 }
 
 int AWindowGUI::keypress_event()
@@ -519,7 +493,7 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 // Create new listitem
 		if(!exists)
 		{
-			AssetPicon *picon = new AssetPicon(mwindow, this, server);
+			AssetPicon *picon = new AssetPicon(this, server);
 			output->append(picon);
 		}
 	}
@@ -530,7 +504,7 @@ void AWindowGUI::create_label_folder()
 	Label *current;
 	for(current = master_edl->labels->first; current; current = NEXT)
 	{
-		AssetPicon *picon = new AssetPicon(mwindow, this, current);
+		AssetPicon *picon = new AssetPicon(this, current);
 		labellist.append(picon);
 	}
 }
@@ -565,8 +539,7 @@ void AWindowGUI::update_asset_list()
 // Create new listitem
 		if(!exists)
 		{
-			AssetPicon *picon = new AssetPicon(mwindow, 
-				this, 
+			AssetPicon *picon = new AssetPicon(this,
 				cliplist_global.values[i]);
 			assets.append(picon);
 		}
@@ -596,7 +569,7 @@ void AWindowGUI::update_asset_list()
 // Create new listitem
 		if(!exists)
 		{
-			AssetPicon *picon = new AssetPicon(mwindow, this, current);
+			AssetPicon *picon = new AssetPicon(this, current);
 			assets.append(picon);
 		}
 	}
@@ -831,10 +804,9 @@ AssetPicon* AWindowGUI::selected_folder()
 }
 
 
-AWindowDivider::AWindowDivider(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
+AWindowDivider::AWindowDivider(AWindowGUI *gui, int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
@@ -855,7 +827,7 @@ int AWindowDivider::cursor_motion_event()
 		int cy;
 
 		gui->get_relative_cursor_pos(&mainsession->afolders_w, &cy);
-		mwindow->theme->get_awindow_sizes(gui);
+		theme_global->get_awindow_sizes(gui);
 		gui->reposition_objects();
 		return 1;
 	}
@@ -873,16 +845,12 @@ int AWindowDivider::button_release_event()
 }
 
 
-AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
- : BC_ListBox(x, 
-		y,
-		w, 
-		h,
-		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
-		(edlsession->folderlist_format == ASSETS_ICONS ?
-			LISTBOX_ICONS | LISTBOX_SMALLFONT : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
+AWindowFolders::AWindowFolders(AWindowGUI *gui, int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h,
+	&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
+	(edlsession->folderlist_format == ASSETS_ICONS ?
+	LISTBOX_ICONS | LISTBOX_SMALLFONT : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_drag_scroll(0);
 }
@@ -918,18 +886,15 @@ int AWindowFolders::button_press_event()
 }
 
 
-AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h)
- : BC_ListBox(x, 
-		y,
-		w, 
-		h,
-		&gui->assets,    // Each column has an ArrayList of BC_ListBoxItems.
-		(edlsession->assetlist_format == ASSETS_ICONS ?
-			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0) | LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
-		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
-		edlsession->asset_columns)                // width of each column
+AWindowAssets::AWindowAssets(AWindowGUI *gui, int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h,
+	&gui->assets,    // Each column has an ArrayList of BC_ListBoxItems.
+	(edlsession->assetlist_format == ASSETS_ICONS ?
+	(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0) |
+	LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
+	gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
+	edlsession->asset_columns)                // width of each column
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_drag_scroll(0);
 }
@@ -963,10 +928,10 @@ int AWindowAssets::handle_event()
 			break;
 		default:
 			if(((AssetPicon*)get_selection(0, 0))->asset)
-				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
+				mwindow_global->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
-				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->edl);
+				mwindow_global->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->edl);
 		}
 		return 1;
 	}
@@ -1085,16 +1050,16 @@ void AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
 
-	mwindow->gui->drag_motion();
-	mwindow->vwindow->gui->drag_motion();
-	mwindow->cwindow->gui->drag_motion();
+	mwindow_global->gui->drag_motion();
+	mwindow_global->vwindow->gui->drag_motion();
+	mwindow_global->cwindow->gui->drag_motion();
 }
 
 void AWindowAssets::drag_stop_event()
 {
-	mwindow->gui->drag_stop();
-	mwindow->vwindow->gui->drag_stop();
-	mwindow->cwindow->gui->drag_stop();
+	mwindow_global->gui->drag_stop();
+	mwindow_global->vwindow->gui->drag_stop();
+	mwindow_global->cwindow->gui->drag_stop();
 	get_drag_popup()->set_animation(0);
 	BC_ListBox::drag_stop_event();
 	// since NO_OPERATION is also defined in listbox,
@@ -1110,40 +1075,34 @@ int AWindowAssets::column_resize_event()
 }
 
 
-LabelPopup::LabelPopup(MWindow *mwindow, AWindowGUI *gui)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
+LabelPopup::LabelPopup(AWindowGUI *gui)
+ : BC_PopupMenu(0, 0, 0, "", 0)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
-	add_item(editlabel = new LabelPopupEdit(mwindow, this));
+	add_item(editlabel = new LabelPopupEdit(this));
 }
 
 
-LabelPopupEdit::LabelPopupEdit(MWindow *mwindow, LabelPopup *popup)
+LabelPopupEdit::LabelPopupEdit(LabelPopup *popup)
  : BC_MenuItem(_("Edit..."))
 {
-	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
 int LabelPopupEdit::handle_event()
 {
 	int i = 0;
+
 	while(1)
 	{
-		AssetPicon *result = (AssetPicon*)mwindow->awindow->gui->asset_list->get_selection(0, i++);
+		AssetPicon *result = (AssetPicon*)mwindow_global->awindow->gui->asset_list->get_selection(0, i++);
 		if(!result) break;
 
 		if(result->label)
 		{
-			mwindow->awindow->gui->awindow->label_edit->edit_label(result->label);
+			mwindow_global->awindow->label_edit->edit_label(result->label);
 			break;
 		}
 	}
-
 	return 1;
 }

@@ -364,7 +364,7 @@ void MWindow::clean_indexes()
 
 void MWindow::init_awindow()
 {
-	awindow = new AWindow(this);
+	awindow = new AWindow();
 }
 
 void MWindow::init_gwindow()
