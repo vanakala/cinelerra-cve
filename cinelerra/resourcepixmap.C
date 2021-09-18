@@ -563,9 +563,8 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	double picons, picount;
 // Start and duration of a picon
 	ptstime picon_src, picon_len;
-
-// Don't draw video if edit is tiny
-	if(edit_w < 2)
+// Don't draw video if edit or picon is tiny
+	if(edit_w < 2 || picon_w < 1)
 		return;
 
 	if(edlsession->show_titles)
