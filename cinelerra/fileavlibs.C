@@ -416,6 +416,10 @@ int FileAVlibs::probe_input(Asset *asset)
 			{
 			case FILE_SVG:
 			case FILE_EXR:
+			case FILE_JPEG:
+			case FILE_PNG:
+			case FILE_TGA:
+			case FILE_TIFF:
 				asset->set_single_image();
 				break;
 			}
