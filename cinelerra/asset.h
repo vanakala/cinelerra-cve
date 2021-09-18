@@ -105,6 +105,7 @@ public:
 	void copy_index(Asset *asset);
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
+	void remove_stream(int stream);
 	ptstime stream_duration(int stream);
 	samplenum stream_samples(int stream);
 	ptstime duration();

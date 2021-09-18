@@ -603,6 +603,25 @@ int Asset::check_programs(Asset *asset)
 	return !strcmp(asset->path, path);
 }
 
+void Asset::remove_stream(int stream)
+{
+	if(stream < 0 || stream >= nb_streams)
+		return;
+
+	if(stream < nb_streams - 1)
+	{
+		memmove(&streams[stream], &streams[stream + 1],
+			sizeof(struct streamdesc) * (nb_streams - stream - 1));
+		stream = nb_streams - 1;
+	}
+
+	if(stream == nb_streams - 1)
+	{
+		memset(&streams[stream], 0, sizeof(struct streamdesc));
+		nb_streams--;
+	}
+}
+
 int Asset::get_stream_ix(int stream_type, int prev_stream)
 {
 	if(nb_programs)
@@ -999,14 +1018,14 @@ void Asset::set_single_image()
 			video_duration = 1. / edlsession->frame_rate;
 		}
 	}
+	video_data = 1;
 	video_length = 1;
 	single_image = 1;
 	pts_base = 0;
 	// Fill stream info
-	int ix = video_streamno - 1;
-	streams[ix].end = video_duration;
-	streams[ix].frame_rate = frame_rate;
-	streams[ix].length = video_length;
+	streams[0].end = video_duration;
+	streams[0].frame_rate = frame_rate;
+	streams[0].length = video_length;
 }
 
 void Asset::write_decoder_params(FileXML *file)
@@ -1306,15 +1325,19 @@ void Asset::format_changed()
 		switch(format)
 		{
 		case FILE_TGA:
+		case FILE_TGA_LIST:
 			FileTGA::get_render_defaults(this);
 			break;
 		case FILE_JPEG:
+		case FILE_JPEG_LIST:
 			FileJPEG::get_render_defaults(this);
 			break;
 		case FILE_PNG:
+		case FILE_PNG_LIST:
 			FilePNG::get_render_defaults(this);
 			break;
 		case FILE_TIFF:
+		case FILE_TIFF_LIST:
 			FileTIFF::get_render_defaults(this);
 			break;
 		default:
@@ -1331,9 +1354,13 @@ void Asset::get_format_params(int options)
 		switch(format)
 		{
 		case FILE_TGA:
+		case FILE_TGA_LIST:
 		case FILE_JPEG:
+		case FILE_JPEG_LIST:
 		case FILE_PNG:
+		case FILE_PNG_LIST:
 		case FILE_TIFF:
+		case FILE_TIFF_LIST:
 			break;
 		default:
 			FileAVlibs::get_format_params(this, options);
@@ -1417,6 +1444,8 @@ void Asset::delete_decoder_parameters()
 
 void Asset::load_defaults(Paramlist *list, int options)
 {
+	int stream;
+
 	if(options & ASSET_PATH)
 		list->get("path", path);
 
@@ -1425,14 +1454,24 @@ void Asset::load_defaults(Paramlist *list, int options)
 
 	if(options & ASSET_TYPES)
 	{
-		audio_data = list->get("audio", audio_data);
-		video_data = list->get("video", video_data);
+		if(list->get("audio", 0) && get_stream_ix(STRDSC_AUDIO) < 0)
+		{
+			streams[nb_streams].stream_index = nb_streams;
+			streams[nb_streams++].options = STRDSC_AUDIO;
+		}
+		if(list->get("video", 0) && get_stream_ix(STRDSC_VIDEO) < 0)
+		{
+			streams[nb_streams].stream_index = nb_streams;
+			streams[nb_streams++].options = STRDSC_VIDEO;
+		}
 	}
 
 	if(options & ASSET_COMPRESSION)
 	{
-		list->get("audio_codec", acodec);
-		list->get("video_codec", vcodec);
+		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
+			list->get("audio_codec", streams[stream].codec);
+		if((stream = get_stream_ix(STRDSC_VIDEO)) >= 0)
+			list->get("video_codec", streams[stream].codec);
 		format_changed();
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
