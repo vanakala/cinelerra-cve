@@ -139,9 +139,9 @@ Plugin *Edit::insert_transition(PluginServer *server)
 	return transition;
 }
 
-int Edit::silence(void)
+int Edit::silence()
 {
-	if(asset) 
+	if(asset)
 		return 0;
 	else
 		return 1;
@@ -217,27 +217,33 @@ Edit& Edit::operator=(Edit& edit)
 	return *this;
 }
 
-double Edit::picon_w(void)
+double Edit::picon_w()
 {
-	if(asset && asset->width && asset->height)
+	if(!asset)
+		return 0;
+
+	int width = asset->streams[stream].width;
+	int height = asset->streams[stream].height;
+
+	if(width && height)
 		return (double)edl->local_session->zoom_track *
-			asset->width / asset->height;
+			width / height;
 	return 0.0;
 }
 
-int Edit::picon_h(void)
+int Edit::picon_h()
 {
 	return edl->local_session->zoom_track;
 }
 
-ptstime Edit::length(void)
+ptstime Edit::length()
 {
 	if(next)
 		return next->project_pts - project_pts;
 	return 0;
 }
 
-ptstime Edit::end_pts(void)
+ptstime Edit::end_pts()
 {
 	if(next)
 		return next->project_pts;

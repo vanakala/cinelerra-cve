@@ -14,7 +14,6 @@
 #include "filexml.inc"
 #include "keyframe.inc"
 #include "linklist.h"
-#include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "track.inc"
@@ -28,15 +27,15 @@ public:
 	Edit(EDL *edl, Track *track);
 	~Edit();
 
-	ptstime length(void);
-	ptstime end_pts(void);
+	ptstime length();
+	ptstime end_pts();
 	void copy_from(Edit *edit);
 	Edit& operator=(Edit& edit);
 // Called by Edits
 	void equivalent_output(Edit *edit, ptstime *result);
 // Get size of frame to draw on timeline
-	double picon_w(void);
-	int picon_h(void);
+	double picon_w();
+	int picon_h();
 
 	void save_xml(FileXML *xml, const char *output_path, int streamno);
 // Shift in time
@@ -44,7 +43,7 @@ public:
 	void shift_source(ptstime difference);
 	Plugin *insert_transition(PluginServer *server);
 // Determine if silence depending on existance of asset or plugin title
-	int silence(void);
+	int silence();
 // Returns size of data in bytes
 	size_t get_size();
 

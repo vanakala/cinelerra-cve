@@ -170,7 +170,7 @@ void AssetPicon::init_object()
 
 				if(!file.open_file(asset, FILE_OPEN_READ | FILE_OPEN_VIDEO, stream))
 				{
-					pixmap_w = pixmap_h * asset->width / asset->height;
+					pixmap_w = pixmap_h * asset->streams[stream].width / asset->streams[stream].height;
 					icon_vframe = new VFrame(0, 
 						pixmap_w, 
 						pixmap_h, 
