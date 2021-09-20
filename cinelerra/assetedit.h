@@ -33,7 +33,6 @@ public:
 	AssetEdit();
 
 	void edit_asset(Asset *asset);
-	void set_asset(Asset *asset);
 	void run();
 
 	Asset *asset, *new_asset;

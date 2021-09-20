@@ -55,16 +55,9 @@ void AssetEdit::edit_asset(Asset *asset)
 	}
 }
 
-void AssetEdit::set_asset(Asset *asset)
-{
-	this->asset = asset;
-}
-
 void AssetEdit::run()
 {
 	int absx, absy;
-// FIXIT
-	int stream = 0;
 
 	if(asset)
 	{
@@ -91,20 +84,14 @@ void AssetEdit::run()
 				asset->copy_from(new_asset, 0);
 				asset->set_decoder_parameters();
 				mwindow_global->update_gui(WUPD_CANVREDRAW);
-
 // Start index rebuilding
 				if(newidx)
 				{
-					char source_filename[BCTEXTLEN];
-					char index_filename[BCTEXTLEN];
-
-					IndexFile::get_index_filename(source_filename, 
-						preferences_global->index_directory,
-						index_filename, 
-						asset->path, stream);
-					remove(index_filename);
-					asset->indexfiles[stream].status = INDEX_NOTTESTED;
-					mwindow_global->mainindexes->add_next_asset(asset, stream);
+					for(int i = 0; i < MAXCHANNELS; i++)
+					{
+						asset->indexfiles[i].remove_index();
+						mwindow_global->mainindexes->add_next_asset(asset, i);
+					}
 					mwindow_global->mainindexes->start_build();
 				}
 
@@ -147,9 +134,10 @@ AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 	int win_y = get_y();
 	ptstime l, length = 0;
 	uintmax_t bitrate;
+	int stream;
 
 	this->asset_edit = asset_edit;
-	this->asset = asset_edit->new_asset;
+	asset = asset_edit->new_asset;
 
 	set_icon(mwindow_global->awindow->get_window_icon());
 	add_subwindow(path_text = new AssetEditPathText(this, x0, y, 300));
@@ -184,26 +172,25 @@ AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 
 	numaudio = numvideo = 0;
 
-	for(int i = 0; i < asset->last_active; i++)
+	stream = -1;
+	while((stream = asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
 	{
-		if(asset->active_streams[i]->options & STRDSC_AUDIO)
-		{
-			add_subwindow(aiwin[numaudio] =
-				new AudioInfoWindow(asset->active_streams[i],
+		add_subwindow(aiwin[numaudio] =
+			new AudioInfoWindow(&asset->streams[stream],
 				theme_global->edit_font_color));
 			numaudio++;
-		}
-		if(asset->active_streams[i]->options & STRDSC_VIDEO)
-		{
-			add_subwindow(viwin[numvideo] =
-				new VideoInfoWindow(asset->active_streams[i],
-				theme_global->edit_font_color));
-			numvideo++;
-		}
-		l = asset->active_streams[i]->end - asset->active_streams[i]->start;
-		if(length < l)
-			length = l;
 	}
+	stream = -1;
+	while((stream = asset->get_stream_ix(STRDSC_VIDEO, stream)) >= 0)
+	{
+		add_subwindow(viwin[numvideo] =
+			new VideoInfoWindow(&asset->streams[stream],
+			theme_global->edit_font_color));
+		numvideo++;
+	}
+
+	length = asset->duration();
+
 	if(!asset->single_image && length > 0)
 	{
 		bitrate = asset->file_length / length * 8;
@@ -300,7 +287,6 @@ AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	flush();
 }
 
 AssetEditWindow::~AssetEditWindow()
