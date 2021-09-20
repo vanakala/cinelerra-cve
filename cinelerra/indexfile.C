@@ -526,6 +526,7 @@ void IndexFile::remove_index()
 	{
 		close_index();
 		remove(index_filename);
+		status = INDEX_NOTTESTED;
 	}
 }
 
