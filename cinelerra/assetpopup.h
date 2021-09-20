@@ -71,9 +71,12 @@ private:
 class AssetPopupBuildIndex : public BC_MenuItem
 {
 public:
-	AssetPopupBuildIndex();
+	AssetPopupBuildIndex(AssetPopup *popup);
 
 	int handle_event();
+
+private:
+	AssetPopup *popup;
 };
 
 

@@ -27,7 +27,7 @@ AssetPopup::AssetPopup(AWindow *awindow, AWindowGUI *gui)
 	add_item(format = new AssetListFormat(gui));
 	add_item(info = new AssetPopupInfo(awindow, this));
 	add_item(new AssetPopupSort(gui));
-	add_item(index = new AssetPopupBuildIndex());
+	add_item(index = new AssetPopupBuildIndex(this));
 	add_item(view = new AssetPopupView(this));
 	add_item(new AssetPopupPaste(this));
 	add_item(new AssetPopupProjectRemove());
@@ -143,14 +143,15 @@ int AssetPopupInfo::handle_event()
 }
 
 
-AssetPopupBuildIndex::AssetPopupBuildIndex()
+AssetPopupBuildIndex::AssetPopupBuildIndex(AssetPopup *popup)
  : BC_MenuItem(_("Rebuild index"))
 {
+	this->popup = popup;
 }
 
 int AssetPopupBuildIndex::handle_event()
 {
-	mwindow_global->rebuild_indices();
+	mwindow_global->rebuild_indices(popup->current_asset);
 	return 1;
 }
 

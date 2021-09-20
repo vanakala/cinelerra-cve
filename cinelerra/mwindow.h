@@ -304,7 +304,7 @@ public:
 	void paste_transition();
 	void insert_transition(PluginServer *server, Edit *dst_edit);
 	void paste_transition(int data_type, PluginServer *server = 0, int firstonly = 0);
-	void rebuild_indices();
+	void rebuild_indices(Asset *asset);
 // Asset removal from caches
 	void reset_caches();
 	void remove_asset_from_caches(Asset *asset);

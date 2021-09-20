@@ -1179,15 +1179,10 @@ void MWindow::update_project(int load_mode)
 	gui->flush();
 }
 
-void MWindow::rebuild_indices()
+void MWindow::rebuild_indices(Asset *asset)
 {
-	char source_filename[BCTEXTLEN], index_filename[BCTEXTLEN];
-
-	for(int i = 0; i < mainsession->drag_assets->total; i++)
-	{
-		mainsession->drag_assets->values[i]->remove_indexes();
-		mainindexes->add_next_asset(mainsession->drag_assets->values[i]);
-	}
+	asset->remove_indexes();
+	mainindexes->add_next_asset(asset);
 	mainindexes->start_build();
 }
 
