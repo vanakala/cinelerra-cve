@@ -614,15 +614,16 @@ void AWindowGUI::sort_assets()
 void AWindowGUI::collect_assets()
 {
 	int i = 0;
+
 	mainsession->drag_assets->remove_all();
 	mainsession->drag_clips->remove_all();
-	while(1)
-	{
-		AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++);
-		if(!result) break;
 
-		if(result->asset) mainsession->drag_assets->append(result->asset);
-		if(result->edl) mainsession->drag_clips->append(result->edl);
+	while(AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++))
+	{
+		if(result->asset)
+			mainsession->drag_assets->append(result->asset);
+		if(result->edl)
+			mainsession->drag_clips->append(result->edl);
 	}
 }
 
@@ -1026,14 +1027,11 @@ int AWindowAssets::drag_start_event()
 		if(collect_pluginservers)
 		{
 			int i = 0;
+
 			mainsession->drag_pluginservers->remove_all();
-			while(1)
-			{
-				AssetPicon *result = (AssetPicon*)get_selection(0, i++);
-				if(!result) break;
-				
+
+			while(AssetPicon *result = (AssetPicon*)get_selection(0, i++))
 				mainsession->drag_pluginservers->append(result->plugin);
-			}
 		}
 
 		if(collect_assets)
@@ -1093,11 +1091,8 @@ int LabelPopupEdit::handle_event()
 {
 	int i = 0;
 
-	while(1)
+	while(AssetPicon *result = (AssetPicon*)mwindow_global->awindow->gui->asset_list->get_selection(0, i++))
 	{
-		AssetPicon *result = (AssetPicon*)mwindow_global->awindow->gui->asset_list->get_selection(0, i++);
-		if(!result) break;
-
 		if(result->label)
 		{
 			mwindow_global->awindow->label_edit->edit_label(result->label);
