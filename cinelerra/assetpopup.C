@@ -30,7 +30,7 @@ AssetPopup::AssetPopup(AWindow *awindow, AWindowGUI *gui)
 	add_item(index = new AssetPopupBuildIndex(this));
 	add_item(view = new AssetPopupView(this));
 	add_item(new AssetPopupPaste(this));
-	add_item(new AssetPopupProjectRemove());
+	add_item(new AssetPopupProjectRemove(this));
 	matchsize = new AssetMatchSize(this);
 	matchrate = new AssetMatchRate(this);
 	show_size = 0;
@@ -227,13 +227,15 @@ int AssetMatchRate::handle_event()
 }
 
 
-AssetPopupProjectRemove::AssetPopupProjectRemove()
+AssetPopupProjectRemove::AssetPopupProjectRemove(AssetPopup *popup)
  : BC_MenuItem(_("Remove from project"))
 {
+	this->popup = popup;
 }
 
 int AssetPopupProjectRemove::handle_event()
 {
+	popup->gui->collect_assets();
 	mwindow_global->remove_assets_from_project(1);
 	return 1;
 }

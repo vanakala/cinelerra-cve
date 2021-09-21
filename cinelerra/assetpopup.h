@@ -31,9 +31,9 @@ public:
 
 	Asset *current_asset;
 	EDL *current_edl;
-private:
 	AWindowGUI *gui;
 
+private:
 	AssetPopupInfo *info;
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
@@ -127,9 +127,11 @@ private:
 class AssetPopupProjectRemove : public BC_MenuItem
 {
 public:
-	AssetPopupProjectRemove();
+	AssetPopupProjectRemove(AssetPopup *popup);
 
 	int handle_event();
+private:
+	AssetPopup *popup;
 };
 
 #endif
