@@ -770,8 +770,6 @@ void Asset::read(FileXML *file, int expand_relative)
 			format = ContainerSelection::prefix_to_container(string);
 			if(format == FILE_UNKNOWN)
 				format = ContainerSelection::text_to_container(string);
-			use_header =
-				file->tag.get_property("USE_HEADER", use_header);
 			program =
 				file->tag.get_property("PROGRAM", program);
 			pcm_format = file->tag.get_property("PCM_FORMAT");
@@ -956,7 +954,6 @@ void Asset::write(FileXML *file, int include_index, int stream,
 
 	file->tag.set_property("TYPE", 
 		ContainerSelection::container_prefix(format));
-	file->tag.set_property("USE_HEADER", use_header);
 	if(!include_index && nb_programs && program_id)
 		file->tag.set_property("PROGRAM", program_id);
 	if(format == FILE_PCM && pcm_format)
@@ -1119,7 +1116,7 @@ void Asset::write_params(FileXML *file)
 	Paramlist parms("ProfilData");
 	char bufr[64];
 
-	save_defaults(&parms, ASSET_ALL | ASSET_HEADER);
+	save_defaults(&parms, ASSET_ALL);
 	parms.save_list(file);
 	file->position--;
 
@@ -1161,7 +1158,7 @@ void Asset::read_params(FileXML *file)
 			encoder_parameters[num] = epar;
 		}
 	}
-	load_defaults(&parm, ASSET_ALL | ASSET_HEADER);
+	load_defaults(&parm, ASSET_ALL);
 	FileAVlibs::deserialize_params(this);
 }
 
@@ -1484,9 +1481,6 @@ void Asset::load_defaults(Paramlist *list, int options)
 		signed_ = list->get("signed", signed_);
 		byte_order = list->get("byte_order", byte_order);
 	}
-
-	if(options & ASSET_HEADER)
-		use_header = list->get("useheader", use_header);
 }
 
 void Asset::save_defaults(Paramlist *list, int options)
@@ -1516,9 +1510,6 @@ void Asset::save_defaults(Paramlist *list, int options)
 		list->set("signed", signed_);
 		list->set("byte_order", byte_order);
 	}
-
-	if(options & ASSET_HEADER)
-		list->set("useheader", use_header);
 }
 
 char *Asset::profile_config_path(const char *filename, char *outpath)

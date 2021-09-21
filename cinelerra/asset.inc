@@ -21,9 +21,7 @@ struct streamdesc;
 #define ASSET_PATH         4
 #define ASSET_TYPES        8
 #define ASSET_BITS         0x10
-#define ASSET_HEADER       0x20
 
-// All bits exept ASSET_HEADER
 #define ASSET_ALL          0x1f
 
 // bits of dump options
