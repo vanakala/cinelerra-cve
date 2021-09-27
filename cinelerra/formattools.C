@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -116,16 +100,16 @@ int FormatPopup::frender_menu2[] = {
 };
 
 FormatTools::FormatTools(MWindow *mwindow,
-			BC_WindowBase *window,
-			Asset *asset, 
-			int &init_x,
-			int &init_y,
-			int support,
-			int checkbox,
-			int details,
-			int *strategy,
-			int brender,
-			int horizontal_layout)
+	BC_WindowBase *window,
+	Asset *asset,
+	int &init_x,
+	int &init_y,
+	int support,
+	int checkbox,
+	int details,
+	int *strategy,
+	int brender,
+	int horizontal_layout)
 {
 	int x = init_x;
 	int y = init_y;
@@ -281,11 +265,12 @@ void FormatTools::enable_supported()
 		if((filesup & SUPPORTS_AUDIO) == 0)
 		{
 			aparams_button->disable();
+			asset->remove_stream_type(STRDSC_AUDIO);
+
 			if(audio_switch)
 			{
 				audio_switch->set_value(0);
 				audio_switch->disable();
-				asset->audio_data = 0;
 			}
 		}
 		else
@@ -296,7 +281,7 @@ void FormatTools::enable_supported()
 				audio_switch->enable();
 				if((filesup & ~SUPPORTS_AUDIO) == 0)
 				{
-					asset->audio_data = 1;
+					asset->create_render_stream(STRDSC_AUDIO);
 					audio_switch->set_value(1);
 				}
 			}
@@ -307,6 +292,7 @@ void FormatTools::enable_supported()
 		if((filesup & SUPPORTS_VIDEO) == 0)
 		{
 			vparams_button->disable();
+			asset->remove_stream_type(STRDSC_VIDEO);
 			if(video_switch)
 			{
 				video_switch->set_value(0);
@@ -323,7 +309,7 @@ void FormatTools::enable_supported()
 				video_switch->enable();
 				if((filesup & ~(SUPPORTS_VIDEO|SUPPORTS_STILL)) == 0)
 				{
-					asset->video_data = 1;
+					asset->create_render_stream(STRDSC_VIDEO);
 					video_switch->set_value(1);
 				}
 			}
@@ -376,20 +362,26 @@ void FormatTools::update(Asset *asset, int *strategy)
 
 	if(path_textbox) 
 		path_textbox->update(asset->path);
+
 	format_popup->update(asset->format);
-	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
-	if(do_video && video_switch) video_switch->update(asset->video_data);
+
+	if(do_audio && audio_switch)
+		audio_switch->update(asset->stream_count(STRDSC_AUDIO));
+
+	if(do_video && video_switch)
+		video_switch->update(asset->stream_count(STRDSC_VIDEO));
+
 	if(strategy)
-	{
 		multiple_files->update(strategy);
-	}
 	close_format_windows();
 }
 
 void FormatTools::close_format_windows()
 {
-	if(aparams_thread) aparams_thread->file->close_window();
-	if(vparams_thread) vparams_thread->file->close_window();
+	if(aparams_thread)
+		aparams_thread->file->close_window();
+	if(vparams_thread)
+		vparams_thread->file->close_window();
 }
 
 int FormatTools::get_w()
@@ -428,14 +420,6 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 		x = init_x;
 		y += aparams_button->get_h() + 5;
-		if(details & SUPPORTS_AUDIO)
-		{
-			channels_title->reposition_window(x, y);
-			x += 260;
-			channels_button->reposition_window(x, y);
-			y += channels_button->get_h() + 25;
-			x = init_x;
-		}
 	}
 
 	if(do_video)
@@ -594,46 +578,33 @@ int FormatPathText::handle_event()
 
 
 FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
- : BC_CheckBox(x, 
-	y, 
-	default_, 
-	_("Render audio tracks"))
-{ 
-	this->format = format; 
+ : BC_CheckBox(x, y, default_, _("Render audio tracks"))
+{
+	this->format = format;
 }
 
 int FormatAudio::handle_event()
 {
-	format->asset->audio_data = get_value();
+	if(get_value())
+		format->asset->create_render_stream(STRDSC_AUDIO);
+	else
+		format->asset->remove_stream_type(STRDSC_AUDIO);
 	return 1;
 }
 
 
 FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
- : BC_CheckBox(x, 
-	y,
-	default_, 
-	_("Render video tracks"))
+ : BC_CheckBox(x, y, default_, _("Render video tracks"))
 {
 	this->format = format; 
 }
 
 int FormatVideo::handle_event()
 {
-	format->asset->video_data = get_value();
-	return 1;
-}
-
-
-FormatChannels::FormatChannels(int x, int y, FormatTools *format)
- : BC_TextBox(x, y, 100, 1, format->asset->channels) 
-{ 
-	this->format = format; 
-}
-
-int FormatChannels::handle_event() 
-{
-	format->asset->channels = atol(get_text());
+	if(get_value())
+		format->asset->create_render_stream(STRDSC_VIDEO);
+	else
+		format->asset->remove_stream_type(STRDSC_VIDEO);
 	return 1;
 }
 

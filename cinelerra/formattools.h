@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef FORMATTOOLS_H
 #define FORMATTOOLS_H
@@ -36,7 +20,6 @@ class FormatVParams;
 class FormatFParams;
 class FormatAThread;
 class FormatVThread;
-class FormatChannels;
 class FormatPathButton;
 class FormatPathText;
 class FormatAudio;
@@ -58,16 +41,16 @@ class FormatTools
 {
 public:
 	FormatTools(MWindow *mwindow,
-			BC_WindowBase *window, 
-			Asset *asset,
-			int &init_x,
-			int &init_y,
-			int support,
-			int checkbox,
-			int details,
-			int *strategy,
-			int brender = 0,
-			int horizontal_layout = 0);
+		BC_WindowBase *window,
+		Asset *asset,
+		int &init_x,
+		int &init_y,
+		int support,
+		int checkbox,
+		int details,
+		int *strategy,
+		int brender = 0,
+		int horizontal_layout = 0);
 	virtual ~FormatTools();
 
 // enable/disable supported streams
@@ -108,8 +91,6 @@ public:
 	FormatPopup *format_popup;
 
 	BC_Title *audio_title;
-	BC_Title *channels_title;
-	FormatChannels *channels_button;
 	FormatAudio *audio_switch;
 
 	BC_Title *video_title;
@@ -145,6 +126,7 @@ public:
 	FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y);
 
 	int handle_event();
+
 	FormatTools *format;
 };
 
@@ -154,6 +136,7 @@ public:
 	FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y);
 
 	int handle_event();
+
 	FormatTools *format;
 };
 
@@ -205,17 +188,6 @@ class FormatVideo : public BC_CheckBox
 {
 public:
 	FormatVideo(int x, int y, FormatTools *format, int default_);
-
-	int handle_event();
-
-	FormatTools *format;
-};
-
-
-class FormatChannels : public BC_TextBox
-{
-public:
-	FormatChannels(int x, int y, FormatTools *format);
 
 	int handle_event();
 
