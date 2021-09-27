@@ -106,6 +106,8 @@ public:
 // Returns index of the next requested type stream
 	int get_stream_ix(int stream_type, int prev_stream = -1);
 	void remove_stream(int stream);
+	void remove_stream_type(int stream_type);
+	void create_render_stream(int stream_type);
 	ptstime stream_duration(int stream);
 	samplenum stream_samples(int stream);
 	ptstime duration();

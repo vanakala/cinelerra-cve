@@ -622,6 +622,14 @@ void Asset::remove_stream(int stream)
 	}
 }
 
+void Asset::remove_stream_type(int stream_type)
+{
+	int stream;
+
+	while((stream = get_stream_ix(stream_type)) >= 0)
+		remove_stream(stream);
+}
+
 int Asset::get_stream_ix(int stream_type, int prev_stream)
 {
 	if(nb_programs)
@@ -662,6 +670,41 @@ int Asset::get_stream_ix(int stream_type, int prev_stream)
 		}
 	}
 	return -1;
+}
+
+void Asset::create_render_stream(int stream_type)
+{
+	if(get_stream_ix(stream_type) >= 0)
+		return;
+
+	streams[nb_streams].options = stream_type;
+	streams[nb_streams].start = 0;
+	streams[nb_streams].end = 0;
+	pts_base = 0;
+
+	if(stream_type & STRDSC_AUDIO)
+	{
+		streams[nb_streams].channels = master_edl->this_edlsession->audio_channels;
+		streams[nb_streams].sample_rate = master_edl->this_edlsession->sample_rate;
+		streams[nb_streams].bits = 16;
+		streams[nb_streams].signedsample = 1;
+		streams[nb_streams].stream_index = 0;
+		byte_order = 1;
+		dither = 1;
+		nb_streams++;
+	}
+
+	if(stream_type & STRDSC_VIDEO)
+	{
+		streams[nb_streams].channels = 1;
+		streams[nb_streams].sample_rate = master_edl->this_edlsession->frame_rate;
+		streams[nb_streams].sample_aspect_ratio = master_edl->this_edlsession->sample_aspect_ratio;
+		streams[nb_streams].width = master_edl->this_edlsession->output_w;
+		streams[nb_streams].height = master_edl->this_edlsession->output_h;
+		streams[nb_streams].stream_index = 1;
+		nb_streams++;
+	}
+	format_changed();
 }
 
 ptstime Asset::stream_duration(int stream)
@@ -1306,9 +1349,9 @@ void Asset::load_defaults(BC_Hash *defaults,
 		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
 	}
 
-	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
-	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
-	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
+	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
+	interlace_mode = BC_ILACE_MODE_UNDETECTED;
+	interlace_fixmethod = BC_ILACE_FIXMETHOD_UPONE;
 
 // this extra 'FORMAT_' prefix is just here for legacy reasons
 	use_pipe = GET_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
@@ -1452,15 +1495,10 @@ void Asset::load_defaults(Paramlist *list, int options)
 	if(options & ASSET_TYPES)
 	{
 		if(list->get("audio", 0) && get_stream_ix(STRDSC_AUDIO) < 0)
-		{
-			streams[nb_streams].stream_index = nb_streams;
-			streams[nb_streams++].options = STRDSC_AUDIO;
-		}
+			create_render_stream(STRDSC_AUDIO);
+
 		if(list->get("video", 0) && get_stream_ix(STRDSC_VIDEO) < 0)
-		{
-			streams[nb_streams].stream_index = nb_streams;
-			streams[nb_streams++].options = STRDSC_VIDEO;
-		}
+			create_render_stream(STRDSC_VIDEO);
 	}
 
 	if(options & ASSET_COMPRESSION)
@@ -1476,15 +1514,20 @@ void Asset::load_defaults(Paramlist *list, int options)
 
 	if(options & ASSET_BITS)
 	{
-		bits = list->get("bits", bits);
-		dither = list->get("dither", dither);
-		signed_ = list->get("signed", signed_);
-		byte_order = list->get("byte_order", byte_order);
+		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
+		{
+			streams[stream].bits = list->get("bits", 16);
+			dither = list->get("dither", 0);
+			streams[stream].signedsample = list->get("signed", 1);
+			byte_order = list->get("byte_order", 1);
+		}
 	}
 }
 
 void Asset::save_defaults(Paramlist *list, int options)
 {
+	int stream;
+
 	list->set("path", path);
 
 	if(options & ASSET_FORMAT)
@@ -1492,23 +1535,32 @@ void Asset::save_defaults(Paramlist *list, int options)
 
 	if(options & ASSET_TYPES)
 	{
-		list->set("audio", audio_data);
-		list->set("video", video_data);
+		if(stream_count(STRDSC_AUDIO))
+			list->set("audio", 1);
+		if(stream_count(STRDSC_VIDEO))
+			list->set("video", 1);
 	}
 
 	if(options & ASSET_COMPRESSION)
 	{
-		list->set("audio_codec", acodec);
-		list->set("video_codec", vcodec);
+		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0 &&
+				streams[stream].codec[0])
+			list->set("audio_codec", streams[stream].codec);
+		if((stream = get_stream_ix(STRDSC_VIDEO)) >= 0 &&
+				streams[stream].codec[0])
+			list->set("video_codec", streams[stream].codec);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
 	}
 	if(options & ASSET_BITS)
 	{
-		list->set("bits", bits);
-		list->set("dither", dither);
-		list->set("signed", signed_);
-		list->set("byte_order", byte_order);
+		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
+		{
+			list->set("bits", streams[stream].bits);
+			list->set("signed", streams[stream].signedsample);
+			list->set("dither", dither);
+			list->set("byte_order", byte_order);
+		}
 	}
 }
 
