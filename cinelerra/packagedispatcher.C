@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcsignals.h"
@@ -34,8 +18,6 @@
 #include "render.h"
 #include "file.h"
 
-
-
 PackageDispatcher::PackageDispatcher()
 {
 	packages = 0;
@@ -49,7 +31,6 @@ PackageDispatcher::PackageDispatcher()
 	total_start = total_end = total_len = 0;
 	strategy = 0;
 	default_asset = 0;
-	preferences = 0;
 	current_number = number_start = 0;
 	total_digits = 0;
 	package_len = min_package_len = 0;
@@ -69,25 +50,21 @@ PackageDispatcher::~PackageDispatcher()
 	delete package_lock;
 }
 
-int PackageDispatcher::create_packages(MWindow *mwindow,
-	EDL *edl,
-	Preferences *preferences,
+int PackageDispatcher::create_packages(EDL *edl,
 	int strategy, 
-	Asset *default_asset, 
+	Asset *default_asset,
 	ptstime total_start,
 	ptstime total_end,
 	int test_overwrite)
 {
 	int result = 0;
-	this->mwindow = mwindow;
 	this->edl = edl;
-	this->preferences = preferences;
 	this->strategy = strategy;
 	this->default_asset = default_asset;
 	this->total_start = total_start;
 	this->total_end = total_end;
 
-	nodes = preferences->get_enabled_nodes();
+	nodes = render_preferences->get_enabled_nodes();
 	audio_pts = total_start;
 	video_pts = total_start;
 	audio_end_pts = total_end;
@@ -108,14 +85,14 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 			6);
 
 // Master node only
-		if(preferences->renderfarm_nodes.total == 1)
+		if(render_preferences->renderfarm_nodes.total == 1)
 		{
 			package_len = total_len;
 			min_package_len = total_len;
 		}
 		else
 		{
-			package_len = preferences->brender_fragment /
+			package_len = render_preferences->brender_fragment /
 				edlsession->frame_rate;
 			min_package_len = 1.0 / edlsession->frame_rate;
 		}
@@ -145,7 +122,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 			packaging_engine = new PackagingEngine();
 			packaging_engine->create_packages_single_farm(
 					edl,
-					preferences,
+					render_preferences,
 					default_asset, 
 					total_start, 
 					total_end);
@@ -219,12 +196,11 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 // Test existence of every output file.
 // Only if this isn't a background render or non interactive.
 	if(!(strategy & (RENDER_BRENDER | RENDER_FARM)) &&
-		test_overwrite &&
-		mwindow)
+		test_overwrite && mwindow_global)
 	{
 		ArrayList<char*> paths;
 		get_package_paths(&paths);
-		result = ConfirmSave::test_files(mwindow, &paths);
+		result = ConfirmSave::test_files(mwindow_global, &paths);
 		paths.remove_all_objects();
 	}
 	return result;
@@ -248,9 +224,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int use_local_rate)
 {
 	package_lock->lock("PackageDispatcher::get_package");
-	preferences->set_rate(frames_per_second, client_number);
-	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
-	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
+	render_preferences->set_rate(frames_per_second, client_number);
+	preferences_global->copy_rates_from(render_preferences);
+	double avg_frames_per_second = render_preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
 
@@ -346,9 +322,9 @@ ptstime PackageDispatcher::get_progress_max()
 	else
 	{
 		return (total_end - total_start) + 
-				preferences->render_preroll * total_packages +
-				(preferences->render_preroll >= total_start ? 
-				total_start - preferences->render_preroll : 0);
+			render_preferences->render_preroll * total_packages +
+			(render_preferences->render_preroll >= total_start ?
+			total_start - render_preferences->render_preroll : 0);
 	}
 }
 

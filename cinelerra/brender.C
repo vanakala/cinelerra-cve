@@ -412,9 +412,7 @@ void BRenderThread::start()
 		ptstime end_pts = command->edl->total_length_of(TRACK_VIDEO);
 		if(end_pts < start_pts) end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
-		result = packages->create_packages(mwindow,
-			command->edl,
-			preferences,
+		result = packages->create_packages(command->edl,
 			RENDER_BRENDER,
 			preferences->brender_asset, 
 			start_pts,

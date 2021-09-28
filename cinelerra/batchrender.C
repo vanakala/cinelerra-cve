@@ -409,9 +409,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths)
 			current_edl->load_xml(file, 0);
 
 // Create test packages
-			packages->create_packages(mwindow_global,
-				current_edl,
-				render_preferences,
+			packages->create_packages(current_edl,
 				job->strategy, 
 				job->asset, 
 				0,

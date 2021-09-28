@@ -545,9 +545,7 @@ int Render::render(int test_overwrite,
 		fs.complete_path(default_asset->path);
 		strategy = Render::fix_strategy(strategy, render_preferences->use_renderfarm);
 
-		result = packages->create_packages(mwindow_global,
-			command->get_edl(),
-			render_preferences,
+		result = packages->create_packages(command->get_edl(),
 			strategy, 
 			default_asset, 
 			total_start, 
