@@ -398,7 +398,7 @@ void Preferences::reset_rates()
 	local_rate = 0.0;
 }
 
-void Preferences::set_rate(float rate, int node)
+void Preferences::set_rate(double rate, int node)
 {
 	if(node < 0)
 	{
@@ -419,10 +419,11 @@ void Preferences::set_rate(float rate, int node)
 	}
 }
 
-float Preferences::get_avg_rate(int use_master_node)
+double Preferences::get_avg_rate(int use_master_node)
 {
 	preferences_lock->lock("Preferences::get_avg_rate");
-	float total = 0.0;
+	double total = 0.0;
+
 	if(renderfarm_rate.total)
 	{
 		int enabled = 0;

@@ -38,7 +38,7 @@ public:
 	void delete_nodes();
 	void reset_rates();
 // Get average frame rate or 1.0
-	float get_avg_rate(int use_master_node);
+	double get_avg_rate(int use_master_node);
 	void sort_nodes();
 	void edit_node(int number, char *new_text, int port, int enabled);
 	int get_enabled_nodes();
@@ -53,7 +53,7 @@ public:
 
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
-	void set_rate(float rate, int node);
+	void set_rate(double rate, int node);
 
 // Calculate the number of cpus to use.
 // Determined by /proc/cpuinfo and force_uniprocessor.
@@ -97,9 +97,9 @@ public:
 	ArrayList<char*> renderfarm_nodes;
 	ArrayList<int>   renderfarm_ports;
 	ArrayList<int>   renderfarm_enabled;
-	ArrayList<float> renderfarm_rate;
+	ArrayList<double> renderfarm_rate;
 // Rate of master node
-	float local_rate;
+	double local_rate;
 	char renderfarm_mountpoint[BCTEXTLEN];
 // Use virtual filesystem
 	int renderfarm_vfs;
