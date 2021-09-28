@@ -2695,6 +2695,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	Paramlist *defaults, *codecs;
 	int rs, rsc, rsp;
 	AVlibsConfig *window = 0;
+	int stream;
 
 	FileAVlibs::avlibs_lock->lock("FileAVlibs::get_parameters");
 	avcodec_register_all();
@@ -2730,7 +2731,8 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			}
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_VIDEO, window->current_codec);
 			pa->set(window->codecopts->name);
-			strcpy(asset->vcodec, window->codecopts->name);
+			if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
+				strcpy(asset->streams[stream].codec, window->codecopts->name);
 			if(!rsc)
 				alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
 			if(!rsp)
@@ -2746,6 +2748,8 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			}
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_AUDIO, window->current_codec);
 			pa->set(window->codecopts->name);
+			if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+				strcpy(asset->streams[stream].codec, window->codecopts->name);
 			strcpy(asset->acodec, window->codecopts->name);
 			if(!rsc)
 				alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
@@ -2852,6 +2856,7 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	AVCodec *encoder;
 	Param *apar;
 	Paramlist *list;
+	int stream;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
@@ -2875,9 +2880,11 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 				codecs = new Paramlist("codecs");
 		}
 		apar = 0;
-		asset->acodec[0] = 0;
 
-		if(oformat->audio_codec == AV_CODEC_ID_NONE)
+		if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+			asset->streams[stream].codec[0] = 0;
+
+		if(stream < 0 || oformat->audio_codec == AV_CODEC_ID_NONE)
 			codecs->remove_param(AVL_PARAM_CODEC_AUDIO);
 		else if(!(apar = codecs->find(AVL_PARAM_CODEC_AUDIO)) ||
 				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
@@ -2891,12 +2898,16 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 				delete cdc;
 			}
 		}
-		if(apar)
-			strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
+		if(apar && stream >= 0)
+		{
+			strncpy(asset->streams[stream].codec, encoder->name, MAX_LEN_CODECNAME);
+			asset->streams[stream].codec[MAX_LEN_CODECNAME - 1] = 0;
+		}
 
 		apar = 0;
-		asset->vcodec[0] = 0;
-		if(oformat->video_codec == AV_CODEC_ID_NONE)
+		if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
+			asset->streams[stream].codec[0] = 0;
+		if(stream < 0 || oformat->video_codec == AV_CODEC_ID_NONE)
 			codecs->remove_param(AVL_PARAM_CODEC_VIDEO);
 		else if(!(apar = codecs->find(AVL_PARAM_CODEC_VIDEO)) ||
 				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
@@ -2910,10 +2921,11 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 				delete cdc;
 			}
 		}
-		if(apar)
-			strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
-		asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
-		asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
+		if(apar && stream >= 0)
+		{
+			strncpy(asset->streams[stream].codec, encoder->name, MAX_LEN_CODECNAME);
+			asset->streams[stream].codec[MAX_LEN_CODECNAME - 1] = 0;
+		}
 	}
 	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
