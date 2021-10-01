@@ -839,7 +839,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 		}
 		context->metadata = meta;
 
-		if(asset->video_data)
+		if((streamix = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 		{
 			AVCodec *codec;
 			AVCodecContext *video_ctx;
@@ -885,17 +885,17 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 			}
 #endif
 			video_index = context->nb_streams - 1;
-			video_ctx->width = asset->width;
-			video_ctx->height = asset->height;
-			video_ctx->time_base = av_d2q(1. / asset->frame_rate, 10000);
+			video_ctx->width = asset->streams[streamix].width;
+			video_ctx->height = asset->streams[streamix].height;
+			video_ctx->time_base = av_d2q(1. / asset->streams[streamix].frame_rate, 10000);
 			stream->time_base = video_ctx->time_base;
-			stream->avg_frame_rate = av_d2q(asset->frame_rate, 10000);
+			stream->avg_frame_rate = av_d2q(asset->streams[streamix].frame_rate, 10000);
 			if(aparam->subparams &&
 					(bparam = aparam->subparams->find(encoder_params[ENC_PIX_FMTS].name)))
 				video_ctx->pix_fmt = (AVPixelFormat)bparam->intvalue;
 			else if(video_ctx->pix_fmt == AV_PIX_FMT_NONE)
 				video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
-			video_ctx->sample_aspect_ratio = av_d2q(asset->sample_aspect_ratio, 40);
+			video_ctx->sample_aspect_ratio = av_d2q(asset->streams[streamix].sample_aspect_ratio, 40);
 			stream->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
 			// Some formats want stream headers to be separate.
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
@@ -930,7 +930,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 #endif
 		}
 
-		if(asset->audio_data)
+		if((streamix = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 		{
 			AVCodec *codec;
 			AVCodecContext *audio_ctx;
@@ -978,7 +978,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 			}
 #endif
 			audio_index = context->nb_streams - 1;
-			audio_ctx->sample_rate = asset->sample_rate;
+			audio_ctx->sample_rate = asset->streams[streamix].sample_rate;
 			if(codec->supported_samplerates)
 			{
 				int i;
@@ -994,8 +994,8 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 				}
 			}
 
-			audio_ctx->channels = asset->channels;
-			audio_ctx->channel_layout = av_get_default_channel_layout(asset->channels);
+			audio_ctx->channels = asset->streams[streamix].channels;
+			audio_ctx->channel_layout = av_get_default_channel_layout(asset->streams[streamix].channels);
 			if(codec->sample_fmts)
 				audio_ctx->sample_fmt = codec->sample_fmts[0];
 
@@ -1027,7 +1027,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 			}
 			av_dict_free(&dict);
 
-			input_channels = MIN(asset->channels, (NUM_INTERNAL_LAYOUTS - 1));
+			input_channels = MIN(asset->streams[streamix].channels, (NUM_INTERNAL_LAYOUTS - 1));
 
 			if(!(swr_ctx = swr_alloc_set_opts(NULL,
 				audio_ctx->channel_layout,
@@ -1035,7 +1035,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 				audio_ctx->sample_rate,
 				internal_layouts[input_channels],
 				AV_SAMPLE_FMT_DBLP,
-				asset->sample_rate, 0, 0)))
+				asset->streams[streamix].sample_rate, 0, 0)))
 			{
 				errormsg(_("Can't allocate resample context for encoding"));
 				avlibs_lock->unlock();
@@ -2227,6 +2227,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	double *in_data[MAXCHANNELS];
 	uint8_t *resampled_ptr[MAXCHANNELS];
 	int resampled_length;
+	int streamix = asset->get_stream_ix(STRDSC_AUDIO);
 
 	if(audio_index < 0)
 		return 1;
@@ -2252,9 +2253,9 @@ int FileAVlibs::write_aframes(AFrame **frames)
 		sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
 
 		resample_size = in_length + audio_ctx->frame_size;
-		resampled_alloc = av_rescale_rnd(swr_get_delay(swr_ctx, asset->sample_rate) +
-			resample_size,
-			audio_ctx->sample_rate, asset->sample_rate, AV_ROUND_UP);
+		resampled_alloc = av_rescale_rnd(swr_get_delay(swr_ctx,
+			asset->streams[streamix].sample_rate) + resample_size,
+			audio_ctx->sample_rate, asset->streams[streamix].sample_rate, AV_ROUND_UP);
 
 		if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
 		{
@@ -2902,6 +2903,14 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		{
 			strncpy(asset->streams[stream].codec, encoder->name, MAX_LEN_CODECNAME);
 			asset->streams[stream].codec[MAX_LEN_CODECNAME - 1] = 0;
+			asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] =
+				AVlibsConfig::load_options(asset,
+				FILEAVLIBS_ACODEC_CONFIG,
+				asset->streams[stream].codec);
+			asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] =
+				AVlibsConfig::load_options(asset,
+				FILEAVLIBS_APRIVT_CONFIG,
+				asset->streams[stream].codec);
 		}
 
 		apar = 0;
@@ -2925,12 +2934,16 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		{
 			strncpy(asset->streams[stream].codec, encoder->name, MAX_LEN_CODECNAME);
 			asset->streams[stream].codec[MAX_LEN_CODECNAME - 1] = 0;
+			asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] =
+				AVlibsConfig::load_options(asset,
+				FILEAVLIBS_VCODEC_CONFIG,
+				asset->streams[stream].codec);
+			asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] =
+				AVlibsConfig::load_options(asset,
+				FILEAVLIBS_VPRIVT_CONFIG,
+				asset->streams[stream].codec);
 		}
 	}
-	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
-	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
-	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
-	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 	if(mwindow_global)
 	{
 		if(!asset->encoder_parameters[FILEAVLIBS_METADT_IX])
@@ -3123,6 +3136,7 @@ void FileAVlibs::save_render_options(Asset *asset)
 {
 	const char *name;
 	Paramlist *tmp;
+	int stream;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
@@ -3131,14 +3145,20 @@ void FileAVlibs::save_render_options(Asset *asset)
 		FILEAVLIBS_FORMAT_CONFIG, name);
 	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_CODECS_IX,
 		FILEAVLIBS_CODECS_CONFIG, name);
-	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_ACODEC_IX,
-		FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
-	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VCODEC_IX,
-		FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
-	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_APRIVT_IX,
-		FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
-	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VPRIVT_IX,
-		FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
+	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+	{
+		AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_ACODEC_IX,
+			FILEAVLIBS_ACODEC_CONFIG, asset->streams[stream].codec);
+		AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_APRIVT_IX,
+			FILEAVLIBS_APRIVT_CONFIG, asset->streams[stream].codec);
+	}
+	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
+	{
+		AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VCODEC_IX,
+			FILEAVLIBS_VCODEC_CONFIG, asset->streams[stream].codec);
+		AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VPRIVT_IX,
+			FILEAVLIBS_VPRIVT_CONFIG, asset->streams[stream].codec);
+	}
 }
 
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
@@ -3333,6 +3353,7 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 {
 	AVCodec *encoder;
 	Param *param, *sbp;
+	int stream;
 
 	if(encoder = avcodec_find_encoder(codec_id))
 	{
@@ -3348,7 +3369,8 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 		param = codecs->append_param(encoder->name, codec_id);
 		param->set_help(encoder->long_name);
 		// Additional parameters
-		if(encoder->type == AVMEDIA_TYPE_VIDEO)
+		if(encoder->type == AVMEDIA_TYPE_VIDEO &&
+				(stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 		{
 			Paramlist *encparams = param->add_subparams(encoder->name);
 
@@ -3383,7 +3405,8 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 				}
 			}
 		}
-		if(encoder->type == AVMEDIA_TYPE_AUDIO)
+		if(encoder->type == AVMEDIA_TYPE_AUDIO &&
+				(stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 		{
 			Paramlist *encparams = param->add_subparams(encoder->name);
 
@@ -3419,13 +3442,14 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 			if(encoder->channel_layouts)
 			{
 				const uint64_t *layout;
+				int channels = asset->streams[stream].channels;
 
 				sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
 					(int64_t)encoder->channel_layouts[0]);
 				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
 
-				if(asset->channels > 0 && asset->channels < NUM_INTERNAL_LAYOUTS)
-					sublist->set_selected((int64_t)internal_layouts[asset->channels]);
+				if(channels > 0 && channels < NUM_INTERNAL_LAYOUTS)
+					sublist->set_selected((int64_t)internal_layouts[channels]);
 				else
 					sublist->set_selected((int64_t)encoder->channel_layouts[0]);
 
@@ -3446,6 +3470,8 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 	const struct AVCodecTag *tags;
 	Param *param, *sbp;
 	Paramlist *codecs;
+	int vstream = asset->get_stream_ix(STRDSC_VIDEO);
+	int astream = asset->get_stream_ix(STRDSC_AUDIO);
 
 	codecs = new Paramlist("AVLibCodecs");
 
@@ -3460,6 +3486,7 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 	else
 	{
 		AVCodecID id;
+
 		if(options & SUPPORTS_VIDEO)
 			id = oformat->video_codec;
 		else if(options & SUPPORTS_AUDIO)
@@ -3469,12 +3496,13 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 	// Remove unusable codecs
 	for(param = codecs->first; param; param = param->next)
 	{
-		if(options & SUPPORTS_VIDEO && asset->frame_rate)
+		if(options & SUPPORTS_VIDEO && vstream >= 0 &&
+				asset->streams[vstream].frame_rate)
 		{
 			while(param && param->subparams &&
 				(sbp = param->subparams->find(encoder_params[ENC_FRAMERATES].name)))
 			{
-				if(!sbp->subparams->find_value(asset->frame_rate))
+				if(!sbp->subparams->find_value(asset->streams[vstream].frame_rate))
 				{
 					Param *np = param->next;
 					delete param;
@@ -3484,12 +3512,13 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 					break;
 			}
 		}
-		if(options & SUPPORTS_AUDIO && asset->sample_rate)
+		if(options & SUPPORTS_AUDIO && astream >= 0 &&
+				asset->streams[astream].sample_rate)
 		{
 			while(param && param->subparams &&
 				(sbp = param->subparams->find(encoder_params[ENC_SAMPLERATES].name)))
 			{
-				if(!sbp->subparams->find_value(asset->sample_rate))
+				if(!sbp->subparams->find_value(asset->streams[astream].sample_rate))
 				{
 					Param *np = param->next;
 					delete param;
