@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "asset.h"
@@ -147,9 +131,12 @@ void FileThread::stop_writing()
 		file_lock->lock("FileThread::stop_writing 2");
 		if(do_audio)
 		{
+			int stream = file->asset->get_stream_ix(STRDSC_AUDIO);
+			int channels = file->asset->streams[stream].channels;
+
 			for(buffer = 0; buffer < ring_buffers; buffer++)
 			{
-				for(i = 0; i < file->asset->channels; i++)
+				for(i = 0; i < channels; i++)
 					delete audio_buffer[buffer][i];
 				delete [] audio_buffer[buffer];
 			}
@@ -159,9 +146,12 @@ void FileThread::stop_writing()
 
 		if(do_video)
 		{
+			int stream = file->asset->get_stream_ix(STRDSC_VIDEO);
+			int layers = file->asset->streams[stream].channels;
+
 			for(buffer = 0; buffer < ring_buffers; buffer++)
 			{
-				for(layer = 0; layer < file->asset->layers; layer++)
+				for(layer = 0; layer < layers; layer++)
 				{
 					for(frame = 0; frame < buffer_size; frame++)
 						BC_Resources::tmpframes.release_frame(video_buffer[buffer][layer][frame]);
@@ -210,12 +200,15 @@ void FileThread::start_writing(int buffer_size,
 
 	if(do_audio)
 	{
+		int stream = file->asset->get_stream_ix(STRDSC_AUDIO);
+		int channels = file->asset->streams[stream].channels;
+
 		audio_buffer = new AFrame**[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
-			audio_buffer[buffer] = new AFrame*[file->asset->channels];
+			audio_buffer[buffer] = new AFrame*[channels];
 
-			for(int channel = 0; channel < file->asset->channels; channel++)
+			for(int channel = 0; channel < channels; channel++)
 			{
 				audio_buffer[buffer][channel] = new AFrame(buffer_size);
 				audio_buffer[buffer][channel]->channel = channel;
@@ -225,19 +218,22 @@ void FileThread::start_writing(int buffer_size,
 
 	if(do_video)
 	{
+		int stream = file->asset->get_stream_ix(STRDSC_VIDEO);
+		int layers = file->asset->streams[stream].channels;
+
 		video_buffer = new VFrame***[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
-			video_buffer[buffer] = new VFrame**[file->asset->layers];
-			for(layer = 0; layer < file->asset->layers; layer++)
+			video_buffer[buffer] = new VFrame**[layers];
+			for(layer = 0; layer < layers; layer++)
 			{
 				video_buffer[buffer][layer] = new VFrame*[buffer_size];
 				for(frame = 0; frame < buffer_size; frame++)
 				{
 					video_buffer[buffer][layer][frame] =
 						BC_Resources::tmpframes.get_tmpframe(
-							file->asset->width,
-							file->asset->height,
+							file->asset->streams[stream].width,
+							file->asset->streams[stream].height,
 							color_model);
 				}
 			}
