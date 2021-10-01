@@ -697,7 +697,7 @@ void Asset::create_render_stream(int stream_type)
 	if(stream_type & STRDSC_VIDEO)
 	{
 		streams[nb_streams].channels = 1;
-		streams[nb_streams].sample_rate = master_edl->this_edlsession->frame_rate;
+		streams[nb_streams].frame_rate = master_edl->this_edlsession->frame_rate;
 		streams[nb_streams].sample_aspect_ratio = master_edl->this_edlsession->sample_aspect_ratio;
 		streams[nb_streams].width = master_edl->this_edlsession->output_w;
 		streams[nb_streams].height = master_edl->this_edlsession->output_h;
