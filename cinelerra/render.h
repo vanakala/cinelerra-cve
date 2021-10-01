@@ -99,7 +99,7 @@ public:
 	void load_profile(Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
-	static int check_asset(EDL *edl, Asset &asset); 
+	static int check_asset(EDL *edl, Asset *asset);
 // Fix strategy to conform with using renderfarm.
 	static int fix_strategy(int strategy, int use_renderfarm);
 // Force filename to have a 0 padded number if rendering to a list.

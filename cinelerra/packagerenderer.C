@@ -94,7 +94,7 @@ int PackageRenderer::initialize(EDL *edl,
 	command->set_edl(edl);
 	command->set_playback_range();
 
-	result = Render::check_asset(edl, *default_asset);
+	result = Render::check_asset(edl, default_asset);
 
 	aconfig = 0;
 	vconfig = 0;
@@ -392,7 +392,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 	this->package = package;
 	brender_base = -1;
 
-	Render::check_asset(edl, *default_asset);
+	Render::check_asset(edl, default_asset);
 
 // Command initalizes start positions from cursor position
 //  what is irrelevant here. Get start and end from package.

@@ -262,7 +262,7 @@ void Render::run()
 
 	if(mode == Render::INTERACTIVE)
 	{
-// Fix the asset for rendering
+// Create a new asset for rendering
 		Asset *asset = new Asset;
 		load_defaults(asset);
 		render_edl = new EDL(0);
@@ -273,9 +273,10 @@ void Render::run()
 			render_edl->this_edlsession = new EDLSession();
 			render_edl->this_edlsession->copy(master_edl->this_edlsession);
 		}
-		check_asset(render_edl, *asset);
+		check_asset(render_edl, asset);
 // Get format from user
 		int x, y;
+
 		BC_Resources::get_root_size(&x, &y);
 		x = x / 2 - WIN_WIDTH / 2;
 		y = y / 2 - WIN_HEIGHT / 2;
@@ -291,9 +292,8 @@ void Render::run()
 
 		if(!result)
 		{
-			if(!check_asset(render_edl, *asset))
+			if(!check_asset(render_edl, asset))
 			{
-				asset->init_streams();
 				save_defaults(asset);
 				mwindow_global->save_defaults();
 
@@ -351,7 +351,7 @@ void Render::run()
 						break;
 					}
 				}
-				if(!result && !check_asset(edl, *job->asset))
+				if(!result && !check_asset(edl, job->asset))
 				{
 					job->asset->init_streams();
 					render(0, job->asset, edl, job->strategy, RANGE_PROJECT);
@@ -392,47 +392,26 @@ void Render::run()
 	}
 }
 
-int Render::check_asset(EDL *edl, Asset &asset)
+int Render::check_asset(EDL *edl, Asset *asset)
 {
-	if(asset.video_data && 
-		edl->playable_tracks_of(TRACK_VIDEO) &&
-		(File::supports(asset.format) & SUPPORTS_VIDEO))
+	int stream;
+	// Phase out
+	asset->video_data = asset->audio_data = 0;
+
+	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
-		asset.video_data = 1;
-		asset.layers = 1;
-		asset.width = edlsession->output_w;
-		asset.height = edlsession->output_h;
-		asset.frame_rate = edlsession->frame_rate;
-		asset.interlace_mode = edlsession->interlace_mode;
-		asset.sample_aspect_ratio = edlsession->sample_aspect_ratio;
-	}
-	else
-	{
-		asset.video_data = 0;
-		asset.layers = 0;
+		if(!edl->playable_tracks_of(TRACK_VIDEO) ||
+				!(File::supports(asset->format) & SUPPORTS_VIDEO))
+			asset->remove_stream(stream);
 	}
 
-	if(asset.audio_data && 
-		edl->playable_tracks_of(TRACK_AUDIO) &&
-		(File::supports(asset.format) & SUPPORTS_AUDIO))
+	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 	{
-		asset.audio_data = 1;
-		asset.channels = edlsession->audio_channels;
-		asset.sample_rate = edlsession->sample_rate;
-		if(asset.format == FILE_MOV) asset.byte_order = 0;
+		if(!edl->playable_tracks_of(TRACK_AUDIO) ||
+				!(File::supports(asset->format) & SUPPORTS_AUDIO))
+			asset->remove_stream(stream);
 	}
-	else
-	{
-		asset.audio_data = 0;
-		asset.channels = 0;
-	}
-
-	if(!asset.audio_data &&
-		!asset.video_data)
-	{
-		return 1;
-	}
-	return 0;
+	return !asset->stream_count(STRDSC_VIDEO | STRDSC_AUDIO);
 }
 
 int Render::fix_strategy(int strategy, int use_renderfarm)
@@ -518,11 +497,8 @@ int Render::render(int test_overwrite,
 	}
 	packages = new PackageDispatcher;
 
-	default_asset->frame_rate = edlsession->frame_rate;
-	default_asset->sample_rate = edlsession->sample_rate;
-
 // Conform asset to EDL.  Find out if any tracks are playable.
-	result = check_asset(command->get_edl(), *default_asset);
+	result = check_asset(command->get_edl(), default_asset);
 
 	if(!result)
 	{
