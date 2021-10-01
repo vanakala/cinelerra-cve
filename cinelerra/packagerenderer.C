@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "asset.h"
@@ -110,12 +94,7 @@ int PackageRenderer::initialize(EDL *edl,
 	command->set_edl(edl);
 	command->set_playback_range();
 
-	default_asset->frame_rate = edlsession->frame_rate;
-	default_asset->sample_rate = edlsession->sample_rate;
-	default_asset->sample_aspect_ratio =
-		edlsession->sample_aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
-	default_asset->init_streams();
 
 	aconfig = 0;
 	vconfig = 0;
@@ -159,9 +138,9 @@ void PackageRenderer::create_engine()
 	if(package->use_brender)
 	{
 		audio_preroll = round((ptstime)preferences->brender_preroll *
-			default_asset->frame_rate);
+			edlsession->frame_rate);
 		video_preroll = round((ptstime)preferences->brender_preroll *
-			default_asset->frame_rate);
+			edlsession->frame_rate);
 	}
 	else
 	{
@@ -181,13 +160,13 @@ void PackageRenderer::create_engine()
 	}
 
 // Create output buffers
-	if(asset->audio_data)
+	if(asset->stream_count(STRDSC_AUDIO))
 	{
 		file->start_audio_thread(audio_read_length, 
 			preferences->processors > 1 ? 2 : 1);
 	}
 
-	if(asset->video_data)
+	if(asset->stream_count(STRDSC_VIDEO))
 	{
 // The write length needs to correlate with the processor count because
 // it is passed to the file handler which usually processes frames simultaneously.
@@ -218,21 +197,22 @@ int PackageRenderer::do_audio()
 	ptstime buffer_duration;
 	int result;
 	int read_length = audio_read_length;
+	int stream;
 
 // Do audio data
-	if(asset->audio_data)
+	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 	{
 		audio_output = file->get_audio_buffer();
 // Zero unused channels in output vector
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
-			if(i < asset->channels)
+			if(i < asset->streams[stream].channels)
 			{
 				af = audio_output[i];
 				if(af)
 				{
 					af->init_aframe(audio_pts, audio_read_length,
-						default_asset->sample_rate);
+						default_asset->streams[stream].sample_rate);
 					af->set_fill_request(audio_pts, audio_read_length);
 				}
 			}
@@ -249,7 +229,8 @@ int PackageRenderer::do_audio()
 
 		if(audio_preroll > 0)
 		{
-			int preroll_len = round(audio_preroll * default_asset->sample_rate);
+			int preroll_len = round(audio_preroll *
+				default_asset->streams[stream].sample_rate);
 
 			if(preroll_len >= output_length)
 				output_length = 0;
@@ -269,12 +250,13 @@ int PackageRenderer::do_audio()
 					}
 				}
 			}
-			audio_preroll -= (ptstime)read_length / default_asset->sample_rate;
+			audio_preroll -= (ptstime)read_length /
+				default_asset->streams[stream].sample_rate;
 		}
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
 		result |= file->write_audio_buffer(output_length);
 	}
-	audio_pts += (ptstime)read_length / default_asset->sample_rate;
+	audio_pts += (ptstime)read_length / default_asset->streams[stream].sample_rate;
 	return 0;
 }
 
@@ -282,8 +264,9 @@ int PackageRenderer::do_video()
 {
 // Do video data
 	int result;
+	int stream;
 
-	if(asset->video_data)
+	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
 		ptstime video_end = video_pts + video_read_length;
 		ptstime duration;
@@ -303,7 +286,7 @@ int PackageRenderer::do_video()
 			video_output_ptr->set_pts(video_pts);
 			video_output[0][video_write_position] = video_output_ptr =
 				render_engine->vrender->process_buffer(video_output_ptr);
-			duration = 1.0 / asset->frame_rate;
+			duration = 1.0 / asset->streams[stream].frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);
 			if(mwindow_global && video_device->output_visible())
@@ -333,7 +316,8 @@ int PackageRenderer::do_video()
 // Used by background render and render farm.
 				if(video_write_position == 0)
 					brender_base = video_pts;
-				video_output_ptr->set_frame_number(round(video_pts * asset->frame_rate));
+				video_output_ptr->set_frame_number(round(video_pts *
+					asset->streams[stream].frame_rate));
 				video_write_position++;
 				if(video_write_position >= video_write_length)
 				{
@@ -368,22 +352,18 @@ void PackageRenderer::stop_engine()
 
 void PackageRenderer::stop_output()
 {
-	int error = 0;
-	if(asset->audio_data)
-	{
-// stop file I/O
-		file->stop_audio_thread();
-	}
+	file->stop_audio_thread();
 
-	if(asset->video_data)
+	if(asset->stream_count(STRDSC_VIDEO))
 	{
-		if(video_write_position)
-			file->write_video_buffer(video_write_position);
+		file->write_video_buffer(video_write_position);
 		if(package->use_brender)
 			set_video_map(brender_base, video_pts);
 
 		video_write_position = 0;
-		if(!error) file->stop_video_thread();
+
+		file->stop_video_thread();
+
 		if(mwindow_global)
 		{
 			video_device->close_all();
@@ -412,8 +392,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	this->package = package;
 	brender_base = -1;
 
-	default_asset->video_data = package->video_do;
-	default_asset->audio_data = package->audio_do;
 	Render::check_asset(edl, *default_asset);
 
 // Command initalizes start positions from cursor position
@@ -439,12 +417,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 		result = 1;
 	}
 
-	if(!asset->video_data) video_done = 1;
-	if(!asset->audio_data) audio_done = 1;
-
 // Create render engine
 	if(!result)
 	{
+		int stream = default_asset->get_stream_ix(STRDSC_AUDIO);
+
 		create_engine();
 // Main loop
 		while(!audio_done || !video_done && !result)
@@ -454,8 +431,10 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Calculate lengths to process.  Audio fragment is constant.
 			if(!audio_done)
 			{
-				samplenum audio_position = round(audio_pts * default_asset->sample_rate);
-				samplenum audio_end = round(package->audio_end_pts * default_asset->sample_rate);
+				int samplerate =
+					default_asset->streams[stream].sample_rate;
+				samplenum audio_position = round(audio_pts * samplerate);
+				samplenum audio_end = round(package->audio_end_pts * samplerate);
 
 				if(audio_position + audio_read_length >= audio_end)
 				{
@@ -463,7 +442,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 					audio_read_length = audio_end - audio_position;
 				}
 
-				duration_rendered = (ptstime)audio_read_length / asset->sample_rate;
+				duration_rendered = (ptstime)audio_read_length / samplerate;
 				need_audio = 1;
 			}
 
@@ -478,8 +457,9 @@ int PackageRenderer::render_package(RenderPackage *package)
 				else
 // Guide video with audio
 				{
-					video_read_length = audio_pts + 
-						(ptstime)audio_read_length / asset->sample_rate -
+					video_read_length = audio_pts +
+						(ptstime)audio_read_length /
+						asset->streams[stream].sample_rate -
 						video_pts;
 				}
 
