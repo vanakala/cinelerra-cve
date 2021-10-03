@@ -21,7 +21,6 @@
 #include "packagerenderer.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "render.h"
 #include "renderengine.h"
 #include "sighandler.h"
 #include "tmpframecache.h"
@@ -77,12 +76,10 @@ PackageRenderer::~PackageRenderer()
 // PackageRenderer::initialize happens only once for every node when doing rendering session
 // This is not called for each package!
 
-int PackageRenderer::initialize(EDL *edl,
+void PackageRenderer::initialize(EDL *edl,
 	Preferences *preferences,
 	Asset *default_asset)
 {
-	int result = 0;
-
 	this->edl = edl;
 	this->preferences = preferences;
 	this->default_asset = default_asset;
@@ -94,12 +91,8 @@ int PackageRenderer::initialize(EDL *edl,
 	command->set_edl(edl);
 	command->set_playback_range();
 
-	result = Render::check_asset(edl, default_asset);
-
 	aconfig = 0;
 	vconfig = 0;
-
-	return result;
 }
 
 int PackageRenderer::create_output()
@@ -391,8 +384,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 	this->package = package;
 	brender_base = -1;
-
-	Render::check_asset(edl, default_asset);
 
 // Command initalizes start positions from cursor position
 //  what is irrelevant here. Get start and end from package.

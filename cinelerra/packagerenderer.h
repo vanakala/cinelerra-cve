@@ -54,7 +54,7 @@ public:
 	~PackageRenderer();
 
 // Initialize stuff which is reused between packages
-	int initialize(EDL *edl,
+	void initialize(EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset);
 

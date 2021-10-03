@@ -572,7 +572,7 @@ int Render::render(int test_overwrite,
 // Perform local rendering
 			start_progress();
 			MainPackageRenderer package_renderer(this);
-			result = package_renderer.initialize(command->get_edl(),
+			package_renderer.initialize(command->get_edl(),
 				render_preferences,
 				default_asset);
 
