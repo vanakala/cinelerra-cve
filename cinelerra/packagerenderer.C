@@ -99,21 +99,17 @@ int PackageRenderer::create_output()
 {
 	int result;
 
-	asset = new Asset(*default_asset);
-	strcpy(asset->path, package->path);
-
 	file = new File;
 
 	file->set_processors(preferences->processors);
 
-	result = file->open_file(asset, FILE_OPEN_WRITE, 0);
+	result = file->open_file(default_asset, FILE_OPEN_WRITE, 0, package->path);
 
 	if(mwindow_global)
 	{
 		if(result)
-			errormsg(_("Couldn't open output file %s"), asset->path);
+			errormsg(_("Couldn't open output file %s"), package->path);
 		mwindow_global->sighandler->push_file(file);
-		asset->remove_indexes();
 	}
 	return result;
 }
@@ -153,13 +149,13 @@ void PackageRenderer::create_engine()
 	}
 
 // Create output buffers
-	if(asset->stream_count(STRDSC_AUDIO))
+	if(default_asset->stream_count(STRDSC_AUDIO))
 	{
 		file->start_audio_thread(audio_read_length, 
 			preferences->processors > 1 ? 2 : 1);
 	}
 
-	if(asset->stream_count(STRDSC_VIDEO))
+	if(default_asset->stream_count(STRDSC_VIDEO))
 	{
 // The write length needs to correlate with the processor count because
 // it is passed to the file handler which usually processes frames simultaneously.
@@ -193,13 +189,13 @@ int PackageRenderer::do_audio()
 	int stream;
 
 // Do audio data
-	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
+	if((stream = default_asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 	{
 		audio_output = file->get_audio_buffer();
 // Zero unused channels in output vector
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
-			if(i < asset->streams[stream].channels)
+			if(i < default_asset->streams[stream].channels)
 			{
 				af = audio_output[i];
 				if(af)
@@ -259,7 +255,7 @@ int PackageRenderer::do_video()
 	int result;
 	int stream;
 
-	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
+	if((stream = default_asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
 		ptstime video_end = video_pts + video_read_length;
 		ptstime duration;
@@ -279,7 +275,7 @@ int PackageRenderer::do_video()
 			video_output_ptr->set_pts(video_pts);
 			video_output[0][video_write_position] = video_output_ptr =
 				render_engine->vrender->process_buffer(video_output_ptr);
-			duration = 1.0 / asset->streams[stream].frame_rate;
+			duration = 1.0 / default_asset->streams[stream].frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);
 			if(mwindow_global && video_device->output_visible())
@@ -310,7 +306,7 @@ int PackageRenderer::do_video()
 				if(video_write_position == 0)
 					brender_base = video_pts;
 				video_output_ptr->set_frame_number(round(video_pts *
-					asset->streams[stream].frame_rate));
+					default_asset->streams[stream].frame_rate));
 				video_write_position++;
 				if(video_write_position >= video_write_length)
 				{
@@ -347,7 +343,7 @@ void PackageRenderer::stop_output()
 {
 	file->stop_audio_thread();
 
-	if(asset->stream_count(STRDSC_VIDEO))
+	if(default_asset->stream_count(STRDSC_VIDEO))
 	{
 		file->write_video_buffer(video_write_position);
 		if(package->use_brender)
@@ -371,7 +367,6 @@ void PackageRenderer::close_output()
 		mwindow_global->sighandler->pull_file(file);
 	file->close_file();
 	delete file;
-	delete asset;
 }
 
 // Aborts and returns 1 if an error is encountered.
@@ -450,7 +445,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 				{
 					video_read_length = audio_pts +
 						(ptstime)audio_read_length /
-						asset->streams[stream].sample_rate -
+						default_asset->streams[stream].sample_rate -
 						video_pts;
 				}
 

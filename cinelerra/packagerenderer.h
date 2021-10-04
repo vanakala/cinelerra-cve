@@ -85,9 +85,6 @@ public:
 	EDL *edl;
 	Preferences *preferences;
 	Asset *default_asset;
-
-// Created locally
-	Asset *asset;
 	ptstime audio_pts;
 	ptstime audio_preroll;
 	int audio_read_length;
