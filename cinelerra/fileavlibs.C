@@ -593,7 +593,7 @@ int FileAVlibs::supports(int format, int decoding)
 	return support;
 }
 
-int FileAVlibs::open_file(int open_mode, int streamix)
+int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 {
 	int result = 0;
 	int rv;
@@ -751,6 +751,10 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 		Param *aparam, *bparam;
 		const char *dstpath;
 		uint8_t *avio_buffer = 0;
+		const char *realpath = asset->path;
+
+		if(filepath)
+			realpath = filepath;
 
 		switch(asset->format)
 		{
@@ -780,7 +784,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 		case FILE_YUV:
 			if(asset->use_pipe && asset->pipe[0])
 			{
-				stream_pipe = new Pipe(asset->pipe, asset->path);
+				stream_pipe = new Pipe(asset->pipe, realpath);
 				if(stream_pipe->open_write())
 				{
 					errormsg(_("Failed to create pipe"));
@@ -797,7 +801,7 @@ int FileAVlibs::open_file(int open_mode, int streamix)
 			return 1;
 		}
 		if(avio_fd < 0)
-			dstpath = asset->path;
+			dstpath = realpath;
 		else
 		{
 			dstpath = 0;

@@ -265,7 +265,7 @@ int File::probe_file(Asset *asset)
 	return FILE_OK;
 }
 
-int File::open_file(Asset *asset, int open_method, int stream)
+int File::open_file(Asset *asset, int open_method, int stream, const char *filepath)
 {
 	int probe_result, rs;
 	int rd, wr;
@@ -334,7 +334,7 @@ int File::open_file(Asset *asset, int open_method, int stream)
 		return 1;
 	}
 
-	if(file->open_file(open_method, stream))
+	if(file->open_file(open_method, stream, filepath))
 	{
 		delete file;
 		file = 0;
