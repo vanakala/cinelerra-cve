@@ -820,7 +820,7 @@ BatchFormat::BatchFormat(BatchRenderGUI *gui,
 			int checkbox,
 			int details,
 			int *strategy)
- : FormatTools(mwindow_global, gui, asset, init_x, init_y, support, checkbox, details,
+ : FormatTools(gui, asset, init_x, init_y, support, checkbox, details,
 	strategy)
 {
 	this->gui = gui;

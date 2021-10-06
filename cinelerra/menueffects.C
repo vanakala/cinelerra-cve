@@ -480,9 +480,9 @@ MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 
 	x = theme_global->menueffect_tools_x;
 	y = theme_global->menueffect_tools_y;
-	format_tools = new FormatTools(mwindow_global,
-		this, asset, x, y,
-		asset->audio_data ? SUPPORTS_AUDIO : 0 | asset->video_data ? SUPPORTS_VIDEO : 0,
+	format_tools = new FormatTools(this, asset, x, y,
+		asset->audio_data ? SUPPORTS_AUDIO : 0 |
+			asset->video_data ? SUPPORTS_VIDEO : 0,
 		0, SUPPORTS_VIDEO,
 		&menueffects->strategy);
 

@@ -122,8 +122,7 @@ void PerformancePrefs::show()
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y1, _("Output for background rendering:")));
 	y1 += 20;
-	brender_tools = new FormatTools(mwindow,
-		this, 
+	brender_tools = new FormatTools(this,
 		pwindow->thread->preferences->brender_asset,
 		x,
 		y1,

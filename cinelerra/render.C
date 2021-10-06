@@ -832,8 +832,7 @@ RenderWindow::RenderWindow(int x, int y, Render *render, Asset *asset)
 			_("Select a file to render to:"))));
 	y += 25;
 
-	format_tools = new FormatTools(mwindow_global,
-		this,
+	format_tools = new FormatTools(this,
 		asset,
 		x,
 		y,

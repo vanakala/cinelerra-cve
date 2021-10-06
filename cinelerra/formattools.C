@@ -99,8 +99,7 @@ int FormatPopup::frender_menu2[] = {
 	FILE_F4V
 };
 
-FormatTools::FormatTools(MWindow *mwindow,
-	BC_WindowBase *window,
+FormatTools::FormatTools(BC_WindowBase *window,
 	Asset *asset,
 	int &init_x,
 	int &init_y,
@@ -116,7 +115,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	int ylev = init_y;
 	int text_x = init_x;
 
-	this->mwindow = mwindow;
 	this->window = window;
 	this->asset = asset;
 	aparams_button = 0;
@@ -141,14 +139,14 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
 	x += 305;
-	path_recent = new BC_RecentList("PATH", mwindow->defaults,
+	path_recent = new BC_RecentList("PATH", mwindow_global->defaults,
 		path_textbox, 10, x, y, 300, 100);
 	window->add_subwindow(path_recent);
 	path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 
 	x += 18;
 	window->add_subwindow(path_button = new BrowseButton(
-		mwindow,
+		mwindow_global,
 		window,
 		path_textbox,
 		x,
@@ -174,11 +172,12 @@ FormatTools::FormatTools(MWindow *mwindow,
 	{
 		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
 		x += 80;
-		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
+		window->add_subwindow(aparams_button = new FormatAParams(this, x, y));
 		x += aparams_button->get_w() + 10;
 		if(checkbox & SUPPORTS_AUDIO)
 		{
-			window->add_subwindow(audio_switch = new FormatAudio(x, y, this, asset->audio_data));
+			window->add_subwindow(audio_switch = new FormatAudio(x, y,
+				this, asset->stream_count(STRDSC_AUDIO)));
 			text_x = x + audio_switch->text_x;
 		}
 		x = init_x;
@@ -198,13 +197,14 @@ FormatTools::FormatTools(MWindow *mwindow,
 		x += 80;
 		if(details & SUPPORTS_VIDEO)
 		{
-			window->add_subwindow(vparams_button = new FormatVParams(mwindow, this, x, y));
+			window->add_subwindow(vparams_button = new FormatVParams(this, x, y));
 			x += vparams_button->get_w() + 10;
 		}
 
 		if(checkbox & SUPPORTS_VIDEO)
 		{
-			window->add_subwindow(video_switch = new FormatVideo(x, y, this, asset->video_data));
+			window->add_subwindow(video_switch = new FormatVideo(x, y,
+				this, asset->stream_count(STRDSC_VIDEO)));
 			text_x = x + video_switch->text_x;
 			y += video_switch->get_h();
 		}
@@ -219,8 +219,8 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 	if(support & SUPPORTS_LIBPARA)
 	{
-		window->add_subwindow(fparams_button = new FormatFParams(mwindow,
-			this, init_x + 80, y));
+		window->add_subwindow(fparams_button = new FormatFParams(this,
+			init_x + 80, y));
 		window->add_subwindow(new BC_Title(text_x, y, _("Format options")));
 		y += fparams_button->get_h() + 10;
 		asset->get_format_params(support);
@@ -231,7 +231,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	x = init_x;
 	if(strategy)
 	{
-		window->add_subwindow(multiple_files = new FormatMultiple(mwindow, x, y, strategy));
+		window->add_subwindow(multiple_files = new FormatMultiple(x, y, strategy));
 		y += multiple_files->get_h() + 10;
 	}
 
@@ -297,7 +297,6 @@ void FormatTools::enable_supported()
 			{
 				video_switch->set_value(0);
 				video_switch->disable();
-				asset->video_data = 0;
 				asset->single_image = 0;
 			}
 		}
@@ -488,8 +487,8 @@ void FormatTools::format_changed()
 	enable_supported();
 }
 
-FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
+FormatAParams::FormatAParams(FormatTools *format, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("wrench"))
 {
 	this->format = format;
 	set_tooltip(_("Configure audio compression"));
@@ -502,21 +501,21 @@ int FormatAParams::handle_event()
 }
 
 
-FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
+FormatVParams::FormatVParams(FormatTools *format, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("wrench"))
 { 
 	this->format = format; 
 	set_tooltip(_("Configure video compression"));
 }
 
-int FormatVParams::handle_event() 
+int FormatVParams::handle_event()
 { 
 	format->set_video_options();
 	return 1;
 }
 
-FormatFParams::FormatFParams(MWindow *mwindow, FormatTools *format, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
+FormatFParams::FormatFParams(FormatTools *format, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("wrench"))
 {
 	this->format = format;
 	set_tooltip(_("Configure format"));
@@ -531,7 +530,7 @@ int FormatFParams::handle_event()
 FormatAThread::FormatAThread(FormatTools *format)
  : Thread()
 { 
-	this->format = format; 
+	this->format = format;
 	file = new File;
 }
 
@@ -577,8 +576,8 @@ int FormatPathText::handle_event()
 }
 
 
-FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
- : BC_CheckBox(x, y, default_, _("Render audio tracks"))
+FormatAudio::FormatAudio(int x, int y, FormatTools *format, int value)
+ : BC_CheckBox(x, y, value, _("Render audio tracks"))
 {
 	this->format = format;
 }
@@ -593,8 +592,8 @@ int FormatAudio::handle_event()
 }
 
 
-FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
- : BC_CheckBox(x, y, default_, _("Render video tracks"))
+FormatVideo::FormatVideo(int x, int y, FormatTools *format, int value)
+ : BC_CheckBox(x, y, value, _("Render video tracks"))
 {
 	this->format = format; 
 }
@@ -622,14 +621,11 @@ int FormatToTracks::handle_event()
 }
 
 
-FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
- : BC_CheckBox(x, 
-	y,
-	*output & RENDER_FILE_PER_LABEL,
+FormatMultiple::FormatMultiple(int x, int y, int *output)
+ : BC_CheckBox(x, y, *output & RENDER_FILE_PER_LABEL,
 	_("Create new file at each label"))
 { 
 	this->output = output;
-	this->mwindow = mwindow;
 }
 
 int FormatMultiple::handle_event()

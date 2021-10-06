@@ -10,7 +10,6 @@
 #include "bcrecentlist.h"
 #include "browsebutton.h"
 #include "file.inc"
-#include "mwindow.inc"
 #include "selection.h"
 #include "paramlistwindow.inc"
 #include "pluginserver.inc"
@@ -40,8 +39,7 @@ struct container_type
 class FormatTools
 {
 public:
-	FormatTools(MWindow *mwindow,
-		BC_WindowBase *window,
+	FormatTools(BC_WindowBase *window,
 		Asset *asset,
 		int &init_x,
 		int &init_y,
@@ -97,7 +95,6 @@ public:
 	FormatVideo *video_switch;
 
 	FormatMultiple *multiple_files;
-	MWindow *mwindow;
 	int use_brender;
 	int do_audio;
 	int do_video;
@@ -123,7 +120,7 @@ public:
 class FormatAParams : public BC_Button
 {
 public:
-	FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y);
+	FormatAParams(FormatTools *format, int x, int y);
 
 	int handle_event();
 
@@ -133,7 +130,7 @@ public:
 class FormatVParams : public BC_Button
 {
 public:
-	FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y);
+	FormatVParams(FormatTools *format, int x, int y);
 
 	int handle_event();
 
@@ -143,7 +140,7 @@ public:
 class FormatFParams : public BC_Button
 {
 public:
-	FormatFParams(MWindow *mwindow, FormatTools *format, int x, int y);
+	FormatFParams(FormatTools *format, int x, int y);
 
 	int handle_event();
 private:
@@ -177,7 +174,7 @@ public:
 class FormatAudio : public BC_CheckBox
 {
 public:
-	FormatAudio(int x, int y, FormatTools *format, int default_);
+	FormatAudio(int x, int y, FormatTools *format, int value);
 
 	int handle_event();
 
@@ -187,7 +184,7 @@ public:
 class FormatVideo : public BC_CheckBox
 {
 public:
-	FormatVideo(int x, int y, FormatTools *format, int default_);
+	FormatVideo(int x, int y, FormatTools *format, int value);
 
 	int handle_event();
 
@@ -207,13 +204,12 @@ public:
 class FormatMultiple : public BC_CheckBox
 {
 public:
-	FormatMultiple(MWindow *mwindow, int x, int y, int *output);
+	FormatMultiple(int x, int y, int *output);
 
 	int handle_event();
 	void update(int *output);
 
 	int *output;
-	MWindow *mwindow;
 };
 
 
