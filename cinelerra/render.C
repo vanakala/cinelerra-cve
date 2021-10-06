@@ -881,6 +881,7 @@ RenderWindow::~RenderWindow()
 void RenderWindow::load_profile()
 {
 	render->load_profile(asset);
+	render->check_asset(render_edl, asset);
 	update_range_type(render->range_type);
 	format_tools->update(asset, &render->strategy);
 }
