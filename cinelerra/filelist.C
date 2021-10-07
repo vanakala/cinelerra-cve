@@ -38,6 +38,7 @@ FileList::FileList(Asset *asset,
 	writer = 0;
 	writing = 0;
 	first_number = 0;
+	renderpath = 0;
 	path_list.set_array_delete();
 	this->list_prefix = list_prefix;
 	this->file_extension = file_extension;
@@ -50,21 +51,28 @@ FileList::~FileList()
 {
 	close_file();
 	delete table_lock;
+	delete [] renderpath;
 }
 
-int FileList::open_file(int open_mode, int streamix)
+int FileList::open_file(int open_mode, int streamix, const char *filepath)
 {
 	writing = open_mode & FILE_OPEN_WRITE;
 	int result = 0;
 
 // skip header for write
-	if(open_mode & FILE_OPEN_WRITE)
+	if(writing)
 	{
+		renderpath = new char[BCTEXTLEN];
+		if(filepath)
+			strcpy(renderpath, filepath);
+		else
+			strcpy(renderpath, asset->path);
+
 // Frame files are created in write_frame and list index is created when
 // file is closed.
 // Look for the starting number in the path but ignore the starting character
 // and total digits since these are used by the header.
-		Render::get_starting_number(asset->path, 
+		Render::get_starting_number(renderpath,
 			first_number,
 			number_start, 
 			number_digits);
@@ -160,22 +168,23 @@ void FileList::close_file()
 
 void FileList::write_list_header()
 {
-	FILE *stream = fopen(asset->path, "w");
+	FILE *stream = fopen(renderpath, "w");
 	FileSystem fs;
 	int dir_len;
 	char *path;
 	char output_directory[BCTEXTLEN];
+	int streamix = asset->get_stream_ix(STRDSC_VIDEO);
 
 	if(stream)
 	{
-		fs.extract_dir(output_directory, asset->path);
+		fs.extract_dir(output_directory, renderpath);
 		dir_len = strlen(output_directory);
 
 		fprintf(stream, "%s\n", list_prefix);
 		fprintf(stream, "# First line is always %s\n", list_prefix);
-		fprintf(stream, "# Frame rate:\n%f\n", asset->frame_rate);
-		fprintf(stream, "# Width:\n%d\n", asset->width);
-		fprintf(stream, "# Height:\n%d\n", asset->height);
+		fprintf(stream, "# Frame rate:\n%f\n", asset->streams[streamix].frame_rate);
+		fprintf(stream, "# Width:\n%d\n", asset->streams[streamix].width);
+		fprintf(stream, "# Height:\n%d\n", asset->streams[streamix].height);
 		fprintf(stream, "# List of image files follows\n");
 
 		for(int i = 0; i < path_list.total; i++)
@@ -188,7 +197,7 @@ void FileList::write_list_header()
 		fclose(stream);
 	}
 	else
-		errormsg(_("Can't create '%s': %m\n"), asset->path);
+		errormsg(_("Can't create '%s': %m\n"), renderpath);
 }
 
 int FileList::read_list_header()
@@ -399,11 +408,15 @@ noframe:
 
 int FileList::write_frames(VFrame ***frames, int len)
 {
+	int streamix = asset->get_stream_ix(STRDSC_VIDEO);
+
 	return_value = 0;
 
 	if(frames[0][0]->get_color_model() == BC_COMPRESSED)
 	{
-		for(int i = 0; i < asset->layers && !return_value; i++)
+		int layers = asset->streams[streamix].channels;
+
+		for(int i = 0; i < layers && !return_value; i++)
 		{
 			for(int j = 0; j < len && !return_value; j++)
 			{
@@ -422,7 +435,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 				}
 				else
 				{
-					errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), asset->path);
+					errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), renderpath);
 					return_value++;
 				}
 			}
@@ -442,12 +455,17 @@ void FileList::add_return_value(int amount)
 
 char* FileList::calculate_path(int number, char *string)
 {
-// Synthesize filename.
-// If a header is used, the filename number must be in a different location.
+	char *path;
+
+	if(writing)
+		path = renderpath;
+	else
+		path = asset->path;
+
 	if(asset->use_header)
 	{
 		int k;
-		strcpy(string, asset->path);
+		strcpy(string, path);
 		for(k = strlen(string) - 1; k > 0 && string[k] != '.'; k--);
 
 		if(k <= 0)
@@ -459,7 +477,7 @@ char* FileList::calculate_path(int number, char *string)
 // Without a header, the original filename can be altered.
 	{
 		Render::create_filename(string, 
-			asset->path, 
+			path,
 			number,
 			number_digits,
 			number_start);
@@ -471,7 +489,7 @@ char* FileList::calculate_path(int number, char *string)
 char* FileList::create_path(int number_override)
 {
 	if(asset->format != list_type)
-		return asset->path;
+		return renderpath ? renderpath : asset->path;
 
 	table_lock->lock("FileList::create_path");
 
@@ -597,9 +615,11 @@ void FrameWriter::init_packages()
 
 void FrameWriter::write_frames(VFrame ***frames, int len)
 {
+	int layers = file->asset->streams[file->asset->get_stream_ix(STRDSC_VIDEO)].channels;
+
 	this->frames = frames;
 	this->len = len;
-	set_package_count(len * file->asset->layers);
+	set_package_count(len * layers);
 	process_packages();
 }
 

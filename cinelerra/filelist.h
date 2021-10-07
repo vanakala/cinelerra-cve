@@ -31,7 +31,7 @@ public:
 	virtual ~FileList();
 
 // basic commands for every file interpreter
-	int open_file(int open_mode, int streamix);
+	int open_file(int open_mode, int streamix, const char *filepath);
 	void close_file();
 
 	char* calculate_path(int number, char *string);
@@ -59,12 +59,10 @@ public:
 
 // Temp storage for compressed data
 	VFrame *data;
+// Render path
+	char *renderpath;
 
 private:
-	int read_raw(VFrame *frame, 
-		float in_x1, float in_y1, float in_x2, float in_y2,
-		float out_x1, float out_y1, float out_x2, float out_y2, 
-		int alpha, int use_alpha, int use_float, int interpolate);
 	ArrayList<char*> path_list;     // List of files
 	const char *list_prefix;
 	const char *file_extension;
