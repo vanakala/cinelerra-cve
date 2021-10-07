@@ -102,7 +102,7 @@ RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second
 		int use_local_rate)
 {
 	RenderPackage *result = 0;
-	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
+	double avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	if(audio_pts < audio_end_pts ||
 		video_pts < video_end_pts)
@@ -112,8 +112,8 @@ RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second
 		result = packages[current_package];
 		result->audio_start_pts = audio_pts;
 		result->video_start_pts = video_pts;
-		result->video_do = default_asset->video_data;
-		result->audio_do = default_asset->audio_data;
+		result->video_do = default_asset->stream_count(STRDSC_VIDEO);
+		result->audio_do = default_asset->stream_count(STRDSC_AUDIO);
 
 		if(current_package >= total_allocated - 1)
 		{
