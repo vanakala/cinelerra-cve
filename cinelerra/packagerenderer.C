@@ -372,8 +372,6 @@ void PackageRenderer::close_output()
 // Aborts and returns 1 if an error is encountered.
 int PackageRenderer::render_package(RenderPackage *package)
 {
-	int audio_done = 0;
-	int video_done = 0;
 	ptstime duration_rendered = 0;
 	int result = 0;
 
@@ -406,25 +404,26 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Create render engine
 	if(!result)
 	{
-		int stream = default_asset->get_stream_ix(STRDSC_AUDIO);
+		int astream = default_asset->get_stream_ix(STRDSC_AUDIO);
+		int vstream = default_asset->get_stream_ix(STRDSC_VIDEO);
 
 		create_engine();
 // Main loop
-		while(!audio_done || !video_done && !result)
+		while(astream >= 0 || vstream >= 0 && !result)
 		{
 			int need_audio = 0, need_video = 0;
 
 // Calculate lengths to process.  Audio fragment is constant.
-			if(!audio_done)
+			if(astream >= 0)
 			{
 				int samplerate =
-					default_asset->streams[stream].sample_rate;
+					default_asset->streams[astream].sample_rate;
 				samplenum audio_position = round(audio_pts * samplerate);
 				samplenum audio_end = round(package->audio_end_pts * samplerate);
 
 				if(audio_position + audio_read_length >= audio_end)
 				{
-					audio_done = 1;
+					astream = -1;
 					audio_read_length = audio_end - audio_position;
 				}
 
@@ -432,9 +431,9 @@ int PackageRenderer::render_package(RenderPackage *package)
 				need_audio = 1;
 			}
 
-			if(!video_done)
+			if(vstream >= 0)
 			{
-				if(audio_done)
+				if(astream >= 0)
 				{
 					video_read_length = package->video_end_pts - video_pts;
 // Packetize video length so progress gets updated
@@ -445,19 +444,19 @@ int PackageRenderer::render_package(RenderPackage *package)
 				{
 					video_read_length = audio_pts +
 						(ptstime)audio_read_length /
-						default_asset->streams[stream].sample_rate -
+						default_asset->streams[astream].sample_rate -
 						video_pts;
 				}
 
 // Clamp length
 				if(video_pts + video_read_length >= package->video_end_pts)
 				{
-					video_done = 1;
+					vstream = -1;
 					video_read_length = package->video_end_pts - video_pts;
 				}
 
 // Calculate samples rendered for progress bar.
-				if(audio_done)
+				if(astream < 0)
 					duration_rendered = video_read_length;
 
 				need_video = 1;
