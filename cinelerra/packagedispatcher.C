@@ -113,8 +113,8 @@ int PackageDispatcher::create_packages(EDL *edl,
 			packages[0]->audio_end_pts = audio_end_pts;
 			packages[0]->video_start_pts = video_pts;
 			packages[0]->video_end_pts = video_end_pts;
-			packages[0]->audio_do = default_asset->audio_data;
-			packages[0]->video_do = default_asset->video_data;
+			packages[0]->audio_do = default_asset->stream_count(STRDSC_AUDIO);
+			packages[0]->video_do = default_asset->stream_count(STRDSC_VIDEO);
 			strcpy(packages[0]->path, default_asset->path);
 		}
 		else
@@ -147,8 +147,8 @@ int PackageDispatcher::create_packages(EDL *edl,
 				new RenderPackage;
 			package->audio_start_pts = audio_pts;
 			package->video_start_pts = video_pts;
-			package->audio_do = default_asset->audio_data;
-			package->video_do = default_asset->video_data;
+			package->audio_do = default_asset->stream_count(STRDSC_AUDIO);
+			package->video_do = default_asset->stream_count(STRDSC_VIDEO);
 
 			while(label && 
 				(label->position < audio_pts ||
@@ -286,16 +286,18 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			scaled_len = MAX(scaled_len, min_package_len);
 
 // Always an image file sequence
+			int streamix = default_asset->get_stream_ix(STRDSC_VIDEO);
 			result->audio_start_pts = audio_pts;
 			result->video_start_pts = video_pts;
 			result->audio_end_pts = result->audio_start_pts + scaled_len;
 			result->video_end_pts = result->video_start_pts + scaled_len;
 			if(PTSEQU(result->video_end_pts, result->video_start_pts)) 
-				result->video_end_pts += 1.0 / default_asset->frame_rate;
+				result->video_end_pts += 1.0 /
+					default_asset->streams[streamix].frame_rate;
 			audio_pts = result->audio_end_pts;
 			video_pts = result->video_end_pts;
-			result->audio_do = default_asset->audio_data;
-			result->video_do = default_asset->video_data;
+			result->audio_do = 0;
+			result->video_do = 1;
 
 // The frame numbers are read from the vframe objects themselves.
 			Render::create_filename(result->path,
