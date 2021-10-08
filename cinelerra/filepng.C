@@ -174,6 +174,7 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	png_infop end_info = 0;
 	VFrame *output_frame;
 	int use_alpha = 0;
+	int stream = asset->get_stream_ix(STRDSC_VIDEO);
 
 	if(asset->encoder_parameters[FILEPNG_VCODEC_IX])
 		use_alpha = asset->encoder_parameters[FILEPNG_VCODEC_IX]->get(PARAM_ALPHA, 0);
@@ -190,8 +191,8 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 	png_set_IHDR(png_ptr, 
 		info_ptr, 
-		asset->width, 
-		asset->height,
+		asset->streams[stream].width,
+		asset->streams[stream].height,
 		8,
 		use_alpha ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, 
@@ -202,10 +203,11 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	native_cmodel = use_alpha ? BC_RGBA8888 : BC_RGB888;
 	if(frame->get_color_model() != native_cmodel)
 	{
-		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0, 
-			asset->width, 
-			asset->height, 
-			native_cmodel);
+		if(!png_unit->temp_frame)
+			png_unit->temp_frame = new VFrame(0,
+				asset->streams[stream].width,
+				asset->streams[stream].height,
+				native_cmodel);
 		png_unit->temp_frame->transfer_from(frame);
 		output_frame = png_unit->temp_frame;
 	}
