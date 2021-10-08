@@ -352,6 +352,9 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	tiff_unit->offset = 0;
 	tiff_unit->data = data;
 	tiff_unit->data->set_compressed_size(0);
+	int streamix = asset->get_stream_ix(STRDSC_VIDEO);
+	int height = asset->streams[streamix].height;
+	int width = asset->streams[streamix].width;
 
 	stream = TIFFClientOpen("FileTIFF", 
 		"w",
@@ -387,35 +390,35 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		color_model = BC_RGB888;
 		bits = 8;
 		type = TIFF_BYTE;
-		bytesperrow = 3 * asset->width;
+		bytesperrow = 3 * width;
 		break;
 	case FileTIFF::RGB_161616:
 		components = 3;
 		color_model = BC_RGB161616;
 		bits = 16;
 		type = TIFF_SHORT;
-		bytesperrow = 6 * asset->width;
+		bytesperrow = 6 * width;
 		break;
 	case FileTIFF::RGBA_8888: 
 		components = 4;
 		color_model = BC_RGBA8888;
 		bits = 8;
 		type = TIFF_BYTE;
-		bytesperrow = 4 * asset->width;
+		bytesperrow = 4 * width;
 		break;
 	case FileTIFF::RGBA_16161616: 
 		components = 4;
 		color_model = BC_RGBA16161616;
 		bits = 16;
 		type = TIFF_SHORT;
-		bytesperrow = 8 * asset->width;
+		bytesperrow = 8 * width;
 		break;
 	default: 
 		components = 3;
 		color_model = BC_RGB888;
 		bits = 8;
 		type = TIFF_BYTE;
-		bytesperrow = 3 * asset->width;
+		bytesperrow = 3 * width;
 		break;
 	}
 
@@ -440,8 +443,8 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		break;
 	}
 
-	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
-	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, asset->height);
+	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, width);
+	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, height);
 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 	TIFFSetField(stream, TIFFTAG_SAMPLESPERPIXEL, components);
 	TIFFSetField(stream, TIFFTAG_BITSPERSAMPLE, bits);
@@ -454,7 +457,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 	if(frame->get_color_model() == color_model)
 	{
-		for(int i = 0; i < asset->height; i++)
+		for(int i = 0; i < height; i++)
 		{
 			TIFFWriteScanline(stream, frame->get_row_ptr(i), i, 0);
 		}
@@ -470,14 +473,14 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		if(!tiff_unit->temp)
 		{
 			tiff_unit->temp = new VFrame(0,
-				asset->width,
-				asset->height,
+				width,
+				height,
 				color_model);
 		}
 
 		tiff_unit->temp->transfer_from(frame);
 
-		for(int i = 0; i < asset->height; i++)
+		for(int i = 0; i < height; i++)
 		{
 			TIFFWriteScanline(stream, tiff_unit->temp->get_row_ptr(i), i, 0);
 		}
