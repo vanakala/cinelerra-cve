@@ -49,11 +49,6 @@ Asset* AssetList::add_asset(Asset *asset)
 	if(asset->format == FILE_UNKNOWN || !asset->nb_streams)
 		check_asset(asset);
 
-	stream = -1;
-	if(!asset->audio_data &&
-			(stream = asset->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
-		asset->set_audio_stream(stream);
-
 	asset->global_inuse = 1;
 	return asset;
 }
