@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "asset.h"
 #include "avlibsconfig.h"
@@ -57,6 +41,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 	int x1;
 	int codec_w = 0;
 	Param *param, *param2;
+	int astream, vstream;
 
 	left = 10;
 	top = 10;
@@ -99,17 +84,20 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 	base_left = win->get_w() + 20;
 	base_w = win->get_w();
 
-	if(options & SUPPORTS_AUDIO)
+	astream = asset->get_stream_ix(STRDSC_AUDIO);
+	vstream = asset->get_stream_ix(STRDSC_VIDEO);
+
+	if((options & SUPPORTS_AUDIO) && astream >= 0)
 	{
 		twin = add_subwindow(new BC_Title(base_left, top, _("Audio codec:")));
-		if(param = codecs->find(asset->acodec))
+		if(param = codecs->find(asset->streams[astream].codec))
 			codecs->set_selected(param->intvalue);
 		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO);
 	}
-	else if(options & SUPPORTS_VIDEO)
+	else if((options & SUPPORTS_VIDEO) && vstream >= 0)
 	{
 		twin = add_subwindow(new BC_Title(base_left, top, _("Video codec:")));
-		if(param = codecs->find(asset->vcodec))
+		if(param = codecs->find(asset->streams[vstream].codec))
 			codecs->set_selected(param->intvalue);
 		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO);
 	}
