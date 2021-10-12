@@ -245,6 +245,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	double low;
 
 	if((wave_item = wave_cache->get_wave(item->asset,
+		item->stream,
 		item->channel,
 		item->start,
 		item->end)))
@@ -314,6 +315,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 		}
 
 		wave_cache->put_wave(item->asset,
+			item->stream,
 			item->channel,
 			item->start,
 			item->end,

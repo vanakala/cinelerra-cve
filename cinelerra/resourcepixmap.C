@@ -486,7 +486,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
 			WaveCacheItem *item = resource_thread->wave_cache->get_wave(
-					edit->asset, edit->channel,
+					edit->asset, edit->stream, edit->channel,
 					source_start, source_end);
 			if(item)
 			{

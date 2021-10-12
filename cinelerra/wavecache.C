@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "mutex.h"
@@ -42,6 +26,7 @@ WaveCache::WaveCache()
 }
 
 WaveCacheItem* WaveCache::get_wave(Asset *asset,
+	int stream,
 	int channel,
 	samplenum start,
 	samplenum end)
@@ -53,7 +38,7 @@ WaveCacheItem* WaveCache::get_wave(Asset *asset,
 	result = (WaveCacheItem*)get_item(start);
 	while(result && result->position == start)
 	{
-		if(result->asset == asset &&
+		if(result->asset == asset && result->stream == stream &&
 			result->channel == channel &&
 			result->end == end)
 		{
@@ -69,6 +54,7 @@ WaveCacheItem* WaveCache::get_wave(Asset *asset,
 }
 
 void WaveCache::put_wave(Asset *asset,
+	int stream,
 	int channel,
 	samplenum start,
 	samplenum end,
@@ -78,6 +64,7 @@ void WaveCache::put_wave(Asset *asset,
 	lock->lock("WaveCache::put_wave");
 	WaveCacheItem *item = new WaveCacheItem;
 	item->asset = asset;
+	item->stream = stream;
 	item->channel = channel;
 	item->position = start;
 	item->end = end;
