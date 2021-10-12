@@ -284,7 +284,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 				int fragment = aframe->get_buffer_length();
 
-				aframe->set_samplerate(item->asset->sample_rate);
+				aframe->set_samplerate(item->asset->streams[item->stream].sample_rate);
 				aframe->channel = item->channel;
 				aframe->stream = item->stream;
 
