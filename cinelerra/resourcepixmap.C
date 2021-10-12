@@ -90,7 +90,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 			if(data_type == TRACK_AUDIO)
 			{
 				double asset_over_session =
-					(double)edit->asset->sample_rate /
+					(double)edit->asset->streams[edit->stream].sample_rate /
 					edlsession->sample_rate;
 				if(index_zoom > edlsession->sample_rate *
 						master_edl->local_session->zoom_time *
@@ -402,7 +402,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	}
 
 	w++;
-	double asset_over_session = (double)edit->asset->sample_rate / 
+	double asset_over_session = (double)edit->asset->streams[edit->stream].sample_rate /
 		edlsession->sample_rate;
 	int source_len = round(w * master_edl->local_session->zoom_time *
 		edlsession->sample_rate);
@@ -419,7 +419,8 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				+ edit->get_source_pts();
 		// 1.6 should be enough to compensate rounding above
 		ptstime len_pts = w * master_edl->local_session->zoom_time * 1.6;
-		int total_source_samples = round(len_pts * edit->asset->sample_rate);
+		int total_source_samples = round(len_pts *
+			edit->asset->streams[edit->stream].sample_rate);
 
 		samplenum source_start = (((pixmap_x - edit_x + x) *
 			round(master_edl->local_session->zoom_time *
@@ -432,7 +433,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		else
 			aframe->check_buffer(total_source_samples);
 
-		aframe->set_samplerate(edit->asset->sample_rate);
+		aframe->set_samplerate(edit->asset->streams[edit->stream].sample_rate);
 		aframe->channel = edit->channel;
 		aframe->set_fill_request(source_start, total_source_samples);
 
@@ -534,7 +535,7 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 	int center_pixel = master_edl->local_session->zoom_track / 2 + top_pixel;
 	int bottom_pixel = top_pixel + master_edl->local_session->zoom_track;
 	int y1 = round(center_pixel -
-		low * master_edl->local_session->zoom_y / 2);
++		low * master_edl->local_session->zoom_y / 2);
 	int y2 = round(center_pixel -
 		high * master_edl->local_session->zoom_y / 2);
 
