@@ -84,50 +84,26 @@ void Asset::init_values()
 
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
-	channels = 0;
 	memset(streams, 0, sizeof(streams));
 	memset(programs, 0, sizeof(programs));
 	nb_streams = 0;
 	nb_programs = 0;
 	program_id = 0;
-	sample_rate = 0;
-	bits = 0;
-	byte_order = 0;
-	signed_ = 0;
-	header = 0;
-	dither = 0;
 	pcm_format = 0;
-	audio_data = 0;
-	video_data = 0;
-	audio_length = 0;
-	video_length = 0;
-	audio_streamno = 0;
-	video_streamno = 0;
 	file_length = 0;
 	memset(&file_mtime, 0, sizeof(file_mtime));
 	single_image = 0;
-	audio_duration = 0;
-	video_duration = 0;
 	global_inuse = 0;
 	pts_base = INT64_MAX;
 	probed = 0;
 	tocfile = 0;
 
-	layers = 0;
-	frame_rate = 0;
-	width = 0;
-	height = 0;
-	vcodec[0] = 0;
-	acodec[0] = 0;
-	sample_aspect_ratio = 1;
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
 	memset(decoder_parameters, 0, MAX_DEC_PARAMLISTS * sizeof(Paramlist *));
-	memset(active_streams, 0, MAXCHANNELS * sizeof(struct streamdesc *));
-	last_active = 0;
 
 	render_parameters = 0;
 	renderprofile_path[0] = 0;
@@ -139,97 +115,6 @@ void Asset::init_values()
 
 	pipe[0] = 0;
 	use_pipe = 0;
-}
-
-void Asset::set_audio_stream(int stream)
-{
-	struct streamdesc *desc;
-
-	if(stream < 0)
-		audio_data = 0;
-	if(stream > nb_streams || !streams[stream].options)
-		return;
-	desc = &streams[stream];
-	audio_data = 1;
-	audio_streamno = stream + 1;
-	channels = desc->channels;
-	sample_rate = desc->sample_rate;
-	bits = desc->bits;
-	signed_ = desc->signedsample;
-	audio_length = desc->length;
-	audio_duration = desc->end - desc->start;
-	strcpy(acodec, desc->codec);
-	active_streams[last_active++] = desc;
-	// should not happen
-	if(last_active >= MAXCHANNELS)
-		last_active = MAXCHANNELS - 1;
-}
-
-void Asset::set_video_stream(int stream)
-{
-	struct streamdesc *desc;
-
-	if(stream < 0)
-		video_data = 0;
-	if(stream > nb_streams || !streams[stream].options)
-		return;
-	desc = &streams[stream];
-	video_data = 1;
-	video_streamno = stream + 1;
-	layers = desc->channels;
-	frame_rate = desc->frame_rate;
-	sample_aspect_ratio = desc->sample_aspect_ratio;
-	width = desc->width;
-	height = desc->height;
-	video_length = desc->length;
-	video_duration = desc->end - desc->start;
-	strcpy(vcodec, desc->codec);
-	active_streams[last_active++] = desc;
-	// should not happen
-	if(last_active >= MAXCHANNELS)
-		last_active = MAXCHANNELS - 1;
-}
-
-void Asset::init_streams()
-{
-	struct streamdesc *desc;
-
-	if(!nb_streams)
-	{
-		if(audio_data)
-		{
-			desc = &streams[nb_streams];
-			desc->stream_index = nb_streams;
-			desc->channels = channels;
-			desc->sample_rate = sample_rate;
-			desc->bits = bits;
-			desc->signedsample = signed_;
-			desc->length = audio_length;
-			desc->start = 0;
-			desc->end = audio_duration;
-			strcpy(desc->codec, acodec);
-			desc->options = STRDSC_AUDIO;
-			active_streams[last_active++] = desc;
-			audio_streamno = ++nb_streams;
-		}
-		if(video_data)
-		{
-			desc = &streams[nb_streams];
-			desc->stream_index = nb_streams;
-			desc->channels = layers;
-			desc->frame_rate = frame_rate;
-			desc->sample_aspect_ratio = sample_aspect_ratio;
-			desc->width = width;
-			desc->height = height;
-			desc->length = video_length;
-			desc->start = 0;
-			desc->end = video_duration;
-			strcpy(desc->codec, vcodec);
-			desc->options = STRDSC_VIDEO;
-			active_streams[last_active++] = desc;
-			video_streamno = ++nb_streams;
-		}
-	}
 }
 
 int Asset::set_program_id(int program_id)
@@ -261,11 +146,8 @@ int Asset::set_program(int pgm)
 	if(pgm < 0 || pgm >= nb_programs)
 		return -1;
 
-	last_active = 0;
 	pdesc = &programs[pgm];
 	program_id = pdesc->program_id;
-	audio_data = video_data = 0;
-	audio_streamno = video_streamno = 0;
 	pts_base = INT64_MAX;
 
 	for(int i = 0; i < pdesc->nb_streams; i++)
@@ -273,16 +155,6 @@ int Asset::set_program(int pgm)
 		int stream = pdesc->streams[i];
 		sdesc = &streams[stream];
 
-		if(sdesc->options & STRDSC_AUDIO & ~mask)
-		{
-			set_audio_stream(stream);
-			mask |= STRDSC_AUDIO;
-		}
-		if(sdesc->options & STRDSC_VIDEO & ~mask)
-		{
-			set_video_stream(stream);
-			mask |= STRDSC_VIDEO;
-		}
 		if(pts_base > pdesc->start)
 			pts_base = pdesc->start;
 	}
@@ -306,38 +178,15 @@ void Asset::copy_format(Asset *asset, int do_index)
 {
 	if(do_index) update_index(asset);
 
-	audio_data = asset->audio_data;
-	audio_streamno = asset->audio_streamno;
 	format = asset->format;
 	pcm_format = asset->pcm_format;
-	channels = asset->channels;
-	sample_rate = asset->sample_rate;
-	bits = asset->bits;
-	byte_order = asset->byte_order;
-	signed_ = asset->signed_;
-	header = asset->header;
-	dither = asset->dither;
 	use_header = asset->use_header;
-	sample_aspect_ratio = asset->sample_aspect_ratio;
 	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
 	interlace_fixmethod = asset->interlace_fixmethod;
 
-	video_data = asset->video_data;
-	video_streamno = asset->video_streamno;
-	layers = asset->layers;
-	frame_rate = asset->frame_rate;
-	width = asset->width;
-	height = asset->height;
-	strcpy(vcodec, asset->vcodec);
-	strcpy(acodec, asset->acodec);
- 
-	this->audio_length = asset->audio_length;
-	this->video_length = asset->video_length;
 	this->single_image = asset->single_image;
 	this->probed = asset->probed;
-	this->audio_duration = asset->audio_duration;
-	this->video_duration = asset->video_duration;
 	this->pts_base = asset->pts_base;
 	this->nb_streams = asset->nb_streams;
 	this->nb_programs = asset->nb_programs;
@@ -358,17 +207,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 	}
 	memcpy(this->programs, asset->programs, sizeof(programs));
 
-	// Set active streams
-	last_active = 0;
 	if(nb_programs)
 	{
 		if(set_program_id(program_id) < 0)
 			set_program(0);
-	}
-	else
-	{
-		set_audio_stream(audio_streamno - 1);
-		set_video_stream(video_streamno - 1);
 	}
 
 	strcpy(pipe, asset->pipe);
@@ -429,29 +271,13 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 		}
 	}
 
-	if(test_dsc & STRDSC_AUDIO && result)
-	{
-		result = (channels == asset.channels && 
-			sample_rate == asset.sample_rate && 
-			bits == asset.bits && 
-			byte_order == asset.byte_order && 
-			signed_ == asset.signed_ && 
-			header == asset.header && 
-			dither == asset.dither &&
-			!strcmp(acodec, asset.acodec));
-	}
-
 	if(test_dsc & STRDSC_VIDEO && result)
 	{
-		result = (layers == asset.layers && 
-			EQUIV(frame_rate, asset.frame_rate) &&
-			asset.interlace_autofixoption == interlace_autofixoption &&
-			asset.interlace_mode    == interlace_mode &&
-			interlace_fixmethod     == asset.interlace_fixmethod &&
-			width == asset.width &&
-			height == asset.height &&
-			!strcmp(vcodec, asset.vcodec));
+		result = asset.interlace_autofixoption == interlace_autofixoption &&
+			asset.interlace_mode == interlace_mode &&
+			interlace_fixmethod == asset.interlace_fixmethod;
 	}
+
 	if(result)
 		result = equivalent_streams(asset, test_dsc);
 	return result;
@@ -459,43 +285,16 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 
 int Asset::equivalent_streams(Asset &asset, int test_dsc)
 {
-	int ct, co, j;
 	int result;
 
-	ct = co = 0;
-	// Check the number of active streams
-	for(int i = 0; i < last_active; i++)
-		if(active_streams[i]->options & test_dsc)
-			ct++;
-
-	for(int i = 0; i < asset.last_active; i++)
-		if(asset.active_streams[i]->options & test_dsc)
-			co++;
-
-	result = ct == co;
-
-	if(result)
+	for(int i = 0; i < nb_streams; i++)
 	{
-		for(int i = 0; i < last_active; i++)
-		{
-			if(!(active_streams[i]->options & test_dsc))
-				continue;
-			for(j = 0; j < asset.last_active; j++)
-			{
-				if(!(asset.active_streams[j]->options & test_dsc))
-					continue;
-				if(active_streams[i]->stream_index == asset.active_streams[j]->stream_index)
-				{
-					result = stream_equivalent(active_streams[i], asset.active_streams[j]);
-					break;
-				}
-			}
-			if(!result || j == asset.last_active)
-			{
-				result = 0;
-				break;
-			}
-		}
+		if(streams[i].options && asset.streams[i].options)
+			result = stream_equivalent(&streams[i], &asset.streams[i]);
+		else if(streams[i].options || asset.streams[i].options)
+			result = 0;
+		if(!result)
+			break;
 	}
 	return result;
 }
@@ -554,8 +353,8 @@ int Asset::check_stream(Asset *asset)
 	if(asset == this)
 		return 1;
 
-	if(video_streamno != asset->video_streamno ||
-			audio_streamno != asset->audio_streamno)
+	if(nb_programs && (nb_programs != asset->nb_programs ||
+			program_id != asset->program_id))
 		return 0;
 
 	return !strcmp(asset->path, path);
@@ -689,8 +488,6 @@ void Asset::create_render_stream(int stream_type)
 		streams[nb_streams].bits = 16;
 		streams[nb_streams].signedsample = 1;
 		streams[nb_streams].stream_index = 0;
-		byte_order = 1;
-		dither = 1;
 		nb_streams++;
 	}
 
@@ -709,18 +506,18 @@ void Asset::create_render_stream(int stream_type)
 
 ptstime Asset::stream_duration(int stream)
 {
-	return streams[stream].end - streams[stream].start;
+	return streams[stream].end - pts_base;
 }
 
 samplenum Asset::stream_samples(int stream)
 {
-	return round((streams[stream].end - streams[stream].start) *
+	return round((streams[stream].end - pts_base) *
 		streams[stream].sample_rate);
 }
 
 ptstime Asset::duration()
 {
-	ptstime dur = 0;
+	ptstime dur = INT64_MAX;
 
 	if(nb_programs)
 	{
@@ -730,8 +527,8 @@ ptstime Asset::duration()
 		{
 			ptstime cur = stream_duration(prog->streams[i]);
 
-			if(cur > dur)
-				cur = dur;
+			if(cur < dur)
+				dur = cur;
 		}
 	}
 	else
@@ -740,10 +537,11 @@ ptstime Asset::duration()
 		{
 			ptstime cur = stream_duration(i);
 
-			if(cur > dur)
-				cur = dur;
+			if(cur < dur)
+				dur = cur;
 		}
 	}
+
 	if(edlsession->cursor_on_frames && dur > 0)
 		dur = floor(dur * edlsession->frame_rate) / edlsession->frame_rate;
 
@@ -1042,30 +840,23 @@ void Asset::remove_indexes()
 
 void Asset::set_single_image()
 {
-	layers = 1;
 
-	if(mwindow_global)
+	streams[0].channels = 1;
+	streams[0].start = 0;
+
+	if(edlsession->si_useduration)
 	{
-		if(edlsession->si_useduration)
-		{
-			frame_rate = 1. /
-				edlsession->si_duration;
-			video_duration = edlsession->si_duration;
-		}
-		else
-		{
-			frame_rate = edlsession->frame_rate;
-			video_duration = 1. / edlsession->frame_rate;
-		}
+		streams[0].frame_rate = 1. /
+			edlsession->si_duration;
+		streams[0].end = edlsession->si_duration;
 	}
-	video_data = 1;
-	video_length = 1;
+	else
+	{
+		streams[0].frame_rate = edlsession->frame_rate;
+		streams[0].end = 1. / edlsession->frame_rate;
+	}
 	single_image = 1;
 	pts_base = 0;
-	// Fill stream info
-	streams[0].end = video_duration;
-	streams[0].frame_rate = frame_rate;
-	streams[0].length = video_length;
 }
 
 void Asset::write_decoder_params(FileXML *file)
@@ -1328,27 +1119,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 		format = GET_DEFAULT("FORMAT", format);
 	}
 
-	if(options & ASSET_COMPRESSION)
-	{
-		GET_DEFAULT("AUDIO_CODEC", acodec);
-		GET_DEFAULT("VIDEO_CODEC", vcodec);
-		format_changed();
-	}
-
-	if(options & ASSET_TYPES)
-	{
-		audio_data = GET_DEFAULT("AUDIO", 1);
-		video_data = GET_DEFAULT("VIDEO", 1);
-	}
-
-	if(options & ASSET_BITS)
-	{
-		bits = GET_DEFAULT("BITS", 16);
-		dither = GET_DEFAULT("DITHER", 0);
-		signed_ = GET_DEFAULT("SIGNED", 1);
-		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
-	}
-
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_UPONE;
@@ -1416,9 +1186,13 @@ void Asset::set_format_params()
 		switch(format)
 		{
 		case FILE_TGA:
+		case FILE_TGA_LIST:
 		case FILE_JPEG:
+		case FILE_JPEG_LIST:
 		case FILE_PNG:
+		case FILE_PNG_LIST:
 		case FILE_TIFF:
+		case FILE_TIFF_LIST:
 			break;
 		default:
 			FileAVlibs::set_format_params(this);
@@ -1434,15 +1208,19 @@ void Asset::save_render_options()
 		switch(format)
 		{
 		case FILE_TGA:
+		case FILE_TGA_LIST:
 			FileTGA::save_render_optios(this);
 			break;
 		case FILE_JPEG:
+		case FILE_JPEG_LIST:
 			FileJPEG::save_render_optios(this);
 			break;
 		case FILE_PNG:
+		case FILE_PNG_LIST:
 			FilePNG::save_render_optios(this);
 			break;
 		case FILE_TIFF:
+		case FILE_TIFF_LIST:
 			FileTIFF::save_render_optios(this);
 			break;
 		default:
@@ -1517,9 +1295,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
 		{
 			streams[stream].bits = list->get("bits", 16);
-			dither = list->get("dither", 0);
 			streams[stream].signedsample = list->get("signed", 1);
-			byte_order = list->get("byte_order", 1);
 		}
 	}
 }
@@ -1558,8 +1334,6 @@ void Asset::save_defaults(Paramlist *list, int options)
 		{
 			list->set("bits", streams[stream].bits);
 			list->set("signed", streams[stream].signedsample);
-			list->set("dither", dither);
-			list->set("byte_order", byte_order);
 		}
 	}
 }
@@ -1600,14 +1374,14 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 	if(options & ASSET_TYPES)
 	{
-		UPDATE_DEFAULT("AUDIO", audio_data);
-		UPDATE_DEFAULT("VIDEO", video_data);
+		remove_prefixed_default(defaults, "AUDIO", string);
+		remove_prefixed_default(defaults, "VIDEO", string);
 	}
 
 	if(options & ASSET_COMPRESSION)
 	{
-		UPDATE_DEFAULT("AUDIO_CODEC", acodec);
-		UPDATE_DEFAULT("VIDEO_CODEC", vcodec);
+		remove_prefixed_default(defaults, "AUDIO_CODEC", string);
+		remove_prefixed_default(defaults, "VIDEO_CODEC", string);
 
 		remove_prefixed_default(defaults, "AMPEG_BITRATE", string);
 		remove_prefixed_default(defaults, "AMPEG_DERIVATIVE", string);
@@ -1693,10 +1467,10 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 	if(options & ASSET_BITS)
 	{
-		UPDATE_DEFAULT("BITS", bits);
-		UPDATE_DEFAULT("DITHER", dither);
-		UPDATE_DEFAULT("SIGNED", signed_);
-		UPDATE_DEFAULT("BYTE_ORDER", byte_order);
+		remove_prefixed_default(defaults, "BITS", string);
+		remove_prefixed_default(defaults, "DITHER", string);
+		remove_prefixed_default(defaults, "SIGNED", string);
+		remove_prefixed_default(defaults, "BYTE_ORDER", string);
 	}
 	remove_prefixed_default(defaults, "REEL_NAME", string);
 	remove_prefixed_default(defaults, "REEL_NUMBER", string);
@@ -1708,23 +1482,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 void Asset::update_path(const char *new_path)
 {
 	strcpy(path, new_path);
-}
-
-ptstime Asset::total_length_framealigned(double fps)
-{
-	if(video_data && audio_data)
-	{
-		ptstime aud = floor(audio_duration * fps) / fps;
-		ptstime vid = floor(video_duration * fps) / fps;
-		return MIN(aud, vid);
-	}
-
-	if(audio_data)
-		return audio_duration;
-
-	if(video_data)
-		return video_duration;
-	return 0;
 }
 
 void Asset::update_index(Asset *asset)
@@ -1764,18 +1521,10 @@ void Asset::dump(int indent, int options)
 		printf(" pcm_format '%s',", pcm_format);
 	printf(" length %" PRId64 " base_pts %.3f probed: %d\n", file_length, pts_base,
 		probed);
-	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
-		indent, "", audio_data, audio_streamno, channels, sample_rate, bits, byte_order);
-	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",
-		signed_, header, dither, acodec, audio_duration, audio_length);
-
-	printf("%*svideo_data %d streamno %d layers %d framerate %.2f width %d height %d\n",
-		indent, "", video_data, video_streamno, layers, frame_rate, width, height);
-	printf("%*s  vcodec '%s' SAR %.2f interlace_mode %s\n",
-		indent, "", vcodec, sample_aspect_ratio,
+	printf("%*sinterlace_mode %s\n", indent, "",
 		AInterlaceModeSelection::name(interlace_mode));
-	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
-		video_duration, video_length, single_image, use_pipe);
+	printf("%*simage %d pipe %d\n", indent, "",
+		single_image, use_pipe);
 
 	if(options & ASSETDUMP_INDEXDATA)
 	{
@@ -1838,14 +1587,6 @@ void Asset::dump(int indent, int options)
 				}
 			}
 		}
-		if(last_active)
-		{
-			printf("%*s%d active streams:\n", indent + 2, "", last_active);
-			printf("%*s", indent + 4, "");
-			for(int i = 0; i < last_active; i++)
-				printf(" %p(%d)", active_streams[i], (int)(active_streams[i] - streams));
-			putchar('\n');
-		}
 	}
 	if(nb_programs)
 	{
@@ -1878,14 +1619,22 @@ void Asset::dump(int indent, int options)
 
 ptstime Asset::from_units(int track_type, posnum position)
 {
+	int stx = get_stream_ix(stream_type(track_type));
+	ptstime rate;
+
+	if(stx < 0)
+		return 0;
+
 	switch(track_type)
 	{
 	case TRACK_AUDIO:
-		return (ptstime)position / sample_rate;
+		rate = streams[stx].sample_rate;
+		break;
 	case TRACK_VIDEO:
-		return (ptstime)position / frame_rate;
+		rate = streams[stx].frame_rate;
+		break;
 	}
-	return 0;
+	return (ptstime)position / rate;
 }
 
 int Asset::stream_type(int track_type)

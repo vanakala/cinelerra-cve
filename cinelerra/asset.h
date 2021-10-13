@@ -75,10 +75,7 @@ struct progdesc
 // Format allows byte seek
 #define STRDSC_SEEKBYTES 0x8000
 
-// Asset can be one of the following:
-// 1) a pure media file
-// 2) an EDL
-// The EDL can reference itself if it contains a media file
+// Asset describes a media file
 class Asset : public ListItem<Asset>
 {
 public:
@@ -92,10 +89,6 @@ public:
 	void dump(int indent = 0, int options = 0);
 	void dump_parameters(int indent = 0, int decoder = 0);
 
-	void set_audio_stream(int stream);
-	void set_video_stream(int stream);
-	// Initilalize streams from data
-	void init_streams();
 	int set_program(int pgm);
 	int set_program_id(int program_id);
 	struct progdesc *get_program(int program_id);
@@ -186,7 +179,6 @@ public:
 	void write_index(FileXML *xml, int stream);
 	void update_path(const char *new_path);
 
-	ptstime total_length_framealigned(double fps);
 	ptstime from_units(int track_type, posnum position);
 	static int stream_type(int track_type);
 
@@ -205,40 +197,8 @@ public:
 	struct progdesc programs[MAXCHANNELS];
 	int nb_streams;
 	struct streamdesc streams[MAXCHANNELS];
-// Pointers to active streams
-	int last_active;
-	struct streamdesc *active_streams[MAXCHANNELS];
 
-// contains audio data
-	int audio_data;
-	int audio_streamno;  // number of active audio stream 1..n
-	int channels;
-	int sample_rate;
-	int bits;
-	int byte_order;
-	int signed_;
-	int header;
-	int dither;
 	const char *pcm_format;
-// String or FourCC describing compression
-	char acodec[MAX_LEN_CODECNAME];
-
-	samplenum audio_length;
-	ptstime audio_duration;
-
-// contains video data
-	int video_data;
-	int video_streamno; // number of active video stream 1..n
-	int layers;
-	double frame_rate;
-	int width, height;
-// String or FourCC describing compression
-	char vcodec[MAX_LEN_CODECNAME];
-
-// Length in units of asset
-	framenum video_length;
-
-	ptstime video_duration;
 
 // Video is a single image
 	int single_image;
