@@ -46,8 +46,6 @@ Preferences::Preferences()
 
 // Default brender asset
 	brender_asset = new Asset;
-	brender_asset->audio_data = 0;
-	brender_asset->video_data = 1;
 	strcpy(brender_asset->path, "/tmp/brender");
 	brender_asset->format = FILE_JPEG_LIST;
 
