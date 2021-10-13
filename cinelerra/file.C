@@ -340,12 +340,8 @@ int File::open_file(Asset *asset, int open_method, int stream, const char *filep
 		file = 0;
 	}
 
-// Set extra writing parameters to mandatory settings.
 	if(file && wr)
-	{
-		if(asset->dither) file->set_dither();
 		writing = 1;
-	}
 
 	if(file)
 		return FILE_OK;
@@ -423,7 +419,7 @@ void File::stop_video_thread()
 
 samplenum File::get_audio_length()
 {
-	return asset->audio_length;
+	return asset->stream_samples(asset_stream);
 }
 
 // No resampling here.
@@ -434,14 +430,6 @@ int File::write_aframes(AFrame **frames)
 	if(file)
 	{
 		write_lock->lock("File::write_aframes");
-		for(int i = 0; i < asset->channels; i++)
-		{
-			if(frames[i])
-			{
-				asset->audio_length += frames[i]->get_length();
-				break;
-			}
-		}
 		result = file->write_aframes(frames);
 		write_lock->unlock();
 		return result;
@@ -498,11 +486,8 @@ int File::get_samples(AFrame *aframe)
 	if(!file)
 		return 0;
 
-	if(aframe->get_samplerate() == 0)
-		aframe->set_samplerate(asset->sample_rate);
-	if(aframe->get_buffer_length() <= 0)
-		return 0;
-	if(aframe->get_source_duration() <= 0)
+	if(!aframe->get_samplerate() || aframe->get_buffer_length() <= 0 ||
+			aframe->get_source_duration() <= 0)
 		return 0;
 
 	aframe->position = round(aframe->get_source_pts() * aframe->get_samplerate());
@@ -511,8 +496,8 @@ int File::get_samples(AFrame *aframe)
 	if(aframe->get_source_length() <= 0)
 		return 0;
 // Never try to read more samples than exist in the file
-	if(aframe->get_source_pts() + aframe->get_source_duration() > asset->audio_duration)
-		aframe->set_source_duration(asset->audio_duration - aframe->get_source_pts());
+	if(aframe->get_source_pts() + aframe->get_source_duration() > asset->stream_duration(asset_stream))
+		aframe->set_source_duration(asset->stream_duration(asset_stream) - aframe->get_source_pts());
 
 	return file->read_aframe(aframe);
 }
