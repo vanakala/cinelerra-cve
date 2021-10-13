@@ -295,8 +295,8 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 			current->end_pts() > position &&
 			current->asset)
 		{
-			w = current->asset->width;
-			h = current->asset->height;
+			w = current->asset->streams[current->stream].width;
+			h = current->asset->streams[current->stream].height;
 			return;
 		}
 	}
