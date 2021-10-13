@@ -686,7 +686,7 @@ void EDL::insert_asset(Asset *asset,
 			length = 1.0 / edlsession->frame_rate;
 	}
 	else
-		length = asset->total_length_framealigned(edlsession->frame_rate);
+		length = asset->duration();
 
 // Paste video
 	stream = -1;
