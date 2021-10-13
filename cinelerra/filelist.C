@@ -143,7 +143,6 @@ int FileList::open_file(int open_mode, int streamix, const char *filepath)
 				sdsc->codec[0] = 0;
 				break;
 			}
-			strcpy(asset->vcodec, sdsc->codec);
 		}
 	}
 
@@ -235,7 +234,6 @@ int FileList::read_list_header()
 		height = atoi(string);
 
 		asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;  // May be good to store the info in the list?
-		asset->audio_data = 0;
 
 // Get all the paths
 		while(!feof(stream))
@@ -288,9 +286,6 @@ int FileList::read_list_header()
 			sdsc->sample_aspect_ratio = 1;
 			sdsc->options = STRDSC_VIDEO;
 			asset->nb_streams = 1;
-			asset->last_active = 0;
-			asset->set_video_stream(0);
-			asset->audio_streamno = 0;
 		}
 	}
 	else
@@ -306,7 +301,8 @@ int FileList::read_frame(VFrame *frame)
 	FILE *fp;
 	char string[BCTEXTLEN];
 
-	current_frame = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
+	current_frame = (frame->get_source_pts() + FRAME_OVERLAP) *
+		asset->streams[0].frame_rate;
 	if(current_frame < 0 ||
 			(asset->use_header && current_frame >= path_list.total &&
 			asset->format == list_type))
@@ -350,8 +346,8 @@ int FileList::read_frame(VFrame *frame)
 			}
 			fclose(fp);
 		}
-		frame->set_duration((ptstime)1 / asset->frame_rate);
-		frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+		frame->set_duration((ptstime)1 / asset->streams[0].frame_rate);
+		frame->set_source_pts((ptstime)current_frame / asset->streams[0].frame_rate);
 	}
 	else
 	{
@@ -401,7 +397,7 @@ emptyfile:
 	errormsg(_("Error while opening \"%s\" for reading. \n"), asset->path);
 noframe:
 	frame->clear_frame();
-	frame->set_duration(1 / asset->frame_rate);
+	frame->set_duration(1 / asset->streams[0].frame_rate);
 	frame->set_frame_number(-1);
 	return 1;
 }
