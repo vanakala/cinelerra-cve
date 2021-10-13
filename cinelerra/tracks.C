@@ -272,7 +272,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 	atracks = vtracks = 0;
 	astream = vstream = -1;
 
-	alength = asset->total_length_framealigned(edlsession->frame_rate);
+	alength = asset->duration();
 
 	// Determine the start and length
 	// If master track is part of the operation, the length
@@ -604,7 +604,7 @@ void Tracks::create_new_tracks(Asset *asset)
 		for(int i = 0; i < vtracks; i++)
 		{
 			new_track = add_track(TRACK_VIDEO, 0, 0);
-			len = asset->total_length_framealigned(edlsession->frame_rate);
+			len = asset->duration();
 			if(len > master_length)
 				len = master_length;
 			new_track->insert_asset(asset, vstream, i, len, 0);
@@ -618,7 +618,7 @@ void Tracks::create_new_tracks(Asset *asset)
 		for(int i = 0; i < atracks; i++)
 		{
 			new_track = add_track(TRACK_AUDIO, 0, 0);
-			len = asset->total_length_framealigned(edlsession->frame_rate);
+			len = asset->duration();
 			if(len > master_length)
 				len = master_length;
 			new_track->insert_asset(asset, astream, i, len, 0);
