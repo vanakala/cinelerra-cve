@@ -183,6 +183,6 @@ void IndexThread::run()
 	index_file->redraw_edits(1);
 
 // write the index file to disk
-	asset->write_index(index_filename, 
-		(lowpoint[asset->channels - 1] + 1) * sizeof(float), stream);
+	asset->write_index(index_filename,
+		(lowpoint[nb_channels - 1] + 1) * sizeof(float), stream);
 }
