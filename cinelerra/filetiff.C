@@ -55,7 +55,6 @@ struct paramlist_defaults FileTIFF::encoder_params[] =
 FileTIFF::FileTIFF(Asset *asset, File *file)
  : FileList(asset, file, "TIFFLIST", ".tif", FILE_TIFF, FILE_TIFF_LIST)
 {
-	asset->video_data = 1;
 }
 
 void FileTIFF::get_parameters(BC_WindowBase *parent_window, 
