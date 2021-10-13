@@ -33,8 +33,8 @@ MenuVEffectThread::MenuVEffectThread()
 
 int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 {
-	asset->layers = master_edl->recordable_tracks_of(TRACK_VIDEO);
-	return asset->layers;
+	asset->streams[0].channels = master_edl->recordable_tracks_of(TRACK_VIDEO);
+	return asset->streams[0].channels;
 }
 
 void MenuVEffectThread::fix_menu(const char *title)

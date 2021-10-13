@@ -119,15 +119,15 @@ void MenuEffectThread::get_derived_attributes(Asset *asset)
 	{
 		if(!(File::supports(asset->format) & SUPPORTS_AUDIO))
 			asset->format = FILE_WAV;
-		asset->audio_data = 1;
-		asset->video_data = 0;
+		asset->remove_stream_type(STRDSC_VIDEO);
+		asset->create_render_stream(STRDSC_AUDIO);
 	}
 	else if(effect_type & SUPPORTS_VIDEO)
 	{
 		if(!(File::supports(asset->format) & SUPPORTS_VIDEO))
 			asset->format = FILE_MOV;
-		asset->audio_data = 0;
-		asset->video_data = 1;
+		asset->remove_stream_type(STRDSC_AUDIO);
+		asset->create_render_stream(STRDSC_VIDEO);
 	}
 }
 
@@ -196,8 +196,8 @@ void MenuEffectThread::run()
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
-		plugindb.fill_plugindb(default_asset->audio_data,
-			default_asset->video_data,
+		plugindb.fill_plugindb(default_asset->stream_count(STRDSC_AUDIO),
+			default_asset->stream_count(STRDSC_VIDEO),
 			-1,
 			-1,
 			0,
@@ -320,19 +320,10 @@ void MenuEffectThread::run()
 		}
 		plugin_server->close_plugin(client);
 
-		default_asset->sample_rate = edlsession->sample_rate;
-		default_asset->frame_rate = edlsession->frame_rate;
 		if(plugin_server->audio)
-			default_asset->audio_data = 1;
+			default_asset->create_render_stream(STRDSC_AUDIO);
 		if(plugin_server->video)
-			default_asset->video_data = 1;
-
-// Should take from first recordable track
-		default_asset->width = edlsession->output_w;
-		default_asset->height = edlsession->output_h;
-		default_asset->sample_aspect_ratio =
-			edlsession->sample_aspect_ratio;
-		default_asset->init_streams();
+			default_asset->create_render_stream(STRDSC_VIDEO);
 	}
 
 	if(!result)
@@ -480,9 +471,9 @@ MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 
 	x = theme_global->menueffect_tools_x;
 	y = theme_global->menueffect_tools_y;
-	format_tools = new FormatTools(this, asset, x, y,
-		asset->audio_data ? SUPPORTS_AUDIO : 0 |
-			asset->video_data ? SUPPORTS_VIDEO : 0,
+	int flags = asset->stream_count(STRDSC_AUDIO) ? SUPPORTS_AUDIO : 0;
+	flags |= asset->stream_count(STRDSC_VIDEO) ? SUPPORTS_VIDEO : 0;
+	format_tools = new FormatTools(this, asset, x, y, flags,
 		0, SUPPORTS_VIDEO,
 		&menueffects->strategy);
 

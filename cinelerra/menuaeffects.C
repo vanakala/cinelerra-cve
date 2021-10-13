@@ -35,8 +35,8 @@ MenuAEffectThread::MenuAEffectThread()
 
 int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 {
-	asset->channels = master_edl->recordable_tracks_of(TRACK_AUDIO);
-	return asset->channels;
+	asset->streams[0].channels = master_edl->recordable_tracks_of(TRACK_AUDIO);
+	return asset->streams[0].channels;
 }
 
 void MenuAEffectThread::fix_menu(const char *title)
