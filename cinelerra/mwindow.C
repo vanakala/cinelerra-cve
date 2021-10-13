@@ -693,13 +693,11 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 // Test index file
 			IndexFile indexfile;
 			new_asset->nb_streams = 0;
-			new_asset->audio_streamno = 1;
 			result = indexfile.open_index(new_asset, 0);
 
 			if(!result)
 			{
 				indexfile.close_index();
-				new_asset->init_streams();
 			}
 // Test known assets
 			if(result)
@@ -731,14 +729,12 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				strcpy(sdsc->codec, new_asset->pcm_format);
 				sdsc->options = STRDSC_AUDIO;
 				new_asset->nb_streams = 1;
-				new_asset->last_active = 0;
-				new_asset->set_audio_stream(0);
 				get_abs_cursor_pos(&cx, &cy);
 				FileFormat fwindow(new_asset, string, cx, cy);
 				result = fwindow.run_window();
 				if(!result)
 				{
-					if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
+					if(SampleRateSelection::limits(&sdsc->sample_rate) < 0)
 						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
 							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
 
@@ -747,8 +743,6 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 					defaults->update("PCM_FORMAT", new_asset->pcm_format);
 					strcpy(sdsc->codec, new_asset->pcm_format);
 					new_asset->nb_streams = 1;
-					new_asset->last_active = 0;
-					new_asset->set_audio_stream(0);
 					defaults->delete_key("AUDIO_BITS");
 					defaults->delete_key("BYTE_ORDER");
 					defaults->delete_key("SIGNED_");
