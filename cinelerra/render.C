@@ -353,7 +353,6 @@ void Render::run()
 				}
 				if(!result && !check_asset(edl, job->asset))
 				{
-					job->asset->init_streams();
 					render(0, job->asset, edl, job->strategy, RANGE_PROJECT);
 				}
 				delete edl;
@@ -395,8 +394,6 @@ void Render::run()
 int Render::check_asset(EDL *edl, Asset *asset)
 {
 	int stream;
-	// Phase out
-	asset->video_data = asset->audio_data = 0;
 
 	if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
