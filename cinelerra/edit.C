@@ -108,17 +108,8 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 
 ptstime Edit::get_source_length()
 {
-	if(asset && track)
-	{
-		switch(track->data_type)
-		{
-		case TRACK_VIDEO:
-			return asset->video_duration;
-
-		case TRACK_AUDIO:
-			return asset->audio_duration;
-		}
-	}
+	if(asset && stream >= 0)
+		return asset->stream_duration(stream);
 	return 0;
 }
 
