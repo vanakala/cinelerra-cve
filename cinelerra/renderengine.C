@@ -84,12 +84,9 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 // Fix background rendering asset to use current dimensions and ignore
 // headers.
-	preferences_global->brender_asset->frame_rate = edlsession->frame_rate;
-	preferences_global->brender_asset->width = edlsession->output_w;
-	preferences_global->brender_asset->height = edlsession->output_h;
+	preferences_global->brender_asset->remove_stream_type(STRDSC_VIDEO);
+	preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
 	preferences_global->brender_asset->use_header = 0;
-	preferences_global->brender_asset->layers = 1;
-	preferences_global->brender_asset->video_data = 1;
 
 	done = 0;
 	interrupted = 0;
