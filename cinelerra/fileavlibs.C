@@ -410,7 +410,6 @@ int FileAVlibs::probe_input(Asset *asset)
 						asset->streams[i].height < MIN_FRAME_HEIGHT))
 					asset->streams[i].options &= ~STRDSC_VIDEO;
 			}
-			asset->audio_data = asset->video_data = 0;
 
 			switch(asset->format)
 			{
@@ -488,21 +487,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			avformat_close_input(&context);
 			avlibs_lock->unlock();
 
-			int stream;
-			int has_audio = 0, has_video = 0;
-
-			if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
-			{
-				asset->set_audio_stream(stream);
-				has_audio = 1;
-			}
-			if((stream = asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
-			{
-				asset->set_video_stream(stream);
-				has_video = 1;
-			}
-
-			if(has_audio || has_video)
+			if(asset->stream_count(STRDSC_AUDIO | STRDSC_VIDEO))
 				return 1;
 		}
 		return -1;
@@ -627,8 +612,8 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 		if(asset->format == FILE_PCM && asset->pcm_format)
 		{
 			infmt = av_find_input_format(asset->pcm_format);
-			av_dict_set_int(&dict, "sample_rate", asset->sample_rate, 0);
-			av_dict_set_int(&dict, "channels", asset->channels, 0);
+			av_dict_set_int(&dict, "sample_rate", asset->streams[0].sample_rate, 0);
+			av_dict_set_int(&dict, "channels", asset->streams[0].channels, 0);
 		}
 
 		if(avformat_open_input(&context, asset->path, infmt, &dict) == 0)
@@ -712,16 +697,6 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 			if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 			{
 				liberror(rv, _("Failed to open %s decoder"), mediatype);
-				if(asset->streams[streamix].options & STRDSC_AUDIO)
-				{
-					asset->audio_data = 0;
-					asset->audio_streamno = 0;
-				}
-				if(asset->streams[streamix].options & STRDSC_AUDIO)
-				{
-					asset->video_data = 0;
-					asset->video_streamno = 0;
-				}
 				asset->streams[streamix].options = 0;
 				current_stream = -1;
 			}
@@ -2755,7 +2730,6 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			pa->set(window->codecopts->name);
 			if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 				strcpy(asset->streams[stream].codec, window->codecopts->name);
-			strcpy(asset->acodec, window->codecopts->name);
 			if(!rsc)
 				alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
 			if(!rsp)
