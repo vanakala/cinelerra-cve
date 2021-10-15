@@ -56,22 +56,24 @@ IndexFile::~IndexFile()
 int IndexFile::open_index(Asset *asset, int stream)
 {
 	int result = 0;
-// use buffer if being built
+
+	if(asset == this->asset && stream == this->stream && file &&
+			status == INDEX_READY)
+		return 1;
+
+	close_index();
+
 	this->asset = asset;
 	this->stream = stream;
 
 	if(status == INDEX_BUILDING)
-	{
-// use buffer
-		result = 0;
-	}
-	else
-	if(!(result = open_file()))
-// opened existing file
+		return 2;
+	else if(!(result = open_file()))
 		status = INDEX_READY;
 	else
 	{
-		result = 1;
+		status = INDEX_NOTTESTED;
+		return 1;
 	}
 
 	return result;
@@ -92,12 +94,14 @@ int IndexFile::open_file()
 	char source_filename[BCTEXTLEN];
 
 	if(!index_filename)
+	{
 		index_filename = new char[BCTEXTLEN];
 
-	get_index_filename(source_filename, 
-		preferences_global->index_directory,
-		index_filename, 
-		asset->path, stream);
+		get_index_filename(source_filename,
+			preferences_global->index_directory,
+			index_filename,
+			asset->path, stream);
+	}
 
 	if(file = fopen(index_filename, "rb"))
 	{
@@ -182,7 +186,7 @@ void IndexFile::get_index_filename(char *source_filename,
 	for(i = 0, j = 0; i < len; i++)
 	{
 		if(input_filename[i] != '/' &&
-			input_filename[i] != '.')
+				input_filename[i] != '.')
 			source_filename[j++] = input_filename[i];
 		else
 		{
@@ -241,12 +245,14 @@ int IndexFile::create_index(Asset *asset, int stream, MainProgressBar *progress)
 		return 1;
 
 	if(!index_filename)
+	{
 		index_filename = new char[BCTEXTLEN];
 
-	get_index_filename(source_filename, 
-		preferences_global->index_directory,
-		index_filename, 
-		asset->path, stream);
+		get_index_filename(source_filename,
+			preferences_global->index_directory,
+			index_filename,
+			asset->path, stream);
+	}
 
 // Test for index in stream table of contents
 	if(!source.get_index(index_filename))

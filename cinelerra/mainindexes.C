@@ -54,15 +54,9 @@ void MainIndexes::add_next_asset(Asset *asset, int stream)
 	int got_it = 0;
 
 	if(!asset->indexfiles[stream].open_index(asset, stream))
-	{
-		asset->indexfiles[stream].status = INDEX_READY;
 		asset->indexfiles[stream].close_index();
-	}
 	else
-	{
-		asset->indexfiles[stream].status = INDEX_NOTTESTED;
 		next_assets.append(asset);
-	}
 
 	next_lock->unlock();
 }

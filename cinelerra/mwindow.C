@@ -691,14 +691,9 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		case FILE_UNRECOGNIZED_CODEC:
 		{
 // Test index file
-			IndexFile indexfile;
 			new_asset->nb_streams = 0;
-			result = indexfile.open_index(new_asset, 0);
-
-			if(!result)
-			{
-				indexfile.close_index();
-			}
+			if(!(result = new_asset->indexfiles[0].open_index(new_asset, 0)))
+				new_asset->indexfiles[0].close_index();
 // Test known assets
 			if(result)
 			{
