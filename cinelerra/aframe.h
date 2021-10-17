@@ -93,6 +93,8 @@ public:
 	inline int get_buffer_length() { return buffer_length; };
 // Get samplerate
 	inline int get_samplerate() { return samplerate; };
+// Invalidate pts
+	inline void reset_pts() { pts = -1; };
 // Make frame empty
 	void set_empty();
 
