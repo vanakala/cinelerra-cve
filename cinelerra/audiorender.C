@@ -634,6 +634,7 @@ AFrame *InFrame::get_aframe(int strm, int chnl)
 		aframe = audio_frames.get_tmpframe(out_length);
 		aframe->channel = channel = chnl;
 		aframe->stream = stream = strm;
+		aframe->set_pts(-1);
 	}
 	return aframe;
 }
@@ -643,7 +644,6 @@ AFrame *InFrame::handover_aframe()
 	AFrame *cur = aframe;
 
 	aframe = 0;
-	stream = -1;
 	channel = -1;
 	return cur;
 }
