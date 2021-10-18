@@ -13,7 +13,6 @@ AFrame::AFrame(int buflen, int float_data)
 {
 	reset_buffer();
 	channel = 0;
-	stream = 0;
 	samplerate = 0;
 	shared = 0;
 	buffer = 0;
@@ -159,7 +158,6 @@ void AFrame::copy_pts(AFrame *that)
 	duration = 0;
 	samplerate = that->samplerate;
 	channel = that->channel;
-	stream = that->stream;
 }
 
 void AFrame::copy(AFrame *that)
@@ -345,9 +343,9 @@ void AFrame::dump(int indent, int dumpdata)
 
 	printf("%*sAFrame %p dump: trackno %d\n", indent, "", this, trackno);
 	indent += 2;
-	printf("%*spts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] stream %d/%d rate %d sample %" PRId64 "\n", indent, "",
+	printf("%*spts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] channel %d rate %d sample %" PRId64 "\n", indent, "",
 		pts, duration, length, source_pts, source_duration, source_length,
-		stream, channel, samplerate, position);
+		channel, samplerate, position);
 	printf("%*sbuffer %p float_buffer %p buffer_length %d shared %d float_data %d\n", indent, "",
 		buffer, float_buffer, buffer_length, shared, float_data);
 	if(dumpdata && length > 0)

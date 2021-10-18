@@ -453,7 +453,6 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 	{
 		cur = audio_frames.get_tmpframe(out_length);
 		cur->set_samplerate(out_samplerate);
-		cur->stream = stream;
 		cur->channel = channel;
 		cur->clear_frame(pts, duration);
 		return cur;
@@ -633,7 +632,7 @@ AFrame *InFrame::get_aframe(int strm, int chnl)
 	{
 		aframe = audio_frames.get_tmpframe(out_length);
 		aframe->channel = channel = chnl;
-		aframe->stream = stream = strm;
+		stream = strm;
 		aframe->reset_pts();
 	}
 	return aframe;

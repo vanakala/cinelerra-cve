@@ -108,7 +108,6 @@ AFrame *ATmpFrameCache::clone_frame(AFrame *frame)
 		printf("ERR: Cloned the same audio frame %p\n", frame);
 	aframe->set_samplerate(frame->get_samplerate());
 	aframe->channel = frame->channel;
-	aframe->stream = frame->stream;
 	aframe->set_track(frame->get_track());
 	aframe->set_empty();
 
