@@ -248,8 +248,8 @@ void MWindowGUI::save_defaults(BC_Hash *defaults)
 	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
 
-	defaults->update("MWINDOWWIDTH", get_w());
-	defaults->update("MWINDOWHEIGHT", get_h());
+	defaults->delete_key("MWINDOWWIDTH");
+	defaults->delete_key("MWINDOWHEIGHT");
 	mainmenu->save_defaults(defaults);
 
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
