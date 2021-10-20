@@ -35,8 +35,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	config->copy_from(edlsession->playback_config);
 	arender = 0;
 	vrender = 0;
-	do_audio = 0;
-	do_video = 0;
 	interrupted = 0;
 	audio_playing = 0;
 	edl = 0;
@@ -46,9 +44,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
 	render_start_lock = new Condition(1, "RenderEngine::render_start", 1);
-	do_audio = 0;
-	do_video = 0;
-	done = 0;
 }
 
 RenderEngine::~RenderEngine()
@@ -88,7 +83,6 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 	preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
 	preferences_global->brender_asset->use_header = 0;
 
-	done = 0;
 	interrupted = 0;
 	if(playback_engine)
 	{
@@ -100,43 +94,25 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 		else
 			config->vconfig->driver = PLAYBACK_X11;
 	}
-	get_duty();
 
-	if(do_audio)
-	{
-		fragment_len = AUDIO_BUFFER_SIZE;
-	}
+	fragment_len = AUDIO_BUFFER_SIZE;
+
+	create_render_threads();
+
 	if(playback_engine)
 		open_output();
-	create_render_threads();
 	arm_render_threads();
-}
-
-void RenderEngine::get_duty()
-{
-	do_audio = 0;
-	do_video = 0;
-
-	if(!command.single_frame() &&
-		edl->playable_tracks_of(TRACK_AUDIO) &&
-		edlsession->audio_channels)
-	{
-		do_audio = 1;
-	}
-
-	if(edl->playable_tracks_of(TRACK_VIDEO))
-	{
-		do_video = 1;
-	}
 }
 
 void RenderEngine::create_render_threads()
 {
-	if(do_video && !vrender)
-		vrender = new VideoRender(this, edl);
-
-	if(do_audio && !arender)
+	if(!command.single_frame() &&
+			edl->playable_tracks_of(TRACK_AUDIO) &&
+			edlsession->audio_channels && !arender)
 		arender = new AudioRender(this, edl);
+
+	if(edl->playable_tracks_of(TRACK_VIDEO) && !vrender)
+		vrender = new VideoRender(this, edl);
 }
 
 void RenderEngine::release_asset(Asset *asset)
@@ -150,9 +126,7 @@ void RenderEngine::release_asset(Asset *asset)
 int RenderEngine::brender_available(ptstime position)
 {
 	if(playback_engine)
-	{
 		return playback_engine->brender_available(position);
-	}
 	else
 		return 0;
 }
@@ -162,38 +136,37 @@ void RenderEngine::open_output()
 	if(command.realtime)
 	{
 // Allocate devices
-		if(do_audio)
+		if(arender)
 		{
 			if(!audio)
 				audio = new AudioDevice;
-			if (audio->open_output(config->aconfig, 
+			if(audio->open_output(config->aconfig,
 				edlsession->sample_rate,
 				fragment_len,
 				edlsession->audio_channels))
 			{
-				do_audio = 0;
 				delete audio;
 				audio = 0;
+				delete arender;
+				arender = 0;
 			}
 		}
 
-		if(do_video && !video)
+		if(vrender && !video)
 			video = new VideoDevice;
 
 // Start playback
-		if(do_audio && do_video)
+		if(arender && vrender)
 		{
 			video->set_adevice(audio);
 			audio->set_vdevice(video);
 		}
 
 // Retool playback configuration
-		if(do_audio)
-		{
+		if(arender)
 			audio->start_playback();
-		}
 
-		if(do_video)
+		if(vrender)
 		{
 			video->open_output(config->vconfig,
 				edl->this_edlsession->output_w,
@@ -208,7 +181,7 @@ void RenderEngine::open_output()
 void RenderEngine::reset_sync_postime(void)
 {
 	timer.update();
-	if(do_audio)
+	if(arender)
 	{
 		if(!edlsession->playback_software_position)
 			audio_playing = 1;
@@ -237,15 +210,11 @@ void RenderEngine::start_command()
 
 void RenderEngine::arm_render_threads()
 {
-	if(do_audio)
-	{
+	if(arender)
 		arender->arm_command();
-	}
 
-	if(do_video)
-	{
+	if(vrender)
 		vrender->arm_command();
-	}
 }
 
 
@@ -253,15 +222,11 @@ void RenderEngine::start_render_threads()
 {
 	timer.update();
 
-	if(do_audio)
-	{
+	if(arender)
 		arender->start_command();
-	}
 
-	if(do_video)
-	{
+	if(vrender)
 		vrender->start_command();
-	}
 }
 
 void RenderEngine::update_framerate(float framerate)
@@ -280,28 +245,23 @@ void RenderEngine::update_playstatistics(int frames, int late, int delay)
 
 void RenderEngine::wait_render_threads()
 {
-	if(do_audio)
-	{
+	if(arender)
 		arender->Thread::join();
-	}
-	if(do_video)
-	{
+
+	if(vrender)
 		vrender->Thread::join();
-	}
 }
 
 void RenderEngine::interrupt_playback()
 {
 	interrupt_lock->lock("RenderEngine::interrupt_playback");
 	interrupted = 1;
+
 	if(audio)
-	{
 		audio->interrupt_playback();
-	}
+
 	if(video)
-	{
 		video->interrupt_playback();
-	}
 	interrupt_lock->unlock();
 }
 
@@ -310,7 +270,7 @@ void RenderEngine::stop_tracking(ptstime position, int type)
 	if(type == TRACK_AUDIO)
 	{
 		audio_playing = 0;
-		if(do_video)
+		if(vrender)
 			return;
 	}
 
@@ -322,9 +282,10 @@ void RenderEngine::set_tracking_position(ptstime pts, int type)
 {
 	if(type == TRACK_AUDIO)
 	{
-		if(do_video)
+		if(vrender)
 			return;
 	}
+
 	if(playback_engine)
 		playback_engine->set_tracking_position(pts);
 }
@@ -340,16 +301,14 @@ void RenderEngine::close_output()
 
 int RenderEngine::get_output_levels(double *levels, ptstime pts)
 {
-	if(do_audio)
+	if(arender)
 		return arender->get_output_levels(levels, pts);
 	return 0;
 }
 
 int RenderEngine::get_module_levels(double *levels, ptstime pts)
 {
-	int i;
-
-	if(do_audio)
+	if(arender)
 		return arender->get_track_levels(levels, pts);
 	return 0;
 }
@@ -375,7 +334,7 @@ void RenderEngine::run()
 
 void RenderEngine::wait_another(const char *location, int type)
 {
-	if(do_audio && do_video)
+	if(arender && vrender)
 	{
 		render_start_lock->wait_another(location);
 		if(type == TRACK_VIDEO)

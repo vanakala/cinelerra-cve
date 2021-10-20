@@ -86,16 +86,12 @@ void PlaybackEngine::interrupt_playback()
 // Return number of existing channels
 int PlaybackEngine::get_output_levels(double *levels, ptstime pts)
 {
-	if(render_engine->do_audio)
-		return render_engine->get_output_levels(levels, pts);
-	return 0;
+	return render_engine->get_output_levels(levels, pts);
 }
 
 int PlaybackEngine::get_module_levels(double *levels, ptstime pts)
 {
-	if(render_engine->do_audio)
-		return render_engine->get_module_levels(levels, pts);
-	return 0;
+	return render_engine->get_module_levels(levels, pts);
 }
 
 void PlaybackEngine::init_tracking()
@@ -130,7 +126,7 @@ void PlaybackEngine::set_tracking_position(ptstime pts)
 
 ptstime PlaybackEngine::get_tracking_position()
 {
-	if(tracking_active && !render_engine->do_video)
+	if(tracking_active && !render_engine->vrender)
 	{
 		ptstime tpts = render_engine->sync_postime() *
 			render_engine->command.get_speed();

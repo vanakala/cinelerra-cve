@@ -30,7 +30,6 @@ public:
 		Canvas *output);
 	~RenderEngine();
 
-	void get_duty();
 	void create_render_threads();
 	void arm_render_threads();
 	void start_render_threads();
@@ -85,14 +84,11 @@ public:
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 
-	int done;
 	AudioDevice *audio;
 	VideoDevice *video;
 	AudioRender *arender;
 	VideoRender *vrender;
-	int do_audio;
-	int do_video;
-	float actual_frame_rate;
+	double actual_frame_rate;
 // If the termination came from interrupt or end of selection
 	int interrupted;
 
