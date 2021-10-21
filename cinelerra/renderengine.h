@@ -30,6 +30,7 @@ public:
 		Canvas *output);
 	~RenderEngine();
 
+	void reset_engines();
 	void create_render_threads();
 	void arm_render_threads();
 	void start_render_threads();

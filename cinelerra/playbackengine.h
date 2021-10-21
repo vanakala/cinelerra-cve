@@ -34,6 +34,8 @@ public:
 	void wait_render_engine();
 // Close all files related to asset
 	void release_asset(Asset *asset);
+// Reset render engines
+	void reset_engines();
 // Set wait_tracking for events that change the cursor location but
 // be sure to unlock the windows
 	void interrupt_playback();

@@ -55,6 +55,11 @@ void PlaybackEngine::release_asset(Asset *asset)
 	render_engine->release_asset(asset);
 }
 
+void PlaybackEngine::reset_engines()
+{
+	render_engine->reset_engines();
+}
+
 void PlaybackEngine::arm_render_engine()
 {
 	render_engine->copy_playbackconfig();

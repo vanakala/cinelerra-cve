@@ -51,14 +51,22 @@ RenderEngine::~RenderEngine()
 	close_output();
 	delete arender;
 	delete vrender;
-	if(audio) delete audio;
-	if(video) delete video;
+	delete audio;
+	delete video;
 	delete input_lock;
 	delete start_lock;
 	delete output_lock;
 	delete interrupt_lock;
 	delete render_start_lock;
 	delete config;
+}
+
+void RenderEngine::reset_engines()
+{
+	delete arender;
+	arender = 0;
+	delete vrender;
+	vrender = 0;
 }
 
 void RenderEngine::copy_playbackconfig()
