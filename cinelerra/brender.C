@@ -33,10 +33,9 @@ extern "C"
 }
 
 
-BRender::BRender(MWindow *mwindow)
+BRender::BRender()
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
 	map_lock = new Mutex("BRender::map_lock");
 	completion_lock = new Condition(0, "BRender::completion_lock");
 	timer = new Timer;
@@ -65,9 +64,9 @@ BRender::~BRender()
 	delete completion_lock;
 	UNSET_TEMP(socket_path);
 	remove(socket_path);
-	if(arguments[0]) delete [] arguments[0];
-	if(arguments[1]) delete [] arguments[1];
-	if(arguments[2]) delete [] arguments[2];
+	delete [] arguments[0];
+	delete [] arguments[1];
+	delete [] arguments[2];
 	delete timer;
 }
 
@@ -85,7 +84,7 @@ void BRender::initialize()
 	Thread::start();
 
 // Wait for local node to start
-	thread = new BRenderThread(mwindow, this);
+	thread = new BRenderThread(this);
 	thread->initialize();
 }
 
@@ -166,7 +165,7 @@ void BRender::render_done()
 		mainsession->brender_end = 0;
 		errormsg(_("Background rendering failed"));
 	}
-	mwindow->update_gui(WUPD_TIMEBAR);
+	mwindow_global->update_gui(WUPD_TIMEBAR);
 }
 
 void BRender::allocate_map(ptstime brender_start, ptstime start, ptstime end)
@@ -208,7 +207,7 @@ void BRender::set_video_map(ptstime start, ptstime end)
 	map_lock->unlock();
 
 	if(update_gui)
-		mwindow->update_gui(WUPD_TIMEBAR);
+		mwindow_global->update_gui(WUPD_TIMEBAR);
 }
 
 
@@ -220,10 +219,9 @@ BRenderCommand::BRenderCommand()
 }
 
 
-BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
+BRenderThread::BRenderThread(BRender *brender)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
 	this->brender = brender;
 	input_lock = new Condition(0, "BRenderThread::input_lock");
 	thread_lock = new Mutex("BRenderThread::thread_lock");
@@ -273,9 +271,11 @@ void BRenderThread::send_command(BRenderCommand *command)
 
 int BRenderThread::is_done(int do_lock)
 {
-	if(do_lock) thread_lock->lock("BRenderThread::is_done");
+	if(do_lock)
+		thread_lock->lock("BRenderThread::is_done");
 	int result = done;
-	if(do_lock) thread_lock->unlock();
+	if(do_lock)
+		thread_lock->unlock();
 	return result;
 }
 
@@ -286,12 +286,7 @@ void BRenderThread::run()
 		BRenderCommand *new_command = 0;
 		thread_lock->lock("BRenderThread::run 1");
 
-// Got new command
-		if(command_queue)
-		{
-			;
-		}
-		else
+		if(!command_queue)
 // Wait for new command
 		{
 			thread_lock->unlock();
@@ -310,43 +305,40 @@ void BRenderThread::run()
 
 // Process the command here to avoid delay.
 // Quit condition
-		if(!new_command)
+		if(new_command)
 		{
-			;
-		}
-		else
-		if(new_command->command == BRenderCommand::BRENDER_STOP)
-		{
-			stop();
-			delete new_command;
-			new_command = 0;
-		}
-		else
-		if(new_command->command == BRenderCommand::BRENDER_RESTART)
-		{
-// Compare EDL's and get last equivalent position in new EDL
-			if(command && edl)
-				new_command->position = 
-					new_command->edl->equivalent_output(edl);
-			else
-				new_command->position = 0;
-
-			stop();
-			brender->completion_lock->lock("BRenderThread::run 4");
-
-			if(new_command->edl->playable_tracks_of(TRACK_VIDEO))
+			if(new_command->command == BRenderCommand::BRENDER_STOP)
 			{
-				if(command) delete command;
-				command = new_command;
-				delete edl;
-				edl = new EDL(0);
-				edl->copy_all(command->edl);
-				start();
-			}
-			else
-			{
+				stop();
 				delete new_command;
 				new_command = 0;
+			}
+			else
+			if(new_command->command == BRenderCommand::BRENDER_RESTART)
+			{
+// Compare EDL's and get last equivalent position in new EDL
+				if(command && edl)
+					new_command->position =
+						new_command->edl->equivalent_output(edl);
+				else
+					new_command->position = 0;
+				stop();
+				brender->completion_lock->lock("BRenderThread::run 4");
+
+				if(new_command->edl->playable_tracks_of(TRACK_VIDEO))
+				{
+					delete command;
+					command = new_command;
+					delete edl;
+					edl = new EDL(0);
+					edl->copy_all(command->edl);
+					start();
+				}
+				else
+				{
+					delete new_command;
+					new_command = 0;
+				}
 			}
 		}
 	}
@@ -379,7 +371,7 @@ void BRenderThread::start()
 	if(!farm_server)
 	{
 		preferences = new Preferences;
-		preferences->copy_from(mwindow->preferences);
+		preferences->copy_from(preferences_global);
 		packages = new PackageDispatcher;
 
 // Fix preferences to use local node
@@ -404,15 +396,17 @@ void BRenderThread::start()
 		ptstime brender_start = edlsession->brender_start;
 		ptstime last_contiguous = brender->videomap.last->pts;
 		ptstime last_good = command->position;
-		if(last_good < 0) last_good = last_contiguous;
+		if(last_good < 0)
+			last_good = last_contiguous;
 		ptstime start_pts = MIN(last_contiguous, last_good);
 		start_pts = MAX(start_pts, brender_start);
 		ptstime end_pts = command->edl->total_length_of(TRACK_VIDEO);
-		if(end_pts < start_pts) end_pts = start_pts;
+		if(end_pts < start_pts)
+			end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
 		result = packages->create_packages(command->edl,
 			RENDER_BRENDER,
-			preferences->brender_asset, 
+			preferences->brender_asset,
 			start_pts,
 			end_pts,
 			0);

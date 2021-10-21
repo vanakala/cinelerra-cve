@@ -61,7 +61,7 @@
 class BRender : public Thread
 {
 public:
-	BRender(MWindow *mwindow);
+	BRender();
 	~BRender();
 
 // Give the last position of the EDL which hasn't changed.
@@ -81,8 +81,6 @@ public:
 
 	void initialize();
 	void run();
-
-	MWindow *mwindow;
 
 // Simple map of finished chunks
 	MapList videomap;
@@ -128,7 +126,7 @@ public:
 class BRenderThread : public Thread
 {
 public:
-	BRenderThread(MWindow *mwindow, BRender *brender);
+	BRenderThread(BRender *brender);
 	~BRenderThread();
 
 	int is_done(int do_lock);
@@ -138,7 +136,6 @@ public:
 	void start();
 	void initialize();
 
-	MWindow *mwindow;
 	BRender *brender;
 	BRenderCommand *command_queue;
 	BRenderCommand *command;

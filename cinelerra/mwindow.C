@@ -481,7 +481,7 @@ void MWindow::init_brender()
 	if(preferences->use_brender && !brender)
 	{
 		brender_lock->lock("MWindow::init_brender");
-		brender = new BRender(this);
+		brender = new BRender();
 		brender->initialize();
 		mainsession->brender_end = 0;
 		brender_lock->unlock();
