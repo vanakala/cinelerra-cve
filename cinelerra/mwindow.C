@@ -1055,6 +1055,7 @@ void MWindow::set_labels_follow_edits(int value)
 void MWindow::sync_parameters(int brender_restart)
 {
 	master_edl->reset_plugins();
+	cwindow->playback_engine->reset_engines();
 	if(!cwindow->playback_engine->is_playing_back)
 		cwindow->playback_engine->send_command(CURRENT_FRAME);
 	if(brender_restart)
