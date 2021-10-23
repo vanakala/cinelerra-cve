@@ -1,27 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef RENDERFARM_H
 #define RENDERFARM_H
-
 
 #include "arraylist.h"
 #include "asset.inc"
@@ -41,7 +24,6 @@
 #include "thread.h"
 
 #include <stdint.h>
-
 
 // Renderfarm theory:
 // The renderfarm starts a RenderFarmServerThread for each client
@@ -84,8 +66,6 @@
 // 4 bytes -> size of packet exclusive
 // size of packet -> data
 
-
-
 // General reply format
 // 4 bytes -> size of packet exclusive
 // size of packet -> data
@@ -122,7 +102,6 @@
 	(((uint64_t)(data)[6]) << 8) |  \
 	((uint64_t)(data)[7]))
 
-
 // Request codes to be used in both client and server.
 enum
 {
@@ -136,26 +115,8 @@ enum
 	RENDERFARM_GET_RESULT,   // Retrieve error status
 	RENDERFARM_DONE,         // Quit
 	RENDERFARM_SET_VMAP,     // 8 Update video map in background rendering
-	RENDERFARM_COMMAND,      // Get the client to run
-	RENDERFARM_TUNER,        // Run a tuner server
 	RENDERFARM_PACKAGES,     // Run packages
-	RENDERFARM_KEEPALIVE,    // Keep alive
-
-// VFS commands
-	RENDERFARM_FOPEN,  
-	RENDERFARM_FCLOSE,
-	RENDERFARM_REMOVE,
-	RENDERFARM_RENAME,
-	RENDERFARM_FGETC,
-	RENDERFARM_FPUTC,
-	RENDERFARM_FREAD,  
-	RENDERFARM_FWRITE,
-	RENDERFARM_FSEEK,
-	RENDERFARM_FTELL,
-	RENDERFARM_STAT,
-	RENDERFARM_STAT64, 
-	RENDERFARM_FGETS,  
-	RENDERFARM_FILENO
+	RENDERFARM_KEEPALIVE     // Keep alive
 };
 
 
@@ -173,7 +134,6 @@ public:
 		BRender *brender);
 	virtual ~RenderFarmServer();
 
-
 // Open connections to clients.
 	int start_clients();
 // The render farm must wait for all the clients to finish.
@@ -181,8 +141,6 @@ public:
 
 // Likewise the render farm must check the internal render loop before 
 // dispatching the next job and whenever a client queries for errors.
-
-
 	ArrayList<RenderFarmServerThread*> clients;
 	PackageDispatcher *packages;
 	Preferences *preferences;
@@ -209,15 +167,12 @@ public:
 	RenderFarmServerThread(RenderFarmServer *server, int number);
 	~RenderFarmServerThread();
 
-
 // Used by both client and server
 	int write_int64(int64_t value);
 	int64_t read_int64(int *error);
 // Inserts header and writes string to socket
 	void write_string(char *string);
 	static int open_client(const char *hostname, int port);
-
-
 
 // Used by server only
 	int read_socket(char *data, int len);
@@ -248,6 +203,7 @@ public:
 	char *datagram;
 };
 
+
 class RenderFarmWatchdog : public Thread
 {
 public:
@@ -269,6 +225,5 @@ public:
 	Condition *request_complete;
 	int done;
 };
-
 
 #endif

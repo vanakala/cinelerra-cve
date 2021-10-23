@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "brender.h"
@@ -50,8 +34,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
-
-
 
 
 RenderFarmServer::RenderFarmServer(PackageDispatcher *packages,
@@ -126,7 +108,7 @@ void RenderFarmServer::wait_clients()
 // Joins when the client is finished.
 RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server,
 	int number)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->server = server;
 	this->number = number;
@@ -135,16 +117,16 @@ RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server,
 	watchdog = 0;
 	buffer = 0;
 	datagram = 0;
-	Thread::set_synchronous(1);
 }
 
 RenderFarmServerThread::~RenderFarmServerThread()
 {
 	Thread::join();
-	if(socket_fd >= 0) close(socket_fd);
-	if(watchdog) delete watchdog;
-	if(buffer) delete [] buffer;
-	if(datagram) delete [] datagram;
+	if(socket_fd >= 0)
+		close(socket_fd);
+	delete watchdog;
+	delete [] buffer;
+	delete [] datagram;
 }
 
 int RenderFarmServerThread::open_client(const char *hostname, int port)
@@ -228,7 +210,8 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 		}
 	}
 
-	if(result) socket_fd = -1;
+	if(result)
+		socket_fd = -1;
 	return socket_fd;
 }
 
@@ -247,7 +230,6 @@ int RenderFarmServerThread::start_loop()
 
 	return 0;
 }
-
 
 int64_t RenderFarmServerThread::read_int64(int *error)
 {
@@ -278,6 +260,7 @@ int64_t RenderFarmServerThread::read_int64(int *error)
 int RenderFarmServerThread::write_int64(int64_t value)
 {
 	unsigned char data[sizeof(int64_t)];
+
 	data[0] = (value >> 56) & 0xff;
 	data[1] = (value >> 48) & 0xff;
 	data[2] = (value >> 40) & 0xff;
@@ -290,12 +273,13 @@ int RenderFarmServerThread::write_int64(int64_t value)
 		sizeof(int64_t));
 }
 
-
 int RenderFarmServerThread::read_socket(char *data, int len)
 {
 	int bytes_read = 0;
 	int offset = 0;
+
 	watchdog->begin_request();
+
 	while(len > 0 && bytes_read >= 0)
 	{
 		enable_cancel();
@@ -350,7 +334,6 @@ void RenderFarmServerThread::run()
 
 	while(!done)
 	{
-
 // Wait for requests.
 // Requests consist of request ID's and accompanying buffers.
 // Get request ID.
@@ -470,16 +453,13 @@ void RenderFarmServerThread::send_asset()
 	write_string(file.string);
 }
 
-
 void RenderFarmServerThread::send_edl()
 {
 	FileXML file;
 
-// Save the XML
 	server->edl->save_xml(&file);
 	write_string(file.string);
 }
-
 
 void RenderFarmServerThread::send_package(const unsigned char *buffer)
 {
@@ -523,7 +503,6 @@ void RenderFarmServerThread::send_package(const unsigned char *buffer)
 	}
 }
 
-
 void RenderFarmServerThread::set_progress(const char *buffer)
 {
 	ptstime val;
@@ -553,15 +532,13 @@ void RenderFarmServerThread::set_video_map(const char *buffer)
 	}
 }
 
-
 void RenderFarmServerThread::set_result(int val, const char *msg)
 {
 	if(!*server->result_return)
 		*server->result_return = val;
 	if(val && msg[0])
-		errormsg("%s",   msg);
+		errormsg("%s", msg);
 }
-
 
 void RenderFarmServerThread::get_result()
 {
@@ -628,4 +605,3 @@ void RenderFarmWatchdog::run()
 		}
 	}
 }
-
