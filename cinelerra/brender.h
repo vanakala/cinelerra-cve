@@ -93,7 +93,7 @@ public:
 	Condition *completion_lock;
 	BRenderThread *thread;
 // PID of master node for killing.
-	int master_pid;
+	pid_t master_pid;
 // Path of socket
 	char socket_path[BCTEXTLEN];
 // Arguments for execvp

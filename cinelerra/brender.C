@@ -82,7 +82,6 @@ void BRender::initialize()
 
 // Start background instance of executable since codecs aren't reentrant
 	Thread::start();
-
 // Wait for local node to start
 	thread = new BRenderThread(this);
 	thread->initialize();
@@ -117,17 +116,16 @@ void BRender::run()
 
 	arguments[3] = 0;
 
-	int pid = vfork();
-	if(!pid)
+	master_pid = vfork();
+	if(!(master_pid = vfork()))
 	{
 		execvp(arguments[0], arguments);
 		perror("BRender::fork_background");
 		_exit(0);
 	}
 
-	master_pid = pid;
-
 	int return_value;
+
 	if(waitpid(master_pid, &return_value, WUNTRACED) < 0)
 	{
 		perror("BRender::run waitpid");
@@ -243,9 +241,9 @@ BRenderThread::~BRenderThread()
 	Thread::join();
 	delete input_lock;
 	delete thread_lock;
-	if(command) delete command;
-	if(command_queue) delete command_queue;
-	if(preferences) delete preferences;
+	delete command;
+	delete command_queue;
+	delete preferences;
 	delete edl;
 }
 
@@ -258,12 +256,12 @@ void BRenderThread::send_command(BRenderCommand *command)
 {
 	thread_lock->lock("BRenderThread::send_command");
 
-	if(this->command_queue)
+	if(command_queue)
 	{
-		delete this->command_queue;
-		this->command_queue = 0;
+		delete command_queue;
+		command_queue = 0;
 	}
-	this->command_queue = command;
+	command_queue = command;
 
 	input_lock->unlock();
 	thread_lock->unlock();
@@ -384,12 +382,9 @@ void BRenderThread::start()
 			0,
 			1,
 			preferences->local_rate);
+		preferences->brender_asset->remove_stream_type(STRDSC_VIDEO);
+		preferences->brender_asset->create_render_stream(STRDSC_VIDEO);
 		preferences->brender_asset->use_header = 0;
-		preferences->brender_asset->streams[0].frame_rate = edlsession->frame_rate;
-		preferences->brender_asset->streams[0].width = edlsession->output_w;
-		preferences->brender_asset->streams[0].height = edlsession->output_h;
-		preferences->brender_asset->interlace_mode = edlsession->interlace_mode;
-		preferences->brender_asset->streams[0].sample_aspect_ratio = edlsession->sample_aspect_ratio;
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
