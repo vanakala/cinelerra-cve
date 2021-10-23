@@ -24,6 +24,7 @@ public:
 	~PackageDispatcher();
 
 	int create_packages(EDL *edl,
+		Preferences *preferences,
 		int strategy, 
 		Asset *default_asset,
 		ptstime total_start,
@@ -41,6 +42,7 @@ public:
 
 private:
 	EDL *edl;
+	Preferences *preferences;
 	ptstime audio_pts;
 	ptstime audio_end_pts;
 	ptstime video_pts;

@@ -410,6 +410,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths)
 
 // Create test packages
 			packages->create_packages(current_edl,
+				render_preferences,
 				job->strategy, 
 				job->asset, 
 				0,

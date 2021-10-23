@@ -35,6 +35,8 @@ PackageDispatcher::PackageDispatcher()
 	total_digits = 0;
 	package_len = min_package_len = 0;
 	nodes = 0;
+	edl = 0;
+	preferences = 0;
 }
 
 PackageDispatcher::~PackageDispatcher()
@@ -51,6 +53,7 @@ PackageDispatcher::~PackageDispatcher()
 }
 
 int PackageDispatcher::create_packages(EDL *edl,
+	Preferences *preferences,
 	int strategy, 
 	Asset *default_asset,
 	ptstime total_start,
@@ -58,13 +61,15 @@ int PackageDispatcher::create_packages(EDL *edl,
 	int test_overwrite)
 {
 	int result = 0;
+
 	this->edl = edl;
+	this->preferences = preferences;
 	this->strategy = strategy;
 	this->default_asset = default_asset;
 	this->total_start = total_start;
 	this->total_end = total_end;
 
-	nodes = render_preferences->get_enabled_nodes();
+	nodes = preferences->get_enabled_nodes();
 	audio_pts = total_start;
 	video_pts = total_start;
 	audio_end_pts = total_end;
@@ -85,14 +90,14 @@ int PackageDispatcher::create_packages(EDL *edl,
 			6);
 
 // Master node only
-		if(render_preferences->renderfarm_nodes.total == 1)
+		if(preferences->renderfarm_nodes.total == 1)
 		{
 			package_len = total_len;
 			min_package_len = total_len;
 		}
 		else
 		{
-			package_len = render_preferences->brender_fragment /
+			package_len = preferences->brender_fragment /
 				edlsession->frame_rate;
 			min_package_len = 1.0 / edlsession->frame_rate;
 		}
@@ -122,7 +127,7 @@ int PackageDispatcher::create_packages(EDL *edl,
 			packaging_engine = new PackagingEngine();
 			packaging_engine->create_packages_single_farm(
 					edl,
-					render_preferences,
+					preferences,
 					default_asset, 
 					total_start, 
 					total_end);
@@ -224,9 +229,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int use_local_rate)
 {
 	package_lock->lock("PackageDispatcher::get_package");
-	render_preferences->set_rate(frames_per_second, client_number);
-	preferences_global->copy_rates_from(render_preferences);
-	double avg_frames_per_second = render_preferences->get_avg_rate(use_local_rate);
+	preferences->set_rate(frames_per_second, client_number);
+	preferences_global->copy_rates_from(preferences);
+	double avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
 
@@ -324,9 +329,9 @@ ptstime PackageDispatcher::get_progress_max()
 	else
 	{
 		return (total_end - total_start) + 
-			render_preferences->render_preroll * total_packages +
-			(render_preferences->render_preroll >= total_start ?
-			total_start - render_preferences->render_preroll : 0);
+			preferences->render_preroll * total_packages +
+			(preferences->render_preroll >= total_start ?
+			total_start - preferences->render_preroll : 0);
 	}
 }
 
