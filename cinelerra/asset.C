@@ -952,7 +952,6 @@ void Asset::write_params(FileXML *file)
 
 	save_defaults(&parms, ASSET_ALL);
 	parms.save_list(file);
-	file->position--;
 
 	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 	{
@@ -963,7 +962,6 @@ void Asset::write_params(FileXML *file)
 			file->append_tag();
 			file->append_newline();
 			encoder_parameters[i]->save_list(file);
-			file->position--;
 			file->tag.set_title(bufr);
 			file->append_tag();
 			file->append_newline();
@@ -1288,6 +1286,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 		format_changed();
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
+		use_header = list->get("use_header", use_header);
 	}
 
 	if(options & ASSET_BITS)
@@ -1327,6 +1326,8 @@ void Asset::save_defaults(Paramlist *list, int options)
 			list->set("video_codec", streams[stream].codec);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
+		if(!use_header)
+			list->set("use_header", use_header);
 	}
 	if(options & ASSET_BITS)
 	{
@@ -1521,10 +1522,10 @@ void Asset::dump(int indent, int options)
 		printf(" pcm_format '%s',", pcm_format);
 	printf(" length %" PRId64 " base_pts %.3f probed: %d\n", file_length, pts_base,
 		probed);
+	printf("%*simage %d pipe %d header %d\n", indent, "",
+		single_image, use_pipe, use_header);
 	printf("%*sinterlace_mode %s\n", indent, "",
 		AInterlaceModeSelection::name(interlace_mode));
-	printf("%*simage %d pipe %d\n", indent, "",
-		single_image, use_pipe);
 
 	if(options & ASSETDUMP_INDEXDATA)
 	{
