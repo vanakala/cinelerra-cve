@@ -116,7 +116,6 @@ void BRender::run()
 
 	arguments[3] = 0;
 
-	master_pid = vfork();
 	if(!(master_pid = vfork()))
 	{
 		execvp(arguments[0], arguments);
