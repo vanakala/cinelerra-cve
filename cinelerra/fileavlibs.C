@@ -7,7 +7,6 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "bcresources.h"
-#include "byteorder.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "colormodels_private.h"

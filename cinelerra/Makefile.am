@@ -289,7 +289,6 @@ noinst_HEADERS = aautomation.h \
 		 batchrender.h \
 		 brender.h \
 		 browsebutton.h \
-		 byteorder.h \
 		 cache.h \
 		 cachebase.h \
 		 canvas.h \

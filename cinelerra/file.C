@@ -7,7 +7,6 @@
 #include "aframe.h"
 #include "bcsignals.h"
 #include "bcresources.h"
-#include "byteorder.h"
 #include "cache.inc"
 #include "condition.h"
 #include "edit.h"
