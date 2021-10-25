@@ -367,6 +367,10 @@ void BRenderThread::start()
 // Allocate render farm.
 	if(!farm_server)
 	{
+		preferences_global->brender_asset->remove_stream_type(STRDSC_VIDEO);
+		preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
+		preferences_global->brender_asset->use_header = 0;
+
 		preferences = new Preferences;
 		preferences->copy_from(preferences_global);
 		packages = new PackageDispatcher;
@@ -381,9 +385,6 @@ void BRenderThread::start()
 			0,
 			1,
 			preferences->local_rate);
-		preferences->brender_asset->remove_stream_type(STRDSC_VIDEO);
-		preferences->brender_asset->create_render_stream(STRDSC_VIDEO);
-		preferences->brender_asset->use_header = 0;
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.

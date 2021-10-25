@@ -85,12 +85,6 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 	command.copy_from(new_command);
 
-// Fix background rendering asset to use current dimensions and ignore
-// headers.
-	preferences_global->brender_asset->remove_stream_type(STRDSC_VIDEO);
-	preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
-	preferences_global->brender_asset->use_header = 0;
-
 	interrupted = 0;
 	if(playback_engine)
 	{
