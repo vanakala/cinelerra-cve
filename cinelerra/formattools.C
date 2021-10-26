@@ -286,6 +286,8 @@ void FormatTools::enable_supported()
 				}
 			}
 		}
+		if(audio_switch)
+			aparams_button->set_enabled(audio_switch->get_value());
 	}
 	if(vparams_button)
 	{
@@ -314,6 +316,8 @@ void FormatTools::enable_supported()
 			}
 			asset->single_image = filesup & SUPPORTS_STILL;
 		}
+		if(video_switch)
+			vparams_button->set_enabled(video_switch->get_value());
 	}
 	if(fparams_button)
 	{
@@ -356,6 +360,8 @@ void FormatTools::update_extension()
 
 void FormatTools::update(Asset *asset, int *strategy)
 {
+	int value;
+
 	this->asset = asset;
 	this->strategy = strategy;
 
@@ -365,10 +371,20 @@ void FormatTools::update(Asset *asset, int *strategy)
 	format_popup->update(asset->format);
 
 	if(do_audio && audio_switch)
-		audio_switch->update(asset->stream_count(STRDSC_AUDIO));
+	{
+		value = asset->stream_count(STRDSC_AUDIO);
+		audio_switch->update(value);
+		if(aparams_button)
+			aparams_button->set_enabled(value);
+	}
 
 	if(do_video && video_switch)
-		video_switch->update(asset->stream_count(STRDSC_VIDEO));
+	{
+		value = asset->stream_count(STRDSC_VIDEO);
+		video_switch->update(value);
+		if(vparams_button)
+			vparams_button->set_enabled(value);
+	}
 
 	if(strategy)
 		multiple_files->update(strategy);
@@ -584,10 +600,14 @@ FormatAudio::FormatAudio(int x, int y, FormatTools *format, int value)
 
 int FormatAudio::handle_event()
 {
-	if(get_value())
+	int value = get_value();
+
+	if(value)
 		format->asset->create_render_stream(STRDSC_AUDIO);
 	else
 		format->asset->remove_stream_type(STRDSC_AUDIO);
+
+	format->aparams_button->set_enabled(value);
 	return 1;
 }
 
@@ -600,10 +620,14 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int value)
 
 int FormatVideo::handle_event()
 {
-	if(get_value())
+	int value = get_value();
+
+	if(value)
 		format->asset->create_render_stream(STRDSC_VIDEO);
 	else
 		format->asset->remove_stream_type(STRDSC_VIDEO);
+
+	format->vparams_button->set_enabled(value);
 	return 1;
 }
 
