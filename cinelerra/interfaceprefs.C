@@ -11,7 +11,7 @@
 #include "edlsession.h"
 #include "language.h"
 #include "interfaceprefs.h"
-#include "mwindow.h"
+#include "mwindow.inc"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "plugindb.h"
@@ -30,8 +30,8 @@ const struct selection_int ViewBehaviourSelection::viewbehaviour[] =
 	{ 0, 0 }
 };
 
-InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
- : PreferencesDialog(mwindow, pwindow)
+InterfacePrefs::InterfacePrefs(PreferencesWindow *pwindow)
+ : PreferencesDialog(pwindow)
 {
 }
 
@@ -42,14 +42,11 @@ void InterfacePrefs::show()
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
 
-	x = mwindow->theme->preferencesoptions_x;
-	y = mwindow->theme->preferencesoptions_y;
+	x = theme_global->preferencesoptions_x;
+	y = theme_global->preferencesoptions_y;
 
-	add_subwindow(new BC_Title(x, 
-		y, 
-		_("Time Format"), 
-		LARGEFONT, 
-		resources->text_default));
+	add_subwindow(new BC_Title(x, y, _("Time Format"),
+		LARGEFONT, resources->text_default));
 
 	y += get_text_height(LARGEFONT) + 5;
 	add_subwindow(hms = new TimeFormatHMS(this,
@@ -128,7 +125,7 @@ void InterfacePrefs::show()
 		ybix[0],
 		pwindow, 
 		pwindow->thread->preferences->index_directory));
-	add_subwindow(ipath = new BrowseButton(mwindow,
+	add_subwindow(ipath = new BrowseButton(mwindow_global,
 		this,
 		ipathtext, 
 		maxw + 5 + ipathtext->get_w(),
@@ -145,7 +142,7 @@ void InterfacePrefs::show()
 // Number of index files to keep
 	sprintf(string, "%d", pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(maxw, ybix[2], pwindow, string));
-	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow,
+	add_subwindow(deleteall = new DeleteAllIndexes(mwindow_global, pwindow,
 		maxw + 10 + icount->get_w(), ybix[2]));
 
 	y += 35;

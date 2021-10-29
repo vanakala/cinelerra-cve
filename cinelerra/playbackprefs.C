@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "adeviceprefs.h"
 #include "audiodevice.inc"
@@ -30,7 +14,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
-#include "mwindow.h"
 #include "playbackprefs.h"
 #include "playbackconfig.h"
 #include "preferences.h"
@@ -39,8 +22,8 @@
 #include "videodevice.inc"
 
 
-PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
- : PreferencesDialog(mwindow, pwindow)
+PlaybackPrefs::PlaybackPrefs(PreferencesWindow *pwindow)
+ : PreferencesDialog(pwindow)
 {
 	video_device = 0;
 }
@@ -64,8 +47,8 @@ void PlaybackPrefs::show()
 
 	playback_config = pwindow->thread->this_edlsession->playback_config;
 
-	x = mwindow->theme->preferencesoptions_x;
-	y = mwindow->theme->preferencesoptions_y;
+	x = theme_global->preferencesoptions_x;
+	y = theme_global->preferencesoptions_y;
 
 // Audio
 	add_subwindow(new BC_Title(x, 

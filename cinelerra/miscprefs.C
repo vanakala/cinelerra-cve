@@ -1,22 +1,7 @@
-/*
- * CINELERRA
- * Copyright (C) 2015 Einar Rünkaru <einarrunkaru at gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2015 Einar Rünkaru <einarrunkaru at gmail dot com>
 
 #include "bcbar.h"
 #include "bctitle.h"
@@ -25,14 +10,13 @@
 #include "edlsession.h"
 #include "language.h"
 #include "miscprefs.h"
-#include "mwindow.h"
 #include "preferences.h"
 #include "theme.h"
 
 #include <string.h>
 
-MiscPrefs::MiscPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
- : PreferencesDialog(mwindow, pwindow)
+MiscPrefs::MiscPrefs(PreferencesWindow *pwindow)
+ : PreferencesDialog(pwindow)
 {
 }
 
@@ -40,8 +24,8 @@ void MiscPrefs::show()
 {
 	BC_WindowBase *win;
 	int x0, y0, boxh;
-	int x = mwindow->theme->preferencesoptions_x;
-	int y = mwindow->theme->preferencesoptions_y;
+	int x = theme_global->preferencesoptions_x;
+	int y = theme_global->preferencesoptions_y;
 
 	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, get_resources()->text_default));
 	y += 30;
@@ -55,7 +39,7 @@ void MiscPrefs::show()
 	boxh = win->get_h() + 5;
 	y += 3;
 	add_subwindow(new BC_Title(x, y, _("seconds")));
-	x = mwindow->theme->preferencesoptions_x;
+	x = theme_global->preferencesoptions_x;
 	y += win->get_h() + 5;
 	add_subwindow(new BC_Title(x, y, _("AVlibs"), LARGEFONT, get_resources()->text_default));
 	y += 30;
@@ -78,7 +62,7 @@ void MiscPrefs::show()
 	win = add_subwindow(new BC_Title(x, y, _("Copyright:")));
 	if(x0 < win->get_w() + 10)
 		x0 = win->get_w() + 10;
-	x = x0 + mwindow->theme->preferencesoptions_x;
+	x = x0 + theme_global->preferencesoptions_x;
 	y = y0;
 	win = add_subwindow(new MiscText(x, y, pwindow->thread->this_edlsession->metadata_author));
 	y += boxh;
@@ -89,7 +73,7 @@ void MiscPrefs::show()
 	y += 35;
 	add_subwindow(new BC_Bar(5, y,  get_w() - 10));
 	y += 25;
-	x = mwindow->theme->preferencesoptions_x;
+	x = theme_global->preferencesoptions_x;
 	win = add_subwindow(new ToggleButton(x, y, _("Automatic backups with interval"),
 		&pwindow->thread->this_edlsession->automatic_backups));
 	x += win->get_w() + 10;
@@ -100,7 +84,7 @@ void MiscPrefs::show()
 	add_subwindow(new BC_Title(x, y, _("seconds")));
 
 	y += 35;
-	x = mwindow->theme->preferencesoptions_x;
+	x = theme_global->preferencesoptions_x;
 	add_subwindow(new ToggleButton(x, y, _("Shrink tracks of invisible plugins"),
 		&pwindow->thread->this_edlsession->shrink_plugin_tracks));
 }

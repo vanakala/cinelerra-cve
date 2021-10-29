@@ -23,7 +23,6 @@ class ViewThumbnails;
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
-#include "mwindow.inc"
 #include "preferencesthread.h"
 #include "selection.h"
 
@@ -31,7 +30,7 @@ class ViewThumbnails;
 class InterfacePrefs : public PreferencesDialog
 {
 public:
-	InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow);
+	InterfacePrefs(PreferencesWindow *pwindow);
 	~InterfacePrefs();
 
 	void show();

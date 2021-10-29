@@ -24,7 +24,7 @@
 class PreferencesMenuitem : public BC_MenuItem
 {
 public:
-	PreferencesMenuitem(MWindow *mwindow);
+	PreferencesMenuitem();
 	~PreferencesMenuitem();
 
 	int handle_event();
@@ -35,7 +35,7 @@ public:
 class PreferencesThread : public Thread
 {
 public:
-	PreferencesThread(MWindow *mwindow);
+	PreferencesThread();
 	~PreferencesThread();
 	void run();
 
@@ -56,8 +56,7 @@ public:
 	int reload_plugins;
 	PreferencesWindow *window;
 	Mutex *window_lock;
-	MWindow *mwindow;
-// Copy of mwindow preferences
+// Copy of global preferences
 	Preferences *preferences;
 	EDL *edl;
 	EDLSession *this_edlsession;
@@ -77,13 +76,13 @@ public:
 class PreferencesDialog : public BC_SubWindow
 {
 public:
-	PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow);
+	PreferencesDialog(PreferencesWindow *pwindow);
 
 	virtual void show() {};
 	virtual void draw_framerate() {};
 	virtual void draw_playstatistics() {};
+
 	PreferencesWindow *pwindow;
-	MWindow *mwindow;
 	Preferences *preferences;
 };
 
@@ -93,8 +92,7 @@ class PreferencesButton;
 class PreferencesWindow : public BC_Window
 {
 public:
-	PreferencesWindow(MWindow *mwindow, 
-		PreferencesThread *thread,
+	PreferencesWindow(PreferencesThread *thread,
 		int x,
 		int y);
 	~PreferencesWindow();
@@ -104,7 +102,6 @@ public:
 	void update_framerate();
 	void update_playstatistics();
 
-	MWindow *mwindow;
 	PreferencesThread *thread;
 	ArrayList<BC_ListBoxItem*> categories;
 	PreferencesCategory *category;

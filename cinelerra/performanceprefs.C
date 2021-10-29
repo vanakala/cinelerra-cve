@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcbar.h"
 #include "bclistboxitem.h"
@@ -25,17 +9,17 @@
 #include "bctitle.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "cache.inc"
 #include "formattools.h"
 #include "language.h"
-#include "mwindow.h"
 #include "performanceprefs.h"
 #include "preferences.h"
 #include <string.h>
 #include "theme.h"
 
 
-PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
- : PreferencesDialog(mwindow, pwindow)
+PerformancePrefs::PerformancePrefs(PreferencesWindow *pwindow)
+ : PreferencesDialog(pwindow)
 {
 	hot_node = -1;
 }
@@ -64,8 +48,8 @@ void PerformancePrefs::show()
 	node_list = 0;
 	generate_node_list();
 
-	xmargin1 = x = mwindow->theme->preferencesoptions_x;
-	y = mwindow->theme->preferencesoptions_y;
+	xmargin1 = x = theme_global->preferencesoptions_x;
+	y = theme_global->preferencesoptions_y;
 
 	ybx[0] = y;
 	win = add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
