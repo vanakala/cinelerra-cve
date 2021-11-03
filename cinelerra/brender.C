@@ -43,7 +43,6 @@ BRender::BRender()
 	socket_path[0] = 0;
 	thread = 0;
 	master_pid = -1;
-	arguments[0] = arguments[1] = arguments[2] = 0;
 	map_valid = 0;
 }
 
@@ -65,9 +64,6 @@ BRender::~BRender()
 	delete completion_lock;
 	UNSET_TEMP(socket_path);
 	remove(socket_path);
-	delete [] arguments[0];
-	delete [] arguments[1];
-	delete [] arguments[2];
 	delete timer;
 }
 
@@ -93,6 +89,7 @@ void BRender::run()
 	char string[BCTEXTLEN];
 	int size;
 	FILE *fd;
+	char *arguments[4];
 
 // Construct executable command with the designated filesystem port
 	fd = fopen("/proc/self/cmdline", "r");
@@ -105,16 +102,9 @@ void BRender::run()
 	else
 		perror(_("BRender::fork_background: can't open /proc/self/cmdline.\n"));
 
-	arguments[0] = new char[strlen(string) + 1];
-	strcpy(arguments[0], string);
-
-	strcpy(string, "-b");
-	arguments[1] = new char[strlen(string) + 1];
-	strcpy(arguments[1], string);
-
-	arguments[2] = new char[strlen(socket_path) + 1];
-	strcpy(arguments[2], socket_path);
-
+	arguments[0] = string;
+	arguments[1] = (char*)"-b";
+	arguments[2] = socket_path;
 	arguments[3] = 0;
 
 	if(!(master_pid = vfork()))

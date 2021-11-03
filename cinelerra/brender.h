@@ -96,8 +96,6 @@ public:
 	pid_t master_pid;
 // Path of socket
 	char socket_path[BCTEXTLEN];
-// Arguments for execvp
-	char *arguments[4];
 	Timer *timer;
 };
 
