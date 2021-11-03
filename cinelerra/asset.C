@@ -1391,7 +1391,8 @@ void Asset::set_renderprofile(const char *path, const char *profilename)
 {
 	char *p;
 
-	strcpy(renderprofile_path, path);
+	if(path)
+		strcpy(renderprofile_path, path);
 	p = &renderprofile_path[strlen(renderprofile_path)];
 	*p++ = '/';
 	strcpy(p, profilename);
