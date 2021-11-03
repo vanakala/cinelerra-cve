@@ -1398,6 +1398,57 @@ void Asset::set_renderprofile(const char *path, const char *profilename)
 	strcpy(p, profilename);
 }
 
+void Asset::save_render_profile()
+{
+	Paramlist params("ProfilData");
+	Param *pp;
+	FileXML file;
+	char path[BCTEXTLEN];
+
+	save_defaults(&params, ASSET_ALL);
+	save_render_options();
+
+	if(render_parameters)
+		params.remove_equiv(render_parameters);
+	else
+		render_parameters = new Paramlist("ProfilData");
+
+	if(params.total() > 0)
+	{
+		for(pp = params.first; pp; pp = pp->next)
+			render_parameters->set(pp);
+		render_parameters->save_list(&file);
+		file.write_to_file(profile_config_path("ProfilData.xml", path));
+	}
+	// Delete old defaults
+	mwindow_global->defaults->delete_key("RENDER_STRATEGY");
+	mwindow_global->defaults->delete_key("RENDER_LOADMODE");
+	mwindow_global->defaults->delete_key("RENDER_RANGE_TYPE");
+}
+
+void Asset::load_render_profile()
+{
+	FileXML file;
+	Paramlist *dflts = 0;
+	Param *par;
+	char path[BCTEXTLEN];
+
+	if(render_parameters)
+	{
+		delete render_parameters;
+		render_parameters = 0;
+	}
+
+	if(!file.read_from_file(profile_config_path("ProfilData.xml", path), 1) &&
+		!file.read_tag())
+	{
+		dflts = new Paramlist();
+		dflts->load_list(&file);
+		load_defaults(dflts, ASSET_ALL);
+		render_parameters = dflts;
+	}
+}
+
 void Asset::save_defaults(BC_Hash *defaults, 
 	const char *prefix,
 	int options)

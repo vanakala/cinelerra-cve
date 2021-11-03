@@ -294,7 +294,7 @@ void Render::run()
 		{
 			if(!check_asset(render_edl, asset))
 			{
-				save_defaults(asset);
+				asset->save_render_profile();
 				mwindow_global->save_defaults();
 
 				if(!render_preferences)
@@ -747,64 +747,7 @@ void Render::load_defaults(Asset *asset)
 	strcpy(p, string);
 
 	asset->load_defaults(mwindow_global->defaults, "RENDER_", ASSET_ALL);
-	load_profile(asset);
-}
-
-void Render::load_profile(Asset *asset)
-{
-	FileXML file;
-	Paramlist *dflts = 0;
-	Param *par;
-	char path[BCTEXTLEN];
-
-	if(asset->render_parameters)
-	{
-		delete asset->render_parameters;
-		asset->render_parameters = 0;
-	}
-
-	if(!file.read_from_file(asset->profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
-	{
-		dflts = new Paramlist();
-		dflts->load_list(&file);
-
-		strategy = dflts->get("strategy", strategy);
-		load_mode = dflts->get("loadmode", load_mode);
-		range_type = dflts->get("renderrange", range_type);
-		asset->load_defaults(dflts, ASSET_ALL);
-		asset->render_parameters = dflts;
-	}
-}
-
-void Render::save_defaults(Asset *asset)
-{
-	Paramlist params("ProfilData");
-	Param *pp;
-	FileXML file;
-	char path[BCTEXTLEN];
-
-	params.append_param("strategy", strategy);
-	params.append_param("loadmode", load_mode);
-	params.append_param("renderrange", range_type);
-	asset->save_defaults(&params, ASSET_ALL);
-	asset->save_render_options();
-
-	if(asset->render_parameters)
-		params.remove_equiv(asset->render_parameters);
-	else
-		asset->render_parameters = new Paramlist("ProfilData");
-
-	if(params.total() > 0)
-	{
-		for(pp = params.first; pp; pp = pp->next)
-			asset->render_parameters->set(pp);
-		asset->render_parameters->save_list(&file);
-		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
-	}
-	// Delete old defaults
-	mwindow_global->defaults->delete_key("RENDER_STRATEGY");
-	mwindow_global->defaults->delete_key("RENDER_LOADMODE");
-	mwindow_global->defaults->delete_key("RENDER_RANGE_TYPE");
+	asset->load_render_profile();
 }
 
 
@@ -878,7 +821,7 @@ RenderWindow::~RenderWindow()
 
 void RenderWindow::load_profile()
 {
-	render->load_profile(asset);
+	asset->load_render_profile();
 	render->check_asset(render_edl, asset);
 	update_range_type(render->range_type);
 	format_tools->update(asset, &render->strategy);

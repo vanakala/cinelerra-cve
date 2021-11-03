@@ -168,6 +168,9 @@ public:
 	void read_decoder_params(FileXML *file);
 // Read stream decoding paramters from xml
 	void read_stream_params(FileXML *file);
+// Write render defaults to profile
+	void save_render_profile();
+	void load_render_profile();
 
 // Write/read rendering parameters to xml
 	void write_params(FileXML *file);

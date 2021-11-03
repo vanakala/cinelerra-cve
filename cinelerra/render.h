@@ -95,8 +95,6 @@ public:
 		int range_type);
 
 	void load_defaults(Asset *asset);
-	void save_defaults(Asset *asset);
-	void load_profile(Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset *asset);
