@@ -155,13 +155,14 @@ void Preferences::copy_from(Preferences *that)
 void Preferences::boundaries()
 {
 	FileSystem fs;
-	if(strlen(index_directory))
+
+	if(index_directory[0])
 	{
 		fs.complete_path(index_directory);
 		fs.add_end_slash(index_directory);
 	}
 
-	if(strlen(global_plugin_dir))
+	if(global_plugin_dir[0])
 	{
 		fs.complete_path(global_plugin_dir);
 		fs.add_end_slash(global_plugin_dir);
