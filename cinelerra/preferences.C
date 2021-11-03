@@ -249,10 +249,6 @@ void Preferences::load_defaults(BC_Hash *defaults)
 			i + 1);
 	}
 
-	brender_asset->load_defaults(defaults, 
-		"BRENDER_", 
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
-
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
@@ -318,9 +314,6 @@ void Preferences::save_defaults(BC_Hash *defaults)
 	}
 
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
-	brender_asset->save_defaults(defaults, 
-		"BRENDER_",
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
 	defaults->update("USE_BRENDER", use_brender);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);
 	defaults->update("USE_RENDERFARM", use_renderfarm);

@@ -130,8 +130,15 @@ void PreferencesThread::run()
 	thread_running = 0;
 	if(!result)
 	{
+		if(!preferences->brender_asset->equivalent(*preferences_global->brender_asset,
+				STRDSC_VIDEO))
+		{
+			if(preferences->brender_asset->renderprofile_path[0])
+				preferences->brender_asset->save_render_profile();
+		}
 		apply_settings();
 		mwindow_global->save_defaults();
+		mwindow_global->restart_brender();
 	}
 
 	window_lock->lock("PreferencesThread::run 2");

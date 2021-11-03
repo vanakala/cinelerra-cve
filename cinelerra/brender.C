@@ -19,6 +19,7 @@
 #include "packagedispatcher.h"
 #include "preferences.h"
 #include "renderfarm.h"
+#include "renderprofiles.h"
 #include "units.h"
 
 #include <errno.h>
@@ -371,6 +372,16 @@ void BRenderThread::start()
 		preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
 		preferences_global->brender_asset->use_header = 0;
 
+		if(!preferences_global->brender_asset->renderprofile_path[0])
+		{
+			edlsession->configuration_path(RENDERCONFIG_DIR,
+				preferences_global->brender_asset->renderprofile_path);
+			preferences_global->brender_asset->set_renderprofile(0, RENDERCONFIG_BRENDER);
+			RenderProfile::chk_profile_dir(preferences_global->brender_asset->renderprofile_path);
+		}
+		preferences_global->brender_asset->load_render_profile();
+		preferences_global->brender_asset->format_changed();
+
 		preferences = new Preferences;
 		preferences->copy_from(preferences_global);
 		packages = new PackageDispatcher;
@@ -399,6 +410,7 @@ void BRenderThread::start()
 		if(end_pts < start_pts)
 			end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
+
 		result = packages->create_packages(command->edl,
 			preferences,
 			RENDER_BRENDER,
