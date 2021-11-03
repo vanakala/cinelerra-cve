@@ -191,6 +191,13 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->nb_streams = asset->nb_streams;
 	this->nb_programs = asset->nb_programs;
 	this->program_id = asset->program_id;
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		for(int j = 0; j < MAX_DEC_PARAMLISTS; j++)
+			delete this->streams[i].decoding_params[j];
+	}
+
 	memcpy(this->streams, asset->streams, sizeof(streams));
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -218,6 +225,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 	{
+		delete encoder_parameters[i];
+		encoder_parameters[i] = 0;
+
 		if(asset->encoder_parameters[i])
 		{
 			encoder_parameters[i] = new Paramlist(asset->encoder_parameters[i]->name);
@@ -226,12 +236,19 @@ void Asset::copy_format(Asset *asset, int do_index)
 	}
 	for(int i = 0; i < MAX_DEC_PARAMLISTS; i++)
 	{
+		delete decoder_parameters[i];
+		decoder_parameters[i] = 0;
+
 		if(asset->decoder_parameters[i])
 		{
 			decoder_parameters[i] = new Paramlist(asset->decoder_parameters[i]->name);
 			decoder_parameters[i]->copy_all(asset->decoder_parameters[i]);
 		}
 	}
+
+	delete render_parameters;
+	render_parameters = 0;
+
 	if(asset->render_parameters)
 	{
 		render_parameters = new Paramlist(asset->render_parameters->name);
