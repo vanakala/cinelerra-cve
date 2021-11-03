@@ -267,6 +267,9 @@ Asset& Asset::operator=(Asset &asset)
 
 int Asset::equivalent(Asset &asset, int test_dsc)
 {
+	if(this == &asset)
+		return 1;
+
 	int result = (!strcmp(asset.path, path) &&
 		format == asset.format && nb_programs == asset.nb_programs
 		&& nb_streams == asset.nb_streams && program_id == asset.program_id);
@@ -281,6 +284,23 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 					break;
 			}
 			else if(asset.decoder_parameters[i])
+			{
+				result = 0;
+				break;
+			}
+		}
+	}
+
+	if(result)
+	{
+		for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
+		{
+			if(encoder_parameters[i])
+			{
+				if(!(result = encoder_parameters[i]->equiv(asset.encoder_parameters[i])))
+					break;
+			}
+			else if(asset.encoder_parameters[i])
 			{
 				result = 0;
 				break;
