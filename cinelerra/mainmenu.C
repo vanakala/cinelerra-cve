@@ -122,7 +122,7 @@ MainMenu::MainMenu(MWindow *mwindow, BC_WindowBase *gui)
 	add_menu(settingsmenu = new BC_Menu(_("Settings")));
 
 	settingsmenu->add_item(new SetFormat(mwindow));
-	settingsmenu->add_item(preferences = new PreferencesMenuitem(mwindow));
+	settingsmenu->add_item(preferences = new PreferencesMenuitem());
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
