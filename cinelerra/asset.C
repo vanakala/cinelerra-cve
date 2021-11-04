@@ -538,7 +538,7 @@ void Asset::create_render_stream(int stream_type)
 		streams[nb_streams].stream_index = 1;
 		nb_streams++;
 	}
-	format_changed();
+	load_render_options();
 }
 
 ptstime Asset::stream_duration(int stream)
@@ -1163,7 +1163,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	GET_DEFAULT("FORMAT_YUV_PIPE", pipe);
 }
 
-void Asset::format_changed()
+void Asset::load_render_options()
 {
 	if(renderprofile_path[0])
 	{
@@ -1320,7 +1320,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 			list->get("audio_codec", streams[stream].codec);
 		if((stream = get_stream_ix(STRDSC_VIDEO)) >= 0)
 			list->get("video_codec", streams[stream].codec);
-		format_changed();
+		load_render_options();
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
 		use_header = list->get("use_header", use_header);

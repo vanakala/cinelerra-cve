@@ -498,7 +498,7 @@ void FormatTools::format_changed()
 	close_format_windows();
 	if(path_recent)
 		path_recent->load_items(ContainerSelection::container_prefix(asset->format));
-	asset->format_changed();
+	asset->load_render_options();
 	asset->get_format_params(support);
 	enable_supported();
 }
