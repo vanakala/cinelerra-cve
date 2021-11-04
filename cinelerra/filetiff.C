@@ -490,7 +490,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	return result;
 }
 
-void FileTIFF::save_render_optios(Asset *asset)
+void FileTIFF::save_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

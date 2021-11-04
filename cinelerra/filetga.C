@@ -753,7 +753,7 @@ void FileTGA::upsample(unsigned char *dest,
 	}
 }
 
-void FileTGA::save_render_optios(Asset *asset)
+void FileTGA::save_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

@@ -389,7 +389,7 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	return 0;
 }
 
-void FileJPEG::save_render_optios(Asset *asset)
+void FileJPEG::save_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

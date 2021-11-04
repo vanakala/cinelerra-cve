@@ -274,7 +274,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	return result;
 }
 
-void FilePNG::save_render_optios(Asset *asset)
+void FilePNG::save_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

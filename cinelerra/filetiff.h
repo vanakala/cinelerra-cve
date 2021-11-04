@@ -32,7 +32,7 @@ public:
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 	static void get_render_defaults(Asset *asset);
-	static void save_render_optios(Asset *asset);
+	static void save_render_options(Asset *asset);
 
 	enum
 	{

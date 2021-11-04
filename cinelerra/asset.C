@@ -1244,19 +1244,19 @@ void Asset::save_render_options()
 		{
 		case FILE_TGA:
 		case FILE_TGA_LIST:
-			FileTGA::save_render_optios(this);
+			FileTGA::save_render_options(this);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
-			FileJPEG::save_render_optios(this);
+			FileJPEG::save_render_options(this);
 			break;
 		case FILE_PNG:
 		case FILE_PNG_LIST:
-			FilePNG::save_render_optios(this);
+			FilePNG::save_render_options(this);
 			break;
 		case FILE_TIFF:
 		case FILE_TIFF_LIST:
-			FileTIFF::save_render_optios(this);
+			FileTIFF::save_render_options(this);
 			break;
 		default:
 			FileAVlibs::save_render_options(this);
