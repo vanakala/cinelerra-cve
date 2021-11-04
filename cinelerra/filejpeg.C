@@ -400,7 +400,7 @@ void FileJPEG::save_render_options(Asset *asset)
 		pathbuf, encoder_params);
 }
 
-void FileJPEG::get_render_defaults(Asset *asset)
+void FileJPEG::load_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

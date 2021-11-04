@@ -501,7 +501,7 @@ void FileTIFF::save_render_options(Asset *asset)
 		pathbuf, encoder_params);
 }
 
-void FileTIFF::get_render_defaults(Asset *asset)
+void FileTIFF::load_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

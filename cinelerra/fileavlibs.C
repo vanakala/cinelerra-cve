@@ -2827,7 +2827,7 @@ void FileAVlibs::deserialize_params(Asset *asset)
 	restore_codec_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX]);
 }
 
-void FileAVlibs::get_render_defaults(Asset *asset)
+void FileAVlibs::load_render_options(Asset *asset)
 {
 	const char *name;
 	AVOutputFormat *oformat = 0;

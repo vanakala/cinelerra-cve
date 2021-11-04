@@ -31,7 +31,7 @@ public:
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 	static void save_render_options(Asset *asset);
-	static void get_render_defaults(Asset *asset);
+	static void load_render_options(Asset *asset);
 
 // For decoding only
 	VFrame *temp;

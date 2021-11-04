@@ -1171,22 +1171,22 @@ void Asset::format_changed()
 		{
 		case FILE_TGA:
 		case FILE_TGA_LIST:
-			FileTGA::get_render_defaults(this);
+			FileTGA::load_render_options(this);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
-			FileJPEG::get_render_defaults(this);
+			FileJPEG::load_render_options(this);
 			break;
 		case FILE_PNG:
 		case FILE_PNG_LIST:
-			FilePNG::get_render_defaults(this);
+			FilePNG::load_render_options(this);
 			break;
 		case FILE_TIFF:
 		case FILE_TIFF_LIST:
-			FileTIFF::get_render_defaults(this);
+			FileTIFF::load_render_options(this);
 			break;
 		default:
-			FileAVlibs::get_render_defaults(this);
+			FileAVlibs::load_render_options(this);
 			break;
 		}
 	}

@@ -764,7 +764,7 @@ void FileTGA::save_render_options(Asset *asset)
 		pathbuf, encoder_params);
 }
 
-void FileTGA::get_render_defaults(Asset *asset)
+void FileTGA::load_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 

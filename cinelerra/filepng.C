@@ -285,7 +285,7 @@ void FilePNG::save_render_options(Asset *asset)
 		pathbuf, encoder_params);
 }
 
-void FilePNG::get_render_defaults(Asset *asset)
+void FilePNG::load_render_options(Asset *asset)
 {
 	char pathbuf[BCTEXTLEN];
 
