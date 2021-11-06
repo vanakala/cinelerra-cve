@@ -31,6 +31,9 @@ void MapList::set_map(ptstime start, ptstime end, int val)
 	MapItem *current;
 	int ov;
 
+	if(PTSEQU(start, end))
+		return;
+
 	for(current = first; current; current = NEXT)
 	{
 		if(current->pts <= start) // v3...v4
