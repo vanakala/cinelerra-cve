@@ -48,6 +48,7 @@ public:
 	virtual void init_cursor() {};
 	virtual void stop_cursor() {};
 	virtual int brender_available(ptstime position) { return 0; };
+	void reset_brender();
 // For normal playback tracking and the cursor are started
 	void init_tracking();
 	void stop_tracking(ptstime position = -1);

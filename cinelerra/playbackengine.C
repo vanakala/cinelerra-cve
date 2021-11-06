@@ -60,6 +60,11 @@ void PlaybackEngine::reset_engines()
 	render_engine->reset_engines();
 }
 
+void PlaybackEngine::reset_brender()
+{
+	render_engine->reset_brender();
+}
+
 void PlaybackEngine::arm_render_engine()
 {
 	render_engine->copy_playbackconfig();

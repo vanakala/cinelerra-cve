@@ -135,6 +135,7 @@ void PreferencesThread::run()
 		{
 			if(preferences->brender_asset->renderprofile_path[0])
 				preferences->brender_asset->save_render_profile();
+			mwindow_global->reset_brender();
 		}
 		apply_settings();
 		mwindow_global->save_defaults();

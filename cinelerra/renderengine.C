@@ -69,6 +69,12 @@ void RenderEngine::reset_engines()
 	vrender = 0;
 }
 
+void RenderEngine::reset_brender()
+{
+	if(vrender)
+		vrender->reset_brender();
+}
+
 void RenderEngine::copy_playbackconfig()
 {
 	config->copy_from(edlsession->playback_config);

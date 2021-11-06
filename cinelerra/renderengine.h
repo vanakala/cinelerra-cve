@@ -31,6 +31,7 @@ public:
 	~RenderEngine();
 
 	void reset_engines();
+	void reset_brender();
 	void create_render_threads();
 	void arm_render_threads();
 	void start_render_threads();

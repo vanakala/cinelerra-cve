@@ -416,6 +416,8 @@ public:
 	void delete_brender();
 // Restart brender after testing its existence
 	void restart_brender();
+// Reset playback of brender
+	void reset_brender();
 // Stops brender after testing its existence
 	void stop_brender();
 // This one happens asynchronously of the others.  Used by playback to

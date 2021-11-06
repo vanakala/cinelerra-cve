@@ -509,6 +509,15 @@ void MWindow::restart_brender()
 	if(brender) brender->restart(master_edl);
 }
 
+void MWindow::reset_brender()
+{
+	brender_lock->lock("MWindow::reset_brender");
+	brender->allocate_map(0, 0, mainsession->brender_end);
+	cwindow->playback_engine->reset_brender();
+	cwindow->stop_playback();
+	brender_lock->unlock();
+}
+
 void MWindow::stop_brender()
 {
 	if(brender) brender->stop();
@@ -518,12 +527,12 @@ int MWindow::brender_available(ptstime postime)
 {
 	int result = 0;
 
-	brender_lock->lock("MWindow::brender_available 1");
+	brender_lock->lock("MWindow::brender_available");
 	if(brender)
 	{
 		if(brender->map_valid)
 		{
-			brender->map_lock->lock("MWindow::brender_available 2");
+			brender->map_lock->lock("MWindow::brender_available");
 			if(postime >= 0)
 				result = brender->videomap.is_set(postime);
 			brender->map_lock->unlock();
