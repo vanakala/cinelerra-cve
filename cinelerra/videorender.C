@@ -36,6 +36,14 @@ VideoRender::~VideoRender()
 	delete brender_file;
 }
 
+void VideoRender::reset_brender()
+{
+	File *f = brender_file;
+
+	brender_file = 0;
+	delete f;
+}
+
 void VideoRender::run()
 {
 	int first_frame = 1;

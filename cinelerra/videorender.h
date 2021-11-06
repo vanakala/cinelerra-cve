@@ -29,6 +29,7 @@ public:
 		VTrackRender *current_renderer);
 	VFrame *take_vframes(Plugin *plugin, VTrackRender *current_renderer);
 	void release_asset(Asset *asset);
+	void reset_brender();
 
 private:
 	void process_frame(ptstime pts);
