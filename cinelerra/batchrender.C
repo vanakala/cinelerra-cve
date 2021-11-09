@@ -72,7 +72,6 @@ BatchRenderJob::BatchRenderJob(int jobnum)
 	this->jobnum = jobnum;
 	asset = new Asset;
 	edl_path[0] = 0;
-	strategy = 0;
 	enabled = 1;
 	elapsed = 0;
 }
@@ -86,7 +85,6 @@ void BatchRenderJob::copy_from(BatchRenderJob *src)
 {
 	asset->copy_from(src->asset, 0);
 	strcpy(edl_path, src->edl_path);
-	strategy = src->strategy;
 	enabled = src->enabled;
 	elapsed = 0;
 }
@@ -105,7 +103,6 @@ void BatchRenderJob::load(const char *path)
 	{
 		dflts = new Paramlist("ProfilData");
 		dflts->load_list(&file);
-		strategy = dflts->get("strategy", strategy);
 		enabled = dflts->get("enabled", enabled);
 		elapsed = dflts->get("elapsed", elapsed);
 		dflts->get("EDL_path", edl_path);
@@ -113,7 +110,7 @@ void BatchRenderJob::load(const char *path)
 		delete asset->render_parameters;
 		asset->render_parameters = dflts;
 	}
-	fix_strategy();
+	asset->fix_strategy(render_preferences->use_renderfarm);
 }
 
 void BatchRenderJob::save()
@@ -123,7 +120,6 @@ void BatchRenderJob::save()
 	FileXML file;
 	char path[BCTEXTLEN];
 
-	params.append_param("strategy", strategy);
 	params.append_param("enabled", enabled);
 	params.append_param("elapsed", elapsed);
 	params.append_param("EDL_path", edl_path);
@@ -143,17 +139,12 @@ void BatchRenderJob::save()
 	}
 }
 
-void BatchRenderJob::fix_strategy()
-{
-	strategy = Render::fix_strategy(strategy, render_preferences->use_renderfarm);
-}
-
 void BatchRenderJob::dump(int indent)
 {
 	printf("%*sBatchRenderJob %p dump:\n", indent, "", this);
 	indent++;
-	printf("%*sstrategy %d enabled %d jobnum %d elapsed %.2f\n", indent, "",
-		strategy, enabled, jobnum, elapsed);
+	printf("%*senabled %d jobnum %d elapsed %.2f\n", indent, "",
+		enabled, jobnum, elapsed);
 	printf("%*sedl_path: '%s'\n", indent, "", edl_path);
 	asset->dump(indent + 2);
 }
@@ -411,7 +402,6 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths)
 // Create test packages
 			packages->create_packages(current_edl,
 				render_preferences,
-				job->strategy, 
 				job->asset, 
 				0,
 				current_edl->total_length(),
@@ -561,16 +551,10 @@ BatchRenderGUI::BatchRenderGUI(BatchRenderThread *thread,
 	int w,
 	int h)
  : BC_Window(MWindow::create_title(N_("Batch Render")),
-	x,
-	y,
-	w, 
-	h, 
-	50, 
-	50, 
-	1,
-	0, 
-	1)
+	x, y, w, h, 50, 50, 1, 0, 1)
 {
+	Asset *asset;
+
 	this->thread = thread;
 
 	theme_global->get_batchrender_sizes(this, get_w(), get_h());
@@ -587,14 +571,15 @@ BatchRenderGUI::BatchRenderGUI(BatchRenderThread *thread,
 // output file
 	add_subwindow(output_path_title = new BC_Title(x1, y, _("Output path:")));
 	y += 20;
+	asset = thread->get_current_asset();
+
 	format_tools = new BatchFormat(this,
-					thread->get_current_asset(),
-					x,
-					y,
-					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
-					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
-					SUPPORTS_VIDEO,
-					&thread->get_current_job()->strategy);
+		asset,
+		x,
+		y,
+		SUPPORTS_AUDIO|SUPPORTS_VIDEO,
+		SUPPORTS_AUDIO|SUPPORTS_VIDEO,
+		SUPPORTS_VIDEO);
 
 	x2 = x;
 	y2 = y + 10;
@@ -808,21 +793,20 @@ void BatchRenderGUI::create_list(int update_widget)
 void BatchRenderGUI::change_job()
 {
 	BatchRenderJob *job = thread->get_current_job();
-	format_tools->update(job->asset, &job->strategy);
+	format_tools->update(job->asset, &job->asset->strategy);
 	edl_path_text->update(job->edl_path);
 }
 
 
 BatchFormat::BatchFormat(BatchRenderGUI *gui,
-			Asset *asset,
-			int &init_x,
-			int &init_y,
-			int support,
-			int checkbox,
-			int details,
-			int *strategy)
+	Asset *asset,
+	int &init_x,
+	int &init_y,
+	int support,
+	int checkbox,
+	int details)
  : FormatTools(gui, asset, init_x, init_y, support, checkbox, details,
-	strategy)
+	&asset->strategy)
 {
 	this->gui = gui;
 }
@@ -834,16 +818,9 @@ int BatchFormat::handle_event()
 }
 
 
-BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread, 
-	int x, 
-	int y, 
-	int w, 
-	char *text)
- : BC_TextBox(x, 
-		y, 
-		w, 
-		1,
-		text)
+BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread,
+	int x, int y, int w, const char *text)
+ : BC_TextBox(x, y, w, 1, text)
 {
 	this->thread = thread;
 }
@@ -856,9 +833,8 @@ int BatchRenderEDLPath::handle_event()
 }
 
 
-BatchRenderNew::BatchRenderNew(BatchRenderThread *thread, 
-	int x, 
-	int y)
+BatchRenderNew::BatchRenderNew(BatchRenderThread *thread,
+	int x, int y)
  : BC_GenericButton(x, y, _("New"))
 {
 	this->thread = thread;
@@ -871,9 +847,8 @@ int BatchRenderNew::handle_event()
 }
 
 
-BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, 
-	int x, 
-	int y)
+BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread,
+	int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
 	this->thread = thread;
@@ -887,16 +862,9 @@ int BatchRenderDelete::handle_event()
 
 
 BatchRenderList::BatchRenderList(BatchRenderThread *thread,
-	int x, 
-	int y,
-	int w,
-	int h,
+	int x, int y, int w, int h,
 	ArrayList<BC_ListBoxItem*> *list_columns)
- : BC_ListBox(x, 
-	y,
-	w, 
-	h, 
-	list_columns,
+ : BC_ListBox(x, y, w, h, list_columns,
 	LISTBOX_DRAG,
 	list_titles,
 	thread->column_width,
@@ -958,12 +926,9 @@ void BatchRenderList::drag_stop_event()
 }
 
 
-BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, 
-	int x, 
-	int y)
+BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, 
-	y,
-	_("Start"))
+	y, _("Start"))
 {
 	this->thread = thread;
 }
@@ -975,12 +940,9 @@ int BatchRenderStart::handle_event()
 }
 
 
-BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, 
-	int x, 
-	int y)
+BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, int x, int y)
  : BC_GenericButton(x, 
-	y,
-	_("Stop"))
+	y, _("Stop"))
 {
 	this->thread = thread;
 }
@@ -992,12 +954,8 @@ int BatchRenderStop::handle_event()
 }
 
 
-BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, 
-	int x, 
-	int y)
- : BC_GenericButton(x, 
-	y,
-	_("Close"))
+BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, int x, int y)
+ : BC_GenericButton(x, y, _("Close"))
 {
 	this->thread = thread;
 }

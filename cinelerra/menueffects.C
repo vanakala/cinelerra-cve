@@ -403,8 +403,10 @@ void MenuEffectThread::run()
 		if(range_type == RANGE_SELECTION)
 			render_edl->local_session->set_selection(total_start, total_end);
 
-		mwindow_global->render->run_menueffects(default_asset, render_edl,
-			strategy, range_type, load_mode);
+		default_asset->strategy = strategy;
+		default_asset->range_type = range_type;
+		default_asset->load_mode = load_mode;
+		mwindow_global->render->run_menueffects(default_asset, render_edl);
 
 		delete render_edl->this_edlsession;
 		delete render_edl;

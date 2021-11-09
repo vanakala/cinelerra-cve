@@ -25,7 +25,6 @@ public:
 
 	int create_packages(EDL *edl,
 		Preferences *preferences,
-		int strategy, 
 		Asset *default_asset,
 		ptstime total_start,
 		ptstime total_end,
@@ -50,7 +49,6 @@ private:
 	ptstime total_start;
 	ptstime total_end;
 	ptstime total_len;
-	int strategy;
 	Asset *default_asset;
 	int current_number;    // The number being injected into the filename.
 	int number_start;      // Character in the filename path at which the number begins

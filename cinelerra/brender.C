@@ -401,9 +401,9 @@ void BRenderThread::start()
 			end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
 
+		preferences->brender_asset->strategy = RENDER_BRENDER;
 		result = packages->create_packages(command->edl,
 			preferences,
-			RENDER_BRENDER,
 			preferences->brender_asset,
 			start_pts,
 			end_pts,

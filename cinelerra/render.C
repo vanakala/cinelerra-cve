@@ -173,9 +173,6 @@ Render::Render()
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
 	progress_timer = new Timer;
-	range_type = RANGE_PROJECT;
-	load_mode = LOADMODE_NEW_TRACKS;
-	strategy = 0;
 }
 
 Render::~Render()
@@ -206,19 +203,13 @@ void Render::start_interactive()
 	}
 }
 
-void Render::run_menueffects(Asset *asset, EDL *edl,
-        int strategy, int range_type, int load_mode)
+void Render::run_menueffects(Asset *asset, EDL *edl)
 {
-	int old_load_mode;
-
 	mode = Render::EFFECT;
-	old_load_mode = this->load_mode;
-	this->load_mode = load_mode;
 	this->jobs = 0;
 	batch_cancelled = 0;
 	completion->reset();
-	render(1, asset, edl, strategy, range_type);
-	this->load_mode = old_load_mode;
+	render(1, asset, edl);
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
@@ -302,9 +293,9 @@ void Render::run()
 				render_preferences->copy_from(preferences_global);
 
 				if(asset->single_image)
-					range_type = RANGE_SINGLEFRAME;
+					asset->range_type = RANGE_SINGLEFRAME;
 
-				render(1, asset, render_edl, strategy, range_type);
+				render(1, asset, render_edl);
 			}
 			else
 				errormsg(_("No audo or video to render"));
@@ -353,7 +344,8 @@ void Render::run()
 				}
 				if(!result && !check_asset(edl, job->asset))
 				{
-					render(0, job->asset, edl, job->strategy, RANGE_PROJECT);
+					job->asset->range_type = RANGE_PROJECT;
+					render(0, job->asset, edl);
 				}
 				delete edl;
 				delete file;
@@ -411,16 +403,6 @@ int Render::check_asset(EDL *edl, Asset *asset)
 	return !asset->stream_count(STRDSC_VIDEO | STRDSC_AUDIO);
 }
 
-int Render::fix_strategy(int strategy, int use_renderfarm)
-{
-	if(use_renderfarm)
-		strategy |= RENDER_FARM;
-	else
-		strategy &= ~RENDER_FARM;
-
-	return strategy;
-}
-
 void Render::start_progress()
 {
 	progress_max = packages->get_progress_max();
@@ -452,11 +434,7 @@ void Render::stop_progress()
 	progress = 0;
 }
 
-int Render::render(int test_overwrite, 
-	Asset *asset,
-	EDL *edl,
-	int strategy,
-	int range_type)
+int Render::render(int test_overwrite, Asset *asset, EDL *edl)
 {
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
@@ -464,8 +442,9 @@ int Render::render(int test_overwrite,
 	int number_start;      // Character in the filename path at which the number begins
 	int current_number;    // The number the being injected into the filename.
 	int done = 0;
+
 	in_progress = 1;
-	this->default_asset = asset;
+	default_asset = asset;
 	progress = 0;
 	result = 0;
 
@@ -474,7 +453,7 @@ int Render::render(int test_overwrite,
 	command->command = NORMAL_FWD;
 	command->set_edl(edl);
 
-	switch(range_type)
+	switch(asset->range_type)
 	{
 	case RANGE_PROJECT:
 		command->playback_range_project();
@@ -516,11 +495,10 @@ int Render::render(int test_overwrite,
 			mwindow_global->stop_brender();
 
 		fs.complete_path(default_asset->path);
-		strategy = Render::fix_strategy(strategy, render_preferences->use_renderfarm);
+		default_asset->fix_strategy(render_preferences->use_renderfarm);
 
 		result = packages->create_packages(command->get_edl(),
 			render_preferences,
-			strategy, 
 			default_asset, 
 			total_start, 
 			total_end,
@@ -542,7 +520,7 @@ int Render::render(int test_overwrite,
 		{
 			printf("Render::render: starting render farm\n");
 		}
-		if(strategy & RENDER_FARM)
+		if(default_asset->strategy & RENDER_FARM)
 		{
 			farm_server = new RenderFarmServer(packages,
 				render_preferences,
@@ -565,7 +543,7 @@ int Render::render(int test_overwrite,
 	}
 	if(!result)
 	{
-		if(!(strategy & RENDER_FARM))
+		if(!(default_asset->strategy & RENDER_FARM))
 		{
 // Perform local rendering
 			start_progress();
@@ -579,7 +557,7 @@ int Render::render(int test_overwrite,
 // Get unfinished job
 				RenderPackage *package;
 
-				if(!(strategy & RENDER_FILE_PER_LABEL))
+				if(!(default_asset->strategy & RENDER_FILE_PER_LABEL))
 					package = packages->get_package(frames_per_second, -1, 1);
 				else
 					package = packages->get_package(0, -1, 1);
@@ -615,15 +593,15 @@ int Render::render(int test_overwrite,
 	if(!result && mwindow_global && mode != Render::BATCH)
 	{
 // Paste all packages into timeline if desired
-		if(load_mode != LOADMODE_NOTHING)
+		if(default_asset->load_mode != LOADMODE_NOTHING)
 		{
 			ArrayList<char*> path_list;
 
 			packages->get_package_paths(&path_list);
 
-			if(load_mode == LOADMODE_PASTE)
+			if(default_asset->load_mode == LOADMODE_PASTE)
 				mwindow_global->clear(0);
-			mwindow_global->load_filenames(&path_list, load_mode);
+			mwindow_global->load_filenames(&path_list, default_asset->load_mode);
 
 			path_list.remove_all_objects();
 
@@ -734,10 +712,6 @@ void Render::load_defaults(Asset *asset)
 	char string[BCTEXTLEN];
 	char *p;
 
-	strategy = mwindow_global->defaults->get("RENDER_STRATEGY", 0);
-	load_mode = mwindow_global->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
-	range_type = mwindow_global->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
-
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow_global->defaults->get("RENDERPROFILE", string);
 	edlsession->configuration_path(RENDERCONFIG_DIR,
@@ -768,7 +742,7 @@ RenderWindow::RenderWindow(int x, int y, Render *render, Asset *asset)
 	set_icon(mwindow_global->get_window_icon());
 	add_subwindow(new BC_Title(x, 
 		y, 
-		(char*)((render->strategy & RENDER_FILE_PER_LABEL) ?
+		(char*)((asset->strategy & RENDER_FILE_PER_LABEL) ?
 			_("Select the first file to render to:") : 
 			_("Select a file to render to:"))));
 	y += 25;
@@ -780,33 +754,26 @@ RenderWindow::RenderWindow(int x, int y, Render *render, Asset *asset)
 		SUPPORTS_AUDIO | SUPPORTS_VIDEO | SUPPORTS_LIBPARA,
 		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
 		SUPPORTS_VIDEO,
-		&render->strategy);
+		&asset->strategy);
 
-	add_subwindow(new BC_Title(x, 
-		y, _("Render range:")));
+	add_subwindow(new BC_Title(x, y, _("Render range:")));
 
 	x += 110;
-	add_subwindow(rangeproject = new RenderRangeProject(this, 
-		render->range_type == RANGE_PROJECT, 
-		x, 
-		y));
+	add_subwindow(rangeproject = new RenderRangeProject(this,
+		asset->range_type == RANGE_PROJECT, x, y));
 	y += 20;
-	add_subwindow(rangeselection = new RenderRangeSelection(this, 
-		render->range_type == RANGE_SELECTION, 
-		x, 
-		y));
+	add_subwindow(rangeselection = new RenderRangeSelection(this,
+		asset->range_type == RANGE_SELECTION, x, y));
 	y += 20;
-	add_subwindow(rangeinout = new RenderRangeInOut(this, 
-		render->range_type == RANGE_INOUT, 
-		x, 
-		y));
+	add_subwindow(rangeinout = new RenderRangeInOut(this,
+		asset->range_type == RANGE_INOUT, x, y));
 	y += 30;
 	x = 5;
 
 	renderprofile = new RenderProfile(mwindow_global, this, x, y);
 
 	y += 70;
-	loadmode = new LoadMode(this, x, y, &render->load_mode, 1);
+	loadmode = new LoadMode(this, x, y, &asset->load_mode, 1);
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -823,13 +790,13 @@ void RenderWindow::load_profile()
 {
 	asset->load_render_profile();
 	render->check_asset(render_edl, asset);
-	update_range_type(render->range_type);
-	format_tools->update(asset, &render->strategy);
+	update_range_type(asset->range_type);
+	format_tools->update(asset, &asset->strategy);
 }
 
 void RenderWindow::update_range_type(int range_type)
 {
-	render->range_type = range_type;
+	asset->range_type = range_type;
 	rangeproject->update(range_type == RANGE_PROJECT);
 	rangeselection->update(range_type == RANGE_SELECTION);
 	rangeinout->update(range_type == RANGE_INOUT);

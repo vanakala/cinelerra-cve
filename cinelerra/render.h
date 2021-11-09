@@ -63,8 +63,6 @@ public:
 	Render *render;
 };
 
-class RenderWindow;
-
 
 class Render : public Thread
 {
@@ -82,24 +80,17 @@ public:
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 // Render menueffects
-	void run_menueffects(Asset *asset, EDL *edl,
-		int strategy, int range_type, int load_mode);
+	void run_menueffects(Asset *asset, EDL *edl);
 
 	void run();
 
 // Render single job.  Used by run.
-	int render(int test_overwrite, 
-		Asset *asset,
-		EDL *edl,
-		int strategy,
-		int range_type);
+	int render(int test_overwrite, Asset *asset, EDL *edl);
 
 	void load_defaults(Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset *asset);
-// Fix strategy to conform with using renderfarm.
-	static int fix_strategy(int strategy, int use_renderfarm);
 // Force filename to have a 0 padded number if rendering to a list.
 	int check_numbering(Asset &asset);
 	static void create_filename(char *path, 
@@ -127,19 +118,11 @@ public:
 // When batch rendering is cancelled from the batch dialog
 	int batch_cancelled;
 
-
-	int load_mode;
 	int in_progress;
-// Background compression must be disabled when direct frame copying and reenabled afterwards
-	int direct_frame_copying;
-
-	VFrame *compressed_output;
 	MainProgressBar *progress;
 	RenderProgress *render_progress;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
-	int strategy;
-	int range_type;
 // Total selection to render in seconds
 	ptstime total_start, total_end;
 // External Render farm checks this every frame.

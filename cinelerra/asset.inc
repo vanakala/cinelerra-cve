@@ -30,4 +30,15 @@ struct streamdesc;
 #define ASSETDUMP_DECODERPTRS   4
 #define ASSETDUMP_DECODERPARAMS 8
 #define ASSETDUMP_INDEXDATA     0x10
+
+// Internal rendering strategies (bits)
+#define RENDER_FILE_PER_LABEL   2
+#define RENDER_BRENDER          4
+#define RENDER_FARM             0x80
+
+#define RANGE_PROJECT           1
+#define RANGE_SELECTION         2
+#define RANGE_INOUT             3
+#define RANGE_SINGLEFRAME       4
+
 #endif

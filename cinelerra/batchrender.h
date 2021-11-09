@@ -38,14 +38,12 @@ public:
 	void copy_from(BatchRenderJob *src);
 	void load(const char *profile_path);
 	void save();
-	void fix_strategy();
 	void dump(int indent = 0);
 
 // Source EDL to render
 	char edl_path[BCTEXTLEN];
 // Destination file for output
 	Asset *asset;
-	int strategy;
 	int enabled;
 	int jobnum;
 // Amount of time elapsed in last render operation
@@ -110,11 +108,8 @@ public:
 class BatchRenderEDLPath : public BC_TextBox
 {
 public:
-	BatchRenderEDLPath(BatchRenderThread *thread, 
-		int x, 
-		int y, 
-		int w, 
-		char *text);
+	BatchRenderEDLPath(BatchRenderThread *thread,
+		int x, int y, int w, const char *text);
 
 	int handle_event();
 	BatchRenderThread *thread;
@@ -124,9 +119,7 @@ public:
 class BatchRenderNew : public BC_GenericButton
 {
 public:
-	BatchRenderNew(BatchRenderThread *thread, 
-		int x, 
-		int y);
+	BatchRenderNew(BatchRenderThread *thread, int x, int y);
 
 	int handle_event();
 	BatchRenderThread *thread;
@@ -136,9 +129,7 @@ public:
 class BatchRenderDelete : public BC_GenericButton
 {
 public:
-	BatchRenderDelete(BatchRenderThread *thread, 
-		int x, 
-		int y);
+	BatchRenderDelete(BatchRenderThread *thread, int x, int y);
 
 	int handle_event();
 	BatchRenderThread *thread;
@@ -147,11 +138,8 @@ public:
 class BatchRenderList : public BC_ListBox
 {
 public:
-	BatchRenderList(BatchRenderThread *thread, 
-		int x, 
-		int y,
-		int w,
-		int h,
+	BatchRenderList(BatchRenderThread *thread,
+		int x, int y, int w, int h,
 		ArrayList<BC_ListBoxItem*> *list_columns);
 
 	int handle_event();
@@ -159,6 +147,7 @@ public:
 	int column_resize_event();
 	int drag_start_event();
 	void drag_stop_event();
+
 	int dragging_item;
 	BatchRenderThread *thread;
 };
@@ -167,10 +156,10 @@ public:
 class BatchRenderStart : public BC_GenericButton
 {
 public:
-	BatchRenderStart(BatchRenderThread *thread, 
-		int x, 
-		int y);
+	BatchRenderStart(BatchRenderThread *thread, int x, int y);
+
 	int handle_event();
+
 	BatchRenderThread *thread;
 };
 
@@ -178,10 +167,10 @@ public:
 class BatchRenderStop : public BC_GenericButton
 {
 public:
-	BatchRenderStop(BatchRenderThread *thread, 
-		int x, 
-		int y);
+	BatchRenderStop(BatchRenderThread *thread, int x, int y);
+
 	int handle_event();
+
 	BatchRenderThread *thread;
 };
 
@@ -189,11 +178,11 @@ public:
 class BatchRenderCancel : public BC_GenericButton
 {
 public:
-	BatchRenderCancel(BatchRenderThread *thread, 
-		int x, 
-		int y);
+	BatchRenderCancel(BatchRenderThread *thread, int x, int y);
+
 	int handle_event();
 	int keypress_event();
+
 	BatchRenderThread *thread;
 };
 
@@ -201,14 +190,9 @@ public:
 class BatchFormat : public FormatTools
 {
 public:
-	BatchFormat(BatchRenderGUI *gui,
-			Asset *asset,
-			int &init_x,
-			int &init_y,
-			int support,
-			int checkbox,
-			int details,
-			int *strategy);
+	BatchFormat(BatchRenderGUI *gui, Asset *asset,
+		int &init_x, int &init_y,
+		int support, int checkbox, int details);
 
 	int handle_event();
 
@@ -220,10 +204,7 @@ class BatchRenderGUI : public BC_Window
 {
 public:
 	BatchRenderGUI(BatchRenderThread *thread,
-		int x,
-		int y,
-		int w,
-		int h);
+		int x, int y, int w, int h);
 	~BatchRenderGUI();
 
 	void resize_event(int w, int h);

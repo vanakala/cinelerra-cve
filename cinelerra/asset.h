@@ -171,6 +171,8 @@ public:
 // Write render defaults to profile
 	void save_render_profile();
 	void load_render_profile();
+// Fix strategy to conform with using renderfarm
+	void fix_strategy(int use_renderfarm);
 
 // Write/read rendering parameters to xml
 	void write_params(FileXML *file);
@@ -218,6 +220,11 @@ public:
 	int interlace_autofixoption;
 	int interlace_mode;
 	int interlace_fixmethod;
+
+// Encoding strategy
+	int strategy;
+	int range_type;
+	int load_mode;
 
 // File modification time
 	struct timespec file_mtime;

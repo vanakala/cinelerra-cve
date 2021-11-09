@@ -110,6 +110,10 @@ void Asset::init_values()
 
 	use_header = 1;
 
+	strategy = 0;
+	range_type = RANGE_PROJECT;
+	load_mode = LOADMODE_NEW_TRACKS;
+
 	index_bytes = 0;
 	id = EDL::next_id();
 
@@ -256,6 +260,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 	}
 	strcpy(renderprofile_path, asset->renderprofile_path);
 	tocfile = asset->tocfile;
+
+	strategy = asset->strategy;
+	range_type = asset->range_type;
+	load_mode = asset->load_mode;
 }
 
 Asset& Asset::operator=(Asset &asset)
@@ -271,8 +279,10 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 		return 1;
 
 	int result = (!strcmp(asset.path, path) &&
-		format == asset.format && nb_programs == asset.nb_programs
-		&& nb_streams == asset.nb_streams && program_id == asset.program_id);
+		format == asset.format && nb_programs == asset.nb_programs &&
+		nb_streams == asset.nb_streams && program_id == asset.program_id &&
+		strategy == asset.strategy && range_type == asset.range_type &&
+		load_mode == asset.load_mode);
 
 	if(result)
 	{
@@ -1405,6 +1415,9 @@ void Asset::save_render_profile()
 	FileXML file;
 	char path[BCTEXTLEN];
 
+	params.append_param("strategy", strategy);
+	params.append_param("loadmode", load_mode);
+	params.append_param("renderrange", range_type);
 	save_defaults(&params, ASSET_ALL);
 	save_render_options();
 
@@ -1444,9 +1457,21 @@ void Asset::load_render_profile()
 	{
 		dflts = new Paramlist();
 		dflts->load_list(&file);
+
+		strategy = dflts->get("strategy", strategy);
+		load_mode = dflts->get("loadmode", load_mode);
+		range_type = dflts->get("renderrange", range_type);
 		load_defaults(dflts, ASSET_ALL);
 		render_parameters = dflts;
 	}
+}
+
+void Asset::fix_strategy(int use_renderfarm)
+{
+	if(use_renderfarm)
+		strategy |= RENDER_FARM;
+	else
+		strategy &= ~RENDER_FARM;
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 
