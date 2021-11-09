@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bctitle.h"
@@ -98,8 +82,6 @@ void MenuEffectThread::get_derived_attributes(Asset *asset)
 
 	asset->load_defaults(defaults, def_prefix,
 		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
-	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
-	strategy = defaults->get("RENDER_EFFECT_STRATEGY", 0);
 
 	delete asset->render_parameters;
 	asset->render_parameters = 0;
@@ -111,8 +93,6 @@ void MenuEffectThread::get_derived_attributes(Asset *asset)
 		asset->load_defaults(params,
 			ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 		asset->render_parameters = params;
-		load_mode = params->get("loadmode", load_mode);
-		strategy = params->get("strategy", strategy);
 	}
 	// Fix asset for media type only
 	if(effect_type & SUPPORTS_AUDIO)
@@ -140,8 +120,6 @@ void MenuEffectThread::save_derived_attributes(Asset *asset)
 	BC_Hash *defaults = mwindow_global->defaults;
 
 	asset->save_defaults(&params, ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
-	params.append_param("loadmode", load_mode);
-	params.append_param("strategy", strategy);
 	if(asset->render_parameters)
 		params.remove_equiv(asset->render_parameters);
 	else
@@ -260,7 +238,6 @@ void MenuEffectThread::run()
 // get selection to render
 // Range
 	ptstime total_start, total_end;
-	int range_type;
 
 	total_start = master_edl->local_session->get_selectionstart();
 
@@ -268,12 +245,12 @@ void MenuEffectThread::run()
 	{
 		total_end = master_edl->total_length();
 		total_start = 0;
-		range_type = RANGE_PROJECT;
+		default_asset->range_type = RANGE_PROJECT;
 	}
 	else
 	{
 		total_end = master_edl->local_session->get_selectionend();
-		range_type = RANGE_SELECTION;
+		default_asset->range_type = RANGE_SELECTION;
 	}
 
 	if(!result &&  (total_end - total_start) <= EPSILON)
@@ -398,14 +375,11 @@ void MenuEffectThread::run()
 		render_preferences->copy_from(preferences_global);
 
 		if(default_asset->single_image)
-			range_type = RANGE_SINGLEFRAME;
+			default_asset->range_type = RANGE_SINGLEFRAME;
 
-		if(range_type == RANGE_SELECTION)
+		if(default_asset->range_type == RANGE_SELECTION)
 			render_edl->local_session->set_selection(total_start, total_end);
 
-		default_asset->strategy = strategy;
-		default_asset->range_type = range_type;
-		default_asset->load_mode = load_mode;
 		mwindow_global->render->run_menueffects(default_asset, render_edl);
 
 		delete render_edl->this_edlsession;
@@ -477,9 +451,9 @@ MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 	flags |= asset->stream_count(STRDSC_VIDEO) ? SUPPORTS_VIDEO : 0;
 	format_tools = new FormatTools(this, asset, x, y, flags,
 		0, SUPPORTS_VIDEO,
-		&menueffects->strategy);
+		&asset->strategy);
 
-	loadmode = new LoadMode(this, x, y, &menueffects->load_mode, 1);
+	loadmode = new LoadMode(this, x, y, &asset->load_mode, 1);
 
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));
