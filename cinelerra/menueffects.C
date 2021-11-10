@@ -73,15 +73,11 @@ void MenuEffectThread::get_derived_attributes(Asset *asset)
 	FileXML file;
 	const char *pfname;
 	char path[BCTEXTLEN];
-	BC_Hash *defaults = mwindow_global->defaults;
 
 	edlsession->configuration_path(RENDERCONFIG_DIR, path);
 	RenderProfile::chk_profile_dir(path);
 	asset->set_renderprofile(path, profile_name);
 	RenderProfile::chk_profile_dir(asset->renderprofile_path);
-
-	asset->load_defaults(defaults, def_prefix,
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 
 	delete asset->render_parameters;
 	asset->render_parameters = 0;

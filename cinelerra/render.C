@@ -720,7 +720,6 @@ void Render::load_defaults(Asset *asset)
 	*p++ = '/';
 	strcpy(p, string);
 
-	asset->load_defaults(mwindow_global->defaults, "RENDER_", ASSET_ALL);
 	asset->load_render_profile();
 }
 

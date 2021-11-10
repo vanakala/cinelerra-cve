@@ -111,10 +111,6 @@ public:
 // Number of streams with stream_type
 	int stream_count(int stream_type);
 
-// Load and save parameters for a render dialog
-// Used by render, record, menueffects, preferences
-	void load_defaults(BC_Hash *defaults, 
-		const char *prefix, int options);
 	void load_render_options();
 	void get_format_params(int options);
 	void set_format_params();
@@ -122,9 +118,6 @@ public:
 	void set_decoder_parameters();
 	void update_decoder_format_defaults();
 	void delete_decoder_parameters();
-	void save_defaults(BC_Hash *defaults, 
-		const char *prefix,
-		int options);
 	void load_defaults(Paramlist *list, int options);
 	void save_defaults(Paramlist *list, int options);
 	char *profile_config_path(const char *filename, char *outpath);
