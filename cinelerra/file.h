@@ -51,9 +51,6 @@ public:
 	int open_file(Asset *asset, int open_method, int stream,
 		const char *filepath = 0);
 
-// Get index from the file if one exists.  Returns 0 on success.
-	int get_index(const char *index_path);
-
 // start a thread for writing to avoid blocking during record
 	void start_audio_thread(int buffer_size, int ring_buffers);
 	void stop_audio_thread();

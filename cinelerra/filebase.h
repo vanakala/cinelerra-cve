@@ -31,7 +31,6 @@ public:
 	friend class FileList;
 	friend class FrameWriter;
 
-	virtual int get_index(const char *index_path) { return 1; };
 	virtual int open_file(int open_method, int streamix,
 		const char *filepath) { return 1; };
 	virtual void close_file() {};

@@ -364,16 +364,6 @@ void File::close_file(int ignore_thread)
 	reset_parameters();
 }
 
-
-int File::get_index(const char *index_path)
-{
-	if(file)
-	{
-		return file->get_index(index_path);
-	}
-	return 1;
-}
-
 void File::start_audio_thread(int buffer_size, int ring_buffers)
 {
 	if(!audio_thread)

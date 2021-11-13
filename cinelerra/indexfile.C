@@ -228,9 +228,6 @@ void IndexFile::release_buffer()
 	index_buffer = 0;
 }
 
-
-// Read data into buffers
-
 int IndexFile::create_index(Asset *asset, int stream, MainProgressBar *progress)
 {
 	int result = 0;
@@ -254,82 +251,74 @@ int IndexFile::create_index(Asset *asset, int stream, MainProgressBar *progress)
 			asset->path, stream);
 	}
 
-// Test for index in stream table of contents
-	if(!source.get_index(index_filename))
-	{
-		redraw_edits(1);
-	}
-	else
 // Build index from scratch
-	{
-		zoom = get_required_scale(&source);
+	zoom = get_required_scale(&source);
 // total length of input file
-		samplenum length_source = source.asset->stream_samples(stream);
+	samplenum length_source = source.asset->stream_samples(stream);
 
 // get amount to read at a time in floats
-		int buffersize = 65536;
+	int buffersize = 65536;
 
-		progress->update_title(_("Creating %s."), index_filename);
-		progress->update_length(length_source);
-		redraw_timer.update();
+	progress->update_title(_("Creating %s."), index_filename);
+	progress->update_length(length_source);
+	redraw_timer.update();
 
 // thread out index thread
-		IndexThread *index_thread = new IndexThread(this,
-			asset, stream, index_filename,
-			buffersize, length_source);
-		index_thread->start_build();
+	IndexThread *index_thread = new IndexThread(this,
+		asset, stream, index_filename,
+		buffersize, length_source);
+	index_thread->start_build();
 
 // current sample in source file
-		samplenum position = 0;
-		int fragment_size = buffersize;
-		int current_buffer = 0;
+	samplenum position = 0;
+	int fragment_size = buffersize;
+	int current_buffer = 0;
 
 // pass through file once
-		while(position < length_source && !result)
+	while(position < length_source && !result)
+	{
+		if(length_source - position < fragment_size && fragment_size == buffersize)
+			fragment_size = length_source - position;
+
+		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
+		int cancelled = progress->update(position);
+
+		if(cancelled || index_thread->interrupt_flag ||
+			interrupt_flag)
 		{
-			if(length_source - position < fragment_size && fragment_size == buffersize)
-				fragment_size = length_source - position;
-
-			index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
-			int cancelled = progress->update(position);
-
-			if(cancelled || index_thread->interrupt_flag ||
-				interrupt_flag)
-			{
-				result = 3;
-			}
-
-			int nb_channels =  asset->streams[stream].channels;
-
-			for(int channel = 0; !result && channel < nb_channels; channel++)
-			{
-				index_thread->frames_in[current_buffer][channel]->set_fill_request(position, fragment_size);
-// Read from source file
-				if(source.get_samples(index_thread->frames_in[current_buffer][channel]))
-					result = 1;
-			}
-
-// Release buffer to thread
-			if(!result)
-			{
-				index_thread->output_lock[current_buffer]->unlock();
-				current_buffer++;
-				if(current_buffer >= TOTAL_BUFFERS)
-					current_buffer = 0;
-				position += fragment_size;
-			}
-			else
-				index_thread->input_lock[current_buffer]->unlock();
+			result = 3;
 		}
 
-// end thread cleanly
-		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");
-		index_thread->last_buffer[current_buffer] = 1;
-		index_thread->output_lock[current_buffer]->unlock();
-		index_thread->stop_build();
+		int nb_channels =  asset->streams[stream].channels;
 
-		delete index_thread;
+		for(int channel = 0; !result && channel < nb_channels; channel++)
+		{
+			index_thread->frames_in[current_buffer][channel]->set_fill_request(position, fragment_size);
+// Read from source file
+			if(source.get_samples(index_thread->frames_in[current_buffer][channel]))
+				result = 1;
+		}
+
+// Release buffer to thread
+		if(!result)
+		{
+			index_thread->output_lock[current_buffer]->unlock();
+			current_buffer++;
+			if(current_buffer >= TOTAL_BUFFERS)
+				current_buffer = 0;
+			position += fragment_size;
+		}
+		else
+			index_thread->input_lock[current_buffer]->unlock();
 	}
+
+// end thread cleanly
+	index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");
+	index_thread->last_buffer[current_buffer] = 1;
+	index_thread->output_lock[current_buffer]->unlock();
+	index_thread->stop_build();
+
+	delete index_thread;
 
 	source.close_file();
 	open_index(asset, stream);
