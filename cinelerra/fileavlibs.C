@@ -427,11 +427,16 @@ int FileAVlibs::probe_input(Asset *asset)
 				avlibs_lock->unlock();
 				return 1;
 			}
-
 			asset->tocfile = new FileTOC(this, preferences_global->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
-			asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
-
+			if(asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1))
+			{
+				avformat_close_input(&context);
+				delete asset->tocfile;
+				asset->tocfile = 0;
+				avlibs_lock->unlock();
+				return -1;
+			}
 			for(int i = 0; i < asset->nb_streams; i++)
 			{
 				int fileix = asset->streams[i].stream_index;
