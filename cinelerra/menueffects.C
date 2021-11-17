@@ -290,6 +290,9 @@ void MenuEffectThread::run()
 				get_recordable_tracks(default_asset));
 
 			realtime = 0;
+
+			if(!result)
+				client->save_defaults();
 		}
 		plugin_server->close_plugin(client);
 

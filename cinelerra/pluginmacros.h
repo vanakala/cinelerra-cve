@@ -220,11 +220,7 @@ PluginClient* new_plugin(PluginServer *server) \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
-	if(defaults) \
-	{ \
-		save_defaults(); \
-		delete defaults; \
-	}
+	delete defaults;
 #endif // gui
 
 #define PLUGIN_CLASS_NEW_PICON \
