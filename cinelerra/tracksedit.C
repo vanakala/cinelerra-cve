@@ -316,7 +316,7 @@ ptstime Tracks::paste_duration(ptstime position, Asset *asset,
 				{
 					if(dest->master)
 						paste_end = position +
-							asset->stream_duration(stream);
+							asset->duration();
 					channel++;
 					if(channel > asset->streams[stream].channels)
 						channel = -1;
