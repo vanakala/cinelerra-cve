@@ -51,8 +51,6 @@ public:
 //             WUPD_INDEXES - causes redraw only certain audio resources with indexes
 	void draw_resources(int mode = 0,
 		Asset *index_asset = 0);
-	void draw_highlight_rectangle(int x, int y, int w, int h);
-	void draw_highlight_insertion(int x, int y, int w, int h);
 	void draw_highlighting();
 // User can either call draw or draw_overlays to copy a fresh 
 // canvas and just draw the overlays over it
@@ -318,6 +316,7 @@ private:
 		int center_pixel,
 		int zoom_track,
 		int color);
+	void draw_highlight_rectangle(int x, int y, int w, int h);
 
 // transforms automation value into current display coords
 // dependant on current automation display range for given kind of automation

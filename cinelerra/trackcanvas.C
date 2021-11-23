@@ -511,137 +511,31 @@ void TrackCanvas::drag_stop()
 }
 
 ptstime TrackCanvas::get_drop_position(int *is_insertion,
-	Edit *moved_edit, ptstime moved_edit_length)
+	Edit *moved_edit, ptstime moved_length)
 {
-	*is_insertion = 0;
+	Track *track = mainsession->track_highlighted;
 	int cursor_x, cursor_y;
+	ptstime position;
+
+	*is_insertion = 0;
 
 // get the canvas/track position
 	get_relative_cursor_pos(&cursor_x, &cursor_y);
-	ptstime pos = cursor_x * master_edl->local_session->zoom_time +
+	position = cursor_x * master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
 
-	Track *track = mainsession->track_highlighted;
-
-// cursor relative position - depending on where we started the drag inside the edit
-	ptstime cursor_position;
 	if(moved_edit)   // relative cursor position depends upon grab point
-		cursor_position = pos - (mainsession->drag_position - moved_edit->get_pts());
-	else             // for clips and assets acts as they were grabbed in the middle
-		cursor_position = pos - moved_edit_length / 2;
-
-// we use real cursor position for affinity calculations
-	ptstime real_cursor_position = pos;
-	if(cursor_position < 0)
-		cursor_position = 0;
-	if(real_cursor_position < 0)
-		real_cursor_position = 0;
-
-	ptstime position = -1;
-	ptstime span_start = 0;
-	ptstime span_length = 0;
-	int span_asset = 0;
-	int last_ignore = 0; // used to make sure we can ignore the last edit if that is what we are dragging
-
-	if(!track || !track->edits->last)
-	{
-		// No edits -> no problems!
-		position = cursor_position;
-	}
+		position -= mainsession->drag_position - moved_edit->get_pts();
 	else
-	{
-		for(Edit *edit = track->edits->first; edit; edit = edit->next)
-		{
-			if(edit && ((moved_edit && edit == moved_edit &&
-				edit->previous && !edit->previous->asset) ||
-				(moved_edit && edit->previous == moved_edit &&
-				!edit->asset)))
-			{
-// our fake edit spans over the edit we are moving
-				span_length += edit->length();
-				last_ignore = 1;
-			}
-			else
-			{
-				int edit_x, edit_y, edit_w, edit_h;
+		position -= moved_length / 2;
 
-				edit_dimensions(track, span_start, span_start + span_length,
-					edit_x, edit_y, edit_w, edit_h);
-
-				if(abs(edit_x - cursor_x) < HANDLE_W)
-				{
-// cursor is close to the beginning of an edit -> insertion
-					*is_insertion = 1;
-					position = span_start;
-				}
-				else if(abs(edit_x + edit_w - cursor_x) < HANDLE_W)
-				{
-// cursor is close to the end of an edit -> insertion
-					*is_insertion = 1;
-					position = span_start + span_length;
-				}
-				else if(!span_asset && span_start <= cursor_position &&
-					span_start + span_length >=
-					cursor_position + moved_edit_length)
-				{
-// we have enough empty space to position the edit where user wants 
-					position = cursor_position;
-				}
-				else if(!span_asset & real_cursor_position >= span_start &&
-					real_cursor_position < span_start + span_length &&
-					span_length >= moved_edit_length)
-				{
-// we are inside an empty edit, but cannot push the edit as far as user wants, so 'resist moving it further'
-					if(fabs(real_cursor_position - span_start) <
-							fabs(real_cursor_position -
-							span_start - span_length))
-						position = span_start;
-					else
-						position = span_start + span_length -
-							moved_edit_length;
-				}
-				else if(cursor_x > edit_x && cursor_x <=
-					edit_x + edit_w / 2)
-				{
-// we are inside an nonempty edit, - snap to left
-					*is_insertion = 1;
-					position = span_start;
-				}
-				else if(cursor_x > edit_x + edit_w / 2 &&
-					cursor_x <= edit_x + edit_w)
-				{
-// we are inside an nonempty edit, - snap to right
-					*is_insertion = 1;
-					position = span_start + span_length;
-				}
-
-				if(position != -1)
-					break;
-
-				if(edit)
-				{
-					span_length = edit->length();
-					span_start = edit->get_pts();
-					last_ignore = 0;
-					if(!edit->asset ||
-						(!moved_edit || moved_edit == edit))
-					{
-// empty edit, missing moved edit or not current
-						if(moved_edit && moved_edit == edit)
-							last_ignore = 1;
-						span_asset = 0;
-					}
-					else
-						span_asset = 1;
-				}
-			}
-		}
-	}
-
-	if(PTSEQU(real_cursor_position, 0))
-	{
+	if(position < 0)
 		position = 0;
-		*is_insertion = 1;
+
+	if(track && track->edits->last)
+	{
+		if(position < track->edits->last->get_pts())
+			*is_insertion = 1;
 	}
 	return position;
 }
@@ -931,23 +825,19 @@ void TrackCanvas::draw_paste_destination()
 // Get source width in pixels
 		if((w = round(paste_length / master_edl->local_session->zoom_time)) > 0)
 		{
+// Get the x coordinate
+			x = round((position - master_edl->local_session->view_start_pts) /
+				master_edl->local_session->zoom_time);
 // Get destination track
 			for(Track *dest = mainsession->track_highlighted; dest;
 				dest = dest->next)
 			{
 				if(dest->record)
 				{
-// Get the x coordinate
-					x = round((position - master_edl->local_session->view_start_pts) /
-						master_edl->local_session->zoom_time);
-
 					int y = dest->y_pixel;
 					int h = dest->vertical_span(theme_global);
 
-					if(insertion)
-						draw_highlight_insertion(x, y, w, h);
-					else
-						draw_highlight_rectangle(x, y, w, h);
+					draw_highlight_rectangle(x, y, w, h);
 				}
 			}
 		}
@@ -979,10 +869,6 @@ int TrackCanvas::resource_h()
 
 void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 {
-// if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
-// just draw arrows, so user has indication that something is there
-// FIXME: get better colors
-
 	if(x + w <= 0)
 	{
 		draw_triangle_left(0, y + h / 6, h * 2 / 3, h * 2 / 3,
@@ -996,52 +882,9 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 		return;
 	}
 
-// If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
+// If we grab when zoomed in and zoom out while dragging,
+//  when edit gets really narrow strange things start happening
 	if(w >= 0 && w < 3)
-	{
-		x -= w / 2;
-		w = 3;
-	}
-	if(x < -10)
-	{
-		w += x - -10;
-		x = -10;
-	}
-	if(y < -10)
-	{
-		h += y - -10;
-		y = -10;
-	}
-	w = MIN(w, get_w() + 20);
-	h = MIN(h, get_h() + 20);
-	set_color(WHITE);
-	set_inverse();
-	draw_rectangle(x, y, w, h);
-	draw_rectangle(x + 1, y + 1, w - 2, h - 2);
-	set_opaque();
-}
-
-void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
-{
-// if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
-// just draw arrows, so user has indication that something is there
-// FIXME: get better colors
-
-	int h1 = h / 8;
-	int h2 = h / 4;
-
-	set_inverse();
-
-	draw_triangle_right(x - h2, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-	draw_triangle_right(x - h2, y + h1 * 5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-
-	draw_triangle_left(x, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-	draw_triangle_left(x, y + h1 * 5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
-
-// draw the box centred around x
-	x -= w / 2;
-// If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
-	if (w >= 0 && w < 3)
 	{
 		x -= w / 2;
 		w = 3;
