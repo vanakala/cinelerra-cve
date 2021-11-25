@@ -145,10 +145,13 @@ void TrackCanvas::drag_motion()
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
 		if(drag_popup)
-		{
 			drag_popup->cursor_motion_event();
-		}
 		return;
+
+	case DRAG_EDIT:
+		if(drag_popup)
+			drag_popup->cursor_motion_event();
+		break;
 	}
 
 	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
