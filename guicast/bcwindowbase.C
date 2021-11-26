@@ -2366,8 +2366,8 @@ void BC_WindowBase::show_window(int flush)
 		XMapWindow(top_level->display, win);
 		if(flush)
 			XFlush(top_level->display);
-		hidden = 0;
 	}
+	hidden = 0;
 	top_level->unlock_window();
 }
 
@@ -2389,8 +2389,8 @@ void BC_WindowBase::hide_window(int flush)
 		XUnmapWindow(top_level->display, win);
 		if(flush)
 			XFlush(top_level->display);
-		hidden = 1;
 	}
+	hidden = 1;
 	top_level->unlock_window();
 }
 
@@ -2622,7 +2622,7 @@ int BC_WindowBase::get_video_on()
 
 int BC_WindowBase::get_hidden()
 {
-	return top_level->hidden;
+	return hidden || top_level->hidden;
 }
 
 int BC_WindowBase::cursor_inside()
