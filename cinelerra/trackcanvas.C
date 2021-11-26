@@ -147,11 +147,6 @@ void TrackCanvas::drag_motion()
 		if(drag_popup)
 			drag_popup->cursor_motion_event();
 		return;
-
-	case DRAG_EDIT:
-		if(drag_popup)
-			drag_popup->cursor_motion_event();
-		break;
 	}
 
 	if(get_cursor_over_window(&cursor_x, &cursor_y) &&
@@ -192,8 +187,6 @@ void TrackCanvas::drag_motion()
 			}
 		}
 	}
-	else
-		return;
 
 	if(!over_track)                 // check for pastes from patchbay
 		over_track = gui->patchbay->is_over_track();
@@ -211,9 +204,7 @@ void TrackCanvas::drag_motion()
 	}
 
 	if(mainsession->current_operation == DRAG_ASSET ||
-			mainsession->current_operation == DRAG_EDIT ||
-			mainsession->current_operation == DRAG_AEFFECT_COPY ||
-			mainsession->current_operation == DRAG_VEFFECT_COPY)
+			mainsession->current_operation == DRAG_EDIT)
 	{
 		redraw = 1;
 	}
@@ -225,6 +216,21 @@ void TrackCanvas::drag_motion()
 		if(drag_handle_pixel < 0)
 			gui->cursor->show();
 		drag_handle_pixel = -1;
+
+		if(drag_popup)
+		{
+			if(over_track)
+			{
+				if(drag_popup->get_hidden())
+					drag_popup->show_window();
+				drag_popup->cursor_motion_event();
+			}
+			else
+			{
+				if(!drag_popup->get_hidden())
+					drag_popup->hide_window();
+			}
+		}
 		flash();
 	}
 }
