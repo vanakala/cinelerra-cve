@@ -226,8 +226,14 @@ int FileAVlibs::probe_input(Asset *asset)
 		return 0;
 
 	avlibs_lock->lock("FileAVlibs::probe_input");
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 	avcodec_register_all();
+#endif
+
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	av_register_all();
+#endif
 
 	AVInputFormat *infmt = 0;
 	AVDictionary *pcm_opts = 0;
@@ -338,7 +344,11 @@ int FileAVlibs::probe_input(Asset *asset)
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				trestfr = convert_framerate(decoder_ctx->framerate, testfr);
 #endif
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 				testfr = convert_framerate(av_stream_get_r_frame_rate(stream), testfr);
+#else
+				testfr = convert_framerate(stream->r_frame_rate, testfr);
+#endif
 				asset->streams[asset->nb_streams].frame_rate = testfr;
 				asset->streams[asset->nb_streams].length =
 					stream->duration * av_q2d(stream->time_base) * testfr;
@@ -561,9 +571,12 @@ int FileAVlibs::supports(int format, int decoding)
 			return 0;
 
 		avlibs_lock->lock("FileAVlibs::supports");
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 		avcodec_register_all();
+#endif
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 		av_register_all();
-
+#endif
 		if(!(oformat = av_guess_format(enc, NULL, NULL)))
 		{
 			avlibs_lock->unlock();
@@ -592,9 +605,12 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 		return 1;
 
 	avlibs_lock->lock("FileAVlibs::open_file");
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 	avcodec_register_all();
+#endif
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	av_register_all();
-
+#endif
 	reading = open_mode & FILE_OPEN_READ;
 	writing = open_mode & FILE_OPEN_WRITE;
 	audio_pos = 0;
@@ -1068,10 +1084,18 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 		else
 		if(!(fmt->flags & AVFMT_NOFILE))
 		{
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 			if((rv = avio_open(&context->pb, context->filename, AVIO_FLAG_WRITE)) < 0)
+#else
+			if((rv = avio_open(&context->pb, context->url, AVIO_FLAG_WRITE)) < 0)
+#endif
 			{
 				liberror(rv, _("Could not open output file '%s'"),
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 					context->filename);
+#else
+					context->url);
+#endif
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -1434,8 +1458,13 @@ int FileAVlibs::read_frame(VFrame *frame)
 			if(!res)
 			{
 				got_it = 1;
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 				video_pos = av_frame_get_best_effort_timestamp(avvframe) +
 					av_frame_get_pkt_duration(avvframe);
+#else
+				video_pos = avvframe->best_effort_timestamp +
+					avvframe->pkt_duration;
+#endif
 				if(video_pos > rqpos)
 					break;
 			}
@@ -1464,9 +1493,19 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 		convert_cmodel(avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) *
+#else
+		frame->set_source_pts(avvframe->best_effort_timestamp *
+#endif
 			av_q2d(stream->time_base) - asset->base_pts());
-		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
+		frame->set_duration(
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
+			av_frame_get_pkt_duration(avvframe) *
+#else
+			avvframe->pkt_duration *
+#endif
+			av_q2d(stream->time_base));
 		frame->set_frame_number(round(frame->get_source_pts() * av_q2d(stream->avg_frame_rate)));
 		frame->clear_status();
 		if(pix_desc->flags & AV_PIX_FMT_FLAG_ALPHA)
@@ -1676,9 +1715,13 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 				if(got_it)
 				{
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 					audio_pos = av_frame_get_best_effort_timestamp(avaframe) +
 						av_frame_get_pkt_duration(avaframe);
-
+#else
+					audio_pos = avaframe->best_effort_timestamp +
+						avaframe->pkt_duration;
+#endif
 					if(audio_pos > rqpos)
 					{
 						int inpos = round((audio_pos - rqpos) *
@@ -1764,9 +1807,13 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 			if(got_it)
 			{
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 				audio_pos = av_frame_get_best_effort_timestamp(avaframe) +
 					av_frame_get_pkt_duration(avaframe);
-
+#else
+				audio_pos = avaframe->best_effort_timestamp +
+					avaframe->pkt_duration;
+#endif
 				if((res = fill_buffer(avaframe)) > 0)
 				{
 					if(buffer_pos >= length)
@@ -1813,8 +1860,13 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 	inpos = insamples * bps;
 
 	if(!planar)
+	{
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 		inpos *= av_frame_get_channels(avaframe);
-
+#else
+		inpos *= avaframe->channels;
+#endif
+	}
 	for(int j = 0; j < AV_NUM_DATA_POINTERS; j++)
 	{
 		if(!avaframe->data[j])
@@ -2682,8 +2734,12 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	int stream;
 
 	FileAVlibs::avlibs_lock->lock("FileAVlibs::get_parameters");
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 	avcodec_register_all();
+#endif
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	av_register_all();
+#endif
 	FileAVlibs::avlibs_lock->unlock();
 	rs = 1;
 	if(codecs = scan_codecs(output_format(asset->format), asset, options))
@@ -2849,8 +2905,12 @@ void FileAVlibs::load_render_options(Asset *asset)
 	restore_codec_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX]);
 
 	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 	avcodec_register_all();
+#endif
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	av_register_all();
+#endif
 	FileAVlibs::avlibs_lock->unlock();
 
 	if(oformat = av_guess_format(name, 0, 0))
@@ -3841,7 +3901,11 @@ void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
 		ctx->av_class, ctx->iformat, ctx->oformat, ctx->priv_data);
 	printf("%*siocontext %p ctx_flags %#x nb_streams %u streams %p\n", indent, "",
 		ctx->pb, ctx->ctx_flags, ctx->nb_streams, ctx->streams);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	printf("%*sfilename '%s'\n", indent, "", ctx->filename);
+#else
+	printf("%*surl '%s'\n", indent, "", ctx->url);
+#endif
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,25,100)
 	printf("%*sstart_time %s(%.2f) duration %s(%.2f), bit_rate %d\n", indent, "",
 #else
@@ -3990,8 +4054,13 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 	printf("%*spts_wrap_reference %s pts_wrap_behavior %d update_initial_durations_done %d\n", indent, "",
 		dump_ts(stm->pts_wrap_reference), stm->pts_wrap_behavior,
 		stm->update_initial_durations_done);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	printf("%*sinject_global_side_data %d recommended_encoder_configuration %p\n", indent, "",
 		stm->inject_global_side_data, stm->recommended_encoder_configuration);
+#else
+	printf("%*sinject_global_side_data %d\n", indent, "",
+		stm->inject_global_side_data);
+#endif
 	printf("%*sdisplay_aspect_ratio %s\n", indent, "",
 		dump_AVRational(&stm->display_aspect_ratio));
 }
@@ -4189,8 +4258,13 @@ void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 	printf("%*spkt_pos %s pkt_duration %s metadata %p decode_error_flags %d\n", indent, "",
 		dump_ts(avf->pkt_pos, bf1), dump_ts(avf->pkt_duration, bf2),
 		avf->metadata, avf->decode_error_flags);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 	printf("%*schannels %d pkt_size %d qp_table_buf %p\n", indent, "",
 		avf->channels, avf->pkt_size, avf->qp_table_buf);
+#else
+	printf("%*schannels %d pkt_size %d\n", indent, "",
+		avf->channels, avf->pkt_size);
+#endif
 }
 
 void FileAVlibs::dump_AVPacket(AVPacket *pkt, int indent)
