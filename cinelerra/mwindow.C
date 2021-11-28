@@ -511,11 +511,14 @@ void MWindow::restart_brender()
 
 void MWindow::reset_brender()
 {
-	brender_lock->lock("MWindow::reset_brender");
-	brender->allocate_map(0, 0, mainsession->brender_end);
-	cwindow->playback_engine->reset_brender();
-	cwindow->stop_playback();
-	brender_lock->unlock();
+	if(brender)
+	{
+		brender_lock->lock("MWindow::reset_brender");
+		brender->allocate_map(0, 0, mainsession->brender_end);
+		cwindow->playback_engine->reset_brender();
+		cwindow->stop_playback();
+		brender_lock->unlock();
+	}
 }
 
 void MWindow::stop_brender()
