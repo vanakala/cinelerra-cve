@@ -1061,6 +1061,16 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 			if((rv = avcodec_parameters_from_context(stream->codecpar, audio_ctx)) < 0)
 				liberror(rv, _("Failed to copy parameters from audio context"));
 #endif
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(55,78,100)
+			avaframe->nb_samples = audio_ctx->frame_size;
+
+			if((rv = av_frame_get_buffer(avaframe, 0)) < 0)
+			{
+				liberror(rv, _("Failed to get audio encoding buffer"));
+				avlibs_lock->unlock();
+				return 1;
+			}
+#endif
 		}
 
 		if(video_index < 0 && audio_index < 0)
@@ -1140,13 +1150,19 @@ void FileAVlibs::close_file()
 		{
 			if(avaframe && headers_written)
 			{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				AVPacket pkt;
+#else
+				AVPacket *pkt = av_packet_alloc();
+#endif
 				int got_output, chan;
 				AVCodecContext *audio_ctx = codec_contexts[audio_index];
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				av_init_packet(&pkt);
 				pkt.data = 0;
 				pkt.size = 0;
+#endif
 				// Last resampled samples
 				if(resample_fill)
 				{
@@ -1167,6 +1183,7 @@ void FileAVlibs::close_file()
 					avcodec_send_frame(audio_ctx, avaframe);
 				// Send eof to encoder
 				avcodec_send_frame(audio_ctx, NULL);
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
 				{
 					pkt.stream_index = audio_index;
@@ -1179,6 +1196,20 @@ void FileAVlibs::close_file()
 					}
 					av_packet_unref(&pkt);
 				}
+#else
+				while((rv = avcodec_receive_packet(audio_ctx, pkt)) >= 0)
+				{
+					pkt->stream_index = audio_index;
+					av_packet_rescale_ts(pkt, audio_ctx->time_base,
+						context->streams[audio_index]->time_base);
+					if((rv = av_interleaved_write_frame(context, pkt)) < 0)
+					{
+						liberror(rv, _("Failed to write last audio packet"));
+						break;
+					}
+				}
+				av_packet_free(&pkt);
+#endif
 				if(rv < 0 && rv != AVERROR_EOF)
 					liberror(rv, _("Failed to encode last audio packet"));
 #else
@@ -1217,17 +1248,23 @@ void FileAVlibs::close_file()
 #endif
 				)
 			{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				AVPacket pkt;
+#else
+				AVPacket *pkt = av_packet_alloc();
+#endif
 				int got_output;
 				AVCodecContext *video_ctx = codec_contexts[video_index];
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				av_init_packet(&pkt);
 				pkt.data = 0;
 				pkt.size = 0;
-
+#endif
 				// Get out samples kept in encoder
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
 				avcodec_send_frame(video_ctx, NULL);
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 				while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
 				{
 					pkt.stream_index = video_index;
@@ -1243,6 +1280,23 @@ void FileAVlibs::close_file()
 					}
 				}
 				av_packet_unref(&pkt);
+#else
+				while((rv = avcodec_receive_packet(video_ctx, pkt)) >= 0)
+				{
+					pkt->stream_index = video_index;
+					av_packet_rescale_ts(pkt,
+						video_ctx->time_base,
+						context->streams[video_index]->time_base);
+
+					if((rv = av_interleaved_write_frame(context, pkt)) < 0)
+					{
+						liberror(rv, _("Failed to write last video packet"));
+						rv = 0;
+						break;
+					}
+				}
+				av_packet_free(&pkt);
+#endif
 				if(rv < 0 && rv != AVERROR_EOF)
 					liberror(rv, _("Failed to encode last video packet"));
 #else
@@ -2174,8 +2228,12 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		else
 			avvframe->interlaced_frame = 0;
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
+#else
+		AVPacket *pkt = av_packet_alloc();
+#endif
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		if(context->oformat->flags & AVFMT_RAWPICTURE &&
@@ -2223,6 +2281,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			avlibs_lock->unlock();
 			return 1;
 		}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 		while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
 		{
 			pkt.stream_index = stream->index;
@@ -2236,7 +2295,21 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			}
 		}
 		av_packet_unref(&pkt);
+#else
+		while((rv = avcodec_receive_packet(video_ctx, pkt)) >= 0)
+		{
+			pkt->stream_index = stream->index;
+			av_packet_rescale_ts(pkt, video_ctx->time_base, stream->time_base);
 
+			if((rv = av_interleaved_write_frame(context, pkt)) < 0)
+			{
+				liberror(rv, _("Failed to write video packet"));
+				avlibs_lock->unlock();
+				return 1;
+			}
+		}
+		av_packet_free(&pkt);
+#endif
 		if(rv != AVERROR(EAGAIN))
 		{
 			liberror(rv, _("Failed to encode video packet"));
@@ -2270,7 +2343,9 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	avlibs_lock->lock("FileAVlibs::write_aframes");
 
 	if(write_pts_base < 0)
+	{
 		write_pts_base = frames[0]->get_pts();
+	}
 
 	stream = context->streams[audio_index];
 	audio_ctx = codec_contexts[audio_index];
@@ -2329,7 +2404,11 @@ int FileAVlibs::write_aframes(AFrame **frames)
 int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 		ptstime pts)
 {
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 	AVPacket pkt;
+#else
+	AVPacket *pkt = av_packet_alloc();
+#endif
 	AVStream *stream;
 	int chan, rv, samples_written;
 	int frame_size = audio_ctx->frame_size;
@@ -2345,9 +2424,12 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 	frames = resampled_length / frame_size;
 
 	stream = context->streams[audio_index];
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 	av_init_packet(&pkt);
 	pkt.data = NULL;
 	pkt.size = 0;
+#endif
 	samples_written = 0;
 
 	if(audio_pos == 0)
@@ -2392,12 +2474,19 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 			}
 		}
 #else
+		if(rv = av_frame_make_writable(avaframe))
+		{
+			liberror(rv, _("Could not make audio frame writable"));
+			return 1;
+		}
+
 		if(rv = avcodec_send_frame(audio_ctx, avaframe))
 		{
 			liberror(rv, _("Failed to send audio frame"));
 			return 1;
 		}
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 		while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
 		{
 			pkt.stream_index = audio_index;
@@ -2410,7 +2499,20 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 				return 1;
 			}
 		}
+#else
+		while((rv = avcodec_receive_packet(audio_ctx, pkt)) >= 0)
+		{
+			pkt->stream_index = audio_index;
+			av_packet_rescale_ts(pkt, audio_ctx->time_base,
+				stream->time_base);
 
+			if((rv = av_interleaved_write_frame(context, pkt)) < 0)
+			{
+				liberror(rv, _("Failed to write audio packet"));
+				return 1;
+			}
+		}
+#endif
 		if(rv != AVERROR(EAGAIN))
 		{
 			liberror(rv, _("Failed to encode audio packet"));
@@ -2425,7 +2527,11 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 	av_free_packet(&pkt);
 #else
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 	av_packet_unref(&pkt);
+#else
+	av_packet_free(&pkt);
+#endif
 #endif
 	if(samples_written < resampled_length + frame_size)
 	{
@@ -4030,39 +4136,18 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 		stm->side_data, stm->nb_side_data);
 	printf("%*sattached_pic:\n", indent, "");
 	dump_AVPacket(&stm->attached_pic, indent + 2);
-	printf("%*sevent_flags %d info %p first_dts %s cur_dts %s\n", indent, "",
-		stm->event_flags, stm->info, dump_ts(stm->first_dts, bf1),
+	printf("%*sevent_flags %d first_dts %s cur_dts %s\n", indent, "",
+		stm->event_flags, dump_ts(stm->first_dts, bf1),
 		dump_ts(stm->cur_dts, bf2));
 	printf("%*slast_IP_pts %s last_IP_duration %d probe_packets %d codec_info_nb_frames %d\n", indent, "",
 		dump_ts(stm->last_IP_pts), stm->last_IP_duration, stm->probe_packets,
 		stm->codec_info_nb_frames);
-	printf("%*sneed_parsing %d last_in_packet_buffer %p\n", indent, "",
-		stm->need_parsing, stm->last_in_packet_buffer);
+	printf("%*sneed_parsing %d\n", indent, "", stm->need_parsing);
 	printf("%*sindex_entries %p nb_index_entries %d\n", indent, "",
 		stm->index_entries, stm->nb_index_entries);
 	printf("%*sindex_entries_allocated_size %u r_frame_rate %s stream_identifier %d\n", indent, "",
 		stm->index_entries_allocated_size, dump_AVRational(&stm->r_frame_rate),
 		stm->stream_identifier);
-	printf("%*sinterleaver_chunk_size %s interleaver_chunk_duration %s request_probe %d\n", indent, "",
-		dump_ts(stm->interleaver_chunk_size, bf1),
-		dump_ts(stm->interleaver_chunk_duration, bf2), stm->request_probe);
-	printf("%*sskip_to_keyframe %d skip_samples %d start_skip_samples %" PRId64 " first_discard_sample %" PRId64 "\n", indent, "",
-		stm->skip_to_keyframe, stm->skip_samples, stm->start_skip_samples,
-		stm->first_discard_sample);
-	printf("%*slast_discard_sample %" PRId64 " nb_decoded_frames %d mux_ts_offset %" PRId64 "\n", indent, "",
-		stm->last_discard_sample, stm->nb_decoded_frames, stm->mux_ts_offset);
-	printf("%*spts_wrap_reference %s pts_wrap_behavior %d update_initial_durations_done %d\n", indent, "",
-		dump_ts(stm->pts_wrap_reference), stm->pts_wrap_behavior,
-		stm->update_initial_durations_done);
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
-	printf("%*sinject_global_side_data %d recommended_encoder_configuration %p\n", indent, "",
-		stm->inject_global_side_data, stm->recommended_encoder_configuration);
-#else
-	printf("%*sinject_global_side_data %d\n", indent, "",
-		stm->inject_global_side_data);
-#endif
-	printf("%*sdisplay_aspect_ratio %s\n", indent, "",
-		dump_AVRational(&stm->display_aspect_ratio));
 }
 
 const char *FileAVlibs::dump_fourcc(unsigned int tag)
@@ -4163,9 +4248,8 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->hwaccel_context);
 	printf("%*sdct_algo %d idct_algo %d bits_per_coded_sample %d bits_per_raw_sample %d\n", indent, "",
 		ctx->dct_algo, ctx->idct_algo, ctx->bits_per_coded_sample, ctx->bits_per_raw_sample);
-	printf("%*sthread_count %d thread_type %d active_thread_type %d thread_safe_callbacks %d\n", indent, "",
-		ctx->thread_count, ctx->thread_type, ctx->active_thread_type,
-		ctx->thread_safe_callbacks);
+	printf("%*sthread_count %d thread_type %d active_thread_type %d\n", indent, "",
+		ctx->thread_count, ctx->thread_type, ctx->active_thread_type);
 	printf("%*sexecute %p execute2 %p nsse_weight %d profile %d level %d\n", indent, "",
 		ctx->execute, ctx->execute2, ctx->nsse_weight, ctx->profile, ctx->level);
 	printf("%*sskip_loop_filter %d skip_idct %d skip_frame %d\n", indent, "",
