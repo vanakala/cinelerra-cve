@@ -13,6 +13,7 @@
 #include "language.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "preferences.h"
@@ -141,8 +142,10 @@ void MainIndexes::run()
 							progress = mwindow_global->mainprogress->start_progress(
 								_("Building Indexes..."), (int64_t)1);
 
-						current_asset->indexfiles[stream].create_index(current_asset,
-							stream, progress);
+						if(current_asset->indexfiles[stream].create_index(current_asset,
+								stream, progress))
+							errormsg(_("Failed to create index for %s"), current_asset->path);
+
 						if(progress->is_cancelled())
 							interrupt_flag = 1;
 					}

@@ -252,7 +252,8 @@ int IndexFile::create_index(Asset *asset, int stream, MainProgressBar *progress)
 	}
 
 // Build index from scratch
-	zoom = get_required_scale(&source);
+	if(!(zoom = get_required_scale(&source)))
+		return 1;
 // total length of input file
 	samplenum length_source = source.asset->stream_samples(stream);
 
