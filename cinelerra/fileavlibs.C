@@ -2563,7 +2563,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 
 	if(asset->single_image)
 	{
-		if((res = avformat_seek_file(context, stream_index,
+		if((res = avformat_seek_file(context, -1,
 			INT64_MIN, (int64_t)0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
 		{
 			liberror(res, _("Media seeking failed"));
@@ -2595,7 +2595,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 		av_packet_unref(pkt);
 		avcodec_flush_buffers(codec_contexts[stream_index]);
 
-		if((res = avformat_seek_file(context, stream_index,
+		if((res = avformat_seek_file(context, -1,
 			INT64_MIN, itm->offset, itm->offset, fl)) < 0)
 		{
 			liberror(res, _("Media seeking failed"));
@@ -2634,10 +2634,14 @@ stream_params *FileAVlibs::get_track_data(int trx)
 {
 	AVStream *stream;
 	AVCodecContext *decoder_context;
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 	AVPacket pkt;
+#else
+	AVPacket *pktp = av_packet_alloc();
+#endif
 	int trid;
 	int posbytes;
-	int interrupt;
+	int interrupt = 0;
 	int err;
 	framenum nb_frames;
 	int64_t maxpts = 0;
@@ -2679,28 +2683,30 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	track_data.min_index = INT64_MAX;
 	track_data.min_offset = INT64_MAX;
 	track_data.index_correction = 0;
-	avformat_seek_file(context, trid, INT64_MIN, INT64_MIN, 0,
+	avformat_seek_file(context, -1, INT64_MIN, INT64_MIN, 0,
 		AVSEEK_FLAG_ANY);
-
 	avformat_flush(context);
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 	pkt.buf = 0;
 	pkt.size = 0;
+	AVPacket *pktp = &pkt;
+#endif
 	nb_frames = 0;
 
 	kf.kf = 0;
-	while((err = av_read_frame(context, &pkt)) == 0)
+	while((err = av_read_frame(context, pktp)) == 0)
 	{
-		if(pkt.stream_index == trid)
+		if(pktp->stream_index == trid)
 		{
 			// New version
-			if(pkt.flags & AV_PKT_FLAG_KEY)
+			if(pktp->flags & AV_PKT_FLAG_KEY)
 			{
 				kf.pts = AV_NOPTS_VALUE;
-				if(pkt.pts != AV_NOPTS_VALUE)
-					kf.pts = pkt.pts;
-				else if(pkt.dts != AV_NOPTS_VALUE)
-					kf.pts = pkt.dts;
+				if(pktp->pts != AV_NOPTS_VALUE)
+					kf.pts = pktp->pts;
+				else if(pktp->dts != AV_NOPTS_VALUE)
+					kf.pts = pktp->dts;
 				if(kf.pts != AV_NOPTS_VALUE)
 				{
 					kf.kf = 1;
@@ -2712,53 +2718,53 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			{
 				if(posbytes)
 				{
-					if(pkt.pos != 1)
-						kf.offs = pkt.pos;
+					if(pktp->pos != 1)
+						kf.offs = pktp->pos;
 				}
-				else if(pkt.dts != AV_NOPTS_VALUE)
+				else if(pktp->dts != AV_NOPTS_VALUE)
 				{
-					kf.offs = pkt.dts;
+					kf.offs = pktp->dts;
 				}
 			}
-			if(pkt.pts != AV_NOPTS_VALUE && pkt.pts > maxpts)
+			if(pktp->pts != AV_NOPTS_VALUE && pktp->pts > maxpts)
 			{
-				maxpts = pkt.pts;
-				maxpts += pkt.duration;
+				maxpts = pktp->pts;
+				maxpts += pktp->duration;
 			}
 			if(posbytes)
 			{
-				if(pkt.pos != -1 && pkt.pos > maxoffs)
+				if(pktp->pos != -1 && pktp->pos > maxoffs)
 				{
-					maxoffs = pkt.pos;
-					maxoffs += pkt.size;
+					maxoffs = pktp->pos;
+					maxoffs += pktp->size;
 				}
 			}
-			else if(pkt.dts != AV_NOPTS_VALUE && pkt.dts > maxoffs)
+			else if(pktp->dts != AV_NOPTS_VALUE && pktp->dts > maxoffs)
 			{
-				maxoffs = pkt.dts;
-				maxoffs += pkt.duration;
+				maxoffs = pktp->dts;
+				maxoffs += pktp->duration;
 			}
 
-			maxpts += pkt.duration;
+			maxpts += pktp->duration;
 
 			switch(decoder_context->codec_type)
 			{
 			case AVMEDIA_TYPE_VIDEO:
-				if(pkt.pts != AV_NOPTS_VALUE)
-					video_pos = pkt.pts;
-				if(pkt.dts != AV_NOPTS_VALUE);
+				if(pktp->pts != AV_NOPTS_VALUE)
+					video_pos = pktp->pts;
+				if(pktp->dts != AV_NOPTS_VALUE);
 					nb_frames++;
 				break;
 
 			case AVMEDIA_TYPE_AUDIO:
-				if(pkt.pts != AV_NOPTS_VALUE)
-					audio_pos = pkt.pts;
+				if(pktp->pts != AV_NOPTS_VALUE)
+					audio_pos = pktp->pts;
 				break;
 			}
 			if(kf.kf && kf.offs != AV_NOPTS_VALUE)
 			{
 				interrupt = asset->tocfile->append_item(kf.pts,
-					kf.offs, pkt.pos);
+					kf.offs, pktp->pos);
 				kf.kf = 0;
 				if(track_data.min_index > kf.pts)
 					track_data.min_index = kf.pts;
@@ -2766,14 +2772,25 @@ stream_params *FileAVlibs::get_track_data(int trx)
 					track_data.min_offset = kf.offs;
 			}
 			if(interrupt)
+			{
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,133,100)
+				av_packet_free(&pktp);
+#endif
 				return 0;
+			}
 		}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		av_free_packet(&pkt);
 #else
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
 		av_packet_unref(&pkt);
 #endif
+#endif
 	}
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,133,100)
+	av_packet_free(&pktp);
+#endif
 
 	if(err != AVERROR_EOF)
 		return 0;
