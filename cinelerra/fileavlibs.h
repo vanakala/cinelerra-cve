@@ -84,7 +84,8 @@ public:
 
 // Callbacks of FileTOC
 	int get_streamcount();
-	stream_params* get_track_data(int trackindex);
+	int fill_toc_streams(FileTOC *tocfile);
+
 	static const char *enc_prompt(const char *enc_name);
 	static struct avlib_encparams encoder_params[];
 
@@ -164,7 +165,6 @@ private:
 	int64_t apkt_pos;
 	int apkt_duration;
 	static Mutex *avlibs_lock;
-	stream_params track_data;
 
 	// Codec contexts
 	AVCodecContext *codec_contexts[MAXCHANNELS];

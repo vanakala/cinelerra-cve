@@ -71,16 +71,13 @@ FileTOC::FileTOC(FileBase *media, const char *dirpath, const char *filepath,
 	IndexFile::get_index_filename(source_filename, dirpath,
 		toc_filename, filepath, -1, TOCFILE_EXTENSION);
 
-	items_allocated = 0;
-	items = 0;
 	num_streams = 0;
 	memset(toc_streams, 0, sizeof(toc_streams));
+	memset(items_allocated, 0, sizeof(items_allocated));
 }
 
 FileTOC::~FileTOC()
 {
-	if(items)
-		delete items;
 	for(int i = 0; i < num_streams; i++)
 	{
 		if(toc_streams[i].items)
@@ -90,9 +87,10 @@ FileTOC::~FileTOC()
 
 int FileTOC::init_tocfile(int ftype)
 {
-	int res, i, j, k, streams;
+	int res, i, j, k;
 	uint32_t *ptr;
 	uint64_t val1, val2;
+	int file_streams = 0;
 
 	if(!((tocfile = fopen(toc_filename, "r")) && (i = read_int32()) == TOCFILE_PREFIX &&
 			(j = read_int32()) == TOCFILE_VERSION &&
@@ -127,51 +125,54 @@ reindex:
 		for(; k < j; k++)
 			fputc(0, tocfile);
 		// Stream IDs: stream_type, stream_id
-		if(streams = media->get_streamcount())
+		if(num_streams = media->get_streamcount())
 		{
 			if(mwindow_global && length > TOC_PROGRESS_LENGTH)
 			{
 				canceled = 0;
 				char fnbuf[BCTEXTLEN];
 				strcpy(fnbuf, filepath);
-				progress = mwindow_global->mainprogress->start_progress(_("Generating TOC"), streams * length);
+				progress = mwindow_global->mainprogress->start_progress(_("Generating TOC"), length);
 				progress->update_title(_("Generating TOC for %s"), basename(fnbuf));
 			}
 			put_int32(TOCFILE_STREAMCOUNT);
-			put_int32(streams);
+			put_int32(num_streams);
 			// New data fields put here
-			// Stream data
-			for(i = 0; i < streams; i++)
+
+			if(media->fill_toc_streams(this))
+				goto toc_canceled;
+			for(i = 0; i < num_streams; i++)
 			{
-				stream_params *td;
-				max_items = 0;
-				streamnum = i;
-				if(td = media->get_track_data(i))
+				stream_params *td = &toc_streams[i];
+
+				if(canceled)
+					goto toc_canceled;
+				put_int32(TOCFILE_STREAM);
+				put_int32(td->type);
+				put_int32(td->id);
+				put_int32(td->layers);
+				put_int32(td->rate_num);
+				put_int32(td->rate_denom);
+				put_int32(td->data1);
+				put_int32(td->data2);
+				put_int64(td->min_index);
+				put_int64(td->max_index);
+				put_int64(td->min_offset);
+				put_int64(td->max_offset);
+				put_int32(td->max_items);
+
+				int n = td->max_items;
+				stream_item *items = td->items;
+
+				for(j = 0; j < n; j++)
 				{
-					if(canceled)
-						goto toc_canceled;
-					put_int32(TOCFILE_STREAM);
-					put_int32(td->type);
-					put_int32(td->id);
-					put_int32(td->layers);
-					put_int32(td->rate_num);
-					put_int32(td->rate_denom);
-					put_int32(td->data1);
-					put_int32(td->data2);
-					put_int64(td->min_index);
-					put_int64(td->max_index);
-					put_int64(td->min_offset);
-					put_int64(td->max_offset);
-					put_int32(max_items);
-					for(j = 0; j < max_items; j++)
-					{
-						put_int64(items[j].index + td->index_correction);
-						put_int64(items[j].offset);
-					}
+					put_int64(items[j].index);
+					put_int64(items[j].offset);
 				}
 				if(canceled)
 					goto toc_canceled;
 			}
+
 			if(progress)
 			{
 				progress->stop_progress();
@@ -180,15 +181,17 @@ reindex:
 			}
 		}
 		media->toc_is_made(canceled); // cleanup in media
-		items_allocated = 0;
-		delete items;
-		items = 0;
+
 		if(fclose(tocfile) || fileio_err)
 		{
 			strcpy(toc_filename, filepath);
 			errorbox(_("Failed to write tocfile for '%s'"), basename(toc_filename));
 			return 1;
 		}
+
+		for(int i = 0; i < num_streams; i++)
+			delete [] toc_streams[i].items;
+
 		if(!(tocfile = fopen(toc_filename, "r")))
 		{
 			errorbox("Can't reopen TOC file");
@@ -229,7 +232,7 @@ reindex:
 				goto toc_err;
 			break;
 		case TOCFILE_STREAMCOUNT:
-			streams = read_int32();
+			file_streams = read_int32();
 			if(fileio_err)
 				goto toc_err;
 			break;
@@ -245,12 +248,12 @@ reindex:
 			toc_streams[num_streams].max_index = read_int64();
 			toc_streams[num_streams].min_offset = read_int64();
 			toc_streams[num_streams].max_offset = read_int64();
-			max_items = toc_streams[num_streams].max_items = read_int32();
+			toc_streams[num_streams].max_items = read_int32();
 			toc_streams[num_streams].toc_start = ftello(tocfile);
 			if(fileio_err)
 				goto toc_err;
 			// skip items
-			for(i = 0; i < max_items; i++)
+			for(i = 0; i < toc_streams[num_streams].max_items; i++)
 			{
 				read_int64();
 				read_int64();
@@ -260,12 +263,12 @@ reindex:
 			num_streams++;
 			break;
 		default:
-			errorbox("Failed to decode TOC.\nFile corrupted?");
+			errorbox(_("Failed to read TOC.\nFile corrupted?"));
 			goto toc_fail;
 		}
 	}
 toc_err:
-	errorbox("Unexpected error while loading TOC.\nFile corrupted?");
+	errorbox(_("Unexpected error while loading TOC.\nFile corrupted?"));
 
 toc_fail:
 	fclose(tocfile);
@@ -279,62 +282,72 @@ toc_canceled:
 		delete progress;
 		progress = 0;
 	}
-	if(items)
+	for(i = 0; i < num_streams; i++)
 	{
-		delete items;
-		max_items = 0;
-		items = 0;
+		delete [] toc_streams[i].items;
+		toc_streams[i].items = 0;
+		toc_streams[i].max_items = 0;
 	}
 	unlink(toc_filename);
 	media->toc_is_made(canceled); // cleanup in media
 	return 1;
 
 toc_eof:
-	if(num_streams != streams)
+	if(num_streams != file_streams)
 		goto toc_err;
 	fclose(tocfile);
 	return 0;
 }
 
-int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
+int FileTOC::append_item(int stream, posnum index, off_t offset, off_t mdoffs)
 {
 	int itmx;
+	stream_item *items;
 
-	if(items_allocated == 0)
+	if(!items_allocated[stream])
 	{
 		items = new stream_item[ITEM_BLOCK];
-		items_allocated = ITEM_BLOCK;
+		items_allocated[stream] = ITEM_BLOCK;
+		toc_streams[stream].items = items;
 	}
-	if(max_items >= items_allocated)
+	else
+		items = toc_streams[stream].items;
+
+	if(toc_streams[stream].max_items >= items_allocated[stream])
 	{
-		int new_alloc = items_allocated + ITEM_BLOCK;
-		stream_item *new_itms = new stream_item[new_alloc];
-		memcpy(new_itms, items,
-			items_allocated * sizeof(stream_item));
-		delete [] items;
-		items = new_itms;
-		items_allocated = new_alloc;
+		int new_alloc = items_allocated[stream] + ITEM_BLOCK;
+		items = new stream_item[new_alloc];
+
+		memcpy(items, toc_streams[stream].items,
+			items_allocated[stream] * sizeof(stream_item));
+		delete [] toc_streams[stream].items;
+		items_allocated[stream] = new_alloc;
+		toc_streams[stream].items = items;
 	}
 	// keep indexes in order
-	for(itmx = max_items - 1; itmx >= 0 && items[itmx].index > index; itmx--);
+	for(itmx = toc_streams[stream].max_items - 1;
+		itmx >= 0 && items[itmx].index > index; itmx--);
 	itmx++;
-	if(itmx < max_items - 1)
+	if(itmx < toc_streams[stream].max_items - 1)
 	{
 		// Not good if we need to reorder here
-		for(int i = max_items; i > itmx; i--)
+		for(int i = toc_streams[stream].max_items; i > itmx; i--)
 			items[i] = items[i - 1];
 		items[itmx].index = index;
 		items[itmx].offset = offset;
 	}
 	else
 	{
-		items[max_items].index = index;
-		items[max_items].offset = offset;
-	}
-	if(progress && mdoffs > 0)
-		canceled = progress->update(mdoffs + streamnum * length);
+		int n = toc_streams[stream].max_items;
 
-	max_items++;
+		items[n].index = index;
+		items[n].offset = offset;
+	}
+
+	if(progress && mdoffs > 0)
+		canceled = progress->update(mdoffs);
+
+	toc_streams[stream].max_items++;
 	return canceled;
 }
 
@@ -355,7 +368,7 @@ stream_item *FileTOC::get_item(int stream, posnum ix, stream_item **nxitem)
 		}
 		fileio_err = 0;
 		fseeko(tocfile, toc_streams[stream].toc_start, SEEK_SET);
-		max_items = toc_streams[stream].max_items;
+		int max_items = toc_streams[stream].max_items;
 		toc_streams[stream].items = new stream_item[max_items];
 		for(int i = 0; i < max_items; i++)
 		{
@@ -406,19 +419,22 @@ int FileTOC::id_to_index(int id)
 	return -1;
 }
 
-void FileTOC::dump(int offsets)
+void FileTOC::dump(int indent, int offsets)
 {
-	printf("FileTOC %p dump\n", this);
-	printf("  toc: %s\n", toc_filename);
-	printf("  file_type %d streams %d\n", file_type, num_streams);
+	printf("%*sFileTOC %p dump\n", indent, "", this);
+	indent += 1;
+	printf("%*stoc: %s\n", indent, "", toc_filename);
+	printf("%*sfile_type %d streams %d\n", indent, "", file_type, num_streams);
+	indent += 1;
 	for(int i = 0; i < num_streams; i++)
 	{
-		printf("  Stream %d: type %d id %d layers %d\n", i,
+		printf("%*sStream %d: type %d id %d layers %d\n", indent, "", i,
 			toc_streams[i].type, toc_streams[i].id, toc_streams[i].layers);
-		printf("    rate num %d, denom %d, data1 %d data2 %d corr %" PRId64 "\n",
+		printf("%*srate num %d/%d, data1 %d data2 %d\n", indent + 1, "",
 			toc_streams[i].rate_num, toc_streams[i].rate_denom,
-			toc_streams[i].data1, toc_streams[i].data2, toc_streams[i].index_correction);
-		printf("    index %" PRId64 "..%" PRId64 " offset %" PRId64 "..%" PRId64 ", toc start %" PRId64 " max_items %d items %p\n",
+			toc_streams[i].data1, toc_streams[i].data2);
+		printf("%*sindex %" PRId64 "..%" PRId64 " offset %" PRId64 "..%" PRId64 ", toc start %" PRId64 " max_items %d items %p\n",
+			indent, "",
 			toc_streams[i].min_index, toc_streams[i].max_index,
 			toc_streams[i].min_offset, toc_streams[i].max_offset,
 			toc_streams[i].toc_start, toc_streams[i].max_items,
@@ -426,7 +442,7 @@ void FileTOC::dump(int offsets)
 		if(offsets && toc_streams[i].items)
 		{
 			for(int j = 0; j < toc_streams[i].max_items; j++)
-				printf("      %5d. %6" PRId64 " : %8" PRId64 "\n", j,
+				printf("%*s%5d. %6" PRId64 " : %8" PRId64 "\n", indent, "", j,
 					toc_streams[i].items[j].index,
 					toc_streams[i].items[j].offset);
 		}

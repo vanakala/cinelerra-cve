@@ -16,14 +16,12 @@
 #include <sys/types.h>
 
 #define TOCFILE_PREFIX         0x20434f54
-#define TOCFILE_VERSION        0x00001300
+#define TOCFILE_VERSION        0x00001400
 
 #include "filebase.inc"
 #include "filetoc.inc"
 
-#define MPEG3_AUDIO_CHUNKSIZE 0x10000
-
-#define ITEM_BLOCK 4096
+#define ITEM_BLOCK 1024
 
 class FileTOC
 {
@@ -35,10 +33,10 @@ public:
 	int init_tocfile(int ftype);
 	// Returns non-zero if user has canceled toc generation
 	// mdoffs is position in bytes (0..file legth for every stream)
-	int append_item(posnum index, off_t offset, off_t mdoffs);
+	int append_item(int stream, posnum index, off_t offset, off_t mdoffs);
 	stream_item *get_item(int stream, posnum ix, stream_item **nxitem);
 	int id_to_index(int id);
-	void dump(int offsets);
+	void dump(int indent, int offsets = 0);
 
 	stream_params toc_streams[MAXCHANNELS];
 	int file_type;
@@ -54,15 +52,12 @@ private:
 	FILE *tocfile;
 	MainProgressBar *progress;
 	int canceled;
-	int streamnum;
 	off_t length;
 	time_t mtime;
 	const char *filepath;
 	int fileio_err;
 	char toc_filename[BCTEXTLEN];
-	int items_allocated;
-	int max_items;
-	stream_item *items;
+	int items_allocated[MAXCHANNELS];
 };
 
 #endif

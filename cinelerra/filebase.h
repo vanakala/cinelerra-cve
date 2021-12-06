@@ -56,7 +56,7 @@ public:
 	virtual int get_streamcount() { return 0; };
 
 	// returns data for the track
-	virtual stream_params *get_track_data(int track) { return 0; };
+	virtual int fill_toc_streams(FileTOC *tocfile) { return 1; };
 
 	// tocfile is generated - filebase can do cleanup
 	virtual void toc_is_made(int canceled) {};

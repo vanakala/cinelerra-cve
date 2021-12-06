@@ -162,7 +162,6 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 		av_log_set_level(AV_LOG_INFO);
 	else
 		av_log_set_level(AV_LOG_QUIET);
-	memset(&track_data, 0, sizeof(track_data));
 	num_buffers = 0;
 	buffer_len = 0;
 	memset(abuffer, 0, sizeof(abuffer));
@@ -437,6 +436,7 @@ int FileAVlibs::probe_input(Asset *asset)
 				avlibs_lock->unlock();
 				return 1;
 			}
+
 			asset->tocfile = new FileTOC(this, preferences_global->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			if(asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1))
@@ -447,13 +447,14 @@ int FileAVlibs::probe_input(Asset *asset)
 				avlibs_lock->unlock();
 				return -1;
 			}
+
 			for(int i = 0; i < asset->nb_streams; i++)
 			{
 				int fileix = asset->streams[i].stream_index;
 
-				asset->streams[i].start = (ptstime)asset->tocfile->toc_streams[i].min_index *
+				asset->streams[i].start = (ptstime)asset->tocfile->toc_streams[i].min_offset *
 					av_q2d(context->streams[fileix]->time_base);
-				asset->streams[i].end = (ptstime)asset->tocfile->toc_streams[i].max_index *
+				asset->streams[i].end = (ptstime)asset->tocfile->toc_streams[i].max_offset *
 					av_q2d(context->streams[fileix]->time_base);
 				if(asset->streams[i].options & STRDSC_VIDEO)
 				{
@@ -2622,7 +2623,7 @@ int FileAVlibs::get_streamcount()
 {
 	int count = 0;
 
-	for(int i = 0; i < MAXCHANNELS; i++)
+	for(int i = 0; i < asset->nb_streams; i++)
 	{
 		if(asset->streams[i].options & (STRDSC_AUDIO | STRDSC_VIDEO))
 			count++;
@@ -2630,7 +2631,7 @@ int FileAVlibs::get_streamcount()
 	return count;
 }
 
-stream_params *FileAVlibs::get_track_data(int trx)
+int FileAVlibs::fill_toc_streams(FileTOC *tocfile)
 {
 	AVStream *stream;
 	AVCodecContext *decoder_context;
@@ -2639,50 +2640,53 @@ stream_params *FileAVlibs::get_track_data(int trx)
 #else
 	AVPacket *pktp = av_packet_alloc();
 #endif
-	int trid;
+	int trid, trx;
 	int posbytes;
 	int interrupt = 0;
 	int err;
-	framenum nb_frames;
-	int64_t maxpts = 0;
-	int64_t maxoffs = 0;
+	stream_params *toc;
+	int nstreams = 0;
+
 	struct {
 		int64_t pts;
 		int64_t offs;
 		int kf;
 	} kf;
 
-	trid = -1;
-	if(asset->streams[trx].options & (STRDSC_AUDIO | STRDSC_VIDEO))
-		trid = asset->streams[trx].stream_index;
-	else
-		return 0;
-
-	stream = context->streams[trid];
-	decoder_context = codec_contexts[trid];
-
-	switch(decoder_context->codec_type)
+	for(trx = 0; trx < asset->nb_streams; trx++)
 	{
-	case AVMEDIA_TYPE_AUDIO:
-		track_data.type = TOCSTREAM_AUDIO;
-		track_data.rate_num = decoder_context->sample_rate;
-		track_data.rate_denom = 0;
-		track_data.layers = decoder_context->channels;
-		break;
+		if(asset->streams[trx].options & (STRDSC_AUDIO | STRDSC_VIDEO))
+			trid = asset->streams[trx].stream_index;
+		else
+			continue;
 
-	case AVMEDIA_TYPE_VIDEO:
-		track_data.type = TOCSTREAM_VIDEO;
-		track_data.rate_num = stream->r_frame_rate.num;
-		track_data.rate_denom = stream->r_frame_rate.den;
-		track_data.layers = 1;
-		break;
+		stream = context->streams[trid];
+		decoder_context = codec_contexts[trid];
+		toc = &tocfile->toc_streams[nstreams++];
+
+		switch(decoder_context->codec_type)
+		{
+		case AVMEDIA_TYPE_AUDIO:
+			toc->type = TOCSTREAM_AUDIO;
+			toc->rate_num = asset->streams[trx].sample_rate;
+			toc->rate_denom = 1;
+			break;
+
+		case AVMEDIA_TYPE_VIDEO:
+			toc->type = TOCSTREAM_VIDEO;
+			toc->rate_num = stream->r_frame_rate.num;
+			toc->rate_denom = stream->r_frame_rate.den;
+			break;
+		}
+		toc->id = trid;
+		toc->layers = asset->streams[trx].channels;
+		toc->data1 = posbytes;
+		toc->data2 = 0;
+		toc->min_index = INT64_MAX;
+		toc->min_offset = INT64_MAX;
+		toc->max_index = -INT64_MAX;
+		toc->max_offset = -INT64_MAX;
 	}
-	track_data.id = trid;
-	track_data.data1 = posbytes;
-	track_data.data2 = 0;
-	track_data.min_index = INT64_MAX;
-	track_data.min_offset = INT64_MAX;
-	track_data.index_correction = 0;
 	avformat_seek_file(context, -1, INT64_MIN, INT64_MIN, 0,
 		AVSEEK_FLAG_ANY);
 	avformat_flush(context);
@@ -2692,92 +2696,76 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	pkt.size = 0;
 	AVPacket *pktp = &pkt;
 #endif
-	nb_frames = 0;
 
 	kf.kf = 0;
 	while((err = av_read_frame(context, pktp)) == 0)
 	{
-		if(pktp->stream_index == trid)
+		trid = pktp->stream_index;
+		for(trx = 0; trx < nstreams; trx++)
 		{
-			// New version
-			if(pktp->flags & AV_PKT_FLAG_KEY)
-			{
-				kf.pts = AV_NOPTS_VALUE;
-				if(pktp->pts != AV_NOPTS_VALUE)
-					kf.pts = pktp->pts;
-				else if(pktp->dts != AV_NOPTS_VALUE)
-					kf.pts = pktp->dts;
-				if(kf.pts != AV_NOPTS_VALUE)
-				{
-					kf.kf = 1;
-					kf.offs = AV_NOPTS_VALUE;
-				}
-			}
+			if(tocfile->toc_streams[trx].id == trid)
+				break;
+		}
+		if(trx >= nstreams)
+			continue;
 
-			if(kf.kf)
+		toc = &tocfile->toc_streams[trx];
+
+		if(pktp->flags & AV_PKT_FLAG_KEY)
+		{
+			kf.pts = AV_NOPTS_VALUE;
+			if(pktp->pts != AV_NOPTS_VALUE)
+				kf.pts = pktp->pts;
+			else if(pktp->dts != AV_NOPTS_VALUE)
+				kf.pts = pktp->dts;
+			if(kf.pts != AV_NOPTS_VALUE)
 			{
-				if(posbytes)
-				{
-					if(pktp->pos != 1)
-						kf.offs = pktp->pos;
-				}
-				else if(pktp->dts != AV_NOPTS_VALUE)
-				{
-					kf.offs = pktp->dts;
-				}
+				kf.kf = 1;
+				kf.offs = AV_NOPTS_VALUE;
 			}
-			if(pktp->pts != AV_NOPTS_VALUE && pktp->pts > maxpts)
-			{
-				maxpts = pktp->pts;
-				maxpts += pktp->duration;
-			}
+		}
+
+		if(kf.kf)
+		{
 			if(posbytes)
 			{
-				if(pktp->pos != -1 && pktp->pos > maxoffs)
-				{
-					maxoffs = pktp->pos;
-					maxoffs += pktp->size;
-				}
+				if(pktp->pos != 1)
+					kf.offs = pktp->pos;
 			}
-			else if(pktp->dts != AV_NOPTS_VALUE && pktp->dts > maxoffs)
-			{
-				maxoffs = pktp->dts;
-				maxoffs += pktp->duration;
-			}
+			else if(pktp->dts != AV_NOPTS_VALUE)
+				kf.offs = pktp->dts;
 
-			maxpts += pktp->duration;
+			if(pktp->pts != AV_NOPTS_VALUE && pktp->pts > toc->max_index)
+				toc->max_index = pktp->pts;
+		}
 
-			switch(decoder_context->codec_type)
-			{
-			case AVMEDIA_TYPE_VIDEO:
-				if(pktp->pts != AV_NOPTS_VALUE)
-					video_pos = pktp->pts;
-				if(pktp->dts != AV_NOPTS_VALUE);
-					nb_frames++;
-				break;
+		if(posbytes)
+		{
+			if(pktp->pos != -1 && pktp->pos > toc->max_offset)
+				toc->max_offset = pktp->pos + pktp->size;
+		}
+		else if(pktp->dts != AV_NOPTS_VALUE && pktp->dts > toc->max_offset)
+			toc->max_offset = pktp->dts + pktp->duration;
 
-			case AVMEDIA_TYPE_AUDIO:
-				if(pktp->pts != AV_NOPTS_VALUE)
-					audio_pos = pktp->pts;
-				break;
-			}
-			if(kf.kf && kf.offs != AV_NOPTS_VALUE)
-			{
-				interrupt = asset->tocfile->append_item(kf.pts,
-					kf.offs, pktp->pos);
-				kf.kf = 0;
-				if(track_data.min_index > kf.pts)
-					track_data.min_index = kf.pts;
-				if(track_data.min_offset > kf.offs)
-					track_data.min_offset = kf.offs;
-			}
-			if(interrupt)
-			{
+		if(pktp->dts != AV_NOPTS_VALUE);
+			toc->data2++;      // number of frames
+
+		if(kf.kf && kf.offs != AV_NOPTS_VALUE)
+		{
+			interrupt = asset->tocfile->append_item(trx, kf.pts,
+				kf.offs, pktp->pos);
+			kf.kf = 0;
+			if(toc->min_index > kf.pts)
+				toc->min_index = kf.pts;
+			if(toc->min_offset > kf.offs)
+				toc->min_offset = kf.offs;
+		}
+		if(interrupt)
+		{
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,133,100)
-				av_packet_free(&pktp);
+			av_packet_free(&pktp);
 #endif
-				return 0;
-			}
+			return 1;
 		}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		av_free_packet(&pkt);
@@ -2793,13 +2781,9 @@ stream_params *FileAVlibs::get_track_data(int trx)
 #endif
 
 	if(err != AVERROR_EOF)
-		return 0;
+		return 1;
 
-	track_data.data2 = nb_frames;
-	track_data.max_offset = maxoffs;
-	track_data.max_index = maxpts + track_data.index_correction;
-
-	return &track_data;
+	return 0;
 }
 
 void FileAVlibs::versionifo(int indent)
