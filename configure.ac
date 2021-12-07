@@ -215,6 +215,8 @@ AC_SUBST(FFMPEG_EXTERNALTEXT)
 echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$ffmpeg_external" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
+	AH_TEMPLATE(HAVE_EXT_AVLIBS, [Define to 1 if externale AVlibs are in use.])
+	AC_DEFINE(HAVE_EXT_AVLIBS)
 else
 #### Check optional components of avlibs
 	AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])

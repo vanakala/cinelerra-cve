@@ -133,7 +133,9 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/opt.h>
 #include <libavutil/pixdesc.h>
+#if !defined(HAVE_EXT_AVLIBS)
 #include <libavformat/internal.h>
+#endif
 int write_io_packet(void *opaque, uint8_t *buf, int buf_size);
 }
 
@@ -3624,6 +3626,7 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 
 	codecs = new Paramlist("AVLibCodecs");
 
+#if !defined(HAVE_EXT_AVLIBS)
 	if(oformat->codec_tag)
 	{
 		for(ctag = oformat->codec_tag; *ctag; ctag++)
@@ -3633,6 +3636,7 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 		}
 	}
 	else
+#endif
 	{
 		AVCodecID id;
 
