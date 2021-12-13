@@ -12,6 +12,7 @@
 extern "C"
 {
 #include <libswresample/swresample.h>
+#include <libavutil/channel_layout.h>
 }
 
 class AVResample

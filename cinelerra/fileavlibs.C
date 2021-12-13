@@ -343,7 +343,7 @@ int FileAVlibs::probe_input(Asset *asset)
 				// Guess usable framerate
 				testfr = convert_framerate(stream->avg_frame_rate);
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				trestfr = convert_framerate(decoder_ctx->framerate, testfr);
+				testfr = convert_framerate(decoder_ctx->framerate, testfr);
 #endif
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
 				testfr = convert_framerate(av_stream_get_r_frame_rate(stream), testfr);

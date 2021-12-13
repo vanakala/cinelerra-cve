@@ -189,8 +189,9 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	FFMPEG_FOLDER=""
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
+	FFMPEG_RELEASE="4.4"
 	if test ! -d ffmpeg ; then
-		FFMPEG_BRANCH="-b release/4.4"
+		FFMPEG_BRANCH="-b release/$FFMPEG_RELEASE"
 		if ! git clone --depth 1 $FFMPEG_BRANCH https://git.ffmpeg.org/ffmpeg.git ffmpeg ; then
 			rm -rf ffmpeg
 			echo "Failed to get a FFmpeg checkout"
@@ -276,10 +277,14 @@ else
 ############## End of theora
 
 ############## librsvg
-	PKG_CHECK_MODULES(librsvg,librsvg-2.0,[librsvg=yes],:)
-	if test "x$librsvg" = xyes; then
-		FFMPEG_CONF="$FFMPEG_CONF --enable-librsvg"
-	fi
+	case "x$FFMPEG_RELEASE" in
+	(x3.4|x4.?)
+		PKG_CHECK_MODULES(librsvg,librsvg-2.0,[librsvg=yes],:)
+		if test "x$librsvg" = xyes; then
+			FFMPEG_CONF="$FFMPEG_CONF --enable-librsvg"
+		fi
+		;;
+	esac
 ############## End of librsvg
 
 ############## opencore-amrnb
