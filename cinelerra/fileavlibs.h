@@ -100,6 +100,10 @@ private:
 	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
 	AVDictionary *create_encoder_dictionary(int options);
 	void list2dictionary(AVDictionary **dict, Paramlist *params);
+	// Create/destroy AVPacket
+	AVPacket *allocate_packet();
+	void deallocate_packet(AVPacket **packet);
+
 	static int streamformat(AVFormatContext *context);
 	static void liberror(int code, const char *fmt, ...);
 	static Paramlist *scan_global_options(int options);
@@ -144,6 +148,8 @@ private:
 	AVFormatContext *context;
 	AVFrame *avvframe;
 	AVFrame *avaframe;
+	AVPacket *avapkt;
+	AVPacket *avvpkt;
 	struct SwsContext *sws_ctx;
 	SwrContext *swr_ctx;
 

@@ -159,6 +159,8 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	context = 0;
 	sws_ctx = 0;
 	swr_ctx = 0;
+	avapkt = 0;
+	avvpkt = 0;
 	stream_pipe = 0;
 	if(mwindow_global && edlsession->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
@@ -527,6 +529,29 @@ double FileAVlibs::convert_framerate(AVRational frate, double dflt)
 		}
 	}
 	return dflt;
+}
+
+AVPacket *FileAVlibs::allocate_packet()
+{
+	AVPacket *packet;
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
+	packet = av_mallocz(sizeof(AVPacket);
+	av_init_packet(packet);
+#else
+	packet = av_packet_alloc();
+#endif
+	return packet;
+}
+
+void FileAVlibs::deallocate_packet(AVPacket **packet)
+{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
+	av_free_packet(*packet)
+	av_freep(packet);
+else
+	av_packet_free(packet);
+#endif
 }
 
 int FileAVlibs::encoder_exists(AVOutputFormat *oformat, const char *encstr, int support)
@@ -1153,19 +1178,9 @@ void FileAVlibs::close_file()
 		{
 			if(avaframe && headers_written)
 			{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				AVPacket pkt;
-#else
-				AVPacket *pkt = av_packet_alloc();
-#endif
 				int got_output, chan;
 				AVCodecContext *audio_ctx = codec_contexts[audio_index];
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				av_init_packet(&pkt);
-				pkt.data = 0;
-				pkt.size = 0;
-#endif
 				// Last resampled samples
 				if(resample_fill)
 				{
@@ -1186,39 +1201,25 @@ void FileAVlibs::close_file()
 					avcodec_send_frame(audio_ctx, avaframe);
 				// Send eof to encoder
 				avcodec_send_frame(audio_ctx, NULL);
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
+
+				while((rv = avcodec_receive_packet(audio_ctx, avapkt)) >= 0)
 				{
-					pkt.stream_index = audio_index;
-					av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+					avapkt->stream_index = audio_index;
+					av_packet_rescale_ts(avapkt, audio_ctx->time_base,
 						context->streams[audio_index]->time_base);
-					if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
-					{
-						liberror(rv, _("Failed to write last audio packet"));
-						break;
-					}
-					av_packet_unref(&pkt);
-				}
-#else
-				while((rv = avcodec_receive_packet(audio_ctx, pkt)) >= 0)
-				{
-					pkt->stream_index = audio_index;
-					av_packet_rescale_ts(pkt, audio_ctx->time_base,
-						context->streams[audio_index]->time_base);
-					if((rv = av_interleaved_write_frame(context, pkt)) < 0)
+					if((rv = av_interleaved_write_frame(context, avapkt)) < 0)
 					{
 						liberror(rv, _("Failed to write last audio packet"));
 						break;
 					}
 				}
-				av_packet_free(&pkt);
-#endif
+
 				if(rv < 0 && rv != AVERROR_EOF)
 					liberror(rv, _("Failed to encode last audio packet"));
 #else
 				for(got_output = 1; got_output;)
 				{
-					if(avcodec_encode_audio2(audio_ctx, &pkt, resample_fill ? avaframe : 0, &got_output))
+					if(avcodec_encode_audio2(audio_ctx, avapkt, resample_fill ? avaframe : 0, &got_output))
 					{
 						errormsg(_("Failed to encode last audio packet"));
 						break;
@@ -1228,17 +1229,16 @@ void FileAVlibs::close_file()
 						resample_fill = 0;
 						continue;
 					}
-					if(got_output && pkt.size)
+					if(got_output && avapkt->size)
 					{
-						pkt.stream_index = audio_index;
-						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+						avapkt->stream_index = audio_index;
+						av_packet_rescale_ts(avapkt, audio_ctx->time_base,
 							context->streams[audio_index]->time_base);
-						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+						if((rv = av_interleaved_write_frame(context, avapkt)) < 0)
 						{
 							liberror(rv, _("Failed to write last audio packet"));
 							break;
 						}
-						av_free_packet(&pkt);
 					}
 				}
 #endif
@@ -1251,61 +1251,34 @@ void FileAVlibs::close_file()
 #endif
 				)
 			{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				AVPacket pkt;
-#else
-				AVPacket *pkt = av_packet_alloc();
-#endif
 				int got_output;
 				AVCodecContext *video_ctx = codec_contexts[video_index];
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				av_init_packet(&pkt);
-				pkt.data = 0;
-				pkt.size = 0;
-#endif
 				// Get out samples kept in encoder
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
 				avcodec_send_frame(video_ctx, NULL);
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-				while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
+
+				while((rv = avcodec_receive_packet(video_ctx, avvpkt)) >= 0)
 				{
-					pkt.stream_index = video_index;
-					av_packet_rescale_ts(&pkt,
+					avvpkt->stream_index = video_index;
+					av_packet_rescale_ts(avvpkt,
 						video_ctx->time_base,
 						context->streams[video_index]->time_base);
 
-					if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+					if((rv = av_interleaved_write_frame(context, avvpkt)) < 0)
 					{
 						liberror(rv, _("Failed to write last video packet"));
 						rv = 0;
 						break;
 					}
 				}
-				av_packet_unref(&pkt);
-#else
-				while((rv = avcodec_receive_packet(video_ctx, pkt)) >= 0)
-				{
-					pkt->stream_index = video_index;
-					av_packet_rescale_ts(pkt,
-						video_ctx->time_base,
-						context->streams[video_index]->time_base);
 
-					if((rv = av_interleaved_write_frame(context, pkt)) < 0)
-					{
-						liberror(rv, _("Failed to write last video packet"));
-						rv = 0;
-						break;
-					}
-				}
-				av_packet_free(&pkt);
-#endif
 				if(rv < 0 && rv != AVERROR_EOF)
 					liberror(rv, _("Failed to encode last video packet"));
 #else
 				for(got_output = 1; got_output;)
 				{
-					if(avcodec_encode_video2(video_ctx, &pkt, 0, &got_output))
+					if(avcodec_encode_video2(video_ctx, avvpkt, 0, &got_output))
 					{
 						errormsg(_("Failed to encode last video packet"));
 						break;
@@ -1313,16 +1286,15 @@ void FileAVlibs::close_file()
 					if(got_output)
 					{
 						pkt.stream_index = video_index;
-						av_packet_rescale_ts(&pkt,
+						av_packet_rescale_ts(avvpkt,
 							video_ctx->time_base,
 							context->streams[video_index]->time_base);
 
-						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+						if((rv = av_interleaved_write_frame(context, avvpkt)) < 0)
 						{
 							liberror(rv, _("Failed to write last video packet"));
 							break;
 						}
-						av_free_packet(&pkt);
 					}
 				}
 #endif
@@ -1366,6 +1338,8 @@ void FileAVlibs::close_file()
 		av_frame_free(&avaframe);
 	if(swr_ctx)
 		swr_free(&swr_ctx);
+	deallocate_packet(&avapkt);
+	deallocate_packet(&avvpkt);
 	avlibs_lock->unlock();
 }
 
@@ -1426,7 +1400,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 	int error = 0;
 	int got_it;
 	int64_t rqpos;
-	AVPacket pkt = {0};
 
 	avlibs_lock->lock("AVlibs::read_frame");
 	AVStream *stream = context->streams[current_stream];
@@ -1434,6 +1407,8 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
+	if(!avvpkt)
+		avvpkt = allocate_packet();
 
 	if(!asset->single_image)
 		rqpos = round((frame->get_source_pts() + asset->base_pts()) / av_q2d(stream->time_base));
@@ -1444,13 +1419,8 @@ int FileAVlibs::read_frame(VFrame *frame)
 	sres = 0;
 	if(rqpos < video_pos || rqpos > vpkt_pos)
 	{
-		if((sres = media_seek(current_stream, rqpos, &pkt, vpkt_pos)) < 0)
+		if((sres = media_seek(current_stream, rqpos, avvpkt, vpkt_pos)) < 0)
 		{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-			av_free_packet(&pkt);
-#else
-			av_packet_unref(&pkt);
-#endif
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -1459,7 +1429,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	for(;;)
 	{
 		if(!file_eof && sres <= 0)
-			error = av_read_frame(context, &pkt);
+			error = av_read_frame(context, avvpkt);
 
 		if(error)
 		{
@@ -1473,27 +1443,25 @@ int FileAVlibs::read_frame(VFrame *frame)
 		if(file_eof)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-			av_free_packet(&pkt);
+			av_free_packet(avvpkt);
 #else
-			av_packet_unref(&pkt);
+			av_packet_unref(avvpkt);
 #endif
-			pkt.stream_index = current_stream;
-			pkt.data = 0;
-			pkt.size = 0;
+			avvpkt->stream_index = current_stream;
 		}
 
-		if(pkt.stream_index == current_stream)
+		if(avvpkt->stream_index == current_stream)
 		{
 			if(!file_eof)
 			{
-				if(pkt.pts != AV_NOPTS_VALUE)
-					vpkt_pos = pkt.pts + pkt.duration;
+				if(avvpkt->pts != AV_NOPTS_VALUE)
+					vpkt_pos = avvpkt->pts + avvpkt->duration;
 				else
-					vpkt_pos = pkt.dts + pkt.duration;
+					vpkt_pos = avvpkt->dts + avvpkt->duration;
 			}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((res = avcodec_decode_video2(decoder_context,
-				avvframe, &got_it, &pkt)) < 0)
+				avvframe, &got_it, avvpkt)) < 0)
 
 			if(got_it)
 			{
@@ -1503,10 +1471,10 @@ int FileAVlibs::read_frame(VFrame *frame)
 					break;
 			}
 #else
-			if(!file_eof && (res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+			if(!file_eof && (res = avcodec_send_packet(decoder_context, avvpkt)) < 0)
 			{
 				liberror(res, _("Failed to send packet to video decoder"));
-				av_packet_unref(&pkt);
+				av_packet_unref(avvpkt);
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -1529,7 +1497,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 			if(res != AVERROR(EAGAIN))
 			{
 				liberror(res, _("Failed to decode video frame"));
-				av_packet_unref(&pkt);
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -1538,11 +1505,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 				break;
 		}
 	}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-	av_free_packet(&pkt);
-#else
-	av_packet_unref(&pkt);
-#endif
 
 	if(!error && got_it)
 	{
@@ -1575,7 +1537,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 		liberror(error, _("Video reading error"));
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -1696,7 +1657,6 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	aframe->set_filled(copylen);
 	memcpy(aframe->buffer, abuffer[aframe->channel],
 		copylen * sizeof(double));
-
 	fresh_open = 0;
 	avlibs_lock->unlock();
 	return 0;
@@ -1707,16 +1667,17 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	int error = 0;
 	int got_it, sres;
 	int res = 0;
-	AVPacket pkt = {0};
 	AVCodecContext *decoder_context = codec_contexts[current_stream];
 
 	if(!avaframe)
 		avaframe = av_frame_alloc();
+	if(!avapkt)
+		avapkt = allocate_packet();
 
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
 
-		if((sres = media_seek(current_stream, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
+		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos + apkt_duration)) < 0)
 			return -1;
 
 		if(sres > 0)
@@ -1725,28 +1686,27 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			apkt_duration = 0;
 			audio_delay = 0;
 		}
-		while(audio_pos < rqpos && (sres || (av_read_frame(context, &pkt) == 0)))
+		while(audio_pos < rqpos && (sres || (av_read_frame(context, avapkt) == 0)))
 		{
 			sres = 0;
 
-			if(pkt.stream_index == current_stream)
+			if(avapkt->stream_index == current_stream)
 			{
-				apkt_duration = pkt.duration;
+				apkt_duration = avapkt->duration;
 
-				if(pkt.pts != AV_NOPTS_VALUE)
-					apkt_pos = pkt.pts + pkt.duration;
+				if(avapkt->pts != AV_NOPTS_VALUE)
+					apkt_pos = avapkt->pts + apkt_duration;
 				else
-					apkt_pos = pkt.dts + pkt.duration;
+					apkt_pos = avapkt->dts + apkt_duration;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 				if((res = avcodec_decode_audio4(decoder_context,
-					avaframe, &got_it, &pkt)) < 0)
+					avaframe, &got_it, avapkt)) < 0)
 #else
-				if((res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+				if((res = avcodec_send_packet(decoder_context, avapkt)) < 0)
 				{
 					if(!fresh_open)
 					{
 						fputs(_("Failed to send packet to audio decoder when skiping.\n"), stdout);
-						av_packet_unref(&pkt);
 						return res;
 					}
 				}
@@ -1762,9 +1722,9 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					{
 						printf(_("Audio decoding failed when skiping.\n"));
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-						av_free_packet(&pkt);
+						av_free_packet(avapkt);
 #else
-						av_packet_unref(&pkt);
+						av_packet_unref(avapkt);
 #endif
 						return res;
 					}
@@ -1793,11 +1753,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				}
 			}
 		}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-		av_free_packet(&pkt);
-#else
-		av_packet_unref(&pkt);
-#endif
 	}
 
 	if(res < 0)
@@ -1805,7 +1760,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	for(;;)
 	{
-		if(!file_eof && (error = av_read_frame(context, &pkt)))
+		if(!file_eof && (error = av_read_frame(context, avapkt)))
 		{
 			if(error != AVERROR_EOF)
 				break;
@@ -1816,30 +1771,30 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 		if(file_eof)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-			av_free_packet(&pkt);
+			av_free_packet(avapkt);
 #else
-			av_packet_unref(&pkt);
+			av_packet_unref(avapkt);
 #endif
-			pkt.stream_index = current_stream;
-			pkt.data = 0;
-			pkt.size = 0;
+			avapkt->stream_index = current_stream;
+			avapkt->data = 0;
+			avapkt->size = 0;
 		}
 
-		if(pkt.stream_index == current_stream)
+		if(avapkt->stream_index == current_stream)
 		{
-			if(!file_eof && pkt.pts != AV_NOPTS_VALUE)
+			if(!file_eof && avapkt->pts != AV_NOPTS_VALUE)
 			{
-				apkt_duration = pkt.duration;
-				apkt_pos = pkt.pts + pkt.duration;
+				apkt_duration = avapkt->duration;
+				apkt_pos = avapkt->pts + avapkt->duration;
 			}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((res = avcodec_decode_audio4(decoder_context,
-				avaframe, &got_it, &pkt)) < 0)
+				avaframe, &got_it, avapkt)) < 0)
 #else
-			if((res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+			if((res = avcodec_send_packet(decoder_context, avapkt)) < 0)
 			{
 				liberror(res, _("Failed to send packet to audio decoder"));
-				av_packet_unref(&pkt);
+				av_packet_unref(avapkt);
 				return res;
 			}
 			got_it = 0;
@@ -1853,11 +1808,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			if(res != AVERROR(EAGAIN))
 #endif
 			{
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-				av_free_packet(&pkt);
-#else
-				av_packet_unref(&pkt);
-#endif
 				liberror(res, _("Audio decoding failed when reading"));
 				return res;
 			}
@@ -1887,11 +1837,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				break;
 		}
 	}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-	av_free_packet(&pkt);
-#else
-	av_packet_unref(&pkt);
-#endif
 
 	if(error)
 	{
@@ -2231,12 +2176,8 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		else
 			avvframe->interlaced_frame = 0;
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-		AVPacket pkt = {0};
-		av_init_packet(&pkt);
-#else
-		AVPacket *pkt = av_packet_alloc();
-#endif
+		if(!avvpkt)
+			avvpkt = allocate_packet();
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		if(context->oformat->flags & AVFMT_RAWPICTURE &&
@@ -2248,16 +2189,16 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 					AV_FIELD_TB : AV_FIELD_BT;
 			else
 				video_ctx->field_order = AV_FIELD_PROGRESSIVE;
-			pkt.data = (uint8_t *)avvframe;
-			pkt.size = sizeof(AVPicture);
-			pkt.pts = av_rescale_q(avvframe->pts,
+			avvpkt->data = (uint8_t *)avvframe;
+			avvpkt->size = sizeof(AVPicture);
+			avvpkt->pts = av_rescale_q(avvframe->pts,
 				video_ctx->time_base, stream->time_base);
-			pkt.flags |= AV_PKT_FLAG_KEY;
+			avvpkt->flags |= AV_PKT_FLAG_KEY;
 			got_it = 1;
 		}
 		else
 		{
-			if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
+			if((rv = avcodec_encode_video2(video_ctx, avvpkt, avvframe, &got_it)) < 0)
 			{
 				liberror(rv, _("Failed to encode video frame"));
 				avlibs_lock->unlock();
@@ -2266,16 +2207,16 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		}
 		if(got_it)
 		{
-			pkt.stream_index = stream->index;
-			av_packet_rescale_ts(&pkt, video_ctx->time_base, stream->time_base);
+			avvpkt->stream_index = stream->index;
+			av_packet_rescale_ts(avvpkt, video_ctx->time_base, stream->time_base);
 
-			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			if((rv = av_interleaved_write_frame(context, avvpkt)) < 0)
 			{
 				liberror(rv, _("Failed to write video packet"));
 				avlibs_lock->unlock();
 				return 1;
 			}
-			av_packet_unref(&pkt);
+			av_packet_unref(avvpkt);
 		}
 #else
 		if(rv = avcodec_send_frame(video_ctx, avvframe))
@@ -2284,35 +2225,19 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			avlibs_lock->unlock();
 			return 1;
 		}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-		while((rv = avcodec_receive_packet(video_ctx, &pkt)) >= 0)
-		{
-			pkt.stream_index = stream->index;
-			av_packet_rescale_ts(&pkt, video_ctx->time_base, stream->time_base);
 
-			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+		while((rv = avcodec_receive_packet(video_ctx, avvpkt)) >= 0)
+		{
+			avvpkt->stream_index = stream->index;
+			av_packet_rescale_ts(avvpkt, video_ctx->time_base, stream->time_base);
+
+			if((rv = av_interleaved_write_frame(context, avvpkt)) < 0)
 			{
 				liberror(rv, _("Failed to write video packet"));
 				avlibs_lock->unlock();
 				return 1;
 			}
 		}
-		av_packet_unref(&pkt);
-#else
-		while((rv = avcodec_receive_packet(video_ctx, pkt)) >= 0)
-		{
-			pkt->stream_index = stream->index;
-			av_packet_rescale_ts(pkt, video_ctx->time_base, stream->time_base);
-
-			if((rv = av_interleaved_write_frame(context, pkt)) < 0)
-			{
-				liberror(rv, _("Failed to write video packet"));
-				avlibs_lock->unlock();
-				return 1;
-			}
-		}
-		av_packet_free(&pkt);
-#endif
 		if(rv != AVERROR(EAGAIN))
 		{
 			liberror(rv, _("Failed to encode video packet"));
@@ -2407,11 +2332,6 @@ int FileAVlibs::write_aframes(AFrame **frames)
 int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 		ptstime pts)
 {
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-	AVPacket pkt;
-#else
-	AVPacket *pkt = av_packet_alloc();
-#endif
 	AVStream *stream;
 	int chan, rv, samples_written;
 	int frame_size = audio_ctx->frame_size;
@@ -2428,15 +2348,13 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 	stream = context->streams[audio_index];
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-	av_init_packet(&pkt);
-	pkt.data = NULL;
-	pkt.size = 0;
-#endif
 	samples_written = 0;
 
 	if(audio_pos == 0)
 		audio_pos = pts / av_q2d(audio_ctx->time_base);
+
+	if(!avapkt)
+		avapkt = allocate_packet();
 
 	resampled_length -= frame_size;
 	samples_written = 0;
@@ -2456,7 +2374,7 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 		int got_output;
 
-		if((rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output)) < 0)
+		if((rv = avcodec_encode_audio2(audio_ctx, avapkt, avaframe, &got_output)) < 0)
 		{
 			liberror(rv, _("Failed to encode audio frame"));
 			return 1;
@@ -2466,11 +2384,11 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 		if(got_output)
 		{
-			pkt.stream_index = audio_index;
-			av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+			avapkt->stream_index = audio_index;
+			av_packet_rescale_ts(avapkt, audio_ctx->time_base,
 				stream->time_base);
 
-			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			if((rv = av_interleaved_write_frame(context, avapkt)) < 0)
 			{
 				liberror(rv, _("Failed to write audio packet"));
 				return 1;
@@ -2489,33 +2407,19 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 			return 1;
 		}
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-		while((rv = avcodec_receive_packet(audio_ctx, &pkt)) >= 0)
+		while((rv = avcodec_receive_packet(audio_ctx, avapkt)) >= 0)
 		{
-			pkt.stream_index = audio_index;
-			av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+			avapkt->stream_index = audio_index;
+			av_packet_rescale_ts(avapkt, audio_ctx->time_base,
 				stream->time_base);
 
-			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			if((rv = av_interleaved_write_frame(context, avapkt)) < 0)
 			{
 				liberror(rv, _("Failed to write audio packet"));
 				return 1;
 			}
 		}
-#else
-		while((rv = avcodec_receive_packet(audio_ctx, pkt)) >= 0)
-		{
-			pkt->stream_index = audio_index;
-			av_packet_rescale_ts(pkt, audio_ctx->time_base,
-				stream->time_base);
 
-			if((rv = av_interleaved_write_frame(context, pkt)) < 0)
-			{
-				liberror(rv, _("Failed to write audio packet"));
-				return 1;
-			}
-		}
-#endif
 		if(rv != AVERROR(EAGAIN))
 		{
 			liberror(rv, _("Failed to encode audio packet"));
@@ -2527,15 +2431,7 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 #endif
 
 	}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-	av_free_packet(&pkt);
-#else
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-	av_packet_unref(&pkt);
-#else
-	av_packet_free(&pkt);
-#endif
-#endif
+
 	if(samples_written < resampled_length + frame_size)
 	{
 		resample_fill = resampled_length + frame_size - samples_written;
@@ -2637,11 +2533,7 @@ int FileAVlibs::fill_toc_streams(FileTOC *tocfile)
 {
 	AVStream *stream;
 	AVCodecContext *decoder_context;
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-	AVPacket pkt;
-#else
-	AVPacket *pktp = av_packet_alloc();
-#endif
+	AVPacket *pktp = allocate_packet();
 	int trid, trx;
 	int posbytes;
 	int interrupt = 0;
@@ -2692,12 +2584,6 @@ int FileAVlibs::fill_toc_streams(FileTOC *tocfile)
 	avformat_seek_file(context, -1, INT64_MIN, INT64_MIN, 0,
 		AVSEEK_FLAG_ANY);
 	avformat_flush(context);
-
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-	pkt.buf = 0;
-	pkt.size = 0;
-	AVPacket *pktp = &pkt;
-#endif
 
 	kf.kf = 0;
 	while((err = av_read_frame(context, pktp)) == 0)
@@ -2764,23 +2650,12 @@ int FileAVlibs::fill_toc_streams(FileTOC *tocfile)
 		}
 		if(interrupt)
 		{
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,133,100)
-			av_packet_free(&pktp);
-#endif
+			deallocate_packet(&pktp);
 			return 1;
 		}
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
-		av_free_packet(&pkt);
-#else
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
-		av_packet_unref(&pkt);
-#endif
-#endif
 	}
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,133,100)
-	av_packet_free(&pktp);
-#endif
+	deallocate_packet(&pktp);
 
 	if(err != AVERROR_EOF)
 		return 1;
