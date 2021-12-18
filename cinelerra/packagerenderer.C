@@ -147,7 +147,6 @@ void PackageRenderer::create_engine()
 		video_preroll += video_pts;
 		video_pts = 0;
 	}
-
 // Create output buffers
 	if(default_asset->stream_count(STRDSC_AUDIO))
 	{
@@ -183,7 +182,7 @@ int PackageRenderer::do_audio()
 	AFrame *audio_output_ptr[MAX_CHANNELS];
 	AFrame **audio_output;
 	AFrame *af;
-	ptstime buffer_duration;
+	ptstime duration;
 	int result;
 	int read_length = audio_read_length;
 	int stream;
@@ -213,39 +212,39 @@ int PackageRenderer::do_audio()
 		if(result = render_engine->arender->process_buffer(audio_output_ptr))
 			return result;
 // Fix buffers for preroll
-		read_length = audio_output_ptr[0]->get_length();
-		int output_length = read_length;
-
+		duration = audio_output_ptr[0]->get_duration();
 		if(audio_preroll > 0)
 		{
-			int preroll_len = round(audio_preroll *
-				default_asset->streams[stream].sample_rate);
-
-			if(preroll_len >= output_length)
-				output_length = 0;
-			else
+			if(audio_preroll < duration)
 			{
-				output_length -= preroll_len;
+				int length = audio_output_ptr[0]->get_length();
+
 				for(int i = 0; i < MAX_CHANNELS; i++)
 				{
 					if(audio_output_ptr[i])
 					{
-						for(int j = 0; j < output_length; j++)
-							audio_output_ptr[i]->buffer[j] = audio_output_ptr[i]->buffer[j + audio_read_length - output_length];
-						audio_output_ptr[i]->set_length(output_length);
+						audio_output_ptr[i]->set_pts(
+							audio_output_ptr[i]->get_pts() + audio_preroll);
 						audio_output_ptr[i]->set_duration(
 							audio_output_ptr[i]->get_duration() -
 							audio_preroll);
+
+						int new_length = audio_output_ptr[i]->get_length();
+
+						for(int j = 0; j < new_length; j++)
+							audio_output_ptr[i]->buffer[j] =
+								audio_output_ptr[i]->buffer[j + length - new_length];
 					}
 				}
 			}
-			audio_preroll -= (ptstime)read_length /
-				default_asset->streams[stream].sample_rate;
+			audio_preroll -= duration;
+			if(audio_preroll > 0)
+				audio_output_ptr[0]->set_empty();
 		}
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
-		result |= file->write_audio_buffer(output_length);
+		result |= file->write_audio_buffer(audio_output_ptr[0]->get_length());
+		audio_pts += duration;
 	}
-	audio_pts += (ptstime)read_length / default_asset->streams[stream].sample_rate;
 	return 0;
 }
 
