@@ -133,9 +133,6 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/opt.h>
 #include <libavutil/pixdesc.h>
-#if !defined(HAVE_EXT_AVLIBS)
-#include <libavformat/internal.h>
-#endif
 int write_io_packet(void *opaque, uint8_t *buf, int buf_size);
 }
 
@@ -3492,26 +3489,25 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 
 Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int options)
 {
-	const struct AVCodecTag * const *ctag;
-	const struct AVCodecTag *tags;
 	Param *param, *sbp;
-	Paramlist *codecs;
+	Paramlist *codecs = new Paramlist("AVLibCodecs");
+	const AVCodecDescriptor *desc = 0;
 	int vstream = asset->get_stream_ix(STRDSC_VIDEO);
 	int astream = asset->get_stream_ix(STRDSC_AUDIO);
 
-	codecs = new Paramlist("AVLibCodecs");
-
-#if !defined(HAVE_EXT_AVLIBS)
 	if(oformat->codec_tag)
 	{
-		for(ctag = oformat->codec_tag; *ctag; ctag++)
+		while(desc = avcodec_descriptor_next(desc))
 		{
-			for(tags = *ctag; tags->id != AV_CODEC_ID_NONE; tags++)
-				fill_encoder_params(codecs, tags->id, asset, options);
+			if((options & SUPPORTS_VIDEO) && desc->type != AVMEDIA_TYPE_VIDEO)
+				continue;
+			if((options & SUPPORTS_AUDIO) && desc->type != AVMEDIA_TYPE_AUDIO)
+				continue;
+			if(av_codec_get_tag(oformat->codec_tag, desc->id))
+				fill_encoder_params(codecs, desc->id, asset, options);
 		}
 	}
 	else
-#endif
 	{
 		AVCodecID id;
 
