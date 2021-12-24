@@ -36,7 +36,7 @@ void SigHandler::signal_handler(int signum)
 	for(int i = 0; i < files.total; i++)
 	{
 		printf("Closing %s\n", files.values[i]->asset->path);
-		files.values[i]->close_file(1);
+		files.values[i]->close_file();
 	}
 }
 

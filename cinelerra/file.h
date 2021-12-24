@@ -15,7 +15,6 @@
 #include "edit.inc"
 #include "filebase.inc"
 #include "file.inc"
-#include "filethread.inc"
 #include "filexml.inc"
 #include "formattools.h"
 #include "framecache.inc"
@@ -51,21 +50,9 @@ public:
 	int open_file(Asset *asset, int open_method, int stream,
 		const char *filepath = 0);
 
-// start a thread for writing to avoid blocking during record
-	void start_audio_thread(int buffer_size, int ring_buffers);
-	void stop_audio_thread();
-// The ring buffer must either be 1 or 2.
-// The buffer_size for video needs to be > 1 on SMP systems to utilize 
-// multiple processors.
-// For audio it's the number of samples per buffer.
-	void start_video_thread(int buffer_size, 
-		int color_model, 
-		int ring_buffers);
-	void stop_video_thread();
-
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
-	void close_file(int ignore_thread = 0);
+	void close_file();
 
 // get length of file normalized to base samplerate
 	samplenum get_audio_length();
@@ -76,19 +63,7 @@ public:
 	int write_aframes(AFrame **buffer);
 
 // Only called by filethread to write an array of an array of channels of frames.
-	int write_frames(VFrame ***frames, int len);
-
-
-
-// For writing buffers in a background thread use these functions to get the buffer.
-// Get a pointer to a buffer to write to.
-	AFrame** get_audio_buffer();
-	VFrame*** get_video_buffer();
-
-// Schedule a buffer for writing on the thread.
-// thread calls write_samples
-	int write_audio_buffer(int len);
-	int write_video_buffer(int len);
+	int write_frames(VFrame **frames, int len);
 
 // Read audio into aframe
 // aframe->source_duration secs starting from aframe->source_pts
@@ -119,8 +94,6 @@ public:
 
 	Asset *asset;    // Copy of asset since File outlives EDL
 	FileBase *file; // virtual class for file type
-// Threads for writing data in the background.
-	FileThread *audio_thread, *video_thread; 
 
 // Temporary storage for color conversions
 	VFrame *temp_frame;

@@ -106,7 +106,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    filelist.C \
 		    filepng.C \
 		    filetga.C \
-		    filethread.C \
 		    filetiff.C \
 		    filetoc.C \
 		    filexml.C \
@@ -324,7 +323,6 @@ noinst_HEADERS = aautomation.h \
 		 filelist.h \
 		 filepng.h \
 		 filetga.h \
-		 filethread.h \
 		 filetiff.h \
 		 filetoc.h \
 		 filexml.h \

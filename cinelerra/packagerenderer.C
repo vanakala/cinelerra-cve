@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
+#include "atmpframecache.h"
 #include "asset.h"
 #include "audiorender.h"
 #include "bcsignals.h"
@@ -66,11 +67,20 @@ PackageRenderer::PackageRenderer()
 	aconfig = 0;
 	vconfig = 0;
 	pkg_error[0] = 0;
+	memset(audio_output, 0, sizeof(audio_output));
+	memset(video_output, 0, sizeof(video_output));
 }
 
 PackageRenderer::~PackageRenderer()
 {
 	delete command;
+	for(int i = 0; i < MAX_CHANNELS; i++)
+	{
+		if(audio_output[i])
+			audio_frames.release_frame(audio_output[i]);
+		if(video_output[i])
+			BC_Resources::tmpframes.release_frame(video_output[i]);
+	}
 }
 
 // PackageRenderer::initialize happens only once for every node when doing rendering session
@@ -147,23 +157,9 @@ void PackageRenderer::create_engine()
 		video_preroll += video_pts;
 		video_pts = 0;
 	}
-// Create output buffers
-	if(default_asset->stream_count(STRDSC_AUDIO))
-	{
-		file->start_audio_thread(audio_read_length, 
-			preferences->processors > 1 ? 2 : 1);
-	}
 
 	if(default_asset->stream_count(STRDSC_VIDEO))
 	{
-// The write length needs to correlate with the processor count because
-// it is passed to the file handler which usually processes frames simultaneously.
-		video_write_length = preferences->processors;
-		video_write_position = 0;
-		file->start_video_thread(video_write_length,
-			edlsession->color_model,
-			preferences->processors > 1 ? 2 : 1);
-
 		if(mwindow_global)
 		{
 			video_device = new VideoDevice;
@@ -179,8 +175,6 @@ void PackageRenderer::create_engine()
 
 int PackageRenderer::do_audio()
 {
-	AFrame *audio_output_ptr[MAX_CHANNELS];
-	AFrame **audio_output;
 	AFrame *af;
 	ptstime duration;
 	int result;
@@ -190,59 +184,63 @@ int PackageRenderer::do_audio()
 // Do audio data
 	if((stream = default_asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 	{
-		audio_output = file->get_audio_buffer();
 // Zero unused channels in output vector
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
 			if(i < default_asset->streams[stream].channels)
 			{
-				af = audio_output[i];
+				if(!(af = audio_output[i]))
+					af = audio_frames.get_tmpframe(read_length);
+
 				if(af)
 				{
 					af->init_aframe(audio_pts, audio_read_length,
 						default_asset->streams[stream].sample_rate);
 					af->set_fill_request(audio_pts, audio_read_length);
+					af->channel = i;
 				}
 			}
 			else
 				af = 0;
-			audio_output_ptr[i] = af;
+			audio_output[i] = af;
 		}
 // Call render engine
-		if(result = render_engine->arender->process_buffer(audio_output_ptr))
+		if(result = render_engine->arender->process_buffer(audio_output))
 			return result;
+
 // Fix buffers for preroll
-		duration = audio_output_ptr[0]->get_duration();
+		duration = audio_output[0]->get_duration();
 		if(audio_preroll > 0)
 		{
 			if(audio_preroll < duration)
 			{
-				int length = audio_output_ptr[0]->get_length();
+				int length = audio_output[0]->get_length();
 
 				for(int i = 0; i < MAX_CHANNELS; i++)
 				{
-					if(audio_output_ptr[i])
+					if(audio_output[i])
 					{
-						audio_output_ptr[i]->set_pts(
-							audio_output_ptr[i]->get_pts() + audio_preroll);
-						audio_output_ptr[i]->set_duration(
-							audio_output_ptr[i]->get_duration() -
+						audio_output[i]->set_pts(
+							audio_output[i]->get_pts() + audio_preroll);
+						audio_output[i]->set_duration(
+							audio_output[i]->get_duration() -
 							audio_preroll);
 
-						int new_length = audio_output_ptr[i]->get_length();
+						int new_length = audio_output[i]->get_length();
 
 						for(int j = 0; j < new_length; j++)
-							audio_output_ptr[i]->buffer[j] =
-								audio_output_ptr[i]->buffer[j + length - new_length];
+							audio_output[i]->buffer[j] =
+								audio_output[i]->buffer[j + length - new_length];
 					}
 				}
 			}
 			audio_preroll -= duration;
 			if(audio_preroll > 0)
-				audio_output_ptr[0]->set_empty();
+				audio_output[0]->set_empty();
 		}
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
-		result |= file->write_audio_buffer(audio_output_ptr[0]->get_length());
+		if(audio_output[0]->get_length())
+			result |= file->write_aframes(audio_output);
 		audio_pts += duration;
 	}
 	return 0;
@@ -253,72 +251,59 @@ int PackageRenderer::do_video()
 // Do video data
 	int result;
 	int stream;
+	VFrame *frame;
 
 	if((stream = default_asset->get_stream_ix(STRDSC_VIDEO)) >= 0)
 	{
 		ptstime video_end = video_pts + video_read_length;
 		ptstime duration;
+		int layers = default_asset->streams[stream].channels;
 
 		if(video_end > package->video_end_pts)
 			video_end = package->video_end_pts;
 
 		while(video_pts < video_end)
 		{
-// Try to use the rendering engine to write the frame.
-// Get a buffer for background writing.
-			if(video_write_position == 0)
-				video_output = file->get_video_buffer();
-
-// Construct layered output buffer
-			video_output_ptr = video_output[0][video_write_position];
-			video_output_ptr->set_pts(video_pts);
-			video_output[0][video_write_position] = video_output_ptr =
-				render_engine->vrender->process_buffer(video_output_ptr);
-			duration = 1.0 / default_asset->streams[stream].frame_rate;
-			video_output_ptr->set_pts(video_pts);
-			video_output_ptr->set_duration(duration);
-			if(mwindow_global && video_device->output_visible())
+			for(int i = 0; i < layers; i++)
 			{
+				if(!(frame = video_output[i]))
+					frame = BC_Resources::tmpframes.get_tmpframe(
+						default_asset->streams[stream].width,
+						default_asset->streams[stream].height,
+						edlsession->color_model);
+				frame->set_pts(video_pts);
+				video_output[i] = frame =
+					render_engine->vrender->process_buffer(frame);
+				duration = 1.0 / default_asset->streams[stream].frame_rate;
+				frame->set_pts(video_pts);
+				frame->set_duration(duration);
+				frame->set_frame_number(round(video_pts *
+					default_asset->streams[stream].frame_rate));
+				if(!i && mwindow_global && video_device->output_visible())
+				{
 // Vector for video device
-				VFrame *preview_output =
-					BC_Resources::tmpframes.clone_frame(video_output_ptr);
+					VFrame *preview_output =
+						BC_Resources::tmpframes.clone_frame(frame);
 
-				preview_output->copy_from(video_output_ptr);
-				video_device->write_buffer(preview_output, 
-					command->get_edl());
+					preview_output->copy_from(frame);
+					video_device->write_buffer(preview_output,
+						command->get_edl());
+				}
 			}
-
 // Don't write to file
 			if(video_preroll > 0)
-			{
 				video_preroll -= duration;
-// Keep the write position at 0 until ready to write real frames
-				if(result = file->write_video_buffer(0))
-					return result;
-				video_write_position = 0;
-			}
 			else
 			{
 // Set background rendering parameters
-// Allow us to skip sections of the output file by setting the frame number.
 // Used by background render and render farm.
-				if(video_write_position == 0)
-					brender_base = video_pts;
-				video_output_ptr->set_frame_number(round(video_pts *
-					default_asset->streams[stream].frame_rate));
-				video_write_position++;
-				if(video_write_position >= video_write_length)
-				{
-					result = file->write_video_buffer(video_write_position);
+				brender_base = video_pts;
 
-					if(result)
-						return result;
+				if(result = file->write_frames(video_output, layers))
+					return result;
 // Update the brender map after writing the files.
-					if(package->use_brender)
-						set_video_map(brender_base, video_pts + duration);
-
-					video_write_position = 0;
-				}
+				if(package->use_brender)
+					set_video_map(brender_base, video_pts + duration);
 			}
 			package->count++;
 			video_pts += duration;
@@ -340,17 +325,10 @@ void PackageRenderer::stop_engine()
 
 void PackageRenderer::stop_output()
 {
-	file->stop_audio_thread();
-
 	if(default_asset->stream_count(STRDSC_VIDEO))
 	{
-		file->write_video_buffer(video_write_position);
 		if(package->use_brender)
 			set_video_map(brender_base, video_pts);
-
-		video_write_position = 0;
-
-		file->stop_video_thread();
 
 		if(mwindow_global)
 		{
@@ -500,6 +478,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 	}
 
 	close_output();
+
 	set_result(result, pkg_error);
 	return result;
 }

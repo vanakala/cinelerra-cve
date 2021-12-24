@@ -2132,7 +2132,7 @@ void FileAVlibs::liberror(int code, const char *fmt, ...)
 	errormsg("%s", string);
 }
 
-int FileAVlibs::write_frames(VFrame ***frames, int len)
+int FileAVlibs::write_frames(VFrame **frames, int len)
 {
 	AVCodecContext *video_ctx;
 	AVStream *stream;
@@ -2147,7 +2147,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 
 	for(int j = 0; j < len; j++)
 	{
-		VFrame *frame = frames[0][j];
+		VFrame *frame = frames[j];
 
 		if(write_pts_base < 0)
 			write_pts_base = frame->get_pts();
@@ -2275,19 +2275,11 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	stream = context->streams[audio_index];
 	audio_ctx = codec_contexts[audio_index];
 
-	if(resample_size < in_length)
+	if(!resampled_alloc)
 	{
-		if(resample_size)
-		{
-			for(chan = 0; chan < MAXCHANNELS; chan++)
-			{
-				delete [] resampled_data[chan];
-				resampled_data[chan] = 0;
-			}
-		}
 		sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
 
-		resample_size = in_length + audio_ctx->frame_size;
+		resample_size = AUDIO_BUFFER_SIZE + audio_ctx->frame_size;
 		resampled_alloc = av_rescale_rnd(swr_get_delay(swr_ctx,
 			asset->streams[streamix].sample_rate) + resample_size,
 			audio_ctx->sample_rate, asset->streams[streamix].sample_rate, AV_ROUND_UP);

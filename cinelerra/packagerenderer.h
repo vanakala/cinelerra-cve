@@ -6,7 +6,9 @@
 #ifndef PACKAGERENDERER_H
 #define PACKAGERENDERER_H
 
+#include "aframe.inc"
 #include "bcwindowbase.inc"
+#include "cinelerra.h"
 #include "edit.inc"
 #include "datatype.h"
 #include "edl.inc"
@@ -89,7 +91,8 @@ public:
 	ptstime audio_preroll;
 	int audio_read_length;
 	File *file;
-	VFrame ***video_output;
+	AFrame *audio_output[MAX_CHANNELS];
+	VFrame *video_output[MAX_CHANNELS];
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
 	AudioOutConfig *aconfig;
@@ -98,13 +101,10 @@ public:
 	RenderPackage *package;
 	TransportCommand *command;
 	VideoDevice *video_device;
-	VFrame *video_output_ptr;
 	ptstime video_preroll;
 	ptstime video_pts;
 	ptstime video_read_length;
 	ptstime brender_base;
-	int video_write_length;
-	int video_write_position;
 	char pkg_error[BCTEXTLEN];
 };
 

@@ -42,7 +42,7 @@ public:
 	virtual size_t get_memory_usage() { return 0; };
 
 	virtual int write_aframes(AFrame **buffer) { return 1; };
-	virtual int write_frames(VFrame ***frames, int len) { return 0; };
+	virtual int write_frames(VFrame **frames, int len) { return 1; };
 	virtual int read_aframe(AFrame *aframe)  { return 1; };
 // Can convert samplerate and channels of audio
 	virtual int converts_samples() { return 0; };

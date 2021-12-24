@@ -17,7 +17,6 @@
 #include "filejpeg.h"
 #include "filepng.h"
 #include "filetga.h"
-#include "filethread.h"
 #include "filetiff.h"
 #include "formattools.h"
 #include "framecache.h"
@@ -48,7 +47,7 @@ File::~File()
 
 	if(temp_frame) delete temp_frame;
 
-	close_file(0);
+	close_file();
 	delete format_completion;
 	delete write_lock;
 	BC_Resources::tmpframes.release_frame(last_frame);
@@ -58,8 +57,6 @@ void File::reset_parameters()
 {
 	file = 0;
 	writing = 0;
-	audio_thread = 0;
-	video_thread = 0;
 	getting_options = 0;
 	format_window = 0;
 	temp_frame = 0;
@@ -348,62 +345,14 @@ int File::open_file(Asset *asset, int open_method, int stream, const char *filep
 		return FILE_NOT_FOUND;
 }
 
-void File::close_file(int ignore_thread)
+void File::close_file()
 {
-	if(!ignore_thread)
-	{
-		stop_audio_thread();
-		stop_video_thread();
-	}
-
-	if(file) 
+	if(file)
 	{
 		file->close_file();
 		delete file;
 	}
 	reset_parameters();
-}
-
-void File::start_audio_thread(int buffer_size, int ring_buffers)
-{
-	if(!audio_thread)
-	{
-		audio_thread = new FileThread(this, SUPPORTS_AUDIO);
-		audio_thread->start_writing(buffer_size, 0, ring_buffers);
-	}
-}
-
-void File::start_video_thread(int buffer_size, 
-	int color_model, 
-	int ring_buffers)
-{
-	if(!video_thread)
-	{
-		video_thread = new FileThread(this, SUPPORTS_VIDEO);
-		video_thread->start_writing(buffer_size, 
-			color_model, 
-			ring_buffers);
-	}
-}
-
-void File::stop_audio_thread()
-{
-	if(audio_thread)
-	{
-		audio_thread->stop_writing();
-		delete audio_thread;
-		audio_thread = 0;
-	}
-}
-
-void File::stop_video_thread()
-{
-	if(video_thread)
-	{
-		video_thread->stop_writing();
-		delete video_thread;
-		video_thread = 0;
-	}
 }
 
 samplenum File::get_audio_length()
@@ -426,7 +375,7 @@ int File::write_aframes(AFrame **frames)
 	return 1;
 }
 
-int File::write_frames(VFrame ***frames, int len)
+int File::write_frames(VFrame **frames, int len)
 {
 	int result;
 
@@ -435,39 +384,6 @@ int File::write_frames(VFrame ***frames, int len)
 	write_lock->unlock();
 
 	return result;
-}
-
-int File::write_audio_buffer(int len)
-{
-	int result = 0;
-	if(audio_thread)
-	{
-		result = audio_thread->write_buffer(len);
-	}
-	return result;
-}
-
-int File::write_video_buffer(int len)
-{
-	int result = 0;
-	if(video_thread)
-	{
-		result = video_thread->write_buffer(len);
-	}
-
-	return result;
-}
-
-AFrame** File::get_audio_buffer()
-{
-	if(audio_thread) return audio_thread->get_audio_buffer();
-	return 0;
-}
-
-VFrame*** File::get_video_buffer()
-{
-	if(video_thread) return video_thread->get_video_buffer();
-	return 0;
 }
 
 int File::get_samples(AFrame *aframe)
