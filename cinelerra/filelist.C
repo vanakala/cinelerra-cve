@@ -402,38 +402,32 @@ noframe:
 	return 1;
 }
 
-int FileList::write_frames(VFrame ***frames, int len)
+int FileList::write_frames(VFrame **frames, int len)
 {
 	int streamix = asset->get_stream_ix(STRDSC_VIDEO);
 
 	return_value = 0;
 
-	if(frames[0][0]->get_color_model() == BC_COMPRESSED)
+	if(frames[0]->get_color_model() == BC_COMPRESSED)
 	{
-		int layers = asset->streams[streamix].channels;
-
-		for(int i = 0; i < layers && !return_value; i++)
+		for(int j = 0; j < len && !return_value; j++)
 		{
-			for(int j = 0; j < len && !return_value; j++)
+			VFrame *frame = frames[j];
+			char *path = create_path(frame->get_frame_number());
+
+			FILE *fd = fopen(path, "wb");
+			if(fd)
 			{
-				VFrame *frame = frames[i][j];
-				char *path = create_path(frame->get_frame_number());
+				return_value = !fwrite(frames[j]->get_data(),
+					frames[j]->get_compressed_size(),
+					1, fd);
 
-				FILE *fd = fopen(path, "wb");
-				if(fd)
-				{
-					return_value = !fwrite(frames[i][j]->get_data(),
-						frames[i][j]->get_compressed_size(),
-						1,
-						fd);
-
-					fclose(fd);
-				}
-				else
-				{
-					errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), renderpath);
-					return_value++;
-				}
+				fclose(fd);
+			}
+			else
+			{
+				errormsg(_("Error while opening \"%s\" for writing. \n%m\n"), renderpath);
+				return_value++;
 			}
 		}
 	}
@@ -593,29 +587,22 @@ FrameWriter::FrameWriter(FileList *file, int cpus)
 
 void FrameWriter::init_packages()
 {
-	for(int i = 0, layer = 0, number = 0;
+	for(int i = 0, number = 0;
 		i < get_total_packages(); i++)
 	{
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 
-		package->input = frames[layer][number];
+		package->input = frames[number];
 		package->path = file->create_path(package->input->get_frame_number());
 		number++;
-		if(number >= len)
-		{
-			layer++;
-			number = 0;
-		}
 	}
 }
 
-void FrameWriter::write_frames(VFrame ***frames, int len)
+void FrameWriter::write_frames(VFrame **frames, int len)
 {
-	int layers = file->asset->streams[file->asset->get_stream_ix(STRDSC_VIDEO)].channels;
-
 	this->frames = frames;
 	this->len = len;
-	set_package_count(len * layers);
+	set_package_count(len);
 	process_packages();
 }
 

@@ -47,7 +47,7 @@ public:
 	virtual int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit) { return 0; };
 
 	void write_list_header();
-	int write_frames(VFrame ***frames, int len);
+	int write_frames(VFrame **frames, int len);
 	VFrame* read_frame(int use_alpha, int use_float);
 	virtual size_t get_memory_usage();
 // Get the total writer units for calculating memory usage
@@ -106,13 +106,13 @@ class FrameWriter : public LoadServer
 public:
 	FrameWriter(FileList *file, int cpus);
 
-	void write_frames(VFrame ***frames, int len);
+	void write_frames(VFrame **frames, int len);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
 
 	FileList *file;
-	VFrame ***frames;
+	VFrame **frames;
 	int len;
 };
 
