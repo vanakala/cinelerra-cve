@@ -1448,7 +1448,10 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 	}
 
 	if(load_configuration())
+	{
 		update_gui();
+		do_reconfigure = 1;
+	}
 
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
