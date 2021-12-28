@@ -42,7 +42,11 @@ PluginClient::PluginClient(PluginServer *server)
 
 void PluginClient::plugin_init(int total_in_buffers)
 {
+	KeyFrame *keyframe = get_first_keyframe();
+
 	this->total_in_buffers = total_in_buffers;
+	if(keyframe)
+		read_data(keyframe);
 	init_plugin();
 }
 
