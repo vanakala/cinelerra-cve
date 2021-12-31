@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+
 extern const char *version_name;
 
 #define AVIO_BUFFSIZE 4096
@@ -532,7 +533,7 @@ AVPacket *FileAVlibs::allocate_packet()
 {
 	AVPacket *packet;
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,12,100)
 	packet = (AVPacket*)av_mallocz(sizeof(AVPacket));
 	av_init_packet(packet);
 #else
@@ -543,7 +544,7 @@ AVPacket *FileAVlibs::allocate_packet()
 
 void FileAVlibs::deallocate_packet(AVPacket **packet)
 {
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,133,100)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,12,100)
 	av_free_packet(*packet);
 	av_freep(packet);
 #else
@@ -1461,7 +1462,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 				avvframe, &got_it, avvpkt)) < 0)
 			{
 				liberror(res, _("Failed to send packet to video decoder"));
-				av_free_packet(avvpkt);
+				av_packet_unref(avvpkt);
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -2182,7 +2183,7 @@ int FileAVlibs::write_frames(VFrame **frames, int len)
 		if(!avvpkt)
 			avvpkt = allocate_packet();
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,37,100)
 		if(context->oformat->flags & AVFMT_RAWPICTURE &&
 				video_ctx->codec->id == AV_CODEC_ID_RAWVIDEO)
 		{
