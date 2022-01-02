@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 		COPYRIGHTTEXT2 "\n"
 #endif
 		);
-	fputs(FFMPEG_EXTERNALTEXT " library versions:\n", stderr);
+	fputs(FFMPEG_EXTERNALTEXT ", library versions:\n", stderr);
 	FileAVlibs::versionifo(4);
 #if defined(COMPILEDATE)
 	fputs(COMPILEDATE "\n", stderr);

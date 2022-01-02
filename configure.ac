@@ -205,7 +205,7 @@ else
 		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve \
 		-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
 		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve"
-	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
+	FFMPEG_EXTERNALTEXT="Internal ffmpeg release $FFMPEG_RELEASE"
 fi
 AC_SUBST(FFMPEG_FOLDER)
 AC_SUBST(FFMPEG_CPPFLAGS)
