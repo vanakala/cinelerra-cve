@@ -38,6 +38,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	interrupted = 0;
 	audio_playing = 0;
 	edl = 0;
+	do_reset = 0;
 
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
@@ -63,10 +64,8 @@ RenderEngine::~RenderEngine()
 
 void RenderEngine::reset_engines()
 {
-	delete arender;
-	arender = 0;
-	delete vrender;
-	vrender = 0;
+	do_reset = 1;
+	interrupt_playback();
 }
 
 void RenderEngine::reset_brender()
@@ -114,6 +113,14 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 void RenderEngine::create_render_threads()
 {
+	if(do_reset)
+	{
+		do_reset = 0;
+		delete arender;
+		arender = 0;
+		delete vrender;
+		vrender = 0;
+	}
 	if(!command.single_frame() &&
 			edl->playable_tracks_of(TRACK_AUDIO) &&
 			edlsession->audio_channels && !arender)
@@ -337,6 +344,15 @@ void RenderEngine::run()
 		playback_engine->is_playing_back = 0;
 
 	input_lock->unlock();
+
+	if(do_reset)
+	{
+		delete arender;
+		arender = 0;
+		delete vrender;
+		vrender = 0;
+		do_reset = 0;
+	}
 	interrupt_lock->unlock();
 }
 
