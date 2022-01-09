@@ -667,6 +667,18 @@ void Track::detach_shared_effects(Plugin *plugin, Track *track)
 	}
 }
 
+int Track::get_strdsc()
+{
+	switch(data_type)
+	{
+	case TRACK_AUDIO:
+		return STRDSC_AUDIO;
+	case TRACK_VIDEO:
+		return STRDSC_VIDEO;
+	}
+	return 0;
+}
+
 void Track::dump(int indent)
 {
 	const char *tp;

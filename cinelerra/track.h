@@ -188,6 +188,8 @@ public:
 	Plugin *get_shared_multichannel(ptstime start, ptstime end);
 // Number of bytes used
 	size_t get_size();
+// Return track type as STRDSC
+	int get_strdsc();
 
 // Dimensions of this track if video
 	int track_w, track_h;
