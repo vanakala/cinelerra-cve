@@ -306,6 +306,10 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 					{
 						if(length > 0)
 							project_time += current->asset->from_units(track->data_type, length);
+						if(current->stream < 0)
+							current->stream =
+								current->asset->get_stream_ix(
+									track->get_strdsc());
 					}
 					else
 						current->stream = -1;
