@@ -192,16 +192,16 @@ int ColorModels::calculate_datasize(int w, int h, int bytes_per_line, int color_
 	{
 	case BC_YUV420P:
 	case BC_YUV411P:
-		return w * h + w * h / 2 + 4;
+		return w * h + w * h / 2;
 
 	case BC_YUV422P:
-		return w * h * 2 + 4;
+		return w * h * 2;
 
 	case BC_YUV444P:
-		return w * h * 3 + 4;
+		return w * h * 3;
 
 	default:
-		return h * bytes_per_line + 4;
+		return h * bytes_per_line;
 	}
 	return 0;
 }

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <inttypes.h>
 #include <png.h>
@@ -31,6 +15,9 @@
 #include "clip.h"
 #include "colormodels.h"
 #include "vframe.h"
+
+// Data padding for CPU vector extensions
+#define OVERALLOC 32
 
 class PngReadFunction
 {
@@ -172,12 +159,13 @@ int VFrame::get_pixels_per_line()
 
 size_t VFrame::get_data_size()
 {
-	return calculate_data_size(w, h, bytes_per_line, color_model) - 4;
+	return calculate_data_size(w, h, bytes_per_line, color_model) - OVERALLOC;
 }
 
 size_t VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
 {
-	return ColorModels::calculate_datasize(w, h, bytes_per_line, color_model);
+	return ColorModels::calculate_datasize(w, h, bytes_per_line, color_model) +
+		OVERALLOC;
 }
 
 void VFrame::create_row_pointers()
@@ -245,7 +233,6 @@ void VFrame::allocate_data(unsigned char *data,
 	else
 		this->bytes_per_line = (this->bytes_per_pixel * w + 15) & ~15;
 
-// Allocate data + padding for MMX
 	if(data)
 	{
 		shared = 1;
