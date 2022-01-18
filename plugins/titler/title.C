@@ -1546,6 +1546,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 	{
 		overlay_mask();
 	}
+	output->set_transparent();
 	return output;
 }
 
@@ -1727,6 +1728,9 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.color_green = (color & 0xff00);
 				config.color_blue = (color << 8) & 0xff00;
 			}
+			config.color_red = input.tag.get_property("COLOR_R", config.color_red);
+			config.color_green = input.tag.get_property("COLOR_G", config.color_green);
+			config.color_blue = input.tag.get_property("COLOR_B", config.color_blue);
 			color = input.tag.get_property("COLOR_STROKE", 0);
 			if(color)
 			{
@@ -1734,6 +1738,12 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.color_stroke_green = (color & 0xff00);
 				config.color_stroke_blue = (color << 8) & 0xff00;
 			}
+			config.color_stroke_red = input.tag.get_property("COLOR_STROKE_R",
+				config.color_stroke_red);
+			config.color_stroke_green = input.tag.get_property("COLOR_STROKE_G",
+				config.color_stroke_green);
+			config.color_stroke_blue = input.tag.get_property("COLOR_STROKE_B",
+				config.color_stroke_blue);
 			config.stroke_width = input.tag.get_property("STROKE_WIDTH", config.stroke_width);
 			config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
 			config.loop = input.tag.get_property("LOOP", config.loop);
