@@ -104,6 +104,7 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		fade,
 		TRANSFER_NORMAL,
 		NEAREST_NEIGHBOR);
+	outgoing->set_transparent();
 }
 
 void DissolveMain::handle_opengl()
