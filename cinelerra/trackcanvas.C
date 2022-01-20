@@ -3118,6 +3118,9 @@ int TrackCanvas::do_plugin_handles(int cursor_x, int cursor_y, int *new_cursor)
 			TrackPlugin *trackplugin = plugin->trackplugin;
 			int plugin_x1, plugin_y1, plugin_x2, plugin_y2;
 
+			if(!trackplugin)
+				continue;
+
 			plugin_x1 = trackplugin->get_x();
 			plugin_x2 = plugin_x1 + trackplugin->get_w();
 			plugin_y1 = trackplugin->get_y();
