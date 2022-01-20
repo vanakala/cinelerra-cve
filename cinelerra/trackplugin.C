@@ -223,7 +223,9 @@ int TrackPlugin::cursor_motion_event()
 
 int TrackPlugin::button_press_event()
 {
-	if(is_event_win())
+	int buttonpress;
+
+	if(is_event_win() && (buttonpress = get_buttonpress()) < 4)
 	{
 		int new_cursor = canvas->default_cursor();
 		int cursor_x = get_cursor_x();
@@ -234,7 +236,7 @@ int TrackPlugin::button_press_event()
 			new_cursor = RIGHT_CURSOR;
 		else
 		{
-			if(get_buttonpress() == 3)
+			if(buttonpress == 3)
 			{
 				if(num_keyframes)
 				{
@@ -255,10 +257,10 @@ int TrackPlugin::button_press_event()
 				canvas->plugin_menu->activate_menu();
 				return 1;
 			}
-			else if(get_double_click())
+			else if(get_double_click() && buttonpress == 1)
 			{
-				master_edl->local_session->set_selectionstart(plugin->get_pts());
-				master_edl->local_session->set_selectionend(plugin->end_pts());
+				master_edl->local_session->set_selection(plugin->get_pts(),
+					plugin->end_pts());
 				mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 				mwindow_global->update_plugin_guis();
 				mwindow_global->update_gui(WUPD_PATCHBAY |
