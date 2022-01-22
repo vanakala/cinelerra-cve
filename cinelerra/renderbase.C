@@ -119,21 +119,35 @@ void RenderBase::shared_done(Plugin *plugin)
 
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != plugin_type)
+		if(track->data_type != plugin_type || !track->renderer)
 			continue;
 
 		for(int i = 0; i < track->plugins.total; i++)
 		{
 			Plugin *current = track->plugins.values[i];
 
+			if(current == plugin)
+				adjust_next_plugin(track, plugin, i);
+
 			if(current->plugin_type == PLUGIN_SHAREDPLUGIN &&
 					current->shared_plugin == plugin &&
 					current->on)
 			{
-				if(track->renderer && track->renderer->next_plugin &&
+				if(track->renderer->next_plugin &&
 						track->renderer->next_plugin->shared_plugin == plugin)
-					track->renderer->next_plugin = 0;
+					adjust_next_plugin(track, track->renderer->next_plugin, i);
 			}
 		}
+	}
+}
+
+void RenderBase::adjust_next_plugin(Track *track, Plugin *plugin, int ix)
+{
+	if(track->renderer->next_plugin == plugin)
+	{
+		if(ix < track->plugins.total - 1)
+			track->renderer->next_plugin = track->plugins.values[ix + 1];
+		else
+			track->renderer->next_plugin = 0;
 	}
 }

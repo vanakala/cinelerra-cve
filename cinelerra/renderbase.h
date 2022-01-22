@@ -12,6 +12,7 @@
 #include "renderbase.inc"
 #include "renderengine.h"
 #include "thread.h"
+#include "track.inc"
 #include "trackrender.inc"
 
 class RenderBase : public Thread
@@ -45,6 +46,9 @@ protected:
 	int last_playback;
 	double render_speed;
 	Condition *start_lock;
+
+private:
+	void adjust_next_plugin(Track *track, Plugin *plugin, int ix);
 };
 
 #endif
