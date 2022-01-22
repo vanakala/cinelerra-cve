@@ -91,12 +91,12 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 			track_frame = render_camera(track_frame);
 			render_mask(track_frame, 1);
 			render_crop(track_frame, 1);
-			track_frame = render_plugins(track_frame, edit, rstep);
+			track_frame = render_plugins(track_frame, edit);
 		}
 		else
 		{
 			if(next_plugin)
-				track_frame = render_plugins(track_frame, edit, rstep);
+				track_frame = render_plugins(track_frame, edit);
 		}
 		if(!next_plugin)
 		{
@@ -408,7 +408,7 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	*out_y2 = round(y[3]);
 }
 
-VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
+VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 {
 	Plugin *plugin;
 	ptstime start = input->get_pts();
@@ -428,7 +428,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 		if(plugin->on && plugin->active_in(start, end))
 		{
 			input->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, input, edit, rstep))
+			if(tmpframe = execute_plugin(plugin, input, edit))
 				input = tmpframe;
 			else
 			{
@@ -440,7 +440,7 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit, int rstep)
 	return input;
 }
 
-VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, int rstep)
+VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit)
 {
 	PluginServer *server = plugin->plugin_server;
 	int layer;
@@ -458,7 +458,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 		frame = render_camera(frame);
 		render_mask(frame, 1);
 		render_crop(frame, 1);
-		frame = render_plugins(frame, edit, rstep);
+		frame = render_plugins(frame, edit);
 		render_fade(frame);
 		render_mask(frame, 0);
 		render_crop(frame, 0);
@@ -472,10 +472,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 			if(!plugin->shared_plugin->plugin_server->multichannel)
 				server = plugin->shared_plugin->plugin_server;
 			else
-			{
-				if(rstep == RSTEP_NORMAL)
-					return 0;
-			}
+				return 0;
 		}
 		// Fall through
 	case PLUGIN_STANDALONE:
@@ -493,7 +490,6 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 				plugin->client->process_buffer(vframes.values);
 				frame = videorender->take_vframes(plugin, this);
 
-				next_plugin = 0;
 				videorender->shared_done(plugin);
 			}
 			else
@@ -505,7 +501,7 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit, 
 				}
 				plugin->client->set_renderer(this);
 				plugin->client->process_buffer(&frame);
-				return frame;
+				next_plugin = 0;
 			}
 		}
 		break;
@@ -547,7 +543,7 @@ VFrame *VTrackRender::get_vtmpframe(VFrame *buffer, PluginClient *client)
 					plugin->plugin_server->multichannel)
 				continue;
 			if(plugin->on && plugin->active_in(buffer->get_pts(), buffer->next_pts()))
-				buffer = execute_plugin(plugin, buffer, edit, RSTEP_NORMAL);
+				buffer = execute_plugin(plugin, buffer, edit);
 		}
 	}
 	return buffer;
