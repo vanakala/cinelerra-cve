@@ -90,10 +90,10 @@ void TrackRender::release_asset(Asset *asset)
 
 int TrackRender::is_playable(ptstime pts, Edit *edit)
 {
-	if(!edit || !media_track->play)
+	if(!media_track->play)
 		return 0;
 
-	return edit->asset || edit->transition || media_track->is_synthesis(pts);
+	return (edit && (edit->asset || edit->transition)) || media_track->is_synthesis(pts);
 }
 
 int TrackRender::is_muted(ptstime pts)
