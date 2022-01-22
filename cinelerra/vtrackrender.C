@@ -557,9 +557,10 @@ VFrame *VTrackRender::render_transition(VFrame *frame, Edit *edit)
 {
 	VFrame *tmpframe;
 	Edit *prev;
-	Plugin *transition = edit->transition;
+	Plugin *transition;
 
-	if(!transition || !transition->plugin_server || !transition->on ||
+	if(!edit || !(transition = edit->transition) ||
+			!transition->plugin_server || !transition->on ||
 			transition->get_length() < frame->get_pts() - edit->get_pts())
 		return frame;
 

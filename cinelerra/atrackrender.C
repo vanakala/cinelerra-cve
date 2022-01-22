@@ -219,11 +219,11 @@ void ATrackRender::render_fade(AFrame *aframe)
 
 void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 {
-	Plugin *transition = edit->transition;
+	Plugin *transition;
 	AFrame *tmpframe;
-	Edit *prev = edit->previous;
 
-	if(!transition || !transition->plugin_server || !transition->on ||
+	if(!edit || !(transition  = edit->transition) ||
+			!transition->plugin_server || !transition->on ||
 			transition->get_length() < aframe->get_pts() - edit->get_pts())
 		return;
 
@@ -234,7 +234,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 	}
 
 	if(!(tmpframe = arender->get_file_frame(aframe->get_pts(),
-		aframe->get_source_duration(), prev, 1)))
+		aframe->get_source_duration(), edit->previous, 1)))
 	{
 		tmpframe = audio_frames.clone_frame(aframe);
 		tmpframe->clear_frame(aframe->get_pts(), aframe->get_source_duration());
