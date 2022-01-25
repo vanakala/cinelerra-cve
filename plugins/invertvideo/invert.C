@@ -206,6 +206,12 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("INVERTVIDEO"))
 		{
+			// Compatibility
+			config.chan0 = input.tag.get_property("R", config.chan0);
+			config.chan1 = input.tag.get_property("G", config.chan1);
+			config.chan2 = input.tag.get_property("B", config.chan2);
+			config.chan3 = input.tag.get_property("A", config.chan3);
+
 			config.chan0 = input.tag.get_property("CHAN0", config.chan0);
 			config.chan1 = input.tag.get_property("CHAN1", config.chan1);
 			config.chan2 = input.tag.get_property("CHAN2", config.chan2);
