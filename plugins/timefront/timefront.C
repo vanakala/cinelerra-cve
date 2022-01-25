@@ -683,10 +683,8 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 	if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		if(total_in_buffers != 2)
-		{
-			abort_plugin(_("If you are using another track for timefront, you have to have it under shared effects"));
 			return;
-		}
+
 		if(outframes[0]->get_w() != outframes[1]->get_w() ||
 			outframes[0]->get_h() != outframes[1]->get_h())
 		{
