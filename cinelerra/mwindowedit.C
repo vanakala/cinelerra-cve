@@ -640,6 +640,8 @@ void MWindow::insert_effect(const char *title,
 			start = 0;
 			length = track->get_length();
 		}
+		if(EQUIV(length, 0))
+			length = master_edl->duration();
 	}
 	start = master_edl->align_to_frame(start, 1);
 	length = master_edl->align_to_frame(length, 1);
