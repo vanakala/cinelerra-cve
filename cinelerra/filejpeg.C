@@ -324,6 +324,7 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	VFrame *work_frame;
 	JSAMPROW row_pointer[1];
 
+	output->clear_frame();
 	if(output->get_color_model() != BC_RGB888)
 	{
 		if(temp_frame && (temp_frame->get_w() != output->get_w() ||

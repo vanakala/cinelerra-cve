@@ -146,6 +146,7 @@ int FileTGA::colormodel_supported(int colormodel)
 
 int FileTGA::read_frame(VFrame *frame, VFrame *data)
 {
+	frame->clear_frame();
 	read_tga(asset, frame, data, temp);
 	return 0;
 }

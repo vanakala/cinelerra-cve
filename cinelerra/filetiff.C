@@ -289,6 +289,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	unit->offset = 0;
 	unit->data = input;
 
+	output->clear_frame();
 	stream = TIFFClientOpen("FileTIFF", 
 		"r",
 		(void*)unit,
