@@ -425,16 +425,23 @@ VFrame *VTrackRender::render_plugins(VFrame *input, Edit *edit)
 				continue;
 		}
 
-		if(plugin->on && plugin->active_in(start, end))
+		if(plugin->active_in(start, end))
 		{
-			input->set_layer(media_track->number_of());
-			if(tmpframe = execute_plugin(plugin, input, edit))
-				input = tmpframe;
-			else
+			if(plugin->on)
 			{
-				next_plugin = plugin;
-				break;
+				input->set_layer(media_track->number_of());
+				if(tmpframe = execute_plugin(plugin, input, edit))
+					input = tmpframe;
+				else
+				{
+					next_plugin = plugin;
+					break;
+				}
 			}
+			else if(plugin->plugin_server &&
+					plugin->plugin_server->multichannel &&
+					videorender->is_shared_ready(plugin, start))
+				videorender->shared_done(plugin);
 		}
 	}
 	return input;
@@ -467,14 +474,8 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit)
 		return frame;
 
 	case PLUGIN_SHAREDPLUGIN:
-		if(!server && plugin->shared_plugin)
-		{
-			if(!plugin->shared_plugin->plugin_server->multichannel)
-				server = plugin->shared_plugin->plugin_server;
-			else
-				return 0;
-		}
-		// Fall through
+		return 0;
+
 	case PLUGIN_STANDALONE:
 		if(server)
 		{

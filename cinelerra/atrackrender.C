@@ -261,16 +261,23 @@ AFrame *ATrackRender::render_plugins(AFrame *aframe, Edit *edit)
 				continue;
 		}
 
-		if(plugin->on && plugin->active_in(start, end))
+		if(plugin->active_in(start, end))
 		{
-			aframe->set_track(media_track->number_of());
-			if(tmp = execute_plugin(plugin, aframe, edit))
-				aframe = tmp;
-			else
+			if(plugin->on)
 			{
-				next_plugin = plugin;
-				break;
+				aframe->set_track(media_track->number_of());
+				if(tmp = execute_plugin(plugin, aframe, edit))
+					aframe = tmp;
+				else
+				{
+					next_plugin = plugin;
+					break;
+				}
 			}
+			else if(plugin->plugin_server &&
+					plugin->plugin_server->multichannel &&
+					arender->is_shared_ready(plugin, start))
+				arender->shared_done(plugin);
 		}
 	}
 	return aframe;
@@ -295,14 +302,8 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit)
 		break;
 
 	case PLUGIN_SHAREDPLUGIN:
-		if(!server && plugin->shared_plugin)
-		{
-			if(!plugin->shared_plugin->plugin_server->multichannel)
-				server = plugin->shared_plugin->plugin_server;
-			else
-				return 0;
-		}
-		// Fall through
+		return 0;
+
 	case PLUGIN_STANDALONE:
 		if(server)
 		{
