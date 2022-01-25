@@ -226,7 +226,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 {
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_infop end_info = 0;	
+	png_infop end_info = 0;
 	int result = 0;
 	int color_type;
 	int color_depth;
@@ -234,6 +234,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	int size = input->get_compressed_size();
 	input->set_compressed_size(0);
 
+	output->clear_frame();
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
