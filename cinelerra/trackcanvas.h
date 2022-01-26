@@ -261,6 +261,9 @@ public:
 
 	int resource_h();
 
+// Check if cursor is inside
+	int cursor_in_canvas(int *x_pos, int *y_pos);
+
 // Display hourglass if timer expired
 	void check_hourglass();
 
