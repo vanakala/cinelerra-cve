@@ -21,6 +21,7 @@ public:
 
 	void show();
 	void update(int x, int y, int w, int h);
+	void update();
 	void update_toggles();
 	int cursor_motion_event();
 	int button_press_event();

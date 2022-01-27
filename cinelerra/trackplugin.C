@@ -181,6 +181,12 @@ void TrackPlugin::update(int x, int y, int w, int h)
 	redraw(x, y, w, h);
 }
 
+void TrackPlugin::update()
+{
+	drawn_w = drawn_h = -1;
+	show();
+}
+
 void TrackPlugin::update_toggles()
 {
 	if(plugin_on)
