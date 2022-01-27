@@ -303,6 +303,20 @@ void Plugin::change_plugin(PluginServer *server, int plugin_type,
 
 	if(plugin_type != PLUGIN_TRANSITION)
 		track->tracks->cleanup_plugins();
+
+	if(trackplugin)
+		trackplugin->update();
+
+	for(Track *current = track->tracks->first; current; current = current->next)
+	{
+		for(int i = 0; i < current->plugins.total; i++)
+		{
+			Plugin *plugin = current->plugins.values[i];
+
+			if(plugin->shared_plugin == this && plugin->trackplugin)
+				plugin->trackplugin->update();
+		}
+	}
 }
 
 KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
