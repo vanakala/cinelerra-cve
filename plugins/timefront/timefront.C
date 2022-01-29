@@ -187,7 +187,8 @@ void TimeFrontWindow::update_shape()
 			add_subwindow(angle_title = new BC_Title(x, y, _("Angle:")));
 			add_subwindow(angle = new TimeFrontAngle(plugin, x + angle_title->get_w() + 10, y));
 		}
-		if(!rate){
+		if(!rate)
+		{
 			y = shape_y + 40;
 
 			add_subwindow(rate_title = new BC_Title(x, y, _("Rate:")));
@@ -204,8 +205,8 @@ void TimeFrontWindow::update_shape()
 			y += 35;
 
 		}
-	} else
-	if(plugin->config.shape == TimeFrontConfig::RADIAL)
+	}
+	else if(plugin->config.shape == TimeFrontConfig::RADIAL)
 	{
 		delete angle_title;
 		delete angle;
@@ -245,8 +246,8 @@ void TimeFrontWindow::update_shape()
 			add_subwindow(out_radius = new TimeFrontOutRadius(plugin, x + out_radius_title->get_w() + 10, y));
 			y += 35;
 		}
-	} else
-	if(plugin->config.shape == TimeFrontConfig::OTHERTRACK)
+	}
+	else if(plugin->config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		delete center_x_title;
 		delete center_y_title;
@@ -280,8 +281,8 @@ void TimeFrontWindow::update_shape()
 				x + track_usage_title->get_w() + 10,
 				y));
 		}
-	} else
-	if(plugin->config.shape == TimeFrontConfig::ALPHA)
+	}
+	else if(plugin->config.shape == TimeFrontConfig::ALPHA)
 	{
 		delete center_x_title;
 		delete center_y_title;
@@ -647,12 +648,14 @@ void TimeFrontMain::reset_plugin()
 
 PLUGIN_CLASS_METHODS
 
-void TimeFrontMain::process_tmpframes(VFrame **frame)
+void TimeFrontMain::process_tmpframes(VFrame **frames)
 {
-	VFrame **outframes = frame;
 	double project_frame_rate = get_project_framerate();
-	int color_model = frame[0]->get_color_model();
+	int color_model = frames[0]->get_color_model();
 	int do_reconfigure = 0;
+	int num_frames = round(config.time_range * project_frame_rate);
+	int frame_h = frames[0]->get_h();
+	int frame_w = frames[0]->get_w();
 
 	switch(color_model)
 	{
@@ -675,18 +678,18 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 
 	if(!framelist[0])
 	{
-		framelist[0] = clone_vframe(outframes[0]);
+		framelist[0] = clone_vframe(frames[0]);
 		framelist_allocated = 1;
 	}
-	framelist[0]->copy_from(outframes[0]);
+	framelist[0]->copy_from(frames[0]);
 	input = framelist[0];
 	if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		if(total_in_buffers != 2)
 			return;
 
-		if(outframes[0]->get_w() != outframes[1]->get_w() ||
-			outframes[0]->get_h() != outframes[1]->get_h())
+		if(frames[0]->get_w() != frames[1]->get_w() ||
+			frames[0]->get_h() != frames[1]->get_h())
 		{
 			abort_plugin(_("Sizes of master track and timefront track do not match"));
 			return;
@@ -695,9 +698,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 
 // Generate new gradient
 	if(!gradient)
-		gradient = new VFrame(0,
-			outframes[0]->get_w(),
-			outframes[0]->get_h(),
+		gradient = new VFrame(0, frames[0]->get_w(), frames[0]->get_h(),
 			BC_A8);
 
 	if(do_reconfigure && config.shape != TimeFrontConfig::OTHERTRACK &&
@@ -713,11 +714,8 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 	if(config.shape == TimeFrontConfig::ALPHA)
 	{
 		VFrame *tfframe = framelist[0];
-		int frames = round(config.time_range * get_project_framerate());
-		int frame_h = tfframe->get_h();
-		int frame_w = tfframe->get_w();
 
-		switch(tfframe->get_color_model())
+		switch(color_model)
 		{
 		case BC_RGBA16161616:
 			for(int i = 0; i < frame_h; i++)
@@ -727,10 +725,10 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 
 				for(int j = 0; j < frame_w; j++)
 				{
-					grad_row[j] = (unsigned char)(CLIP(frames *
+					uint64_t v = (uint64_t)num_frames *
 						in_row[j * 4 + 3] *
-						in_row[j * 4 + 3 ] / 0xffff / 0xffff,
-						0, frames));
+						in_row[j * 4 + 3] / 0x10000 / 0x100;
+					grad_row[j] = CLIP(v, 0, num_frames);
 				}
 			}
 			break;
@@ -742,24 +740,23 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				unsigned char *grad_row = gradient->get_row_ptr(i);
 
 				for(int j = 0; j < frame_w; j++)
-					grad_row[j] = (unsigned char)(
-							CLIP(frames * in_row[j * 4] *
-							in_row[j * 4] / 0xffff / 0xffff,
-						0, frames));
+				{
+					uint64_t v = (uint64_t)num_frames *
+						in_row[j * 4] * in_row[j * 4] /
+						0x10000 / 0x100;
+					grad_row[j] = CLIP(v, 0, num_frames);
+				}
 			}
 			break;
 		}
 	}
 	else if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		VFrame *tfframe = outframes[1];
-		int frame_h = outframes[1]->get_h();
-		int frame_w = outframes[1]->get_w();
-		int frames = round(config.time_range * get_project_framerate());
+		VFrame *tfframe = frames[1];
 
 		if(config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
-			switch(tfframe->get_color_model())
+			switch(color_model)
 			{
 			case BC_RGBA16161616:
 				for(int i = 0; i < frame_h; i++)
@@ -769,13 +766,13 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 
 					for(int j = 0; j < frame_w; j++)
 					{
-						int tmp = in_row[j * 4] +
+						int tmp = (in_row[j * 4] +
 							in_row[j * 4 + 1] +
-							in_row[j * 4 + 2];
-						grad_row[j] = (unsigned char)(CLIP(
-							frames * tmp * 
-							in_row[j * 4 + 3] / 0xffff / 0xffff / 3,
-							0, frames));
+							in_row[j * 4 + 2]) / 3 ;
+						uint64_t v = (uint64_t)num_frames * tmp *
+							in_row[j * 4 + 3] / 0x10000 /
+							0x100;
+						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
 				break;
@@ -787,16 +784,20 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
 					for(int j = 0; j < frame_w; j++)
-						grad_row[j] =
-							(unsigned char)(CLIP(frames * in_row[j * 4] *
-							in_row[j * 4 + 1] / 0xffff / 0xffff, 0, frames));
+					{
+						uint64_t v = (uint64_t)num_frames *
+							in_row[j * 4] *
+							in_row[j * 4 + 1] /
+							0x10000 / 0x100;
+						grad_row[j] = CLIP(v, 0, num_frames);
+					}
 				}
 				break;
 			}
 		}
 		else if(config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
 		{
-			switch(tfframe->get_color_model())
+			switch(color_model)
 			{
 			case BC_RGBA16161616:
 				for(int i = 0; i < frame_h; i++)
@@ -806,10 +807,11 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 
 					for(int j = 0; j < frame_w; j++)
 					{
-						grad_row[j] = (unsigned char)(CLIP(
-							frames * in_row[j * 4 + 3] *
-							in_row[j * 4 + 3] / 0xffff / 0xffff,
-							0, frames));
+						uint64_t v = (uint64_t)num_frames *
+							in_row[j * 4 + 3] *
+							in_row[j * 4 + 3] /
+							 0x10000 / 0x100;
+						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
 				break;
@@ -822,10 +824,12 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 					int frame_w = tfframe->get_w();
 
 					for(int j = 0; j < frame_w; j++)
-						grad_row[j] = (unsigned char)(CLIP(
-							frames * in_row[j * 4] *
-							in_row[j * 4] / 0xffff / 0xffff,
-							0, frames));
+					{
+						uint64_t v = (uint64_t)num_frames *
+							in_row[j * 4] *
+							in_row[j * 4] / 0x10000 / 0x100;
+						grad_row[j] = CLIP(v, 0, num_frames);
+					}
 				}
 				break;
 			}
@@ -844,7 +848,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 		{
 			if(!framelist[1])
 			{
-				framelist[1] = clone_vframe(outframes[0]);
+				framelist[1] = clone_vframe(frames[0]);
 				framelist_allocated++;
 			}
 			framelist[1]->set_pts(cpts);
@@ -865,27 +869,24 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				break;
 		}
 	}
-	int width = outframes[0]->get_w();
-	int height = outframes[0]->get_h();
+
 	if(config.show_grayscale)
 	{
 		if(!config.invert)
 		{
-			int frames = round(config.time_range * get_project_framerate());
-
-			switch(outframes[0]->get_color_model())
+			switch(color_model)
 			{
 			case BC_RGBA16161616:
-				for(int i = 0; i < height; i++)
+				for(int i = 0; i < frame_h; i++)
 				{
-					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
-					for(int j = 0; j < width; j++)
+					for(int j = 0; j < frame_w; j++)
 					{
-						out_row[0] = 0xffff * grad_row[0] / frames;
-						out_row[1] = 0xffff * grad_row[0] / frames;
-						out_row[2] = 0xffff * grad_row[0] / frames;
+						out_row[0] = 0xffff * grad_row[0] / num_frames;
+						out_row[1] = 0xffff * grad_row[0] / num_frames;
+						out_row[2] = 0xffff * grad_row[0] / num_frames;
 						out_row[3] = 0xffff;
 						out_row += 4;
 						grad_row++;
@@ -893,19 +894,18 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				}
 				break;
 			case BC_AYUV16161616:
-				for(int i = 0; i < height; i++)
+				for(int i = 0; i < frame_h; i++)
 				{
-					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
-					for (int j = 0; j < width; j++)
+					for (int j = 0; j < frame_w; j++)
 					{
 						out_row[0] = 0xffff;
-						out_row[1] = 0xffff * grad_row[0] / frames;
+						out_row[1] = 0xffff * *grad_row++ / num_frames;
 						out_row[2] = 0x8000;
 						out_row[3] = 0x8000;
 						out_row += 4;
-						grad_row++;
 					}
 				}
 				break;
@@ -913,24 +913,22 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 		}
 		else
 		{
-			int pframes = round(config.time_range * get_project_framerate());
-
-			switch(outframes[0]->get_color_model())
+			switch(color_model)
 			{
 			case BC_RGBA16161616:
-				for(int i = 0; i < height; i++)
+				for(int i = 0; i < frame_h; i++)
 				{
-					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
-					for (int j = 0; j < width; j++)
+					for (int j = 0; j < frame_w; j++)
 					{
-						out_row[0] = 0xffff * (pframes - grad_row[0]) /
-							pframes;
-						out_row[1] = 0xffff * (pframes - grad_row[0]) /
-							pframes;
-						out_row[2] = 0xffff * (pframes - grad_row[0]) /
-							pframes;
+						out_row[0] = 0xffff * (num_frames - grad_row[0]) /
+							num_frames;
+						out_row[1] = 0xffff * (num_frames - grad_row[0]) /
+							num_frames;
+						out_row[2] = 0xffff * (num_frames - grad_row[0]) /
+							num_frames;
 						out_row[3] = 0xffff;
 						out_row += 4;
 						grad_row++;
@@ -939,15 +937,15 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				break;
 
 			case BC_AYUV16161616:
-				for(int i = 0; i < height; i++)
+				for(int i = 0; i < frame_h; i++)
 				{
-					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					unsigned char *grad_row = gradient->get_row_ptr(i);
 
-					for(int j = 0; j < width; j++)
+					for(int j = 0; j < frame_w; j++)
 					{
 						out_row[0] = 0xffff;
-						out_row[1] = 0xffff * (pframes - grad_row[0]) / pframes;
+						out_row[1] = 0xffff * (num_frames - grad_row[0]) / num_frames;
 						out_row[2] = 0x8000;
 						out_row[3] = 0x8000;
 						out_row += 4;
@@ -957,20 +955,20 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 				break;
 			}
 		}
-		outframes[0]->clear_transparent();
+		frames[0]->clear_transparent();
 	}
 	else if(!config.invert)
 	{
-		switch(outframes[0]->get_color_model())
+		switch(color_model)
 		{
 		case BC_RGBA16161616:
 		case BC_AYUV16161616:
-			for(int i = 0; i < height; i++)
+			for(int i = 0; i < frame_h; i++)
 			{
-				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 				unsigned char *gradient_row = gradient->get_row_ptr(i);
 
-				for (int j = 0; j < width; j++)
+				for (int j = 0; j < frame_w; j++)
 				{
 					unsigned int choice = gradient_row[j];
 					uint16_t *row = (uint16_t*)framelist[gradient_row[j]]->get_row_ptr(i);
@@ -982,26 +980,25 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 					out_row += 4;
 				}
 			}
-			outframes[0]->set_transparent();
 			break;
 		default:
 			break;
 		}
-		outframes[0]->set_transparent();
+		frames[0]->set_transparent();
 	}
 	else
 	{
 		int pframes = framelist_last - 1;
-		switch(outframes[0]->get_color_model())
+		switch(color_model)
 		{
 		case BC_RGBA16161616:
 		case BC_AYUV16161616:
-			for(int i = 0; i < height; i++)
+			for(int i = 0; i < frame_h; i++)
 			{
-				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 				unsigned char *gradient_row = gradient->get_row_ptr(i);
 
-				for (int j = 0; j < width; j++)
+				for (int j = 0; j < frame_w; j++)
 				{
 					unsigned int choice = pframes - gradient_row[j];
 					uint16_t *row = (uint16_t*)framelist[choice]->get_row_ptr(i);
@@ -1015,20 +1012,17 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 			}
 			break;
 		}
-		outframes[0]->set_transparent();
+		frames[0]->set_transparent();
 	}
 	if(config.shape == TimeFrontConfig::ALPHA)
 	{
-		int frame_w = outframes[0]->get_w();
-		int frame_h = outframes[0]->get_h();
-
 		// Set alpha to max
-		switch(outframes[0]->get_color_model())
+		switch(frames[0]->get_color_model())
 		{
 		case BC_RGBA16161616:
 			for(int i = 0; i < frame_h; i++)
 			{
-				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					for(int j = 0; j < frame_w; j++)
 						out_row[j * 4 + 3] = 0xffff;
 			}
@@ -1037,14 +1031,14 @@ void TimeFrontMain::process_tmpframes(VFrame **frame)
 			{
 				for(int i = 0; i < frame_h; i++)
 				{
-					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					uint16_t *out_row = (uint16_t*)frames[0]->get_row_ptr(i);
 					for(int j = 0; j < frame_w; j++)
 						out_row[j * 4] = 0xffff;
 				}
 			}
 			break;
 		}
-		outframes[0]->set_transparent();
+		frames[0]->clear_transparent();
 	}
 }
 
