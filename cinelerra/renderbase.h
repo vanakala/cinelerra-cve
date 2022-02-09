@@ -15,6 +15,45 @@
 #include "track.inc"
 #include "trackrender.inc"
 
+
+class RefPlugin
+{
+public:
+	RefPlugin()
+	{
+		plugin = 0;
+		track = 0;
+		paired = 0;
+	};
+
+	RefPlugin(Plugin *plugin, Track *track);
+
+	RefPlugin& operator=(RefPlugin &that)
+	{
+		plugin = that.plugin;
+		track = that.track;
+		paired = that.paired;
+		return *this;
+	};
+
+	int operator==(RefPlugin &that)
+	{
+		return plugin == that.plugin && track == that.track;
+	}
+
+	int operator!=(RefPlugin &that)
+	{
+		return plugin != that.plugin || track != that.track;
+	}
+
+	Plugin *shared_master();
+	void dump(int indent = 0);
+
+	Plugin *plugin;
+	Track *track;
+	int paired;
+};
+
 class RenderBase : public Thread
 {
 public:
@@ -30,6 +69,8 @@ public:
 	int is_shared_ready(Plugin *plugin, ptstime pts);
 // Mark shared plugin rendered
 	void shared_done(Plugin *plugin);
+// Check shared plugins and tracks
+	static Plugin *check_multichannel_plugins();
 
 protected:
 	virtual void init_frames() {};

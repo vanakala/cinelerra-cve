@@ -7,6 +7,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "plugin.h"
+#include "pluginserver.h"
 #include "renderbase.h"
 #include "renderengine.h"
 #include "thread.h"
@@ -150,4 +151,184 @@ void RenderBase::adjust_next_plugin(Track *track, Plugin *plugin, int ix)
 		else
 			track->renderer->next_plugin = 0;
 	}
+}
+
+Plugin *RenderBase::check_multichannel_plugins()
+{
+	ArrayList<struct RefPlugin>mc_plugins;
+	RefPlugin *ref;
+
+// FixIt: shared tracks are missing
+	for(Track *track = master_edl->tracks->last; track; track = track->previous)
+	{
+		for(int i = 0; i < track->plugins.total; i++)
+		{
+			Plugin *plugin = track->plugins.values[i];
+
+			if((plugin->plugin_type == PLUGIN_STANDALONE &&
+					plugin->plugin_server &&
+					plugin->plugin_server->multichannel) ||
+					plugin->shared_plugin &&
+					plugin->shared_plugin->plugin_server &&
+					plugin->shared_plugin->plugin_server->multichannel)
+			{
+				RefPlugin new_ref(plugin, plugin->track);
+				mc_plugins.append(new_ref);
+			}
+		}
+	}
+	if(mc_plugins.total < 2)
+		return 0;
+
+// Remove single plugins
+	for(int i = 0; i < mc_plugins.total - 1; i++)
+	{
+		if(mc_plugins.values[i].track != mc_plugins.values[i + 1].track)
+		{
+			mc_plugins.remove(mc_plugins.values[i]);
+			i--;
+		}
+		else for(int j = i + 1; j < mc_plugins.total; j++)
+		{
+			if(mc_plugins.values[i].track != mc_plugins.values[j].track)
+			{
+				i = j - 1;
+				break;
+			}
+		}
+	}
+	if(mc_plugins.total < 2)
+		return 0;
+
+	int k = mc_plugins.total - 1;
+// Remove the last single line
+	if(mc_plugins.values[k].track != mc_plugins.values[k - 1].track)
+		mc_plugins.remove(mc_plugins.values[k]);
+
+// One track with multiple same plugins
+	for(int i = 0; i < mc_plugins.total; i++)
+	{
+		RefPlugin *crp = &mc_plugins.values[i];
+		Plugin *mp = crp->shared_master();
+
+		for(int j = i + 1; j < mc_plugins.total; j++)
+		{
+			if(crp->track != mc_plugins.values[j].track)
+				break;
+
+			Plugin *cp = mc_plugins.values[j].shared_master();
+
+			if(cp == mp)
+				return crp->plugin;
+		}
+	}
+// Count the number of tracks
+	Track *tp = mc_plugins.values[0].track;
+	int tc = 1;
+
+	for(int i = 1; i < mc_plugins.total; i++)
+	{
+		if(tp != mc_plugins.values[i].track)
+		{
+			tc++;
+			tp = mc_plugins.values[i].track;
+		}
+	}
+	if(tc < 2)
+		return 0;
+
+// Remove plugins what are single or do not overlap
+	for(int i = 0; i < mc_plugins.total; i++)
+	{
+		RefPlugin *crp = &mc_plugins.values[i];
+
+		if(crp->paired)
+			continue;
+
+		Plugin *mp = crp->shared_master();
+
+		for(int j = i + 1; j < mc_plugins.total; j++)
+		{
+			if(crp->track == mc_plugins.values[j].track ||
+					mc_plugins.values[j].paired)
+				continue;
+
+			Plugin *cp = mc_plugins.values[j].shared_master();
+
+			if(mp == cp)
+			{
+				crp->paired = 1;
+				mc_plugins.values[j].paired = 1;
+			}
+		}
+	}
+
+	for(int i = 0; i < mc_plugins.total; i++)
+	{
+		if(!mc_plugins.values[i].paired)
+		{
+			mc_plugins.remove(mc_plugins.values[i]);
+			i--;
+		}
+	}
+
+// More than 1 plugin share tracks
+// Number the plugins on track
+	int count;
+	tp = 0;
+	for(int i = 0; i < mc_plugins.total; i++)
+	{
+		if(tp != mc_plugins.values[i].track)
+		{
+			count = 1;
+			tp = mc_plugins.values[i].track;
+		}
+		mc_plugins.values[i].paired = count++;
+	}
+
+	for(int i = 0; i < mc_plugins.total; i++)
+	{
+		RefPlugin *crp = &mc_plugins.values[i];
+		Plugin *mp = crp->shared_master();
+
+		for(int j = i + 1; j < mc_plugins.total; j++)
+		{
+			if(crp->track == mc_plugins.values[j].track)
+				continue;
+
+			Plugin *cp = mc_plugins.values[j].shared_master();
+
+			if(mp == cp)
+			{
+				if(mc_plugins.values[j].paired < crp->paired)
+					return mc_plugins.values[j].plugin;
+			}
+		}
+	}
+	return 0;
+}
+
+RefPlugin::RefPlugin(Plugin *plugin, Track *track)
+{
+	this->plugin = plugin;
+	this->track = track;
+	paired = 0;
+}
+
+Plugin *RefPlugin::shared_master()
+{
+	if(plugin->shared_plugin)
+		return plugin->shared_plugin;
+	return plugin;
+}
+
+void RefPlugin::dump(int indent)
+{
+	char string[BCTEXTLEN];
+
+	printf("%*sRefPlugin %p %3d dump:\n", indent, "", this, paired);
+	indent++;
+	printf("%*s%p '%s'", indent, "", track, track->title);
+	plugin->calculate_title(string);
+	printf(" %p '%s'\n", plugin, string);
 }
