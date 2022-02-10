@@ -103,7 +103,8 @@ void PluginDialogThread::run()
 	mwindow_global->gui->canvas->get_relative_cursor_pos(&rx, &ry);
 	if(rx > 0 && rx < mwindow_global->gui->canvas->get_w())
 	{
-		ptstime cursor_pts = rx * master_edl->local_session->zoom_time;
+		ptstime cursor_pts = rx * master_edl->local_session->zoom_time +
+			master_edl->local_session->view_start_pts;
 
 		if(cursor_pts < selections[0] || cursor_pts > selections[1])
 			selections[0] = selections[1] = cursor_pts;
