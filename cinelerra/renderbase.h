@@ -71,6 +71,7 @@ public:
 	void shared_done(Plugin *plugin);
 // Check shared plugins and tracks
 	static Plugin *check_multichannel_plugins();
+	static int check_multichannel(Plugin *plugin);
 
 protected:
 	virtual void init_frames() {};

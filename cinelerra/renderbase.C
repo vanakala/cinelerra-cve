@@ -165,18 +165,31 @@ Plugin *RenderBase::check_multichannel_plugins()
 		{
 			Plugin *plugin = track->plugins.values[i];
 
-			if((plugin->plugin_type == PLUGIN_STANDALONE &&
-					plugin->plugin_server &&
-					plugin->plugin_server->multichannel) ||
-					plugin->shared_plugin &&
-					plugin->shared_plugin->plugin_server &&
-					plugin->shared_plugin->plugin_server->multichannel)
+			if(plugin->plugin_type == PLUGIN_SHAREDMODULE &&
+					plugin->shared_track)
 			{
-				RefPlugin new_ref(plugin, plugin->track);
+				Track *reftrack = plugin->shared_track;
+
+				for(int k = 0; k < reftrack->plugins.total; k++)
+				{
+					Plugin *cur = reftrack->plugins.values[k];
+
+					if(check_multichannel(cur))
+					{
+						RefPlugin new_ref(cur, track);
+						mc_plugins.append(new_ref);
+					}
+				}
+			}
+
+			if(check_multichannel(plugin))
+			{
+				RefPlugin new_ref(plugin, track);
 				mc_plugins.append(new_ref);
 			}
 		}
 	}
+
 	if(mc_plugins.total < 2)
 		return 0;
 
@@ -307,6 +320,16 @@ Plugin *RenderBase::check_multichannel_plugins()
 	}
 	return 0;
 }
+
+int RenderBase::check_multichannel(Plugin *plugin)
+{
+	return (plugin->plugin_type == PLUGIN_STANDALONE &&
+		plugin->plugin_server && plugin->plugin_server->multichannel) ||
+		(plugin->shared_plugin &&
+		plugin->shared_plugin->plugin_server &&
+		plugin->shared_plugin->plugin_server->multichannel);
+}
+
 
 RefPlugin::RefPlugin(Plugin *plugin, Track *track)
 {
