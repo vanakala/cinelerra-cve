@@ -19,6 +19,7 @@
 #include "panautos.h"
 #include "plugin.h"
 #include "pluginserver.h"
+#include "renderbase.h"
 #include "theme.inc"
 #include "track.h"
 #include "tracks.h"
@@ -807,106 +808,50 @@ void Tracks::cleanup()
 
 void Tracks::cleanup_plugins()
 {
-	int have_shared_track = 0;
+	ptstime duration = length();
+
+	if(duration < EPSILON)
+		return;
+
+// Check the maximum duration
+	for(Track *track = first; track; track = track->next)
+	{
+		if(track->master)
+			continue;
+
+		if(track->get_length() > duration)
+			track->clear_after(duration);
+	}
 
 	for(Track *track = first; track; track = track->next)
 	{
 		for(int i = 0; i < track->plugins.total; i++)
 		{
 			Plugin *plugin = track->plugins.values[i];
-			Track *cur;
-			Plugin *slave;
-			int found;
 
-			if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
-				have_shared_track = 1;
-
-			if(plugin->plugin_type != PLUGIN_STANDALONE ||
-					!plugin->plugin_server ||
-					!plugin->plugin_server->multichannel)
-				continue;
-
-			ptstime start = plugin->get_pts();
-			ptstime end = plugin->end_pts();
-
-			for(cur = first; cur; cur = cur->next)
+			if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN &&
+				plugin->shared_plugin)
 			{
-				found = 0;
-				for(int j = 0; j < cur->plugins.total; j++)
-				{
-					slave = cur->plugins.values[j];
-
-					if(slave->plugin_type == PLUGIN_SHAREDPLUGIN &&
-						slave->shared_plugin == plugin)
-					{
-					// Force slave pts equivalent of masters
-						slave->set_pts(start);
-						slave->set_end(end);
-						found = 1;
-						break;
-					}
-				}
-				if(found)
-				{
-				// Remove all other shared plugin slaves active same time
-					for(int j = 0; j < cur->plugins.total; j++)
-					{
-						Plugin *curplugin = cur->plugins.values[j];
-
-						if(curplugin->plugin_type == PLUGIN_SHAREDPLUGIN &&
-							curplugin->shared_plugin &&
-							curplugin->shared_plugin != plugin &&
-							curplugin->shared_plugin->plugin_server &&
-							curplugin->shared_plugin->plugin_server->multichannel)
-						{
-							ptstime cur_start = curplugin->get_pts();
-							ptstime cur_end = curplugin->end_pts();
-
-							if(cur_start < end && cur_end > start)
-							{
-								// Remove shared slave that overlaps
-								// with current plugin
-								cur->plugins.remove_object(curplugin);
-								j--;
-							}
-						}
-					}
-				}
+				plugin->set_pts(plugin->shared_plugin->get_pts());
+				plugin->set_length(plugin->shared_plugin->get_length());
 			}
-		}
-	}
-	if(have_shared_track)
-	{
-		for(Track *track = first; track; track = track->next)
-		{
-			for(int i = 0; i < track->plugins.total; i++)
+
+			if(plugin->plugin_type == PLUGIN_SHAREDMODULE &&
+				plugin->shared_track)
 			{
-				Plugin *plugin = track->plugins.values[i];
-
-				if(plugin->plugin_type != PLUGIN_SHAREDMODULE)
-					continue;
-
-				ptstime start = plugin->get_pts();
-				ptstime end = plugin->end_pts();
-
-				if(track->get_shared_multichannel(start, end))
+				if(plugin->get_pts() > duration)
 				{
-					// Remove shared track plugin
-					track->plugins.remove_object(plugin);
+					track->remove_plugin(plugin);
 					i--;
-					continue;
 				}
-				if(plugin->shared_track)
-				{
-					// Remove shared plugin from src track
-					Plugin *src = plugin->shared_track->get_shared_multichannel(start, end);
-
-					if(src)
-						plugin->shared_track->plugins.remove_object(src);
-				}
+				else if(plugin->end_pts() > duration)
+					plugin->set_end(duration);
 			}
 		}
 	}
+
+	while(Plugin *p = RenderBase::check_multichannel_plugins())
+		p->track->remove_plugin(p);
 }
 
 size_t Tracks::get_size()
