@@ -66,15 +66,6 @@ struct progdesc
 	unsigned char streams[MAXCHANNELS];
 };
 
-// Streamdesc option bits
-// Stream type
-#define STRDSC_AUDIO   1
-#define STRDSC_VIDEO   2
-// All stream types
-#define STRDSC_ALLTYP  3
-// Format allows byte seek
-#define STRDSC_SEEKBYTES 0x8000
-
 // Asset describes a media file
 class Asset : public ListItem<Asset>
 {
