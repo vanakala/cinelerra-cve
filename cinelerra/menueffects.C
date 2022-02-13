@@ -170,9 +170,15 @@ void MenuEffectThread::run()
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
-		plugindb.fill_plugindb(default_asset->stream_count(STRDSC_AUDIO),
-			default_asset->stream_count(STRDSC_VIDEO),
-			-1,
+		int strdsc = 0;
+
+		if(default_asset->stream_count(STRDSC_AUDIO))
+			strdsc |= STRDSC_AUDIO;
+
+		if(default_asset->stream_count(STRDSC_VIDEO))
+			strdsc |= STRDSC_VIDEO;
+
+		plugindb.fill_plugindb(strdsc,
 			-1,
 			0,
 			0,

@@ -309,10 +309,10 @@ AWindowGUI::AWindowGUI(AWindow *awindow)
 
 	create_label_folder();
 
-	create_persistent_folder(&aeffects, 1, 0, 1, 0);
-	create_persistent_folder(&veffects, 0, 1, 1, 0);
-	create_persistent_folder(&atransitions, 1, 0, 0, 1);
-	create_persistent_folder(&vtransitions, 0, 1, 0, 1);
+	create_persistent_folder(&aeffects, STRDSC_AUDIO, 1, 0);
+	create_persistent_folder(&veffects, STRDSC_VIDEO, 1, 0);
+	create_persistent_folder(&atransitions, STRDSC_AUDIO, 0, 1);
+	create_persistent_folder(&vtransitions, STRDSC_VIDEO, 0, 1);
 
 	theme_global->get_awindow_sizes(this);
 
@@ -468,19 +468,16 @@ void AWindowGUI::async_update_assets()
 	send_custom_xatom(&event);
 }
 
-void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
-	int do_audio, 
-	int do_video, 
-	int is_realtime, 
+void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
+	int strdsc,
+	int is_realtime,
 	int is_transition)
 {
 	ArrayList<PluginServer*> plugins;
 
 // Get pointers to plugindb entries
-	plugindb.fill_plugindb(do_audio,
-			do_video, 
-			is_realtime, 
-			-1,
+	plugindb.fill_plugindb(strdsc,
+			is_realtime,
 			is_transition,
 			0,
 			plugins);

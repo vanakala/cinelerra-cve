@@ -404,8 +404,6 @@ ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
 	ArrayList<PluginServer*> themes;
 
 	plugindb.fill_plugindb(0,
-		0, 
-		0, 
 		0,
 		0,
 		1,

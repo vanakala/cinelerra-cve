@@ -185,25 +185,22 @@ void PluginDB::init_plugins(SplashGUI *splash_window)
 	lad_fs.remove_all_objects();
 }
 
-void PluginDB::fill_plugindb(int do_audio,
-		int do_video,
-		int is_realtime,
-		int is_multichannel,
-		int is_transition,
-		int is_theme,
-		ArrayList<PluginServer*> &plugindb)
+void PluginDB::fill_plugindb(int strdsc,
+	int is_realtime,
+	int is_transition,
+	int is_theme,
+	ArrayList<PluginServer*> &plugindb)
 {
 // Get plugins
 	for(int i = 0; i < total; i++)
 	{
 		PluginServer *current = values[i];
 
-		if(current->audio == do_audio &&
-				current->video == do_video &&
-				(current->realtime == is_realtime || is_realtime < 0) &&
-				(current->multichannel == is_multichannel || is_multichannel < 0) &&
-				current->transition == is_transition &&
-				current->theme == is_theme)
+		if(((((strdsc & STRDSC_AUDIO) && current->audio) ||
+				((strdsc & STRDSC_VIDEO) && current->video)) &&
+				(((current->realtime && is_realtime > 0) || is_realtime < 0) ||
+				(current->transition && is_transition))) ||
+				(current->theme && is_theme))
 			plugindb.append(current);
 	}
 // Alphabetize list by title

@@ -140,10 +140,9 @@ private:
 	void filter_displayed_assets();
 	Atom UpdateAssetsXAtom;
 	void update_assets();
-	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
-		int do_audio, 
-		int do_video, 
-		int is_realtime, 
+	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
+		int strdesc,
+		int is_realtime,
 		int is_transition);
 	void create_label_folder();
 // Create custom atoms to be used for async messages between windows

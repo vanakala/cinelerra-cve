@@ -211,11 +211,8 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 	theme_global->get_plugindialog_sizes();
 	set_icon(mwindow_global->get_window_icon());
 
-// GET A LIST OF ALL THE PLUGINS AVAILABLE
-	plugindb.fill_plugindb(thread->data_type == TRACK_AUDIO,
-		thread->data_type == TRACK_VIDEO, 
+	plugindb.fill_plugindb(thread->track->get_strdsc(),
 		1,
-		-1,
 		0,
 		0,
 		local_plugindb);

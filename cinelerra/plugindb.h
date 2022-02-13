@@ -24,10 +24,8 @@ public:
 		SplashGUI *splash_window,
 		int *counter);
 	void init_plugins(SplashGUI *splash_window);
-	void fill_plugindb(int do_audio,
-		int do_video,
+	void fill_plugindb(int strdsc,
 		int is_realtime,
-		int is_multichannel,
 		int is_transition,
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);
