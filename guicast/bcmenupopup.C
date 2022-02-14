@@ -118,7 +118,7 @@ int BC_MenuPopup::dispatch_button_press()
 		}
 		if(result) draw_items();
 	}
-	return 0;
+	return result;
 }
 
 int BC_MenuPopup::dispatch_button_release()
