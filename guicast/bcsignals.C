@@ -292,14 +292,14 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 			p = copystr(p, "'\n");
 			if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
 				abort();
-			p = copystr(msgbuf, "    pc=0x");
-#if __WORDSIZE == 64
-			p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_RIP]));
-#else
-			p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_EIP]));
-#endif
-			p = copystr(p, " addr=0x");
-			p = copystr(p, tohex((unsigned long)inf->si_addr));
+			p = copystr(msgbuf, " addr=");
+			if(inf->si_addr)
+			{
+				p = copystr(p, "0x");
+				p = copystr(p, tohex((unsigned long)inf->si_addr));
+			}
+			else
+				p = copystr(p, "0x0");
 		}
 		p = copystr(p, " tid=0x");
 	} else
