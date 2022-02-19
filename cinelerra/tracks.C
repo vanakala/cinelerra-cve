@@ -290,10 +290,16 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		if(!vtracks && (vstream = asset->get_stream_ix(STRDSC_VIDEO, vstream)) >= 0)
 			vtracks = asset->streams[vstream].channels;
 
+		if(vstream < 0)
+			vtracks = -1;
+
 		if(!atracks && (astream = asset->get_stream_ix(STRDSC_AUDIO, astream)) >= 0)
 			atracks = asset->streams[astream].channels;
 
-		if(vtracks && current->data_type == TRACK_VIDEO)
+		if(astream < 0)
+			atracks = -1;
+
+		if(vtracks > 0 && current->data_type == TRACK_VIDEO)
 		{
 			vtracks--;
 			dur = current->get_length();
@@ -301,7 +307,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 				master = current;
 		}
 
-		if(atracks && current->data_type == TRACK_AUDIO)
+		if(atracks > 0 && current->data_type == TRACK_AUDIO)
 		{
 			atracks--;
 			dur = current->get_length();
@@ -351,10 +357,16 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		if(!vtracks && (vstream = asset->get_stream_ix(STRDSC_VIDEO, vstream)) >= 0)
 			vchannels = vtracks = asset->streams[vstream].channels;
 
+		if(vstream < 0)
+			vtracks = -1;
+
 		if(!atracks && (astream = asset->get_stream_ix(STRDSC_AUDIO, astream)) >= 0)
 			achannels = atracks = asset->streams[astream].channels;
 
-		if(vtracks && current->data_type == TRACK_VIDEO)
+		if(astream < 0)
+			atracks = -1;
+
+		if(vtracks > 0 && current->data_type == TRACK_VIDEO)
 		{
 			sdur = asset->stream_duration(vstream);
 			dur = MIN(alength, sdur);
@@ -362,7 +374,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 				dur, start,  overwrite);
 			vtracks--;
 		}
-		if(atracks && current->data_type == TRACK_AUDIO)
+		if(atracks > 0 && current->data_type == TRACK_AUDIO)
 		{
 			sdur = asset->stream_duration(astream);
 			dur = MIN(alength, sdur);
