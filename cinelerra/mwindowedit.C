@@ -1031,7 +1031,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		master_edl->update_assets(new_assets->values[i]);
 		duration = master_edl->tracks->append_asset(new_assets->values[i],
 			position, first_track, overwrite);
-		master_edl->local_session->preview_end = position + duration;
+		master_edl->local_session->preview_end = master_edl->duration();
 	}
 	save_backup();
 }
