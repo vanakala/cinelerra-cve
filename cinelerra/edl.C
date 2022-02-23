@@ -29,6 +29,7 @@
 #include "playbackconfig.h"
 #include "plugin.h"
 #include "pluginserver.h"
+#include "renderbase.h"
 #include "theme.h"
 #include "tracks.h"
 #include "vtrack.h"
@@ -766,13 +767,15 @@ void EDL::get_shared_plugins(Track *source, ptstime startpos, ptstime endpos,
 
 					if(!plugin->plugin_server)
 						continue;
+
 					if(plugin->plugin_server->multichannel &&
-							(track->get_shared_track(
-								plugin_start, plugin_end) ||
-							!plugin->shared_slots()))
+							!plugin->shared_slots())
 						continue;
 
-					if(track->get_shared_multichannel(plugin_start, plugin_end))
+					if(!RenderBase::multichannel_possible(source,
+							source->plugins.total,
+							plugin_start, plugin_end,
+							plugin))
 						continue;
 
 					for(int j = 0; j < source->plugins.total; j++)
@@ -798,10 +801,6 @@ void EDL::get_shared_plugins(Track *source, ptstime startpos, ptstime endpos,
 void EDL::get_shared_tracks(Track *track, ptstime start, ptstime end,
 	ArrayList<Track*> *module_locations)
 {
-	if(track->get_shared_multichannel(start, end) ||
-			track->get_shared_track(start, end))
-		return;
-
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
 		if(current != track &&
