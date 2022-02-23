@@ -330,6 +330,57 @@ int RenderBase::check_multichannel(Plugin *plugin)
 		plugin->shared_plugin->plugin_server->multichannel);
 }
 
+int RenderBase::multichannel_possible(Track *track, int ix_on_track,
+	ptstime start, ptstime end, Plugin *plugin)
+{
+	Track *plugin_track = plugin->track;
+	int plugin_num = plugin->get_multichannel_number();
+	int num_here = -1;
+	int num_there = -1;
+
+	if(!plugin->plugin_server || !plugin->plugin_server->multichannel)
+		return 1; // possible
+
+	for(int i = 0; i < track->plugins.total; i++)
+	{
+		Plugin *current = track->plugins.values[i];
+
+		if(!current->active_in(start, end))
+			continue;
+
+		if(current->shared_plugin && current->shared_plugin->plugin_server &&
+			current->shared_plugin->plugin_server->multichannel &&
+			current->shared_plugin->track == plugin->track)
+		{
+			num_there = current->shared_plugin->get_multichannel_number();
+			num_here = current->get_multichannel_number();
+		}
+		else if(current->plugin_server && current->plugin_server->multichannel)
+		{
+			int num_here = current->get_multichannel_number();
+
+			for(int k = 0; k < plugin_track->plugins.total; k++)
+			{
+				Plugin *current2 = plugin_track->plugins.values[k];
+
+				if(current2->shared_plugin == current)
+				{
+					num_there = current2->get_multichannel_number();
+					break;
+				}
+			}
+		}
+
+		if(num_here >= 0 && num_there >= 0)
+		{
+			if((num_here < ix_on_track && num_there > plugin_num) ||
+					(num_here > ix_on_track && num_there < plugin_num))
+				return 0;
+		}
+	}
+	return 1;
+}
+
 
 RefPlugin::RefPlugin(Plugin *plugin, Track *track)
 {

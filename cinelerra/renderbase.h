@@ -72,6 +72,10 @@ public:
 // Check shared plugins and tracks
 	static Plugin *check_multichannel_plugins();
 	static int check_multichannel(Plugin *plugin);
+// Returns 1 if plugin is possinle on track position ix_on_track
+	static int multichannel_possible(Track *track, int ix_on_track,
+		ptstime start, ptstime end,
+		Plugin *shared);
 
 protected:
 	virtual void init_frames() {};
