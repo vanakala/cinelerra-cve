@@ -88,6 +88,7 @@ public:
 
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();
+	int get_multichannel_number();
 	size_t get_size();
 	int shared_slots();
 

@@ -593,6 +593,27 @@ int Plugin::shared_slots()
 	return count < max;
 }
 
+int Plugin::get_multichannel_number()
+{
+	int num = 0;
+
+	for(int i = 0; i < track->plugins.total; i++)
+	{
+		Plugin *cur = track->plugins.values[i];
+
+		if(cur == this)
+			return num;
+
+		if(cur->plugin_server && cur->plugin_server->multichannel)
+			num++;
+
+		if(cur->shared_plugin && cur->shared_plugin->plugin_server &&
+				cur->shared_plugin->plugin_server)
+			num++;
+	}
+	return num;
+}
+
 void Plugin::calculate_title(char *string)
 {
 	string[0] = 0;
