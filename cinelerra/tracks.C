@@ -866,6 +866,21 @@ void Tracks::cleanup_plugins()
 		p->track->remove_plugin(p);
 }
 
+int Tracks::shared_on_track(Plugin *plugin, Track *track)
+{
+	for(Track *ct = first; ct; ct = ct->next)
+	{
+		for(int i = 0; i < ct->plugins.total; i++)
+		{
+			Plugin *cp = ct->plugins.values[i];
+
+			if(cp->shared_plugin == plugin && cp->track == track)
+				return 1;
+		}
+	}
+	return 0;
+}
+
 size_t Tracks::get_size()
 {
 	size_t size = sizeof(*this);

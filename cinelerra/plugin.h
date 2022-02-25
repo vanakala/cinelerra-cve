@@ -89,6 +89,8 @@ public:
 	ptstime plugin_change_duration(ptstime start, ptstime length);
 	int get_number();
 	int get_multichannel_number();
+	// Returns NZ when plugin is shared on track
+	int shared_with(Track *track);
 	size_t get_size();
 	int shared_slots();
 

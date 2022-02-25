@@ -85,6 +85,8 @@ public:
 	void cleanup();
 // Cleanup of multichannel shared plugins
 	void cleanup_plugins();
+// Check if plugin is shared with track
+	int shared_on_track(Plugin *plugin, Track *track);
 // Number of bytes used
 	size_t get_size();
 
