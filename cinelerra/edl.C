@@ -803,11 +803,33 @@ void EDL::get_shared_tracks(Track *track, ptstime start, ptstime end,
 {
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
+		int found = 0;
+
 		if(current != track &&
-				current->data_type == track->data_type &&
-				!current->get_shared_multichannel(start, end) &&
-				!current->get_shared_track(start, end))
-			module_locations->append(current);
+			current->data_type == track->data_type)
+		{
+			for(int i = 0; i < current->plugins.total; i++)
+			{
+				Plugin *plugin = current->plugins.values[i];
+
+				if(plugin->get_pts() > end ||
+						plugin->end_pts() < start)
+					continue;
+
+				if(plugin->shared_track == track ||
+					(plugin->shared_plugin &&
+					plugin->shared_plugin->track == track) ||
+					(plugin->plugin_server &&
+					plugin->plugin_server->multichannel &&
+					plugin->shared_with(track)))
+				{
+					found = 1;
+					break;
+				}
+			}
+			if(!found)
+				module_locations->append(current);
+		}
 	}
 }
 
