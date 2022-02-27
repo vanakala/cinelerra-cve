@@ -599,16 +599,10 @@ int Plugin::get_multichannel_number()
 
 	for(int i = 0; i < track->plugins.total; i++)
 	{
-		Plugin *cur = track->plugins.values[i];
-
-		if(cur == this)
+		if(track->plugins.values[i] == this)
 			return num;
 
-		if(cur->plugin_server && cur->plugin_server->multichannel)
-			num++;
-
-		if(cur->shared_plugin && cur->shared_plugin->plugin_server &&
-				cur->shared_plugin->plugin_server)
+		if(track->plugins.values[i]->is_multichannel())
 			num++;
 	}
 	return num;
