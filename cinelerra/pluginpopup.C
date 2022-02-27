@@ -26,19 +26,25 @@ PluginPopup::PluginPopup()
 	add_item(new PluginPopupClearKeyFrames(this));
 	show = new PluginPopupShow(this);
 	add_item(on = new PluginPopupOn(this));
-	add_item(new PluginPopupUp(this));
-	add_item(new PluginPopupDown(this));
+	moveup = new PluginPopupUp(this);
+	movedown = new PluginPopupDown(this);
 	pastekeyframe = new PluginPopupPasteKeyFrame(this);
 	have_show = 0;
 	have_keyframe = 0;
+	have_moveup = 0;
+	have_movedown = 0;
 }
 
 PluginPopup::~PluginPopup()
 {
 	if(!have_show)
 		delete show;
-	if(have_keyframe)
+	if(!have_keyframe)
 		delete pastekeyframe;
+	if(!have_moveup)
+		delete moveup;
+	if(!have_movedown)
+		delete movedown;
 }
 
 void PluginPopup::update(Plugin *plugin)
@@ -72,6 +78,27 @@ void PluginPopup::update(Plugin *plugin)
 	{
 		remove_item(pastekeyframe);
 		have_keyframe = 0;
+	}
+
+	if(plugin->is_multichannel() &&
+		plugin->get_multichannel_count(plugin->get_pts(), plugin->end_pts()) > 1)
+	{
+		remove_item(moveup);
+		remove_item(movedown);
+		have_movedown = have_moveup = 0;
+	}
+	else
+	{
+		if(!have_moveup)
+		{
+			add_item(moveup);
+			have_moveup = 1;
+		}
+		if(!have_movedown)
+		{
+			add_item(movedown);
+			have_movedown = 1;
+		}
 	}
 }
 

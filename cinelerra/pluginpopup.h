@@ -11,6 +11,8 @@ class PluginPopupDetach;
 class PluginPopupOn;
 class PluginPopupShow;
 class PluginPopupPasteKeyFrame;
+class PluginPopupUp;
+class PluginPopupDown;
 
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
@@ -35,8 +37,12 @@ private:
 	PluginPopupShow *show;
 	PluginPopupOn *on;
 	PluginPopupPasteKeyFrame *pastekeyframe;
+	PluginPopupUp *moveup;
+	PluginPopupDown *movedown;
 	int have_show;
 	int have_keyframe;
+	int have_moveup;
+	int have_movedown;
 };
 
 
