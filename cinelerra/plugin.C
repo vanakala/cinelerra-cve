@@ -608,6 +608,20 @@ int Plugin::get_multichannel_number()
 	return num;
 }
 
+int Plugin::get_multichannel_count(ptstime start, ptstime end)
+{
+	int count = 0;
+
+	for(int i = 0; i < track->plugins.total; i++)
+	{
+		Plugin *cur = track->plugins.values[i];
+
+		if(cur->active_in(start, end) && cur->is_multichannel())
+			count++;
+	}
+	return count;
+}
+
 int Plugin::is_multichannel()
 {
 	return (plugin_type == PLUGIN_STANDALONE &&

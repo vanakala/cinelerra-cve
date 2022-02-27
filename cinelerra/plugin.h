@@ -93,6 +93,8 @@ public:
 	int shared_with(Track *track);
 	// Returns NZ if plugin is multichannel master or slave
 	int is_multichannel();
+	// Retuns number of multichannel plugins
+	int get_multichannel_count(ptstime start, ptstime end);
 	size_t get_size();
 	int shared_slots();
 
