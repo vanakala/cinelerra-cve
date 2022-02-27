@@ -614,6 +614,15 @@ int Plugin::get_multichannel_number()
 	return num;
 }
 
+int Plugin::is_multichannel()
+{
+	return (plugin_type == PLUGIN_STANDALONE &&
+		plugin_server && plugin_server->multichannel) ||
+		(shared_plugin &&
+		shared_plugin->plugin_server &&
+		shared_plugin->plugin_server->multichannel);
+}
+
 int Plugin::shared_with(Track *track)
 {
 	return track->tracks->shared_on_track(this, track);

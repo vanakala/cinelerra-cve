@@ -174,7 +174,7 @@ Plugin *RenderBase::check_multichannel_plugins()
 				{
 					Plugin *cur = reftrack->plugins.values[k];
 
-					if(check_multichannel(cur))
+					if(cur->is_multichannel())
 					{
 						RefPlugin new_ref(cur, track);
 						mc_plugins.append(new_ref);
@@ -182,7 +182,7 @@ Plugin *RenderBase::check_multichannel_plugins()
 				}
 			}
 
-			if(check_multichannel(plugin))
+			if(plugin->is_multichannel())
 			{
 				RefPlugin new_ref(plugin, track);
 				mc_plugins.append(new_ref);
@@ -319,15 +319,6 @@ Plugin *RenderBase::check_multichannel_plugins()
 		}
 	}
 	return 0;
-}
-
-int RenderBase::check_multichannel(Plugin *plugin)
-{
-	return (plugin->plugin_type == PLUGIN_STANDALONE &&
-		plugin->plugin_server && plugin->plugin_server->multichannel) ||
-		(plugin->shared_plugin &&
-		plugin->shared_plugin->plugin_server &&
-		plugin->shared_plugin->plugin_server->multichannel);
 }
 
 int RenderBase::multichannel_possible(Track *track, int ix_on_track,
