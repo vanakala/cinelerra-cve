@@ -68,7 +68,7 @@ if test "$no_x" = yes; then
 	fi
 	AC_MSG_ERROR([Cinelerra requires X Windows.])
 fi
-X_LIBS="$X_LIBS -lXxf86vm -lXv -lXext -lX11"
+X_LIBS="$X_LIBS -lXxf86vm -lXv -lXext -lX11 -latomic"
 AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
 AC_DEFINE(HAVE_LIBXXF86VM)
 ############## END XLIB
