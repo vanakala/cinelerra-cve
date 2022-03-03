@@ -80,8 +80,9 @@ void PluginPopup::update(Plugin *plugin)
 		have_keyframe = 0;
 	}
 
-	if(plugin->is_multichannel() &&
-		plugin->get_multichannel_count(plugin->get_pts(), plugin->end_pts()) > 1)
+	if(plugin->track->plugins.total < 2 ||
+		(plugin->is_multichannel() &&
+		plugin->get_multichannel_count(plugin->get_pts(), plugin->end_pts()) > 1))
 	{
 		remove_item(moveup);
 		remove_item(movedown);
