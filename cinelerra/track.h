@@ -190,6 +190,8 @@ public:
 	size_t get_size();
 // Return track type as STRDSC
 	int get_strdsc();
+// Check data_type against strdsc
+	int is_strdsc(int strdsc);
 
 // Dimensions of this track if video
 	int track_w, track_h;

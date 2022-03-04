@@ -679,6 +679,11 @@ int Track::get_strdsc()
 	return 0;
 }
 
+int Track::is_strdsc(int strdsc)
+{
+	return get_strdsc() & strdsc;
+}
+
 void Track::dump(int indent)
 {
 	const char *tp;
