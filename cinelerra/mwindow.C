@@ -473,7 +473,7 @@ void MWindow::init_render()
 
 void MWindow::init_exportedl()
 {
-	exportedl = new ExportEDL(this);
+	exportedl = new ExportEDL();
 }
 
 void MWindow::init_brender()
