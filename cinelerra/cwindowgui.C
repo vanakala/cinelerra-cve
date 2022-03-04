@@ -522,7 +522,7 @@ void CWindowGUI::drag_stop()
 
 	if(mainsession->current_operation == DRAG_VTRANSITION)
 	{
-		mwindow->paste_transition(TRACK_VIDEO,
+		mwindow->paste_transition(STRDSC_VIDEO,
 			mainsession->drag_pluginservers->values[0]);
 		mainsession->current_operation = NO_OPERATION;
 	}

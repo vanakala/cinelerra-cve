@@ -27,8 +27,7 @@ MenuAEffects::~MenuAEffects()
 MenuAEffectThread::MenuAEffectThread()
  : MenuEffectThread()
 {
-	effect_type = SUPPORTS_AUDIO;
-	track_type = TRACK_AUDIO;
+	track_data_type = STRDSC_AUDIO;
 	def_prefix = "AEFFECT_";
 	profile_name = RENDERCONFIG_AEFFECT;
 }

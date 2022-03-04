@@ -91,14 +91,14 @@ void MenuEffectThread::get_derived_attributes(Asset *asset)
 		asset->render_parameters = params;
 	}
 	// Fix asset for media type only
-	if(effect_type & SUPPORTS_AUDIO)
+	if(track_data_type & STRDSC_AUDIO)
 	{
 		if(!(File::supports(asset->format) & SUPPORTS_AUDIO))
 			asset->format = FILE_WAV;
 		asset->remove_stream_type(STRDSC_VIDEO);
 		asset->create_render_stream(STRDSC_AUDIO);
 	}
-	else if(effect_type & SUPPORTS_VIDEO)
+	else if(track_data_type & STRDSC_VIDEO)
 	{
 		if(!(File::supports(asset->format) & SUPPORTS_VIDEO))
 			asset->format = FILE_MOV;
@@ -216,7 +216,7 @@ void MenuEffectThread::run()
 			plugin_server = local_plugindb.values[plugin_number];
 	}
 	else
-		plugin_server = plugindb.get_pluginserver(title, track_type, 0);
+		plugin_server = plugindb.get_pluginserver(track_data_type, title, 0);
 
 // Update the  most recently used effects and copy the plugin server.
 	if(plugin_server)
@@ -325,10 +325,10 @@ void MenuEffectThread::run()
 
 		for(Track *track = master_edl->first_track(); track; track = track->next)
 		{
-			if(track->data_type != track_type || !track->record)
+			if(!track->is_strdsc(track_data_type) || !track->record)
 				continue;
 
-			Track *new_track = render_edl->tracks->add_track(track_type, 0, 0);
+			Track *new_track = render_edl->tracks->add_track(track->data_type, 0, 0);
 
 			new_track->copy_settings(track);
 			new_track->edits->copy_from(track->edits);

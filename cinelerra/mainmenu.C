@@ -707,7 +707,7 @@ DefaultATransition::DefaultATransition(MWindow *mwindow)
 
 int DefaultATransition::handle_event()
 {
-	mwindow->paste_transition(TRACK_AUDIO);
+	mwindow->paste_transition(STRDSC_AUDIO);
 	return 1;
 }
 
@@ -760,7 +760,7 @@ DefaultVTransition::DefaultVTransition(MWindow *mwindow)
 
 int DefaultVTransition::handle_event()
 {
-	mwindow->paste_transition(TRACK_VIDEO);
+	mwindow->paste_transition(STRDSC_VIDEO);
 	return 1;
 }
 

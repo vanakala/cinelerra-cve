@@ -25,8 +25,7 @@ MenuVEffects::~MenuVEffects()
 MenuVEffectThread::MenuVEffectThread()
  : MenuEffectThread()
 {
-	effect_type = SUPPORTS_VIDEO;
-	track_type = TRACK_VIDEO;
+	track_data_type = STRDSC_VIDEO;
 	def_prefix = "VEFFECT_";
 	profile_name = RENDERCONFIG_VEFFECT;
 }

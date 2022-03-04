@@ -22,17 +22,17 @@ static struct oldpluginnames
 	char oldname[64];
 	char newname[64];
 } oldpluginnames[] = {
-	{ TRACK_AUDIO, "Invert Audio", "Invert" },
-	{ TRACK_AUDIO, "Delay audio", "Delay" },
-	{ TRACK_AUDIO, "Loop audio", "Loop" },
-	{ TRACK_AUDIO, "Reverse audio", "Reverse" },
-	{ TRACK_AUDIO, "Heroine College Concert Hall", "HC Concert Hall" },
-	{ TRACK_VIDEO, "Invert Video", "Invert" },
-	{ TRACK_VIDEO, "Denoise video", "Denoise" },
-	{ TRACK_VIDEO, "Selective Temporal Averaging", "STA" },
-	{ TRACK_VIDEO, "Delay Video", "Delay" },
-	{ TRACK_VIDEO, "Loop video", "Loop" },
-	{ TRACK_VIDEO, "Reverse video", "Reverse" },
+	{ STRDSC_AUDIO, "Invert Audio", "Invert" },
+	{ STRDSC_AUDIO, "Delay audio", "Delay" },
+	{ STRDSC_AUDIO, "Loop audio", "Loop" },
+	{ STRDSC_AUDIO, "Reverse audio", "Reverse" },
+	{ STRDSC_AUDIO, "Heroine College Concert Hall", "HC Concert Hall" },
+	{ STRDSC_VIDEO, "Invert Video", "Invert" },
+	{ STRDSC_VIDEO, "Denoise video", "Denoise" },
+	{ STRDSC_VIDEO, "Selective Temporal Averaging", "STA" },
+	{ STRDSC_VIDEO, "Delay Video", "Delay" },
+	{ STRDSC_VIDEO, "Loop video", "Loop" },
+	{ STRDSC_VIDEO, "Reverse video", "Reverse" },
 	{ 0, "", "" }
 };
 
@@ -224,7 +224,7 @@ void PluginDB::fill_plugindb(int strdsc,
 	}
 }
 
-PluginServer* PluginDB::get_pluginserver(const char *title, int data_type,
+PluginServer* PluginDB::get_pluginserver(int strdsc, const char *title,
 	int transition)
 {
 	const char *new_title;
@@ -233,22 +233,22 @@ PluginServer* PluginDB::get_pluginserver(const char *title, int data_type,
 	{
 		PluginServer *server = values[i];
 
-		if(((data_type == TRACK_AUDIO && server->audio) ||
-				(data_type == TRACK_VIDEO && server->video)) &&
+		if((((strdsc & STRDSC_AUDIO) && server->audio) ||
+				((strdsc & STRDSC_VIDEO) && server->video)) &&
 				((transition && server->transition) ||
 				(!transition && !server->transition)) &&
 				!strcmp(server->title, title))
 			return server;
 	}
 // Check if name has been changed
-	if(new_title = translate_pluginname(title, data_type))
+	if(new_title = translate_pluginname(title, strdsc))
 	{
 		for(int i = 0; i < total; i++)
 		{
 			PluginServer *server = values[i];
 
-			if(((data_type == TRACK_AUDIO && server->audio) ||
-					(data_type == TRACK_VIDEO && server->video)) &&
+			if((((strdsc & STRDSC_AUDIO) && server->audio) ||
+					((strdsc & STRDSC_VIDEO) && server->video)) &&
 					((transition && server->transition) ||
 					(!transition && !server->transition)) &&
 					!strcmp(server->title, new_title))
@@ -271,13 +271,13 @@ PluginServer *PluginDB::get_theme(const char *title)
 	return 0;
 }
 
-const char *PluginDB::translate_pluginname(const char *oldname, int data_type)
+const char *PluginDB::translate_pluginname(const char *oldname, int strdsc)
 {
 	struct oldpluginnames *pnp;
 
 	for(int i = 0; oldpluginnames[i].oldname[0]; i++)
 	{
-		if(data_type == oldpluginnames[i].datatype &&
+		if(strdsc == oldpluginnames[i].datatype &&
 				strcmp(oldpluginnames[i].oldname, oldname) == 0)
 			return oldpluginnames[i].newname;
 	}
@@ -289,7 +289,7 @@ int PluginDB::count()
 	return total;
 }
 
-void PluginDB::dump(int indent, int data_type)
+void PluginDB::dump(int indent, int strdsc)
 {
 	int typ;
 	char max[4];
@@ -300,11 +300,11 @@ void PluginDB::dump(int indent, int data_type)
 	{
 		PluginServer *server = values[i];
 
-		if(data_type > 0)
+		if(strdsc)
 		{
-			if(data_type == TRACK_AUDIO && !server->audio)
+			if((strdsc & STRDSC_AUDIO) && !server->audio)
 				continue;
-			if(data_type == TRACK_VIDEO && !server->video)
+			if((strdsc & STRDSC_VIDEO) && !server->video)
 				continue;
 		}
 		if(server->audio)

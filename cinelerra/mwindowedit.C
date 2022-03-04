@@ -625,7 +625,7 @@ void MWindow::insert_effect(const char *title,
 		return;
 
 	if(plugin_type == PLUGIN_STANDALONE)
-		server = plugindb.get_pluginserver(title, track->data_type, 0);
+		server = plugindb.get_pluginserver(track->get_strdsc(), title, 0);
 
 	if(EQUIV(length, 0))
 	{
@@ -1191,24 +1191,20 @@ void MWindow::insert_transition(PluginServer *server, Edit *dst_edit)
 	}
 }
 
-void MWindow::paste_transition(int data_type, PluginServer *server, int firstonly)
+void MWindow::paste_transition(int strdsc, PluginServer *server, int firstonly)
 {
 	const char *name = 0;
 	ptstime position = master_edl->local_session->get_selectionstart();
 
 	if(!server)
 	{
-		switch(data_type)
-		{
-		case TRACK_AUDIO:
+		if(strdsc & STRDSC_AUDIO)
 			name = edlsession->default_atransition;
-			break;
-		case TRACK_VIDEO:
+		else if(strdsc & STRDSC_VIDEO)
 			name = edlsession->default_vtransition;
-			break;
-		}
+
 		if(name)
-			server = plugindb.get_pluginserver(name, data_type, 1);
+			server = plugindb.get_pluginserver(strdsc, name, 1);
 
 		if(!server)
 		{
@@ -1224,8 +1220,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 	for(Track *track = master_edl->tracks->first; track;
 		track = track->next)
 	{
-		if(track->data_type == data_type &&
-			track->record)
+		if(track->is_strdsc(strdsc) && track->record)
 		{
 			Edit *edit = track->editof(position);
 
@@ -1239,7 +1234,7 @@ void MWindow::paste_transition(int data_type, PluginServer *server, int firstonl
 	save_backup();
 	undo->update_undo(_("transition"), LOAD_EDITS);
 
-	sync_parameters(data_type == TRACK_VIDEO);
+	sync_parameters(strdsc & STRDSC_VIDEO);
 
 	update_gui(WUPD_CANVINCR);
 }

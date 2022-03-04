@@ -162,8 +162,9 @@ void PluginDialogThread::run()
 			{
 				plugin->hide_plugin_gui();
 				plugin->change_plugin(
-					plugindb.get_pluginserver(plugin_title,
-						plugin->track->data_type, 0),
+					plugindb.get_pluginserver(
+						plugin->track->get_strdsc(),
+						plugin_title, 0),
 					plugin_type, shared_plugin,
 					shared_track);
 			}

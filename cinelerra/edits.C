@@ -329,8 +329,8 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 
 				plugin_name[0] = 0;
 				file->tag.get_property("TITLE", plugin_name);
-				server = plugindb.get_pluginserver(plugin_name,
-					track->data_type, 1);
+				server = plugindb.get_pluginserver(track->get_strdsc(),
+					plugin_name, 1);
 				current->transition = new Plugin(edl, track, server);
 				current->transition->plugin_type = PLUGIN_TRANSITION;
 				posnum length = file->tag.get_property("LENGTH", 0);

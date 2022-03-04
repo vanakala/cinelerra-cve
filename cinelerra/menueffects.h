@@ -43,8 +43,7 @@ public:
 	virtual void fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 
-	int effect_type;
-	int track_type;
+	int track_data_type;
 	const char *def_prefix;
 	const char *profile_name;
 	char title[1024];

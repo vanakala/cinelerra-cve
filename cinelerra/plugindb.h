@@ -29,12 +29,12 @@ public:
 		int is_transition,
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);
-	PluginServer *get_pluginserver(const char *title, int data_type, int transition);
+	PluginServer *get_pluginserver(int strdsc, const char *title, int transition);
 	PluginServer *get_theme(const char *title);
-	const char *translate_pluginname(const char *oldname, int data_type);
+	const char *translate_pluginname(const char *oldname, int strdsc);
 	int count();
 
-	void dump(int indent = 0, int data_type = 0);
+	void dump(int indent = 0, int strdsc = 0);
 };
 
 #endif
