@@ -34,12 +34,11 @@
 #include "vwindow.h"
 
 
-SetFormat::SetFormat(MWindow *mwindow)
+SetFormat::SetFormat()
  : BC_MenuItem(_("Format..."), "Shift-F", 'F')
 {
 	set_shift(1); 
-	this->mwindow = mwindow;
-	thread = new SetFormatThread(mwindow);
+	thread = new SetFormatThread();
 }
 
 SetFormat::~SetFormat()
@@ -63,10 +62,9 @@ int SetFormat::handle_event()
 	return 1;
 }
 
-SetFormatThread::SetFormatThread(MWindow *mwindow)
+SetFormatThread::SetFormatThread()
  : Thread()
 {
-	this->mwindow = mwindow;
 	window_lock = new Mutex("SetFormatThread::window_lock");
 	window = 0;
 }
@@ -87,12 +85,12 @@ void SetFormatThread::run()
 	new_edlsession = new EDLSession();
 	new_edlsession->copy(edlsession);
 
-	mwindow->get_abs_cursor_pos(&x, &y);
-	x -= mwindow->theme->setformat_w / 2;
-	y -= mwindow->theme->setformat_h / 2;
+	mwindow_global->get_abs_cursor_pos(&x, &y);
+	x -= theme_global->setformat_w / 2;
+	y -= theme_global->setformat_h / 2;
 
 	window_lock->lock("SetFormatThread::run 1");
-	window = new SetFormatWindow(mwindow, this, x, y);
+	window = new SetFormatWindow(this, x, y);
 	window_lock->unlock();
 
 	int result = window->run_window();
@@ -114,10 +112,10 @@ void SetFormatThread::apply_changes()
 	int new_channels = new_edlsession->audio_channels;
 	CLAMP(new_channels, 1, MAXCHANNELS);
 
-	mwindow->stop_playback();
+	mwindow_global->stop_playback();
 	master_edl->reset_renderers();
 
-	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+	memcpy(&mwindow_global->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 		new_edlsession->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
 	if(SampleRateSelection::limits(&new_edlsession->sample_rate) < 0)
@@ -136,18 +134,18 @@ void SetFormatThread::apply_changes()
 	edlsession->output_h = dimension[1];
 	master_edl->rechannel();
 
-	mwindow->save_backup();
-	mwindow->undo->update_undo(_("set format"), LOAD_ALL);
+	mwindow_global->save_backup();
+	mwindow_global->undo->update_undo(_("set format"), LOAD_ALL);
 
 // Update GUIs
-	mwindow->restart_brender();
-	mwindow->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+	mwindow_global->restart_brender();
+	mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 
-	mwindow->cwindow->update(WUPD_TIMEBAR | WUPD_OVERLAYS | WUPD_ACHANNELS);
-	mwindow->vwindow->update(WUPD_ACHANNELS);
-	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
-	mwindow->lwindow->gui->flush();
+	mwindow_global->cwindow->update(WUPD_TIMEBAR | WUPD_OVERLAYS | WUPD_ACHANNELS);
+	mwindow_global->vwindow->update(WUPD_ACHANNELS);
+	mwindow_global->lwindow->gui->panel->set_meters(new_channels, 1);
+	mwindow_global->lwindow->gui->flush();
 
 // Warn user
 	if(((edlsession->output_w % 4) ||
@@ -159,7 +157,7 @@ void SetFormatThread::apply_changes()
 	}
 
 // Flash frame
-	mwindow->sync_parameters();
+	mwindow_global->sync_parameters();
 }
 
 void SetFormatThread::update()
@@ -206,15 +204,14 @@ void SetFormatThread::update_window()
 }
 
 
-SetFormatWindow::SetFormatWindow(MWindow *mwindow, 
-	SetFormatThread *thread,
+SetFormatWindow::SetFormatWindow(SetFormatThread *thread,
 	int x,
 	int y)
  : BC_Window(MWindow::create_title(N_("Set Format")),
 	x,
 	y,
-	mwindow->theme->setformat_w,
-	mwindow->theme->setformat_h,
+	theme_global->setformat_w,
+	theme_global->setformat_h,
 	-1,
 	-1,
 	0,
@@ -224,134 +221,133 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	BC_TextBox *textbox;
 	BC_Title *title;
 
-	this->mwindow = mwindow;
 	this->thread = thread;
-	mwindow->theme->draw_setformat_bg(this);
-	set_icon(mwindow->get_window_icon());
+	theme_global->draw_setformat_bg(this);
+	set_icon(mwindow_global->get_window_icon());
 
 	x = 10;
-	y = mwindow->theme->setformat_y1;
+	y = theme_global->setformat_y1;
 
 	presets = new SetFormatPresets(this, x, y);
 	presets->set_edlsession(thread->new_edlsession);
 
-	y = mwindow->theme->setformat_y2;
+	y = theme_global->setformat_y2;
 
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
+	add_subwindow(new BC_Title(theme_global->setformat_x1,
 		y, 
 		_("Audio"), 
 		LARGEFONT));
-	y = mwindow->theme->setformat_y3;
+	y = theme_global->setformat_y3;
 
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
+	add_subwindow(new BC_Title(theme_global->setformat_x1,
 		y,
 		_("Samplerate:")));
 	add_subwindow(sample_rate = new SampleRateSelection(
-		mwindow->theme->setformat_x2, y,
+		theme_global->setformat_x2, y,
 		this, &thread->new_edlsession->sample_rate));
 	sample_rate->update(thread->new_edlsession->sample_rate);
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x1,
 		y, 
 		_("Channels:")));
 	add_subwindow(channels = new SetChannelsTextBox(thread, 
-		mwindow->theme->setformat_x2, 
+		theme_global->setformat_x2,
 		y));
 	add_subwindow(new BC_ITumbler(channels, 
 		1, 
 		MAXCHANNELS, 
-		mwindow->theme->setformat_x2 + channels->get_w(), 
+		theme_global->setformat_x2 + channels->get_w(),
 		y));
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x1,
 		y, 
 		_("Channel positions:")));
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(canvas = new SetChannelsCanvas(mwindow, 
-		thread, 
-		mwindow->theme->setformat_channels_x, 
-		mwindow->theme->setformat_channels_y, 
-		mwindow->theme->setformat_channels_w, 
-		mwindow->theme->setformat_channels_h));
+	y += theme_global->setformat_margin;
+	add_subwindow(canvas = new SetChannelsCanvas(thread,
+		theme_global->setformat_channels_x,
+		theme_global->setformat_channels_y,
+		theme_global->setformat_channels_w,
+		theme_global->setformat_channels_h));
 	canvas->draw();
 
-	y = mwindow->theme->setformat_y2;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y = theme_global->setformat_y2;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("Video"), 
 		LARGEFONT));
 
-	y = mwindow->theme->setformat_y3;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y = theme_global->setformat_y3;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("Frame rate:")));
 	add_subwindow(frame_rate = new FrameRateSelection(
-		mwindow->theme->setformat_x4, y, this,
+		theme_global->setformat_x4, y, this,
 		&thread->new_edlsession->frame_rate));
 	frame_rate->update(thread->new_edlsession->frame_rate);
 
 	int y0;
-	y0 = y += mwindow->theme->setformat_margin;
-	add_subwindow(title = new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
+	y0 = y += theme_global->setformat_margin;
+	add_subwindow(title = new BC_Title(theme_global->setformat_x3, y, _("Width:")));
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Height:")));
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x3, y, _("Height:")));
 
 	add_subwindow(framesize_selection = new SetFrameSize(
-		mwindow->theme->setformat_x4, y0,
-		mwindow->theme->setformat_x4, y,
+		theme_global->setformat_x4, y0,
+		theme_global->setformat_x4, y,
 		this, &thread->dimension[0], &thread->dimension[1], thread));
 	framesize_selection->update(thread->dimension[0], thread->dimension[1]);
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("W Scale:")));
-	add_subwindow(ratio[0] = new ScaleRatioText(mwindow->theme->setformat_x4, 
+	add_subwindow(ratio[0] = new ScaleRatioText(theme_global->setformat_x4,
 		y, 
 		thread, 
 		&thread->ratio[0]));
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("H Scale:")));
-	add_subwindow(ratio[1] = new ScaleRatioText(mwindow->theme->setformat_x4, 
+	add_subwindow(ratio[1] = new ScaleRatioText(theme_global->setformat_x4,
 		y, 
 		thread, 
 		&thread->ratio[1]));
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("Color model:")));
-	x = mwindow->theme->setformat_x4;
+	x = theme_global->setformat_x4;
 	cmodel_selection = new ColormodelSelection(x, y, this,
 		&thread->new_edlsession->color_model);
 	cmodel_selection->update(thread->new_edlsession->color_model);
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	y += theme_global->setformat_margin;
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("Aspect ratio:")));
-	y += mwindow->theme->setformat_margin;
-	x = mwindow->theme->setformat_x3;
+	y += theme_global->setformat_margin;
+	x = theme_global->setformat_x3;
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
 		x + SELECTION_TB_WIDTH + 15, y, this,
 		&thread->new_edlsession->sample_aspect_ratio,
 		&thread->dimension[0], &thread->dimension[1]));
 	aspectratio_selection->update_sar(thread->new_edlsession->sample_aspect_ratio);
-	y += mwindow->theme->setformat_margin;
+	y += theme_global->setformat_margin;
 
 // --------------------
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
 		_("Interlace mode:")));
-	add_subwindow(interlace_selection = new InterlaceModeSelection(mwindow->theme->setformat_x4,
+	add_subwindow(interlace_selection = new InterlaceModeSelection(
+		theme_global->setformat_x4,
 		y, this, &thread->new_edlsession->interlace_mode));
 	interlace_selection->update(thread->new_edlsession->interlace_mode);
-	y += mwindow->theme->setformat_margin;
+	y += theme_global->setformat_margin;
 
 	BC_OKTextButton *ok;
 	BC_CancelTextButton *cancel;
@@ -399,7 +395,7 @@ int SetChannelsTextBox::handle_event()
 	if(new_channels > 0)
 	{
 		memcpy(thread->new_edlsession->achannel_positions,
-			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+			&preferences_global->channel_positions[MAXCHANNELS * (new_channels - 1)],
 			sizeof(int) * MAXCHANNELS);
 	}
 
@@ -408,8 +404,7 @@ int SetChannelsTextBox::handle_event()
 }
 
 
-SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow, 
-	SetFormatThread *thread, 
+SetChannelsCanvas::SetChannelsCanvas(SetFormatThread *thread,
 	int x, 
 	int y,
 	int w,
@@ -420,16 +415,15 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 	h)
 {
 	this->thread = thread;
-	this->mwindow = mwindow;
 	active_channel = -1;
-	box_r = mwindow->theme->channel_position_data->get_w() / 2;
+	box_r = theme_global->channel_position_data->get_w() / 2;
 	temp_picon = new VFrame(0, 
-		mwindow->theme->channel_position_data->get_w(),
-		mwindow->theme->channel_position_data->get_h(),
-		mwindow->theme->channel_position_data->get_color_model());
-	rotater = new RotateFrame(mwindow->preferences->processors,
-		mwindow->theme->channel_position_data->get_w(),
-		mwindow->theme->channel_position_data->get_h());
+		theme_global->channel_position_data->get_w(),
+		theme_global->channel_position_data->get_h(),
+		theme_global->channel_position_data->get_color_model());
+	rotater = new RotateFrame(preferences_global->processors,
+		theme_global->channel_position_data->get_w(),
+		theme_global->channel_position_data->get_h());
 }
 
 SetChannelsCanvas::~SetChannelsCanvas()
@@ -450,7 +444,7 @@ void SetChannelsCanvas::draw(int angle)
 
 	int x, y, w, h;
 	char string[32];
-	set_color(mwindow->theme->channel_position_color);
+	set_color(theme_global->channel_position_color);
 	for(int i = 0; i < thread->new_edlsession->audio_channels; i++)
 	{
 		get_dimensions(thread->new_edlsession->achannel_positions[i],
@@ -462,7 +456,7 @@ void SetChannelsCanvas::draw(int angle)
 		rotate_angle = -rotate_angle;
 		while(rotate_angle < 0) rotate_angle += 360;
 		rotater->rotate(temp_picon, 
-			mwindow->theme->channel_position_data, 
+			theme_global->channel_position_data,
 			rotate_angle);
 
 		BC_Pixmap temp_pixmap(this, 
@@ -558,7 +552,7 @@ int SetChannelsCanvas::cursor_motion_event()
 		{
 			thread->new_edlsession->achannel_positions[active_channel] = new_d;
 			int new_channels = thread->new_edlsession->audio_channels;
-			memcpy(&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+			memcpy(&preferences_global->channel_positions[MAXCHANNELS * (new_channels - 1)],
 				thread->new_edlsession->achannel_positions,
 				sizeof(int) * MAXCHANNELS);
 			draw(thread->new_edlsession->achannel_positions[active_channel]);

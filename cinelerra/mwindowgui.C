@@ -113,7 +113,7 @@ void MWindowGUI::show()
 {
 	set_icon(mwindow->get_window_icon());
 
-	add_subwindow(mainmenu = new MainMenu(mwindow, this));
+	add_subwindow(mainmenu = new MainMenu(this));
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);

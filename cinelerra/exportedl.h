@@ -50,10 +50,9 @@ private:
 class ExportEDLItem : public BC_MenuItem
 {
 public:
-	ExportEDLItem(MWindow *mwindow);
+	ExportEDLItem();
 
 	int handle_event();
-	MWindow *mwindow;
 };
 
 

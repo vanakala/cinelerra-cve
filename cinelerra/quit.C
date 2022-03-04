@@ -18,17 +18,16 @@
 #include "mainsession.h"
 
 
-Quit::Quit(MWindow *mwindow, Save *save)
+Quit::Quit(Save *save)
  : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
 { 
-	this->mwindow = mwindow; 
 	this->save = save;
 }
 
 int Quit::handle_event() 
 {
 	if(mainsession->changes_made ||
-		mwindow->render->in_progress) 
+		mwindow_global->render->in_progress)
 	{
 		if(running())
 			return 0;
@@ -36,9 +35,9 @@ int Quit::handle_event()
 	}
 	else 
 	{        // quit
-		mwindow->interrupt_indexes();
-		mwindow->delete_brender();
-		mwindow->glthread->quit();
+		mwindow_global->interrupt_indexes();
+		mwindow_global->delete_brender();
+		mwindow_global->glthread->quit();
 	}
 	return 1;
 }
@@ -49,7 +48,7 @@ void Quit::run()
 	int cx, cy;
 
 // Test execution conditions
-	if(mwindow->render->running())
+	if(mwindow_global->render->running())
 	{
 		errorbox(_("Can't quit while a render is in progress."));
 		return;
@@ -57,8 +56,8 @@ void Quit::run()
 
 // Quit
 	{
-		mwindow->get_abs_cursor_pos(&cx, &cy);
-		QuestionWindow confirm(mwindow, 1, cx, cy,
+		mwindow_global->get_abs_cursor_pos(&cx, &cy);
+		QuestionWindow confirm(mwindow_global, 1, cx, cy,
 			_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
 		result = confirm.run_window();
 	}
@@ -66,11 +65,11 @@ void Quit::run()
 	switch(result)
 	{
 	case 0:          // quit
-		if(mwindow)
+		if(mwindow_global)
 		{
-			mwindow->interrupt_indexes();
-			mwindow->delete_brender();
-			mwindow->glthread->quit();
+			mwindow_global->interrupt_indexes();
+			mwindow_global->delete_brender();
+			mwindow_global->glthread->quit();
 		}
 		break;
 

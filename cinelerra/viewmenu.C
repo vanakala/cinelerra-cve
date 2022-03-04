@@ -15,10 +15,9 @@
 #include "viewmenu.h"
 
 
-ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
+ShowAssets::ShowAssets(const char *hotkey)
  : BC_MenuItem(_("Show assets"), hotkey, hotkey[0])
 {
-	this->mwindow = mwindow; 
 	set_checked(edlsession->show_assets);
 }
 
@@ -26,16 +25,15 @@ int ShowAssets::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->show_assets = get_checked();
-	mwindow->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
-	mwindow->gwindow->gui->update_toggles();
+	mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	mwindow_global->gwindow->gui->update_toggles();
 	return 1;
 }
 
 
-ShowTitles::ShowTitles(MWindow *mwindow, const char *hotkey)
+ShowTitles::ShowTitles(const char *hotkey)
  : BC_MenuItem(_("Show titles"), hotkey, hotkey[0])
 {
-	this->mwindow = mwindow; 
 	set_checked(edlsession->show_titles);
 }
 
@@ -43,15 +41,14 @@ int ShowTitles::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->show_titles = get_checked();
-	mwindow->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
-	mwindow->gwindow->gui->update_toggles();
+	mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
+	mwindow_global->gwindow->gui->update_toggles();
 	return 1;
 }
 
-ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
+ShowTransitions::ShowTransitions(const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
-	this->mwindow = mwindow; 
 	set_checked(edlsession->auto_conf->transitions_visible);
 }
 
@@ -59,19 +56,17 @@ int ShowTransitions::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->transitions_visible = get_checked();
-	mwindow->draw_canvas_overlays();
-	mwindow->gwindow->gui->update_toggles();
+	mwindow_global->draw_canvas_overlays();
+	mwindow_global->gwindow->gui->update_toggles();
 	return 1;
 }
 
 
-ShowAutomation::ShowAutomation(MWindow *mwindow, 
-	const char *text,
+ShowAutomation::ShowAutomation(const char *text,
 	const char *hotkey,
 	int subscript)
  : BC_MenuItem(text, hotkey, hotkey[0])
 {
-	this->mwindow = mwindow;
 	this->subscript = subscript;
 	set_checked(edlsession->auto_conf->auto_visible[subscript]);
 }
@@ -80,8 +75,8 @@ int ShowAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->auto_visible[subscript] = get_checked();
-	mwindow->draw_canvas_overlays();
-	mwindow->gwindow->gui->update_toggles();
+	mwindow_global->draw_canvas_overlays();
+	mwindow_global->gwindow->gui->update_toggles();
 	return 1;
 }
 
@@ -91,17 +86,16 @@ void ShowAutomation::update_toggle()
 }
 
 
-PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
- : BC_MenuItem(_("Plugin Autos"), hotkey, hotkey[0]) 
+PluginAutomation::PluginAutomation(const char *hotkey)
+ : BC_MenuItem(_("Plugin Autos"), hotkey, hotkey[0])
 {
-	this->mwindow = mwindow; 
 }
 
 int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->keyframes_visible = get_checked();
-	mwindow->draw_canvas_overlays();
-	mwindow->gwindow->gui->update_toggles();
+	mwindow_global->draw_canvas_overlays();
+	mwindow_global->gwindow->gui->update_toggles();
 	return 1;
 }

@@ -9,7 +9,6 @@
 #include "edlsession.inc"
 #include "formatpresets.h"
 #include "mutex.inc"
-#include "mwindow.inc"
 #include "rotateframe.inc"
 #include "setformat.inc"
 #include "selection.inc"
@@ -22,20 +21,19 @@ class SetFormatPresets;
 class SetFormat : public BC_MenuItem
 {
 public:
-	SetFormat(MWindow *mwindow);
+	SetFormat();
 	~SetFormat();
 
 	int handle_event();
 
 	SetFormatThread *thread;
-	MWindow *mwindow;
 };
 
 
 class SetFormatThread : public Thread
 {
 public:
-	SetFormatThread(MWindow *mwindow);
+	SetFormatThread();
 	~SetFormatThread();
 
 	void run();
@@ -49,7 +47,6 @@ public:
 
 	Mutex *window_lock;
 	SetFormatWindow *window;
-	MWindow *mwindow;
 	EDLSession *new_edlsession;
 	double ratio[2];
 	int dimension[2];
@@ -64,15 +61,13 @@ public:
 	int handle_event();
 
 	SetFormatThread *thread;
-	MWindow *mwindow;
 };
 
 
 class SetChannelsCanvas : public BC_SubWindow
 {
 public:
-	SetChannelsCanvas(MWindow *mwindow, 
-		SetFormatThread *thread, 
+	SetChannelsCanvas(SetFormatThread *thread,
 		int x, 
 		int y,
 		int w,
@@ -92,7 +87,6 @@ private:
 
 	int poltoxy(int &x, int &y, int r, int d);
 	int xytopol(int &d, int x, int y);
-	MWindow *mwindow;
 	SetFormatThread *thread;
 	VFrame *temp_picon;
 	RotateFrame *rotater;
@@ -149,13 +143,11 @@ public:
 class SetFormatWindow : public BC_Window
 {
 public:
-	SetFormatWindow(MWindow *mwindow, 
-		SetFormatThread *thread,
+	SetFormatWindow(SetFormatThread *thread,
 		int x,
 		int y);
 	~SetFormatWindow();
 
-	MWindow *mwindow;
 	SetFormatThread *thread;
 	SetChannelsCanvas *canvas;
 

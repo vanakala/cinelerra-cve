@@ -6,20 +6,18 @@
 #ifndef QUIT_H
 #define QUIT_H
 
-#include "mwindow.inc"
 #include "savefile.inc"
 
 class Quit : public BC_MenuItem, public Thread
 {
 public:
-	Quit(MWindow *mwindow,  Save *save);
+	Quit(Save *save);
 
 	int handle_event();
 private:
 	void run();
 
 	Save *save;
-	MWindow *mwindow;
 };
 
 #endif

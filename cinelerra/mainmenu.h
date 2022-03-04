@@ -26,8 +26,6 @@ class Undo;
 #include "bcmenuitem.h"
 #include "bcrecentlist.inc"
 #include "loadfile.inc"
-#include "mwindow.inc"
-#include "mwindowgui.inc"
 #include "menuaeffects.inc"
 #include "menuveffects.inc"
 #include "new.inc"
@@ -42,7 +40,7 @@ class Undo;
 class MainMenu : public BC_MenuBar
 {
 public:
-	MainMenu(MWindow *mwindow, BC_WindowBase *gui);
+	MainMenu(BC_WindowBase *gui);
 
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
@@ -64,7 +62,6 @@ public:
 	int set_show_autos();
 	void update_toggles();
 
-	MWindow *mwindow;
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
 
@@ -114,81 +111,67 @@ public:
 class Undo : public BC_MenuItem
 {
 public:
-	Undo(MWindow *mwindow);
+	Undo();
 
 	int handle_event();
 	void update_caption(const char *new_caption = "");
-
-	MWindow *mwindow;
 };
 
 class DumpEDL : public BC_MenuItem
 {
 public:
-	DumpEDL(MWindow *mwindow);
+	DumpEDL();
 
 	int handle_event();
-	MWindow *mwindow;
 };
 
 class DumpPlugins : public BC_MenuItem
 {
 public:
-	DumpPlugins(MWindow *mwindow);
+	DumpPlugins();
 
 	int handle_event();
-	MWindow *mwindow;
 };
 
 class Redo : public BC_MenuItem
 {
 public:
-	Redo(MWindow *mwindow);
+	Redo();
 
 	int handle_event();
 	void update_caption(const char *new_caption = "");
-
-	MWindow *mwindow;
 };
 
 class Cut : public BC_MenuItem
 {
 public:
-	Cut(MWindow *mwindow);
+	Cut();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class Copy : public BC_MenuItem
 {
 public:
-	Copy(MWindow *mwindow);
+	Copy();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class Paste : public BC_MenuItem
 {
 public:
-	Paste(MWindow *mwindow);
+	Paste();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class Clear : public BC_MenuItem
 {
 public:
-	Clear(MWindow *mwindow);
+	Clear();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class CutEffects : public BC_MenuItem
@@ -250,51 +233,41 @@ public:
 class PasteSilence : public BC_MenuItem
 {
 public:
-	PasteSilence(MWindow *mwindow);
+	PasteSilence();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class SelectAll : public BC_MenuItem
 {
 public:
-	SelectAll(MWindow *mwindow);
+	SelectAll();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ClearLabels : public BC_MenuItem
 {
 public:
-	ClearLabels(MWindow *mwindow);
+	ClearLabels();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class MuteSelection : public BC_MenuItem
 {
 public:
-	MuteSelection(MWindow *mwindow);
+	MuteSelection();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class TrimSelection : public BC_MenuItem
 {
 public:
-	TrimSelection(MWindow *mwindow);
+	TrimSelection();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class EditNotes : public BC_MenuItem
@@ -310,41 +283,33 @@ public:
 class AddAudioTrack : public BC_MenuItem
 {
 public:
-	AddAudioTrack(MWindow *mwindow);
+	AddAudioTrack();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class DefaultATransition : public BC_MenuItem
 {
 public:
-	DefaultATransition(MWindow *mwindow);
+	DefaultATransition();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class MapAudio1 : public BC_MenuItem
 {
 public:
-	MapAudio1(MWindow *mwindow);
+	MapAudio1();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class MapAudio2 : public BC_MenuItem
 {
 public:
-	MapAudio2(MWindow *mwindow);
+	MapAudio2();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 // ========================================== video
@@ -352,22 +317,18 @@ public:
 class AddVideoTrack : public BC_MenuItem
 {
 public:
-	AddVideoTrack(MWindow *mwindow);
+	AddVideoTrack();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 
 class DefaultVTransition : public BC_MenuItem
 {
 public:
-	DefaultVTransition(MWindow *mwindow);
+	DefaultVTransition();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 // ========================================== settings
@@ -375,190 +336,146 @@ public:
 class MoveTracksUp : public BC_MenuItem
 {
 public:
-	MoveTracksUp(MWindow *mwindow);
+	MoveTracksUp();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class MoveTracksDown : public BC_MenuItem
 {
 public:
-	MoveTracksDown(MWindow *mwindow);
+	MoveTracksDown();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class DeleteTracks : public BC_MenuItem
 {
 public:
-	DeleteTracks(MWindow *mwindow);
+	DeleteTracks();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ConcatenateTracks : public BC_MenuItem
 {
 public:
-	ConcatenateTracks(MWindow *mwindow);
+	ConcatenateTracks();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class DeleteTrack : public BC_MenuItem
 {
 public:
-	DeleteTrack(MWindow *mwindow);
+	DeleteTrack();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class LoopPlayback : public BC_MenuItem
 {
 public:
-	LoopPlayback(MWindow *mwindow);
+	LoopPlayback();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class SetBRenderStart : public BC_MenuItem
 {
 public:
-	SetBRenderStart(MWindow *mwindow);
+	SetBRenderStart();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class LabelsFollowEdits : public BC_MenuItem
 {
 public:
-	LabelsFollowEdits(MWindow *mwindow);
+	LabelsFollowEdits();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class CursorOnFrames : public BC_MenuItem
 {
 public:
-	CursorOnFrames(MWindow *mwindow);
+	CursorOnFrames();
 
 	int handle_event();
-
-	MWindow *mwindow;
-};
-
-class AutosFollowEdits : public BC_MenuItem
-{
-public:
-	AutosFollowEdits(MWindow *mwindow);
-
-	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class SaveSettingsNow : public BC_MenuItem
 {
 public:
-	SaveSettingsNow(MWindow *mwindow);
+	SaveSettingsNow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 // ========================================== window
 class ShowVWindow : public BC_MenuItem
 {
 public:
-	ShowVWindow(MWindow *mwindow);
+	ShowVWindow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ShowAWindow : public BC_MenuItem
 {
 public:
-	ShowAWindow(MWindow *mwindow);
+	ShowAWindow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ShowGWindow : public BC_MenuItem
 {
 public:
-	ShowGWindow(MWindow *mwindow);
+	ShowGWindow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ShowCWindow : public BC_MenuItem
 {
 public:
-	ShowCWindow(MWindow *mwindow);
+	ShowCWindow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ShowLWindow : public BC_MenuItem
 {
 public:
-	ShowLWindow(MWindow *mwindow);
+	ShowLWindow();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class TileWindows : public BC_MenuItem
 {
 public:
-	TileWindows(MWindow *mwindow);
+	TileWindows();
+
 	int handle_event();
-	MWindow *mwindow;
 };
 
 class ShowRuler : public BC_MenuItem
 {
 public:
-	ShowRuler(MWindow *mwindow);
+	ShowRuler();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class ShowStatus : public BC_MenuItem
 {
 public:
-	ShowStatus(MWindow *mwindow);
+	ShowStatus();
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 #endif

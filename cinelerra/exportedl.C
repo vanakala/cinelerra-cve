@@ -195,16 +195,15 @@ void ExportEDLAsset::save_defaults()
 }
 
 
-ExportEDLItem::ExportEDLItem(MWindow *mwindow)
+ExportEDLItem::ExportEDLItem()
  : BC_MenuItem(_("Export EDL..."), "Shift+E", 'E')
 {
-	this->mwindow = mwindow;
 	set_shift(1);
 }
 
 int ExportEDLItem::handle_event() 
 {
-	mwindow->exportedl->start_interactive();
+	mwindow_global->exportedl->start_interactive();
 	return 1;
 }
 
