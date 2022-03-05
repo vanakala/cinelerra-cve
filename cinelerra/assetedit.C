@@ -515,7 +515,7 @@ int AssetEditPathText::handle_event()
 AssetEditPath::AssetEditPath(AssetEditWindow *fwindow,
 	BC_TextBox *textbox, int x, int y, const char *text,
 	const char *window_title, const char *window_caption)
- : BrowseButton(mwindow_global, fwindow, textbox, x, y, text, window_title, window_caption, 0)
+ : BrowseButton(fwindow, textbox, x, y, text, window_title, window_caption, 0)
 { 
 	this->fwindow = fwindow; 
 }

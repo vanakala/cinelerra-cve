@@ -600,9 +600,7 @@ BatchRenderGUI::BatchRenderGUI(BatchRenderThread *thread,
 		thread->get_current_edl()));
 
 	x += edl_path_text->get_w();
-	add_subwindow(edl_path_browse = new BrowseButton(
-		mwindow_global,
-		this,
+	add_subwindow(edl_path_browse = new BrowseButton(this,
 		edl_path_text, 
 		x, 
 		y, 

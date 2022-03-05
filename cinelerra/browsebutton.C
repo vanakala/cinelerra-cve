@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "browsebutton.h"
 #include "bcsignals.h"
@@ -28,8 +12,7 @@
 #include "theme.h"
 
 
-BrowseButton::BrowseButton(MWindow *mwindow, 
-	BC_WindowBase *parent_window, 
+BrowseButton::BrowseButton(BC_WindowBase *parent_window,
 	BC_TextBox *textbox, 
 	int x, 
 	int y, 
@@ -38,7 +21,7 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	const char *caption, 
 	int want_directory,
 	const char *recent_prefix)
- : BC_Button(x, y, mwindow->theme->get_image_set("magnify_button")), 
+ : BC_Button(x, y, theme_global->get_image_set("magnify_button")),
    Thread(THREAD_SYNCHRONOUS)
 {
 	this->parent_window = parent_window;
@@ -47,7 +30,6 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	this->caption = caption;
 	this->init_directory = init_directory;
 	this->textbox = textbox;
-	this->mwindow = mwindow;
 	this->recent_prefix = recent_prefix;
 	set_tooltip(_("Look for file"));
 	gui = 0;
@@ -86,8 +68,7 @@ int BrowseButton::handle_event()
 
 void BrowseButton::run()
 {
-	BrowseButtonWindow browsewindow(mwindow,
-		this,
+	BrowseButtonWindow browsewindow(this,
 		parent_window, 
 		textbox->get_text(), 
 		title, 
@@ -108,17 +89,14 @@ void BrowseButton::run()
 }
 
 
-BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow, 
-	BrowseButton *button,
+BrowseButtonWindow::BrowseButtonWindow(BrowseButton *button,
 	BC_WindowBase *parent_window, 
 	const char *init_directory, 
 	const char *title, 
 	const char *caption, 
 	int want_directory)
- : BC_FileBox(button->x - 
-		BC_WindowBase::get_resources()->filebox_w / 2,
-	button->y -
-		BC_WindowBase::get_resources()->filebox_h / 2,
+ : BC_FileBox(button->x - BC_WindowBase::get_resources()->filebox_w / 2,
+	button->y - BC_WindowBase::get_resources()->filebox_h / 2,
 	init_directory,
 	title,
 	caption,
@@ -127,7 +105,7 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 // Want only directories
 	want_directory,
 	0,
-	mwindow->theme->browse_pad)
+	theme_global->browse_pad)
 {
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 }

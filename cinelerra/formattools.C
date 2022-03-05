@@ -145,9 +145,7 @@ FormatTools::FormatTools(BC_WindowBase *window,
 	path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 
 	x += 18;
-	window->add_subwindow(path_button = new BrowseButton(
-		mwindow_global,
-		window,
+	window->add_subwindow(path_button = new BrowseButton(window,
 		path_textbox,
 		x,
 		y,

@@ -319,10 +319,8 @@ ExportEDLWindow::ExportEDLWindow(int x, int y, ExportEDL *exportedl,
 	path_recent->load_items("EDLPATH");
 
 	x += 24;
-	add_subwindow(path_button = new BrowseButton(
-		mwindow_global,
-		this,
-		path_textbox, 
+	add_subwindow(path_button = new BrowseButton(this,
+		path_textbox,
 		x, 
 		y - 4, 
 		exportasset->path,
