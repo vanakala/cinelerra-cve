@@ -10,7 +10,6 @@
 #include "editpanel.h"
 #include "edl.inc"
 #include "mbuttons.inc"
-#include "mwindow.inc"
 #include "playtransport.h"
 
 class MainEditing;
@@ -18,7 +17,7 @@ class MainEditing;
 class MButtons : public BC_SubWindow
 {
 public:
-	MButtons(MWindow *mwindow);
+	MButtons();
 	~MButtons();
 
 	void show();
@@ -26,7 +25,6 @@ public:
 	int keypress_event();
 	void update();
 
-	MWindow *mwindow;
 	PlayTransport *transport;
 	MainEditing *edit_panel;
 };
@@ -34,7 +32,8 @@ public:
 class MainTransport : public PlayTransport
 {
 public:
-	MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y);
+	MainTransport(MButtons *mbuttons, int x, int y);
+
 	void goto_start();
 	void goto_end();
 	EDL *get_edl();
@@ -43,9 +42,8 @@ public:
 class MainEditing : public EditPanel
 {
 public:
-	MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y);
+	MainEditing(MButtons *mbuttons, int x, int y);
 
-	MWindow *mwindow;
 	MButtons *mbuttons;
 };
 

@@ -118,7 +118,7 @@ void MWindowGUI::show()
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
 
-	add_subwindow(mbuttons = new MButtons(mwindow));
+	add_subwindow(mbuttons = new MButtons());
 	mbuttons->show();
 
 	add_subwindow(timebar = new MTimeBar(this,

@@ -13,13 +13,12 @@
 #include "playtransport.h"
 #include "theme.h"
 
-MButtons::MButtons(MWindow *mwindow)
- : BC_SubWindow(mwindow->theme->mbuttons_x, 
-	mwindow->theme->mbuttons_y,
-	mwindow->theme->mbuttons_w, 
-	mwindow->theme->mbuttons_h)
+MButtons::MButtons()
+ : BC_SubWindow(theme_global->mbuttons_x,
+	theme_global->mbuttons_y,
+	theme_global->mbuttons_w,
+	theme_global->mbuttons_h)
 {
-	this->mwindow = mwindow;
 	transport = 0;
 	edit_panel = 0;
 }
@@ -34,21 +33,21 @@ void MButtons::show()
 {
 	int x = 3, y = 0;
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	transport = new MainTransport(mwindow, this, x, y);
-	transport->set_engine(mwindow->cwindow->playback_engine);
+	transport = new MainTransport(this, x, y);
+	transport->set_engine(mwindow_global->cwindow->playback_engine);
 	x += transport->get_w();
-	x += mwindow->theme->mtransport_margin;
+	x += theme_global->mtransport_margin;
 
-	edit_panel = new MainEditing(mwindow, this, x, y);
+	edit_panel = new MainEditing(this, x, y);
 	flash();
 }
 
 void MButtons::resize_event()
 {
-	reposition_window(mwindow->theme->mbuttons_x, 
-		mwindow->theme->mbuttons_y, 
-		mwindow->theme->mbuttons_w, 
-		mwindow->theme->mbuttons_h);
+	reposition_window(theme_global->mbuttons_x,
+		theme_global->mbuttons_y,
+		theme_global->mbuttons_w,
+		theme_global->mbuttons_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	flash();
 }
@@ -64,21 +63,21 @@ void MButtons::update()
 }
 
 
-MainTransport::MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : PlayTransport(mwindow, mbuttons, x, y)
+MainTransport::MainTransport(MButtons *mbuttons, int x, int y)
+ : PlayTransport(mwindow_global, mbuttons, x, y)
 {
 }
 
 void MainTransport::goto_start()
 {
 	handle_transport(REWIND, 1);
-	mwindow->goto_start();
+	mwindow_global->goto_start();
 }
 
 void MainTransport::goto_end()
 {
 	handle_transport(GOTO_END, 1);
-	mwindow->goto_end();
+	mwindow_global->goto_end();
 }
 
 EDL *MainTransport::get_edl()
@@ -87,12 +86,11 @@ EDL *MainTransport::get_edl()
 }
 
 
-MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
+MainEditing::MainEditing(MButtons *mbuttons, int x, int y)
  : EditPanel(mbuttons, x, y,
 		EDTP_EDITING_MODE | EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE
 			| EDTP_UNDO | EDTP_FIT | EDTP_LOCKLABELS | EDTP_LABELS 
 			| EDTP_TOCLIP | EDTP_MWINDOW | EDTP_CUT, 0)
 {
-	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
 }
