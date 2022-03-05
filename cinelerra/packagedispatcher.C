@@ -201,7 +201,7 @@ int PackageDispatcher::create_packages(EDL *edl,
 	{
 		ArrayList<char*> paths;
 		get_package_paths(&paths);
-		result = ConfirmSave::test_files(mwindow_global, &paths);
+		result = ConfirmSave::test_files(&paths);
 		paths.remove_all_objects();
 	}
 	return result;

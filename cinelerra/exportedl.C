@@ -267,7 +267,7 @@ void ExportEDL::run()
 			ArrayList<char*> paths;
 
 			paths.append(exportasset->path);
-			filesok = ConfirmSave::test_files(mwindow_global, &paths);
+			filesok = ConfirmSave::test_files(&paths);
 		}
 	} while(!result && filesok);
 

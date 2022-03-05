@@ -446,7 +446,7 @@ void BatchRenderThread::start_rendering(char *config_path)
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths);
 
-	int result = ConfirmSave::test_files(0, &paths);
+	int result = ConfirmSave::test_files(&paths);
 	paths.remove_all_objects();
 
 // Abort on any existing file because it's so hard to set this up.
@@ -475,7 +475,7 @@ void BatchRenderThread::start_rendering()
 	calculate_dest_paths(&paths);
 
 // Test destination files for overwrite
-	int result = ConfirmSave::test_files(mwindow_global, &paths);
+	int result = ConfirmSave::test_files(&paths);
 	paths.remove_all_objects();
 
 // User cancelled

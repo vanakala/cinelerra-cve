@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
 #include "bcbutton.h"
@@ -46,8 +30,7 @@ int ConfirmSave::test_file(const char *path)
 	return result;
 }
 
-int ConfirmSave::test_files(MWindow *mwindow, 
-	ArrayList<char*> *paths)
+int ConfirmSave::test_files(ArrayList<char*> *paths)
 {
 	ArrayList<BC_ListBoxItem*> list;
 	int result = 0;
@@ -64,10 +47,10 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 	if(list.total)
 	{
-		if(mwindow)
+		if(mwindow_global)
 		{
-			mwindow->get_abs_cursor_pos(&cx, &cy);
-			ConfirmSaveWindow window(mwindow, &list, cx, cy);
+			mwindow_global->get_abs_cursor_pos(&cx, &cy);
+			ConfirmSaveWindow window(&list, cx, cy);
 			window.raise_window();
 			result = window.run_window();
 		}
@@ -93,8 +76,8 @@ int ConfirmSave::test_files(MWindow *mwindow,
 }
 
 
-ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
-	ArrayList<BC_ListBoxItem*> *list, int absx, int absy)
+ConfirmSaveWindow::ConfirmSaveWindow(ArrayList<BC_ListBoxItem*> *list,
+	int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Files Exist")),
 		absx - 160,
 		absy - 120,
@@ -102,18 +85,15 @@ ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow,
 		mainsession->ewindow_h,
 		50, 50)
 {
-	this->mwindow = mwindow;
 	this->list = list;
 	int x = 10, y = 10;
 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 
-	add_subwindow(title = new BC_Title(x, 
-		y, 
+	add_subwindow(title = new BC_Title(x, y,
 		_("The following files exist.  Overwrite them?")));
 	y += 30;
-	add_subwindow(listbox = new BC_ListBox(x, 
-		y, 
+	add_subwindow(listbox = new BC_ListBox(x, y,
 		get_w() - x - 10,
 		get_h() - y - BC_OKButton::calculate_h() - 10,
 		list));
