@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef MAINPROGRESS_H
 #define MAINPROGRESS_H
@@ -28,7 +12,6 @@
 #include "bcwindowbase.inc"
 #include "datatype.h"
 #include "mainprogress.inc"
-#include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "bctimer.inc"
 
@@ -38,7 +21,7 @@ class MainProgress;
 class MainProgressBar
 {
 public:
-	MainProgressBar(MWindow *mwindow, MainProgress *mainprogress);
+	MainProgressBar(MainProgress *mainprogress);
 	~MainProgressBar();
 
 	friend class MainProgress;
@@ -60,7 +43,6 @@ public:
 	BC_ProgressBox *progress_box;
 // Only defined if this is the main progress bar
 	BC_ProgressBar *progress_bar;
-	MWindow *mwindow;
 	MainProgress *mainprogress;
 // Title assigned by user
 	char default_title[BCTEXTLEN];
@@ -78,8 +60,7 @@ private:
 class MainProgress
 {
 public:
-	MainProgress(MWindow *mwindow, MWindowGUI *gui);
-	~MainProgress();
+	MainProgress(MWindowGUI *gui);
 
 // Start a progress sequence and return the bar.
 // use_window - force opening of a new window if 1.
@@ -94,7 +75,6 @@ public:
 	ArrayList<MainProgressBar*> progress_bars;
 	MainProgressBar *mwindow_progress;
 
-	MWindow *mwindow;
 	MWindowGUI *gui;
 // For mwindow progress
 	int cancelled;

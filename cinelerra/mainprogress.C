@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcprogress.h"
 #include "bcprogressbox.h"
@@ -33,11 +17,10 @@
 
 #define MAINPROGRESS_COEF 1e6
 
-MainProgressBar::MainProgressBar(MWindow *mwindow, MainProgress *mainprogress)
+MainProgressBar::MainProgressBar(MainProgress *mainprogress)
 {
 	progress_box = 0;
 	progress_bar = 0;
-	this->mwindow = mwindow;
 	this->mainprogress = mainprogress;
 	eta_timer = new Timer;
 }
@@ -77,7 +60,7 @@ void MainProgressBar::stop_progress()
 	if(progress_bar)
 	{
 		progress_bar->update(0);
-		mwindow->default_message();
+		mwindow_global->default_message();
 	}
 }
 
@@ -111,7 +94,7 @@ void MainProgressBar::update_current_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-		mwindow->show_message(bufr);
+		mwindow_global->show_message(bufr);
 }
 
 void MainProgressBar::update_title(const char *fmt, ...)
@@ -131,7 +114,7 @@ void MainProgressBar::update_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-		mwindow->show_message(bufr);
+		mwindow_global->show_message(bufr);
 }
 
 void MainProgressBar::update_length(int64_t length)
@@ -208,18 +191,13 @@ double MainProgressBar::get_time()
 }
 
 
-MainProgress::MainProgress(MWindow *mwindow, MWindowGUI *gui)
+MainProgress::MainProgress(MWindowGUI *gui)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	mwindow_progress = 0;
 	cancelled = 0;
 }
 
-
-MainProgress::~MainProgress()
-{
-}
 
 MainProgressBar* MainProgress::start_progress(const char *text,
 	int64_t total_length,
@@ -232,7 +210,7 @@ MainProgressBar* MainProgress::start_progress(const char *text,
 // Default to main window
 	if(!mwindow_progress && !use_window)
 	{
-		mwindow_progress = new MainProgressBar(mwindow, this);
+		mwindow_progress = new MainProgressBar(this);
 		mwindow_progress->progress_bar = gui->statusbar->main_progress;
 		mwindow_progress->progress_bar->update_length(total_length);
 		mwindow_progress->update_title("%s", text);
@@ -242,9 +220,9 @@ MainProgressBar* MainProgress::start_progress(const char *text,
 
 	if(!result)
 	{
-		result = new MainProgressBar(mwindow, this);
+		result = new MainProgressBar(this);
 		progress_bars.append(result);
-		mwindow->get_abs_cursor_pos(&cx, &cy);
+		mwindow_global->get_abs_cursor_pos(&cx, &cy);
 		result->progress_box = new BC_ProgressBox(cx, cy,
 			text, total_length);
 	}

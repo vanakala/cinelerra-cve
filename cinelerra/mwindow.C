@@ -144,7 +144,7 @@ MWindow::MWindow(const char *config_path)
 	init_render();
 	init_brender();
 	init_exportedl();
-	mainprogress = new MainProgress(this, gui);
+	mainprogress = new MainProgress(gui);
 	undo = new MainUndo();
 	clip_edit = new ClipEdit();
 
