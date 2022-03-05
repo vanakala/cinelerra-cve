@@ -22,7 +22,7 @@ AudioLowLevel::AudioLowLevel(AudioDevice *device)
 	this->device = device;
 }
 
-AudioDevice::AudioDevice(MWindow *mwindow)
+AudioDevice::AudioDevice()
  : Thread(THREAD_SYNCHRONOUS)
 {
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
@@ -45,7 +45,6 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	sharing = 0;
 	total_samples_read = 0;
 	read_waiting = 0;
-	this->mwindow = mwindow;
 	out_config = 0;
 	startup_lock = new Condition(0, "AudioDevice::startup_lock");
 	timer_lock = new Mutex("AudioDevice::timer_lock");

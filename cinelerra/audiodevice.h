@@ -19,7 +19,6 @@
 #include "condition.inc"
 #include "datatype.h"
 #include "mutex.inc"
-#include "mwindow.inc"
 #include "preferences.inc"
 #include "sema.inc"
 #include "thread.h"
@@ -46,7 +45,7 @@ class AudioDevice : public Thread
 {
 public:
 // MWindow is required where global input is used, to get the pointer.
-	AudioDevice(MWindow *mwindow = 0);
+	AudioDevice();
 	~AudioDevice();
 
 	friend class AudioALSA;
@@ -151,7 +150,6 @@ private:
 	int thread_buffer_num;
 	int thread_result;
 	samplenum total_samples_read;
-	MWindow *mwindow;
 };
 
 #endif
