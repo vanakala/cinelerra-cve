@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef METERPANEL_H
 #define METERPANEL_H
@@ -25,7 +9,6 @@
 #include "bcbutton.h"
 #include "bctoggle.h"
 #include "bcmeter.h"
-#include "mwindow.inc"
 
 class MeterReset;
 class MeterMeter;
@@ -34,8 +17,7 @@ class MeterMeter;
 class MeterPanel
 {
 public:
-	MeterPanel(MWindow *mwindow, 
-		BC_WindowBase *subwindow, 
+	MeterPanel(BC_WindowBase *subwindow,
 		int x, 
 		int y, 
 		int h,
@@ -58,7 +40,6 @@ public:
 	void reset_meters();
 	void set_delays(int over_delay, int peak_delay);
 
-	MWindow *mwindow;
 	BC_WindowBase *subwindow;
 	ArrayList<MeterMeter*> meters;
 	MeterReset *reset;
@@ -72,11 +53,10 @@ public:
 class MeterReset : public BC_Button
 {
 public:
-	MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y);
+	MeterReset(MeterPanel *panel, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	MeterPanel *panel;
 };
 
@@ -84,22 +64,20 @@ public:
 class MeterShow : public BC_Toggle
 {
 public:
-	MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y);
+	MeterShow(MeterPanel *panel, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	MeterPanel *panel;
 };
 
 class MeterMeter : public BC_Meter
 {
 public:
-	MeterMeter(MWindow *mwindow, MeterPanel *panel, int x, int y, int h, int titles);
+	MeterMeter(MeterPanel *panel, int x, int y, int h, int titles);
 
 	int button_press_event();
 
-	MWindow *mwindow;
 	MeterPanel *panel;
 };
 

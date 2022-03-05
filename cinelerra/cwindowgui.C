@@ -544,7 +544,7 @@ void CWindowEditing::set_outpoint()
 
 
 CWindowMeters::CWindowMeters(CWindowGUI *gui, int x, int y, int h)
- : MeterPanel(mwindow_global, gui, x, y, h,
+ : MeterPanel(gui, x, y, h,
 	edlsession->audio_channels,
 	edlsession->cwindow_meter)
 {

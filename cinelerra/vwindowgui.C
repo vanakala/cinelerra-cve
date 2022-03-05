@@ -291,13 +291,8 @@ VWindowMeters::VWindowMeters(VWindowGUI *gui,
 	int x, 
 	int y, 
 	int h)
- : MeterPanel(mwindow_global,
-		gui,
-		x,
-		y,
-		h,
-		edlsession->audio_channels,
-		edlsession->vwindow_meter)
+ : MeterPanel(gui, x, y, h,
+	edlsession->audio_channels, edlsession->vwindow_meter)
 {
 	this->gui = gui;
 }

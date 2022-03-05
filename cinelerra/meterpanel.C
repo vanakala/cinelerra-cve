@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "edl.h"
@@ -30,8 +14,7 @@
 #include "vframe.h"
 
 
-MeterPanel::MeterPanel(MWindow *mwindow, 
-	BC_WindowBase *subwindow, 
+MeterPanel::MeterPanel(BC_WindowBase *subwindow,
 	int x, 
 	int y,
 	int h,
@@ -40,7 +23,6 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 	int use_recording)
 {
 	this->subwindow = subwindow;
-	this->mwindow = mwindow;
 	this->x = x;
 	this->y = y;
 	this->h = h;
@@ -58,8 +40,7 @@ MeterPanel::~MeterPanel()
 int MeterPanel::get_meters_width(int meter_count, int use_meters)
 {
 	return use_meters ? 
-		(BC_Meter::get_title_w() + BC_Meter::get_meter_w() * meter_count) : 
-		0;
+		(BC_Meter::get_title_w() + BC_Meter::get_meter_w() * meter_count) : 0;
 }
 
 void MeterPanel::reposition_window(int x, int y, int h)
@@ -82,14 +63,13 @@ int MeterPanel::change_status_event()
 
 int MeterPanel::get_reset_x()
 {
-	return x + 
-		get_meters_width(meter_count, use_meters) - 
-		mwindow->theme->over_button[0]->get_w();
+	return x + get_meters_width(meter_count, use_meters) -
+		theme_global->over_button[0]->get_w();
 }
 
 int MeterPanel::get_reset_y()
 {
-	return y + h - mwindow->theme->over_button[0]->get_h();
+	return y + h - theme_global->over_button[0]->get_h();
 }
 
 int MeterPanel::get_meter_w(int number)
@@ -140,12 +120,8 @@ void MeterPanel::set_meters(int meter_count, int use_meters)
 			for(int i = 0; i < meter_count; i++)
 			{
 				MeterMeter *new_meter;
-				subwindow->add_subwindow(new_meter = new MeterMeter(mwindow,
-						this,
-						x, 
-						y, 
-						h, 
-						(i == 0)));
+				subwindow->add_subwindow(new_meter = new MeterMeter(this,
+					x, y, h, (i == 0)));
 				meters.append(new_meter);
 				x += get_meter_w(i);
 			}
@@ -177,10 +153,9 @@ void MeterPanel::change_format(int min, int max)
 }
 
 
-MeterReset::MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y)
- : BC_Button(x, y, mwindow->theme->over_button)
+MeterReset::MeterReset(MeterPanel *panel, int x, int y)
+ : BC_Button(x, y, theme_global->over_button)
 {
-	this->mwindow = mwindow;
 	this->panel = panel;
 }
 
@@ -192,12 +167,8 @@ int MeterReset::handle_event()
 }
 
 
-MeterMeter::MeterMeter(MWindow *mwindow, 
-	MeterPanel *panel, 
-	int x, 
-	int y, 
-	int h, 
-	int titles)
+MeterMeter::MeterMeter(MeterPanel *panel,
+	int x, int y, int h, int titles)
  : BC_Meter(x,
 	y,
 	METER_VERT,
@@ -206,7 +177,6 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	panel->use_recording ? 0 : edlsession->max_meter_db,
 	titles)
 {
-	this->mwindow = mwindow;
 	this->panel = panel;
 }
 
@@ -215,21 +185,17 @@ int MeterMeter::button_press_event()
 	if(is_event_win() && BC_WindowBase::cursor_inside())
 	{
 		panel->reset_meters();
-		mwindow->reset_meters();
+		mwindow_global->reset_meters();
 		return 1;
 	}
-
 	return 0;
 }
 
 
-MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
- : BC_Toggle(x, 
-		y,
-		mwindow->theme->get_image_set("meters"), 
-		panel->use_meters)
+MeterShow::MeterShow(MeterPanel *panel, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("meters"),
+	panel->use_meters)
 {
-	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Show meters"));
 }

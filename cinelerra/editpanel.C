@@ -123,8 +123,7 @@ EditPanel::EditPanel(BC_WindowBase *subwindow,
 
 	if(meter_panel)
 	{
-		subwindow->add_subwindow(meters = new MeterShow(mwindow_global,
-			meter_panel, x1, y1));
+		subwindow->add_subwindow(meters = new MeterShow(meter_panel, x1, y1));
 		x1 += meters->get_w();
 	}
 
