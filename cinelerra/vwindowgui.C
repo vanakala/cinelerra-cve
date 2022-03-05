@@ -461,10 +461,7 @@ void VWindowSlider::set_position()
 VWindowTransport::VWindowTransport(VWindowGUI *gui,
 	int x, 
 	int y)
- : PlayTransport(mwindow_global,
-	gui, 
-	x, 
-	y)
+ : PlayTransport(gui, x, y)
 {
 	this->gui = gui;
 }

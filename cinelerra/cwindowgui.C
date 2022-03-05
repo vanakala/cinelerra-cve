@@ -625,9 +625,8 @@ void CWindowSlider::decrease_value()
 
 
 CWindowTransport::CWindowTransport(CWindowGUI *gui, int x, int y)
- : PlayTransport(mwindow_global, gui, x, y)
+ : PlayTransport(gui, x, y)
 {
-	this->gui = gui;
 }
 
 void CWindowTransport::goto_start()

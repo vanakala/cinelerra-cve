@@ -756,7 +756,7 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cstatus_y = mainsession->cwindow_h;
 	}
 
-	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
+	czoom_x = ctransport_x + PlayTransport::get_transport_width() + 20;
 	czoom_y = ctransport_y + 5;
 
 	cmeter_y = 5;
@@ -769,7 +769,7 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	ctimebar_h = 16;
 
 // Not used
-	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
+	ctime_x = ctransport_x + PlayTransport::get_transport_width();
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;

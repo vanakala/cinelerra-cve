@@ -180,8 +180,6 @@ public:
 
 	void goto_start();
 	void goto_end();
-
-	CWindowGUI *gui;
 };
 
 

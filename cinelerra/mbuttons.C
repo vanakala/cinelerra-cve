@@ -64,7 +64,7 @@ void MButtons::update()
 
 
 MainTransport::MainTransport(MButtons *mbuttons, int x, int y)
- : PlayTransport(mwindow_global, mbuttons, x, y)
+ : PlayTransport(mbuttons, x, y)
 {
 }
 
