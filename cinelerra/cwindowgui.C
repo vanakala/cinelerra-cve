@@ -111,8 +111,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
 
-	composite_panel = new CPanel(mwindow, 
-		this, 
+	composite_panel = new CPanel(this,
 		mwindow->theme->ccomposite_x,
 		mwindow->theme->ccomposite_y,
 		mwindow->theme->ccomposite_w,

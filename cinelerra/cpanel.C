@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "cpanel.h"
 #include "cwindowgui.h"
@@ -26,38 +10,45 @@
 #include "edlsession.h"
 #include "language.h"
 #include "mbuttons.h"
-#include "mwindow.h"
 #include "theme.h"
 
 
-CPanel::CPanel(MWindow *mwindow, 
-	CWindowGUI *subwindow, 
+CPanel::CPanel(CWindowGUI *subwindow,
 	int x, 
 	int y, 
 	int w, 
 	int h)
 {
-	this->mwindow = mwindow;
 	this->subwindow = subwindow;
-	subwindow->add_subwindow(operation[CWINDOW_PROTECT] = new CPanelProtect(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_PROTECT] =
+		new CPanelProtect(this, x, y));
 	y += operation[CWINDOW_PROTECT]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_ZOOM] = new CPanelMagnify(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_ZOOM] =
+		new CPanelMagnify(this, x, y));
 	y += operation[CWINDOW_ZOOM]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_MASK] = new CPanelMask(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_MASK] =
+		new CPanelMask(this, x, y));
 	y += operation[CWINDOW_MASK]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_RULER] = new CPanelRuler(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_RULER] =
+		new CPanelRuler(this, x, y));
 	y += operation[CWINDOW_RULER]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_CAMERA] = new CPanelCamera(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_CAMERA] =
+		new CPanelCamera(this, x, y));
 	y += operation[CWINDOW_CAMERA]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_PROJECTOR] = new CPanelProj(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_PROJECTOR] =
+		new CPanelProj(this, x, y));
 	y += operation[CWINDOW_PROJECTOR]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_CROP] = new CPanelCrop(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_CROP] =
+		new CPanelCrop(this, x, y));
 	y += operation[CWINDOW_CROP]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_EYEDROP] = new CPanelEyedrop(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_EYEDROP] =
+		new CPanelEyedrop(this, x, y));
 	y += operation[CWINDOW_EYEDROP]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_TOOL_WINDOW] = new CPanelToolWindow(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_TOOL_WINDOW] =
+		new CPanelToolWindow(this, x, y));
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
-	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
+	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] =
+		new CPanelTitleSafe(this, x, y));
 }
 
 void CPanel::reposition_buttons(int x, int y)
@@ -101,10 +92,8 @@ void CPanel::set_operation(int value)
 }
 
 
-CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y, 
-	mwindow->theme->get_image_set("protect"), 
+CPanelProtect::CPanelProtect(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("protect"),
 	edlsession->cwindow_operation == CWINDOW_PROTECT)
 {
 	this->gui = gui;
@@ -118,10 +107,8 @@ int CPanelProtect::handle_event()
 }
 
 
-CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y, 
-	mwindow->theme->get_image_set("mask"), 
+CPanelMask::CPanelMask(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("mask"),
 	edlsession->cwindow_operation == CWINDOW_MASK)
 {
 	this->gui = gui;
@@ -135,10 +122,8 @@ int CPanelMask::handle_event()
 }
 
 
-CPanelRuler::CPanelRuler(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x,
-	y,
-	mwindow->theme->get_image_set("ruler"),
+CPanelRuler::CPanelRuler(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("ruler"),
 	edlsession->cwindow_operation == CWINDOW_RULER)
 {
 	this->gui = gui;
@@ -151,10 +136,8 @@ int CPanelRuler::handle_event()
 	return 1;
 }
 
-CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("magnify"), 
+CPanelMagnify::CPanelMagnify(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("magnify"),
 	edlsession->cwindow_operation == CWINDOW_ZOOM)
 {
 	this->gui = gui;
@@ -168,10 +151,8 @@ int CPanelMagnify::handle_event()
 }
 
 
-CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("camera"), 
+CPanelCamera::CPanelCamera(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("camera"),
 	edlsession->cwindow_operation == CWINDOW_CAMERA)
 {
 	this->gui = gui;
@@ -185,10 +166,8 @@ int CPanelCamera::handle_event()
 }
 
 
-CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("projector"), 
+CPanelProj::CPanelProj(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("projector"),
 	edlsession->cwindow_operation == CWINDOW_PROJECTOR)
 {
 	this->gui = gui;
@@ -202,10 +181,8 @@ int CPanelProj::handle_event()
 }
 
 
-CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("crop"), 
+CPanelCrop::CPanelCrop(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("crop"),
 	edlsession->cwindow_operation == CWINDOW_CROP)
 {
 	this->gui = gui;
@@ -219,10 +196,8 @@ int CPanelCrop::handle_event()
 }
 
 
-CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("eyedrop"), 
+CPanelEyedrop::CPanelEyedrop(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("eyedrop"),
 	edlsession->cwindow_operation == CWINDOW_EYEDROP)
 {
 	this->gui = gui;
@@ -236,13 +211,10 @@ int CPanelEyedrop::handle_event()
 }
 
 
-CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("tool"), 
+CPanelToolWindow::CPanelToolWindow(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("tool"),
 	edlsession->tool_window)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Show tool info"));
 }
@@ -257,13 +229,10 @@ int CPanelToolWindow::handle_event()
 }
 
 
-CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
- : BC_Toggle(x, 
-	y,
-	mwindow->theme->get_image_set("titlesafe"), 
+CPanelTitleSafe::CPanelTitleSafe(CPanel *gui, int x, int y)
+ : BC_Toggle(x, y, theme_global->get_image_set("titlesafe"),
 	edlsession->safe_regions)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Show safe regions"));
 }
