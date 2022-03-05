@@ -35,7 +35,7 @@ CWindow::CWindow()
 {
 	destination = mwindow_global->defaults->get("CWINDOW_DESTINATION", 0);
 
-	gui = new CWindowGUI(mwindow_global, this);
+	gui = new CWindowGUI(this);
 
 	playback_engine = new CPlayback(this, gui->canvas);
 

@@ -63,7 +63,7 @@ static double my_zoom_table[] =
 static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 
 
-CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
+CWindowGUI::CWindowGUI(CWindow *cwindow)
  : BC_Window(MWindow::create_title(N_("Compositor")),
 	mainsession->cwindow_x,
 	mainsession->cwindow_y,
@@ -77,7 +77,6 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	BC_WindowBase::get_resources()->bg_color,
 	edlsession->get_cwindow_display())
 {
-	this->mwindow = mwindow;
 	this->cwindow = cwindow;
 	affected_track = 0;
 	affected_x = 0;
@@ -95,54 +94,50 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	inactive = 0;
 	crop_translate = 0;
 
-	set_icon(mwindow->theme->get_image("cwindow_icon"));
+	set_icon(theme_global->get_image("cwindow_icon"));
 
-	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
-	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
+	active = new BC_Pixmap(this, theme_global->get_image("cwindow_active"));
+	inactive = new BC_Pixmap(this, theme_global->get_image("cwindow_inactive"));
 
-	mwindow->theme->get_cwindow_sizes(this, mainsession->cwindow_controls);
-	mwindow->theme->draw_cwindow_bg(this);
+	theme_global->get_cwindow_sizes(this, mainsession->cwindow_controls);
+	theme_global->draw_cwindow_bg(this);
 	flash();
 
 // Meters required by composite panel
-	meters = new CWindowMeters(mwindow, 
-		this,
-		mwindow->theme->cmeter_x,
-		mwindow->theme->cmeter_y,
-		mwindow->theme->cmeter_h);
+	meters = new CWindowMeters(this,
+		theme_global->cmeter_x,
+		theme_global->cmeter_y,
+		theme_global->cmeter_h);
 
 	composite_panel = new CPanel(this,
-		mwindow->theme->ccomposite_x,
-		mwindow->theme->ccomposite_y,
-		mwindow->theme->ccomposite_w,
-		mwindow->theme->ccomposite_h);
+		theme_global->ccomposite_x,
+		theme_global->ccomposite_y,
+		theme_global->ccomposite_w,
+		theme_global->ccomposite_h);
 
 	canvas = new CWindowCanvas(this);
 
 	add_subwindow(timebar = new CTimeBar(this,
-		mwindow->theme->ctimebar_x,
-		mwindow->theme->ctimebar_y,
-		mwindow->theme->ctimebar_w, 
-		mwindow->theme->ctimebar_h));
+		theme_global->ctimebar_x,
+		theme_global->ctimebar_y,
+		theme_global->ctimebar_w,
+		theme_global->ctimebar_h));
 	timebar->update();
 
-	add_subwindow(slider = new CWindowSlider(mwindow, 
-		cwindow, 
-		mwindow->theme->cslider_x,
-		mwindow->theme->cslider_y, 
-		mwindow->theme->cslider_w));
+	add_subwindow(slider = new CWindowSlider(cwindow,
+		theme_global->cslider_x,
+		theme_global->cslider_y,
+		theme_global->cslider_w));
 
-	transport = new CWindowTransport(mwindow, 
-		this, 
-		mwindow->theme->ctransport_x, 
-		mwindow->theme->ctransport_y);
+	transport = new CWindowTransport(this,
+		theme_global->ctransport_x,
+		theme_global->ctransport_y);
 
-	edit_panel = new CWindowEditing(mwindow, this, meters);
+	edit_panel = new CWindowEditing(this, meters);
 
-	zoom_panel = new CWindowZoom(mwindow, 
-		this, 
-		mwindow->theme->czoom_x, 
-		mwindow->theme->czoom_y,
+	zoom_panel = new CWindowZoom(this,
+		theme_global->czoom_x,
+		theme_global->czoom_y,
 		_("Auto"));
 	if(!edlsession->cwindow_scrollbars)
 		zoom_panel->update(_("Auto"));
@@ -181,39 +176,39 @@ void CWindowGUI::resize_event(int w, int h)
 	mainsession->cwindow_w = w;
 	mainsession->cwindow_h = h;
 
-	mwindow->theme->get_cwindow_sizes(this, mainsession->cwindow_controls);
-	mwindow->theme->draw_cwindow_bg(this);
+	theme_global->get_cwindow_sizes(this, mainsession->cwindow_controls);
+	theme_global->draw_cwindow_bg(this);
 	flash();
 
-	composite_panel->reposition_buttons(mwindow->theme->ccomposite_x,
-		mwindow->theme->ccomposite_y);
+	composite_panel->reposition_buttons(theme_global->ccomposite_x,
+		theme_global->ccomposite_y);
 
 	canvas->reposition_window(master_edl,
-		mwindow->theme->ccanvas_x,
-		mwindow->theme->ccanvas_y,
-		mwindow->theme->ccanvas_w,
-		mwindow->theme->ccanvas_h);
+		theme_global->ccanvas_x,
+		theme_global->ccanvas_y,
+		theme_global->ccanvas_w,
+		theme_global->ccanvas_h);
 	canvas->update_guidelines();
 	timebar->resize_event();
 
-	slider->reposition_window(mwindow->theme->cslider_x,
-		mwindow->theme->cslider_y, 
-		mwindow->theme->cslider_w);
+	slider->reposition_window(theme_global->cslider_x,
+		theme_global->cslider_y,
+		theme_global->cslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
 
-	transport->reposition_buttons(mwindow->theme->ctransport_x, 
-		mwindow->theme->ctransport_y);
+	transport->reposition_buttons(theme_global->ctransport_x,
+		theme_global->ctransport_y);
 
-	edit_panel->reposition_buttons(mwindow->theme->cedit_x, 
-		mwindow->theme->cedit_y);
+	edit_panel->reposition_buttons(theme_global->cedit_x,
+		theme_global->cedit_y);
 
-	zoom_panel->reposition_window(mwindow->theme->czoom_x, 
-		mwindow->theme->czoom_y);
+	zoom_panel->reposition_window(theme_global->czoom_x,
+		theme_global->czoom_y);
 
-	meters->reposition_window(mwindow->theme->cmeter_x,
-		mwindow->theme->cmeter_y,
-		mwindow->theme->cmeter_h);
+	meters->reposition_window(theme_global->cmeter_x,
+		theme_global->cmeter_y,
+		theme_global->cmeter_h);
 
 	draw_status();
 
@@ -264,18 +259,18 @@ void CWindowGUI::draw_status()
 		canvas->is_processing)
 	{
 		draw_pixmap(active, 
-			mwindow->theme->cstatus_x, 
-			mwindow->theme->cstatus_y);
+			theme_global->cstatus_x,
+			theme_global->cstatus_y);
 	}
 	else
 	{
 		draw_pixmap(inactive, 
-			mwindow->theme->cstatus_x, 
-			mwindow->theme->cstatus_y);
+			theme_global->cstatus_x,
+			theme_global->cstatus_y);
 	}
-	
-	flash(mwindow->theme->cstatus_x,
-		mwindow->theme->cstatus_y,
+
+	flash(theme_global->cstatus_x,
+		theme_global->cstatus_y,
 		active->get_w(),
 		active->get_h());
 }
@@ -322,10 +317,10 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	}
 	canvas->update_zoom(x, y, new_zoom);
 	canvas->reposition_window(master_edl,
-		mwindow->theme->ccanvas_x,
-		mwindow->theme->ccanvas_y,
-		mwindow->theme->ccanvas_w,
-		mwindow->theme->ccanvas_h);
+		theme_global->ccanvas_x,
+		theme_global->ccanvas_y,
+		theme_global->ccanvas_w,
+		theme_global->ccanvas_h);
 	canvas->draw_refresh();
 }
 
@@ -389,11 +384,11 @@ int CWindowGUI::keypress_event()
 			if (alt_down())
 			{
 				int shift_down = this->shift_down();
-				mwindow->stop_composer();
-				mwindow->prev_edit_handle(shift_down);
+				mwindow_global->stop_composer();
+				mwindow_global->prev_edit_handle(shift_down);
 			}
 			else
-				mwindow->move_left(); 
+				mwindow_global->move_left();
 
 			result = 1;
 		}
@@ -404,12 +399,12 @@ int CWindowGUI::keypress_event()
 			if(alt_down())
 			{
 				int shift_down = this->shift_down();
-				mwindow->stop_composer();
-				mwindow->next_edit_handle(shift_down);
+				mwindow_global->stop_composer();
+				mwindow_global->next_edit_handle(shift_down);
 			}
 			else
-				mwindow->move_right(); 
-			result = 1; 
+				mwindow_global->move_right();
+			result = 1;
 		}
 		break;
 	}
@@ -482,8 +477,8 @@ void CWindowGUI::drag_stop()
 	{
 		if(mainsession->drag_assets->total)
 		{
-			mwindow->clear(0);
-			mwindow->load_assets(mainsession->drag_assets,
+			mwindow_global->clear(0);
+			mwindow_global->load_assets(mainsession->drag_assets,
 				master_edl->local_session->get_selectionstart(),
 				mainsession->track_highlighted,
 				0); // overwrite
@@ -491,8 +486,8 @@ void CWindowGUI::drag_stop()
 
 		if(mainsession->drag_clips->total)
 		{
-			mwindow->clear(0);
-			mwindow->paste_edls(mainsession->drag_clips,
+			mwindow_global->clear(0);
+			mwindow_global->paste_edls(mainsession->drag_clips,
 				LOADMODE_PASTE, 
 				mainsession->track_highlighted,
 				master_edl->local_session->get_selectionstart(),
@@ -502,11 +497,11 @@ void CWindowGUI::drag_stop()
 		if(mainsession->drag_assets->total ||
 			mainsession->drag_clips->total)
 		{
-			mwindow->save_backup();
-			mwindow->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+			mwindow_global->save_backup();
+			mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 				WUPD_ZOOMBAR | WUPD_CLOCK);
-			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
-			mwindow->sync_parameters();
+			mwindow_global->undo->update_undo(_("insert assets"), LOAD_ALL);
+			mwindow_global->sync_parameters();
 		}
 	}
 
@@ -514,66 +509,63 @@ void CWindowGUI::drag_stop()
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
 
-		mwindow->insert_effects_cwindow(affected_track);
+		mwindow_global->insert_effects_cwindow(affected_track);
 		mainsession->current_operation = NO_OPERATION;
 	}
 
 	if(mainsession->current_operation == DRAG_VTRANSITION)
 	{
-		mwindow->paste_transition(STRDSC_VIDEO,
+		mwindow_global->paste_transition(STRDSC_VIDEO,
 			mainsession->drag_pluginservers->values[0]);
 		mainsession->current_operation = NO_OPERATION;
 	}
 }
 
 
-CWindowEditing::CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *meter_panel)
- : EditPanel(mwindow, gui,
-	mwindow->theme->cedit_x,
-	mwindow->theme->cedit_y,
+CWindowEditing::CWindowEditing(CWindowGUI *gui, MeterPanel *meter_panel)
+ : EditPanel(mwindow_global, gui,
+	theme_global->cedit_x,
+	theme_global->cedit_y,
 	EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
 		| EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
 	meter_panel)
 {
-	this->mwindow = mwindow;
 }
 
 void CWindowEditing::set_inpoint()
 {
-	mwindow->set_inpoint();
+	mwindow_global->set_inpoint();
 }
 
 void CWindowEditing::set_outpoint()
 {
-	mwindow->set_outpoint();
+	mwindow_global->set_outpoint();
 }
 
 
-CWindowMeters::CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h)
- : MeterPanel(mwindow, gui, x, y, h,
+CWindowMeters::CWindowMeters(CWindowGUI *gui, int x, int y, int h)
+ : MeterPanel(mwindow_global, gui, x, y, h,
 	edlsession->audio_channels,
 	edlsession->cwindow_meter)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 int CWindowMeters::change_status_event()
 {
 	edlsession->cwindow_meter = use_meters;
-	mwindow->theme->get_cwindow_sizes(gui, mainsession->cwindow_controls);
+	theme_global->get_cwindow_sizes(gui, mainsession->cwindow_controls);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
 }
 
 
-CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y, 
+CWindowZoom::CWindowZoom(CWindowGUI *gui, int x, int y,
 	const char *first_item_text)
- : ZoomPanel(mwindow, gui, edlsession->cwindow_zoom,
+ : ZoomPanel(mwindow_global, gui, edlsession->cwindow_zoom,
 	x, y, 80,  my_zoom_table, total_zooms,
 	ZOOM_PERCENTAGE, first_item_text)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
@@ -583,16 +575,14 @@ int CWindowZoom::handle_event()
 		gui->zoom_canvas(1, get_value(), 0);
 	else
 		gui->zoom_canvas(0, get_value(), 0);
-
 	return 1;
 }
 
 
-CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels)
+CWindowSlider::CWindowSlider(CWindow *cwindow, int x, int y, int pixels)
  : BC_PercentageSlider(x, y, 0, pixels, pixels,
 	0, 1, 0)
 {
-	this->mwindow = mwindow;
 	this->cwindow = cwindow;
 	set_precision(0.00001);
 	set_pagination(1.0, 10.0);
@@ -602,7 +592,7 @@ int CWindowSlider::handle_event()
 {
 	cwindow->playback_engine->interrupt_playback();
 
-	mwindow->select_point(get_value());
+	mwindow_global->select_point(get_value());
 	return 1;
 }
 
@@ -617,7 +607,7 @@ void CWindowSlider::set_position()
 			master_edl->local_session->preview_end)
 		master_edl->local_session->preview_start = 0;
 
-	update(mwindow->theme->cslider_w, 
+	update(theme_global->cslider_w,
 		master_edl->local_session->get_selectionstart(1),
 		master_edl->local_session->preview_start,
 		master_edl->local_session->preview_end);
@@ -634,9 +624,8 @@ void CWindowSlider::decrease_value()
 }
 
 
-CWindowTransport::CWindowTransport(MWindow *mwindow, 
-	CWindowGUI *gui, int x, int y)
- : PlayTransport(mwindow, gui, x, y)
+CWindowTransport::CWindowTransport(CWindowGUI *gui, int x, int y)
+ : PlayTransport(mwindow_global, gui, x, y)
 {
 	this->gui = gui;
 }
@@ -644,13 +633,13 @@ CWindowTransport::CWindowTransport(MWindow *mwindow,
 void CWindowTransport::goto_start()
 {
 	handle_transport(REWIND, 1);
-	mwindow->goto_start();
+	mwindow_global->goto_start();
 }
 
 void CWindowTransport::goto_end()
 {
 	handle_transport(GOTO_END, 1);
-	mwindow->goto_end();
+	mwindow_global->goto_end();
 }
 
 

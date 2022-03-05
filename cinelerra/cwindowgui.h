@@ -39,7 +39,7 @@ class CWindowEditing;
 class CWindowGUI : public BC_Window
 {
 public:
-	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
+	CWindowGUI(CWindow *cwindow);
 	~CWindowGUI();
 
 	void resize_event(int w, int h);
@@ -66,7 +66,6 @@ public:
 	void keyboard_zoomin();
 	void keyboard_zoomout();
 
-	MWindow *mwindow;
 	CWindow *cwindow;
 	CWindowEditing *edit_panel;
 	CPanel *composite_panel;
@@ -129,23 +128,20 @@ public:
 class CWindowEditing : public EditPanel
 {
 public:
-	CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *meter_panel);
+	CWindowEditing(CWindowGUI *gui, MeterPanel *meter_panel);
 
 	void set_inpoint();
 	void set_outpoint();
-
-	MWindow *mwindow;
 };
 
 
 class CWindowMeters : public MeterPanel
 {
 public:
-	CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h);
+	CWindowMeters(CWindowGUI *gui, int x, int y, int h);
 
 	int change_status_event();
 
-	MWindow *mwindow;
 	CWindowGUI *gui;
 };
 
@@ -153,11 +149,11 @@ public:
 class CWindowZoom : public ZoomPanel
 {
 public:
-	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y,
+	CWindowZoom(CWindowGUI *gui, int x, int y,
 		const char *first_item_text);
 
 	int handle_event();
-	MWindow *mwindow;
+
 	CWindowGUI *gui;
 };
 
@@ -165,35 +161,21 @@ public:
 class CWindowSlider : public BC_PercentageSlider
 {
 public:
-	CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels);
+	CWindowSlider(CWindow *cwindow, int x, int y, int pixels);
 
 	int handle_event();
 	void set_position();
 	void increase_value();
 	void decrease_value();
 
-	MWindow *mwindow;
 	CWindow *cwindow;
-};
-
-
-class CWindowReset : public BC_Button
-{
-public:
-	CWindowReset(MWindow *mwindow, CWindowGUI *cwindow, int x, int y);
-	~CWindowReset();
-
-	int handle_event();
-
-	CWindowGUI *cwindow;
-	MWindow *mwindow;
 };
 
 
 class CWindowTransport : public PlayTransport
 {
 public:
-	CWindowTransport(MWindow *mwindow, CWindowGUI *gui, 
+	CWindowTransport(CWindowGUI *gui,
 		int x, int y);
 
 	void goto_start();
