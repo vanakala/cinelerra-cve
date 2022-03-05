@@ -13,8 +13,7 @@
 class CTimeBar : public TimeBar
 {
 public:
-	CTimeBar(MWindow *mwindow, 
-		CWindowGUI *gui,
+	CTimeBar(CWindowGUI *gui,
 		int x,
 		int y,
 		int w, 

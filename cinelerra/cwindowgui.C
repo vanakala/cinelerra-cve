@@ -119,8 +119,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 
 	canvas = new CWindowCanvas(this);
 
-	add_subwindow(timebar = new CTimeBar(mwindow,
-		this,
+	add_subwindow(timebar = new CTimeBar(this,
 		mwindow->theme->ctimebar_x,
 		mwindow->theme->ctimebar_y,
 		mwindow->theme->ctimebar_w, 

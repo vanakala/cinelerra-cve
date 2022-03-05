@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -43,34 +27,33 @@
 #include "zoombar.h"
 
 
-LabelGUI::LabelGUI(MWindow *mwindow, TimeBar *timebar,
+LabelGUI::LabelGUI(TimeBar *timebar,
 	int pixel, int y, ptstime position,
 	VFrame **data)
- : BC_Toggle(translate_pixel(mwindow, pixel), y,
-		data ? data : mwindow->theme->label_toggle,
+ : BC_Toggle(translate_pixel(pixel), y,
+		data ? data : theme_global->label_toggle,
 		0)
 {
-	this->mwindow = mwindow;
 	this->timebar = timebar;
 	this->pixel = pixel;
 	this->position = position;
 	this->label = 0;
 }
 
-int LabelGUI::get_y(MWindow *mwindow, TimeBar *timebar)
+int LabelGUI::get_y(TimeBar *timebar)
 {
 	return timebar->get_h() -
-		mwindow->theme->label_toggle[0]->get_h();
+		theme_global->label_toggle[0]->get_h();
 }
 
-int LabelGUI::translate_pixel(MWindow *mwindow, int pixel)
+int LabelGUI::translate_pixel(int pixel)
 {
-	return (pixel - mwindow->theme->label_toggle[0]->get_w() / 2);
+	return (pixel - theme_global->label_toggle[0]->get_w() / 2);
 }
 
 void LabelGUI::reposition()
 {
-	reposition_window(translate_pixel(mwindow, pixel), BC_Toggle::get_y());
+	reposition_window(translate_pixel(pixel), BC_Toggle::get_y());
 }
 
 int LabelGUI::button_press_event()
@@ -97,49 +80,46 @@ int LabelGUI::handle_event()
 }
 
 
-InPointGUI::InPointGUI(MWindow *mwindow, 
-	TimeBar *timebar, 
+InPointGUI::InPointGUI(TimeBar *timebar,
 	int pixel,
 	ptstime position)
- : LabelGUI(mwindow, 
-	timebar,
+ : LabelGUI(timebar,
 	pixel, 
-	get_y(mwindow, timebar), 
+	get_y(timebar),
 	position, 
-	mwindow->theme->in_point)
+	theme_global->in_point)
 {
 }
 
-int InPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
+int InPointGUI::get_y(TimeBar *timebar)
 {
-	return (timebar->get_h() - mwindow->theme->in_point[0]->get_h());
+	return (timebar->get_h() - theme_global->in_point[0]->get_h());
 }
 
 
-OutPointGUI::OutPointGUI(MWindow *mwindow, TimeBar *timebar,
+OutPointGUI::OutPointGUI(TimeBar *timebar,
 	int pixel, ptstime position)
- : LabelGUI(mwindow, timebar, pixel, get_y(mwindow, timebar),
-	position, mwindow->theme->out_point)
+ : LabelGUI(timebar, pixel, get_y(timebar),
+	position, theme_global->out_point)
 {
 }
 
-int OutPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
+int OutPointGUI::get_y(TimeBar *timebar)
 {
 	return timebar->get_h() -
-		mwindow->theme->out_point[0]->get_h();
+		theme_global->out_point[0]->get_h();
 }
 
 
-TimeBar::TimeBar(MWindow *mwindow, BC_WindowBase *gui,
+TimeBar::TimeBar(BC_WindowBase *gui,
 	int x, int y, int w, int h)
  : BC_SubWindow(x, y, w, h)
 {
 	this->gui = gui;
-	this->mwindow = mwindow;
 	in_point = 0;
 	out_point = 0;
 	current_operation = TIMEBAR_NONE;
-	label_edit = new LabelEdit(mwindow->awindow);
+	label_edit = new LabelEdit(mwindow_global->awindow);
 }
 
 TimeBar::~TimeBar()
@@ -175,10 +155,9 @@ void TimeBar::update_labels()
 				{
 					LabelGUI *new_label;
 					add_subwindow(new_label = 
-						new LabelGUI(mwindow, 
-							this, 
+						new LabelGUI(this,
 							pixel, 
-							LabelGUI::get_y(mwindow, this), 
+							LabelGUI::get_y(this),
 							current->position));
 					new_label->set_cursor(ARROW_CURSOR);
 					new_label->set_tooltip(current->textstr, 1);
@@ -274,7 +253,7 @@ void TimeBar::update_highlights()
 void TimeBar::update_points()
 {
 	EDL *edl = get_edl();
-	int pixel;
+	int pixel = 0;
 
 	if(edl) pixel = position_to_pixel(edl->local_session->get_inpoint());
 
@@ -305,14 +284,14 @@ void TimeBar::update_points()
 	if(edl && edl->local_session->inpoint_valid() && 
 		pixel >= 0 && pixel < get_w())
 	{
-		add_subwindow(in_point = new InPointGUI(mwindow,
-			this, pixel,
+		add_subwindow(in_point = new InPointGUI(this, pixel,
 			edl->local_session->get_inpoint()));
 		in_point->set_cursor(ARROW_CURSOR);
 	}
 	if(in_point)
 		update_highlight(in_point, in_point->position);
 
+	pixel = 0;
 	if(edl) pixel = position_to_pixel(edl->local_session->get_outpoint());
 
 	if(out_point)
@@ -340,8 +319,7 @@ void TimeBar::update_points()
 	if(edl && edl->local_session->outpoint_valid() &&
 		pixel >= 0 && pixel < get_w())
 	{
-		add_subwindow(out_point = new OutPointGUI(mwindow, 
-			this, pixel,
+		add_subwindow(out_point = new OutPointGUI(this, pixel,
 			edl->local_session->get_outpoint()));
 		out_point->set_cursor(ARROW_CURSOR);
 		update_highlight(out_point, out_point->position);
@@ -375,9 +353,9 @@ void TimeBar::draw_range()
 	{
 		get_preview_pixels(x1, x2);
 
-		draw_3segmenth(0, 0, x1, mwindow->theme->timebar_view_data);
+		draw_3segmenth(0, 0, x1, theme_global->timebar_view_data);
 		draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
-		draw_3segmenth(x2, 0, get_w() - x2, mwindow->theme->timebar_view_data);
+		draw_3segmenth(x2, 0, get_w() - x2, theme_global->timebar_view_data);
 
 		set_color(BLACK);
 		draw_line(x1, 0, x1, get_h());
@@ -409,23 +387,25 @@ void TimeBar::get_edl_length()
 
 void TimeBar::get_preview_pixels(int &x1, int &x2)
 {
+	EDL *edl;
+
 	x1 = 0;
 	x2 = 0;
 
 	get_edl_length();
 
-	if(get_edl())
+	if(edl = get_edl())
 	{
 		if(!EQUIV(edl_length, 0))
 		{
-			if(get_edl()->local_session->preview_end <= 0 ||
-					get_edl()->local_session->preview_end > edl_length)
-				get_edl()->local_session->preview_end = edl_length;
-			if(get_edl()->local_session->preview_start >
-					get_edl()->local_session->preview_end)
-				get_edl()->local_session->preview_start = 0;
-			x1 = (int)(get_edl()->local_session->preview_start / time_per_pixel);
-			x2 = (int)(get_edl()->local_session->preview_end / time_per_pixel);
+			if(edl->local_session->preview_end <= 0 ||
+					edl->local_session->preview_end > edl_length)
+				edl->local_session->preview_end = edl_length;
+			if(edl->local_session->preview_start >
+					edl->local_session->preview_end)
+				edl->local_session->preview_start = 0;
+			x1 = round(edl->local_session->preview_start / time_per_pixel);
+			x2 = round(edl->local_session->preview_end / time_per_pixel);
 		}
 		else
 		{
@@ -590,10 +570,10 @@ int TimeBar::button_press_event()
 		if(ctrl_down())
 		{
 			if(get_buttonpress() == 1)
-				mwindow->next_time_format();
+				mwindow_global->next_time_format();
 			else
 			if(get_buttonpress() == 3)
-				mwindow->prev_time_format();
+				mwindow_global->prev_time_format();
 			return 1;
 		}
 		else
@@ -615,7 +595,7 @@ int TimeBar::button_press_event()
 			if(is_event_win() && cursor_inside())
 			{
 				update_cursor();
-				mwindow->gui->canvas->activate();
+				mwindow_global->gui->canvas->activate();
 				return 1;
 			}
 		}
@@ -625,21 +605,21 @@ int TimeBar::button_press_event()
 
 void TimeBar::repeat_event(int duration)
 {
-	if(!mwindow->gui->canvas->drag_scroll) return;
+	if(!mwindow_global->gui->canvas->drag_scroll) return;
 	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return;
 
 	int distance = 0;
 	int x_movement = 0;
 	int relative_cursor_x, relative_cursor_y;
 
-	mwindow->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
+	mwindow_global->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
 		&relative_cursor_y);
 
 	if(current_operation == TIMEBAR_DRAG)
 	{
-		if(relative_cursor_x >= mwindow->gui->canvas->get_w())
+		if(relative_cursor_x >= mwindow_global->gui->canvas->get_w())
 		{
-			distance = relative_cursor_x - mwindow->gui->canvas->get_w();
+			distance = relative_cursor_x - mwindow_global->gui->canvas->get_w();
 			x_movement = 1;
 		}
 		else
@@ -652,7 +632,7 @@ void TimeBar::repeat_event(int duration)
 		if(x_movement)
 		{
 			update_cursor();
-			mwindow->samplemovement(master_edl->local_session->view_start_pts +
+			mwindow_global->samplemovement(master_edl->local_session->view_start_pts +
 				distance * master_edl->local_session->zoom_time);
 		}
 	}
@@ -668,18 +648,18 @@ int TimeBar::cursor_motion_event()
 	{
 	case TIMEBAR_DRAG:
 		update_cursor();
-		mwindow->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
+		mwindow_global->gui->canvas->get_relative_cursor_pos(&relative_cursor_x,
 			&relative_cursor_y);
-		if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
+		if(relative_cursor_x >= mwindow_global->gui->canvas->get_w() ||
 			relative_cursor_x < 0)
 		{
-			mwindow->gui->canvas->start_dragscroll();
+			mwindow_global->gui->canvas->start_dragscroll();
 		}
 		else
-		if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
+		if(relative_cursor_x < mwindow_global->gui->canvas->get_w() && 
 			relative_cursor_x >= 0)
 		{
-			mwindow->gui->canvas->stop_dragscroll();
+			mwindow_global->gui->canvas->stop_dragscroll();
 		}
 		result = 1;
 		break;
@@ -707,8 +687,8 @@ int TimeBar::button_release_event()
 	switch(current_operation)
 	{
 	case TIMEBAR_DRAG:
-		mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
-		mwindow->gui->canvas->stop_dragscroll();
+		mwindow_global->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
+		mwindow_global->gui->canvas->stop_dragscroll();
 		current_operation = TIMEBAR_NONE;
 		result = 1;
 		break;
@@ -734,7 +714,7 @@ void TimeBar::update_cursor()
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;
 
-	mwindow->select_point(position);
+	mwindow_global->select_point(position);
 	update_highlights();
 }
 
@@ -781,11 +761,11 @@ void TimeBar::select_region(ptstime position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(WUPD_POSITION);
-	mwindow->gui->cursor->update();
-	mwindow->gui->canvas->flash();
-	mwindow->gui->canvas->activate();
-	mwindow->gui->zoombar->update();
-	mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
+	mwindow_global->cwindow->update(WUPD_POSITION);
+	mwindow_global->gui->cursor->update();
+	mwindow_global->gui->canvas->flash();
+	mwindow_global->gui->canvas->activate();
+	mwindow_global->gui->zoombar->update();
+	mwindow_global->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
 	update_highlights();
 }

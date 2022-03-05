@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef TIMEBAR_H
 #define TIMEBAR_H
@@ -28,7 +12,6 @@
 #include "edl.inc"
 #include "labels.inc"
 #include "labeledit.inc"
-#include "mwindow.inc"
 #include "timebar.inc"
 
 class TimeBarLeftArrow;
@@ -48,21 +31,19 @@ class OutPointGUI;
 class LabelGUI : public BC_Toggle
 {
 public:
-	LabelGUI(MWindow *mwindow, 
-		TimeBar *timebar, 
+	LabelGUI(TimeBar *timebar,
 		int pixel,
 		int y, 
 		ptstime position,
 		VFrame **data = 0);
 
-	static int translate_pixel(MWindow *mwindow, int pixel);
+	static int translate_pixel(int pixel);
 	virtual int handle_event();
-	static int get_y(MWindow *mwindow, TimeBar *timebar);
+	static int get_y(TimeBar *timebar);
 	void reposition();
 	int button_press_event();
 
 	Label *label;
-	MWindow *mwindow;
 	TimeBar *timebar;
 	int pixel;
 	ptstime position;
@@ -71,30 +52,27 @@ public:
 class InPointGUI : public LabelGUI
 {
 public:
-	InPointGUI(MWindow *mwindow, 
-		TimeBar *timebar, 
+	InPointGUI(TimeBar *timebar,
 		int pixel,
 		ptstime position);
 
-	static int get_y(MWindow *mwindow, TimeBar *timebar);
+	static int get_y(TimeBar *timebar);
 };
 
 class OutPointGUI : public LabelGUI
 {
 public:
-	OutPointGUI(MWindow *mwindow, 
-		TimeBar *timebar, 
+	OutPointGUI(TimeBar *timebar,
 		int pixel, 
 		ptstime position);
 
-	static int get_y(MWindow *mwindow, TimeBar *timebar);
+	static int get_y(TimeBar *timebar);
 };
 
 class TimeBar : public BC_SubWindow
 {
 public:
-	TimeBar(MWindow *mwindow, 
-		BC_WindowBase *gui,
+	TimeBar(BC_WindowBase *gui,
 		int x, 
 		int y,
 		int w,
@@ -135,7 +113,6 @@ public:
 	void select_region(ptstime position);
 	void get_edl_length();
 
-	MWindow *mwindow;
 	BC_WindowBase *gui;
 	int flip_vertical(int w, int h);
 // Operation started by a buttonpress

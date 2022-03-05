@@ -82,8 +82,7 @@ VWindowGUI::VWindowGUI(VWindow *vwindow)
 
 	canvas = new VWindowCanvas(this);
 
-	add_subwindow(timebar = new VTimeBar(mwindow_global,
-		this,
+	add_subwindow(timebar = new VTimeBar(this,
 		theme_global->vtimebar_x,
 		theme_global->vtimebar_y,
 		theme_global->vtimebar_w,

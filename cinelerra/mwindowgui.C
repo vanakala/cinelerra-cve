@@ -121,8 +121,7 @@ void MWindowGUI::show()
 	add_subwindow(mbuttons = new MButtons(mwindow));
 	mbuttons->show();
 
-	add_subwindow(timebar = new MTimeBar(mwindow, 
-		this,
+	add_subwindow(timebar = new MTimeBar(this,
 		mwindow->theme->mtimebar_x,
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,

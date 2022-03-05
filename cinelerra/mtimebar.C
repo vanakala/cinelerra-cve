@@ -23,13 +23,12 @@
 #include "zoombar.h"
 
 
-MTimeBar::MTimeBar(MWindow *mwindow, 
-	MWindowGUI *gui,
+MTimeBar::MTimeBar(MWindowGUI *gui,
 	int x, 
 	int y,
 	int w,
 	int h)
- : TimeBar(mwindow, gui, x, y, w, h)
+ : TimeBar(gui, x, y, w, h)
 {
 	this->gui = gui;
 }
@@ -42,7 +41,7 @@ int MTimeBar::position_to_pixel(ptstime position)
 
 void MTimeBar::stop_playback()
 {
-	mwindow->stop_composer();
+	mwindow_global->stop_composer();
 }
 
 #define TEXT_MARGIN 4
@@ -337,7 +336,7 @@ void MTimeBar::draw_range()
 {
 	int x1 = 0, x2 = 0;
 	if(master_edl->playable_tracks_of(TRACK_VIDEO) &&
-		mwindow->preferences->use_brender)
+		preferences_global->use_brender)
 	{
 		double time_per_pixel = (double)master_edl->local_session->zoom_time;
 		x1 = round((edlsession->brender_start -
@@ -352,7 +351,7 @@ void MTimeBar::draw_range()
 	{
 		draw_top_background(get_parent(), 0, 0, x1, get_h());
 
-		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->get_image("timebar_brender"));
+		draw_3segmenth(x1, 0, x2 - x1, theme_global->get_image("timebar_brender"));
 
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
@@ -364,7 +363,7 @@ void MTimeBar::select_label(ptstime position)
 {
 	EDL *edl = master_edl;
 
-	mwindow->stop_composer();
+	mwindow_global->stop_composer();
 
 	position = master_edl->align_to_frame(position);
 
@@ -387,21 +386,21 @@ void MTimeBar::select_label(ptstime position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
-	mwindow->gui->cursor->update();
-	mwindow->activate_canvas();
-	mwindow->update_gui(WUPD_ZOOMBAR | WUPD_PATCHBAY);
-	mwindow->update_plugin_guis();
+	mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
+	mwindow_global->gui->cursor->update();
+	mwindow_global->activate_canvas();
+	mwindow_global->update_gui(WUPD_ZOOMBAR | WUPD_PATCHBAY);
+	mwindow_global->update_plugin_guis();
 	update_highlights();
-	mwindow->gui->canvas->flash();
+	mwindow_global->gui->canvas->flash();
 }
 
 void MTimeBar::resize_event()
 {
-	reposition_window(mwindow->theme->mtimebar_x,
-		mwindow->theme->mtimebar_y,
-		mwindow->theme->mtimebar_w,
-		mwindow->theme->mtimebar_h);
+	reposition_window(theme_global->mtimebar_x,
+		theme_global->mtimebar_y,
+		theme_global->mtimebar_w,
+		theme_global->mtimebar_h);
 	update();
 }
 

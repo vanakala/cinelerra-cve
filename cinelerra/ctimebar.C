@@ -15,29 +15,26 @@
 #include "theme.h"
 
 
-CTimeBar::CTimeBar(MWindow *mwindow, 
-		CWindowGUI *gui,
+CTimeBar::CTimeBar(CWindowGUI *gui,
 		int x,
 		int y,
 		int w, 
 		int h)
- : TimeBar(mwindow, 
-		gui,
+ : TimeBar(gui,
 		x, 
 		y,
 		w,
 		h)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 void CTimeBar::resize_event()
 {
-	reposition_window(mwindow->theme->ctimebar_x,
-		mwindow->theme->ctimebar_y,
-		mwindow->theme->ctimebar_w,
-		mwindow->theme->ctimebar_h);
+	reposition_window(theme_global->ctimebar_x,
+		theme_global->ctimebar_y,
+		theme_global->ctimebar_w,
+		theme_global->ctimebar_h);
 	update();
 }
 
@@ -56,7 +53,7 @@ void CTimeBar::select_label(ptstime position)
 {
 	EDL *edl = master_edl;
 
-	mwindow->stop_composer();
+	mwindow_global->stop_composer();
 
 	position = master_edl->align_to_frame(position);
 
@@ -79,7 +76,7 @@ void CTimeBar::select_label(ptstime position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
-	mwindow->update_gui(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-	mwindow->update_plugin_guis();
+	mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
+	mwindow_global->update_gui(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY | WUPD_CLOCK);
+	mwindow_global->update_plugin_guis();
 }

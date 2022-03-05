@@ -12,8 +12,7 @@
 class MTimeBar : public TimeBar
 {
 public:
-	MTimeBar(MWindow *mwindow, 
-		MWindowGUI *gui,
+	MTimeBar(MWindowGUI *gui,
 		int x, 
 		int y,
 		int w,
