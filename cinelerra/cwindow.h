@@ -22,7 +22,7 @@
 class CWindow : public Thread
 {
 public:
-	CWindow(MWindow *mwindow);
+	CWindow();
 	~CWindow();
 
 // Position is inclusive of the other 2
@@ -51,7 +51,6 @@ public:
 	int stop_playback();
 
 	int destination;
-	MWindow *mwindow;
 	CWindowGUI *gui;
 
 	CTracking *playback_cursor;

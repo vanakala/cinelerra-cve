@@ -30,14 +30,12 @@
 #include <unistd.h>
 
 
-CWindow::CWindow(MWindow *mwindow)
+CWindow::CWindow()
  : Thread()
 {
-	this->mwindow = mwindow;
+	destination = mwindow_global->defaults->get("CWINDOW_DESTINATION", 0);
 
-	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
-
-	gui = new CWindowGUI(mwindow, this);
+	gui = new CWindowGUI(mwindow_global, this);
 
 	playback_engine = new CPlayback(this, gui->canvas);
 
@@ -64,7 +62,7 @@ void CWindow::hide_window()
 {
 	gui->hide_window();
 	gui->tool_panel->hide_tool();
-	mwindow->mark_cwindow_hidden();
+	mwindow_global->mark_cwindow_hidden();
 }
 
 Track* CWindow::calculate_affected_track()
@@ -102,7 +100,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 		{
 			if(created) *created = 1;
 			if(redraw)
-				mwindow->draw_canvas_overlays();
+				mwindow_global->draw_canvas_overlays();
 		}
 	}
 	else
@@ -201,10 +199,10 @@ void CWindow::update(int options)
 			mainsession->cwindow_h);
 	else
 		gui->canvas->reposition_window(master_edl,
-			mwindow->theme->ccanvas_x,
-			mwindow->theme->ccanvas_y,
-			mwindow->theme->ccanvas_w,
-			mwindow->theme->ccanvas_h);
+			theme_global->ccanvas_x,
+			theme_global->ccanvas_y,
+			theme_global->ccanvas_w,
+			theme_global->ccanvas_h);
 }
 
 GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end)
