@@ -141,7 +141,7 @@ void InterfacePrefs::show()
 // Number of index files to keep
 	sprintf(string, "%d", pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(maxw, ybix[2], pwindow, string));
-	add_subwindow(deleteall = new DeleteAllIndexes(mwindow_global, pwindow,
+	add_subwindow(deleteall = new DeleteAllIndexes(pwindow,
 		maxw + 10 + icount->get_w(), ybix[2]));
 
 	y += 35;
