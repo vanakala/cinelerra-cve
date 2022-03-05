@@ -9,6 +9,7 @@
 #include "filesystem.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mwindow.inc"
 #include "plugindb.h"
 #include "pluginserver.h"
 #include "splashgui.h"

@@ -198,7 +198,7 @@ MWindow::~MWindow()
 
 void MWindow::init_error()
 {
-	new MainError(this);
+	new MainError();
 }
 
 void MWindow::create_defaults_path(char *string)
