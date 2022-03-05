@@ -10,80 +10,73 @@
 #include "bctextbox.h"
 #include "editpanel.inc"
 #include "meterpanel.inc"
-#include "mwindow.inc"
 #include "manualgoto.inc"
 
 
 class EditInPoint : public BC_Button
 {
 public:
-	EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditInPoint(EditPanel *panel, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditOutPoint : public BC_Button
 {
 public:
-	EditOutPoint(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditOutPoint(EditPanel *panel, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditSplice : public BC_Button
 {
 public:
-	EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditSplice(EditPanel *panel, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditOverwrite : public BC_Button
 {
 public:
-	EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditOverwrite(EditPanel *panel, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditToClip : public BC_Button
 {
 public:
-	EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditToClip(EditPanel *panel, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditManualGoto : public BC_Button
 {
 public:
-	EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditManualGoto(EditPanel *panel, int x, int y);
 	~EditManualGoto();
 
 	int handle_event();
 	int keypress_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 	ManualGoto *mangoto;
 };
@@ -91,183 +84,155 @@ public:
 class EditCut : public BC_Button
 {
 public:
-	EditCut(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditCut(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditCopy : public BC_Button
 {
 public:
-	EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditCopy(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditPaste : public BC_Button
 {
 public:
-	EditPaste(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditPaste(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditUndo : public BC_Button
 {
 public:
-	EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditUndo(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
-	MWindow *mwindow;
+
 	EditPanel *panel;
 };
 
 class EditRedo : public BC_Button
 {
 public:
-	EditRedo(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditRedo(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditLabelbutton : public BC_Button
 {
 public:
-	EditLabelbutton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditLabelbutton(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditFit : public BC_Button
 {
 public:
-	EditFit(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditFit(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditFitAutos : public BC_Button
 {
 public:
-	EditFitAutos(MWindow *mwindow, EditPanel *panel, int x, int y);
+	EditFitAutos(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class EditPrevLabel : public BC_Button
 {
 public:
-	EditPrevLabel(MWindow *mwindow, 
-		EditPanel *panel, 
-		int x, 
-		int y,
-		int is_mwindow);
+	EditPrevLabel(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 class EditNextLabel : public BC_Button
 {
 public:
-	EditNextLabel(MWindow *mwindow, 
-		EditPanel *panel, 
-		int x, 
-		int y,
-		int is_mwindow);
+	EditNextLabel(EditPanel *panel, int x, int y);
 
 	int keypress_event();
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
-	int is_mwindow;
 };
 
 class ArrowButton : public BC_Toggle
 {
 public:
-	ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	ArrowButton(EditPanel *panel, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class IBeamButton : public BC_Toggle
 {
 public:
-	IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	IBeamButton(EditPanel *panel, int x, int y);
 
 	int handle_event();
 
-	MWindow *mwindow;
 	EditPanel *panel;
 };
 
 class KeyFrameButton : public BC_Toggle
 {
 public:
-	KeyFrameButton(MWindow *mwindow, int x, int y);
+	KeyFrameButton(int x, int y);
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 class LockLabelsButton : public BC_Toggle
 {
 public:
-	LockLabelsButton(MWindow *mwindow, int x, int y);
+	LockLabelsButton(int x, int y);
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 
 class EditPanel
 {
 public:
-	EditPanel(MWindow *mwindow, 
-		BC_WindowBase *subwindow,
-		int x, 
-		int y, 
-		int use_flags,
+	EditPanel(BC_WindowBase *subwindow,
+		int x, int y, int use_flags,
 		MeterPanel *meter_panel);
 
 	friend class IBeamButton;
@@ -291,7 +256,6 @@ public:
 	LockLabelsButton *locklabels;
 
 private:
-	MWindow *mwindow;
 	int use_flags;
 
 	int x, y, x1, y1;

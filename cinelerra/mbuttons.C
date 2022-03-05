@@ -88,14 +88,10 @@ EDL *MainTransport::get_edl()
 
 
 MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
- : EditPanel(mwindow, 
-		mbuttons, 
-		x, 
-		y,
+ : EditPanel(mbuttons, x, y,
 		EDTP_EDITING_MODE | EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE
 			| EDTP_UNDO | EDTP_FIT | EDTP_LOCKLABELS | EDTP_LABELS 
-			| EDTP_TOCLIP | EDTP_MWINDOW | EDTP_CUT,
-		0)
+			| EDTP_TOCLIP | EDTP_MWINDOW | EDTP_CUT, 0)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;

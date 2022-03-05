@@ -313,12 +313,11 @@ int VWindowMeters::change_status_event()
 
 VWindowEditing::VWindowEditing(VWindow *vwindow,
 	MeterPanel *meter_panel, VWindowGUI *gui)
- : EditPanel(mwindow_global,
-		gui,
-		theme_global->vedit_x,
-		theme_global->vedit_y,
-		EDTP_SPLICE | EDTP_OVERWRITE | EDTP_COPY | EDTP_LABELS | EDTP_TOCLIP,
-		meter_panel)
+ : EditPanel(gui,
+	theme_global->vedit_x,
+	theme_global->vedit_y,
+	EDTP_SPLICE | EDTP_OVERWRITE | EDTP_COPY | EDTP_LABELS | EDTP_TOCLIP,
+	meter_panel)
 {
 	this->vwindow = vwindow;
 }

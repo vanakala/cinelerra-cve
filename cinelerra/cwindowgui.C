@@ -523,7 +523,7 @@ void CWindowGUI::drag_stop()
 
 
 CWindowEditing::CWindowEditing(CWindowGUI *gui, MeterPanel *meter_panel)
- : EditPanel(mwindow_global, gui,
+ : EditPanel(gui,
 	theme_global->cedit_x,
 	theme_global->cedit_y,
 	EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
