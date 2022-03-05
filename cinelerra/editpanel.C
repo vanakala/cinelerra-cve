@@ -470,7 +470,7 @@ EditManualGoto::EditManualGoto(EditPanel *panel, int x, int y)
  : BC_Button(x, y, theme_global->get_image_set("goto"))
 {
 	this->panel = panel;
-	mangoto = new ManualGoto(mwindow_global, panel->subwindow);
+	mangoto = new ManualGoto(panel->subwindow);
 	set_tooltip(_("Manual goto ( g )"));
 }
 

@@ -22,27 +22,26 @@
 
 #include <ctype.h>
 
-ManualGoto::ManualGoto(MWindow *mwindow, BC_WindowBase *masterwindow)
+ManualGoto::ManualGoto(BC_WindowBase *masterwindow)
  : Thread()
 {
-	this->mwindow = mwindow;
 	this->masterwindow = masterwindow;
 	window = 0;
 }
 
 void ManualGoto::open_window()
 {
-	if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
-		(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
+	if ((masterwindow == (BC_WindowBase *)mwindow_global->cwindow->gui)||
+		(masterwindow == (BC_WindowBase *)mwindow_global->gui->mbuttons))
 	{
 		position = master_edl->local_session->get_selectionstart(1) +
 			edlsession->get_frame_offset();
-		icon_image = mwindow->get_window_icon();
+		icon_image = mwindow_global->get_window_icon();
 	}
 	else
 	{
 		position = vwindow_edl->local_session->get_selectionstart(1);
-		icon_image = mwindow->vwindow->get_window_icon();
+		icon_image = mwindow_global->vwindow->get_window_icon();
 	}
 
 	if(!running())
@@ -56,8 +55,8 @@ void ManualGoto::run()
 	int result;
 	int cx, cy;
 
-	mwindow->get_abs_cursor_pos(&cx, &cy);
-	window = new ManualGotoWindow(mwindow, this, cx, cy);
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	window = new ManualGotoWindow(this, cx, cy);
 	result = window->run_window();
 
 	if(result == 0) // ok button or return pressed
@@ -65,8 +64,8 @@ void ManualGoto::run()
 		ptstime new_position = window->get_entered_position_sec();
 		char modifier = window->signtitle->get_text()[0];
 
-		if((masterwindow == (BC_WindowBase*)mwindow->cwindow->gui)||
-			(masterwindow == (BC_WindowBase*)mwindow->gui->mbuttons))
+		if((masterwindow == (BC_WindowBase*)mwindow_global->cwindow->gui)||
+			(masterwindow == (BC_WindowBase*)mwindow_global->gui->mbuttons))
 		{
 			// mwindow/cwindow update
 
@@ -89,17 +88,17 @@ void ManualGoto::run()
 			if(!PTSEQU(current_position, new_position))
 			{
 				master_edl->local_session->set_selection(new_position);
-				mwindow->find_cursor();
-				mwindow->update_gui(WUPD_SCROLLBARS |
+				mwindow_global->find_cursor();
+				mwindow_global->update_gui(WUPD_SCROLLBARS |
 					WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
 					WUPD_PATCHBAY | WUPD_CLOCK);
-				mwindow->cwindow->update(WUPD_POSITION);
+				mwindow_global->cwindow->update(WUPD_POSITION);
 			}
 		}
-		else if(masterwindow == (BC_WindowBase*)mwindow->vwindow->gui)
+		else if(masterwindow == (BC_WindowBase*)mwindow_global->vwindow->gui)
 		{
 			// vwindow update
-			VWindow *vwindow = mwindow->vwindow;
+			VWindow *vwindow = mwindow_global->vwindow;
 			ptstime current_position = vwindow_edl->local_session->get_selectionstart(1);
 
 			switch(modifier)
@@ -131,7 +130,7 @@ void ManualGoto::run()
 }
 
 
-ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int absx, int absy)
+ManualGotoWindow::ManualGotoWindow(ManualGoto *thread, int absx, int absy)
  : BC_Window(MWindow::create_title(N_("Goto position")),
 	absx - 250 / 2,
 	absy - 80 / 2,
@@ -152,7 +151,6 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int abs
 	int boxpos[NUM_TIMEPARTS];
 	int hdrpos[NUM_TIMEPARTS];
 
-	this->mwindow = mwindow;
 	this->thread = thread;
 	numboxes = 0;
 

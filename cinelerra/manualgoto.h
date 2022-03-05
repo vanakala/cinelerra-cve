@@ -9,7 +9,6 @@
 #include "bctextbox.h"
 #include "bcwindow.h"
 #include "datatype.h"
-#include "mwindow.inc"
 #include "thread.h"
 #include "vwindow.inc"
 
@@ -21,12 +20,11 @@ class ManualGotoNumber;
 class ManualGoto : public Thread
 {
 public:
-	ManualGoto(MWindow *mwindow, BC_WindowBase *masterwindow);
+	ManualGoto(BC_WindowBase *masterwindow);
 
 	void run();
 
 // If it is being created or edited
-	MWindow *mwindow;
 	BC_WindowBase *masterwindow;
 	void open_window();
 
@@ -39,7 +37,7 @@ public:
 class ManualGotoWindow : public BC_Window
 {
 public:
-	ManualGotoWindow(MWindow *mwindow, ManualGoto *thread, int absx, int absy);
+	ManualGotoWindow(ManualGoto *thread, int absx, int absy);
 
 	void activate();
 	ptstime get_entered_position_sec();
@@ -50,7 +48,6 @@ public:
 	BC_Title *signtitle;
 	ManualGotoNumber *boxes[NUM_TIMEPARTS];
 	int numboxes;
-	MWindow *mwindow;
 	ManualGoto *thread;
 	int timeformat;
 	char timestring[64];
