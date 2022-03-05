@@ -490,8 +490,7 @@ void VWindowTransport::goto_end()
 
 
 VWindowCanvas::VWindowCanvas(VWindowGUI *gui)
- : Canvas(mwindow_global,
-	0,
+ : Canvas(0,
 	gui,
 	theme_global->vcanvas_x,
 	theme_global->vcanvas_y,

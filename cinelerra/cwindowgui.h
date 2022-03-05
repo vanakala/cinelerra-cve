@@ -206,7 +206,7 @@ public:
 class CWindowCanvas : public Canvas
 {
 public:
-	CWindowCanvas(MWindow *mwindow, CWindowGUI *gui);
+	CWindowCanvas(CWindowGUI *gui);
 
 	void status_event();
 	void zoom_resize_window(double percentage);
@@ -252,7 +252,6 @@ public:
 	void toggle_controls();
 	double sample_aspect_ratio();
 
-	MWindow *mwindow;
 	CWindowGUI *gui;
 	GuideFrame *safe_regions;
 };

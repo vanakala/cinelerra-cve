@@ -118,7 +118,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 		mwindow->theme->ccomposite_w,
 		mwindow->theme->ccomposite_h);
 
-	canvas = new CWindowCanvas(mwindow, this);
+	canvas = new CWindowCanvas(this);
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
 		this,
@@ -656,15 +656,14 @@ void CWindowTransport::goto_end()
 }
 
 
-CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
- : Canvas(mwindow, gui, 0,
-	mwindow->theme->ccanvas_x,
-	mwindow->theme->ccanvas_y,
-	mwindow->theme->ccanvas_w,
-	mwindow->theme->ccanvas_h,
+CWindowCanvas::CWindowCanvas(CWindowGUI *gui)
+ : Canvas(gui, 0,
+	theme_global->ccanvas_x,
+	theme_global->ccanvas_y,
+	theme_global->ccanvas_w,
+	theme_global->ccanvas_h,
 	edlsession->cwindow_scrollbars)
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	safe_regions = guidelines.append_frame(0, MAX_PTSTIME);
 	update_guidelines();
@@ -1478,7 +1477,7 @@ int CWindowCanvas::do_mask(int &redraw,
 			gui->current_operation = edlsession->cwindow_operation;
 // Delete the template
 			delete point;
-			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
+			mwindow_global->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
 		}
 
 		result = 1;
@@ -1710,7 +1709,7 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 		y_keyframe->set_value(0);
 		z_keyframe->set_value(1);
 
-		mwindow->sync_parameters();
+		mwindow_global->sync_parameters();
 		gui->update_tool();
 	}
 }
@@ -2350,10 +2349,10 @@ void CWindowCanvas::test_zoom(int &redraw)
 
 	update_zoom(x, y, zoom);
 	reposition_window(master_edl,
-		mwindow->theme->ccanvas_x,
-		mwindow->theme->ccanvas_y,
-		mwindow->theme->ccanvas_w,
-		mwindow->theme->ccanvas_h);
+		theme_global->ccanvas_x,
+		theme_global->ccanvas_y,
+		theme_global->ccanvas_w,
+		theme_global->ccanvas_h);
 	update_scrollbars();
 
 	clear_canvas();
@@ -2486,11 +2485,11 @@ int CWindowCanvas::cursor_motion_event()
 	}
 
 	if(redraw_canvas)
-		mwindow->draw_canvas_overlays();
+		mwindow_global->draw_canvas_overlays();
 
 	if(rerender)
 	{
-		mwindow->sync_parameters();
+		mwindow_global->sync_parameters();
 		if(!redraw) gui->update_tool();
 	}
 	return result;
@@ -2566,7 +2565,7 @@ int CWindowCanvas::button_press_event()
 // rerendering can also be caused by press event
 	if(rerender)
 	{
-		mwindow->restart_brender();
+		mwindow_global->restart_brender();
 		gui->cwindow->playback_engine->send_command(CURRENT_FRAME);
 		if(!redraw) gui->update_tool();
 	}
@@ -2588,18 +2587,18 @@ int CWindowCanvas::button_release_event()
 		break;
 
 	case CWINDOW_CAMERA:
-		mwindow->undo->update_undo(_("camera"), LOAD_AUTOMATION);
+		mwindow_global->undo->update_undo(_("camera"), LOAD_AUTOMATION);
 		break;
 
 	case CWINDOW_PROJECTOR:
-		mwindow->undo->update_undo(_("projector"), LOAD_AUTOMATION);
+		mwindow_global->undo->update_undo(_("projector"), LOAD_AUTOMATION);
 		break;
 
 	case CWINDOW_MASK:
 	case CWINDOW_MASK_CONTROL_IN:
 	case CWINDOW_MASK_CONTROL_OUT:
 	case CWINDOW_MASK_TRANSLATE:
-		mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
+		mwindow_global->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
 		break;
 	}
 
@@ -2618,8 +2617,8 @@ void CWindowCanvas::zoom_resize_window(double percentage)
 		canvas_w,
 		canvas_h);
 
-	new_w = canvas_w + (gui->get_w() - mwindow->theme->ccanvas_w);
-	new_h = canvas_h + (gui->get_h() - mwindow->theme->ccanvas_h);
+	new_w = canvas_w + (gui->get_w() - theme_global->ccanvas_w);
+	new_h = canvas_h + (gui->get_h() - theme_global->ccanvas_h);
 	gui->resize_window(new_w, new_h);
 	gui->resize_event(new_w, new_h);
 }
