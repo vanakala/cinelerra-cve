@@ -208,7 +208,7 @@ void PreferencesThread::apply_settings()
 			int cx, cy;
 
 			mwindow_global->get_abs_cursor_pos(&cx, &cy);
-			QuestionWindow confirm(mwindow_global, 0, cx, cy,
+			QuestionWindow confirm(0, cx, cy,
 				_("Index directory is missing.\nCreate the directory?"));
 			if(confirm.run_window())
 			{
