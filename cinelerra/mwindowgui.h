@@ -14,7 +14,6 @@
 #include "maincursor.inc"
 #include "mainmenu.inc"
 #include "mtimebar.inc"
-#include "mwindow.inc"
 #include "patchbay.inc"
 #include "zoombar.inc"
 #include "samplescroll.inc"
@@ -26,7 +25,7 @@
 class MWindowGUI : public BC_Window
 {
 public:
-	MWindowGUI(MWindow *mwindow);
+	MWindowGUI();
 	~MWindowGUI();
 
 	void show();
@@ -54,8 +53,6 @@ public:
 
 // Return if the area bounded by x1 and x2 is visible between view_x1 and view_x2
 	static int visible(int x1, int x2, int view_x1, int view_x2);
-
-	MWindow *mwindow;
 
 	MainClock *mainclock;
 	MButtons *mbuttons;

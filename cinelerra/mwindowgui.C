@@ -39,7 +39,7 @@
 #include <stdarg.h>
 
 // the main window uses its own private colormap for video
-MWindowGUI::MWindowGUI(MWindow *mwindow)
+MWindowGUI::MWindowGUI()
  : BC_Window(PROGRAM_NAME,
 		mainsession->mwindow_x,
 		mainsession->mwindow_y,
@@ -51,7 +51,6 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 		1,
 		1)
 {
-	this->mwindow = mwindow;
 	mbuttons = 0;
 	statusbar = 0;
 	zoombar = 0;
@@ -80,22 +79,22 @@ MWindowGUI::~MWindowGUI()
 
 void MWindowGUI::get_scrollbars()
 {
-	view_w = mwindow->theme->mcanvas_w;
-	view_h = mwindow->theme->mcanvas_h;
+	view_w = theme_global->mcanvas_w;
+	view_h = theme_global->mcanvas_h;
 
 	if(canvas && (view_w != canvas->get_w() || view_h != canvas->get_h()))
 	{
-		canvas->reposition_window(mwindow->theme->mcanvas_x,
-			mwindow->theme->mcanvas_y,
+		canvas->reposition_window(theme_global->mcanvas_x,
+			theme_global->mcanvas_y,
 			view_w,
 			view_h);
 	}
 
 	if(!samplescroll)
-		add_subwindow(samplescroll = new SampleScroll(mwindow,
-			mwindow->theme->mhscroll_x,
-			mwindow->theme->mhscroll_y,
-			mwindow->theme->mhscroll_w));
+		add_subwindow(samplescroll = new SampleScroll(mwindow_global,
+			theme_global->mhscroll_x,
+			theme_global->mhscroll_y,
+			theme_global->mhscroll_w));
 	else
 		samplescroll->resize_event();
 
@@ -111,21 +110,21 @@ void MWindowGUI::get_scrollbars()
 
 void MWindowGUI::show()
 {
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 
 	add_subwindow(mainmenu = new MainMenu(this));
 
-	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
-	mwindow->theme->draw_mwindow_bg(this);
+	theme_global->get_mwindow_sizes(this, get_w(), get_h());
+	theme_global->draw_mwindow_bg(this);
 
 	add_subwindow(mbuttons = new MButtons());
 	mbuttons->show();
 
 	add_subwindow(timebar = new MTimeBar(this,
-		mwindow->theme->mtimebar_x,
-		mwindow->theme->mtimebar_y,
-		mwindow->theme->mtimebar_w,
-		mwindow->theme->mtimebar_h));
+		theme_global->mtimebar_x,
+		theme_global->mtimebar_y,
+		theme_global->mtimebar_w,
+		theme_global->mtimebar_h));
 	timebar->update();
 
 	add_subwindow(patchbay = new PatchBay());
@@ -135,19 +134,19 @@ void MWindowGUI::show()
 
 	cursor = new MainCursor(this);
 
-	mwindow->gui->add_subwindow(canvas = new TrackCanvas(this));
+	add_subwindow(canvas = new TrackCanvas(this));
 	canvas->show();
 
-	add_subwindow(zoombar = new ZoomBar(mwindow, this));
+	add_subwindow(zoombar = new ZoomBar(mwindow_global, this));
 	zoombar->show();
 
-	add_subwindow(statusbar = new StatusBar(mwindow, this));
+	add_subwindow(statusbar = new StatusBar(mwindow_global, this));
 	statusbar->show();
 
 	add_subwindow(mainclock = new MainClock(
-		mwindow->theme->mclock_x,
-		mwindow->theme->mclock_y,
-		mwindow->theme->mclock_w));
+		theme_global->mclock_x,
+		theme_global->mclock_y,
+		theme_global->mclock_w));
 	mainclock->set_frame_offset(
 		edlsession->get_frame_offset());
 	mainclock->update(0);
@@ -164,8 +163,8 @@ void MWindowGUI::resize_event(int w, int h)
 {
 	mainsession->mwindow_w = w;
 	mainsession->mwindow_h = h;
-	mwindow->theme->get_mwindow_sizes(this, w, h);
-	mwindow->theme->draw_mwindow_bg(this);
+	theme_global->get_mwindow_sizes(this, w, h);
+	theme_global->draw_mwindow_bg(this);
 	flash();
 	mainmenu->reposition_window(0, 0, w, mainmenu->get_h());
 	mbuttons->resize_event();
@@ -203,32 +202,32 @@ void MWindowGUI::default_positions()
 		mainsession->mwindow_y,
 		mainsession->mwindow_w,
 		mainsession->mwindow_h);
-	mwindow->vwindow->gui->reposition_window(mainsession->vwindow_x,
+	mwindow_global->vwindow->gui->reposition_window(mainsession->vwindow_x,
 		mainsession->vwindow_y,
 		mainsession->vwindow_w,
 		mainsession->vwindow_h);
-	mwindow->cwindow->gui->reposition_window(mainsession->cwindow_x,
+	mwindow_global->cwindow->gui->reposition_window(mainsession->cwindow_x,
 		mainsession->cwindow_y,
 		mainsession->cwindow_w,
 		mainsession->cwindow_h);
-	mwindow->awindow->gui->reposition_window(mainsession->awindow_x,
+	mwindow_global->awindow->gui->reposition_window(mainsession->awindow_x,
 		mainsession->awindow_y,
 		mainsession->awindow_w,
 		mainsession->awindow_h);
 
 	resize_event(mainsession->mwindow_w,
 		mainsession->mwindow_h);
-	mwindow->vwindow->gui->resize_event(mainsession->vwindow_w,
+	mwindow_global->vwindow->gui->resize_event(mainsession->vwindow_w,
 		mainsession->vwindow_h);
-	mwindow->cwindow->gui->resize_event(mainsession->cwindow_w,
+	mwindow_global->cwindow->gui->resize_event(mainsession->cwindow_w,
 		mainsession->cwindow_h);
-	mwindow->awindow->gui->resize_event(mainsession->awindow_w,
+	mwindow_global->awindow->gui->resize_event(mainsession->awindow_w,
 		mainsession->awindow_h);
 
 	flush();
-	mwindow->vwindow->gui->flush();
-	mwindow->cwindow->gui->flush();
-	mwindow->awindow->gui->flush();
+	mwindow_global->vwindow->gui->flush();
+	mwindow_global->cwindow->gui->flush();
+	mwindow_global->awindow->gui->flush();
 }
 
 void MWindowGUI::repeat_event(int duration)
@@ -289,7 +288,7 @@ int MWindowGUI::keypress_event()
 		switch(get_keypress())
 		{
 		case 'e':
-			mwindow->toggle_editing_mode();
+			mwindow_global->toggle_editing_mode();
 			result = 1;
 			break;
 		case LEFT:
@@ -298,10 +297,10 @@ int MWindowGUI::keypress_event()
 				if(alt_down())
 				{
 					mbuttons->transport->handle_transport(STOP);
-					mwindow->prev_edit_handle(shift_down());
+					mwindow_global->prev_edit_handle(shift_down());
 				}
 				else
-					mwindow->move_left(); 
+					mwindow_global->move_left(); 
 				result = 1;
 			}
 			break;
@@ -311,10 +310,10 @@ int MWindowGUI::keypress_event()
 				if(alt_down())
 				{
 					mbuttons->transport->handle_transport(STOP);
-					mwindow->next_edit_handle(shift_down());
+					mwindow_global->next_edit_handle(shift_down());
 				}
 				else
-					mwindow->move_right(); 
+					mwindow_global->move_right(); 
 				result = 1;
 			}
 			break;
@@ -322,24 +321,24 @@ int MWindowGUI::keypress_event()
 		case UP:
 			if(ctrl_down() && !alt_down())
 			{
-				mwindow->expand_y();
+				mwindow_global->expand_y();
 				result = 1;
 			}
 			else
 			if(!ctrl_down() && alt_down())
 			{
-				mwindow->expand_autos(0,1,1);
+				mwindow_global->expand_autos(0,1,1);
 				result = 1;
 			}
 			else
 			if(ctrl_down() && alt_down())
 			{
-				mwindow->expand_autos(1,1,1);
+				mwindow_global->expand_autos(1,1,1);
 				result = 1;
 			}
 			else
 			{
-				mwindow->expand_sample();
+				mwindow_global->expand_sample();
 				result = 1;
 			}
 			break;
@@ -347,24 +346,24 @@ int MWindowGUI::keypress_event()
 		case DOWN:
 			if(ctrl_down() && !alt_down())
 			{
-				mwindow->zoom_in_y();
+				mwindow_global->zoom_in_y();
 				result = 1;
 			}
 			else
 			if(!ctrl_down() && alt_down())
 			{
-				mwindow->shrink_autos(0,1,1);
+				mwindow_global->shrink_autos(0,1,1);
 				result = 1;
 			}
 			else
 			if(ctrl_down() && alt_down())
 			{
-				mwindow->shrink_autos(1,1,1);
+				mwindow_global->shrink_autos(1,1,1);
 				result = 1;
 			}
 			else
 			{
-				mwindow->zoom_in_sample();
+				mwindow_global->zoom_in_sample();
 				result = 1;
 			}
 			break;
@@ -372,12 +371,12 @@ int MWindowGUI::keypress_event()
 		case PGUP:
 			if(!ctrl_down())
 			{
-				mwindow->move_up();
+				mwindow_global->move_up();
 				result = 1;
 			}
 			else
 			{
-				mwindow->expand_t();
+				mwindow_global->expand_t();
 				result = 1;
 			}
 			break;
@@ -385,12 +384,12 @@ int MWindowGUI::keypress_event()
 		case PGDN:
 			if(!ctrl_down())
 			{
-				mwindow->move_down();
+				mwindow_global->move_down();
 				result = 1;
 			}
 			else
 			{
-				mwindow->zoom_in_t();
+				mwindow_global->zoom_in_t();
 				result = 1;
 			}
 			break;
@@ -476,8 +475,8 @@ int MWindowGUI::keypress_event()
 
 			}
 
-			mwindow->update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_BUTTONBAR);
-			mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
+			mwindow_global->update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_BUTTONBAR);
+			mwindow_global->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
 
 			result = 1;
 			break;
