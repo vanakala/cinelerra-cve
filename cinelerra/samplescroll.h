@@ -7,14 +7,12 @@
 #define MAINXSCROLL_H
 
 #include "bcscrollbar.h"
-#include "mwindow.inc"
-#include "mwindowgui.inc"
 #include "mutex.inc"
 
 class SampleScroll : public BC_ScrollBar
 {
 public:
-	SampleScroll(MWindow *mwindow, int x, int y, int w);
+	SampleScroll(int x, int y, int w);
 	~SampleScroll();
 
 	void resize_event();
@@ -22,7 +20,6 @@ public:
 	int handle_event();
 
 private:
-	MWindow *mwindow;
 	Mutex *lock;
 };
 

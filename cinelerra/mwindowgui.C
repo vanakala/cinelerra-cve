@@ -91,7 +91,7 @@ void MWindowGUI::get_scrollbars()
 	}
 
 	if(!samplescroll)
-		add_subwindow(samplescroll = new SampleScroll(mwindow_global,
+		add_subwindow(samplescroll = new SampleScroll(
 			theme_global->mhscroll_x,
 			theme_global->mhscroll_y,
 			theme_global->mhscroll_w));

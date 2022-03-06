@@ -18,19 +18,9 @@
 #include "theme.h"
 #include "trackcanvas.h"
 
-SampleScroll::SampleScroll(MWindow *mwindow, 
-	int x,
-	int y,
-	int w)
- : BC_ScrollBar(x, 
-	y,
-	SCROLL_HORIZ, 
-	w, 
-	0, 
-	0, 
-	0)
+SampleScroll::SampleScroll(int x, int y, int w)
+ : BC_ScrollBar(x, y, SCROLL_HORIZ, w, 0, 0, 0)
 {
-	this->mwindow = mwindow;
 	lock = new Mutex("SampleScroll");
 }
 
@@ -43,19 +33,19 @@ SampleScroll::~SampleScroll()
 
 void SampleScroll::resize_event(void)
 {
-	reposition_window(mwindow->theme->mhscroll_x,
-		mwindow->theme->mhscroll_y, 
-		mwindow->theme->mhscroll_w);
+	reposition_window(theme_global->mhscroll_x,
+		theme_global->mhscroll_y,
+		theme_global->mhscroll_w);
 }
 
 void SampleScroll::set_position(void)
 {
 	ptstime new_pos = master_edl->local_session->view_start_pts;
 
-	if(mwindow->gui->canvas)
+	if(mwindow_global->gui->canvas)
 	{
 		lock->lock("set_position");
-		ptstime handle_dur = (mwindow->theme->mcanvas_w -
+		ptstime handle_dur = (theme_global->mcanvas_w -
 			BC_ScrollBar::get_span(SCROLL_VERT)) *
 			master_edl->local_session->zoom_time;
 
@@ -82,7 +72,7 @@ int SampleScroll::handle_event()
 	lock->lock("handle_event");
 	master_edl->local_session->view_start_pts = get_value() *
 		master_edl->local_session->zoom_time;
-	mwindow->update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_TIMEBAR);
+	mwindow_global->update_gui(WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_TIMEBAR);
 	lock->unlock();
 	return 1;
 }
