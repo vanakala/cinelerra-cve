@@ -8,21 +8,17 @@
 
 #include "bcbutton.h"
 #include "bcsubwindow.h"
-#include "mwindow.inc"
-#include "mwindowgui.inc"
 
 class StatusBarCancel;
 
 class StatusBar : public BC_SubWindow
 {
 public:
-	StatusBar(MWindow *mwindow, MWindowGUI *gui);
+	StatusBar();
 
 	void show();
 	void resize_event();
 
-	MWindow *mwindow;
-	MWindowGUI *gui;
 	BC_ProgressBar *main_progress;
 	StatusBarCancel *main_progress_cancel;
 	BC_Title *status_text;
@@ -31,11 +27,9 @@ public:
 class StatusBarCancel : public BC_Button
 {
 public:
-	StatusBarCancel(MWindow *mwindow, int x, int y);
+	StatusBarCancel(int x, int y);
 
 	int handle_event();
-
-	MWindow *mwindow;
 };
 
 #endif

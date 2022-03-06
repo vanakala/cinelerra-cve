@@ -140,7 +140,7 @@ void MWindowGUI::show()
 	add_subwindow(zoombar = new ZoomBar(mwindow_global, this));
 	zoombar->show();
 
-	add_subwindow(statusbar = new StatusBar(mwindow_global, this));
+	add_subwindow(statusbar = new StatusBar());
 	statusbar->show();
 
 	add_subwindow(mainclock = new MainClock(
