@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "bcmenuitem.h"
@@ -46,8 +30,7 @@ ZoomHash::~ZoomHash()
 }
 
 
-ZoomPanel::ZoomPanel(MWindow *mwindow, 
-	BC_WindowBase *subwindow, 
+ZoomPanel::ZoomPanel(BC_WindowBase *subwindow,
 	double value, 
 	int x, 
 	int y,
@@ -59,7 +42,6 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	VFrame **menu_images,
 	VFrame **tumbler_images)
 {
-	this->mwindow = mwindow;
 	this->subwindow = subwindow;
 	this->x = x;
 	this->y = y;
@@ -75,8 +57,7 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	initialize(first_item_text);
 }
 
-ZoomPanel::ZoomPanel(MWindow *mwindow, 
-	BC_WindowBase *subwindow, 
+ZoomPanel::ZoomPanel(BC_WindowBase *subwindow, 
 	double value, 
 	int x, 
 	int y,
@@ -88,7 +69,6 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	VFrame **menu_images,
 	VFrame **tumbler_images)
 {
-	this->mwindow = mwindow;
 	this->subwindow = subwindow;
 	this->x = x;
 	this->y = y;
@@ -113,15 +93,11 @@ ZoomPanel::~ZoomPanel()
 
 void ZoomPanel::initialize(const char *first_item_text)
 {
-	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, 
-		this, 
-		x, 
-		y));
+	subwindow->add_subwindow(zoom_text = new ZoomPopup(this,
+		x, y));
 	x += zoom_text->get_w();
-	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, 
-		this, 
-		x, 
-		y));
+	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(this,
+		x, y));
 	if(first_item_text)
 		zoom_text->add_item(new BC_MenuItem(first_item_text));
 	calculate_menu();
@@ -237,7 +213,7 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 		break;
 
 	case ZOOM_TIME:
-		double total_seconds = (double)mwindow->gui->canvas->get_w() * 
+		double total_seconds = mwindow_global->gui->canvas->get_w() * 
 			value;
 		Units::totext(string,
 			total_seconds,
@@ -263,20 +239,11 @@ double ZoomPanel::text_to_zoom(const char *text)
 }
 
 
-ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
- : BC_PopupMenu(x, 
-	y,
-	panel->w,
-	panel->value_to_text(panel->value, 0),
-	1,
-	panel->menu_images)
+ZoomPopup::ZoomPopup(ZoomPanel *panel, int x, int y)
+ : BC_PopupMenu(x, y, panel->w, panel->value_to_text(panel->value, 0),
+	1, panel->menu_images)
 {
-	this->mwindow = mwindow;
 	this->panel = panel;
-}
-
-ZoomPopup::~ZoomPopup()
-{
 }
 
 int ZoomPopup::handle_event()
@@ -287,17 +254,10 @@ int ZoomPopup::handle_event()
 }
 
 
-ZoomTumbler::ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y)
- : BC_Tumbler(x, 
-	y,
-	panel->tumbler_images)
+ZoomTumbler::ZoomTumbler(ZoomPanel *panel, int x, int y)
+ : BC_Tumbler(x, y, panel->tumbler_images)
 {
-	this->mwindow = mwindow;
 	this->panel = panel;
-}
-
-ZoomTumbler::~ZoomTumbler()
-{
 }
 
 void ZoomTumbler::handle_up_event()

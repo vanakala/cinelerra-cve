@@ -1,30 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef ZOOMPANEL_H
 #define ZOOMPANEL_H
 
 #include "bcpopupmenu.h"
 #include "bctumble.h"
-#include "mwindow.inc"
 #include "units.h"
 #include "vframe.inc"
 
@@ -49,8 +32,7 @@ public:
 class ZoomPanel
 {
 public:
-	ZoomPanel(MWindow *mwindow, 
-		BC_WindowBase *subwindow, 
+	ZoomPanel(BC_WindowBase *subwindow,
 		double value, 
 		int x, 
 		int y, 
@@ -61,8 +43,7 @@ public:
 		const char *first_item_text = 0,
 		VFrame **menu_images = 0,
 		VFrame **tumbler_images = 0);
-	ZoomPanel(MWindow *mwindow, 
-		BC_WindowBase *subwindow, 
+	ZoomPanel(BC_WindowBase *subwindow,
 		double value, 
 		int x, 
 		int y, 
@@ -88,7 +69,6 @@ public:
 	void update(const char *value);
 	void reposition_window(int x, int y);
 
-	MWindow *mwindow;
 	BC_WindowBase *subwindow;
 	int x;
 	int y;
@@ -113,26 +93,22 @@ private:
 class ZoomPopup : public BC_PopupMenu
 {
 public:
-	ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y);
-	~ZoomPopup();
+	ZoomPopup(ZoomPanel *panel, int x, int y);
 
 	int handle_event();
 
 	ZoomPanel *panel;
-	MWindow *mwindow;
 };
 
 class ZoomTumbler : public BC_Tumbler
 {
 public:
-	ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y);
-	~ZoomTumbler();
+	ZoomTumbler(ZoomPanel *panel, int x, int y);
 
 	void handle_up_event();
 	void handle_down_event();
 
 	ZoomPanel *panel;
-	MWindow *mwindow;
 };
 
 #endif

@@ -562,7 +562,7 @@ int CWindowMeters::change_status_event()
 
 CWindowZoom::CWindowZoom(CWindowGUI *gui, int x, int y,
 	const char *first_item_text)
- : ZoomPanel(mwindow_global, gui, edlsession->cwindow_zoom,
+ : ZoomPanel(gui, edlsession->cwindow_zoom,
 	x, y, 80,  my_zoom_table, total_zooms,
 	ZOOM_PERCENTAGE, first_item_text)
 {

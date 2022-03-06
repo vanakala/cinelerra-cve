@@ -266,8 +266,7 @@ void ZoomBar::set_selection(int which_one)
 SampleZoomPanel::SampleZoomPanel(ZoomBar *zoombar,
 	int x,
 	int y)
- : ZoomPanel(mwindow_global,
-	zoombar,
+ : ZoomPanel(zoombar,
 	master_edl->local_session->zoom_time,
 	x, 
 	y, 
@@ -290,8 +289,7 @@ int SampleZoomPanel::handle_event()
 
 
 AmpZoomPanel::AmpZoomPanel(ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow_global,
-	zoombar,
+ : ZoomPanel(zoombar,
 	master_edl->local_session->zoom_y,
 	x, 
 	y, 
@@ -314,8 +312,7 @@ int AmpZoomPanel::handle_event()
 
 
 TrackZoomPanel::TrackZoomPanel(ZoomBar *zoombar, int x, int y)
- : ZoomPanel(mwindow_global,
-	zoombar, 
+ : ZoomPanel(zoombar,
 	master_edl->local_session->zoom_track,
 	x, 
 	y, 
