@@ -374,7 +374,7 @@ void MWindow::init_gwindow()
 
 void MWindow::init_tipwindow()
 {
-	twindow = new TipWindow(this);
+	twindow = new TipWindow();
 	twindow->start();
 }
 

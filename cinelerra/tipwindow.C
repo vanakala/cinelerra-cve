@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -75,10 +59,9 @@ static const char *tips[] =
 static int total_tips = sizeof(tips) / sizeof(char*);
 
 
-TipWindow::TipWindow(MWindow *mwindow)
+TipWindow::TipWindow()
  : BC_DialogThread()
 {
-	this->mwindow = mwindow;
 }
 
 BC_Window* TipWindow::new_gui()
@@ -86,8 +69,7 @@ BC_Window* TipWindow::new_gui()
 	int x, y;
 
 	BC_Resources::get_abs_cursor(&x, &y);
-	TipWindowGUI *gui = this->gui = new TipWindowGUI(mwindow, 
-		this,
+	TipWindowGUI *gui = this->gui = new TipWindowGUI(this,
 		x,
 		y);
 	return gui;
@@ -100,7 +82,7 @@ char* TipWindow::get_current_tip()
 	mainsession->current_tip++;
 	if(mainsession->current_tip >= total_tips)
 		mainsession->current_tip = 0;
-	mwindow->save_defaults();
+	mwindow_global->save_defaults();
 	return result;
 }
 
@@ -122,8 +104,7 @@ void TipWindow::prev_tip()
 }
 
 
-TipWindowGUI::TipWindowGUI(MWindow *mwindow, 
-	TipWindow *thread,
+TipWindowGUI::TipWindowGUI(TipWindow *thread,
 	int x,
 	int y)
  : BC_Window(MWindow::create_title(N_("Tip of the day")),
@@ -137,28 +118,27 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 	0,
 	1)
 {
-	this->mwindow = mwindow;
 	this->thread = thread;
 
 	x = y = 10;
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip()));
 	y = get_h() - 30;
 
-	set_icon(mwindow->get_window_icon());
+	set_icon(mwindow_global->get_window_icon());
 
-	BC_CheckBox *checkbox; 
-	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));
+	BC_CheckBox *checkbox;
+	add_subwindow(checkbox = new TipDisable(this, x, y));
 
 	BC_Button *button;
-	y = get_h() - TipClose::calculate_h(mwindow) - 10;
-	x = get_w() - TipClose::calculate_w(mwindow) - 10;
-	add_subwindow(button = new TipClose(mwindow, this, x, y));
+	y = get_h() - TipClose::calculate_h() - 10;
+	x = get_w() - TipClose::calculate_w() - 10;
+	add_subwindow(button = new TipClose(this, x, y));
 
-	x -= TipNext::calculate_w(mwindow) + 10;
-	add_subwindow(button = new TipNext(mwindow, this, x, y));
+	x -= TipNext::calculate_w() + 10;
+	add_subwindow(button = new TipNext(this, x, y));
 
-	x -= TipPrev::calculate_w(mwindow) + 10;
-	add_subwindow(button = new TipPrev(mwindow, this, x, y));
+	x -= TipPrev::calculate_w() + 10;
+	add_subwindow(button = new TipPrev(this, x, y));
 
 	x += button->get_w() + 10;
 
@@ -180,29 +160,23 @@ int TipWindowGUI::keypress_event()
 }
 
 
-TipDisable::TipDisable(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_CheckBox(x, 
-	y, 
-	mwindow->preferences->use_tipwindow, 
+TipDisable::TipDisable(TipWindowGUI *gui, int x, int y)
+ : BC_CheckBox(x, y, preferences_global->use_tipwindow,
 	_("Show tip of the day."))
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 int TipDisable::handle_event()
 {
-	mwindow->preferences->use_tipwindow = get_value();
+	preferences_global->use_tipwindow = get_value();
 	return 1;
 }
 
 
-TipNext::TipNext(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_Button(x, 
-	y, 
-	mwindow->theme->get_image_set("next_tip"))
+TipNext::TipNext(TipWindowGUI *gui, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("next_tip"))
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Next tip"));
 }
@@ -213,16 +187,15 @@ int TipNext::handle_event()
 	return 1;
 }
 
-int TipNext::calculate_w(MWindow *mwindow)
+int TipNext::calculate_w()
 {
-	return mwindow->theme->get_image_set("next_tip")[0]->get_w();
+	return theme_global->get_image_set("next_tip")[0]->get_w();
 }
 
 
-TipPrev::TipPrev(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("prev_tip"))
+TipPrev::TipPrev(TipWindowGUI *gui, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("prev_tip"))
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Previous tip"));
 }
@@ -233,16 +206,15 @@ int TipPrev::handle_event()
 	return 1;
 }
 
-int TipPrev::calculate_w(MWindow *mwindow)
+int TipPrev::calculate_w()
 {
-	return mwindow->theme->get_image_set("prev_tip")[0]->get_w();
+	return theme_global->get_image_set("prev_tip")[0]->get_w();
 }
 
 
-TipClose::TipClose(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("close_tip"))
+TipClose::TipClose(TipWindowGUI *gui, int x, int y)
+ : BC_Button(x, y, theme_global->get_image_set("close_tip"))
 {
-	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Close"));
 }
@@ -253,12 +225,12 @@ int TipClose::handle_event()
 	return 1;
 }
 
-int TipClose::calculate_w(MWindow *mwindow)
+int TipClose::calculate_w()
 {
-	return mwindow->theme->get_image_set("close_tip")[0]->get_w();
+	return theme_global->get_image_set("close_tip")[0]->get_w();
 }
 
-int TipClose::calculate_h(MWindow *mwindow)
+int TipClose::calculate_h()
 {
-	return mwindow->theme->get_image_set("close_tip")[0]->get_h();
+	return theme_global->get_image_set("close_tip")[0]->get_h();
 }
