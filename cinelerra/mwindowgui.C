@@ -137,7 +137,7 @@ void MWindowGUI::show()
 	add_subwindow(canvas = new TrackCanvas(this));
 	canvas->show();
 
-	add_subwindow(zoombar = new ZoomBar(mwindow_global, this));
+	add_subwindow(zoombar = new ZoomBar());
 	zoombar->show();
 
 	add_subwindow(statusbar = new StatusBar());
