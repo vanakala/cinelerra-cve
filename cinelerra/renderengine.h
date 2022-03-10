@@ -59,7 +59,7 @@ public:
 // return position to synchronize video against
 	ptstime sync_postime(void);
 // Update preferences window
-	void update_framerate(float framerate);
+	void update_framerate(double framerate);
 // Update statistics
 	void update_playstatistics(int frames, int late, int delay);
 // Wait for other thread

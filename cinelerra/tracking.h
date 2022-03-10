@@ -29,7 +29,7 @@ public:
 // Update meters
 	virtual void update_meters(ptstime pts) {};
 	virtual void stop_meters() {};
-	virtual void set_delays(float over_delay, float peak_delay) {};
+	virtual void set_delays(ptstime over_delay, ptstime peak_delay) {};
 
 	void run();
 

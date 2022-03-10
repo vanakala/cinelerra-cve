@@ -52,8 +52,10 @@ void VTracking::stop_meters()
 	vwindow->gui->meters->stop_meters();
 }
 
-void VTracking::set_delays(float over_delay, float peak_delay)
+void VTracking::set_delays(ptstime over_delay, ptstime peak_delay)
 {
-	vwindow->gui->meters->set_delays(over_delay * tracking_rate,
-		peak_delay * tracking_rate);
+	int over = round(over_delay * tracking_rate);
+	int peak = round(peak_delay * tracking_rate);
+
+	vwindow->gui->meters->set_delays(over, peak);
 }

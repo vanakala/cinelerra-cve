@@ -78,7 +78,6 @@ EDLSession::EDLSession()
 	video_every_frame = 0;
 	view_follows_playback = 1;
 	vwindow_meter = 1;
-	vwindow_zoom = 1;
 	tool_window = 0;
 	show_avlibsmsgs = 0;
 	experimental_codecs = 1;
@@ -236,7 +235,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	// backward compatibility
 	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
 	keyframes_visible = defaults->get("SHOW_KEYFRAMES", keyframes_visible);
-	vwindow_zoom = defaults->get("VWINDOW_ZOOM", vwindow_zoom);
 	boundaries();
 }
 
@@ -342,7 +340,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("VIDEO_WRITE_LENGTH");
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
-	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
+	defaults->delete_key("VWINDOW_ZOOM");
 	defaults->update("METADATA_AUTHOR", metadata_author);
 	defaults->update("METADATA_TITLE", metadata_title);
 	defaults->update("METADATA_COPYRIGHT", metadata_copyright);
@@ -481,7 +479,6 @@ void EDLSession::load_xml(FileXML *file)
 	}
 	tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 	vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
-	vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
 	file->tag.get_property("METADATA_AUTHOR", metadata_author);
 	file->tag.get_property("METADATA_TITLE", metadata_title);
 	file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
@@ -537,7 +534,6 @@ void EDLSession::save_xml(FileXML *file)
 	}
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
-	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
 
 	file->tag.set_property("METADATA_AUTHOR", metadata_author);
 	file->tag.set_property("METADATA_TITLE", metadata_title);
@@ -667,7 +663,6 @@ void EDLSession::copy(EDLSession *session)
 	video_tracks = session->video_tracks;
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
-	vwindow_zoom = session->vwindow_zoom;
 	strcpy(metadata_author, session->metadata_author);
 	strcpy(metadata_title, session->metadata_title);
 	strcpy(metadata_copyright, session->metadata_copyright);

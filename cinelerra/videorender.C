@@ -131,8 +131,8 @@ void VideoRender::run()
 		if(!renderengine->video->interrupt &&
 			framerate_counter >= edl->this_edlsession->frame_rate)
 		{
-			renderengine->update_framerate((float)framerate_counter /
-				((float)framerate_timer.get_difference() / 1000));
+			renderengine->update_framerate((double)framerate_counter /
+				(framerate_timer.get_difference() / 1000));
 			framerate_counter = 0;
 			framerate_timer.update();
 		}

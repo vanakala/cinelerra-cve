@@ -244,7 +244,7 @@ void RenderEngine::start_render_threads()
 		vrender->start_command();
 }
 
-void RenderEngine::update_framerate(float framerate)
+void RenderEngine::update_framerate(double framerate)
 {
 	edlsession->actual_frame_rate = framerate;
 	mwindow_global->preferences_thread->update_framerate();

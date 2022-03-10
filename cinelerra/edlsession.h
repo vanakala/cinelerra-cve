@@ -67,7 +67,7 @@ public:
 	int asset_columns[ASSET_COLUMNS];
 	AutoConf *auto_conf;
 // Statistics
-	float actual_frame_rate;
+	double actual_frame_rate;
 	int frame_count;
 	int frames_late;
 	int avg_delay;
@@ -116,11 +116,11 @@ public:
 // AWindow format
 	int folderlist_format;
 	double frame_rate;
-	float frames_per_foot;
+	double frames_per_foot;
 // labels follow edits during editing
 	int labels_follow_edits;
-	float meter_over_delay;
-	float meter_peak_delay;
+	ptstime meter_over_delay;
+	ptstime meter_peak_delay;
 	int min_meter_db;
 	int max_meter_db;
 	int output_w;
@@ -133,7 +133,7 @@ public:
 	int sample_rate;
 // Load files as a duration
 	int si_useduration;
-	float si_duration;
+	ptstime si_duration;
 // Show assets in track canvas
 	int show_assets;
 // Show titles in resources
@@ -160,7 +160,6 @@ public:
 	char metadata_copyright[BCTEXTLEN];
 // Use the vwindow meter or not
 	int vwindow_meter;
-	float vwindow_zoom;
 // Global ID counter
 	static int current_id;
 	PlaybackConfig* playback_config;

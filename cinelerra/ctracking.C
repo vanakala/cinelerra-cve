@@ -175,10 +175,10 @@ void CTracking::stop_meters()
 	mwindow_global->lwindow->gui->panel->stop_meters();
 }
 
-void CTracking::set_delays(float over_delay, float peak_delay)
+void CTracking::set_delays(ptstime over_delay, ptstime peak_delay)
 {
-	int over = over_delay * tracking_rate;
-	int peak = peak_delay * tracking_rate;
+	int over = round(over_delay * tracking_rate);
+	int peak = round(peak_delay * tracking_rate);
 
 	cwindow->gui->meters->set_delays(over, peak);
 	mwindow_global->gui->patchbay->set_delays(over, peak);

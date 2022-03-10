@@ -26,7 +26,7 @@ public:
 
 	void update_meters(ptstime pts);
 	void stop_meters();
-	void set_delays(float over_delay, float peak_delay);
+	void set_delays(ptstime over_delay, ptstime peak_delay);
 
 private:
 	CWindow *cwindow;
