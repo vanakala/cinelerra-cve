@@ -39,11 +39,16 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int h = outgoing->get_h();
 	ptstime length = get_length();
 	int cmodel = outgoing->get_color_model();
+	int shift, mask;
+	get_color_bits(&shift, &mask);
+	int max = (0xffff >> shift) + 1;
 
 	if(length < EPSILON)
 		return;
 
-	fade = source_pts / length;
+	double fade = source_pts / length;
+	int kfade = max * fade;
+	int ikfade = max - kfade;
 
 // Use hardware
 	if(get_use_opengl())
@@ -56,19 +61,24 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	if(!overlayer)
 		overlayer = new OverlayFrame(get_project_smp());
 
-// There is a problem when dissolving from a big picture to a small picture.
-// In order to make it dissolve correctly, we have to manually decrese alpha of big picture.
 	switch(cmodel)
 	{
 	case BC_RGBA16161616:
 		for(int i = 0; i < h; i++)
 		{
-			uint16_t* alpha_chan = (uint16_t*)outgoing->get_row_ptr(i) + 3;
+			uint16_t* output_alpha = (uint16_t*)outgoing->get_row_ptr(i) + 3;
+			uint16_t* input_alpha = (uint16_t*)incoming->get_row_ptr(i) + 3;
 
 			for(int j = 0; j < w; j++)
 			{
-				*alpha_chan = (uint16_t)(*alpha_chan * (1 - fade));
-				alpha_chan += 4;
+				int oval = *output_alpha >> shift;
+				int ival = *input_alpha >> shift;
+				int alpha = (((uint64_t)oval * ikfade + ival * kfade) / max);
+
+				*input_alpha = (alpha << shift) + mask;
+
+				output_alpha += 4;
+				input_alpha += 4;
 			}
 		}
 		break;
@@ -76,12 +86,20 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	case BC_AYUV16161616:
 		for(int i = 0; i < h; i++)
 		{
-			uint16_t* alpha_chan = (uint16_t*)outgoing->get_row_ptr(i);
+			uint16_t* output_alpha = (uint16_t*)outgoing->get_row_ptr(i);
+			uint16_t* input_alpha = (uint16_t*)incoming->get_row_ptr(i);
 
 			for(int j = 0; j < w; j++)
 			{
-				*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
-				alpha_chan += 4;
+
+				int oval = *output_alpha >> shift;
+				int ival = *input_alpha >> shift;
+				int alpha = (((uint64_t)oval * ikfade + ival * kfade) / max);
+
+				*input_alpha = (alpha << shift) + mask;
+
+				output_alpha += 4;
+				input_alpha += 4;
 			}
 		}
 		break;
@@ -91,17 +109,8 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		return;
 	}
 
-	overlayer->overlay(outgoing, 
-		incoming, 
-		0, 
-		0, 
-		incoming->get_w(),
-		incoming->get_h(),
-		0,
-		0,
-		incoming->get_w(),
-		incoming->get_h(),
-		fade,
+	overlayer->overlay(outgoing, incoming, 0, 0, w, h,
+		0, 0, w, h, fade,
 		TRANSFER_NORMAL,
 		NEAREST_NEIGHBOR);
 	outgoing->set_transparent();

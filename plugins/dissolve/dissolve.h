@@ -36,7 +36,6 @@ public:
 	void handle_opengl();
 
 	OverlayFrame *overlayer;
-	double fade;
 };
 
 #endif
