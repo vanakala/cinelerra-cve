@@ -11,6 +11,7 @@
 #include "language.h"
 #include "miscprefs.h"
 #include "preferences.h"
+#include "selection.h"
 #include "theme.h"
 
 #include <string.h>
@@ -87,6 +88,14 @@ void MiscPrefs::show()
 	x = theme_global->preferencesoptions_x;
 	add_subwindow(new ToggleButton(x, y, _("Shrink tracks of invisible plugins"),
 		&pwindow->thread->this_edlsession->shrink_plugin_tracks));
+
+	y += 35;
+	win = add_subwindow(new BC_Title(x, y, _("Output color depth:")));
+	x += win->get_w() + 10;
+	OutputDepthSelection *depth_selection;
+	add_subwindow(depth_selection = new OutputDepthSelection(x, y, this,
+		&pwindow->thread->this_edlsession->output_color_depth));
+	depth_selection->update(pwindow->thread->this_edlsession->output_color_depth);
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
