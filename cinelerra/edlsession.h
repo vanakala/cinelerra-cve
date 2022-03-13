@@ -46,6 +46,9 @@ public:
 // rendered.
 	int need_rerender(EDLSession *ptr);
 
+// Returns output color bits, shift and mask of unused lower bits
+	int color_bits(int *shift, int *mask);
+
 	void dump(int indent = 0);
 
 // calculates the frame offset for programme timecode
@@ -56,6 +59,7 @@ public:
 
 // Convert pts to text in current formet
 	void ptstotext(char *string, ptstime pts);
+
 // Size in bytes
 	size_t get_size();
 
@@ -171,7 +175,8 @@ public:
 	int backup_interval;
 // Shrink plugin tracks
 	int shrink_plugin_tracks;
-
+// Output color depth in bits
+	int output_color_depth;
 private:
 	int defaults_loaded;
 };

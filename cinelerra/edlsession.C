@@ -90,6 +90,7 @@ EDLSession::EDLSession()
 	automatic_backups = 1;
 	backup_interval = 60;
 	shrink_plugin_tracks = 0;
+	output_color_depth = 8;
 	keyframes_visible = 1;
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -231,6 +232,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
 	automatic_backups = defaults->get("AUTOMATIC_BACKUPS", automatic_backups);
 	shrink_plugin_tracks = defaults->get("SHRINK_TRACKS", shrink_plugin_tracks);
+	output_color_depth = defaults->get("OUTPUT_DEPTH", output_color_depth);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
 	// backward compatibility
 	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
@@ -348,6 +350,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("AUTOMATIC_BACKUPS", automatic_backups);
 	defaults->update("BACKUP_INTERVAL", backup_interval);
 	defaults->update("SHRINK_TRACKS", shrink_plugin_tracks);
+	defaults->update("OUTPUT_DEPTH", output_color_depth);
 	defaults->delete_key("SHOW_PLUGINS");
 	defaults->update("SHOW_KEYFRAMES", keyframes_visible);
 }
@@ -388,6 +391,7 @@ void EDLSession::boundaries()
 		color_model = BC_AYUV16161616;
 		break;
 	}
+	OutputDepthSelection::limits(&output_color_depth);
 }
 
 void EDLSession::load_video_config(FileXML *file)
@@ -669,6 +673,7 @@ void EDLSession::copy(EDLSession *session)
 	automatic_backups = session->automatic_backups;
 	backup_interval = session->backup_interval;
 	shrink_plugin_tracks = session->shrink_plugin_tracks;
+	output_color_depth = session->output_color_depth;
 }
 
 ptstime EDLSession::get_frame_offset()
@@ -702,6 +707,24 @@ void EDLSession::ptstotext(char *string, ptstime pts)
 		frames_per_foot);
 }
 
+int EDLSession::color_bits(int *shift, int *mask)
+{
+	int sh = 16 - output_color_depth;
+	int ma;
+
+	if(shift)
+		*shift = sh;
+
+	if(mask)
+	{
+		if(sh)
+			*mask = 0xffff & ~((0xffff >> sh) << sh);
+		else
+			*mask = 0;
+	}
+	return output_color_depth;
+}
+
 size_t EDLSession::get_size()
 {
 	return sizeof(*this);
@@ -713,9 +736,9 @@ void EDLSession::dump(int indent)
 	indent += 2;
 	printf("%*saudio: tracks %d channels %d sample_rate %d\n",
 		indent, "", audio_tracks, audio_channels, sample_rate);
-	printf("%*svideo: tracks %d framerate %.2f output %dx%d SAR %.3f '%s'\n",
+	printf("%*svideo: tracks %d framerate %.2f [%dx%d] SAR %.3f '%s' depth %d\n",
 		indent, "", video_tracks, frame_rate, output_w, output_h, sample_aspect_ratio,
-		ColorModels::name(color_model));
+		ColorModels::name(color_model), output_color_depth);
 	printf("%*sdefault transitions: audio '%s' video '%s' length %.2f\n", indent, "",
 		default_atransition, default_vtransition, default_transition_length);
 }
