@@ -133,6 +133,8 @@ public:
 	double get_sample_aspect_ratio();
 // Get color model of project
 	int get_project_color_model();
+// Returns output color depth
+	int get_color_bits(int *shift, int *mask);
 // Get the start of the plugin
 	ptstime get_start();
 // Get the length of the plugin

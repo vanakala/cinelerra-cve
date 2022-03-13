@@ -78,6 +78,13 @@ int PluginClient::get_project_color_model()
 	return edlsession->color_model;
 }
 
+int PluginClient::get_color_bits(int *shift, int *mask)
+{
+	if(plugin && plugin->edl && plugin->edl->this_edlsession)
+		return plugin->edl->this_edlsession->color_bits(shift, mask);
+	return edlsession->color_bits(shift, mask);
+}
+
 ptstime PluginClient::get_start()
 {
 	if(plugin)
