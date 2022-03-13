@@ -1,22 +1,7 @@
-/*
- * CINELERRA
- * Copyright (C) 2014 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2014 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "selection.h"
 #include "bcpopupmenu.h"
@@ -115,6 +100,16 @@ const struct selection_2double AspectRatioSelection::aspect_ratios[] =
 	{ "2.66 : 1", 2.66, 1.0 },
 	{ 0, 0, 0 }
 };
+
+const struct selection_int OutputDepthSelection::output_depths[] =
+{
+	{ N_("8 Bit"), 8 },
+	{ N_("10 Bit"), 10 },
+	{ N_("12 Bit"), 12 },
+	{ N_("16 Bit"), 16 },
+	{ 0, 0 }
+};
+
 
 SampleRateSelection::SampleRateSelection(int x, int y, BC_WindowBase *base, int *value)
  : Selection(x, y , base, sample_rates, value)
@@ -788,4 +783,36 @@ int SampleBitsSelection::sampleflag(int size)
 	}
 
 	return SBITS_LINEAR16;
+}
+
+OutputDepthSelection::OutputDepthSelection(int x, int y, BC_WindowBase *base, int *value)
+ : Selection(x, y, base, output_depths, value)
+{
+	disable(1);
+}
+
+void OutputDepthSelection::update(int depth)
+{
+	for(int i = 0; output_depths[i].text; i++)
+	{
+		if(output_depths[i].value == depth)
+			BC_TextBox::update(_(output_depths[i].text));
+	}
+}
+
+int OutputDepthSelection::limits(int *depth)
+{
+	int result = 0;
+
+	if(*depth < MIN_OUTPUT_DEPTH)
+	{
+		*depth = MIN_OUTPUT_DEPTH;
+		result = -1;
+	}
+	if(*depth > MAX_OUTPUT_DEPTH)
+	{
+		*depth = MAX_OUTPUT_DEPTH;
+		result = -1;
+	}
+	return result;
 }

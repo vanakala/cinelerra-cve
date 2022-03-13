@@ -58,6 +58,10 @@
 #define MIN_FRAME_RATE 1
 #define MAX_FRAME_RATE 1500
 
+// Output bit depth limits
+#define MIN_OUTPUT_DEPTH 8
+#define MAX_OUTPUT_DEPTH 16
+
 // Sample aspect ratio limits
 #define MIN_ASPECT_RATIO 0.001
 #define MAX_ASPECT_RATIO 100.0
