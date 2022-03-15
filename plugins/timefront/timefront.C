@@ -727,7 +727,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 				{
 					uint64_t v = (uint64_t)num_frames *
 						in_row[j * 4 + 3] *
-						in_row[j * 4 + 3] / 0x10000 / 0x100;
+						in_row[j * 4 + 3] / 0x10000 / 0x10000;
 					grad_row[j] = CLIP(v, 0, num_frames);
 				}
 			}
@@ -743,7 +743,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 				{
 					uint64_t v = (uint64_t)num_frames *
 						in_row[j * 4] * in_row[j * 4] /
-						0x10000 / 0x100;
+						0x10000 / 0x10000;
 					grad_row[j] = CLIP(v, 0, num_frames);
 				}
 			}
@@ -753,7 +753,6 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 	else if(config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		VFrame *tfframe = frames[1];
-
 		if(config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
 			switch(color_model)
@@ -771,7 +770,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 							in_row[j * 4 + 2]) / 3 ;
 						uint64_t v = (uint64_t)num_frames * tmp *
 							in_row[j * 4 + 3] / 0x10000 /
-							0x100;
+							0x10000;
 						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
@@ -788,7 +787,7 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 						uint64_t v = (uint64_t)num_frames *
 							in_row[j * 4] *
 							in_row[j * 4 + 1] /
-							0x10000 / 0x100;
+							0x10000 / 0x10000;
 						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
@@ -810,24 +809,23 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 						uint64_t v = (uint64_t)num_frames *
 							in_row[j * 4 + 3] *
 							in_row[j * 4 + 3] /
-							 0x10000 / 0x100;
+							 0x10000 / 0x10000;
 						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
 				break;
 
 			case BC_AYUV16161616:
-				for(int i = 0; i < tfframe->get_h(); i++)
+				for(int i = 0; i < frame_h; i++)
 				{
 					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
 					unsigned char *grad_row = gradient->get_row_ptr(i);
-					int frame_w = tfframe->get_w();
 
 					for(int j = 0; j < frame_w; j++)
 					{
 						uint64_t v = (uint64_t)num_frames *
 							in_row[j * 4] *
-							in_row[j * 4] / 0x10000 / 0x100;
+							in_row[j * 4] / 0x10000 / 0x10000;
 						grad_row[j] = CLIP(v, 0, num_frames);
 					}
 				}
@@ -884,12 +882,10 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 
 					for(int j = 0; j < frame_w; j++)
 					{
-						out_row[0] = 0xffff * grad_row[0] / num_frames;
-						out_row[1] = 0xffff * grad_row[0] / num_frames;
-						out_row[2] = 0xffff * grad_row[0] / num_frames;
+						int v = 0xffff * *grad_row++ / num_frames;
+						out_row[0] = out_row[1] = out_row[2] = v;
 						out_row[3] = 0xffff;
 						out_row += 4;
-						grad_row++;
 					}
 				}
 				break;
@@ -923,11 +919,9 @@ void TimeFrontMain::process_tmpframes(VFrame **frames)
 
 					for (int j = 0; j < frame_w; j++)
 					{
-						out_row[0] = 0xffff * (num_frames - grad_row[0]) /
-							num_frames;
-						out_row[1] = 0xffff * (num_frames - grad_row[0]) /
-							num_frames;
-						out_row[2] = 0xffff * (num_frames - grad_row[0]) /
+						out_row[0] = out_row[1] = out_row[2] =
+							0xffff *
+							(num_frames - grad_row[0]) /
 							num_frames;
 						out_row[3] = 0xffff;
 						out_row += 4;
