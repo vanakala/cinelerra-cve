@@ -64,8 +64,17 @@ RenderEngine::~RenderEngine()
 
 void RenderEngine::reset_engines()
 {
-	do_reset = 1;
-	interrupt_playback();
+	if(!do_reset)
+	{
+		interrupt_lock->lock("RenderEngine::interrupt_playback");
+		do_reset = 1;
+		interrupted = 1;
+		if(audio)
+			audio->interrupt_playback();
+		if(video)
+			video->interrupt_playback();
+		interrupt_lock->unlock();
+	}
 }
 
 void RenderEngine::reset_brender()
@@ -113,14 +122,17 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 void RenderEngine::create_render_threads()
 {
+	interrupt_lock->lock("RenderEngine::create_render_threads");
 	if(do_reset)
 	{
-		do_reset = 0;
 		delete arender;
 		arender = 0;
 		delete vrender;
 		vrender = 0;
+		do_reset = 0;
 	}
+	interrupt_lock->unlock();
+
 	if(!command.single_frame() &&
 			edl->playable_tracks_of(TRACK_AUDIO) &&
 			edlsession->audio_channels && !arender)
