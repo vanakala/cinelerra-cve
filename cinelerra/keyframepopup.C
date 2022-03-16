@@ -18,6 +18,7 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "track.h"
+#include "trackplugin.h"
 
 KeyframePopup::KeyframePopup()
  : BC_PopupMenu(0, 
@@ -170,7 +171,13 @@ int KeyframePopupDelete::handle_event()
 	mwindow_global->save_backup();
 	mwindow_global->undo->update_undo(_("delete keyframe"), LOAD_ALL);
 
-	mwindow_global->update_gui(WUPD_CANVINCR);
+	if(popup->keyframe_plugin)
+	{
+		if(popup->keyframe_plugin->trackplugin)
+			popup->keyframe_plugin->trackplugin->update();
+	}
+	else
+		mwindow_global->update_gui(WUPD_CANVINCR);
 	mwindow_global->update_plugin_guis();
 	mwindow_global->sync_parameters();
 	return 1;
