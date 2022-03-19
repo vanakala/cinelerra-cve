@@ -822,17 +822,23 @@ void Edits::cleanup()
 			current->set_pts(0);
 		while(current->next)
 		{
+// Remove zero-length edits
 			if(fabs(current->length()) < EPSILON)
 			{
 				Edit *next = current->next;
 				remove(current);
-				current = next;
+				if(!(current = next->previous))
+					current = next;
+				if(!current->next)
+					break;
 			}
-			else if(!current->asset && !current->next->asset &&
-					current->next != last)
+// Remove edits without asset
+			if(!current->asset && !current->next->asset)
 				remove(current->next);
+// Join edits
 			else if(current->asset == current->next->asset &&
-					PTSEQU(current->get_source_pts() + current->length(), current->next->get_source_pts()))
+					PTSEQU(current->get_source_pts() + current->length(),
+					current->next->get_source_pts()))
 				remove(current->next);
 			else
 				break;
