@@ -771,17 +771,6 @@ ptstime Tracks::total_length_framealigned(double fps)
 	return 0;
 }
 
-void Tracks::translate_projector(float offset_x, float offset_y)
-{
-	for(Track *current = first; current; current = NEXT)
-	{
-		if(current->data_type == TRACK_VIDEO)
-		{
-			((VTrack*)current)->translate(offset_x, offset_y, 0);
-		}
-	}
-}
-
 void Tracks::update_y_pixels(Theme *theme)
 {
 	int y = -edl->local_session->track_start;

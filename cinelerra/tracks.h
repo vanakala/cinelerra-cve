@@ -62,7 +62,6 @@ public:
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 
-	void translate_projector(float offset_x, float offset_y);
 // add a track
 	Track* add_track(int track_type, int above, Track *dst_track);
 // delete any track

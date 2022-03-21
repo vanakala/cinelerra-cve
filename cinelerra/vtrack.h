@@ -27,8 +27,6 @@ public:
 		int *out_x, int *out_y, int *out_w, int *out_h);
 
 	int vertical_span(Theme *theme);
-	void translate(float offset_x, float offset_y, int do_camera);
-
 };
 
 #endif

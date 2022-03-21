@@ -137,34 +137,3 @@ void VTrack::calculate_output_transfer(ptstime position,
 	*out_w = round(x[3] - x[2]);
 	*out_h = round(y[3] - y[2]);
 }
-
-void VTrack::translate(float offset_x, float offset_y, int do_camera)
-{
-	int subscript_x, subscript_y;
-
-	if(do_camera)
-	{
-		subscript_x = AUTOMATION_CAMERA_X;
-		subscript_y = AUTOMATION_CAMERA_Y;
-	}
-	else
-	{
-		subscript_x = AUTOMATION_PROJECTOR_X;
-		subscript_y = AUTOMATION_PROJECTOR_Y;
-	}
-
-// Translate everyone else
-	for(Auto *current = automation->get_auto_for_editing(0, subscript_x);
-		current;
-		current = NEXT)
-	{
-		((FloatAuto*)current)->add_value(offset_x);
-	}
-
-	for(Auto *current = automation->get_auto_for_editing(0, subscript_y);
-		current;
-		current = NEXT)
-	{
-		((FloatAuto*)current)->add_value(offset_y);
-	}
-}
