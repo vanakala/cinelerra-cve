@@ -84,8 +84,8 @@ int VPatchGUI::update(int x, int y)
 			ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 			unit_position = master_edl->align_to_frame(unit_position);
 
-			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
-				unit_position);
+			int value = round(vtrack->automation->get_floatvalue(
+				unit_position, AUTOMATION_FADE));
 			fade->update(fade->get_w(),value,
 				master_edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 				master_edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
@@ -155,10 +155,9 @@ double VFadePatch::update_edl()
 {
 	FloatAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	Autos *fade_autos = patch->vtrack->automation->autos[AUTOMATION_FADE];
-	int need_undo = !fade_autos->auto_exists_for_editing(position);
+	int need_undo = !patch->vtrack->automation->auto_exists_for_editing(position, AUTOMATION_FADE);
 
-	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
+	current = (FloatAuto*)patch->vtrack->automation->get_auto_for_editing(position, AUTOMATION_FADE);
 
 	double result = get_value() - current->get_value();
 	current->set_value(get_value());
@@ -198,8 +197,7 @@ double VFadePatch::get_keyframe_value(VPatchGUI *patch)
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	return ((FloatAutos*)patch->vtrack->automation->autos[AUTOMATION_FADE])->get_value(
-		unit_position);
+	return patch->vtrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
 }
 
 
@@ -226,16 +224,13 @@ int VModePatch::handle_event()
 	update(mode);
 
 // Set keyframe
-	IntAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
-	int need_undo = !mode_autos->auto_exists_for_editing(position);
+	int need_undo = !patch->vtrack->automation->auto_exists_for_editing(position, AUTOMATION_MODE);
+	IntAuto *current = (IntAuto*)patch->vtrack->automation->get_auto_for_editing(position, AUTOMATION_MODE);
 
-	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = mode;
 
 	mwindow_global->undo->update_undo(_("mode"), LOAD_AUTOMATION, need_undo ? 0 : this);
-
 	mwindow_global->sync_parameters();
 
 	if(edlsession->auto_conf->auto_visible[AUTOMATION_MODE])
@@ -246,12 +241,10 @@ int VModePatch::handle_event()
 
 int VModePatch::get_keyframe_value(VPatchGUI *patch)
 {
-	Auto *current = 0;
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	return ((IntAutos*)patch->vtrack->automation->autos[AUTOMATION_MODE])->get_value(
-		unit_position);
+	return patch->vtrack->automation->get_intvalue(unit_position, AUTOMATION_MODE);
 }
 
 void VModePatch::update(int mode)

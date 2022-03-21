@@ -1285,7 +1285,7 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 		for(int i = 0; i < AUTOMATION_TOTAL && !result; i++)
 		{
 // Event not trapped and automation visible
-			Autos *autos = automation->autos[i];
+			Autos *autos = automation->have_autos(i);
 			if(!result && session->auto_conf->auto_visible[i] && autos)
 			{
 				pixmaps_lock->lock("TrackCanvas::do_track_autos");
@@ -1818,22 +1818,12 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 			if(current->data_type == skip->data_type &&
 				current->gang && current->record && current != skip)
 			{
-				FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
 				ptstime position = fauto->pos_time;
-
-				double init_value = fade_autos->get_value(fauto->pos_time);
-				FloatAuto *keyframe;
-				keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
-
-				if(!keyframe)
-				{
+				double init_value = current->automation->get_floatvalue(position, AUTOMATION_FADE);
 // create keyframe on neighbouring track at the point in time given by fauto
-					keyframe = (FloatAuto*)fade_autos->insert_auto(fauto->pos_time);
-					keyframe->set_value(init_value + change);
-				} 
-				else
-					keyframe->adjust_to_new_coordinates(fauto->pos_time, keyframe->get_value() + change);
+				FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, AUTOMATION_FADE);
 
+				keyframe->set_value(init_value + change);
 				mainsession->drag_auto_gang->append((Auto *)keyframe);
 			}
 		}

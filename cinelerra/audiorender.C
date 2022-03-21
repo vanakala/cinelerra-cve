@@ -133,7 +133,7 @@ ptstime AudioRender::calculate_render_duration()
 			}
 			for(int i = 0; i < AUTOMATION_TOTAL; i++)
 			{
-				if(!(autos = track->renderer->autos_track->automation->autos[i]))
+				if(!(autos = track->renderer->autos_track->automation->have_autos(i)))
 					continue;
 				if(!(autom = autos->nearest_after(start_pts)))
 					continue;
@@ -182,7 +182,7 @@ ptstime AudioRender::calculate_render_duration()
 			}
 			for(int i = 0; i < AUTOMATION_TOTAL; i++)
 			{
-				if(!(autos = track->renderer->autos_track->automation->autos[i]))
+				if(!(autos = track->renderer->autos_track->automation->have_autos(i)))
 					continue;
 				if(!(autom = autos->nearest_before(start_pts)))
 					continue;

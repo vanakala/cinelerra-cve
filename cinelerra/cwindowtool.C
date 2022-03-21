@@ -427,9 +427,8 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 
 	if(track)
 	{
-		autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
 		keyframe = (CropAuto*)mwindow_global->cwindow->calculate_affected_auto(
-			(Autos*)autos, create_it);
+			AUTOMATION_CROP, track, create_it);
 	}
 	else
 		return 0;
@@ -438,7 +437,10 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 	{
 		if(edlsession->auto_keyframes &&
 				!PTSEQU(pos, keyframe->pos_time))
+		{
+			CropAutos *autos = (CropAutos*)track->automation->have_autos(AUTOMATION_CROP);
 			autos->get_values(pos, &left, &right, &top, &bottom);
+		}
 		else
 		{
 			top = keyframe->top;
@@ -796,8 +798,8 @@ int CWindowCPCenter::handle_event()
 
 	if(track)
 		x_auto = (FloatAuto*)mwindow_global->cwindow->calculate_affected_auto(
-			track->automation->autos[gui->is_camera ? AUTOMATION_CAMERA_X : AUTOMATION_PROJECTOR_X],
-			1);
+			gui->is_camera ? AUTOMATION_CAMERA_X : AUTOMATION_PROJECTOR_X,
+			track, 1);
 
 	if(x_auto)
 	{
@@ -943,7 +945,8 @@ int CWindowCPMiddle::handle_event()
 
 	if(track)
 		y_auto = (FloatAuto*)mwindow_global->cwindow->calculate_affected_auto(
-			track->automation->autos[gui->is_camera ? AUTOMATION_CAMERA_Y : AUTOMATION_PROJECTOR_Y], 1);
+			gui->is_camera ? AUTOMATION_CAMERA_Y : AUTOMATION_PROJECTOR_Y,
+			track, 1);
 
 	if(y_auto)
 	{
@@ -1062,7 +1065,7 @@ int CWindowMaskMode::handle_event()
 	gui->get_keyframe(track, keyframe, mask, point, 0);
 
 	if(track)
-		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(mode(get_text()));
+		((MaskAutos*)track->automation->get_auto_for_editing(-1, AUTOMATION_MASK))->set_mode(mode(get_text()));
 
 	gui->update_preview();
 	return 1;
@@ -1086,26 +1089,29 @@ int CWindowMaskDelete::handle_event()
 
 	if(track)
 	{
-		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-		for(MaskAuto *current = (MaskAuto*)mask_autos->first;
-			current; current = (MaskAuto*)NEXT)
+		MaskAutos *mask_autos = (MaskAutos *)track->automation->get_autos(AUTOMATION_MASK);
+		if(mask_autos)
 		{
-			SubMask *submask = current->get_submask(edlsession->cwindow_mask);
-
-			for(int i = gui->thread->cwindowgui->affected_point;
-				i < submask->points.total - 1; i++)
+			for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+				current; current = (MaskAuto*)NEXT)
 			{
-				*submask->points.values[i] = *submask->points.values[i + 1];
-			}
+				SubMask *submask = current->get_submask(edlsession->cwindow_mask);
 
-			if(submask->points.total)
-			{
-				submask->points.remove_object(
-					submask->points.values[submask->points.total - 1]);
+				for(int i = gui->thread->cwindowgui->affected_point;
+					i < submask->points.total - 1; i++)
+				{
+					*submask->points.values[i] = *submask->points.values[i + 1];
+				}
+
+				if(submask->points.total)
+				{
+					submask->points.remove_object(
+						submask->points.values[submask->points.total - 1]);
+				}
 			}
+			gui->update();
+			gui->update_preview();
 		}
-		gui->update();
-		gui->update_preview();
 	}
 	return 1;
 }
@@ -1295,7 +1301,8 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 
 	track = mwindow_global->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (MaskAuto*)mwindow_global->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], create_it);
+		keyframe = (MaskAuto*)mwindow_global->cwindow->calculate_affected_auto(
+			AUTOMATION_MASK, track, create_it);
 	else
 		keyframe = 0;
 
@@ -1329,16 +1336,14 @@ void CWindowMaskGUI::update()
 	MaskPoint *point;
 	SubMask *mask;
 
-	get_keyframe(track, 
-		keyframe, 
-		mask,
-		point,
-		0);
+	get_keyframe(track, keyframe, mask, point, 0);
 
 	if(track)
-		mode->set_text(
-			CWindowMaskMode::name(((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->get_mode()));
-
+	{
+		MaskAutos *mautos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
+		if(mautos)
+			mode->set_text(CWindowMaskMode::name(mautos->get_mode()));
+	}
 	if(!keyframe)
 		return;
 
@@ -1356,7 +1361,6 @@ void CWindowMaskGUI::update()
 	}
 
 	number->update(edlsession->cwindow_mask);
-
 }
 
 int CWindowMaskGUI::handle_event()

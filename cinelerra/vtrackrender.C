@@ -111,10 +111,8 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 
 void VTrackRender::render_fade(VFrame *frame)
 {
-	double value;
-
-	value = ((FloatAutos*)autos_track->automation->autos[AUTOMATION_FADE])->get_value(
-		frame->get_pts());
+	double value = autos_track->automation->get_floatvalue(
+		frame->get_pts(), AUTOMATION_FADE);
 
 	CLAMP(value, 0, 100);
 
@@ -132,12 +130,13 @@ void VTrackRender::render_fade(VFrame *frame)
 void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 {
 	int total_points = 0;
-	MaskAutos *keyframe_set =
-		(MaskAutos*)autos_track->automation->autos[AUTOMATION_MASK];
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(frame->get_pts());
+	MaskAuto *keyframe = (MaskAuto*)autos_track->automation->get_prev_auto(frame->get_pts(), AUTOMATION_MASK);
 
 	if(!keyframe)
 		return;
+
+	MaskAutos *keyframe_set =
+		(MaskAutos*)autos_track->automation->have_autos(AUTOMATION_MASK);
 
 	for(int i = 0; i < keyframe->masks.total; i++)
 	{
@@ -170,9 +169,9 @@ void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 void VTrackRender::render_crop(VFrame *frame, int before_plugins)
 {
 	int left, right, top, bottom;
-	CropAutos *cropautos = (CropAutos *)autos_track->automation->autos[AUTOMATION_CROP];
+	CropAutos *cropautos = (CropAutos *)autos_track->automation->have_autos(AUTOMATION_CROP);
 
-	if(!cropautos->first)
+	if(!cropautos || !cropautos->first)
 		return;
 
 	cropautos->get_values(frame->get_pts(),
@@ -197,7 +196,7 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 	if(!input)
 		input = &track_frame;
 
-	if(((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(output->get_pts()))
+	if(autos_track->automation->get_intvalue(output->get_pts(), AUTOMATION_MUTE))
 	{
 		BC_Resources::tmpframes.release_frame(*input);
 		return output;
@@ -216,9 +215,8 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 	if(out_x2 > out_x1 && out_y2 > out_y1 &&
 		in_x2 > in_x1 && in_y2 > in_y1)
 	{
-		mode_keyframe =
-			(IntAuto*)autos_track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-				(*input)->get_pts());
+		mode_keyframe = (IntAuto*)autos_track->automation->get_prev_auto(
+			(*input)->get_pts(), AUTOMATION_MODE);
 
 		if(mode_keyframe)
 			mode = mode_keyframe->value;

@@ -196,7 +196,7 @@ void Tracks::init_shared_pointers()
 
 Track* Tracks::add_track(int track_type, int above, Track *dst_track)
 {
-	Track* new_track = new VTrack(edl, this);
+	Track* new_track;
 
 	switch(track_type)
 	{
@@ -234,7 +234,7 @@ Track* Tracks::add_track(int track_type, int above, Track *dst_track)
 		}
 
 		PanAutos* pan_autos =
-			(PanAutos*)new_track->automation->autos[AUTOMATION_PAN];
+			(PanAutos*)new_track->automation->get_autos(AUTOMATION_PAN);
 
 		pan_autos->default_values[current_pan] = 1.0;
 

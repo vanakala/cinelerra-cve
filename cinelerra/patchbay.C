@@ -194,15 +194,11 @@ int PatchBay::cursor_motion_event()
 						break;
 					case Tracks::MUTE:
 						{
-							IntAuto *current = 0;
 							ptstime position = master_edl->local_session->get_selectionstart(1);
-							Autos *mute_autos = track->automation->autos[AUTOMATION_MUTE];
 
-							current = (IntAuto*)mute_autos->get_prev_auto(position);
-
-							if(current->value != new_status)
+							if(track->automation->get_intvalue(position, AUTOMATION_MUTE) != new_status)
 							{
-								current = (IntAuto*)mute_autos->get_auto_for_editing(position);
+								IntAuto *current = (IntAuto*)track->automation->get_auto_for_editing(position, AUTOMATION_MUTE);
 
 								current->value = new_status;
 								mwindow_global->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
@@ -379,12 +375,11 @@ void PatchBay::synchronize_faders(double change, int data_type, Track *skip)
 			current->record && 
 			current != skip)
 		{
-			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
+			PatchGUI *patch;
 			ptstime position = master_edl->local_session->get_selectionstart(1);
+			FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, AUTOMATION_FADE);
+			double new_value = keyframe->get_value() + change;
 
-			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
-
-			float new_value = keyframe->get_value() + change;
 			if(data_type == TRACK_AUDIO)
 				CLAMP(new_value,
 					master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
@@ -396,8 +391,8 @@ void PatchBay::synchronize_faders(double change, int data_type, Track *skip)
 
 			keyframe->set_value(new_value);
 
-			PatchGUI *patch = get_patch_of(current);
-			if(patch) patch->update(patch->x, patch->y);
+			if(patch = get_patch_of(current))
+				patch->update(patch->x, patch->y);
 		}
 	}
 }

@@ -4,7 +4,6 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
-#include "aautomation.h"
 #include "automation.h"
 #include "atrackrender.h"
 #include "bcsignals.h"
@@ -24,7 +23,6 @@
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
-#include "vautomation.h"
 #include "vframe.h"
 #include "vtrackrender.h"
 #include <string.h>
@@ -1250,15 +1248,6 @@ size_t Track::get_size()
 		size += current_plugin->get_size();
 	}
 	size += edits->get_size();
-
-	switch(data_type)
-	{
-	case TRACK_AUDIO:
-		size += ((AAutomation*)automation)->get_size();
-		break;
-	case TRACK_VIDEO:
-		size += ((VAutomation*)automation)->get_size();
-		break;
-	}
+	size += automation->get_size();
 	return size;
 }

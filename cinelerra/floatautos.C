@@ -64,7 +64,7 @@ Auto* FloatAutos::new_auto()
 
 int FloatAutos::automation_is_constant(ptstime start,
 	ptstime length,
-	double &constant)
+	double *constant)
 {
 	int total_autos = total();
 	ptstime end;
@@ -74,28 +74,28 @@ int FloatAutos::automation_is_constant(ptstime start,
 // No keyframes on track
 	if(total_autos == 0)
 	{
-		constant = default_value;
+		*constant = default_value;
 		return 1;
 	}
 	else
 // Only one keyframe on track.
 	if(total_autos == 1)
 	{
-		constant = ((FloatAuto*)first)->get_value();
+		*constant = ((FloatAuto*)first)->get_value();
 		return 1;
 	}
 	else
 // Last keyframe is before region
 	if(last->pos_time <= start)
 	{
-		constant = ((FloatAuto*)last)->get_value();
+		*constant = ((FloatAuto*)last)->get_value();
 		return 1;
 	}
 	else
 // First keyframe is after region
 	if(first->pos_time > end)
 	{
-		constant = ((FloatAuto*)first)->get_value();
+		*constant = ((FloatAuto*)first)->get_value();
 		return 1;
 	}
 
@@ -113,7 +113,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 			current->pos_time >= end)
 		{
 // Get value now in case change doesn't occur
-			constant = float_current->get_value();
+			*constant = float_current->get_value();
 			test_previous_current = 1;
 		}
 		prev_position = current->pos_time;
@@ -125,7 +125,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 		{
 
 // Get value now in case change doesn't occur
-			constant = float_current->get_value();
+			*constant = float_current->get_value();
 
 // Keyframe has neighbor
 			if(current->previous)

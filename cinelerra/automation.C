@@ -3,18 +3,23 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "atrack.inc"
 #include "autoconf.h"
 #include "automation.h"
 #include "autos.h"
-#include "atrack.inc"
 #include "bcsignals.h"
 #include "colors.h"
+#include "cropautos.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "floatautos.h"
+#include "intautos.h"
 #include "language.h"
 #include "mainsession.inc"
-#include "intautos.h"
+#include "maskautos.h"
+#include "panautos.h"
+#include "overlayframe.inc"
 #include "track.h"
 
 #include <string.h>
@@ -33,40 +38,40 @@ struct automation_def Automation::automation_tbl[] =
 {
 	{ N_("Mute"), "MUTEAUTOS", "SHOW_MUTE",
 		0, AUTOGROUPTYPE_INT255, AUTOMATION_TYPE_INT,
-		BLUE, DRAG_MUTE, DRAG_MUTE },
+		BLUE, DRAG_MUTE, DRAG_MUTE, 0 },
 	{ N_("Camera X"), "CAMERA_X", "SHOW_CAMERA_X",
 		0, AUTOGROUPTYPE_X, AUTOMATION_TYPE_FLOAT,
-		RED, DRAG_CAMERA_X, DRAG_CAMERA_X },
+		RED, DRAG_CAMERA_X, DRAG_CAMERA_X, 0 },
 	{ N_("Camera Y"), "CAMERA_Y", "SHOW_CAMERA_Y",
 		0, AUTOGROUPTYPE_Y, AUTOMATION_TYPE_FLOAT,
-		GREEN, DRAG_CAMERA_Y, DRAG_CAMERA_Y },
+		GREEN, DRAG_CAMERA_Y, DRAG_CAMERA_Y, 0 },
 	{ N_("Camera Z"), "CAMERA_Z", "SHOW_CAMERA_Z",
 		0, AUTOGROUPTYPE_ZOOM, AUTOMATION_TYPE_FLOAT,
-		BLUE, DRAG_CAMERA_Z, DRAG_CAMERA_Z },
+		BLUE, DRAG_CAMERA_Z, DRAG_CAMERA_Z, 1 },
 	{ N_("Projector X"), "PROJECTOR_X", "SHOW_PROJECTOR_X",
 		0, AUTOGROUPTYPE_X, AUTOMATION_TYPE_FLOAT,
-		RED, DRAG_PROJECTOR_X, DRAG_PROJECTOR_X },
+		RED, DRAG_PROJECTOR_X, DRAG_PROJECTOR_X , 0 },
 	{ N_("Projector Y"), "PROJECTOR_Y", "SHOW_PROJECTOR_Y",
 		0, AUTOGROUPTYPE_Y, AUTOMATION_TYPE_FLOAT,
-		GREEN, DRAG_PROJECTOR_Y, DRAG_PROJECTOR_Y },
+		GREEN, DRAG_PROJECTOR_Y, DRAG_PROJECTOR_Y, 0 },
 	{ N_("Projector Z"), "PROJECTOR_Z", "SHOW_PROJECTOR_Z",
 		0, AUTOGROUPTYPE_ZOOM, AUTOMATION_TYPE_FLOAT,
-		BLUE, DRAG_PROJECTOR_Z, DRAG_PROJECTOR_Z },
+		BLUE, DRAG_PROJECTOR_Z, DRAG_PROJECTOR_Z, 1 },
 	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
 		1, AUTOGROUPTYPE_AUDIO_FADE, AUTOMATION_TYPE_FLOAT,
-		WHITE, DRAG_FADE, DRAG_FADE },
+		WHITE, DRAG_FADE, DRAG_FADE, 100 },
 	{ N_("Pan"), "PANAUTOS", "SHOW_PAN",
-		0, -1, AUTOMATION_PAN,
+		0, -1, AUTOMATION_TYPE_PAN,
 		0, DRAG_PAN_PRE, DRAG_PAN },
 	{ N_("Mode"), "MODEAUTOS", "SHOW_MODE",
 		0, -1, AUTOMATION_TYPE_INT,
-		0, DRAG_MODE, DRAG_MODE_PRE },
+		0, DRAG_MODE, DRAG_MODE_PRE, TRANSFER_NORMAL },
 	{ N_("Mask"), "MASKAUTOS", "SHOW_MASK",
 		0, -1, AUTOMATION_TYPE_MASK,
-		0, DRAG_MASK_PRE, DRAG_MASK },
+		0, DRAG_MASK_PRE, DRAG_MASK, 0 },
 	{ N_("Crop"), "CROPAUTOS", "SHOW_CROP",
 		0, -1, AUTOMATION_TYPE_CROP,
-		0, DRAG_CROP_PRE, DRAG_CROP }
+		0, DRAG_CROP_PRE, DRAG_CROP, 0 }
 };
 
 Automation::Automation(EDL *edl, Track *track)
@@ -74,10 +79,6 @@ Automation::Automation(EDL *edl, Track *track)
 	this->edl = edl;
 	this->track = track;
 	memset(autos, 0, sizeof(Autos*) * AUTOMATION_TOTAL);
-
-	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
-	autos[AUTOMATION_MUTE]->autoidx = AUTOMATION_MUTE; 
-	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
 }
 
 Automation::~Automation()
@@ -88,13 +89,64 @@ Automation::~Automation()
 	}
 }
 
-int Automation::autogrouptype(int autoidx, Track *track)
+Autos *Automation::have_autos(int autoidx)
 {
-	int autogrouptype;
+	return autos[autoidx];
+}
 
-	if(autoidx < AUTOMATION_TOTAL)
+int Automation::total_autos(int autoidx)
+{
+	if(autos[autoidx])
+		return autos[autoidx]->total();
+	return 0;
+}
+
+Auto *Automation::get_prev_auto(Auto *current, int autoidx)
+{
+	if(autos[autoidx])
+		return autos[autoidx]->get_prev_auto(current);
+	return 0;
+}
+
+Auto *Automation::get_prev_auto(ptstime pts, int autoidx)
+{
+	if(autos[autoidx])
+		return autos[autoidx]->get_prev_auto(pts);
+	return 0;
+}
+
+Autos *Automation::get_autos(int autoidx)
+{
+	if(autoidx < 0 || autoidx >= AUTOMATION_TOTAL)
+		return 0;
+
+	if(!autos[autoidx])
 	{
-		autogrouptype = automation_tbl[autoidx].autogrouptype;
+		switch(automation_tbl[autoidx].type)
+		{
+		case AUTOMATION_TYPE_FLOAT:
+			autos[autoidx] = new FloatAutos(edl, track,
+				automation_tbl[autoidx].default_value);
+			break;
+		case AUTOMATION_TYPE_MASK:
+			autos[autoidx] = new MaskAutos(edl, track);
+			break;
+		case AUTOMATION_TYPE_INT:
+			autos[autoidx] = new IntAutos(edl, track,
+				automation_tbl[autoidx].default_value);
+			break;
+		case AUTOMATION_TYPE_PAN:
+			autos[autoidx] = new PanAutos(edl, track);
+			break;
+		case AUTOMATION_TYPE_CROP:
+			autos[autoidx] = new CropAutos(edl, track);
+			break;
+		default:
+			return 0;
+		}
+		autos[autoidx]->autoidx = autoidx;
+		int autogrouptype = automation_tbl[autoidx].autogrouptype;
+
 		if(autogrouptype == AUTOGROUPTYPE_AUDIO_FADE)
 		{
 			switch(track->data_type)
@@ -106,9 +158,35 @@ int Automation::autogrouptype(int autoidx, Track *track)
 				break;
 			}
 		}
-		return autogrouptype;
+		autos[autoidx]->autogrouptype = autogrouptype;
 	}
-	return -1;
+	return autos[autoidx];
+}
+
+Auto *Automation::get_auto_for_editing(ptstime pos, int autoidx)
+{
+	Autos *autos = get_autos(autoidx);
+
+	if(autos)
+		return autos->get_auto_for_editing(pos);
+	return 0;
+}
+
+int Automation::floatvalue_is_constant(ptstime start, ptstime length, int autoidx,
+	double *constant)
+{
+	if(autos[autoidx])
+		return ((FloatAutos*)autos[autoidx])->automation_is_constant(start, length, constant);
+
+	*constant = (double)automation_tbl[autoidx].default_value;
+	return 1;
+}
+
+int Automation::get_intvalue_constant(ptstime start, ptstime end, int autoidx)
+{
+	if(autos[autoidx])
+		return ((IntAutos*)autos[autoidx])->get_automation_constant(start, end);
+	return automation_tbl[autoidx].default_value;
 }
 
 Automation& Automation::operator=(Automation& automation)
@@ -274,12 +352,91 @@ ptstime Automation::get_length()
 	return last_pts;
 }
 
+void Automation::get_projector(double *x, double *y, double *z, ptstime position)
+{
+	if(autos[AUTOMATION_PROJECTOR_X])
+		*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position);
+	else
+		*x = (double)automation_tbl[AUTOMATION_PROJECTOR_X].default_value;
+
+	if(autos[AUTOMATION_PROJECTOR_Y])
+		*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position);
+	else
+		*y = (double)automation_tbl[AUTOMATION_PROJECTOR_Y].default_value;
+
+	if(autos[AUTOMATION_PROJECTOR_Z])
+		*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position);
+	else
+		*z = (double)automation_tbl[AUTOMATION_PROJECTOR_Z].default_value;
+}
+
+void Automation::get_camera(double *x, double *y, double *z, ptstime position)
+{
+	if(autos[AUTOMATION_CAMERA_X])
+		*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position);
+	else
+		*x = (double)automation_tbl[AUTOMATION_CAMERA_X].default_value;
+
+	if(autos[AUTOMATION_CAMERA_Y])
+		*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position);
+	else
+		*y = (double)automation_tbl[AUTOMATION_CAMERA_Y].default_value;
+
+	if(autos[AUTOMATION_CAMERA_Z])
+		*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position);
+	else
+		*z = (double)automation_tbl[AUTOMATION_CAMERA_Z].default_value;
+}
+
+int Automation::get_intvalue(ptstime pos, int autoidx)
+{
+	if(autos[autoidx])
+		return ((IntAutos*)autos[autoidx])->get_value(pos);
+	return automation_tbl[autoidx].default_value;
+}
+
+double Automation::get_floatvalue(ptstime pos, int autoidx, FloatAuto *prev, FloatAuto *next)
+{
+	if(autos[autoidx])
+		return ((FloatAutos*)autos[autoidx])->get_value(pos, prev, next);
+	return (double)automation_tbl[autoidx].default_value;
+}
+
+int Automation::auto_exists_for_editing(ptstime pos, int autoidx)
+{
+	if(autos[autoidx])
+		return autos[autoidx]->auto_exists_for_editing(pos);
+	return 0;
+}
+
 size_t Automation::get_size()
 {
-	size_t size = 0;
+	size_t size = sizeof(*this);
 
 	if(autos[AUTOMATION_MUTE])
 		size += ((IntAutos*)autos[AUTOMATION_MUTE])->get_size();
+	if(autos[AUTOMATION_FADE])
+		size += ((FloatAutos*)autos[AUTOMATION_FADE])->get_size();
+	if(autos[AUTOMATION_PAN])
+		size += ((PanAutos*)autos[AUTOMATION_PAN])->get_size();
+	if(autos[AUTOMATION_MODE])
+		size += ((IntAutos*)autos[AUTOMATION_MODE])->get_size();
+	if(autos[AUTOMATION_MASK])
+		size += ((MaskAutos*)autos[AUTOMATION_MASK])->get_size();
+	if(autos[AUTOMATION_CAMERA_X])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_size();
+	if(autos[AUTOMATION_CAMERA_Y])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_X])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_Y])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_size();
+	if(autos[AUTOMATION_CAMERA_Z])
+		size += ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_size();
+	if(autos[AUTOMATION_PROJECTOR_Z])
+		size += ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_size();
+	if(autos[AUTOMATION_CROP])
+		size += ((CropAutos*)autos[AUTOMATION_CROP])->get_size();
 	return size;
 }
 

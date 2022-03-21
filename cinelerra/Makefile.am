@@ -42,8 +42,7 @@ SUBDIRS = data
 
 bin_PROGRAMS = cinelerracve
 
-cinelerracve_SOURCES = aautomation.C \
-		    aboutprefs.C \
+cinelerracve_SOURCES = aboutprefs.C \
 		    adeviceprefs.C \
 		    aframe.C \
 		    affine.C \
@@ -225,7 +224,6 @@ cinelerracve_SOURCES = aautomation.C \
 		    transitionpopup.C \
 		    transportcommand.C \
 		    undostackitem.C \
-		    vautomation.C \
 		    vdeviceprefs.C \
 		    vdevicex11.C \
 		    videodevice.C \
@@ -259,8 +257,7 @@ AM_CXXFLAGS = \
 
 AM_LDFLAGS = -export-dynamic
 
-noinst_HEADERS = aautomation.h \
-		 aboutprefs.h \
+noinst_HEADERS = aboutprefs.h \
 		 adeviceprefs.h \
 		 aframe.h \
 		 affine.h \
@@ -441,7 +438,6 @@ noinst_HEADERS = aautomation.h \
 		 transitionpopup.h \
 		 transportcommand.h \
 		 undostackitem.h \
-		 vautomation.h \
 		 vdeviceprefs.h \
 		 vdevicex11.h \
 		 videodevice.h \

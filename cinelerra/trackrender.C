@@ -98,7 +98,7 @@ int TrackRender::is_playable(ptstime pts, Edit *edit)
 
 int TrackRender::is_muted(ptstime pts)
 {
-	return ((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts);
+	return autos_track->automation->get_intvalue(pts, AUTOMATION_MUTE);
 }
 
 ptstime TrackRender::align_to_frame(ptstime position)

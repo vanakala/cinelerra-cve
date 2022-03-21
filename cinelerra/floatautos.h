@@ -14,16 +14,13 @@
 class FloatAutos : public Autos
 {
 public:
-	FloatAutos(EDL *edl, 
-		Track *track,
-// Value for default auto
-		float default_value);
+	FloatAutos(EDL *edl, Track *track, float default_value);
 
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant
 	int automation_is_constant(ptstime start,
 		ptstime length,
-		double &constant);
+		double *constant);
 
 // Get value at a specific point.
 	float get_value(ptstime position,

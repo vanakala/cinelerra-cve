@@ -341,14 +341,14 @@ void MWindow::paste_keyframe(Track *track, Plugin *plugin)
 				if((id = Automation::index(title)) < 0)
 					return;
 
-				if(!track->automation || !track->automation->autos[id] ||
+				if(!track->automation || !track->automation->have_autos(id) ||
 						!edlsession->auto_conf->auto_visible[id])
 					return;
 
 				if(file.read_tag() || !file.tag.title_is("AUTO"))
 					return;
 
-				new_auto = track->automation->autos[id]->insert_auto(position);
+				new_auto = track->automation->get_auto_for_editing(position, id);
 			}
 			else if(plugin && !strcmp(type, "KeyFrame") &&
 					edlsession->keyframes_visible)
@@ -410,7 +410,7 @@ int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
 				if((id = Automation::index(title)) < 0)
 					return 0;
 
-				if(!track->automation || !track->automation->autos[id] ||
+				if(!track->automation || !track->automation->have_autos(id) ||
 						!edlsession->auto_conf->auto_visible[id])
 					return 0;
 				return 1;
@@ -1264,9 +1264,10 @@ void MWindow::resize_track(Track *track, int w, int h)
 
 	track->reset_renderers();
 // We have to move all maskpoints so they do not move in relation to image areas
-	((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->translate_masks(
-		(w - track->track_w) / 2, 
-		(h - track->track_h) / 2);
+	MaskAutos *masks = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
+	if(masks)
+		masks->translate_masks((w - track->track_w) / 2,
+			(h - track->track_h) / 2);
 	track->track_w = w;
 	track->track_h = h;
 	undo->update_undo(_("resize track"), LOAD_ALL);
@@ -1544,8 +1545,7 @@ void MWindow::map_audio(int pattern)
 		if(current->data_type == TRACK_AUDIO && 
 			current->record)
 		{
-			Autos *pan_autos = current->automation->autos[AUTOMATION_PAN];
-			PanAuto *pan_auto = (PanAuto*)pan_autos->get_auto_for_editing(-1);
+			PanAuto *pan_auto = (PanAuto*)current->automation->get_auto_for_editing(-1, AUTOMATION_PAN);
 
 			for(int i = 0; i < MAXCHANNELS; i++)
 			{

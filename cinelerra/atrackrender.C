@@ -124,7 +124,7 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 	module_levels.fill(&track_frame);
 
-	if(((IntAutos *)autos_track->automation->autos[AUTOMATION_MUTE])->get_value(pts))
+	if(autos_track->automation->get_intvalue(pts, AUTOMATION_MUTE))
 	{
 		audio_frames.release_frame(track_frame);
 		track_frame = 0;
@@ -133,7 +133,7 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 	if(track_frame->channel >= 0)
 	{
-		PanAutos *panautos = (PanAutos*)autos_track->automation->autos[AUTOMATION_PAN];
+		PanAutos *panautos = (PanAutos*)autos_track->automation->get_autos(AUTOMATION_PAN);
 
 		for(int i = 0; i < out_channels; i++)
 		{
@@ -182,12 +182,12 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 void ATrackRender::render_fade(AFrame *aframe)
 {
-	FloatAutos *fadeautos = (FloatAutos*)autos_track->automation->autos[AUTOMATION_FADE];
 	ptstime pts = aframe->get_pts();
 	int framelen = aframe->get_length();
 	double fade_value, value;
 
-	if(fadeautos->automation_is_constant(pts, aframe->get_duration(), fade_value))
+	if(autos_track->automation->floatvalue_is_constant(pts, aframe->get_duration(),
+		AUTOMATION_FADE, &fade_value))
 	{
 		if(EQUIV(fade_value, 0))
 			return;
@@ -201,6 +201,7 @@ void ATrackRender::render_fade(AFrame *aframe)
 	}
 	else
 	{
+		FloatAutos *fadeautos = (FloatAutos*)autos_track->automation->get_autos(AUTOMATION_FADE);
 		double step = aframe->to_duration(1);
 
 		for(int i = 0; i < framelen; i++)

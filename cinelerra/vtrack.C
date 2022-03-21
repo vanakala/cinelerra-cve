@@ -1,25 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "automation.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "clip.h"
@@ -33,7 +18,6 @@
 #include "theme.h"
 #include "tracks.inc"
 #include "units.h"
-#include "vautomation.h"
 #include "vtrack.h"
 
 VTrack::VTrack(EDL *edl, Tracks *tracks)
@@ -42,7 +26,7 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 	data_type = TRACK_VIDEO;
 	draw = 1;
 	one_unit = (ptstime)1.0 / edlsession->frame_rate;
-	automation = new VAutomation(edl, this);
+	automation = new Automation(edl, this);
 }
 
 int VTrack::vertical_span(Theme *theme)
@@ -169,21 +153,16 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 		subscript_y = AUTOMATION_PROJECTOR_Y;
 	}
 
-	if(!automation->autos[subscript_x]->first)
-		((FloatAutos*)automation->autos[subscript_x])->insert_auto(0);
 // Translate everyone else
-	for(Auto *current = automation->autos[subscript_x]->first;
-		current; 
+	for(Auto *current = automation->get_auto_for_editing(0, subscript_x);
+		current;
 		current = NEXT)
 	{
 		((FloatAuto*)current)->add_value(offset_x);
 	}
 
-	if(!automation->autos[subscript_y]->first)
-		((FloatAutos*)automation->autos[subscript_y])->insert_auto(0);
-
-	for(Auto *current = automation->autos[subscript_y]->first;
-		current; 
+	for(Auto *current = automation->get_auto_for_editing(0, subscript_y);
+		current;
 		current = NEXT)
 	{
 		((FloatAuto*)current)->add_value(offset_y);

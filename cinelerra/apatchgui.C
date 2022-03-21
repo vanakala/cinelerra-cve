@@ -86,19 +86,14 @@ int APatchGUI::update(int x, int y)
 		}
 		else
 		{
-			FloatAuto *previous = 0, *next = 0;
 			ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 
 			unit_position = master_edl->align_to_frame(unit_position);
-			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
-			float value = ptr->get_value(
-				unit_position,
-				previous, 
-				next);
+			double value = atrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
 			fade->update(fade->get_w(),
-					value,
-					master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
+				value,
+				master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+				master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 		}
 	}
 	else
@@ -149,7 +144,7 @@ int APatchGUI::update(int x, int y)
 				PanAuto *previous = 0, *next = 0;
 				ptstime position = master_edl->local_session->get_selectionstart(1);
 				position = master_edl->align_to_frame(position);
-				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
+				PanAutos *ptr = (PanAutos*)atrack->automation->get_autos(AUTOMATION_PAN);
 
 				ptr->get_handle(handle_x,
 					handle_y,
@@ -166,7 +161,7 @@ int APatchGUI::update(int x, int y)
 	{
 		int handle_x, handle_y;
 		PanAuto *previous = 0, *next = 0;
-		PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
+		PanAutos *ptr = (PanAutos*)atrack->automation->get_autos(AUTOMATION_PAN);
 		ptstime position = master_edl->local_session->get_selectionstart(1);
 		double *values;
 
@@ -214,10 +209,9 @@ double AFadePatch::update_edl()
 {
 	FloatAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	Autos *fade_autos = patch->atrack->automation->autos[AUTOMATION_FADE];
-	int need_undo = !fade_autos->auto_exists_for_editing(position);
+	int need_undo = !patch->atrack->automation->auto_exists_for_editing(position, AUTOMATION_FADE);
 
-	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
+	current = (FloatAuto*)patch->atrack->automation->get_auto_for_editing(position, AUTOMATION_FADE);
 
 	double result = get_value() - current->get_value();
 	current->set_value(get_value());
@@ -252,13 +246,10 @@ int AFadePatch::handle_event()
 
 double AFadePatch::get_keyframe_value(APatchGUI *patch)
 {
-	FloatAuto *prev = 0;
-	FloatAuto *next = 0;
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
-	return ptr->get_value(unit_position, prev, next);
+	return patch->atrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
 }
 
 
@@ -279,7 +270,7 @@ int APanPatch::handle_event()
 {
 	PanAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	Autos *pan_autos = patch->atrack->automation->autos[AUTOMATION_PAN];
+	Autos *pan_autos = patch->atrack->automation->get_autos(AUTOMATION_PAN);
 	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
 	current = (PanAuto*)pan_autos->get_auto_for_editing(position);

@@ -1029,9 +1029,14 @@ int CWindowCanvas::do_mask(int &redraw,
 // Retrieve points from top recordable track
 	Track *track = gui->cwindow->calculate_affected_track();
 
-	if(!track) return 0;
+	if(!track)
+		return 0;
 
-	MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+	MaskAutos *mask_autos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
+
+	if(!mask_autos)
+		return 0;
+
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	ArrayList<MaskPoint*> points;
@@ -1355,8 +1360,8 @@ int CWindowCanvas::do_mask(int &redraw,
 // Get current keyframe
 		if(gui->affected_track)
 			gui->affected_keyframe = 
-				gui->cwindow->calculate_affected_auto(
-					gui->affected_track->automation->autos[AUTOMATION_MASK],
+				gui->cwindow->calculate_affected_auto(AUTOMATION_MASK,
+					gui->affected_track,
 					1);
 
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
@@ -1731,11 +1736,15 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	if(!track)
 		return 0;
 
-	crop_autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
+	crop_autos = (CropAutos*)track->automation->have_autos(AUTOMATION_CROP);
+
+	if(!crop_autos)
+		return 0;
+
 	crop_autos->get_values(master_edl->local_session->get_selectionstart(1),
 		&left, &right, &top, &bottom);
-	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(
-		crop_autos, 1, &created_auto);
+	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(AUTOMATION_CROP,
+		track, 1, &created_auto);
 	if(created_auto)
 	{
 		crop_auto->left = left;
@@ -2010,7 +2019,11 @@ void CWindowCanvas::draw_crop()
 	if(!track)
 		return;
 
-	crop_autos = (CropAutos*)track->automation->autos[AUTOMATION_CROP];
+	crop_autos = (CropAutos*)track->automation->have_autos(AUTOMATION_CROP);
+
+	if(!crop_autos)
+		return;
+
 	position = master_edl->local_session->get_selectionstart(1);
 
 	crop_autos->get_values(position, &left, &right, &top, &bottom);
@@ -2144,29 +2157,28 @@ int CWindowCanvas::test_bezier(int button_press,
 
 			if(!gui->affected_x && !gui->affected_y && !gui->affected_z)
 			{
-				FloatAutos *affected_x_autos;
-				FloatAutos *affected_y_autos;
-				FloatAutos *affected_z_autos;
+				int x_auto_ix, y_auto_ix, z_auto_ix;
+
 				if(!gui->affected_track) return 0;
 
 				if(edlsession->cwindow_operation == CWINDOW_CAMERA)
 				{
-					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_X];
-					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Y];
-					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Z];
+					x_auto_ix = AUTOMATION_CAMERA_X;
+					y_auto_ix = AUTOMATION_CAMERA_Y;
+					z_auto_ix = AUTOMATION_CAMERA_Z;
 				}
 				else
 				{
-					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_X];
-					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
-					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
+					x_auto_ix = AUTOMATION_PROJECTOR_X;
+					y_auto_ix = AUTOMATION_PROJECTOR_Y;
+					z_auto_ix = AUTOMATION_PROJECTOR_Z;
 				}
 
 				if(gui->translating_zoom)
 				{
 					gui->affected_z = 
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_z_autos, 1, &created, 0);
+							z_auto_ix, gui->affected_track, 1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
 				}
@@ -2174,12 +2186,12 @@ int CWindowCanvas::test_bezier(int button_press,
 				{
 					gui->affected_x = 
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_x_autos, 1, &created, 0);
+							x_auto_ix, gui->affected_track, 1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
-					gui->affected_y = 
+					gui->affected_y =
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							affected_y_autos, 1, &created, 0);
+							y_auto_ix, gui->affected_track, 1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
 				}

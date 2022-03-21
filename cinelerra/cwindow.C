@@ -82,30 +82,30 @@ Track* CWindow::calculate_affected_track()
 	return affected_track;
 }
 
-Auto* CWindow::calculate_affected_auto(Autos *autos, 
-	int create,
-	int *created,
-	int redraw)
+Auto* CWindow::calculate_affected_auto(int autoidx, Track *track,
+	int create, int *created, int redraw)
 {
 	Auto* affected_auto = 0;
-	if(created) *created = 0;
+	if(created)
+		*created = 0;
 
 	if(create)
 	{
-		int total = autos->total();
-		affected_auto = autos->get_auto_for_editing();
+		int total = track->automation->total_autos(autoidx);
+		affected_auto = track->automation->get_auto_for_editing(-1, autoidx);
 
 // Got created
-		if(total != autos->total())
+		if(total != track->automation->total_autos(autoidx))
 		{
-			if(created) *created = 1;
+			if(created)
+				*created = 1;
 			if(redraw)
 				mwindow_global->draw_canvas_overlays();
 		}
 	}
 	else
 	{
-		affected_auto = autos->get_prev_auto(affected_auto);
+		affected_auto = track->automation->get_prev_auto(affected_auto, autoidx);
 	}
 
 	return affected_auto;
@@ -120,29 +120,38 @@ void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 	int create_y,
 	int create_z)
 {
-	if(x_auto) (*x_auto) = 0;
-	if(y_auto) (*y_auto) = 0;
-	if(z_auto) (*z_auto) = 0;
+	if(x_auto)
+		*x_auto = 0;
+	if(y_auto)
+		*y_auto = 0;
+	if(z_auto)
+		*z_auto = 0;
 
 	if(!track) return;
 
 	if(use_camera)
 	{
-		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_X], create_x);
-		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_Y], create_y);
-		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_CAMERA_Z], create_z);
+		if(x_auto)
+			*x_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_CAMERA_X, track, create_x);
+		if(y_auto)
+			*y_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_CAMERA_Y, track, create_y);
+		if(z_auto)
+			*z_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_CAMERA_Z, track, create_z);
 	}
 	else
 	{
-		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_X], create_x);
-		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_Y], create_y);
-		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
-			track->automation->autos[AUTOMATION_PROJECTOR_Z], create_z);
+		if(x_auto)
+			*x_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_PROJECTOR_X, track, create_x);
+		if(y_auto)
+			*y_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_PROJECTOR_Y, track, create_y);
+		if(z_auto)
+			*z_auto = (FloatAuto*)calculate_affected_auto(
+				AUTOMATION_PROJECTOR_Z, track, create_z);
 	}
 }
 

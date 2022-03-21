@@ -421,9 +421,8 @@ int MutePatch::handle_event()
 {
 	IntAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
 
-	current = (IntAuto*)mute_autos->get_auto_for_editing(position);
+	current = (IntAuto*)patch->track->automation->get_auto_for_editing(position, AUTOMATION_MUTE);
 
 	patch->toggle_behavior(Tracks::MUTE,
 		get_value(),
@@ -448,8 +447,7 @@ int MutePatch::get_keyframe_value(PatchGUI *patch)
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	return ((IntAutos*)patch->track->automation->autos[AUTOMATION_MUTE])->get_value(
-		unit_position);
+	return patch->track->automation->get_intvalue(unit_position, AUTOMATION_MUTE);
 }
 
 MasterTrackPatch::MasterTrackPatch(PatchGUI *patch, int x, int y)

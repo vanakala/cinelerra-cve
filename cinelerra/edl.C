@@ -378,13 +378,14 @@ void EDL::rechannel()
 	{
 		if(current->data_type == TRACK_AUDIO)
 		{
-			PanAutos *autos = (PanAutos*)current->automation->autos[AUTOMATION_PAN];
+			PanAutos *autos = (PanAutos*)current->automation->have_autos(AUTOMATION_PAN);
 
-			for(PanAuto *keyframe = (PanAuto*)autos->first;
-				keyframe;
-				keyframe = (PanAuto*)keyframe->next)
+			if(autos)
 			{
-				keyframe->rechannel();
+				for(PanAuto *keyframe = (PanAuto*)autos->first;
+						keyframe;
+						keyframe = (PanAuto*)keyframe->next)
+					keyframe->rechannel();
 			}
 		}
 	}
@@ -1026,7 +1027,7 @@ void EDL::set_all_toggles(int toggle_type, int value)
 				current->draw = value;
 				break;
 			case Tracks::MUTE:
-				((IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_auto_for_editing(position))->value = value;
+				((IntAuto*)current->automation->get_auto_for_editing(position, AUTOMATION_MUTE))->value = value;
 				break;
 			case Tracks::EXPAND:
 				current->expand_view = value;
@@ -1052,7 +1053,8 @@ int EDL::total_toggled(int toggle_type)
 			{
 			case Tracks::MUTE:
 				start = local_session->get_selectionstart(1);
-				result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->get_automation_constant(start, start);
+				result += current->automation->get_intvalue_constant(
+					start, start, AUTOMATION_MUTE);
 				break;
 			case Tracks::PLAY:
 				result += !!current->play;

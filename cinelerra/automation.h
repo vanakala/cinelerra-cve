@@ -7,12 +7,14 @@
 #define AUTOMATION_H
 
 #include "arraylist.h"
+#include "auto.inc"
 #include "autoconf.inc"
 #include "automation.inc"
 #include "autos.inc"
 #include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
+#include "floatauto.inc"
 #include "mwindow.inc"
 #include "track.inc"
 
@@ -44,6 +46,7 @@ struct automation_def
 	int color;
 	int preoperation;
 	int operation;
+	int default_value;
 };
 
 struct autogrouptype_def
@@ -55,11 +58,19 @@ struct autogrouptype_def
 
 class Automation
 {
+	friend class AutoConf;
 public:
 	Automation(EDL *edl, Track *track);
-	virtual ~Automation();
+	~Automation();
 
-	int autogrouptype(int autoidx, Track *track);
+// Returns autos, creates if not exist
+	Autos *get_autos(int autoidx);
+	Autos *have_autos(int autoidx);
+	int total_autos(int autoidx);
+	Auto *get_prev_auto(Auto *current, int autoidx);
+	Auto *get_prev_auto(ptstime pts, int autoidx);
+// Returns auto, creates autos if needed
+	Auto *get_auto_for_editing(ptstime pos, int autoidx);
 	void equivalent_output(Automation *automation, ptstime *result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
@@ -69,18 +80,24 @@ public:
 	void copy(Automation *automation, ptstime start, ptstime end);
 
 // Get projector coordinates if this is video automation
-	virtual void get_projector(double *x,
+	void get_projector(double *x,
 		double *y,
 		double *z,
-		ptstime position) {};
+		ptstime position);
 // Get camera coordinates if this is video automation
-	virtual void get_camera(double *x,
+	void get_camera(double *x,
 		double *y,
 		double *z,
-		ptstime position) {};
+		ptstime position);
+// Return value of auto or default value
+	int get_intvalue(ptstime pos, int autoidx);
+	double get_floatvalue(ptstime pos, int autoidx,
+		FloatAuto *prev = 0, FloatAuto *next = 0);
+	int auto_exists_for_editing(ptstime pos, int autoidx);
+	int floatvalue_is_constant(ptstime start, ptstime length, int autoidx,
+		double *constant);
+	int get_intvalue_constant(ptstime start, ptstime end, int autoidx);
 
-// Returns the point to restart background rendering at.
-// -1 means nothing changed.
 	void clear(ptstime start,
 		ptstime end,
 		AutoConf *autoconf, 
@@ -99,15 +116,17 @@ public:
 		ptstime end,
 		int autogrouptype);
 	ptstime get_length();
-	virtual size_t get_size();
+	size_t get_size();
 	static const char *name(int index);
 	static int index(const char *name);
 
 	void dump(int indent = 0);
 
-	Autos *autos[AUTOMATION_TOTAL];
 	static struct automation_def automation_tbl[];
 	static struct autogrouptype_def autogrouptypes[];
+
+private:
+	Autos *autos[AUTOMATION_TOTAL];
 	EDL *edl;
 	Track *track;
 };
