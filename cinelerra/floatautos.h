@@ -14,7 +14,7 @@
 class FloatAutos : public Autos
 {
 public:
-	FloatAutos(EDL *edl, Track *track, float default_value);
+	FloatAutos(EDL *edl, Track *track, double default_value);
 
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant
@@ -23,14 +23,14 @@ public:
 		double *constant);
 
 // Get value at a specific point.
-	float get_value(ptstime position,
+	double get_value(ptstime position,
 		FloatAuto* previous = 0,
 		FloatAuto* next = 0);
 
 // Helper: just calc the bezier function without doing any lookup of nodes
-	static float calculate_bezier(FloatAuto *previous, FloatAuto *next,
+	static double calculate_bezier(FloatAuto *previous, FloatAuto *next,
 		ptstime position);
-	static float calculate_bezier_derivation(FloatAuto *previous,
+	static double calculate_bezier_derivation(FloatAuto *previous,
 		FloatAuto *next, ptstime position);
 
 	void get_extents(double *min,
@@ -46,7 +46,7 @@ public:
 	size_t get_size();
 	void dump(int ident = 0);
 
-	float default_value;
+	double default_value;
 };
 
 #endif

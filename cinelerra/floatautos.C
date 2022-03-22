@@ -16,7 +16,7 @@
 
 FloatAutos::FloatAutos(EDL *edl,
 	Track *track,
-	float default_value)
+	double default_value)
  : Autos(edl, track)
 {
 	this->default_value = default_value;
@@ -35,19 +35,19 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 // Is current auto in range?
 		if(current->pos_time >= start && current->pos_time < end)
 		{
-			float current_value = current->get_value();
+			double current_value = current->get_value();
 
 // Determine whether to set the control in point.
 			if(previous_auto && previous_auto->pos_time >= start)
 			{
-				float previous_value = previous_auto->get_value();
+				double previous_value = previous_auto->get_value();
 				current->set_control_in_value((previous_value - current_value) / 3.0);
 			}
 
 // Determine whether to set the control out point
 			if(next_auto && next_auto->pos_time < end)
 			{
-				float next_value = next_auto->get_value();
+				double next_value = next_auto->get_value();
 				current->set_control_out_value((next_value - current_value) / 3.0);
 			}
 		}
@@ -162,7 +162,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 	return 1;
 }
 
-float FloatAutos::get_value(ptstime position,
+double FloatAutos::get_value(ptstime position,
 	FloatAuto* previous,
 	FloatAuto* next)
 {
@@ -197,27 +197,27 @@ float FloatAutos::get_value(ptstime position,
 	return calculate_bezier(previous, next, position);
 }
 
-float FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstime position)
+double FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstime position)
 {
 	if(EQUIV(next->pos_time, previous->pos_time))
 		return previous->get_value();
 
-	float y0 = previous->get_value();
-	float y3 = next->get_value();
+	double y0 = previous->get_value();
+	double y3 = next->get_value();
 
 // control points
-	float y1 = previous->get_value() + previous->get_control_out_value();
-	float y2 = next->get_value() + next->get_control_in_value();
-	float t =  (position - previous->pos_time) /
+	double y1 = previous->get_value() + previous->get_control_out_value();
+	double y2 = next->get_value() + next->get_control_in_value();
+	double t =  (position - previous->pos_time) /
 		(next->pos_time - previous->pos_time);
 
-	float tpow2 = t * t;
-	float tpow3 = t * t * t;
-	float invt = 1 - t;
-	float invtpow2 = invt * invt;
-	float invtpow3 = invt * invt * invt;
+	double tpow2 = t * t;
+	double tpow3 = t * t * t;
+	double invt = 1 - t;
+	double invtpow2 = invt * invt;
+	double invtpow3 = invt * invt * invt;
 
-	float result = (  invtpow3 * y0
+	double result = (  invtpow3 * y0
 		+ 3 * t     * invtpow2 * y1
 		+ 3 * tpow2 * invt     * y2 
 		+     tpow3            * y3);
@@ -225,30 +225,31 @@ float FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstime
 	return result;
 }
 
-float FloatAutos::calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next, ptstime position)
+double FloatAutos::calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next,
+	ptstime position)
 // calculate the slope of the interpolating bezier function at given position.
 {
-	float scale = next->pos_time - previous->pos_time;
-	if(fabsf(scale) < EPSILON)
+	double scale = next->pos_time - previous->pos_time;
+	if(fabs(scale) < EPSILON)
 		if(fabs(previous->get_control_out_pts()) > EPSILON)
 			return previous->get_control_out_value() / previous->get_control_out_pts();
 		else
 			return 0;
 
-	float y0 = previous->get_value();
-	float y3 = next->get_value();
+	double y0 = previous->get_value();
+	double y3 = next->get_value();
 
 // control points
-	float y1 = previous->get_value() + previous->get_control_out_value();
-	float y2 = next->get_value() + next->get_control_in_value();
+	double y1 = previous->get_value() + previous->get_control_out_value();
+	double y2 = next->get_value() + next->get_control_in_value();
 	// normalized scale
-	float t = (position - previous->pos_time) / scale;
+	double t = (position - previous->pos_time) / scale;
 
-	float tpow2 = t * t;
-	float invt = 1 - t;
-	float invtpow2 = invt * invt;
+	double tpow2 = t * t;
+	double invt = 1 - t;
+	double invtpow2 = invt * invt;
 
-	float slope = 3 * (
+	double slope = 3 * (
 		- invtpow2              * y0
 		- invt * ( 2*t - invt ) * y1
 		+ t    * ( 2*invt - t ) * y2

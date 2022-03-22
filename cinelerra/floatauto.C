@@ -141,7 +141,7 @@ void FloatAuto::toggle_tangent_mode()
 	}
 }
 
-void FloatAuto::set_value(float newvalue)
+void FloatAuto::set_value(double newvalue)
 {
 	this->value = newvalue;
 	this->adjust_tangents();
@@ -151,7 +151,7 @@ void FloatAuto::set_value(float newvalue)
 		((FloatAuto*)next)->adjust_tangents();
 }
 
-void FloatAuto::add_value(float increment)
+void FloatAuto::add_value(double increment)
 {
 	value += increment;
 	adjust_tangents();
@@ -162,7 +162,7 @@ void FloatAuto::add_value(float increment)
 		((FloatAuto*)next)->adjust_tangents();
 }
 
-void FloatAuto::set_control_in_value(float newvalue)
+void FloatAuto::set_control_in_value(double newvalue)
 {
 	switch(tangent_mode)
 	{
@@ -173,7 +173,7 @@ void FloatAuto::set_control_in_value(float newvalue)
 	}
 }
 
-void FloatAuto::set_control_out_value(float newvalue)
+void FloatAuto::set_control_out_value(double newvalue)
 {
 	switch(tangent_mode)
 	{
@@ -184,12 +184,12 @@ void FloatAuto::set_control_out_value(float newvalue)
 	}
 }
 
-inline int sgn(float value)
+inline int sgn(double value)
 {
 	return (value == 0) ? 0 : (value < 0) ? -1 : 1;
 }
 
-inline float weighted_mean(float v1, float v2, float w1, float w2)
+inline double weighted_mean(double v1, double v2, double w1, double w2)
 {
 	if(0.000001 > fabs(w1 + w2))
 		return 0;
@@ -217,15 +217,15 @@ void FloatAuto::adjust_tangents()
 		// has positive and right connection has negative slope, then
 		// we force the calculated tangent to be horizontal.
 
-		float s, dxl, dxr, sl, sr;
+		double s, dxl, dxr, sl, sr;
 
 		calculate_slope((FloatAuto*) previous, this, sl, dxl);
 		calculate_slope(this, (FloatAuto*) next, sr, dxr);
 
 		if(0 < sgn(sl) * sgn(sr))
 		{
-			float wl = fabs(dxl) * (fabs(1.0/sl) + 1);
-			float wr = fabs(dxr) * (fabs(1.0/sr) + 1);
+			double wl = fabs(dxl) * (fabs(1.0 / sl) + 1);
+			double wr = fabs(dxr) * (fabs(1.0 / sr) + 1);
 			s = weighted_mean(sl, sr, wl, wr);
 		}
 		else
@@ -237,7 +237,7 @@ void FloatAuto::adjust_tangents()
 	else
 	if(tangent_mode == TGNT_LINEAR)
 	{
-		float g, dx;
+		double g, dx;
 
 		if(previous)
 		{
@@ -253,11 +253,11 @@ void FloatAuto::adjust_tangents()
 	else
 	if(tangent_mode == TGNT_TFREE && control_in_pts && control_out_pts)
 	{
-		float gl = control_in_value / control_in_pts;
-		float gr = control_out_value / control_out_pts;
-		float wl = fabs(control_in_value);
-		float wr = fabs(control_out_value);
-		float g = weighted_mean(gl, gr, wl, wr);
+		double gl = control_in_value / control_in_pts;
+		double gr = control_out_value / control_out_pts;
+		double wl = fabs(control_in_value);
+		double wr = fabs(control_out_value);
+		double g = weighted_mean(gl, gr, wl, wr);
 
 		control_in_value = g * control_in_pts;
 		control_out_value = g * control_out_pts;
@@ -265,7 +265,7 @@ void FloatAuto::adjust_tangents()
 }
 
 inline void FloatAuto::calculate_slope(FloatAuto *left, 
-		FloatAuto *right, float &dvdx, float &dx)
+		FloatAuto *right, double &dvdx, double &dx)
 {
 	dvdx = 0;
 	dx = 0;
@@ -273,7 +273,7 @@ inline void FloatAuto::calculate_slope(FloatAuto *left,
 		return;
 
 	dx = right->pos_time - left->pos_time;
-	float dv = right->value - left->value;
+	double dv = right->value - left->value;
 	dvdx = (fabsf(dx) < EPSILON) ? 0 : dv/dx;
 }
 
@@ -314,7 +314,7 @@ void FloatAuto::adjust_ctrl_positions(FloatAuto *prev, FloatAuto *next)
 // tangents up-to-date
 }
 
-inline void redefine_tangent(ptstime &old_pos, ptstime new_pos, float &ctrl_val)
+inline void redefine_tangent(ptstime &old_pos, ptstime new_pos, double &ctrl_val)
 {
 	if(old_pos > EPSILON)
 		ctrl_val *= new_pos / old_pos;
@@ -328,7 +328,7 @@ inline void FloatAuto::set_ctrl_positions(FloatAuto *prev, FloatAuto* next)
 	redefine_tangent(next->control_in_pts, -distance / 3, next->control_in_value);
 }
 
-void FloatAuto::adjust_to_new_coordinates(ptstime position, float value)
+void FloatAuto::adjust_to_new_coordinates(ptstime position, double value)
 // define new position and value in one step, do necessary re-adjustments
 {
 	this->value = value;
@@ -407,7 +407,7 @@ void FloatAuto::dump(int ident)
 		s = "tangent unknown";
 		break;
 	}
-	printf("%*sFloatAuto %p: pos_time %.3lf value %.3f\n",
+	printf("%*sFloatAuto %p: pos_time %.3f value %.3f\n",
 		ident, "", this, pos_time, value);
 	ident += 2;
 	printf("%*scontrols in %.2f/%.3f, out %.2f/%.3f %s\n", ident, "",

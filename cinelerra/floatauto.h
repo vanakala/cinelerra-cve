@@ -31,9 +31,9 @@ public:
 	void dump(int ident = 0);
 
 // "the value" (=payload of this keyframe)
-	float get_value() { return this->value; }
-	void set_value(float newval);
-	void add_value(float increment);
+	double get_value() { return this->value; }
+	void set_value(double newval);
+	void add_value(double increment);
 	size_t get_size();
 
 	tgnt_mode tangent_mode;
@@ -41,10 +41,10 @@ public:
 	void toggle_tangent_mode();       // cycles through all modes (e.g. by ctrl-click)
 
 // Control values (y coords of bézier control point), relative to value
-	float get_control_in_value() { check_pos(); return this->control_in_value; }
-	float get_control_out_value() { check_pos(); return this->control_out_value; }
-	void set_control_in_value(float newval);
-	void set_control_out_value(float newval);
+	double get_control_in_value() { check_pos(); return this->control_in_value; }
+	double get_control_out_value() { check_pos(); return this->control_out_value; }
+	void set_control_in_value(double newval);
+	void set_control_out_value(double newval);
 
 // get calculated x-position of control points for drawing,
 // relative to auto position, in native units of the track.
@@ -52,7 +52,7 @@ public:
 	ptstime get_control_out_pts() { check_pos(); return this->control_out_pts; }
 
 // define new position and value, re-adjust ctrl point, notify neighbours
-	void adjust_to_new_coordinates(ptstime position, float value);
+	void adjust_to_new_coordinates(ptstime position, double value);
 
 private:
 // recalc. ctrk in and out points, if automatic tangent mode (SMOOTH or LINEAR)
@@ -60,7 +60,7 @@ private:
 // recalc. x location of ctrl points, notify neighbours
 	void adjust_ctrl_positions(FloatAuto *p = 0, FloatAuto *n = 0);
 	void set_ctrl_positions(FloatAuto *prev, FloatAuto *next);
-	void calculate_slope(FloatAuto* a1, FloatAuto* a2, float& dvdx, float& dx);
+	void calculate_slope(FloatAuto* a1, FloatAuto* a2, double& dvdx, double& dx);
 	void check_pos() { if(!PTSEQU(pos_time, pos_valid)) adjust_ctrl_positions(); }
 	void tangent_dirty() { pos_valid = -1; }
 // check is member of FloatAutos-Collection
@@ -73,9 +73,9 @@ private:
 
 // Control values are relative to value
 	ptstime pos_valid;
-	float value;
-	float control_in_value;
-	float control_out_value;
+	double value;
+	double control_in_value;
+	double control_out_value;
 };
 
 #endif
