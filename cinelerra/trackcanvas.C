@@ -1356,7 +1356,7 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 					{
 						if(buttonpress != 3)
 						{
-							if(i == AUTOMATION_FADE) 
+							if(i == AUTOMATION_AFADE || i == AUTOMATION_VFADE)
 								synchronize_autos(0, 
 									track, 
 									(FloatAuto*)mainsession->drag_auto,
@@ -1818,10 +1818,11 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 			if(current->data_type == skip->data_type &&
 				current->gang && current->record && current != skip)
 			{
+				int autoidx = current->data_type == TRACK_AUDIO ? AUTOMATION_AFADE : AUTOMATION_VFADE;
 				ptstime position = fauto->pos_time;
-				double init_value = current->automation->get_floatvalue(position, AUTOMATION_FADE);
+				double init_value = current->automation->get_floatvalue(position, autoidx);
 // create keyframe on neighbouring track at the point in time given by fauto
-				FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, AUTOMATION_FADE);
+				FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, autoidx);
 
 				keyframe->set_value(init_value + change);
 				mainsession->drag_auto_gang->append((Auto *)keyframe);

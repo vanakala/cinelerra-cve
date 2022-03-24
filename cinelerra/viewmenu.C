@@ -75,6 +75,8 @@ int ShowAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	edlsession->auto_conf->auto_visible[subscript] = get_checked();
+	if(subscript == AUTOMATION_AFADE)
+		edlsession->auto_conf->auto_visible[AUTOMATION_VFADE] = get_checked();
 	mwindow_global->draw_canvas_overlays();
 	mwindow_global->gwindow->gui->update_toggles();
 	return 1;

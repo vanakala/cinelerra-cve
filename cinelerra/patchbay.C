@@ -377,18 +377,16 @@ void PatchBay::synchronize_faders(double change, int data_type, Track *skip)
 		{
 			PatchGUI *patch;
 			ptstime position = master_edl->local_session->get_selectionstart(1);
-			FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, AUTOMATION_FADE);
-			double new_value = keyframe->get_value() + change;
+			FloatAuto *keyframe;
+			double new_value;
+			int autoidx = data_type == TRACK_AUDIO ? AUTOMATION_AFADE : AUTOMATION_VFADE;
+			int autogrouptype = current->automation->automation_tbl[autoidx].autogrouptype;
 
-			if(data_type == TRACK_AUDIO)
-				CLAMP(new_value,
-					master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
-			else
-				CLAMP(new_value,
-					master_edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-					master_edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
-
+			keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, autoidx);
+			keyframe->get_value() + change;
+			CLAMP(new_value,
+				master_edl->local_session->automation_mins[autogrouptype],
+				master_edl->local_session->automation_maxs[autogrouptype]);
 			keyframe->set_value(new_value);
 
 			if(patch = get_patch_of(current))

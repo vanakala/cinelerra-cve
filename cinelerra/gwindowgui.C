@@ -30,7 +30,7 @@ static toggleinfo toggle_order[] =
 	{0, NONAUTOTOGGLES_ASSETS},
 	{0, NONAUTOTOGGLES_TITLES},
 	{0, NONAUTOTOGGLES_TRANSITIONS},
-	{1, AUTOMATION_FADE},
+	{1, AUTOMATION_AFADE},
 	{1, AUTOMATION_MUTE},
 	{1, AUTOMATION_MODE},
 	{1, AUTOMATION_PAN},
@@ -44,6 +44,8 @@ static toggleinfo toggle_order[] =
 	{1, AUTOMATION_PROJECTOR_Y},
 	{1, AUTOMATION_PROJECTOR_Z},
 };
+
+#define TOGGLE_ELEMS ((int)(sizeof(toggle_order) / sizeof(toggleinfo)))
 
 GWindowGUI::GWindowGUI(int w, int h)
  : BC_Window(MWindow::create_title(N_("Overlays")),
@@ -60,7 +62,7 @@ GWindowGUI::GWindowGUI(int w, int h)
 	int x = 10, y = 10;
 
 	set_icon(mwindow_global->get_window_icon());
-	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
+	for(int i = 0; i < TOGGLE_ELEMS; i++)
 	{
 		add_tool(toggles[i] = new GWindowToggle(this,
 			x,
@@ -77,7 +79,7 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 
 	*w = 10;
 	*h = 10;
-	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
+	for(int i = 0; i < TOGGLE_ELEMS; i++)
 	{
 		BC_Toggle::calculate_extents(gui, 
 			BC_WindowBase::get_resources()->checkbox_images,
@@ -96,14 +98,13 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 		*w = MAX(current_w, *w);
 		*h += current_h + 5;
 	}
-
 	*h += 10;
 	*w += 20;
 }
 
 void GWindowGUI::update_toggles()
 {
-	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
+	for(int i = 0; i < TOGGLE_ELEMS; i++)
 	{
 		toggles[i]->update();
 	}
@@ -159,7 +160,11 @@ int GWindowToggle::handle_event()
 
 // Update stuff in MWindow
 	if(toggleinf.isauto)
+	{
+		if(toggleinf.ref == AUTOMATION_AFADE)
+			edlsession->auto_conf->auto_visible[AUTOMATION_VFADE] = get_value();
 		mwindow_global->draw_canvas_overlays();
+	}
 	else
 	{
 		switch(toggleinf.ref)

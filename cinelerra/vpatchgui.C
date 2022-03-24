@@ -85,7 +85,7 @@ int VPatchGUI::update(int x, int y)
 			unit_position = master_edl->align_to_frame(unit_position);
 
 			int value = round(vtrack->automation->get_floatvalue(
-				unit_position, AUTOMATION_FADE));
+				unit_position, AUTOMATION_VFADE));
 			fade->update(fade->get_w(),value,
 				master_edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 				master_edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
@@ -155,9 +155,9 @@ double VFadePatch::update_edl()
 {
 	FloatAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	int need_undo = !patch->vtrack->automation->auto_exists_for_editing(position, AUTOMATION_FADE);
+	int need_undo = !patch->vtrack->automation->auto_exists_for_editing(position, AUTOMATION_VFADE);
 
-	current = (FloatAuto*)patch->vtrack->automation->get_auto_for_editing(position, AUTOMATION_FADE);
+	current = (FloatAuto*)patch->vtrack->automation->get_auto_for_editing(position, AUTOMATION_VFADE);
 
 	double result = get_value() - current->get_value();
 	current->set_value(get_value());
@@ -186,7 +186,7 @@ int VFadePatch::handle_event()
 
 	mwindow_global->sync_parameters();
 
-	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_VFADE])
 		mwindow_global->draw_canvas_overlays();
 
 	return 1;
@@ -197,7 +197,7 @@ double VFadePatch::get_keyframe_value(VPatchGUI *patch)
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	return patch->vtrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
+	return patch->vtrack->automation->get_floatvalue(unit_position, AUTOMATION_VFADE);
 }
 
 

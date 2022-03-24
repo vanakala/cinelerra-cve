@@ -187,7 +187,7 @@ void ATrackRender::render_fade(AFrame *aframe)
 	double fade_value, value;
 
 	if(autos_track->automation->floatvalue_is_constant(pts, aframe->get_duration(),
-		AUTOMATION_FADE, &fade_value))
+		AUTOMATION_AFADE, &fade_value))
 	{
 		if(EQUIV(fade_value, 0))
 			return;
@@ -201,7 +201,7 @@ void ATrackRender::render_fade(AFrame *aframe)
 	}
 	else
 	{
-		FloatAutos *fadeautos = (FloatAutos*)autos_track->automation->get_autos(AUTOMATION_FADE);
+		FloatAutos *fadeautos = (FloatAutos*)autos_track->automation->get_autos(AUTOMATION_AFADE);
 		double step = aframe->to_duration(1);
 
 		for(int i = 0; i < framelen; i++)

@@ -89,7 +89,7 @@ int APatchGUI::update(int x, int y)
 			ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 
 			unit_position = master_edl->align_to_frame(unit_position);
-			double value = atrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
+			double value = atrack->automation->get_floatvalue(unit_position, AUTOMATION_AFADE);
 			fade->update(fade->get_w(),
 				value,
 				master_edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
@@ -209,9 +209,9 @@ double AFadePatch::update_edl()
 {
 	FloatAuto *current;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
-	int need_undo = !patch->atrack->automation->auto_exists_for_editing(position, AUTOMATION_FADE);
+	int need_undo = !patch->atrack->automation->auto_exists_for_editing(position, AUTOMATION_AFADE);
 
-	current = (FloatAuto*)patch->atrack->automation->get_auto_for_editing(position, AUTOMATION_FADE);
+	current = (FloatAuto*)patch->atrack->automation->get_auto_for_editing(position, AUTOMATION_AFADE);
 
 	double result = get_value() - current->get_value();
 	current->set_value(get_value());
@@ -239,7 +239,7 @@ int AFadePatch::handle_event()
 
 	mwindow_global->sync_parameters(0);
 
-	if(edlsession->auto_conf->auto_visible[AUTOMATION_FADE])
+	if(edlsession->auto_conf->auto_visible[AUTOMATION_AFADE])
 		mwindow_global->draw_canvas_overlays();
 	return 1;
 }
@@ -249,7 +249,7 @@ double AFadePatch::get_keyframe_value(APatchGUI *patch)
 	ptstime unit_position = master_edl->local_session->get_selectionstart(1);
 	unit_position = master_edl->align_to_frame(unit_position);
 
-	return patch->atrack->automation->get_floatvalue(unit_position, AUTOMATION_FADE);
+	return patch->atrack->automation->get_floatvalue(unit_position, AUTOMATION_AFADE);
 }
 
 

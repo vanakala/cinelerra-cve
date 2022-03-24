@@ -112,7 +112,7 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 void VTrackRender::render_fade(VFrame *frame)
 {
 	double value = autos_track->automation->get_floatvalue(
-		frame->get_pts(), AUTOMATION_FADE);
+		frame->get_pts(), AUTOMATION_VFADE);
 
 	CLAMP(value, 0, 100);
 

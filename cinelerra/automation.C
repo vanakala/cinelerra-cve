@@ -59,6 +59,9 @@ struct automation_def Automation::automation_tbl[] =
 		BLUE, DRAG_PROJECTOR_Z, DRAG_PROJECTOR_Z, 1 },
 	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
 		1, AUTOGROUPTYPE_AUDIO_FADE, AUTOMATION_TYPE_FLOAT,
+		WHITE, DRAG_FADE, DRAG_FADE, 0 },
+	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
+		1, AUTOGROUPTYPE_VIDEO_FADE, AUTOMATION_TYPE_FLOAT,
 		WHITE, DRAG_FADE, DRAG_FADE, 100 },
 	{ N_("Pan"), "PANAUTOS", "SHOW_PAN",
 		0, -1, AUTOMATION_TYPE_PAN,
@@ -145,20 +148,7 @@ Autos *Automation::get_autos(int autoidx)
 			return 0;
 		}
 		autos[autoidx]->autoidx = autoidx;
-		int autogrouptype = automation_tbl[autoidx].autogrouptype;
-
-		if(autogrouptype == AUTOGROUPTYPE_AUDIO_FADE)
-		{
-			switch(track->data_type)
-			{
-			case TRACK_AUDIO:
-				break;
-			case TRACK_VIDEO:
-				autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
-				break;
-			}
-		}
-		autos[autoidx]->autogrouptype = autogrouptype;
+		autos[autoidx]->autogrouptype = automation_tbl[autoidx].autogrouptype;
 	}
 	return autos[autoidx];
 }
@@ -415,8 +405,10 @@ size_t Automation::get_size()
 
 	if(autos[AUTOMATION_MUTE])
 		size += ((IntAutos*)autos[AUTOMATION_MUTE])->get_size();
-	if(autos[AUTOMATION_FADE])
-		size += ((FloatAutos*)autos[AUTOMATION_FADE])->get_size();
+	if(autos[AUTOMATION_AFADE])
+		size += ((FloatAutos*)autos[AUTOMATION_AFADE])->get_size();
+	if(autos[AUTOMATION_VFADE])
+		size += ((FloatAutos*)autos[AUTOMATION_VFADE])->get_size();
 	if(autos[AUTOMATION_PAN])
 		size += ((PanAutos*)autos[AUTOMATION_PAN])->get_size();
 	if(autos[AUTOMATION_MODE])

@@ -132,7 +132,7 @@ MainMenu::MainMenu(BC_WindowBase *gui)
 	viewmenu->add_item(show_assets = new ShowAssets("0"));
 	viewmenu->add_item(show_titles = new ShowTitles("1"));
 	viewmenu->add_item(show_transitions = new ShowTransitions("2"));
-	viewmenu->add_item(fade_automation = new ShowAutomation(_("Fade"), "3", AUTOMATION_FADE));
+	viewmenu->add_item(fade_automation = new ShowAutomation(_("Fade"), "3", AUTOMATION_AFADE));
 	viewmenu->add_item(mute_automation = new ShowAutomation(_("Mute"), "4", AUTOMATION_MUTE));
 	viewmenu->add_item(mode_automation = new ShowAutomation(_("Overlay mode"), "5", AUTOMATION_MODE));
 	viewmenu->add_item(pan_automation = new ShowAutomation(_("Pan"), "6", AUTOMATION_PAN));
