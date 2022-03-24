@@ -1286,64 +1286,78 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 		{
 // Event not trapped and automation visible
 			Autos *autos = automation->have_autos(i);
-			if(!result && session->auto_conf->auto_visible[i] && autos)
+			if(!result && session->auto_conf->auto_visible[i])
 			{
 				pixmaps_lock->lock("TrackCanvas::do_track_autos");
-				switch(i)
+				if(autos)
 				{
-				case AUTOMATION_MODE:
-					result = do_autos(track, autos,
-						cursor_x, cursor_y,
-						draw, buttonpress,
-						modekeyframe_pixmap,
-						auto_keyframe);
-					break;
-
-				case AUTOMATION_PAN:
-					result = do_autos(track, autos,
-						cursor_x, cursor_y,
-						draw, buttonpress,
-						pankeyframe_pixmap,
-						auto_keyframe);
-					break;
-
-				case AUTOMATION_MASK:
-					result = do_autos(track, autos,
-						cursor_x, cursor_y,
-						draw, buttonpress,
-						maskkeyframe_pixmap,
-						auto_keyframe);
-					break;
-
-				case AUTOMATION_CROP:
-					result = do_autos(track, autos,
-						cursor_x, cursor_y,
-						draw, buttonpress,
-						cropkeyframe_pixmap,
-						auto_keyframe);
-					break;
-
-				default:
-					switch(autos->get_type())
+					switch(i)
 					{
-					case AUTOMATION_TYPE_FLOAT:
-						result = do_float_autos(track, autos,
+					case AUTOMATION_MODE:
+						result = do_autos(track, autos,
 							cursor_x, cursor_y,
 							draw, buttonpress,
-							Automation::automation_tbl[i].color,
+							modekeyframe_pixmap,
 							auto_keyframe);
 						break;
 
-					case AUTOMATION_TYPE_INT:
-						result = do_toggle_autos(track,
-							(IntAutos*)autos,
+					case AUTOMATION_PAN:
+						result = do_autos(track, autos,
 							cursor_x, cursor_y,
 							draw, buttonpress,
-							Automation::automation_tbl[i].color,
+							pankeyframe_pixmap,
+							auto_keyframe);
+						break;
+
+					case AUTOMATION_MASK:
+						result = do_autos(track, autos,
+							cursor_x, cursor_y,
+							draw, buttonpress,
+							maskkeyframe_pixmap,
+							auto_keyframe);
+						break;
+
+					case AUTOMATION_CROP:
+						result = do_autos(track, autos,
+							cursor_x, cursor_y,
+							draw, buttonpress,
+							cropkeyframe_pixmap,
 							auto_keyframe);
 						break;
 					}
-					break;
+				}
+				if(!result)
+				{
+					switch(i)
+					{
+					case AUTOMATION_MODE:
+					case AUTOMATION_PAN:
+					case AUTOMATION_MASK:
+					case AUTOMATION_CROP:
+						break;
+
+					default:
+						switch(automation->automation_tbl[i].type)
+						{
+						case AUTOMATION_TYPE_FLOAT:
+							result = do_float_autos(track, autos,
+								cursor_x, cursor_y,
+								draw, buttonpress,
+								Automation::automation_tbl[i].color,
+								auto_keyframe, i);
+							break;
+
+						case AUTOMATION_TYPE_INT:
+							result = do_toggle_autos(track,
+								(IntAutos*)autos,
+								cursor_x, cursor_y,
+								draw, buttonpress,
+								Automation::automation_tbl[i].color,
+								auto_keyframe);
+							break;
+						}
+						break;
+					}
 				}
 				pixmaps_lock->unlock();
 
@@ -1787,6 +1801,7 @@ void TrackCanvas::draw_floatline(int center_pixel, FloatAuto *previous, FloatAut
 	{
 		ptstime timpos = view_start + (x / xzoom);
 		double value = autos->get_value(timpos, previous, next);
+
 		AUTOMATIONCLAMPS(value, autogrouptype);
 
 		int y = center_pixel + 
@@ -2016,7 +2031,7 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 
 int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 	int cursor_x, int cursor_y, int draw, int buttonpress,
-	int color, Auto* &auto_instance)
+	int color, Auto* &auto_instance, int autoidx)
 {
 	int result = 0;
 
@@ -2032,158 +2047,189 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 	int skip = 0;
 	Auto *current = 0;
 	Auto *previous = 0;
-	int empty = autos->first == autos->last;
+	int empty = !autos || autos->first == autos->last;
 	auto_instance = 0;
 
 	calculate_viewport(track, view_start, view_end,
 		yscale, xzoom, center_pixel);
-
 // Get first auto before start
-	for(current = autos->last; current && current->pos_time >= view_start;
-		current = PREVIOUS);
+	if(autos)
+	{
+		for(current = autos->last; current && current->pos_time >= view_start;
+			current = PREVIOUS);
 
-	if(current)
-	{
-		calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
-			current, view_start,
-			xzoom, yscale, autos->autogrouptype);
-		current = NEXT;
-	}
-	else
-	{
-		current = autos->first; 
 		if(current)
 		{
 			calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
-				current, view_start, xzoom, yscale,
-				autos->autogrouptype);
-			ax = 0;
+				current, view_start,
+				xzoom, yscale, autos->autogrouptype);
+			current = NEXT;
 		}
 		else
 		{
-			ax = 0;
-			ay = 0;
+			current = autos->first;
+			if(current)
+			{
+				calculate_auto_position(&ax, &ay, 0, 0, 0, 0,
+					current, view_start, xzoom, yscale,
+					autos->autogrouptype);
+				ax = 0;
+			}
+			else
+			{
+				ax = 0;
+				ay = 0;
+			}
 		}
-	}
 
-	do
-	{
-		skip = 0;
-		draw_auto = !empty;
-
-		if(current)
+		do
 		{
-			calculate_auto_position(&ax2, &ay2,
-				&in_x2,&in_y2, &out_x2, &out_y2,
-				current, view_start, xzoom,
-				yscale, autos->autogrouptype);
-		}
-		else
-		{
-			ax2 = get_w();
-			ay2 = ay;
-			skip = 1;
-		}
+			skip = 0;
+			draw_auto = !empty;
 
-		slope = (ay2 - ay) / (ax2 - ax);
+			if(current)
+			{
+				calculate_auto_position(&ax2, &ay2,
+					&in_x2,&in_y2, &out_x2, &out_y2,
+					current, view_start, xzoom,
+					yscale, autos->autogrouptype);
+			}
+			else
+			{
+				ax2 = get_w();
+				ay2 = ay;
+				skip = 1;
+			}
 
-		if(ax2 > get_w())
-		{
-			draw_auto = 0;
-			ax2 = get_w();
-			ay2 = ay + slope * (get_w() - ax);
-		}
+			slope = (ay2 - ay) / (ax2 - ax);
 
-		if(ax < 0)
-		{
-			ay = ay + slope * (0 - ax);
-			ax = 0;
-		}
+			if(ax2 > get_w())
+			{
+				draw_auto = 0;
+				ax2 = get_w();
+				ay2 = ay + slope * (get_w() - ax);
+			}
+
+			if(ax < 0)
+			{
+				ay = ay + slope * (0 - ax);
+				ax = 0;
+			}
 
 // Draw or test handle
-		if(current && !result)
-		{
-			if(!draw)
+			if(current && !result)
 			{
-				if(track->record)
-					result = test_floatauto((FloatAuto*)current,
+				if(!draw)
+				{
+					if(track->record)
+						result = test_floatauto((FloatAuto*)current,
+							round(ax2), round(ay2),
+							round(in_x2), round(in_y2),
+							round(out_x2), round(out_y2),
+							round(center_pixel), round(yscale),
+							cursor_x, cursor_y,
+							buttonpress, autos->autogrouptype);
+
+					if(result)
+						auto_instance = current;
+				}
+				else if(draw_auto)
+					draw_floatauto((FloatAuto *)current,
 						round(ax2), round(ay2),
 						round(in_x2), round(in_y2),
 						round(out_x2), round(out_y2),
 						round(center_pixel), round(yscale),
-						cursor_x, cursor_y,
-						buttonpress, autos->autogrouptype);
-
-				if(result)
-					auto_instance = current;
+						color);
 			}
-			else if(draw_auto)
-				draw_floatauto((FloatAuto *)current,
-					round(ax2), round(ay2),
-					round(in_x2), round(in_y2),
-					round(out_x2), round(out_y2),
-					round(center_pixel), round(yscale),
-					color);
-		}
 
 // Draw or test joining line
-		if(!draw)
+			if(!draw)
+			{
+				if(!result)
+				{
+					if(track->record && buttonpress != 3)
+					{
+						result = test_floatline(center_pixel,
+							(FloatAutos*)autos,
+							view_start, xzoom, yscale,
+							round(ax),
+// Exclude auto coverage from the end of the line. The auto overlaps
+							(int)round(ax2) - HANDLE_W / 2,
+							cursor_x, cursor_y, buttonpress);
+					}
+				}
+			}
+			else
+				draw_floatline(center_pixel, (FloatAuto*)previous,
+					(FloatAuto*)current, (FloatAutos*)autos,
+					view_start, xzoom, yscale,
+					round(ax), round(ay), round(ax2), round(ay2),
+					color);
+
+			if(current)
+			{
+				previous = current;
+				current = NEXT;
+			}
+
+			ax = ax2;
+			ay = ay2;
+		}while(current && current->pos_time <= view_end && !result);
+
+		if(ax < get_w() && !result)
 		{
-			if(!result)
+			ax2 = get_w();
+			ay2 = ay;
+			if(!draw)
 			{
 				if(track->record && buttonpress != 3)
 				{
 					result = test_floatline(center_pixel,
 						(FloatAutos*)autos,
 						view_start, xzoom, yscale,
-						round(ax),
-// Exclude auto coverage from the end of the line. The auto overlaps
-						(int)round(ax2) - HANDLE_W / 2,
-						cursor_x, cursor_y, buttonpress);
+						round(ax), round(ax2),
+						cursor_x, cursor_y,
+						buttonpress);
 				}
 			}
-		}
-		else
-			draw_floatline(center_pixel, (FloatAuto*)previous,
-				(FloatAuto*)current, (FloatAutos*)autos,
-				view_start, xzoom, yscale,
-				round(ax), round(ay), round(ax2), round(ay2),
-				color);
-
-		if(current)
-		{
-			previous = current;
-			current = NEXT;
-		}
-
-		ax = ax2;
-		ay = ay2;
-	}while(current && current->pos_time <= view_end && !result);
-
-	if(ax < get_w() && !result)
-	{
-		ax2 = get_w();
-		ay2 = ay;
-		if(!draw)
-		{
-			if(track->record && buttonpress != 3)
-			{
-				result = test_floatline(center_pixel,
-					(FloatAutos*)autos,
+			else
+				draw_floatline(center_pixel, (FloatAuto*)previous,
+					(FloatAuto*)current,(FloatAutos*)autos,
 					view_start, xzoom, yscale,
-					round(ax), round(ax2),
-					cursor_x, cursor_y,
-					buttonpress);
-			}
+					round(ax), round(ay), round(ax2), round(ay2),
+					color);
 		}
-		else
-			draw_floatline(center_pixel, (FloatAuto*)previous,
-				(FloatAuto*)current,(FloatAutos*)autos,
-				view_start, xzoom, yscale,
-				round(ax), round(ay), round(ax2), round(ay2),
-				color);
 	}
+	else
+		draw_defaultline(center_pixel, yscale, color, autoidx, track);
+
 	return result;
+}
+
+void TrackCanvas::draw_defaultline(int center_pixel,
+	double yscale, int color, int autoidx, Track *track)
+{
+	if((autoidx == AUTOMATION_AFADE && track->data_type != TRACK_AUDIO) ||
+			(autoidx == AUTOMATION_VFADE && track->data_type != TRACK_VIDEO))
+		return;
+
+	int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
+	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
+	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
+	double automation_range = automation_max - automation_min;
+
+	int value = track->automation->get_intvalue(0, autoidx);
+	int y = center_pixel +
+		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+
+	if(y >= center_pixel - yscale / 2 &&
+		y < center_pixel + yscale / 2 - 1)
+	{
+		set_color(BLACK);
+		draw_line(0, y, get_w(), y);
+		set_color(color);
+		draw_line(0, y - 1, get_w(), y - 1);
+	}
 }
 
 int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,

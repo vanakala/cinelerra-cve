@@ -133,14 +133,11 @@ public:
 		int cursor_y, 
 		int buttonpress);
 
-	int do_float_autos(Track *track, 
-		Autos *autos, 
-		int cursor_x, 
-		int cursor_y, 
-		int draw, 
-		int buttonpress,
-		int color,
-		Auto * &auto_instance);
+	int do_float_autos(Track *track, Autos *autos,
+		int cursor_x, int cursor_y,
+		int draw, int buttonpress,int color,
+		Auto * &auto_instance, int autoidx);
+
 	int do_toggle_autos(Track *track, 
 		IntAutos *autos,
 		int cursor_x,
@@ -320,6 +317,9 @@ private:
 		int zoom_track,
 		int color);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
+	void draw_defaultline(int center_pixel,
+		double yscale, int color, int autoidx, Track *track);
+
 
 // transforms automation value into current display coords
 // dependant on current automation display range for given kind of automation
