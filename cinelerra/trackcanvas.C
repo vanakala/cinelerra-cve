@@ -1353,7 +1353,7 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 								cursor_x, cursor_y,
 								draw, buttonpress,
 								Automation::automation_tbl[i].color,
-								auto_keyframe);
+								auto_keyframe, i);
 							break;
 						}
 						break;
@@ -2209,18 +2209,32 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 void TrackCanvas::draw_defaultline(int center_pixel,
 	double yscale, int color, int autoidx, Track *track)
 {
+	int y;
+
 	if((autoidx == AUTOMATION_AFADE && track->data_type != TRACK_AUDIO) ||
 			(autoidx == AUTOMATION_VFADE && track->data_type != TRACK_VIDEO))
 		return;
 
-	int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
-	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-	double automation_range = automation_max - automation_min;
+	int autotype = track->automation->automation_tbl[autoidx].type;
 
 	int value = track->automation->get_intvalue(0, autoidx);
-	int y = center_pixel +
-		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+
+	if(autotype == AUTOMATION_TYPE_FLOAT)
+	{
+		int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
+		double automation_min = master_edl->local_session->automation_mins[autogrouptype];
+		double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
+		double automation_range = automation_max - automation_min;
+		y = center_pixel +
+			(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+	}
+	else
+	{
+		if(value)
+			y = center_pixel + round(-yscale * 0.8 / 2);
+		else
+			y = center_pixel + round(yscale * 0.8 / 2);
+	}
 
 	if(y >= center_pixel - yscale / 2 &&
 		y < center_pixel + yscale / 2 - 1)
@@ -2233,9 +2247,8 @@ void TrackCanvas::draw_defaultline(int center_pixel,
 }
 
 int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,
-	int cursor_x, int cursor_y,
-	int draw, int buttonpress, int color,
-	Auto * &auto_instance)
+	int cursor_x, int cursor_y, int draw, int buttonpress,
+	int color, Auto * &auto_instance, int autoidx)
 {
 	int result = 0;
 	ptstime view_start;
@@ -2244,126 +2257,132 @@ int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,
 	int center_pixel;
 	double xzoom;
 	int ax, ay, ax2, ay2;
-	int empty = autos->first == autos->last;
-
-	auto_instance = 0;
 
 	calculate_viewport(track, view_start, view_end,
 		yscale, xzoom, center_pixel);
 
-	int high = round(-yscale * 0.8 / 2);
-	int low = round(yscale * 0.8 / 2);
+	if(autos)
+	{
+		int empty = autos->first == autos->last;
+
+		auto_instance = 0;
+
+		int high = round(-yscale * 0.8 / 2);
+		int low = round(yscale * 0.8 / 2);
 
 // Get first auto before start
-	IntAuto *current;
+		IntAuto *current;
 
-	for(current = (IntAuto*)autos->last; current &&
-		current->pos_time >= view_start;
-		current = (IntAuto*)current->previous);
+		for(current = (IntAuto*)autos->last; current &&
+			current->pos_time >= view_start;
+			current = (IntAuto*)current->previous);
 
-	if(current)
-	{
-		ax = 0;
-		ay = current->value ? high : low;
-		current = (IntAuto*)current->next;
-	}
-	else
-	{
-		current = (IntAuto*)autos->first;
 		if(current)
 		{
 			ax = 0;
 			ay = current->value ? high : low;
+			current = (IntAuto*)current->next;
 		}
 		else
 		{
-			ax = 0;
-			ay = autos->default_value ? high : low;
+			current = (IntAuto*)autos->first;
+			if(current)
+			{
+				ax = 0;
+				ay = current->value ? high : low;
+			}
+			else
+			{
+				ax = 0;
+				ay = autos->default_value ? high : low;
+			}
 		}
-	}
 
-	do
-	{
-		if(current)
+		do
 		{
-			ax2 = round((current->pos_time - view_start) * xzoom);
-			ay2 = current->value ? high : low;
-		}
-		else
+			if(current)
+			{
+				ax2 = round((current->pos_time - view_start) * xzoom);
+				ay2 = current->value ? high : low;
+			}
+			else
+			{
+				ax2 = get_w();
+				ay2 = ay;
+			}
+
+			if(ax2 > get_w())
+				ax2 = get_w();
+
+			if(current && !result)
+			{
+				if(!draw)
+				{
+					if(track->record)
+					{
+						result = test_auto(current,
+							ax2, ay2,
+							center_pixel, round(yscale),
+							cursor_x, cursor_y,
+							buttonpress);
+
+						if(result)
+							auto_instance = current;
+					}
+				}
+				else if(!empty)
+					draw_auto(current, ax2, ay2,
+				center_pixel, round(yscale), color);
+				current = (IntAuto*)current->next;
+			}
+
+			if(!draw)
+			{
+				if(!result)
+				{
+					if(track->record && buttonpress != 3)
+					{
+						result = test_toggleline(autos,
+							center_pixel,
+							ax, ay,
+							ax2, ay2,
+							cursor_x, cursor_y,
+							buttonpress);
+					}
+				}
+			}
+			else
+				draw_toggleline(center_pixel,
+					ax, ay, ax2, ay2,
+					color);
+
+			ax = ax2;
+			ay = ay2;
+		}while(current && current->pos_time <= view_end && !result);
+
+		if(ax < get_w() && !result)
 		{
 			ax2 = get_w();
 			ay2 = ay;
-		}
-
-		if(ax2 > get_w())
-			ax2 = get_w();
-
-		if(current && !result)
-		{
 			if(!draw)
-			{
-				if(track->record)
-				{
-					result = test_auto(current,
-						ax2, ay2,
-						center_pixel, round(yscale),
-						cursor_x, cursor_y,
-						buttonpress);
-
-					if(result)
-						auto_instance = current;
-				}
-			}
-			else if(!empty)
-				draw_auto(current, ax2, ay2,
-					center_pixel, round(yscale), color);
-			current = (IntAuto*)current->next;
-		}
-
-		if(!draw)
-		{
-			if(!result)
 			{
 				if(track->record && buttonpress != 3)
 				{
 					result = test_toggleline(autos,
 						center_pixel,
-						ax, ay,
-						ax2, ay2,
+						ax, ay, ax2, ay2,
 						cursor_x, cursor_y,
 						buttonpress);
 				}
 			}
-		}
-		else
-			draw_toggleline(center_pixel,
-				ax, ay, ax2, ay2,
-				color);
-
-		ax = ax2;
-		ay = ay2;
-	}while(current && current->pos_time <= view_end && !result);
-
-	if(ax < get_w() && !result)
-	{
-		ax2 = get_w();
-		ay2 = ay;
-		if(!draw)
-		{
-			if(track->record && buttonpress != 3)
-			{
-				result = test_toggleline(autos,
-					center_pixel,
+			else
+				draw_toggleline(center_pixel,
 					ax, ay, ax2, ay2,
-					cursor_x, cursor_y,
-					buttonpress);
-			}
+					color);
 		}
-		else
-			draw_toggleline(center_pixel,
-				ax, ay, ax2, ay2,
-				color);
 	}
+	else
+		draw_defaultline(center_pixel, yscale, color, autoidx, track);
 	return result;
 }
 

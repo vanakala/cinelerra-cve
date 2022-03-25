@@ -138,14 +138,9 @@ public:
 		int draw, int buttonpress,int color,
 		Auto * &auto_instance, int autoidx);
 
-	int do_toggle_autos(Track *track, 
-		IntAutos *autos,
-		int cursor_x,
-		int cursor_y,
-		int draw,
-		int buttonpress,
-		int color,
-		Auto * &auto_instance);
+	int do_toggle_autos(Track *track, IntAutos *autos,
+		int cursor_x, int cursor_y, int draw, int buttonpress,
+		int color, Auto * &auto_instance, int autoidx);
 	int do_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
