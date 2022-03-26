@@ -49,11 +49,6 @@ void IntAuto::copy_from(IntAuto *that)
 	this->value = that->value;
 }
 
-int IntAuto::percentage_to_value(float percentage)
-{
-	return percentage > .5;
-}
-
 size_t IntAuto::get_size()
 {
 	return sizeof(*this);
