@@ -312,7 +312,8 @@ private:
 		int zoom_track,
 		int color);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
-	void draw_defaultline(int center_pixel,
+	int draw_defaultline(int center_pixel, int draw,
+		int buttonpress, int cursor_x, int cursor_y, double xzoom,
 		double yscale, int color, int autoidx, Track *track);
 
 

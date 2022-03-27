@@ -2047,7 +2047,6 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 	int skip = 0;
 	Auto *current = 0;
 	Auto *previous = 0;
-	int empty = !autos || autos->first == autos->last;
 	auto_instance = 0;
 
 	calculate_viewport(track, view_start, view_end,
@@ -2055,6 +2054,8 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 // Get first auto before start
 	if(autos)
 	{
+		int empty = autos->first == autos->last;
+
 		for(current = autos->last; current && current->pos_time >= view_start;
 			current = PREVIOUS);
 
@@ -2126,7 +2127,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 							round(ax2), round(ay2),
 							round(in_x2), round(in_y2),
 							round(out_x2), round(out_y2),
-							round(center_pixel), round(yscale),
+							center_pixel, round(yscale),
 							cursor_x, cursor_y,
 							buttonpress, autos->autogrouptype);
 
@@ -2138,7 +2139,7 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 						round(ax2), round(ay2),
 						round(in_x2), round(in_y2),
 						round(out_x2), round(out_y2),
-						round(center_pixel), round(yscale),
+						center_pixel, round(yscale),
 						color);
 			}
 
@@ -2201,32 +2202,35 @@ int TrackCanvas::do_float_autos(Track *track, Autos *autos,
 		}
 	}
 	else
-		draw_defaultline(center_pixel, yscale, color, autoidx, track);
+		result = draw_defaultline(center_pixel, draw,
+			buttonpress, cursor_x, cursor_y, xzoom,
+			yscale, color, autoidx, track);
 
 	return result;
 }
 
-void TrackCanvas::draw_defaultline(int center_pixel,
+int TrackCanvas::draw_defaultline(int center_pixel, int draw,
+	int buttonpress, int cursor_x, int cursor_y, double xzoom,
 	double yscale, int color, int autoidx, Track *track)
 {
 	int y;
+	int result = 0;
 
 	if((autoidx == AUTOMATION_AFADE && track->data_type != TRACK_AUDIO) ||
 			(autoidx == AUTOMATION_VFADE && track->data_type != TRACK_VIDEO))
-		return;
+		return 0;
 
 	int autotype = track->automation->automation_tbl[autoidx].type;
-
 	int value = track->automation->get_intvalue(0, autoidx);
+	int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
 
 	if(autotype == AUTOMATION_TYPE_FLOAT)
 	{
-		int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
 		double automation_min = master_edl->local_session->automation_mins[autogrouptype];
 		double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
 		double automation_range = automation_max - automation_min;
 		y = center_pixel +
-			(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+				(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
 	}
 	else
 	{
@@ -2236,14 +2240,47 @@ void TrackCanvas::draw_defaultline(int center_pixel,
 			y = center_pixel + round(yscale * 0.8 / 2);
 	}
 
-	if(y >= center_pixel - yscale / 2 &&
-		y < center_pixel + yscale / 2 - 1)
+	if(draw)
 	{
-		set_color(BLACK);
-		draw_line(0, y, get_w(), y);
-		set_color(color);
-		draw_line(0, y - 1, get_w(), y - 1);
+		if(y >= center_pixel - yscale / 2 &&
+			y < center_pixel + yscale / 2 - 1)
+		{
+			set_color(BLACK);
+			draw_line(0, y, get_w(), y);
+			set_color(color);
+			draw_line(0, y - 1, get_w(), y - 1);
+		}
 	}
+	else
+	{
+		if(buttonpress == 1 && cursor_y < y + HANDLE_W / 2 &&
+			cursor_y > y - HANDLE_W / 2)
+		{
+			ptstime pts = master_edl->local_session->view_start_pts +
+				(cursor_x / xzoom);
+
+			if(autotype == AUTOMATION_TYPE_FLOAT)
+			{
+				FloatAuto *new_auto = (FloatAuto*)track->automation->get_auto_for_editing(pts, autoidx);
+				new_auto->set_value(value);
+				mainsession->drag_auto = new_auto;
+				mainsession->drag_start_percentage = value_to_percentage(value, autogrouptype);
+			}
+			else
+			{
+				IntAuto *new_auto = (IntAuto*)track->automation->get_auto_for_editing(pts, autoidx);
+				new_auto->value = value;
+				mainsession->drag_auto = new_auto;
+				mainsession->drag_start_percentage = value;
+			}
+			mainsession->drag_start_postime = pts;
+			mainsession->drag_origin_x = cursor_x;
+			mainsession->drag_origin_y = cursor_y;
+			mainsession->drag_handle = HANDLE_MAIN;
+			result = 1;
+		}
+	}
+	return result;
 }
 
 int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,
@@ -2382,7 +2419,9 @@ int TrackCanvas::do_toggle_autos(Track *track, IntAutos *autos,
 		}
 	}
 	else
-		draw_defaultline(center_pixel, yscale, color, autoidx, track);
+		result = draw_defaultline(center_pixel, draw,
+			buttonpress, cursor_x, cursor_y, xzoom,
+			yscale, color, autoidx, track);
 	return result;
 }
 
