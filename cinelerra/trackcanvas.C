@@ -1942,7 +1942,7 @@ int TrackCanvas::test_toggleline(Autos *autos, int center_pixel,
 				Auto *current;
 				ptstime position = cursor_x * master_edl->local_session->zoom_time +
 					master_edl->local_session->view_start_pts;
-				int new_value = (int)((IntAutos*)autos)->get_automation_constant(position, position);
+				int new_value = ((IntAutos*)autos)->get_value(position);
 				current = mainsession->drag_auto = autos->insert_auto(position);
 				((IntAuto*)current)->value = new_value;
 				// Toggle Autos don't respond to vertical zoom, they always show up
