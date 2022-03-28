@@ -1826,15 +1826,17 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 // fill mainsession->drag_auto_gang
 	if(fill_gangs == 1 && skip->gang)
 	{
+		ptstime position = fauto->pos_time;
+
 		for(Track *current = master_edl->first_track();
 			current;
 			current = NEXT)
 		{
 			if(current->data_type == skip->data_type &&
-				current->gang && current->record && current != skip)
+				current->gang && current->record && current != skip &&
+				position < current->get_length())
 			{
 				int autoidx = current->data_type == TRACK_AUDIO ? AUTOMATION_AFADE : AUTOMATION_VFADE;
-				ptstime position = fauto->pos_time;
 				double init_value = current->automation->get_floatvalue(position, autoidx);
 // create keyframe on neighbouring track at the point in time given by fauto
 				FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, autoidx);
@@ -2258,6 +2260,9 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 		{
 			ptstime pts = master_edl->local_session->view_start_pts +
 				(cursor_x / xzoom);
+
+			if(pts >= track->get_length())
+				return 0;
 
 			if(autotype == AUTOMATION_TYPE_FLOAT)
 			{
