@@ -22,25 +22,6 @@ Auto* IntAutos::new_auto()
 	return result;
 }
 
-int IntAutos::get_automation_constant(ptstime start, ptstime end)
-{
-	Auto *current_auto, *before = 0, *after = 0;
-
-// quickly get autos just outside range
-	get_neighbors(start, end, &before, &after);
-
-// no auto before range so use first
-	if(before)
-		current_auto = before;
-	else
-		current_auto = first;
-
-// no autos at all so use default value
-	if(!current_auto) return default_value;
-
-	return ((IntAuto*)current_auto)->value;
-}
-
 int IntAutos::get_value(ptstime position)
 {
 	IntAuto *current = (IntAuto *)get_prev_auto(position);
