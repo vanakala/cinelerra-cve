@@ -16,7 +16,6 @@ public:
 	IntAutos(EDL *edl, Track *track, int default_value);
 
 	Auto* new_auto();
-	int automation_is_constant(ptstime start, ptstime end);
 	int get_automation_constant(ptstime start, ptstime end);
 	void get_extents(double *min,
 		double *max,
