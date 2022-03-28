@@ -1052,9 +1052,9 @@ int EDL::total_toggled(int toggle_type)
 			switch(toggle_type)
 			{
 			case Tracks::MUTE:
-				start = local_session->get_selectionstart(1);
-				result += current->automation->get_intvalue_constant(
-					start, start, AUTOMATION_MUTE);
+				result += current->automation->get_intvalue(
+					local_session->get_selectionstart(1),
+					AUTOMATION_MUTE);
 				break;
 			case Tracks::PLAY:
 				result += !!current->play;

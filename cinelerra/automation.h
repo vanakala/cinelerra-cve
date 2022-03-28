@@ -96,7 +96,6 @@ public:
 	int auto_exists_for_editing(ptstime pos, int autoidx);
 	int floatvalue_is_constant(ptstime start, ptstime length, int autoidx,
 		double *constant);
-	int get_intvalue_constant(ptstime start, ptstime end, int autoidx);
 
 	void clear(ptstime start,
 		ptstime end,

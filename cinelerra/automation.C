@@ -172,13 +172,6 @@ int Automation::floatvalue_is_constant(ptstime start, ptstime length, int autoid
 	return 1;
 }
 
-int Automation::get_intvalue_constant(ptstime start, ptstime end, int autoidx)
-{
-	if(autos[autoidx])
-		return ((IntAutos*)autos[autoidx])->get_automation_constant(start, end);
-	return automation_tbl[autoidx].default_value;
-}
-
 Automation& Automation::operator=(Automation& automation)
 {
 	copy_from(&automation);
