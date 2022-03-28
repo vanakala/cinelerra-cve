@@ -1361,8 +1361,7 @@ int CWindowCanvas::do_mask(int &redraw,
 		if(gui->affected_track)
 			gui->affected_keyframe = 
 				gui->cwindow->calculate_affected_auto(AUTOMATION_MASK,
-					gui->affected_track,
-					1);
+					position, gui->affected_track, 1);
 
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(edlsession->cwindow_mask);
@@ -1678,10 +1677,10 @@ void CWindowCanvas::update_guidelines()
 
 void CWindowCanvas::reset_keyframe(int do_camera)
 {
-	FloatAuto *x_keyframe = 0;
-	FloatAuto *y_keyframe = 0;
-	FloatAuto *z_keyframe = 0;
-	Track *affected_track = 0;
+	FloatAuto *x_keyframe;
+	FloatAuto *y_keyframe;
+	FloatAuto *z_keyframe;
+	Track *affected_track;
 
 	affected_track = gui->cwindow->calculate_affected_track();
 
@@ -1741,10 +1740,12 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	if(!crop_autos)
 		return 0;
 
-	crop_autos->get_values(master_edl->local_session->get_selectionstart(1),
+	ptstime pts = master_edl->local_session->get_selectionstart(1);
+
+	crop_autos->get_values(pts,
 		&left, &right, &top, &bottom);
 	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(AUTOMATION_CROP,
-		track, 1, &created_auto);
+		pts, track, 1, &created_auto);
 	if(created_auto)
 	{
 		crop_auto->left = left;
@@ -2158,6 +2159,7 @@ int CWindowCanvas::test_bezier(int button_press,
 			if(!gui->affected_x && !gui->affected_y && !gui->affected_z)
 			{
 				int x_auto_ix, y_auto_ix, z_auto_ix;
+				ptstime pts = master_edl->local_session->get_selectionstart(1);
 
 				if(!gui->affected_track) return 0;
 
@@ -2178,7 +2180,8 @@ int CWindowCanvas::test_bezier(int button_press,
 				{
 					gui->affected_z = 
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							z_auto_ix, gui->affected_track, 1, &created, 0);
+							z_auto_ix, pts, gui->affected_track,
+							1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
 				}
@@ -2186,12 +2189,14 @@ int CWindowCanvas::test_bezier(int button_press,
 				{
 					gui->affected_x = 
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							x_auto_ix, gui->affected_track, 1, &created, 0);
+							x_auto_ix, pts, gui->affected_track,
+							1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
 					gui->affected_y =
 						(FloatAuto*)gui->cwindow->calculate_affected_auto(
-							y_auto_ix, gui->affected_track, 1, &created, 0);
+							y_auto_ix, pts, gui->affected_track,
+							1, &created, 0);
 					if(created)
 						redraw_canvas = 1;
 				}

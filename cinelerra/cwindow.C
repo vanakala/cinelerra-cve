@@ -82,8 +82,8 @@ Track* CWindow::calculate_affected_track()
 	return affected_track;
 }
 
-Auto* CWindow::calculate_affected_auto(int autoidx, Track *track,
-	int create, int *created, int redraw)
+Auto* CWindow::calculate_affected_auto(int autoidx, ptstime pts,
+	Track *track, int create, int *created, int redraw)
 {
 	Auto* affected_auto = 0;
 	if(created)
@@ -92,7 +92,7 @@ Auto* CWindow::calculate_affected_auto(int autoidx, Track *track,
 	if(create)
 	{
 		int total = track->automation->total_autos(autoidx);
-		affected_auto = track->automation->get_auto_for_editing(-1, autoidx);
+		affected_auto = track->automation->get_auto_for_editing(pts, autoidx);
 
 // Got created
 		if(total != track->automation->total_autos(autoidx))
@@ -120,6 +120,8 @@ void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 	int create_y,
 	int create_z)
 {
+	int auto_x, auto_y, auto_z;
+
 	if(x_auto)
 		*x_auto = 0;
 	if(y_auto)
@@ -129,30 +131,30 @@ void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 
 	if(!track) return;
 
+	ptstime pts = master_edl->local_session->get_selectionstart(1);
+
 	if(use_camera)
 	{
-		if(x_auto)
-			*x_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_CAMERA_X, track, create_x);
-		if(y_auto)
-			*y_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_CAMERA_Y, track, create_y);
-		if(z_auto)
-			*z_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_CAMERA_Z, track, create_z);
+		auto_x = AUTOMATION_CAMERA_X;
+		auto_y = AUTOMATION_CAMERA_Y;
+		auto_z = AUTOMATION_CAMERA_Z;
 	}
 	else
 	{
-		if(x_auto)
-			*x_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_PROJECTOR_X, track, create_x);
-		if(y_auto)
-			*y_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_PROJECTOR_Y, track, create_y);
-		if(z_auto)
-			*z_auto = (FloatAuto*)calculate_affected_auto(
-				AUTOMATION_PROJECTOR_Z, track, create_z);
+		auto_x = AUTOMATION_PROJECTOR_X;
+		auto_y = AUTOMATION_PROJECTOR_Y;
+		auto_z = AUTOMATION_PROJECTOR_Z;
 	}
+
+	if(x_auto)
+		*x_auto = (FloatAuto*)calculate_affected_auto(auto_x, pts,
+			track, create_x);
+	if(y_auto)
+		*y_auto = (FloatAuto*)calculate_affected_auto(auto_y, pts,
+			track, create_y);
+	if(z_auto)
+		*z_auto = (FloatAuto*)calculate_affected_auto(auto_z, pts,
+			track, create_z);
 }
 
 void CWindow::run()

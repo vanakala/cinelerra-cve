@@ -32,7 +32,7 @@ public:
 // Get keyframe for editing in the CWindow.
 // create - if 0 forces automatic creation to be off
 //          if 1 uses automatic creation option to create
-	Auto* calculate_affected_auto(int autoidx, Track *track,
+	Auto* calculate_affected_auto(int autoidx, ptstime pts, Track *track,
 		int create = 1,
 		int *created = 0,
 		int redraw = 1);

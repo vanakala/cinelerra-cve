@@ -428,7 +428,7 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 	if(track)
 	{
 		keyframe = (CropAuto*)mwindow_global->cwindow->calculate_affected_auto(
-			AUTOMATION_CROP, track, create_it);
+			AUTOMATION_CROP, pos, track, create_it);
 	}
 	else
 		return 0;
@@ -799,6 +799,7 @@ int CWindowCPCenter::handle_event()
 	if(track)
 		x_auto = (FloatAuto*)mwindow_global->cwindow->calculate_affected_auto(
 			gui->is_camera ? AUTOMATION_CAMERA_X : AUTOMATION_PROJECTOR_X,
+			master_edl->local_session->get_selectionstart(1),
 			track, 1);
 
 	if(x_auto)
@@ -946,6 +947,7 @@ int CWindowCPMiddle::handle_event()
 	if(track)
 		y_auto = (FloatAuto*)mwindow_global->cwindow->calculate_affected_auto(
 			gui->is_camera ? AUTOMATION_CAMERA_Y : AUTOMATION_PROJECTOR_Y,
+			master_edl->local_session->get_selectionstart(1),
 			track, 1);
 
 	if(y_auto)
@@ -1302,7 +1304,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	track = mwindow_global->cwindow->calculate_affected_track();
 	if(track)
 		keyframe = (MaskAuto*)mwindow_global->cwindow->calculate_affected_auto(
-			AUTOMATION_MASK, track, create_it);
+			AUTOMATION_MASK, pos, track, create_it);
 	else
 		keyframe = 0;
 
