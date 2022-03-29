@@ -141,50 +141,47 @@ void TimeBar::update_labels()
 	int output = 0;
 	EDL *edl = get_edl();
 
-	if(edl)
+	for(Label *current = edl->labels->first;
+		current;
+		current = NEXT)
 	{
-		for(Label *current = edl->labels->first;
-			current;
-			current = NEXT)
+		int pixel = position_to_pixel(current->position);
+		if(pixel >= 0 && pixel < get_w())
 		{
-			int pixel = position_to_pixel(current->position);
-			if(pixel >= 0 && pixel < get_w())
-			{
 // Create new label
-				if(output >= labels.total)
+			if(output >= labels.total)
+			{
+				LabelGUI *new_label;
+				add_subwindow(new_label =
+					new LabelGUI(this,
+						pixel,
+						LabelGUI::get_y(this),
+						current->position));
+				new_label->set_cursor(ARROW_CURSOR);
+				new_label->set_tooltip(current->textstr, 1);
+				new_label->label = current;
+				labels.append(new_label);
+			}
+			else
+// Reposition old label
+			{
+				LabelGUI *gui = labels.values[output];
+				if(gui->pixel != pixel)
 				{
-					LabelGUI *new_label;
-					add_subwindow(new_label = 
-						new LabelGUI(this,
-							pixel, 
-							LabelGUI::get_y(this),
-							current->position));
-					new_label->set_cursor(ARROW_CURSOR);
-					new_label->set_tooltip(current->textstr, 1);
-					new_label->label = current;
-					labels.append(new_label);
+					gui->pixel = pixel;
+					gui->reposition();
 				}
 				else
-// Reposition old label
 				{
-					LabelGUI *gui = labels.values[output];
-					if(gui->pixel != pixel)
-					{
-						gui->pixel = pixel;
-						gui->reposition();
-					}
-					else
-					{
-						gui->draw_face();
-					}
-
-					labels.values[output]->position = current->position;
-					labels.values[output]->set_tooltip(current->textstr, 1);
-					labels.values[output]->label = current;
+					gui->draw_face();
 				}
-				update_highlight(labels.values[output], current->position);
-				output++;
+
+				labels.values[output]->position = current->position;
+				labels.values[output]->set_tooltip(current->textstr, 1);
+				labels.values[output]->label = current;
 			}
+			update_highlight(labels.values[output], current->position);
+			output++;
 		}
 	}
 
@@ -253,9 +250,7 @@ void TimeBar::update_highlights()
 void TimeBar::update_points()
 {
 	EDL *edl = get_edl();
-	int pixel = 0;
-
-	if(edl) pixel = position_to_pixel(edl->local_session->get_inpoint());
+	int pixel = position_to_pixel(edl->local_session->get_inpoint());
 
 	if(in_point)
 	{
@@ -346,72 +341,63 @@ EDL* TimeBar::get_edl()
 
 void TimeBar::draw_range()
 {
-	EDL *edl;
+	EDL *edl = get_edl();
 	int x1 = 0, x2 = 0;
 
-	if(edl = get_edl())
-	{
-		get_preview_pixels(x1, x2);
+	get_preview_pixels(x1, x2);
 
-		draw_3segmenth(0, 0, x1, theme_global->timebar_view_data);
-		draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
-		draw_3segmenth(x2, 0, get_w() - x2, theme_global->timebar_view_data);
+	draw_3segmenth(0, 0, x1, theme_global->timebar_view_data);
+	draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
+	draw_3segmenth(x2, 0, get_w() - x2, theme_global->timebar_view_data);
 
-		set_color(BLACK);
-		draw_line(x1, 0, x1, get_h());
-		draw_line(x2, 0, x2, get_h());
+	set_color(BLACK);
+	draw_line(x1, 0, x1, get_h());
+	draw_line(x2, 0, x2, get_h());
 
-		int pixel = position_to_pixel(
-			edl->local_session->get_selectionstart(1));
+	int pixel = position_to_pixel(
+		edl->local_session->get_selectionstart(1));
 // Draw insertion point position if this timebar to a window which 
 // has something other than the master EDL.
-		set_color(RED);
-		draw_line(pixel, 0, pixel, get_h());
-	}
-	else
-		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	set_color(RED);
+	draw_line(pixel, 0, pixel, get_h());
 }
 
 void TimeBar::get_edl_length()
 {
 	edl_length = 0;
 
-	if(get_edl())
-		edl_length = get_edl()->total_length();
+	edl_length = get_edl()->total_length();
 
 	if(!EQUIV(edl_length, 0))
 		time_per_pixel = edl_length / get_w();
 	else
-		time_per_pixel = 0;
+		time_per_pixel = 0.001;
 }
 
 void TimeBar::get_preview_pixels(int &x1, int &x2)
 {
-	EDL *edl;
+	EDL *edl = get_edl();
 
 	x1 = 0;
 	x2 = 0;
 
 	get_edl_length();
 
-	if(edl = get_edl())
+	if(!EQUIV(edl_length, 0))
 	{
-		if(!EQUIV(edl_length, 0))
-		{
-			if(edl->local_session->preview_end <= 0 ||
-					edl->local_session->preview_end > edl_length)
-				edl->local_session->preview_end = edl_length;
-			if(edl->local_session->preview_start >
-					edl->local_session->preview_end)
-				edl->local_session->preview_start = 0;
-			x1 = round(edl->local_session->preview_start / time_per_pixel);
-			x2 = round(edl->local_session->preview_end / time_per_pixel);
-		}
-		else
-		{
-			x1 = 0;
-			x2 = get_w();
-		}
+		if(edl->local_session->preview_end <= 0 ||
+				edl->local_session->preview_end > edl_length)
+			edl->local_session->preview_end = edl_length;
+		if(edl->local_session->preview_start >
+				edl->local_session->preview_end)
+			edl->local_session->preview_start = 0;
+		x1 = round(edl->local_session->preview_start / time_per_pixel);
+		x2 = round(edl->local_session->preview_end / time_per_pixel);
+	}
+	else
+	{
+		x1 = 0;
+		x2 = get_w();
 	}
 }
 
