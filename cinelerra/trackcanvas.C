@@ -461,7 +461,7 @@ void TrackCanvas::drag_stop()
 					mainsession->drag_edit,
 					mainsession->drag_edit->length());
 
-				if(position < -0.5)
+				if(position < 0)
 				{
 					result = 1;
 					break;
@@ -532,7 +532,6 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	get_relative_cursor_pos(&cursor_x, &cursor_y);
 	position = cursor_x * master_edl->local_session->zoom_time +
 			master_edl->local_session->view_start_pts;
-
 	if(moved_edit)   // relative cursor position depends upon grab point
 		position -= mainsession->drag_position - moved_edit->get_pts();
 	else
@@ -809,19 +808,19 @@ void TrackCanvas::draw_paste_destination()
 				clip = mainsession->drag_clips->values[0];
 				paste_length = clip->duration();
 			}
+			position = get_drop_position(&insertion, NULL, paste_length);
 		}
 		else if(mainsession->current_operation == DRAG_EDIT)
+		{
 			paste_length = mainsession->drag_edits->values[0]->length();
-
-		position = get_drop_position(&insertion, NULL,
-			paste_length);
-
+			position = get_drop_position(&insertion, mainsession->drag_edits->values[0],
+				paste_length);
+		}
 		if(position < 0)
 			return;
 
 		if(position > master_edl->duration())
 			position = master_edl->duration();
-
 		if(asset)
 			paste_length = mainsession->track_highlighted->tracks->paste_duration(
 				position, asset, mainsession->track_highlighted,
