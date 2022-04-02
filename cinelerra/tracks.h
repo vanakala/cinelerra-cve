@@ -57,7 +57,6 @@ public:
 	int recordable_tracks_of(int type);
 	int total_tracks_of(int type);
 	ptstime duration_of(int type);
-	ptstime duration_framealigned(double fps);
 	ptstime duration();
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);

@@ -746,31 +746,6 @@ ptstime Tracks::duration_of(int type)
 	return total;
 }
 
-ptstime Tracks::duration_framealigned(double fps)
-{
-	int atracks, vtracks;
-	ptstime alen, vlen;
-
-	alen = vlen = 0;
-
-	if(atracks = total_tracks_of(TRACK_AUDIO))
-		alen = duration_of(TRACK_AUDIO);
-
-	if(vtracks = total_tracks_of(TRACK_VIDEO))
-		vlen = duration_of(TRACK_VIDEO);
-
-	if(atracks && vtracks)
-		return MIN(floor(alen * fps), floor(vlen * fps)) / fps;
-
-	if(atracks)
-		return floor(alen * fps) / fps;
-
-	if(vtracks)
-		return floor(vlen * fps) / fps;
-
-	return 0;
-}
-
 void Tracks::update_y_pixels(Theme *theme)
 {
 	int y = -edl->local_session->track_start;
