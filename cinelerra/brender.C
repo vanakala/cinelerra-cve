@@ -396,7 +396,7 @@ void BRenderThread::start()
 			last_good = last_contiguous;
 		ptstime start_pts = MIN(last_contiguous, last_good);
 		start_pts = MAX(start_pts, brender_start);
-		ptstime end_pts = command->edl->total_length_of(TRACK_VIDEO);
+		ptstime end_pts = command->edl->duration_of(TRACK_VIDEO);
 		if(end_pts < start_pts)
 			end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
