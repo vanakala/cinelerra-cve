@@ -56,7 +56,7 @@ public:
 // Return number of tracks with the record patch enabled
 	int recordable_tracks_of(int type);
 	int total_tracks_of(int type);
-	ptstime total_length_of(int type);
+	ptstime duration_of(int type);
 	ptstime duration_framealigned(double fps);
 	ptstime duration();
 // Update y pixels after a zoom

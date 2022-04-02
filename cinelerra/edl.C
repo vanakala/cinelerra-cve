@@ -935,7 +935,7 @@ ptstime EDL::duration()
 ptstime EDL::total_length_of(int type)
 {
 	if(tracks && tracks->total())
-		return tracks->total_length_of(type);
+		return tracks->duration_of(type);
 	return 0;
 }
 

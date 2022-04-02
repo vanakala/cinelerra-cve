@@ -730,7 +730,7 @@ ptstime Tracks::total_length()
 	return total;
 }
 
-ptstime Tracks::total_length_of(int type)
+ptstime Tracks::duration_of(int type)
 {
 	ptstime len, total = 0;
 
@@ -754,10 +754,10 @@ ptstime Tracks::duration_framealigned(double fps)
 	alen = vlen = 0;
 
 	if(atracks = total_tracks_of(TRACK_AUDIO))
-		alen = total_length_of(TRACK_AUDIO);
+		alen = duration_of(TRACK_AUDIO);
 
 	if(vtracks = total_tracks_of(TRACK_VIDEO))
-		vlen = total_length_of(TRACK_VIDEO);
+		vlen = duration_of(TRACK_VIDEO);
 
 	if(atracks && vtracks)
 		return MIN(floor(alen * fps), floor(vlen * fps)) / fps;
