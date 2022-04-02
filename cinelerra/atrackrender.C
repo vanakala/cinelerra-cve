@@ -225,7 +225,7 @@ void ATrackRender::render_transition(AFrame *aframe, Edit *edit)
 
 	if(!edit || !(transition = edit->transition) ||
 			!transition->plugin_server || !transition->on ||
-			transition->get_length() < aframe->get_pts() - edit->get_pts())
+			transition->duration() < aframe->get_pts() - edit->get_pts())
 		return;
 
 	if(!transition->client)

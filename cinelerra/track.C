@@ -509,7 +509,7 @@ Plugin* Track::insert_effect(PluginServer *server,
 		if(shared_plugin)
 		{
 			plugin->set_pts(shared_plugin->get_pts());
-			plugin->set_length(shared_plugin->get_length());
+			plugin->set_length(shared_plugin->duration());
 		}
 		else
 // From a drag operation
@@ -576,7 +576,7 @@ void Track::reset_plugins(ptstime pts)
 		if(edit->transition)
 		{
 			ptstime pos = edit->get_pts();
-			ptstime end = edit->get_pts() + edit->transition->get_length();
+			ptstime end = edit->get_pts() + edit->transition->duration();
 
 			if(end < pts - PLUGIN_INACTIVE_TIME ||
 					pos > pts + PLUGIN_INACTIVE_TIME)
@@ -937,7 +937,7 @@ void Track::clear_plugins(ptstime start, ptstime end)
 		else if(start > pl_pts && end < pl_end) // selection in plugin
 		{
 			plugin->keyframes->clear(start, end, 1);
-			plugin->set_length(plugin->get_length() - end + start);
+			plugin->set_length(plugin->duration() - end + start);
 		}
 		else if(end >= pl_end && start > pl_pts) // plugin end in selection
 		{
@@ -1188,7 +1188,7 @@ ptstime Track::plugin_max_start(Plugin *plugin)
 		return plugin->get_pts();
 	}
 	else
-		return tracks->duration() - plugin->get_length();
+		return tracks->duration() - plugin->duration();
 }
 
 Edit *Track::editof(ptstime postime)

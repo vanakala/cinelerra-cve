@@ -95,7 +95,7 @@ ptstime PluginClient::get_start()
 ptstime PluginClient::get_length()
 {
 	if(plugin)
-		return plugin->get_length();
+		return plugin->duration();
 	return master_edl->total_length();
 }
 

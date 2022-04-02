@@ -31,7 +31,7 @@ Plugin::Plugin(EDL *edl, Track *track, PluginServer *server)
 	this->track = track;
 	plugin_type = PLUGIN_NONE;
 	pts = 0;
-	duration = 0;
+	length = 0;
 	show = 0;
 	on = 1;
 	idle = 0;
@@ -91,15 +91,15 @@ void Plugin::copy(Plugin *plugin, ptstime start, ptstime end)
 
 	if(pts < start)
 	{
-		duration -= start - pts;
+		length -= start - pts;
 		shift_keyframes(start - pts);
 		pts = start;
 	}
 
 	if(end_pts() > end)
-		duration -= end - pts;
+		length -= end - pts;
 
-	keyframes->clear_after(pts + duration);
+	keyframes->clear_after(pts + length);
 	shift(-start);
 }
 
@@ -107,7 +107,7 @@ void Plugin::copy_from(Plugin *plugin)
 {
 	plugin->calculate_ref_ids();
 	pts = plugin->get_pts();
-	duration = plugin->get_length();
+	length = plugin->duration();
 
 	plugin_type = plugin->plugin_type;
 	show = plugin->show;
@@ -131,17 +131,17 @@ void Plugin::set_pts(ptstime pts)
 
 void Plugin::set_length(ptstime length)
 {
-	duration = length;
+	this->length = length;
 }
 
 void Plugin::set_end(ptstime end)
 {
-	duration = end - pts;
+	length = end - pts;
 }
 
 Plugin *Plugin::active_in(ptstime start, ptstime end)
 {
-	if(pts < end && pts + duration > start)
+	if(pts < end && pts + length > start)
 		return this;
 	return 0;
 }
@@ -164,7 +164,7 @@ void Plugin::remove_keyframes_after(ptstime pts)
 void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
 {
 // End of plugin changed
-	ptstime thisend = pts + duration;
+	ptstime thisend = pts + length;
 	ptstime plugend = plugin->end_pts();
 	if(!PTSEQU(thisend, plugend))
 	{
@@ -223,7 +223,7 @@ int Plugin::identical(Plugin *that)
 		return 0;
 
 // Test length
-	if(!PTSEQU(duration, that->duration))
+	if(!PTSEQU(length, that->length))
 		return 0;
 
 // Test server or location
@@ -389,7 +389,7 @@ void Plugin::save_xml(FileXML *file)
 	}
 	if(plugin_server)
 		file->tag.set_property("TITLE", plugin_server->title);
-	file->tag.set_property("DURATION", duration);
+	file->tag.set_property("DURATION", length);
 	if(!on)
 		file->tag.set_property("OFF", !on);
 	file->append_tag();
@@ -805,7 +805,7 @@ void Plugin::dump(int indent)
 	if(shared_plugin_id >= 0)
 		printf(" shared_plugin_id: %d", shared_plugin_id);
 	printf("\n%*sproject_pts %.3f length %.3f id %d idle %d client %p\n", indent, "",
-		pts, duration, id, idle, client);
+		pts, length, id, idle, client);
 
 	keyframes->dump(indent);
 }

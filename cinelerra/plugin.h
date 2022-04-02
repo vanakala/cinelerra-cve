@@ -72,8 +72,8 @@ public:
 	void get_camera(double *x, double *y, double *z, ptstime postime);
 // Position, length
 	inline ptstime get_pts() { return pts; };
-	inline ptstime get_length() { return duration; };
-	inline ptstime end_pts() { return pts + duration; };
+	inline ptstime duration() { return length; };
+	inline ptstime end_pts() { return pts + length; };
 	void set_pts(ptstime pts);
 	void set_length(ptstime length);
 	void set_end(ptstime end);
@@ -128,7 +128,7 @@ private:
 	int shared_track_id;
 	int shared_plugin_id;
 	ptstime pts;
-	ptstime duration;
+	ptstime length;
 };
 
 #endif

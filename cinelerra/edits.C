@@ -220,7 +220,7 @@ Edit* Edits::split_edit(ptstime postime, int force)
 
 	if(trans)
 	{
-		if(edit->duration() < trans->get_length())
+		if(edit->duration() < trans->duration())
 			trans->set_length(edit->duration());
 		edit->transition = trans;
 	}

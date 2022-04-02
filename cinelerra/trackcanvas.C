@@ -371,7 +371,7 @@ void TrackCanvas::drag_stop()
 			ptstime drop_pos = cursor_x *
 				master_edl->local_session->zoom_time +
 				master_edl->local_session->view_start_pts;
-			drop_pos -= mainsession->drag_plugin->get_length() / 2;
+			drop_pos -= mainsession->drag_plugin->duration() / 2;
 			if(drop_pos < 0)
 				drop_pos = 0;
 			mwindow_global->move_effect(mainsession->drag_plugin,
@@ -859,7 +859,7 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin,
 
 	x = round((plugin->get_pts() - master_edl->local_session->view_start_pts) /
 		master_edl->local_session->zoom_time);
-	w = round(plugin->get_length() /
+	w = round(plugin->duration() /
 		master_edl->local_session->zoom_time);
 	y = plugin->track->y_pixel +
 		master_edl->local_session->zoom_track;
@@ -1188,7 +1188,7 @@ void TrackCanvas::draw_transitions()
 					strip_y += theme_global->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
-				strip_w = Units::round(edit->transition->get_length() /
+				strip_w = Units::round(edit->transition->duration() /
 					master_edl->local_session->zoom_time);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&

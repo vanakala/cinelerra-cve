@@ -59,7 +59,7 @@ TransitionLengthText::TransitionLengthText(TransitionLengthDialog *gui,
 	int x,
 	int y)
  : BC_TumbleTextBox(gui, 
-	gui->transition->get_length(),
+	gui->transition->duration(),
 	0.0,
 	100.0,
 	x,
@@ -73,7 +73,7 @@ TransitionLengthText::TransitionLengthText(TransitionLengthDialog *gui,
 int TransitionLengthText::handle_event()
 {
 	double result = atof(get_text());
-	if(!EQUIV(result, gui->transition->get_length()))
+	if(!EQUIV(result, gui->transition->duration()))
 	{
 		gui->transition->set_length(result);
 		mwindow_global->sync_parameters(
@@ -127,7 +127,7 @@ void TransitionPopup::update(Plugin *transition)
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
 	char len_text[50];
-	sprintf(len_text, _("Length: %2.2f sec"), transition->get_length());
+	sprintf(len_text, _("Length: %2.2f sec"), transition->duration());
 	length->set_text(len_text);
 }
 

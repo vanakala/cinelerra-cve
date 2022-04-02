@@ -166,7 +166,7 @@ void ExportEDLAsset::export_it()
 				edittype[0] = 'D';
 				fprintf(fh, "%03d %8s %s %4s %03" PRId64, colnum,
 					reel_name, avselect, edittype,
-					track->to_units(edit->transition->get_length()));
+					track->to_units(edit->transition->duration()));
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");
