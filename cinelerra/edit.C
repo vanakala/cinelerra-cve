@@ -227,7 +227,7 @@ int Edit::picon_h()
 	return edl->local_session->zoom_track;
 }
 
-ptstime Edit::length()
+ptstime Edit::duration()
 {
 	if(next)
 		return next->project_pts - project_pts;
@@ -244,7 +244,7 @@ ptstime Edit::end_pts()
 void Edit::dump(int indent)
 {
 	printf("%*sEdit %p: project_pts %.3f source_pts %.3f length %.3f\n",
-		indent, "", this, project_pts,  source_pts, length());
+		indent, "", this, project_pts,  source_pts, duration());
 	indent += 2;
 	if(asset)
 		printf("%*sasset %p stream %d channel %d\n",

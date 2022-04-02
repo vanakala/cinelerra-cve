@@ -85,7 +85,7 @@ void ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint,
 	{
 		strcpy(reel_name, "   BL   ");
 		edit_sourcestart = 0;
-		edit_sourceend = edit->length();
+		edit_sourceend = edit->duration();
 	}
 
 	edit_deststart = edit->get_pts();

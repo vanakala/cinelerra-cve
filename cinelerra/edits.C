@@ -216,12 +216,12 @@ Edit* Edits::split_edit(ptstime postime, int force)
 	new_edit->copy_from(edit);
 	new_edit->set_pts(postime);
 	if(edit->asset)
-		new_edit->shift_source(edit->length());
+		new_edit->shift_source(edit->duration());
 
 	if(trans)
 	{
-		if(edit->length() < trans->get_length())
-			trans->set_length(edit->length());
+		if(edit->duration() < trans->get_length())
+			trans->set_length(edit->duration());
 		edit->transition = trans;
 	}
 	return new_edit;
@@ -565,7 +565,7 @@ void Edits::clear_handle(ptstime start,
 				ptstime length =
 					current_edit->next->get_source_pts() -
 					current_edit->get_source_pts() -
-					current_edit->length();
+					current_edit->duration();
 				delete current_edit->next;
 // Lengthen automation
 				track->automation->paste_silence(start,
@@ -677,7 +677,7 @@ ptstime Edits::adjust_position(ptstime oldposition, ptstime newposition,
 			// Check previohus edit
 			if(newposition > oldposition && edit->previous)
 			{
-				ptstime prevlen = edit->previous->length();
+				ptstime prevlen = edit->previous->duration();
 				newposition = limit_source_move(edit->previous,
 					newposition - prevlen) + prevlen;
 			}
@@ -700,11 +700,11 @@ ptstime Edits::limit_move(Edit *edit, ptstime newposition, int check_end)
 
 	if(check_end)
 	{
-		ptstime new_end = newposition + edit->length();
+		ptstime new_end = newposition + edit->duration();
 		ptstime tot_len = edl->total_length();
 
 		if(!edit->track->master && new_end > tot_len)
-			newposition = tot_len - edit->length();
+			newposition = tot_len - edit->duration();
 	}
 	return newposition;
 }
@@ -716,9 +716,9 @@ ptstime Edits::limit_source_move(Edit *edit, ptstime newposition)
 		ptstime new_pts = edit->get_source_pts() + newposition - edit->get_pts();
 		ptstime src_end = edit->source_duration();
 
-		if(new_pts + edit->length() > src_end)
+		if(new_pts + edit->duration() > src_end)
 		{
-			new_pts = src_end - edit->length();
+			new_pts = src_end - edit->duration();
 			newposition = new_pts - edit->get_source_pts() + edit->get_pts();
 		}
 
@@ -811,7 +811,7 @@ void Edits::cleanup()
 {
 	for(Edit *current = first; current; current = current->next)
 	{
-		if(fabs(current->length()) < EPSILON)
+		if(fabs(current->duration()) < EPSILON)
 		{
 			current->asset = 0;
 			current->stream = -1;
@@ -823,7 +823,7 @@ void Edits::cleanup()
 		while(current->next)
 		{
 // Remove zero-length edits
-			if(fabs(current->length()) < EPSILON)
+			if(fabs(current->duration()) < EPSILON)
 			{
 				Edit *next = current->next;
 				remove(current);
@@ -837,14 +837,14 @@ void Edits::cleanup()
 				remove(current->next);
 // Join edits
 			else if(current->asset == current->next->asset &&
-					PTSEQU(current->get_source_pts() + current->length(),
+					PTSEQU(current->get_source_pts() + current->duration(),
 					current->next->get_source_pts()))
 				remove(current->next);
 			else
 				break;
 		}
 	}
-	if(first && fabs(first->length()) < EPSILON)
+	if(first && fabs(first->duration()) < EPSILON)
 		remove(first);
 }
 

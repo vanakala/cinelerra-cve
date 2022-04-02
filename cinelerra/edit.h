@@ -27,7 +27,7 @@ public:
 	Edit(EDL *edl, Track *track);
 	~Edit();
 
-	ptstime length();
+	ptstime duration();
 	ptstime end_pts();
 	void copy_from(Edit *edit);
 	Edit& operator=(Edit& edit);

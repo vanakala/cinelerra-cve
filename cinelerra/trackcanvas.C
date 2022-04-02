@@ -406,7 +406,7 @@ void TrackCanvas::drag_stop()
 			if(mainsession->edit_highlighted)
 			{
 				start = mainsession->edit_highlighted->get_pts();
-				length = mainsession->edit_highlighted->length();
+				length = mainsession->edit_highlighted->duration();
 			}
 
 			mwindow_global->insert_effects_canvas(start, length);
@@ -459,7 +459,7 @@ void TrackCanvas::drag_stop()
 			{
 				ptstime position = get_drop_position(&insertion,
 					mainsession->drag_edit,
-					mainsession->drag_edit->length());
+					mainsession->drag_edit->duration());
 
 				if(position < 0)
 				{
@@ -812,7 +812,7 @@ void TrackCanvas::draw_paste_destination()
 		}
 		else if(mainsession->current_operation == DRAG_EDIT)
 		{
-			paste_length = mainsession->drag_edits->values[0]->length();
+			paste_length = mainsession->drag_edits->values[0]->duration();
 			position = get_drop_position(&insertion, mainsession->drag_edits->values[0],
 				paste_length);
 		}
