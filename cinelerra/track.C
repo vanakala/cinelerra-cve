@@ -245,7 +245,7 @@ int Track::get_canvas_number(Plugin *plugin)
 	return number;
 }
 
-ptstime Track::get_length()
+ptstime Track::duration()
 {
 	ptstime total_length = 0;
 	ptstime length;
@@ -253,12 +253,12 @@ ptstime Track::get_length()
 	if(edits->last)
 		total_length = edits->last->get_pts();
 // Test synthesis effects
-	if((length = get_effects_length(1)) > total_length)
+	if((length = effects_duration(1)) > total_length)
 		total_length = length;
 	return total_length;
 }
 
-ptstime Track::get_effects_length(int is_synthesis)
+ptstime Track::effects_duration(int is_synthesis)
 {
 	ptstime total_length = 0;
 	ptstime length;
@@ -456,7 +456,7 @@ void Track::insert_plugin(Track *track, ptstime position,
 	ptstime end, new_start;
 
 	if(duration < 0)
-		duration = track->get_length();
+		duration = track->duration();
 
 	end = position + duration;
 
@@ -1201,7 +1201,7 @@ Plugin *Track::get_shared_multichannel(ptstime start, ptstime end)
 	if(PTSEQU(start, end))
 	{
 		start = 0;
-		end = get_length();
+		end = duration();
 	}
 
 	for(int j = 0; j < plugins.total; j++)
@@ -1223,7 +1223,7 @@ Plugin *Track::get_shared_track(ptstime start, ptstime end)
 	if(PTSEQU(start, end))
 	{
 		start = 0;
-		end = get_length();
+		end = duration();
 	}
 
 	for(int i = 0; i < plugins.total; i++)

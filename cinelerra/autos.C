@@ -568,5 +568,5 @@ void Autos::drag_limits(Auto *current, ptstime *prev, ptstime *next)
 	if(current->next)
 		*next = unit_round(current->next->pos_time, -1);
 	else
-		*next = track->get_length() + base_pts;
+		*next = track->duration() + base_pts;
 }

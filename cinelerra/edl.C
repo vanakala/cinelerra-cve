@@ -1090,7 +1090,7 @@ void EDL::check_master_track()
 		set_all_toggles(Tracks::MASTER, 0);
 		for(Track *current = tracks->first; current; current = NEXT)
 		{
-			if(current->get_length() > EPSILON)
+			if(current->duration() > EPSILON)
 			{
 				current->master = 1;
 				break;

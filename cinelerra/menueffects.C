@@ -334,7 +334,7 @@ void MenuEffectThread::run()
 			new_track->edits->copy_from(track->edits);
 			new_track->automation->copy_from(track->automation);
 
-			ptstime track_dur = new_track->get_length();
+			ptstime track_dur = new_track->duration();
 			if(track_dur < min_track_length)
 				min_track_length = track_dur;
 		}
@@ -343,7 +343,7 @@ void MenuEffectThread::run()
 
 		for(Track *track = render_edl->first_track(); track; track = track->next)
 		{
-			ptstime max_pts = track->get_length();
+			ptstime max_pts = track->duration();
 
 			if(max_pts > total_end)
 				max_pts = total_end;

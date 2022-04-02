@@ -392,7 +392,7 @@ void TrackCanvas::drag_stop()
 // Drop all the effects
 			Track *track = mainsession->track_highlighted;
 			ptstime start = 0;
-			ptstime length = track->get_length();
+			ptstime length = track->duration();
 
 			if(master_edl->local_session->get_selectionend() >
 				master_edl->local_session->get_selectionstart())
@@ -1833,7 +1833,7 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 		{
 			if(current->data_type == skip->data_type &&
 				current->gang && current->record && current != skip &&
-				position < current->get_length())
+				position < current->duration())
 			{
 				int autoidx = current->data_type == TRACK_AUDIO ? AUTOMATION_AFADE : AUTOMATION_VFADE;
 				double init_value = current->automation->get_floatvalue(position, autoidx);
@@ -2260,7 +2260,7 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 			ptstime pts = master_edl->local_session->view_start_pts +
 				(cursor_x / xzoom);
 
-			if(pts >= track->get_length())
+			if(pts >= track->duration())
 				return 0;
 
 			if(autotype == AUTOMATION_TYPE_FLOAT)

@@ -373,7 +373,7 @@ void PatchBay::synchronize_faders(double change, int data_type, Track *skip)
 		current = NEXT)
 	{
 		if(current->data_type == data_type && current->gang &&
-			current->record &&  current != skip && position < current->get_length())
+			current->record &&  current != skip && position < current->duration())
 		{
 			PatchGUI *patch;
 			int autoidx = data_type == TRACK_AUDIO ? AUTOMATION_AFADE : AUTOMATION_VFADE;

@@ -582,7 +582,7 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 	if(!dest_track) return;
 
 	ptstime start = 0;
-	ptstime length = dest_track->get_length();
+	ptstime length = dest_track->duration();
 
 	if(master_edl->local_session->get_selectionend() >
 		master_edl->local_session->get_selectionstart())
@@ -638,7 +638,7 @@ void MWindow::insert_effect(const char *title,
 		else
 		{
 			start = 0;
-			length = track->get_length();
+			length = track->duration();
 		}
 		if(EQUIV(length, 0))
 			length = master_edl->duration();

@@ -255,7 +255,7 @@ ptstime Tracks::length()
 	for(Track *track = first; track; track = track->next)
 	{
 		if(track->master)
-			return track->get_length();
+			return track->duration();
 	}
 	return 0;
 }
@@ -302,7 +302,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		if(vtracks > 0 && current->data_type == TRACK_VIDEO)
 		{
 			vtracks--;
-			dur = current->get_length();
+			dur = current->duration();
 			if(current->master)
 				master = current;
 		}
@@ -310,7 +310,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		if(atracks > 0 && current->data_type == TRACK_AUDIO)
 		{
 			atracks--;
-			dur = current->get_length();
+			dur = current->duration();
 			if(current->master)
 				master = current;
 		}
@@ -323,7 +323,7 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		// If master is part of operation we append to master
 		// If master does not paticipate, append to the longest participating track
 		if(master)
-			start = master->get_length();
+			start = master->duration();
 		else if((dur = length()) > 0)
 			alength = dur - start;
 	}
@@ -418,17 +418,17 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					break;
 			if(new_track)
 			{
-				dur = current->get_length();
+				dur = current->duration();
 				if(current->master)
 				{
 					master = current;
 					if(options & TRACKS_EFFECTS)
 					{
-						alength = new_track->get_effects_length(1);
+						alength = new_track->effects_duration(1);
 
 						if(alength < EPSILON)
 						{
-							alength = new_track->get_effects_length(0);
+							alength = new_track->effects_duration(0);
 							if(alength + paste_at > dur)
 							{
 								alength = dur - paste_at;
@@ -438,7 +438,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 						}
 					}
 					else
-						alength = new_track->get_length();
+						alength = new_track->duration();
 				}
 			}
 		}
@@ -462,16 +462,16 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					break;
 			if(new_track)
 			{
-				dur = current->get_length();
+				dur = current->duration();
 				if(current->master)
 				{
 					master = current;
 					if(options & TRACKS_EFFECTS)
 					{
-						alength = new_track->get_effects_length(1);
+						alength = new_track->effects_duration(1);
 						if(alength < EPSILON)
 						{
-							alength = new_track->get_effects_length(0);
+							alength = new_track->effects_duration(0);
 							if(alength + paste_at > dur)
 							{
 								alength = dur - paste_at;
@@ -481,7 +481,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 						}
 					}
 					else
-						alength = new_track->get_length();
+						alength = new_track->duration();
 				}
 			}
 		}
@@ -493,7 +493,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 		// If master is part of operation we append to master
 		// If master does not participate, append to the longest participating track
 		if(master)
-			start = master->get_length();
+			start = master->duration();
 		else
 			alength = length() - start;
 	}
@@ -530,9 +530,9 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				break;
 
 			if(options & TRACKS_EFFECTS)
-				dur = new_track->get_effects_length(0);
+				dur = new_track->effects_duration(0);
 			else
-				dur = new_track->get_length();
+				dur = new_track->duration();
 
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
@@ -559,9 +559,9 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				break;
 
 			if(options & TRACKS_EFFECTS)
-				dur = new_track->get_effects_length(0);
+				dur = new_track->effects_duration(0);
 			else
-				dur = new_track->get_length();
+				dur = new_track->duration();
 
 			dur = MIN(alength, dur);
 			current->insert_track(new_track, dur, start, overwrite);
@@ -654,7 +654,7 @@ void Tracks::create_new_tracks(Tracks *tracks)
 	for(Track *track = tracks->first; track; track = track->next)
 	{
 		new_track = add_track(track->data_type, 0, 0);
-		len = track->get_length();
+		len = track->duration();
 		if(len > master_length)
 			len = master_length;
 		new_track->insert_track(track, len, 0);
@@ -724,7 +724,7 @@ ptstime Tracks::total_length()
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		ptstime length = current->get_length();
+		ptstime length = current->duration();
 		if(length > total) total = length;
 	}
 	return total;
@@ -738,7 +738,7 @@ ptstime Tracks::total_length_of(int type)
 	{
 		if(current->data_type == type)
 		{
-			len = current->get_length();
+			len = current->duration();
 			if(len > total)
 				total = len;
 		}
@@ -820,7 +820,7 @@ void Tracks::cleanup_plugins()
 		if(track->master)
 			continue;
 
-		if(track->get_length() > duration)
+		if(track->duration() > duration)
 			track->clear_after(duration);
 	}
 

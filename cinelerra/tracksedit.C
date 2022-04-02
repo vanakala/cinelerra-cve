@@ -182,7 +182,7 @@ void Tracks::concatenate_tracks()
 // Calculate new length
 	if(master_track)
 	{
-		output_max = master_track->get_length();
+		output_max = master_track->duration();
 
 		if(master_track->record)
 		{
@@ -192,7 +192,7 @@ void Tracks::concatenate_tracks()
 				if(output_track->data_type == master_track->data_type &&
 						!output_track->record &&
 						output_track->play)
-					output_max += output_track->get_length();
+					output_max += output_track->duration();
 			}
 		}
 	}
@@ -225,14 +225,14 @@ void Tracks::concatenate_tracks()
 // Transfer input track to end of output track one at a time
 			while(input_track)
 			{
-				output_start = output_track->get_length();
+				output_start = output_track->duration();
 
 				if(output_start < output_max - EPSILON)
 				{
 					output_track->insert_track(input_track,
-						input_track->get_length(),
+						input_track->duration(),
 						output_start);
-					if(output_track->get_length() > output_max)
+					if(output_track->duration() > output_max)
 						output_track->clear_after(output_max);
 				}
 
@@ -365,7 +365,7 @@ ptstime Tracks::paste_duration(ptstime position, EDL *clip,
 			if(cliptrack)
 			{
 				if(dest->master)
-					paste_end = position + cliptrack->get_length();
+					paste_end = position + cliptrack->duration();
 				cliptrack = cliptrack->next;
 			}
 
@@ -520,7 +520,7 @@ void Tracks::paste_silence(ptstime start, ptstime end)
 				start = track_end;
 			break;
 		}
-		ptstime len = current_track->get_length();
+		ptstime len = current_track->duration();
 		if(len + silence_len > track_end)
 		{
 			silence_len = track_end - len;

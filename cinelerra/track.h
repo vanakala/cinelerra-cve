@@ -49,9 +49,9 @@ public:
 	int get_canvas_number(Plugin *plugin);
 
 // Get length of track in seconds
-	ptstime get_length();
+	ptstime duration();
 // Get length of effects in seconds
-	ptstime get_effects_length(int is_synthesis);
+	ptstime effects_duration(int is_synthesis);
 // Get dimensions of source for convenience functions
 	void get_source_dimensions(ptstime position, int &w, int &h);
 
