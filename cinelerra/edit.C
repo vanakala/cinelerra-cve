@@ -106,7 +106,7 @@ void Edit::save_xml(FileXML *file, const char *output_path, int track_type)
 	}
 }
 
-ptstime Edit::get_source_length()
+ptstime Edit::source_duration()
 {
 	if(asset && stream >= 0)
 		return asset->stream_duration(stream);

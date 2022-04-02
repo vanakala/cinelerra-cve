@@ -714,7 +714,7 @@ ptstime Edits::limit_source_move(Edit *edit, ptstime newposition)
 	if(edit->asset)
 	{
 		ptstime new_pts = edit->get_source_pts() + newposition - edit->get_pts();
-		ptstime src_end = edit->get_source_length();
+		ptstime src_end = edit->source_duration();
 
 		if(new_pts + edit->length() > src_end)
 		{
@@ -768,7 +768,7 @@ void Edits::move_edits(Edit *current_edit, ptstime newposition)
 // shift right
 			if((ed = current_edit->previous) && ed->asset)
 			{
-				apts = ed->get_source_length() - ed->get_source_pts() + ed->get_pts();
+				apts = ed->source_duration() - ed->get_source_pts() + ed->get_pts();
 
 				if(apts < newposition)
 					newposition = apts;

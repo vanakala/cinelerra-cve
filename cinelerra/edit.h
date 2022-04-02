@@ -60,7 +60,7 @@ public:
 // End of current edit in source
 	ptstime source_end_pts();
 // End of asset
-	ptstime get_source_length();
+	ptstime source_duration();
 
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
