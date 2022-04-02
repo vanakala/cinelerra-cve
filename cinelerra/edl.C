@@ -1085,7 +1085,7 @@ void EDL::check_master_track()
 	if(!tracks || !tracks->total())
 		return;
 
-	if(total_toggled(Tracks::MASTER) != 1 || tracks->length() < EPSILON)
+	if(total_toggled(Tracks::MASTER) != 1 || tracks->duration() < EPSILON)
 	{
 		set_all_toggles(Tracks::MASTER, 0);
 		for(Track *current = tracks->first; current; current = NEXT)

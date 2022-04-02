@@ -1188,7 +1188,7 @@ ptstime Track::plugin_max_start(Plugin *plugin)
 		return plugin->get_pts();
 	}
 	else
-		return tracks->length() - plugin->get_length();
+		return tracks->duration() - plugin->get_length();
 }
 
 Edit *Track::editof(ptstime postime)

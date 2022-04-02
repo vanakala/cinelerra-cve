@@ -502,7 +502,7 @@ void Tracks::paste_silence(ptstime start, ptstime end)
 {
 	Track* current_track;
 	ptstime paste_end = 0;
-	ptstime track_end = length();
+	ptstime track_end = duration();
 	ptstime silence_len = end - start;
 
 	if(silence_len < EPSILON)

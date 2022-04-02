@@ -58,7 +58,7 @@ public:
 	int total_tracks_of(int type);
 	ptstime total_length_of(int type);
 	ptstime total_length_framealigned(double fps);
-	ptstime length();
+	ptstime duration();
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 

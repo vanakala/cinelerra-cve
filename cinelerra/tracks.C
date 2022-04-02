@@ -250,7 +250,7 @@ Track* Tracks::add_track(int track_type, int above, Track *dst_track)
 	return new_track;
 }
 
-ptstime Tracks::length()
+ptstime Tracks::duration()
 {
 	for(Track *track = first; track; track = track->next)
 	{
@@ -324,12 +324,12 @@ ptstime Tracks::append_asset(Asset *asset, ptstime paste_at,
 		// If master does not paticipate, append to the longest participating track
 		if(master)
 			start = master->duration();
-		else if((dur = length()) > 0)
+		else if((dur = duration()) > 0)
 			alength = dur - start;
 	}
 	else
 	{
-		dur = length();
+		dur = duration();
 		start = MIN(paste_at, dur);
 
 		if(!master && dur > 0)
@@ -495,11 +495,11 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 		if(master)
 			start = master->duration();
 		else
-			alength = length() - start;
+			alength = duration() - start;
 	}
 	else
 	{
-		dur = length();
+		dur = duration();
 		start = MIN(paste_at, dur);
 		if(!master || alength < EPSILON)
 			alength = dur - start;
@@ -585,7 +585,7 @@ void Tracks::init_plugin_pointers_by_ids()
 
 void Tracks::create_new_tracks(Asset *asset)
 {
-	ptstime master_length = length();
+	ptstime master_length = duration();
 	ptstime len;
 	Track *new_track;
 	int atracks, vtracks;
@@ -641,12 +641,12 @@ void Tracks::create_new_tracks(Asset *asset)
 
 void Tracks::create_new_tracks(Tracks *tracks)
 {
-	ptstime master_length = length();
+	ptstime master_length = duration();
 	ptstime len;
 	Track *new_track;
 
 	if(master_length < EPSILON)
-		master_length = tracks->length();
+		master_length = tracks->duration();
 
 	if(!tracks->total() || master_length < EPSILON)
 		return;
@@ -809,9 +809,9 @@ void Tracks::cleanup()
 
 void Tracks::cleanup_plugins()
 {
-	ptstime duration = length();
+	ptstime dur = duration();
 
-	if(duration < EPSILON)
+	if(dur < EPSILON)
 		return;
 
 // Check the maximum duration
@@ -820,8 +820,8 @@ void Tracks::cleanup_plugins()
 		if(track->master)
 			continue;
 
-		if(track->duration() > duration)
-			track->clear_after(duration);
+		if(track->duration() > dur)
+			track->clear_after(dur);
 	}
 
 	for(Track *track = first; track; track = track->next)
@@ -840,13 +840,13 @@ void Tracks::cleanup_plugins()
 			if(plugin->plugin_type == PLUGIN_SHAREDMODULE &&
 				plugin->shared_track)
 			{
-				if(plugin->get_pts() > duration)
+				if(plugin->get_pts() > dur)
 				{
 					track->remove_plugin(plugin);
 					i--;
 				}
-				else if(plugin->end_pts() > duration)
-					plugin->set_end(duration);
+				else if(plugin->end_pts() > dur)
+					plugin->set_end(dur);
 			}
 		}
 	}
