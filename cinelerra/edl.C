@@ -967,13 +967,6 @@ int EDL::recordable_tracks_of(int type)
 	return 0;
 }
 
-ptstime EDL::total_length_framealigned()
-{
-	if(tracks && tracks->total())
-		return tracks->duration_framealigned(edlsession->frame_rate);
-	return 0;
-}
-
 Track *EDL::first_track()
 {
 	if(tracks && tracks->total())
