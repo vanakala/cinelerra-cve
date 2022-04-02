@@ -129,9 +129,9 @@ void Plugin::set_pts(ptstime pts)
 	this->keyframes->base_pts = pts;
 }
 
-void Plugin::set_length(ptstime length)
+void Plugin::set_duration(ptstime duration)
 {
-	this->length = length;
+	this->length = duration;
 }
 
 void Plugin::set_end(ptstime end)

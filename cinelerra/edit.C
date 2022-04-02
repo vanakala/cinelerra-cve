@@ -121,7 +121,7 @@ Plugin *Edit::insert_transition(PluginServer *server)
 			track,
 			server);
 		transition->plugin_type = PLUGIN_TRANSITION;
-		transition->set_length(edlsession->default_transition_length);
+		transition->set_duration(edlsession->default_transition_length);
 	}
 	else
 		transition->get_keyframe(0)->set_data(0);

@@ -664,7 +664,7 @@ void MWindow::insert_effect(const char *title,
 			track->remove_plugin(new_plugin);
 			return;
 		}
-		new_plugin->set_length(new_length);
+		new_plugin->set_duration(new_length);
 	}
 
 	if(server && (client = server->open_plugin(0, 0)))

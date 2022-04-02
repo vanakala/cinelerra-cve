@@ -221,7 +221,7 @@ Edit* Edits::split_edit(ptstime postime, int force)
 	if(trans)
 	{
 		if(edit->duration() < trans->duration())
-			trans->set_length(edit->duration());
+			trans->set_duration(edit->duration());
 		edit->transition = trans;
 	}
 	return new_edit;
@@ -339,7 +339,7 @@ ptstime Edits::load_edit(FileXML *file, ptstime project_time)
 				length_time = file->tag.get_property("LENGTH_TIME", length_time);
 				length_time = file->tag.get_property("DURATION", length_time);
 				current->transition->on = !file->tag.get_property("OFF", 0);
-				current->transition->set_length(length_time);
+				current->transition->set_duration(length_time);
 				current->transition->load(file);
 				if(!server)
 					current->transition->on = 0;

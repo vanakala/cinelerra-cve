@@ -809,7 +809,7 @@ void Tracks::cleanup_plugins()
 				plugin->shared_plugin)
 			{
 				plugin->set_pts(plugin->shared_plugin->get_pts());
-				plugin->set_length(plugin->shared_plugin->duration());
+				plugin->set_duration(plugin->shared_plugin->duration());
 			}
 
 			if(plugin->plugin_type == PLUGIN_SHAREDMODULE &&

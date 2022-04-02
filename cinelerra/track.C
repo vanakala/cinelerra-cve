@@ -391,7 +391,7 @@ void Track::load_pluginset(FileXML *file, ptstime start)
 				plugins.append(plugin);
 				plugin->plugin_type = type;
 				plugin->set_pts(startproject + start);
-				plugin->set_length(length);
+				plugin->set_duration(length);
 				plugin->on = !file->tag.get_property("OFF", 0);
 				plugin->load(file, start);
 				if(!server && type == PLUGIN_STANDALONE)
@@ -509,19 +509,19 @@ Plugin* Track::insert_effect(PluginServer *server,
 		if(shared_plugin)
 		{
 			plugin->set_pts(shared_plugin->get_pts());
-			plugin->set_length(shared_plugin->duration());
+			plugin->set_duration(shared_plugin->duration());
 		}
 		else
 // From a drag operation
 		{
 			plugin->set_pts(start);
-			plugin->set_length(length);
+			plugin->set_duration(length);
 		}
 	}
 	else
 	{
 		plugin->set_pts(start);
-		plugin->set_length(length);
+		plugin->set_duration(length);
 	}
 
 	expand_view = 1;
@@ -937,17 +937,17 @@ void Track::clear_plugins(ptstime start, ptstime end)
 		else if(start > pl_pts && end < pl_end) // selection in plugin
 		{
 			plugin->keyframes->clear(start, end, 1);
-			plugin->set_length(plugin->duration() - end + start);
+			plugin->set_duration(plugin->duration() - end + start);
 		}
 		else if(end >= pl_end && start > pl_pts) // plugin end in selection
 		{
 			plugin->keyframes->clear_after(start);
-			plugin->set_length(start - pl_pts);
+			plugin->set_duration(start - pl_pts);
 		}
 		else if(start <= pl_pts && end < pl_end) // plugin start in selection
 		{
 			plugin->keyframes->clear(pl_pts, end, 1);
-			plugin->set_length(pl_end - end);
+			plugin->set_duration(pl_end - end);
 			plugin->shift(start - pl_pts);
 		}
 	}
@@ -966,7 +966,7 @@ void Track::clear_after(ptstime pts)
 		if(plugin_end < pts)
 			continue;
 		if(plugin_pts < pts && plugin_end > pts)
-			plugin->set_length(pts - plugin_pts);
+			plugin->set_duration(pts - plugin_pts);
 		if(plugin->get_pts() > pts)
 		{
 			plugins.remove_object(plugin);
@@ -1003,7 +1003,7 @@ ptstime Track::adjust_position(ptstime oldposition, ptstime newposition,
 		else if(edl->equivalent(plugin->end_pts(), oldposition) &&
 				newpos > plugin->get_pts())
 		{
-			plugin->set_length(newpos - plugin->get_pts());
+			plugin->set_duration(newpos - plugin->get_pts());
 			plugin->remove_keyframes_after(newpos);
 		}
 	}

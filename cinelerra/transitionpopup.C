@@ -75,7 +75,7 @@ int TransitionLengthText::handle_event()
 	double result = atof(get_text());
 	if(!EQUIV(result, gui->transition->duration()))
 	{
-		gui->transition->set_length(result);
+		gui->transition->set_duration(result);
 		mwindow_global->sync_parameters(
 			gui->transition->track->data_type == TRACK_VIDEO);
 		edlsession->default_transition_length = result;

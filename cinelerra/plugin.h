@@ -75,7 +75,7 @@ public:
 	inline ptstime duration() { return length; };
 	inline ptstime end_pts() { return pts + length; };
 	void set_pts(ptstime pts);
-	void set_length(ptstime length);
+	void set_duration(ptstime duration);
 	void set_end(ptstime end);
 	Plugin *active_in(ptstime start, ptstime end);
 // Client
