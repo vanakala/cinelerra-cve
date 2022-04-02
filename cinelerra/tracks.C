@@ -746,7 +746,7 @@ ptstime Tracks::total_length_of(int type)
 	return total;
 }
 
-ptstime Tracks::total_length_framealigned(double fps)
+ptstime Tracks::duration_framealigned(double fps)
 {
 	int atracks, vtracks;
 	ptstime alen, vlen;
