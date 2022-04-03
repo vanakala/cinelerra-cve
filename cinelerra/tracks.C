@@ -711,18 +711,6 @@ int Tracks::total_tracks_of(int type)
 	return result;
 }
 
-ptstime Tracks::total_length()
-{
-	ptstime total = 0;
-
-	for(Track *current = first; current; current = NEXT)
-	{
-		ptstime length = current->duration();
-		if(length > total) total = length;
-	}
-	return total;
-}
-
 ptstime Tracks::duration_of(int type)
 {
 	ptstime len, total = 0;

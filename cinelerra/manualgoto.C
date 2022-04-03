@@ -112,8 +112,8 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			if(new_position > vwindow_edl->total_length())
-				new_position = vwindow_edl->total_length();
+			if(new_position > vwindow_edl->duration())
+				new_position = vwindow_edl->duration();
 			if(new_position < 0)
 				new_position = 0;
 			new_position = vwindow_edl->align_to_frame(new_position);

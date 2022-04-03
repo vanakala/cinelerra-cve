@@ -579,7 +579,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		set_filename(0);
 	}
 
-	original_length = master_edl->total_length();
+	original_length = master_edl->duration();
 	original_preview_end = master_edl->local_session->preview_end;
 
 	for(int i = 0; i < filenames->total; i++)
@@ -879,7 +879,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		master_edl->update_assets(g_asset);
 // Fix preview range
 	if(EQUIV(original_length, original_preview_end))
-		master_edl->local_session->preview_end = master_edl->total_length();
+		master_edl->local_session->preview_end = master_edl->duration();
 	update_project(oloadmode);
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
@@ -1501,10 +1501,10 @@ void MWindow::set_loop_boundaries()
 		;
 	}
 	else
-	if(master_edl->total_length())
+	if(master_edl->duration())
 	{
 		start = 0;
-		end = master_edl->total_length();
+		end = master_edl->duration();
 	}
 	else
 	{

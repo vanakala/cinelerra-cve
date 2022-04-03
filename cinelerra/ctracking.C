@@ -82,7 +82,7 @@ int CTracking::update_scroll(ptstime position)
 		ptstime midpoint = view_start + half_canvas;
 
 		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD &&
-			master_edl->total_length() > view_end)
+			master_edl->duration() > view_end)
 		{
 			ptstime left_boundary = midpoint + SCROLL_THRESHOLD * half_canvas;
 			ptstime right_boundary = midpoint + half_canvas;

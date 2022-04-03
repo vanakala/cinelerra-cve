@@ -78,7 +78,7 @@ void MWindow::fit_selection(void)
 	if(EQUIV(master_edl->local_session->get_selectionstart(1),
 		master_edl->local_session->get_selectionend(1)))
 	{
-		selection_length = master_edl->total_length();
+		selection_length = master_edl->duration();
 	}
 	else
 	{
@@ -105,7 +105,7 @@ void MWindow::fit_autos(int doall)
 		master_edl->local_session->get_selectionend(1)))
 	{
 		start = 0;
-		end = master_edl->total_length();
+		end = master_edl->duration();
 	}
 	else
 // Test autos in highlighting only
@@ -331,17 +331,17 @@ void MWindow::goto_end()
 {
 	ptstime new_view_start;
 
-	if(master_edl->total_length() > (ptstime)gui->canvas->get_w() *
+	if(master_edl->duration() > (ptstime)gui->canvas->get_w() *
 			master_edl->local_session->zoom_time)
-		new_view_start = master_edl->total_length() -
+		new_view_start = master_edl->duration() -
 			(gui->canvas->get_w() * master_edl->local_session->zoom_time) / 2;
 	else
 		new_view_start = 0;
 
 	if(gui->shift_down())
-		master_edl->local_session->set_selectionend(master_edl->total_length());
+		master_edl->local_session->set_selectionend(master_edl->duration());
 	else
-		master_edl->local_session->set_selection(master_edl->total_length());
+		master_edl->local_session->set_selection(master_edl->duration());
 
 	gui->cursor->hide();
 	samplemovement(new_view_start);
@@ -405,7 +405,7 @@ void MWindow::move_right(int distance)
 void MWindow::select_all(void)
 {
 	master_edl->local_session->set_selectionstart(0);
-	master_edl->local_session->set_selectionend(master_edl->total_length());
+	master_edl->local_session->set_selectionend(master_edl->duration());
 	update_gui(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_CLOCK);
 	cwindow->update(WUPD_POSITION);
 }

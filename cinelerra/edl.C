@@ -296,7 +296,7 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 	int save_flags)
 {
 	ptstime start = 0;
-	ptstime end = total_length();
+	ptstime end = duration();
 // begin file
 	if(!(save_flags & EDL_CLIP))    // Cliplist writes tag itself
 	{
@@ -399,7 +399,7 @@ void EDL::trim_selection(ptstime start,
 	{
 // clear the data
 		clear(0, start, edit_labels);
-		clear(end - start, total_length(),
+		clear(end - start, duration(),
 			edit_labels);
 	}
 }
@@ -440,7 +440,7 @@ void EDL::set_inpoint(ptstime position)
 	}
 	else
 	{
-		ptstime total_len = total_length();
+		ptstime total_len = duration();
 
 		position = align_to_frame(position);
 		if(position < 0)
@@ -462,7 +462,7 @@ void EDL::set_outpoint(ptstime position)
 	}
 	else
 	{
-		ptstime total_len = total_length();
+		ptstime total_len = duration();
 
 		position = align_to_frame(position);
 		if(position < 0)
@@ -730,7 +730,7 @@ void EDL::insert_asset(Asset *asset,
 
 void EDL::optimize()
 {
-	ptstime length = total_length();
+	ptstime length = duration();
 
 	if(local_session->preview_end > length) local_session->preview_end = length;
 	if(local_session->preview_start > length ||
@@ -912,18 +912,11 @@ void EDL::init_edl()
 	check_master_track();
 }
 
-ptstime EDL::total_length()
-{
-	if(tracks && tracks->total())
-		return tracks->total_length();
-	return 0;
-}
-
 ptstime EDL::duration()
 {
 	if(tracks && tracks->total())
 	{
-		ptstime len = tracks->total_length();
+		ptstime len = tracks->duration();
 
 		if(edlsession->cursor_on_frames && len > 0)
 			len = floor(len * edlsession->frame_rate) / edlsession->frame_rate;

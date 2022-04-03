@@ -404,7 +404,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths)
 				render_preferences,
 				job->asset, 
 				0,
-				current_edl->total_length(),
+				current_edl->duration(),
 				0);
 
 // Append output paths allocated to total

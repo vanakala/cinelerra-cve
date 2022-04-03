@@ -164,7 +164,6 @@ public:
 // Create tracks from assets
 	void init_edl();
 
-	ptstime total_length();
 	ptstime duration();
 	ptstime duration_of(int type);
 	int total_tracks();

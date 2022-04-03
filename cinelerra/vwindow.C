@@ -162,7 +162,7 @@ void VWindow::goto_start()
 
 void VWindow::goto_end()
 {
-	ptstime position = vwindow_edl->total_length();
+	ptstime position = vwindow_edl->duration();
 
 	vwindow_edl->local_session->set_selection(position);
 	update_position(0, 1);

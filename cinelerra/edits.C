@@ -695,13 +695,13 @@ ptstime Edits::limit_move(Edit *edit, ptstime newposition, int check_end)
 	if(newposition < 0)
 		newposition = 0;
 
-	if(!edit->track->master && newposition > edl->total_length())
-		newposition = edl->total_length();
+	if(!edit->track->master && newposition > edl->duration())
+		newposition = edl->duration();
 
 	if(check_end)
 	{
 		ptstime new_end = newposition + edit->duration();
-		ptstime tot_len = edl->total_length();
+		ptstime tot_len = edl->duration();
 
 		if(!edit->track->master && new_end > tot_len)
 			newposition = tot_len - edit->duration();

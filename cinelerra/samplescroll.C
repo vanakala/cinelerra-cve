@@ -50,15 +50,15 @@ void SampleScroll::set_position(void)
 			master_edl->local_session->zoom_time;
 
 		if(master_edl->local_session->view_start_pts >
-				master_edl->total_length() - handle_dur)
+				master_edl->duration() - handle_dur)
 		{
-			new_pos = master_edl->total_length() - handle_dur;
+			new_pos = master_edl->duration() - handle_dur;
 			if(new_pos < 0)
 				new_pos = 0;
 
 			master_edl->local_session->view_start_pts = new_pos;
 		}
-		update_length(round(master_edl->total_length() /
+		update_length(round(master_edl->duration() /
 			master_edl->local_session->zoom_time),
 			round(master_edl->local_session->view_start_pts /
 			master_edl->local_session->zoom_time),

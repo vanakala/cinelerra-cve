@@ -116,7 +116,7 @@ void TransportCommand::set_playback_range(int use_inout)
 		start_position = end_position = playbackstart = 0;
 		return;
 	}
-	totlen = edl->total_length();
+	totlen = edl->duration();
 	loop_playback = 0;
 
 	switch(command)
@@ -215,13 +215,13 @@ void TransportCommand::playback_range_inout()
 	if(edl->local_session->outpoint_valid())
 		end_position = edl->local_session->get_outpoint();
 	else
-		end_position = edl->total_length();
+		end_position = edl->duration();
 }
 
 void TransportCommand::playback_range_project()
 {
 	start_position = 0;
-	end_position = edl->total_length();
+	end_position = edl->duration();
 }
 
 // Debug

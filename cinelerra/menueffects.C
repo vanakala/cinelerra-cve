@@ -245,7 +245,7 @@ void MenuEffectThread::run()
 
 	if(PTSEQU(master_edl->local_session->get_selectionend(), total_start))
 	{
-		total_end = master_edl->total_length();
+		total_end = master_edl->duration();
 		total_start = 0;
 		default_asset->range_type = RANGE_PROJECT;
 	}
@@ -310,7 +310,7 @@ void MenuEffectThread::run()
 
 	if(!result)
 	{
-		ptstime min_track_length = master_edl->total_length();
+		ptstime min_track_length = master_edl->duration();
 
 		render_edl = new EDL(0);
 		render_edl->update_assets(master_edl);

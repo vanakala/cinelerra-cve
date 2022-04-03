@@ -366,7 +366,7 @@ void VWindowEditing::next_label()
 
 	if(!current)
 	{
-		ptstime position = vwindow_edl->total_length();
+		ptstime position = vwindow_edl->duration();
 
 		vwindow_edl->local_session->set_selection(position);
 		vwindow->update_position(0, 1);
@@ -397,7 +397,7 @@ void VWindowEditing::to_clip()
 
 	if(PTSEQU(start, end))
 	{
-		end = vwindow_edl->total_length();
+		end = vwindow_edl->duration();
 		start = 0;
 	}
 
@@ -442,7 +442,7 @@ int VWindowSlider::handle_event()
 
 void VWindowSlider::set_position()
 {
-	ptstime new_length = vwindow_edl->total_length();
+	ptstime new_length = vwindow_edl->duration();
 
 	if(EQUIV(vwindow_edl->local_session->preview_end, 0))
 		vwindow_edl->local_session->preview_end = new_length;

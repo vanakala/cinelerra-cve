@@ -148,11 +148,7 @@ public:
 		int currentend, 
 		int handle_mode);
 
-	ptstime total_length();     // Longest track.
-
 	int totalpixels();       // height of all tracks in pixels
-
-private:
 };
 
 #endif

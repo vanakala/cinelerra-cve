@@ -484,7 +484,7 @@ int Render::render(int test_overwrite, Asset *asset, EDL *edl)
 
 // Nothing to render
 		result = EQUIV(total_start, total_end) ||
-				total_start > edl->total_length();
+				total_start > edl->duration();
 	}
 
 // Generate packages

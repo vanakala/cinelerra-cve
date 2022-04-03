@@ -96,14 +96,14 @@ ptstime PluginClient::get_length()
 {
 	if(plugin)
 		return plugin->duration();
-	return master_edl->total_length();
+	return master_edl->duration();
 }
 
 ptstime PluginClient::get_end()
 {
 	if(plugin)
 		return plugin->end_pts();
-	return master_edl->total_length();
+	return master_edl->duration();
 }
 
 int PluginClient::plugin_get_parameters(int channels)

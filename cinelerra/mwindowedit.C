@@ -172,7 +172,7 @@ void MWindow::clear(int clear_handle)
 		master_edl->clear(start,
 			end, 
 			edlsession->labels_follow_edits);
-		master_edl->local_session->preview_end = master_edl->total_length();
+		master_edl->local_session->preview_end = master_edl->duration();
 	}
 }
 
@@ -782,7 +782,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	master_edl->clear(start, end, edlsession->labels_follow_edits);
 	paste_edl(&edl, LOADMODE_PASTE, track, position, behaviour);
 	master_edl->local_session->set_selection(orig_selection);
-	master_edl->local_session->preview_end = master_edl->total_length();
+	master_edl->local_session->preview_end = master_edl->duration();
 	save_backup();
 	undo->update_undo(_("move edit"), LOAD_ALL);
 
@@ -1081,7 +1081,7 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 	if(new_edl == 0)
 		return 0;
 
-	original_length = master_edl->total_length();
+	original_length = master_edl->duration();
 	original_preview_end = master_edl->local_session->preview_end;
 
 	switch(load_mode)
@@ -1107,7 +1107,7 @@ ptstime MWindow::paste_edl(EDL *new_edl,
 	}
 // Fix preview range
 	if(EQUIV(original_length, original_preview_end))
-		master_edl->local_session->preview_end = master_edl->total_length();
+		master_edl->local_session->preview_end = master_edl->duration();
 
 // Start examining next batch of index files
 	mainindexes->start_build();
@@ -1409,7 +1409,7 @@ void MWindow::to_clip()
 	if(EQUIV(end, start)) 
 	{
 		start = 0;
-		end = master_edl->total_length();
+		end = master_edl->duration();
 	}
 
 	new_edl->copy(master_edl, start, end);

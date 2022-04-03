@@ -366,7 +366,7 @@ void TimeBar::get_edl_length()
 {
 	edl_length = 0;
 
-	edl_length = get_edl()->total_length();
+	edl_length = get_edl()->duration();
 
 	if(!EQUIV(edl_length, 0))
 		time_per_pixel = edl_length / get_w();
@@ -735,7 +735,7 @@ void TimeBar::select_region(ptstime position)
 			master_edl->local_session->set_selectionstart(start->position);
 
 		if(!end)
-			master_edl->local_session->set_selectionend(master_edl->total_length());
+			master_edl->local_session->set_selectionend(master_edl->duration());
 		else
 			master_edl->local_session->set_selectionend(end->position);
 	}
