@@ -48,10 +48,12 @@ public:
 	virtual int vertical_span(Theme *theme);
 	int get_canvas_number(Plugin *plugin);
 
-// Get length of track in seconds
+// Get length of track
 	ptstime duration();
-// Get length of effects in seconds
-	ptstime effects_duration(int is_synthesis);
+// Get length of effects
+	ptstime effects_duration();
+// Get length of synthetic effects
+	ptstime synth_effects_duration();
 // Get dimensions of source for convenience functions
 	void get_source_dimensions(ptstime position, int &w, int &h);
 

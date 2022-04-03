@@ -424,17 +424,13 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					master = current;
 					if(options & TRACKS_EFFECTS)
 					{
-						alength = new_track->effects_duration(1);
+						alength = new_track->effects_duration();
 
-						if(alength < EPSILON)
+						if(alength + paste_at > dur)
 						{
-							alength = new_track->effects_duration(0);
-							if(alength + paste_at > dur)
-							{
-								alength = dur - paste_at;
-								if(alength < 0)
-									alength = 0;
-							}
+							alength = dur - paste_at;
+							if(alength < 0)
+								alength = 0;
 						}
 					}
 					else
@@ -468,16 +464,13 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 					master = current;
 					if(options & TRACKS_EFFECTS)
 					{
-						alength = new_track->effects_duration(1);
-						if(alength < EPSILON)
+						alength = new_track->effects_duration();
+
+						if(alength + paste_at > dur)
 						{
-							alength = new_track->effects_duration(0);
-							if(alength + paste_at > dur)
-							{
-								alength = dur - paste_at;
-								if(alength < 0)
-									alength = 0;
-							}
+							alength = dur - paste_at;
+							if(alength < 0)
+								alength = 0;
 						}
 					}
 					else
@@ -530,7 +523,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				break;
 
 			if(options & TRACKS_EFFECTS)
-				dur = new_track->effects_duration(0);
+				dur = new_track->effects_duration();
 			else
 				dur = new_track->duration();
 
@@ -559,7 +552,7 @@ ptstime Tracks::append_tracks(Tracks *tracks, ptstime paste_at,
 				break;
 
 			if(options & TRACKS_EFFECTS)
-				dur = new_track->effects_duration(0);
+				dur = new_track->effects_duration();
 			else
 				dur = new_track->duration();
 
