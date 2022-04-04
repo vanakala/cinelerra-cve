@@ -5,6 +5,8 @@
 
 #include "bchash.h"
 #include "bcresources.h"
+#include "bcsignals.h"
+#include "edl.h"
 #include "filesystem.h"
 #include "language.h"
 #include "loadfile.h"
@@ -297,6 +299,7 @@ int LoadBackup::handle_event()
 
 	mwindow_global->load_filenames(&path_list, LOADMODE_REPLACE);
 	path_list.remove_all_objects();
+	mwindow_global->set_filename(master_edl->project_path);
 	mwindow_global->undo->update_undo(_("load backup"), LOAD_ALL, 0, 0);
 	mwindow_global->save_backup();
 // We deliberately mark the project changed, because the backup is most likely
