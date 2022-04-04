@@ -108,5 +108,6 @@ extern EDL *render_edl;
 #define EDL_VWINDOW   2
 #define EDL_CLIPBRD   4
 #define EDL_UNDO      8
+#define EDL_BACKUP   16
 
 #endif

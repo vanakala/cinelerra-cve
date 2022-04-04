@@ -307,7 +307,7 @@ void EDL::save_xml(FileXML *file, const char *output_path,
 			file->tag.set_title("EDL");
 			file->tag.set_property("VERSION", CINELERRA_VERSION);
 // Save path for restoration of the project title from a backup.
-			if(this->project_path[0])
+			if(save_flags & EDL_BACKUP && this->project_path[0])
 			{
 				file->tag.set_property("PROJECT_PATH", project_path);
 			}

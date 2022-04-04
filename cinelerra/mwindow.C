@@ -1206,7 +1206,7 @@ void MWindow::save_backup(int is_manual)
 			return;
 	}
 	master_edl->set_project_path(mainsession->filename);
-	master_edl->save_xml(&file, BACKUP_PATH);
+	master_edl->save_xml(&file, BACKUP_PATH, EDL_BACKUP);
 	strcpy(path, BACKUP_PATH);
 	fs.complete_path(path);
 
