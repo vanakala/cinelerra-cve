@@ -123,9 +123,7 @@ public:
 		int currentend, 
 		int handle_mode);
 
-	void trim_selection(ptstime start, 
-		ptstime end,
-		int edit_labels);
+	void trim_selection(ptstime start, ptstime end);
 
 // Editing functions
 	void copy_assets(ptstime start,

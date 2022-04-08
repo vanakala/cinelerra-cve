@@ -1491,8 +1491,7 @@ void MWindow::trim_selection()
 		return;
 
 	master_edl->trim_selection(master_edl->local_session->get_selectionstart(),
-		master_edl->local_session->get_selectionend(),
-		edlsession->labels_follow_edits);
+		master_edl->local_session->get_selectionend());
 
 	save_backup();
 	undo->update_undo(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);

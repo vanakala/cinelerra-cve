@@ -391,9 +391,7 @@ void EDL::rechannel()
 	}
 }
 
-void EDL::trim_selection(ptstime start, 
-	ptstime end,
-	int edit_labels)
+void EDL::trim_selection(ptstime start, ptstime end)
 {
 	if(start != end)
 	{
