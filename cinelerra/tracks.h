@@ -125,7 +125,7 @@ public:
 	void copy(Tracks *tracks, ptstime start, ptstime end,
 		ArrayList<Track*> *src_tracks = 0);
 
-	void clear(ptstime start, ptstime end);
+	void clear(ptstime start, ptstime end, Track *first_track = 0);
 	void clear_automation(ptstime selectionstart,
 		ptstime selectionend);
 	void straighten_automation(ptstime selectionstart,

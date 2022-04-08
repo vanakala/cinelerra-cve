@@ -15,13 +15,14 @@
 
 #include <string.h>
 
-void Tracks::clear(ptstime start, ptstime end)
+void Tracks::clear(ptstime start, ptstime end, Track *first_track)
 {
-	Track *current_track;
+	Track *current_track = first_track;
 
-	for(current_track = first; 
-		current_track; 
-		current_track = current_track->next)
+	if(!current_track)
+		current_track = first;
+
+	for(; current_track; current_track = current_track->next)
 	{
 		if(current_track->record)
 			current_track->clear(start, end);
