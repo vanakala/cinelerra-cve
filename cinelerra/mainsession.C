@@ -29,7 +29,6 @@ MainSession::MainSession()
 	drag_assets = new ArrayList<Asset*>;
 	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
-	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
 	clip_number = 1;
 	brender_end = 0;
@@ -49,7 +48,6 @@ MainSession::~MainSession()
 	delete drag_assets;
 	delete drag_auto_gang;
 	delete drag_clips;
-	delete drag_edits;
 }
 
 void MainSession::boundaries()

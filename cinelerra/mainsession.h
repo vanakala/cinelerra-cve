@@ -57,8 +57,6 @@ public:
 
 // Edit whose handle is being dragged
 	Edit *drag_edit;
-// Edits who are being dragged
-	ArrayList<Edit*> *drag_edits;
 // Button pressed during drag
 	int drag_button;
 // Handle being dragged
