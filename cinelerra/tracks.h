@@ -34,11 +34,6 @@ public:
 		Track *track, 
 		ptstime position);
 
-// Construct a list of all the recordable edits which start on position
-	void get_affected_edits(ArrayList<Edit*> *drag_edits, 
-		ptstime position,
-		Track *start_track);
-
 	void get_automation_extents(double *min,
 		double *max,
 		ptstime start,

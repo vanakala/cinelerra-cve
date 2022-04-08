@@ -103,30 +103,6 @@ void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 	}
 }
 
-void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, ptstime position, Track *start_track)
-{
-	drag_edits->remove_all();
-
-	for(Track *track = start_track;
-		track;
-		track = track->next)
-	{
-		if(track->record)
-		{
-			for(Edit *edit = track->edits->first; edit; edit = edit->next)
-			{
-				ptstime startproject = edit->get_pts();
-				if(edl->equivalent(startproject, position))
-				{
-					drag_edits->append(edit);
-					break;
-				}
-			}
-		}
-	}
-
-}
-
 void Tracks::get_automation_extents(double *min,
 	double *max,
 	ptstime start,
