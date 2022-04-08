@@ -461,15 +461,13 @@ void TrackCanvas::drag_stop()
 					mainsession->drag_edit,
 					mainsession->drag_edit->duration());
 
-				if(position < 0)
+				if(position >= 0)
 				{
-					result = 1;
-					break;
+					mwindow_global->move_edits(mainsession->drag_edit,
+						mainsession->track_highlighted,
+						position, !insertion);
 				}
-
-				mwindow_global->move_edits(mainsession->drag_edits,
-					mainsession->track_highlighted,
-					position, !insertion);
+				mainsession->drag_edit = 0;
 			}
 			result = 1;
 		}
@@ -788,8 +786,7 @@ void TrackCanvas::draw_paste_destination()
 	if((mainsession->current_operation == DRAG_ASSET &&
 		(mainsession->drag_assets->total ||
 			mainsession->drag_clips->total)) ||
-		(mainsession->current_operation == DRAG_EDIT &&
-			mainsession->drag_edits->total))
+		(mainsession->current_operation == DRAG_EDIT))
 	{
 		Asset *asset = 0;
 		EDL *clip = 0;
@@ -812,8 +809,8 @@ void TrackCanvas::draw_paste_destination()
 		}
 		else if(mainsession->current_operation == DRAG_EDIT)
 		{
-			paste_length = mainsession->drag_edits->values[0]->duration();
-			position = get_drop_position(&insertion, mainsession->drag_edits->values[0],
+			paste_length = mainsession->drag_edit->duration();
+			position = get_drop_position(&insertion, mainsession->drag_edit,
 				paste_length);
 		}
 		if(position < 0)
@@ -3320,20 +3317,7 @@ int TrackCanvas::do_edits(int cursor_x, int cursor_y, int button_press,
 // Need to create drag window
 						mainsession->current_operation = DRAG_EDIT;
 						mainsession->drag_edit = edit;
-// Drag only one edit
-						if(ctrl_down())
-						{
-							mainsession->drag_edits->remove_all();
-							mainsession->drag_edits->append(edit);
-						}
-						else
-// Construct list of all affected edits
-						{
-							master_edl->tracks->get_affected_edits(
-								mainsession->drag_edits,
-								edit->get_pts(),
-								edit->track);
-						}
+
 						mainsession->drag_origin_x = cursor_x;
 						mainsession->drag_origin_y = cursor_y;
 // Where the drag started, so we know relative position inside the edit later
