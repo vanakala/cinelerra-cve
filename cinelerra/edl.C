@@ -398,9 +398,8 @@ void EDL::trim_selection(ptstime start,
 	if(start != end)
 	{
 // clear the data
-		clear(0, start, edit_labels);
-		clear(end - start, duration(),
-			edit_labels);
+		clear(0, start);
+		clear(end - start, duration());
 	}
 }
 
@@ -475,29 +474,22 @@ void EDL::set_outpoint(ptstime position)
 	}
 }
 
-void EDL::clear(ptstime start,
-	ptstime end,
-	int edit_labels)
+void EDL::clear(ptstime start, ptstime end, Track *first_track)
 {
 	if(PTSEQU(start, end))
 	{
 		ptstime distance = 0;
 
-		tracks->clear_handle(start, 
-			end,
-			distance, 
-			edit_labels);
-		if(edit_labels && distance > 0)
-			labels->paste_silence(start, 
-				start + distance);
+		tracks->clear_handle(start, end, distance,
+			edlsession->labels_follow_edits);
+		if(edlsession->labels_follow_edits && distance > 0)
+			labels->paste_silence(start, start + distance);
 	}
 	else
 	{
-		tracks->clear(start, end);
-		if(edit_labels)
-			labels->clear(start, 
-				end, 
-				1);
+		tracks->clear(start, end, first_track);
+		if(edlsession->labels_follow_edits)
+			labels->clear(start, end, 1);
 	}
 
 // Need to put at beginning so a subsequent paste operation starts at the

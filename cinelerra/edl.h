@@ -139,9 +139,7 @@ public:
 		ptstime end,
 		int edit_labels);
 	void remove_from_project(ArrayList<Asset*> *assets);
-	void clear(ptstime start,
-		ptstime end,
-		int edit_labels);
+	void clear(ptstime start, ptstime end, Track *first_track = 0);
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset, 
 		double position, 

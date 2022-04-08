@@ -169,9 +169,7 @@ void MWindow::clear(int clear_handle)
 
 	if(clear_handle || !EQUIV(start, end))
 	{
-		master_edl->clear(start,
-			end, 
-			edlsession->labels_follow_edits);
+		master_edl->clear(start, end);
 		master_edl->local_session->preview_end = master_edl->duration();
 	}
 }
@@ -452,9 +450,7 @@ void MWindow::cut()
 	ptstime end = master_edl->local_session->get_selectionend();
 
 	copy(start, end);
-	master_edl->clear(start,
-		end,
-		edlsession->labels_follow_edits);
+	master_edl->clear(start, end);
 
 	master_edl->optimize();
 	save_backup();
@@ -779,7 +775,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	for(int i = 0; i < edits->total; i++)
 		tracks.append(edits->values[i]->track);
 	edl.copy(master_edl, start, end, &tracks);
-	master_edl->clear(start, end, edlsession->labels_follow_edits);
+	master_edl->clear(start, end);
 	paste_edl(&edl, LOADMODE_PASTE, track, position, behaviour);
 	master_edl->local_session->set_selection(orig_selection);
 	master_edl->local_session->preview_end = master_edl->duration();
@@ -902,7 +898,7 @@ void MWindow::mute_selection()
 		if(cwindow->stop_playback())
 			return;
 
-		master_edl->clear(start, end, edlsession->labels_follow_edits);
+		master_edl->clear(start, end);
 		master_edl->local_session->set_selectionend(end);
 		master_edl->local_session->set_selectionstart(start);
 		master_edl->paste_silence(start, end, 0);
