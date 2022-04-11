@@ -214,6 +214,8 @@ public:
 // Get current position
 	void get_abs_cursor_pos(int *abs_x, int *abs_y);
 	void get_relative_cursor_pos(int *rel_x, int *rel_y);
+// Cursor is inside the current window at coordinates
+	int cursor_inside_window(int *rel_x, int *rel_y);
 // Return 1 if cursor is over an unobscured part of this window.
 // An argument is provided for excluding a drag popup
 	int get_cursor_over_window(int *rel_x, int *rel_y);
