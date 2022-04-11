@@ -3402,7 +3402,7 @@ int TrackCanvas::button_press_event()
 	int new_cursor;
 	int update_opts = 0;
 
-	if(cursor_in_canvas(&cursor_x, &cursor_y))
+	if(cursor_inside_window(&cursor_x, &cursor_y))
 	{
 		new_cursor = default_cursor();
 
@@ -3574,14 +3574,6 @@ int TrackCanvas::start_selection(ptstime position)
 		rerender = 1;
 	}
 	return rerender;
-}
-
-int TrackCanvas::cursor_in_canvas(int *x_pos, int *y_pos)
-{
-	get_relative_cursor_pos(x_pos, y_pos);
-
-	return *x_pos >= 0 && *x_pos < get_w() &&
-		*y_pos >= 0 && *y_pos < get_h();
 }
 
 ptstime TrackCanvas::time_visible(void)
