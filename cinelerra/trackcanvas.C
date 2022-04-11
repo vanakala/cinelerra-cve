@@ -538,9 +538,11 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	if(position < 0)
 		position = 0;
 
-	if(track && track->edits->last)
+	if(track)
 	{
-		if(position < track->edits->last->get_pts())
+		if(position > master_edl->duration())
+			return -1;
+		if(track->edits->last && position < track->edits->last->get_pts())
 			*is_insertion = 1;
 	}
 	return position;
