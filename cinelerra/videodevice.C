@@ -17,7 +17,6 @@
 VideoDevice::VideoDevice()
 {
 	out_config = 0;
-	irate = 0;
 	out_w = out_h = 0;
 	writing = 0;
 	output_base = 0;

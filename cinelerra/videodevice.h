@@ -58,8 +58,6 @@ public:
 // Audio device to share data with
 	AudioDevice *adevice;
 
-// frame rate
-	float irate;
 // timer for displaying frames in the current buffer
 	Timer buffer_timer;
 // timer for getting frame rate
