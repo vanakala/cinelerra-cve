@@ -105,7 +105,7 @@ void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 				FloatAutos::calculate_bezier(left, right, pos));
 		}
 
-		float new_slope = FloatAutos::calculate_bezier_derivation(left, right, pos);
+		double new_slope = FloatAutos::calculate_bezier_derivation(left, right, pos);
 		this->set_control_in_value(new_slope * control_in_pts);
 		this->set_control_out_value(new_slope * control_out_pts);
 	}
