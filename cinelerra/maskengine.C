@@ -73,7 +73,7 @@ inline void MaskUnit::draw_line_clamped(
 		draw_y2 = tmp;
 	}
 
-	float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1); 
+	double slope = (double)(draw_x2 - draw_x1) / (draw_y2 - draw_y1);
 	w--;
 	for(int y_i = draw_y1; y_i < draw_y2; y_i++) 
 	{ 
@@ -81,7 +81,7 @@ inline void MaskUnit::draw_line_clamped(
 			return; // since y gets larger, there is no point in continuing
 		else if(y_i >= 0) 
 		{ 
-			int x = (int)(slope * (y_i - draw_y1) + draw_x1); 
+			int x = round(slope * (y_i - draw_y1) + draw_x1);
 			int x_i = CLIP(x, 0, w); 
 
 			// now insert into span in order

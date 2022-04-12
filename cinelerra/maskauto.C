@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 MaskPoint::MaskPoint()
 {
 	x = 0;

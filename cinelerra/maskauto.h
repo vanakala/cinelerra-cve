@@ -22,9 +22,9 @@ public:
 	int x;
 	int y;
 // Incoming acceleration
-	float control_x1, control_y1;
+	double control_x1, control_y1;
 // Outgoing acceleration
-	float control_x2, control_y2;
+	double control_x2, control_y2;
 };
 
 class SubMask

@@ -1,32 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "automation.inc"
 #include "clip.h"
 #include "maskauto.h"
 #include "maskautos.h"
 
-
-MaskAutos::MaskAutos(EDL *edl, 
-	Track *track)
+MaskAutos::MaskAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_MASK;
@@ -85,10 +67,10 @@ void MaskAutos::avg_points(MaskPoint *output,
 		*output = *input1;
 	else
 	{
-		float fraction2 = (output_position - position1) / (position2 - position1);
-		float fraction1 = 1 - fraction2;
-		output->x = input1->x * fraction1 + input2->x * fraction2;
-		output->y = input1->y * fraction1 + input2->y * fraction2;
+		double fraction2 = (output_position - position1) / (position2 - position1);
+		double fraction1 = 1 - fraction2;
+		output->x = round(input1->x * fraction1 + input2->x * fraction2);
+		output->y = round(input1->y * fraction1 + input2->y * fraction2);
 		output->control_x1 = input1->control_x1 * fraction1 + input2->control_x1 * fraction2;
 		output->control_y1 = input1->control_y1 * fraction1 + input2->control_y1 * fraction2;
 		output->control_x2 = input1->control_x2 * fraction1 + input2->control_x2 * fraction2;
@@ -148,11 +130,10 @@ int MaskAutos::total_submasks(ptstime position)
 			return current->masks.total;
 		}
 	}
-
 	return 0;
 }
 
-void MaskAutos::translate_masks(float translate_x, float translate_y)
+void MaskAutos::translate_masks(double translate_x, double translate_y)
 {
 	for(MaskAuto* current = (MaskAuto*)first; 
 		current; 
