@@ -6,12 +6,6 @@
 #ifndef AUDIODEVICE_H
 #define AUDIODEVICE_H
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-
 #include "audioalsa.inc"
 #include "audiodevice.inc"
 #include "audioesound.inc"
@@ -44,7 +38,6 @@ public:
 class AudioDevice : public Thread
 {
 public:
-// MWindow is required where global input is used, to get the pointer.
 	AudioDevice();
 	~AudioDevice();
 
@@ -89,7 +82,7 @@ public:
 
 // total audio time played
 //  + audio offset from configuration if playback
-	ptstime current_postime(float speed = 1.0);
+	ptstime current_postime(double speed = 1.0);
 // If interrupted
 	int get_interrupted();
 	int get_device_buffer();

@@ -16,7 +16,6 @@
 #include "preferences.h"
 #include "sema.h"
 
-
 AudioLowLevel::AudioLowLevel(AudioDevice *device)
 {
 	this->device = device;
