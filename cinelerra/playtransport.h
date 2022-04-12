@@ -7,14 +7,8 @@
 #define PLAYTRANSPORT_H
 
 #include "bcbutton.h"
-#include "edl.inc"
-#include "mwindow.inc"
 #include "playbackengine.inc"
 #include "playtransport.inc"
-
-#define PLAY_MODE 0
-#define PAUSE_MODE 1
-#define PAUSEDOWN_MODE 2
 
 class PlayTransport
 {
@@ -41,10 +35,6 @@ public:
 
 	int get_w();
 
-// playback parameters
-	int reverse;
-	float speed;
-
 	PTransportButton *active_button;
 	PlayButton *forward_play;
 	FramePlayButton *frame_forward_play;
@@ -69,9 +59,6 @@ public:
 	PTransportButton(PlayTransport *transport, int x, int y, VFrame **data);
 	virtual ~PTransportButton() {};
 
-	virtual void set_mode(int mode);
-
-	int mode;
 	PlayTransport *transport;
 };
 

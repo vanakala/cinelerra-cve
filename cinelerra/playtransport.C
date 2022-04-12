@@ -5,18 +5,13 @@
 
 #include "bcsignals.h"
 #include "bcwindowbase.h"
-#include "edl.h"
 #include "keys.h"
 #include "language.h"
-#include "localsession.h"
-#include "mwindow.h"
 #include "playbackengine.h"
 #include "playtransport.h"
-#include "preferences.h"
 #include "theme.h"
 #include "transportcommand.h"
 #include "vframe.h"
-#include "localsession.h"
 
 
 PlayTransport::PlayTransport(BC_WindowBase *subwindow,
@@ -46,11 +41,7 @@ PlayTransport::PlayTransport(BC_WindowBase *subwindow,
 	x += fast_play->get_w();
 	subwindow->add_subwindow(end_button = new EndButton(this, x, y));
 	x += end_button->get_w();
-
-	reverse = 0;
-	speed = 0;
 }
-
 
 PlayTransport::~PlayTransport()
 {
@@ -252,14 +243,7 @@ PTransportButton::PTransportButton(PlayTransport *transport, int x, int y, VFram
  : BC_Button(x, y, data)
 {
 	this->transport = transport;
-	mode = PLAY_MODE;
 }
-
-void PTransportButton::set_mode(int mode)
-{
-	this->mode = mode;
-}
-
 
 RewindButton::RewindButton(PlayTransport *transport, int x, int y)
  : PTransportButton(transport, x, y, theme_global->get_image_set("rewind"))
