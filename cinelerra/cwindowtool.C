@@ -685,8 +685,8 @@ int CWindowCamProjGUI::handle_event()
 		y_auto->set_value(atof(y->get_text()));
 	else if(create_z && z_auto)
 	{
-		float zoom = atof(z->get_text());
-		float zmax = is_camera ? 10 : 10000;
+		double zoom = atof(z->get_text());
+		double zmax = is_camera ? 10 : 10000;
 
 		if(zoom > zmax)
 			zoom = zmax;
