@@ -42,7 +42,6 @@ public:
 		int *output);
 	void toggle_master(int value, MasterTrackPatch *toggle, int *output);
 	virtual int update(int x, int y);
-	void synchronize_faders(float change, int audio, int video);
 
 	PatchBay *patchbay;
 	Track *track;
