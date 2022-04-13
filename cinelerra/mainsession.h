@@ -68,7 +68,7 @@ public:
 // Cursor position when button was pressed
 	int drag_origin_x, drag_origin_y;
 // Value of keyframe when button was pressed
-	float drag_start_percentage;
+	double drag_start_percentage;
 	ptstime drag_start_postime;
 // Records for redrawing brender position in timebar
 	ptstime brender_end;
