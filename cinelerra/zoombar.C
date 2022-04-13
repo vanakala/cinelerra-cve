@@ -458,9 +458,9 @@ int ZoomTextBox::button_press_event()
 
 int ZoomTextBox::handle_event()
 {
-	float min, max;
+	double min, max;
 
-	if(sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
+	if(sscanf(this->get_text(),"%lf to%lf", &min, &max) == 2)
 	{
 		AUTOMATIONVIEWCLAMPS(min, master_edl->local_session->zoombar_showautotype);
 		AUTOMATIONVIEWCLAMPS(max, master_edl->local_session->zoombar_showautotype);
