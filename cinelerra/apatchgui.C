@@ -186,15 +186,6 @@ int APatchGUI::update(int x, int y)
 	return y1;
 }
 
-void APatchGUI::synchronize_fade(double value_change)
-{
-	if(fade && !change_source) 
-	{
-		fade->update(fade->get_value() + value_change);
-		fade->update_edl();
-	}
-}
-
 
 AFadePatch::AFadePatch(APatchGUI *patch, int x, int y, int w)
  : BC_FSlider(x, y, 0, w, w,

@@ -28,7 +28,6 @@ public:
 
 	int reposition(int x, int y);
 	int update(int x, int y);
-	void synchronize_fade(double value_change);
 
 	ATrack *atrack;
 	AFadePatch *fade;

@@ -132,15 +132,6 @@ int VPatchGUI::update(int x, int y)
 	return y1;
 }
 
-void VPatchGUI::synchronize_fade(double value_change)
-{
-	if(fade && !change_source) 
-	{
-		fade->update(round(fade->get_value() + value_change));
-		fade->update_edl();
-	}
-}
-
 
 VFadePatch::VFadePatch(VPatchGUI *patch, int x, int y, int w)
  : BC_ISlider(x, y, 0, w, w,
