@@ -486,9 +486,13 @@ void SetChannelsCanvas::get_dimensions(int channel_position,
 #define MARGIN 10
 	int real_w = this->get_w() - box_r * 2 - MARGIN;
 	int real_h = this->get_h() - box_r * 2 - MARGIN;
-	float corrected_position = channel_position;
-	if(corrected_position < 0) corrected_position += 360;
-	Units::polar_to_xy((float)corrected_position, real_w / 2, x, y);
+	double corrected_position = channel_position;
+
+	if(corrected_position < 0)
+		corrected_position += 360;
+
+	Units::polar_to_xy(corrected_position, real_w / 2, x, y);
+
 	x += real_w / 2 + MARGIN / 2;
 	y += real_h / 2 + MARGIN / 2;
 	w = box_r * 2;
