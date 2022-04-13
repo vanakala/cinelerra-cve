@@ -89,8 +89,8 @@ public:
 // Track zoom
 	int zoom_track;
 // Vertical automation scale
-	float automation_mins[6];
-	float automation_maxs[6];
+	double automation_mins[6];
+	double automation_maxs[6];
 	int zoombar_showautotype;
 
 // Range for CWindow and VWindow preview in seconds.
