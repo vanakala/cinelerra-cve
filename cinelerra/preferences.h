@@ -33,7 +33,7 @@ public:
 		int *channel_positions, 
 		int channels);
 
-	void add_node(char *text, int port, int enabled, float rate);
+	void add_node(char *text, int port, int enabled, double rate);
 	void delete_node(int number);
 	void delete_nodes();
 	void reset_rates();

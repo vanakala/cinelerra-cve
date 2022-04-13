@@ -270,7 +270,7 @@ void Preferences::load_defaults(BC_Hash *defaults)
 		char result[BCTEXTLEN];
 		int result_port = 0;
 		int result_enabled = 0;
-		float result_rate = 0.0;
+		double result_rate = 0.0;
 
 		result[0] = 0;
 		defaults->get(string, result);
@@ -339,7 +339,7 @@ void Preferences::save_defaults(BC_Hash *defaults)
 	}
 }
 
-void Preferences::add_node(char *text, int port, int enabled, float rate)
+void Preferences::add_node(char *text, int port, int enabled, double rate)
 {
 	if(text[0] == 0) return;
 
