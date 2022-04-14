@@ -56,9 +56,9 @@ void ATrack::set_default_title()
 	BC_Resources::encode_to_utf8(title, BCTEXTLEN);
 }
 
-posnum ATrack::to_units(ptstime position, int round)
+posnum ATrack::to_units(ptstime position)
 {
-	return Units::round(position * edlsession->sample_rate);
+	return round(position * edlsession->sample_rate);
 }
 
 ptstime ATrack::from_units(posnum position)

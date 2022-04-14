@@ -19,7 +19,7 @@ public:
 
 	void set_default_title();
 	void save_header(FileXML *file);
-	posnum to_units(ptstime position, int round = 0);
+	posnum to_units(ptstime position);
 	ptstime from_units(posnum position);
 
 	void calculate_output_transfer(ptstime position,

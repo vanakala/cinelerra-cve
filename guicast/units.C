@@ -436,11 +436,6 @@ void Units::polar_to_xy(double angle, int radius, int &x, int &y)
 	y = round(-sin(angle / 360 * (2 * M_PI)) * radius);
 }
 
-int64_t Units::round(double result)
-{
-	return round(result);
-}
-
 double Units::quantize10(double value)
 {
 	return round(value * 10) / 10;

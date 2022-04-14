@@ -1187,7 +1187,7 @@ void TrackCanvas::draw_transitions()
 					strip_y += theme_global->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
-				strip_w = Units::round(edit->transition->duration() /
+				strip_w = round(edit->transition->duration() /
 					master_edl->local_session->zoom_time);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&

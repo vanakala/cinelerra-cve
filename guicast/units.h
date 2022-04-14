@@ -132,9 +132,6 @@ public:
 
 	static double xy_to_polar(int x, int y);
 	static void polar_to_xy(double angle, int radius, int &x, int &y);
-// Numbers < 0 round down if next digit is < 5
-// Numbers > 0 round up if next digit is > 5
-	static int64_t round(double result);
 
 	static double quantize10(double value);
 	static double quantize(double value, double precision);

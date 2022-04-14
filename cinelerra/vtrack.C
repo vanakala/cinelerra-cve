@@ -52,9 +52,9 @@ void VTrack::set_default_title()
 	BC_Resources::encode_to_utf8(title, BCTEXTLEN);
 }
 
-posnum VTrack::to_units(ptstime position, int round)
+posnum VTrack::to_units(ptstime position)
 {
-	return Units::round(position * edlsession->frame_rate);
+	return round(position * edlsession->frame_rate);
 }
 
 ptstime VTrack::from_units(posnum position)
