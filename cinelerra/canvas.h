@@ -8,7 +8,6 @@
 
 #include "bcpopup.h"
 #include "bcmenuitem.h"
-#include "bcmeter.h"
 #include "bcpopupmenu.h"
 #include "bcscrollbar.h"
 #include "cwindowgui.inc"
