@@ -638,7 +638,7 @@ void BC_FSlider::init_selection(int cursor_x, int cursor_y)
 
 int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 {
-	float old_value = value;
+	double old_value = value;
 
 	if(vertical)
 	{
@@ -660,11 +660,7 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 
-	if(old_value != value)
-	{
-		return 1;
-	}
-	return 0;
+	return !EQUIV(old_value, value);
 }
 
 void BC_FSlider::set_precision(double value)
