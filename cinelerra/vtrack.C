@@ -54,16 +54,7 @@ void VTrack::set_default_title()
 
 posnum VTrack::to_units(ptstime position, int round)
 {
-	if(round)
-	{
-		return Units::round(position * edlsession->frame_rate);
-	}
-	else
-	{
-// Kludge for rounding errors, just on a smaller scale than formal rounding
-		position *= edlsession->frame_rate;
-		return Units::to_int64(position);
-	}
+	return Units::round(position * edlsession->frame_rate);
 }
 
 ptstime VTrack::from_units(posnum position)

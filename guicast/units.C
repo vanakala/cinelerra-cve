@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcwindowbase.inc"
 #include "units.h"
@@ -27,7 +11,6 @@
 #include <string.h>
 
 int* Freq::freqtable = 0;
-
 
 DB::DB()
 {
@@ -136,12 +119,9 @@ int Freq::operator!=(Freq &newfreq) { return freq != newfreq.freq; }
 int Freq::operator==(Freq &newfreq) { return freq == newfreq.freq; }
 int Freq::operator==(int newfreq) { return freq == newfreq; }
 
-char* Units::totext(char *text, 
-			double seconds, 
-			int time_format, 
-			int sample_rate, 
-			float frame_rate, 
-			float frames_per_foot)    // give text representation as time
+char* Units::totext(char *text, ptstime seconds,
+	int time_format, int sample_rate,
+	double frame_rate, double frames_per_foot)    // give text representation as time
 {
 	int hour, minute, second, thousandths;
 	int64_t frame, feet;
@@ -168,22 +148,22 @@ char* Units::totext(char *text,
 
 		case TIME_HMS2:
 		{
-			float second;
+			double second;
 			seconds = fabs(seconds);
 			hour = (int)(seconds / 3600);
 			minute = (int)(seconds / 60 - hour * 60);
-			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+			second = (double)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
 			sprintf(text, "%d:%02d:%02d", hour, minute, (int)second);
 			return text;
 		}
 
 		case TIME_HMS3:
 		{
-			float second;
+			double second;
 			seconds = fabs(seconds);
 			hour = (int)(seconds / 3600);
 			minute = (int)(seconds / 60 - hour * 60);
-			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+			second = (double)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
 			sprintf(text, "%02d:%02d:%02d", hour, minute, (int)second);
 			return text;
 		}
@@ -210,21 +190,21 @@ char* Units::totext(char *text,
 		}
 
 		case TIME_SAMPLES:
-			sprintf(text, "%09" PRId64, to_int64(seconds * sample_rate));
+			sprintf(text, "%09" PRId64, (int64_t)round(seconds * sample_rate));
 			break;
 
 		case TIME_SAMPLES_HEX:
-			sprintf(text, "%08" PRIx64, to_int64(seconds * sample_rate));
+			sprintf(text, "%08" PRIx64, (int64_t)round(seconds * sample_rate));
 			break;
 
 		case TIME_FRAMES:
-			frame = to_int64(seconds * frame_rate);
+			frame = round(seconds * frame_rate);
 			sprintf(text, "%06" PRId64, frame);
 			return text;
 			break;
 
 		case TIME_FEET_FRAMES:
-			frame = to_int64(seconds * frame_rate);
+			frame = round(seconds * frame_rate);
 			feet = (int64_t)(frame / frames_per_foot);
 			sprintf(text, "%05" PRId64 "-%02" PRId64,
 				feet, 
@@ -235,23 +215,16 @@ char* Units::totext(char *text,
 	return text;
 }
 
-
 // give text representation as time
-char* Units::totext(char *text, 
-		int64_t samples, 
-		int samplerate, 
-		int time_format, 
-		float frame_rate,
-		float frames_per_foot)
+char* Units::totext(char *text, samplenum samples, int samplerate,
+	int time_format, double frame_rate, double frames_per_foot)
 {
 	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
 }
 
-int64_t Units::fromtext(const char *text, 
-			int samplerate, 
-			int time_format, 
-			float frame_rate,
-			float frames_per_foot)
+samplenum Units::fromtext(const char *text, int samplerate,
+	int time_format, double frame_rate,
+	double frames_per_foot)
 {
 	int64_t hours, minutes, frames, total_samples, i, j;
 	int64_t feet;
@@ -262,8 +235,7 @@ int64_t Units::fromtext(const char *text,
 	{
 		case TIME_SECONDS:
 			seconds = atof(text);
-			return (int64_t)(seconds * samplerate);
-			break;
+			return seconds * samplerate;
 
 		case TIME_HMS:
 		case TIME_HMS2:
@@ -271,138 +243,122 @@ int64_t Units::fromtext(const char *text,
 // get hours
 			i = 0;
 			j = 0;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			hours = atol(string);
 // get minutes
 			j = 0;
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			minutes = atol(string);
 
 // get seconds
 			j = 0;
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
-			while((text[i] == '.' || (text[i] >=48 && text[i] <= 57)) && j < 10) string[j++] = text[i++];
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
+			while((text[i] == '.' || (text[i] >= '0' && text[i] <= '9')) && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			seconds = atof(string);
 
-			total_samples = (uint64_t)(((double)seconds + minutes * 60 + hours * 3600) * samplerate);
-			return total_samples;
-			break;
+			return ((double)seconds + minutes * 60 + hours * 3600) *
+					samplerate;
 
 		case TIME_HMSF:
 // get hours
 			i = 0;
 			j = 0;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			hours = atol(string);
 
 // get minutes
 			j = 0;
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			minutes = atol(string);
 
 // get seconds
 			j = 0;
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			seconds = atof(string);
 
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
 // get frames
 			j = 0;
-			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
+			while(text[i] >= '0' && text[i] <= '9' && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			frames = atol(string);
 
-			total_samples = (int64_t)(((float)frames / frame_rate + seconds + minutes*60 + hours*3600) * samplerate);
-			return total_samples;
-			break;
+			return ((double)frames / frame_rate + seconds +
+				minutes * 60 + hours * 3600) * samplerate;
 
 		case TIME_SAMPLES:
 			return atol(text);
-			break;
 
 		case TIME_SAMPLES_HEX:
 			sscanf(text, "%" PRId64, &total_samples);
 			return total_samples;
 
 		case TIME_FRAMES:
-			return (int64_t)(atof(text) / frame_rate * samplerate);
-			break;
+			return (ptstime)(atof(text) / frame_rate * samplerate);
 
 		case TIME_FEET_FRAMES:
 // Get feet
 			i = 0;
 			j = 0;
-			while(text[i] >=48 && text[i] <= 57 && text[i] != 0 && j < 10) string[j++] = text[i++];
+			while(text[i] >= '0' && text[i] <= '9' && text[i] != 0 && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			feet = atol(string);
 
 // skip separator
-			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
+			while((text[i] < '0' || text[i] > '9') && text[i] != 0) i++;
 
 // Get frames
 			j = 0;
-			while(text[i] >=48 && text[i] <= 57 && text[i] != 0 && j < 10) string[j++] = text[i++];
+			while(text[i] >= '0' && text[i] <= '9' && text[i] != 0 && j < 10)
+				string[j++] = text[i++];
 			string[j] = 0;
 			frames = atol(string);
-			return (int64_t)(((float)feet * frames_per_foot + frames) / frame_rate * samplerate);
-			break;
+			return ((double)feet * frames_per_foot + frames) / frame_rate * samplerate;
 	}
 	return 0;
 }
 
-double Units::text_to_seconds(const char *text, 
-				int samplerate, 
-				int time_format, 
-				float frame_rate, 
-				float frames_per_foot)
+ptstime Units::text_to_seconds(const char *text, int samplerate,
+	int time_format, double frame_rate, double frames_per_foot)
 {
-	return (double)fromtext(text, 
-		samplerate, 
-		time_format, 
-		frame_rate, 
-		frames_per_foot) / samplerate;
+	return (ptstime)fromtext(text, samplerate, time_format,
+		frame_rate, frames_per_foot) / samplerate;
 }
 
 int Units::timeformat_totype(const char *tcf) 
 {
-	if (!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
-	if (!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);
-	if (!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
-	if (!strcmp(tcf,TIME_HMS3__STR)) return(TIME_HMS3);
-	if (!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
-	if (!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
-	if (!strcmp(tcf,TIME_SAMPLES_HEX__STR)) return(TIME_SAMPLES_HEX);
-	if (!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
-	if (!strcmp(tcf,TIME_FEET_FRAMES__STR)) return(TIME_FEET_FRAMES);
+	if(!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
+	if(!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);
+	if(!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
+	if(!strcmp(tcf,TIME_HMS3__STR)) return(TIME_HMS3);
+	if(!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
+	if(!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
+	if(!strcmp(tcf,TIME_SAMPLES_HEX__STR)) return(TIME_SAMPLES_HEX);
+	if(!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
+	if(!strcmp(tcf,TIME_FEET_FRAMES__STR)) return(TIME_FEET_FRAMES);
 	return(-1);
-}
-
-
-float Units::toframes(int64_t samples, int sample_rate, float framerate) 
-{ 
-	return (float)samples / sample_rate * framerate; 
-} // give position in frames
-
-int64_t Units::toframes_round(int64_t samples, int sample_rate, float framerate) 
-{
-// used in editing
-	float result_f = (float)samples / sample_rate * framerate; 
-	int64_t result_l = (int64_t)(result_f + 0.5);
-	return result_l;
 }
 
 double Units::fix_framerate(double value)
@@ -425,37 +381,33 @@ double Units::atoframerate(const char *text)
 	return fix_framerate(result);
 }
 
-
-int64_t Units::tosamples(float frames, int sample_rate, float framerate) 
-{ 
-	float result = (frames / framerate * sample_rate);
-
-	if(result - (int)result) result += 1;
-	return (int64_t)result;
-} // give position in samples
-
-
-float Units::xy_to_polar(int x, int y)
+samplenum Units::tosamples(double frames, int sample_rate, double framerate)
 {
-	float angle;
+	return ceil(frames / framerate * sample_rate);
+}
+
+double Units::xy_to_polar(int x, int y)
+{
+	double angle;
+
 	if(x > 0 && y <= 0)
 	{
-		angle = atan((float)-y / x) / (2 * M_PI) * 360;
+		angle = atan((double)-y / x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x < 0 && y <= 0)
 	{
-		angle = 180 - atan((float)-y / -x) / (2 * M_PI) * 360;
+		angle = 180 - atan((double)-y / -x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x < 0 && y > 0)
 	{
-		angle = 180 - atan((float)-y / -x) / (2 * M_PI) * 360;
+		angle = 180 - atan((double)-y / -x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x > 0 && y > 0)
 	{
-		angle = 360 + atan((float)-y / x) / (2 * M_PI) * 360;
+		angle = 360 + atan((double)-y / x) / (2 * M_PI) * 360;
 	}
 	else
 	if(x == 0 && y < 0)
@@ -472,42 +424,31 @@ float Units::xy_to_polar(int x, int y)
 	{
 		angle = 0;
 	}
-
 	return angle;
 }
 
-void Units::polar_to_xy(float angle, int radius, int &x, int &y)
+void Units::polar_to_xy(double angle, int radius, int &x, int &y)
 {
-	while(angle < 0) angle += 360;
+	while(angle < 0)
+		angle += 360;
 
-	x = (int)(cos(angle / 360 * (2 * M_PI)) * radius);
-	y = (int)(-sin(angle / 360 * (2 * M_PI)) * radius);
+	x = round(cos(angle / 360 * (2 * M_PI)) * radius);
+	y = round(-sin(angle / 360 * (2 * M_PI)) * radius);
 }
 
 int64_t Units::round(double result)
 {
-	return (int64_t)(result < 0 ? result - 0.5 : result + 0.5);
+	return round(result);
 }
 
-float Units::quantize10(float value)
+double Units::quantize10(double value)
 {
-	int64_t temp = (int64_t)(value * 10 + 0.5);
-	value = (float)temp / 10;
-	return value;
+	return round(value * 10) / 10;
 }
 
-float Units::quantize(float value, float precision)
+double Units::quantize(double value, double precision)
 {
-	int64_t temp = (int64_t)(value / precision + 0.5);
-	value = (float)temp * precision;
-	return value;
-}
-
-int64_t Units::to_int64(double result)
-{
-// This must round up if result is one sample within cieling.
-// Sampling rates below 48000 may cause more problems.
-	return (int64_t)(result < 0 ? (result - 0.005) : (result + 0.005));
+	return round(value / precision) * precision;
 }
 
 char* Units::print_time_format(int time_format, char *string)
@@ -522,86 +463,7 @@ char* Units::print_time_format(int time_format, char *string)
 		case 5: sprintf(string, "Feet-frames"); break;
 		case 8: sprintf(string, "Seconds"); break;
 	}
-
 	return string;
-}
-
-#undef BYTE_ORDER
-#define BYTE_ORDER ((*(const u_int32_t*)"a   ") & 0x00000001)
-
-void* Units::int64_to_ptr(uint64_t value)
-{
-	unsigned char *value_dissected = (unsigned char*)&value;
-	void *result;
-	unsigned char *data = (unsigned char*)&result;
-
-// Must be done behind the compiler's back
-	if(sizeof(void*) == 4)
-	{
-		if(!BYTE_ORDER)
-		{
-			data[0] = value_dissected[4];
-			data[1] = value_dissected[5];
-			data[2] = value_dissected[6];
-			data[3] = value_dissected[7];
-		}
-		else
-		{
-			data[0] = value_dissected[0];
-			data[1] = value_dissected[1];
-			data[2] = value_dissected[2];
-			data[3] = value_dissected[3];
-		}
-	}
-	else
-	{
-		data[0] = value_dissected[0];
-		data[1] = value_dissected[1];
-		data[2] = value_dissected[2];
-		data[3] = value_dissected[3];
-		data[4] = value_dissected[4];
-		data[5] = value_dissected[5];
-		data[6] = value_dissected[6];
-		data[7] = value_dissected[7];
-	}
-	return result;
-}
-
-uint64_t Units::ptr_to_int64(void *ptr)
-{
-	unsigned char *ptr_dissected = (unsigned char*)&ptr;
-	int64_t result = 0;
-	unsigned char *data = (unsigned char*)&result;
-// Don't do this at home.
-	if(sizeof(void*) == 4)
-	{
-		if(!BYTE_ORDER)
-		{
-			data[4] = ptr_dissected[0];
-			data[5] = ptr_dissected[1];
-			data[6] = ptr_dissected[2];
-			data[7] = ptr_dissected[3];
-		}
-		else
-		{
-			data[0] = ptr_dissected[0];
-			data[1] = ptr_dissected[1];
-			data[2] = ptr_dissected[2];
-			data[3] = ptr_dissected[3];
-		}
-	}
-	else
-	{
-		data[0] = ptr_dissected[0];
-		data[1] = ptr_dissected[1];
-		data[2] = ptr_dissected[2];
-		data[3] = ptr_dissected[3];
-		data[4] = ptr_dissected[4];
-		data[5] = ptr_dissected[5];
-		data[6] = ptr_dissected[6];
-		data[7] = ptr_dissected[7];
-	}
-	return result;
 }
 
 const char* Units::format_to_separators(int time_format)
@@ -635,9 +497,4 @@ void Units::punctuate(char *string)
 
 		string[i] = string[j];
 	}
-}
-
-void Units::fix_double(double *x)
-{
-	*x = *x;
 }

@@ -58,10 +58,7 @@ void ATrack::set_default_title()
 
 posnum ATrack::to_units(ptstime position, int round)
 {
-	if(round)
-		return Units::round(position * edlsession->sample_rate);
-	else
-		return Units::to_int64(position * edlsession->sample_rate);
+	return Units::round(position * edlsession->sample_rate);
 }
 
 ptstime ATrack::from_units(posnum position)

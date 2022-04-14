@@ -1,31 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef UNITS_H
 #define UNITS_H
 
+#include "datatype.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-
 
 #define INFINITYGAIN -96
 #define MAXGAIN 50
@@ -116,10 +100,6 @@ public:
 
 	static int timeformat_totype(const char *tcf);
 
-// No rounding.
-	static float toframes(int64_t samples, int sample_rate, float framerate);
-// Round up if > .5
-	static int64_t toframes_round(int64_t samples, int sample_rate, float framerate);
 	static double fix_framerate(double value);
 	static double atoframerate(const char *text);
 
@@ -130,55 +110,34 @@ public:
 // Returns 0 if the format has no separators.
 	static const char* format_to_separators(int time_format);
 
-	static int64_t tosamples(float frames, int sample_rate, float framerate);
+	static samplenum tosamples(double frames, int sample_rate, double framerate);
 // give text representation as time
-	static char* totext(char *text, 
-				int64_t samples, 
-				int time_format, 
-				int samplerate, 
-				float frame_rate = 0, 
-				float frames_per_foot = 0);
+	static char* totext(char *text, samplenum samples,
+		int time_format, int samplerate,
+		double frame_rate = 0, double frames_per_foot = 0);
 // give text representation as time
-	static char* totext(char *text, 
-				double seconds, 
-				int time_format, 
-				int sample_rate = 0,
-				float frame_rate = 0, 
-				float frames_per_foot = 0);
+	static char* totext(char *text, ptstime seconds,
+		int time_format, int sample_rate = 0,
+		double frame_rate = 0, double frames_per_foot = 0);
 // convert time to samples
-	static int64_t fromtext(const char *text, 
-				int samplerate, 
-				int time_format, 
-				float frame_rate, 
-				float frames_per_foot);
+	static samplenum fromtext(const char *text,
+		int samplerate, int time_format,
+		double frame_rate, double frames_per_foot);
 // Convert text to seconds
-	static double text_to_seconds(const char *text, 
-				int samplerate, 
-				int time_format, 
-				float frame_rate, 
-				float frames_per_foot);
+	static double text_to_seconds(const char *text, int samplerate,
+		int time_format, double frame_rate,
+		double frames_per_foot);
 
 	static char* print_time_format(int time_format, char *string);
 
-	static float xy_to_polar(int x, int y);
-	static void polar_to_xy(float angle, int radius, int &x, int &y);
-
+	static double xy_to_polar(int x, int y);
+	static void polar_to_xy(double angle, int radius, int &x, int &y);
 // Numbers < 0 round down if next digit is < 5
 // Numbers > 0 round up if next digit is > 5
 	static int64_t round(double result);
 
-// Flooring type converter rounded to nearest .001
-	static int64_t to_int64(double result);
-
-	static float quantize10(float value);
-	static float quantize(float value, float precision);
-
-	static void* int64_to_ptr(uint64_t value);
-	static uint64_t ptr_to_int64(void *ptr);
-
-// Comparisons between double seem to work more often when this is called
-// on the comparison values.
-	static void fix_double(double *x);
+	static double quantize10(double value);
+	static double quantize(double value, double precision);
 };
 
 #endif
