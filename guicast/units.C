@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcwindowbase.inc"
+#include "bcsignals.h"
 #include "units.h"
 
 #include <inttypes.h>
@@ -343,8 +344,48 @@ samplenum Units::fromtext(const char *text, int samplerate,
 ptstime Units::text_to_seconds(const char *text, int samplerate,
 	int time_format, double frame_rate, double frames_per_foot)
 {
-	return (ptstime)fromtext(text, samplerate, time_format,
-		frame_rate, frames_per_foot) / samplerate;
+	char *nptr;
+	long hour, min, sec, mil;
+	posnum pos;
+
+	hour = min = sec = mil = 0;
+
+	switch(time_format)
+	{
+	case TIME_HMSF:
+	case TIME_HMS:
+	case TIME_HMS2:
+	case TIME_HMS3:
+		hour = strtol(text, &nptr, 10);
+		if(*nptr)
+		{
+			min = strtol(nptr + 1, &nptr, 10);
+			if(*nptr)
+			{
+				sec = strtol(nptr + 1, &nptr, 10);
+				if(*nptr)
+					mil = strtol(nptr + 1, &nptr, 10);
+			}
+		}
+		if(time_format == TIME_HMSF)
+			return (ptstime)hour * 3600 + min * 60 + sec + mil / frame_rate;
+		return (ptstime)hour * 3600 + min * 60 + sec + mil / 1000.0;
+	case TIME_SECONDS:
+		return atof(text);
+
+	case TIME_SAMPLES:
+		return atof(text) / samplerate;
+
+	case TIME_FRAMES:
+		return atof(text) / frame_rate;
+
+	case TIME_FEET_FRAMES:
+		hour = strtol(text, &nptr, 10);
+		if(*nptr)
+			min = strtol(nptr + 1, &nptr, 10);
+		return (hour * frames_per_foot + min) / frame_rate;
+	}
+	return 0;
 }
 
 int Units::timeformat_totype(const char *tcf) 
