@@ -194,10 +194,6 @@ char* Units::totext(char *text, ptstime seconds,
 			sprintf(text, "%09" PRId64, (int64_t)round(seconds * sample_rate));
 			break;
 
-		case TIME_SAMPLES_HEX:
-			sprintf(text, "%08" PRIx64, (int64_t)round(seconds * sample_rate));
-			break;
-
 		case TIME_FRAMES:
 			frame = round(seconds * frame_rate);
 			sprintf(text, "%06" PRId64, frame);
@@ -278,7 +274,6 @@ int Units::timeformat_totype(const char *tcf)
 	if(!strcmp(tcf,TIME_HMS3__STR)) return(TIME_HMS3);
 	if(!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
 	if(!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
-	if(!strcmp(tcf,TIME_SAMPLES_HEX__STR)) return(TIME_SAMPLES_HEX);
 	if(!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
 	if(!strcmp(tcf,TIME_FEET_FRAMES__STR)) return(TIME_FEET_FRAMES);
 	return(-1);
@@ -371,15 +366,33 @@ double Units::quantize(double value, double precision)
 
 char* Units::print_time_format(int time_format, char *string)
 {
+
 	switch(time_format)
 	{
-		case 0: sprintf(string, "Hours:Minutes:Seconds.xxx"); break;
-		case 1: sprintf(string, "Hours:Minutes:Seconds:Frames"); break;
-		case 2: sprintf(string, "Samples"); break;
-		case 3: sprintf(string, "Hex Samples"); break;
-		case 4: sprintf(string, "Frames"); break;
-		case 5: sprintf(string, "Feet-frames"); break;
-		case 8: sprintf(string, "Seconds"); break;
+	case TIME_HMS:
+		strcpy(string, "Hours:Minutes:Seconds.xxx");
+		break;
+	case TIME_HMSF:
+		strcpy(string, "Hours:Minutes:Seconds:Frames");
+		break;
+	case TIME_SAMPLES:
+		strcpy(string, "Samples");
+		break;
+	case TIME_FRAMES:
+		strcpy(string, "Frames");
+		break;
+	case TIME_FEET_FRAMES:
+		strcpy(string, "Feet-frames");
+		break;
+	case TIME_HMS2:
+	case TIME_HMS3:
+		strcpy(string, "Hours:Minutes:Seconds");
+		break;
+	case TIME_SECONDS:
+		strcpy(string, "Seconds");
+		break;
+	default:
+		*string = 0;
 	}
 	return string;
 }
@@ -388,15 +401,21 @@ const char* Units::format_to_separators(int time_format)
 {
 	switch(time_format)
 	{
-		case TIME_SECONDS:     return "0000.000";
-		case TIME_HMS:         return "0:00:00.000";
-		case TIME_HMS2:        return "0:00:00";
-		case TIME_HMS3:        return "00:00:00";
-		case TIME_HMSF:        return "0:00:00:00";
-		case TIME_SAMPLES:     return 0;
-		case TIME_SAMPLES_HEX: return 0;
-		case TIME_FRAMES:      return 0;
-		case TIME_FEET_FRAMES: return "00000-00";
+	case TIME_SECONDS:
+		return "0000.000";
+	case TIME_HMS:
+		return "0:00:00.000";
+	case TIME_HMS2:
+		return "0:00:00";
+	case TIME_HMS3:
+		return "00:00:00";
+	case TIME_HMSF:
+		return "0:00:00:00";
+	case TIME_SAMPLES:
+	case TIME_FRAMES:
+		return 0;
+	case TIME_FEET_FRAMES:
+		return "00000-00";
 	}
 	return 0;
 }

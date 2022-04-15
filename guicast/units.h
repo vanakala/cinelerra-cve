@@ -16,26 +16,25 @@
 #define TOTALFREQS 1024
 
 // h:mm:ss.sss
-#define TIME_HMS 0
-// h:mm:ss
-#define TIME_HMS2 6
-// hh:mm:ss
-#define TIME_HMS3 7
+#define TIME_HMS         1
 // h:mm:ss:ff
-#define TIME_SECONDS 8
-#define TIME_HMSF 1
-#define TIME_SAMPLES 2
-#define TIME_SAMPLES_HEX 3
-#define TIME_FRAMES 4
+#define TIME_HMSF        2
+#define TIME_SAMPLES     3
+#define TIME_FRAMES      4
 // fffff-ff
 #define TIME_FEET_FRAMES 5
+// h:mm:ss
+#define TIME_HMS2        6
+// hh:mm:ss
+#define TIME_HMS3        7
+#define TIME_SECONDS     8
+
 #define TIME_SECONDS__STR      "ssss.sss"
 #define TIME_HMS__STR          "h:mm:ss.sss"
 #define TIME_HMS2__STR         "h:mm:ss"
 #define TIME_HMS3__STR         "hh:mm:ss"
 #define TIME_HMSF__STR         "h:mm:ss:ff"
 #define TIME_SAMPLES__STR      "audio samples"
-#define TIME_SAMPLES_HEX__STR  "audio samples (hex)"
 #define TIME_FRAMES__STR       "video frames"
 #define TIME_FEET_FRAMES__STR  "video frames (feet)"
 
