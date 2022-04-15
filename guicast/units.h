@@ -119,12 +119,8 @@ public:
 	static char* totext(char *text, ptstime seconds,
 		int time_format, int sample_rate = 0,
 		double frame_rate = 0, double frames_per_foot = 0);
-// convert time to samples
-	static samplenum fromtext(const char *text,
-		int samplerate, int time_format,
-		double frame_rate, double frames_per_foot);
 // Convert text to seconds
-	static double text_to_seconds(const char *text, int samplerate,
+	static ptstime text_to_seconds(const char *text, int samplerate,
 		int time_format, double frame_rate,
 		double frames_per_foot);
 
