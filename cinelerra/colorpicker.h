@@ -20,12 +20,8 @@ class PaletteWheel;
 class PaletteWheelValue;
 class PaletteOutput;
 class PaletteHue;
-class PaletteSaturation;
-class PaletteValue;
-class PaletteRed;
-class PaletteGreen;
-class PaletteBlue;
-class PaletteAlpha;
+class PaletteFSlider;
+class PaletteISlider;
 
 class ColorThread : public Thread
 {
@@ -34,13 +30,13 @@ public:
 	~ColorThread();
 
 	void run();
-	void start_window(int r, int g, int b, int alpha);
+	void start_window(int r, int g, int b, int a);
 	void start_window(int output, int alpha);
 	virtual int handle_new_color(int output, int alpha) { return 0; }
 	virtual int handle_new_color(int red, int green,
 		int blue, int alpha) { return 0; };
-	void update_gui(int r, int g, int b, int alpha);
-	void update_gui(int output, int alpha);
+	void update_gui(int r, int g, int b, int a);
+	void update_gui(int output, int a);
 
 private:
 	friend class ColorWindow;
@@ -49,10 +45,12 @@ private:
 	Condition *completion;
 // protects window, output, alpha
 	Mutex *mutex;
-// Starting color
-	int output;
-	int alpha;
 	int do_alpha;
+// u16 colors
+	int red;
+	int green;
+	int blue;
+	int alpha;
 	const char *title;
 	VFrame *icon;
 };
@@ -74,14 +72,16 @@ public:
 	PaletteWheelValue *wheel_value;
 	PaletteOutput *output;
 	PaletteHue *hue;
-	PaletteSaturation *saturation;
-	PaletteValue *value;
-	PaletteRed *red;
-	PaletteGreen *green;
-	PaletteBlue *blue;
-	PaletteAlpha *alpha;
+	PaletteFSlider *saturation;
+	PaletteFSlider *value;
+	PaletteISlider *red;
+	PaletteISlider *green;
+	PaletteISlider *blue;
+	PaletteISlider *alpha;
 	VFrame *value_bitmap;
-	float h, s, v, r, g, b, a;
+	int hueval;
+	double sat;
+	double val;
 };
 
 
@@ -95,8 +95,8 @@ public:
 	int cursor_motion_event();
 	int button_release_event();
 
-	void draw(float hue, float saturation);
-	int get_angle(float x1, float y1, float x2, float y2);
+	void draw(int hue, double saturation);
+	int get_angle(int x1, int y1, int x2, int y2);
 	double torads(double angle);
 
 	ColorWindow *window;
@@ -114,7 +114,7 @@ public:
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
-	void draw(float hue, float saturation, float value);
+	void draw(int hue, double saturation, double value);
 
 	ColorWindow *window;
 	int button_down;
@@ -143,59 +143,21 @@ public:
 	ColorWindow *window;
 };
 
-class PaletteSaturation : public BC_FSlider
+class PaletteFSlider : public BC_FSlider
 {
 public:
-	PaletteSaturation(ColorWindow *window, int x, int y);
-
-	int handle_event();
-	ColorWindow *window;
-};
-
-class PaletteValue : public BC_FSlider
-{
-public:
-	PaletteValue(ColorWindow *window, int x, int y);
+	PaletteFSlider(ColorWindow *window, int x, int y, double *value);
 
 	int handle_event();
 
 	ColorWindow *window;
+	double *value;
 };
 
-class PaletteRed : public BC_FSlider
+class PaletteISlider : public BC_ISlider
 {
 public:
-	PaletteRed(ColorWindow *window, int x, int y);
-
-	int handle_event();
-
-	ColorWindow *window;
-};
-
-class PaletteGreen : public BC_FSlider
-{
-public:
-	PaletteGreen(ColorWindow *window, int x, int y);
-
-	int handle_event();
-
-	ColorWindow *window;
-};
-
-class PaletteBlue : public BC_FSlider
-{
-public:
-	PaletteBlue(ColorWindow *window, int x, int y);
-
-	int handle_event();
-
-	ColorWindow *window;
-};
-
-class PaletteAlpha : public BC_FSlider
-{
-public:
-	PaletteAlpha(ColorWindow *window, int x, int y);
+	PaletteISlider(ColorWindow *window, int x, int y, int *value);
 
 	int handle_event();
 
