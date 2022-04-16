@@ -1,26 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
+#include "datatype.h"
 #include "colorspaces.h"
+#include <math.h>
 
 int ColorSpaces::rtoy_tab_8[0x100];
 int ColorSpaces::gtoy_tab_8[0x100];
@@ -162,6 +148,46 @@ void ColorSpaces::rgb_to_hsv(float r, float g, float b, float &h, float &s, floa
 	}
 }
 
+#define PIXVAL_MAX 65535.0
+
+void ColorSpaces::rgb_to_hsv(int red,  int green, int blue,
+	int *hue, double *sat, double *val)
+{
+	double hf;
+	double rf = red / PIXVAL_MAX;
+	double gf = green / PIXVAL_MAX;
+	double bf = blue / PIXVAL_MAX;
+	double min = (((rf < gf) ? rf : gf) < bf ?
+		((rf < gf) ? rf : gf) : bf);
+	double max = (((rf > gf) ? rf : gf) > bf ?
+		((rf > gf) ? rf : gf) : bf);
+	double delta = max - min;
+
+	*val = max;
+
+	if(max > EPSILON && delta > EPSILON)
+	{
+		*sat = delta / max;
+
+		if(rf == max)
+			hf = (gf - bf) / delta;       // between yellow & magenta
+		else if(gf == max)
+			hf = 2 + (bf - rf) / delta;  // between cyan & yellow
+		else
+			hf = 4 + (rf - gf) / delta;  // between magenta & cyan
+		hf *= 60;
+
+		if(hf < 0)
+			hf += 360;
+		*hue = round(hf);
+	}
+	else
+	{
+		*hue = 0;
+		*sat = 0;
+	}
+}
+
 void ColorSpaces::hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v)
 {
 	int i;
@@ -212,6 +238,58 @@ void ColorSpaces::hsv_to_rgb(float &r, float &g, float &b, float h, float s, flo
 		r = v;
 		g = p;
 		b = q;
+		break;
+	}
+}
+
+void ColorSpaces::hsv_to_rgb(int *red, int *green, int *blue,
+	int hue, double sat, double val)
+{
+	if(sat < EPSILON)
+	{
+// achromatic (grey)
+		*red = *green = *blue = val * PIXVAL_MAX;
+		return;
+	}
+
+	double hf = hue / 60.0;
+	double frac = hf - trunc(hf);
+	double p = val * (1 - sat);
+	double q = val * (1 - sat * frac);
+	double t = val * (1 - sat * (1 - frac));
+	int sec = hf;
+
+	switch(sec)
+	{
+	case 0:
+		*red = val * PIXVAL_MAX;
+		*green = t * PIXVAL_MAX;
+		*blue = p * PIXVAL_MAX;
+		break;
+	case 1:
+		*red = q * PIXVAL_MAX;
+		*green = val * PIXVAL_MAX;
+		*blue = p * PIXVAL_MAX;
+		break;
+	case 2:
+		*red = p * PIXVAL_MAX;
+		*green = val * PIXVAL_MAX;
+		*blue = t * PIXVAL_MAX;
+		break;
+	case 3:
+		*red = p * PIXVAL_MAX;
+		*green = q * PIXVAL_MAX;
+		*blue = val * PIXVAL_MAX;
+		break;
+	case 4:
+		*red = t * PIXVAL_MAX;
+		*green = p * PIXVAL_MAX;
+		*blue = val * PIXVAL_MAX;
+		break;
+	default:                // case 5:
+		*red = val * PIXVAL_MAX;
+		*green = p * PIXVAL_MAX;
+		*blue = q * PIXVAL_MAX;
 		break;
 	}
 }
