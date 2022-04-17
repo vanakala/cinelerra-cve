@@ -61,7 +61,6 @@ public:
 	ColorWindow(ColorThread *thread, int x, int y, const char *title);
 
 	void change_values();
-	void close_event();
 	void update_display();
 	void update_rgb();
 	int handle_event();
@@ -100,8 +99,8 @@ public:
 	double torads(double angle);
 
 	ColorWindow *window;
-	float oldhue;
-	float oldsaturation;
+	int oldhue;
+	double oldsaturation;
 	int button_down;
 };
 

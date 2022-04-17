@@ -196,11 +196,6 @@ void ColorWindow::change_values()
 		&hueval, &sat, &val);
 }
 
-void ColorWindow::close_event()
-{
-	set_done(0);
-}
-
 void ColorWindow::update_rgb()
 {
 	ColorSpaces::rgb_to_hsv(red->get_value(),
@@ -266,7 +261,6 @@ PaletteWheel::PaletteWheel(ColorWindow *window, int x, int y)
 
 void PaletteWheel::show()
 {
-// Upper right
 	int h;
 	double s;
 	double v = 1;
