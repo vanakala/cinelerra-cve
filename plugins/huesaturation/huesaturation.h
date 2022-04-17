@@ -46,13 +46,13 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	double hue;
+	int hue;
 	double saturation;
 	double value;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-class HueSlider : public BC_FSlider
+class HueSlider : public BC_ISlider
 {
 public:
 	HueSlider(HueEffect *plugin, int x, int y, int w);
