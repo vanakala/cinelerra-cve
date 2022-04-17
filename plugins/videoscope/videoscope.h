@@ -36,7 +36,7 @@
 // Vectorscope HSV axes and labels
 const struct Vectorscope_HSV_axes
 {
-	float  hue;   // angle, degrees
+	int    hue;   // angle, degrees
 	char   label[4];
 	int    color; // label color
 }

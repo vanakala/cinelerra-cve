@@ -175,12 +175,11 @@ void VideoScopeWindow::allocate_bitmaps()
 // Convert polar to cartesian for vectorscope.
 // Hue is angle (degrees), Saturation is distance from center [0, 1].
 // Value (intensity) is not plotted.
-static void polar_to_cartesian(double h,
-	double s, double radius,
-	int &x, int & y)
+static void polar_to_cartesian(int h, double s, double radius,
+	int &x, int &y)
 {
-	double adjacent = cos(h / 360 * 2 * M_PI);
-	double opposite = sin(h / 360 * 2 * M_PI);
+	double adjacent = cos(h / 360.0 * 2 * M_PI);
+	double opposite = sin(h / 360.0 * 2 * M_PI);
 	double r = (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius;
 	x = round(radius + adjacent * r);
 	y = round(radius - opposite * r);
@@ -621,34 +620,29 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 			for(int j = 0; j < w; j++)
 			{
 				uint16_t *in_pixel = in_row + j * 4;
-				float intensity;
-				float h, s, v;
+				double intensity;
+				int h;
+				double s, v;
 				int r, g, b;
 
 				r = in_pixel[0];
 				g = in_pixel[1];
 				b = in_pixel[2];
 
-				ColorSpaces::rgb_to_hsv((float)r / 0xffff,
-						(float)g / 0xffff,
-						(float)b / 0xffff,
-						h, s, v);
+				ColorSpaces::rgb_to_hsv(r, g, b, &h, &s, &v);
 				// Calculate point's RGB,
 				// used in both waveform and vectorscope.
 				int ri, gi, bi;
 
-				ri = r / 256;
-				gi = g / 256;
-				bi = b / 256;
 				// Brighten & decrease contrast
 				// so low levels are visible against black.
-				ri = brighten(ri);
-				gi = brighten(gi);
-				bi = brighten(bi);
+				ri = brighten(r >> 8);
+				gi = brighten(g >> 8);
+				bi = brighten(b >> 8);
 				// Calculate waveform
 				intensity = v;
 				int y = waveform_h -
-					(int)roundf((intensity - FLOAT_MIN) /
+					(int)round((intensity - FLOAT_MIN) /
 						(FLOAT_MAX - FLOAT_MIN) *
 						waveform_h);
 				int x = j * waveform_w / w;
@@ -674,12 +668,13 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 			for(int j = 0; j < w; j++)
 			{
 				uint16_t *in_pixel = in_row + j * 4;
-				float intensity;
+				double intensity;
 
 				// Analyze pixel
-				intensity = (float)in_pixel[1] / 0xffff;
+				intensity = (double)in_pixel[1] / 0xffff;
 
-				float h, s, v;
+				int h;
+				double s, v;
 				int r, g, b;
 
 				ColorSpaces::yuv_to_rgb_16(r, g, b,
@@ -687,28 +682,22 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 					in_pixel[2],
 					in_pixel[3]);
 
-				ColorSpaces::rgb_to_hsv((float)r / 0xffff,
-					(float)g / 0xffff,
-					(float)b / 0xffff,
-					h, s, v);
+				ColorSpaces::rgb_to_hsv(r, g, b,
+					&h, &s, &v);
 
 				// Calculate point's RGB, used in both
 				//  waveform and vectorscope.
 				int ri, gi, bi;
 
-				ri = r / 256;
-				gi = g / 256;
-				bi = b / 256;
-
 				// Brighten & decrease contrast so low
 				// levels are visible against black.
-				ri = brighten(ri);
-				gi = brighten(gi);
-				bi = brighten(bi);
+				ri = brighten(r >> 8);
+				gi = brighten(g >> 8);
+				bi = brighten(b >> 8);
 
 				// Calculate waveform
 				int y = waveform_h -
-					(int)roundf((intensity - FLOAT_MIN) /
+					(int)round((intensity - FLOAT_MIN) /
 						(FLOAT_MAX - FLOAT_MIN) *
 						waveform_h);
 
