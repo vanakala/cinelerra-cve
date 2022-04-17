@@ -37,19 +37,11 @@ class ColorSpaces
 public:
 	ColorSpaces();
 
-// All units are 0 - 1
-	static void rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v);
-	static void hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v);
-
 // 16bit RGB
 	static void rgb_to_hsv(int red, int green, int blue,
 		int *hue, double *sat, double *val);
 	static void hsv_to_rgb(int *red, int *green, int *blue,
 		int hue, double sat, double val);
-
-// YUV units are 0 - max.  HSV units are 0 - 1
-	static void yuv_to_hsv(int y, int u, int v, float &h, float &s, float &va, int max);
-	static void hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max);
 
 	static inline void rgb_to_yuv_8(int &y, int &u, int &v)
 	{
