@@ -201,8 +201,6 @@ void GradientWindow::update()
 	update_in_color();
 	update_out_color();
 	update_shape();
-	in_color_thread->update_gui(plugin->config.get_in_color(), plugin->config.in_a);
-	out_color_thread->update_gui(plugin->config.get_out_color(), plugin->config.out_a);
 }
 
 void GradientWindow::update_shape()
