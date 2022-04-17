@@ -107,7 +107,8 @@ void ColorBalanceEngine::run()
 
 		int i, j, k;
 		int y, cb, cr, r, g, b, r_n, g_n, b_n;
-		float h, s, v, h_old, s_old, r_f, g_f, b_f;
+		int h, h_old;
+		double s, v, s_old;
 		int compwidth = input->get_w() * 4;
 
 		switch(input->get_color_model())
@@ -133,12 +134,9 @@ void ColorBalanceEngine::run()
 
 					if(plugin->config.preserve)
 					{
-						ColorSpaces::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v);
-						ColorSpaces::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v);
-						ColorSpaces::hsv_to_rgb(r_f, g_f, b_f, h, s, v);
-						r = r_f;
-						g = g_f;
-						b = b_f;
+						ColorSpaces::rgb_to_hsv(r_n, g_n, b_n, &h, &s, &v);
+						ColorSpaces::rgb_to_hsv(r, g, b, &h_old, &s_old, &v);
+						ColorSpaces::hsv_to_rgb(&r, &g, &b, h, s, v);
 					}
 					else
 					{
@@ -176,16 +174,12 @@ void ColorBalanceEngine::run()
 
 					if(plugin->config.preserve)
 					{
-						ColorSpaces::rgb_to_hsv((float)r_n,
-							(float)g_n, (float)b_n, h, s, v);
-						ColorSpaces::rgb_to_hsv((float)r,
-							(float)g, (float)b,
-							h_old, s_old, v);
-						ColorSpaces::hsv_to_rgb(r_f, g_f, b_f,
+						ColorSpaces::rgb_to_hsv(r_n,
+							g_n, b_n, &h, &s, &v);
+						ColorSpaces::rgb_to_hsv(r, g, b,
+							&h_old, &s_old, &v);
+						ColorSpaces::hsv_to_rgb(&r, &g, &b,
 							h, s, v);
-						r = r_f;
-						g = g_f;
-						b = b_f;
 					}
 					else
 					{
