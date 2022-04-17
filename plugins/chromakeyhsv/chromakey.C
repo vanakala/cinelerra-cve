@@ -544,39 +544,37 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	ChromaKeyPackage *pkg = (ChromaKeyPackage*)package;
 	int w = plugin->input->get_w();
 
-	float red = (float)plugin->config.red / 0xffff;
-	float green = (float)plugin->config.green / 0xffff;
-	float blue = (float)plugin->config.blue / 0xffff;
+	double in_slope = plugin->config.in_slope / 100;
+	double out_slope = plugin->config.out_slope / 100;
 
-	float in_slope = plugin->config.in_slope / 100;
-	float out_slope = plugin->config.out_slope / 100;
+	double tolerance = plugin->config.tolerance / 100;
+	double tolerance_in = tolerance - in_slope;
+	double tolerance_out = tolerance + out_slope;
 
-	float tolerance = plugin->config.tolerance / 100;
-	float tolerance_in = tolerance - in_slope;
-	float tolerance_out = tolerance + out_slope;
+	double sat = plugin->config.saturation / 100;
+	double min_s = plugin->config.min_saturation / 100;
+	double min_s_in = min_s + in_slope;
+	double min_s_out = min_s - out_slope;
 
-	float sat = plugin->config.saturation / 100;
-	float min_s = plugin->config.min_saturation / 100;
-	float min_s_in = min_s + in_slope;
-	float min_s_out = min_s - out_slope;
+	double min_v = plugin->config.min_brightness / 100;
+	double min_v_in = min_v + in_slope;
+	double min_v_out = min_v - out_slope;
 
-	float min_v = plugin->config.min_brightness / 100;
-	float min_v_in = min_v + in_slope;
-	float min_v_out = min_v - out_slope;
+	double max_v = plugin->config.max_brightness / 100;
+	double max_v_in = max_v - in_slope;
+	double max_v_out = max_v + out_slope;
 
-	float max_v = plugin->config.max_brightness / 100;
-	float max_v_in = max_v - in_slope;
-	float max_v_out = max_v + out_slope;
-
-	float spill_threshold = plugin->config.spill_threshold / 100;
-	float spill_amount = 1.0 - plugin->config.spill_amount / 100;
+	double spill_threshold = plugin->config.spill_threshold / 100;
+	double spill_amount = 1.0 - plugin->config.spill_amount / 100;
 
 	int alpha_offset = plugin->config.alpha_offset * 0xffff / 100;
 
 // Convert RGB key to HSV key
-	float hue_key, saturation_key, value_key;
-	ColorSpaces::rgb_to_hsv(red, green, blue,
-		hue_key, saturation_key, value_key);
+	int hue_key;
+	double saturation_key, value_key;
+
+	ColorSpaces::rgb_to_hsv(plugin->config.red, plugin->config.green,
+		plugin->config.blue, &hue_key, &saturation_key, &value_key);
 
 	switch(plugin->input->get_color_model())
 	{
@@ -588,40 +586,35 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 			for(int j = 0; j < w; j++)
 			{
 				float a = 1;
-
-				float r = (float)row[0] / 0xffff;
-				float g = (float)row[1] / 0xffff;
-				float b = (float)row[2] / 0xffff;
-
-				float h, s, v;
-
-				float av = 1, ah = 1, as = 1, avm = 1;
+				int h;
+				double s, v;
+				double av = 1, ah = 1, as = 1, avm = 1;
 				bool has_match = true;
 
-				ColorSpaces::rgb_to_hsv(r, g, b, h, s, v);
+				ColorSpaces::rgb_to_hsv(row[0], row[1], row[2], &h, &s, &v);
 
 // First, test if the hue is in range
-				if(tolerance == 0)
+				if(EQUIV(tolerance, 0))
 					ah = 1.0;
-				else if(fabs(h - hue_key) < tolerance_in * 180)
+				else if(abs(h - hue_key) < tolerance_in * 180)
 					ah = 0;
-				else if((out_slope != 0) && (fabs(h - hue_key) < tolerance * 180))
+				else if(!EQUIV(out_slope, 0) && (abs(h - hue_key) < tolerance * 180))
 // we scale alpha between 0 and 1/2
-					ah = fabs(h - hue_key) / tolerance / 360;
-				else if(fabs (h - hue_key) < tolerance_out * 180)
+					ah = abs(h - hue_key) / tolerance / 360;
+				else if(abs(h - hue_key) < tolerance_out * 180)
 // we scale alpha between 1/2 and 1
-					ah = fabs(h - hue_key) / tolerance_out / 360;
+					ah = abs(h - hue_key) / tolerance_out / 360;
 				else
 					has_match = false;
 
 // Check if the saturation matches
 				if(has_match)
 				{
-					if(min_s == 0)
+					if(EQUIV(min_s, 0))
 						as = 0;
 					else if(s - sat >= min_s_in)
 						as = 0;
-					else if((out_slope != 0) && (s - sat > min_s))
+					else if(!EQUIV(out_slope, 0) && (s - sat > min_s))
 						as = (s - sat - min_s) / (min_s * 2);
 					else if(s - sat > min_s_out)
 						as = (s - sat - min_s_out) / (min_s_out * 2);
@@ -636,7 +629,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 						av = 0;
 					else if(v >= min_v_in)
 						av = 0;
-					else if((out_slope != 0) && (v > min_v))
+					else if(!EQUIV(out_slope, 0) && (v > min_v))
 						av = (v - min_v) / (min_v * 2);
 					else if(v > min_v_out)
 						av = (v - min_v_out) / (min_v_out * 2);
@@ -651,7 +644,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 						avm = 1;
 					else if(v <= max_v_in)
 						avm = 0;
-					else if((out_slope != 0) && (v < max_v))
+					else if(!EQUIV(out_slope, 0) && (v < max_v))
 						avm = (v - max_v) / (max_v * 2);
 					else if(v < max_v_out)
 						avm = (v - max_v_out) / (max_v_out * 2);
@@ -664,17 +657,15 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 					a = MAX(MAX(ah, av), MAX(as, avm));
 
 // Spill light processing
-				if((fabs(h - hue_key) < spill_threshold * 180) ||
-					((fabs(h - hue_key) > 360)
-					&& (fabs(h - hue_key) - 360 < spill_threshold * 180)))
+				if((abs(h - hue_key) < spill_threshold * 180) ||
+					((abs(h - hue_key) > 360)
+					&& (abs(h - hue_key) - 360 < spill_threshold * 180)))
 				{
-					s = s * spill_amount * fabs(h - hue_key) / (spill_threshold * 180);
+					s = s * spill_amount * abs(h - hue_key) / (spill_threshold * 180);
 
-					ColorSpaces::hsv_to_rgb(r, g, b, h, s, v);
+					int ri, gi, bi;
 
-					int ri = r * 0xffff;
-					int gi = g * 0xffff;
-					int bi = b * 0xffff;
+					ColorSpaces::hsv_to_rgb(&ri, &gi, &bi, h, s, v);
 
 					row[0] = CLIP(ri, 0, 0xffff);
 					row[1] = CLIP(gi, 0, 0xffff);
@@ -706,35 +697,37 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 
 			for(int j = 0; j < w; j++)
 			{
-				float a = 1;
-				float h, s, v;
-				float av = 1, ah = 1, as = 1, avm = 1;
+				double a = 1;
+				int h;
+				double s, v;
+				double av = 1, ah = 1, as = 1, avm = 1;
+				int r, g, b;
 				bool has_match = true;
 
-				ColorSpaces::yuv_to_hsv(row[1], row[2], row[3],
-					h, s, v, 0xffff);
+				ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
+				ColorSpaces::rgb_to_hsv(r, g, b, &h, &s, &v);
 
 				// First, test if the hue is in range
-				if(tolerance == 0)
+				if(EQUIV(tolerance, 0))
 					ah = 1.0;
 				else
-				if(fabs(h - hue_key) < tolerance_in * 180)
+				if(abs(h - hue_key) < tolerance_in * 180)
 					ah = 0;
 				else
-				if((out_slope != 0) && (fabs(h - hue_key) < tolerance * 180))
+				if(!EQUIV(out_slope, 0) && (abs(h - hue_key) < tolerance * 180))
 					// we scale alpha between 0 and 1/2
-					ah = fabs(h - hue_key) / tolerance / 360;
+					ah = abs(h - hue_key) / tolerance / 360;
 				else
-				if(fabs(h - hue_key) < tolerance_out * 180)
+				if(abs(h - hue_key) < tolerance_out * 180)
 					// we scale alpha between 1/2 and 1
-					ah = fabs(h - hue_key) / tolerance_out / 360;
+					ah = abs(h - hue_key) / tolerance_out / 360;
 				else
 					has_match = false;
 
 				// Check if the saturation matches
 				if(has_match)
 				{
-					if(min_s == 0)
+					if(EQUIV(min_s, 0))
 						as = 0;
 					else if(s - sat >= min_s_in)
 						as = 0;
@@ -749,7 +742,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 				// Check if the value is more than the minimun
 				if(has_match)
 				{
-					if(min_v == 0)
+					if(EQUIV(min_v, 0))
 						av = 0;
 					else if(v >= min_v_in)
 						av = 0;
@@ -764,7 +757,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 				// Check if the value is less than the maximum
 				if(has_match)
 				{
-					if(max_v == 0)
+					if(EQUIV(max_v, 0))
 						avm = 1;
 					else if(v <= max_v_in)
 						avm = 0;
@@ -781,15 +774,16 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 					a = MAX(MAX(ah, av), MAX(as, avm));
 
 				// Spill light processing
-				if((fabs(h - hue_key) < spill_threshold * 180) ||
-					((fabs(h - hue_key) > 360)
-					&& (fabs(h - hue_key) - 360 < spill_threshold * 180)))
+				if((abs(h - hue_key) < spill_threshold * 180) ||
+					((abs(h - hue_key) > 360)
+					&& (abs(h - hue_key) - 360 < spill_threshold * 180)))
 				{
-					s = s * spill_amount * fabs(h - hue_key) /
+					s = s * spill_amount * abs(h - hue_key) /
 						(spill_threshold * 180);
 
 					int iy, iu, iv;
-					ColorSpaces::hsv_to_yuv(iy, iu, iv, h, s, v, 0xffff);
+					ColorSpaces::hsv_to_rgb(&r, &g, &b, h, s, v);
+					ColorSpaces::rgb_to_yuv_16(r, g, b, iy, iu, iv);
 					row[1] = iy;
 					row[2] = iu;
 					row[3] = iv;
