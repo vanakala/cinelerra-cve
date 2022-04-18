@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcbutton.h"
 #include "bctitle.h"
@@ -139,9 +123,9 @@ void ResizeTrackWindow::update(int changed_scale,
 	if(changed_size)
 	{
 		thread->w_scale = (double)thread->w / thread->w1;
-		w_scale->update((float)thread->w_scale);
+		w_scale->update(thread->w_scale);
 		thread->h_scale = (double)thread->h / thread->h1;
-		h_scale->update((float)thread->h_scale);
+		h_scale->update(thread->h_scale);
 	}
 }
 
@@ -150,7 +134,7 @@ ResizeTrackScaleW::ResizeTrackScaleW(ResizeTrackWindow *gui,
 	ResizeTrackThread *thread,
 	int x,
 	int y)
- : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, (float)thread->w_scale)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, thread->w_scale)
 {
 	this->gui = gui;
 	this->thread = thread;
@@ -167,7 +151,7 @@ ResizeTrackScaleH::ResizeTrackScaleH(ResizeTrackWindow *gui,
 	ResizeTrackThread *thread,
 	int x,
 	int y)
- : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, (float)thread->h_scale)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, thread->h_scale)
 {
 	this->gui = gui;
 	this->thread = thread;
