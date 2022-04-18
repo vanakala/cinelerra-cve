@@ -20,7 +20,6 @@ IVTCConfig::IVTCConfig()
 	frame_offset = 0;
 	first_field = 0;
 	automatic = 1;
-	auto_threshold = 2;
 	pattern = IVTCConfig::PULLDOWN32;
 }
 
@@ -66,7 +65,6 @@ void IVTCMain::load_defaults()
 	config.frame_offset = defaults->get("FRAME_OFFSET", config.frame_offset);
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 	config.automatic = defaults->get("AUTOMATIC", config.automatic);
-	config.auto_threshold = defaults->get("AUTO_THRESHOLD", config.auto_threshold);
 	config.pattern = defaults->get("PATTERN", config.pattern);
 }
 
@@ -75,7 +73,7 @@ void IVTCMain::save_defaults()
 	defaults->update("FRAME_OFFSET", config.frame_offset);
 	defaults->update("FIRST_FIELD", config.first_field);
 	defaults->update("AUTOMATIC", config.automatic);
-	defaults->update("AUTO_THRESHOLD", config.auto_threshold);
+	defaults->delete_key("AUTO_THRESHOLD");
 	defaults->update("PATTERN", config.pattern);
 	defaults->save();
 }
@@ -98,7 +96,6 @@ void IVTCMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("FRAME_OFFSET", config.frame_offset);
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.tag.set_property("AUTOMATIC", config.automatic);
-	output.tag.set_property("AUTO_THRESHOLD", config.auto_threshold);
 	output.tag.set_property("PATTERN", config.pattern);
 	output.append_tag();
 	output.tag.set_title("/IVTC");
@@ -112,8 +109,6 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->get_data(), keyframe->data_size());
 
-	float new_threshold;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("IVTC"))
@@ -121,7 +116,6 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 			config.frame_offset = input.tag.get_property("FRAME_OFFSET", config.frame_offset);
 			config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
 			config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
-			new_threshold = input.tag.get_property("AUTO_THRESHOLD", config.auto_threshold);
 			config.pattern = input.tag.get_property("PATTERN", config.pattern);
 		}
 	}

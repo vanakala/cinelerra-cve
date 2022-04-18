@@ -38,7 +38,6 @@ public:
 // 0 - even     1 - odd
 	int first_field;
 	int automatic;
-	float auto_threshold;
 	int pattern;
 	enum
 	{
