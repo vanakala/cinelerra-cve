@@ -322,9 +322,9 @@ PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
 		int x, 
 		int y)
  : BC_TumbleTextBox(subwindow, 
-	(float)pwindow->thread->preferences->render_preroll,
-	(float)0, 
-	(float)100,
+	pwindow->thread->preferences->render_preroll,
+	0.0,
+	100.0,
 	x,
 	y,
 	100)
