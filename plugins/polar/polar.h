@@ -42,8 +42,8 @@ public:
 		ptstime current_pts);
 
 	int polar_to_rectangular;
-	float depth;
-	float angle;
+	double depth;
+	double angle;
 	int backwards;
 	int invert;
 	PLUGIN_CONFIG_CLASS_MEMBERS

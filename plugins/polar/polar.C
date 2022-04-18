@@ -91,8 +91,8 @@ PolarDepth::PolarDepth(PolarEffect *plugin, int x, int y)
 		0,
 		200,
 		200, 
-		(float)1, 
-		(float)100,
+		1.0,
+		100.0,
 		plugin->config.depth)
 {
 	this->plugin = plugin;
@@ -112,8 +112,8 @@ PolarAngle::PolarAngle(PolarEffect *plugin, int x, int y)
 		0,
 		200,
 		200, 
-		(float)1, 
-		(float)360, 
+		1.0,
+		360.0,
 		plugin->config.angle)
 {
 	this->plugin = plugin;
@@ -249,7 +249,7 @@ static int calc_undistorted_coords(int wx,
 		int wy,
 		int w,
 		int h,
-		float depth,
+		double depth,
 		double angle,
 		int polar_to_rectangular,
 		int backwards,
