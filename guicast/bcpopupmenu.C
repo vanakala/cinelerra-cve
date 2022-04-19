@@ -18,7 +18,6 @@
 #define BUTTON_UP 0
 #define BUTTON_HI 1
 #define BUTTON_DN 2
-#define TOTAL_IMAGES 3
 
 #define TRIANGLE_W 10
 #define TRIANGLE_H 10
@@ -47,7 +46,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		strcpy(this->text, text);
 		use_title = 1;
 	}
-	for(int i = 0; i < TOTAL_IMAGES; i++)
+	for(int i = 0; i < POPUPMENU_TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
 	}
@@ -74,7 +73,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		strcpy(this->text, text);
 		use_title = 1;
 	}
-	for(int i = 0; i < TOTAL_IMAGES; i++)
+	for(int i = 0; i < POPUPMENU_TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
 	}
@@ -86,10 +85,11 @@ BC_PopupMenu::BC_PopupMenu(int x,
 
 BC_PopupMenu::~BC_PopupMenu()
 {
-	if(menu_popup) delete menu_popup;
-	for(int i = 0; i < TOTAL_IMAGES; i++)
+	delete menu_popup;
+
+	for(int i = 0; i < POPUPMENU_TOTAL_IMAGES; i++)
 	{
-		if(images[i]) delete images[i];
+		delete images[i];
 	}
 }
 
@@ -103,9 +103,13 @@ void BC_PopupMenu::set_text(const char *text)
 	this->text[0] = 0;
 	if(text && *text)
 		strcpy(this->text, text);
+	if(!use_title)
+	{
+		init_images();
+		use_title = 1;
+	}
 	if(top_level)
 		draw_title();
-	use_title = 1;
 }
 
 void BC_PopupMenu::set_icon(BC_Pixmap *icon)
@@ -116,18 +120,21 @@ void BC_PopupMenu::set_icon(BC_Pixmap *icon)
 	use_title = 1;
 }
 
+void BC_PopupMenu::init_images()
+{
+	if(data)
+		set_images(data);
+	else
+	if(resources.popupmenu_images)
+		set_images(resources.popupmenu_images);
+	else
+		set_images(resources.generic_button_images);
+}
+
 void BC_PopupMenu::initialize()
 {
 	if(use_title)
-	{
-		if(data)
-			set_images(data);
-		else
-		if(resources.popupmenu_images)
-			set_images(resources.popupmenu_images);
-		else
-			set_images(resources.generic_button_images);
-	}
+		init_images();
 	else
 // Move outside window if no title
 	{
@@ -152,9 +159,9 @@ void BC_PopupMenu::initialize()
 
 void BC_PopupMenu::set_images(VFrame **data)
 {
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < POPUPMENU_TOTAL_IMAGES; i++)
 	{
-		if(images[i]) delete images[i];
+		delete images[i];
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 	}
 
@@ -222,7 +229,7 @@ void BC_PopupMenu::draw_title()
 		set_font(MEDIUMFONT);
 		BC_WindowBase::draw_center_text(
 			(get_w() - margin * 2 - resources.popupmenu_triangle_margin) / 2 + margin + offset,
-			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2) + offset, 
+			get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2 + offset,
 			text);
 	}
 

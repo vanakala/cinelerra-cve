@@ -11,6 +11,8 @@
 #include "bcmenupopup.inc"
 #include "bcsubwindow.h"
 
+#define POPUPMENU_TOTAL_IMAGES 3
+
 // A menu that pops up in the middle of a window or under a button.
 
 class BC_PopupMenu : public BC_SubWindow
@@ -63,10 +65,11 @@ public:
 	void set_images(VFrame **data);
 
 private:
+	void init_images();
 	char text[BCTEXTLEN];
 	int margin;
 	VFrame **data;
-	BC_Pixmap *images[9];
+	BC_Pixmap *images[POPUPMENU_TOTAL_IMAGES];
 	BC_Pixmap *icon;
 	int highlighted;
 	int popup_down;
