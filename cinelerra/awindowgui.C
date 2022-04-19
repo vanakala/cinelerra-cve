@@ -463,6 +463,8 @@ void AWindowGUI::recieve_custom_xatoms(XClientMessageEvent *event)
 void AWindowGUI::async_update_assets()
 {
 	XClientMessageEvent event;
+
+	memset(&event, 0, sizeof(event));
 	event.message_type = UpdateAssetsXAtom;
 	event.format = 32;
 	send_custom_xatom(&event);
