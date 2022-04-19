@@ -419,7 +419,7 @@ private:
 	int scan_w;
 	int scan_h;
 // Range of angles to compare
-	float scan_angle1, scan_angle2;
+	double scan_angle1, scan_angle2;
 	int total_steps;
 
 	ArrayList<RotateScanCache*> cache;

@@ -523,8 +523,8 @@ void MotionMain::process_global()
 			global_target_src->get_h(),
 			dx,
 			dy,
-			(float)global_target_src->get_w() + dx,
-			(float)global_target_src->get_h() + dy,
+			global_target_src->get_w() + dx,
+			global_target_src->get_h() + dy,
 			1,
 			TRANSFER_REPLACE,
 			interpolation);
@@ -1808,6 +1808,8 @@ MotionScanCache::MotionScanCache(int x, int y, int64_t difference)
 
 RotateScanPackage::RotateScanPackage()
 {
+	angle = 0;
+	difference = 0;
 }
 
 

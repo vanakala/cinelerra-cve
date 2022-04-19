@@ -322,8 +322,8 @@ GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin,
  : BC_PopupMenu(x,
 	y,
 	w,
-	0,
-	1)
+	"64",
+	POPUPMENU_USE_COORDS)
 {
 	this->plugin = plugin;
 	add_item(new BC_MenuItem("64"));
@@ -355,8 +355,8 @@ RotationSearchPositions::RotationSearchPositions(MotionMain *plugin,
  : BC_PopupMenu(x,
 	y,
 	w,
-	0,
-	1)
+	"4",
+	POPUPMENU_USE_COORDS)
 {
 	this->plugin = plugin;
 	add_item(new BC_MenuItem("4"));
@@ -475,8 +475,8 @@ MotionBlockX::MotionBlockX(MotionMain *plugin,
  : BC_FPot(x,
 	y,
 	plugin->config.block_x,
-	(float)0, 
-	(float)100)
+	0.0,
+	100.0)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -485,7 +485,7 @@ MotionBlockX::MotionBlockX(MotionMain *plugin,
 int MotionBlockX::handle_event()
 {
 	plugin->config.block_x = get_value();
-	gui->block_x_text->update((float)plugin->config.block_x);
+	gui->block_x_text->update(plugin->config.block_x);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -497,7 +497,7 @@ MotionBlockY::MotionBlockY(MotionMain *plugin,
  : BC_FPot(x, y,
 	plugin->config.block_y,
 	0.0,
-	100)
+	100.0)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -506,7 +506,7 @@ MotionBlockY::MotionBlockY(MotionMain *plugin,
 int MotionBlockY::handle_event()
 {
 	plugin->config.block_y = get_value();
-	gui->block_y_text->update((float)plugin->config.block_y);
+	gui->block_y_text->update(plugin->config.block_y);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -624,7 +624,7 @@ TrackFrameNumber::TrackFrameNumber(MotionMain *plugin,
 	MotionWindow *gui,
 	int x, 
 	int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->config.track_pts)
+ : BC_TextBox(x, y, 100, 1, plugin->config.track_pts)
 {
 	this->plugin = plugin;
 	this->gui = gui;
