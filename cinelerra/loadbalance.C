@@ -1,46 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "condition.h"
 #include "mutex.h"
 #include "loadbalance.h"
 
-
-
-
 LoadPackage::LoadPackage()
 {
 	completion_lock = new Condition(0, "LoadPackage::completion_lock");
 }
+
 LoadPackage::~LoadPackage()
 {
 	delete completion_lock;
 }
 
 
-
 LoadClient::LoadClient(LoadServer *server)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
-	Thread::set_synchronous(1);
 	this->server = server;
 	done = 0;
 	package_number = 0;
@@ -49,9 +29,8 @@ LoadClient::LoadClient(LoadServer *server)
 }
 
 LoadClient::LoadClient()
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
-	Thread::set_synchronous(1);
 	server = 0;
 	done = 0;
 	package_number = 0;
@@ -117,13 +96,6 @@ void LoadClient::run_single()
 		process_package(server->packages[0]);
 }
 
-void LoadClient::process_package(LoadPackage *package)
-{
-}
-
-
-
-
 
 LoadServer::LoadServer(int total_clients, int total_packages)
 {
@@ -152,7 +124,7 @@ void LoadServer::delete_clients()
 			delete clients[i];
 		delete [] clients;
 	}
-	if(single_client) delete single_client;
+	delete single_client;
 	clients = 0;
 	single_client = 0;
 }
@@ -174,7 +146,6 @@ void LoadServer::set_package_count(int total_packages)
 	this->total_packages = total_packages;
 	create_packages();
 }
-
 
 void LoadServer::create_clients()
 {
@@ -266,4 +237,3 @@ void LoadServer::process_single()
 	current_package = 0;
 	single_client->run_single();
 }
-
