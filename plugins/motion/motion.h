@@ -154,13 +154,13 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	int64_t abs_diff(unsigned char *prev_ptr,
+	int abs_diff(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
 		int row_bytes,
 		int w,
 		int h,
 		int color_model);
-	int64_t abs_diff_sub(unsigned char *prev_ptr,
+	int abs_diff_sub(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
 		int row_bytes,
 		int w,
@@ -244,24 +244,21 @@ public:
 	int scan_x1, scan_y1, scan_x2, scan_y2;
 	int dx;
 	int dy;
-	int64_t max_difference;
-	int64_t min_difference;
-	int64_t min_pixel;
-	int is_border;
 	int valid;
 // For single block
 	int pixel;
-	int64_t difference1;
-	int64_t difference2;
+	int difference1;
+	int difference2;
 };
 
 
 class MotionScanCache
 {
 public:
-	MotionScanCache(int x, int y, int64_t difference);
+	MotionScanCache(int x, int y, int difference);
+
 	int x, y;
-	int64_t difference;
+	int difference;
 };
 
 
@@ -272,8 +269,8 @@ public:
 	~MotionScanUnit();
 
 	void process_package(LoadPackage *package);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+	int get_cache(int x, int y);
+	void put_cache(int x, int y, int difference);
 
 	MotionScan *server;
 	MotionMain *plugin;
@@ -302,8 +299,8 @@ public:
 	void scan_frame(VFrame *previous_frame,
 // Frame after motion
 		VFrame *current_frame);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+	int get_cache(int x, int y);
+	void put_cache(int x, int y, int difference);
 
 // Change between previous frame and current frame multiplied by 
 // OVERSAMPLE
@@ -340,17 +337,17 @@ public:
 	RotateScanPackage();
 
 	double angle;
-	int64_t difference;
+	int difference;
 };
 
 
 class RotateScanCache
 {
 public:
-	RotateScanCache(double angle, int64_t difference);
+	RotateScanCache(double angle, int difference);
 
 	double angle;
-	int64_t difference;
+	int difference;
 };
 
 
@@ -391,8 +388,8 @@ public:
 // Pivot
 		int block_x,
 		int block_y);
-	int64_t get_cache(double angle);
-	void put_cache(double angle, int64_t difference);
+	int get_cache(double angle);
+	void put_cache(double angle, int difference);
 
 // Angle result
 	double result;

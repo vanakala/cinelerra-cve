@@ -416,8 +416,8 @@ void MotionMain::read_data(KeyFrame *keyframe)
 void MotionMain::process_global()
 {
 	if(!engine) engine = new MotionScan(this,
-		PluginClient::get_project_smp() + 1,
-		PluginClient::get_project_smp() + 1);
+		PluginClient::get_project_smp(),
+		PluginClient::get_project_smp());
 
 // Get the current motion vector between the previous and current frame
 	engine->scan_frame(current_global_ref, prev_global_ref);
@@ -513,7 +513,7 @@ void MotionMain::process_global()
 	if(config.mode1 != MotionConfig::NOTHING)
 	{
 		if(!overlayer) 
-			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
+			overlayer = new OverlayFrame(PluginClient::get_project_smp());
 		global_target_dst->clear_frame();
 		overlayer->overlay(global_target_dst,
 			global_target_src,
@@ -542,7 +542,7 @@ void MotionMain::process_rotation()
 	if(config.global)
 	{
 		if(!overlayer) 
-			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
+			overlayer = new OverlayFrame(PluginClient::get_project_smp());
 
 		double dx;
 		double dy;
@@ -646,8 +646,8 @@ void MotionMain::process_rotation()
 	if(config.mode1 != MotionConfig::NOTHING)
 	{
 		if(!rotate_engine)
-			rotate_engine = new AffineEngine(PluginClient::get_project_smp() + 1,
-				PluginClient::get_project_smp() + 1);
+			rotate_engine = new AffineEngine(PluginClient::get_project_smp(),
+				PluginClient::get_project_smp());
 
 		rotate_target_dst->clear_frame();
 
@@ -665,12 +665,10 @@ void MotionMain::process_rotation()
 			if(config.global)
 			{
 // Use origin of global stabilize operation
-				rotate_engine->set_pivot((int)(rotate_target_dst->get_w() * 
-						config.block_x / 
-						100),
-					(int)(rotate_target_dst->get_h() * 
-						config.block_y / 
-						100));
+				rotate_engine->set_pivot(round(rotate_target_dst->get_w() *
+						config.block_x / 100),
+					round(rotate_target_dst->get_h() *
+						config.block_y / 100));
 				}
 				else
 				{
@@ -1138,14 +1136,14 @@ void MotionMain::draw_arrow(GuideFrame *gf, int x1, int y1, int x2, int y2)
 		gf->add_line(x2, y2, x4, y4);
 }
 
-int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
+int MotionMain::abs_diff(unsigned char *prev_ptr,
 	unsigned char *current_ptr,
 	int row_bytes,
 	int w,
 	int h,
 	int color_model)
 {
-	int64_t result = 0;
+	int result = 0;
 
 	switch(color_model)
 	{
@@ -1158,15 +1156,8 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 			for(int j = 0; j < w; j++)
 			{
 				for(int k = 0; k < 3; k++)
-				{
-					int64_t difference;
+					result += abs(*prev_row++ - *current_row++);
 
-					difference = *prev_row++ - *current_row++;
-					if(difference < 0)
-						result -= difference;
-					else
-						result += difference;
-				}
 				prev_row++;
 				current_row++;
 			}
@@ -1185,16 +1176,9 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 			{
 				prev_row++;
 				current_row++;
-				for(int k = 0; k < 3; k++)
-				{
-					int64_t difference;
 
-					difference = *prev_row++ - *current_row++;
-					if(difference < 0)
-						result -= difference;
-					else
-						result += difference;
-				}
+				for(int k = 0; k < 3; k++)
+					result += abs(*prev_row++ - *current_row++);
 			}
 			prev_ptr += row_bytes;
 			current_ptr += row_bytes;
@@ -1204,7 +1188,7 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 	return result;
 }
 
-int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
+int MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 	unsigned char *current_ptr,
 	int row_bytes,
 	int w,
@@ -1215,93 +1199,74 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 {
 	int h_sub = h - 1;
 	int w_sub = w - 1;
-	int64_t result = 0;
+	int result = 0;
+
+	int y2_fraction = sub_y * 0x100 / OVERSAMPLE;
+	int y1_fraction = 0x100 - y2_fraction;
+	int x2_fraction = sub_x * 0x100 / OVERSAMPLE;
+	int x1_fraction = 0x100 - x2_fraction;
 
 	switch(color_model)
 	{
 	case BC_RGBA16161616:
+		for(int i = 0; i < h_sub; i++)
 		{
-			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
-			int64_t y1_fraction = 0x100 - y2_fraction;
-			int64_t x2_fraction = sub_x * 0x100 / OVERSAMPLE;
-			int64_t x1_fraction = 0x100 - x2_fraction;
-			for(int i = 0; i < h_sub; i++)
+			uint16_t *prev_row1 = (uint16_t*)prev_ptr;
+			uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
+			uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
+			uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
+			uint16_t *current_row = (uint16_t*)current_ptr;
+			for(int j = 0; j < w_sub; j++)
 			{
-				uint16_t *prev_row1 = (uint16_t*)prev_ptr;
-				uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
-				uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
-				uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
-				uint16_t *current_row = (uint16_t*)current_ptr;
-				for(int j = 0; j < w_sub; j++)
+				for(int k = 0; k < 3; k++)
 				{
-					for(int k = 0; k < 3; k++)
-					{
-						int64_t difference;
-						int64_t prev_value =
-							(*prev_row1++ * x1_fraction * y1_fraction + \
-							*prev_row2++ * x2_fraction * y1_fraction + \
-							*prev_row3++ * x1_fraction * y2_fraction + \
-							*prev_row4++ * x2_fraction * y2_fraction) /
-							0x100 / 0x100;
-						int64_t current_value = *current_row++;
-						difference = prev_value - current_value;
-						if(difference < 0)
-							result -= difference;
-						else
-							result += difference;
-					}
-					prev_row1++;
-					prev_row2++;
-					prev_row3++;
-					prev_row4++;
-					current_row++;
+					int prev_value =
+						((int64_t)*prev_row1++ * x1_fraction * y1_fraction + \
+						*prev_row2++ * x2_fraction * y1_fraction + \
+						*prev_row3++ * x1_fraction * y2_fraction + \
+						*prev_row4++ * x2_fraction * y2_fraction) /
+						0x100 / 0x100;
+					result += abs(prev_value - *current_row++);
 				}
-				prev_ptr += row_bytes;
-				current_ptr += row_bytes;
+				prev_row1++;
+				prev_row2++;
+				prev_row3++;
+				prev_row4++;
+				current_row++;
 			}
+			prev_ptr += row_bytes;
+			current_ptr += row_bytes;
 		}
 		break;
 
 	case BC_AYUV16161616:
+		for(int i = 0; i < h_sub; i++)
 		{
-			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
-			int64_t y1_fraction = 0x100 - y2_fraction;
-			int64_t x2_fraction = sub_x * 0x100 / OVERSAMPLE;
-			int64_t x1_fraction = 0x100 - x2_fraction;
-			for(int i = 0; i < h_sub; i++)
+			uint16_t *prev_row1 = (uint16_t*)prev_ptr;
+			uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
+			uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
+			uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
+			uint16_t *current_row = (uint16_t*)current_ptr;
+			for(int j = 0; j < w_sub; j++)
 			{
-				uint16_t *prev_row1 = (uint16_t*)prev_ptr;
-				uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
-				uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
-				uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
-				uint16_t *current_row = (uint16_t*)current_ptr;
-				for(int j = 0; j < w_sub; j++)
+				prev_row1++;
+				prev_row2++;
+				prev_row3++;
+				prev_row4++;
+				current_row++;
+				for(int k = 0; k < 3; k++)
 				{
-					prev_row1++;
-					prev_row2++;
-					prev_row3++;
-					prev_row4++;
-					current_row++;
-					for(int k = 0; k < 3; k++)
-					{
-						int64_t difference;
-						int64_t prev_value =
-							(*prev_row1++ * x1_fraction * y1_fraction +
-							*prev_row2++ * x2_fraction * y1_fraction +
-							*prev_row3++ * x1_fraction * y2_fraction +
-							*prev_row4++ * x2_fraction * y2_fraction) /
-							0x100 / 0x100;
-						int64_t current_value = *current_row++;
-						difference = prev_value - current_value;
-						if(difference < 0)
-							result -= difference;
-						else
-							result += difference;
-					}
+					int prev_value =
+						((int64_t)*prev_row1++ * x1_fraction * y1_fraction +
+						*prev_row2++ * x2_fraction * y1_fraction +
+						*prev_row3++ * x1_fraction * y2_fraction +
+						*prev_row4++ * x2_fraction * y2_fraction) /
+						0x100 / 0x100;
+					result += abs(prev_value - *current_row++);
 				}
-				prev_ptr += row_bytes;
-				current_ptr += row_bytes;
 			}
+			prev_ptr += row_bytes;
+			current_ptr += row_bytes;
 		}
 		break;
 	}
@@ -1347,7 +1312,7 @@ void MotionScanUnit::process_package(LoadPackage *package)
 // Try cache
 		pkg->difference1 = server->get_cache(search_x, search_y);
 
-		if(pkg->difference1 < 0)
+		if(pkg->difference1 == INT_MAX)
 		{
 // Pointers to first pixel in each block
 			unsigned char *prev_ptr = server->previous_frame->get_row_ptr(search_y) +
@@ -1411,9 +1376,9 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	}
 }
 
-int64_t MotionScanUnit::get_cache(int x, int y)
+int MotionScanUnit::get_cache(int x, int y)
 {
-	int64_t result = -1;
+	int result = INT_MAX;
 
 	cache_lock->lock("MotionScanUnit::get_cache");
 	for(int i = 0; i < cache.total; i++)
@@ -1429,7 +1394,7 @@ int64_t MotionScanUnit::get_cache(int x, int y)
 	return result;
 }
 
-void MotionScanUnit::put_cache(int x, int y, int64_t difference)
+void MotionScanUnit::put_cache(int x, int y, int difference)
 {
 	MotionScanCache *ptr = new MotionScanCache(x, y, difference);
 	cache_lock->lock("MotionScanUnit::put_cache");
@@ -1457,7 +1422,6 @@ void MotionScan::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
-
 		pkg->block_x1 = block_x1;
 		pkg->block_x2 = block_x2;
 		pkg->block_y1 = block_y1;
@@ -1466,7 +1430,7 @@ void MotionScan::init_packages()
 		pkg->scan_x2 = scan_x2;
 		pkg->scan_y1 = scan_y1;
 		pkg->scan_y2 = scan_y2;
-		pkg->pixel = (int64_t)i * (int64_t)total_pixels / (int64_t)total_steps;
+		pkg->pixel = i * total_pixels / total_steps;
 		pkg->difference1 = 0;
 		pkg->difference2 = 0;
 		pkg->dx = 0;
@@ -1621,12 +1585,13 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 				process_packages();
 
 // Get least difference
-				int64_t min_difference = -1;
+				int min_difference = INT_MAX;
 
 				for(int i = 0; i < get_total_packages(); i++)
 				{
 					MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
-					if(pkg->difference1 < min_difference || min_difference == -1)
+
+					if(pkg->difference1 < min_difference)
 					{
 						min_difference = pkg->difference1;
 
@@ -1678,10 +1643,12 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 				process_packages();
 
 // Get least difference
-				int64_t min_difference = -1;
+				int min_difference = INT_MAX;
+
 				for(int i = 0; i < get_total_packages(); i++)
 				{
 					MotionScanPackage *pkg = (MotionScanPackage*)get_package(i);
+
 					if(pkg->difference1 < min_difference || min_difference == -1)
 					{
 						min_difference = pkg->difference1;
@@ -1772,9 +1739,9 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	}
 }
 
-int64_t MotionScan::get_cache(int x, int y)
+int MotionScan::get_cache(int x, int y)
 {
-	int64_t result = -1;
+	int result = INT_MAX;
 
 	cache_lock->lock("MotionScan::get_cache");
 	for(int i = 0; i < cache.total; i++)
@@ -1790,7 +1757,7 @@ int64_t MotionScan::get_cache(int x, int y)
 	return result;
 }
 
-void MotionScan::put_cache(int x, int y, int64_t difference)
+void MotionScan::put_cache(int x, int y, int difference)
 {
 	MotionScanCache *ptr = new MotionScanCache(x, y, difference);
 	cache_lock->lock("MotionScan::put_cache");
@@ -1798,7 +1765,7 @@ void MotionScan::put_cache(int x, int y, int64_t difference)
 	cache_lock->unlock();
 }
 
-MotionScanCache::MotionScanCache(int x, int y, int64_t difference)
+MotionScanCache::MotionScanCache(int x, int y, int difference)
 {
 	this->x = x;
 	this->y = y;
@@ -1808,8 +1775,8 @@ MotionScanCache::MotionScanCache(int x, int y, int64_t difference)
 
 RotateScanPackage::RotateScanPackage()
 {
-	angle = 0;
-	difference = 0;
+	angle = MAX_ROTATION;
+	difference = INT_MAX;
 }
 
 
@@ -1832,9 +1799,10 @@ void RotateScanUnit::process_package(LoadPackage *package)
 {
 	if(server->skip)
 		return;
+
 	RotateScanPackage *pkg = (RotateScanPackage*)package;
 
-	if((pkg->difference = server->get_cache(pkg->angle)) < 0)
+	if((pkg->difference = server->get_cache(pkg->angle)) == INT_MAX)
 	{
 		int color_model = server->previous_frame->get_color_model();
 		int pixel_size = ColorModels::calculate_pixelsize(color_model);
@@ -1846,7 +1814,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			server->previous_frame->get_w(),
 			server->previous_frame->get_h(),
 			color_model);
-
+		temp->clear_frame();
 // Rotate original block size
 		rotater->set_viewport(server->block_x1, 
 			server->block_y1,
@@ -1857,7 +1825,6 @@ void RotateScanUnit::process_package(LoadPackage *package)
 		rotater->rotate(temp,
 			server->previous_frame,
 			pkg->angle);
-
 // Clamp coordinates
 		int x1 = server->scan_x;
 		int y1 = server->scan_y;
@@ -2038,7 +2005,6 @@ double RotateScan::scan_frame(VFrame *previous_frame,
 	scan_h = round(fabs(max_y - center_y) * 2);
 	scan_x = round(center_x - scan_w / 2);
 	scan_y = round(center_y - scan_h / 2);
-
 // Determine min angle from size of block
 	double angle1 = atan((double)block_h / block_w);
 	double angle2 = atan((double)(block_h - 1) / (block_w + 1));
@@ -2061,11 +2027,13 @@ double RotateScan::scan_frame(VFrame *previous_frame,
 			set_package_count(total_steps);
 			process_packages();
 
-			int64_t min_difference = -1;
+			int min_difference = INT_MAX;
+
 			for(int i = 0; i < get_total_packages(); i++)
 			{
 				RotateScanPackage *pkg = (RotateScanPackage*)get_package(i);
-				if(pkg->difference < min_difference || min_difference == -1)
+
+				if(pkg->difference < min_difference)
 				{
 					min_difference = pkg->difference;
 					result = pkg->angle;
@@ -2093,18 +2061,18 @@ double RotateScan::scan_frame(VFrame *previous_frame,
 			plugin->abort_plugin(_("Failed to save coords: %m"));
 		}
 	}
-
 	return result;
 }
 
-int64_t RotateScan::get_cache(double angle)
+int RotateScan::get_cache(double angle)
 {
-	int64_t result = -1;
+	int result = INT_MAX;
 
 	cache_lock->lock("RotateScan::get_cache");
 	for(int i = 0; i < cache.total; i++)
 	{
 		RotateScanCache *ptr = cache.values[i];
+
 		if(fabs(ptr->angle - angle) <= MIN_ANGLE)
 		{
 			result = ptr->difference;
@@ -2115,7 +2083,7 @@ int64_t RotateScan::get_cache(double angle)
 	return result;
 }
 
-void RotateScan::put_cache(double angle, int64_t difference)
+void RotateScan::put_cache(double angle, int difference)
 {
 	RotateScanCache *ptr = new RotateScanCache(angle, difference);
 	cache_lock->lock("RotateScan::put_cache");
@@ -2124,7 +2092,7 @@ void RotateScan::put_cache(double angle, int64_t difference)
 }
 
 
-RotateScanCache::RotateScanCache(double angle, int64_t difference)
+RotateScanCache::RotateScanCache(double angle, int difference)
 {
 	this->angle = angle;
 	this->difference = difference;
