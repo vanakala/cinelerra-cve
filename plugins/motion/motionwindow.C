@@ -160,7 +160,7 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 		y));
 	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20, 
 		y, 
-		_("Abs position (s):")));
+		_("Rel position:")));
 	add_subwindow(track_frame_number = new TrackFrameNumber(plugin, 
 		this,
 		x + track_single->get_w() + title->get_w() + 20, 
@@ -512,18 +512,12 @@ int MotionBlockY::handle_event()
 }
 
 MotionBlockXText::MotionBlockXText(MotionMain *plugin, 
-	MotionWindow *gui,
-	int x, 
-	int y)
- : BC_TextBox(x,
-	y,
-	75,
-	1,
-	plugin->config.block_x)
+	MotionWindow *gui, int x, int y)
+ : BC_TextBox(x, y, 60, 1, plugin->config.block_x,
+	TXTBOX_BORDER, MEDIUMFONT, 2)
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	set_precision(4);
 }
 
 int MotionBlockXText::handle_event()
@@ -536,18 +530,13 @@ int MotionBlockXText::handle_event()
 
 
 MotionBlockYText::MotionBlockYText(MotionMain *plugin, 
-	MotionWindow *gui,
-	int x, 
-	int y)
- : BC_TextBox(x,
-	y,
-	75,
-	1,
-	plugin->config.block_y)
+	MotionWindow *gui, int x, int y)
+ : BC_TextBox(x, y, 60, 1,
+	plugin->config.block_y,
+	TXTBOX_BORDER, MEDIUMFONT, 2)
 {
 	this->plugin = plugin;
 	this->gui = gui;
-	set_precision(4);
 }
 
 int MotionBlockYText::handle_event()

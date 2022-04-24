@@ -22,26 +22,6 @@
 
 REGISTER_PLUGIN
 
-static void sort(int *array, int total)
-{
-	int done = 0;
-	while(!done)
-	{
-		done = 1;
-		for(int i = 0; i < total - 1; i++)
-		{
-			if(array[i] > array[i + 1])
-			{
-				array[i] ^= array[i + 1];
-				array[i + 1] ^= array[i];
-				array[i] ^= array[i + 1];
-				done = 0;
-			}
-		}
-	}
-}
-
-
 MotionConfig::MotionConfig()
 {
 	global_range_w = 5;
@@ -190,15 +170,10 @@ MotionMain::MotionMain(PluginServer *server)
 	total_dy = 0;
 	total_angle = 0;
 	overlayer = 0;
-	prev_global_ref = 0;
-	current_global_ref = 0;
-	global_target_src = 0;
-	global_target_dst = 0;
-
-	prev_rotate_ref = 0;
-	current_rotate_ref = 0;
-	rotate_target_src = 0;
-	rotate_target_dst = 0;
+	prev_ref = 0;
+	current_ref = 0;
+	target_src = 0;
+	target_dst = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -209,15 +184,8 @@ MotionMain::~MotionMain()
 	delete rotate_engine;
 	delete motion_rotate;
 
-	release_vframe(prev_global_ref);
-	release_vframe(current_global_ref);
-	release_vframe(global_target_src);
-	release_vframe(global_target_dst);
+	release_vframe(prev_ref);
 
-	release_vframe(prev_rotate_ref);
-	release_vframe(current_rotate_ref);
-	release_vframe(rotate_target_src);
-	release_vframe(rotate_target_dst);
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -243,27 +211,10 @@ void MotionMain::reset_plugin()
 		delete rotate_engine;
 		rotate_engine = 0;
 	}
-	if(prev_global_ref)
+	if(prev_ref)
 	{
-		release_vframe(prev_global_ref);
-		prev_global_ref = 0;
-		release_vframe(prev_global_ref);
-		prev_global_ref = 0;
-		release_vframe(global_target_src);
-		global_target_src = 0;
-		release_vframe(global_target_dst);
-		global_target_dst = 0;
-	}
-	if(prev_rotate_ref)
-	{
-		release_vframe(prev_rotate_ref);
-		prev_rotate_ref = 0;
-		release_vframe(current_rotate_ref);
-		current_rotate_ref = 0;
-		release_vframe(rotate_target_src);
-		rotate_target_src = 0;
-		release_vframe(rotate_target_dst);
-		rotate_target_dst = 0;
+		release_vframe(prev_ref);
+		prev_ref = 0;
 	}
 }
 
@@ -420,10 +371,9 @@ void MotionMain::process_global()
 		PluginClient::get_project_smp());
 
 // Get the current motion vector between the previous and current frame
-	engine->scan_frame(current_global_ref, prev_global_ref);
+	engine->scan_frame(current_ref, prev_ref);
 	current_dx = engine->dx_result;
 	current_dy = engine->dy_result;
-
 // Add current motion vector to accumulation vector.
 	if(config.mode3 != MotionConfig::TRACK_SINGLE)
 	{
@@ -444,17 +394,17 @@ void MotionMain::process_global()
 	if(config.magnitude < 100)
 	{
 		int block_w = config.global_block_w *
-				current_global_ref->get_w() / 100;
+				current_ref->get_w() / 100;
 		int block_h = config.global_block_h *
-				current_global_ref->get_h() / 100;
+				current_ref->get_h() / 100;
 		int block_x_orig = config.block_x *
-			current_global_ref->get_w() / 100;
+			current_ref->get_w() / 100;
 		int block_y_orig = config.block_y *
-			current_global_ref->get_h() / 100;
+			current_ref->get_h() / 100;
 
-		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
+		int max_block_x = (int64_t)(current_ref->get_w() - block_x_orig) *
 			OVERSAMPLE * config.magnitude / 100;
-		int max_block_y = (int64_t)(current_global_ref->get_h() - block_y_orig) *
+		int max_block_y = (int64_t)(current_ref->get_h() - block_y_orig) *
 			OVERSAMPLE * config.magnitude / 100;
 		int min_block_x = (int64_t)-block_x_orig * OVERSAMPLE *
 			config.magnitude / 100;
@@ -468,13 +418,6 @@ void MotionMain::process_global()
 	total_dx = round(config.stab_gain_x * total_dx);
 	total_dy = round(config.stab_gain_y * total_dy);
 
-	if(config.mode3 != MotionConfig::TRACK_SINGLE && !config.rotate)
-	{
-// Transfer current reference frame to previous reference frame and update
-// counter.  Must wait for rotate to compare.
-		prev_global_ref->copy_from(current_global_ref);
-	}
-
 // Decide what to do with target based on requested operation
 	int interpolation;
 	double dx;
@@ -483,7 +426,6 @@ void MotionMain::process_global()
 	switch(config.mode1)
 	{
 	case MotionConfig::NOTHING:
-		global_target_dst->copy_from(global_target_src);
 		break;
 	case MotionConfig::TRACK_PIXEL:
 		interpolation = NEAREST_NEIGHBOR;
@@ -514,21 +456,22 @@ void MotionMain::process_global()
 	{
 		if(!overlayer) 
 			overlayer = new OverlayFrame(PluginClient::get_project_smp());
-		global_target_dst->clear_frame();
-		overlayer->overlay(global_target_dst,
-			global_target_src,
+
+		target_dst->clear_frame();
+
+		overlayer->overlay(target_dst,
+			target_src,
 			0,
 			0,
-			global_target_src->get_w(),
-			global_target_src->get_h(),
+			target_src->get_w(),
+			target_src->get_h(),
 			dx,
 			dy,
-			global_target_src->get_w() + dx,
-			global_target_src->get_h() + dy,
+			target_src->get_w() + dx,
+			target_src->get_h() + dy,
 			1,
 			TRANSFER_REPLACE,
 			interpolation);
-		global_target_dst->copy_pts(global_target_src);
 	}
 }
 
@@ -537,74 +480,16 @@ void MotionMain::process_rotation()
 	int block_x;
 	int block_y;
 
-// Convert the previous global reference into the previous rotation reference.
-// Convert global target destination into rotation target source.
-	if(config.global)
-	{
-		if(!overlayer) 
-			overlayer = new OverlayFrame(PluginClient::get_project_smp());
-
-		double dx;
-		double dy;
-
-		if(config.mode3 == MotionConfig::TRACK_SINGLE)
-		{
-			dx = (double)total_dx / OVERSAMPLE;
-			dy = (double)total_dy / OVERSAMPLE;
-		}
-		else
-		{
-			dx = (double)current_dx / OVERSAMPLE;
-			dy = (double)current_dy / OVERSAMPLE;
-		}
-
-		dx = config.stab_gain_x * dx;
-		dy = config.stab_gain_y * dy;
-
-		prev_rotate_ref->clear_frame();
-		overlayer->overlay(prev_rotate_ref,
-			prev_global_ref,
-			0,
-			0,
-			prev_global_ref->get_w(),
-			prev_global_ref->get_h(),
-			dx,
-			dy,
-			prev_global_ref->get_w() + dx,
-			prev_global_ref->get_h() + dy,
-			1,
-			TRANSFER_REPLACE,
-			CUBIC_LINEAR);
-// Pivot is destination global position
-		block_x = round(prev_rotate_ref->get_w() * config.block_x /
-			100 + (double)total_dx / OVERSAMPLE);
-		block_y = round(prev_rotate_ref->get_h() * config.block_y /
-			100 + (double)total_dy / OVERSAMPLE);
-		prev_rotate_ref->copy_pts(prev_global_ref);
-// Use the global target output as the rotation target input
-		rotate_target_src->copy_from(global_target_dst);
-// Transfer current reference frame to previous reference frame for global.
-		if(config.mode3 != MotionConfig::TRACK_SINGLE)
-		{
-			prev_global_ref->copy_from(current_global_ref);
-		}
-	}
-	else
-	{
-// Pivot is fixed
-		block_x = round(prev_rotate_ref->get_w() * config.block_x / 100);
-		block_y = round(prev_rotate_ref->get_h() * config.block_y / 100);
-	}
+	block_x = round(prev_ref->get_w() * config.block_x / 100);
+	block_y = round(prev_ref->get_h() * config.block_y / 100);
 
 // Get rotation
 	if(!motion_rotate)
 		motion_rotate = new RotateScan(this, get_project_smp(),
 			get_project_smp());
 
-	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
-		current_rotate_ref,
-		block_x,
-		block_y);
+	current_angle = motion_rotate->scan_frame(prev_ref,
+		current_ref, block_x, block_y);
 
 // Add current rotation to accumulation
 	if(config.mode3 != MotionConfig::TRACK_SINGLE)
@@ -612,13 +497,6 @@ void MotionMain::process_rotation()
 // Retract over time
 		total_angle = total_angle * (100 - config.return_speed) / 100;
 		total_angle += current_angle;
-
-		if(!config.global)
-		{
-// Transfer current reference frame to previous reference frame and update
-// counter.
-			prev_rotate_ref->copy_from(current_rotate_ref);
-		}
 	}
 	else
 	{
@@ -631,7 +509,6 @@ void MotionMain::process_rotation()
 	switch(config.mode1)
 	{
 	case MotionConfig::NOTHING:
-		rotate_target_dst->copy_from(rotate_target_src);
 		break;
 	case MotionConfig::TRACK:
 	case MotionConfig::TRACK_PIXEL:
@@ -649,7 +526,7 @@ void MotionMain::process_rotation()
 			rotate_engine = new AffineEngine(PluginClient::get_project_smp(),
 				PluginClient::get_project_smp());
 
-		rotate_target_dst->clear_frame();
+		target_dst->clear_frame();
 
 // Determine pivot based on a number of factors.
 		switch(config.mode1)
@@ -665,19 +542,16 @@ void MotionMain::process_rotation()
 			if(config.global)
 			{
 // Use origin of global stabilize operation
-				rotate_engine->set_pivot(round(rotate_target_dst->get_w() *
+				rotate_engine->set_pivot(round(target_dst->get_w() *
 						config.block_x / 100),
-					round(rotate_target_dst->get_h() *
+					round(target_dst->get_h() *
 						config.block_y / 100));
-				}
-				else
-				{
-// Use origin
-					rotate_engine->set_pivot(block_x, block_y);
-				}
-				break;
+			}
+			else
+				rotate_engine->set_pivot(block_x, block_y);
+			break;
 		}
-		rotate_engine->rotate(rotate_target_dst, rotate_target_src, angle);
+		rotate_engine->rotate(target_dst, target_src, angle);
 	}
 }
 
@@ -686,8 +560,9 @@ void MotionMain::process_tmpframes(VFrame **frame)
 {
 	int color_model = frame[0]->get_color_model();
 	int do_reconfigure = 0;
-	w = frame[0]->get_w();
-	h = frame[0]->get_h();
+
+	width = frame[0]->get_w();
+	height = frame[0]->get_h();
 
 	switch(color_model)
 	{
@@ -705,9 +580,11 @@ void MotionMain::process_tmpframes(VFrame **frame)
 		do_reconfigure = 1;
 	}
 
+	if(!config.global && !config.rotate)
+		return;
+
 // Calculate the source and destination pointers for each of the operations.
 	reference_layer = PluginClient::total_in_buffers - 1;
-	target_layer = 0;
 
 	ptstime actual_previous_pts;
 
@@ -716,8 +593,9 @@ void MotionMain::process_tmpframes(VFrame **frame)
 
 	if(config.mode3 == MotionConfig::TRACK_SINGLE)
 	{
-		actual_previous_pts = config.track_pts;
-		if(frame[0]->pts_in_frame(actual_previous_pts))
+		actual_previous_pts = config.track_pts + get_start();
+		if(frame[0]->pts_in_frame(actual_previous_pts) ||
+				actual_previous_pts >= get_end())
 			skip_current = 1;
 	}
 	else
@@ -736,11 +614,13 @@ void MotionMain::process_tmpframes(VFrame **frame)
 // Only count motion since last keyframe
 	}
 
-	if(!config.global && !config.rotate) skip_current = 1;
+	if(skip_current)
+		return;
 
-	int need_reload = !skip_current &&
-		(!prev_global_ref || !prev_global_ref->pts_in_frame(actual_previous_pts) ||
-			do_reconfigure);
+	int need_reload = (!prev_ref ||
+		!prev_ref->pts_in_frame(actual_previous_pts) ||
+		do_reconfigure);
+
 	if(need_reload)
 	{
 		total_dx = 0;
@@ -757,110 +637,51 @@ void MotionMain::process_tmpframes(VFrame **frame)
 		total_angle = 0;
 		current_angle = 0;
 	}
-
-// Get the global pointers.  Here we walk through the sequence of events.
-	if(config.global)
-	{
-// Assume global only.  Global reads previous frame and compares
-// with current frame to get the current translation.
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
-		if(!prev_global_ref)
-			prev_global_ref = clone_vframe(frame[0]);
-		if(!current_global_ref)
-			current_global_ref = clone_vframe(frame[0]);
-
-// Global loads the current target frame into the src and 
-// writes it to the dst frame with desired translation.
-		if(!global_target_src)
-			global_target_src = clone_vframe(frame[0]);
-		if(!global_target_dst)
-			global_target_dst = clone_vframe(frame[0]);
+	if(!prev_ref)
+		prev_ref = clone_vframe(frame[0]);
 
 // Load the global frames
-		if(need_reload)
-		{
-			prev_global_ref->set_layer(frame[reference_layer]->get_layer());
-			prev_global_ref->set_pts(actual_previous_pts);
-			prev_global_ref = get_frame(prev_global_ref);
-		}
-		current_global_ref->copy_from(frame[reference_layer]);
-		global_target_src->copy_from(frame[target_layer]);
-
-// Global followed by rotate
-		if(config.rotate)
-		{
-// Must translate the previous global reference by the current global
-// accumulation vector to match the current global reference.
-// The center of the search area is always the user value + the accumulation vector.
-			if(!prev_rotate_ref)
-				prev_rotate_ref = clone_vframe(frame[0]);
-// The current global reference is the current rotation reference.
-			if(!current_rotate_ref)
-				current_rotate_ref = clone_vframe(frame[0]);
-
-// The global target destination is copied to the rotation target source
-// then written to the rotation output with rotation.
-// The pivot for the rotation is the center of the search area 
-// if we're tracking.
-// The pivot is fixed to the user position if we're compensating.
-			if(!rotate_target_src)
-				rotate_target_src = clone_vframe(frame[0]);
-			if(!rotate_target_dst)
-				rotate_target_dst = clone_vframe(frame[0]);
-			rotate_target_src->copy_pts(frame[target_layer]);
-			rotate_target_dst->copy_pts(frame[target_layer]);
-		}
+	if(need_reload)
+	{
+		prev_ref->set_layer(frame[reference_layer]->get_layer());
+		prev_ref->set_pts(actual_previous_pts);
+		prev_ref = get_frame(prev_ref);
 	}
-	else
-// Rotation only
+	current_ref = frame[reference_layer];
+
+	target_src = frame[0];
+	target_dst = frame[0] = clone_vframe(target_src);
+	frame[0]->copy_pts(target_src);
+
+// Get position change from previous frame to current frame
+	if(config.global)
+		process_global();
+// Get rotation change from previous frame to current frame
 	if(config.rotate)
 	{
-// Rotation reads the previous reference frame and compares it with current 
-// reference frame.
-		if(!prev_rotate_ref)
-			prev_rotate_ref = clone_vframe(frame[0]);
-		if(!current_rotate_ref)
-			current_rotate_ref = clone_vframe(frame[0]);
-
-// Rotation loads target frame to temporary, rotates it, and writes it to the
-// target frame.  The pivot is always fixed.
-		if(!rotate_target_src)
-			rotate_target_src = clone_vframe(frame[0]);
-		if(!rotate_target_dst)
-			rotate_target_dst = clone_vframe(frame[0]);
-
-// Load the rotate frames
-		if(need_reload)
+		if(config.global)
 		{
-			prev_rotate_ref->set_layer(frame[reference_layer]->get_layer());
-			prev_rotate_ref->set_pts(actual_previous_pts);
-			prev_rotate_ref = get_frame(prev_rotate_ref);
+			target_dst = target_src;
+			target_src = frame[0];
+			frame[0] = target_dst;
 		}
-		current_rotate_ref->copy_from(frame[reference_layer]);
-		rotate_target_src->copy_from(frame[target_layer]);
-		rotate_target_dst->copy_pts(frame[target_layer]);
+		process_rotation();
 	}
 
-	if(!skip_current)
+	if(config.mode1 == MotionConfig::NOTHING)
 	{
-// Get position change from previous frame to current frame
-		if(config.global) process_global();
-// Get rotation change from previous frame to current frame
-		if(config.rotate) process_rotation();
+		release_vframe(frame[0]);
+		frame[0] = target_src;
 	}
+	else
+		release_vframe(target_src);
 
-// Transfer the relevant target frame to the output
-	if(!skip_current)
+	if(config.mode3 != MotionConfig::TRACK_SINGLE)
 	{
-		if(config.rotate)
-		{
-			frame[target_layer]->copy_from(rotate_target_dst);
-		}
-		else
-		{
-			frame[target_layer]->copy_from(global_target_dst);
-		}
+// Transfer current reference frame to previous reference frame
+		prev_ref->copy_from(current_ref);
 	}
 
 	draw_vectors();
@@ -982,8 +803,8 @@ void MotionMain::draw_vectors()
 // End of vector is total accumulation.
 		if(config.mode3 == MotionConfig::TRACK_SINGLE)
 		{
-			global_x1 = round(config.block_x * w / 100);
-			global_y1 = round(config.block_y * h / 100);
+			global_x1 = round(config.block_x * width / 100);
+			global_y1 = round(config.block_y * height / 100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
 		}
@@ -992,40 +813,39 @@ void MotionMain::draw_vectors()
 // End of vector is current change.
 		if(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK)
 		{
-			global_x1 = round(config.block_x * w / 100);
-			global_y1 = round(config.block_y * h / 100);
+			global_x1 = round(config.block_x * width / 100);
+			global_y1 = round(config.block_y * height / 100);
 			global_x2 = global_x1 + current_dx / OVERSAMPLE;
 			global_y2 = global_y1 + current_dy / OVERSAMPLE;
 		}
 		else
 		{
-			global_x1 = round(config.block_x * w / 100 +
+			global_x1 = round(config.block_x * width / 100 +
 				(total_dx - current_dx) / OVERSAMPLE);
-			global_y1 = round(config.block_y * h / 100 +
+			global_y1 = round(config.block_y * height / 100 +
 				(total_dy - current_dy) / OVERSAMPLE);
-			global_x2 = round(config.block_x * w / 100 +
+			global_x2 = round(config.block_x * width / 100 +
 				total_dx / OVERSAMPLE);
-			global_y2 = round(config.block_y * h / 100 +
+			global_y2 = round(config.block_y * height / 100 +
 				total_dy / OVERSAMPLE);
 		}
 
 		block_x = global_x1;
 		block_y = global_y1;
-		block_w = config.global_block_w * w / 100;
-		block_h = config.global_block_h * h / 100;
+		block_w = config.global_block_w * width / 100;
+		block_h = config.global_block_h * height / 100;
 		block_x1 = block_x - block_w / 2;
 		block_y1 = block_y - block_h / 2;
 		block_x2 = block_x + block_w / 2;
 		block_y2 = block_y + block_h / 2;
-		search_w = config.global_range_w * w / 100;
-		search_h = config.global_range_h * h / 100;
+		search_w = config.global_range_w * width / 100;
+		search_h = config.global_range_h * height / 100;
 		search_x1 = block_x1 - search_w / 2;
 		search_y1 = block_y1 - search_h / 2;
 		search_x2 = block_x2 + search_w / 2;
 		search_y2 = block_y2 + search_h / 2;
 
-		clamp_scan(w, 
-			h, 
+		clamp_scan(width, height,
 			&block_x1,
 			&block_y1,
 			&block_x2,
@@ -1055,12 +875,12 @@ void MotionMain::draw_vectors()
 	}
 	else
 	{
-		block_x = round(config.block_x * w / 100);
-		block_y = round(config.block_y * h / 100);
+		block_x = round(config.block_x * width / 100);
+		block_y = round(config.block_y * height / 100);
 	}
 
-	block_w = config.rotation_block_w * w / 100;
-	block_h = config.rotation_block_h * h / 100;
+	block_w = config.rotation_block_w * width / 100;
+	block_h = config.rotation_block_h * height / 100;
 
 	if(config.rotate)
 	{
@@ -1458,7 +1278,6 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 	cache.remove_all_objects();
 
-// Single macroblock
 	int w = current_frame->get_w();
 	int h = current_frame->get_h();
 
@@ -1792,7 +1611,7 @@ RotateScanUnit::RotateScanUnit(RotateScan *server, MotionMain *plugin)
 RotateScanUnit::~RotateScanUnit()
 {
 	delete rotater;
-	delete temp;
+	plugin->release_vframe(temp);
 }
 
 void RotateScanUnit::process_package(LoadPackage *package)
@@ -1810,10 +1629,8 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 		if(!rotater)
 			rotater = new AffineEngine(1, 1);
-		if(!temp) temp = new VFrame(0,
-			server->previous_frame->get_w(),
-			server->previous_frame->get_h(),
-			color_model);
+		if(!temp)
+			temp = plugin->clone_vframe(server->previous_frame);
 		temp->clear_frame();
 // Rotate original block size
 		rotater->set_viewport(server->block_x1, 

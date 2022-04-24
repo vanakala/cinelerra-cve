@@ -149,8 +149,6 @@ public:
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-// Calculate frame to copy from and frame to move
-	void calculate_pointers(VFrame **frame, VFrame **src, VFrame **dst);
 
 	PLUGIN_CLASS_MEMBERS
 
@@ -203,34 +201,18 @@ public:
 
 // The layer to track motion in.
 	int reference_layer;
-// The layer to apply motion in.
-	int target_layer;
 
-// Pointer to the source and destination of each operation.
-// These are fully allocated buffers.
+// The previous reference frame
+	VFrame *prev_ref;
+// The current reference frame
+	VFrame *current_ref;
+// The input target frame
+	VFrame *target_src;
+// The output target frame
+	VFrame *target_dst;
 
-// The previous reference frame for global motion tracking
-	VFrame *prev_global_ref;
-// The current reference frame for global motion tracking
-	VFrame *current_global_ref;
-// The input target frame for global motion tracking
-	VFrame *global_target_src;
-// The output target frame for global motion tracking
-	VFrame *global_target_dst;
-
-// The previous reference frame for rotation tracking
-	VFrame *prev_rotate_ref;
-// The current reference frame for rotation tracking
-	VFrame *current_rotate_ref;
-// The input target frame for rotation tracking.
-	VFrame *rotate_target_src;
-// The output target frame for rotation tracking.
-	VFrame *rotate_target_dst;
-
-// The output of process_buffer
-	VFrame *output_frame;
-	int w;
-	int h;
+	int width;
+	int height;
 };
 
 
