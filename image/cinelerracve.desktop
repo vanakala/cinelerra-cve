@@ -5,5 +5,6 @@ Categories=Application;AudioVideo;Multimedia;
 Encoding=UTF-8
 Exec=cinelerracve
 Icon=cinelerracve.png
+StartupWMClass=cinelerra
 Terminal=false
 Type=Application
