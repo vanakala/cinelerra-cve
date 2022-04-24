@@ -200,7 +200,7 @@ int PluginClient::get_total_buffers()
 
 int PluginClient::get_project_smp()
 {
-	return preferences_global->processors;
+	return preferences_global->max_threads;
 }
 
 BC_Hash* PluginClient::load_defaults_file(const char *filename)

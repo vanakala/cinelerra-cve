@@ -121,7 +121,7 @@ void VTrackRender::render_fade(VFrame *frame)
 	if(!EQUIV(value, 1.0))
 	{
 		if(!fader)
-			fader = new FadeEngine(preferences_global->processors);
+			fader = new FadeEngine(preferences_global->max_threads);
 		fader->do_fade(frame, value);
 		frame->set_transparent();
 	}
@@ -160,7 +160,7 @@ void VTrackRender::render_mask(VFrame *frame, int before_plugins)
 		return;
 	}
 	if(!masker)
-		masker = new MaskEngine(preferences_global->processors);
+		masker = new MaskEngine(preferences_global->max_threads);
 
 	masker->do_mask(frame, keyframe_set, before_plugins);
 	frame->set_transparent();
@@ -234,7 +234,7 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 		}
 
 		if(!overlayer)
-			overlayer = new OverlayFrame(preferences_global->processors);
+			overlayer = new OverlayFrame(preferences_global->max_threads);
 
 		overlayer->overlay(output, *input,
 			in_x1, in_y1, in_x2, in_y2,
@@ -266,7 +266,7 @@ VFrame *VTrackRender::render_camera(VFrame *frame)
 		in_x2 != out_x2 || in_y2 != out_y2)
 	{
 		if(!overlayer)
-			overlayer = new OverlayFrame(preferences_global->processors);
+			overlayer = new OverlayFrame(preferences_global->max_threads);
 
 		dstframe = BC_Resources::tmpframes.clone_frame(frame);
 		dstframe->clear_frame();

@@ -178,7 +178,7 @@ void PreferencesThread::apply_settings()
 
 	rerender = 
 		this_edlsession->need_rerender(edlsession) ||
-		(preferences->force_uniprocessor != preferences_global->force_uniprocessor) ||
+		(preferences->max_threads != preferences_global->max_threads) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*preferences_global->brender_asset,

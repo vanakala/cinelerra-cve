@@ -111,7 +111,7 @@ int PackageRenderer::create_output()
 
 	file = new File;
 
-	file->set_processors(preferences->processors);
+	file->set_processors(preferences->max_threads);
 
 	result = file->open_file(default_asset, FILE_OPEN_WRITE, 0, package->path);
 

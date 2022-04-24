@@ -34,15 +34,13 @@ Preferences::Preferences()
 	use_thumbnails = 1;
 	theme[0] = 0;
 	use_renderfarm = 0;
-	force_uniprocessor = 0;
 	renderfarm_port = DEAMON_PORT;
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
-	processors = calculate_processors(0);
-	real_processors = calculate_processors(1);
+	calculate_processors();
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -121,8 +119,7 @@ void Preferences::copy_from(Preferences *that)
 	use_tipwindow = that->use_tipwindow;
 
 	cache_size = that->cache_size;
-	force_uniprocessor = that->force_uniprocessor;
-	processors = that->processors;
+	max_threads = that->max_threads;
 	real_processors = that->real_processors;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
@@ -169,6 +166,8 @@ void Preferences::boundaries()
 	}
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
 	CLAMP(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
+	int max = 2 * real_processors;
+	CLAMP(max_threads, 1, max);
 }
 
 Preferences& Preferences::operator=(Preferences &that)
@@ -250,7 +249,7 @@ void Preferences::load_defaults(BC_Hash *defaults)
 			i + 1);
 	}
 
-	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
+	max_threads = defaults->get("MAXIMUM_THREADS", max_threads);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", (int64_t)cache_size);
@@ -314,8 +313,9 @@ void Preferences::save_defaults(BC_Hash *defaults)
 		defaults->update(string, string2);
 	}
 
-	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
+	defaults->delete_key("FORCE_UNIPROCESSOR");
 	defaults->update("USE_BRENDER", use_brender);
+	defaults->update("MAXIMUM_THREADS", max_threads);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);
 	defaults->update("USE_RENDERFARM", use_renderfarm);
 	defaults->update("LOCAL_RATE", local_rate);
@@ -562,13 +562,11 @@ int Preferences::get_node_port(int number)
 	return -1;
 }
 
-int Preferences::calculate_processors(int interactive)
+void Preferences::calculate_processors()
 {
 /* Get processor count */
 	int result = 1;
 	FILE *proc;
-
-	if(force_uniprocessor && !interactive) return 1;
 
 	if(proc = fopen("/proc/cpuinfo", "r"))
 	{
@@ -597,6 +595,5 @@ int Preferences::calculate_processors(int interactive)
 		}
 		fclose(proc);
 	}
-
-	return result;
+	max_threads = real_processors = result;
 }

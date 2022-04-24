@@ -421,7 +421,7 @@ SetChannelsCanvas::SetChannelsCanvas(SetFormatThread *thread,
 		theme_global->channel_position_data->get_w(),
 		theme_global->channel_position_data->get_h(),
 		theme_global->channel_position_data->get_color_model());
-	rotater = new RotateFrame(preferences_global->processors,
+	rotater = new RotateFrame(preferences_global->max_threads,
 		theme_global->channel_position_data->get_w(),
 		theme_global->channel_position_data->get_h());
 }

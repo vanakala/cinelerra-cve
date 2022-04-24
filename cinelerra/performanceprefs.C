@@ -43,7 +43,7 @@ void PerformancePrefs::show()
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
-	int maxw, curw, y1, ybx[2];
+	int maxw, curw, y1, ybx[3];
 
 	node_list = 0;
 	generate_node_list();
@@ -58,6 +58,10 @@ void PerformancePrefs::show()
 	win = add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
 	if((curw = win->get_w()) > maxw)
 		maxw = curw;
+	ybx[2] = y += 30;
+	win = add_subwindow(new BC_Title(x, y + 5, _("Maximum number of threads:")));
+	if((curw = win->get_w()) > maxw)
+		maxw = curw;
 	maxw += x + 5;
 
 // Cache size
@@ -67,13 +71,9 @@ void PerformancePrefs::show()
 		this);
 
 // Seconds to preroll renders
-	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, 
-		this, 
-		maxw,
-		ybx[1]);
-	y += 30;
-	add_subwindow(new PrefsForceUniprocessor(pwindow, x, y));
-
+	new PrefsRenderPreroll(pwindow, this, maxw, ybx[1]);
+// Number of threads
+	new PrefsNumberOfThreads(pwindow, this, maxw, ybx[2]);
 	y += 35;
 
 // Background rendering
@@ -357,7 +357,7 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 
 int PrefsBRenderPreroll::handle_event()
 {
-	pwindow->thread->preferences->brender_preroll = atol(get_text());
+	pwindow->thread->preferences->brender_preroll = atoi(get_text());
 	return 1;
 }
 
@@ -378,18 +378,22 @@ int PrefsRenderFarm::handle_event()
 }
 
 
-PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
-	y, 
-	pwindow->thread->preferences->force_uniprocessor,
-	_("Force single processor use"))
+PrefsNumberOfThreads::PrefsNumberOfThreads(PreferencesWindow *pwindow,
+	PerformancePrefs *subwindow, int x, int y)
+ : BC_TumbleTextBox(subwindow,
+	pwindow->thread->preferences->max_threads,
+	0,
+	100,
+	x,
+	y,
+	100)
 {
 	this->pwindow = pwindow;
 }
 
-int PrefsForceUniprocessor::handle_event()
+int PrefsNumberOfThreads::handle_event()
 {
-	pwindow->thread->preferences->force_uniprocessor = get_value();
+	pwindow->thread->preferences->max_threads = atoi(get_text());
 	return 1;
 }
 

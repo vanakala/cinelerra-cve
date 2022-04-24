@@ -56,9 +56,8 @@ public:
 	void set_rate(double rate, int node);
 
 // Calculate the number of cpus to use.
-// Determined by /proc/cpuinfo and force_uniprocessor.
-// interactive forces it to ignore force_uniprocessor
-	int calculate_processors(int interactive = 0);
+// Determined by /proc/cpuinfo.
+	void calculate_processors();
 
 // ================================= Performance ================================
 // directory to look in for indexes
@@ -72,11 +71,9 @@ public:
 	char theme[BCTEXTLEN];
 	ptstime render_preroll;
 	int brender_preroll;
-	int force_uniprocessor;
-// The number of cpus to use when rendering.
-// Determined by /proc/cpuinfo and force_uniprocessor
-	int processors;
-// Number of processors for interactive operations.
+// Maximum threads (1 .. 2 * processors)
+	int max_threads;
+// Number of processors in system
 	int real_processors;
 
 // Default positions for channels

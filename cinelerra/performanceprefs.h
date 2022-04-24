@@ -93,10 +93,12 @@ public:
 };
 
 
-class PrefsForceUniprocessor : public BC_CheckBox
+class PrefsNumberOfThreads : public BC_TumbleTextBox
 {
 public:
-	PrefsForceUniprocessor(PreferencesWindow *pwindow, int x, int y);
+	PrefsNumberOfThreads(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow,
+		int x, int y);
 
 	int handle_event();
 
