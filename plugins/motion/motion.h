@@ -344,7 +344,6 @@ public:
 	RotateScan *server;
 	MotionMain *plugin;
 	AffineEngine *rotater;
-	VFrame *temp;
 };
 
 

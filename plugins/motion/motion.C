@@ -4,8 +4,9 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "affine.h"
-#include "clip.h"
 #include "bchash.h"
+#include "clip.h"
+#include "colorspaces.h"
 #include "filexml.h"
 #include "guidelines.h"
 #include "keyframe.h"
@@ -884,26 +885,8 @@ void MotionMain::draw_vectors()
 
 	if(config.rotate)
 	{
-		double angle = total_angle * 2 * M_PI / 360;
-		double base_angle1 = atan((double)block_h / block_w);
-		double base_angle2 = atan((double)block_w / block_h);
-		double target_angle1 = base_angle1 + angle;
-		double target_angle2 = base_angle2 + angle;
-		double radius = sqrt(block_w * block_w + block_h * block_h) / 2;
-
-		block_x1 = round(block_x - cos(target_angle1) * radius);
-		block_y1 = round(block_y - sin(target_angle1) * radius);
-		block_x2 = round(block_x + sin(target_angle2) * radius);
-		block_y2 = round(block_y - cos(target_angle2) * radius);
-		block_x3 = round(block_x - sin(target_angle2) * radius);
-		block_y3 = round(block_y + cos(target_angle2) * radius);
-		block_x4 = round(block_x + cos(target_angle1) * radius);
-		block_y4 = round(block_y + sin(target_angle1) * radius);
-
-		gf->add_line(block_x1, block_y1, block_x2, block_y2);
-		gf->add_line(block_x2, block_y2, block_x4, block_y4);
-		gf->add_line(block_x4, block_y4, block_x3, block_y3);
-		gf->add_line(block_x3, block_y3, block_x1, block_y1);
+		gf->add_rectangle(block_x - block_w / 2, block_y - block_h / 2,
+			block_w, block_h);
 // Center
 		if(!config.global)
 			gf->add_circle(block_x - 3, block_y - 3, 6, 6);
@@ -975,11 +958,13 @@ int MotionMain::abs_diff(unsigned char *prev_ptr,
 
 			for(int j = 0; j < w; j++)
 			{
-				for(int k = 0; k < 3; k++)
-					result += abs(*prev_row++ - *current_row++);
+				result += abs(ColorSpaces::rgb_to_y_16(prev_row[0],
+						prev_row[1], prev_row[2]) -
+					ColorSpaces::rgb_to_y_16(current_row[0],
+						current_row[1], current_row[2]));
 
-				prev_row++;
-				current_row++;
+				prev_row += 4;
+				current_row += 4;
 			}
 			prev_ptr += row_bytes;
 			current_ptr += row_bytes;
@@ -994,11 +979,9 @@ int MotionMain::abs_diff(unsigned char *prev_ptr,
 
 			for(int j = 0; j < w; j++)
 			{
-				prev_row++;
-				current_row++;
-
-				for(int k = 0; k < 3; k++)
-					result += abs(*prev_row++ - *current_row++);
+				result += abs(prev_row[1] - current_row[1]);
+				prev_row += 4;
+				current_row += 4;
 			}
 			prev_ptr += row_bytes;
 			current_ptr += row_bytes;
@@ -1605,13 +1588,11 @@ RotateScanUnit::RotateScanUnit(RotateScan *server, MotionMain *plugin)
 	this->server = server;
 	this->plugin = plugin;
 	rotater = 0;
-	temp = 0;
 }
 
 RotateScanUnit::~RotateScanUnit()
 {
 	delete rotater;
-	plugin->release_vframe(temp);
 }
 
 void RotateScanUnit::process_package(LoadPackage *package)
@@ -1629,24 +1610,24 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 		if(!rotater)
 			rotater = new AffineEngine(1, 1);
-		if(!temp)
-			temp = plugin->clone_vframe(server->previous_frame);
+
+		VFrame *temp = plugin->clone_vframe(server->previous_frame);
 		temp->clear_frame();
-// Rotate original block size
-		rotater->set_viewport(server->block_x1, 
-			server->block_y1,
-			server->block_x2 - server->block_x1,
-			server->block_y2 - server->block_y1);
+
+		rotater->set_viewport(server->scan_x,
+			server->scan_y,
+			server->scan_w,
+			server->scan_h);
 		rotater->set_pivot(server->block_x, server->block_y);
 
 		rotater->rotate(temp,
 			server->previous_frame,
 			pkg->angle);
-// Clamp coordinates
-		int x1 = server->scan_x;
-		int y1 = server->scan_y;
-		int x2 = x1 + server->scan_w;
-		int y2 = y1 + server->scan_h;
+
+		int x1 = server->block_x1;
+		int y1 = server->block_y1;
+		int x2 = server->block_x2;
+		int y2 = server->block_y2;
 		x2 = MIN(temp->get_w(), x2);
 		y2 = MIN(temp->get_h(), y2);
 		x2 = MIN(server->current_frame->get_w(), x2);
@@ -1666,6 +1647,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 				color_model);
 			server->put_cache(pkg->angle, pkg->difference);
 		}
+		plugin->release_vframe(temp);
 	}
 }
 
@@ -1747,96 +1729,73 @@ double RotateScan::scan_frame(VFrame *previous_frame,
 	int block_w = w * plugin->config.rotation_block_w / 100;
 	int block_h = h * plugin->config.rotation_block_h / 100;
 
-	if(this->block_x - block_w / 2 < 0) block_w = this->block_x * 2;
-	if(this->block_y - block_h / 2 < 0) block_h = this->block_y * 2;
-	if(this->block_x + block_w / 2 > w) block_w = (w - this->block_x) * 2;
-	if(this->block_y + block_h / 2 > h) block_h = (h - this->block_y) * 2;
+	if(this->block_x - block_w / 2 < 0)
+		block_w = this->block_x * 2;
+	if(this->block_y - block_h / 2 < 0)
+		block_h = this->block_y * 2;
+	if(this->block_x + block_w / 2 > w)
+		block_w = (w - this->block_x) * 2;
+	if(this->block_y + block_h / 2 > h)
+		block_h = (h - this->block_y) * 2;
 
 	block_x1 = this->block_x - block_w / 2;
 	block_x2 = this->block_x + block_w / 2;
 	block_y1 = this->block_y - block_h / 2;
 	block_y2 = this->block_y + block_h / 2;
 
-// Calculate the maximum area available to scan after rotation.
-// Must be calculated from the starting range because of cache.
 // Get coords of rectangle after rotation.
 	double center_x = this->block_x;
 	double center_y = this->block_y;
-	double max_angle = plugin->config.rotation_range;
-	double base_angle1 = atan((double)block_h / block_w);
-	double base_angle2 = atan((double)block_w / block_h);
-	double target_angle1 = base_angle1 + max_angle * 2 * M_PI / 360;
-	double target_angle2 = base_angle2 + max_angle * 2 * M_PI / 360;
+	double max_angle = plugin->config.rotation_range  * 2 * M_PI / 360;
+	double target_angle1 = atan((double)block_h / block_w) + max_angle;
+	double target_angle2 = atan((double)block_w / block_h) + max_angle;
 	double radius = sqrt(block_w * block_w + block_h * block_h) / 2;
-	double x1 = center_x - cos(target_angle1) * radius;
-	double y1 = center_y - sin(target_angle1) * radius;
-	double x2 = center_x + sin(target_angle2) * radius;
-	double y2 = center_y - cos(target_angle2) * radius;
-	double x3 = center_x - sin(target_angle2) * radius;
-	double y3 = center_y + cos(target_angle2) * radius;
+	double wx[4], wy[4];
 
-// Track top edge to find greatest area.
-	double max_area1 = 0;
-	double max_x1 = 0;
-	double max_y1 = 0;
-	for(double x = x1; x < x2; x++)
+	wx[0] = center_x - cos(target_angle1) * radius;
+	wy[0] = center_y - sin(target_angle1) * radius;
+	wx[1] = center_x + sin(target_angle2) * radius;
+	wy[1] = center_y - cos(target_angle2) * radius;
+	wx[2] = center_x - sin(target_angle2) * radius;
+	wy[2] = center_y + cos(target_angle2) * radius;
+	wx[3] = center_x + sin(target_angle2) * radius;
+	wy[3] = center_y + cos(target_angle2) * radius;
+
+	double min_x, min_y, max_x, max_y;
+	min_x = w;
+	min_y = h;
+	max_x = 0;
+	max_y = 0;
+
+	for(int i = 0; i < 4; i++)
 	{
-		double y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-		if(x >= center_x && x < block_x2 && y >= block_y1 && y < center_y)
-		{
-			double area = fabs(x - center_x) * fabs(y - center_y);
-			if(area > max_area1)
-			{
-				max_area1 = area;
-				max_x1 = x;
-				max_y1 = y;
-			}
-		}
+		if(min_x > wx[i])
+			min_x = wx[i];
+		if(max_x < wx[i])
+			max_x = wx[i];
+		if(min_y > wy[i])
+			min_y = wy[i];
+		if(max_y < wy[i])
+			max_y = wy[i];
 	}
-
-// Track left edge to find greatest area.
-	double max_area2 = 0;
-	double max_x2 = 0;
-	double max_y2 = 0;
-	for(double y = y1; y < y3; y++)
-	{
-		double x = x1 + (x3 - x1) * (y - y1) / (y3 - y1);
-		if(x >= block_x1 && x < center_x && y >= block_y1 && y < center_y)
-		{
-			double area = fabs(x - center_x) * fabs(y - center_y);
-			if(area > max_area2)
-			{
-				max_area2 = area;
-				max_x2 = x;
-				max_y2 = y;
-			}
-		}
-	}
-
-	double max_x, max_y;
-	max_x = max_x2;
-	max_y = max_y1;
 
 // Get reduced scan coords
-	scan_w = round(fabs(max_x - center_x) * 2);
-	scan_h = round(fabs(max_y - center_y) * 2);
-	scan_x = round(center_x - scan_w / 2);
-	scan_y = round(center_y - scan_h / 2);
-// Determine min angle from size of block
-	double angle1 = atan((double)block_h / block_w);
-	double angle2 = atan((double)(block_h - 1) / (block_w + 1));
-	double min_angle = fabs(angle2 - angle1) / OVERSAMPLE;
-	min_angle = MAX(min_angle, MIN_ANGLE);
+	scan_w = round(max_x - min_x);
+	scan_h = round(max_y - min_y);
+	scan_x = round(min_x);
+	scan_y = round(min_y);
 
 	cache.remove_all_objects();
+
 	if(!skip)
 	{
 // Initial search range
 		double angle_range = plugin->config.rotation_range;
 		result = 0;
 		total_steps = plugin->config.rotate_positions;
+		double min_range = total_steps * MIN_ANGLE;
 
-		while(angle_range >= min_angle * total_steps)
+		while(angle_range >= min_range)
 		{
 			scan_angle1 = result - angle_range;
 			scan_angle2 = result + angle_range;
