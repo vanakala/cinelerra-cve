@@ -164,6 +164,13 @@ void CWindow::run()
 
 void CWindow::update(int options)
 {
+	if(options & WUPD_SCROLLBARS)
+	{
+		gui->canvas->update_zoom(edlsession->cwindow_xscroll,
+			edlsession->cwindow_yscroll, edlsession->cwindow_zoom);
+		gui->canvas->update_scrollbars();
+	}
+
 	if(options & WUPD_POSITION)
 	{
 		gui->slider->set_position();
@@ -199,11 +206,6 @@ void CWindow::update(int options)
 	if(options & WUPD_ACHANNELS)
 		gui->meters->set_meters(edlsession->audio_channels,
 			edlsession->cwindow_meter);
-
-	if(!edlsession->cwindow_scrollbars)
-		gui->zoom_panel->update(_("Auto"));
-	else
-		gui->zoom_panel->update(edlsession->cwindow_zoom);
 
 	if(options & WUPD_ACHANNELS)
 		gui->resize_event(mainsession->cwindow_w,
