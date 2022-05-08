@@ -278,11 +278,7 @@ void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
 			}
 		}
 	}
-	if(current_renderer->initialized_buffers != current_renderer->vframes.total)
-	{
-		plugin->client->plugin_init(current_renderer->vframes.total);
-		current_renderer->initialized_buffers = current_renderer->vframes.total;
-	}
+	plugin->client->plugin_init(current_renderer->vframes.total);
 }
 
 VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)

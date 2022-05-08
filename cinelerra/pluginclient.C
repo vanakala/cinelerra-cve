@@ -40,14 +40,19 @@ PluginClient::PluginClient(PluginServer *server)
 	this->server = server;
 }
 
-void PluginClient::plugin_init(int total_in_buffers)
+void PluginClient::plugin_init(int total_buffers)
 {
-	KeyFrame *keyframe = get_first_keyframe();
+	KeyFrame *keyframe;
 
-	this->total_in_buffers = total_in_buffers;
-	if(keyframe)
-		read_data(keyframe);
-	init_plugin();
+	if(total_buffers != total_in_buffers)
+	{
+		keyframe = get_first_keyframe();
+
+		this->total_in_buffers = total_buffers;
+		if(keyframe)
+			read_data(keyframe);
+		init_plugin();
+	}
 }
 
 int PluginClient::get_project_samplerate()

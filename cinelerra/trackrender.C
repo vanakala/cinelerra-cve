@@ -23,7 +23,6 @@ TrackRender::TrackRender(Track *track)
 	plugins_track = track;
 	autos_track = track;
 	next_plugin = 0;
-	initialized_buffers = 0;
 
 	for(int i = 0; i < TRACKRENDER_FILES_MAX; i++)
 		trackfiles[i] = 0;

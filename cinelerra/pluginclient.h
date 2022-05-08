@@ -200,7 +200,7 @@ public:
 // Abort plugin with unsupported colormodel
 	void unsupported(int cmodel);
 // Initialize plugin
-	void plugin_init(int total_in_buffers);
+	void plugin_init(int total_buffers);
 
 	virtual void render_gui(void *data) { };
 // Sets the current trackrender (needed by get_?frame)

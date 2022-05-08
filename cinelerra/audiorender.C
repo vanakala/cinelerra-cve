@@ -548,11 +548,7 @@ void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 		}
 	}
 
-	if(current_renderer->initialized_buffers != current_renderer->aframes.total)
-	{
-		plugin->client->plugin_init(current_renderer->aframes.total);
-		current_renderer->initialized_buffers = current_renderer->aframes.total;
-	}
+	plugin->client->plugin_init(current_renderer->aframes.total);
 }
 
 AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)

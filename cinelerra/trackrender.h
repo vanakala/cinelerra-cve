@@ -40,7 +40,6 @@ public:
 
 	Track *media_track;
 	Plugin *next_plugin;
-	int initialized_buffers;
 
 protected:
 	File *media_file(Edit *edit, int filenum);
