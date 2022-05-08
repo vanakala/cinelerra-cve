@@ -22,14 +22,10 @@
 #define TRIANGLE_W 10
 #define TRIANGLE_H 10
 
-BC_PopupMenu::BC_PopupMenu(int x, 
-		int y, 
-		int w, 
-		const char *text, 
-		int options,
-		VFrame **data,
-		int margin)
- : BC_SubWindow(x, y, w, 0, -1)
+BC_PopupMenu::BC_PopupMenu(int x, int y, int w,
+	const char *text, int options,
+	VFrame **data, int margin)
+ : BC_SubWindow(x, y, w, 1, -1)
 {
 	highlighted = popup_down = 0;
 	icon = 0;
@@ -56,16 +52,15 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	menu_popup = new BC_MenuPopup;
 }
 
-BC_PopupMenu::BC_PopupMenu(int x, 
-		int y, 
-		const char *text, 
-		int options,
-		VFrame **data)
- : BC_SubWindow(x, y, 0, 0, -1)
+BC_PopupMenu::BC_PopupMenu(int x, int y,
+	const char *text, int options,
+	VFrame **data)
+ : BC_SubWindow(x, y, 10, 1, -1)
 {
 	highlighted = popup_down = 0;
 	icon = 0;
 	use_title = 0;
+	margin = 0;
 	use_coords = options & POPUPMENU_USE_COORDS;
 	this->text[0] = 0;
 	if(text && *text)
@@ -133,7 +128,7 @@ void BC_PopupMenu::init_images()
 
 void BC_PopupMenu::initialize()
 {
-	if(use_title)
+	if(use_title || data)
 		init_images();
 	else
 // Move outside window if no title
@@ -146,6 +141,7 @@ void BC_PopupMenu::initialize()
 		w = 10;
 		h = 1;
 	}
+
 	BC_SubWindow::initialize();
 
 	menu_popup->initialize(top_level, 
@@ -179,14 +175,13 @@ void BC_PopupMenu::set_images(VFrame **data)
 
 int BC_PopupMenu::calculate_h(VFrame **data)
 {
-	if(data)
-		;
-	else
-	if(resources.popupmenu_images)
-		data = resources.popupmenu_images;
-	else
-		data = resources.generic_button_images;
-
+	if(!data)
+	{
+		if(resources.popupmenu_images)
+			data = resources.popupmenu_images;
+		else
+			data = resources.generic_button_images;
+	}
 	return data[BUTTON_UP]->get_h();
 }
 
@@ -212,7 +207,8 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 
 void BC_PopupMenu::draw_title()
 {
-	if(!use_title) return;
+	if(!use_title)
+		return;
 
 	top_level->lock_window("BC_PopupMenu::draw_title");
 // Background
@@ -307,7 +303,8 @@ void BC_PopupMenu::activate_menu(int init_releases)
 			menu_popup->activate_menu(x, y, w, h, 1, 1);
 		popup_down = 1;
 		top_level->unlock_window();
-		if(use_title) draw_title();
+		if(use_title)
+			draw_title();
 	}
 }
 
@@ -355,30 +352,34 @@ int BC_PopupMenu::button_press_event()
 	}
 
 	// Scrolling section
-	if (is_event_win() 
-		&& (get_buttonpress() == 4 || get_buttonpress() == 5) 
+	if (is_event_win() && (get_buttonpress() == 4 || get_buttonpress() == 5)
 		&& menu_popup->total_menuitems() > 1)
 	{
 		int theval = -1;
-		for (int i = 0; i < menu_popup->total_menuitems(); i++) {
-			if (!strcmp(menu_popup->menu_items.values[i]->get_text(),get_text())) {
-				theval=i; 
+		for(int i = 0; i < menu_popup->total_menuitems(); i++)
+		{
+			if(!strcmp(menu_popup->menu_items.values[i]->get_text(),get_text()))
+			{
+				theval = i;
 				break;
 			}
 		}
 
-		if (theval == -1)                  theval=0;
-		else if (get_buttonpress() == 4)   theval--;
-		else if (get_buttonpress() == 5)   theval++;
-
-		if (theval < 0)
+		if(theval == -1)
 			theval=0;
-		if (theval >= menu_popup->total_menuitems()) 
+		else if(get_buttonpress() == 4)
+			theval--;
+		else if(get_buttonpress() == 5)
+			theval++;
+
+		if(theval < 0)
+			theval = 0;
+		if(theval >= menu_popup->total_menuitems())
 			theval = menu_popup->total_menuitems() - 1;
 
 		BC_MenuItem *tmp = menu_popup->menu_items.values[theval];
 		set_text(tmp->get_text());
-		if (!tmp->handle_event())
+		if(!tmp->handle_event())
 			this->handle_event();
 	}
 
@@ -442,12 +443,12 @@ int BC_PopupMenu::button_release_event()
 
 void BC_PopupMenu::translation_event()
 {
-	if(popup_down) menu_popup->dispatch_translation_event();
+	if(popup_down)
+		menu_popup->dispatch_translation_event();
 }
 
 void BC_PopupMenu::cursor_leave_event()
 {
-
 	if(status == BUTTON_HI && use_title)
 	{
 		status = BUTTON_UP;
@@ -468,11 +469,8 @@ int BC_PopupMenu::cursor_enter_event()
 	{
 		tooltip_done = 0;
 		if(top_level->button_down)
-		{
 			status = BUTTON_DN;
-		}
-		else
-		if(status == BUTTON_UP) 
+		else if(status == BUTTON_UP)
 			status = BUTTON_HI;
 		draw_title();
 	}

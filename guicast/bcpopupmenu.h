@@ -18,19 +18,14 @@
 class BC_PopupMenu : public BC_SubWindow
 {
 public:
-	BC_PopupMenu(int x, 
-		int y, 
-		int w, 
-		const char *text, 
-		int options = 0,
+	BC_PopupMenu(int x, int y, int w,
+		const char *text, int options = 0,
 // Data for alternative title images
 		VFrame **data = 0,
 // Alternative text margin
 		int margin = -1);
-	BC_PopupMenu(int x, 
-		int y, 
-		const char *text, 
-		int options = 0,
+	BC_PopupMenu(int x, int y,
+		const char *text, int options = 0,
 // Data for alternative title images
 		VFrame **data = 0);
 	virtual ~BC_PopupMenu();
