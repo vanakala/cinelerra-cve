@@ -367,9 +367,10 @@ void MotionMain::read_data(KeyFrame *keyframe)
 
 void MotionMain::process_global()
 {
-	if(!engine) engine = new MotionScan(this,
-		PluginClient::get_project_smp(),
-		PluginClient::get_project_smp());
+	if(!engine)
+		engine = new MotionScan(this,
+			PluginClient::get_project_smp(),
+			PluginClient::get_project_smp());
 
 // Get the current motion vector between the previous and current frame
 	engine->scan_frame(current_ref, prev_ref);
@@ -585,8 +586,7 @@ void MotionMain::process_tmpframes(VFrame **frame)
 		return;
 
 // Calculate the source and destination pointers for each of the operations.
-	reference_layer = PluginClient::total_in_buffers - 1;
-
+	reference_layer = total_in_buffers - 1;
 	ptstime actual_previous_pts;
 
 // Skip if match frame not available
@@ -1021,21 +1021,28 @@ int MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 			uint16_t *current_row = (uint16_t*)current_ptr;
 			for(int j = 0; j < w_sub; j++)
 			{
-				for(int k = 0; k < 3; k++)
-				{
-					int prev_value =
-						((int64_t)*prev_row1++ * x1_fraction * y1_fraction + \
-						*prev_row2++ * x2_fraction * y1_fraction + \
-						*prev_row3++ * x1_fraction * y2_fraction + \
-						*prev_row4++ * x2_fraction * y2_fraction) /
-						0x100 / 0x100;
-					result += abs(prev_value - *current_row++);
-				}
-				prev_row1++;
-				prev_row2++;
-				prev_row3++;
-				prev_row4++;
-				current_row++;
+				int y_row1 = ColorSpaces::rgb_to_y_16(prev_row1[0],
+					prev_row1[1], prev_row1[2]);
+				int y_row2 = ColorSpaces::rgb_to_y_16(prev_row2[0],
+					prev_row2[1], prev_row2[2]);
+				int y_row3 = ColorSpaces::rgb_to_y_16(prev_row3[0],
+					prev_row3[1], prev_row3[2]);
+				int y_row4 = ColorSpaces::rgb_to_y_16(prev_row4[0],
+					prev_row4[1], prev_row4[2]);
+				int y_cur = ColorSpaces::rgb_to_y_16(current_row[0],
+					current_row[1], current_row[2]);
+				int prev_value =
+					((int64_t)y_row1 * x1_fraction * y1_fraction +
+					y_row2 * x2_fraction * y1_fraction +
+					y_row3 * x1_fraction * y2_fraction +
+					y_row4 * x2_fraction * y2_fraction) /
+					0x100 / 0x100;
+				result += abs(prev_value - y_cur);
+				prev_row1 += 4;
+				prev_row2 += 4;
+				prev_row3 += 4;
+				prev_row4 += 4;
+				current_row += 4;
 			}
 			prev_ptr += row_bytes;
 			current_ptr += row_bytes;
@@ -1057,16 +1064,19 @@ int MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 				prev_row3++;
 				prev_row4++;
 				current_row++;
-				for(int k = 0; k < 3; k++)
-				{
-					int prev_value =
-						((int64_t)*prev_row1++ * x1_fraction * y1_fraction +
-						*prev_row2++ * x2_fraction * y1_fraction +
-						*prev_row3++ * x1_fraction * y2_fraction +
-						*prev_row4++ * x2_fraction * y2_fraction) /
-						0x100 / 0x100;
-					result += abs(prev_value - *current_row++);
-				}
+
+				int prev_value =
+					((int64_t)*prev_row1 * x1_fraction * y1_fraction +
+					*prev_row2 * x2_fraction * y1_fraction +
+					*prev_row3 * x1_fraction * y2_fraction +
+					*prev_row4 * x2_fraction * y2_fraction) /
+					0x100 / 0x100;
+				result += abs(prev_value - *current_row);
+				prev_row1 += 3;
+				prev_row2 += 3;
+				prev_row3 += 3;
+				prev_row4 += 3;
+				current_row += 3;
 			}
 			prev_ptr += row_bytes;
 			current_ptr += row_bytes;
