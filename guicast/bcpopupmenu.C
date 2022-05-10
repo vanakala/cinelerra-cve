@@ -97,11 +97,13 @@ void BC_PopupMenu::set_text(const char *text)
 {
 	this->text[0] = 0;
 	if(text && *text)
-		strcpy(this->text, text);
-	if(!use_title)
 	{
-		init_images();
-		use_title = 1;
+		strcpy(this->text, text);
+		if(!use_title)
+		{
+			init_images();
+			use_title = 1;
+		}
 	}
 	if(top_level)
 		draw_title();
