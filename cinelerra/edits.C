@@ -177,8 +177,9 @@ Edit* Edits::split_edit(ptstime postime, int force)
 		{
 			append(new_edit = create_edit());
 			new_edit->set_pts(postime);
+			return new_edit;
 		}
-		return new_edit;
+		return edit;
 	}
 // Get edit containing position
 	edit = editof(postime);
