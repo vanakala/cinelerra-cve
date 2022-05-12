@@ -56,7 +56,6 @@ cinelerracve_SOURCES = aboutprefs.C \
 		    atrackrender.C \
 		    audioalsa.C \
 		    audiodevice.C \
-		    audioesound.C \
 		    audioodevice.C \
 		    audiorender.C \
 		    auto.C \
@@ -271,7 +270,6 @@ noinst_HEADERS = aboutprefs.h \
 		 atrackrender.h \
 		 audioalsa.h \
 		 audiodevice.h \
-		 audioesound.h \
 		 audiorender.h \
 		 autoconf.h \
 		 auto.h \

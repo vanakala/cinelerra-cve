@@ -105,9 +105,6 @@ fi
 AC_ARG_ENABLE(alsa,
 	AC_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
 	[enable_alsa=$enableval],[enable_alsa=yes])
-AC_ARG_ENABLE(esd,
-	AC_HELP_STRING([--disable-esd], [disable support for ESD (default=autodetect)]),
-	[enable_esd=$enableval],[enable_esd=yes])
 
 if test "x$enable_alsa" = "xyes"; then
 	AM_PATH_ALSA(1.0.2,[alsa=yes])
@@ -122,14 +119,6 @@ if test "x$enable_alsa" = "xyes"; then
 	LIBS=`echo "$LIBS" | sed -e s/-lasound//g`
 fi
 
-if test "x$enable_esd" = "xyes"; then
-	AM_PATH_ESD(,[esound=yes])
-	if test "x$esound" = xyes; then
-		SOUND_CFLAGS="$ESD_CFLAGS -DHAVE_ESOUND $SOUND_CFLAGS"
-		SOUND_LDFLAGS="$ESD_LIBS $SOUND_LDFLAGS"
-		enable_esd=ok
-	fi
-fi
 AC_SUBST(SOUND_CFLAGS)
 AC_SUBST(SOUND_LDFLAGS)
 ############### END OF SOUND
@@ -551,7 +540,6 @@ else
 	$4
 	echo "$2 is $component"
 fi])
-ORPT(enable_esd,ESD (Enlightenment Sound Daemon),--disable-esd,RPT(esound,ESD subsystem))
 ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )

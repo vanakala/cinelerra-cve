@@ -63,9 +63,6 @@ void ADevicePrefs::initialize(int creation)
 	case AUDIO_ALSA:
 		create_alsa_objs();
 		break;
-	case AUDIO_ESOUND:
-		create_esound_objs();
-		break;
 	}
 }
 
@@ -84,25 +81,8 @@ void ADevicePrefs::delete_objects(int creation)
 	case AUDIO_ALSA:
 		delete_alsa_objs(creation);
 		break;
-	case AUDIO_ESOUND:
-		delete_esound_objs();
-		break;
 	}
 	driver = -1;
-}
-
-void ADevicePrefs::delete_esound_objs()
-{
-#ifdef HAVE_ESOUND
-	delete server_title;
-	server_title = 0;
-	delete port_title;
-	port_title = 0;
-	delete esound_server;
-	esound_server = 0;
-	delete esound_port;
-	esound_port = 0;
-#endif
 }
 
 void ADevicePrefs::delete_alsa_objs(int creation)
@@ -164,24 +144,6 @@ void ADevicePrefs::create_alsa_objs()
 #endif
 }
 
-void ADevicePrefs::create_esound_objs()
-{
-#ifdef HAVE_ESOUND
-	int x1 = x + menu->get_w() + 5;
-	char *output_char;
-	int *output_int;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	output_char = out_config->esound_out_server;
-	dialog->add_subwindow(server_title = new BC_Title(x1, y, _("Server:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(esound_server = new ADeviceTextBox(x1, y + 20, output_char));
-
-	output_int = &out_config->esound_out_port;
-	x1 += esound_server->get_w() + 5;
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
-#endif
-}
 
 ADriverMenu::ADriverMenu(int x, 
 	int y, 
@@ -195,18 +157,12 @@ ADriverMenu::ADriverMenu(int x,
 #ifdef HAVE_ALSA
 	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
 #endif
-#ifdef HAVE_ESOUND
-	add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
-#endif
 }
 
 const char *ADriverMenu::adriver_to_string(int driver)
 {
 	switch(driver)
 	{
-	case AUDIO_ESOUND:
-		return AUDIO_ESOUND_TITLE;
-
 	case AUDIO_ALSA:
 		return AUDIO_ALSA_TITLE;
 	}

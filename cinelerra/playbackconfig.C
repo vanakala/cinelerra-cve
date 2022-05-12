@@ -15,16 +15,10 @@ AudioOutConfig::AudioOutConfig()
 {
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
-#elif defined(HAVE_ESOUND)
-	driver = AUDIO_ESOUND;
-#else
 	driver = 0;
 #endif
 
 	audio_offset = 0.0;
-
-	esound_out_server[0] = 0;
-	esound_out_port = 0;
 
 	strcpy(alsa_out_device, "default");
 	alsa_out_bits = 16;
@@ -39,8 +33,6 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 {
 	return driver == that.driver &&
 		EQUIV(audio_offset, that.audio_offset) &&
-		!strcmp(esound_out_server, that.esound_out_server) &&
-		(esound_out_port == that.esound_out_port) && 
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_bits == that.alsa_out_bits);
 }
@@ -56,9 +48,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 	driver = src->driver;
 	audio_offset = src->audio_offset;
 
-	strcpy(esound_out_server, src->esound_out_server);
-	esound_out_port = src->esound_out_port;
-
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_bits = src->alsa_out_bits;
 }
@@ -71,11 +60,6 @@ void AudioOutConfig::load_defaults(BC_Hash *defaults)
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
-
-	defaults->get("ESOUND_OUT_SERVER_0", esound_out_server);
-	defaults->get("ESOUND_OUT_SERVER", esound_out_server);
-	esound_out_port = defaults->get("ESOUND_OUT_PORT_0", esound_out_port);
-	esound_out_port = defaults->get("ESOUND_OUT_PORT", esound_out_port);
 }
 
 void AudioOutConfig::save_defaults(BC_Hash *defaults)
@@ -94,9 +78,9 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
 
 	defaults->delete_keys_prefix("ESOUND_OUT_SERVER_");
-	defaults->update("ESOUND_OUT_SERVER", esound_out_server);
+	defaults->delete_key("ESOUND_OUT_SERVER");
 	defaults->delete_keys_prefix("ESOUND_OUT_PORT_");
-	defaults->update("ESOUND_OUT_PORT", esound_out_port);
+	defaults->delete_key("ESOUND_OUT_PORT");
 }
 
 

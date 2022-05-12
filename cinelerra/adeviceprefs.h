@@ -43,10 +43,8 @@ public:
 	PreferencesWindow *pwindow;
 
 private:
-	void create_esound_objs();
 	void create_alsa_objs();
 
-	void delete_esound_objs();
 	void delete_alsa_objs(int creation);
 
 // The output config resolved from playback strategy and render engine.
@@ -58,8 +56,6 @@ private:
 	ADriverMenu *menu;
 	BC_Title *driver_title, *path_title, *bits_title;
 	BC_Title *server_title, *port_title, *channel_title, *syt_title;
-	ADeviceTextBox *esound_server;
-	ADeviceIntBox *esound_port;
 
 	ALSADevice *alsa_device;
 	SampleBitsSelection *alsa_bits;

@@ -5,7 +5,6 @@
 
 #include "audioalsa.h"
 #include "audiodevice.h"
-#include "audioesound.h"
 #include "bctimer.h"
 #include "bcsignals.h"
 #include "condition.h"
@@ -84,11 +83,6 @@ void AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 	{
 		switch(driver)
 		{
-#ifdef HAVE_ESOUND
-		case AUDIO_ESOUND:
-			lowlevel = new AudioESound(this);
-			break;
-#endif
 #ifdef HAVE_ALSA
 		case AUDIO_ALSA:
 			lowlevel = new AudioALSA(this);

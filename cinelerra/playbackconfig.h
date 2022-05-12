@@ -31,9 +31,6 @@ public:
 // Change default titles for duplex
 	int driver;
 
-	char esound_out_server[BCTEXTLEN];
-	int esound_out_port;
-
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_bits;
