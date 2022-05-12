@@ -444,6 +444,21 @@ void MWindow::clear_keyframes(Plugin *plugin)
 	}
 }
 
+void MWindow::swap_shared_main(Plugin *sharedplugin)
+{
+	if(sharedplugin->plugin_type == PLUGIN_SHAREDPLUGIN)
+	{
+		if(cwindow->stop_playback())
+			return;
+		master_edl->tracks->swap_main_plugin(sharedplugin);
+		save_backup();
+		undo->update_undo(_("Swap main"), LOAD_ALL);
+		update_gui(WUPD_CANVINCR);
+		update_plugin_guis();
+		sync_parameters();
+	}
+}
+
 void MWindow::cut()
 {
 	ptstime start = master_edl->local_session->get_selectionstart();

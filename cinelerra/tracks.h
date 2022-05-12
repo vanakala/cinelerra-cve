@@ -80,6 +80,8 @@ public:
 	void cleanup_plugins();
 // Check if plugin is shared with track
 	int shared_on_track(Plugin *plugin, Track *track);
+// Make shared plugin main plugin
+	void swap_main_plugin(Plugin *sharedplugin);
 // Number of bytes used
 	size_t get_size();
 

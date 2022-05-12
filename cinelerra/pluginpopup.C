@@ -29,10 +29,12 @@ PluginPopup::PluginPopup()
 	moveup = new PluginPopupUp(this);
 	movedown = new PluginPopupDown(this);
 	pastekeyframe = new PluginPopupPasteKeyFrame(this);
+	swapmain = new PluginPopupSwapMain(this);
 	have_show = 0;
 	have_keyframe = 0;
 	have_moveup = 0;
 	have_movedown = 0;
+	have_swapmain = 0;
 }
 
 PluginPopup::~PluginPopup()
@@ -45,6 +47,8 @@ PluginPopup::~PluginPopup()
 		delete moveup;
 	if(!have_movedown)
 		delete movedown;
+	if(!have_swapmain)
+		delete swapmain;
 }
 
 void PluginPopup::update(Plugin *plugin)
@@ -99,6 +103,22 @@ void PluginPopup::update(Plugin *plugin)
 		{
 			add_item(movedown);
 			have_movedown = 1;
+		}
+	}
+	if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
+	{
+		if(!have_swapmain)
+		{
+			add_item(swapmain);
+			have_swapmain = 1;
+		}
+	}
+	else
+	{
+		if(have_swapmain)
+		{
+			remove_item(swapmain);
+			have_swapmain = 0;
 		}
 	}
 }
@@ -230,5 +250,17 @@ PluginPopupClearKeyFrames::PluginPopupClearKeyFrames(PluginPopup *popup)
 int PluginPopupClearKeyFrames::handle_event()
 {
 	mwindow_global->clear_keyframes(popup->plugin);
+	return 1;
+}
+
+PluginPopupSwapMain::PluginPopupSwapMain(PluginPopup *popup)
+ : BC_MenuItem(_("Swap with main"))
+{
+	this->popup = popup;
+}
+
+int PluginPopupSwapMain::handle_event()
+{
+	mwindow_global->swap_shared_main(popup->plugin);
 	return 1;
 }

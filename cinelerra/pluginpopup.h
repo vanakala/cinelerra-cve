@@ -13,6 +13,7 @@ class PluginPopupShow;
 class PluginPopupPasteKeyFrame;
 class PluginPopupUp;
 class PluginPopupDown;
+class PluginPopupSwapMain;
 
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
@@ -39,10 +40,12 @@ private:
 	PluginPopupPasteKeyFrame *pastekeyframe;
 	PluginPopupUp *moveup;
 	PluginPopupDown *movedown;
+	PluginPopupSwapMain *swapmain;
 	int have_show;
 	int have_keyframe;
 	int have_moveup;
 	int have_movedown;
+	int have_swapmain;
 };
 
 
@@ -131,4 +134,14 @@ public:
 private:
 	PluginPopup *popup;
 };
+
+class PluginPopupSwapMain : public BC_MenuItem
+{
+public:
+	PluginPopupSwapMain(PluginPopup *popup);
+	int handle_event();
+private:
+	PluginPopup *popup;
+};
+
 #endif

@@ -802,6 +802,37 @@ int Tracks::shared_on_track(Plugin *plugin, Track *track)
 	return 0;
 }
 
+void Tracks::swap_main_plugin(Plugin *sharedplugin)
+{
+	Plugin *mainplugin;
+
+	if(mainplugin = sharedplugin->shared_plugin)
+	{
+		Track *mtrack = mainplugin->track;
+		Track *strack = sharedplugin->track;
+
+		for(int i = 0; i < mtrack->plugins.total; i++)
+		{
+			if(mtrack->plugins.values[i] == mainplugin)
+			{
+				mtrack->plugins.values[i] = sharedplugin;
+				sharedplugin->track = mtrack;
+				break;
+			}
+		}
+
+		for(int i = 0; i < strack->plugins.total; i++)
+		{
+			if(strack->plugins.values[i] == sharedplugin)
+			{
+				strack->plugins.values[i] = mainplugin;
+				mainplugin->track = strack;
+				break;
+			}
+		}
+	}
+}
+
 size_t Tracks::get_size()
 {
 	size_t size = sizeof(*this);

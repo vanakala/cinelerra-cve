@@ -335,6 +335,7 @@ public:
 	void paste_keyframe(Track *track, Plugin *plugin);
 	int can_paste_keyframe(Track *track, Plugin *plugin);
 	void clear_keyframes(Plugin *plugin);
+	void swap_shared_main(Plugin *sharedplugin);
 	void clear_automation();
 	void straighten_automation();
 
