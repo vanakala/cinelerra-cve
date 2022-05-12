@@ -303,7 +303,14 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit)
 		break;
 
 	case PLUGIN_SHAREDPLUGIN:
-		return 0;
+		if(!server && plugin->shared_plugin)
+		{
+			if(!plugin->shared_plugin->plugin_server->multichannel)
+				server = plugin->shared_plugin->plugin_server;
+			else
+				return 0;
+		}
+		// Fall through
 
 	case PLUGIN_STANDALONE:
 		if(server)
