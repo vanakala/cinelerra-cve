@@ -79,7 +79,7 @@ RotateToggle::RotateToggle(RotateWindow *window,
 
 int RotateToggle::handle_event()
 {
-	plugin->config.angle = (float)value;
+	plugin->config.angle = value;
 	window->update();
 	plugin->send_configure_change();
 	return 1;
@@ -132,7 +132,7 @@ RotateText::RotateText(RotateWindow *window,
 	y,
 	100,
 	1,
-	(float)plugin->config.angle)
+	plugin->config.angle)
 {
 	this->window = window;
 	this->plugin = plugin;
@@ -307,18 +307,18 @@ void RotateEffect::load_defaults()
 {
 	defaults = load_defaults_file("rotate.rc");
 
-	config.angle = defaults->get("ANGLE", (float)config.angle);
-	config.pivot_x = defaults->get("PIVOT_X", (float)config.pivot_x);
-	config.pivot_y = defaults->get("PIVOT_Y", (float)config.pivot_y);
-	config.draw_pivot = defaults->get("DRAW_PIVOT", (int)config.draw_pivot);
+	config.angle = defaults->get("ANGLE", config.angle);
+	config.pivot_x = defaults->get("PIVOT_X", config.pivot_x);
+	config.pivot_y = defaults->get("PIVOT_Y", config.pivot_y);
+	config.draw_pivot = defaults->get("DRAW_PIVOT", config.draw_pivot);
 }
 
 void RotateEffect::save_defaults()
 {
-	defaults->update("ANGLE", (float)config.angle);
-	defaults->update("PIVOT_X", (float)config.pivot_x);
-	defaults->update("PIVOT_Y", (float)config.pivot_y);
-	defaults->update("DRAW_PIVOT", (int)config.draw_pivot);
+	defaults->update("ANGLE", config.angle);
+	defaults->update("PIVOT_X", config.pivot_x);
+	defaults->update("PIVOT_Y", config.pivot_y);
+	defaults->update("DRAW_PIVOT", config.draw_pivot);
 	defaults->save();
 }
 
@@ -327,10 +327,10 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 	output.tag.set_title("ROTATE");
-	output.tag.set_property("ANGLE", (float)config.angle);
-	output.tag.set_property("PIVOT_X", (float)config.pivot_x);
-	output.tag.set_property("PIVOT_Y", (float)config.pivot_y);
-	output.tag.set_property("DRAW_PIVOT", (int)config.draw_pivot);
+	output.tag.set_property("ANGLE", config.angle);
+	output.tag.set_property("PIVOT_X", config.pivot_x);
+	output.tag.set_property("PIVOT_Y", config.pivot_y);
+	output.tag.set_property("DRAW_PIVOT", config.draw_pivot);
 	output.append_tag();
 	output.tag.set_title("/ROTATE");
 	output.append_tag();
@@ -347,10 +347,10 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("ROTATE"))
 		{
-			config.angle = input.tag.get_property("ANGLE", (float)config.angle);
-			config.pivot_x = input.tag.get_property("PIVOT_X", (float)config.pivot_x);
-			config.pivot_y = input.tag.get_property("PIVOT_Y", (float)config.pivot_y);
-			config.draw_pivot = input.tag.get_property("DRAW_PIVOT", (int)config.draw_pivot);
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.pivot_x = input.tag.get_property("PIVOT_X", config.pivot_x);
+			config.pivot_y = input.tag.get_property("PIVOT_Y", config.pivot_y);
+			config.draw_pivot = input.tag.get_property("DRAW_PIVOT", config.draw_pivot);
 		}
 	}
 }
@@ -391,8 +391,8 @@ VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 
 	if(config.draw_pivot)
 	{
-		int center_x = (int)(config.pivot_x * w / 100);
-		int center_y = (int)(config.pivot_y * h / 100);
+		int center_x = round(config.pivot_x * w / 100);
+		int center_y = round(config.pivot_y * h / 100);
 
 		switch(cmodel)
 		{
