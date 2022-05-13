@@ -5,9 +5,10 @@
 
 #include "affine.h"
 #include "bctitle.h"
-#include "clip.h"
 #include "bchash.h"
+#include "clip.h"
 #include "filexml.h"
+#include "guidelines.h"
 #include "language.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
@@ -110,7 +111,7 @@ RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(0.01);
+	set_precision(0.1);
 	set_use_caption(0);
 }
 
@@ -136,7 +137,7 @@ RotateText::RotateText(RotateWindow *window,
 {
 	this->window = window;
 	this->plugin = plugin;
-	set_precision(4);
+	set_precision(1);
 }
 
 int RotateText::handle_event()
@@ -389,77 +390,34 @@ VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 	output->clear_frame();
 	engine->rotate(output, frame, config.angle);
 
+	GuideFrame *gf = get_guides();
+
+	gf->clear();
+
 	if(config.draw_pivot)
 	{
 		int center_x = round(config.pivot_x * w / 100);
 		int center_y = round(config.pivot_y * h / 100);
+		int x1, y1, x2, y2;
+		int wmax = w - 1;
+		int hmax = h - 1;
 
-		switch(cmodel)
-		{
-		case BC_RGBA16161616:
-			if(center_x >= 0 && center_x < w ||
-				center_y >= 0 && center_y < h)
-			{
-				uint16_t *hrow = (uint16_t*)output->get_row_ptr(center_y) +
-					4 * (center_x - CENTER_W / 2);
+		x1 = center_x - CENTER_W / 2;
+		x2 = center_x + CENTER_W / 2;
+		y1 = center_y - CENTER_W / 2;
+		y2 = center_y + CENTER_W / 2;
 
-				for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++)
-				{
-					if(i >= 0 && i < w)
-					{
-						hrow[0] = 0xffff - hrow[0];
-						hrow[1] = 0xffff - hrow[1];
-						hrow[2] = 0xffff - hrow[2];
-						hrow += 4;
-					}
-				}
+		CLAMP(center_x, 0, wmax);
+		CLAMP(center_y, 0, hmax);
+		CLAMP(x1, 0, wmax);
+		CLAMP(x2, 0, wmax);
+		CLAMP(y1, 0, hmax);
+		CLAMP(y2, 0, hmax);
 
-				for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++)
-				{
-					if(i >= 0 && i < h)
-					{
-						uint16_t *vrow = (uint16_t*)output->get_row_ptr(i) +
-							center_x * 4;
-						vrow[0] = 0xffff - vrow[0];
-						vrow[1] = 0xffff - vrow[1];
-						vrow[2] = 0xffff - vrow[2];
-					}
-				}
-			}
-			break;
-		case BC_AYUV16161616:
-			if(center_x >= 0 && center_x < w ||
-				center_y >= 0 && center_y < h)
-			{
-				uint16_t *hrow = (uint16_t*)output->get_row_ptr(center_y) +
-					4 * (center_x - CENTER_W / 2);
-				for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++)
-				{
-					if(i >= 0 && i < w)
-					{
-						hrow[1] = 0xffff - hrow[1];
-						hrow[2] = 0xffff - hrow[2];
-						hrow[3] = 0xffff - hrow[3];
-					}
-					hrow += 4;
-				}
-			}
-
-			for(int i = center_y - CENTER_W / 2; i <= center_y + CENTER_W / 2; i++)
-			{
-				if(i >= 0 && i < h)
-				{
-					uint16_t *vrow = (uint16_t*)output->get_row_ptr(i) +
-						center_x * 4;
-
-					vrow[1] = 0xffff - vrow[1];
-					vrow[2] = 0xffff - vrow[2];
-					vrow[3] = 0xffff - vrow[3];
-				}
-			}
-			break;
-		}
+		gf->add_line(x1, center_y, x2, center_y);
+		gf->add_line(center_x, y1, center_x, y2);
 	}
+
 	release_vframe(frame);
 	output->set_transparent();
 	return output;
