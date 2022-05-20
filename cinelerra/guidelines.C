@@ -1,29 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "canvas.h"
 #include "colors.h"
 #include "edlsession.h"
 #include "guidelines.h"
+#include "vtrackrender.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -44,8 +30,7 @@ GuideFrame::GuideFrame(ptstime start, ptstime end, Canvas *canvas)
 	is_enabled = 0;
 	color = WHITE;
 	vframe = 0;
-	width = 0;
-	height = 0;
+	renderer = 0;
 }
 
 GuideFrame::~GuideFrame()
@@ -173,21 +158,9 @@ void GuideFrame::set_color(int color)
 	this->color = color;
 }
 
-void GuideFrame::set_dimensions(int w, int h)
-{
-	width = w;
-	height = h;
-}
-
 VFrame *GuideFrame::get_vframe(int w, int h)
 {
 	canvas->lock_canvas("GuideFrame::get_vframe");
-	if(vframe && (vframe->get_w() != w ||
-		vframe->get_h() != h))
-	{
-		delete vframe;
-		vframe = 0;
-	}
 	if(!vframe)
 	{
 		vframe = new VFrame(0, w, h, BC_A8);
@@ -212,40 +185,83 @@ void GuideFrame::repeat_event(Canvas *canvas)
 int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 {
 	uint16_t *dp;
-	double x1, x2, y1, y2;
-	double hbase, vbase;
+	int x1, x2, y1, y2;
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
+	double xscale, yscale;
+	double dx1, dx2, dy1, dy2;
+	int pluginframe;
 
 	if(is_enabled && data && start <= pts && pts < end)
 	{
-		if(width && height)
+		if(renderer && canvas->refresh_frame)
 		{
-			hbase = (edlsession->output_w - width) / 2;
-			vbase = (edlsession->output_h - height) / 2;
+			renderer->calculate_output_transfer(canvas->refresh_frame,
+				&in_x1, &in_y1, &in_x2, &in_y2,
+				&out_x1, &out_y1, &out_x2, &out_y2);
+			xscale = (double)(out_x2 - out_x1) / (in_x2 - in_x1);
+			yscale = (double)(out_y2 - out_y1) / (in_y2 - in_y1);
+			pluginframe = 1;
 		}
 		else
-			hbase = vbase = 0;
+		{
+			xscale = yscale = 1;
+			in_x1 = out_x1 = 0;
+			in_y1 = out_y1 = 0;
+			pluginframe = 0;
+		}
 
 		for(dp = data; dp < dataend;)
 		{
-			x1 = dp[1] + hbase;
-			y1 = dp[2] + vbase;
-
-			canvas->output_to_canvas(edl, x1, y1);
-			if(*dp != GUIDELINE_PIXEL)
+			if(pluginframe)
 			{
-				if(*dp == GUIDELINE_LINE)
+				dx1 = (dp[1] - in_x1) * xscale + out_x1;
+				dy1 = (dp[2] - in_y1) * yscale + out_y1;
+				canvas->output_to_canvas(edl, dx1, dy1);
+				x1 = round(dx1);
+				y1 = round(dy1);
+
+				if(*dp != GUIDELINE_PIXEL)
 				{
-					x2 = dp[3] + hbase;
-					y2 = dp[4] + vbase;
-					canvas->output_to_canvas(edl, x2, y2);
+					if(*dp == GUIDELINE_LINE)
+					{
+						dx2 = (dp[3] - in_x1) * xscale + out_x1;
+						dy2 = (dp[4] - in_y1) * yscale + out_y1;
+					}
+					else
+					{
+						dx2 = (dp[3] + dp[1] - in_x1) *
+							xscale + out_x1;
+						dy2 = (dp[4] + dp[2] - in_y1) *
+							yscale + out_y1;
+					}
+					canvas->output_to_canvas(edl, dx2, dy2);
+					x2 = round(dx2);
+					y2 = round(dy2);
 				}
-				else
+			}
+			else
+			{
+				dx1 = dp[1];
+				dy1 = dp[2];
+				canvas->output_to_canvas(edl, dx1, dy1);
+				x1 = round(dx1);
+				y1 = round(dy1);
+				if(*dp != GUIDELINE_PIXEL)
 				{
-					x2 = (dp[1] + dp[3]) + hbase;
-					y2 = (dp[2] + dp[4]) + vbase;
-					canvas->output_to_canvas(edl, x2, y2);
-					x2 -= x1;
-					y2 -= y1;
+					if(*dp == GUIDELINE_LINE)
+					{
+						dx2 = dp[3];
+						dy2 = dp[4];
+					}
+					else
+					{
+						dx2 = dp[3] + dp[1];
+						dy2 = dp[4] + dp[2];
+					}
+					canvas->output_to_canvas(edl, dx2, dy2);
+					x2 = round(dx2);
+					y2 = round(dy2);
 				}
 			}
 			canvas->get_canvas()->set_color(color);
@@ -253,54 +269,42 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			switch(*dp++)
 			{
 			case GUIDELINE_LINE:
-				canvas->get_canvas()->draw_line(
-					round(x1), round(y1),
-					round(x2), round(y2));
+				canvas->get_canvas()->draw_line(x1, y1, x2, y2);
 				dp += 4;
 				break;
 			case GUIDELINE_RECTANGLE:
-				canvas->get_canvas()->draw_rectangle(
-					round(x1), round(y1),
-					round(x2), round(y2));
+				canvas->get_canvas()->draw_rectangle(x1, y1,
+					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_BOX:
-				canvas->get_canvas()->draw_box(
-					round(x1), round(y1),
-					round(x2), round(y2));
+				canvas->get_canvas()->draw_box(x1, y1,
+					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_DISC:
-				canvas->get_canvas()->draw_disc(
-					round(x1), round(y1),
-					round(x2), round(y2));
+				canvas->get_canvas()->draw_disc(x1, y1,
+					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_CIRCLE:
-				canvas->get_canvas()->draw_circle(
-					round(x1), round(y1),
-					round(x2), round(y2));
+				canvas->get_canvas()->draw_circle(x1, y1,
+					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_PIXEL:
-				canvas->get_canvas()->draw_pixel(
-					round(x1), round(y1));
+				canvas->get_canvas()->draw_pixel(x1, y1);
 				dp += 2;
 				break;
 			case GUIDELINE_VFRAME:
 				if(vframe)
 				{
-					double ix1, ix2, iy1, iy2;
-
-					canvas->get_transfers(edl,
-						ix1, iy1, ix2, iy2,
-						x1, y1, x2, y2);
 					vframe->set_pixel_aspect(canvas->sample_aspect_ratio());
 					canvas->get_canvas()->draw_vframe(vframe,
-						round(x1), round(y1),
-						round(x2 - x1), round(y2 - y1),
-						round(ix1), round(iy1),
-						round(ix2 - ix1), round(iy2 - iy1),
+						out_x1, out_y1,
+						out_x2 - out_x1, out_y2 - out_y1,
+						in_x1, in_y1,
+						in_x2 - in_x1, in_y2 - in_y1,
 						0);
 				}
 				break;

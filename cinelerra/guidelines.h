@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #ifndef GUIDELINES_H
 #define GUIDELINES_H
@@ -28,6 +12,7 @@
 #include "edl.inc"
 #include "guidelines.inc"
 #include "linklist.h"
+#include "vtrackrender.inc"
 #include "vframe.inc"
 
 class GuideFrame : public ListItem<GuideFrame>
@@ -50,7 +35,6 @@ public:
 	void shift(ptstime difference);
 	void set_position(ptstime new_start, ptstime new_end);
 	void set_color(int color);
-	void set_dimensions(int h, int w);
 	VFrame *get_vframe(int w, int h);
 	void repeat_event(Canvas *canvas);
 	int draw(Canvas *canvas, EDL *edl, ptstime pts);
@@ -58,11 +42,10 @@ public:
 	size_t get_size();
 	void dump(int indent = 0);
 
+	VTrackRender *renderer;
 private:
 	ptstime start;
 	ptstime end;
-	int width;
-	int height;
 	int period;
 	int period_count;
 	int is_enabled;

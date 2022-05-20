@@ -32,6 +32,9 @@ public:
 	VFrame *handover_trackframe();
 	void take_vframe(VFrame *frame);
 	VFrame *render_projector(VFrame *output, VFrame **input = 0);
+	void calculate_output_transfer(VFrame *output,
+		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
+		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
 	void dump(int indent);
 
 // Frames for multichannel plugin
@@ -44,9 +47,6 @@ private:
 	void render_crop(VFrame *frame, int before_plugins);
 	VFrame *render_camera(VFrame *frame);
 	void calculate_input_transfer(ptstime position,
-		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
-		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
-	void calculate_output_transfer(VFrame *output,
 		int *in_x1, int *in_y1, int *in_x2, int *in_y2,
 		int *out_x1, int *out_y1, int *out_x2, int *out_y2);
 	VFrame *render_plugins(VFrame *frame, Edit *edit);
