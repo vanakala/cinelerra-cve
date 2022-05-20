@@ -8,8 +8,9 @@
 
 #include "edl.inc"
 #include "filexml.inc"
+#include "theme.inc"
 #include "track.h"
-#include "vframe.inc"
+#include "tracks.inc"
 
 
 class VTrack : public Track
@@ -21,10 +22,6 @@ public:
 	void save_header(FileXML *file);
 	posnum to_units(ptstime position);
 	ptstime from_units(posnum position);
-
-	void calculate_output_transfer(ptstime position,
-		int *in_x, int *in_y, int *in_w, int *in_h,
-		int *out_x, int *out_y, int *out_w, int *out_h);
 
 	int vertical_span(Theme *theme);
 };
