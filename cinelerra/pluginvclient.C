@@ -5,6 +5,7 @@
 
 #include "bcresources.h"
 #include "cwindow.h"
+#include "guidelines.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "pluginserver.inc"

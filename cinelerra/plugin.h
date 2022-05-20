@@ -10,7 +10,7 @@
 #include "aframe.inc"
 #include "edl.inc"
 #include "filexml.inc"
-#include "guidelines.h"
+#include "guidelines.inc"
 #include "keyframe.inc"
 #include "keyframes.inc"
 #include "plugin.inc"

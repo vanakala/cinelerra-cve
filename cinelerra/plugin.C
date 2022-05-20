@@ -11,6 +11,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "guidelines.h"
 #include "keyframe.h"
 #include "keyframes.h"
 #include "language.h"
