@@ -23,7 +23,7 @@ class PluginVClient : public PluginClient
 {
 public:
 	PluginVClient(PluginServer *server);
-	virtual ~PluginVClient() {};
+	~PluginVClient();
 
 	int is_video() { return 1; };
 

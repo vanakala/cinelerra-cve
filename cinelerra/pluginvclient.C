@@ -4,18 +4,28 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "cwindow.h"
 #include "guidelines.h"
 #include "mwindow.h"
 #include "plugin.h"
-#include "pluginserver.inc"
+#include "pluginserver.h"
 #include "pluginvclient.h"
-
-#include <string.h>
 
 PluginVClient::PluginVClient(PluginServer *server)
  : PluginClient(server)
 {
+}
+
+PluginVClient::~PluginVClient()
+{
+	if(plugin)
+	{
+		GuideFrame *gf = plugin->guideframe;
+
+		plugin->guideframe = 0;
+		delete gf;
+	}
 }
 
 ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
@@ -39,6 +49,8 @@ GuideFrame *PluginVClient::get_guides()
 	if(!plugin->guideframe && mwindow_global)
 		plugin->guideframe = mwindow_global->cwindow->new_guideframe(get_start(),
 			get_end());
-	plugin->guideframe->renderer = (VTrackRender*)renderer;
+
+	if(plugin->guideframe)
+		plugin->guideframe->renderer = (VTrackRender*)renderer;
 	return plugin->guideframe;
 }
