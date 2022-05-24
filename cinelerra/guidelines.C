@@ -299,10 +299,20 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			case GUIDELINE_VFRAME:
 				if(vframe)
 				{
+					dx1 = in_x1;
+					dy1 = in_y1;
+					canvas->output_to_canvas(edl, dx1, dy1);
+					dx2 = in_x2;
+					dy2 = in_y2;
+					canvas->output_to_canvas(edl, dx2, dy2);
+					x1 = round(dx1);
+					y1 = round(dy1);
+					x2 = round(dx2);
+					y2 = round(dy2);
 					vframe->set_pixel_aspect(canvas->sample_aspect_ratio());
 					canvas->get_canvas()->draw_vframe(vframe,
-						out_x1, out_y1,
-						out_x2 - out_x1, out_y2 - out_y1,
+						x1, y1,
+						x2 - x1, y2 - y1,
 						in_x1, in_y1,
 						in_x2 - in_x1, in_y2 - in_y1,
 						0);
