@@ -85,6 +85,7 @@ SUBDIRS= \
 	spectrogram \
 	swapchannels \
 	synthesizer \
+	testvplugin \
 	threshold \
 	timeavg \
 	timefront \

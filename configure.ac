@@ -505,6 +505,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/zoomblur/Makefile
 	plugins/timefront/Makefile
 	plugins/diffkey/Makefile
+	plugins/testvplugin/Makefile
 	image/Makefile)
 
 succeeded=yes
