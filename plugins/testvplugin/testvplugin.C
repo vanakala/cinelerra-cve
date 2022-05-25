@@ -12,6 +12,7 @@
 #include "picon_png.h"
 #include "vframe.h"
 #include "testvplugin.h"
+#include "tmpframecache.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -34,18 +35,24 @@ TestVPluginConfig::TestVPluginConfig()
 {
 	testguides = TEST_LINE;
 	color = WHITE;
+	colorspace = 0;
+	avlibs = 0;
 }
 
 int TestVPluginConfig::equivalent(TestVPluginConfig &that)
 {
 	return testguides == that.testguides &&
-		color == that.color;
+		color == that.color &&
+		colorspace == that.colorspace &&
+		avlibs == that.avlibs;
 }
 
 void TestVPluginConfig::copy_from(TestVPluginConfig &that)
 {
 	testguides = that.testguides;
 	color = that.color;
+	colorspace = that.colorspace;
+	avlibs == that.avlibs;
 }
 
 void TestVPluginConfig::interpolate(TestVPluginConfig &prev,
@@ -56,6 +63,8 @@ void TestVPluginConfig::interpolate(TestVPluginConfig &prev,
 {
 	testguides = prev.testguides;
 	color = prev.color;
+	colorspace = prev.colorspace;
+	avlibs == prev.avlibs;
 }
 
 
@@ -105,47 +114,106 @@ void TestVPluginColor::update(int val)
 	BC_CheckBox::update(val & color);
 }
 
+TestVPluginValue::TestVPluginValue(int x, int y, TestVPlugin *plugin,
+	int *value, const char *name)
+ : BC_CheckBox(x, y, *value, name)
+{
+	this->plugin = plugin;
+	this->value = value;
+}
+
+int TestVPluginValue::handle_event()
+{
+	*value = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
 TestVPluginWindow::TestVPluginWindow(TestVPlugin *plugin, int x, int y)
  : PluginWindow(plugin,
 	x,
 	y,
-	270,
-	200)
+	370,
+	240)
 {
-	x = y = 10;
-	int colw = 100;
+	BC_WindowBase *win;
+	int col2w, w;
+	int y_red, y_green, y_blue, y_blink;
+	int x_left, y_top;
 
-	add_subwindow(new BC_Title(x, y, _("Guides:")));
-	x += 60;
+	y_top = 10;
+	x_left = 10;
+	x = x_left;
+	y = y_top;
+	win = add_subwindow(new BC_Title(x, y, _("Guides:")));
+	x += win->get_w() / 2;
+	y += win->get_h() + 5;
 	add_subwindow(testguide_line = new TestVPluginGuides(x, y, plugin,
 		TEST_LINE, _("Lines")));
-	add_subwindow(testguide_red = new TestVPluginColor(x + colw, y, plugin,
-		RED, _("Red")));
+	col2w = testguide_line->get_w();
+	y_red = y;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_rect = new TestVPluginGuides(x, y, plugin,
 		TEST_RECT, _("Rectangle")));
-	add_subwindow(testguide_green = new TestVPluginColor(x + colw, y, plugin,
-		GREEN, _("Green")));
+	if((w = testguide_rect->get_w()) > col2w)
+		col2w = w;
+	y_green = y;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_box = new TestVPluginGuides(x, y, plugin,
 		TEST_BOX, _("Box")));
-	add_subwindow(testguide_blue = new TestVPluginColor(x + colw, y, plugin,
-		BLUE, _("Blue")));
+	if((w = testguide_box->get_w()) > col2w)
+		col2w = w;
+	y_blue = y;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_disc = new TestVPluginGuides(x, y, plugin,
 		TEST_DISC, _("Disc")));
-	add_subwindow(testguide_blink = new TestVPluginGuides(x + colw, y, plugin,
-		TEST_BLNK, _("Blink")));
+	if((w = testguide_disc->get_w()) > col2w)
+		col2w = w;
+	y_blink = y;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_circ = new TestVPluginGuides(x, y, plugin,
 		TEST_CIRC, _("Circle")));
+	if((w = testguide_circ->get_w()) > col2w)
+		col2w = w;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_pixel = new TestVPluginGuides(x, y, plugin,
 		TEST_PIXL, _("Pixel")));
+	if((w = testguide_pixel->get_w()) > col2w)
+		col2w = w;
 	y += testguide_line->get_h() + 5;
 	add_subwindow(testguide_frame = new TestVPluginGuides(x, y, plugin,
 		TEST_FRAM, _("Frame")));
+	if((w = testguide_frame->get_w()) > col2w)
+		col2w = w;
 	y += testguide_line->get_h() + 5;
+	x += col2w + 10;
+	col2w = 0;
+	add_subwindow(testguide_red = new TestVPluginColor(x, y_red, plugin,
+		RED, _("Red")));
+	if((w = testguide_red->get_w()) > col2w)
+		col2w = w;
+	add_subwindow(testguide_green = new TestVPluginColor(x, y_green, plugin,
+		GREEN, _("Green")));
+	if((w = testguide_green->get_w()) > col2w)
+		col2w = w;
+	add_subwindow(testguide_blue = new TestVPluginColor(x, y_blue, plugin,
+		BLUE, _("Blue")));
+	if((w = testguide_blue->get_w()) > col2w)
+		col2w = w;
+	add_subwindow(testguide_blink = new TestVPluginGuides(x, y_blink, plugin,
+		TEST_BLNK, _("Blink")));
+	if((w = testguide_blink->get_w()) > col2w)
+		col2w = w;
+	y = y_top;
+	x += col2w;
+	win = add_subwindow(new BC_Title(x, y, _("Color conversions:")));
+	x += win->get_w() / 2;
+	y += win->get_h() + 5;
+	add_subwindow(testcolor = new TestVPluginValue(x, y, plugin,
+		&plugin->config.colorspace, _("On")));
+	y += testcolor->get_h() + 5;
+	add_subwindow(testavlibs = new TestVPluginValue(x, y, plugin,
+		&plugin->config.avlibs, _("AVlibs")));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -185,18 +253,19 @@ void TestVPlugin::load_defaults()
 
 	config.testguides = defaults->get("GUIDELINES", config.testguides);
 	config.color = defaults->get("COLOR", config.color);
+	config.colorspace = defaults->get("COLORSPACE", config.colorspace);
+	config.avlibs = defaults->get("AVLIBS", config.avlibs);
 }
 
 void TestVPlugin::save_defaults()
 {
 	defaults->update("GUIDELINES", config.testguides);
 	defaults->update("COLOR", config.color);
+	defaults->update("COLORSPACE", config.colorspace);
+	defaults->update("AVLIBS", config.avlibs);
 	defaults->save();
 }
 
-/*
- * Saves the values of the parameters to the project
- */
 void TestVPlugin::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -204,6 +273,8 @@ void TestVPlugin::save_data(KeyFrame *keyframe)
 	output.tag.set_title("TESTVPLUGIN");
 	output.tag.set_property("GUIDELINES", config.testguides);
 	output.tag.set_property("COLOR", config.color);
+	output.tag.set_property("COLORSPACE", config.colorspace);
+	output.tag.set_property("AVLIBS", config.avlibs);
 	output.append_tag();
 	output.tag.set_title("/TESTVPLUGIN");
 	output.append_tag();
@@ -226,16 +297,25 @@ void TestVPlugin::read_data(KeyFrame *keyframe)
 			config.testguides = input.tag.get_property("GUIDELINES",
 				config.testguides);
 			config.color = input.tag.get_property("COLOR", config.color);
+			config.colorspace = input.tag.get_property("COLORSPACE",
+				config.colorspace);
+			config.avlibs = input.tag.get_property("AVLIBS", config.avlibs);
 		}
 	}
 }
 
 int TestVPlugin::load_configuration()
 {
-	int prev_val = config.testguides;
+	TestVPluginConfig prev_config;
+	KeyFrame *prev_keyframe = get_prev_keyframe(source_pts);
 
-	read_data(get_prev_keyframe(source_pts));
-	return !(prev_val == config.testguides);
+	if(prev_keyframe)
+	{
+		prev_config.copy_from(config);
+		read_data(prev_keyframe);
+		return !config.equivalent(prev_config);
+	}
+	return 0;
 }
 
 VFrame *TestVPlugin::process_tmpframe(VFrame *frame)
@@ -309,6 +389,134 @@ VFrame *TestVPlugin::process_tmpframe(VFrame *frame)
 			gf->set_repeater_period(1);
 		else
 			gf->set_repeater_period(0);
+	}
+	if(config.colorspace)
+	{
+		VFrame *tmp;
+
+		if(config.avlibs)
+		{
+			switch(frame->get_color_model())
+			{
+			case BC_AYUV16161616:
+				tmp = BC_Resources::tmpframes.get_tmpframe(
+					frame->get_w(),
+					frame->get_h(),
+					BC_RGBA16161616);
+				tmp->transfer_from(frame);
+				frame->transfer_from(tmp);
+				release_vframe(tmp);
+				break;
+			case BC_RGBA16161616:
+				tmp = BC_Resources::tmpframes.get_tmpframe(
+					frame->get_w(),
+					frame->get_h(),
+					BC_AYUV16161616);
+				tmp->transfer_from(frame);
+				frame->transfer_from(tmp);
+				release_vframe(tmp);
+				break;
+			default:
+				unsupported(frame->get_color_model());
+				break;
+				}
+		}
+		else
+		{
+			int width = frame->get_w();
+			int height = frame->get_h();
+			int r, g, b, y, u, v, a, k;
+
+			switch(frame->get_color_model())
+			{
+			case BC_AYUV16161616:
+				tmp = BC_Resources::tmpframes.get_tmpframe(
+					width, height,
+					BC_RGBA16161616);
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						a = frow[k + 0];
+						y = frow[k + 1];
+						u = frow[k + 2];
+						v = frow[k + 3];
+						ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
+						trow[k + 0] = r;
+						trow[k + 1] = g;
+						trow[k + 2] = b;
+						trow[k + 3] = a;
+					}
+				}
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						r = trow[k + 0];
+						g = trow[k + 1];
+						b = trow[k + 2];
+						a = trow[k + 3];
+						ColorSpaces::rgb_to_yuv_16(r, g, b, y, u, v);
+						frow[k + 0] = a;
+						frow[k + 1] = y;
+						frow[k + 2] = u;
+						frow[k + 3] = v;
+					}
+				}
+				release_vframe(tmp);
+				break;
+
+			case BC_RGBA16161616:
+				tmp = BC_Resources::tmpframes.get_tmpframe(
+					width, height,
+					BC_AYUV16161616);
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						r = frow[k + 0];
+						g = frow[k + 1];
+						b = frow[k + 2];
+						a = frow[k + 3];
+						ColorSpaces::rgb_to_yuv_16(r, g, b, y, u, v);
+						trow[k + 0] = a;
+						trow[k + 1] = y;
+						trow[k + 2] = u;
+						trow[k + 3] = v;
+					}
+				}
+				for(int j = 0; j < height; j++)
+				{
+					uint16_t *frow = (uint16_t*)frame->get_row_ptr(j);
+					uint16_t *trow = (uint16_t*)tmp->get_row_ptr(j);
+					for(int i = 0; i < width; i++)
+					{
+						k = 4 * i;
+						a = trow[k + 0];
+						y = trow[k + 1];
+						u = trow[k + 2];
+						v = trow[k + 3];
+						ColorSpaces::yuv_to_rgb_16(r, g, b, y, u, v);
+						frow[k + 0] = r;
+						frow[k + 1] = g;
+						frow[k + 2] = b;
+						frow[k + 3] = a;
+					}
+				}
+				release_vframe(tmp);
+				break;
+			}
+		}
+		frame->set_transparent();
 	}
 	return frame;
 }

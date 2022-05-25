@@ -37,6 +37,8 @@ public:
 
 	int testguides;
 	int color;
+	int colorspace;
+	int avlibs;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -66,6 +68,19 @@ public:
 	int color;
 };
 
+class TestVPluginValue : public BC_CheckBox
+{
+public:
+	TestVPluginValue(int x, int y, TestVPlugin *plugin,
+		int *value, const char *name);
+
+	int handle_event();
+
+	TestVPlugin *plugin;
+	int *value;
+};
+
+
 class TestVPluginWindow : public PluginWindow
 {
 public:
@@ -84,6 +99,8 @@ public:
 	TestVPluginColor *testguide_green;
 	TestVPluginColor *testguide_blue;
 	TestVPluginGuides *testguide_blink;
+	TestVPluginValue *testcolor;
+	TestVPluginValue *testavlibs;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
