@@ -50,8 +50,8 @@ Canvas::Canvas(CWindowGUI *cwindow,
 	this->w = w;
 	this->h = h;
 	this->use_scrollbars = use_scrollbars;
-	this->root_w = subwindow->get_root_w(0, 0);
-	this->root_h = subwindow->get_root_h(0);
+	this->root_w = subwindow->get_root_w();
+	this->root_h = subwindow->get_root_h();
 	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
 	guidelines.set_canvas(this);
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));

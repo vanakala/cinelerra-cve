@@ -420,13 +420,13 @@ ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname,
 	int w = listwin->get_w();
 	int h = listwin->get_h() + BC_OKButton::calculate_h() + 40;
 
-	int max_w = get_root_w(1) - 100;
+	int max_w = get_root_w() - 100;
 	if(w > max_w)
 	{
 		add_subwindow(listwin->set_scrollbar(0, listwin->get_h() + 10, max_w));
 		w = max_w;
 	}
-	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
+	reposition_window((get_root_w() - w) / 2, (get_root_h() - h) / 2,
 		w, h);
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

@@ -297,8 +297,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		display = init_display(display_name);
 
 // Fudge window placement
-		root_w = get_root_w(1, 0);
-		root_h = get_root_h(0);
+		root_w = get_root_w();
+		root_h = get_root_h();
 		if(this->x + this->w > root_w) this->x = root_w - this->w;
 		if(this->y + this->h > root_h) this->y = root_h - this->h;
 		if(this->x < 0) this->x = 0;
@@ -2582,26 +2582,16 @@ void BC_WindowBase::get_dimensions(int *width, int *height)
 	*height = h;
 }
 
-int BC_WindowBase::get_root_w(int ignore_dualhead, int lock_display)
+int BC_WindowBase::get_root_w()
 {
-	if(lock_display) lock_window("BC_WindowBase::get_root_w");
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
-	int result = WidthOfScreen(screen_ptr);
-// Wider than 16:9, narrower than dual head
-	if(!ignore_dualhead) 
-		if((float)result / HeightOfScreen(screen_ptr) > 1.8) result /= 2;
-
-	if(lock_display) unlock_window();
-	return result;
+	return WidthOfScreen(screen_ptr);
 }
 
-int BC_WindowBase::get_root_h(int lock_display)
+int BC_WindowBase::get_root_h()
 {
-	if(lock_display) lock_window("BC_WindowBase::get_root_h");
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
-	int result = HeightOfScreen(screen_ptr);
-	if(lock_display) unlock_window();
-	return result;
+	return HeightOfScreen(screen_ptr);
 }
 
 // Bottom right corner

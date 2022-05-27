@@ -56,12 +56,12 @@ RulerGUI::RulerGUI(Ruler *thread)
 	resize = 0;
 	separate_cursor = 0;
 	// Limit ruler length and position
-	root_w = get_root_w(0, 0);
-	root_h = get_root_h(0);
+	root_w = get_root_w();
+	root_h = get_root_h();
 	max_length = root_h * 4 / 5;
 	min_length = RULER_MIN_LENGTH;
 	if(mainsession->ruler_length < min_length)
-		mainsession->ruler_length;
+		mainsession->ruler_length = min_length;
 	if(mainsession->ruler_length > max_length)
 		mainsession->ruler_length = max_length;
 	draw_ruler();

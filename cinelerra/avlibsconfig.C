@@ -199,7 +199,7 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 
 	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
 	subw += base_left;
-	reposition_window((get_root_w(1) - subw) / 2, (get_root_h(1) - h) / 2,
+	reposition_window((get_root_w() - subw) / 2, (get_root_h() - h) / 2,
 		subw, h);
 	if(okbutton)
 	{
