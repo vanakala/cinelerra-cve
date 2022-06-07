@@ -17,9 +17,13 @@
 #include "pluginwindow.h"
 #include "vframe.h"
 
+#define BLUR_W 5
+#define BLUR_H 5
+#define BLUR_PASSES 5
+#define BLUR_PASSES_MAX 20
+
 REGISTER_PLUGIN
 
-// C41Config
 C41Config::C41Config()
 {
 	active = 0;
@@ -27,10 +31,12 @@ C41Config::C41Config()
 	postproc = 0;
 	show_box = 0;
 
-	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
+	fix_min_r = fix_min_g = fix_min_b = 0;
+	fix_light = 0;
 	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
 	min_col = max_col = min_row = max_row = 0;
 	frame_max_col = frame_max_row = -1;
+	blur_passes = BLUR_PASSES;
 }
 
 void C41Config::copy_from(C41Config &src)
@@ -62,9 +68,9 @@ int C41Config::equivalent(C41Config &src)
 		compute_magic == src.compute_magic &&
 		postproc == src.postproc &&
 		show_box == src.show_box &&
-		EQUIV(fix_min_r, src.fix_min_r) &&
-		EQUIV(fix_min_g, src.fix_min_g) &&
-		EQUIV(fix_min_b, src.fix_min_b) &&
+		fix_min_r == src.fix_min_r &&
+		fix_min_g == src.fix_min_g &&
+		fix_min_b == src.fix_min_b &&
 		EQUIV(fix_light, src.fix_light) &&
 		EQUIV(fix_gamma_g, src.fix_gamma_g) &&
 		EQUIV(fix_gamma_b, src.fix_gamma_b) &&
@@ -77,10 +83,10 @@ int C41Config::equivalent(C41Config &src)
 }
 
 void C41Config::interpolate(C41Config &prev,
-		C41Config &next,
-		ptstime prev_pts,
-		ptstime next_pts,
-		ptstime current_pts)
+	C41Config &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	active = prev.active;
@@ -104,7 +110,6 @@ void C41Config::interpolate(C41Config &prev,
 	frame_max_col = prev.frame_max_col;
 }
 
-// C41Enable
 C41Enable::C41Enable(C41Effect *plugin, int *output, int x, int y, const char *text)
  : BC_CheckBox(x, y, *output, text)
 {
@@ -119,23 +124,33 @@ int C41Enable::handle_event()
 	return 1;
 }
 
-// C41TextBox
-C41TextBox::C41TextBox(C41Effect *plugin, float *value, int x, int y)
- : BC_TextBox(x, y, 160, 1, *value)
+C41TextBox::C41TextBox(C41Effect *plugin, double *value, int x, int y)
+ : BC_TextBox(x, y, 100, 1, *value)
 {
 	this->plugin = plugin;
-	this->boxValue = value;
+	dblvalue = value;
+	intvalue = 0;
+}
+
+C41TextBox::C41TextBox(C41Effect *plugin, int *value, int x, int y)
+ : BC_TextBox(x, y, 100, 1, *value)
+{
+	this->plugin = plugin;
+	intvalue = value;
+	dblvalue = 0;
 }
 
 int C41TextBox::handle_event()
 {
-	*boxValue = atof(get_text());
+	if(intvalue)
+		*intvalue = atoi(get_text());
+	else
+		*dblvalue = atof(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-// C41Button
 C41Button::C41Button(C41Effect *plugin, C41Window *window, int x, int y)
  : BC_GenericButton(x, y, _("Apply values"))
 {
@@ -145,26 +160,26 @@ C41Button::C41Button(C41Effect *plugin, C41Window *window, int x, int y)
 
 int C41Button::handle_event()
 {
-	plugin->config.fix_min_r = plugin->values.min_r;
-	plugin->config.fix_min_g = plugin->values.min_g;
-	plugin->config.fix_min_b = plugin->values.min_b;
-	plugin->config.fix_light = plugin->values.light;
-	plugin->config.fix_gamma_g = plugin->values.gamma_g;
-	plugin->config.fix_gamma_b = plugin->values.gamma_b;
-	if(plugin->values.coef1 > 0)
-		plugin->config.fix_coef1 = plugin->values.coef1;
-	if(plugin->values.coef2 > 0)
-		plugin->config.fix_coef2 = plugin->values.coef2;
-	plugin->config.frame_max_row = plugin->values.frame_max_row;
-	plugin->config.frame_max_col = plugin->values.frame_max_col;
+	plugin->config.fix_min_r = plugin->min_r;
+	plugin->config.fix_min_g = plugin->min_g;
+	plugin->config.fix_min_b = plugin->min_b;
+	plugin->config.fix_light = plugin->light;
+	plugin->config.fix_gamma_g = plugin->gamma_g;
+	plugin->config.fix_gamma_b = plugin->gamma_b;
+	if(plugin->coef1 > 0)
+		plugin->config.fix_coef1 = plugin->coef1;
+	if(plugin->coef2 > 0)
+		plugin->config.fix_coef2 = plugin->coef2;
+	plugin->config.frame_max_row = plugin->frame_max_row;
+	plugin->config.frame_max_col = plugin->frame_max_col;
 
 	// Set uninitalized box values
 	if(!plugin->config.max_row || !plugin->config.max_col)
 	{
-		plugin->config.min_row = plugin->values.shave_min_row;
-		plugin->config.max_row = plugin->values.shave_max_row;
-		plugin->config.min_col = plugin->values.shave_min_col;
-		plugin->config.max_col = plugin->values.shave_max_col;
+		plugin->config.min_row = plugin->shave_min_row;
+		plugin->config.max_row = plugin->shave_max_row;
+		plugin->config.min_col = plugin->shave_min_col;
+		plugin->config.max_col = plugin->shave_max_col;
 	}
 
 	window->update();
@@ -183,12 +198,12 @@ C41BoxButton::C41BoxButton(C41Effect *plugin, C41Window *window, int x, int y)
 
 int C41BoxButton::handle_event()
 {
-	plugin->config.min_row = plugin->values.shave_min_row;
-	plugin->config.max_row = plugin->values.shave_max_row;
-	plugin->config.min_col = plugin->values.shave_min_col;
-	plugin->config.max_col = plugin->values.shave_max_col;
-	plugin->config.frame_max_row = plugin->values.frame_max_row;
-	plugin->config.frame_max_col = plugin->values.frame_max_col;
+	plugin->config.min_row = plugin->shave_min_row;
+	plugin->config.max_row = plugin->shave_max_row;
+	plugin->config.min_col = plugin->shave_min_col;
+	plugin->config.max_col = plugin->shave_max_col;
+	plugin->config.frame_max_row = plugin->frame_max_row;
+	plugin->config.frame_max_col = plugin->frame_max_col;
 
 	window->update();
 
@@ -198,13 +213,7 @@ int C41BoxButton::handle_event()
 
 
 C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int max)
- : BC_ISlider(x,
-	y,
-	0,
-	180,
-	180,
-	0,
-	max > 0 ? max : SLIDER_LENGTH,
+ : BC_ISlider(x, y, 0, 180, 180, 0, max > 0 ? max : SLIDER_LENGTH,
 	*output)
 {
 	this->plugin = plugin;
@@ -220,9 +229,8 @@ int C41Slider::handle_event()
 
 PLUGIN_THREAD_METHODS
 
-// C41Window
 C41Window::C41Window(C41Effect *plugin, int x, int y)
- : PluginWindow(plugin, x, y, 500, 510)
+ : PluginWindow(plugin, x, y, 500, 540)
 {
 	x = y = 10;
 
@@ -239,15 +247,15 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Min R:")));
-	add_subwindow(min_r = new BC_Title(x + 80, y, "0.0000"));
+	add_subwindow(min_r = new BC_Title(x + 80, y, "0"));
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Min G:")));
-	add_subwindow(min_g = new BC_Title(x + 80, y, "0.0000"));
+	add_subwindow(min_g = new BC_Title(x + 80, y, "0"));
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Min B:")));
-	add_subwindow(min_b = new BC_Title(x + 80, y, "0.0000"));
+	add_subwindow(min_b = new BC_Title(x + 80, y, "0"));
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Light:")));
@@ -285,6 +293,11 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	y += 30;
 
 	add_subwindow(boxlock = new C41BoxButton(plugin, this, x, y));
+
+	y += 30;
+	add_subwindow(new BC_Title(x, y, _("Blur passes:")));
+	add_subwindow(blur_passes = new C41TextBox(plugin, &plugin->config.blur_passes,
+		x + 80, y));
 
 	y = 10;
 	x = 250;
@@ -371,6 +384,7 @@ void C41Window::update()
 	fix_gamma_b->update(plugin->config.fix_gamma_b);
 	fix_coef1->update(plugin->config.fix_coef1);
 	fix_coef2->update(plugin->config.fix_coef2);
+	blur_passes->update(plugin->config.blur_passes);
 
 	if(plugin->config.frame_max_col > 0 && plugin->config.frame_max_row > 0 &&
 			(plugin->config.frame_max_col != slider_max_col ||
@@ -399,22 +413,22 @@ void C41Window::update()
 
 void C41Window::update_magic()
 {
-	min_r->update(plugin->values.min_r);
-	min_g->update(plugin->values.min_g);
-	min_b->update(plugin->values.min_b);
-	light->update(plugin->values.light);
-	gamma_g->update(plugin->values.gamma_g);
-	gamma_b->update(plugin->values.gamma_b);
+	min_r->update(plugin->min_r);
+	min_g->update(plugin->min_g);
+	min_b->update(plugin->min_b);
+	light->update(plugin->light);
+	gamma_g->update(plugin->gamma_g);
+	gamma_b->update(plugin->gamma_b);
 	// Avoid blinking
-	if(plugin->values.coef1 > 0 || plugin->values.coef2 > 0)
+	if(plugin->coef1 > 0 || plugin->coef2 > 0)
 	{
-		coef1->update(plugin->values.coef1);
-		coef2->update(plugin->values.coef2);
+		coef1->update(plugin->coef1);
+		coef2->update(plugin->coef2);
 	}
-	box_col_min->update(plugin->values.shave_min_col);
-	box_col_max->update(plugin->values.shave_max_col);
-	box_row_min->update(plugin->values.shave_min_row);
-	box_row_max->update(plugin->values.shave_max_row);
+	box_col_min->update(plugin->shave_min_col);
+	box_col_max->update(plugin->shave_max_col);
+	box_row_min->update(plugin->shave_min_row);
+	box_row_max->update(plugin->shave_max_row);
 }
 
 
@@ -426,7 +440,10 @@ C41Effect::C41Effect(PluginServer *server)
 	blurry_frame = 0;
 	pv_min = pv_max = 0;
 	pv_alloc = 0;
-	memset(&values, 0, sizeof(values));
+	min_r = min_g = min_b = 0;
+	light = gamma_g = gamma_b = coef1 = coef2 = 0.;
+	frame_max_col = frame_max_row = 0;
+	shave_min_col = shave_max_col = shave_min_row = shave_max_row = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -477,6 +494,7 @@ void C41Effect::load_defaults()
 	config.max_col = defaults->get("MAX_COL", config.max_col);
 	config.frame_max_col = defaults->get("FRAME_COL", config.frame_max_col);
 	config.frame_max_row = defaults->get("FRAME_ROW", config.frame_max_row);
+	config.blur_passes = defaults->get("BLUR_PASSES", config.blur_passes);
 }
 
 void C41Effect::save_defaults()
@@ -499,6 +517,7 @@ void C41Effect::save_defaults()
 	defaults->update("MAX_COL", config.max_col);
 	defaults->update("FRAME_COL", config.frame_max_col);
 	defaults->update("FRAME_ROW", config.frame_max_row);
+	defaults->update("BLUR_PASSES", config.blur_passes);
 	defaults->save();
 }
 
@@ -526,6 +545,7 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MAX_COL", config.max_col);
 	output.tag.set_property("FRAME_COL", config.frame_max_col);
 	output.tag.set_property("FRAME_ROW", config.frame_max_row);
+	output.tag.set_property("BLUR_PASSES", config.blur_passes);
 	output.append_tag();
 	output.tag.set_title("/C41");
 	output.append_tag();
@@ -559,49 +579,13 @@ void C41Effect::read_data(KeyFrame *keyframe)
 			config.max_col = input.tag.get_property("MAX_COL", config.max_col);
 			config.frame_max_col = input.tag.get_property("FRAME_COL", config.frame_max_col);
 			config.frame_max_row = input.tag.get_property("FRAME_ROW", config.frame_max_row);
+			config.blur_passes = input.tag.get_property("BLUR_PASSES", config.blur_passes);
 		}
 	}
 }
 
-#if defined(C41_FAST_POW)
-
-float C41Effect::myLog2(float i)
-{
-	float x, y;
-	float LogBodge = 0.346607f;
-	x = *(int *)&i;
-	x *= 1.0 / (1 << 23); // 1/pow(2,23);
-	x = x - 127;
-
-	y = x - floorf(x);
-	y = (y - y * y) * LogBodge;
-	return x + y;
-}
-
-float C41Effect::myPow2(float i)
-{
-	float PowBodge = 0.33971f;
-	float x;
-	float y = i - floorf(i);
-	y = (y - y * y) * PowBodge;
-
-	x = i + 127 - y;
-	x *= (1 << 23);
-	*(int*)&x = (int)x;
-	return x;
-}
-
-float C41Effect::myPow(float a, float b)
-{
-	return myPow2(b * myLog2(a));
-}
-
-#endif
-
 VFrame *C41Effect::process_tmpframe(VFrame *frame)
 {
-	int pixlen;
-
 	if(load_configuration())
 		update_gui();
 
@@ -612,86 +596,66 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 	{
 	case BC_RGBA16161616:
 	case BC_AYUV16161616:
-		pixlen = 4;
 		break;
 	default:
-		abort_plugin(_("Color model '%s' is not supported"),
-			ColorModels::name(frame->get_color_model()));
-		return frame; // Unsupported
+		unsupported(frame->get_color_model());
+		return frame;
 	}
 
 	if(config.compute_magic)
 	{
 		// Box blur!
-		int i, j, k;
-		float *tmp_row, *blurry_row;
-
 		// Convert frame to RGB for magic computing
 		if(!tmp_frame)
-			tmp_frame = new VFrame(0, frame_w, frame_h, BC_RGB_FLOAT);
+			tmp_frame = new VFrame(0, frame_w, frame_h, BC_RGBA16161616);
 		if(!blurry_frame)
-			blurry_frame = new VFrame(0, frame_w, frame_h, BC_RGB_FLOAT);
+			blurry_frame = new VFrame(0, frame_w, frame_h, BC_RGBA16161616);
 
 		switch(frame->get_color_model())
 		{
 		case BC_RGBA16161616:
-			for(i = 0; i < frame_h; i++)
-			{
-				uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-				for(j = k = 0; j < (pixlen * frame_w); j++)
-				{
-					if((j & 3) == 3)
-						continue;
-					blurry_row[k++] = (float)row[j] / 0xffff;
-				}
-			}
+			blurry_frame->copy_from(frame);
 			break;
 
 		case BC_AYUV16161616:
-			for(i = 0; i < frame_h; i++)
-			{
-				int r, g, b;
-
-				uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-				blurry_row = (float*)blurry_frame->get_row_ptr(i);
-				for(j = k = 0; j < frame_w; j++)
-				{
-					ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
-					blurry_row[k++] = (float)r / 0xffff;
-					blurry_row[k++] = (float)g / 0xffff;
-					blurry_row[k++] = (float)b / 0xffff;
-					row += 4;
-				}
-			}
+			blurry_frame->transfer_from(frame);
 			break;
 		}
-		// 10 passes of Box blur should be good
-		int boxw = 5, boxh = 5;
-		int pass, x, y, y_up, y_down, x_right, x_left;
-		float component;
-
-		for(pass = 0; pass < 10; pass++)
+		if(config.blur_passes > 0 && config.blur_passes < BLUR_PASSES_MAX)
 		{
-			tmp_frame->copy_from(blurry_frame);
-			for(y = 0; y < frame_h; y++)
+			for(int pass = 0; pass < config.blur_passes; pass++)
 			{
-				blurry_row = (float*)blurry_frame->get_row_ptr(y);
-				y_up = (y - boxh < 0)? 0 : y - boxh;
-				y_down = (y + boxh >= frame_h)? frame_h - 1 : y + boxh;
-				float *tmp_up = (float*)tmp_frame->get_row_ptr(y_up);
-				float *tmp_down = (float*)tmp_frame->get_row_ptr(y_down);
-				for(x = 0; x < (3 * frame_w); x++)
+				VFrame *swt = blurry_frame;
+				blurry_frame = tmp_frame;
+				tmp_frame = swt;
+
+				for(int y = 0; y < frame_h; y++)
 				{
-					x_left = (x - (3 * boxw) < 0)? 0 : x - (3 * boxw);
-					x_right = (x + (3 * boxw) >= (3 * frame_w)) ? (3 * frame_w) - 1 : x + (3 * boxw);
-					component = (tmp_down[x_right]
-							+ tmp_up[x_left]
-							+ tmp_up[x_right]
-							+ tmp_down[x_right]) / 4;
-					blurry_row[x] = component;
+					uint16_t *blurry_row = (uint16_t*)blurry_frame->get_row_ptr(y);
+					int y_up = (y - BLUR_H < 0) ? 0 : y - BLUR_H;
+					int y_down = (y + BLUR_H >= frame_h) ?
+						frame_h - 1 : y + BLUR_H;
+					uint16_t *tmp_up = (uint16_t*)tmp_frame->get_row_ptr(y_up);
+					uint16_t *tmp_down = (uint16_t*)tmp_frame->get_row_ptr(y_down);
+
+					for(int x = 0; x < (4 * frame_w); x++)
+					{
+						if(x % 4 == 3)
+							continue;
+						int x_left = (x - (4 * BLUR_W) < 0) ?
+							0 : x - (4 * BLUR_W);
+						int x_right = (x + (4 * BLUR_W) >= (4 * frame_w)) ?
+							(4 * (frame_w - 1)) : x + (4 * BLUR_W);
+						int component = (tmp_down[x_right] +
+							tmp_up[x_left] +
+							tmp_up[x_right] +
+							tmp_down[x_right]) / 4;
+						blurry_row[x] = component;
+					}
 				}
 			}
 		}
+
 		// Shave image: cut off border areas where min max difference
 		// is less than C41_SHAVE_TOLERANCE
 		shave_min_row = shave_min_col = 0;
@@ -701,21 +665,22 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 		if(!pv_alloc)
 		{
 			pv_alloc = MAX(frame_h, frame_w);
-			pv_min = new float[pv_alloc];
-			pv_max = new float[pv_alloc];
+			pv_min = new int[pv_alloc];
+			pv_max = new int[pv_alloc];
 		}
 
-		for(x = 0; x < pv_alloc; x++)
+		for(int x = 0; x < pv_alloc; x++)
 		{
-			pv_min[x] = 1.;
-			pv_max[x] = 0.;
+			pv_min[x] = 0x10000;
+			pv_max[x] = 0;
 		}
 
-		for(y = 0; y < frame_h; y++)
+		for(int y = 0; y < frame_h; y++)
 		{
-			float *row = (float *)blurry_frame->get_row_ptr(y);
-			float pv;
-			for(x = 0; x < frame_w; x++, row += 3)
+			uint16_t *row = (uint16_t*)blurry_frame->get_row_ptr(y);
+			int pv;
+
+			for(int x = 0; x < frame_w; x++)
 			{
 				pv = (row[0] + row[1] + row[2]) / 3;
 
@@ -723,6 +688,7 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 					pv_min[y] = pv;
 				if(pv_max[y] < pv)
 					pv_max[y] = pv;
+				row += 4;
 			}
 		}
 		for(shave_min_row = 0; shave_min_row < frame_h; shave_min_row++)
@@ -733,18 +699,18 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 				break;
 		shave_max_row++;
 
-		for(x = 0; x < pv_alloc; x++)
+		for(int x = 0; x < pv_alloc; x++)
 		{
-			pv_min[x] = 1.;
-			pv_max[x] = 0.;
+			pv_min[x] = 0x10000;
+			pv_max[x] = 0;
 		}
 
-		for(y = shave_min_row; y < shave_max_row; y++)
+		for(int y = shave_min_row; y < shave_max_row; y++)
 		{
-			float pv;
-			float *row = (float*)blurry_frame->get_row_ptr(y);
+			int pv;
+			uint16_t *row = (uint16_t*)blurry_frame->get_row_ptr(y);
 
-			for(x = 0; x < frame_w; x++, row += 3)
+			for(int x = 0; x < frame_w; x++)
 			{
 				pv = (row[0] + row[1] + row[2]) / 3;
 
@@ -752,6 +718,7 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 					pv_min[x] = pv;
 				if(pv_max[x] < pv)
 					pv_max[x] = pv;
+				row += 4;
 			}
 		}
 		for(shave_min_col = 0; shave_min_col < frame_w; shave_min_col++)
@@ -763,19 +730,21 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 		shave_max_col++;
 
 		int mrg = C41_SHAVE_BLUR * frame_w;
+
 		if(shave_min_col < mrg)
 			shave_min_col = mrg;
 		if(shave_max_col > frame_w - mrg)
 			shave_max_col = frame_w - mrg;
-		mrg = C41_SHAVE_BLUR * frame_w;
+
+		mrg = C41_SHAVE_BLUR * frame_h;
 		if(shave_min_row < mrg)
 			shave_min_row = mrg;
 		if(shave_max_row > frame_h - mrg)
 			shave_max_row = frame_h - mrg;
 
 		// Compute magic negfix values
-		float minima_r = 50., minima_g = 50., minima_b = 50.;
-		float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
+		int minima_r = 0x10000, minima_g = 0x10000, minima_b = 0x10000;
+		int maxima_r = 0, maxima_g = 0, maxima_b = 0;
 
 		// Check if config_parameters are usable
 		if(config.frame_max_row == frame_h && config.frame_max_col == frame_w
@@ -799,9 +768,9 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 
 		for(int i = min_row; i < max_row; i++)
 		{
-			float *row = (float*)blurry_frame->get_row_ptr(i);
-			row += 3 * min_col;
-			for(int j = min_col; j < max_col; j++, row += 3)
+			uint16_t *row = (uint16_t *)blurry_frame->get_row_ptr(i);
+			row += 4 * min_col;
+			for(int j = min_col; j < max_col; j++)
 			{
 
 				if(row[0] < minima_r) minima_r = row[0];
@@ -812,23 +781,27 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 
 				if(row[2] < minima_b) minima_b = row[2];
 				if(row[2] > maxima_b) maxima_b = row[2];
+				row += 4;
 			}
 		}
 
-		values.min_r = minima_r;
-		values.min_g = minima_g;
-		values.min_b = minima_b;
-		values.light = (minima_r / maxima_r);
-		values.gamma_g = logf(maxima_r / minima_r) / logf(maxima_g / minima_g);
-		values.gamma_b = logf(maxima_r / minima_r) / logf(maxima_b / minima_b);
-		values.shave_min_col = shave_min_col;
-		values.shave_max_col = shave_max_col;
-		values.shave_min_row = shave_min_row;
-		values.shave_max_row = shave_max_row;
-		values.frame_max_row = frame_h;
-		values.frame_max_col = frame_w;
-		values.coef1 = -1;
-		values.coef2 = -1;
+		min_r = minima_r;
+		min_g = minima_g;
+		min_b = minima_b;
+		light = (double)minima_r / maxima_r;
+
+		double rsc = (double)maxima_r / minima_r;
+		double gsc = (double)maxima_g / minima_g;
+		double bsc = (double)maxima_b / minima_b;
+
+		gamma_g = log(rsc) / log(gsc);
+		gamma_b = log(rsc) / log(bsc);
+
+		frame_max_row = frame_h;
+		frame_max_col = frame_w;
+		coef1 = -1;
+		coef2 = -1;
+		update_magic();
 	}
 
 	// Apply the transformation
@@ -836,28 +809,19 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 	{
 		switch(frame->get_color_model())
 		{
-		case BC_RGB_FLOAT:
-		case BC_RGBA_FLOAT:
-			for(int i = 0; i < frame_h; i++)
-			{
-				float *row = (float*)frame->get_row_ptr(i);
-				for(int j = 0; j < frame_w; j++, row += pixlen)
-				{
-					row[0] = normalize_pixel((config.fix_min_r / row[0]) - config.fix_light);
-					row[1] = normalize_pixel(C41_POW_FUNC((config.fix_min_g / row[1]), config.fix_gamma_g) - config.fix_light);
-					row[2] = normalize_pixel(C41_POW_FUNC((config.fix_min_b / row[2]), config.fix_gamma_b) - config.fix_light);
-				}
-			}
-			break;
 		case BC_RGBA16161616:
 			for(int i = 0; i < frame_h; i++)
 			{
 				uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-				for(int j = 0; j < frame_w; j++, row += pixlen)
+				for(int j = 0; j < frame_w; j++)
 				{
-					row[0] = pixtouint((config.fix_min_r / ((float)row[0] / 0xffff)) - config.fix_light);
-					row[1] = pixtouint(C41_POW_FUNC((config.fix_min_g / ((float)row[1] / 0xffff)), config.fix_gamma_g) - config.fix_light);
-					row[2] = pixtouint(C41_POW_FUNC((config.fix_min_b / ((float)row[2] / 0xffff)), config.fix_gamma_b) - config.fix_light);
+					row[0] = pixtouint((double)config.fix_min_r /
+						row[0] - config.fix_light);
+					row[1] = pixtouint(pow((double)config.fix_min_g /
+						row[1], config.fix_gamma_g) - config.fix_light);
+					row[2] = pixtouint(pow((double)config.fix_min_b / row[2],
+						config.fix_gamma_b) - config.fix_light);
+					row += 4;
 				}
 			}
 			break;
@@ -866,53 +830,36 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 			{
 				uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
 				int r, g, b;
-				for(int j = 0; j < frame_w; j++, row += pixlen)
+				for(int j = 0; j < frame_w; j++)
 				{
 					ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
-					r = pixtouint((config.fix_min_r / ((float)r / 0xffff)) - config.fix_light);
-					g = pixtouint(C41_POW_FUNC((config.fix_min_g / ((float)g / 0xffff)), config.fix_gamma_g) - config.fix_light);
-					b = pixtouint(C41_POW_FUNC((config.fix_min_b / ((float)b / 0xffff)), config.fix_gamma_b) - config.fix_light);
+					r = pixtouint((double)config.fix_min_r / r -
+						config.fix_light);
+					g = pixtouint(pow((double)config.fix_min_g /
+						g, config.fix_gamma_g) - config.fix_light);
+					b = pixtouint(pow((double)config.fix_min_b /
+						b, config.fix_gamma_b) - config.fix_light);
 					ColorSpaces::rgb_to_yuv_16(r, g, b, row[1], row[2], row[3]);
+					row += 4;
 				}
 			}
 			break;
 		}
+
 		if(config.compute_magic && !config.postproc)
 		{
-			float minima_r = 50., minima_g = 50., minima_b = 50.;
-			float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
 			int min_r, min_g, min_b, max_r, max_g, max_b;
 			min_r = min_g = min_b = 0x10000;
 			max_r = max_g = max_b = 0;
-			int cmodel = frame->get_color_model();
 
 			switch(frame->get_color_model())
 			{
-			case BC_RGB_FLOAT:
-			case BC_RGBA_FLOAT:
-				for(int i = min_row; i < max_row; i++)
-				{
-					float *row = (float*)frame->get_row_ptr(i);
-					row += pixlen * min_col;
-					for(int j = min_col; j < max_col; j++, row += pixlen)
-					{
-						if(row[0] < minima_r) minima_r = row[0];
-						if(row[0] > maxima_r) maxima_r = row[0];
-
-						if(row[1] < minima_g) minima_g = row[1];
-						if(row[1] > maxima_g) maxima_g = row[1];
-
-						if(row[2] < minima_b) minima_b = row[2];
-						if(row[2] > maxima_b) maxima_b = row[2];
-					}
-				}
-				break;
 			case BC_RGBA16161616:
 				for(int i = min_row; i < max_row; i++)
 				{
 					uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-					row += pixlen * min_col;
-					for(int j = min_col; j < max_col; j++, row += pixlen)
+					row += 4 * min_col;
+					for(int j = min_col; j < max_col; j++)
 					{
 
 						if(row[0] < min_r) min_r = row[0];
@@ -921,8 +868,10 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 						if(row[1] < min_g) min_g = row[1];
 						if(row[1] > max_g) max_g = row[1];
 
-						if(row[2] < min_g) min_g = row[2];
-						if(row[2] > max_g) max_g = row[2];
+						if(row[2] < min_b) min_b = row[2];
+						if(row[2] > max_b) max_b = row[2];
+
+						row += 4;
 					}
 				}
 				break;
@@ -930,10 +879,10 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 				for(int i = min_row; i < max_row; i++)
 				{
 					uint16_t *row = (uint16_t*)frame->get_row_ptr(i);
-					row += pixlen * min_col;
+					row += 4 * min_col;
 					int r, g, b;
 
-					for(int j = min_col; j < max_col; j++, row += pixlen)
+					for(int j = min_col; j < max_col; j++)
 					{
 						ColorSpaces::yuv_to_rgb_16(r, g, b, row[1], row[2], row[3]);
 
@@ -945,36 +894,30 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 
 						if(b < min_b) min_b = b;
 						if(b > max_b) max_b = b;
+
+						row += 4;
 					}
 				}
 				break;
 			}
 
-			if(cmodel == BC_AYUV16161616 || cmodel == BC_RGBA16161616)
-			{
-				maxima_r = (float)max_r / 0xffff;
-				minima_r = (float)min_r / 0xffff;
-				maxima_g = (float)max_g / 0xffff;
-				minima_g = (float)min_g / 0xffff;
-				maxima_b = (float)max_b / 0xffff;
-				minima_b = (float)min_b / 0xffff;
-			}
-
 			// Calculate postprocessing coeficents
-			values.coef2 = minima_r;
-			if(minima_g < values.coef2)
-				values.coef2 = minima_g;
-			if(minima_b < values.coef2)
-				values.coef2 = minima_b;
-			values.coef1 = maxima_r;
-			if(maxima_g > values.coef1)
-				values.coef1 = maxima_g;
-			if(maxima_b > values.coef1)
-				values.coef1 = maxima_b;
-			// Try not to overflow RGB601
-			// (235 - 16) / 256 * 0.9
-			values.coef1 = 0.770 / (values.coef1 - values.coef2);
-			values.coef2 = 0.065 - values.coef2 * values.coef1;
+			coef2 = min_r;
+			if(min_g < coef2)
+				coef2 = min_g;
+			if(min_b < coef2)
+				coef2 = min_b;
+			coef1 = max_r;
+			if(max_g > coef1)
+				coef1 = max_g;
+			if(max_b > coef1)
+				coef1 = max_b;
+
+			coef1 /= 0xffff;
+			coef2 /= 0xffff;
+			coef1 = 1.0 / (coef1 - coef2);
+			coef2 = 0.065 - coef2 * coef1;
+			update_magic();
 		}
 
 		GuideFrame *gf = get_guides();
@@ -1002,40 +945,19 @@ VFrame *C41Effect::process_tmpframe(VFrame *frame)
 	return frame;
 }
 
-float C41Effect::normalize_pixel(float ival)
+uint16_t C41Effect::pixtouint(double val)
 {
-	float val = fix_exepts(ival);
+	int rv;
 
 	if(config.postproc)
 		val = config.fix_coef1 * val + config.fix_coef2;
 
-	CLAMP(val, 0., 1.);
-	return val;
+	rv = round(val * 0xffff);
+	return CLIP(rv, 0, 0xffff);
 }
 
-float C41Effect::fix_exepts(float ival)
+void C41Effect::update_magic()
 {
-	switch(fpclassify(ival))
-	{
-	case FP_NAN:
-	case FP_SUBNORMAL:
-		ival = 0;
-		break;
-	case FP_INFINITE:
-		if(ival < 0)
-			ival = 0.;
-		else
-			ival = 1.;
-		break;
-	}
-	return ival;
-}
-
-uint16_t C41Effect::pixtouint(float val)
-{
-	if(config.postproc)
-		val = config.fix_coef1 * val + config.fix_coef2;
-
-	val = roundf(val * 0xffff);
-	return CLIP(val, 0, 0xffff);
+	if(thread)
+		thread->window->update_magic();
 }

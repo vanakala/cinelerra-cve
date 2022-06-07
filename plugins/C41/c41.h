@@ -44,30 +44,12 @@
 
 // Shave the image in order to avoid black borders
 // The min max pixel value difference must be at least 0.05
-#define C41_SHAVE_TOLERANCE 0.05
+#define C41_SHAVE_TOLERANCE 3278
 // Shave some amount - blurring at the edges is not good
 #define C41_SHAVE_BLUR 0.20
 
 #include <stdint.h>
 #include <string.h>
-
-struct magic
-{
-	float min_r;
-	float min_g;
-	float min_b;
-	float light;
-	float gamma_g;
-	float gamma_b;
-	float coef1;
-	float coef2;
-	int shave_min_row;
-	int shave_max_row;
-	int shave_min_col;
-	int shave_max_col;
-	int frame_max_col;
-	int frame_max_row;
-};
 
 class C41Config
 {
@@ -77,29 +59,30 @@ public:
 	void copy_from(C41Config &src);
 	int equivalent(C41Config &src);
 	void interpolate(C41Config &prev,
-			C41Config &next,
-			ptstime prev_pts,
-			ptstime next_pts,
-			ptstime current_pts);
+		C41Config &next,
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int active;
 	int compute_magic;
 	int postproc;
 	int show_box;
-	float fix_min_r;
-	float fix_min_g;
-	float fix_min_b;
-	float fix_light;
-	float fix_gamma_g;
-	float fix_gamma_b;
-	float fix_coef1;
-	float fix_coef2;
+	int fix_min_r;
+	int fix_min_g;
+	int fix_min_b;
+	double fix_light;
+	double fix_gamma_g;
+	double fix_gamma_b;
+	double fix_coef1;
+	double fix_coef2;
 	int min_col;
 	int max_col;
 	int min_row;
 	int max_row;
 	int frame_max_row;
 	int frame_max_col;
+	int blur_passes;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -116,11 +99,14 @@ public:
 class C41TextBox : public BC_TextBox
 {
 public:
-	C41TextBox(C41Effect *plugin, float *value, int x, int y);
+	C41TextBox(C41Effect *plugin, double *value, int x, int y);
+	C41TextBox(C41Effect *plugin, int *value, int x, int y);
+
 	int handle_event();
 
 	C41Effect *plugin;
-	float *boxValue;
+	double *dblvalue;
+	int *intvalue;
 };
 
 class C41Button : public BC_GenericButton
@@ -178,6 +164,7 @@ public:
 	BC_Title *box_col_max;
 	BC_Title *box_row_min;
 	BC_Title *box_row_max;
+	C41TextBox *blur_passes;
 	C41TextBox *fix_min_r;
 	C41TextBox *fix_min_g;
 	C41TextBox *fix_min_b;
@@ -213,20 +200,24 @@ public:
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	float fix_exepts(float ival);
-	float normalize_pixel(float ival);
-	uint16_t pixtouint(float val);
-#if defined(C41_FAST_POW)
-	float myLog2(float i) __attribute__ ((optimize(0)));
-	float myPow2(float i) __attribute__ ((optimize(0)));
-	float myPow(float a, float b);
-#endif
+	uint16_t pixtouint(double val);
+	void update_magic();
+
 	VFrame* tmp_frame;
 	VFrame* blurry_frame;
-	struct magic values;
+	int min_r;
+	int min_g;
+	int min_b;
+	double light;
+	double gamma_g;
+	double gamma_b;
+	double coef1;
+	double coef2;
+	int frame_max_col;
+	int frame_max_row;
 
-	float *pv_min;
-	float *pv_max;
+	int *pv_min;
+	int *pv_max;
 	int pv_alloc;
 
 	int shave_min_row;
