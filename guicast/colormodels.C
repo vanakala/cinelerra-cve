@@ -248,6 +248,20 @@ void ColorModels::transfer_sws(unsigned char *output,
 			printf("ColorModels::transfer_sws: swscale context initialization failed\n");
 			return;
 		}
+
+		int *inv_table, *table;
+		int srcRange, dstRange;
+		int brightness, contrast, saturation;
+
+		if(sws_getColorspaceDetails(sws_ctx, &inv_table,
+			&srcRange, &table, &dstRange,
+			&brightness, &contrast, &saturation) == 0)
+		{
+			sws_setColorspaceDetails(sws_ctx, inv_table,
+				1, table, 1,
+				brightness, contrast, saturation);
+		}
+
 		sws_scale(sws_ctx, in_data, in_linesizes,
 			0, in_h, out_data, out_linesizes);
 		sws_freeContext(sws_ctx);
