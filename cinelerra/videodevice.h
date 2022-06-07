@@ -7,7 +7,6 @@
 #define VIDEODEVICE_H
 
 #include "audiodevice.inc"
-#include "bctimer.h"
 #include "canvas.inc"
 #include "edl.inc"
 #include "videodevice.inc"
@@ -58,16 +57,10 @@ public:
 // Audio device to share data with
 	AudioDevice *adevice;
 
-// timer for displaying frames in the current buffer
-	Timer buffer_timer;
-// timer for getting frame rate
-	Timer rate_timer;
 // size of output frame being fed to device during playback
 	int out_w, out_h;
 // modes
 	int writing;
-// time from start of previous frame to start of next frame in ms
-	int frame_delay;
 
 // Single frame mode for playback
 	int single_frame;
