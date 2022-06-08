@@ -312,90 +312,6 @@ void ColorModels::transfer_sws(unsigned char *output,
 	}
 }
 
-void ColorModels::transfer_frame(unsigned char *output,
-	VFrame *frame,
-	unsigned char *out_y_plane,
-	unsigned char *out_u_plane,
-	unsigned char *out_v_plane,
-	int out_w,           // output width
-	int out_h,           // output height
-	int out_colormodel,
-	int out_rowspan)
-{
-	unsigned char *in_data[4], *out_data[4];
-	int in_linesizes[4], out_linesizes[4];
-	AVPixelFormat pix_in, pix_out;
-	struct SwsContext *sws_ctx = 0;
-
-	pix_in = color_model_to_pix_fmt(frame->get_color_model());
-	pix_out = color_model_to_pix_fmt(out_colormodel);
-
-	if(pix_in != AV_PIX_FMT_NONE && pix_out != AV_PIX_FMT_NONE)
-	{
-		sws_ctx = sws_getCachedContext(sws_ctx, frame->get_w(), frame->get_h(),
-			pix_in, out_w, out_h, pix_out,
-			libinterpolate(), NULL, NULL, NULL);
-		fill_data(frame->get_color_model(), in_data, frame->get_data(),
-			frame->get_y(), frame->get_u(), frame->get_v());
-		fill_linesizes(frame->get_color_model(), frame->get_bytes_per_line(),
-			frame->get_w(), in_linesizes);
-		fill_data(out_colormodel, out_data, output,
-			out_y_plane, out_u_plane, out_v_plane);
-		fill_linesizes(out_colormodel, out_rowspan, out_w, out_linesizes);
-
-		if(!sws_ctx)
-		{
-			printf("ColorModels::transfer_frame: swscale context initialization failed\n");
-			return;
-		}
-		sws_scale(sws_ctx, in_data, in_linesizes,
-			0, frame->get_h(), out_data, out_linesizes);
-		sws_freeContext(sws_ctx);
-	}
-	else
-	{
-		VFrame *tmpframe = 0;
-
-		if(pix_out == AV_PIX_FMT_NONE && pix_in != AV_PIX_FMT_NONE)
-		{
-			int tmp_cmodel = inter_color_model(out_colormodel);
-
-			tmpframe = BC_Resources::tmpframes.get_tmpframe(out_w, out_h, tmp_cmodel);
-			transfer_frame(tmpframe->get_data(), frame,
-				tmpframe->get_y(), tmpframe->get_u(), tmpframe->get_v(),
-				out_w, out_h,
-				tmp_cmodel, tmpframe->get_bytes_per_line());
-			copy_colors(out_w, out_h,
-				output, out_colormodel, out_rowspan,
-				tmpframe->get_data(), tmp_cmodel, tmpframe->get_bytes_per_line());
-			BC_Resources::tmpframes.release_frame(tmpframe);
-		}
-		else if(pix_out != AV_PIX_FMT_NONE && pix_in == AV_PIX_FMT_NONE)
-		{
-			int tmp_cmodel = inter_color_model(frame->get_color_model());
-
-			tmpframe = BC_Resources::tmpframes.get_tmpframe(frame->get_w(),
-				frame->get_h(), tmp_cmodel);
-			copy_colors(frame->get_w(), frame->get_h(),
-				tmpframe->get_data(), tmp_cmodel, tmpframe->get_bytes_per_line(),
-				frame->get_data(), frame->get_color_model(),
-				frame->get_bytes_per_line());
-
-			transfer_frame(output, tmpframe,
-				out_y_plane, out_u_plane, out_v_plane,
-				out_w, out_h,
-				out_colormodel, out_rowspan);
-			BC_Resources::tmpframes.release_frame(tmpframe);
-		}
-		else
-		{
-			slow_transfer(out_w, out_h, output, out_colormodel, out_rowspan,
-				frame->get_w(), frame->get_h(), frame->get_data(),
-				frame->get_color_model(), frame->get_bytes_per_line());
-		}
-	}
-}
-
 void ColorModels::fill_linesizes(int colormodel, int rowspan, int w, int *linesizes)
 {
 	if(rowspan > 0)
@@ -672,8 +588,11 @@ void ColorModels::slow_transfer(int out_w, int out_h,
 	copy_colors(in_w, in_h, in_tmp->get_data(), in_medmodel,
 		in_tmp->get_bytes_per_line(), input, in_cmodel, in_rowspan);
 	// in_tmp -> out_tmp
-	transfer_frame(out_tmp->get_data(), in_tmp, 0, 0, 0, out_w, out_h,
-		out_medmodel, out_tmp->get_bytes_per_line());
+	transfer_sws(out_tmp->get_data(), in_tmp->get_data(),
+		0, 0, 0, 0, 0, 0,
+		in_w, in_h, out_w, out_h,
+		in_medmodel, out_medmodel,
+		in_tmp->get_bytes_per_line(), out_tmp->get_bytes_per_line());
 	// copy out_tmp -> output
 	copy_colors(out_w, out_h, output, out_cmodel, out_rowspan,
 		out_tmp->get_data(), out_medmodel, out_tmp->get_bytes_per_line());
