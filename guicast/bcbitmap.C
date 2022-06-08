@@ -527,14 +527,13 @@ void BC_Bitmap::read_frame(VFrame *frame,
 		}
 // Software only
 	default:
-		ColorModels::transfer_frame(get_data(),
-			frame,
-			get_y_plane(),
-			get_u_plane(),
-			get_v_plane(),
+		ColorModels::transfer_sws(get_data(), frame->get_data(),
+			get_y_plane(), get_u_plane(), get_v_plane(),
+			frame->get_y(), frame->get_u(), frame->get_v(),
+			frame->get_w(), frame->get_h(),
 			disp_w, disp_h,
-			color_model,
-			get_bytes_per_line());
+			frame->get_color_model(), color_model,
+			frame->get_bytes_per_line(), get_bytes_per_line());
 		break;
 	}
 }
