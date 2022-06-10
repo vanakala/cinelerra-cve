@@ -541,7 +541,8 @@ int Canvas::button_press_event()
 {
 	int result = 0;
 
-	if(!canvas_subwindow->get_video_on() && get_canvas()->get_buttonpress() == 3)
+	if(!canvas_subwindow->get_video_on() && get_canvas()->get_buttonpress() == 3 &&
+			!get_canvas()->alt_down())
 	{
 		if(get_fullscreen())
 			fullscreen_menu->activate_menu();
