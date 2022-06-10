@@ -3402,6 +3402,9 @@ int TrackCanvas::button_press_event()
 	int new_cursor;
 	int update_opts = 0;
 
+	if(get_buttonpress() ==  3 && alt_down())
+		return 0;
+
 	if(cursor_inside_window(&cursor_x, &cursor_y))
 	{
 		new_cursor = default_cursor();
