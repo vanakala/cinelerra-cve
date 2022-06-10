@@ -680,6 +680,8 @@ private:
 	int drag_x1, drag_x2, drag_y1, drag_y2;
 // Dragging is specific to the subwindow
 	int is_dragging;
+// Dragging top window
+	int is_window_drag;
 // Don't delete the background pixmap
 	int shared_bg_pixmap;
 	char title[BCTEXTLEN];

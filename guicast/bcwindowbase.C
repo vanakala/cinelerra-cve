@@ -183,6 +183,7 @@ void BC_WindowBase::initialize()
 	current_cursor = ARROW_CURSOR;
 	hourglass_total = 0;
 	is_dragging = 0;
+	is_window_drag = 0;
 	shared_bg_pixmap = 0;
 	icon_pixmap = 0;
 	icon_window = 0;
@@ -1242,6 +1243,12 @@ int BC_WindowBase::dispatch_drag_start()
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_drag_start();
 	if(!result && active_subwindow) result = active_subwindow->dispatch_drag_start();
 
+	if(alt_mask && button_down && button_number == 3)
+	{
+		is_window_drag = 1;
+		result = 1;
+	}
+
 	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_start();
@@ -1254,6 +1261,12 @@ int BC_WindowBase::dispatch_drag_start()
 int BC_WindowBase::dispatch_drag_stop()
 {
 	int result = 0;
+
+	if(is_window_drag)
+	{
+		is_window_drag = 0;
+		result = 1;
+	}
 
 	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
@@ -1273,6 +1286,12 @@ int BC_WindowBase::dispatch_drag_stop()
 int BC_WindowBase::dispatch_drag_motion()
 {
 	int result = 0;
+
+	if(is_window_drag)
+	{
+		reposition_window(x + cursor_x - drag_x, y + cursor_y - drag_y);
+		result = 1;
+	}
 
 	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
