@@ -812,7 +812,7 @@ AWindowDivider::AWindowDivider(AWindowGUI *gui, int x, int y, int w, int h)
 
 int AWindowDivider::button_press_event()
 {
-	if(is_event_win() && cursor_inside())
+	if(is_event_win() && cursor_inside() && !alt_down())
 	{
 		mainsession->current_operation = DRAG_PARTITION;
 		return 1;
@@ -874,7 +874,8 @@ int AWindowFolders::button_press_event()
 
 	if(!result)
 	{
-		if(get_buttonpress() == 3 && is_event_win() && cursor_inside())
+		if(get_buttonpress() == 3 && !alt_down() && is_event_win() &&
+				cursor_inside())
 		{
 			gui->folderlist_menu->update_titles();
 			gui->folderlist_menu->activate_menu();
@@ -905,7 +906,8 @@ int AWindowAssets::button_press_event()
 
 	result = BC_ListBox::button_press_event();
 
-	if(!result && get_buttonpress() == 3 && is_event_win() && cursor_inside())
+	if(!result && get_buttonpress() == 3 && !alt_down() && is_event_win() &&
+			cursor_inside())
 	{
 		BC_ListBox::deactivate_selection();
 		gui->assetlist_menu->update_titles();
