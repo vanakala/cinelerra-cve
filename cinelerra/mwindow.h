@@ -407,8 +407,6 @@ public:
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
 
-	void init_render();
-	void init_exportedl();
 // These three happen synchronously with each other
 // Make sure this is called after synchronizing EDL's.
 	void init_brender();
@@ -425,14 +423,10 @@ public:
 	int brender_available(ptstime position);
 	void set_brender_start();
 
-	void init_error();
 	static void init_defaults(BC_Hash* &defaults, 
 		const char *config_path);
 	const char *default_std();
-	void init_edl();
-	void init_awindow();
-	void init_gwindow();
-	void init_tipwindow();
+
 // Used by MWindow and RenderFarmClient
 	static void init_plugins(Preferences *preferences, 
 		ArrayList<PluginServer*>* &plugindb,
@@ -442,15 +436,7 @@ public:
 		FileSystem *fs,
 		SplashGUI *splash_window,
 		int *counter);
-	void init_preferences();
-	void init_signals();
 	void init_theme();
-	void init_compositor();
-	void init_levelwindow();
-	void init_viewer();
-	void init_ruler();
-	void init_indexes();
-	void init_gui();
 	void init_playbackcursor();
 
 	void clean_indexes();

@@ -108,52 +108,83 @@ MWindow::MWindow(const char *config_path)
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
-	init_signals();
+
+	sighandler = new SigHandler;
+	sighandler->initialize();
+	sighandler->initXErrors();
+
 	mwindow_global = this;
 
 	glthread = new GLThread();
-
 
 	show_splash();
 
 	init_defaults(defaults, config_path);
 	default_standard = default_std();
 
-	init_edl();
-	init_preferences();
+	master_edl = new EDL(1);
+	edlsession = new EDLSession();
+	vwindow_edl = new EDL(0);
+
+	FormatPresets::fill_preset_defaults(default_standard, edlsession);
+	master_edl->load_defaults(defaults, edlsession);
+	master_edl->create_default_tracks();
+
+	preferences = new Preferences;
+	preferences->load_defaults(defaults);
+	mainsession = new MainSession();
+	mainsession->load_defaults(defaults);
+	preferences_global = preferences;
+
 	plugindb.init_plugins(splash_window);
-	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
+	if(splash_window)
+		splash_window->operation->update(_("Initializing GUI"));
+
 	init_theme();
-	init_error();
+	new MainError();
 
 	strcpy(string, preferences->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 	last_backup_time = time(0);
 
-	init_awindow();
-	init_compositor();
-	init_levelwindow();
-	init_viewer();
-	init_ruler();
-	init_indexes();
+	awindow = new AWindow;
+	cwindow = new CWindow;
+	lwindow = new LevelWindow;
+	vwindow = new VWindow;
+	ruler = new Ruler;
+	mainindexes = new MainIndexes();
+	mainindexes->start_loop();
 
-	init_gui();
-	init_gwindow();
+	gui = new MWindowGUI();
+	gui->show();
+	gui->load_defaults(defaults);
 
-	init_render();
+	gwindow = new GWindow(gui);
+
+	render = new Render;
+	batch_render = new BatchRenderThread;
+
 	init_brender();
-	init_exportedl();
-	mainprogress = new MainProgress(gui);
-	undo = new MainUndo();
-	clip_edit = new ClipEdit();
 
-	if(mainsession->show_vwindow) vwindow->gui->show_window();
-	if(mainsession->show_cwindow) cwindow->gui->show_window();
-	if(mainsession->show_awindow) awindow->gui->show_window();
-	if(mainsession->show_lwindow) lwindow->gui->show_window();
-	if(mainsession->show_gwindow) gwindow->gui->show_window();
-	if(mainsession->show_ruler) ruler->gui->show_window();
+	exportedl = new ExportEDL;
+
+	mainprogress = new MainProgress(gui);
+	undo = new MainUndo;
+	clip_edit = new ClipEdit;
+
+	if(mainsession->show_vwindow)
+		vwindow->gui->show_window();
+	if(mainsession->show_cwindow)
+		cwindow->gui->show_window();
+	if(mainsession->show_awindow)
+		awindow->gui->show_window();
+	if(mainsession->show_lwindow)
+		lwindow->gui->show_window();
+	if(mainsession->show_gwindow)
+		gwindow->gui->show_window();
+	if(mainsession->show_ruler)
+		ruler->gui->show_window();
 
 	gui->mainmenu->load_defaults(defaults);
 	gui->mainmenu->update_toggles();
@@ -163,7 +194,10 @@ MWindow::MWindow(const char *config_path)
 	gui->raise_window();
 
 	if(preferences->use_tipwindow)
-		init_tipwindow();
+	{
+		twindow = new TipWindow();
+		twindow->start();
+	}
 	hide_splash();
 }
 
@@ -181,7 +215,7 @@ MWindow::~MWindow()
 	exit(0);
 
 	delete mainprogress;
-	if(gui) delete gui;
+	delete gui;
 	delete undo;
 	delete clip_edit;
 	delete preferences;
@@ -194,11 +228,6 @@ MWindow::~MWindow()
 	delete plugin_gui_lock;
 	delete vwindow_edl;
 	delete master_edl;
-}
-
-void MWindow::init_error()
-{
-	new MainError();
 }
 
 void MWindow::create_defaults_path(char *string)
@@ -281,15 +310,6 @@ void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
 	defaults->load();
 }
 
-void MWindow::init_preferences()
-{
-	preferences = new Preferences;
-	preferences->load_defaults(defaults);
-	mainsession = new MainSession();
-	mainsession->load_defaults(defaults);
-	preferences_global = preferences;
-}
-
 void MWindow::clean_indexes()
 {
 	FileSystem fs;
@@ -362,22 +382,6 @@ void MWindow::clean_indexes()
 	}
 }
 
-void MWindow::init_awindow()
-{
-	awindow = new AWindow();
-}
-
-void MWindow::init_gwindow()
-{
-	gwindow = new GWindow(gui);
-}
-
-void MWindow::init_tipwindow()
-{
-	twindow = new TipWindow();
-	twindow->start();
-}
-
 void MWindow::init_theme()
 {
 	PluginServer *server = plugindb.get_theme(preferences->theme);
@@ -412,68 +416,6 @@ void MWindow::init_theme()
 
 	theme->check_used();
 	master_edl->tracks->update_y_pixels(theme);
-}
-
-void MWindow::init_edl()
-{
-	master_edl = new EDL(1);
-	edlsession = new EDLSession();
-	vwindow_edl = new EDL(0);
-
-	FormatPresets::fill_preset_defaults(default_standard, edlsession);
-	master_edl->load_defaults(defaults, edlsession);
-	master_edl->create_default_tracks();
-}
-
-void MWindow::init_compositor()
-{
-	cwindow = new CWindow();
-}
-
-void MWindow::init_levelwindow()
-{
-	lwindow = new LevelWindow;
-}
-
-void MWindow::init_viewer()
-{
-	vwindow = new VWindow();
-}
-
-void MWindow::init_ruler()
-{
-	ruler = new Ruler;
-}
-
-void MWindow::init_indexes()
-{
-	mainindexes = new MainIndexes();
-	mainindexes->start_loop();
-}
-
-void MWindow::init_gui()
-{
-	gui = new MWindowGUI();
-	gui->show();
-	gui->load_defaults(defaults);
-}
-
-void MWindow::init_signals()
-{
-	sighandler = new SigHandler;
-	sighandler->initialize();
-	sighandler->initXErrors();
-}
-
-void MWindow::init_render()
-{
-	render = new Render();
-	batch_render = new BatchRenderThread();
-}
-
-void MWindow::init_exportedl()
-{
-	exportedl = new ExportEDL();
 }
 
 void MWindow::init_brender()
