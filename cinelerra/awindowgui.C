@@ -382,9 +382,6 @@ void AWindowGUI::resize_event(int w, int h)
 
 	reposition_objects();
 
-	int x = theme_global->abuttons_x;
-	int y = theme_global->abuttons_y;
-
 	BC_WindowBase::resize_event(w, h);
 }
 
