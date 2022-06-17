@@ -585,7 +585,7 @@ void BC_WindowBase::dispatch_event()
 	int result;
 	XClientMessageEvent *ptr;
 	int temp;
-	int cancel_resize, cancel_translation;
+	int cancel_resize;
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
 	lock_window("BC_WindowBase::dispatch_event1");
@@ -753,7 +753,6 @@ void BC_WindowBase::dispatch_event()
 		last_resize_w = event.xconfigure.width;
 		last_resize_h = event.xconfigure.height;
 		cancel_resize = 0;
-		cancel_translation = 0;
 
 // Resize history prevents responses to recursive resize requests
 		for(int i = 0; i < resize_history.total && !cancel_resize; i++)
@@ -773,13 +772,12 @@ void BC_WindowBase::dispatch_event()
 		if(!cancel_resize)
 			resize_events = 1;
 
-		if((last_translate_x == x && last_translate_y == y))
-			cancel_translation = 1;
-
-		if(!cancel_translation)
+		if(!(last_translate_x == x && last_translate_y == y) &&
+				translation_count)
 			translation_events = 1;
 
-		translation_count++;
+		if(!translation_count)
+			translation_count++;
 		break;
 
 	case KeyPress:
