@@ -3,12 +3,9 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#include "awindowgui.h"
-#include "awindow.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "cinelerra.h"
-#include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
 #include "edl.h"
@@ -32,8 +29,6 @@
 #include "trackcanvas.h"
 #include "trackscroll.h"
 #include "tracks.h"
-#include "vwindowgui.h"
-#include "vwindow.h"
 #include "zoombar.h"
 
 #include <stdarg.h>
@@ -194,40 +189,6 @@ void MWindowGUI::drag_stop()
 {
 	if(!get_hidden())
 		canvas->drag_stop();
-}
-
-void MWindowGUI::default_positions()
-{
-	reposition_window(mainsession->mwindow_x,
-		mainsession->mwindow_y,
-		mainsession->mwindow_w,
-		mainsession->mwindow_h);
-	mwindow_global->vwindow->gui->reposition_window(mainsession->vwindow_x,
-		mainsession->vwindow_y,
-		mainsession->vwindow_w,
-		mainsession->vwindow_h);
-	mwindow_global->cwindow->gui->reposition_window(mainsession->cwindow_x,
-		mainsession->cwindow_y,
-		mainsession->cwindow_w,
-		mainsession->cwindow_h);
-	mwindow_global->awindow->gui->reposition_window(mainsession->awindow_x,
-		mainsession->awindow_y,
-		mainsession->awindow_w,
-		mainsession->awindow_h);
-
-	resize_event(mainsession->mwindow_w,
-		mainsession->mwindow_h);
-	mwindow_global->vwindow->gui->resize_event(mainsession->vwindow_w,
-		mainsession->vwindow_h);
-	mwindow_global->cwindow->gui->resize_event(mainsession->cwindow_w,
-		mainsession->cwindow_h);
-	mwindow_global->awindow->gui->resize_event(mainsession->awindow_w,
-		mainsession->awindow_h);
-
-	flush();
-	mwindow_global->vwindow->gui->flush();
-	mwindow_global->cwindow->gui->flush();
-	mwindow_global->awindow->gui->flush();
 }
 
 void MWindowGUI::repeat_event(int duration)
