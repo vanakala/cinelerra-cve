@@ -590,7 +590,7 @@ focevt:
 		XMapEvent *mpevp = (XMapEvent*)ev;
 
 		print_event_common(ev, "MapNotify");
-		printf(" mapped %#lx override_redirect %c\n", mpevp->window,
+		printf(" window %#lx override_redirect %c\n", mpevp->window,
 			mpevp->override_redirect? 'T':'f');
 		break;
 	}
@@ -609,7 +609,8 @@ focevt:
 		XReparentEvent *rpevp = (XReparentEvent*)ev;
 
 		print_event_common(ev, "ReparentNotify");
-		printf(" window %#lx (%d,%d) override_redirect %c\n", rpevp->window,
+		printf(" window %#lx parent %#lx (%d,%d) override_redirect %c\n",
+			rpevp->window, rpevp->parent,
 			rpevp->x, rpevp->y, rpevp->override_redirect? 'T':'f');
 		break;
 	}
