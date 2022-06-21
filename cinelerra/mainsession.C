@@ -78,12 +78,8 @@ void MainSession::default_window_positions()
 	int root_y = 0;
 
 	BC_Resources::get_root_size(&root_w, &root_h);
-
 	BC_Resources::get_window_borders(&border_left, &border_right,
 		&border_top, &border_bottom);
-
-// Wider than 16:9, narrower than dual head
-	if((float)root_w / root_h > 1.8) root_w /= 2;
 
 	vwindow_x = root_x;
 	vwindow_y = root_y;
