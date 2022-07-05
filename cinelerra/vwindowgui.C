@@ -120,11 +120,7 @@ void VWindowGUI::change_source(const char *title)
 
 void VWindowGUI::resize_event(int w, int h)
 {
-	mainsession->vwindow_x = get_x();
-	mainsession->vwindow_y = get_y();
-	mainsession->vwindow_w = w;
-	mainsession->vwindow_h = h;
-
+	mainsession->vwindow_location(-1, -1, w, h);
 	theme_global->get_vwindow_sizes(this);
 	theme_global->draw_vwindow_bg(this);
 	flash();
@@ -156,8 +152,15 @@ void VWindowGUI::resize_event(int w, int h)
 
 void VWindowGUI::translation_event()
 {
-	mainsession->vwindow_x = get_x();
-	mainsession->vwindow_y = get_y();
+	if(mainsession->vwindow_location(get_x(), get_y(), get_w(), get_h()))
+	{
+		reposition_window(mainsession->vwindow_x,
+			mainsession->vwindow_y,
+			mainsession->vwindow_w,
+			mainsession->vwindow_h);
+		resize_event(mainsession->vwindow_w,
+			mainsession->vwindow_h);
+	}
 }
 
 void VWindowGUI::close_event()
