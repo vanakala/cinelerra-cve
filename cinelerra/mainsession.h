@@ -30,6 +30,10 @@ public:
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
 	void default_window_positions();
+	int mwindow_location(int x, int y, int w, int h);
+	int vwindow_location(int x, int y, int w, int h);
+	int cwindow_location(int x, int y, int w, int h);
+	int awindow_location(int x, int y, int w, int h);
 	void boundaries();
 	size_t get_size();
 
@@ -111,6 +115,8 @@ public:
 	int show_ruler;
 	int plugindialog_w, plugindialog_h;
 	int menueffect_w, menueffect_h;
+
+	int positions_ready;
 
 	int cwindow_fullscreen;
 	int rwindow_fullscreen;
