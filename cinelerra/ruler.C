@@ -154,8 +154,6 @@ void RulerGUI::draw_ruler()
 
 void RulerGUI::resize_event(int w, int h)
 {
-	mainsession->ruler_x = get_x();
-	mainsession->ruler_y = get_y();
 	if(mainsession->ruler_orientation == RULER_HORIZ)
 		mainsession->ruler_length = w;
 	else
