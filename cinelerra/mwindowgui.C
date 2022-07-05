@@ -156,8 +156,7 @@ void MWindowGUI::focus_out_event()
 
 void MWindowGUI::resize_event(int w, int h)
 {
-	mainsession->mwindow_w = w;
-	mainsession->mwindow_h = h;
+	mainsession->mwindow_location(-1, -1, w, h);
 	theme_global->get_mwindow_sizes(this, w, h);
 	theme_global->draw_mwindow_bg(this);
 	flash();
@@ -198,8 +197,15 @@ void MWindowGUI::repeat_event(int duration)
 
 void MWindowGUI::translation_event()
 {
-	mainsession->mwindow_x = get_x();
-	mainsession->mwindow_y = get_y();
+	if(mainsession->mwindow_location(get_x(), get_y(), get_w(), get_h()))
+	{
+		reposition_window(mainsession->mwindow_x,
+			mainsession->mwindow_y,
+			mainsession->mwindow_w,
+			mainsession->mwindow_h);
+		resize_event(mainsession->mwindow_w,
+			mainsession->mwindow_h);
+	}
 }
 
 void MWindowGUI::save_defaults(BC_Hash *defaults)
