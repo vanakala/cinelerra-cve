@@ -734,7 +734,7 @@ void BC_WindowBase::dispatch_event()
 	case ConfigureNotify:
 		if(win == top_level->win)
 		{
-			if(event.xconfigure.send_event)
+			if(event.xconfigure.send_event || event.xconfigure.override_redirect)
 			{
 				last_translate_x = event.xconfigure.x;
 				last_translate_y = event.xconfigure.y;
