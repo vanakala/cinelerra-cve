@@ -42,8 +42,6 @@ LevelWindowGUI::~LevelWindowGUI()
 
 void LevelWindowGUI::resize_event(int w, int h)
 {
-	mainsession->lwindow_x = get_x();
-	mainsession->lwindow_y = get_y();
 	mainsession->lwindow_w = w;
 	mainsession->lwindow_h = h;
 
@@ -52,8 +50,6 @@ void LevelWindowGUI::resize_event(int w, int h)
 	panel->reposition_window(panel->x,
 		panel->y,
 		h - 10);
-
-	BC_WindowBase::resize_event(w, h);
 }
 
 void LevelWindowGUI::translation_event()
