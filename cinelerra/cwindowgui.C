@@ -165,16 +165,20 @@ CWindowGUI::~CWindowGUI()
 
 void CWindowGUI::translation_event()
 {
-	mainsession->cwindow_x = get_x();
-	mainsession->cwindow_y = get_y();
+	if(mainsession->cwindow_location(get_x(), get_y(), get_w(), get_h()))
+	{
+		reposition_window(mainsession->cwindow_x,
+			mainsession->cwindow_y,
+			mainsession->cwindow_w,
+			mainsession->cwindow_h);
+		resize_event(mainsession->cwindow_w,
+			mainsession->cwindow_h);
+	}
 }
 
 void CWindowGUI::resize_event(int w, int h)
 {
-	mainsession->cwindow_x = get_x();
-	mainsession->cwindow_y = get_y();
-	mainsession->cwindow_w = w;
-	mainsession->cwindow_h = h;
+	mainsession->cwindow_location(-1, -1, w, h);
 
 	theme_global->get_cwindow_sizes(this, mainsession->cwindow_controls);
 	theme_global->draw_cwindow_bg(this);
@@ -211,8 +215,6 @@ void CWindowGUI::resize_event(int w, int h)
 		theme_global->cmeter_h);
 
 	draw_status();
-
-	BC_WindowBase::resize_event(w, h);
 }
 
 int CWindowGUI::button_press_event()
