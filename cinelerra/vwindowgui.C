@@ -146,8 +146,6 @@ void VWindowGUI::resize_event(int w, int h)
 	meters->reposition_window(theme_global->vmeter_x,
 		theme_global->vmeter_y,
 		theme_global->vmeter_h);
-
-	BC_WindowBase::resize_event(w, h);
 }
 
 void VWindowGUI::translation_event()
