@@ -372,23 +372,25 @@ AWindowGUI::~AWindowGUI()
 
 void AWindowGUI::resize_event(int w, int h)
 {
-	mainsession->awindow_x = get_x();
-	mainsession->awindow_y = get_y();
-	mainsession->awindow_w = w;
-	mainsession->awindow_h = h;
+	mainsession->awindow_location(-1, -1, w, h);
 
 	theme_global->get_awindow_sizes(this);
 	theme_global->draw_awindow_bg(this);
 
 	reposition_objects();
-
-	BC_WindowBase::resize_event(w, h);
 }
 
 void AWindowGUI::translation_event()
 {
-	mainsession->awindow_x = get_x();
-	mainsession->awindow_y = get_y();
+	if(mainsession->awindow_location(get_x(), get_y(), get_w(), get_h()))
+	{
+		reposition_window(mainsession->awindow_x,
+			mainsession->awindow_y,
+			mainsession->awindow_w,
+			mainsession->awindow_h);
+		resize_event(mainsession->awindow_w,
+			mainsession->awindow_h);
+	}
 }
 
 void AWindowGUI::reposition_objects()
