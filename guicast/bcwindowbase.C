@@ -71,16 +71,19 @@ BC_WindowBase::~BC_WindowBase()
 	is_deleting = 1;
 
 	hide_tooltip();
+
 	if(window_type != MAIN_WINDOW)
 	{
-		if(top_level->active_menubar == this) top_level->active_menubar = 0;
-		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
-		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
+		if(top_level->active_menubar == this)
+			top_level->active_menubar = 0;
+		if(top_level->active_popup_menu == this)
+			top_level->active_popup_menu = 0;
+		if(top_level->active_subwindow == this)
+			top_level->active_subwindow = 0;
 // Remove pointer from parent window to this
 		if(parent_window->subwindows)
 			parent_window->subwindows->remove(this);
 	}
-
 
 // Delete the subwindows
 	if(subwindows)
@@ -98,10 +101,14 @@ BC_WindowBase::~BC_WindowBase()
 
 	XDestroyWindow(top_level->display, win);
 
-	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
-	if(icon_pixmap) delete icon_pixmap;
-	if(icon_window) delete icon_window;
-	if(temp_bitmap) delete temp_bitmap;
+	if(bg_pixmap && !shared_bg_pixmap)
+		delete bg_pixmap;
+	if(icon_pixmap)
+		delete icon_pixmap;
+	if(icon_window)
+		delete icon_window;
+	if(temp_bitmap)
+		delete temp_bitmap;
 	resources.create_window_lock->unlock();
 
 	if(have_gl_context)
@@ -220,31 +227,15 @@ void BC_WindowBase::initialize()
 	reset_completion();
 }
 
-#define DEFAULT_EVENT_MASKS EnterWindowMask | \
-			LeaveWindowMask | \
-			ButtonPressMask | \
-			ButtonReleaseMask | \
-			PointerMotionMask | \
-			FocusChangeMask
+#define DEFAULT_EVENT_MASKS EnterWindowMask | LeaveWindowMask | ButtonPressMask | \
+	ButtonReleaseMask | PointerMotionMask | FocusChangeMask
 
 
 void BC_WindowBase::create_window(BC_WindowBase *parent_window,
-				const char *title, 
-				int x,
-				int y,
-				int w, 
-				int h, 
-				int minw, 
-				int minh, 
-				int allow_resize,
-				int private_color, 
-				int hide,
-				int bg_color,
-				const char *display_name,
-				int window_type,
-				BC_Pixmap *bg_pixmap,
-				int group_it,
-				int options)
+	const char *title, int x, int y, int w, int h,
+	int minw, int minh, int allow_resize, int private_color,
+	int hide, int bg_color, const char *display_name, int window_type,
+	BC_Pixmap *bg_pixmap, int group_it, int options)
 {
 	XSetWindowAttributes attr;
 	unsigned long mask;
@@ -259,7 +250,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 	resources.create_window_lock->lock("BC_WindowBase::create_window");
 
-	if(parent_window) top_level = parent_window->top_level;
+	if(parent_window)
+		top_level = parent_window->top_level;
 
 #ifdef HAVE_LIBXXF86VM
 	if(window_type == VIDMODE_SCALED_WINDOW)
@@ -281,9 +273,11 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		strcpy(this->title, title);
 	else
 		this->title[0] = 0;
-	if(bg_pixmap) shared_bg_pixmap = 1;
+	if(bg_pixmap)
+		shared_bg_pixmap = 1;
 
-	if(parent_window) top_level = parent_window->top_level;
+	if(parent_window)
+		top_level = parent_window->top_level;
 
 	subwindows = new BC_SubWindowList;
 
@@ -300,10 +294,16 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // Fudge window placement
 		root_w = get_root_w();
 		root_h = get_root_h();
-		if(this->x + this->w > root_w) this->x = root_w - this->w;
-		if(this->y + this->h > root_h) this->y = root_h - this->h;
-		if(this->x < 0) this->x = 0;
-		if(this->y < 0) this->y = 0;
+
+		if(this->x + this->w > root_w)
+			this->x = root_w - this->w;
+		if(this->y + this->h > root_h)
+			this->y = root_h - this->h;
+		if(this->x < 0)
+			this->x = 0;
+		if(this->y < 0)
+			this->y = 0;
+
 		screen = DefaultScreen(display);
 		rootwin = RootWindow(display, screen);
 
@@ -316,9 +316,12 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // This must be done before fonts to know if antialiasing is available.
 		init_colors();
 // get the resources
-		if(resources.use_shm < 0) resources.initialize_display(this);
+		if(resources.use_shm < 0)
+			resources.initialize_display(this);
+
 		x_correction = resources.get_left_border();
 		y_correction = resources.get_top_border();
+
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
 
@@ -327,13 +330,9 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_cursors();
 
 // Create the window
-		mask = CWEventMask | 
-				CWBackPixel | 
-				CWColormap | 
-				CWCursor;
+		mask = CWEventMask | CWBackPixel | CWColormap | CWCursor;
 
-		attr.event_mask = DEFAULT_EVENT_MASKS |
-			StructureNotifyMask | 
+		attr.event_mask = DEFAULT_EVENT_MASKS | StructureNotifyMask |
 			KeyPressMask;
 
 		attr.background_pixel = get_color(this->bg_color);
@@ -346,18 +345,10 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			attr.override_redirect = True;
 		}
 
-		win = XCreateWindow(display, 
-			rootwin, 
-			this->x, 
-			this->y, 
-			this->w, 
-			this->h, 
-			0, 
-			top_level->default_depth, 
-			InputOutput, 
-			vis, 
-			mask, 
-			&attr);
+		win = XCreateWindow(display, rootwin,
+			this->x, this->y, this->w, this->h, 0,
+			top_level->default_depth,
+			InputOutput, vis, mask, &attr);
 
 		XGetNormalHints(display, win, &size_hints);
 
@@ -365,9 +356,10 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		size_hints.width = this->w;
 		size_hints.height = this->h;
 		size_hints.min_width = allow_resize ? minw : this->w;
-		size_hints.max_width = allow_resize ? 32767 : this->w; 
+		size_hints.max_width = allow_resize ? 32767 : this->w;
 		size_hints.min_height = allow_resize ? minh : this->h;
-		size_hints.max_height = allow_resize ? 32767 : this->h; 
+		size_hints.max_height = allow_resize ? 32767 : this->h;
+
 		if(x > -BC_INFINITY && x < BC_INFINITY)
 		{
 			size_hints.flags |= PPosition;
@@ -393,25 +385,23 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		clipboard = new BC_Clipboard(display_name);
 		clipboard->start_clipboard();
 
-		if (group_it)
+		if(group_it)
 		{
 			Atom ClientLeaderXAtom;
-			if (XGroupLeader == 0)
+
+			if(XGroupLeader == 0)
 				XGroupLeader = win;
+
 			XClassHint *class_hints = XAllocClassHint(); 
+
 			class_hints->res_name = (char*)"cinelerra";
 			class_hints->res_class = (char*)"Cinelerra";
 			XSetClassHint(top_level->display, win, class_hints);
 			XFree(class_hints);
 			ClientLeaderXAtom = XInternAtom(display, "WM_CLIENT_LEADER", True);
-			XChangeProperty(display, 
-					win, 
-					ClientLeaderXAtom, 
-					XA_WINDOW, 
-					32, 
-					PropModeReplace, 
-					(unsigned char *)&XGroupLeader, 
-					true);
+			XChangeProperty(display, win, ClientLeaderXAtom,
+				XA_WINDOW, 32, PropModeReplace,
+				(unsigned char *)&XGroupLeader, true);
 		}
 		init_im();
 		completion_event_type = XShmGetEventBase(display) + ShmCompletion;
@@ -431,12 +421,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	if(window_type == POPUP_WINDOW)
 #endif
 	{
-		mask = CWEventMask | 
-			CWBackPixel | 
-			CWColormap | 
-			CWOverrideRedirect | 
-			CWSaveUnder | 
-			CWCursor;
+		mask = CWEventMask | CWBackPixel | CWColormap | CWOverrideRedirect |
+			CWSaveUnder | CWCursor;
 
 		attr.event_mask = DEFAULT_EVENT_MASKS |
 			KeyPressMask;
@@ -452,43 +438,27 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		attr.override_redirect = True;
 		attr.save_under = True;
 
-		win = XCreateWindow(top_level->display, 
-			top_level->rootwin, 
-			this->x, 
-			this->y, 
-			this->w, 
-			this->h, 
-			0, 
-			top_level->default_depth, 
-			InputOutput, 
-			top_level->vis, 
-			mask, 
-			&attr);
+		win = XCreateWindow(top_level->display, top_level->rootwin,
+			this->x, this->y, this->w, this->h, 0,
+			top_level->default_depth, InputOutput,
+			top_level->vis, mask, &attr);
 	}
 
 	if(window_type == SUB_WINDOW)
 	{
-		mask = CWBackPixel | 
-			CWEventMask | 
-			CWCursor;
+		mask = CWBackPixel | CWEventMask | CWCursor;
 		attr.event_mask = DEFAULT_EVENT_MASKS;
 		attr.background_pixel = top_level->get_color(this->bg_color);
+
 		if(top_level->is_hourglass)
 			attr.cursor = top_level->get_cursor_struct(HOURGLASS_CURSOR);
 		else
 			attr.cursor = top_level->get_cursor_struct(ARROW_CURSOR);
-		win = XCreateWindow(top_level->display, 
-			parent_window->win, 
-			this->x, 
-			this->y, 
-			this->w, 
-			this->h, 
-			0, 
-			top_level->default_depth, 
-			InputOutput, 
-			top_level->vis, 
-			mask, 
-			&attr);
+
+		win = XCreateWindow(top_level->display, parent_window->win,
+			this->x, this->y, this->w, this->h, 0,
+			top_level->default_depth, InputOutput,
+			top_level->vis, mask, &attr);
 		init_window_shape();
 		XMapWindow(top_level->display, win);
 	}
@@ -510,7 +480,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 #endif
 	{
 		init_window_shape();
-		if(!hidden) show_window();
+		if(!hidden)
+			show_window();
 	}
 	resources.create_window_lock->unlock();
 }
@@ -519,11 +490,14 @@ Display* BC_WindowBase::init_display(const char *display_name)
 {
 	Display* display;
 
-	if(display_name && display_name[0] == 0) display_name = NULL;
+	if(display_name && display_name[0] == 0)
+		display_name = NULL;
+
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
 		printf("BC_WindowBase::init_display: cannot connect to X server %s\n", 
 			display_name);
+
 		if(getenv("DISPLAY") == NULL)
 		{
 			printf("'DISPLAY' environment variable not set.\n");
@@ -551,15 +525,11 @@ int BC_WindowBase::run_window()
 
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
-	{
 		set_repeat(resources.tooltip_delay);
-	}
 
 // Start common events
 	while(!done)
-	{
 		dispatch_event();
-	}
 
 	unset_all_repeaters();
 	hide_tooltip();
@@ -586,6 +556,7 @@ void BC_WindowBase::dispatch_event()
 	XClientMessageEvent *ptr;
 	int temp;
 	int cancel_resize;
+
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
 	lock_window("BC_WindowBase::dispatch_event1");
@@ -635,14 +606,11 @@ void BC_WindowBase::dispatch_event()
 
 		ptr = (XClientMessageEvent*)&event;
 
-
 		if(ptr->message_type == ProtoXAtom && ptr->data.l[0] == DelWinXAtom)
 			close_event();
-		else
-		if(ptr->message_type == RepeaterXAtom)
+		else if(ptr->message_type == RepeaterXAtom)
 			dispatch_repeat_event(ptr->data.l[0]);
-		else
-		if(ptr->message_type == SetDoneXAtom)
+		else if(ptr->message_type == SetDoneXAtom)
 		{
 			return_value = ptr->data.l[0];
 			done = 1;
@@ -675,8 +643,10 @@ void BC_WindowBase::dispatch_event()
 		cursor_y = event.xbutton.y;
 		button_number = event.xbutton.button;
 		event_win = event.xany.window;
-		if (button_number != 4 && button_number != 5)
+
+		if(button_number != 4 && button_number != 5)
 			button_down = 1;
+
 		button_pressed = event.xbutton.button;
 		button_time1 = button_time2;
 		button_time2 = event.xbutton.time;
@@ -744,12 +714,8 @@ void BC_WindowBase::dispatch_event()
 		{
 			lock_window("BC_WindowBase::dispatch_event ConfigureNotify");
 			XTranslateCoordinates(top_level->display,
-				top_level->win,
-				top_level->rootwin,
-				0,
-				0,
-				&last_translate_x,
-				&last_translate_y,
+				top_level->win, top_level->rootwin,
+				0, 0, &last_translate_x, &last_translate_y,
 				&tempwin);
 			unlock_window();
 		}
@@ -787,13 +753,15 @@ void BC_WindowBase::dispatch_event()
 		get_key_masks(&event);
 		key_pressed = 0;
 
-		if(XFilterEvent(&event, win)) break;
+		if(XFilterEvent(&event, win))
+			break;
 
 		wkey_string_length = XwcLookupString(input_context,
 			(XKeyEvent*)&event, wkey_string, 4, &keysym, 0);
 
 // block out control keys
-		if(keysym > 0xffe0 && keysym < 0xffff) break;
+		if(keysym > 0xffe0 && keysym < 0xffff)
+			break;
 
 		switch(keysym)
 		{
@@ -808,47 +776,97 @@ void BC_WindowBase::dispatch_event()
 			break;
 
 // Translate key codes
-		case XK_Return:     key_pressed = RETURN;    break;
-		case XK_Up:         key_pressed = UP;        break;
-		case XK_Down:       key_pressed = DOWN;      break;
-		case XK_Left:       key_pressed = LEFT;      break;
-		case XK_Right:      key_pressed = RIGHT;     break;
-		case XK_Next:       key_pressed = PGDN;      break;
-		case XK_Prior:      key_pressed = PGUP;      break;
-		case XK_BackSpace:  key_pressed = BACKSPACE; break;
-		case XK_Escape:     key_pressed = ESC;       break;
+		case XK_Return:
+			key_pressed = RETURN;
+			break;
+		case XK_Up:
+			key_pressed = UP;
+			break;
+		case XK_Down:
+			key_pressed = DOWN;
+			break;
+		case XK_Left:
+			key_pressed = LEFT;
+			break;
+		case XK_Right:
+			key_pressed = RIGHT;
+			break;
+		case XK_Next:
+			key_pressed = PGDN;
+			break;
+		case XK_Prior:
+			key_pressed = PGUP;
+			break;
+		case XK_BackSpace:
+			key_pressed = BACKSPACE;
+			break;
+		case XK_Escape:
+			key_pressed = ESC;
+			break;
 		case XK_Tab:
 			if(shift_down())
 				key_pressed = LEFTTAB;
 			else
 				key_pressed = TAB;
 			break;
-		case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
-		case XK_underscore: key_pressed = '_';       break;
-		case XK_asciitilde: key_pressed = '~';       break;
-		case XK_Delete:     key_pressed = DELETE;    break;
-		case XK_Home:       key_pressed = HOME;      break;
-		case XK_End:        key_pressed = END;       break;
+		case XK_ISO_Left_Tab:
+			key_pressed = LEFTTAB;
+			break;
+		case XK_underscore:
+			key_pressed = '_';
+			break;
+		case XK_asciitilde:
+			key_pressed = '~';
+			break;
+		case XK_Delete:
+			key_pressed = DELETE;
+			break;
+		case XK_Home:
+			key_pressed = HOME;
+			break;
+		case XK_End:
+			key_pressed = END;
+			break;
 
 // number pad
-		case XK_KP_Enter:       key_pressed = KPENTER;   break;
-		case XK_KP_Add:         key_pressed = KPPLUS;    break;
+		case XK_KP_Enter:
+			key_pressed = KPENTER;
+			break;
+		case XK_KP_Add:
+			key_pressed = KPPLUS;
+			break;
 		case XK_KP_1:
-		case XK_KP_End:         key_pressed = KP1;       break;
+		case XK_KP_End:
+			key_pressed = KP1;
+			break;
 		case XK_KP_2:
-		case XK_KP_Down:        key_pressed = KP2;       break;
+		case XK_KP_Down:
+			key_pressed = KP2;
+			break;
 		case XK_KP_3:
-		case XK_KP_Page_Down:   key_pressed = KP3;       break;
+		case XK_KP_Page_Down:
+			key_pressed = KP3;
+			break;
 		case XK_KP_4:
-		case XK_KP_Left:        key_pressed = KP4;       break;
+		case XK_KP_Left:
+			key_pressed = KP4;
+			break;
 		case XK_KP_5:
-		case XK_KP_Begin:       key_pressed = KP5;       break;
+		case XK_KP_Begin:
+			key_pressed = KP5;
+			break;
 		case XK_KP_6:
-		case XK_KP_Right:       key_pressed = KP6;       break;
+		case XK_KP_Right:
+			key_pressed = KP6;
+			break;
 		case XK_KP_0:
-		case XK_KP_Insert:      key_pressed = KPINS;     break;
+		case XK_KP_Insert:
+			key_pressed = KPINS;
+			break;
 		case XK_KP_Decimal:
-		case XK_KP_Delete:      key_pressed = KPDEL;     break;
+		case XK_KP_Delete:
+			key_pressed = KPDEL;
+			break;
 		default:
 			key_pressed = keysym & 0xff;
 			break;
@@ -882,12 +900,11 @@ void BC_WindowBase::dispatch_event()
 
 void BC_WindowBase::dispatch_expose_event()
 {
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_expose_event();
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_expose_event();
 	}
-
-// Propagate to user
 	expose_event();
 }
 
@@ -901,17 +918,15 @@ void BC_WindowBase::dispatch_resize_event(int w, int h)
 		resize_events = 0;
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, w, h);
-
 		clear_box(0, 0, w, h);
 	}
 
-// Propagate to subwindows
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_resize_event(w, h);
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_resize_event(w, h);
 	}
 
-// Propagate to user
 	resize_event(w, h);
 
 	if(window_type == MAIN_WINDOW)
@@ -924,6 +939,7 @@ void BC_WindowBase::dispatch_resize_event(int w, int h)
 void BC_WindowBase::dispatch_translation_event()
 {
 	translation_events = 0;
+
 	if(window_type == MAIN_WINDOW)
 	{
 		prev_x = x;
@@ -935,9 +951,10 @@ void BC_WindowBase::dispatch_translation_event()
 		y -= y_correction;
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_translation_event();
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_translation_event();
 	}
 
 	translation_event();
@@ -946,6 +963,7 @@ void BC_WindowBase::dispatch_translation_event()
 int BC_WindowBase::dispatch_motion_event()
 {
 	int result = 0;
+
 	unhide_cursor();
 
 	if(top_level == this)
@@ -962,8 +980,8 @@ int BC_WindowBase::dispatch_motion_event()
 				result = dispatch_drag_motion();
 			}
 
-			if(!result && 
-				(last_motion_x < drag_x1 || last_motion_x >= drag_x2 || 
+			if(!result &&
+				(last_motion_x < drag_x1 || last_motion_x >= drag_x2 ||
 				last_motion_y < drag_y1 || last_motion_y >= drag_y2))
 			{
 				cursor_x = drag_x;
@@ -975,42 +993,53 @@ int BC_WindowBase::dispatch_motion_event()
 		cursor_x = last_motion_x;
 		cursor_y = last_motion_y;
 
-		if(active_menubar && !result) result = active_menubar->dispatch_motion_event();
-		if(active_popup_menu && !result) result = active_popup_menu->dispatch_motion_event();
-		if(active_subwindow && !result) result = active_subwindow->dispatch_motion_event();
+		if(active_menubar && !result)
+			result = active_menubar->dispatch_motion_event();
+		if(active_popup_menu && !result)
+			result = active_popup_menu->dispatch_motion_event();
+		if(active_subwindow && !result)
+			result = active_subwindow->dispatch_motion_event();
 	}
-
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(subwindows && !result)
 	{
-		result = subwindows->values[i]->dispatch_motion_event();
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_motion_event())
+				break;
 	}
 
-	if(!result) result = cursor_motion_event();    // give to user
+	if(!result)
+		result = cursor_motion_event();
 	return result;
 }
 
 int BC_WindowBase::dispatch_keypress_event()
 {
 	int result = 0;
+
 	if(top_level == this)
 	{
 		if(active_subwindow) 
 			result = active_subwindow->dispatch_keypress_event();
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
-		result = subwindows->values[i]->dispatch_keypress_event();
+	if(subwindows && !result)
+	{
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_keypress_event())
+				break;
+	}
 
-	if(!result) result = keypress_event();
-
+	if(!result)
+		result = keypress_event();
 	return result;
 }
 
 void BC_WindowBase::dispatch_focus_in()
 {
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_focus_in();
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_focus_in();
 	}
 
 	focus_in_event();
@@ -1018,9 +1047,10 @@ void BC_WindowBase::dispatch_focus_in()
 
 void BC_WindowBase::dispatch_focus_out()
 {
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_focus_out();
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_focus_out();
 	}
 
 	focus_out_event();
@@ -1093,27 +1123,35 @@ int BC_WindowBase::get_has_focus()
 
 int BC_WindowBase::get_deleting()
 {
-	if(is_deleting) return 1;
-	if(parent_window && parent_window->get_deleting()) return 1;
+	if(is_deleting)
+		return 1;
+	if(parent_window && parent_window->get_deleting())
+		return 1;
 	return 0;
 }
 
 int BC_WindowBase::dispatch_button_press()
 {
 	int result = 0;
+
 	if(top_level == this)
 	{
-		if(active_menubar) result = active_menubar->dispatch_button_press();
-		if(active_popup_menu && !result) result = active_popup_menu->dispatch_button_press();
-		if(active_subwindow && !result) result = active_subwindow->dispatch_button_press();
+		if(active_menubar)
+			result = active_menubar->dispatch_button_press();
+		if(active_popup_menu && !result)
+			result = active_popup_menu->dispatch_button_press();
+		if(active_subwindow && !result)
+			result = active_subwindow->dispatch_button_press();
 	}
-
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(!result && subwindows)
 	{
-		result = subwindows->values[i]->dispatch_button_press();
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_button_press())
+				break;
 	}
 
-	if(!result) result = button_press_event();
+	if(!result)
+		result = button_press_event();
 
 	return result;
 }
@@ -1121,24 +1159,28 @@ int BC_WindowBase::dispatch_button_press()
 int BC_WindowBase::dispatch_button_release()
 {
 	int result = 0;
+
 	if(top_level == this)
 	{
-		if(active_menubar) result = active_menubar->dispatch_button_release();
-		if(active_popup_menu && !result) result = active_popup_menu->dispatch_button_release();
-		if(active_subwindow && !result) result = active_subwindow->dispatch_button_release();
+		if(active_menubar)
+			result = active_menubar->dispatch_button_release();
+		if(active_popup_menu && !result)
+			result = active_popup_menu->dispatch_button_release();
+		if(active_subwindow && !result)
+			result = active_subwindow->dispatch_button_release();
 		if(!result && button_number != 4 && button_number != 5)
 			result = dispatch_drag_stop();
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(subwindows && !result)
 	{
-		result = subwindows->values[i]->dispatch_button_release();
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_button_release())
+				break;
 	}
 
 	if(!result)
-	{
 		result = button_release_event();
-	}
 
 	return result;
 }
@@ -1148,9 +1190,10 @@ void BC_WindowBase::dispatch_repeat_event(int duration)
 {
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_repeat_event(duration);
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_repeat_event(duration);
 	}
 
 	repeat_event(duration);
@@ -1161,9 +1204,7 @@ void BC_WindowBase::dispatch_repeat_event(int duration)
 		for(int i = 0; i < repeaters.total; i++)
 		{
 			if(repeaters.values[i]->delay == duration)
-			{
 				repeaters.values[i]->repeat_lock->unlock();
-			}
 		}
 	}
 }
@@ -1181,12 +1222,12 @@ void BC_WindowBase::unhide_cursor()
 	cursor_timer->update();
 }
 
-
 void BC_WindowBase::update_video_cursor()
 {
 	if(video_on && !is_transparent)
 	{
-		if(cursor_timer->get_difference() > VIDEO_CURSOR_TIMEOUT && !is_transparent)
+		if(cursor_timer->get_difference() > VIDEO_CURSOR_TIMEOUT &&
+				!is_transparent)
 		{
 			is_transparent = 1;
 			set_cursor(TRANSPARENT_CURSOR, 1);
@@ -1194,19 +1235,17 @@ void BC_WindowBase::update_video_cursor()
 		}
 	}
 	else
-	{
 		cursor_timer->update();
-	}
 }
-
 
 void BC_WindowBase::dispatch_cursor_leave()
 {
 	unhide_cursor();
 
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_cursor_leave();
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_cursor_leave();
 	}
 
 	cursor_leave_event();
@@ -1218,16 +1257,22 @@ int BC_WindowBase::dispatch_cursor_enter()
 
 	unhide_cursor();
 
-	if(active_menubar) result = active_menubar->dispatch_cursor_enter();
-	if(!result && active_popup_menu) result = active_popup_menu->dispatch_cursor_enter();
-	if(!result && active_subwindow) result = active_subwindow->dispatch_cursor_enter();
+	if(active_menubar)
+		result = active_menubar->dispatch_cursor_enter();
+	if(!result && active_popup_menu)
+		result = active_popup_menu->dispatch_cursor_enter();
+	if(!result && active_subwindow)
+		result = active_subwindow->dispatch_cursor_enter();
 
-	for(int i = 0; !result && subwindows && i < subwindows->total; i++)
+	if(!result && subwindows)
 	{
-		result = subwindows->values[i]->dispatch_cursor_enter();
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_cursor_enter())
+				break;
 	}
 
-	if(!result) result = cursor_enter_event();
+	if(!result)
+		result = cursor_enter_event();
 	return result;
 }
 
@@ -1240,22 +1285,28 @@ int BC_WindowBase::dispatch_drag_start()
 {
 	int result = 0;
 
-	if(active_menubar) result = active_menubar->dispatch_drag_start();
-	if(!result && active_popup_menu) result = active_popup_menu->dispatch_drag_start();
-	if(!result && active_subwindow) result = active_subwindow->dispatch_drag_start();
+	if(active_menubar)
+		result = active_menubar->dispatch_drag_start();
+	if(!result && active_popup_menu)
+		result = active_popup_menu->dispatch_drag_start();
+	if(!result && active_subwindow)
+		result = active_subwindow->dispatch_drag_start();
 
-	if(alt_mask && button_down && button_number == 3)
+	if(!result && alt_mask && button_down && button_number == 3)
 	{
 		is_window_drag = 1;
 		result = 1;
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(!result && subwindows)
 	{
-		result = subwindows->values[i]->dispatch_drag_start();
+		for(int i = 0; i < subwindows->total; i++)
+			if(result = subwindows->values[i]->dispatch_drag_start())
+				break;
 	}
 
-	if(!result) result = is_dragging = drag_start_event();
+	if(!result)
+		result = is_dragging = drag_start_event();
 	return result;
 }
 
@@ -1269,12 +1320,14 @@ int BC_WindowBase::dispatch_drag_stop()
 		result = 1;
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(!result && subwindows)
 	{
-		result = subwindows->values[i]->dispatch_drag_stop();
+		for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+			if(result = subwindows->values[i]->dispatch_drag_stop())
+				break;
 	}
 
-	if(is_dragging && !result) 
+	if(is_dragging && !result)
 	{
 		drag_stop_event();
 		is_dragging = 0;
@@ -1294,9 +1347,11 @@ int BC_WindowBase::dispatch_drag_motion()
 		result = 1;
 	}
 
-	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
+	if(!result && subwindows)
 	{
-		result = subwindows->values[i]->dispatch_drag_motion();
+		for(int i = 0; i < subwindows->total && !result; i++)
+			if(result = subwindows->values[i]->dispatch_drag_motion())
+				break;
 	}
 
 	if(is_dragging && !result)
@@ -1319,16 +1374,10 @@ void BC_WindowBase::show_tooltip(int w, int h)
 		top_level->hide_tooltip();
 		tooltip_on = 1;
 
-
 		lock_window("BC_WindowBase::show_tooltip");
-		XTranslateCoordinates(top_level->display, 
-				win, 
-				top_level->rootwin, 
-				get_w(), 
-				get_h(), 
-				&x, 
-				&y, 
-				&tempwin);
+		XTranslateCoordinates(top_level->display, win,
+			top_level->rootwin, get_w(), get_h(),
+			&x, &y, &tempwin);
 		unlock_window();
 
 		if(w < 0)
@@ -1355,12 +1404,8 @@ void BC_WindowBase::show_tooltip(int w, int h)
 		w += TOOLTIP_MARGIN * 2;
 		h += TOOLTIP_MARGIN * 2;
 
-		tooltip_popup = new BC_Popup(top_level, 
-					x,
-					y,
-					w, 
-					h, 
-					resources.tooltip_bg_color);
+		tooltip_popup = new BC_Popup(top_level, x, y, w, h,
+			resources.tooltip_bg_color);
 
 		draw_tooltip();
 		tooltip_popup->set_font(MEDIUMFONT);
@@ -1370,8 +1415,11 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 void BC_WindowBase::hide_tooltip()
 {
-	for(int i = 0; subwindows && i < subwindows->total; i++)
-		subwindows->values[i]->hide_tooltip();
+	if(subwindows)
+	{
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->hide_tooltip();
+	}
 
 	if(tooltip_on)
 	{
@@ -1421,8 +1469,9 @@ void BC_WindowBase::set_repeat(int duration)
 {
 	if(duration <= 0)
 		return;
+
 	if(window_type != MAIN_WINDOW)
-	{ 
+	{
 		top_level->set_repeat(duration);
 		return;
 	}
@@ -1460,13 +1509,10 @@ void BC_WindowBase::unset_repeat(int duration)
 	}
 }
 
-
 void BC_WindowBase::unset_all_repeaters()
 {
 	for(int i = 0; i < repeaters.total; i++)
-	{
 		repeaters.values[i]->stop_repeating();
-	}
 	repeaters.remove_all_objects();
 }
 
@@ -1481,11 +1527,7 @@ void BC_WindowBase::arm_repeat(int duration)
 	event.xclient.format = 32;
 	event.xclient.data.l[0] = duration;
 
-	XSendEvent(top_level->display, 
-		top_level->win, 
-		0, 
-		0, 
-		&event);
+	XSendEvent(top_level->display, top_level->win, 0, 0, &event);
 	flush();
 }
 
@@ -1495,14 +1537,9 @@ void BC_WindowBase::send_custom_xatom(XClientMessageEvent *event)
 	event->display = top_level->display;
 	event->window = top_level->win;
 
-	XSendEvent(top_level->display, 
-		top_level->win, 
-		0, 
-		0, 
-		(XEvent *)event);
+	XSendEvent(top_level->display, top_level->win, 0, 0, (XEvent*)event);
 	flush();
 }
-
 
 Atom BC_WindowBase::create_xatom(const char *atom_name)
 {
@@ -1514,10 +1551,11 @@ void BC_WindowBase::get_atoms()
 	SetDoneXAtom =  create_xatom("BC_REPEAT_EVENT");
 	RepeaterXAtom = create_xatom("BC_CLOSE_EVENT");
 	DelWinXAtom =   create_xatom("WM_DELETE_WINDOW");
-	if(ProtoXAtom = create_xatom("WM_PROTOCOLS"))
-		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&DelWinXAtom, True);
-}
 
+	if(ProtoXAtom = create_xatom("WM_PROTOCOLS"))
+		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32,
+			PropModeReplace, (unsigned char*)&DelWinXAtom, True);
+}
 
 void BC_WindowBase::init_cursors()
 {
@@ -1538,24 +1576,17 @@ void BC_WindowBase::init_cursors()
 
 	char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 	Colormap colormap = DefaultColormap(display, screen);
-	Pixmap pixmap_bottom = XCreateBitmapFromData(display, 
-		rootwin,
-		cursor_data, 
-		8,
-		8);
+	Pixmap pixmap_bottom = XCreateBitmapFromData(display, rootwin,
+		cursor_data, 8, 8);
 	XColor black, dummy;
 	XAllocNamedColor(display, colormap, "black", &black, &dummy);
-	transparent_cursor = XCreatePixmapCursor(display,
-		pixmap_bottom,
-		pixmap_bottom,
-		&black,
-		&black,
-		0,
-		0);
+	transparent_cursor = XCreatePixmapCursor(display, pixmap_bottom,
+		pixmap_bottom, &black, &black, 0, 0);
 	XFreePixmap(display, pixmap_bottom);
 }
 
-int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
+int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order,
+	int depth)
 {
 	int color_model;
 
@@ -1565,7 +1596,8 @@ int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_o
 		color_model = BC_RGB8;
 		break;
 	case 16:
-		color_model = (server_byte_order == client_byte_order) ? BC_RGB565 : BC_BGR565;
+		color_model = (server_byte_order == client_byte_order) ?
+			BC_RGB565 : BC_BGR565;
 		break;
 	case 24:
 		color_model = server_byte_order ? BC_BGR888 : BC_RGB888;
@@ -1585,23 +1617,16 @@ void BC_WindowBase::init_colors()
 // Get the real depth
 	char *data = 0;
 	XImage *ximage;
-	ximage = XCreateImage(top_level->display, 
-					top_level->vis, 
-					top_level->default_depth, 
-					ZPixmap, 
-					0, 
-					data, 
-					16, 
-					16, 
-					8, 
-					0);
+	ximage = XCreateImage(top_level->display, top_level->vis,
+		top_level->default_depth, ZPixmap, 0, data,
+		16, 16, 8, 0);
 	bits_per_pixel = ximage->bits_per_pixel;
 	XDestroyImage(ximage);
 
 	color_model = evaluate_color_model(client_byte_order, 
 		server_byte_order, 
 		bits_per_pixel);
-// Get the color model
+
 	switch(color_model)
 	{
 	case BC_RGB8:
@@ -1641,14 +1666,10 @@ void BC_WindowBase::create_private_colors()
 	create_shared_colors();        // overwrite the necessary colors on the table
 }
 
-
 void BC_WindowBase::create_color(int color)
 {
 	if(total_colors == 256)
-	{
-// replace the closest match with an exact match
 		color_table[get_color_rgb8(color)][0] = color;
-	}
 	else
 	{
 // add the color to the table
@@ -1714,9 +1735,9 @@ void BC_WindowBase::allocate_color_table()
 		blue = color & 0xFF;
 
 		col.flags = DoRed | DoGreen | DoBlue;
-		col.red   = red<<8   | red;
-		col.green = green<<8 | green;
-		col.blue  = blue<<8  | blue;
+		col.red   = red << 8   | red;
+		col.green = green << 8 | green;
+		col.blue  = blue << 8  | blue;
 
 		XAllocColor(display, cmap, &col);
 		color_table[i][1] = col.pixel;
@@ -1729,12 +1750,8 @@ void BC_WindowBase::init_window_shape()
 {
 	if(bg_pixmap && bg_pixmap->get_alpha())
 	{
-		XShapeCombineMask(top_level->display,
-			this->win,
-			ShapeBounding,
-			0,
-			0,
-			bg_pixmap->get_alpha(),
+		XShapeCombineMask(top_level->display,this->win,
+			ShapeBounding, 0, 0, bg_pixmap->get_alpha(),
 			ShapeSet);
 	}
 }
@@ -1851,9 +1868,7 @@ int BC_WindowBase::get_color(int color)
 	{
 	case BC_RGB8:
 		if(private_color)
-		{
 			return get_color_rgb8(color);
-		}
 		else
 		{
 // test last color looked up
@@ -1978,9 +1993,7 @@ void BC_WindowBase::set_current_color(int color)
 		color = current_color;
 	else
 		current_color = color;
-	XSetForeground(top_level->display, 
-		top_level->gc, 
-		get_color(color));
+	XSetForeground(top_level->display, top_level->gc, get_color(color));
 }
 
 void BC_WindowBase::set_opaque()
@@ -1988,7 +2001,7 @@ void BC_WindowBase::set_opaque()
 	XSetFunction(top_level->display, top_level->gc, GXcopy);
 }
 
-void BC_WindowBase::set_inverse() 
+void BC_WindowBase::set_inverse()
 {
 	XSetFunction(top_level->display, top_level->gc, GXxor);
 }
@@ -2034,14 +2047,14 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 void BC_WindowBase::set_cursor(int cursor, int override)
 {
 // don't change cursor if overridden
-	if((!top_level->is_hourglass && !is_transparent) || 
-		override)
+	if((!top_level->is_hourglass && !is_transparent) || override)
 	{
 		XDefineCursor(top_level->display, win, get_cursor_struct(cursor));
 		flush();
 	}
 
-	if(!override) current_cursor = cursor;
+	if(!override)
+		current_cursor = cursor;
 }
 
 void BC_WindowBase::set_x_cursor(int cursor)
@@ -2080,9 +2093,10 @@ void BC_WindowBase::start_hourglass_recursive()
 	if(!is_transparent)
 	{
 		set_cursor(HOURGLASS_CURSOR, 1);
-		for(int i = 0; subwindows && i < subwindows->total; i++)
+		if(subwindows)
 		{
-			subwindows->values[i]->start_hourglass_recursive();
+			for(int i = 0; i < subwindows->total; i++)
+				subwindows->values[i]->start_hourglass_recursive();
 		}
 	}
 }
@@ -2091,7 +2105,8 @@ void BC_WindowBase::stop_hourglass_recursive()
 {
 	if(this == top_level)
 	{
-		if(hourglass_total == 0) return;
+		if(hourglass_total == 0)
+			return;
 		top_level->hourglass_total--;
 	}
 
@@ -2103,9 +2118,10 @@ void BC_WindowBase::stop_hourglass_recursive()
 		if(!is_transparent)
 			set_cursor(current_cursor, 1);
 
-		for(int i = 0; subwindows && i < subwindows->total; i++)
+		if(subwindows)
 		{
-			subwindows->values[i]->stop_hourglass_recursive();
+			for(int i = 0;  i < subwindows->total; i++)
+				subwindows->values[i]->stop_hourglass_recursive();
 		}
 	}
 }
@@ -2141,26 +2157,16 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_xft_struct(font))
 	{
 		XGlyphInfo extents;
+
 		if(resources.locale_utf8)
-		{
-			XftTextExtentsUtf8(top_level->display,
-				get_xft_struct(font),
-				(const FcChar8*)text,
-				length,
-				&extents);
-		}
+			XftTextExtentsUtf8(top_level->display, get_xft_struct(font),
+				(const FcChar8*)text, length, &extents);
 		else
-		{
-			XftTextExtents8(top_level->display,
-				get_xft_struct(font),
-				(const FcChar8*)text,
-				length,
-				&extents);
-		}
+			XftTextExtents8(top_level->display, get_xft_struct(font),
+				(const FcChar8*)text, length, &extents);
 		return extents.xOff;
 	}
-	else
-	if(font == MEDIUM_7SEGMENT)
+	else if(font == MEDIUM_7SEGMENT)
 		return resources.medium_7segment[0]->get_w() * length;
 	return 0;
 }
@@ -2169,18 +2175,17 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 {
 	XGlyphInfo extents;
 
-	XftTextExtents32(top_level->display,
-		get_xft_struct(font),
-		(const FcChar32*)text,
-		length,
-		&extents);
+	XftTextExtents32(top_level->display, get_xft_struct(font),
+		(const FcChar32*)text, length, &extents);
 	return extents.xOff;
 }
 
 int BC_WindowBase::get_text_width(int font, const char *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
-	if(length < 0) length = strlen(text);
+
+	if(length < 0)
+		length = strlen(text);
 
 	for(i = 0, j = 0; i <= length; i++)
 	{
@@ -2190,12 +2195,11 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 			line_w = get_single_text_width(font, &text[j], i - j);
 			j = i + 1;
 		}
-		else
-		if(text[i] == 0)
-		{
+		else if(text[i] == 0)
 			line_w = get_single_text_width(font, &text[j], length - j);
-		}
-		if(line_w > w) w = line_w;
+
+		if(line_w > w)
+			w = line_w;
 	}
 
 	if(i > length && w == 0)
@@ -2208,7 +2212,9 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
-	if(length < 0) length = wcslen(text);
+
+	if(length < 0)
+		length = wcslen(text);
 
 	for(i = 0, j = 0; i <= length; i++)
 	{
@@ -2218,18 +2224,15 @@ int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
 			line_w = get_single_text_width(font, &text[j], i - j);
 			j = i + 1;
 		}
-		else
-		if(text[i] == 0)
-		{
+		else if(text[i] == 0)
 			line_w = get_single_text_width(font, &text[j], length - j);
-		}
-		if(line_w > w) w = line_w;
+
+		if(line_w > w)
+			w = line_w;
 	}
 
 	if(i > length && w == 0)
-	{
 		w = get_single_text_width(font, text, length);
-	}
 	return w;
 }
 
@@ -2283,7 +2286,8 @@ int BC_WindowBase::get_text_height(int font, const wchar_t *text)
 
 BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
 {
-	if(color_model < 0) color_model = top_level->get_color_model();
+	if(color_model < 0)
+		color_model = top_level->get_color_model();
 	return new BC_Bitmap(top_level, w, h, color_model);
 }
 
@@ -2295,10 +2299,12 @@ int BC_WindowBase::accel_available(int color_model, int w, int h)
 	if(window_type != MAIN_WINDOW) 
 		return top_level->accel_available(color_model, w, h);
 
-	if(!resources.use_xvideo) return 0;
+	if(!resources.use_xvideo)
+		return 0;
 
 // Only local server is fast enough.
-	if(!resources.use_shm) return 0;
+	if(!resources.use_shm)
+		return 0;
 
 	for(i = 0; i < BC_DisplayInfo::num_adapters; i++)
 	{
@@ -2341,10 +2347,12 @@ int BC_WindowBase::accel_cmodels(int *cmodels, int len)
 	if(window_type != MAIN_WINDOW) 
 		return top_level->accel_cmodels(cmodels, len);
 
-	if(!resources.use_xvideo) return 0;
+	if(!resources.use_xvideo)
+		return 0;
 
 // Only local server is fast enough.
-	if(!resources.use_shm) return 0;
+	if(!resources.use_shm)
+		return 0;
 
 	num = 0;
 	for(i = 0; i < BC_DisplayInfo::num_adapters; i++)
@@ -2430,7 +2438,8 @@ BC_WindowBase* BC_WindowBase::add_subwindow(BC_WindowBase *subwindow)
 	if(subwindows)
 		subwindows->append(subwindow);
 
-	if(subwindow->bg_color == -1) subwindow->bg_color = this->bg_color;
+	if(subwindow->bg_color == -1)
+		subwindow->bg_color = this->bg_color;
 
 // parent window must be set before the subwindow initialization
 	subwindow->parent_window = this;
@@ -2440,7 +2449,6 @@ BC_WindowBase* BC_WindowBase::add_subwindow(BC_WindowBase *subwindow)
 	subwindow->initialize();
 	return subwindow;
 }
-
 
 BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 {
@@ -2452,13 +2460,9 @@ void BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);
 	if(x >= 0)
-	{
 		XClearArea(top_level->display, win, x, y, w, h, 0);
-	}
 	else
-	{
 		XClearWindow(top_level->display, win);
-	}
 
 	if(flush)
 		this->flush();
@@ -2489,11 +2493,8 @@ int BC_WindowBase::get_window_lock()
 void BC_WindowBase::lock_window(const char *location) 
 {
 	if(top_level && top_level != this)
-	{
 		top_level->lock_window(location);
-	}
-	else
-	if(top_level)
+	else if(top_level)
 	{
 		SET_XLOCK(this, title, location);
 		XLockDisplay(display);
@@ -2501,19 +2502,14 @@ void BC_WindowBase::lock_window(const char *location)
 		top_level->window_lock++;
 	}
 	else
-	{
 		printf("BC_WindowBase::lock_window top_level NULL\n");
-	}
 }
 
 void BC_WindowBase::unlock_window()
 {
 	if(top_level && top_level != this)
-	{
 		top_level->unlock_window();
-	}
-	else
-	if(top_level)
+	else if(top_level)
 	{
 		UNSET_LOCK(this);
 		if(--top_level->window_lock < 0)
@@ -2521,9 +2517,7 @@ void BC_WindowBase::unlock_window()
 		XUnlockDisplay(display);
 	}
 	else
-	{
 		printf("BC_WindowBase::unlock_window top_level NULL\n");
-	}
 }
 
 void BC_WindowBase::lock_events(const char *location)
@@ -2567,11 +2561,7 @@ void BC_WindowBase::set_done(int return_value)
 		event.xclient.format = 32;
 		event.xclient.data.l[0] = return_value;
 
-		XSendEvent(display,
-			win,
-			0,
-			0,
-			&event);
+		XSendEvent(display, win, 0, 0, &event);
 		flush();
 	}
 }
@@ -2637,10 +2627,8 @@ int BC_WindowBase::get_hidden()
 
 int BC_WindowBase::cursor_inside()
 {
-	return (top_level->cursor_x >= 0 && 
-			top_level->cursor_y >= 0 && 
-			top_level->cursor_x < w && 
-			top_level->cursor_y < h);
+	return (top_level->cursor_x >= 0 && top_level->cursor_y >= 0 &&
+		top_level->cursor_x < w && top_level->cursor_y < h);
 }
 
 BC_WindowBase* BC_WindowBase::get_top_level()
@@ -2687,9 +2675,12 @@ void BC_WindowBase::deactivate()
 {
 	if(window_type == MAIN_WINDOW)
 	{
-		if(top_level->active_menubar) top_level->active_menubar->deactivate();
-		if(top_level->active_popup_menu) top_level->active_popup_menu->deactivate();
-		if(top_level->active_subwindow) top_level->active_subwindow->deactivate();
+		if(top_level->active_menubar)
+			top_level->active_menubar->deactivate();
+		if(top_level->active_popup_menu)
+			top_level->active_popup_menu->deactivate();
+		if(top_level->active_subwindow)
+			top_level->active_subwindow->deactivate();
 
 		top_level->active_menubar = 0;
 		top_level->active_popup_menu = 0;
@@ -2706,14 +2697,15 @@ void BC_WindowBase::cycle_textboxes(int amount)
 	{
 		BC_WindowBase *first_textbox = 0;
 		find_next_textbox(&first_textbox, &new_textbox, result);
-		if(!new_textbox) new_textbox = first_textbox;
+		if(!new_textbox)
+			new_textbox = first_textbox;
 	}
-	else
-	if(amount < 0)
+	else if(amount < 0)
 	{
 		BC_WindowBase *last_textbox = 0;
 		find_prev_textbox(&last_textbox, &new_textbox, result);
-		if(!new_textbox) new_textbox = last_textbox;
+		if(!new_textbox)
+			new_textbox = last_textbox;
 	}
 
 	if(new_textbox != active_subwindow)
@@ -2723,20 +2715,26 @@ void BC_WindowBase::cycle_textboxes(int amount)
 	}
 }
 
-void BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result)
+void BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox,
+	BC_WindowBase **next_textbox, int &result)
 {
 // Search subwindows for textbox
-	for(int i = 0; subwindows && i < subwindows->total && result < 2; i++)
+	if(subwindows && result < 2)
 	{
-		BC_WindowBase *test_subwindow = subwindows->values[i];
-		test_subwindow->find_next_textbox(first_textbox, next_textbox, result);
+		for(int i = 0; i < subwindows->total && result < 2; i++)
+		{
+			BC_WindowBase *test_subwindow = subwindows->values[i];
+			test_subwindow->find_next_textbox(first_textbox,
+				next_textbox, result);
+		}
 	}
 
 	if(result < 2)
 	{
 		if(uses_text())
 		{
-			if(!*first_textbox) *first_textbox = this;
+			if(!*first_textbox)
+				*first_textbox = this;
 
 			if(result < 1)
 			{
@@ -2752,13 +2750,15 @@ void BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBa
 	}
 }
 
-void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result)
+void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox,
+	BC_WindowBase **prev_textbox, int &result)
 {
 	if(result < 2)
 	{
 		if(uses_text())
 		{
-			if(!*last_textbox) *last_textbox = this;
+			if(!*last_textbox)
+				*last_textbox = this;
 
 			if(result < 1)
 			{
@@ -2776,10 +2776,12 @@ void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBas
 // Search subwindows for textbox
 	if(subwindows)
 	{
-		for(int i = subwindows->total - 1; subwindows && i >= 0 && result < 2; i--)
+		for(int i = subwindows->total - 1; i >= 0 && result < 2; i--)
 		{
 			BC_WindowBase *test_subwindow = subwindows->values[i];
-			test_subwindow->find_prev_textbox(last_textbox, prev_textbox, result);
+
+			test_subwindow->find_prev_textbox(last_textbox,
+				prev_textbox, result);
 		}
 	}
 }
@@ -2795,15 +2797,8 @@ void BC_WindowBase::get_relative_cursor_pos(int *rel_x, int *rel_y)
 	unsigned int temp_mask;
 	Window temp_win;
 
-	XQueryPointer(top_level->display,
-			win,
-			&temp_win,
-			&temp_win,
-			&abs_x,
-			&abs_y,
-			rel_x,
-			rel_y,
-			&temp_mask);
+	XQueryPointer(top_level->display, win, &temp_win, &temp_win,
+		&abs_x, &abs_y, rel_x, rel_y, &temp_mask);
 }
 
 int BC_WindowBase::cursor_inside_window(int *rel_x, int *rel_y)
@@ -2836,10 +2831,11 @@ int BC_WindowBase::match_window(Window win)
 	if(this->win == win)
 		return 1;
 
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		if(subwindows->values[i]->match_window(win))
-			return 1;
+		for(int i = 0; i < subwindows->total; i++)
+			if(subwindows->values[i]->match_window(win))
+				return 1;
 	}
 	return 0;
 }
@@ -2850,15 +2846,9 @@ int BC_WindowBase::get_cursor_over_window(int *rel_x, int *rel_y)
 	unsigned int temp_mask;
 	Window temp_win1, temp_win2;
 
-	if(!XQueryPointer(top_level->display,
-			win,
-			&temp_win1,
-			&temp_win2,
-			&abs_x,
-			&abs_y,
-			rel_x,
-			rel_y,
-			&temp_mask))
+	if(!XQueryPointer(top_level->display, win,
+			&temp_win1, &temp_win2, &abs_x, &abs_y,
+			rel_x, rel_y, &temp_mask))
 		return 0;
 
 	return !temp_win2 || match_window(temp_win2);
@@ -2968,9 +2958,10 @@ void BC_WindowBase::resize_window(int w, int h)
 	pixmap = new BC_Pixmap(this, w, h);
 
 // Propagate to menubar
-	for(int i = 0; subwindows && i < subwindows->total; i++)
+	if(subwindows)
 	{
-		subwindows->values[i]->dispatch_resize_event(w, h);
+		for(int i = 0; i < subwindows->total; i++)
+			subwindows->values[i]->dispatch_resize_event(w, h);
 	}
 
 	draw_background(0, 0, w, h);
@@ -3010,25 +3001,13 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 	}
 
 	if(translation_count && window_type == MAIN_WINDOW)
-	{
-// KDE shifts window right and down.
-// FVWM leaves window alone and adds border around it.
-		XMoveResizeWindow(top_level->display, 
-			win, 
-			x + BC_DisplayInfo::left_border - BC_DisplayInfo::auto_reposition_x, 
-			y + BC_DisplayInfo::top_border - BC_DisplayInfo::auto_reposition_y, 
-			this->w,
-			this->h);
-	}
+		XMoveResizeWindow(top_level->display, win,
+			x + BC_DisplayInfo::left_border - BC_DisplayInfo::auto_reposition_x,
+			y + BC_DisplayInfo::top_border - BC_DisplayInfo::auto_reposition_y,
+			this->w, this->h);
 	else
-	{
-		XMoveResizeWindow(top_level->display, 
-			win, 
-			x, 
-			y, 
-			this->w, 
-			this->h);
-	}
+		XMoveResizeWindow(top_level->display, win, x, y,
+			this->w, this->h);
 
 	if(resize)
 	{
@@ -3036,9 +3015,11 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 		pixmap = new BC_Pixmap(this, this->w, this->h);
 		draw_background(0, 0, this->w, this->h);
 // Propagate to menubar
-		for(int i = 0; subwindows && i < subwindows->total; i++)
+		if(subwindows)
 		{
-			subwindows->values[i]->dispatch_resize_event(this->w, this->h);
+			for(int i = 0; i < subwindows->total; i++)
+				subwindows->values[i]->dispatch_resize_event(
+					this->w, this->h);
 		}
 	}
 }
@@ -3051,16 +3032,16 @@ void BC_WindowBase::set_tooltips(int tooltips_enabled)
 void BC_WindowBase::raise_window(int do_flush)
 {
 	XRaiseWindow(top_level->display, win);
-	if(do_flush) XFlush(top_level->display);
+	if(do_flush)
+		XFlush(top_level->display);
 }
 
 void BC_WindowBase::set_background(VFrame *bitmap)
 {
-	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
+	if(bg_pixmap && !shared_bg_pixmap)
+		delete bg_pixmap;
 
-	bg_pixmap = new BC_Pixmap(this, 
-			bitmap, 
-			PIXMAP_OPAQUE);
+	bg_pixmap = new BC_Pixmap(this, bitmap, PIXMAP_OPAQUE);
 	shared_bg_pixmap = 0;
 	draw_background(0, 0, w, h);
 }
@@ -3125,24 +3106,18 @@ void BC_WindowBase::set_icon(VFrame *data)
 {
 	top_level->lock_window("BC_WindowBase::set_icon");
 	icon_vframe = data;
-	if(icon_pixmap) delete icon_pixmap;
-	if(icon_window) delete icon_window;
-	icon_pixmap = new BC_Pixmap(top_level, 
-		data, 
-		PIXMAP_ALPHA,
-		1);
+	if(icon_pixmap)
+		delete icon_pixmap;
+	if(icon_window)
+		delete icon_window;
+	icon_pixmap = new BC_Pixmap(top_level, data, PIXMAP_ALPHA, 1);
 
-	icon_window = new BC_Popup(this, 
-		(int)BC_INFINITY, 
-		(int)BC_INFINITY, 
-		icon_pixmap->get_w(), 
-		icon_pixmap->get_h(), 
-		-1, 
-		1, // All windows are hidden initially
-		icon_pixmap);
+	icon_window = new BC_Popup(this, BC_INFINITY, BC_INFINITY,
+		icon_pixmap->get_w(), icon_pixmap->get_h(), -1, 1, icon_pixmap);
 
 	XWMHints wm_hints;
-	wm_hints.flags = WindowGroupHint | IconPixmapHint | IconMaskHint | IconWindowHint;
+	wm_hints.flags = WindowGroupHint | IconPixmapHint | IconMaskHint |
+		IconWindowHint;
 	wm_hints.icon_pixmap = icon_pixmap->get_pixmap();
 	wm_hints.icon_mask = icon_pixmap->get_alpha();
 	wm_hints.icon_window = icon_window->win;
@@ -3153,26 +3128,20 @@ void BC_WindowBase::set_icon(VFrame *data)
 	top_level->unlock_window();
 }
 
-int BC_WindowBase::set_w(int w)
+void BC_WindowBase::set_w(int w)
 {
 	this->w = w;
-	return 0;
 }
 
-int BC_WindowBase::set_h(int h)
+void BC_WindowBase::set_h(int h)
 {
 	this->h = h;
-	return 0;
 }
 
 // For some reason XTranslateCoordinates can take a long time to return.
 // We work around this by only calling it when the event windows are different.
-void BC_WindowBase::translate_coordinates(Window src_w, 
-		Window dest_w,
-		int src_x,
-		int src_y,
-		int *dest_x_return,
-		int *dest_y_return)
+void BC_WindowBase::translate_coordinates(Window src_w, Window dest_w,
+	int src_x, int src_y, int *dest_x_return, int *dest_y_return)
 {
 	Window tempwin = 0;
 
@@ -3184,13 +3153,8 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 	else
 	{
 		lock_window("BC_WindowBase::translate_coordinates");
-		XTranslateCoordinates(top_level->display, 
-			src_w, 
-			dest_w, 
-			src_x, 
-			src_y, 
-			dest_x_return, 
-			dest_y_return,
+		XTranslateCoordinates(top_level->display, src_w, dest_w,
+			src_x, src_y, dest_x_return, dest_y_return,
 			&tempwin);
 		unlock_window();
 	}
@@ -3200,15 +3164,18 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 void BC_WindowBase::closest_vm(int *vm, int *width, int *height)
 {
 	int foo, bar;
+
 	*vm = 0;
 	if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
 	{
 		int vm_count, i;
 		XF86VidModeModeInfo **vm_modelines;
-		XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
-		for (i = 0; i < vm_count; i++)
+		XF86VidModeGetAllModeLines(top_level->display,
+			XDefaultScreen(top_level->display), &vm_count, &vm_modelines);
+		for(i = 0; i < vm_count; i++)
 		{
-			if (vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay && vm_modelines[i]->hdisplay >= *width)
+			if(vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay &&
+					vm_modelines[i]->hdisplay >= *width)
 				*vm = i;
 		}
 		display = top_level->display;
@@ -3224,14 +3191,17 @@ void BC_WindowBase::closest_vm(int *vm, int *width, int *height)
 
 void BC_WindowBase::scale_vm(int vm)
 {
-	int foo,bar,dotclock;
-	if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
+	int foo, bar, dotclock;
+
+	if(XF86VidModeQueryExtension(top_level->display, &foo, &bar))
 	{
 		int vm_count;
 		XF86VidModeModeInfo **vm_modelines;
 		XF86VidModeModeLine vml;
-		XF86VidModeGetAllModeLines(top_level->display, XDefaultScreen(top_level->display), &vm_count, &vm_modelines);
-		XF86VidModeGetModeLine(top_level->display, XDefaultScreen(top_level->display), &dotclock, &vml);
+		XF86VidModeGetAllModeLines(top_level->display,
+			XDefaultScreen(top_level->display), &vm_count, &vm_modelines);
+		XF86VidModeGetModeLine(top_level->display,
+			XDefaultScreen(top_level->display), &dotclock, &vml);
 		orig_modeline.dotclock = dotclock;
 		orig_modeline.hdisplay = vml.hdisplay;
 		orig_modeline.hsyncstart = vml.hsyncstart;
@@ -3243,19 +3213,20 @@ void BC_WindowBase::scale_vm(int vm)
 		orig_modeline.vtotal = vml.vtotal;
 		orig_modeline.flags = vml.flags;
 		orig_modeline.privsize = vml.privsize;
-		XF86VidModeSwitchToMode(top_level->display, XDefaultScreen(top_level->display), vm_modelines[vm]);
-		XF86VidModeSetViewPort(top_level->display, XDefaultScreen(top_level->display), 0, 0);
+		XF86VidModeSwitchToMode(top_level->display,
+			XDefaultScreen(top_level->display), vm_modelines[vm]);
+		XF86VidModeSetViewPort(top_level->display,
+			XDefaultScreen(top_level->display), 0, 0);
 		XFlush(top_level->display);
 	}
 }
 
 void BC_WindowBase::restore_vm()
 {
-	XF86VidModeSwitchToMode(top_level->display, XDefaultScreen(top_level->display), &orig_modeline);
+	XF86VidModeSwitchToMode(top_level->display,
+		XDefaultScreen(top_level->display), &orig_modeline);
 	XFlush(top_level->display);
 }
-
-
 #endif
 
 

@@ -61,7 +61,6 @@
 #include "mutex.inc"
 #include "vframe.inc"
 
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -198,7 +197,6 @@ public:
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
 
-
 	static BC_Resources* get_resources();
 // User must create glthread object first
 	static GLThread* get_glthread();
@@ -252,8 +250,8 @@ public:
 	int get_text_width(int font, const wchar_t *text, int length = -1);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
-	int set_w(int w);
-	int set_h(int h);
+	void set_w(int w);
+	void set_h(int h);
 	BC_WindowBase* get_top_level();
 	BC_WindowBase* get_parent();
 // Event happened in this window
@@ -301,9 +299,12 @@ public:
 	void draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
-	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
-	void draw_text(int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
-	void draw_utf8_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
+	void draw_text(int x, int y, const char *text, int length = -1,
+		BC_Pixmap *pixmap = 0);
+	void draw_text(int x, int y, const wchar_t *text, int length = -1,
+		BC_Pixmap *pixmap = 0);
+	void draw_utf8_text(int x, int y, const char *text, int length = -1,
+		BC_Pixmap *pixmap = 0);
 	void draw_wide_text(int x, int y,
 		int length, BC_Pixmap *pixmap);
 	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
@@ -315,77 +316,29 @@ public:
 	void draw_rectangle(int x, int y, int w, int h);
 
 // For drawing a changing level
-	void draw_3segmenth(int x, 
-		int y, 
-		int w, 
-		int total_x,
-		int total_w,
-		VFrame *image,
-		BC_Pixmap *pixmap);
-	void draw_3segmenth(int x, 
-		int y, 
-		int w, 
-		int total_x,
-		int total_w,
-		BC_Pixmap *src,
-		BC_Pixmap *dst = 0);
-	void draw_3segmentv(int x, 
-		int y, 
-		int h, 
-		int total_y,
-		int total_h,
-		BC_Pixmap *src,
-		BC_Pixmap *dst = 0);
-	void draw_3segmentv(int x, 
-		int y, 
-		int h, 
-		int total_y,
-		int total_h,
-		VFrame *src,
-		BC_Pixmap *dst = 0);
+	void draw_3segmenth(int x, int y, int w, int total_x, int total_w,
+		VFrame *image, BC_Pixmap *pixmap);
+	void draw_3segmenth(int x, int y, int w, int total_x, int total_w,
+		BC_Pixmap *src, BC_Pixmap *dst = 0);
+	void draw_3segmentv(int x, int y, int h, int total_y, int total_h,
+		BC_Pixmap *src, BC_Pixmap *dst = 0);
+	void draw_3segmentv(int x, int y, int h, int total_y, int total_h,
+		VFrame *src, BC_Pixmap *dst = 0);
 // For drawing a single level
-	void draw_3segmenth(int x, 
-		int y, 
-		int w, 
-		VFrame *image,
+	void draw_3segmenth(int x, int y, int w, VFrame *image,
 		BC_Pixmap *pixmap = 0);
-	void draw_3segmenth(int x, 
-		int y, 
-		int w,
-		BC_Pixmap *src,
+	void draw_3segmenth(int x, int y, int w, BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(int x, 
-		int y, 
-		int h,
-		BC_Pixmap *src,
+	void draw_3segmentv(int x, int y, int h, BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(int x, 
-		int y, 
-		int h,
-		VFrame *src,
+	void draw_3segmentv(int x, int y, int h, VFrame *src,
 		BC_Pixmap *dst = 0);
-	void draw_9segment(int x, 
-		int y, 
-		int w,
-		int h,
-		VFrame *src,
-		BC_Pixmap *dst = 0);
-	void draw_9segment(int x, 
-		int y, 
-		int w,
-		int h,
-		BC_Pixmap *src,
-		BC_Pixmap *dst = 0);
-	void draw_3d_box(int x, 
-		int y, 
-		int w, 
-		int h, 
-		int light1, 
-		int light2, 
-		int middle, 
-		int shadow1, 
-		int shadow2, 
-		BC_Pixmap *pixmap = 0);
+	void draw_9segment(int x, int y, int w, int h,
+		VFrame *src, BC_Pixmap *dst = 0);
+	void draw_9segment(int x, int y, int w, int h,
+		BC_Pixmap *src, BC_Pixmap *dst = 0);
+	void draw_3d_box(int x, int y, int w, int h,  int light1, int light2,
+		int middle, int shadow1, int shadow2, BC_Pixmap *pixmap = 0);
 	void draw_3d_border(int x, int y, int w, int h, 
 		int light1, int light2, int shadow1, int shadow2);
 	void draw_colored_box(int x, int y, int w, int h, int down, int highlighted);
@@ -414,49 +367,27 @@ public:
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
 // Draw a bitmap on the window
-	void draw_bitmap(BC_Bitmap *bitmap, 
-		int dest_x = 0, 
-		int dest_y = 0, 
-		int dest_w = 0, 
-		int dest_h = 0,
-		int src_x = 0,
-		int src_y = 0,
-		int src_w = 0,
-		int src_h = 0,
+	void draw_bitmap(BC_Bitmap *bitmap,
+		int dest_x = 0, int dest_y = 0, int dest_w = 0, int dest_h = 0,
+		int src_x = 0, int src_y = 0, int src_w = 0, int src_h = 0,
 		BC_Pixmap *pixmap = 0);
 	void draw_pixel(int x, int y, BC_Pixmap *pixmap = 0);
 // Draw a pixmap on the window
-	void draw_pixmap(BC_Pixmap *pixmap, 
-		int dest_x = 0, 
-		int dest_y = 0, 
-		int dest_w = -1, 
-		int dest_h = -1,
-		int src_x = 0,
-		int src_y = 0,
-		BC_Pixmap *dst = 0);
+	void draw_pixmap(BC_Pixmap *pixmap,
+		int dest_x = 0, int dest_y = 0, int dest_w = -1, int dest_h = -1,
+		int src_x = 0, int src_y = 0, BC_Pixmap *dst = 0);
 // Draw a vframe on the window
 	void draw_vframe(VFrame *frame, 
-		int dest_x = 0, 
-		int dest_y = 0, 
-		int dest_w = -1, 
-		int dest_h = -1, 
-		int src_x = 0, 
-		int src_y = 0, 
-		int src_w = 0, 
-		int src_h = 0, 
+		int dest_x = 0, int dest_y = 0, int dest_w = -1, int dest_h = -1,
+		int src_x = 0, int src_y = 0, int src_w = 0, int src_h = 0,
 		BC_Pixmap *pixmap = 0);
 	void draw_border(const char *text, int x, int y, int w, int h);
 // Draw a region of the background
 	void draw_top_background(BC_WindowBase *parent_window, int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_top_tiles(BC_WindowBase *parent_window, int x, int y, int w, int h);
 	void draw_background(int x, int y, int w, int h);
-	void draw_tiles(BC_Pixmap *tile, 
-		int origin_x, 
-		int origin_y, 
-		int x, 
-		int y, 
-		int w, 
-		int h);
+	void draw_tiles(BC_Pixmap *tile, int origin_x, int origin_y,
+		int x, int y, int w, int h);
 	void slide_left(int distance);
 	void slide_right(int distance);
 	void slide_up(int distance);
@@ -496,23 +427,11 @@ public:
 
 private:
 // Create a window
-	void create_window(BC_WindowBase *parent_window,
-				const char *title, 
-				int x,
-				int y,
-				int w, 
-				int h, 
-				int minw, 
-				int minh, 
-				int allow_resize,
-				int private_color, 
-				int hide,
-				int bg_color,
-				const char *display_name,
-				int window_type,
-				BC_Pixmap *bg_pixmap,
-				int group_it,
-				int options = 0);
+	void create_window(BC_WindowBase *parent_window, const char *title,
+		int x, int y, int w, int h, int minw, int minh,
+		int allow_resize, int private_color, int hide,
+		int bg_color, const char *display_name, int window_type,
+		BC_Pixmap *bg_pixmap, int group_it, int options = 0);
 
 	static Display* init_display(const char *display_name);
 	virtual void initialize();
@@ -573,12 +492,8 @@ private:
 	void find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
 
 
-	void translate_coordinates(Window src_w, 
-		Window dest_w,
-		int src_x,
-		int src_y,
-		int *dest_x_return,
-		int *dest_y_return);
+	void translate_coordinates(Window src_w, Window dest_w,
+		int src_x, int src_y, int *dest_x_return, int *dest_y_return);
 	void lock_events(const char *location);
 	void unlock_events();
 
@@ -597,7 +512,7 @@ private:
 // Pointer to the active menubar in the window.
 	BC_MenuBar* active_menubar;
 // pointer to the active popup menu in the window
-	BC_PopupMenu* active_popup_menu;    
+	BC_PopupMenu* active_popup_menu;
 // pointer to the active subwindow
 	BC_WindowBase* active_subwindow;
 
