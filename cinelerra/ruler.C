@@ -95,15 +95,14 @@ void RulerGUI::draw_ruler()
 	{
 		r_width = 20 + th;
 		tb = 14 + th;
+
 		if(get_h() != height || get_w() != width)
-		{
 			resize_window(mainsession->ruler_length, r_width);
-			BC_WindowBase::resize_event(mainsession->ruler_length, r_width);
-		}
+
 		// draw bg
 		clear_box(0, 0, mainsession->ruler_length, r_width);
 		set_color(BC_WindowBase::get_resources()->default_text_color);
-		draw_rectangle(0, 0, mainsession->ruler_length, r_width);
+		draw_rectangle(0, 0, mainsession->ruler_length - 1, r_width);
 		for(int i = 5; i <  mainsession->ruler_length; i += 5)
 		{
 			h = ticklength(i);
@@ -124,15 +123,14 @@ void RulerGUI::draw_ruler()
 	else
 	{
 		r_width = 18 + tw;
+
 		if(get_h() != height || get_w() != width)
-		{
 			resize_window(r_width, mainsession->ruler_length);
-			BC_WindowBase::resize_event(r_width, mainsession->ruler_length);
-		}
+
 		// draw bg
 		clear_box(0, 0, r_width, mainsession->ruler_length);
 		set_color(BC_WindowBase::get_resources()->default_text_color);
-		draw_rectangle(0, 0, r_width, mainsession->ruler_length);
+		draw_rectangle(0, 0, r_width, mainsession->ruler_length - 1);
 		for(int i = 5; i < mainsession->ruler_length; i += 5)
 		{
 			w = ticklength(i);
@@ -212,7 +210,7 @@ int RulerGUI::cursor_motion_event()
 		set_cursor(ARROW_CURSOR);
 		separate_cursor = 0;
 	}
-	return 0;
+	return 1;
 }
 
 int RulerGUI::button_release_event()
