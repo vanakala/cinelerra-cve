@@ -2969,16 +2969,6 @@ void BC_WindowBase::resize_window(int w, int h)
 		resize_history.append(new BC_ResizeCall(w, h));
 }
 
-// The only way for resize events to be propagated is by updating the internal w and h
-void BC_WindowBase::resize_event(int w, int h)
-{
-	if(window_type == MAIN_WINDOW)
-	{
-		this->w = w;
-		this->h = h;
-	}
-}
-
 void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 {
 	int resize = 0;

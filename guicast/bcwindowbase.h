@@ -135,7 +135,7 @@ public:
 	int run_window();
 // Terminal event dispatchers
 	virtual void close_event();
-	virtual void resize_event(int w, int h);
+	virtual void resize_event(int w, int h) {};
 	virtual void repeat_event(int duration) {};
 	virtual void focus_in_event() {};
 	virtual void focus_out_event() {};
