@@ -540,9 +540,6 @@ private:
 	int resize_events, last_resize_w, last_resize_h;
 	int translation_events, last_translate_x, last_translate_y;
 	int prev_x, prev_y;
-// Since the window manager automatically translates the window at boot, 
-// use the first translation event to get correction factors
-	int translation_count;
 	int x_correction, y_correction;
 // Key masks
 	int ctrl_mask, shift_mask, alt_mask;

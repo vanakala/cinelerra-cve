@@ -196,7 +196,6 @@ void BC_WindowBase::initialize()
 	icon_window = 0;
 	icon_vframe = 0;
 	window_type = MAIN_WINDOW;
-	translation_count = 0;
 	x_correction = y_correction = 0;
 	temp_bitmap = 0;
 	tooltip_on = 0;
@@ -741,12 +740,8 @@ void BC_WindowBase::dispatch_event()
 		if(!cancel_resize)
 			resize_events = 1;
 
-		if(!(last_translate_x == x && last_translate_y == y) &&
-				translation_count)
+		if(!(last_translate_x == x && last_translate_y == y))
 			translation_events = 1;
-
-		if(!translation_count)
-			translation_count++;
 		break;
 
 	case KeyPress:
@@ -2990,7 +2985,7 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 		this->h = h;
 	}
 
-	if(translation_count && window_type == MAIN_WINDOW)
+	if(window_type == MAIN_WINDOW)
 		XMoveResizeWindow(top_level->display, win,
 			x + BC_DisplayInfo::left_border - BC_DisplayInfo::auto_reposition_x,
 			y + BC_DisplayInfo::top_border - BC_DisplayInfo::auto_reposition_y,
