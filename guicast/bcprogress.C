@@ -1,35 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#include <stdio.h>
-#include <unistd.h>
-
-#define PROGRESS_UP 0
-#define PROGRESS_HI 1
-
-#include "colors.h"
 #include "fonts.h"
 #include "bcprogress.h"
 #include "bcpixmap.h"
 #include "bcresources.h"
+
+#include <math.h>
 
 BC_ProgressBar::BC_ProgressBar(int x, int y, int w, int64_t length, int do_text)
  : BC_SubWindow(x, y, w, 0, -1)
@@ -38,20 +17,21 @@ BC_ProgressBar::BC_ProgressBar(int x, int y, int w, int64_t length, int do_text)
 	this->do_text = do_text;
 	position = 0;
 	pixel = 0;
-	for(int i = 0; i < 2; i++) images[i] = 0;
+	image_up = 0;
+	image_hi = 0;
 	do_text = 1;
 }
 
 BC_ProgressBar::~BC_ProgressBar()
 {
-	for(int i = 0; i < 2; i++)
-	if (images[i]) delete images[i];
+	delete image_up;
+	delete image_hi;
 }
 
 void BC_ProgressBar::initialize()
 {
 	set_images();
-	h = images[PROGRESS_UP]->get_h();
+	h = image_up->get_h();
 
 	BC_SubWindow::initialize();
 	draw(1);
@@ -59,8 +39,10 @@ void BC_ProgressBar::initialize()
 
 void BC_ProgressBar::reposition_window(int x, int y, int w, int h)
 {
-	if(w < 0) w = get_w();
-	if(h < 0) h = get_h();
+	if(w < 0)
+		w = get_w();
+	if(h < 0)
+		h = get_h();
 	BC_WindowBase::reposition_window(x, y, w, h);
 	draw(1);
 }
@@ -72,15 +54,13 @@ void BC_ProgressBar::set_do_text(int value)
 
 void BC_ProgressBar::set_images()
 {
-	for(int i = 0; i < 2; i++)
-		if(images[i]) delete images[i];
+	delete image_up;
+	delete image_hi;
 
-	for(int i = 0; i < 2; i++)
-	{
-		images[i] = new BC_Pixmap(parent_window, 
-			resources.progress_images[i],
-			PIXMAP_ALPHA);
-	}
+	image_up = new BC_Pixmap(parent_window, resources.progress_images[0],
+		PIXMAP_ALPHA);
+	image_hi = new BC_Pixmap(parent_window, resources.progress_images[1],
+		PIXMAP_ALPHA);
 }
 
 void BC_ProgressBar::draw(int force)
@@ -88,7 +68,7 @@ void BC_ProgressBar::draw(int force)
 	char string[32];
 	int new_pixel;
 
-	new_pixel = (int)(((float)position / length) * get_w());
+	new_pixel = round(((double)position / length) * get_w());
 
 	if(new_pixel != pixel || force)
 	{
@@ -96,15 +76,14 @@ void BC_ProgressBar::draw(int force)
 		pixel = new_pixel;
 // Clear background
 		draw_top_background(parent_window, 0, 0, get_w(), get_h());
-		draw_3segmenth(0, 0, pixel, 0, get_w(), images[PROGRESS_HI]);
-		draw_3segmenth(pixel, 0, get_w() - pixel, 0, get_w(), images[PROGRESS_UP]);
-
+		draw_3segmenth(0, 0, pixel, 0, get_w(), image_hi);
+		draw_3segmenth(pixel, 0, get_w() - pixel, 0, get_w(), image_up);
 
 		if(do_text)
 		{
 			set_font(MEDIUMFONT);
 			set_color(resources.progress_text);     // draw decimal percentage
-			sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
+			sprintf(string, "%d%%", (int)round(100 * (double)position / length / w));
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}
 		flash();
