@@ -454,14 +454,6 @@ public:
 	int handle_event();
 };
 
-class TileWindows : public BC_MenuItem
-{
-public:
-	TileWindows();
-
-	int handle_event();
-};
-
 class ShowRuler : public BC_MenuItem
 {
 public:

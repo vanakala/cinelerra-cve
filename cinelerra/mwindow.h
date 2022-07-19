@@ -99,7 +99,6 @@ public:
 	void show_cwindow();
 	void show_gwindow();
 	void show_ruler();
-	void tile_windows();
 // Gui functions
 	void show_message(const char *fmt, ...);
 	void default_message();

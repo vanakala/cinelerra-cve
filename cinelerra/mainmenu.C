@@ -153,7 +153,6 @@ MainMenu::MainMenu(BC_WindowBase *gui)
 	windowmenu->add_item(show_gwindow = new ShowGWindow());
 	windowmenu->add_item(show_lwindow = new ShowLWindow());
 	windowmenu->add_item(show_ruler = new ShowRuler());
-	windowmenu->add_item(new TileWindows());
 }
 
 void MainMenu::load_defaults(BC_Hash *defaults)
@@ -930,17 +929,6 @@ ShowLWindow::ShowLWindow()
 int ShowLWindow::handle_event()
 {
 	mwindow_global->show_lwindow();
-	return 1;
-}
-
-TileWindows::TileWindows()
- : BC_MenuItem(_("Default positions"))
-{
-}
-
-int TileWindows::handle_event()
-{
-	mwindow_global->tile_windows();
 	return 1;
 }
 

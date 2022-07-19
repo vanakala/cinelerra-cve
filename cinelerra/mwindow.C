@@ -938,37 +938,6 @@ void MWindow::mark_lwindow_hidden()
 	gui->mainmenu->show_lwindow->set_checked(0);
 }
 
-void MWindow::tile_windows()
-{
-	mainsession->default_window_positions();
-	gui->reposition_window(mainsession->mwindow_x,
-		mainsession->mwindow_y,
-		mainsession->mwindow_w,
-		mainsession->mwindow_h);
-	vwindow->gui->reposition_window(mainsession->vwindow_x,
-		mainsession->vwindow_y,
-		mainsession->vwindow_w,
-		mainsession->vwindow_h);
-
-	cwindow->gui->reposition_window(mainsession->cwindow_x,
-		mainsession->cwindow_y,
-		mainsession->cwindow_w,
-		mainsession->cwindow_h);
-	awindow->gui->reposition_window(mainsession->awindow_x,
-		mainsession->awindow_y,
-		mainsession->awindow_w,
-		mainsession->awindow_h);
-
-	gui->resize_event(mainsession->mwindow_w,
-		mainsession->mwindow_h);
-	vwindow->gui->resize_event(mainsession->vwindow_w,
-		mainsession->vwindow_h);
-	mwindow_global->cwindow->gui->resize_event(mainsession->cwindow_w,
-		mainsession->cwindow_h);
-	mwindow_global->awindow->gui->resize_event(mainsession->awindow_w,
-		mainsession->awindow_h);
-}
-
 void MWindow::show_ruler()
 {
 	mainsession->show_ruler = 1;
