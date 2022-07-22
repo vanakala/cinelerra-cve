@@ -33,11 +33,10 @@ public:
 		__attribute__ ((__format__(__printf__, 2, 3)));
 	void update_current_title(const char *fmt, ...)
 		__attribute__ ((__format__(__printf__, 2, 3)));
-	void update_length(int64_t length);
-	int update(int64_t value);
+	void update_length(double length);
 	int update(ptstime value);
 	void get_time(char *text);
-	double get_time(); 
+	double get_time();
 
 // Only defined if this is a separate window;
 	BC_ProgressBox *progress_box;
@@ -48,8 +47,8 @@ public:
 	char default_title[BCTEXTLEN];
 	Timer *eta_timer;
 // Last time eta was updated
-	int64_t last_eta;
-	int64_t length;
+	double last_eta;
+	double length;
 
 private:
 	void start();
@@ -65,10 +64,7 @@ public:
 // Start a progress sequence and return the bar.
 // use_window - force opening of a new window if 1.
 	MainProgressBar* start_progress(const char *text,
-		int64_t total_length, 
-		int use_window = 0);
-	MainProgressBar* start_progress(const char *text,
-		ptstime total_len_pts, 
+		ptstime total_len_pts,
 		int use_window = 0);
 	void end_progress(MainProgressBar* progress_bar);
 
