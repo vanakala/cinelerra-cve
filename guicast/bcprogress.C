@@ -10,7 +10,7 @@
 
 #include <math.h>
 
-BC_ProgressBar::BC_ProgressBar(int x, int y, int w, int64_t length, int do_text)
+BC_ProgressBar::BC_ProgressBar(int x, int y, int w, double length, int do_text)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	this->length = length;
@@ -68,22 +68,22 @@ void BC_ProgressBar::draw(int force)
 	char string[32];
 	int new_pixel;
 
-	new_pixel = round(((double)position / length) * get_w());
+	new_pixel = round((position / length) * w);
 
 	if(new_pixel != pixel || force)
 	{
 		top_level->lock_window("BC_ProgressBar::draw");
 		pixel = new_pixel;
 // Clear background
-		draw_top_background(parent_window, 0, 0, get_w(), get_h());
-		draw_3segmenth(0, 0, pixel, 0, get_w(), image_hi);
-		draw_3segmenth(pixel, 0, get_w() - pixel, 0, get_w(), image_up);
+		draw_top_background(parent_window, 0, 0, w, h);
+		draw_3segmenth(0, 0, pixel, 0, w, image_hi);
+		draw_3segmenth(pixel, 0, w - pixel, 0, w, image_up);
 
 		if(do_text)
 		{
 			set_font(MEDIUMFONT);
 			set_color(resources.progress_text);     // draw decimal percentage
-			sprintf(string, "%d%%", (int)round(100 * (double)position / length / w));
+			sprintf(string, "%d%%", (int)round(100 * position / length / w));
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}
 		flash();
@@ -91,13 +91,13 @@ void BC_ProgressBar::draw(int force)
 	}
 }
 
-void BC_ProgressBar::update(int64_t position)
+void BC_ProgressBar::update(double position)
 {
 	this->position = position;
 	draw();
 }
 
-void BC_ProgressBar::update_length(int64_t length)
+void BC_ProgressBar::update_length(double length)
 {
 	this->length = length;
 	position = 0;
