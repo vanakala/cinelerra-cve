@@ -80,6 +80,7 @@ void Track::copy_settings(Track *track)
 	this->record = track->record;
 	this->nudge = track->nudge;
 	this->play = track->play;
+	this->master = track->master;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
 	strcpy(this->title, track->title);

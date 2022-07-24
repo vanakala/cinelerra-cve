@@ -234,6 +234,7 @@ void EDL::copy_all(EDL *edl)
 	update_assets(edl);
 	tracks->copy_from(edl->tracks);
 	labels->copy_from(edl->labels);
+	check_master_track();
 }
 
 void EDL::copy_session(EDL *edl, EDLSession *session)
