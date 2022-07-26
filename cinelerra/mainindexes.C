@@ -140,7 +140,7 @@ void MainIndexes::run()
 // Try to create index now.
 						if(!progress)
 							progress = mwindow_global->mainprogress->start_progress(
-								_("Building Indexes..."), (int64_t)1);
+								_("Building Indexes..."), 1);
 
 						if(current_asset->indexfiles[stream].create_index(current_asset,
 								stream, progress))
