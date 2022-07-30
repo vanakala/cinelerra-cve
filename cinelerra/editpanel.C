@@ -164,11 +164,14 @@ void EditPanel::update()
 {
 	int new_editing_mode = edlsession->editing_mode;
 
-	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
-	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
-	if(keyframe) keyframe->update(edlsession->auto_keyframes);
-	if(locklabels) locklabels->set_value(edlsession->labels_follow_edits);
-	subwindow->flush();
+	if(arrow)
+		arrow->update(new_editing_mode == EDITING_ARROW);
+	if(ibeam)
+		ibeam->update(new_editing_mode == EDITING_IBEAM);
+	if(keyframe)
+		keyframe->update(edlsession->auto_keyframes);
+	if(locklabels)
+		locklabels->set_value(edlsession->labels_follow_edits);
 }
 
 void EditPanel::toggle_label()
