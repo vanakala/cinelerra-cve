@@ -104,7 +104,6 @@ void CWindowTool::start_tool(int operation)
 
 			if(edlsession->tool_window && mainsession->show_cwindow)
 				tool_gui->show_window();
-			tool_gui->flush();
 
 // Signal thread to run next tool GUI
 			input_lock->unlock();
@@ -163,8 +162,6 @@ int CWindowTool::update_show_window()
 			tool_gui->show_window();
 			tool_gui->raise_window();
 		}
-
-		tool_gui->flush();
 		ret = 1;
 	}
 	tool_gui_lock->unlock();
@@ -181,10 +178,7 @@ void CWindowTool::update_values()
 {
 	tool_gui_lock->lock("CWindowTool::update_values");
 	if(tool_gui)
-	{
 		tool_gui->update();
-		tool_gui->flush();
-	}
 	tool_gui_lock->unlock();
 }
 
@@ -212,11 +206,9 @@ CWindowToolGUI::CWindowToolGUI(CWindowTool *thread,
 void CWindowToolGUI::close_event()
 {
 	hide_window();
-	flush();
 	edlsession->tool_window = 0;
 
 	thread->cwindowgui->composite_panel->set_operation(edlsession->cwindow_operation);
-	thread->cwindowgui->flush();
 }
 
 void CWindowToolGUI::translation_event()
