@@ -423,7 +423,6 @@ void AWindowGUI::reposition_objects()
 		w = 1;
 	asset_list->reposition_window(x2, theme_global->alist_y,
 		w, theme_global->alist_h);
-	flush();
 }
 
 void AWindowGUI::close_event()
@@ -769,8 +768,6 @@ void AWindowGUI::update_assets()
 		asset_list->get_yposition(),
 		-1,
 		0);
-
-	flush();
 }
 
 int AWindowGUI::folder_number(const char *name)
