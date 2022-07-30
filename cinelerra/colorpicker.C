@@ -59,10 +59,7 @@ void ColorThread::start_window(int r, int g, int b, int a)
 		Thread::start();
 	}
 	else
-	{
 		window->raise_window();
-		window->flush();
-	}
 }
 
 void ColorThread::start_window(int output, int alpha)
@@ -187,7 +184,6 @@ ColorWindow::ColorWindow(ColorThread *thread, int x, int y, const char *title)
 		alpha = 0;
 
 	show_window();
-	flush();
 }
 
 void ColorWindow::change_values()
