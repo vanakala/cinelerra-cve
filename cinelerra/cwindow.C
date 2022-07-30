@@ -54,7 +54,6 @@ void CWindow::show_window()
 {
 	gui->show_window();
 	gui->raise_window();
-	gui->flush();
 	gui->tool_panel->show_tool();
 }
 
