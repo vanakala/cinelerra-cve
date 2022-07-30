@@ -120,17 +120,10 @@ int AssetPopupInfo::handle_event()
 {
 	if(popup->current_asset)
 	{
-		if(awindow->asset_edit->running() &&
-			awindow->asset_edit->window)
-		{
+		if(awindow->asset_edit->running() && awindow->asset_edit->window)
 			awindow->asset_edit->window->raise_window();
-			awindow->asset_edit->window->flush();
-		}
 		else
-		{
-			awindow->asset_edit->edit_asset(
-				popup->current_asset);
-		}
+			awindow->asset_edit->edit_asset(popup->current_asset);
 		return 1;
 	}
 	else if(popup->current_edl)
