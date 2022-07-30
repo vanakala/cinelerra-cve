@@ -80,7 +80,6 @@ void BrowseButton::run()
 	if(!browsewindow.run_window())
 	{
 		textbox->update(browsewindow.get_submitted_path());
-		parent_window->flush();
 		textbox->handle_event();
 	}
 	startup_lock->lock("BrowseButton::run");
