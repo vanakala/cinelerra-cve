@@ -66,10 +66,7 @@ void File::reset_parameters()
 void File::raise_window()
 {
 	if(getting_options && format_window)
-	{
 		format_window->raise_window();
-		format_window->flush();
-	}
 }
 
 void File::close_window()
