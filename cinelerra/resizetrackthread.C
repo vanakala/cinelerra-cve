@@ -107,7 +107,6 @@ ResizeTrackWindow::ResizeTrackWindow(ResizeTrackThread *thread,
 	add_subwindow(new BC_CancelButton(this));
 
 	show_window();
-	flush();
 }
 
 void ResizeTrackWindow::update(int changed_scale, 
