@@ -869,7 +869,6 @@ void MWindow::show_vwindow()
 	mainsession->show_vwindow = 1;
 	vwindow->gui->show_window();
 	vwindow->gui->raise_window();
-	vwindow->gui->flush();
 	gui->mainmenu->show_vwindow->set_checked(1);
 }
 
@@ -884,7 +883,6 @@ void MWindow::show_awindow()
 	mainsession->show_awindow = 1;
 	awindow->gui->show_window();
 	awindow->gui->raise_window();
-	awindow->gui->flush();
 	gui->mainmenu->show_awindow->set_checked(1);
 }
 
@@ -912,8 +910,6 @@ void MWindow::show_gwindow()
 	mainsession->show_gwindow = 1;
 	gwindow->gui->show_window();
 	gwindow->gui->raise_window();
-	gwindow->gui->flush();
-
 	gui->mainmenu->show_gwindow->set_checked(1);
 }
 
@@ -928,7 +924,6 @@ void MWindow::show_lwindow()
 	mainsession->show_lwindow = 1;
 	lwindow->gui->show_window();
 	lwindow->gui->raise_window();
-	lwindow->gui->flush();
 	gui->mainmenu->show_lwindow->set_checked(1);
 }
 
@@ -943,7 +938,6 @@ void MWindow::show_ruler()
 	mainsession->show_ruler = 1;
 	ruler->gui->show_window();
 	ruler->gui->raise_window();
-	ruler->gui->flush();
 	gui->mainmenu->show_ruler->set_checked(1);
 }
 
@@ -968,10 +962,8 @@ void MWindow::set_auto_keyframes(int value)
 {
 	edlsession->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
-	gui->flush();
 	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->update_tool();
-	cwindow->gui->flush();
 }
 
 void MWindow::set_editing_mode(int new_editing_mode)
@@ -996,7 +988,6 @@ void MWindow::set_labels_follow_edits(int value)
 	edlsession->labels_follow_edits = value;
 	gui->mbuttons->edit_panel->locklabels->update(value);
 	gui->mainmenu->labels_follow_edits->set_checked(value);
-	gui->flush();
 }
 
 void MWindow::sync_parameters(int brender_restart)
@@ -1110,10 +1101,7 @@ void MWindow::update_project(int load_mode)
 
 	cwindow->gui->slider->set_position();
 	cwindow->playback_engine->send_command(CURRENT_FRAME);
-
 	awindow->gui->async_update_assets();
-
-	gui->flush();
 }
 
 void MWindow::rebuild_indices(Asset *asset)
