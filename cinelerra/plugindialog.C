@@ -55,10 +55,7 @@ void PluginDialogThread::start_window(Track *track,
 	{
 		window_lock->lock("PluginDialogThread::start_window");
 		if(window)
-		{
 			window->raise_window();
-			window->flush();
-		}
 		window_lock->unlock();
 	}
 	else
@@ -284,7 +281,6 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 	selected_modules = -1;
 
 	show_window();
-	flush();
 }
 
 PluginDialog::~PluginDialog()
@@ -323,7 +319,6 @@ void PluginDialog::resize_event(int w, int h)
 		theme_global->plugindialog_module_y,
 		theme_global->plugindialog_module_w,
 		theme_global->plugindialog_module_h);
-	flush();
 }
 
 
