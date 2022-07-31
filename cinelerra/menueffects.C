@@ -463,7 +463,6 @@ MenuEffectWindow::MenuEffectWindow(MenuEffectThread *menueffects,
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));
 	show_window();
-	flush();
 }
 
 MenuEffectWindow::~MenuEffectWindow()
@@ -589,7 +588,6 @@ MenuEffectPrompt::MenuEffectPrompt(int absx, int absy)
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	raise_window();
-	flush();
 }
 
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
