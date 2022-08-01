@@ -453,9 +453,9 @@ void BC_Meter::draw_face()
 	}
 
 	if(orientation == METER_HORIZ)
-		flash(0, 0, pixels, get_h(), 1);
+		flash(0, 0, pixels, get_h());
 	else
-		flash(x, 0, w, pixels, 1);
+		flash(x, 0, w, pixels);
 
 	top_level->unlock_window();
 }

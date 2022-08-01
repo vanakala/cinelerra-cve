@@ -598,7 +598,7 @@ void TrackCanvas::draw_indexes(Asset *asset)
 	gui->cursor->hide();
 	draw_resources(WUPD_INDEXES, asset);
 	draw_overlays();
-	flash(1);
+	flash();
 	gui->cursor->show();
 }
 

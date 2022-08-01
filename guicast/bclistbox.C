@@ -272,7 +272,7 @@ void BC_ListBoxToggle::draw(int flash)
 			y);
 
 		if(flash)
-			listbox->gui->flash(x, y, w, h, 1);
+			listbox->gui->flash(x, y, w, h);
 	}
 }
 
@@ -3388,7 +3388,7 @@ int BC_ListBox::cursor_motion_event()
 
 				if(redraw_items || redraw_titles ||
 						redraw_border || redraw_toggles)
-					gui->flash(1);
+					gui->flash();
 			}
 
 			if(!result && list_highlighted)
@@ -3994,7 +3994,7 @@ void BC_ListBox::draw_items(int flash)
 			draw_rectangle(0);
 
 		if(flash)
-			gui->flash(1);
+			gui->flash();
 
 		top_level->unlock_window();
 	}
@@ -4128,7 +4128,7 @@ void BC_ListBox::draw_border(int flash)
 		resources.listbox_border4);
 
 	if(flash)
-		gui->flash(1);
+		gui->flash();
 }
 
 void BC_ListBox::draw_titles(int flash)
@@ -4187,7 +4187,7 @@ void BC_ListBox::draw_titles(int flash)
 		draw_border(0);
 
 		if(flash)
-			gui->flash(1);
+			gui->flash();
 
 		top_level->unlock_window();
 	}
@@ -4200,7 +4200,7 @@ void BC_ListBox::draw_toggles(int flash)
 		expanders.values[i]->draw(0);
 
 	if(flash && expanders.total)
-		gui->flash(1);
+		gui->flash();
 }
 
 void BC_ListBox::draw_rectangle(int flash)
@@ -4219,7 +4219,7 @@ void BC_ListBox::draw_rectangle(int flash)
 	gui->set_opaque();
 
 	if(flash)
-		gui->flash(1);
+		gui->flash();
 
 	top_level->unlock_window();
 }

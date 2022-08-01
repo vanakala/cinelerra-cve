@@ -247,7 +247,7 @@ void ThresholdCanvas::draw()
 	draw_line(border_x1, 0, border_x1, get_h());
 	draw_line(border_x2, 0, border_x2, get_h());
 
-	flash(1);
+	flash();
 }
 
 

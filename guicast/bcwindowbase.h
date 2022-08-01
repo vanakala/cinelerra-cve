@@ -184,8 +184,8 @@ public:
 
 	int get_opengl_version(BC_WindowBase *window);
 
-	void flash(int x, int y, int w, int h, int flush = 1);
-	void flash(int flush = 1);
+	void flash(int x, int y, int w, int h);
+	void flash();
 	void flush();
 	void sync_display();
 // Lock out other threads

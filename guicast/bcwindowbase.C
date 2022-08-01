@@ -1404,7 +1404,7 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 		draw_tooltip();
 		tooltip_popup->set_font(MEDIUMFONT);
-		tooltip_popup->flash(1);
+		tooltip_popup->flash();
 	}
 }
 
@@ -2442,7 +2442,7 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 	return add_subwindow(subwindow);
 }
 
-void BC_WindowBase::flash(int x, int y, int w, int h, int flush)
+void BC_WindowBase::flash(int x, int y, int w, int h)
 {
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);
@@ -2450,14 +2450,11 @@ void BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 		XClearArea(top_level->display, win, x, y, w, h, 0);
 	else
 		XClearWindow(top_level->display, win);
-
-	if(flush)
-		this->flush();
 }
 
-void BC_WindowBase::flash(int flush)
+void BC_WindowBase::flash()
 {
-	flash(-1, -1, -1, -1, flush);
+	flash(-1, -1, -1, -1);
 }
 
 void BC_WindowBase::flush()

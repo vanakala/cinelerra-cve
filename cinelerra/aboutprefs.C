@@ -113,5 +113,5 @@ void AboutPrefs::show()
 	x += theme_global->about_bg->get_w() + 10;
 	y += get_text_height(LARGEFONT) * 2;
 
-	flash(1);
+	flash();
 }

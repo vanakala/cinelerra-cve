@@ -623,7 +623,7 @@ void BC_TextBox::draw()
 
 // Border
 	draw_border();
-	flash(1);
+	flash();
 	top_level->unlock_window();
 }
 
@@ -647,7 +647,7 @@ int BC_TextBox::cursor_enter_event()
 		{
 			highlighted = 1;
 			draw_border();
-			flash(1);
+			flash();
 		}
 	}
 	return 0;
@@ -660,7 +660,7 @@ void BC_TextBox::cursor_leave_event()
 		highlighted = 0;
 		draw_border();
 		hide_tooltip();
-		flash(1);
+		flash();
 	}
 }
 
@@ -813,7 +813,7 @@ void BC_TextBox::repeat_event(int duration)
 			return;
 		}
 		draw_cursor();
-		flash(1);
+		flash();
 	}
 }
 
