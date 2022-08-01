@@ -62,14 +62,10 @@
 #include "vframe.inc"
 
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <X11/Xatom.h>
+
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
-#include <X11/cursorfont.h>
+
 #ifdef HAVE_LIBXXF86VM
 #include <X11/extensions/xf86vmode.h>
 #endif
