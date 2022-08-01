@@ -395,7 +395,7 @@ public:
 
 	void cycle_textboxes(int amount);
 
-	void raise_window(int do_flush = 1);
+	void raise_window();
 	void set_tooltips(int tooltips_enabled);
 	void resize_window(int w, int h);
 	void reposition_window(int x, int y, int w = -1, int h = -1);

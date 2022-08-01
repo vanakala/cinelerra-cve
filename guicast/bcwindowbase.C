@@ -3003,11 +3003,10 @@ void BC_WindowBase::set_tooltips(int tooltips_enabled)
 	resources.tooltips_enabled = tooltips_enabled;
 }
 
-void BC_WindowBase::raise_window(int do_flush)
+void BC_WindowBase::raise_window()
 {
 	XRaiseWindow(top_level->display, win);
-	if(do_flush)
-		XFlush(top_level->display);
+	XFlush(top_level->display);
 }
 
 void BC_WindowBase::set_background(VFrame *bitmap)
