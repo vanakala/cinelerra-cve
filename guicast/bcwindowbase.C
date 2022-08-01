@@ -2371,7 +2371,7 @@ int BC_WindowBase::accel_cmodels(int *cmodels, int len)
 	return num;
 }
 
-void BC_WindowBase::show_window(int flush)
+void BC_WindowBase::show_window()
 {
 	int completion = 0;
 
@@ -2385,16 +2385,12 @@ void BC_WindowBase::show_window(int flush)
 		}
 	}
 	if(!completion)
-	{
 		XMapWindow(top_level->display, win);
-		if(flush)
-			XFlush(top_level->display);
-	}
 	hidden = 0;
 	top_level->unlock_window();
 }
 
-void BC_WindowBase::hide_window(int flush)
+void BC_WindowBase::hide_window()
 {
 	int completion = 0;
 
@@ -2408,11 +2404,7 @@ void BC_WindowBase::hide_window(int flush)
 		}
 	}
 	if(!completion)
-	{
 		XUnmapWindow(top_level->display, win);
-		if(flush)
-			XFlush(top_level->display);
-	}
 	hidden = 1;
 	top_level->unlock_window();
 }

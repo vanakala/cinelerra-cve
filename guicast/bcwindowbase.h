@@ -165,8 +165,8 @@ public:
 	int get_color(int color);
 // return the currently selected color
 	int get_color();
-	void show_window(int flush = 1);
-	void hide_window(int flush = 1);
+	void show_window();
+	void hide_window();
 	int get_hidden();
 	int get_video_on();
 // Shouldn't deference a pointer to delete a window if a parent is 
