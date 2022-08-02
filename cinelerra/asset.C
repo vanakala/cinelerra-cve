@@ -1436,6 +1436,7 @@ void Asset::load_render_profile()
 		load_defaults(dflts, ASSET_ALL);
 		render_parameters = dflts;
 	}
+	load_render_options();
 }
 
 void Asset::fix_strategy(int use_renderfarm)

@@ -370,7 +370,6 @@ void BRenderThread::start()
 			RenderProfile::chk_profile_dir(preferences_global->brender_asset->renderprofile_path);
 		}
 		preferences_global->brender_asset->load_render_profile();
-		preferences_global->brender_asset->load_render_options();
 
 		preferences = new Preferences;
 		preferences->copy_from(preferences_global);
