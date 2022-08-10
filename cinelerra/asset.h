@@ -235,6 +235,8 @@ public:
 	int id;
 // Used by assetlist
 	int global_inuse;
+// Use hardware acceleration
+	int vhwaccel;
 private:
 // Minimal pts over all streams
 	ptstime pts_base;

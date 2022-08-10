@@ -97,6 +97,7 @@ void Asset::init_values()
 	pts_base = INT64_MAX;
 	probed = 0;
 	tocfile = 0;
+	vhwaccel = 0;
 
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
@@ -188,6 +189,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
 	interlace_fixmethod = asset->interlace_fixmethod;
+	vhwaccel = asset->vhwaccel;
 
 	this->single_image = asset->single_image;
 	this->probed = asset->probed;
@@ -322,7 +324,8 @@ int Asset::equivalent(Asset &asset, int test_dsc)
 	{
 		result = asset.interlace_autofixoption == interlace_autofixoption &&
 			asset.interlace_mode == interlace_mode &&
-			interlace_fixmethod == asset.interlace_fixmethod;
+			interlace_fixmethod == asset.interlace_fixmethod &&
+			vhwaccel == asset.vhwaccel;
 	}
 
 	if(result)
@@ -721,6 +724,7 @@ void Asset::read_video(FileXML *file)
 		interlace_fixmethod = InterlaceFixSelection::xml_value(
 			file->tag.get_property("INTERLACE_FIXMETHOD",
 				string));
+		vhwaccel = file->tag.get_property("VHWACCEL", vhwaccel);
 	}
 }
 
@@ -1064,16 +1068,22 @@ void Asset::write_audio(FileXML *file)
 void Asset::write_video(FileXML *file)
 {
 	if(stream_count(STRDSC_VIDEO) &&
-		interlace_autofixoption && interlace_mode != BC_ILACE_MODE_UNDETECTED)
+		((interlace_autofixoption && interlace_mode != BC_ILACE_MODE_UNDETECTED) ||
+		vhwaccel))
 	{
 		file->tag.set_title("VIDEO");
-		file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
+		if(interlace_autofixoption && interlace_mode != BC_ILACE_MODE_UNDETECTED)
+		{
+			file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
-		file->tag.set_property("INTERLACE_MODE",
-			AInterlaceModeSelection::xml_text(interlace_mode));
+			file->tag.set_property("INTERLACE_MODE",
+				AInterlaceModeSelection::xml_text(interlace_mode));
 
-		file->tag.set_property("INTERLACE_FIXMETHOD",
-			InterlaceFixSelection::xml_text(interlace_fixmethod));
+			file->tag.set_property("INTERLACE_FIXMETHOD",
+				InterlaceFixSelection::xml_text(interlace_fixmethod));
+		}
+		if(vhwaccel)
+			file->tag.set_property("VHWACCEL", vhwaccel);
 
 		file->append_tag();
 		file->tag.set_title("/VIDEO");
@@ -1482,7 +1492,8 @@ void Asset::dump(int indent, int options)
 	printf("%*sAsset %p dump:\n", indent, "", this);
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
-	printf("%*sid %d inuse %d tocfile %p\n", indent, "", id, global_inuse, tocfile);
+	printf("%*sid %d inuse %d vhwaccel %d tocfile %p\n", indent, "",
+		id, global_inuse, vhwaccel, tocfile);
 	printf("%*sfile format '%s'", indent, "",
 		ContainerSelection::container_to_text(format));
 	if(format == FILE_PCM)
