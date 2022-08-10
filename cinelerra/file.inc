@@ -13,6 +13,7 @@
 #define FILE_OPEN_VIDEO    0x20
 #define FILE_OPEN_TYPE     0xf0
 #define FILE_OPEN_ALL      0xf0
+#define FILE_OPEN_HWACCEL  0x8000
 
 // Return values for open_file
 #define FILE_OK                 0

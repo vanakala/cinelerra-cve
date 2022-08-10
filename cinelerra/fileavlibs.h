@@ -175,6 +175,10 @@ private:
 	// Codec contexts
 	AVCodecContext *codec_contexts[MAXCHANNELS];
 
+	// Hardare device
+	AVBufferRef *hw_device_ctx;
+	AVFrame *avhwframe;
+
 	// decoding audio
 	int input_channels;
 	int num_buffers;

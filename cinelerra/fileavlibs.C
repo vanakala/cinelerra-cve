@@ -180,6 +180,8 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	current_stream = -1;
 	memset(resampled_data, 0, sizeof(resampled_data));
 	memset(codec_contexts, 0, sizeof(codec_contexts));
+	hw_device_ctx = 0;
+	avhwframe = 0;
 }
 
 FileAVlibs::~FileAVlibs()
@@ -704,6 +706,13 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 				mediatype = _("Video");
 				if(!(open_mode & FILE_OPEN_VIDEO))
 					printf("%d is not a video stream.\n", streamix);
+				else if(open_mode & FILE_OPEN_HWACCEL)
+				{
+					if((rv = av_hwdevice_ctx_create(&hw_device_ctx,
+							AV_HWDEVICE_TYPE_VAAPI,
+							NULL, NULL, 0)) < 0)
+						liberror(rv, "Can't allocate vaapi context");
+				}
 				break;
 			}
 			if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
@@ -726,6 +735,9 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 			}
 			avcodec_parameters_to_context(decoder_context, stream->codecpar);
 #endif
+			if(hw_device_ctx)
+				decoder_context->hw_device_ctx =
+					av_buffer_ref(hw_device_ctx);
 			codec_contexts[current_stream] = decoder_context;
 
 			if(asset->streams[streamix].options & STRDSC_AUDIO)
@@ -1336,6 +1348,10 @@ void FileAVlibs::close_file()
 		av_frame_free(&avaframe);
 	if(swr_ctx)
 		swr_free(&swr_ctx);
+	if(avhwframe)
+		av_frame_free(&avhwframe);
+	if(&hw_device_ctx)
+		av_buffer_unref(&hw_device_ctx);
 	deallocate_packet(&avapkt);
 	deallocate_packet(&avvpkt);
 	avlibs_lock->unlock();
@@ -1398,6 +1414,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	int error = 0;
 	int got_it;
 	int64_t rqpos;
+	AVFrame *frameptr;
 
 	avlibs_lock->lock("AVlibs::read_frame");
 	AVStream *stream = context->streams[current_stream];
@@ -1405,8 +1422,12 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
+
 	if(!avvpkt)
 		avvpkt = allocate_packet();
+
+	if(decoder_context->hw_device_ctx && !avhwframe)
+		avhwframe = av_frame_alloc();
 
 	if(!asset->single_image)
 		rqpos = round((frame->get_source_pts() + asset->base_pts()) / av_q2d(stream->time_base));
@@ -1483,19 +1504,39 @@ int FileAVlibs::read_frame(VFrame *frame)
 				return 1;
 			}
 			got_it = 0;
-			res = avcodec_receive_frame(decoder_context, avvframe);
+
+			if(decoder_context->hw_device_ctx)
+				frameptr = avhwframe;
+			else
+				frameptr = avvframe;
+
+			res = avcodec_receive_frame(decoder_context, frameptr);
 			if(!res)
 			{
 				got_it = 1;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
-				video_pos = av_frame_get_best_effort_timestamp(avvframe) +
-					av_frame_get_pkt_duration(avvframe);
+				video_pos = av_frame_get_best_effort_timestamp(frameptr) +
+					av_frame_get_pkt_duration(frameptr);
 #else
-				video_pos = avvframe->best_effort_timestamp +
-					avvframe->pkt_duration;
+				video_pos = frameptr->best_effort_timestamp +
+					frameptr->pkt_duration;
 #endif
 				if(video_pos > rqpos)
+				{
+					if(frameptr != avvframe)
+					{
+						res = av_hwframe_transfer_data(avvframe,
+							avhwframe, 0);
+						if(res)
+						{
+							liberror(res,
+								_("Failed to get frame from hwaccel"));
+							avlibs_lock->unlock();
+							return 1;
+						}
+					}
 					break;
+				}
 			}
 			else
 			if(res != AVERROR(EAGAIN))
@@ -1512,21 +1553,21 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!error && got_it)
 	{
-		const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(decoder_context->pix_fmt);
+		const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get((AVPixelFormat)avvframe->format);
 
-		convert_cmodel(avvframe, decoder_context->pix_fmt,
-			decoder_context->width, decoder_context->height, frame);
+		convert_cmodel(avvframe, (AVPixelFormat)avvframe->format,
+			avvframe->width, avvframe->height, frame);
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
-		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) *
+		frame->set_source_pts(av_frame_get_best_effort_timestamp(frameptr) *
 #else
-		frame->set_source_pts(avvframe->best_effort_timestamp *
+		frame->set_source_pts(frameptr->best_effort_timestamp *
 #endif
 			av_q2d(stream->time_base) - asset->base_pts());
 		frame->set_duration(
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
-			av_frame_get_pkt_duration(avvframe) *
+			av_frame_get_pkt_duration(frameptr) *
 #else
-			avvframe->pkt_duration *
+			frameptr->pkt_duration *
 #endif
 			av_q2d(stream->time_base));
 		frame->set_frame_number(round(frame->get_source_pts() * av_q2d(stream->avg_frame_rate)));
