@@ -114,6 +114,7 @@ cinelerracve_SOURCES = aboutprefs.C \
 		    fourier.C \
 		    framecache.C \
 		    guidelines.C \
+		    guielements.C \
 		    gwindow.C \
 		    gwindowgui.C \
 		    indexfile.C \
@@ -327,6 +328,7 @@ noinst_HEADERS = aboutprefs.h \
 		 formattools.h \
 		 fourier.h \
 		 framecache.h \
+		 guielements.h \
 		 guidelines.h \
 		 gwindow.h \
 		 gwindowgui.h \
