@@ -24,6 +24,7 @@
 #include "language.h"
 #include "mainindexes.h"
 #include "mainerror.h"
+#include "miscprefs.h"
 #include "mwindow.h"
 #include "selection.h"
 #include "theme.h"
@@ -254,6 +255,9 @@ AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 // --------------------
 	if(numvideo)
 	{
+		win = add_subwindow(new ToggleButton(x2, y,
+			_("Use hardware acceleration"), &asset->vhwaccel));
+		y += win->get_h() + 5;
 		add_subwindow(new BC_Title(x1, y, _("Fix interlacing:")));
 		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(this,
 			x2, y));
