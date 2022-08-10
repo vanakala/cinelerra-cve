@@ -275,7 +275,11 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset, int stream)
 	if(asset->streams[stream].options & STRDSC_AUDIO)
 		open_mode = FILE_OPEN_AUDIO;
 	else if(asset->streams[stream].options & STRDSC_VIDEO)
+	{
 		open_mode = FILE_OPEN_VIDEO;
+		if(asset->vhwaccel)
+			open_mode |= FILE_OPEN_HWACCEL;
+	}
 	file->set_processors(preferences_global->max_threads);
 	if(!open_mode ||
 		(result = file->open_file(this->asset, FILE_OPEN_READ | open_mode, stream)))

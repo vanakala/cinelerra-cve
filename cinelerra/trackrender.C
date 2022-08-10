@@ -55,6 +55,8 @@ File *TrackRender::media_file(Edit *edit, int filenum)
 				break;
 			case TRACK_VIDEO:
 				media_type = FILE_OPEN_VIDEO;
+				if(edit->asset->vhwaccel)
+					media_type |= FILE_OPEN_HWACCEL;
 				break;
 			}
 			if(file->open_file(edit->asset, FILE_OPEN_READ | media_type, edit->stream))
