@@ -6,6 +6,7 @@
 #ifndef MISCPREFS_H
 #define MISCPREFS_H
 
+#include "guielements.h"
 #include "preferencesthread.h"
 
 class MiscPrefs : public PreferencesDialog
@@ -36,36 +37,6 @@ public:
 	int handle_event();
 
 	PreferencesWindow *pwindow;
-};
-
-class ToggleButton : public BC_CheckBox
-{
-public:
-	ToggleButton(int x, int y, const char *text, int *value);
-
-	int handle_event();
-
-	int *valueptr;
-};
-
-class MiscText : public BC_TextBox
-{
-public:
-	MiscText(int x, int y, char *boxtext);
-
-	int handle_event();
-private:
-	char *str;
-};
-
-class MiscValue : public BC_TextBox
-{
-public:
-	MiscValue(int x, int y, int *value);
-
-	int handle_event();
-private:
-	int *valueptr;
 };
 
 #endif
