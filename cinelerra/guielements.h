@@ -20,6 +20,18 @@ private:
 	int *valueptr;
 };
 
+class DblValueTextBox : public BC_TextBox
+{
+public:
+	DblValueTextBox(int x, int y, double *value, int width = GUIELEM_VAL_W,
+		int precision = 4);
+
+	int handle_event();
+private:
+	double *valueptr;
+};
+
+
 class TextBox : public BC_TextBox
 {
 public:

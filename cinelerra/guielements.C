@@ -8,7 +8,7 @@
 #include <string.h>
 
 ValueTextBox::ValueTextBox(int x, int y, int *value, int width)
- : BC_TextBox(x, y, 70, 1, *value)
+ : BC_TextBox(x, y, width, 1, *value)
 {
 	valueptr = value;
 }
@@ -20,8 +20,20 @@ int ValueTextBox::handle_event()
 }
 
 
+DblValueTextBox::DblValueTextBox(int x, int y, double *value, int width, int precision)
+ : BC_TextBox(x, y, width, 1, *value, TXTBOX_BORDER, MEDIUMFONT, precision)
+{
+	valueptr = value;
+}
+
+int DblValueTextBox::handle_event()
+{
+	*valueptr = atof(get_text());
+	return 1;
+}
+
 TextBox::TextBox(int x, int y, char *boxtext, int width)
- : BC_TextBox(x, y, 400, 1, boxtext)
+ : BC_TextBox(x, y, width, 1, boxtext)
 {
 	this->str = boxtext;
 }
