@@ -30,10 +30,8 @@ void MiscPrefs::show()
 
 	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, get_resources()->text_default));
 	y += 30;
-	win = add_subwindow(new StillImageUseDuration(pwindow,
-		pwindow->thread->this_edlsession->si_useduration,
-		x,
-		y));
+	win = add_subwindow(new CheckBox(x, y, _("Import images with a duration of"),
+		&pwindow->thread->this_edlsession->si_useduration));
 	x += win->get_w() + 10;
 	win = add_subwindow(new StillImageDuration(pwindow, x, y));
 	x += win->get_w() + 10;
@@ -97,19 +95,6 @@ void MiscPrefs::show()
 		&pwindow->thread->this_edlsession->output_color_depth));
 	depth_selection->update(pwindow->thread->this_edlsession->output_color_depth);
 }
-
-StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
- : BC_CheckBox(x, y, value, _("Import images with a duration of"))
-{
-	this->pwindow = pwindow; 
-}
-
-int StillImageUseDuration::handle_event()
-{
-	pwindow->thread->this_edlsession->si_useduration = get_value();
-	return 1;
-}
-
 
 StillImageDuration::StillImageDuration(PreferencesWindow *pwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, pwindow->thread->this_edlsession->si_duration)

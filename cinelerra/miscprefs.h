@@ -17,18 +17,6 @@ public:
 	void show();
 };
 
-
-class StillImageUseDuration : public BC_CheckBox
-{
-public:
-	StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class StillImageDuration : public BC_TextBox
 {
 public:
