@@ -81,6 +81,7 @@ public:
 	static void save_render_options(Asset *asset);
 	static int update_codeclist(Asset *asset, Paramlist *codecs, int options);
 	static const char *encoder_formatname(int fileformat);
+	static int have_hwaccel(Asset *asset);
 
 // Callbacks of FileTOC
 	int get_streamcount();
@@ -144,6 +145,8 @@ private:
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 	static void dump_AVCodecParameters(AVCodecParameters *codecpar, int indent = 0);
 #endif
+	void dump_hwdevice_ctx(AVBufferRef *device_ref, int indent = 0);
+
 	static struct avlib_formattable known_formats[];
 	AVFormatContext *context;
 	AVFrame *avvframe;

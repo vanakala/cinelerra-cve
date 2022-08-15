@@ -1350,7 +1350,7 @@ void FileAVlibs::close_file()
 		swr_free(&swr_ctx);
 	if(avhwframe)
 		av_frame_free(&avhwframe);
-	if(&hw_device_ctx)
+	if(hw_device_ctx)
 		av_buffer_unref(&hw_device_ctx);
 	deallocate_packet(&avapkt);
 	deallocate_packet(&avvpkt);
@@ -3630,6 +3630,18 @@ Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
 	return clean_list(libopts);
 }
 
+int FileAVlibs::have_hwaccel(Asset *asset)
+{
+	int result = 0;
+	AVBufferRef *hw_device_ctx = 0;
+
+	if(!av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI,
+			NULL, NULL, 0) && hw_device_ctx)
+		result = 1;
+	av_buffer_unref(&hw_device_ctx);
+	return result;
+}
+
 Paramlist *FileAVlibs::scan_encoder_private_opts(AVCodecID codec, int options)
 {
 	AVCodec *encoder;
@@ -4348,3 +4360,17 @@ void FileAVlibs::dump_AVCodecParameters(AVCodecParameters *codecpar, int indent)
 		codecpar->initial_padding, codecpar->trailing_padding, codecpar->seek_preroll);
 }
 #endif
+
+void FileAVlibs::dump_hwdevice_ctx(AVBufferRef *device_ref, int indent)
+{
+	AVHWDeviceContext *device_ctx = (AVHWDeviceContext*)device_ref->data;
+
+	printf("%*sAVHWDeviceContext %p (ref %p) dump:\n", indent, "",
+		device_ctx, device_ref);
+	indent += 2;
+	printf("%*stype '%s'\n", indent, "",
+		av_hwdevice_get_type_name(device_ctx->type));
+	printf("%*sav_class %p internal %p hwctx %p user %p\n", indent, "",
+		device_ctx->av_class, device_ctx->internal, device_ctx->hwctx,
+		device_ctx->user_opaque);
+}
