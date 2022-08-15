@@ -13,6 +13,7 @@
 #include "clip.h"
 #include "edit.inc"
 #include "edlsession.h"
+#include "fileavlibs.h"
 #include "filexml.h"
 #include "filesystem.h"
 #include "formatpresets.h"
@@ -92,6 +93,7 @@ EDLSession::EDLSession()
 	shrink_plugin_tracks = 0;
 	output_color_depth = 8;
 	keyframes_visible = 1;
+	have_hwaccel = -1;
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -237,6 +239,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	// backward compatibility
 	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
 	keyframes_visible = defaults->get("SHOW_KEYFRAMES", keyframes_visible);
+	hwaccel();
 	boundaries();
 }
 
@@ -674,6 +677,7 @@ void EDLSession::copy(EDLSession *session)
 	backup_interval = session->backup_interval;
 	shrink_plugin_tracks = session->shrink_plugin_tracks;
 	output_color_depth = session->output_color_depth;
+	have_hwaccel = session->have_hwaccel;
 }
 
 ptstime EDLSession::get_frame_offset()
@@ -725,6 +729,13 @@ int EDLSession::color_bits(int *shift, int *mask)
 	return output_color_depth;
 }
 
+int EDLSession::hwaccel()
+{
+	if(have_hwaccel < 0)
+		have_hwaccel = FileAVlibs::have_hwaccel(0);
+	return have_hwaccel;
+}
+
 size_t EDLSession::get_size()
 {
 	return sizeof(*this);
@@ -739,6 +750,7 @@ void EDLSession::dump(int indent)
 	printf("%*svideo: tracks %d framerate %.2f [%dx%d] SAR %.3f '%s' depth %d\n",
 		indent, "", video_tracks, frame_rate, output_w, output_h, sample_aspect_ratio,
 		ColorModels::name(color_model), output_color_depth);
-	printf("%*sdefault transitions: audio '%s' video '%s' length %.2f\n", indent, "",
-		default_atransition, default_vtransition, default_transition_length);
+	printf("%*sdefault transitions: '%s', '%s' length %.2f hw_accel %d\n", indent, "",
+		default_atransition, default_vtransition, default_transition_length,
+		have_hwaccel);
 }

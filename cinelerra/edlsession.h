@@ -60,6 +60,9 @@ public:
 // Convert pts to text in current formet
 	void ptstotext(char *string, ptstime pts);
 
+// Have hardware acceleration
+	int hwaccel();
+
 // Size in bytes
 	size_t get_size();
 
@@ -179,6 +182,7 @@ public:
 	int output_color_depth;
 private:
 	int defaults_loaded;
+	int have_hwaccel;
 };
 
 
