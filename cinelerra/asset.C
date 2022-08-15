@@ -725,6 +725,8 @@ void Asset::read_video(FileXML *file)
 			file->tag.get_property("INTERLACE_FIXMETHOD",
 				string));
 		vhwaccel = file->tag.get_property("VHWACCEL", vhwaccel);
+		if(vhwaccel && !edlsession->hwaccel())
+			vhwaccel = 0;
 	}
 }
 
@@ -1625,6 +1627,13 @@ int Asset::stream_type(int track_type)
 	case TRACK_VIDEO:
 		return STRDSC_VIDEO;
 	}
+	return 0;
+}
+
+int Asset::have_hwaccel()
+{
+	if(edlsession->hwaccel() > 0)
+		return FileAVlibs::have_hwaccel(this);
 	return 0;
 }
 

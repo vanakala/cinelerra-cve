@@ -138,6 +138,7 @@ public:
 	void read_index(FileXML *xml);
 	void interrupt_index();
 	void remove_indexes();
+	int have_hwaccel();
 
 // Output path is the path of the output file if name truncation is desired.
 // It is empty if complete names should be used.
