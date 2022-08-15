@@ -255,9 +255,15 @@ AssetEditWindow::AssetEditWindow(AssetEdit *asset_edit,
 // --------------------
 	if(numvideo)
 	{
-		win = add_subwindow(new CheckBox(x2, y,
-			_("Use hardware acceleration"), &asset->vhwaccel));
-		y += win->get_h() + 5;
+		if(asset->have_hwaccel())
+		{
+			win = add_subwindow(new CheckBox(x2, y,
+				_("Use hardware acceleration"), &asset->vhwaccel));
+			y += win->get_h() + 5;
+		}
+		else
+			asset->vhwaccel = 0;
+
 		add_subwindow(new BC_Title(x1, y, _("Fix interlacing:")));
 		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(this,
 			x2, y));
