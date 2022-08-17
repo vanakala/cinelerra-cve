@@ -3637,8 +3637,10 @@ int FileAVlibs::have_hwaccel(Asset *asset)
 
 	if(!av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI,
 			NULL, NULL, 0) && hw_device_ctx)
+	{
 		result = 1;
-	av_buffer_unref(&hw_device_ctx);
+		av_buffer_unref(&hw_device_ctx);
+	}
 	return result;
 }
 
@@ -4373,4 +4375,29 @@ void FileAVlibs::dump_hwdevice_ctx(AVBufferRef *device_ref, int indent)
 	printf("%*sav_class %p internal %p hwctx %p user %p\n", indent, "",
 		device_ctx->av_class, device_ctx->internal, device_ctx->hwctx,
 		device_ctx->user_opaque);
+}
+
+void FileAVlibs::dump_AVPixelFormats(AVPixelFormat *pix_fmts)
+{
+	if(pix_fmts)
+	{
+		for(int i = 0; pix_fmts[i] != AV_PIX_FMT_NONE; i++)
+			printf(" %s", av_get_pix_fmt_name(pix_fmts[i]));
+	}
+	else
+		fputs("(none)", stdout);
+	putchar('\n');
+}
+
+void FileAVlibs::dump_AVHWFramesConstraints(AVHWFramesConstraints *constr, int indent)
+{
+	printf("%*sAVHWFramesConstraints %p dump:\n", indent, "", constr);
+	indent += 2;
+	printf("%*sframe sizes (%d,%d)..(%d,%d)\n", indent, "",
+		constr->min_width, constr->min_height,
+		constr->max_width, constr->max_height);
+	printf("%*sHW formats:",  indent, "");
+	FileAVlibs::dump_AVPixelFormats(constr->valid_hw_formats);
+	printf("%*sSW formats:",  indent, "");
+	FileAVlibs::dump_AVPixelFormats(constr->valid_sw_formats);
 }

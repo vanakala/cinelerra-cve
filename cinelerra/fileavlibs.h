@@ -145,7 +145,10 @@ private:
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 	static void dump_AVCodecParameters(AVCodecParameters *codecpar, int indent = 0);
 #endif
-	void dump_hwdevice_ctx(AVBufferRef *device_ref, int indent = 0);
+	static void dump_hwdevice_ctx(AVBufferRef *device_ref, int indent = 0);
+	static void dump_AVPixelFormats(AVPixelFormat *pix_fmts);
+	static void dump_AVHWFramesConstraints(AVHWFramesConstraints *constr,
+		int indent = 0);
 
 	static struct avlib_formattable known_formats[];
 	AVFormatContext *context;
