@@ -266,7 +266,6 @@ int FileAVlibs::probe_input(Asset *asset)
 			codec_id = stream->codecpar->codec_id;
 #endif
 			codec = avcodec_find_decoder(codec_id);
-
 			if(codec_id == AV_CODEC_ID_NONE || !codec)
 				continue;
 
@@ -504,6 +503,7 @@ int FileAVlibs::probe_input(Asset *asset)
 #endif
 			}
 			avformat_close_input(&context);
+			have_hwaccel(asset);
 			avlibs_lock->unlock();
 
 			if(asset->stream_count(STRDSC_AUDIO | STRDSC_VIDEO))
@@ -3638,7 +3638,39 @@ int FileAVlibs::have_hwaccel(Asset *asset)
 	if(!av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI,
 			NULL, NULL, 0) && hw_device_ctx)
 	{
-		result = 1;
+		if(asset)
+		{
+			AVHWFramesConstraints *constr =
+				av_hwdevice_get_hwframe_constraints(hw_device_ctx, 0);
+			int ix = -1;
+
+			if(constr && constr->valid_sw_formats)
+			{
+				while((ix = asset->get_stream_ix(STRDSC_VIDEO, ix)) >= 0)
+				{
+					AVPixelFormat pix_fmt = av_get_pix_fmt(
+						asset->streams[ix].samplefmt);
+					int found = 0;
+
+					for(int k = 0; constr->valid_sw_formats[k] != AV_PIX_FMT_NONE; k++)
+					{
+						if(pix_fmt == constr->valid_sw_formats[k])
+						{
+							asset->streams[ix].options |= STRDSC_HWACCEL;
+							found = 1;
+							break;
+						}
+					}
+					if(found)
+						result++;
+					else
+						asset->streams[ix].options &= ~STRDSC_HWACCEL;
+				}
+			}
+			av_hwframe_constraints_free(&constr);
+		}
+		else
+			result = 1;
 		av_buffer_unref(&hw_device_ctx);
 	}
 	return result;

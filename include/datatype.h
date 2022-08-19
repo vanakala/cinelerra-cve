@@ -60,6 +60,8 @@ typedef double ptstime;
 #define STRDSC_VIDEO   2
 // All stream types
 #define STRDSC_ALLTYP  3
+// HWaccel with stream is possible
+#define STRDSC_HWACCEL 0x4000
 // Format allows byte seek
 #define STRDSC_SEEKBYTES 0x8000
 
