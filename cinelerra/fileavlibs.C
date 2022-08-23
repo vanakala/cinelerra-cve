@@ -706,7 +706,8 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 				mediatype = _("Video");
 				if(!(open_mode & FILE_OPEN_VIDEO))
 					printf("%d is not a video stream.\n", streamix);
-				else if(open_mode & FILE_OPEN_HWACCEL)
+				else if(open_mode & FILE_OPEN_HWACCEL &&
+						asset->streams[streamix].options & STRDSC_HWACCEL)
 				{
 					if((rv = av_hwdevice_ctx_create(&hw_device_ctx,
 							AV_HWDEVICE_TYPE_VAAPI,
