@@ -46,7 +46,7 @@ public:
 	void set_color(int color);
 	void update(const char *text);
 	void update(const wchar_t *text);
-	void update(double value);
+	void update(double value, int precision = 4);
 	void update(int value);
 	char* get_text();
 

@@ -156,10 +156,10 @@ void BC_Title::update(int value)
 	update(string);
 }
 
-void BC_Title::update(double value)
+void BC_Title::update(double value, int precision)
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%.04f", value);
+	sprintf(string, "%.*f", precision, value);
 	update(string);
 }
 
