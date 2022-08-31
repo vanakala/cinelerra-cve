@@ -193,7 +193,7 @@ void PlaybackPrefs::update(int interpolation)
 
 void PlaybackPrefs::draw_framerate()
 {
-	framerate_title->update(pwindow->thread->this_edlsession->actual_frame_rate);
+	framerate_title->update(pwindow->thread->this_edlsession->actual_frame_rate, 2);
 }
 
 void PlaybackPrefs::draw_playstatistics()
