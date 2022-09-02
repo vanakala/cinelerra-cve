@@ -2411,7 +2411,10 @@ void BC_WindowBase::hide_window()
 		}
 	}
 	if(!completion)
+	{
 		XUnmapWindow(top_level->display, win);
+		flush();
+	}
 	hidden = 1;
 	top_level->unlock_window();
 }
