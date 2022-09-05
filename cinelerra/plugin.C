@@ -637,7 +637,7 @@ int Plugin::shared_with(Track *track)
 	return track->tracks->shared_on_track(this, track);
 }
 
-void Plugin::calculate_title(char *string)
+char *Plugin::calculate_title(char *string)
 {
 	string[0] = 0;
 
@@ -663,6 +663,7 @@ void Plugin::calculate_title(char *string)
 	}
 	else
 		strcpy(string, _("None"));
+	return string;
 }
 
 void Plugin::shift(ptstime difference)
