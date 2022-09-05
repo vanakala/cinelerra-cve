@@ -41,6 +41,7 @@ private:
 	PluginPopupUp *moveup;
 	PluginPopupDown *movedown;
 	PluginPopupSwapMain *swapmain;
+	BC_MenuItem *plugin_title;
 	int have_show;
 	int have_keyframe;
 	int have_moveup;

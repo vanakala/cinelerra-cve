@@ -5,6 +5,7 @@
 
 #include "cinelerra.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -15,12 +16,10 @@
 
 
 PluginPopup::PluginPopup()
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
+ : BC_PopupMenu(0, 0, 0)
 {
+	add_item(plugin_title = new BC_MenuItem("-"));
+	add_item(new BC_MenuItem("-"));
 	add_item(change = new PluginPopupChange(this));
 	add_item(detach = new PluginPopupDetach(this));
 	add_item(new PluginPopupClearKeyFrames(this));
@@ -53,11 +52,14 @@ PluginPopup::~PluginPopup()
 
 void PluginPopup::update(Plugin *plugin)
 {
+	char string[BCTEXTLEN];
+
 	on->set_checked(plugin->on);
 	show->set_checked(plugin->show);
 	this->plugin = plugin;
 	if(plugin->plugin_type == PLUGIN_STANDALONE)
 	{
+		plugin_title->set_text(plugin->calculate_title(string));
 		if(!have_show)
 		{
 			add_item(show);
@@ -107,6 +109,7 @@ void PluginPopup::update(Plugin *plugin)
 	}
 	if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
+		plugin_title->set_text(plugin->calculate_title(string));
 		if(!have_swapmain)
 		{
 			add_item(swapmain);
