@@ -385,7 +385,7 @@ int MWindow::can_paste_keyframe(Track *track, Plugin *plugin)
 			len, SECONDARY_SELECTION);
 
 		file.read_from_string(string);
-		delete string;
+		delete [] string;
 
 		if(!file.read_tag() && file.tag.title_is("CLIPBOARD_AUTO"))
 		{
