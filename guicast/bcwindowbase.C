@@ -268,6 +268,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	this->y = y;
 	this->w = w;
 	this->h = h;
+	last_translate_x = x;
+	last_translate_y = y;
 	this->bg_color = bg_color;
 	this->window_type = window_type;
 	this->hidden = hide;
