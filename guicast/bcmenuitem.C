@@ -10,6 +10,7 @@
 #include "bcpopup.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 
@@ -25,7 +26,10 @@
 
 BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 {
-	reset();
+	this->text = 0;
+	this->hotkey_text = 0;
+	this->icon = 0;
+	disabled = 0;
 
 	if(text)
 		set_text(text);
@@ -49,13 +53,6 @@ BC_MenuItem::~BC_MenuItem()
 	delete submenu;
 	if(menu_popup)
 		menu_popup->remove_item(this);
-}
-
-void BC_MenuItem::reset()
-{
-	text = 0;
-	hotkey_text = 0;
-	icon = 0;
 }
 
 void BC_MenuItem::initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, BC_MenuPopup *menu_popup)
@@ -85,6 +82,16 @@ BC_Pixmap* BC_MenuItem::get_icon()
 	return icon;
 }
 
+void BC_MenuItem::disable()
+{
+	disabled = 1;
+}
+
+void BC_MenuItem::enable()
+{
+	disabled = 0;
+}
+
 void BC_MenuItem::set_text(const char *text)
 {
 	delete [] this->text;
@@ -94,6 +101,8 @@ void BC_MenuItem::set_text(const char *text)
 	{
 		this->text = new char[strlen(text) + 1];
 		strcpy(this->text, text);
+		if(text[0] && text[0] == '-' && text[1] == 0)
+			disabled = 1;
 	}
 }
 
@@ -122,18 +131,14 @@ void BC_MenuItem::deactivate_submenus(BC_MenuPopup *exclude)
 void BC_MenuItem::activate_submenu()
 {
 	int new_x, new_y;
+
 	if(menu_popup->popup && submenu && !submenu->popup)
 	{
 		Window tempwin;
 		top_level->lock_window("BC_MenuItem::activate_submenu");
-		XTranslateCoordinates(top_level->display, 
-			menu_popup->get_popup()->win, 
-			top_level->rootwin, 
-			0, 
-			y, 
-			&new_x, 
-			&new_y, 
-			&tempwin);
+		XTranslateCoordinates(top_level->display,
+			menu_popup->get_popup()->win, top_level->rootwin,
+			0, y, &new_x, &new_y, &tempwin);
 		submenu->activate_menu(new_x + 5, new_y, menu_popup->w - 10, h, 0, 0);
 		highlighted = 1;
 		top_level->unlock_window();
@@ -144,10 +149,11 @@ int BC_MenuItem::dispatch_button_press()
 {
 	int result = 0;
 
+	if(disabled)
+		return 0;
+
 	if(submenu)
-	{
 		result = submenu->dispatch_button_press();
-	}
 
 	if(!result && top_level->event_win == menu_popup->get_popup()->win)
 	{
@@ -177,7 +183,7 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 	int cursor_x, cursor_y;
 	Window tempwin;
 
-	if(!text || !strcmp(text, "-"))
+	if(disabled)
 		return 0;
 
 	if(submenu)
@@ -221,10 +227,11 @@ int BC_MenuItem::dispatch_motion_event(int &redraw)
 	int cursor_x, cursor_y;
 	Window tempwin;
 
+	if(disabled)
+		return 0;
+
 	if(submenu)
-	{
 		result = submenu->dispatch_motion_event();
-	}
 
 	top_level->translate_coordinates(top_level->event_win, 
 		menu_popup->get_popup()->win,
@@ -259,16 +266,14 @@ int BC_MenuItem::dispatch_motion_event(int &redraw)
 
 void BC_MenuItem::dispatch_translation_event()
 {
-	if(submenu)
+	if(!disabled && submenu)
 		submenu->dispatch_translation_event();
 }
 
 void BC_MenuItem::dispatch_cursor_leave()
 {
-	if(submenu)
-	{
+	if(!disabled && submenu)
 		submenu->dispatch_cursor_leave();
-	}
 
 	if(highlighted && top_level->event_win == menu_popup->get_popup()->win)
 	{
@@ -279,10 +284,12 @@ void BC_MenuItem::dispatch_cursor_leave()
 int BC_MenuItem::dispatch_key_press()
 {
 	int result = 0;
+
+	if(disabled)
+		return 0;
+
 	if(submenu)
-	{
 		result = submenu->dispatch_key_press();
-	}
 
 	if(!result)
 	{
@@ -303,12 +310,12 @@ void BC_MenuItem::draw()
 	int text_line = top_level->get_text_descent(MEDIUMFONT);
 	BC_Resources *resources = top_level->get_resources();
 
-	top_level->lock_window("BC_MenuItem::draw");
-
 	if(!text)
 		return;
 
-	if(!strcmp(text, "-"))
+	top_level->lock_window("BC_MenuItem::draw");
+
+	if(text[0] && text[0] == '-' && text[1] == 0)
 	{
 		menu_popup->get_popup()->set_color(DKGREY);
 		menu_popup->get_popup()->draw_line(5, y + h / 2, menu_popup->get_w() - 5, y + h / 2);
@@ -318,7 +325,8 @@ void BC_MenuItem::draw()
 	else
 	{
 		int offset = 0;
-		if(highlighted)
+
+		if(!disabled && highlighted)
 		{
 			int y = this->y;
 			int w = menu_popup->get_w() - 4;
@@ -376,7 +384,7 @@ void BC_MenuItem::draw()
 			menu_popup->get_popup()->set_color(resources->menu_item_text);
 		}
 
-		if(checked)
+		if(!disabled && checked)
 		{
 			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);

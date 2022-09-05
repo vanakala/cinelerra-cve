@@ -20,7 +20,6 @@ public:
 
 	friend class BC_MenuPopup;
 
-	void reset();
 	void add_submenu(BC_SubMenu *submenu);
 	void set_checked(int value);
 	int get_checked();
@@ -31,6 +30,9 @@ public:
 	void set_hotkey_text(const char *text);
 	void set_shift(int value = 1);
 	void set_alt(int value = 1);
+	void disable();
+	void enable();
+	int get_disabled() { return disabled; };
 
 	void deactivate_submenus(BC_MenuPopup *exclude);
 	void activate_submenu();
@@ -74,6 +76,8 @@ private:
 	int y;
 // height of item is set during menu activation
 	int h;
+// Item is disabled
+	int disabled;
 };
 
 #endif
