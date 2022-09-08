@@ -22,7 +22,6 @@ class PlaybackOutChannels;
 class PlaybackOutPath;
 class PlaybackPreload;
 class PlaybackReadLength;
-class PlaybackSoftwareTimer;
 class TimecodeOffset;
 class VideoAsynchronous;
 
@@ -71,17 +70,6 @@ public:
 
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
-};
-
-
-class PlaybackSoftwareTimer : public BC_CheckBox
-{
-public:
-	PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 

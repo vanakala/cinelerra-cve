@@ -68,8 +68,9 @@ void PlaybackPrefs::show()
 	y += audio_offset->get_h() + 5;
 	win = add_subwindow(new CheckBox(x, y, _("View follows playback"),
 		&pwindow->thread->this_edlsession->view_follows_playback));
-	y += win->get_h();
-	win = add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->this_edlsession->playback_software_position, y));
+	y += win->get_h() + 3;
+	win = add_subwindow(new CheckBox(x, y, _("Use software for positioning information"),
+		&pwindow->thread->this_edlsession->playback_software_position));
 
 	y += win->get_h() + 10;
 	win = add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
@@ -225,19 +226,6 @@ PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow,
 int PlaybackAudioOffset::handle_event()
 {
 	playback->playback_config->aconfig->audio_offset = atof(get_text());
-	return 1;
-}
-
-
-PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("Use software for positioning information"))
-{ 
-	this->pwindow = pwindow; 
-}
-
-int PlaybackSoftwareTimer::handle_event() 
-{ 
-	pwindow->thread->this_edlsession->playback_software_position = get_value();
 	return 1;
 }
 
