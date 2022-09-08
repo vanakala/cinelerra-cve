@@ -73,21 +73,6 @@ public:
 };
 
 
-class VideoEveryFrame : public BC_CheckBox
-{
-public:
-	VideoEveryFrame(PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback_prefs,
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback_prefs;
-};
-
-
 class PlaybackNearest : public BC_Radial
 {
 public:

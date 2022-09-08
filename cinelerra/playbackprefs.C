@@ -40,7 +40,6 @@ void PlaybackPrefs::show()
 	int x, y, y1, x2, y2, wt, wh;
 	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
-	BC_WindowBase *window;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
 	int maxw;
@@ -91,9 +90,10 @@ void PlaybackPrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT));
 	y += 30;
 
-	win = add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
+	win = add_subwindow(new CheckBox(x, y, _("Play every frame"),
+		&pwindow->thread->this_edlsession->video_every_frame));
 	y1 = y + 2;
-	y += window->get_h() + 20;
+	y += win->get_h() + 20;
 
 	y2 = y1;
 	x2 = x + 370;
@@ -302,21 +302,6 @@ int PlaybackBilinearBilinear::handle_event()
 	return 1;
 }
 
-VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback_prefs,
-	int x, 
-	int y)
- : BC_CheckBox(x, y, pwindow->thread->this_edlsession->video_every_frame, _("Play every frame"))
-{
-	this->pwindow = pwindow;
-	this->playback_prefs = playback_prefs;
-}
-
-int VideoEveryFrame::handle_event()
-{
-	pwindow->thread->this_edlsession->video_every_frame = get_value();
-	return 1;
-}
 
 TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow, 
       PlaybackPrefs *playback, char *text, int unit)
