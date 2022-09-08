@@ -23,7 +23,6 @@ class PlaybackOutPath;
 class PlaybackPreload;
 class PlaybackReadLength;
 class PlaybackSoftwareTimer;
-class PlaybackViewFollows;
 class TimecodeOffset;
 class VideoAsynchronous;
 
@@ -72,17 +71,6 @@ public:
 
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
-};
-
-
-class PlaybackViewFollows : public BC_CheckBox
-{
-public:
-	PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 

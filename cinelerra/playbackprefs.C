@@ -6,13 +6,14 @@
 #include "adeviceprefs.h"
 #include "audiodevice.inc"
 #include "bcbar.h"
+#include "bchash.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "colormodels.inc"
 #include "clip.h"
-#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "guielements.h"
 #include "language.h"
 #include "playbackprefs.h"
 #include "playbackconfig.h"
@@ -65,8 +66,8 @@ void PlaybackPrefs::show()
 		x2,
 		y);
 	y += audio_offset->get_h() + 5;
-
-	win = add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->this_edlsession->view_follows_playback, y));
+	win = add_subwindow(new CheckBox(x, y, _("View follows playback"),
+		&pwindow->thread->this_edlsession->view_follows_playback));
 	y += win->get_h();
 	win = add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->this_edlsession->playback_software_position, y));
 
@@ -224,18 +225,6 @@ PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow,
 int PlaybackAudioOffset::handle_event()
 {
 	playback->playback_config->aconfig->audio_offset = atof(get_text());
-	return 1;
-}
-
-PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("View follows playback"))
-{ 
-	this->pwindow = pwindow; 
-}
-
-int PlaybackViewFollows::handle_event() 
-{ 
-	pwindow->thread->this_edlsession->view_follows_playback = get_value();
 	return 1;
 }
 
