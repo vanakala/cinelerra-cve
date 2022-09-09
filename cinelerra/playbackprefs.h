@@ -58,21 +58,6 @@ public:
 };
 
 
-class PlaybackAudioOffset : public BC_TumbleTextBox
-{
-public:
-	PlaybackAudioOffset(PreferencesWindow *pwindow, 
-		PlaybackPrefs *subwindow,
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
-
 class PlaybackNearest : public BC_Radial
 {
 public:

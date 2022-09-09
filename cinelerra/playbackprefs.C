@@ -51,20 +51,16 @@ void PlaybackPrefs::show()
 	y = theme_global->preferencesoptions_y;
 
 // Audio
-	add_subwindow(new BC_Title(x, 
-		y, 
-		_("Audio Out"), 
-		LARGEFONT));
+	add_subwindow(new BC_Title(x, y, _("Audio Out"), LARGEFONT));
 
 	y += get_text_height(LARGEFONT) + 5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
 	x2 += title1->get_w() + 5;
-	PlaybackAudioOffset *audio_offset = new PlaybackAudioOffset(pwindow,
-		this,
-		x2,
-		y);
-	y += audio_offset->get_h() + 5;
+	DblValueTumbleTextBox *ttbox = new DblValueTumbleTextBox(x2, y, this,
+		&playback_config->aconfig->audio_offset,
+		-10.0, 10.0, 0.01, GUIELEM_VAL_W, 2);
+	y += ttbox->get_h() + 5;
 	win = add_subwindow(new CheckBox(x, y, _("View follows playback"),
 		&pwindow->thread->this_edlsession->view_follows_playback));
 	y += win->get_h() + 3;
@@ -182,7 +178,6 @@ void PlaybackPrefs::show()
 	video_device->initialize();
 }
 
-
 void PlaybackPrefs::update(int interpolation)
 {
 	BC_Resources::interpolation_method = interpolation;
@@ -203,30 +198,6 @@ void PlaybackPrefs::draw_playstatistics()
 	playedframes_title->update(pwindow->thread->this_edlsession->frame_count);
 	lateframes_title->update(pwindow->thread->this_edlsession->frames_late);
 	avgdelay_title->update(pwindow->thread->this_edlsession->avg_delay);
-}
-
-PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback, 
-	int x, 
-	int y)
- : BC_TumbleTextBox(playback,
-	playback->playback_config->aconfig->audio_offset,
-	-10.0,
-	10.0,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-	this->playback = playback;
-	set_precision(2);
-	set_increment(0.1);
-}
-
-int PlaybackAudioOffset::handle_event()
-{
-	playback->playback_config->aconfig->audio_offset = atof(get_text());
-	return 1;
 }
 
 
