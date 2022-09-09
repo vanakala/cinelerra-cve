@@ -45,6 +45,22 @@ int TextBox::handle_event()
 }
 
 
+DblValueTumbleTextBox::DblValueTumbleTextBox(int x, int y,
+	BC_WindowBase *parent_window, double *value, double min, double max,
+	double increment, int width, int precision)
+ : BC_TumbleTextBox(parent_window, *value, min, max, x, y, width, precision)
+{
+	valueptr = value;
+	set_increment(increment);
+}
+
+int DblValueTumbleTextBox::handle_event()
+{
+	*valueptr = atof(get_text());
+	return 1;
+}
+
+
 CheckBox::CheckBox(int x, int y, const char *text, int *value)
  : BC_CheckBox(x, y, *value, text)
 {
