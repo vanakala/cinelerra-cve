@@ -11,6 +11,7 @@
 #include "clip.h"
 #include "cache.inc"
 #include "formattools.h"
+#include "guielements.h"
 #include "language.h"
 #include "performanceprefs.h"
 #include "preferences.h"
@@ -82,10 +83,8 @@ void PerformancePrefs::show()
 
 	add_subwindow(new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
 	y1 = y += 30;
-
-	win = add_subwindow(new PrefsUseBRender(pwindow, 
-		x,
-		y));
+	win = add_subwindow(new CheckBox(x, y, _("Use background rendering"),
+		&pwindow->thread->preferences->use_brender));
 	y += win->get_h() + 10;
 	win = add_subwindow(new BC_Title(x, y, _("Frames per background rendering job:")));
 
@@ -245,26 +244,6 @@ void PerformancePrefs::update_node_list()
 			node_list->get_xposition(),
 			node_list->get_yposition(),
 			node_list->get_selection_number(0, 0));
-}
-
-
-PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow, 
-	int x,
-	int y)
- : BC_CheckBox(x, 
-	y,
-	pwindow->thread->preferences->use_brender, 
-	_("Use background rendering"))
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsUseBRender::handle_event()
-{
-	pwindow->thread->redraw_overlays = 1;
-	pwindow->thread->redraw_times = 1;
-	pwindow->thread->preferences->use_brender = get_value();
-	return 1;
 }
 
 

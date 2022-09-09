@@ -184,6 +184,12 @@ void PreferencesThread::apply_settings()
 		!preferences->brender_asset->equivalent(*preferences_global->brender_asset,
 			STRDSC_VIDEO);
 
+	if(preferences->use_brender != preferences_global->use_brender)
+	{
+		redraw_overlays = 1;
+		redraw_times = 1;
+	}
+
 	// Check index directory
 	if(strcmp(preferences_global->index_directory, preferences->index_directory))
 	{
@@ -258,10 +264,16 @@ void PreferencesThread::apply_settings()
 	}
 
 	if(redraw_overlays)
+	{
 		mwindow_global->draw_canvas_overlays();
+		redraw_overlays = 0;
+	}
 
 	if(redraw_times)
+	{
 		mwindow_global->update_gui(WUPD_TIMEBAR | WUPD_CLOCK | WUPD_TIMEDEPS);
+		redraw_times = 0;
+	}
 
 	if(rerender)
 	{

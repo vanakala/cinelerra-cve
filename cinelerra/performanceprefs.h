@@ -38,19 +38,6 @@ public:
 };
 
 
-class PrefsUseBRender : public BC_CheckBox
-{
-public:
-	PrefsUseBRender(PreferencesWindow *pwindow, 
-		int x,
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsBRenderFragment : public BC_TumbleTextBox
 {
 public:
