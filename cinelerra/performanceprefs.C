@@ -123,7 +123,8 @@ void PerformancePrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
 	y += 25;
 
-	add_subwindow(new PrefsRenderFarm(pwindow, x, y));
+	add_subwindow(new CheckBox(x, y, _("Use render farm"),
+		&pwindow->thread->preferences->use_renderfarm));
 	add_subwindow(new BC_Title(x + xmargin4, y, _("Nodes:")));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Hostname:")));
@@ -337,22 +338,6 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 int PrefsBRenderPreroll::handle_event()
 {
 	pwindow->thread->preferences->brender_preroll = atoi(get_text());
-	return 1;
-}
-
-
-PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
-	y,
-	pwindow->thread->preferences->use_renderfarm,
-	_("Use render farm"))
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsRenderFarm::handle_event()
-{
-	pwindow->thread->preferences->use_renderfarm = get_value();
 	return 1;
 }
 

@@ -93,17 +93,6 @@ public:
 };
 
 
-class PrefsRenderFarm : public BC_CheckBox
-{
-public:
-	PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsRenderFarmConsolidate : public BC_CheckBox
 {
 public:
