@@ -74,7 +74,8 @@ void PerformancePrefs::show()
 // Seconds to preroll renders
 	new PrefsRenderPreroll(pwindow, this, maxw, ybx[1]);
 // Number of threads
-	new PrefsNumberOfThreads(pwindow, this, maxw, ybx[2]);
+	new ValueTumbleTextBox(maxw, ybx[2], this,
+		&pwindow->thread->preferences->max_threads, 0, 32);
 	y += 35;
 
 // Background rendering
@@ -338,26 +339,6 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 int PrefsBRenderPreroll::handle_event()
 {
 	pwindow->thread->preferences->brender_preroll = atoi(get_text());
-	return 1;
-}
-
-
-PrefsNumberOfThreads::PrefsNumberOfThreads(PreferencesWindow *pwindow,
-	PerformancePrefs *subwindow, int x, int y)
- : BC_TumbleTextBox(subwindow,
-	pwindow->thread->preferences->max_threads,
-	0,
-	100,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsNumberOfThreads::handle_event()
-{
-	pwindow->thread->preferences->max_threads = atoi(get_text());
 	return 1;
 }
 

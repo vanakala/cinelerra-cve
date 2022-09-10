@@ -80,19 +80,6 @@ public:
 };
 
 
-class PrefsNumberOfThreads : public BC_TumbleTextBox
-{
-public:
-	PrefsNumberOfThreads(PreferencesWindow *pwindow,
-		PerformancePrefs *subwindow,
-		int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsRenderFarmConsolidate : public BC_CheckBox
 {
 public:
