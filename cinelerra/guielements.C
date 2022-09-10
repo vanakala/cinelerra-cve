@@ -44,6 +44,21 @@ int TextBox::handle_event()
 	return 1;
 }
 
+ValueTumbleTextBox::ValueTumbleTextBox(int x, int y,
+	BC_WindowBase *parent_window, int *value, int min, int max,
+	int increment, int width)
+ : BC_TumbleTextBox(parent_window, *value, min, max, x, y, width)
+{
+	valueptr = value;
+	set_increment(increment);
+}
+
+int ValueTumbleTextBox::handle_event()
+{
+	*valueptr = atoi(get_text());
+	return 1;
+}
+
 
 DblValueTumbleTextBox::DblValueTumbleTextBox(int x, int y,
 	BC_WindowBase *parent_window, double *value, double min, double max,

@@ -32,6 +32,18 @@ private:
 };
 
 
+class ValueTumbleTextBox : public BC_TumbleTextBox
+{
+public:
+	ValueTumbleTextBox(int x, int y, BC_WindowBase *parent_window,
+		int *value, int min, int max,
+		int increment = 1, int width = GUIELEM_VAL_W);
+
+	int handle_event();
+private:
+	int *valueptr;
+};
+
 class DblValueTumbleTextBox : public BC_TumbleTextBox
 {
 public:
