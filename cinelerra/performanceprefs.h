@@ -38,20 +38,6 @@ public:
 };
 
 
-class PrefsBRenderPreroll : public BC_TumbleTextBox
-{
-public:
-	PrefsBRenderPreroll(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsRenderFarmConsolidate : public BC_CheckBox
 {
 public:

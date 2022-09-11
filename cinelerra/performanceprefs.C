@@ -97,11 +97,10 @@ void PerformancePrefs::show()
 	y += ttb->get_h() + 5;
 	win = add_subwindow(new BC_Title(x, y, _("Frames to preroll background:")));
 	y += win->get_h() + 5;
-	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, 
-		this, 
-		x + xmargin3, 
-		y + 5);
-	y += bpreroll->get_h() + 20;
+
+	ttb = new ValueTumbleTextBox(x + xmargin3, y + 5, this,
+		&pwindow->thread->preferences->brender_preroll, 0, 100);
+	y += ttb->get_h() + 20;
 
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y1, _("Output for background rendering:")));
@@ -272,28 +271,6 @@ int CICacheSize::handle_event()
 	result = atol(get_text()) * 0x100000;
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
-	return 1;
-}
-
-
-PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y)
- : BC_TumbleTextBox(subwindow, 
-	pwindow->thread->preferences->brender_preroll,
-	0,
-	100,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsBRenderPreroll::handle_event()
-{
-	pwindow->thread->preferences->brender_preroll = atoi(get_text());
 	return 1;
 }
 
