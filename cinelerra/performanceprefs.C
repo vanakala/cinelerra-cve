@@ -90,11 +90,9 @@ void PerformancePrefs::show()
 	win = add_subwindow(new BC_Title(x, y, _("Frames per background rendering job:")));
 
 	y += win->get_h() + 5;
-	PrefsBRenderFragment *brender_fragment = new PrefsBRenderFragment(pwindow, 
-		this, 
-		x + xmargin3,
-		y);
-	y += brender_fragment->get_h() + 5;
+	ValueTumbleTextBox *ttb = new ValueTumbleTextBox(x + xmargin3, y, this,
+		&pwindow->thread->preferences->brender_fragment, 1, 1024);
+	y += ttb->get_h() + 5;
 	win = add_subwindow(new BC_Title(x, y, _("Frames to preroll background:")));
 	y += win->get_h() + 5;
 	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, 
@@ -246,28 +244,6 @@ void PerformancePrefs::update_node_list()
 			node_list->get_xposition(),
 			node_list->get_yposition(),
 			node_list->get_selection_number(0, 0));
-}
-
-
-PrefsBRenderFragment::PrefsBRenderFragment(PreferencesWindow *pwindow, 
-	PerformancePrefs *subwindow, 
-	int x, 
-	int y)
- : BC_TumbleTextBox(subwindow, 
-	pwindow->thread->preferences->brender_fragment,
-	1,
-	65535,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsBRenderFragment::handle_event()
-{
-	pwindow->thread->preferences->brender_fragment = atol(get_text());
-	return 1;
 }
 
 
