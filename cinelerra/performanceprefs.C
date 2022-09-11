@@ -72,7 +72,9 @@ void PerformancePrefs::show()
 		this);
 
 // Seconds to preroll renders
-	new PrefsRenderPreroll(pwindow, this, maxw, ybx[1]);
+	new DblValueTumbleTextBox(maxw, ybx[1], this,
+		&pwindow->thread->preferences->render_preroll, 0.0, 10.0, 0.1,
+		GUIELEM_VAL_W, 2);
 // Number of threads
 	new ValueTumbleTextBox(maxw, ybx[2], this,
 		&pwindow->thread->preferences->max_threads, 0, 32);
@@ -270,29 +272,6 @@ int CICacheSize::handle_event()
 	result = atol(get_text()) * 0x100000;
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
-	return 1;
-}
-
-
-PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y)
- : BC_TumbleTextBox(subwindow, 
-	pwindow->thread->preferences->render_preroll,
-	0.0,
-	100.0,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-	set_increment(0.1);
-}
-
-int PrefsRenderPreroll::handle_event()
-{
-	pwindow->thread->preferences->render_preroll = atof(get_text());
 	return 1;
 }
 

@@ -38,20 +38,6 @@ public:
 };
 
 
-class PrefsRenderPreroll : public BC_TumbleTextBox
-{
-public:
-	PrefsRenderPreroll(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsBRenderPreroll : public BC_TumbleTextBox
 {
 public:
