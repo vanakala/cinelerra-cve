@@ -10,6 +10,9 @@
 #define GUIELEM_TXT_w 400
 
 class ValueTextBox;
+class DblValueTextBox;
+class ValueTumbleTextBox;
+class DblValueTumbleTextBox;
 class TextBox;
 class CheckBox;
 

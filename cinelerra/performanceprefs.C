@@ -463,24 +463,3 @@ int PrefsRenderFarmJobs::handle_event()
 	pwindow->thread->preferences->renderfarm_job_count = atol(get_text());
 	return 1;
 }
-
-
-PrefsRenderFarmMountpoint::PrefsRenderFarmMountpoint(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y)
- : BC_TextBox(x, 
-	y,
-	100,
-	1,
-	pwindow->thread->preferences->renderfarm_mountpoint)
-{
-	this->pwindow = pwindow;
-	this->subwindow = subwindow;
-}
-
-int PrefsRenderFarmMountpoint::handle_event()
-{
-	strcpy(pwindow->thread->preferences->renderfarm_mountpoint, get_text());
-	return 1;
-}

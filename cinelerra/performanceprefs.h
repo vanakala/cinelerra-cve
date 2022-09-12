@@ -52,21 +52,6 @@ public:
 };
 
 
-class PrefsRenderFarmMountpoint : public BC_TextBox
-{
-public:
-	PrefsRenderFarmMountpoint(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PerformancePrefs *subwindow;
-};
-
-
 class PrefsRenderFarmNodes : public BC_ListBox
 {
 public:
