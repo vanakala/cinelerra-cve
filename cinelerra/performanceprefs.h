@@ -31,7 +31,7 @@ public:
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
-	PrefsRenderFarmPort *edit_port;
+	ValueTumbleTextBox *edit_port;
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
@@ -42,20 +42,6 @@ class PrefsRenderFarmConsolidate : public BC_CheckBox
 {
 public:
 	PrefsRenderFarmConsolidate(PreferencesWindow *pwindow, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
-class PrefsRenderFarmPort : public BC_TumbleTextBox
-{
-public:
-	PrefsRenderFarmPort(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
 
 	int handle_event();
 

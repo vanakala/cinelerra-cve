@@ -145,10 +145,9 @@ void PerformancePrefs::show()
 		this, 
 		x, 
 		y));
-	edit_port = new PrefsRenderFarmPort(pwindow, 
-		this, 
-		x + xmargin3, 
-		y);
+
+	edit_port = new ValueTumbleTextBox(x + xmargin3, y, this,
+		&pwindow->thread->preferences->renderfarm_port, 1025, 65535);
 
 	y += 30;
 
@@ -287,28 +286,6 @@ PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindo
 int PrefsRenderFarmConsolidate::handle_event()
 {
 	pwindow->thread->preferences->renderfarm_consolidate = get_value();
-	return 1;
-}
-
-
-PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow, 
-	PerformancePrefs *subwindow, 
-	int x, 
-	int y)
- : BC_TumbleTextBox(subwindow, 
-	pwindow->thread->preferences->renderfarm_port,
-	1,
-	65535,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsRenderFarmPort::handle_event()
-{
-	pwindow->thread->preferences->renderfarm_port = atol(get_text());
 	return 1;
 }
 
