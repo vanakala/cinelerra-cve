@@ -38,17 +38,6 @@ public:
 };
 
 
-class PrefsRenderFarmConsolidate : public BC_CheckBox
-{
-public:
-	PrefsRenderFarmConsolidate(PreferencesWindow *pwindow, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsRenderFarmJobs : public BC_TumbleTextBox
 {
 public:

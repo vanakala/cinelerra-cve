@@ -274,22 +274,6 @@ int CICacheSize::handle_event()
 }
 
 
-PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
-	y, 
-	pwindow->thread->preferences->renderfarm_consolidate,
-	_("Consolidate output files on completion"))
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsRenderFarmConsolidate::handle_event()
-{
-	pwindow->thread->preferences->renderfarm_consolidate = get_value();
-	return 1;
-}
-
-
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow, 
 	PerformancePrefs *subwindow, int x, int y)
  : BC_ListBox(x, 
