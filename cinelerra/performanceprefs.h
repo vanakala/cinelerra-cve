@@ -38,20 +38,6 @@ public:
 };
 
 
-class PrefsRenderFarmJobs : public BC_TumbleTextBox
-{
-public:
-	PrefsRenderFarmJobs(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
 class PrefsRenderFarmNodes : public BC_ListBox
 {
 public:

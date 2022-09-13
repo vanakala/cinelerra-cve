@@ -180,10 +180,9 @@ void PerformancePrefs::show()
 	add_subwindow(new BC_Title(x, 
 		y + 30, 
 		_("(overridden if new file at each label is checked)")));
-	PrefsRenderFarmJobs *jobs = new PrefsRenderFarmJobs(pwindow, 
-		this, 
-		x + xmargin3, 
-		y);
+	new ValueTumbleTextBox(x + xmargin3, y, this,
+		&pwindow->thread->preferences->renderfarm_job_count,
+		1, 64);
 }
 
 void PerformancePrefs::generate_node_list()
@@ -439,27 +438,5 @@ int PrefsRenderFarmReset::handle_event()
 	subwindow->update_node_list();
 	subwindow->master_rate->update(pwindow->thread->preferences->local_rate);
 	subwindow->hot_node = -1;
-	return 1;
-}
-
-
-PrefsRenderFarmJobs::PrefsRenderFarmJobs(PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow, 
-		int x, 
-		int y)
- : BC_TumbleTextBox(subwindow, 
-	pwindow->thread->preferences->renderfarm_job_count,
-	1,
-	100,
-	x,
-	y,
-	100)
-{
-	this->pwindow = pwindow;
-}
-
-int PrefsRenderFarmJobs::handle_event()
-{
-	pwindow->thread->preferences->renderfarm_job_count = atol(get_text());
 	return 1;
 }
