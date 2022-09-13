@@ -37,7 +37,6 @@ Preferences::Preferences()
 	renderfarm_port = DEAMON_PORT;
 	render_preroll = 0.5;
 	brender_preroll = 0;
-	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
 	calculate_processors();
@@ -139,8 +138,6 @@ void Preferences::copy_from(Preferences *that)
 	brender_preroll = that->brender_preroll;
 	renderfarm_job_count = that->renderfarm_job_count;
 	renderfarm_vfs = that->renderfarm_vfs;
-	strcpy(renderfarm_mountpoint, that->renderfarm_mountpoint);
-	renderfarm_consolidate = that->renderfarm_consolidate;
 	use_brender = that->use_brender;
 	brender_fragment = that->brender_fragment;
 	*brender_asset = *that->brender_asset;
@@ -259,8 +256,6 @@ void Preferences::load_defaults(BC_Hash *defaults)
 	render_preroll = defaults->get("RENDERFARM_PREROLL", render_preroll);
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
-	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
-	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
 	for(int i = 0; i < renderfarm_total; i++)
@@ -322,9 +317,9 @@ void Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("BRENDER_PREROLL", brender_preroll);
-	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
+	defaults->delete_key("RENDERFARM_MOUNTPOINT");
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
-	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
+	defaults->delete_key("RENDERFARM_CONSOLIDATE");
 	defaults->update("RENDERFARM_TOTAL", (int64_t)renderfarm_nodes.total);
 	for(int i = 0; i < renderfarm_nodes.total; i++)
 	{

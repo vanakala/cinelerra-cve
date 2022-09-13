@@ -97,14 +97,10 @@ public:
 	ArrayList<double> renderfarm_rate;
 // Rate of master node
 	double local_rate;
-	char renderfarm_mountpoint[BCTEXTLEN];
 // Use virtual filesystem
 	int renderfarm_vfs;
 // Jobs per node
 	int renderfarm_job_count;
-// Consolidate output files
-	int renderfarm_consolidate;
-
 // Tip of the day
 	int use_tipwindow;
 
