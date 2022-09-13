@@ -1001,15 +1001,15 @@ void MWindow::sync_parameters(int brender_restart)
 
 void MWindow::age_caches()
 {
-	size_t prev_memory_usage;
-	size_t memory_usage;
+	int prev_memory_usage;
+	int memory_usage;
 
-	memory_usage = gui->canvas->get_cache_size();
+	memory_usage = gui->canvas->get_cache_size() / MEGABYTE;
 	do {
 		if(memory_usage > preferences->cache_size)
 			gui->canvas->cache_delete_oldest();
 		prev_memory_usage = memory_usage;
-		memory_usage = gui->canvas->get_cache_size();
+		memory_usage = gui->canvas->get_cache_size() / MEGABYTE;
 	} while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences->cache_size);
 }

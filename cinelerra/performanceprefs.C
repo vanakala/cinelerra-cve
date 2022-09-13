@@ -251,9 +251,9 @@ CICacheSize::CICacheSize(int x,
 	PreferencesWindow *pwindow, 
 	PerformancePrefs *subwindow)
  : BC_TumbleTextBox(subwindow,
-	(int)(pwindow->thread->preferences->cache_size / 0x100000),
-	(int)(MIN_CACHE_SIZE / 0x100000),
-	(int)(MAX_CACHE_SIZE / 0x100000),
+	pwindow->thread->preferences->cache_size,
+	MIN_CACHE_SIZE,
+	MAX_CACHE_SIZE,
 	x, 
 	y, 
 	100)
@@ -264,9 +264,9 @@ CICacheSize::CICacheSize(int x,
 
 int CICacheSize::handle_event()
 {
-	size_t result;
+	int result;
 
-	result = atol(get_text()) * 0x100000;
+	result = atol(get_text());
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
 	return 1;

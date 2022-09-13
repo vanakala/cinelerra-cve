@@ -154,21 +154,20 @@ void CICache::delete_entry(Asset *asset)
 void CICache::age()
 {
 	CICacheItem *current;
-	size_t prev_memory_usage;
-	size_t memory_usage;
+	int prev_memory_usage;
+	int memory_usage;
 	int result = 0;
 
 // delete old assets if memory usage is exceeded
 	do
 	{
-		memory_usage = get_memory_usage();
+		memory_usage = get_memory_usage() / MEGABYTE;
 
 		if(memory_usage > preferences_global->cache_size)
-		{
 			result = delete_oldest();
-		}
+
 		prev_memory_usage = memory_usage;
-		memory_usage = get_memory_usage();
+		memory_usage = get_memory_usage() / MEGABYTE;
 	}while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences_global->cache_size && !result);
 }

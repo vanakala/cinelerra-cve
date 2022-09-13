@@ -28,7 +28,7 @@ Preferences::Preferences()
 	strcpy(index_directory, BCASTDIR);
 	fs.complete_path(index_directory);
 	strcpy(global_plugin_dir, PLUGIN_DIR);
-	cache_size = 0xa00000;
+	cache_size = 10;
 	index_size = 0x300000;
 	index_count = 500;
 	use_thumbnails = 1;
@@ -249,7 +249,7 @@ void Preferences::load_defaults(BC_Hash *defaults)
 	max_threads = defaults->get("MAXIMUM_THREADS", max_threads);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
-	cache_size = defaults->get("CACHE_SIZE", (int64_t)cache_size);
+	cache_size = defaults->get("CACHE_SIZE", cache_size);
 	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
@@ -293,7 +293,7 @@ void Preferences::save_defaults(BC_Hash *defaults)
 
 	defaults->update("USE_TIPWINDOW", use_tipwindow);
 
-	defaults->update("CACHE_SIZE", (int64_t)cache_size);
+	defaults->update("CACHE_SIZE", cache_size);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);

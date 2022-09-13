@@ -40,6 +40,8 @@ typedef double ptstime;
 
 #define PTSEQU(x, y) (fabs((x) - (y)) < EPSILON)
 
+#define MEGABYTE 0x100000
+
 #define TRACK_AUDIO 0
 #define TRACK_VIDEO 1
 // Number of track types
