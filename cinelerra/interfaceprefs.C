@@ -39,9 +39,9 @@ InterfacePrefs::InterfacePrefs(PreferencesWindow *pwindow)
 void InterfacePrefs::show()
 {
 	int y, x, value;
-	char string[1024];
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
+	char string[BCTEXTLEN];
 
 	x = theme_global->preferencesoptions_x;
 	y = theme_global->preferencesoptions_y;
@@ -74,12 +74,9 @@ void InterfacePrefs::show()
 		pwindow->thread->this_edlsession->time_format == TIME_FEET_FRAMES,
 		x, 
 		y));
-
-	sprintf(string, "%0.2f", pwindow->thread->this_edlsession->frames_per_foot);
-	win = add_subwindow(new TimeFormatFeetSetting(pwindow,
-		x + feet->get_w() + 5,
-		y - 5,
-		string));
+	win = add_subwindow(new DblValueTextBox(x + feet->get_w() + 5, y - 2,
+		&pwindow->thread->this_edlsession->frames_per_foot,
+		GUIELEM_VAL_W, 2));
 	add_subwindow(new BC_Title(x + feet->get_w() + win->get_w() + 10,
 		y, _("frames per foot")));
 	y += 20;
@@ -152,7 +149,6 @@ void InterfacePrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
 
 	y += 35;
-//	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
 	add_subwindow(new CheckBox(x, y, _("Use thumbnails in resource window"),
 		&pwindow->thread->preferences->use_thumbnails));
 
@@ -357,19 +353,6 @@ int TimeFormatFeet::handle_event()
 	return 1;
 }
 
-TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string)
- : BC_TextBox(x, y, 90, 1, string)
-{
-	this->pwindow = pwindow;
-}
-
-int TimeFormatFeetSetting::handle_event()
-{
-	pwindow->thread->this_edlsession->frames_per_foot = atof(get_text());
-	if(pwindow->thread->this_edlsession->frames_per_foot < 1)
-		pwindow->thread->this_edlsession->frames_per_foot = 1;
-	return 1;
-}
 
 MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)

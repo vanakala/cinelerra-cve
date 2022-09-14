@@ -232,6 +232,8 @@ void PreferencesThread::apply_settings()
 			strcpy(preferences->index_directory,
 				preferences_global->index_directory);
 	}
+	if(this_edlsession->frames_per_foot < 1)
+		this_edlsession->frames_per_foot = 1;
 	edlsession->copy(this_edlsession);
 	preferences_global->copy_from(preferences);
 	mwindow_global->init_brender();
