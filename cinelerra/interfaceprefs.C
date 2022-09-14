@@ -152,7 +152,9 @@ void InterfacePrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
 
 	y += 35;
-	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
+//	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
+	add_subwindow(new CheckBox(x, y, _("Use thumbnails in resource window"),
+		&pwindow->thread->preferences->use_thumbnails));
 
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Dragging edit boundaries does what:")));
@@ -220,7 +222,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete max_db;
-	delete thumbnails;
 }
 
 
@@ -429,23 +430,6 @@ int ViewThemeItem::handle_event()
 	popup->set_text(get_text());
 	strcpy(popup->pwindow->thread->preferences->theme, get_text());
 	popup->handle_event();
-	return 1;
-}
-
-
-ViewThumbnails::ViewThumbnails(int x, 
-	int y, 
-	PreferencesWindow *pwindow)
- : BC_CheckBox(x, 
-	y,
-	pwindow->thread->preferences->use_thumbnails, _("Use thumbnails in resource window"))
-{
-	this->pwindow = pwindow;
-}
-
-int ViewThumbnails::handle_event()
-{
-	pwindow->thread->preferences->use_thumbnails = get_value();
 	return 1;
 }
 

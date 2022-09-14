@@ -18,7 +18,6 @@ class TimeFormatFeet;
 class TimeFormatSeconds;
 class MeterMinDB;
 class MeterMaxDB;
-class ViewThumbnails;
 
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
@@ -51,7 +50,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-	ViewThumbnails *thumbnails;
 };
 
 
@@ -203,17 +201,6 @@ class ViewTheme : public BC_PopupMenu
 {
 public:
 	ViewTheme(int x, int y, PreferencesWindow *pwindow);
-
-	PreferencesWindow *pwindow;
-};
-
-
-class ViewThumbnails : public BC_CheckBox
-{
-public:
-	ViewThumbnails(int x, int y, PreferencesWindow *pwindow);
-
-	int handle_event();
 
 	PreferencesWindow *pwindow;
 };
