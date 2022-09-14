@@ -7,6 +7,7 @@
 #define PERFORMANCEPREFS_H
 
 #include "formattools.inc"
+#include "guielements.inc"
 #include "preferencesthread.h"
 
 class CICacheSize;
@@ -26,8 +27,6 @@ public:
 	void update_node_list();
 
 	int hot_node;
-
-	CICacheSize *cache_size;
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
@@ -122,19 +121,6 @@ public:
 	int handle_event();
 
 	PerformancePrefs *subwindow;
-	PreferencesWindow *pwindow;
-};
-
-
-class CICacheSize : public BC_TumbleTextBox
-{
-public:
-	CICacheSize(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PerformancePrefs *subwindow);
-	int handle_event();
-
 	PreferencesWindow *pwindow;
 };
 

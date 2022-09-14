@@ -66,11 +66,9 @@ void PerformancePrefs::show()
 	maxw += x + 5;
 
 // Cache size
-	cache_size = new CICacheSize(maxw,
-		ybx[0],
-		pwindow, 
-		this);
-
+	new ValueTumbleTextBox(maxw, ybx[0], this,
+		&pwindow->thread->preferences->cache_size,
+		MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 // Seconds to preroll renders
 	new DblValueTumbleTextBox(maxw, ybx[1], this,
 		&pwindow->thread->preferences->render_preroll, 0.0, 10.0, 0.1,
@@ -243,33 +241,6 @@ void PerformancePrefs::update_node_list()
 			node_list->get_xposition(),
 			node_list->get_yposition(),
 			node_list->get_selection_number(0, 0));
-}
-
-
-CICacheSize::CICacheSize(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PerformancePrefs *subwindow)
- : BC_TumbleTextBox(subwindow,
-	pwindow->thread->preferences->cache_size,
-	MIN_CACHE_SIZE,
-	MAX_CACHE_SIZE,
-	x, 
-	y, 
-	100)
-{ 
-	this->pwindow = pwindow;
-	set_increment(1);
-}
-
-int CICacheSize::handle_event()
-{
-	int result;
-
-	result = atol(get_text());
-	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
-	pwindow->thread->preferences->cache_size = result;
-	return 1;
 }
 
 
