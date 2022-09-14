@@ -9,6 +9,7 @@
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "guielements.h"
 #include "language.h"
 #include "interfaceprefs.h"
 #include "mwindow.inc"
@@ -88,8 +89,8 @@ void InterfacePrefs::show()
 		y));
 
 	y += 35;
-	add_subwindow(new UseTipWindow(pwindow, x, y));
-
+	add_subwindow(new CheckBox(x, y, _("Show tip of the day"),
+		&pwindow->thread->preferences->use_tipwindow));
 	y += 35;
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
@@ -445,22 +446,6 @@ ViewThumbnails::ViewThumbnails(int x,
 int ViewThumbnails::handle_event()
 {
 	pwindow->thread->preferences->use_thumbnails = get_value();
-	return 1;
-}
-
-
-UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
-	y,
-	pwindow->thread->preferences->use_tipwindow, 
-	_("Show tip of the day"))
-{
-	this->pwindow = pwindow;
-}
-
-int UseTipWindow::handle_event()
-{
-	pwindow->thread->preferences->use_tipwindow = get_value();
 	return 1;
 }
 
