@@ -31,7 +31,10 @@ BrowseButton::BrowseButton(BC_WindowBase *parent_window,
 	this->init_directory = init_directory;
 	this->textbox = textbox;
 	this->recent_prefix = recent_prefix;
-	set_tooltip(_("Look for file"));
+	if(want_directory)
+		set_tooltip(_("Look for directory"));
+	else
+		set_tooltip(_("Look for file"));
 	gui = 0;
 	startup_lock = new Mutex("BrowseButton::startup_lock");
 }
