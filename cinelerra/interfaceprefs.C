@@ -130,10 +130,10 @@ void InterfacePrefs::show()
 		&pwindow->thread->preferences->index_size, 100));
 
 // Number of index files to keep
-	sprintf(string, "%d", pwindow->thread->preferences->index_count);
-	add_subwindow(icount = new IndexCount(maxw, ybix[2], pwindow, string));
+	win = add_subwindow(new ValueTextBox(maxw, ybix[2],
+		&pwindow->thread->preferences->index_count, 100));
 	add_subwindow(deleteall = new DeleteAllIndexes(pwindow,
-		maxw + 10 + icount->get_w(), ybix[2]));
+		maxw + 10 + win->get_w(), ybix[2]));
 
 	y += 35;
 	add_subwindow(new BC_Bar(5, y, get_w() - 10));
@@ -211,26 +211,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete max_db;
-}
-
-
-IndexCount::IndexCount(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	const char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int IndexCount::handle_event()
-{
-	long result;
-
-	result = atol(get_text());
-	if(result < 1) result = 1;
-	pwindow->thread->preferences->index_count = result;
-	return 1;
 }
 
 

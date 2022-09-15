@@ -6,7 +6,6 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
-class IndexCount;
 class TimeFormatHMS;
 class TimeFormatHMSF;
 class TimeFormatSamples;
@@ -34,7 +33,6 @@ public:
 	void update(int new_value);
 
 	BrowseButton *ipath;
-	IndexCount *icount;
 	DeleteAllIndexes *deleteall;
 
 	TimeFormatHMS *hms;
@@ -46,17 +44,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-};
-
-
-class IndexCount : public BC_TextBox
-{
-public:
-	IndexCount(int x, int y, PreferencesWindow *pwindow, const char *text);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 
