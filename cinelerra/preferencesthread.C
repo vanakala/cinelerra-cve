@@ -236,6 +236,11 @@ void PreferencesThread::apply_settings()
 		this_edlsession->frames_per_foot = 1;
 	if(preferences->index_size < 64000)
 		preferences->index_size = 64000;
+	if(this_edlsession->min_meter_db != edlsession->min_meter_db ||
+			this_edlsession->max_meter_db != edlsession->max_meter_db)
+		redraw_meters = 1;
+	else
+		redraw_meters = 0;
 	edlsession->copy(this_edlsession);
 	preferences_global->copy_from(preferences);
 	mwindow_global->init_brender();

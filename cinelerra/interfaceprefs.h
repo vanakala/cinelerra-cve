@@ -13,8 +13,6 @@ class TimeFormatFrames;
 class TimeFormatHex;
 class TimeFormatFeet;
 class TimeFormatSeconds;
-class MeterMinDB;
-class MeterMaxDB;
 
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
@@ -41,9 +39,6 @@ public:
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
-
-	MeterMinDB *min_db;
-	MeterMaxDB *max_db;
 };
 
 
@@ -117,28 +112,6 @@ class TimeFormatFeetSetting : public BC_TextBox
 {
 public:
 	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
-class MeterMinDB : public BC_TextBox
-{
-public:
-	MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-};
-
-
-class MeterMaxDB : public BC_TextBox
-{
-public:
-	MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int y);
 
 	int handle_event();
 

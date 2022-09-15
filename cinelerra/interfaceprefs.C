@@ -42,7 +42,6 @@ void InterfacePrefs::show()
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
 	TextBox *ipathtext;
-	char string[BCTEXTLEN];
 
 	x = theme_global->preferencesoptions_x;
 	y = theme_global->preferencesoptions_y;
@@ -168,22 +167,24 @@ void InterfacePrefs::show()
 		&pwindow->thread->this_edlsession->edit_handle_mode[2]));
 	selection->update(pwindow->thread->this_edlsession->edit_handle_mode[2]);
 
-	y += 35;
+	y += 30;
 	int x1 = x;
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
-	x += title->get_w() + 10;
-	sprintf(string, "%d", pwindow->thread->this_edlsession->min_meter_db);
-	add_subwindow(min_db = new MeterMinDB(pwindow, string, x, y));
 
-	x += min_db->get_w() + 10;
-	add_subwindow(title = new BC_Title(x, y + 5, _("Max DB:")));
-	x += title->get_w() + 10;
-	sprintf(string, "%d", pwindow->thread->this_edlsession->max_meter_db);
-	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
+	win = add_subwindow(new BC_Title(x, y + 5, _("Min DB for meter:")));
+	x += win->get_w() + 5;
+
+	win = add_subwindow(new ValueTextBox(x, y,
+		&pwindow->thread->this_edlsession->min_meter_db, 50));
+	x += win->get_w() + 10;
+
+	win = add_subwindow(new BC_Title(x, y + 5, _("Max DB:")));
+	x += win->get_w() + 5;
+
+	add_subwindow(new ValueTextBox(x, y,
+		&pwindow->thread->this_edlsession->max_meter_db, 50));
 
 	x = x1;
-	y += 25;
+	y += 30;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;
@@ -209,8 +210,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete samples;
 	delete frames;
 	delete feet;
-	delete min_db;
-	delete max_db;
 }
 
 
@@ -287,34 +286,6 @@ TimeFormatFeet::TimeFormatFeet(InterfacePrefs *tfwindow, int value, int x, int y
 int TimeFormatFeet::handle_event()
 {
 	tfwindow->update(TIME_FEET_FRAMES);
-	return 1;
-}
-
-
-MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 50, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int MeterMinDB::handle_event()
-{ 
-	pwindow->thread->redraw_meters = 1;
-	pwindow->thread->this_edlsession->min_meter_db = atol(get_text());
-	return 1;
-}
-
-
-MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 50, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int MeterMaxDB::handle_event()
-{ 
-	pwindow->thread->redraw_meters = 1;
-	pwindow->thread->this_edlsession->max_meter_db = atol(get_text());
 	return 1;
 }
 
