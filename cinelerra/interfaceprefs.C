@@ -126,8 +126,8 @@ void InterfacePrefs::show()
 		_("Index Path"), _("Select the directory for index files"), 1));
 
 // Index file size
-	sprintf(string, "%d", pwindow->thread->preferences->index_size);
-	add_subwindow(isize = new IndexSize(maxw, ybix[1], pwindow, string));
+	add_subwindow(new ValueTextBox(maxw, ybix[1],
+		&pwindow->thread->preferences->index_size, 100));
 
 // Number of index files to keep
 	sprintf(string, "%d", pwindow->thread->preferences->index_count);
@@ -211,26 +211,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete max_db;
-}
-
-
-IndexSize::IndexSize(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	const char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int IndexSize::handle_event()
-{
-	int result;
-
-	result = atoi(get_text());
-	if(result < 64000) result = 64000;
-	pwindow->thread->preferences->index_size = result;
-	return 1;
 }
 
 

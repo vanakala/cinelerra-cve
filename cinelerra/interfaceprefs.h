@@ -6,7 +6,6 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
-class IndexSize;
 class IndexCount;
 class TimeFormatHMS;
 class TimeFormatHMSF;
@@ -32,10 +31,9 @@ public:
 	~InterfacePrefs();
 
 	void show();
-// must delete each derived class
 	void update(int new_value);
+
 	BrowseButton *ipath;
-	IndexSize *isize;
 	IndexCount *icount;
 	DeleteAllIndexes *deleteall;
 
@@ -48,17 +46,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-};
-
-
-class IndexSize : public BC_TextBox
-{
-public:
-	IndexSize(int x, int y, PreferencesWindow *pwindow, const char *text);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 
