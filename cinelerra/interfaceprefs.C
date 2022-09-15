@@ -41,6 +41,7 @@ void InterfacePrefs::show()
 	int y, x, value;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
+	TextBox *ipathtext;
 	char string[BCTEXTLEN];
 
 	x = theme_global->preferencesoptions_x;
@@ -98,39 +99,31 @@ void InterfacePrefs::show()
 	int w, maxw;
 
 	ybix[0] = y += 35;
-	win = add_subwindow(new BC_Title(x,
-		y + 5, 
-		_("Index files go here:"), MEDIUMFONT, resources->text_default));
+	win = add_subwindow(new BC_Title(x, y + 5, _("Index files go here:"),
+		MEDIUMFONT, resources->text_default));
 	maxw = win->get_w();
 
 	ybix[1] = y += 30;
-	win = add_subwindow(new BC_Title(x, 
-		y + 5, 
-		_("Size of index file:"), 
-		MEDIUMFONT, 
-		resources->text_default));
+	win = add_subwindow(new BC_Title(x, y + 5, _("Size of index file:"),
+		MEDIUMFONT, resources->text_default));
 	if((w = win->get_w()) > maxw)
 		maxw = w;
 
 	ybix[2] = y += 30;
-	win = add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
+	win = add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"),
+		MEDIUMFONT, resources->text_default));
 	if((w = win->get_w()) > maxw)
 		maxw = w;
 	maxw += x + 5;
 
 // Index path
-	add_subwindow(ipathtext = new IndexPathText(maxw,
-		ybix[0],
-		pwindow, 
-		pwindow->thread->preferences->index_directory));
-	add_subwindow(ipath = new BrowseButton(this,
-		ipathtext, 
-		maxw + 5 + ipathtext->get_w(),
-		y, 
+	add_subwindow(ipathtext = new TextBox(maxw, ybix[0],
+		pwindow->thread->preferences->index_directory, 240));
+
+	add_subwindow(ipath = new BrowseButton(this, ipathtext,
+		maxw + 5 + ipathtext->get_w(), ybix[0],
 		pwindow->thread->preferences->index_directory,
-		_("Index Path"), 
-		_("Select the directory for index files"),
-		1));
+		_("Index Path"), _("Select the directory for index files"), 1));
 
 // Index file size
 	sprintf(string, "%d", pwindow->thread->preferences->index_size);
@@ -218,22 +211,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete max_db;
-}
-
-
-IndexPathText::IndexPathText(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	const char *text)
- : BC_TextBox(x, y, 240, 1, text)
-{
-	this->pwindow = pwindow; 
-}
-
-int IndexPathText::handle_event()
-{
-	strcpy(pwindow->thread->preferences->index_directory, get_text());
-	return 1;
 }
 
 

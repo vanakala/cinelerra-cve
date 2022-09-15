@@ -8,7 +8,6 @@
 
 class IndexSize;
 class IndexCount;
-class IndexPathText;
 class TimeFormatHMS;
 class TimeFormatHMSF;
 class TimeFormatSamples;
@@ -38,7 +37,6 @@ public:
 	BrowseButton *ipath;
 	IndexSize *isize;
 	IndexCount *icount;
-	IndexPathText *ipathtext;
 	DeleteAllIndexes *deleteall;
 
 	TimeFormatHMS *hms;
@@ -50,17 +48,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-};
-
-
-class IndexPathText : public BC_TextBox
-{
-public:
-	IndexPathText(int x, int y, PreferencesWindow *pwindow, const char *text);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 
