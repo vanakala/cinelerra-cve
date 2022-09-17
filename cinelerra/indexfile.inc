@@ -8,4 +8,7 @@
 
 class IndexFile;
 
+#define MIN_INDEX_SIZE 64
+#define MAX_INDEX_SIZE 4096
+
 #endif

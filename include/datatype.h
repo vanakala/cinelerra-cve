@@ -40,6 +40,7 @@ typedef double ptstime;
 
 #define PTSEQU(x, y) (fabs((x) - (y)) < EPSILON)
 
+#define KILOBYTE 0x400
 #define MEGABYTE 0x100000
 
 #define TRACK_AUDIO 0

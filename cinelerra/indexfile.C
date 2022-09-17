@@ -162,7 +162,7 @@ int IndexFile::get_required_scale(File *source)
 	if(length_source > 0)
 	{
 		int peak_count =
-			preferences_global->index_size /
+			(preferences_global->index_size * KILOBYTE) /
 			(2 * sizeof(float) * asset->streams[stream].channels);
 
 		for(result = 1;

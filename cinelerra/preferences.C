@@ -12,6 +12,7 @@
 #include "bchash.h"
 #include "file.inc"
 #include "filesystem.h"
+#include "indexfile.inc"
 #include "mutex.h"
 #include "preferences.h"
 #include "theme.h"
@@ -29,7 +30,7 @@ Preferences::Preferences()
 	fs.complete_path(index_directory);
 	strcpy(global_plugin_dir, PLUGIN_DIR);
 	cache_size = 10;
-	index_size = 0x300000;
+	index_size = 3072;
 	index_count = 500;
 	use_thumbnails = 1;
 	theme[0] = 0;
@@ -165,6 +166,7 @@ void Preferences::boundaries()
 	CLAMP(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	int max = 2 * real_processors;
 	CLAMP(max_threads, 1, max);
+	CLAMP(index_size, MIN_INDEX_SIZE, MAX_INDEX_SIZE);
 }
 
 Preferences& Preferences::operator=(Preferences &that)

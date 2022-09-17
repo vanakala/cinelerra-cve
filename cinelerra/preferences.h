@@ -62,7 +62,7 @@ public:
 // ================================= Performance ================================
 // directory to look in for indexes
 	char index_directory[BCTEXTLEN];
-// size of index file in bytes
+// size of index file in kilobytes
 	int index_size;
 	int index_count;
 // Use thumbnails in AWindow assets.

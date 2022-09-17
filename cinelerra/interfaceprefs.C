@@ -103,7 +103,7 @@ void InterfacePrefs::show()
 	maxw = win->get_w();
 
 	ybix[1] = y += 30;
-	win = add_subwindow(new BC_Title(x, y + 5, _("Size of index file:"),
+	win = add_subwindow(new BC_Title(x, y + 5, _("Size of index file (kB):"),
 		MEDIUMFONT, resources->text_default));
 	if((w = win->get_w()) > maxw)
 		maxw = w;

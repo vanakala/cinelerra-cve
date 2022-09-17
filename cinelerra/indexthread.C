@@ -31,7 +31,7 @@ IndexThread::IndexThread(IndexFile *index_file,
 	this->index_filename = index_filename;
 	this->index_file = index_file;
 // initialize output data
-	int index_size = preferences_global->index_size /
+	int index_size = (preferences_global->index_size * KILOBYTE) /
 		sizeof(float) + 1;      // size of output file in floats
 	index_file->allocate_buffer(index_size);
 
