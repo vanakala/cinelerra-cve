@@ -728,7 +728,13 @@ void FileSystem::set_current_dir(const char *new_dir)
 
 void FileSystem::add_end_slash(char *new_dir)
 {
-	if(new_dir[strlen(new_dir) - 1] != '/') strcat(new_dir, "/");
+	int len = strlen(new_dir);
+
+	if(len && new_dir[len - 1] != '/')
+	{
+		new_dir[len++] = '/';
+		new_dir[len] = 0;
+	}
 }
 
 char* FileSystem::get_current_dir()
