@@ -715,9 +715,10 @@ void FileSystem::change_dir(const char *new_dir)
 
 	complete_path(new_dir_full);
 // cut ending slash
-	if(strcmp(new_dir_full, "/") && 
-		new_dir_full[strlen(new_dir_full) - 1] == '/') 
-		new_dir_full[strlen(new_dir_full) - 1] = 0;
+	int len = strlen(new_dir_full) - 1;
+
+	if(len > 0 && new_dir_full[len] == '/')
+		new_dir_full[len] = 0;
 	update(new_dir_full);
 }
 
