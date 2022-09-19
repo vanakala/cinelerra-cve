@@ -193,13 +193,11 @@ void ZoomBar::set_selection(int which_one)
 		start_position = Units::text_to_seconds(from_value->get_text(), 
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 		length = Units::text_to_seconds(length_value->get_text(),
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 		end_position = start_position + length;
 
 		if(end_position < start_position)
@@ -214,13 +212,11 @@ void ZoomBar::set_selection(int which_one)
 		start_position = Units::text_to_seconds(from_value->get_text(), 
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 		end_position = Units::text_to_seconds(to_value->get_text(), 
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 
 		if(end_position < start_position)
 		{
@@ -234,13 +230,11 @@ void ZoomBar::set_selection(int which_one)
 		start_position = Units::text_to_seconds(from_value->get_text(),
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 		end_position = Units::text_to_seconds(to_value->get_text(),
 			edlsession->sample_rate,
 			edlsession->time_format,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 
 		if(end_position < start_position)
 		{

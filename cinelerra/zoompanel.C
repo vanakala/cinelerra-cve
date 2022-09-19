@@ -219,8 +219,7 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 			total_seconds,
 			edlsession->time_format,
 			edlsession->sample_rate,
-			edlsession->frame_rate,
-			edlsession->frames_per_foot);
+			edlsession->frame_rate);
 		break;
 	}
 	return string;

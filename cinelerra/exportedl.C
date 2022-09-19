@@ -45,8 +45,7 @@ void ExportEDLAsset::double_to_CMX3600(ptstime seconds, double frame_rate, char 
 			seconds, 
 			TIME_HMSF, 
 			0, // sample_rate ... unnecessary 
-			frame_rate, 
-			0);    // frames per foot
+			frame_rate);
 
 	if((int)(seconds / 3600) <= 9)
 	{

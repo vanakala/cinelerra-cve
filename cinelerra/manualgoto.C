@@ -254,8 +254,7 @@ ptstime ManualGotoWindow::get_entered_position_sec()
 	return Units::text_to_seconds(timestring,
 		edlsession->sample_rate,
 		timeformat,
-		edlsession->frame_rate,
-		edlsession->frames_per_foot);
+		edlsession->frame_rate);
 }
 
 int ManualGotoWindow::split_timestr(char *timestr)
@@ -288,8 +287,7 @@ void ManualGotoWindow::set_entered_position_sec(ptstime position)
 		position,
 		timeformat,
 		edlsession->sample_rate,
-		edlsession->frame_rate,
-		edlsession->frames_per_foot);
+		edlsession->frame_rate);
 	split_timestr(timestring);
 
 	for(i = 0; i < numboxes; i++)

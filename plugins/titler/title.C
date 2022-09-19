@@ -1467,8 +1467,7 @@ VFrame *TitleMain::process_tmpframe(VFrame *input_ptr)
 				output->get_pts(),
 				tcf, 
 				0,
-				get_project_framerate(),
-				0);
+				get_project_framerate());
 		config.text_to_ucs4(DEFAULT_ENCODING);
 		do_reconfigure = 1;
 	}
