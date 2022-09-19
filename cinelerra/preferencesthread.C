@@ -232,8 +232,6 @@ void PreferencesThread::apply_settings()
 			strcpy(preferences->index_directory,
 				preferences_global->index_directory);
 	}
-	if(this_edlsession->frames_per_foot < 1)
-		this_edlsession->frames_per_foot = 1;
 	if(this_edlsession->min_meter_db != edlsession->min_meter_db ||
 			this_edlsession->max_meter_db != edlsession->max_meter_db)
 		redraw_meters = 1;

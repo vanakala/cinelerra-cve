@@ -44,7 +44,6 @@ EDLSession::EDLSession()
 	audio_channels = 2;
 	video_tracks = 1;
 	sample_rate = 48000;
-	frames_per_foot = 16;
 	meter_over_delay = OVER_DELAY;
 	meter_peak_delay = PEAK_DELAY;
 	min_meter_db = MIN_AUDIO_METER_DB;
@@ -197,7 +196,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	editing_mode = defaults->get("EDITING_MODE", editing_mode);
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", folderlist_format);
 	frame_rate = defaults->get("FRAMERATE", frame_rate);
-	frames_per_foot = defaults->get("FRAMES_PER_FOOT", frames_per_foot);
 	BC_Resources::interpolation_method = defaults->get("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", auto_keyframes);
@@ -300,7 +298,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ENABLE_DUPLEX");
 	defaults->update("FOLDERLIST_FORMAT", folderlist_format);
 	defaults->update("FRAMERATE", frame_rate);
-	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
+	defaults->delete_key("FRAMES_PER_FOOT");
 	defaults->delete_key("HIGHLIGHTED_TRACK");
 	defaults->update("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
@@ -365,7 +363,6 @@ void EDLSession::boundaries()
 	CLAMP(video_tracks, 0, MAX_AUDIO_TRACKS);
 	CLAMP(min_meter_db, MIN_AUDIO_METER_DB, -20);
 	CLAMP(max_meter_db, 0, MAX_AUDIO_METER_DB);
-	CLAMP(frames_per_foot, 1, 32);
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
@@ -408,7 +405,6 @@ void EDLSession::load_video_config(FileXML *file)
 	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE"));
 
 	frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
-	frames_per_foot = file->tag.get_property("FRAMES_PER_FOOT", frames_per_foot);
 	output_w = file->tag.get_property("OUTPUTW", output_w);
 	output_h = file->tag.get_property("OUTPUTH", output_h);
 	aspect_w = aspect_h = 1.0;
@@ -564,7 +560,6 @@ void EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("INTERLACE_MODE",
 		AInterlaceModeSelection::xml_text(interlace_mode));
 	file->tag.set_property("FRAMERATE", frame_rate);
-	file->tag.set_property("FRAMES_PER_FOOT", frames_per_foot);
 	file->tag.set_property("OUTPUTW", output_w);
 	file->tag.set_property("OUTPUTH", output_h);
 	file->tag.set_property("SAMPLEASPECT", sample_aspect_ratio);
@@ -638,7 +633,6 @@ void EDLSession::copy(EDLSession *session)
 	editing_mode = session->editing_mode;
 	folderlist_format = session->folderlist_format;
 	frame_rate = session->frame_rate;
-	frames_per_foot = session->frames_per_foot;
 	labels_follow_edits = session->labels_follow_edits;
 	auto_keyframes = session->auto_keyframes;
 	min_meter_db = session->min_meter_db;
@@ -707,8 +701,7 @@ void EDLSession::ptstotext(char *string, ptstime pts)
 	Units::totext(string, pts,
 		time_format,
 		sample_rate,
-		frame_rate,
-		frames_per_foot);
+		frame_rate);
 }
 
 int EDLSession::color_bits(int *shift, int *mask)

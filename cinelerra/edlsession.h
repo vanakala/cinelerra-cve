@@ -123,7 +123,6 @@ public:
 // AWindow format
 	int folderlist_format;
 	double frame_rate;
-	double frames_per_foot;
 // labels follow edits during editing
 	int labels_follow_edits;
 	ptstime meter_over_delay;
