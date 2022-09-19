@@ -171,63 +171,6 @@ void MTimeBar::draw_time()
 // Set text interval
 	switch(edlsession->time_format)
 	{
-	case TIME_FEET_FRAMES:
-	{
-		double foot_seconds = frame_seconds * edlsession->frames_per_foot;
-		if(frame_seconds >= min_time)
-			text_interval = frame_seconds;
-		else
-		if(foot_seconds / 8.0 > min_time)
-			text_interval = frame_seconds * edlsession->frames_per_foot / 8.0;
-		else
-		if(foot_seconds / 4.0 > min_time)
-			text_interval = frame_seconds * edlsession->frames_per_foot / 4.0;
-		else
-		if(foot_seconds / 2.0 > min_time)
-			text_interval = frame_seconds * edlsession->frames_per_foot / 2.0;
-		else
-		if(foot_seconds > min_time)
-			text_interval = frame_seconds * edlsession->frames_per_foot;
-		else
-		if(foot_seconds * 2 >= min_time)
-			text_interval = foot_seconds * 2;
-		else
-		if(foot_seconds * 5 >= min_time)
-			text_interval = foot_seconds * 5;
-		else
-		{
-
-			for(int factor = 10, progression = 0; factor <= 100000; )
-			{
-				if(foot_seconds * factor >= min_time)
-				{
-					text_interval = foot_seconds * factor;
-					break;
-				}
-
-				if(progression == 0)
-				{
-					factor = (int)(factor * 2.5);
-					progression++;
-				}
-				else
-				if(progression == 1)
-				{
-					factor = (int)(factor * 2);
-					progression++;
-				}
-				else
-				if(progression == 2)
-				{
-					factor = (int)(factor * 2);
-					progression = 0;
-				}
-			}
-
-		}
-		break;
-	}
-
 	case TIME_FRAMES:
 	case TIME_HMSF:
 // One frame per text mark
@@ -288,7 +231,6 @@ void MTimeBar::draw_time()
 	switch(edlsession->time_format)
 	{
 	case TIME_HMSF:
-	case TIME_FEET_FRAMES:
 	case TIME_FRAMES:
 		if(frame_seconds / time_per_pixel > TICK_SPACING)
 			tick_interval = frame_seconds;

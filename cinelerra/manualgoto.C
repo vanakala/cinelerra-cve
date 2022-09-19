@@ -183,10 +183,6 @@ ManualGotoWindow::ManualGotoWindow(ManualGoto *thread, int absx, int absy)
 	case TIME_FRAMES:
 		timehdrs[0] = _("Frames");
 		break;
-	case TIME_FEET_FRAMES:
-		timehdrs[0] = _("Feet");
-		timehdrs[1] = _("frames");
-		break;
 	}
 	xpos = 0;
 	edlsession->ptstotext(timestring, (ptstime)0);

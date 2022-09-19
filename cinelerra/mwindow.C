@@ -1336,9 +1336,6 @@ void MWindow::next_time_format()
 		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:
-		edlsession->time_format = TIME_FEET_FRAMES;
-		break;
-	case TIME_FEET_FRAMES:
 		edlsession->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
@@ -1357,9 +1354,6 @@ void MWindow::prev_time_format()
 		edlsession->time_format = TIME_SECONDS;
 		break;
 	case TIME_SECONDS:
-		edlsession->time_format = TIME_FEET_FRAMES;
-		break;
-	case TIME_FEET_FRAMES:
 		edlsession->time_format = TIME_FRAMES;
 		break;
 	case TIME_FRAMES:

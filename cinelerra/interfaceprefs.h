@@ -11,7 +11,6 @@ class TimeFormatHMSF;
 class TimeFormatSamples;
 class TimeFormatFrames;
 class TimeFormatHex;
-class TimeFormatFeet;
 class TimeFormatSeconds;
 
 #include "bcpopupmenu.h"
@@ -37,7 +36,6 @@ public:
 	TimeFormatHMSF *hmsf;
 	TimeFormatSamples *samples;
 	TimeFormatFrames *frames;
-	TimeFormatFeet *feet;
 	TimeFormatSeconds *seconds;
 };
 
@@ -86,17 +84,6 @@ public:
 };
 
 
-class TimeFormatFeet : public BC_Radial
-{
-public:
-	TimeFormatFeet(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
 class TimeFormatSeconds : public BC_Radial
 {
 public:
@@ -105,17 +92,6 @@ public:
 	int handle_event();
 
 	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatFeetSetting : public BC_TextBox
-{
-public:
-	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
 };
 
 

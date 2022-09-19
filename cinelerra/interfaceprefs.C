@@ -70,16 +70,6 @@ void InterfacePrefs::show()
 		x, 
 		y));
 	y += 20;
-	add_subwindow(feet = new TimeFormatFeet(this,
-		pwindow->thread->this_edlsession->time_format == TIME_FEET_FRAMES,
-		x, 
-		y));
-	win = add_subwindow(new DblValueTextBox(x + feet->get_w() + 5, y - 2,
-		&pwindow->thread->this_edlsession->frames_per_foot,
-		GUIELEM_VAL_W, 2));
-	add_subwindow(new BC_Title(x + feet->get_w() + win->get_w() + 10,
-		y, _("frames per foot")));
-	y += 20;
 	add_subwindow(seconds = new TimeFormatSeconds(this,
 		pwindow->thread->this_edlsession->time_format == TIME_SECONDS,
 		x, 
@@ -199,7 +189,6 @@ void InterfacePrefs::update(int new_value)
 	hmsf->update(new_value == TIME_HMSF);
 	samples->update(new_value == TIME_SAMPLES);
 	frames->update(new_value == TIME_FRAMES);
-	feet->update(new_value == TIME_FEET_FRAMES);
 	seconds->update(new_value == TIME_SECONDS);
 }
 
@@ -209,7 +198,6 @@ InterfacePrefs::~InterfacePrefs()
 	delete hmsf;
 	delete samples;
 	delete frames;
-	delete feet;
 }
 
 
@@ -276,19 +264,6 @@ int TimeFormatSeconds::handle_event()
 	tfwindow->update(TIME_SECONDS);
 	return 1;
 }
-
-TimeFormatFeet::TimeFormatFeet(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Feet-frames"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatFeet::handle_event()
-{
-	tfwindow->update(TIME_FEET_FRAMES);
-	return 1;
-}
-
 
 ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
  : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->theme, 1)
