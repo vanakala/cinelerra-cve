@@ -122,7 +122,7 @@ int Freq::operator==(int newfreq) { return freq == newfreq; }
 
 char* Units::totext(char *text, ptstime seconds,
 	int time_format, int sample_rate,
-	double frame_rate, double frames_per_foot)    // give text representation as time
+	double frame_rate)    // give text representation as time
 {
 	int hour, minute, second, thousandths;
 	int64_t frame, feet;
@@ -199,28 +199,19 @@ char* Units::totext(char *text, ptstime seconds,
 			sprintf(text, "%06" PRId64, frame);
 			return text;
 			break;
-
-		case TIME_FEET_FRAMES:
-			frame = round(seconds * frame_rate);
-			feet = (int64_t)(frame / frames_per_foot);
-			sprintf(text, "%05" PRId64 "-%02" PRId64,
-				feet, 
-				(int64_t)(frame - feet * frames_per_foot));
-			return text;
-			break;
 	}
 	return text;
 }
 
 // give text representation as time
 char* Units::totext(char *text, samplenum samples, int samplerate,
-	int time_format, double frame_rate, double frames_per_foot)
+	int time_format, double frame_rate)
 {
-	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
+	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate);
 }
 
 ptstime Units::text_to_seconds(const char *text, int samplerate,
-	int time_format, double frame_rate, double frames_per_foot)
+	int time_format, double frame_rate)
 {
 	char *nptr;
 	long hour, min, sec, mil;
@@ -256,12 +247,6 @@ ptstime Units::text_to_seconds(const char *text, int samplerate,
 
 	case TIME_FRAMES:
 		return atof(text) / frame_rate;
-
-	case TIME_FEET_FRAMES:
-		hour = strtol(text, &nptr, 10);
-		if(*nptr)
-			min = strtol(nptr + 1, &nptr, 10);
-		return (hour * frames_per_foot + min) / frame_rate;
 	}
 	return 0;
 }
@@ -275,7 +260,6 @@ int Units::timeformat_totype(const char *tcf)
 	if(!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
 	if(!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
 	if(!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
-	if(!strcmp(tcf,TIME_FEET_FRAMES__STR)) return(TIME_FEET_FRAMES);
 	return(-1);
 }
 
@@ -381,9 +365,6 @@ char* Units::print_time_format(int time_format, char *string)
 	case TIME_FRAMES:
 		strcpy(string, "Frames");
 		break;
-	case TIME_FEET_FRAMES:
-		strcpy(string, "Feet-frames");
-		break;
 	case TIME_HMS2:
 	case TIME_HMS3:
 		strcpy(string, "Hours:Minutes:Seconds");
@@ -413,9 +394,7 @@ const char* Units::format_to_separators(int time_format)
 		return "0:00:00:00";
 	case TIME_SAMPLES:
 	case TIME_FRAMES:
-		return 0;
-	case TIME_FEET_FRAMES:
-		return "00000-00";
+		break;
 	}
 	return 0;
 }

@@ -21,8 +21,6 @@
 #define TIME_HMSF        2
 #define TIME_SAMPLES     3
 #define TIME_FRAMES      4
-// fffff-ff
-#define TIME_FEET_FRAMES 5
 // h:mm:ss
 #define TIME_HMS2        6
 // hh:mm:ss
@@ -36,7 +34,6 @@
 #define TIME_HMSF__STR         "h:mm:ss:ff"
 #define TIME_SAMPLES__STR      "audio samples"
 #define TIME_FRAMES__STR       "video frames"
-#define TIME_FEET_FRAMES__STR  "video frames (feet)"
 
 class DB
 {
@@ -113,15 +110,14 @@ public:
 // give text representation as time
 	static char* totext(char *text, samplenum samples,
 		int time_format, int samplerate,
-		double frame_rate = 0, double frames_per_foot = 0);
+		double frame_rate = 0);
 // give text representation as time
 	static char* totext(char *text, ptstime seconds,
 		int time_format, int sample_rate = 0,
-		double frame_rate = 0, double frames_per_foot = 0);
+		double frame_rate = 0);
 // Convert text to seconds
 	static ptstime text_to_seconds(const char *text, int samplerate,
-		int time_format, double frame_rate,
-		double frames_per_foot = 0);
+		int time_format, double frame_rate);
 
 	static char* print_time_format(int time_format, char *string);
 
