@@ -121,7 +121,7 @@ public:
 // Convert text to seconds
 	static ptstime text_to_seconds(const char *text, int samplerate,
 		int time_format, double frame_rate,
-		double frames_per_foot);
+		double frames_per_foot = 0);
 
 	static char* print_time_format(int time_format, char *string);
 
