@@ -816,3 +816,55 @@ int OutputDepthSelection::limits(int *depth)
 	}
 	return result;
 }
+
+RadialSelection::RadialSelection(int x, int y,
+	const struct selection_int items[], int *value)
+ : BC_SubWindow(x, y, 20, 200)
+{
+	items_ptr = items;
+	value_ptr = value;
+
+}
+
+void RadialSelection::show()
+{
+	int rx, ry, rw, w;
+
+	rx = ry = rw = 0;
+
+	for(int i = 0; items_ptr[i].text; i++)
+	{
+		RadialSelectionItem *curitem = new RadialSelectionItem(rx, ry, this,
+			&items_ptr[i], value_ptr);
+
+		add_subwindow(curitem);
+		radials.append(curitem);
+		ry += curitem->get_h();
+		w = curitem->get_w();
+		if(w > rw)
+			rw = w;
+	}
+	resize_window(rw, ry);
+}
+
+void RadialSelection::update(int new_value)
+{
+	for(int i = 0; i < radials.total; i++)
+		radials.values[i]->update(items_ptr[i].value == new_value);
+}
+
+RadialSelectionItem::RadialSelectionItem(int x, int y, RadialSelection *base,
+	const struct selection_int *item, int *value)
+ : BC_Radial(x, y, *value == item->value, _(item->text))
+{
+	item_ptr = item;
+	value_ptr = value;
+	radialbase = base;
+}
+
+int RadialSelectionItem::handle_event()
+{
+	*value_ptr = item_ptr->value;
+	radialbase->update(*value_ptr);
+	return 1;
+}

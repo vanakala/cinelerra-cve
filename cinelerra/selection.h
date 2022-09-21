@@ -229,4 +229,32 @@ private:
 	static const struct selection_int output_depths[];
 };
 
+class RadialSelectionItem : public BC_Radial
+{
+public:
+	RadialSelectionItem(int x, int y, RadialSelection *base,
+		const struct selection_int *item, int *value);
+
+	int handle_event();
+
+private:
+	const struct selection_int *item_ptr;
+	int *value_ptr;
+	RadialSelection *radialbase;
+};
+
+
+class RadialSelection : public BC_SubWindow
+{
+public:
+	RadialSelection(int x, int y, const struct selection_int items[], int *value);
+
+	void show();
+	void update(int new_value);
+private:
+	int *value_ptr;
+	const struct selection_int *items_ptr;
+	ArrayList<RadialSelectionItem*> radials;
+};
+
 #endif

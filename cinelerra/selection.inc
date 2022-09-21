@@ -23,5 +23,6 @@ class FrameRateSelection;
 class FrameSizeSelection;
 class AspectRatioSelection;
 class SampleBitsSelection;
+class RadialSelection;
 
 #endif
