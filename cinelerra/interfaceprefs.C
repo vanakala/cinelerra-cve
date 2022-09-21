@@ -31,6 +31,16 @@ const struct selection_int ViewBehaviourSelection::viewbehaviour[] =
 	{ 0, 0 }
 };
 
+const struct selection_int InterfacePrefs::time_formats[] =
+{
+	{ N_("Use Hours:Minutes:Seconds.xxx"), TIME_HMS },
+	{ N_("Use Hours:Minutes:Seconds:Frames"), TIME_HMSF },
+	{ N_("Use Samples"), TIME_SAMPLES },
+	{ N_("Use Frames"), TIME_FRAMES },
+	{ N_("Use Seconds"), TIME_SECONDS },
+	{ 0, 0 }
+};
+
 InterfacePrefs::InterfacePrefs(PreferencesWindow *pwindow)
  : PreferencesDialog(pwindow)
 {
@@ -42,6 +52,7 @@ void InterfacePrefs::show()
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
 	TextBox *ipathtext;
+	RadialSelection *rsel;
 
 	x = theme_global->preferencesoptions_x;
 	y = theme_global->preferencesoptions_y;
@@ -50,32 +61,12 @@ void InterfacePrefs::show()
 		LARGEFONT, resources->text_default));
 
 	y += get_text_height(LARGEFONT) + 5;
-	add_subwindow(hms = new TimeFormatHMS(this,
-		pwindow->thread->this_edlsession->time_format == TIME_HMS,
-		x, 
-		y));
-	y += 20;
-	add_subwindow(hmsf = new TimeFormatHMSF(this,
-		pwindow->thread->this_edlsession->time_format == TIME_HMSF,
-		x, 
-		y));
-	y += 20;
-	add_subwindow(samples = new TimeFormatSamples(this,
-		pwindow->thread->this_edlsession->time_format == TIME_SAMPLES,
-		x, 
-		y));
-	y += 20;
-	add_subwindow(frames = new TimeFormatFrames(this,
-		pwindow->thread->this_edlsession->time_format == TIME_FRAMES,
-		x, 
-		y));
-	y += 20;
-	add_subwindow(seconds = new TimeFormatSeconds(this,
-		pwindow->thread->this_edlsession->time_format == TIME_SECONDS,
-		x, 
-		y));
 
-	y += 35;
+	add_subwindow(rsel = new RadialSelection(x, y, time_formats,
+		&pwindow->thread->this_edlsession->time_format));
+	rsel->show();
+	y += rsel->get_h() + 10;
+
 	add_subwindow(new CheckBox(x, y, _("Show tip of the day"),
 		&pwindow->thread->preferences->use_tipwindow));
 	y += 35;
@@ -181,89 +172,6 @@ void InterfacePrefs::show()
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 }
 
-void InterfacePrefs::update(int new_value)
-{
-	pwindow->thread->redraw_times = 1;
-	pwindow->thread->this_edlsession->time_format = new_value;
-	hms->update(new_value == TIME_HMS);
-	hmsf->update(new_value == TIME_HMSF);
-	samples->update(new_value == TIME_SAMPLES);
-	frames->update(new_value == TIME_FRAMES);
-	seconds->update(new_value == TIME_SECONDS);
-}
-
-InterfacePrefs::~InterfacePrefs()
-{
-	delete hms;
-	delete hmsf;
-	delete samples;
-	delete frames;
-}
-
-
-TimeFormatHMS::TimeFormatHMS(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds.xxx"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatHMS::handle_event()
-{
-	tfwindow->update(TIME_HMS);
-	return 1;
-}
-
-
-TimeFormatHMSF::TimeFormatHMSF(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds:Frames"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatHMSF::handle_event()
-{
-	tfwindow->update(TIME_HMSF);
-	return 1;
-}
-
-
-TimeFormatSamples::TimeFormatSamples(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Samples"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatSamples::handle_event()
-{
-	tfwindow->update(TIME_SAMPLES);
-	return 1;
-}
-
-
-TimeFormatFrames::TimeFormatFrames(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Frames"))
-{
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatFrames::handle_event()
-{
-	tfwindow->update(TIME_FRAMES);
-	return 1;
-}
-
-
-TimeFormatSeconds::TimeFormatSeconds(InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Seconds"))
-{ 
-	this->tfwindow = tfwindow;
-}
-
-int TimeFormatSeconds::handle_event()
-{
-	tfwindow->update(TIME_SECONDS);
-	return 1;
-}
 
 ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
  : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->theme, 1)

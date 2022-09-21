@@ -6,13 +6,6 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
-class TimeFormatHMS;
-class TimeFormatHMSF;
-class TimeFormatSamples;
-class TimeFormatFrames;
-class TimeFormatHex;
-class TimeFormatSeconds;
-
 #include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -24,74 +17,13 @@ class InterfacePrefs : public PreferencesDialog
 {
 public:
 	InterfacePrefs(PreferencesWindow *pwindow);
-	~InterfacePrefs();
 
 	void show();
-	void update(int new_value);
-
+private:
 	BrowseButton *ipath;
 	DeleteAllIndexes *deleteall;
 
-	TimeFormatHMS *hms;
-	TimeFormatHMSF *hmsf;
-	TimeFormatSamples *samples;
-	TimeFormatFrames *frames;
-	TimeFormatSeconds *seconds;
-};
-
-
-class TimeFormatHMS : public BC_Radial
-{
-public:
-	TimeFormatHMS(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatHMSF : public BC_Radial
-{
-public:
-	TimeFormatHMSF(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatSamples : public BC_Radial
-{
-public:
-	TimeFormatSamples(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatFrames : public BC_Radial
-{
-public:
-	TimeFormatFrames(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
-};
-
-
-class TimeFormatSeconds : public BC_Radial
-{
-public:
-	TimeFormatSeconds(InterfacePrefs *tfwindow, int value, int x, int y);
-
-	int handle_event();
-
-	InterfacePrefs *tfwindow;
+	static const struct selection_int time_formats[];
 };
 
 
@@ -106,6 +38,7 @@ public:
 private:
 	static const struct selection_int viewbehaviour[];
 };
+
 
 class ViewTheme : public BC_PopupMenu
 {
