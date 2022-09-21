@@ -108,13 +108,9 @@ void PreferencesThread::run()
 	this_edlsession->copy(edlsession);
 	edl->copy_session(master_edl, this_edlsession);
 	redraw_indexes = 0;
-	redraw_meters = 0;
-	redraw_times = 0;
-	redraw_overlays = 0;
 	close_assets = 0;
 	reload_plugins = 0;
 	need_new_indexes = 0;
-	rerender = 0;
 
 	BC_Resources::get_root_size(&x, &y);
 	x = x / 2 - WIDTH / 2;
@@ -169,8 +165,10 @@ void PreferencesThread::update_playstatistics()
 
 void PreferencesThread::apply_settings()
 {
-// Compare sessions
+	int redraw_overlays, redraw_times;
+	int redraw_meters, rerender;
 
+// Compare sessions
 	AudioOutConfig *this_aconfig = this_edlsession->playback_config->aconfig;
 	VideoOutConfig *this_vconfig = this_edlsession->playback_config->vconfig;
 	AudioOutConfig *aconfig = edlsession->playback_config->aconfig;
@@ -184,13 +182,7 @@ void PreferencesThread::apply_settings()
 		!preferences->brender_asset->equivalent(*preferences_global->brender_asset,
 			STRDSC_VIDEO);
 
-	if(preferences->use_brender != preferences_global->use_brender)
-	{
-		redraw_overlays = 1;
-		redraw_times = 1;
-	}
-
-	// Check index directory
+// Check index directory
 	if(strcmp(preferences_global->index_directory, preferences->index_directory))
 	{
 		char new_dir[BCTEXTLEN];
@@ -232,11 +224,14 @@ void PreferencesThread::apply_settings()
 			strcpy(preferences->index_directory,
 				preferences_global->index_directory);
 	}
-	if(this_edlsession->min_meter_db != edlsession->min_meter_db ||
-			this_edlsession->max_meter_db != edlsession->max_meter_db)
-		redraw_meters = 1;
-	else
-		redraw_meters = 0;
+
+	redraw_overlays = redraw_times = preferences->use_brender !=
+		preferences_global->use_brender;
+	redraw_meters = this_edlsession->min_meter_db != edlsession->min_meter_db ||
+		this_edlsession->max_meter_db != edlsession->max_meter_db;
+	if(!redraw_times)
+		redraw_times = this_edlsession->time_format != edlsession->time_format;
+
 	edlsession->copy(this_edlsession);
 	preferences_global->copy_from(preferences);
 	mwindow_global->init_brender();
