@@ -22,6 +22,15 @@
 #include "vdeviceprefs.h"
 #include "videodevice.inc"
 
+const struct selection_int PlaybackPrefs::scalings[] =
+{
+	{ N_("Lanczos enlarge and reduce"), LANCZOS_LANCZOS },
+	{ N_("Bicubic enlarge and reduce"), CUBIC_CUBIC },
+	{ N_("Bicubic enlarge and bilinear reduce"), CUBIC_LINEAR },
+	{ N_("Bilinear enlarge and bilinear reduce"), LINEAR_LINEAR },
+	{ N_("Nearest neighbor enlarge and reduce"), NEAREST_NEIGHBOR },
+	{ 0, 0 }
+};
 
 PlaybackPrefs::PlaybackPrefs(PreferencesWindow *pwindow)
  : PreferencesDialog(pwindow)
@@ -44,6 +53,7 @@ void PlaybackPrefs::show()
 	BC_WindowBase *win;
 	int maxw;
 	BC_Title *title1;
+	RadialSelection *rsel;
 
 	playback_config = pwindow->thread->this_edlsession->playback_config;
 
@@ -119,37 +129,12 @@ void PlaybackPrefs::show()
 
 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
-	add_subwindow(lanczos_lanczos = new PlaybackLanczosLanczos(pwindow,
-		this,
-		BC_Resources::interpolation_method == LANCZOS_LANCZOS,
-		10, 
-		y));
-	y += 20;
-	add_subwindow(cubic_cubic = new PlaybackBicubicBicubic(pwindow,
-		this, 
-		BC_Resources::interpolation_method == CUBIC_CUBIC,
-		10, 
-		y));
-	y += 20;
-	add_subwindow(cubic_linear = new PlaybackBicubicBilinear(pwindow, 
-		this, 
-		BC_Resources::interpolation_method == CUBIC_LINEAR,
-		10, 
-		y));
-	y += 20;
-	add_subwindow(linear_linear = new PlaybackBilinearBilinear(pwindow, 
-		this, 
-		BC_Resources::interpolation_method == LINEAR_LINEAR,
-		10, 
-		y));
-	y += 20;
-	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
-		this, 
-		BC_Resources::interpolation_method == NEAREST_NEIGHBOR,
-		10, 
-		y));
 
-	y += 35;
+	add_subwindow(rsel = new RadialSelection(x, y, scalings,
+		&BC_Resources::interpolation_method));
+	rsel->show();
+
+	y += rsel->get_h();
 
 	x2 = x;
 	x += 370;
@@ -178,16 +163,6 @@ void PlaybackPrefs::show()
 	video_device->initialize();
 }
 
-void PlaybackPrefs::update(int interpolation)
-{
-	BC_Resources::interpolation_method = interpolation;
-	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
-	lanczos_lanczos->update(interpolation == LANCZOS_LANCZOS);
-	cubic_cubic->update(interpolation == CUBIC_CUBIC);
-	cubic_linear->update(interpolation == CUBIC_LINEAR);
-	linear_linear->update(interpolation == LINEAR_LINEAR);
-}
-
 void PlaybackPrefs::draw_framerate()
 {
 	framerate_title->update(pwindow->thread->this_edlsession->actual_frame_rate, 2);
@@ -198,79 +173,6 @@ void PlaybackPrefs::draw_playstatistics()
 	playedframes_title->update(pwindow->thread->this_edlsession->frame_count);
 	lateframes_title->update(pwindow->thread->this_edlsession->frames_late);
 	avgdelay_title->update(pwindow->thread->this_edlsession->avg_delay);
-}
-
-
-PlaybackNearest::PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, _("Nearest neighbor enlarge and reduce"))
-{
-	this->pwindow = pwindow;
-	this->prefs = prefs;
-}
-
-int PlaybackNearest::handle_event()
-{
-	prefs->update(NEAREST_NEIGHBOR);
-	return 1;
-}
-
-
-PlaybackLanczosLanczos::PlaybackLanczosLanczos(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, _("Lanczos enlarge and reduce"))
-{
-	this->pwindow = pwindow;
-	this->prefs = prefs;
-}
-
-int PlaybackLanczosLanczos::handle_event()
-{
-	prefs->update(LANCZOS_LANCZOS);
-	return 1;
-}
-
-
-PlaybackBicubicBicubic::PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, _("Bicubic enlarge and reduce"))
-{
-	this->pwindow = pwindow;
-	this->prefs = prefs;
-}
-int PlaybackBicubicBicubic::handle_event()
-{
-	prefs->update(CUBIC_CUBIC);
-	return 1;
-}
-
-
-PlaybackBicubicBilinear::PlaybackBicubicBilinear(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, _("Bicubic enlarge and bilinear reduce"))
-{
-	this->pwindow = pwindow;
-	this->prefs = prefs;
-}
-
-int PlaybackBicubicBilinear::handle_event()
-{
-	prefs->update(CUBIC_LINEAR);
-	return 1;
-}
-
-
-PlaybackBilinearBilinear::PlaybackBilinearBilinear(PreferencesWindow *pwindow, 
-	PlaybackPrefs *prefs, 
-	int value, 
-	int x, 
-	int y)
- : BC_Radial(x, y, value, _("Bilinear enlarge and bilinear reduce"))
-{
-	this->pwindow = pwindow;
-	this->prefs = prefs;
-}
-
-int PlaybackBilinearBilinear::handle_event()
-{
-	prefs->update(LINEAR_LINEAR);
-	return 1;
 }
 
 

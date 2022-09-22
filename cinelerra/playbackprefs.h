@@ -6,27 +6,11 @@
 #ifndef PLAYBACKPREFS_H
 #define PLAYBACKPREFS_H
 
-class PlaybackLanczosLanczos;
-class PlaybackBicubicBicubic;
-class PlaybackBicubicBilinear;
-class PlaybackBilinearBilinear;
-class PlaybackBufferBytes;
-class PlaybackBufferSize;
-class PlaybackDisableNoEdits;
-class PlaybackHead;
-class PlaybackHeadCount;
-class PlaybackHost;
-class PlaybackNearest;
-class PlaybackOutBits;
-class PlaybackOutChannels;
-class PlaybackOutPath;
-class PlaybackPreload;
-class PlaybackReadLength;
 class TimecodeOffset;
-class VideoAsynchronous;
 
 #include "adeviceprefs.h"
 #include "preferencesthread.h"
+#include "selection.h"
 #include "vdeviceprefs.h"
 
 class PlaybackPrefs : public PreferencesDialog
@@ -40,7 +24,7 @@ public:
 	void update(int interpolation);
 	void draw_framerate();
 	void draw_playstatistics();
-
+private:
 	ADevicePrefs *audio_device;
 	VDevicePrefs *video_device;
 
@@ -49,80 +33,8 @@ public:
 	BC_Title *playedframes_title;
 	BC_Title *lateframes_title;
 	BC_Title *avgdelay_title;
-	PlaybackNearest *nearest_neighbor;
-	PlaybackLanczosLanczos *lanczos_lanczos;
-	PlaybackBicubicBicubic *cubic_cubic;
-	PlaybackBicubicBilinear *cubic_linear;
-	PlaybackBilinearBilinear *linear_linear;
 	BC_Title *vdevice_title;
-};
-
-
-class PlaybackNearest : public BC_Radial
-{
-public:
-	PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *prefs;
-};
-
-
-class PlaybackLanczosLanczos : public BC_Radial
-{
-public:
-	PlaybackLanczosLanczos(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *prefs;
-};
-
-
-class PlaybackBicubicBicubic : public BC_Radial
-{
-public:
-	PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *prefs;
-};
-
-
-class PlaybackBicubicBilinear : public BC_Radial
-{
-public:
-	PlaybackBicubicBilinear(PreferencesWindow *pwindow, 
-		PlaybackPrefs *prefs, 
-		int value, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *prefs;
-};
-
-
-class PlaybackBilinearBilinear : public BC_Radial
-{
-public:
-	PlaybackBilinearBilinear(PreferencesWindow *pwindow, 
-		PlaybackPrefs *prefs, 
-		int value, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *prefs;
+	static const struct selection_int scalings[];
 };
 
 
