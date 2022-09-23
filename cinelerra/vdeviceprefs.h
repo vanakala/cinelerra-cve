@@ -18,7 +18,6 @@
 class VDeviceCheckBox;
 class VDeviceTextBox;
 class VDeviceIntBox;
-class VDeviceTumbleBox;
 class VDriverMenu;
 
 class VDevicePrefs
@@ -52,8 +51,6 @@ private:
 	BC_Title *channel_title;
 	BC_Title *output_title;
 	VDeviceTextBox *device_text;
-	VDeviceTumbleBox *device_port;
-	VDeviceTumbleBox *device_number;
 	int driver;
 	int x;
 	int y;
@@ -78,19 +75,6 @@ public:
 	int *output;
 };
 
-class VDeviceTumbleBox : public BC_TumbleTextBox
-{
-public:
-	VDeviceTumbleBox(VDevicePrefs *prefs, 
-		int x, 
-		int y, 
-		int *output,
-		int min,
-		int max);
-
-	int handle_event();
-	int *output;
-};
 
 class VDeviceCheckBox : public BC_CheckBox
 {

@@ -50,10 +50,8 @@ void VDevicePrefs::reset_objects()
 	device_text = 0;
 
 	port_title = 0;
-	device_port = 0;
 
 	number_title = 0;
-	device_number = 0;
 
 	channel_title = 0;
 	output_title = 0;
@@ -83,11 +81,9 @@ void VDevicePrefs::delete_objects()
 	delete device_text;
 
 	delete port_title;
-	delete device_port;
 
 	delete number_title;
-	delete device_number;
-	if(channel_title) delete channel_title;
+	delete channel_title;
 
 	reset_objects();
 	driver = -1;
@@ -183,30 +179,6 @@ VDeviceTextBox::VDeviceTextBox(int x, int y, char *output)
 int VDeviceTextBox::handle_event() 
 { 
 	strcpy(output, get_text());
-	return 1;
-}
-
-
-VDeviceTumbleBox::VDeviceTumbleBox(VDevicePrefs *prefs, 
-	int x, 
-	int y, 
-	int *output,
-	int min,
-	int max)
- : BC_TumbleTextBox(prefs->dialog,
-	*output,
-	min,
-	max,
-	x,
-	y, 
-	60)
-{ 
-	this->output = output; 
-}
-
-int VDeviceTumbleBox::handle_event() 
-{
-	*output = atol(get_text()); 
 	return 1;
 }
 
