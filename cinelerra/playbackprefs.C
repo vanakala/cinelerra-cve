@@ -47,7 +47,6 @@ PlaybackPrefs::~PlaybackPrefs()
 void PlaybackPrefs::show()
 {
 	int x, y, y1, x2, y2, wt, wh;
-	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	BC_WindowBase *win;
@@ -140,17 +139,18 @@ void PlaybackPrefs::show()
 	x += 370;
 	win = add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT));
 	x += win->get_w();
-	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[3]);
-	win = add_subwindow(new TimecodeOffset(x, y, pwindow, this, string, 3));
+
+	win = add_subwindow(new ValueTextBox(x, y,
+		&pwindow->thread->this_edlsession->timecode_offset[3], 30));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[2]);
-	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 2));
+	win = add_subwindow(new ValueTextBox(win->get_x() + win->get_w(), y,
+		&pwindow->thread->this_edlsession->timecode_offset[2], 30));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[1]);
-	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 1));
+	win = add_subwindow(new ValueTextBox(win->get_x() + win->get_w(), y,
+		&pwindow->thread->this_edlsession->timecode_offset[1], 30));
 	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
-	sprintf(string, "%d", pwindow->thread->this_edlsession->timecode_offset[0]);
-	add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 0));
+	win = add_subwindow(new ValueTextBox(win->get_x() + win->get_w(), y,
+		&pwindow->thread->this_edlsession->timecode_offset[0], 30));
 	x = x2;
 	y += 10;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
@@ -173,20 +173,4 @@ void PlaybackPrefs::draw_playstatistics()
 	playedframes_title->update(pwindow->thread->this_edlsession->frame_count);
 	lateframes_title->update(pwindow->thread->this_edlsession->frames_late);
 	avgdelay_title->update(pwindow->thread->this_edlsession->avg_delay);
-}
-
-
-TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow, 
-      PlaybackPrefs *playback, char *text, int unit)
- : BC_TextBox(x, y, 30, 1, text)
-{
-	this->pwindow = pwindow;
-	this->playback = playback;
-	this->unit = unit;
-}
-
-int TimecodeOffset::handle_event()
-{
-	pwindow->thread->this_edlsession->timecode_offset[unit] = atol(get_text());
-	return 1;
 }

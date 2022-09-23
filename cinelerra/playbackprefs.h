@@ -6,8 +6,6 @@
 #ifndef PLAYBACKPREFS_H
 #define PLAYBACKPREFS_H
 
-class TimecodeOffset;
-
 #include "adeviceprefs.h"
 #include "preferencesthread.h"
 #include "selection.h"
@@ -35,20 +33,6 @@ private:
 	BC_Title *avgdelay_title;
 	BC_Title *vdevice_title;
 	static const struct selection_int scalings[];
-};
-
-
-class TimecodeOffset : public BC_TextBox
-{
-public:
-	TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
-		PlaybackPrefs *playback, char *text, int unit);
-
-	int handle_event();
-
-	int unit;
-	PlaybackPrefs *playback;
-	PreferencesWindow *pwindow;
 };
 
 #endif
