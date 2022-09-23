@@ -50,20 +50,9 @@ private:
 	BC_Title *number_title;
 	BC_Title *channel_title;
 	BC_Title *output_title;
-	VDeviceTextBox *device_text;
 	int driver;
 	int x;
 	int y;
-};
-
-class VDeviceTextBox : public BC_TextBox
-{
-public:
-	VDeviceTextBox(int x, int y, char *output);
-
-	int handle_event();
-
-	char *output;
 };
 
 class VDeviceIntBox : public BC_TextBox

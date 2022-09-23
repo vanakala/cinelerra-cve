@@ -7,10 +7,9 @@
 #include "bcresources.h"
 #include "bctitle.h"
 #include "cwindow.h"
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include "formattools.h"
+#include "guielements.h"
 #include "language.h"
 #include "mwindow.h"
 #include "vdeviceprefs.h"
@@ -47,7 +46,6 @@ VDevicePrefs::~VDevicePrefs()
 void VDevicePrefs::reset_objects()
 {
 	device_title = 0;
-	device_text = 0;
 
 	port_title = 0;
 
@@ -78,7 +76,6 @@ void VDevicePrefs::delete_objects()
 {
 	delete output_title;
 	delete device_title;
-	delete device_text;
 
 	delete port_title;
 
@@ -91,12 +88,11 @@ void VDevicePrefs::delete_objects()
 
 void VDevicePrefs::create_x11_objs()
 {
-	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int x1 = x + menu->get_w() + 5;
-	output_char = out_config->x11_host;
+
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+	dialog->add_subwindow(new TextBox(x1, y + 20, out_config->x11_host, 200));
 }
 
 
@@ -166,19 +162,6 @@ int VDriverItem::handle_event()
 	popup->set_text(get_text());
 	*(popup->output) = driver;
 	popup->device_prefs->initialize();
-	return 1;
-}
-
-
-VDeviceTextBox::VDeviceTextBox(int x, int y, char *output)
- : BC_TextBox(x, y, 200, 1, output)
-{ 
-	this->output = output; 
-}
-
-int VDeviceTextBox::handle_event() 
-{ 
-	strcpy(output, get_text());
 	return 1;
 }
 
