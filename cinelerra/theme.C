@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "awindowgui.h"
 #include "bcsignals.h"
@@ -48,14 +32,12 @@
 #include "vwindowgui.h"
 #include "zoombar.h"
 
-
 #include <errno.h>
 #include <string.h>
 
 Theme::Theme()
  : BC_Theme()
 {
-	this->mwindow = 0;
 	theme_title = DEFAULT_THEME;
 	data_buffer = 0;
 	contents_buffer = 0;
@@ -93,8 +75,8 @@ Theme::~Theme()
 
 void Theme::flush_images()
 {
-	if(data_buffer) delete [] data_buffer;
-	if(contents_buffer) delete [] contents_buffer;
+	delete [] data_buffer;
+	delete [] contents_buffer;
 	data_buffer = 0;
 	contents_buffer = 0;
 	contents.remove_all();
@@ -125,21 +107,15 @@ void Theme::draw_lwindow_bg(LevelWindowGUI *gui)
 }
 
 
-void Theme::draw_resource_bg(TrackCanvas *canvas,
-	ResourcePixmap *pixmap, 
-	int edit_x,
-	int edit_w,
-	int pixmap_x,
-	int x1, 
-	int y1, 
-	int x2,
-	int y2)
+void Theme::draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap,
+	int edit_x, int edit_w, int pixmap_x,
+	int x1, int y1, int x2, int y2)
 {
 	VFrame *image;
 
 	switch(master_edl->local_session->zoom_track)
 	{
-	case 1024: 
+	case 1024:
 		image = get_image("resource1024");
 		break;
 	case 512:
@@ -160,13 +136,8 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 		break;
 	}
 
-	canvas->draw_3segmenth(x1, 
-		y1, 
-		x2 - x1, 
-		edit_x - pixmap_x,
-		edit_w,
-		image,
-		pixmap);
+	canvas->draw_3segmenth(x1, y1, x2 - x1, edit_x - pixmap_x,
+		edit_w, image, pixmap);
 }
 
 void Theme::get_awindow_sizes(AWindowGUI *gui)
@@ -187,9 +158,7 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 	alist_h = afolders_h;
 }
 
-void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
-	int w, 
-	int h)
+void Theme::get_batchrender_sizes(BatchRenderGUI *gui, int w, int h)
 {
 	batchrender_x1 = 5;
 	batchrender_x2 = 300;
@@ -199,6 +168,7 @@ void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
 void Theme::get_plugindialog_sizes()
 {
 	int x = 10, y = 30;
+
 	plugindialog_new_x = x;
 	plugindialog_new_y = y;
 	plugindialog_shared_x = mainsession->plugindialog_w / 3;

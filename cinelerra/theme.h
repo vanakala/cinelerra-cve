@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef THEME_H
 #define THEME_H
@@ -28,7 +12,6 @@
 #include "cwindowgui.inc"
 #include "levelwindowgui.inc"
 #include "mbuttons.inc"
-#include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "new.inc"
 #include "overlayframe.inc"
@@ -56,15 +39,11 @@ public:
 	virtual ~Theme();
 
 	virtual void initialize();
-	virtual void get_mwindow_sizes(MWindowGUI *gui, 
-		int w, 
-		int h) {};
+	virtual void get_mwindow_sizes(MWindowGUI *gui, int w, int h) {};
 	virtual void get_vwindow_sizes(VWindowGUI *gui) {};
 	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls) {};
 	virtual void get_awindow_sizes(AWindowGUI *gui);
-	virtual void get_batchrender_sizes(BatchRenderGUI *gui,
-		int w, 
-		int h);
+	virtual void get_batchrender_sizes(BatchRenderGUI *gui, int w, int h);
 	virtual void get_plugindialog_sizes();
 	virtual void get_menueffect_sizes(int use_list);
 	virtual void draw_awindow_bg(AWindowGUI *gui);
@@ -72,15 +51,9 @@ public:
 	virtual void draw_lwindow_bg(LevelWindowGUI *gui);
 	virtual void draw_mwindow_bg(MWindowGUI *gui) {};
 	virtual void draw_vwindow_bg(VWindowGUI *gui) {};
-	virtual void draw_resource_bg(TrackCanvas *canvas,
-		ResourcePixmap *pixmap, 
-		int edit_x,
-		int edit_w,
-		int pixmap_x,
-		int x1, 
-		int y1, 
-		int x2,
-		int y2);
+	virtual void draw_resource_bg(TrackCanvas *canvas, ResourcePixmap *pixmap,
+		int edit_x, int edit_w, int pixmap_x,
+		int x1, int y1, int x2, int y2);
 
 	virtual void get_preferences_sizes() {};
 	virtual void draw_preferences_bg(PreferencesWindow *gui) {};
@@ -241,8 +214,6 @@ public:
 	VFrame **uptriangle_data;
 	VFrame **viewasset_data;
 	VFrame *vtimebar_bg_data;
-
-	MWindow *mwindow;
 
 // Compressed images are loaded in here.
 	char *data_buffer;

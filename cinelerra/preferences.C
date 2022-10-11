@@ -14,6 +14,7 @@
 #include "filesystem.h"
 #include "indexfile.inc"
 #include "mutex.h"
+#include "mwindow.inc"
 #include "preferences.h"
 #include "theme.h"
 #include "videodevice.inc"
