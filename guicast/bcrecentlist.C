@@ -53,16 +53,15 @@ int BC_RecentList::handle_event()
 {
 	BC_ListBoxItem *item = get_selection(0, 0);
 
-	if(item < 0)
+	if(!item)
 		return 0;
 
 	char *text = item->get_text();
+
 	if(text && textbox)
 	{
-		// change the text in the textbox
 		textbox->update(text);
-		// tell the textbox to deal with it
-		textbox->handle_event();
+		return textbox->handle_event();
 	}
 	return 0;
 }
