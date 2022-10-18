@@ -705,15 +705,16 @@ void BC_Bitmap::drain_buffer()
 	XFlush(top_level->display);
 }
 
-void BC_Bitmap::dump(int minmax)
+void BC_Bitmap::dump(int indent, int minmax)
 {
-	printf("BC_Bitmap %p dump\n", this);
-	printf("    %d x %d %s pixb %d line %ld\n", w, h, ColorModels::name(color_model),
-		bits_per_pixel, bytes_per_line);
-	printf("    buffers %d/%d shm %d port %d top %p\n",
+	printf("%*sBC_Bitmap %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*s[%dx%d] '%s' pixbits %d bytes/line %ld\n", indent, "", w, h,
+		ColorModels::name(color_model), bits_per_pixel, bytes_per_line);
+	printf("%*sbuffers %d/%d shm %d port %d top %p\n", indent, "",
 		current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
 	for(int i = 0; i < ring_buffers; i++)
-		printf("      %d: data %p xv_image %p ximage %p\n",
+		printf("%*s%d: data %p xv_image %p ximage %p\n", indent, "",
 		i, data[i], xv_image[i], ximage[i]);
 	if(minmax)
 	{
@@ -731,19 +732,19 @@ void BC_Bitmap::dump(int minmax)
 		{
 		case BC_YUV420P:
 			VFrame::calc_minmax8(get_y_plane(), w * h, avg, min, max);
-			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sy: avg %d min %d max %d\n", indent, "", avg, min, max);
 			VFrame::calc_minmax8(get_u_plane(), w * h / 4, avg, min, max);
-			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			printf("%*su: avg %d min %d max %d\n", indent, "", avg, min, max);
 			VFrame::calc_minmax8(get_v_plane(), w * h / 4,avg, min, max);
-			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sv: avg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		case BC_YUV422P:
 			VFrame::calc_minmax8(get_y_plane(), w * h, avg, min, max);
-			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sy: avg %d min %d max %d\n", indent, "", avg, min, max);
 			VFrame::calc_minmax8(get_u_plane(), w * h / 2, avg, min, max);
-			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			printf("%*su: avg %d min %d max %d\n", indent, "", avg, min, max);
 			VFrame::calc_minmax8(get_v_plane(), w * h / 2, avg, min, max);
-			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sv: avg %d min %d max %d\n", indent, "", avg, min, max);
 		case BC_RGB888:
 		case BC_YUV888:
 		case BC_BGR888:
@@ -795,14 +796,17 @@ void BC_Bitmap::dump(int minmax)
 		default:
 			VFrame::calc_minmax8(get_data(), h * bytes_per_line,
 				avg, min, max);
-			printf("    avg %d min %d max %d\n", avg, min, max);
+			printf("%*savg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		}
 		for(int i = 0; i < anum; i++)
-			printf("    l:%d avg %d min %d max %d\n", i, aavg[i], amin[i], amax[i]);
+			printf("%*sl:%d avg %d min %d max %d\n", indent, "", i,
+				aavg[i], amin[i], amax[i]);
 		for(int i = 0; i < lnum; i++)
-			printf("    l:%d avg %" PRId64" min %" PRId64 " max %" PRId64"\n", i, lavg[i], lmin[i], lmax[i]);
+			printf("%*sl:%d avg %" PRId64" min %" PRId64 " max %" PRId64"\n",
+				indent, "", i, lavg[i], lmin[i], lmax[i]);
 		for(int i = 0; i < fnum; i++)
-			printf("    l:%d avg %.3f min %.3f max %.3f\n", i, favg[i], fmin[i], fmax[i]);
+			printf("%*sl:%d avg %.3f min %.3f max %.3f\n", indent, "",
+			i, favg[i], fmin[i], fmax[i]);
 	}
 }

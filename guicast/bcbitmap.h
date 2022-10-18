@@ -92,7 +92,7 @@ public:
 	int completion_event(XEvent *event);
 	void completion_drain(int action, BC_WindowBase *window);
 
-	void dump(int minmax = 0);
+	void dump(int indent = 0, int minmax = 0);
 
 private:
 	void initialize(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm);
