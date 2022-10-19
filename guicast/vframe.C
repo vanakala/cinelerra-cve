@@ -753,6 +753,39 @@ void VFrame::merge_status(VFrame *that)
 	status |= that->status;
 }
 
+void VFrame::merge_color(int color)
+{
+	int r, b, g, a, aa;
+
+	if(status & VFRAME_MERGEDCOLOR)
+		return;
+
+	r = (color >> 16) & 0xff;
+	g = (color >> 8) & 0xff;
+	b = color & 0xff;
+
+	switch(color_model)
+	{
+	case BC_RGBA8888:
+		for(int j = 0; j < h; j++)
+		{
+			unsigned char *row = get_row_ptr(j);
+
+			for(int i = 0; i < w; i++)
+			{
+				a = row[3];
+				aa = 255 - a;
+				row[0] = (row[0] * a + r * aa) / 0xff;
+				row[1] = (row[1] * a + g * aa) / 0xff;
+				row[2] = (row[2] * a + b * aa) / 0xff;
+				row += 4;
+			}
+		}
+		break;
+	}
+	status |= VFRAME_MERGEDCOLOR;
+}
+
 int VFrame::pts_in_frame_source(ptstime pts, ptstime accuracy)
 {
 	pts += accuracy;

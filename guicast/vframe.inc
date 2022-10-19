@@ -8,6 +8,8 @@
 
 class VFrame;
 
+// VFrame status bits
 #define VFRAME_TRANSPARENT 1
+#define VFRAME_MERGEDCOLOR 2
 
 #endif

@@ -98,6 +98,7 @@ public:
 	void clear_transparent();
 	int is_transparent();
 	void merge_status(VFrame *that);
+	void merge_color(int color);
 	int pts_in_frame_source(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	int pts_in_frame(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	void set_layer(int layer);
