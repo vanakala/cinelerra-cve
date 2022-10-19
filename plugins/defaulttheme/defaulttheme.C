@@ -961,7 +961,10 @@ void BlondTheme::draw_vwindow_bg(VWindowGUI *gui)
 
 void BlondTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
-	gui->draw_vframe(get_image("preferences_bg"), 0, 0);
+	VFrame *bg_image = get_image("preferences_bg");
+
+	bg_image->merge_color(gui->get_bg_color());
+	gui->draw_vframe(bg_image, 0, 0);
 }
 
 void BlondTheme::draw_new_bg(NewWindow *gui)
@@ -974,8 +977,6 @@ void BlondTheme::draw_setformat_bg(SetFormatWindow *gui)
 	gui->draw_vframe(get_image("setformat_bg"), 0, 0);
 }
 
-
-// pmd: SUV (same), 1_2_2blond (nonexist)
 void BlondTheme::get_plugindialog_sizes()
 {
 	int x = 10, y = 30;
