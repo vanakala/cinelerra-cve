@@ -716,7 +716,7 @@ void BC_Bitmap::dump(int indent, int minmax)
 	for(int i = 0; i < ring_buffers; i++)
 		printf("%*s%d: data %p xv_image %p ximage %p\n", indent, "",
 		i, data[i], xv_image[i], ximage[i]);
-	if(minmax)
+	if(minmax & w > 0 && h > 0)
 	{
 		int min, max;
 		unsigned int avg;
