@@ -85,7 +85,7 @@ public:
 // Verify all images have been used after initialization.
 	void check_used();
 
-	void dump();
+	void dump(int indent);
 	BC_Resources* get_resources();
 
 private:

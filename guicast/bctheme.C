@@ -26,14 +26,6 @@ BC_Theme::~BC_Theme()
 	image_sets.remove_all_objects();
 }
 
-void BC_Theme::dump()
-{
-	printf("BC_Theme::dump 1 image_sets=%d contents=%d\n", 
-		image_sets.total, 
-		contents.total);
-	for(int i = 0; i < contents.total; i++)
-		printf("    %s %p\n", contents.values[i], pointers.values[i]);
-}
 
 BC_Resources* BC_Theme::get_resources()
 {
@@ -490,6 +482,18 @@ void BC_Theme::check_used()
 	if(got_it)
 		printf("\n");
 }
+
+void BC_Theme::dump(int indent)
+{
+	printf("%*sBC_Theme %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*simage_sets: %d contents: %d\n", indent, "",
+		image_sets.total, contents.total);
+	for(int i = 0; i < contents.total; i++)
+		printf("%*s%s %p\n", indent, "",
+			contents.values[i], pointers.values[i]);
+}
+
 
 BC_ThemeSet::BC_ThemeSet(int total, int is_reference, const char *title)
 {
