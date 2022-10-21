@@ -13,10 +13,7 @@
 
 AudioOutConfig::AudioOutConfig()
 {
-#ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
-	driver = 0;
-#endif
 
 	audio_offset = 0.0;
 
@@ -55,8 +52,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 void AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
 	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
-	driver = defaults->get("AUDIO_OUT_DRIVER_0", driver);
-	driver = defaults->get("AUDIO_OUT_DRIVER", driver);
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
@@ -68,7 +63,7 @@ void AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("AUDIO_OFFSET", audio_offset);
 
 	defaults->delete_keys_prefix("AUDIO_OUT_DRIVER_");
-	defaults->update("AUDIO_OUT_DRIVER", driver);
+	defaults->delete_key("AUDIO_OUT_DRIVER");
 
 	defaults->delete_keys_prefix("OSS_ENABLE_");
 	defaults->delete_keys_prefix("OSS_OUT_DEVICE_");
