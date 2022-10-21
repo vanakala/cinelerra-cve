@@ -83,11 +83,9 @@ void AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 	{
 		switch(driver)
 		{
-#ifdef HAVE_ALSA
 		case AUDIO_ALSA:
 			lowlevel = new AudioALSA(this);
 			break;
-#endif
 		default:
 			errorbox(_("Can't configure requested audio device"));
 			exit(1);

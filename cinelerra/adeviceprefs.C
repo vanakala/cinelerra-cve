@@ -87,7 +87,6 @@ void ADevicePrefs::delete_objects(int creation)
 
 void ADevicePrefs::delete_alsa_objs(int creation)
 {
-#ifdef HAVE_ALSA
 	alsa_drivers->remove_all_objects();
 	delete alsa_drivers;
 	alsa_drivers = 0;
@@ -103,12 +102,10 @@ void ADevicePrefs::delete_alsa_objs(int creation)
 		delete alsa_bits;
 		alsa_bits = 0;
 	}
-#endif
 }
 
 void ADevicePrefs::create_alsa_objs()
 {
-#ifdef HAVE_ALSA
 	char *output_char;
 	int *output_int;
 	int y1 = y;
@@ -141,7 +138,6 @@ void ADevicePrefs::create_alsa_objs()
 	dialog->add_subwindow(alsa_bits = new SampleBitsSelection(x1, y1 + 20, dialog,
 		output_int, SBITS_LINEAR));
 	alsa_bits->update_size(*output_int);
-#endif
 }
 
 
@@ -154,9 +150,7 @@ ADriverMenu::ADriverMenu(int x,
 	this->output = output;
 	this->device_prefs = device_prefs;
 
-#ifdef HAVE_ALSA
 	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
-#endif
 }
 
 const char *ADriverMenu::adriver_to_string(int driver)

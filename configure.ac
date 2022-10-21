@@ -109,7 +109,7 @@ AC_ARG_ENABLE(alsa,
 if test "x$enable_alsa" = "xyes"; then
 	AM_PATH_ALSA(1.0.2,[alsa=yes])
 	if test "x$alsa" = "xyes"; then
-		SOUND_CFLAGS="$ALSA_CFLAGS -DHAVE_ALSA $SOUND_CFLAGS"
+		SOUND_CFLAGS="$ALSA_CFLAGS $SOUND_CFLAGS"
 		SOUND_LDFLAGS="$ALSA_LIBS $SOUND_LDFLAGS"
 		enable_alsa=ok
 	fi
