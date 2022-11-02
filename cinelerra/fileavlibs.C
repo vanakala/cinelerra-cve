@@ -2532,7 +2532,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 		av_packet_unref(pkt);
 		avcodec_flush_buffers(codec_contexts[stream_index]);
 
-		if((res = avformat_seek_file(context, -1,
+		if((res = avformat_seek_file(context, stream_index,
 			INT64_MIN, itm->offset, itm->offset, fl)) < 0)
 		{
 			liberror(res, _("Media seeking failed"));
@@ -2547,7 +2547,6 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 			}
 			if(pkt->stream_index != stream_index || pkt->pts != AV_NOPTS_VALUE)
 				continue;
-
 		} while(pkt->pts < itm->index);
 		return 1;
 	}
