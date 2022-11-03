@@ -1723,7 +1723,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
 
-		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos + apkt_duration)) < 0)
+		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos)) < 0)
 			return -1;
 
 		if(sres > 0)
