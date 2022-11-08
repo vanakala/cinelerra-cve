@@ -1,35 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef PLUGINACLIENTLAD_H
 #define PLUGINACLIENTLAD_H
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
+
 #ifdef HAVE_LADSPA
 
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_USES_TMPFRAME
 
 #define PLUGIN_TITLE ((const char*)server->lad_descriptor->Name)
 #define PLUGIN_CLASS PluginAClientLAD
@@ -166,8 +150,8 @@ public:
 	PluginAClientLAD(PluginServer *server);
 	~PluginAClientLAD();
 
-	void process_realtime(AFrame *input, AFrame *output);
-	void process_realtime(AFrame **input_frames, AFrame **output_frames);
+	AFrame *process_tmpframe(AFrame *frame);
+	void process_tmpframes(AFrame **frames);
 
 	void load_defaults();
 	void save_defaults();

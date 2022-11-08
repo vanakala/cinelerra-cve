@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "aframe.h"
 #include "clip.h"
@@ -723,9 +707,9 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	}
 }
 
-void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
+AFrame *PluginAClientLAD::process_tmpframe(AFrame *frame)
 {
-	int size = input->get_length();
+	int size = frame->get_length();
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
 
@@ -734,8 +718,9 @@ void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
 	for(int i = 0; i < in_channels; i++)
 	{
 		LADSPA_Data *in_buffer = in_buffers[i];
+
 		for(int j = 0; j < size; j++)
-			in_buffer[j] = input->buffer[j];
+			in_buffer[j] = frame->buffer[j];
 	}
 	for(int i = 0; i < out_channels; i++)
 		memset(out_buffers[i], 0, sizeof(float) * size);
@@ -744,19 +729,14 @@ void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
 
 	LADSPA_Data *out_buffer = out_buffers[0];
 
-	if(input != output)
-		output->copy_of(input);
-
 	for(int i = 0; i < size; i++)
-	{
-		output->buffer[i] = out_buffer[i];
-	}
+		frame->buffer[i] = out_buffer[i];
+	return frame;
 }
 
-void PluginAClientLAD::process_realtime(AFrame **input_frames,
-	AFrame **output_frames)
+void PluginAClientLAD::process_tmpframes(AFrame **frames)
 {
-	int size = input_frames[0]->get_length();
+	int size = frames[0]->get_length();
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
 
@@ -766,10 +746,11 @@ void PluginAClientLAD::process_realtime(AFrame **input_frames,
 	{
 		float *in_buffer = in_buffers[i];
 		double *in_ptr;
+
 		if(i < PluginClient::total_in_buffers)
-			in_ptr = input_frames[i]->buffer;
+			in_ptr = frames[i]->buffer;
 		else
-			in_ptr = input_frames[0]->buffer;
+			in_ptr = frames[0]->buffer;
 		for(int j = 0; j < size; j++)
 			in_buffer[j] = in_ptr[j];
 	}
@@ -783,10 +764,7 @@ void PluginAClientLAD::process_realtime(AFrame **input_frames,
 		if(i < total_outbuffers)
 		{
 			LADSPA_Data *out_buffer = out_buffers[i];
-			double *out_ptr = output_frames[i]->buffer;
-
-			if(output_frames[i] != input_frames[i])
-				output_frames[i]->copy_of(input_frames[i]);
+			double *out_ptr = frames[i]->buffer;
 
 			for(int j = 0; j < size; j++)
 				out_ptr[j] = out_buffer[j];
