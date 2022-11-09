@@ -35,6 +35,7 @@ int Quit::handle_event()
 	}
 	else 
 	{        // quit
+		mwindow_global->stop_playback();
 		mwindow_global->interrupt_indexes();
 		mwindow_global->delete_brender();
 		mwindow_global->glthread->quit();
@@ -67,6 +68,7 @@ void Quit::run()
 	case 0:          // quit
 		if(mwindow_global)
 		{
+			mwindow_global->stop_playback();
 			mwindow_global->interrupt_indexes();
 			mwindow_global->delete_brender();
 			mwindow_global->glthread->quit();
