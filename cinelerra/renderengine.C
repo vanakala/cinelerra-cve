@@ -36,7 +36,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	arender = 0;
 	vrender = 0;
 	interrupted = 0;
-	audio_playing = 0;
+	audio_timing = 0;
 	edl = 0;
 	do_reset = 0;
 
@@ -211,13 +211,13 @@ void RenderEngine::reset_sync_postime(void)
 	if(arender)
 	{
 		if(!edlsession->playback_software_position)
-			audio_playing = 1;
+			audio_timing = 1;
 	}
 }
 
 ptstime RenderEngine::sync_postime(void)
 {
-	if(audio_playing)
+	if(audio_timing)
 		return audio->current_postime(command.get_speed());
 
 	return (ptstime)timer.get_difference() / 1000;
@@ -296,7 +296,7 @@ void RenderEngine::stop_tracking(ptstime position, int type)
 {
 	if(type == TRACK_AUDIO)
 	{
-		audio_playing = 0;
+		audio_timing = 0;
 		if(vrender)
 			return;
 	}
