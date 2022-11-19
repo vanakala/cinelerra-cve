@@ -256,8 +256,8 @@ void TransportCommand::dump(int indent)
 {
 	char b[64];
 
-	printf("%*sTransportCommand %p dump: '%s' %s\n", indent, "",
-		this, commandstr(), realtime ? "rt" : "--");
+	printf("%*sTransportCommand %p dump: '%s' %s %s\n", indent, "",
+		this, commandstr(), realtime ? "rt" : "--", single_frame() ? "sng" : "mlt");
 	indent += 2;
 	printf("%*splayback %.3f; positions start=%.3f, end=%.3f loop %d\n", indent, "",
 		playbackstart, start_position, end_position, loop_playback);
