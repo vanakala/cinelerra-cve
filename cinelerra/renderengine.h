@@ -101,6 +101,7 @@ private:
 // Timer for synchronization without audio
 	Timer timer;
 	int audio_timing;
+	int playing_audio;
 	int do_reset;
 };
 

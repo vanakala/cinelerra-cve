@@ -37,6 +37,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	vrender = 0;
 	interrupted = 0;
 	audio_timing = 0;
+	playing_audio = 0;
 	edl = 0;
 	do_reset = 0;
 
@@ -98,6 +99,7 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 	edl = new_command->get_edl();
 
 	command.copy_from(new_command);
+	playing_audio = 0;
 
 	interrupted = 0;
 	if(playback_engine)
@@ -115,11 +117,15 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 	create_render_threads();
 
+
+	if(arender && !command.single_frame())
+	{
+		arender->arm_command();
+		playing_audio = 1;
+	}
+
 	if(playback_engine)
 		open_output();
-
-	if(arender)
-		arender->arm_command();
 
 	if(vrender)
 		vrender->arm_command();
@@ -135,6 +141,7 @@ void RenderEngine::create_render_threads()
 		delete vrender;
 		vrender = 0;
 		do_reset = 0;
+		playing_audio = 0;
 	}
 	interrupt_lock->unlock();
 
@@ -168,7 +175,7 @@ void RenderEngine::open_output()
 	if(command.realtime)
 	{
 // Allocate devices
-		if(arender)
+		if(playing_audio)
 		{
 			if(!audio)
 				audio = new AudioDevice;
@@ -181,6 +188,7 @@ void RenderEngine::open_output()
 				audio = 0;
 				delete arender;
 				arender = 0;
+				playing_audio = 0;
 			}
 		}
 
@@ -195,7 +203,7 @@ void RenderEngine::open_output()
 		}
 
 // Retool playback configuration
-		if(arender)
+		if(playing_audio)
 			audio->start_playback();
 
 		if(vrender)
@@ -244,7 +252,7 @@ void RenderEngine::start_render_threads()
 {
 	timer.update();
 
-	if(arender)
+	if(playing_audio)
 		arender->start_command();
 
 	if(vrender)
@@ -267,8 +275,11 @@ void RenderEngine::update_playstatistics(int frames, int late, int delay)
 
 void RenderEngine::wait_render_threads()
 {
-	if(arender)
+	if(playing_audio)
+	{
 		arender->Thread::join();
+		playing_audio = 0;
+	}
 
 	if(vrender)
 		vrender->Thread::join();
@@ -365,11 +376,12 @@ void RenderEngine::run()
 
 void RenderEngine::wait_another(const char *location, int type)
 {
-	if(arender && vrender)
+	if(playing_audio && vrender)
 	{
 		render_start_lock->wait_another(location);
 		if(type == TRACK_VIDEO)
 			reset_sync_postime();
-	} else
+	}
+	else
 		reset_sync_postime();
 }
