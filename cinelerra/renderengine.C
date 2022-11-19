@@ -117,7 +117,12 @@ void RenderEngine::arm_command(TransportCommand *new_command)
 
 	if(playback_engine)
 		open_output();
-	arm_render_threads();
+
+	if(arender)
+		arender->arm_command();
+
+	if(vrender)
+		vrender->arm_command();
 }
 
 void RenderEngine::create_render_threads()
@@ -234,16 +239,6 @@ void RenderEngine::start_command()
 		start_lock->unlock();
 	}
 }
-
-void RenderEngine::arm_render_threads()
-{
-	if(arender)
-		arender->arm_command();
-
-	if(vrender)
-		vrender->arm_command();
-}
-
 
 void RenderEngine::start_render_threads()
 {
