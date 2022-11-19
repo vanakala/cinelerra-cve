@@ -30,7 +30,6 @@ public:
 	virtual ~PlaybackEngine();
 
 	void arm_render_engine();
-	void start_render_engine();
 	void wait_render_engine();
 // Close all files related to asset
 	void release_asset(Asset *asset);
@@ -78,6 +77,8 @@ protected:
 // Current EDL
 	EDL *edl;
 private:
+	void start_render_engine();
+
 // Tracking variables updated from rendering position
 	ptstime tracking_position;
 	ptstime tracking_start;
