@@ -42,9 +42,15 @@ Canvas::Canvas(CWindowGUI *cwindow,
 	cwindowgui = cwindow;
 	vwindowgui = vwindow;
 	if(cwindow)
+	{
+		edl = master_edl;
 		subwindow = cwindow;
+	}
 	else
+	{
+		edl = vwindow_edl;
 		subwindow = vwindow;
+	}
 	this->x = x;
 	this->y = y;
 	this->w = w;
@@ -697,6 +703,45 @@ int Canvas::keypress_event(BC_WindowBase *caller)
 		return 1;
 	}
 	return 0;
+}
+
+void Canvas::draw_refresh()
+{
+	BC_WindowBase *canvas = get_canvas();
+
+	if(!canvas->get_video_on())
+	{
+		lock_canvas("Canvas::draw_refresh");
+
+		if(refresh_frame)
+		{
+			double in_x1, in_y1, in_x2, in_y2;
+			double out_x1, out_y1, out_x2, out_y2;
+			get_transfers(edl,
+				in_x1, in_y1, in_x2, in_y2,
+				out_x1, out_y1, out_x2, out_y2);
+
+			if(out_x2 > out_x1 && out_y2 > out_y1 &&
+				in_x2 > in_x1 && in_y2 > in_y1)
+			{
+				refresh_frame->set_pixel_aspect(sample_aspect_ratio());
+				canvas->draw_vframe(refresh_frame,
+					round(out_x1), round(out_y1),
+					round(out_x2 - out_x1),
+					round(out_y2 - out_y1),
+					round(in_x1), round(in_y1),
+					round(in_x2 - in_x1),
+					round(in_y2 - in_y1), 0);
+			}
+		}
+		else
+			clear_canvas();
+
+		draw_overlays();
+		canvas->flash();
+		canvas->flush();
+		unlock_canvas();
+	}
 }
 
 

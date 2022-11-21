@@ -88,7 +88,6 @@ public:
 	VWindowCanvas(VWindowGUI *gui);
 
 	void zoom_resize_window(double percentage);
-	void draw_refresh();
 	void draw_overlays();
 	void close_source();
 	int get_fullscreen();

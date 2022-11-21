@@ -701,49 +701,6 @@ double CWindowCanvas::get_zoom()
 	return edlsession->cwindow_zoom;
 }
 
-void CWindowCanvas::draw_refresh()
-{
-	if(!get_canvas()->get_video_on())
-	{
-		lock_canvas("CWindowCanvas::draw_refresh");
-
-		if(refresh_frame)
-		{
-			double in_x1, in_y1, in_x2, in_y2;
-			double out_x1, out_y1, out_x2, out_y2;
-			get_transfers(master_edl,
-				in_x1, in_y1, in_x2, in_y2,
-				out_x1, out_y1, out_x2, out_y2);
-
-			if(out_x2 > out_x1 && 
-				out_y2 > out_y1 && 
-				in_x2 > in_x1 && 
-				in_y2 > in_y1)
-			{
-// Can't use OpenGL here because it is called asynchronously of the
-// playback operation.
-				refresh_frame->set_pixel_aspect(sample_aspect_ratio());
-				get_canvas()->draw_vframe(refresh_frame,
-						round(out_x1),
-						round(out_y1),
-						round(out_x2 - out_x1),
-						round(out_y2 - out_y1),
-						round(in_x1),
-						round(in_y1),
-						round(in_x2 - in_x1),
-						round(in_y2 - in_y1),
-						0);
-			}
-		}
-		else
-			clear_canvas();
-
-		draw_overlays();
-		get_canvas()->flash();
-		unlock_canvas();
-	}
-}
-
 #define CROPHANDLE_W 10
 #define CROPHANDLE_H 10
 

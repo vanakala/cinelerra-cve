@@ -116,7 +116,7 @@ public:
 	virtual int get_yscroll() { return 0; };
 	virtual double get_zoom() { return 0; };
 // Redraws the image
-	virtual void draw_refresh() {};
+	void draw_refresh();
 
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.
@@ -197,6 +197,7 @@ private:
 		int &canvas_w, 
 		int &canvas_h);
 	Mutex *canvas_lock;
+	EDL *edl;
 };
 
 

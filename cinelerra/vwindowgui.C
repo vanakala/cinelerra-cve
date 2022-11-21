@@ -514,45 +514,6 @@ void VWindowCanvas::close_source()
 	gui->vwindow->remove_source();
 }
 
-void VWindowCanvas::draw_refresh()
-{
-	if(!get_canvas()->get_video_on())
-	{
-		lock_canvas("VWindowCanvas::draw_refresh");
-		if(refresh_frame)
-		{
-			double in_x1, in_y1, in_x2, in_y2;
-			double out_x1, out_y1, out_x2, out_y2;
-			get_transfers(vwindow_edl,
-				in_x1,
-				in_y1,
-				in_x2,
-				in_y2,
-				out_x1,
-				out_y1,
-				out_x2,
-				out_y2);
-			refresh_frame->set_pixel_aspect(sample_aspect_ratio());
-			get_canvas()->draw_vframe(refresh_frame,
-				round(out_x1),
-				round(out_y1),
-				round(out_x2 - out_x1),
-				round(out_y2 - out_y1),
-				round(in_x1),
-				round(in_y1),
-				round(in_x2 - in_x1),
-				round(in_y2 - in_y1),
-				0);
-		}
-		else
-			clear_canvas();
-
-		draw_overlays();
-		get_canvas()->flash();
-		unlock_canvas();
-	}
-}
-
 void VWindowCanvas::draw_overlays()
 {
 	if(mainsession->vcanvas_highlighted)

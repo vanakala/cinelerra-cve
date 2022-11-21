@@ -200,7 +200,6 @@ public:
 		int button_press,
 		int cursor_motion,
 		int draw);
-	void draw_refresh();
 	void draw_overlays();
 	void update_guidelines();
 // Cursor may have to be drawn
