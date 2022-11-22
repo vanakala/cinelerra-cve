@@ -126,9 +126,7 @@ public:
 
 // Convert coord from output to canvas position, including
 // x and y scroll offsets
-	void output_to_canvas(EDL *edl, double &x, double &y);
-// Convert coord from canvas to output position
-	void canvas_to_output(EDL *edl, double &x, double &y);
+	void output_to_canvas(double &x, double &y);
 
 // Get if scrollbars exist
 	int scrollbars_exist();
@@ -190,6 +188,9 @@ protected:
 		double &zoom_y,
 		double &conformed_w,
 		double &conformed_h);
+
+// Convert coord from canvas to output position
+	void canvas_to_output(double &x, double &y);
 
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y,

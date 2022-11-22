@@ -217,7 +217,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			{
 				dx1 = (dp[1] - in_x1) * xscale + out_x1;
 				dy1 = (dp[2] - in_y1) * yscale + out_y1;
-				canvas->output_to_canvas(edl, dx1, dy1);
+				canvas->output_to_canvas(dx1, dy1);
 				x1 = round(dx1);
 				y1 = round(dy1);
 
@@ -235,7 +235,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 						dy2 = (dp[4] + dp[2] - in_y1) *
 							yscale + out_y1;
 					}
-					canvas->output_to_canvas(edl, dx2, dy2);
+					canvas->output_to_canvas(dx2, dy2);
 					x2 = round(dx2);
 					y2 = round(dy2);
 				}
@@ -244,7 +244,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			{
 				dx1 = dp[1];
 				dy1 = dp[2];
-				canvas->output_to_canvas(edl, dx1, dy1);
+				canvas->output_to_canvas(dx1, dy1);
 				x1 = round(dx1);
 				y1 = round(dy1);
 				if(*dp != GUIDELINE_PIXEL)
@@ -259,7 +259,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 						dx2 = dp[3] + dp[1];
 						dy2 = dp[4] + dp[2];
 					}
-					canvas->output_to_canvas(edl, dx2, dy2);
+					canvas->output_to_canvas(dx2, dy2);
 					x2 = round(dx2);
 					y2 = round(dy2);
 				}
@@ -301,10 +301,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 				{
 					dx1 = in_x1;
 					dy1 = in_y1;
-					canvas->output_to_canvas(edl, dx1, dy1);
+					canvas->output_to_canvas(dx1, dy1);
 					dx2 = in_x2;
 					dy2 = in_y2;
-					canvas->output_to_canvas(edl, dx2, dy2);
+					canvas->output_to_canvas(dx2, dy2);
 					x1 = round(dx1);
 					y1 = round(dy1);
 					x2 = round(dx2);

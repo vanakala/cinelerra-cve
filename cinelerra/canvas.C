@@ -258,7 +258,7 @@ void Canvas::get_zooms(double &zoom_x,
 }
 
 // Convert a coordinate on the canvas to a coordinate on the output
-void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
+void Canvas::canvas_to_output(double &x, double &y)
 {
 	double zoom_x, zoom_y, conformed_w, conformed_h;
 
@@ -268,7 +268,7 @@ void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
 	y = y / zoom_y + get_y_offset(zoom_y, conformed_w, conformed_h);
 }
 
-void Canvas::output_to_canvas(EDL *edl, double &x, double &y)
+void Canvas::output_to_canvas(double &x, double &y)
 {
 	double zoom_x, zoom_y, conformed_w, conformed_h;
 
@@ -311,8 +311,8 @@ void Canvas::get_transfers(EDL *edl,
 		in_x2 = canvas_w;
 		in_y2 = canvas_h;
 
-		canvas_to_output(edl, in_x1, in_y1);
-		canvas_to_output(edl, in_x2, in_y2);
+		canvas_to_output(in_x1, in_y1);
+		canvas_to_output(in_x2, in_y2);
 
 		if(in_x1 < 0)
 		{
