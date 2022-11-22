@@ -2378,7 +2378,7 @@ int CWindowCanvas::cursor_motion_event()
 			double cursor_y = get_cursor_y();
 			double zoom_x, zoom_y, conformed_w, conformed_h;
 
-			get_zooms(master_edl, zoom_x, zoom_y, conformed_w, conformed_h);
+			get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 			cursor_x = cursor_x / zoom_x + gui->x_offset;
 			cursor_y = cursor_y / zoom_y + gui->y_offset;
 
@@ -2471,7 +2471,8 @@ int CWindowCanvas::button_press_event()
 	calculate_origin();
 
 	double zoom_x, zoom_y, conformed_w, conformed_h;
-	get_zooms(master_edl, zoom_x, zoom_y, conformed_w, conformed_h);
+
+	get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 	gui->x_offset = get_x_offset(zoom_x, conformed_w, conformed_h);
 	gui->y_offset = get_y_offset(zoom_y, conformed_w, conformed_h);
 

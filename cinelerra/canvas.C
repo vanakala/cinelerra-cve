@@ -227,8 +227,7 @@ void Canvas::update_scrollbars()
 	}
 }
 
-void Canvas::get_zooms(EDL *edl,
-	double &zoom_x,
+void Canvas::get_zooms(double &zoom_x,
 	double &zoom_y,
 	double &conformed_w,
 	double &conformed_h)
@@ -262,7 +261,8 @@ void Canvas::get_zooms(EDL *edl,
 void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
 {
 	double zoom_x, zoom_y, conformed_w, conformed_h;
-	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
+
+	get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 
 	x = x / zoom_x + get_x_offset(zoom_x, conformed_w, conformed_h);
 	y = y / zoom_y + get_y_offset(zoom_y, conformed_w, conformed_h);
@@ -271,7 +271,8 @@ void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
 void Canvas::output_to_canvas(EDL *edl, double &x, double &y)
 {
 	double zoom_x, zoom_y, conformed_w, conformed_h;
-	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
+
+	get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 
 	x = zoom_x * (x - get_x_offset(zoom_x, conformed_w, conformed_h));
 	y = zoom_y * (y - get_y_offset(zoom_y, conformed_w, conformed_h));
@@ -300,7 +301,7 @@ void Canvas::get_transfers(EDL *edl,
 		double out_x1, out_y1, out_x2, out_y2;
 		double zoom_x, zoom_y, conformed_w, conformed_h;
 
-		get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
+		get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 		out_x1 = 0;
 		out_y1 = 0;
 		out_x2 = canvas_w;
@@ -432,7 +433,7 @@ void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
 
 		if(use_scrollbars)
 		{
-			get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
+			get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 
 			if(!need_xscroll)
 			{

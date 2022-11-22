@@ -186,6 +186,11 @@ protected:
 	double get_y_offset(double zoom_y,
 		double conformed_w,
 		double conformed_h);
+	void get_zooms(double &zoom_x,
+		double &zoom_y,
+		double &conformed_w,
+		double &conformed_h);
+
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y,
 		int &canvas_w, int &canvas_h);
