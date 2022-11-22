@@ -327,8 +327,8 @@ void Canvas::get_transfers(EDL *edl,
 			in_y1 = 0;
 		}
 
-		int output_w = get_output_w(edl);
-		int output_h = get_output_h(edl);
+		int output_w = get_output_w();
+		int output_h = get_output_h();
 
 		if(in_x2 > output_w)
 		{
@@ -383,8 +383,8 @@ void Canvas::get_transfers(EDL *edl,
 // Get output frame coords from EDL
 			output_x1 = 0;
 			output_y1 = 0;
-			output_x2 = get_output_w(edl);
-			output_y2 = get_output_h(edl);
+			output_x2 = get_output_w();
+			output_y2 = get_output_h();
 		}
 	}
 
@@ -404,14 +404,14 @@ int Canvas::scrollbars_exist()
 	return(use_scrollbars && (xscroll || yscroll));
 }
 
-int Canvas::get_output_w(EDL *edl)
+int Canvas::get_output_w()
 {
 	if(edl->this_edlsession)
 		return edl->this_edlsession->output_w;
 	return edlsession->output_w;
 }
 
-int Canvas::get_output_h(EDL *edl)
+int Canvas::get_output_h()
 {
 	if(edl->this_edlsession)
 		return edl->this_edlsession->output_h;
@@ -427,8 +427,8 @@ void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
 
 	if(edl)
 	{
-		w_needed = get_output_w(edl);
-		h_needed = get_output_h(edl);
+		w_needed = get_output_w();
+		h_needed = get_output_h();
 		w_visible = w_needed;
 		h_visible = h_needed;
 

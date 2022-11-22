@@ -140,9 +140,6 @@ public:
 // Convert coord from canvas to output position
 	void canvas_to_output(EDL *edl, double &x, double &y);
 
-// Get dimensions of frame being sent to canvas
-	virtual int get_output_w(EDL *edl);
-	virtual int get_output_h(EDL *edl);
 // Get if scrollbars exist
 	int scrollbars_exist();
 // Get cursor locations relative to canvas and not offset by scrollbars
@@ -193,6 +190,9 @@ public:
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y,
 		int &canvas_w, int &canvas_h);
+// Get dimensions of frame being sent to canvas
+	int get_output_w();
+	int get_output_h();
 
 	Mutex *canvas_lock;
 	EDL *edl;
