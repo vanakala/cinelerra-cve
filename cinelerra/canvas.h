@@ -118,16 +118,6 @@ public:
 // Redraws the image
 	void draw_refresh();
 
-// Get top left offset of canvas relative to output.
-// Normally negative.  Can be positive if output is smaller than canvas.
-	double get_x_offset(EDL *edl,
-		double zoom_x,
-		double conformed_w,
-		double conformed_h);
-	double get_y_offset(EDL *edl,
-		double zoom_y,
-		double conformed_w,
-		double conformed_h);
 	void get_zooms(EDL *edl,
 		double &zoom_x,
 		double &zoom_y,
@@ -187,6 +177,15 @@ public:
 	VWindowGUI *vwindowgui;
 	GuideLines guidelines;
 
+protected:
+// Get top left offset of canvas relative to output.
+// Normally negative.  Can be positive if output is smaller than canvas.
+	double get_x_offset(double zoom_x,
+		double conformed_w,
+		double conformed_h);
+	double get_y_offset(double zoom_y,
+		double conformed_w,
+		double conformed_h);
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y,
 		int &canvas_w, int &canvas_h);

@@ -2472,8 +2472,8 @@ int CWindowCanvas::button_press_event()
 
 	double zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(master_edl, zoom_x, zoom_y, conformed_w, conformed_h);
-	gui->x_offset = get_x_offset(master_edl, zoom_x, conformed_w, conformed_h);
-	gui->y_offset = get_y_offset(master_edl, zoom_y, conformed_w, conformed_h);
+	gui->x_offset = get_x_offset(zoom_x, conformed_w, conformed_h);
+	gui->y_offset = get_y_offset(zoom_y, conformed_w, conformed_h);
 
 // Scroll view
 	if(get_buttonpress() == 2)

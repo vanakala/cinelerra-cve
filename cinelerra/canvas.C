@@ -151,8 +151,7 @@ void Canvas::calculate_sizes(int output_w, int output_h,
 	}
 }
 
-double Canvas::get_x_offset(EDL *edl,
-	double zoom_x,
+double Canvas::get_x_offset(double zoom_x,
 	double conformed_w,
 	double conformed_h)
 {
@@ -185,8 +184,7 @@ double Canvas::get_x_offset(EDL *edl,
 	return 0;
 }
 
-double Canvas::get_y_offset(EDL *edl,
-	double zoom_y,
+double Canvas::get_y_offset(double zoom_y,
 	double conformed_w,
 	double conformed_h)
 {
@@ -266,8 +264,8 @@ void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
 	double zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-	x = x / zoom_x + get_x_offset(edl, zoom_x, conformed_w, conformed_h);
-	y = y / zoom_y + get_y_offset(edl, zoom_y, conformed_w, conformed_h);
+	x = x / zoom_x + get_x_offset(zoom_x, conformed_w, conformed_h);
+	y = y / zoom_y + get_y_offset(zoom_y, conformed_w, conformed_h);
 }
 
 void Canvas::output_to_canvas(EDL *edl, double &x, double &y)
@@ -275,8 +273,8 @@ void Canvas::output_to_canvas(EDL *edl, double &x, double &y)
 	double zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-	x = zoom_x * (x - get_x_offset(edl, zoom_x, conformed_w, conformed_h));
-	y = zoom_y * (y - get_y_offset(edl, zoom_y, conformed_w, conformed_h));
+	x = zoom_x * (x - get_x_offset(zoom_x, conformed_w, conformed_h));
+	y = zoom_y * (y - get_y_offset(zoom_y, conformed_w, conformed_h));
 }
 
 void Canvas::get_transfers(EDL *edl, 
