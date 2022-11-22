@@ -92,8 +92,7 @@ public:
 // This gets the input coordinates on the device output_frame
 // and the corresponding output coordinates on the canvas.
 // Must be floating point to support OpenGL.
-	void get_transfers(EDL *edl, 
-		double &output_x1,
+	void get_transfers(double &output_x1,
 		double &output_y1,
 		double &output_x2,
 		double &output_y2,

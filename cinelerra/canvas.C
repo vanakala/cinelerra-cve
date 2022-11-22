@@ -278,8 +278,7 @@ void Canvas::output_to_canvas(double &x, double &y)
 	y = zoom_y * (y - get_y_offset(zoom_y, conformed_w, conformed_h));
 }
 
-void Canvas::get_transfers(EDL *edl, 
-	double &output_x1,
+void Canvas::get_transfers(double &output_x1,
 	double &output_y1,
 	double &output_x2,
 	double &output_y2,
@@ -714,8 +713,8 @@ void Canvas::draw_refresh()
 		{
 			double in_x1, in_y1, in_x2, in_y2;
 			double out_x1, out_y1, out_x2, out_y2;
-			get_transfers(edl,
-				in_x1, in_y1, in_x2, in_y2,
+
+			get_transfers(in_x1, in_y1, in_x2, in_y2,
 				out_x1, out_y1, out_x2, out_y2);
 
 			if(out_x2 > out_x1 && out_y2 > out_y1 &&

@@ -154,14 +154,13 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	int i = 0;
 	output->lock_canvas("VDeviceX11::write_buffer");
 
-	output->get_transfers(edl, 
-		output_x1, 
-		output_y1, 
-		output_x2, 
-		output_y2, 
-		canvas_x1, 
-		canvas_y1, 
-		canvas_x2, 
+	output->get_transfers(output_x1,
+		output_y1,
+		output_x2,
+		output_y2,
+		canvas_x1,
+		canvas_y1,
+		canvas_x2,
 		canvas_y2);
 // Convert colormodel
 	if(bitmap)
