@@ -113,7 +113,7 @@ BC_WindowBase* Canvas::get_canvas()
 		view_y = y;
 		view_w = w;
 		view_h = h;
-		get_scrollbars(master_edl, view_x, view_y, view_w, view_h);
+		get_scrollbars(view_x, view_y, view_w, view_h);
 		create_canvas();
 	}
 	if(get_fullscreen() && canvas_fullscreen) 
@@ -418,11 +418,8 @@ int Canvas::get_output_h(EDL *edl)
 	return edlsession->output_h;
 }
 
-void Canvas::get_scrollbars(EDL *edl, 
-	int &canvas_x, 
-	int &canvas_y, 
-	int &canvas_w, 
-	int &canvas_h)
+void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
+	int &canvas_w, int &canvas_h)
 {
 	int need_xscroll = 0;
 	int need_yscroll = 0;
@@ -430,8 +427,8 @@ void Canvas::get_scrollbars(EDL *edl,
 
 	if(edl)
 	{
-		w_needed = edlsession->output_w;
-		h_needed = edlsession->output_h;
+		w_needed = get_output_w(edl);
+		h_needed = get_output_h(edl);
 		w_visible = w_needed;
 		h_visible = h_needed;
 
@@ -513,7 +510,8 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 	view_y = y;
 	view_w = w;
 	view_h = h;
-	get_scrollbars(edl, view_x, view_y, view_w, view_h);
+	get_scrollbars(view_x, view_y, view_w, view_h);
+
 	if(canvas_subwindow)
 	{
 		canvas_subwindow->reposition_window(view_x, view_y, view_w, view_h);

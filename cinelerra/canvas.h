@@ -191,11 +191,9 @@ public:
 	GuideLines guidelines;
 
 private:
-	void get_scrollbars(EDL *edl, 
-		int &canvas_x, 
-		int &canvas_y, 
-		int &canvas_w, 
-		int &canvas_h);
+	void get_scrollbars(int &canvas_x, int &canvas_y,
+		int &canvas_w, int &canvas_h);
+
 	Mutex *canvas_lock;
 	EDL *edl;
 };
