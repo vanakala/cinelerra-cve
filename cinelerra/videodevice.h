@@ -8,7 +8,6 @@
 
 #include "audiodevice.inc"
 #include "canvas.inc"
-#include "edl.inc"
 #include "videodevice.inc"
 #include "vdevicex11.inc"
 #include "vframe.inc"
@@ -48,8 +47,7 @@ public:
 	void stop_playback();
 
 // absolute frame of last frame in buffer.
-// The EDL parameter is passed to Canvas and can be 0.
-	int write_buffer(VFrame *output, EDL *edl);
+	int write_buffer(VFrame *output);
 
 // Flag when output is interrupted
 	int interrupt;

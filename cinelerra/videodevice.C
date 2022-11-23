@@ -119,9 +119,10 @@ void VideoDevice::interrupt_playback()
 	interrupt = 1;
 }
 
-int VideoDevice::write_buffer(VFrame *output, EDL *edl)
+int VideoDevice::write_buffer(VFrame *output)
 {
-	if(output_base) return output_base->write_buffer(output, edl);
+	if(output_base)
+		return output_base->write_buffer(output);
 	return 1;
 }
 

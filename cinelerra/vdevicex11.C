@@ -8,9 +8,7 @@
 #include "bcsignals.h"
 #include "canvas.h"
 #include "colormodels.h"
-#include "edl.h"
 #include "playbackconfig.h"
-#include "preferences.h"
 #include "tmpframecache.h"
 #include "vdevicex11.h"
 #include "vframe.h"
@@ -139,7 +137,7 @@ int VDeviceX11::get_accel_colormodel(int colormodel)
 	return accel_cmodel;
 }
 
-int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
+int VDeviceX11::write_buffer(VFrame *output_channels)
 {
 	if(output_channels != output->refresh_frame)
 	{
@@ -184,7 +182,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	}
 	else
 	{
-		output_channels->set_pixel_aspect(edl->get_sample_aspect_ratio());
 		output->get_canvas()->draw_vframe(output_channels,
 			round(canvas_x1),
 			round(canvas_y1),

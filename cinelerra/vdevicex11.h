@@ -10,7 +10,6 @@
 
 #include "bcbitmap.inc"
 #include "canvas.inc"
-#include "edl.inc"
 #include "videodevice.inc"
 #include "vframe.inc"
 
@@ -24,7 +23,7 @@ public:
 	int output_visible();
 
 // After loading the bitmap with a picture, write it
-	int write_buffer(VFrame *result, EDL *edl);
+	int write_buffer(VFrame *result);
 
 private:
 

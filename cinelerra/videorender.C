@@ -253,7 +253,8 @@ void VideoRender::flash_output()
 	framerate_counter++;
 	flashed_pts = pts;
 	flashed_duration = duration;
-	renderengine->video->write_buffer(frame, edl);
+	frame->set_pixel_aspect(edl->get_sample_aspect_ratio());
+	renderengine->video->write_buffer(frame);
 	renderengine->set_tracking_position(flashed_pts, TRACK_VIDEO);
 }
 

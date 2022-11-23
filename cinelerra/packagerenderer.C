@@ -286,8 +286,8 @@ int PackageRenderer::do_video()
 						BC_Resources::tmpframes.clone_frame(frame);
 
 					preview_output->copy_from(frame);
-					video_device->write_buffer(preview_output,
-						command->get_edl());
+					frame->set_pixel_aspect(command->get_edl()->get_sample_aspect_ratio());
+					video_device->write_buffer(preview_output);
 				}
 			}
 // Don't write to file
