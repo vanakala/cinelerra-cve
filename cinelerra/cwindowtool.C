@@ -109,8 +109,7 @@ void CWindowTool::start_tool(int operation)
 			input_lock->unlock();
 		}
 	}
-	else
-	if(tool_gui) 
+	else if(tool_gui)
 		tool_gui->update();
 }
 
@@ -187,16 +186,8 @@ CWindowToolGUI::CWindowToolGUI(CWindowTool *thread,
 	const char *title,
 	int w, 
 	int h)
- : BC_Window(title,
-	mainsession->ctool_x,
-	mainsession->ctool_y,
-	w,
-	h,
-	w,
-	h,
-	0,
-	0,
-	1)
+ : BC_Window(title, mainsession->ctool_x, mainsession->ctool_y,
+	w, h, w, h, 0, 0, 1)
 {
 	this->thread = thread;
 	current_operation = 0;
@@ -217,13 +208,9 @@ void CWindowToolGUI::translation_event()
 	mainsession->ctool_y = get_y();
 }
 
-void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
-	FloatAuto* &y_auto,
-	FloatAuto* &z_auto,
-	int camera,
-	int create_x,
-	int create_y,
-	int create_z)
+void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto, FloatAuto* &y_auto,
+	FloatAuto* &z_auto, int camera,
+	int create_x, int create_y, int create_z)
 {
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 	ptstime pos = master_edl->local_session->get_selectionstart(1);
@@ -235,13 +222,8 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 	if(track)
 	{
 		mwindow_global->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			camera,
-			create_x,
-			create_y,
-			create_z);
+			&y_auto, &z_auto, track, camera,
+			create_x, create_y, create_z);
 	}
 
 	if(edlsession->auto_keyframes)
@@ -268,26 +250,14 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, double value, int log_increment = 0)
- : BC_TumbleTextBox(gui, 
-		value,
-		-65536.0,
-		65536.0,
-		x, 
-		y, 
-		100)
+ : BC_TumbleTextBox(gui, value, -65536.0, 65536.0, x, y, 100)
 {
 	this->gui = gui;
 	set_log_floatincrement(log_increment);
 }
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
- : BC_TumbleTextBox(gui, 
-		value,
-		-65536,
-		65536,
-		x, 
-		y, 
-		100)
+ : BC_TumbleTextBox(gui, value, -65536, 65536, x, y, 100)
 {
 	this->gui = gui;
 }
@@ -320,15 +290,13 @@ int CWindowCropBeforePlugins::handle_event()
 }
 
 CWindowCropGUI::CWindowCropGUI(CWindowTool *thread)
- : CWindowToolGUI(thread,
-	MWindow::create_title(N_("Crop")),
-	330,
-	100)
+ : CWindowToolGUI(thread, MWindow::create_title(N_("Crop")),
+	330, 100)
 {
 	int x = 10, y = 10;
 	BC_Title *title;
 	int column1 = 0;
-	int pad = MAX(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1), 
+	int pad = MAX(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1),
 		BC_Title::calculate_h(this, "X")) + 5;
 
 	add_subwindow(title = new BC_Title(x, y, _("X1:")));
@@ -337,8 +305,7 @@ CWindowCropGUI::CWindowCropGUI(CWindowTool *thread)
 	add_subwindow(title = new BC_Title(x, y, _("W:")));
 	column1 = MAX(column1, title->get_w());
 	y += pad;
-	add_subwindow(apply = new CWindowCropBeforePlugins(this,
-		x, y));
+	add_subwindow(apply = new CWindowCropBeforePlugins(this, x, y));
 
 	x += column1 + 5;
 	y = 10;
@@ -446,10 +413,8 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 }
 
 CWindowEyedropGUI::CWindowEyedropGUI(CWindowTool *thread)
- : CWindowToolGUI(thread,
-	MWindow::create_title(N_("Color")),
-	150,
-	150)
+ : CWindowToolGUI(thread, MWindow::create_title(N_("Color")),
+	150, 150)
 {
 	int x = 10;
 	int y = 10;
@@ -549,7 +514,7 @@ int CWindowTangentToggle::handle_event()
 	if(track)
 	{
 		mwindow_global->cwindow->calculate_affected_autos(&x, &y, &z,
-			track, cfg.use_camera, 0,0,0); // don't create new keyframe
+			track, cfg.use_camera, 0, 0, 0); // don't create new keyframe
 
 		if(x)
 			x->change_tangent_mode(cfg.mode);
@@ -576,10 +541,7 @@ CWindowProjectorGUI::CWindowProjectorGUI(CWindowTool *thread)
 
 CWindowCamProjGUI::CWindowCamProjGUI(CWindowTool *thread,
 	const char *tooltitle, int camera)
- : CWindowToolGUI(thread,
-	tooltitle,
-	170,
-	170)
+ : CWindowToolGUI(thread, tooltitle, 170, 170)
 {
 	int x = 10, y = 10, x1;
 	BC_Title *title;
@@ -592,27 +554,19 @@ CWindowCamProjGUI::CWindowCamProjGUI(CWindowTool *thread,
 
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
-	this->x = new CWindowCoord(this, 
-		x, 
-		y, 
-		0);
+	this->x = new CWindowCoord(this, x, y, 0);
 	y += 30;
+
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
 	x += title->get_w();
-	this->y = new CWindowCoord(this, 
-		x, 
-		y, 
-		0);
+	this->y = new CWindowCoord(this, x, y, 0);
 	y += 30;
+
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Z:")));
 	x += title->get_w();
-	this->z = new CWindowCoord(this, 
-		x, 
-		y, 
-		1.0,
-		1);
+	this->z = new CWindowCoord(this, x, y, 1.0, 1);
 	this->z->set_boundaries(.0001, 256.0);
 
 	y += 30;
@@ -731,16 +685,8 @@ int CWindowCPLeft::handle_event()
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-	{
-		mwindow_global->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			gui->is_camera,
-			1,
-			0,
-			0);
-	}
+		mwindow_global->cwindow->calculate_affected_autos(&x_auto, 0, &z_auto,
+			track, gui->is_camera, 1, 0, 0);
 
 	if(x_auto && z_auto)
 	{
@@ -749,8 +695,7 @@ int CWindowCPLeft::handle_event()
 			int w = 0, h = 0;
 			track->get_source_dimensions(
 				master_edl->local_session->get_selectionstart(1),
-				w,
-				h);
+				w, h);
 
 			if(w && h)
 			{
@@ -819,26 +764,19 @@ int CWindowCPRight::handle_event()
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-	{
-		mwindow_global->cwindow->calculate_affected_autos(&x_auto,
-			0,
-			&z_auto,
-			track,
-			gui->is_camera,
-			1,
-			0,
-			0);
-	}
+		mwindow_global->cwindow->calculate_affected_autos(&x_auto, 0,
+			&z_auto, track, gui->is_camera,
+			1, 0, 0);
 
 	if(x_auto && z_auto)
 	{
 		if(gui->is_camera)
 		{
 			int w = 0, h = 0;
+
 			track->get_source_dimensions(
 				master_edl->local_session->get_selectionstart(1),
-				w,
-				h);
+				w, h);
 
 			if(w && h)
 			{
@@ -879,26 +817,19 @@ int CWindowCPTop::handle_event()
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-	{
-		mwindow_global->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			gui->is_camera,
-			0,
-			1,
-			0);
-	}
+		mwindow_global->cwindow->calculate_affected_autos(0, &y_auto,
+			&z_auto, track, gui->is_camera,
+			0, 1, 0);
 
 	if(y_auto && z_auto)
 	{
 		if(gui->is_camera)
 		{
 			int w = 0, h = 0;
+
 			track->get_source_dimensions(
 				master_edl->local_session->get_selectionstart(1),
-				w,
-				h);
+				w, h);
 
 			if(w && h)
 			{
@@ -968,16 +899,8 @@ int CWindowCPBottom::handle_event()
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-	{
-		mwindow_global->cwindow->calculate_affected_autos(0,
-			&y_auto,
-			&z_auto,
-			track,
-			gui->is_camera,
-			0,
-			1,
-			0);
-	}
+		mwindow_global->cwindow->calculate_affected_autos(0, &y_auto, &z_auto,
+			track, gui->is_camera, 0, 1, 0);
 
 	if(y_auto && z_auto)
 	{
@@ -1013,13 +936,8 @@ int CWindowCPBottom::handle_event()
 }
 
 
-CWindowMaskMode::CWindowMaskMode(CWindowMaskGUI *gui,
-	int x, int y)
- : BC_PopupMenu(x,
-	y,
-	220,
-	0,
-	POPUPMENU_USE_COORDS)
+CWindowMaskMode::CWindowMaskMode(CWindowMaskGUI *gui, int x, int y)
+ : BC_PopupMenu(x, y, 220, 0, POPUPMENU_USE_COORDS)
 {
 	this->gui = gui;
 	add_item(new BC_MenuItem(name(MASK_MULTIPLY_ALPHA)));
@@ -1066,9 +984,7 @@ int CWindowMaskMode::handle_event()
 }
 
 
-CWindowMaskDelete::CWindowMaskDelete(CWindowToolGUI *gui,
-	int x, 
-	int y)
+CWindowMaskDelete::CWindowMaskDelete(CWindowToolGUI *gui, int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
 	this->gui = gui;
@@ -1092,16 +1008,12 @@ int CWindowMaskDelete::handle_event()
 				SubMask *submask = current->get_submask(edlsession->cwindow_mask);
 
 				for(int i = gui->thread->cwindowgui->affected_point;
-					i < submask->points.total - 1; i++)
-				{
+						i < submask->points.total - 1; i++)
 					*submask->points.values[i] = *submask->points.values[i + 1];
-				}
 
 				if(submask->points.total)
-				{
 					submask->points.remove_object(
 						submask->points.values[submask->points.total - 1]);
-				}
 			}
 			gui->update();
 			gui->update_preview();
@@ -1112,23 +1024,15 @@ int CWindowMaskDelete::handle_event()
 
 int CWindowMaskDelete::keypress_event()
 {
-	if(get_keypress() == BACKSPACE ||
-		get_keypress() == DELETE) 
+	if(get_keypress() == BACKSPACE || get_keypress() == DELETE)
 		return handle_event();
 	return 0;
 }
 
 
-CWindowMaskNumber::CWindowMaskNumber(CWindowToolGUI *gui,
-	int x, 
-	int y)
- : BC_TumbleTextBox(gui, 
-		edlsession->cwindow_mask,
-		0,
-		SUBMASKS - 1,
-		x, 
-		y, 
-		100)
+CWindowMaskNumber::CWindowMaskNumber(CWindowToolGUI *gui, int x, int y)
+ : BC_TumbleTextBox(gui, edlsession->cwindow_mask, 0,
+	SUBMASKS - 1, x, y, 100)
 {
 	this->gui = gui;
 }
@@ -1143,13 +1047,7 @@ int CWindowMaskNumber::handle_event()
 
 
 CWindowMaskFeather::CWindowMaskFeather(CWindowToolGUI *gui, int x, int y)
- : BC_TumbleTextBox(gui, 
-		0,
-		0,
-		0xff,
-		x, 
-		y, 
-		100)
+ : BC_TumbleTextBox(gui, 0, 0, 0xff, x, y, 100)
 {
 	this->gui = gui;
 }
@@ -1161,11 +1059,7 @@ int CWindowMaskFeather::handle_event()
 	MaskPoint *point;
 	SubMask *mask;
 
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe,
-		mask, 
-		point,
-		1);
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 1);
 
 	keyframe->feather = atoi(get_text());
 	gui->update_preview();
@@ -1174,14 +1068,7 @@ int CWindowMaskFeather::handle_event()
 
 
 CWindowMaskValue::CWindowMaskValue(CWindowToolGUI *gui, int x, int y)
- : BC_ISlider(x, 
-		y,
-		0,
-		200,
-		200,
-		0,
-		100,
-		0)
+ : BC_ISlider(x, y, 0, 200, 200, 0, 100, 0)
 {
 	this->gui = gui;
 }
@@ -1193,11 +1080,7 @@ int CWindowMaskValue::handle_event()
 	MaskPoint *point;
 	SubMask *mask;
 
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe,
-		mask, 
-		point,
-		1);
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 1);
 
 	keyframe->value = get_value();
 	gui->update_preview();
@@ -1206,10 +1089,7 @@ int CWindowMaskValue::handle_event()
 
 
 CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y)
- : BC_CheckBox(x, 
-	y, 
-	1, 
-	_("Apply mask before plugins"))
+ : BC_CheckBox(x, y, 1, _("Apply mask before plugins"))
 {
 	this->gui = gui;
 }
@@ -1220,13 +1100,11 @@ int CWindowMaskBeforePlugins::handle_event()
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe,
-		mask, 
-		point,
-		1);
 
-	if (keyframe) {
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 1);
+
+	if(keyframe)
+	{
 		keyframe->apply_before_plugins = get_value();
 		gui->update_preview();
 	}
@@ -1235,10 +1113,7 @@ int CWindowMaskBeforePlugins::handle_event()
 
 
 CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
- : CWindowToolGUI(thread,
-	MWindow::create_title(N_("Mask")),
-	330,
-	280)
+ : CWindowToolGUI(thread, MWindow::create_title(N_("Mask")), 330, 280)
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -1272,8 +1147,7 @@ CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
 
 	y += 30;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 
-		10, 
-		y));
+		10, y));
 
 	update();
 }
@@ -1285,15 +1159,13 @@ CWindowMaskGUI::~CWindowMaskGUI()
 	delete localauto;
 }
 
-void CWindowMaskGUI::get_keyframe(Track* &track, 
-	MaskAuto* &keyframe, 
-	SubMask* &mask, 
-	MaskPoint* &point,
-	int create_it)
+void CWindowMaskGUI::get_keyframe(Track* &track, MaskAuto* &keyframe,
+	SubMask* &mask, MaskPoint* &point, int create_it)
 {
 	ptstime pos = master_edl->local_session->get_selectionstart(1);
 
 	track = mwindow_global->cwindow->calculate_affected_track();
+
 	if(track)
 		keyframe = (MaskAuto*)mwindow_global->cwindow->calculate_affected_auto(
 			AUTOMATION_MASK, pos, track, create_it);
@@ -1316,10 +1188,8 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	if(keyframe)
 	{
 		if(mwindow_global->cwindow->gui->affected_point < mask->points.total &&
-			mwindow_global->cwindow->gui->affected_point >= 0)
-		{
+				mwindow_global->cwindow->gui->affected_point >= 0)
 			point = mask->points.values[mwindow_global->cwindow->gui->affected_point];
-		}
 	}
 }
 
@@ -1363,11 +1233,8 @@ int CWindowMaskGUI::handle_event()
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
-	get_keyframe(track, 
-		keyframe, 
-		mask,
-		point,
-		1);
+
+	get_keyframe(track, keyframe, mask, point, 1);
 
 	if(point)
 	{
@@ -1386,10 +1253,7 @@ void CWindowMaskGUI::update_preview()
 }
 
 CWindowRulerGUI::CWindowRulerGUI(CWindowTool *thread)
- : CWindowToolGUI(thread,
-	MWindow::create_title(N_("Ruler")),
-	320,
-	240)
+ : CWindowToolGUI(thread, MWindow::create_title(N_("Ruler")), 320, 240)
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -1435,26 +1299,21 @@ void CWindowRulerGUI::update()
 		(edlsession->ruler_x2 - edlsession->ruler_x1)) * 360 / 2 / M_PI;
 
 	if(EQUIV(distance_value, 0.0))
-	{
 		angle_value = 0.0;
-	}
-	else
-	if(angle_value < 0)
-	{
+	else if(angle_value < 0)
 		angle_value *= -1;
-	}
 
 	char string[BCTEXTLEN];
-	sprintf(string, "%d, %d",
-		mainsession->cwindow_output_x,
+
+	sprintf(string, "%d, %d", mainsession->cwindow_output_x,
 		mainsession->cwindow_output_y);
 	current->update(string);
-	sprintf(string, "%.0f, %.0f",
-		edlsession->ruler_x1,
+
+	sprintf(string, "%.0f, %.0f", edlsession->ruler_x1,
 		edlsession->ruler_y1);
 	point1->update(string);
-	sprintf(string, "%.0f, %.0f",
-		edlsession->ruler_x2,
+
+	sprintf(string, "%.0f, %.0f", edlsession->ruler_x2,
 		edlsession->ruler_y2);
 	point2->update(string);
 
@@ -1463,4 +1322,3 @@ void CWindowRulerGUI::update()
 	sprintf(string, "%0.02f %c", angle_value, 0xb0);
 	angle->update(string);
 }
-

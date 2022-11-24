@@ -76,13 +76,8 @@ public:
 	CWindowCoord *event_caller;
 
 protected:
-	void get_keyframes(FloatAuto* &x_auto,
-		FloatAuto* &y_auto,
-		FloatAuto* &z_auto,
-		int camera,
-		int create_x,
-		int create_y,
-		int create_z);
+	void get_keyframes(FloatAuto* &x_auto, FloatAuto* &y_auto, FloatAuto* &z_auto,
+		int camera, int create_x, int create_y, int create_z);
 
 	FloatAuto *local_x;
 	FloatAuto *local_y;
@@ -207,11 +202,8 @@ public:
 
 	void update();
 	int handle_event();
-	void get_keyframe(Track* &track, 
-		MaskAuto* &keyframe, 
-		SubMask* &mask, 
-		MaskPoint* &point,
-		int create_it);
+	void get_keyframe(Track* &track, MaskAuto* &keyframe,
+		SubMask* &mask, MaskPoint* &point, int create_it);
 	void update_preview();
 
 	CWindowCoord *x, *y;
