@@ -1000,7 +1000,10 @@ int CWindowCanvas::do_mask(int &redraw,
 	MaskAutos *mask_autos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
 
 	if(!mask_autos)
-		return 0;
+	{
+		mask_autos = (MaskAutos*)track->automation->get_autos(AUTOMATION_MASK);
+		track->automation->get_auto_for_editing(0, AUTOMATION_MASK);
+	}
 
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
