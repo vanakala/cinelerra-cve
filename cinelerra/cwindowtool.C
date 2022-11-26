@@ -969,18 +969,20 @@ int CWindowMaskMode::mode(const char *text)
 
 int CWindowMaskMode::handle_event()
 {
-	MaskAuto *keyframe;
-	Track *track;
-	MaskPoint *point;
-	SubMask *mask;
-
-	gui->get_keyframe(track, keyframe, mask, point, 0);
+	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-		((MaskAutos*)track->automation->get_auto_for_editing(-1, AUTOMATION_MASK))->set_mode(mode(get_text()));
+	{
+		MaskAutos *mautos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
 
-	gui->update_preview();
-	return 1;
+		if(mautos)
+		{
+			mautos->set_mode(mode(get_text()));
+			gui->update_preview();
+			return 1;
+		}
+	}
+	return 0;
 }
 
 
