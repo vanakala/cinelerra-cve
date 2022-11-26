@@ -219,21 +219,27 @@ void CWindowGUI::resize_event(int w, int h)
 
 int CWindowGUI::button_press_event()
 {
-	if(canvas->get_canvas())
-		return canvas->button_press_event_base(canvas->get_canvas());
+	BC_WindowBase *win;
+
+	if(win = canvas->get_canvas())
+		return canvas->button_press_event_base(win);
 	return 0;
 }
 
 void CWindowGUI::cursor_leave_event()
 {
-	if(canvas->get_canvas())
-		canvas->cursor_leave_event_base(canvas->get_canvas());
+	BC_WindowBase *win;
+
+	if(win = canvas->get_canvas())
+		canvas->cursor_leave_event_base(win);
 }
 
 int CWindowGUI::cursor_enter_event()
 {
-	if(canvas->get_canvas())
-		return canvas->cursor_enter_event_base(canvas->get_canvas());
+	BC_WindowBase *win;
+
+	if(win = canvas->get_canvas())
+		return canvas->cursor_enter_event_base(win);
 	return 0;
 }
 
