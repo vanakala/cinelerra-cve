@@ -1120,11 +1120,6 @@ int BC_WindowBase::dispatch_completion(XEvent *event)
 	return result;
 }
 
-int BC_WindowBase::get_has_focus()
-{
-	return top_level->has_focus;
-}
-
 int BC_WindowBase::get_deleting()
 {
 	if(is_deleting)
@@ -1981,11 +1976,6 @@ void BC_WindowBase::stop_video()
 	unhide_cursor();
 }
 
-int BC_WindowBase::get_color()
-{
-	return current_color;
-}
-
 void BC_WindowBase::set_color(int color)
 {
 	current_color = color;
@@ -2067,11 +2057,6 @@ void BC_WindowBase::set_x_cursor(int cursor)
 	XDefineCursor(top_level->display, win, temp_cursor);
 	current_cursor = cursor;
 	flush();
-}
-
-int BC_WindowBase::get_cursor()
-{
-	return current_cursor;
 }
 
 void BC_WindowBase::start_hourglass()
@@ -2481,11 +2466,6 @@ void BC_WindowBase::sync_display()
 	unlock_window();
 }
 
-int BC_WindowBase::get_window_lock()
-{
-	return top_level->window_lock;
-}
-
 void BC_WindowBase::lock_window(const char *location) 
 {
 	if(top_level && top_level != this)
@@ -2600,66 +2580,15 @@ int BC_WindowBase::get_root_h()
 	return HeightOfScreen(screen_ptr);
 }
 
-// Bottom right corner
-int BC_WindowBase::get_x2()
-{
-	return w + x;
-}
-
-int BC_WindowBase::get_y2()
-{
-	return y + h;
-}
-
-int BC_WindowBase::get_video_on()
-{
-	return video_on;
-}
-
-int BC_WindowBase::get_hidden()
-{
-	return hidden || top_level->hidden;
-}
-
 int BC_WindowBase::cursor_inside()
 {
 	return (top_level->cursor_x >= 0 && top_level->cursor_y >= 0 &&
 		top_level->cursor_x < w && top_level->cursor_y < h);
 }
 
-BC_WindowBase* BC_WindowBase::get_top_level()
-{
-	return top_level;
-}
-
-BC_WindowBase* BC_WindowBase::get_parent()
-{
-	return parent_window;
-}
-
-int BC_WindowBase::get_color_model()
-{
-	return top_level->color_model;
-}
-
-BC_Resources* BC_WindowBase::get_resources()
-{
-	return &BC_WindowBase::resources;
-}
-
 GLThread* BC_WindowBase::get_glthread()
 {
 	return BC_WindowBase::resources.get_glthread();
-}
-
-int BC_WindowBase::get_bg_color()
-{
-	return bg_color;
-}
-
-BC_Pixmap* BC_WindowBase::get_bg_pixmap()
-{
-	return bg_pixmap;
 }
 
 void BC_WindowBase::set_active_subwindow(BC_WindowBase *subwindow)
@@ -2782,11 +2711,6 @@ void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox,
 	}
 }
 
-BC_Clipboard* BC_WindowBase::get_clipboard()
-{
-	return top_level->clipboard;
-}
-
 void BC_WindowBase::get_relative_cursor_pos(int *rel_x, int *rel_y)
 {
 	int abs_x, abs_y;
@@ -2850,64 +2774,9 @@ int BC_WindowBase::get_cursor_over_window(int *rel_x, int *rel_y)
 	return !temp_win2 || match_window(temp_win2);
 }
 
-int BC_WindowBase::get_drag_x()
-{
-	return top_level->drag_x;
-}
-
-int BC_WindowBase::get_drag_y()
-{
-	return top_level->drag_y;
-}
-
-int BC_WindowBase::get_cursor_x()
-{
-	return top_level->cursor_x;
-}
-
-int BC_WindowBase::get_cursor_y()
-{
-	return top_level->cursor_y;
-}
-
-int BC_WindowBase::is_event_win()
-{
-	return this->win == top_level->event_win;
-}
-
 void BC_WindowBase::set_dragging(int value)
 {
 	is_dragging = value;
-}
-
-int BC_WindowBase::get_dragging()
-{
-	return is_dragging;
-}
-
-int BC_WindowBase::get_buttonpress()
-{
-	return top_level->button_number;
-}
-
-int BC_WindowBase::get_button_down()
-{
-	return top_level->button_down;
-}
-
-int BC_WindowBase::alt_down()
-{
-	return top_level->alt_mask;
-}
-
-int BC_WindowBase::shift_down()
-{
-	return top_level->shift_mask;
-}
-
-int BC_WindowBase::ctrl_down()
-{
-	return top_level->ctrl_mask;
 }
 
 wchar_t* BC_WindowBase::get_wkeystring(int *length)
@@ -2915,21 +2784,6 @@ wchar_t* BC_WindowBase::get_wkeystring(int *length)
 	if(length)
 		*length = top_level->wkey_string_length;
 	return top_level->wkey_string;
-}
-
-int BC_WindowBase::get_keypress()
-{
-	return top_level->key_pressed;
-}
-
-int BC_WindowBase::get_double_click()
-{
-	return top_level->double_click;
-}
-
-int BC_WindowBase::get_bgcolor()
-{
-	return bg_color;
 }
 
 void BC_WindowBase::resize_window(int w, int h)
@@ -3072,21 +2926,6 @@ void BC_WindowBase::set_utf8title(const char *text)
 	flush();
 }
 
-char* BC_WindowBase::get_title()
-{
-	return title;
-}
-
-int BC_WindowBase::get_toggle_value()
-{
-	return toggle_value;
-}
-
-int BC_WindowBase::get_toggle_drag()
-{
-	return toggle_drag;
-}
-
 void BC_WindowBase::set_icon(VFrame *data)
 {
 	top_level->lock_window("BC_WindowBase::set_icon");
@@ -3213,12 +3052,6 @@ void BC_WindowBase::restore_vm()
 	XFlush(top_level->display);
 }
 #endif
-
-
-int BC_WindowBase::get_id()
-{
-	return id;
-}
 
 void BC_WindowBase::set_protowatch()
 {

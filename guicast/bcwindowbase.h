@@ -156,15 +156,15 @@ public:
 // Returns number of color_models
 	int accel_cmodels(int *cmodels, int len);
 // Get color model adjusted for byte order and pixel size
-	int get_color_model();
+	inline int get_color_model() { return top_level->color_model; };
 // return the colormap pixel of the color for all bit depths
 	int get_color(int color);
 // return the currently selected color
-	int get_color();
+	inline int get_color() { return current_color; };
 	void show_window();
 	void hide_window();
-	int get_hidden();
-	int get_video_on();
+	inline int get_hidden() { return hidden || top_level->hidden; };
+	inline int get_video_on() { return video_on; };
 // Shouldn't deference a pointer to delete a window if a parent is 
 // currently being deleted.  This returns 1 if any parent is being deleted.
 	int get_deleting();
@@ -187,13 +187,13 @@ public:
 // Lock out other threads
 	void lock_window(const char *location = 0);
 	void unlock_window();
-	int get_window_lock();
+	inline int get_window_lock() { return top_level->window_lock; };
 
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
 
-	static BC_Resources* get_resources();
+	static inline BC_Resources* get_resources() { return &BC_WindowBase::resources; }
 // User must create glthread object first
 	static GLThread* get_glthread();
 
@@ -214,44 +214,44 @@ public:
 // An argument is provided for excluding a drag popup
 	int get_cursor_over_window(int *rel_x, int *rel_y);
 // For traversing windows... return 1 if this or any subwindow is win
- 	int match_window(Window win);
+	int match_window(Window win);
 
 // 1 or 0 if a button is down
-	int get_button_down();
+	inline int get_button_down() { return top_level->button_down; };
 // Number of button pressed 1 - 5
-	int get_buttonpress();
-	int get_has_focus();
-	int get_dragging();
+	inline int get_buttonpress() { return top_level->button_number; };
+	inline int get_has_focus() { return top_level->has_focus; };
+	inline int get_dragging() { return is_dragging; };
 	wchar_t* get_wkeystring(int *length = 0);
-	int get_keypress();
+	inline int get_keypress() { return top_level->key_pressed; };
 // Get cursor position of last event
-	int get_cursor_x();
-	int get_cursor_y();
+	inline int get_cursor_x() { return top_level->cursor_x; };
+	inline int get_cursor_y() { return top_level->cursor_y; };
 // Cursor position of drag start
-	int get_drag_x();
-	int get_drag_y();
-	int alt_down();
-	int shift_down();
-	int ctrl_down();
-	int get_double_click();
+	inline int get_drag_x() { return top_level->drag_x; };
+	inline int get_drag_y() { return top_level->drag_y; };
+	inline int alt_down() { return top_level->alt_mask; };
+	inline int shift_down() { return top_level->shift_mask; };
+	inline int ctrl_down() { return top_level->ctrl_mask; };
+	int get_double_click() { return top_level->double_click; };
 // Bottom right corner
-	int get_x2();
-	int get_y2();
-	int get_bg_color();
-	BC_Pixmap* get_bg_pixmap();
+	inline int get_x2() { return w + x; };
+	inline int get_y2() { return y + h; };
+	inline int get_bg_color() { return bg_color; };
+	inline BC_Pixmap* get_bg_pixmap() { return bg_pixmap; };
 	int get_text_ascent(int font);
 	int get_text_descent(int font);
 	int get_text_height(int font, const wchar_t *text = 0);
 	int get_text_width(int font, const char *text, int length = -1);
 	int get_text_width(int font, const wchar_t *text, int length = -1);
-	BC_Clipboard* get_clipboard();
+	inline BC_Clipboard* get_clipboard() { return top_level->clipboard; };
 	void set_dragging(int value);
 	void set_w(int w);
 	void set_h(int h);
-	BC_WindowBase* get_top_level();
-	BC_WindowBase* get_parent();
+	inline BC_WindowBase* get_top_level() { return top_level; };
+	inline BC_WindowBase* get_parent() { return parent_window; };
 // Event happened in this window
-	int is_event_win();
+	inline int is_event_win() { return this->win == top_level->event_win; };
 	int cursor_inside();
 // Deactivate everything and activate this subwindow
 	virtual void activate() {};
@@ -259,22 +259,22 @@ public:
 	virtual void deactivate();
 	void set_active_subwindow(BC_WindowBase *subwindow);
 // Get value of toggle value when dragging a selection
-	int get_toggle_value();
+	inline int get_toggle_value() { return toggle_value; };
 // Get if toggle is being dragged
-	int get_toggle_drag();
+	inline int get_toggle_drag() { return toggle_drag; };
 
 // Set the window to the color
 	void set_color(int color);
 // Set gc to the color
 	void set_current_color(int color = -1);
-	int get_bgcolor();
+	inline int get_bgcolor() { return bg_color; };
 	void set_font(int font);
 // Set the cursor to a macro from cursors.h
 // Set override if the caller is enabling hourglass or hiding the cursor
 	void set_cursor(int cursor, int override = 0);
 // Set the cursor to a character in the X cursor library.  Used by test.C
 	void set_x_cursor(int cursor);
-	int get_cursor();
+	inline int get_cursor() { return current_cursor; };
 // Shows the cursor after it's hidden by video playback
 	void unhide_cursor();
 // Called by video updating routines to hide the cursor after a timeout
@@ -355,10 +355,10 @@ public:
 // Change the window title
 	void set_title(const char *text);
 	void set_utf8title(const char *text);
-	char* get_title();
+	inline char* get_title() { return title; };
 	void start_video();
 	void stop_video();
-	int get_id();
+	inline int get_id() { return id; };
 	void set_done(int return_value);
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
