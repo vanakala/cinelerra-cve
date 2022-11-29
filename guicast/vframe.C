@@ -100,18 +100,12 @@ int VFrame::equivalent(VFrame *src)
 		src->bytes_per_line == bytes_per_line);
 }
 
-int VFrame::get_shared(void)
-{
-	return shared;
-}
-
 int VFrame::params_match(int w, int h, int color_model)
 {
 	return (this->w == w &&
 		this->h == h &&
 		this->color_model == color_model);
 }
-
 
 void VFrame::reset_parameters()
 {
@@ -145,11 +139,6 @@ void VFrame::clear_objects()
 // Delete row pointers
 	delete [] rows;
 	rows = 0;
-}
-
-int VFrame::get_bytes_per_line()
-{
-	return bytes_per_line;
 }
 
 int VFrame::get_pixels_per_line()
@@ -411,31 +400,10 @@ void VFrame::read_png(unsigned char *data)
 	delete_row_ptrs();
 }
 
-unsigned char* VFrame::get_data()
-{
-	return data;
-}
-
-int VFrame::get_compressed_allocated()
-{
-	return compressed_allocated;
-}
-
-int VFrame::get_compressed_size()
-{
-	return compressed_size;
-}
-
 void VFrame::set_compressed_size(int size)
 {
 	compressed_size = size;
 }
-
-int VFrame::get_color_model()
-{
-	return color_model;
-}
-
 
 int VFrame::equals(VFrame *frame)
 {
@@ -569,11 +537,6 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 	status = frame->get_status();
 }
 
-int VFrame::get_bytes_per_pixel(void)
-{
-	return bytes_per_pixel;
-}
-
 unsigned char *VFrame::get_row_ptr(int num)
 {
 	if(num < 0)
@@ -610,36 +573,6 @@ void VFrame::delete_row_ptrs()
 	rows = 0;
 }
 
-int VFrame::get_w(void)
-{
-	return w;
-}
-
-int VFrame::get_h(void)
-{
-	return h;
-}
-
-unsigned char* VFrame::get_y(void)
-{
-	return y;
-}
-
-unsigned char* VFrame::get_u(void)
-{
-	return u;
-}
-
-unsigned char* VFrame::get_v(void)
-{
-	return v;
-}
-
-double VFrame::get_pixel_aspect()
-{
-	return pixel_aspect;
-}
-
 void VFrame::set_pixel_aspect(double aspect)
 {
 	pixel_aspect = aspect;
@@ -668,19 +601,9 @@ void VFrame::set_frame_number(framenum number)
 	frame_number = number;
 }
 
-framenum VFrame::get_frame_number(void)
-{
-	return frame_number;
-}
-
 void VFrame::set_layer(int layer)
 {
 	this->layer = layer;
-}
-
-int VFrame::get_layer(void)
-{
-	return layer;
 }
 
 void VFrame::set_source_pts(ptstime pts)
@@ -688,49 +611,14 @@ void VFrame::set_source_pts(ptstime pts)
 	this->source_pts = pts;
 }
 
-ptstime VFrame::get_source_pts(void)
-{
-	return source_pts;
-}
-
 void VFrame::set_pts(ptstime pts)
 {
 	this->pts = pts;
 }
 
-ptstime VFrame::get_pts(void)
-{
-	return pts;
-}
-
 void VFrame::set_duration(ptstime duration)
 {
 	this->duration = duration;
-}
-
-ptstime VFrame::get_duration(void)
-{
-	return duration;
-}
-
-ptstime VFrame::next_pts()
-{
-	return pts + duration;
-}
-
-ptstime VFrame::next_source_pts()
-{
-	return source_pts + duration;
-}
-
-int VFrame::get_status()
-{
-	return status;
-}
-
-void VFrame::clear_status()
-{
-	status = 0;
 }
 
 void VFrame::set_transparent()
@@ -741,11 +629,6 @@ void VFrame::set_transparent()
 void VFrame::clear_transparent()
 {
 	status &= ~VFRAME_TRANSPARENT;
-}
-
-int VFrame::is_transparent()
-{
-	return status & VFRAME_TRANSPARENT;
 }
 
 void VFrame::merge_status(VFrame *that)

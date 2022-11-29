@@ -84,53 +84,53 @@ public:
 
 // Frame number in media file
 	void set_frame_number(framenum number);
-	framenum get_frame_number(void);
+	inline framenum get_frame_number() { return frame_number; };
 // Frame position and duration
 	void set_source_pts(ptstime pts);
-	ptstime get_source_pts(void);
+	inline ptstime get_source_pts() { return source_pts; };
 	void set_pts(ptstime pts);
-	ptstime get_pts(void);
-	ptstime next_source_pts();
-	ptstime next_pts();
-	int get_status();
-	void clear_status();
+	inline ptstime get_pts() { return pts; };
+	inline ptstime next_source_pts() { return source_pts + duration; };
+	inline ptstime next_pts() { return pts + duration; };
+	inline int get_status() { return status; };
+	inline void clear_status() { status = 0; };
 	void set_transparent();
 	void clear_transparent();
-	int is_transparent();
+	inline int is_transparent() { return status & VFRAME_TRANSPARENT; };
 	void merge_status(VFrame *that);
 	void merge_color(int color);
 	int pts_in_frame_source(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	int pts_in_frame(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	void set_layer(int layer);
-	int get_layer(void);
-	void clear_pts(void);
+	inline int get_layer() { return layer; };
+	void clear_pts();
 	void copy_pts(VFrame *frame);
 	void set_duration(ptstime duration);
-	ptstime get_duration(void);
+	inline ptstime get_duration() { return duration; };
 
-	int get_compressed_allocated();
-	int get_compressed_size();
+	inline int get_compressed_allocated() { return compressed_allocated; };
+	inline int get_compressed_size() { return compressed_size; };
 	void set_compressed_size(int size);
-	int get_color_model();
+	inline int get_color_model() { return color_model; };
 // Get the data pointer
-	unsigned char* get_data();
+	inline unsigned char* get_data() { return data; };
 // return pointer to the row
 	unsigned char* get_row_ptr(int num);
 // return an array of pointers to rows
 	unsigned char** get_rows();
 	void delete_row_ptrs();
 // return yuv planes
-	unsigned char* get_y(void);
-	unsigned char* get_u(void);
-	unsigned char* get_v(void);
-	int get_w(void);
-	int get_h(void);
-	int get_bytes_per_pixel(void);
-	int get_bytes_per_line();
+	inline unsigned char* get_y() { return y; };
+	inline unsigned char* get_u() { return u; };
+	inline unsigned char* get_v() { return v; };
+	inline int get_w() { return w; };
+	inline int get_h() { return h; };
+	inline int get_bytes_per_pixel() { return bytes_per_pixel; };
+	inline int get_bytes_per_line() { return bytes_per_line; };
 	int get_pixels_per_line();
 // Return 1 if the buffer is shared.
-	int get_shared(void);
-	double get_pixel_aspect();
+	inline int get_shared() { return shared; };
+	inline double get_pixel_aspect() { return pixel_aspect; };
 	void set_pixel_aspect(double aspect);
 
 	static size_t calculate_data_size(int w, 
