@@ -562,16 +562,6 @@ long BC_Bitmap::get_v_offset()
 		return 0;
 }
 
-int BC_Bitmap::get_bytes_per_line()
-{
-	return bytes_per_line;
-}
-
-unsigned char* BC_Bitmap::get_data()
-{
-	return data[current_ringbuffer];
-}
-
 unsigned char* BC_Bitmap::get_y_plane()
 {
 	if(color_model == BC_YUV420P ||
@@ -597,26 +587,6 @@ unsigned char* BC_Bitmap::get_u_plane()
 		return data[current_ringbuffer] + xv_image[current_ringbuffer]->offsets[2];
 	else
 		return 0;
-}
-
-int BC_Bitmap::hardware_scaling()
-{
-	return(xv_image[0] != 0);
-}
-
-int BC_Bitmap::get_w()
-{
-	return w;
-}
-
-int BC_Bitmap::get_h()
-{
-	return h;
-}
-
-int BC_Bitmap::get_color_model()
-{
-	return color_model; 
 }
 
 void BC_Bitmap::reset_completion()

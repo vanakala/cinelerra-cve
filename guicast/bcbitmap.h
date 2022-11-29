@@ -72,17 +72,17 @@ public:
 	void read_drawable(Drawable &pixmap, int source_x, int source_y);
 
 	int rotate_90(int side);
-	int get_w();
-	int get_h();
+	inline int get_w() { return w; };
+	inline int get_h() { return h; };
 // Data pointers for current ring buffer
-	unsigned char* get_data();
+	inline unsigned char* get_data() { return data[current_ringbuffer]; };
 	unsigned char* get_y_plane();
 	unsigned char* get_u_plane();
 	unsigned char* get_v_plane();
 // Get the frame buffer itself
-	int get_color_model();
-	int hardware_scaling();
-	int get_bytes_per_line();
+	inline int get_color_model() { return color_model; };
+	inline int hardware_scaling() { return xv_image[0] != 0; };
+	inline int get_bytes_per_line() { return bytes_per_line; };
 
 // Returns just the plane offset
 	long get_y_offset();
