@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcbitmap.h"
 #include "bcpixmap.h"
@@ -26,7 +10,6 @@
 #include "bcwindowbase.h"
 #include "vframe.h"
 
-
 #include <unistd.h>
 
 BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, 
@@ -34,9 +17,10 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	int mode,
 	int icon_offset)
 {
+	BC_Bitmap *opaque_bitmap, *alpha_bitmap, *mask_bitmap;
+
 	reset();
 
-	BC_Bitmap *opaque_bitmap, *alpha_bitmap, *mask_bitmap;
 	if(frame->get_color_model() != BC_RGBA8888 &&
 			mode == PIXMAP_ALPHA)
 		mode = PIXMAP_OPAQUE;
@@ -51,40 +35,26 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 
 	if(mode == PIXMAP_ALPHA)
 	{
-		alpha_bitmap = new BC_Bitmap(parent_window, 
-				frame->get_w(), 
-				frame->get_h(), 
-				BC_TRANSPARENCY, 
-				0);
+		alpha_bitmap = new BC_Bitmap(parent_window,
+				frame->get_w(), frame->get_h(),
+				BC_TRANSPARENCY, 0);
 
 		if(frame->get_color_model() != BC_RGBA8888)
 			printf("BC_Pixmap::BC_Pixmap: PIXMAP_ALPHA but frame doesn't have alpha.\n");
-		alpha_bitmap->read_frame(frame, 
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h());
+		alpha_bitmap->read_frame(frame, 0, 0,
+			frame->get_w(), frame->get_h());
 	}
 
-	initialize(parent_window, 
-		frame->get_w(), 
-		frame->get_h(), 
-		mode);
+	initialize(parent_window, frame->get_w(), frame->get_h(), mode);
 
 	opaque_bitmap->write_drawable(opaque_pixmap,
 		top_level->gc, 0, 0, 0, 0, w, h);
-		delete opaque_bitmap;
+	delete opaque_bitmap;
 
 	if(mode == PIXMAP_ALPHA)
 	{
-		alpha_bitmap->write_drawable(alpha_pixmap, 
-			copy_gc, 
-			0, 
-			0, 
-			icon_offset ? 2 : 0, 
-			icon_offset ? 2 : 0, 
-			w, 
-			h);
+		alpha_bitmap->write_drawable(alpha_pixmap, copy_gc, 0, 0,
+			icon_offset ? 2 : 0, icon_offset ? 2 : 0, w, h);
 		delete alpha_bitmap;
 		XFreeGC(top_level->display, copy_gc);
 
@@ -115,7 +85,6 @@ BC_Pixmap::~BC_Pixmap()
 	}
 	top_level->unlock_window();
 }
-
 
 void BC_Pixmap::reset()
 {
@@ -155,21 +124,14 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 		gcvalues.background = 1;
 		gcvalues.function = GXcopy;
 
-		alpha_pixmap = XCreatePixmap(top_level->display, 
-			top_level->win, 
-			w, 
-			h, 
-			1);
+		alpha_pixmap = XCreatePixmap(top_level->display, top_level->win,
+			w, h, 1);
 
-		alpha_gc = XCreateGC(top_level->display, 
-			top_level->win, 
-			gcmask, 
-			&gcvalues);
+		alpha_gc = XCreateGC(top_level->display, top_level->win,
+			gcmask, &gcvalues);
 
-		copy_gc = XCreateGC(top_level->display,
-			alpha_pixmap,
-			gcmask,
-			&gcvalues);
+		copy_gc = XCreateGC(top_level->display, alpha_pixmap,
+			gcmask, &gcvalues);
 
 		alpha_xft_draw = XftDrawCreateBitmap(top_level->display,
 			alpha_pixmap);
@@ -180,27 +142,14 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 void BC_Pixmap::resize(int w, int h)
 {
 	top_level->lock_window("BC_Pixmap::resize");
-	Pixmap new_pixmap = XCreatePixmap(top_level->display, 
-			top_level->win, 
-			w, 
-			h, 
-			top_level->default_depth);
+	Pixmap new_pixmap = XCreatePixmap(top_level->display, top_level->win,
+		w, h, top_level->default_depth);
 
 	XftDraw *new_xft_draw = XftDrawCreate(top_level->display,
-		new_pixmap,
-		top_level->vis,
-		top_level->cmap);
+		new_pixmap, top_level->vis, top_level->cmap);
 
-	XCopyArea(top_level->display,
-		opaque_pixmap,
-		new_pixmap,
-		top_level->gc,
-		0,
-		0,
-		get_w(),
-		get_h(),
-		0,
-		0);
+	XCopyArea(top_level->display, opaque_pixmap, new_pixmap,
+		top_level->gc, 0, 0, get_w(), get_h(), 0, 0);
 	this->w = w;
 	this->h = h;
 
@@ -217,19 +166,11 @@ void BC_Pixmap::resize(int w, int h)
 
 void BC_Pixmap::copy_area(int x, int y, int w, int h, int x2, int y2)
 {
-	XCopyArea(top_level->display,
-		opaque_pixmap,
-		opaque_pixmap,
-		top_level->gc,
-		x,
-		y,
-		w,
-		h,
-		x2,
-		y2);
+	XCopyArea(top_level->display, opaque_pixmap, opaque_pixmap,
+		top_level->gc, x, y, w, h, x2, y2);
 }
 
-void BC_Pixmap::write_drawable(Drawable &pixmap, 
+void BC_Pixmap::write_drawable(Drawable &pixmap,
 	int dest_x, int dest_y,
 	int dest_w, int dest_h,
 	int src_x, int src_y)
@@ -249,61 +190,28 @@ void BC_Pixmap::write_drawable(Drawable &pixmap,
 	top_level->lock_window("BC_Pixmap::write_drawable");
 	if(mode == PIXMAP_ALPHA)
 	{
-		XSetClipOrigin(top_level->display, alpha_gc, dest_x - src_x, dest_y - src_y);
-		XCopyArea(top_level->display, 
-			this->opaque_pixmap, 
-			pixmap, 
-			alpha_gc, 
-			src_x, 
-			src_y, 
-			dest_w, 
-			dest_h, 
-			dest_x, 
-			dest_y);
+		XSetClipOrigin(top_level->display, alpha_gc,
+			dest_x - src_x, dest_y - src_y);
+		XCopyArea(top_level->display,  opaque_pixmap,
+			pixmap, alpha_gc, src_x, src_y, dest_w, dest_h,
+			dest_x, dest_y);
 	}
 	else
-	{
-		XCopyArea(top_level->display, 
-			this->opaque_pixmap, 
-			pixmap, 
-			top_level->gc, 
-			src_x, 
-			src_y, 
-			dest_w, 
-			dest_h, 
-			dest_x, 
-			dest_y);
-	}
+		XCopyArea(top_level->display, opaque_pixmap,
+			pixmap, top_level->gc, src_x, src_y, dest_w, dest_h,
+			dest_x, dest_y);
 	top_level->unlock_window();
 }
 
-void BC_Pixmap::draw_vframe(VFrame *frame, 
-		int dest_x, 
-		int dest_y, 
-		int dest_w, 
-		int dest_h,
-		int src_x,
-		int src_y)
+void BC_Pixmap::draw_vframe(VFrame *frame, int dest_x, int dest_y,
+	int dest_w, int dest_h, int src_x, int src_y)
 {
-	parent_window->draw_vframe(frame, 
-		dest_x, 
-		dest_y, 
-		dest_w, 
-		dest_h,
-		src_x,
-		src_y,
-		0,
-		0,
-		this);
+	parent_window->draw_vframe(frame, dest_x, dest_y, dest_w, dest_h,
+		src_x, src_y, 0, 0, this);
 }
 
-void BC_Pixmap::draw_pixmap(BC_Pixmap *pixmap, 
-	int dest_x, 
-	int dest_y,
-	int dest_w,
-	int dest_h,
-	int src_x,
-	int src_y)
+void BC_Pixmap::draw_pixmap(BC_Pixmap *pixmap, int dest_x, int dest_y,
+	int dest_w, int dest_h, int src_x, int src_y)
 {
 	pixmap->write_drawable(this->opaque_pixmap,
 		dest_x, dest_y,

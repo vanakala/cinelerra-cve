@@ -1,32 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCPIXMAP_H
 #define BCPIXMAP_H
 
 #include <X11/Xlib.h>
 
-#if defined(HAVE_CONFIG_H)
 #include "config.h"
-#endif
 
 #include <X11/Xft/Xft.h>
 
@@ -64,7 +46,7 @@ public:
 		int dest_w = -1, int dest_h = -1,
 		int src_x = 0, int src_y = 0);
 // Draw the vframe pointed to by frame onto this pixmap.
-	void draw_vframe(VFrame *frame, 
+	void draw_vframe(VFrame *frame,
 		int dest_x = 0, int dest_y = 0,
 		int dest_w = -1, int dest_h = -1,
 		int src_x = 0, int src_y = 0);
@@ -85,6 +67,5 @@ private:
 // GC's only used if alpha pixmap
 	GC alpha_gc, copy_gc;
 };
-
 
 #endif
