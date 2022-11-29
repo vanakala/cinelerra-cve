@@ -218,23 +218,3 @@ void BC_Pixmap::draw_pixmap(BC_Pixmap *pixmap, int dest_x, int dest_y,
 		dest_w, dest_h,
 		src_x, src_y);
 }
-
-int BC_Pixmap::get_w()
-{
-	return w;
-}
-
-int BC_Pixmap::get_h()
-{
-	return h;
-}
-
-Pixmap BC_Pixmap::get_pixmap()
-{
-	return opaque_pixmap;
-}
-
-Pixmap BC_Pixmap::get_alpha()
-{
-	return alpha_pixmap;
-}

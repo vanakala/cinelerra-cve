@@ -50,10 +50,10 @@ public:
 		int dest_x = 0, int dest_y = 0,
 		int dest_w = -1, int dest_h = -1,
 		int src_x = 0, int src_y = 0);
-	int get_w();
-	int get_h();
-	Pixmap get_pixmap();
-	Pixmap get_alpha();
+	inline int get_w() { return w; };
+	inline int get_h() { return h; };
+	Pixmap get_pixmap() { return opaque_pixmap; };
+	Pixmap get_alpha() { return alpha_pixmap; };
 
 private:
 	void initialize(BC_WindowBase *parent_window, int w, int h, int mode);
