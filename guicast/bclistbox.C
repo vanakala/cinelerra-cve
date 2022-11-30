@@ -1075,22 +1075,6 @@ void BC_ListBox::set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
 	}
 }
 
-int BC_ListBox::get_w()
-{
-	if(is_popup)
-		return BCPOPUPLISTBOX_W;
-	else
-		return popup_w;
-}
-
-int BC_ListBox::get_h()
-{
-	if(is_popup)
-		return BCPOPUPLISTBOX_H;
-	else
-		return popup_h;
-}
-
 int BC_ListBox::get_yscroll_x()
 {
 	if(is_popup)

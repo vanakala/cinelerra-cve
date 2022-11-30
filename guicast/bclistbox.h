@@ -10,12 +10,8 @@
 #include "bclistboxitem.inc"
 #include "bcpixmap.inc"
 #include "bcscrollbar.h"
-#include "bcsubwindow.h"
 #include "bctoggle.h"
-#include "colors.h"
-
-#define BCPOPUPLISTBOX_W 25
-#define BCPOPUPLISTBOX_H 25
+#include "bcsubwindow.h"
 
 #define MIN_COLUMN_WIDTH 10
 
@@ -117,7 +113,6 @@ public:
 // Column moved
 	virtual int move_column_event() { return 0; };
 
-
 // Get the column movement
 	int get_from_column();
 	int get_to_column();
@@ -218,8 +213,6 @@ public:
 	int get_xscroll_width();
 	int get_column_offset(int column);
 	int get_column_width(int column, int clamp_right = 0);
-	int get_w();
-	int get_h();
 	int get_display_mode();
 	void set_justify(int value);
 
@@ -506,15 +499,15 @@ private:
 		NO_OPERATION,
 		BUTTON_DOWN_SELECT, // Pressed button and slid off to select items.
 		BUTTON_DN,
-		DRAG_DIVISION,    // Dragging column division
-		DRAG_COLUMN,	  // Dragging column
-		DRAG_ITEM,        // Dragging item
-		SELECT, 		  // Select item
-		SELECT_RECT,	  // Selection rectangle
-		WHEEL,  		  // Wheel mouse
-		COLUMN_DN,		  // column title down
-		COLUMN_DRAG,      // column title is being dragged
-		EXPAND_DN         // Expander is down
+		DRAG_DIVISION,      // Dragging column division
+		DRAG_COLUMN,        // Dragging column
+		DRAG_ITEM,          // Dragging item
+		SELECT,             // Select item
+		SELECT_RECT,        // Selection rectangle
+		WHEEL,              // Wheel mouse
+		COLUMN_DN,          // column title down
+		COLUMN_DRAG,        // column title is being dragged
+		EXPAND_DN           // Expander is down
 	};
 
 // More state variables
