@@ -2542,32 +2542,6 @@ void BC_WindowBase::set_done(int return_value)
 	}
 }
 
-int BC_WindowBase::get_w()
-{
-	return w;
-}
-
-int BC_WindowBase::get_h()
-{
-	return h;
-}
-
-int BC_WindowBase::get_x()
-{
-	return x;
-}
-
-int BC_WindowBase::get_y()
-{
-	return y;
-}
-
-void BC_WindowBase::get_dimensions(int *width, int *height)
-{
-	*width = w;
-	*height = h;
-}
-
 int BC_WindowBase::get_root_w()
 {
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);

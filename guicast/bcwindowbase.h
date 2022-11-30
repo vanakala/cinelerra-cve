@@ -198,11 +198,12 @@ public:
 	static GLThread* get_glthread();
 
 // Dimensions
-	virtual int get_w();
-	virtual int get_h();
-	virtual int get_x();
-	virtual int get_y();
-	void get_dimensions(int *width, int *height);
+	inline int get_w() { return w; };
+	inline int get_h() { return h; };
+	inline int get_x() { return x; };
+	inline int get_y() { return y; };
+	inline void get_dimensions(int *width, int *height)
+		{ *width = w; *height = h; };
 	int get_root_w();
 	int get_root_h();
 // Get current position
