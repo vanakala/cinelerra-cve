@@ -18,41 +18,20 @@
 class BC_TextBox : public BC_SubWindow
 {
 public:
-	BC_TextBox(int x, 
-		int y, 
-		int w, 
-		int rows, 
-		const char *text, 
-		int options = TXTBOX_BORDER,
-		int font = MEDIUMFONT,
+	BC_TextBox(int x, int y, int w, int rows, const char *text,
+		int options = TXTBOX_BORDER, int font = MEDIUMFONT,
 		int is_utf8 = 0);
-	BC_TextBox(int x,
-		int y,
-		int w,
-		int rows,
-		const char *text,
-		const wchar_t *wtext,
+	BC_TextBox(int x, int y, int w, int rows,
+		const char *text, const wchar_t *wtext,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
-	BC_TextBox(int x, 
-		int y, 
-		int w, 
-		int rows, 
-		int text,
+	BC_TextBox(int x, int y, int w, int rows, int text,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
-	BC_TextBox(int x,
-		int y,
-		int w,
-		int rows,
-		int64_t text,
+	BC_TextBox(int x, int y, int w, int rows, int64_t text,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
-	BC_TextBox(int x, 
-		int y, 
-		int w, 
-		int rows, 
-		double text,
+	BC_TextBox(int x, int y, int w, int rows, double text,
 		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT,
 		int precision = 4);
@@ -99,7 +78,8 @@ public:
 	void reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
-	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
+	static int calculate_row_h(int rows, BC_WindowBase *parent_window,
+		int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
 	void set_precision(int precision);
 // Whether to draw every time there is a keypress or rely on user to
@@ -184,17 +164,11 @@ class BC_ScrollTextBoxYScroll;
 class BC_ScrollTextBox
 {
 public:
-	BC_ScrollTextBox(BC_WindowBase *parent_window, 
-		int x, 
-		int y, 
-		int w,
-		int rows,
+	BC_ScrollTextBox(BC_WindowBase *parent_window,
+		int x, int y, int w, int rows,
 		const char *default_text);
-	BC_ScrollTextBox(BC_WindowBase *parent_window, 
-		int x, 
-		int y, 
-		int w,
-		int rows,
+	BC_ScrollTextBox(BC_WindowBase *parent_window,
+		int x, int y, int w, int rows,
 		const wchar_t *default_text);
 	virtual ~BC_ScrollTextBox();
 
@@ -227,8 +201,10 @@ class BC_ScrollTextBoxText : public BC_TextBox
 public:
 	BC_ScrollTextBoxText(BC_ScrollTextBox *gui);
 	virtual ~BC_ScrollTextBoxText();
+
 	int handle_event();
 	void motion_event();
+
 	BC_ScrollTextBox *gui;
 };
 
@@ -237,6 +213,7 @@ class BC_ScrollTextBoxYScroll : public BC_ScrollBar
 public:
 	BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui);
 	virtual ~BC_ScrollTextBoxYScroll();
+
 	int handle_event();
 	BC_ScrollTextBox *gui;
 };
@@ -251,10 +228,7 @@ public:
 	BC_PopupTextBox(BC_WindowBase *parent_window, 
 		ArrayList<BC_ListBoxItem*> *list_items,
 		const char *default_text,
-		int x, 
-		int y, 
-		int text_w,
-		int list_h);
+		int x, int y, int text_w, int list_h);
 	virtual ~BC_PopupTextBox();
 
 	virtual int handle_event();
@@ -287,7 +261,9 @@ class BC_PopupTextBoxText : public BC_TextBox
 public:
 	BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y);
 	virtual ~BC_PopupTextBoxText();
+
 	int handle_event();
+
 	BC_PopupTextBox *popup;
 };
 
@@ -295,7 +271,9 @@ class BC_PopupTextBoxList : public BC_ListBox
 {
 public:
 	BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y);
+
 	int handle_event();
+
 	BC_PopupTextBox *popup;
 };
 
@@ -303,25 +281,15 @@ public:
 class BC_TumbleTextBoxText;
 class BC_TumbleTextBoxTumble;
 
-
 class BC_TumbleTextBox
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		int default_value,
-		int min,
-		int max,
-		int x, 
-		int y, 
-		int text_w);
+		int default_value, int min, int max,
+		int x, int y, int text_w);
 	BC_TumbleTextBox(BC_WindowBase *parent_window,
-		double default_value,
-		double min,
-		double max,
-		int x,
-		int y,
-		int text_w,
-		int precision = 4);
+		double default_value, double min, double max,
+		int x, int y, int text_w, int precision = 4);
 	virtual ~BC_TumbleTextBox();
 
 	virtual int handle_event();
@@ -347,6 +315,7 @@ public:
 
 private:
 	void reset();
+
 	int x, y, text_w;
 	int default_value, min, max;
 	double default_value_f, min_f, max_f;
@@ -363,18 +332,11 @@ class BC_TumbleTextBoxText : public BC_TextBox
 {
 public:
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-		int default_value,
-		int min,
-		int max,
-		int x,
-		int y);
+		int default_value, int min, int max,
+		int x, int y);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
-		double default_value,
-		double min,
-		double max,
-		int x,
-		int y,
-		int precision);
+		double default_value, double min, double max,
+		int x, int y, int precision);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);
 	virtual ~BC_TumbleTextBoxText();
 
