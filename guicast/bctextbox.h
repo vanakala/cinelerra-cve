@@ -53,7 +53,7 @@ public:
 // options: do not dim the text when the box is disabled
 	void disable(int options = 0);
 	void enable();
-	int get_enabled();
+	inline int get_enabled() { return enabled; };
 
 	void initialize();
 
@@ -76,7 +76,6 @@ public:
 	void set_text_row(int row);
 	int get_text_row();
 	void reposition_window(int x, int y, int w = -1, int rows = -1);
-	int uses_text();
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window,
 		int has_border = 1, int font = MEDIUMFONT);
@@ -85,10 +84,10 @@ public:
 // Whether to draw every time there is a keypress or rely on user to
 // follow up every keypress with an update().
 	void set_keypress_draw(int value);
-	int get_ibeam_letter();
+	inline int get_ibeam_letter() { return ibeam_letter; };
 	void set_ibeam_letter(int number, int redraw = 1);
 // Used for custom formatting text boxes
-	int get_last_keypress();
+	inline int get_last_keypress() { return last_keypress; };
 // Table of separators to skip.  Used by time textboxes
 // The separator format is "0000:0000".  Things not alnum are considered
 // separators.  The alnums are replaced by user text.
@@ -172,17 +171,17 @@ public:
 		const wchar_t *default_text);
 	virtual ~BC_ScrollTextBox();
 
-	virtual int handle_event();
+	virtual int handle_event() { return 0; };
 	char* get_text();
 	wchar_t* get_wtext(int *length = 0);
 	void update(const char *text);
 	void update(const wchar_t *text);
 	void reposition_window(int x, int y, int w, int rows);
-	int get_x();
-	int get_y();
-	int get_w();
+	inline int get_x() { return x; };
+	int get_y() { return y; };
+	int get_w() { return w; };
 // Visible rows for resizing
-	int get_rows();
+	int get_rows() { return rows; };
 
 	friend class BC_ScrollTextBoxText;
 	friend class BC_ScrollTextBoxYScroll;
@@ -212,7 +211,7 @@ class BC_ScrollTextBoxYScroll : public BC_ScrollBar
 {
 public:
 	BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui);
-	virtual ~BC_ScrollTextBoxYScroll();
+	virtual ~BC_ScrollTextBoxYScroll() {};
 
 	int handle_event();
 	BC_ScrollTextBox *gui;
@@ -231,11 +230,11 @@ public:
 		int x, int y, int text_w, int list_h);
 	virtual ~BC_PopupTextBox();
 
-	virtual int handle_event();
+	virtual int handle_event() { return 0; };
 	char* get_text();
 	int get_number();
-	int get_x();
-	int get_y();
+	int get_x() { return x; };
+	int get_y() { return y; };
 	int get_w();
 	int get_h();
 	void update(const char *text);
@@ -292,13 +291,13 @@ public:
 		int x, int y, int text_w, int precision = 4);
 	virtual ~BC_TumbleTextBox();
 
-	virtual int handle_event();
+	virtual int handle_event() { return 0; };
 	char* get_text();
 	void update(const char *value);
 	void update(int value);
 	void update(double value);
-	int get_x();
-	int get_y();
+	int get_x() { return x; };
+	int get_y() { return y; };
 	int get_w();
 	int get_h();
 	void reposition_widget(int x, int y, int w = -1, int h = -1);

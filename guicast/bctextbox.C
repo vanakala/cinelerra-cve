@@ -374,11 +374,6 @@ void BC_TextBox::enable()
 	}
 }
 
-int BC_TextBox::get_enabled()
-{
-	return enabled;
-}
-
 int BC_TextBox::pixels_to_rows(BC_WindowBase *window, int font, int pixels)
 {
 	return (pixels - 4) /
@@ -424,7 +419,6 @@ int BC_TextBox::get_text_rows()
 			result++;
 	return result;
 }
-
 
 int BC_TextBox::get_row_h(int rows)
 {
@@ -630,7 +624,6 @@ int BC_TextBox::button_press_event()
 
 	if(get_buttonpress() > 2)
 		return 0;
-
 
 	if(!enabled)
 		return 0;
@@ -1284,11 +1277,6 @@ int BC_TextBox::keypress_event()
 	return result;
 }
 
-int BC_TextBox::uses_text()
-{
-	return 1;
-}
-
 void BC_TextBox::delete_selection(int letter1, int letter2, int text_len)
 {
 	int i, j;
@@ -1566,16 +1554,6 @@ void BC_TextBox::set_keypress_draw(int value)
 	keypress_draw = value;
 }
 
-int BC_TextBox::get_last_keypress()
-{
-	return last_keypress;
-}
-
-int BC_TextBox::get_ibeam_letter()
-{
-	return ibeam_letter;
-}
-
 void BC_TextBox::set_ibeam_letter(int number, int redraw)
 {
 	this->ibeam_letter = number;
@@ -1627,31 +1605,6 @@ BC_ScrollTextBox::~BC_ScrollTextBox()
 	}
 }
 
-int BC_ScrollTextBox::handle_event()
-{
-	return 1;
-}
-
-int BC_ScrollTextBox::get_x()
-{
-	return x;
-}
-
-int BC_ScrollTextBox::get_y()
-{
-	return y;
-}
-
-int BC_ScrollTextBox::get_w()
-{
-	return w;
-}
-
-int BC_ScrollTextBox::get_rows()
-{
-	return rows;
-}
-
 char* BC_ScrollTextBox::get_text()
 {
 	return text->get_text();
@@ -1678,7 +1631,6 @@ void BC_ScrollTextBox::update(const wchar_t *text)
 		yscroll->get_handlelength());
 }
 
-
 void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 {
 	this->x = x;
@@ -1694,7 +1646,7 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 
 
 BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui)
- : BC_TextBox(gui->x, gui->y, 
+ : BC_TextBox(gui->x, gui->y,
 	gui->w - resources.vscroll_data[SCROLL_HANDLE_UP]->get_w(),
 	gui->rows, gui->default_text, gui->default_wtext)
 {
@@ -1730,10 +1682,6 @@ BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
 	gui->text->get_text_rows(), 0, gui->rows)
 {
 	this->gui = gui;
-}
-
-BC_ScrollTextBoxYScroll::~BC_ScrollTextBoxYScroll()
-{
 }
 
 int BC_ScrollTextBoxYScroll::handle_event()
@@ -1832,16 +1780,6 @@ int BC_PopupTextBox::get_number()
 	return listbox->get_selection_number(0, 0);
 }
 
-int BC_PopupTextBox::get_x()
-{
-	return x;
-}
-
-int BC_PopupTextBox::get_y()
-{
-	return y;
-}
-
 int BC_PopupTextBox::get_w()
 {
 	return textbox->get_w() + listbox->get_w();
@@ -1850,11 +1788,6 @@ int BC_PopupTextBox::get_w()
 int BC_PopupTextBox::get_h()
 {
 	return textbox->get_h();
-}
-
-int BC_PopupTextBox::handle_event()
-{
-	return 1;
 }
 
 void BC_PopupTextBox::reposition_widget(int x, int y, int w, int h) 
@@ -1898,14 +1831,12 @@ BC_TumbleTextBoxText::~BC_TumbleTextBoxText()
 	{
 		popup->textbox = 0;
 		delete popup;
-		popup = 0;
 	}
 }
 
 int BC_TumbleTextBoxText::handle_event()
 {
-	popup->handle_event();
-	return 1;
+	return popup->handle_event();
 }
 
 int BC_TumbleTextBoxText::button_press_event()
@@ -1966,7 +1897,6 @@ BC_TumbleTextBox::~BC_TumbleTextBox()
 		textbox->popup = 0;
 		delete textbox;
 	}
-	textbox = 0;
 }
 
 void BC_TumbleTextBox::reset()
@@ -2039,16 +1969,6 @@ void BC_TumbleTextBox::update(double value)
 	textbox->update(value);
 }
 
-int BC_TumbleTextBox::get_x()
-{
-	return x;
-}
-
-int BC_TumbleTextBox::get_y()
-{
-	return y;
-}
-
 int BC_TumbleTextBox::get_w()
 {
 	return textbox->get_w() + tumbler->get_w();
@@ -2057,11 +1977,6 @@ int BC_TumbleTextBox::get_w()
 int BC_TumbleTextBox::get_h()
 {
 	return textbox->get_h();
-}
-
-int BC_TumbleTextBox::handle_event()
-{
-	return 1;
 }
 
 void BC_TumbleTextBox::reposition_widget(int x, int y, int w, int h) 
