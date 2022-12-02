@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bccapture.h"
 #include "bcsignals.h"
@@ -25,6 +9,7 @@
 #include "colormodels.h"
 #include "language.h"
 #include "vframe.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/Xutil.h>
@@ -32,7 +17,6 @@
 // Byte orders:
 // 24 bpp packed:         bgr
 // 24 bpp unpacked:       0bgr
-
 
 BC_Capture::BC_Capture(int w, int h, char *display_path)
 {
@@ -45,7 +29,6 @@ BC_Capture::BC_Capture(int w, int h, char *display_path)
 	allocate_data();
 }
 
-
 BC_Capture::~BC_Capture()
 {
 	delete_data();
@@ -55,7 +38,10 @@ BC_Capture::~BC_Capture()
 void BC_Capture::init_window(char *display_path)
 {
 	int bits_per_pixel;
-	if(display_path && display_path[0] == 0) display_path = NULL;
+
+	if(display_path && display_path[0] == 0)
+		display_path = NULL;
+
 	if((display = XOpenDisplay(display_path)) == NULL)
 	{
 		printf(_("cannot connect to X server.\n"));
@@ -72,42 +58,37 @@ void BC_Capture::init_window(char *display_path)
 	server_byte_order = (XImageByteOrder(display) == MSBFirst) ? 0 : 1;
 	char *data = 0;
 	XImage *ximage;
-	ximage = XCreateImage(display, 
-			vis,
-			default_depth,
-			ZPixmap,
-			0,
-			data,
-			16,
-			16,
-			8,
-			0);
+	ximage = XCreateImage(display, vis, default_depth,
+		ZPixmap, 0, data, 16, 16, 8, 0);
 	bits_per_pixel = ximage->bits_per_pixel;
 	XDestroyImage(ximage);
-	bitmap_color_model = BC_WindowBase::evaluate_color_model(client_byte_order, server_byte_order, bits_per_pixel);
+
+	bitmap_color_model = BC_WindowBase::evaluate_color_model(client_byte_order,
+		server_byte_order, bits_per_pixel);
 
 // test shared memory
 // This doesn't ensure the X Server is on the local host
 	if(use_shm && !XShmQueryExtension(display))
-	{
 		use_shm = 0;
-	}
 }
-
 
 void BC_Capture::allocate_data()
 {
 // try shared memory
 	if(use_shm)
 	{
-		ximage = XShmCreateImage(display, vis, default_depth, ZPixmap, (char*)NULL, &shm_info, w, h);
+		ximage = XShmCreateImage(display, vis, default_depth,
+			ZPixmap, (char*)NULL, &shm_info, w, h);
 
-		shm_info.shmid = shmget(IPC_PRIVATE, h * ximage->bytes_per_line, IPC_CREAT | 0600);
+		shm_info.shmid = shmget(IPC_PRIVATE, h * ximage->bytes_per_line,
+			IPC_CREAT | 0600);
+
 		if(shm_info.shmid == -1)
 		{
 			perror("BC_Capture::allocate_data shmget");
 			abort();
 		}
+
 		data = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
 		shmctl(shm_info.shmid, IPC_RMID, 0);
 		ximage->data = shm_info.shmaddr = (char*)data;  // setting ximage->data stops BadValue
@@ -117,6 +98,7 @@ void BC_Capture::allocate_data()
 		BC_Signals::set_catch_errors();
 		XShmAttach(display, &shm_info);
 		XSync(display, False);
+
 		if(BC_Signals::reset_catch())
 		{
 			XDestroyImage(ximage);
@@ -129,7 +111,8 @@ void BC_Capture::allocate_data()
 	{
 // need to use bytes_per_line for some X servers
 		data = 0;
-		ximage = XCreateImage(display, vis, default_depth, ZPixmap, 0, (char*)data, w, h, 8, 0);
+		ximage = XCreateImage(display, vis, default_depth,
+			ZPixmap, 0, (char*)data, w, h, 8, 0);
 		data = (unsigned char*)malloc(h * ximage->bytes_per_line);
 		XDestroyImage(ximage);
 
@@ -152,34 +135,31 @@ void BC_Capture::delete_data()
 			shmdt(shm_info.shmaddr);
 		}
 		else
-		{
 			XDestroyImage(ximage);
-		}
 
 // data is automatically freed by XDestroyImage
 		data = 0;
 	}
 }
 
-
-int BC_Capture::get_w()
-{
-	return w;
-}
-
-int BC_Capture::get_h()
-{
-	return h;
-}
-
 int BC_Capture::capture_frame(VFrame *frame, int &x1, int &y1)
 {
-	if(!display) return 1;
-	if(x1 < 0) x1 = 0;
-	if(y1 < 0) y1 = 0;
-	if(x1 > get_top_w() - w) x1 = get_top_w() - w;
-	if(y1 > get_top_h() - h) y1 = get_top_h() - h;
+	int top_dim;
 
+	if(!display)
+		return 1;
+
+	if(x1 < 0)
+		x1 = 0;
+	if(y1 < 0)
+		y1 = 0;
+
+	top_dim = get_top_w();
+	if(x1 > top_dim - w)
+		x1 = top_dim - w;
+	top_dim = get_top_h();
+	if(y1 > top_dim - h)
+		y1 = top_dim - h;
 
 // Read the raw data
 	if(use_shm)
@@ -187,18 +167,12 @@ int BC_Capture::capture_frame(VFrame *frame, int &x1, int &y1)
 	else
 		XGetSubImage(display, rootwin, x1, y1, w, h, 0xffffffff, ZPixmap, ximage, 0, 0);
 
-	ColorModels::transfer_sws(frame->get_data(),
-		data,
-		frame->get_y(),
-		frame->get_u(),
-		frame->get_v(),
-		0, 0, 0,
-		w, h,
+	ColorModels::transfer_sws(frame->get_data(), data,
+		frame->get_y(), frame->get_u(), frame->get_v(),
+		0, 0, 0, w, h,
 		frame->get_w(), frame->get_h(),
-		bitmap_color_model,
-		frame->get_color_model(),
-		bytes_per_line,
-		frame->get_bytes_per_line());
+		bitmap_color_model, frame->get_color_model(),
+		bytes_per_line, frame->get_bytes_per_line());
 	return 0;
 }
 
