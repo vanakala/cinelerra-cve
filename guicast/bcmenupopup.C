@@ -15,8 +15,6 @@
 
 #include <string.h>
 
-
-
 // ==================================== Menu Popup =============================
 
 // Types of menu popups
@@ -36,21 +34,17 @@ BC_MenuPopup::BC_MenuPopup()
 BC_MenuPopup::~BC_MenuPopup()
 {
 	while(menu_items.total)
-	{
-// Each menuitem recursively removes itself from the arraylist
 		delete menu_items.values[0];
-	}
+
 	delete window_bg;
 	delete item_bg[0];
 	delete item_bg[1];
 	delete item_bg[2];
 }
 
-void BC_MenuPopup::initialize(BC_WindowBase *top_level, 
-		BC_MenuBar *menu_bar, 
-		BC_Menu *menu, 
-		BC_MenuItem *menu_item, 
-		BC_PopupMenu *popup_menu)
+void BC_MenuPopup::initialize(BC_WindowBase *top_level,
+	BC_MenuBar *menu_bar, BC_Menu *menu,
+	BC_MenuItem *menu_item, BC_PopupMenu *popup_menu)
 {
 	popup = 0;
 	active = 0;
@@ -60,26 +54,31 @@ void BC_MenuPopup::initialize(BC_WindowBase *top_level,
 	this->popup_menu = popup_menu;
 	this->top_level = top_level;
 
-	if(menu_item) this->type = MENUPOPUP_SUBMENU;
-	else
-	if(menu) this->type = MENUPOPUP_MENUBAR;
-	else
-	if(popup_menu) this->type = MENUPOPUP_POPUP;
+	if(menu_item)
+		this->type = MENUPOPUP_SUBMENU;
+	else if(menu)
+		this->type = MENUPOPUP_MENUBAR;
+	else if(popup_menu)
+		this->type = MENUPOPUP_POPUP;
 
 	BC_Resources *resources = top_level->get_resources();
+
 	if(resources->menu_popup_bg)
-	{
 		window_bg = new BC_Pixmap(top_level, resources->menu_popup_bg);
-	}
+
 	if(resources->menu_item_bg)
 	{
-		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0], PIXMAP_ALPHA);
-		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1], PIXMAP_ALPHA);
-		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2], PIXMAP_ALPHA);
+		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0],
+			PIXMAP_ALPHA);
+		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1],
+			PIXMAP_ALPHA);
+		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2],
+			PIXMAP_ALPHA);
 	}
 	for(int i = 0; i < menu_items.total; i++)
 	{
 		BC_MenuItem *item = menu_items.values[i];
+
 		item->initialize(top_level, menu_bar, this);
 	}
 }
@@ -87,6 +86,7 @@ void BC_MenuPopup::initialize(BC_WindowBase *top_level,
 void BC_MenuPopup::add_item(BC_MenuItem *item)
 {
 	menu_items.append(item);
+
 	if(top_level)
 		item->initialize(top_level, menu_bar, this);
 // items uninitialized here will be initialized later in initialize
@@ -99,24 +99,21 @@ void BC_MenuPopup::remove_item(BC_MenuItem *item)
 		item = menu_items.values[menu_items.total - 1];
 		delete item;
 	}
-	if(item) menu_items.remove(item);
-}
-
-int BC_MenuPopup::total_menuitems()
-{
-	return menu_items.total;
+	if(item)
+		menu_items.remove(item);
 }
 
 int BC_MenuPopup::dispatch_button_press()
 {
 	int result = 0;
+
 	if(popup)
 	{
 		for(int i = 0; i < menu_items.total && !result; i++)
-		{
 			result = menu_items.values[i]->dispatch_button_press();
-		}
-		if(result) draw_items();
+
+		if(result)
+			draw_items();
 	}
 	return result;
 }
@@ -124,13 +121,14 @@ int BC_MenuPopup::dispatch_button_press()
 int BC_MenuPopup::dispatch_button_release()
 {
 	int result = 0, redraw = 0;
+
 	if(popup)
 	{
 		for(int i = 0; i < menu_items.total && !result; i++)
-		{
 			result = menu_items.values[i]->dispatch_button_release(redraw);
-		}
-		if(redraw) draw_items();
+
+		if(redraw)
+			draw_items();
 	}
 	return result;
 }
@@ -138,10 +136,10 @@ int BC_MenuPopup::dispatch_button_release()
 int BC_MenuPopup::dispatch_key_press()
 {
 	int result = 0;
+
 	for(int i = 0; i < menu_items.total && !result; i++)
-	{
 		result = menu_items.values[i]->dispatch_key_press();
-	}
+
 	return result;
 }
 
@@ -154,13 +152,11 @@ int BC_MenuPopup::dispatch_motion_event()
 	{
 // Try submenus and items
 		for(i = 0; i < menu_items.total; i++)
-		{
 			result |= menu_items.values[i]->dispatch_motion_event(redraw);
-		}
 
-		if(redraw) draw_items();
+		if(redraw)
+			draw_items();
 	}
-
 	return result;
 }
 
@@ -168,24 +164,21 @@ void BC_MenuPopup::dispatch_translation_event()
 {
 	if(popup)
 	{
-		int new_x = x + 
-			(top_level->last_translate_x - 
-			top_level->prev_x - 
-			top_level->get_resources()->get_left_border());
-		int new_y = y + 
-			(top_level->last_translate_y - 
-			top_level->prev_y -
-			top_level->get_resources()->get_top_border());
+		BC_Resources *resources = top_level->get_resources();
+
+		int new_x = x + (top_level->last_translate_x -
+			top_level->prev_x - resources->get_left_border());
+		int new_y = y + (top_level->last_translate_y -
+			top_level->prev_y - resources->get_top_border());
 
 		popup->reposition_window(new_x, new_y, popup->get_w(), popup->get_h());
 		top_level->flush();
-		this->x = new_x;
-		this->y = new_y;
+
+		x = new_x;
+		y = new_y;
 
 		for(int i = 0; i < menu_items.total; i++)
-		{
 			menu_items.values[i]->dispatch_translation_event();
-		}
 	}
 }
 
@@ -194,24 +187,20 @@ void BC_MenuPopup::dispatch_cursor_leave()
 	if(popup)
 	{
 		for(int i = 0; i < menu_items.total; i++)
-		{
 			menu_items.values[i]->dispatch_cursor_leave();
-		}
+
 		draw_items();
 	}
 }
 
-void BC_MenuPopup::activate_menu(int x, 
-	int y, 
-	int w, 
-	int h, 
-	int top_window_coords, 
-	int vertical_justify)
+void BC_MenuPopup::activate_menu(int x, int y, int w, int h,
+	int top_window_coords, int vertical_justify)
 {
 	Window tempwin;
 	int new_x, new_y, top_w, top_h;
 	top_w = top_level->get_root_w();
 	top_h = top_level->get_root_h();
+	BC_Resources *resources = top_level->get_resources();
 
 	get_dimensions();
 
@@ -219,21 +208,16 @@ void BC_MenuPopup::activate_menu(int x,
 	if(top_window_coords)
 	{
 		top_level->lock_window("BC_MenuPopup::activate_menu");
-		XTranslateCoordinates(top_level->display, 
-			top_level->win, 
-			top_level->rootwin, 
-			x, 
-			y, 
-			&new_x, 
-			&new_y, 
-			&tempwin);
+		XTranslateCoordinates(top_level->display,
+			top_level->win, top_level->rootwin,
+			x, y, &new_x, &new_y, &tempwin);
 		top_level->unlock_window();
 	} 
 	else
 // Coords are absolute
 	{
-		new_x = x; 
-		new_y = y; 
+		new_x = x;
+		new_y = y;
 	}
 
 // All coords are now relative to root window.
@@ -241,8 +225,10 @@ void BC_MenuPopup::activate_menu(int x,
 	{
 		this->x = new_x;
 		this->y = new_y + h;
-		if(this->x + this->w > top_w) this->x -= this->x + this->w - top_w; // Right justify
-		if(this->y + this->h > top_h) this->y -= this->h + h; // Bottom justify
+		if(this->x + this->w > top_w)
+			this->x -= this->x + this->w - top_w; // Right justify
+		if(this->y + this->h > top_h)
+			this->y -= this->h + h; // Bottom justify
 // Avoid top of menu going out of screen
 		if(this->y < 0)
 			this->y = 20;
@@ -251,32 +237,24 @@ void BC_MenuPopup::activate_menu(int x,
 	{
 		this->x = new_x + w;
 		this->y = new_y;
-		if(this->x + this->w > top_w) this->x = new_x - this->w;
-		if(this->y + this->h > top_h) this->y = new_y + h - this->h;
+		if(this->x + this->w > top_w)
+			this->x = new_x - this->w;
+		if(this->y + this->h > top_h)
+			this->y = new_y + h - this->h;
 	}
 
 	active = 1;
 	if(menu_bar)
 	{
-		popup = new BC_Popup(menu_bar, 
-					this->x, 
-					this->y, 
-					this->w, 
-					this->h, 
-					top_level->get_resources()->menu_up,
-					1,
-					menu_bar->bg_pixmap);
+		popup = new BC_Popup(menu_bar, this->x, this->y,
+			this->w, this->h, resources->menu_up,
+			1, menu_bar->bg_pixmap);
 	}
 	else
 	{
-		popup = new BC_Popup(top_level, 
-					this->x, 
-					this->y, 
-					this->w, 
-					this->h, 
-					top_level->get_resources()->menu_up,
-					1,
-					0);
+		popup = new BC_Popup(top_level, this->x, this->y,
+			this->w, this->h, resources->menu_up,
+			1, 0);
 	}
 	draw_items();
 	popup->show_window();
@@ -285,16 +263,14 @@ void BC_MenuPopup::activate_menu(int x,
 void BC_MenuPopup::deactivate_submenus(BC_MenuPopup *exclude)
 {
 	for(int i = 0; i < menu_items.total; i++)
-	{
 		menu_items.values[i]->deactivate_submenus(exclude);
-	}
 }
 
 void BC_MenuPopup::deactivate_menu()
 {
 	deactivate_submenus(0);
 
-	if(popup) delete popup;
+	delete popup;
 	popup = 0;
 	active = 0;
 }
@@ -308,26 +284,17 @@ void BC_MenuPopup::draw_items()
 		popup->draw_top_tiles(popup, 0, 0, w, h);
 
 	if(window_bg)
-	{
-		popup->draw_9segment(0,
-			0,
-			w,
-			h,
-			window_bg);
-	}
+		popup->draw_9segment(0, 0, w, h, window_bg);
 	else
-	{
-		popup->draw_3d_border(0, 0, w, h, 
+		popup->draw_3d_border(0, 0, w, h,
 			top_level->get_resources()->menu_light,
 			top_level->get_resources()->menu_up,
 			top_level->get_resources()->menu_shadow,
 			BLACK);
-	}
 
 	for(int i = 0; i < menu_items.total; i++)
-	{
 		menu_items.values[i]->draw();
-	}
+
 	popup->flash();
 	top_level->unlock_window();
 }
@@ -343,17 +310,25 @@ void BC_MenuPopup::get_dimensions()
 // Set up parameters in each item and get total h. 
 	for(i = 0; i < menu_items.total; i++)
 	{
-		text_w = 10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->text);
-		if(menu_items.values[i]->checked) text_w += 20;
+		text_w = 10 +
+			top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->text);
 
-		key_w = 10 + top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->hotkey_text);
-		if(text_w > widest_text) widest_text = text_w;
-		if(key_w > widest_key) widest_key = key_w;
+		if(menu_items.values[i]->checked)
+			text_w += 20;
+
+		key_w = 10 +
+			top_level->get_text_width(MEDIUMFONT, menu_items.values[i]->hotkey_text);
+
+		if(text_w > widest_text)
+			widest_text = text_w;
+		if(key_w > widest_key)
+			widest_key = key_w;
 
 		if(!strcmp(menu_items.values[i]->text, "-")) 
 			menu_items.values[i]->h = 5;
 		else
-			menu_items.values[i]->h = top_level->get_text_height(MEDIUMFONT) + 4;
+			menu_items.values[i]->h =
+				top_level->get_text_height(MEDIUMFONT) + 4;
 
 		menu_items.values[i]->y = h;
 		menu_items.values[i]->highlighted = 0;
@@ -369,29 +344,8 @@ void BC_MenuPopup::get_dimensions()
 	h += 2;
 }
 
-int BC_MenuPopup::get_key_x()
-{
-	return key_x;
-}
-
-BC_Popup* BC_MenuPopup::get_popup()
-{
-	return popup;
-}
-
-int BC_MenuPopup::get_w()
-{
-	return w;
-}
-
-
-// ================================= Sub Menu ==================================
 
 BC_SubMenu::BC_SubMenu() : BC_MenuPopup()
-{
-}
-
-BC_SubMenu::~BC_SubMenu()
 {
 }
 

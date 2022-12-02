@@ -24,14 +24,12 @@ public:
 	friend class BC_MenuItem;
 	friend class BC_PopupMenu;
 
-	void initialize(BC_WindowBase *top_level, 
-		BC_MenuBar *menu_bar, 
-		BC_Menu *menu, 
-		BC_MenuItem *menu_item, 
-		BC_PopupMenu *popup_menu);
+	void initialize(BC_WindowBase *top_level,
+		BC_MenuBar *menu_bar, BC_Menu *menu,
+		BC_MenuItem *menu_item, BC_PopupMenu *popup_menu);
 	void add_item(BC_MenuItem *item);
 	void remove_item(BC_MenuItem* item = 0);
-	int total_menuitems();
+	inline int total_menuitems() { return menu_items.total; };
 
 // Deactivates all submenus in a downward progression except for the exclude
 	void deactivate_submenus(BC_MenuPopup *exclude = 0);
@@ -42,11 +40,12 @@ public:
 	void dispatch_cursor_leave();
 	void dispatch_translation_event();
 	void deactivate_menu();
-	void activate_menu(int x, int y, int w, int h, int top_window_coords, int vertical_justify);
-	int get_key_x();
-	int get_w();
+	void activate_menu(int x, int y, int w, int h,
+		int top_window_coords, int vertical_justify);
+	inline int get_key_x() { return key_x; };
+	inline int get_w() { return w; };
 	void draw_items();
-	BC_Popup* get_popup();
+	inline BC_Popup* get_popup() { return popup; };
 
 private:
 	void get_dimensions();
@@ -74,7 +73,7 @@ class BC_SubMenu : public BC_MenuPopup
 {
 public:
 	BC_SubMenu();
-	virtual ~BC_SubMenu();
+	virtual ~BC_SubMenu() {};
 
 	void add_submenuitem(BC_MenuItem *item);
 };
