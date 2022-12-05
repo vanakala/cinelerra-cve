@@ -105,8 +105,8 @@ public:
 	virtual int move_column_event() { return 0; };
 
 // Get the column movement
-	int get_from_column();
-	int get_to_column();
+	inline int get_from_column() { return dragged_title; };
+	inline int get_to_column() { return highlighted_title; };
 
 // Get the item in the given column which is the selection_number of the total
 // selected rows.  Returns 0 on failure.
@@ -156,7 +156,7 @@ public:
 	virtual int keypress_event();
 	void translation_event();
 	void repeat_event(int duration);
-	BC_DragWindow* get_drag_popup();
+	inline BC_DragWindow* get_drag_popup() { return drag_popup; };
 
 // change the contents
 	void update(ArrayList<BC_ListBoxItem*> *data,
@@ -167,7 +167,8 @@ public:
 		int draw = 1);
 	void center_selection();
 	void update_format(int options, int redraw);
-	int get_format();
+	int get_format() { return display_format |
+		(labelfont == SMALLFONT ? LISTBOX_SMALLFONT : 0); };
 
 // Allow scrolling when dragging items
 	void set_drag_scroll(int value);
@@ -182,11 +183,11 @@ public:
 	void set_search_column(int value);
 	void set_selection_mode(int mode);
 	void set_yposition(int position, int draw_items = 1);
-	int get_yposition();
+	inline int get_yposition() { return yposition; };
 	void set_xposition(int position);
-	int get_xposition();
+	inline int get_xposition() { return xposition; };
 // Return the flat index of the highlighted item
-	int get_highlighted_item();
+	inline int get_highlighted_item() { return highlighted_item; };
 	int get_yscroll_x();
 	int get_yscroll_y();
 	int get_yscroll_height();
@@ -195,7 +196,7 @@ public:
 	int get_xscroll_width();
 	int get_column_offset(int column);
 	int get_column_width(int column, int clamp_right = 0);
-	int get_display_mode();
+	inline int get_display_mode() { return display_format ? LISTBOX_ICONS : 0; };
 	void set_justify(int value);
 
 	enum
@@ -204,14 +205,14 @@ public:
 		SORT_DESCENDING
 	};
 
-	int get_sort_column();
+	inline int get_sort_column() { return sort_column; };
 	void set_sort_column(int value, int redraw = 0);
-	int get_sort_order();
+	inline int get_sort_order() { return sort_order; };
 	void set_sort_order(int value, int redraw = 0);
 
 	void reset_query();
 	void reposition_window(int x, int y, int w = -1, int h = -1);
-	BC_Pixmap* get_bg_surface();
+	inline BC_Pixmap* get_bg_surface() { return bg_surface; };
 // Set all items for autoplacement with recursion into sublists
 	void set_autoplacement(ArrayList<BC_ListBoxItem*> *data, int do_icon,
 		int do_text);

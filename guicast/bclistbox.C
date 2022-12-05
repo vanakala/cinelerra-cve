@@ -753,11 +753,6 @@ void BC_ListBox::set_search_column(int value)
 	this->search_column = value;
 }
 
-int BC_ListBox::get_sort_column()
-{
-	return sort_column;
-}
-
 void BC_ListBox::set_sort_column(int value, int redraw)
 {
 	sort_column = value;
@@ -765,36 +760,11 @@ void BC_ListBox::set_sort_column(int value, int redraw)
 		draw_titles(1);
 }
 
-int BC_ListBox::get_sort_order()
-{
-	return sort_order;
-}
-
 void BC_ListBox::set_sort_order(int value, int redraw)
 {
 	sort_order = value;
 	if(redraw)
 		draw_titles(1);
-}
-
-int BC_ListBox::get_display_mode()
-{
-	return display_format ? LISTBOX_ICONS : 0;
-}
-
-int BC_ListBox::get_yposition()
-{
-	return yposition;
-}
-
-int BC_ListBox::get_xposition()
-{
-	return xposition;
-}
-
-int BC_ListBox::get_highlighted_item()
-{
-	return highlighted_item;
 }
 
 int BC_ListBox::get_item_x(BC_ListBoxItem *item)
@@ -1168,16 +1138,6 @@ int BC_ListBox::get_item_color(ArrayList<BC_ListBoxItem*> *data,
 		return BLACK;
 	else
 		return color;
-}
-
-int BC_ListBox::get_from_column()
-{
-	return dragged_title;
-}
-
-int BC_ListBox::get_to_column()
-{
-	return highlighted_title;
 }
 
 
@@ -2239,7 +2199,6 @@ int BC_ListBox::get_total_items(ArrayList<BC_ListBoxItem*> *data,
 	}
 	return *result;
 }
-
 
 int BC_ListBox::get_last_selection(ArrayList<BC_ListBoxItem*> *data, int *result)
 {
@@ -3318,11 +3277,6 @@ void BC_ListBox::drag_stop_event()
 	}
 }
 
-BC_DragWindow* BC_ListBox::get_drag_popup()
-{
-	return drag_popup;
-}
-
 void BC_ListBox::translation_event()
 {
 	if(is_popup && gui)
@@ -3536,11 +3490,6 @@ int BC_ListBox::keypress_event()
 	return result;
 }
 
-BC_Pixmap* BC_ListBox::get_bg_surface()
-{
-	return bg_surface;
-}
-
 void BC_ListBox::draw_background()
 {
 	top_level->lock_window("BC_ListBox::draw_background");
@@ -3572,13 +3521,8 @@ void BC_ListBox::update_format(int options, int redraw)
 		labelfont = MEDIUMFONT;
 	if(labelfont != oldfont)
 		set_autoplacement(data, 1, 1);
-	if(redraw)
-		if(gui) draw_items(1);
-}
-
-int BC_ListBox::get_format()
-{
-	return display_format | (labelfont == SMALLFONT ? LISTBOX_SMALLFONT : 0);
+	if(redraw && gui)
+		draw_items(1);
 }
 
 void BC_ListBox::draw_items(int flash)
