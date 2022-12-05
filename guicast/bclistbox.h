@@ -18,10 +18,8 @@
 class BC_ListBoxYScroll : public BC_ScrollBar
 {
 public:
-	BC_ListBoxYScroll(BC_ListBox *listbox, 
-		int total_height,
-		int view_height,
-		int position);
+	BC_ListBoxYScroll(BC_ListBox *listbox, int total_height,
+		int view_height, int position);
 
 	int handle_event();
 
@@ -32,10 +30,8 @@ private:
 class BC_ListBoxXScroll : public BC_ScrollBar
 {
 public:
-	BC_ListBoxXScroll(BC_ListBox *listbox, 
-		int total_width, 
-		int view_width,
-		int position);
+	BC_ListBoxXScroll(BC_ListBox *listbox, int total_width,
+		int view_width, int position);
 
 	int handle_event();
 
@@ -46,10 +42,8 @@ private:
 class BC_ListBoxToggle
 {
 public:
-	BC_ListBoxToggle(BC_ListBox *listbox, 
-		BC_ListBoxItem *item, 
-		int x, 
-		int y);
+	BC_ListBoxToggle(BC_ListBox *listbox, BC_ListBoxItem *item,
+		int x, int y);
 
 	int cursor_motion_event(int *redraw_toggles);
 	void cursor_leave_event(int *redraw_toggles);
@@ -80,10 +74,7 @@ public:
 class BC_ListBox : public BC_SubWindow
 {
 public:
-	BC_ListBox(int x, 
-		int y, 
-		int w, 
-		int h,
+	BC_ListBox(int x, int y, int w, int h,
 		ArrayList<BC_ListBoxItem*> *data = 0, // Each column has an ArrayList of BC_ListBoxItems.
 		int options = 0,                      // Option bits (bclistbox.inc)
 		const char **column_titles = 0,       // Titles for columns.  Set to 0 for no titles
@@ -121,8 +112,7 @@ public:
 // selected rows.  Returns 0 on failure.
 	BC_ListBoxItem* get_selection(int column, int selection_number);
 	BC_ListBoxItem* get_selection_recursive(ArrayList<BC_ListBoxItem*> *data,
-		int column,
-		int selection_number);
+		int column, int selection_number);
 
 // Get the flat index of the item in the given column which is the selection_number
 // of the total selected rows.  Returns -1 on failure.  The column
@@ -130,9 +120,7 @@ public:
 // number.
 	int get_selection_number(int column, int selection_number);
 	int get_selection_number_recursive(ArrayList<BC_ListBoxItem*> *data,
-		int column,
-		int selection_number,
-		int *counter = 0);
+		int column, int selection_number, int *counter = 0);
 
 	virtual int evaluate_query(int list_item, char *string);
 	void expand_item(BC_ListBoxItem *item, int expand);
@@ -142,17 +130,14 @@ public:
 // Convert recursive pointer to flat index.
 // The pointer can be any item in the row corresponding to the index.
 // Returns -1 if no item was found.
-	int item_to_index(ArrayList<BC_ListBoxItem*> *data,
-		BC_ListBoxItem *item,
+	int item_to_index(ArrayList<BC_ListBoxItem*> *data, BC_ListBoxItem *item,
 		int *counter = 0);
 // Convert flat index and column to desired item.
 	BC_ListBoxItem* index_to_item(ArrayList<BC_ListBoxItem*> *data,
-		int number,
-		int column,
-		int *counter = 0);
+		int number, int column, int *counter = 0);
 // Get all items with recursion for text mode
-	static int get_total_items(ArrayList<BC_ListBoxItem*> *data, 
-		int *result /* = 0 */,
+	static int get_total_items(ArrayList<BC_ListBoxItem*> *data,
+		int *result,
 		int master_column);
 
 	void focus_out_event();
@@ -175,11 +160,8 @@ public:
 
 // change the contents
 	void update(ArrayList<BC_ListBoxItem*> *data,
-		const char **column_titles,
-		int *column_widths,
-		int columns,
-		int xposition = 0,
-		int yposition = 0,
+		const char **column_titles, int *column_widths,
+		int columns, int xposition = 0, int yposition = 0,
 		int highlighted_number = -1,  // Flat index of item cursor is over
 		int recalc_positions = 0,     // set all autoplace flags to 1
 		int draw = 1);
@@ -231,38 +213,28 @@ public:
 	void reposition_window(int x, int y, int w = -1, int h = -1);
 	BC_Pixmap* get_bg_surface();
 // Set all items for autoplacement with recursion into sublists
-	void set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
-		int do_icon, 
+	void set_autoplacement(ArrayList<BC_ListBoxItem*> *data, int do_icon,
 		int do_text);
 // Set selection status on all items with recursion
 	void set_all_selected(ArrayList<BC_ListBoxItem*> *data, int value);
 // Set selection status of single row with recursion
 // item_number - the flat index of the row to select
-	void set_selected(ArrayList<BC_ListBoxItem*> *data, 
-		int item_number, 
-		int value,
-		int *counter = 0);
+	void set_selected(ArrayList<BC_ListBoxItem*> *data,
+		int item_number, int value, int *counter = 0);
 
 // Called by keypress_event for cursor up.  Selects previous and next visible 
 // row, skipping desired number of visible rows.
-	int select_previous(int skip, 
-		BC_ListBoxItem *selected_item = 0,
-		int *counter = 0,
-		ArrayList<BC_ListBoxItem*> *data = 0,
-		int *got_it = 0,
-		int *got_second = 0);
-	int select_next(int skip, 
-		BC_ListBoxItem *selected_item = 0,
-		int *counter = 0,
-		ArrayList<BC_ListBoxItem*> *data = 0,
-		int *got_it = 0,
-		int *got_second = 0);
+	int select_previous(int skip, BC_ListBoxItem *selected_item = 0,
+		int *counter = 0, ArrayList<BC_ListBoxItem*> *data = 0,
+		int *got_it = 0, int *got_second = 0);
+	int select_next(int skip, BC_ListBoxItem *selected_item = 0,
+		int *counter = 0, ArrayList<BC_ListBoxItem*> *data = 0,
+		int *got_it = 0, int *got_second = 0);
 
 // Called by cursor_motion_event to select different item if selection_number
 // changed.  Returns 1 if redraw is required.
-	int update_selection(ArrayList<BC_ListBoxItem*> *data, 
-		int selection_number,
-		int *counter = 0);
+	int update_selection(ArrayList<BC_ListBoxItem*> *data,
+		int selection_number, int *counter = 0);
 
 	virtual void dump(int indent = 0);
 
@@ -271,9 +243,7 @@ public:
 
 private:
 	void delete_columns();
-	void set_columns(const char **column_titles, 
-		int *column_widths, 
-		int columns);
+	void set_columns(const char **column_titles, int *column_widths, int columns);
 // Draw the button for a popup listbox
 	void draw_button();
 // Draw list border
@@ -285,10 +255,8 @@ private:
 // Draw selection rectangle
 	void draw_rectangle(int flash);
 
-	void draw_text_recursive(ArrayList<BC_ListBoxItem*> *data, 
-		int column,
-		int indent,
-		int *current_toggle);
+	void draw_text_recursive(ArrayList<BC_ListBoxItem*> *data, int column,
+		int indent, int *current_toggle);
 // Returns 1 if selection changed
 	int query_list();
 	void init_column_width();
@@ -307,20 +275,16 @@ private:
 	int expand_selection(int button_press, int selection_number);
 // Called by button_press_event and cursor_motion_event 
 // to select a range in text mode
-	void select_range(ArrayList<BC_ListBoxItem*> *data,
-		int start,
-		int end,
-		int *current = 0);
+	void select_range(ArrayList<BC_ListBoxItem*> *data, int start,
+		int end, int *current = 0);
 // Called by button_press_event to toggle the selection status of a single item.
 // Called for both text and icon mode.  In text mode it's recursive and fills
 // the entire row with the first item's value.  Returns 1 when the item was toggled.
 	int toggle_item_selection(ArrayList<BC_ListBoxItem*> *data,
-		int selection_number,
-		int *counter = 0);
+		int selection_number, int *counter = 0);
 // Set value of selected in all selected items to new value
 	void promote_selections(ArrayList<BC_ListBoxItem*> *data,
-		int old_value,
-		int new_value);
+		int old_value, int new_value);
 
 	int test_column_divisions(int cursor_x, int cursor_y, int &new_cursor);
 	int test_column_titles(int cursor_x, int cursor_y);
@@ -330,23 +294,16 @@ private:
 	void calculate_item_coords();
 	void calculate_last_coords_recursive(
 		ArrayList<BC_ListBoxItem*> *data,
-		int *icon_x,
-		int *next_icon_x,
-		int *next_icon_y,
-		int *next_text_y,
-		int top_level);
+		int *icon_x, int *next_icon_x, int *next_icon_y,
+		int *next_text_y, int top_level);
 	void calculate_item_coords_recursive(
 		ArrayList<BC_ListBoxItem*> *data,
-		int *icon_x,
-		int *next_icon_x,
-		int *next_icon_y,
-		int *next_text_y,
-		int top_level);
+		int *icon_x, int *next_icon_x, int *next_icon_y,
+		int *next_text_y, int top_level);
 
 	int get_items_width();
-	int get_items_height(ArrayList<BC_ListBoxItem*> *data, 
-		int columns, 
-		int *result = 0);
+	int get_items_height(ArrayList<BC_ListBoxItem*> *data,
+		int columns, int *result = 0);
 	int get_icon_w(BC_ListBoxItem *item);
 	int get_icon_h(BC_ListBoxItem *item);
 	int get_item_x(BC_ListBoxItem *item);
@@ -377,24 +334,17 @@ private:
 // only if the current operation is not SELECT, so scrolling is possible.
 // expanded - 1 if items in this table should be tested for cursor coverage
 	int get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
-		int cursor_x, 
-		int cursor_y, 
+		int cursor_x, int cursor_y,
 		BC_ListBoxItem **item_return = 0,
-		int *counter = 0,
-		int expanded = 1);
+		int *counter = 0, int expanded = 1);
 // Select the items in the rectangle and deselect the items outside of it.
 // Returns 1 if redraw is required.
 	int select_rectangle(ArrayList<BC_ListBoxItem*> *data,
-		int x1, 
-		int y1,
-		int x2, 
-		int y2);
+		int x1, int y1, int x2, int y2);
 // Convert the row of the item to a pointer.
 	BC_ListBoxItem* number_to_item(int row);
 	int reposition_item(ArrayList<BC_ListBoxItem*> *data,
-		int selection_number,
-		int x,
-		int y,
+		int selection_number, int x, int y,
 		int *counter = 0);
 // Move selected items to src_items
 	void move_selection(ArrayList<BC_ListBoxItem*> *dst,
@@ -403,8 +353,7 @@ private:
 // destination.
 	int put_selection(ArrayList<BC_ListBoxItem*> *data,
 		ArrayList<BC_ListBoxItem*> *src,
-		int destination,
-		int *counter = 0);
+		int destination, int *counter = 0);
 
 	int center_selection(int selection,
 		ArrayList<BC_ListBoxItem*> *data = 0,
