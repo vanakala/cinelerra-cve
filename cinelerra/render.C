@@ -769,7 +769,7 @@ RenderWindow::RenderWindow(int x, int y, Render *render, Asset *asset)
 	y += 30;
 	x = 5;
 
-	renderprofile = new RenderProfile(mwindow_global, this, x, y);
+	renderprofile = new RenderProfile(this, x, y);
 
 	y += 70;
 	loadmode = new LoadMode(this, x, y, &asset->load_mode, 1);

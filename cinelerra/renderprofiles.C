@@ -1,24 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2007 Andraz Tori
- * Copyright (C) 2017 Einar Rünkaru
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2007 Andraz Tori
+// Copyright (C) 2017 Einar Rünkaru
 
 #include "bcsignals.h"
 #include "bctitle.h"
@@ -46,45 +30,31 @@
 #define MAX_PROFILES 16
 
 
-RenderProfile::RenderProfile(MWindow *mwindow,
-	RenderWindow *rwindow, 
-	int x, 
-	int y)
+RenderProfile::RenderProfile(RenderWindow *rwindow, int x, int y)
 {
 	DIR *dir;
 	struct dirent *entry;
 	struct stat stb;
 	char string[BCTEXTLEN];
 
-	this->mwindow = mwindow;
 	this->rwindow = rwindow;
 	this->x = x;
 	this->y = y;
 
-	rwindow->add_subwindow(new BC_Title(x, 
-		y, 
-		_("RenderProfile:")));
+	rwindow->add_subwindow(new BC_Title(x, y, _("RenderProfile:")));
 
 	int old_y = y;
 	rwindow->add_subwindow(title = new BC_Title(x, y, _("Render profile:")));
 	y += 25;
-	rwindow->add_subwindow(textbox = new BC_TextBox(x, 
-		y, 
-		LISTWIDTH, 
-		1, 
-		""));
+	rwindow->add_subwindow(textbox = new BC_TextBox(x, y, LISTWIDTH, 1, ""));
 	x += textbox->get_w();
 	rwindow->add_subwindow(listbox = new RenderProfileListBox(rwindow, this, x, y));
 
 	y = old_y;
 	x += listbox->get_w() + 10;
-	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this, 
-		x, 
-		y));
+	rwindow->add_subwindow(saveprofile = new SaveRenderProfileButton(this, x, y));
 	y += 25;
-	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
-		x, 
-		y));
+	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, x, y));
 
 	edlsession->configuration_path(RENDERCONFIG_DIR, string);
 	if(dir = opendir(string))
@@ -120,13 +90,13 @@ RenderProfile::~RenderProfile()
 	for (int i = 1; i < MAX_PROFILES; i++)
 	{
 		sprintf(string, "RENDER_%i_PROFILE_NAME", i);
-		mwindow->defaults->delete_key(string);
+		mwindow_global->defaults->delete_key(string);
 		sprintf(string, "RENDER_%i_STRATEGY", i);
-		mwindow->defaults->delete_key(string);
+		mwindow_global->defaults->delete_key(string);
 		sprintf(string, "RENDER_%i_LOADMODE", i);
-		mwindow->defaults->delete_key(string);
+		mwindow_global->defaults->delete_key(string);
 		sprintf(string, "RENDER_%i_RANGE_TYPE", i);
-		mwindow->defaults->delete_key(string);
+		mwindow_global->defaults->delete_key(string);
 	}
 }
 
@@ -210,7 +180,7 @@ int RenderProfile::select_profile(const char *profile)
 	{
 		closedir(dir);
 		textbox->update(profile);
-		mwindow->defaults->update("RENDERPROFILE", profile);
+		mwindow_global->defaults->update("RENDERPROFILE", profile);
 		rwindow->load_profile();
 		return 0;
 	}
@@ -269,20 +239,13 @@ void RenderProfile::reposition_window(int x, int y)
 	y += 20;
 	textbox->reposition_window(x, y);
 	x += textbox->get_w();
-	listbox->reposition_window(x, 
-		y, 
-		LISTWIDTH);
+	listbox->reposition_window(x, y, LISTWIDTH);
 }
 
 
 RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window, 
-	RenderProfile *renderprofile, 
-	int x, 
-	int y)
- : BC_ListBox(x,
-	y,
-	LISTWIDTH,
-	150,
+	RenderProfile *renderprofile, int x, int y)
+ : BC_ListBox(x, y, LISTWIDTH, 150,
 	(ArrayList<BC_ListBoxItem *>*)&renderprofile->profiles,
 	LISTBOX_POPUP)
 {
