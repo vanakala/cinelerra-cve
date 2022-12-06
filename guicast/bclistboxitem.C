@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bclistboxitem.h"
 #include "bcpixmap.h"
@@ -26,7 +10,6 @@
 
 #include <string.h>
 
-
 // ====================================================== item
 
 BC_ListBoxItem::BC_ListBoxItem()
@@ -34,18 +17,15 @@ BC_ListBoxItem::BC_ListBoxItem()
 	initialize();
 
 	color = BC_WindowBase::get_resources()->listbox_text;
-	this->text = new char[1];
-	text[0] = 0;
 	selectable = 1;
 }
 
-BC_ListBoxItem::BC_ListBoxItem(const char *text, 
-	BC_Pixmap *icon, 
-	int color)
+BC_ListBoxItem::BC_ListBoxItem(const char *text, BC_Pixmap *icon, int color)
 {
 	initialize();
 
-	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
+	if(color == -1)
+		color = BC_WindowBase::get_resources()->listbox_text;
 	this->text = new char[strlen(text) + 1];
 	this->icon = icon;
 
@@ -58,7 +38,8 @@ BC_ListBoxItem::BC_ListBoxItem(const char *text, int color)
 {
 	initialize();
 
-	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
+	if(color == -1)
+		color = BC_WindowBase::get_resources()->listbox_text;
 	this->text = new char[strlen(text) + 1];
 	strcpy(this->text, text);
 	this->color = color;
@@ -67,7 +48,8 @@ BC_ListBoxItem::BC_ListBoxItem(const char *text, int color)
 
 BC_ListBoxItem::~BC_ListBoxItem()
 {
-	if(text) delete [] text;
+	delete [] text;
+
 	if(sublist)
 	{
 		for(int i = 0; i < columns; i++)
@@ -95,36 +77,14 @@ void BC_ListBoxItem::initialize()
 	expand = 0;
 }
 
-int BC_ListBoxItem::get_icon_x()
-{
-	return icon_x;
-}
-
-int BC_ListBoxItem::get_icon_y()
-{
-	return icon_y;
-}
-
-int BC_ListBoxItem::get_text_x()
-{
-	return text_x;
-}
-
-int BC_ListBoxItem::get_text_y()
-{
-	return text_y;
-}
-
-int BC_ListBoxItem::set_autoplace_icon(int value)
+void BC_ListBoxItem::set_autoplace_icon(int value)
 {
 	autoplace_icon = value;
-	return 0;
 }
 
-int BC_ListBoxItem::set_autoplace_text(int value)
+void BC_ListBoxItem::set_autoplace_text(int value)
 {
 	autoplace_text = value;
-	return 0;
 }
 
 void BC_ListBoxItem::set_icon_x(int x)
@@ -154,18 +114,12 @@ void BC_ListBoxItem::set_selectable(int value)
 	this->selectable = value;
 }
 
-int BC_ListBoxItem::get_selectable()
-{
-	return selectable;
-}
-
-
-
 void BC_ListBoxItem::set_text_x(int x)
 {
 	text_x = x;
 	autoplace_text = 0;
 }
+
 void BC_ListBoxItem::set_text_y(int y)
 {
 	text_y = y;
@@ -184,19 +138,14 @@ int BC_ListBoxItem::get_icon_h()
 
 void BC_ListBoxItem::set_text(char *new_text)
 {
-	if(this->text) delete [] this->text;
-	this->text = 0;
+	delete [] text;
+	text = 0;
 
-	if(new_text)
+	if(new_text && new_text[0])
 	{
 		this->text = new char[strlen(new_text) + 1];
 		strcpy(this->text, new_text);
 	}
-}
-
-char* BC_ListBoxItem::get_text()
-{
-	return text;
 }
 
 void BC_ListBoxItem::set_icon(BC_Pixmap *icon)
@@ -214,12 +163,6 @@ void BC_ListBoxItem::set_color(int color)
 	this->color = color;
 }
 
-int BC_ListBoxItem::get_color()
-{
-	return color;
-}
-
-
 BC_ListBoxItem& BC_ListBoxItem::operator=(BC_ListBoxItem& item)
 {
 	copy_from(&item);
@@ -228,7 +171,8 @@ BC_ListBoxItem& BC_ListBoxItem::operator=(BC_ListBoxItem& item)
 
 void BC_ListBoxItem::copy_from(BC_ListBoxItem *item)
 {
-	if(item->text) set_text(item->text);
+	if(item->text)
+		set_text(item->text);
 	color = item->color;
 	text_x = item->text_x;
 	text_y = item->text_y;
@@ -259,21 +203,6 @@ ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::new_sublist(int columns)
 	sublist = new ArrayList<BC_ListBoxItem*>[columns];
 	this->columns = columns;
 	return sublist;
-}
-
-ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::get_sublist()
-{
-	return sublist;
-}
-
-int BC_ListBoxItem::get_columns()
-{
-	return columns;
-}
-
-int BC_ListBoxItem::get_expand()
-{
-	return expand;
 }
 
 void BC_ListBoxItem::set_expand(int value)

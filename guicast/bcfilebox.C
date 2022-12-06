@@ -16,7 +16,9 @@
 #include "filesystem.h"
 #include "language.h"
 #include "mutex.h"
-#include "inttypes.h"
+#include "vframe.h"
+
+#include <inttypes.h>
 #include <string.h>
 #include <sys/stat.h>
 

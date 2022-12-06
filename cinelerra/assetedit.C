@@ -35,6 +35,7 @@
 #include "edlsession.h"
 #include "units.h"
 #include "vwindow.h"
+#include "vframe.h"
 
 #include <string.h>
 #include <inttypes.h>

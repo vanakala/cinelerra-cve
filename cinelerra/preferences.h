@@ -10,6 +10,7 @@
 #include "bchash.inc"
 #include "bcwindowbase.inc"
 #include "cinelerra.h"
+#include "datatype.h"
 #include "mutex.inc"
 #include "preferences.inc"
 

@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCLISTBOXITEM_H
 #define BCLISTBOXITEM_H
@@ -25,9 +9,7 @@
 #include "arraylist.h"
 #include "bcpixmap.inc"
 #include "colors.h"
-#include "vframe.h"
-
-
+#include "vframe.inc"
 
 // Every item in a list inherits this
 class BC_ListBoxItem
@@ -35,13 +17,8 @@ class BC_ListBoxItem
 public:
 	BC_ListBoxItem();
 // New items
-	BC_ListBoxItem(const char *text, 
-		int color = -1);
-	BC_ListBoxItem(const char *text, 
-		BC_Pixmap *icon, 
-		int color = -1);
-	
-
+	BC_ListBoxItem(const char *text, int color = -1);
+	BC_ListBoxItem(const char *text, BC_Pixmap *icon, int color = -1);
 
 // autoplace is always 1 in initialization.
 // Positions set with the set_ commands cancel autoplacement.
@@ -54,43 +31,42 @@ public:
 	BC_ListBoxItem& operator=(BC_ListBoxItem& item);
 	void copy_from(BC_ListBoxItem *item);
 	void set_text(char *new_text);
-	char* get_text();
+	inline char* get_text() { return text; };
 	void set_icon(BC_Pixmap *icon);
 	void set_icon_vframe(VFrame *icon_vframe);
-	int get_icon_x();
-	int get_icon_y();
-	int get_text_x();
-	int get_text_y();
+	inline int get_icon_x() { return icon_x; };
+	inline int get_icon_y() { return icon_y; };
+	inline int get_text_x() { return text_x; };
+	inline int get_text_y() { return text_y; };
 	void set_icon_x(int x);
 	void set_icon_y(int y);
 	void set_text_x(int x);
 	void set_text_y(int y);
 	void set_color(int color);
 	void set_searchable(int value);
-	int get_color();
+	inline int get_color() { return color; };
 	void set_selected(int value);
-	int set_autoplace_icon(int value);
-	int set_autoplace_text(int value);
+	void set_autoplace_icon(int value);
+	void set_autoplace_text(int value);
 	void set_selectable(int value);
-	int get_selectable();
+	inline int get_selectable() { return selectable; }
 	virtual void dump(int indent);
 
 // The item with the sublist must be in column 0.  Only this is searched by
 // BC_ListBox.
 // Mind you, sublists are ignored in icon mode.
 	ArrayList<BC_ListBoxItem*>* new_sublist(int columns);
-	ArrayList<BC_ListBoxItem*>* get_sublist();
+	inline ArrayList<BC_ListBoxItem*>* get_sublist() { return sublist; };
 // Return the number of columns in the sublist
-	int get_columns();
+	inline int get_columns() { return columns; };
 // Return if it's expanded
-	int get_expand();
+	inline int get_expand() { return expand; };
 	void set_expand(int value);
 
 private:
 	void initialize();
 	int get_icon_w();
 	int get_icon_h();
-
 
 	BC_Pixmap *icon;
 	VFrame *icon_vframe;
@@ -119,7 +95,5 @@ private:
 // Item is selectable
 	int selectable;
 };
-
-
 
 #endif
