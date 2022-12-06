@@ -215,20 +215,7 @@ int RenderProfile::calculate_h(BC_WindowBase *gui)
 
 int RenderProfile::get_h()
 {
-	int result = 0;
-	result = MAX(result, title->get_h());
-	result = MAX(result, textbox->get_h());
-	return result;
-}
-
-int RenderProfile::get_x()
-{
-	return x;
-}
-
-int RenderProfile::get_y()
-{
-	return y;
+	return MAX(title->get_h(), textbox->get_h());
 }
 
 void RenderProfile::reposition_window(int x, int y)

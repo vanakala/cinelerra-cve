@@ -50,11 +50,13 @@ public:
 	void reposition_window(int x, int y);
 	static int calculate_h(BC_WindowBase *gui);
 	int get_h();
-	int get_x();
-	int get_y();
+	inline int get_x() { return x; };
+	inline int get_y() { return y; };
 
-	BC_Title *title;
 	BC_TextBox *textbox;
+	ArrayList<BC_ListBoxItem*> profiles;
+private:
+	BC_Title *title;
 	RenderProfileListBox *listbox;
 	SaveRenderProfileButton *saveprofile;
 	DeleteRenderProfileButton *deleteprofile;
@@ -63,7 +65,6 @@ public:
 	int y;
 	int *output;
 	int use_nothing;
-	ArrayList<BC_ListBoxItem*> profiles;
 };
 
 class RenderProfileListBox : public BC_ListBox
