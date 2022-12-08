@@ -56,13 +56,12 @@ public:
 	char plugin_title[BCTEXTLEN];
 };
 
+
 class PluginDialog : public BC_Window
 {
 public:
 	PluginDialog(PluginDialogThread *thread,
-		const char *title,
-		int x,
-		int y);
+		const char *title, int x, int y);
 	~PluginDialog();
 
 	void resize_event(int w, int h);
@@ -97,45 +96,41 @@ public:
 class PluginDialogNew : public BC_ListBox
 {
 public:
-	PluginDialogNew(PluginDialog *dialog, 
-		ArrayList<BC_ListBoxItem*> *standalone_data, 
-		int x, 
-		int y,
-		int w,
-		int h);
+	PluginDialogNew(PluginDialog *dialog,
+		ArrayList<BC_ListBoxItem*> *standalone_data,
+		int x, int y, int w, int h);
 
 	int handle_event();
 	void selection_changed();
+
 	PluginDialog *dialog;
 };
+
 
 class PluginDialogShared : public BC_ListBox
 {
 public:
-	PluginDialogShared(PluginDialog *dialog, 
-		ArrayList<BC_ListBoxItem*> *shared_data, 
-		int x, 
-		int y,
-		int w,
-		int h);
+	PluginDialogShared(PluginDialog *dialog,
+		ArrayList<BC_ListBoxItem*> *shared_data,
+		int x, int y, int w, int h);
 
 	int handle_event();
 	void selection_changed();
+
 	PluginDialog *dialog;
 };
+
 
 class PluginDialogModules : public BC_ListBox
 {
 public:
-	PluginDialogModules(PluginDialog *dialog, 
-		ArrayList<BC_ListBoxItem*> *module_data, 
-		int x, 
-		int y,
-		int w,
-		int h);
+	PluginDialogModules(PluginDialog *dialog,
+		ArrayList<BC_ListBoxItem*> *module_data,
+		int x, int y, int w, int h);
 
 	int handle_event();
 	void selection_changed();
+
 	PluginDialog *dialog;
 };
 

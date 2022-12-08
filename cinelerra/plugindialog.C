@@ -31,7 +31,6 @@ PluginDialogThread::PluginDialogThread()
 {
 	window = 0;
 	plugin = 0;
-	Thread::set_synchronous(0);
 	window_lock = new Mutex("PluginDialogThread::window_lock");
 	completion = new Condition(1, "PluginDialogThread::completion");
 }
@@ -48,8 +47,7 @@ PluginDialogThread::~PluginDialogThread()
 	delete completion;
 }
 
-void PluginDialogThread::start_window(Track *track,
-	Plugin *plugin)
+void PluginDialogThread::start_window(Track *track, Plugin *plugin)
 {
 	if(Thread::running())
 	{
@@ -125,16 +123,14 @@ void PluginDialogThread::run()
 		shared_plugin = 0;
 		shared_track = 0;
 	}
-	else
-	if(window->selected_shared >= 0 &&
+	else if(window->selected_shared >= 0 &&
 		window->selected_shared < window->plugin_locations.total)
 	{
 		plugin_type = PLUGIN_SHAREDPLUGIN;
 		shared_plugin = window->plugin_locations.values[window->selected_shared];
 		shared_track = 0;
 	}
-	else
-	if(window->selected_modules >= 0 &&
+	else if(window->selected_modules >= 0 &&
 		window->selected_modules < window->module_locations.total)
 	{
 		plugin_type = PLUGIN_SHAREDMODULE;
@@ -175,7 +171,8 @@ void PluginDialogThread::run()
 			}
 
 			mwindow_global->save_backup();
-			mwindow_global->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
+			mwindow_global->undo->update_undo(_("attach effect"),
+				LOAD_EDITS | LOAD_PATCHES);
 			mwindow_global->sync_parameters();
 			mwindow_global->update_gui(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_PATCHBAY);
@@ -186,19 +183,11 @@ void PluginDialogThread::run()
 
 
 PluginDialog::PluginDialog(PluginDialogThread *thread,
-	const char *window_title,
-	int x,
-	int y)
- : BC_Window(window_title, 
-	x,
-	y,
+	const char *window_title, int x, int y)
+ : BC_Window(window_title, x, y,
 	mainsession->plugindialog_w,
 	mainsession->plugindialog_h,
-	510, 
-	415,
-	1,
-	0,
-	1)
+	510, 415, 1, 0, 1)
 {
 	int use_default = 1;
 	char string[BCTEXTLEN];
@@ -210,10 +199,7 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 	set_icon(mwindow_global->get_window_icon());
 
 	plugindb.fill_plugindb(thread->track->get_strdsc(),
-		1,
-		0,
-		0,
-		local_plugindb);
+		1, 0, 0, local_plugindb);
 	master_edl->get_shared_plugins(thread->track, thread->selections[0],
 		thread->selections[1], &plugin_locations);
 
@@ -244,30 +230,25 @@ PluginDialog::PluginDialog(PluginDialogThread *thread,
 // Create widgets
 	add_subwindow(standalone_title = new BC_Title(
 		theme_global->plugindialog_new_x,
-		theme_global->plugindialog_new_y - 20,
-		_("Plugins:")));
-	add_subwindow(standalone_list = new PluginDialogNew(this, 
-		&standalone_data, 
+		theme_global->plugindialog_new_y - 20, _("Plugins:")));
+	add_subwindow(standalone_list = new PluginDialogNew(this,
+		&standalone_data,
 		theme_global->plugindialog_new_x,
 		theme_global->plugindialog_new_y,
 		theme_global->plugindialog_new_w,
 		theme_global->plugindialog_new_h));
 
 	add_subwindow(shared_title = new BC_Title(theme_global->plugindialog_shared_x,
-		theme_global->plugindialog_shared_y - 20,
-		_("Shared effects:")));
-	add_subwindow(shared_list = new PluginDialogShared(this, 
-		&shared_data, 
+		theme_global->plugindialog_shared_y - 20, _("Shared effects:")));
+	add_subwindow(shared_list = new PluginDialogShared(this, &shared_data,
 		theme_global->plugindialog_shared_x,
 		theme_global->plugindialog_shared_y,
 		theme_global->plugindialog_shared_w,
 		theme_global->plugindialog_shared_h));
 
 	add_subwindow(module_title = new BC_Title(theme_global->plugindialog_module_x,
-		theme_global->plugindialog_module_y - 20,
-		_("Shared tracks:")));
-	add_subwindow(module_list = new PluginDialogModules(this, 
-		&module_data, 
+		theme_global->plugindialog_module_y - 20, _("Shared tracks:")));
+	add_subwindow(module_list = new PluginDialogModules(this, &module_data,
 		theme_global->plugindialog_module_x,
 		theme_global->plugindialog_module_y,
 		theme_global->plugindialog_module_w,
@@ -322,24 +303,17 @@ void PluginDialog::resize_event(int w, int h)
 }
 
 
-PluginDialogNew::PluginDialogNew(PluginDialog *dialog, 
-	ArrayList<BC_ListBoxItem*> *standalone_data, 
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x, 
-	y,
-	w, 
-	h, 
-	standalone_data) 
-{ 
-	this->dialog = dialog; 
+PluginDialogNew::PluginDialogNew(PluginDialog *dialog,
+	ArrayList<BC_ListBoxItem*> *standalone_data,
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, standalone_data)
+{
+	this->dialog = dialog;
 }
 
-int PluginDialogNew::handle_event() 
+int PluginDialogNew::handle_event()
 {
-	set_done(0); 
+	set_done(0);
 	return 1;
 }
 
@@ -355,24 +329,17 @@ void PluginDialogNew::selection_changed()
 }
 
 
-PluginDialogShared::PluginDialogShared(PluginDialog *dialog, 
-	ArrayList<BC_ListBoxItem*> *shared_data, 
-	int x,
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x, 
-	y,
-	w, 
-	h, 
-	shared_data) 
-{ 
+PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
+	ArrayList<BC_ListBoxItem*> *shared_data,
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, shared_data)
+{
 	this->dialog = dialog;
 }
 
 int PluginDialogShared::handle_event()
-{ 
-	set_done(0); 
+{
+	set_done(0);
 	return 1;
 }
 
@@ -390,22 +357,15 @@ void PluginDialogShared::selection_changed()
 
 PluginDialogModules::PluginDialogModules(PluginDialog *dialog, 
 	ArrayList<BC_ListBoxItem*> *module_data, 
-	int x, 
-	int y,
-	int w,
-	int h)
- : BC_ListBox(x, 
- 	y, 
-	w, 
-	h, 
-	module_data) 
-{ 
+	int x, int y, int w, int h)
+ : BC_ListBox(x, y, w, h, module_data)
+{
 	this->dialog = dialog; 
 }
 
 int PluginDialogModules::handle_event()
 {
-	set_done(0); 
+	set_done(0);
 	return 1;
 }
 
