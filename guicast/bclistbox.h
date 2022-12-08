@@ -386,7 +386,9 @@ private:
 	BC_ListBoxXScroll *xscrollbar;
 	BC_ListBoxYScroll *yscrollbar;
 	ArrayList<BC_ListBoxToggle*> expanders;
-	char query[BCTEXTLEN];
+	int query_len;
+	int query_alloc;
+	wchar_t *wquery;
 
 // Window containing the listbox
 	BC_WindowBase *gui;

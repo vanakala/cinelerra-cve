@@ -20,6 +20,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define QUERY_LEN 128;
+
 // ====================================================== scrollbars
 BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox, int total_height,
 		int view_height, int position)
@@ -252,8 +254,7 @@ void BC_ListBoxToggle::draw(int flash)
 		}
 
 		listbox->gui->draw_pixmap(listbox->toggle_images[image_number],
-			x,
-			y);
+			x, y);
 
 		if(flash)
 			listbox->gui->flash(x, y, w, h);
@@ -290,6 +291,8 @@ BC_ListBox::BC_ListBox(int x, int y, int w, int h,
 	selection_number2 = -1;
 	bg_surface = 0;
 	bg_pixmap = 0;
+	query_len = query_alloc = 0;
+	wquery = 0;
 
 	current_operation = NO_OPERATION;
 	button_highlighted = 0;
@@ -378,6 +381,7 @@ BC_ListBox::~BC_ListBox()
 
 	delete_columns();
 	delete drag_popup;
+	delete [] wquery;
 }
 
 void BC_ListBox::enable()
@@ -394,24 +398,28 @@ void BC_ListBox::disable()
 
 void BC_ListBox::reset_query()
 {
-	query[0] = 0;  // reset query
+	query_len = 0;
 }
 
 int BC_ListBox::evaluate_query(int list_item, char *string)
 {
-	return(strcmp(string, data[search_column].values[list_item]->text) <= 0 &&
-		data[search_column].values[list_item]->searchable);
+	return(data[search_column].values[list_item]->searchable &&
+		strcasecmp(string, data[search_column].values[list_item]->text) <= 0);
 }
 
 int BC_ListBox::query_list()
 {
-	if(query[0] == 0)
+	if(!query_len)
 		return 0;
 
 	int done = 0;
 	int result;
 	int selection_changed = 0;
 	int prev_selection = -1;
+	char query[BCTEXTLEN];
+
+	BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
+		(char*)wquery, query, sizeof(query), query_len * sizeof(wchar_t));
 
 	for(int i = 0; !done && i < data[0].total; i++)
 	{
@@ -3454,23 +3462,32 @@ int BC_ListBox::keypress_event()
 		default:
 			if(!ctrl_down())
 			{
-				if(top_level->get_keypress() > 30 &&
-					top_level->get_keypress() < 127)
-				{
-					int query_len = strlen(query);
+				int len;
+				wchar_t *temp_string = top_level->get_wkeystring(&len);
 
-					query[query_len++] = top_level->get_keypress();
-					query[query_len] = 0;
-					new_selection = query_list();
-				}
-				else
 				if(top_level->get_keypress() == BACKSPACE)
 				{
-					int query_len = strlen(query);
-					if(query_len > 0) query[--query_len] = 0;
+					if(query_len > 0)
+					{
+						query_len--;
+						new_selection = query_list();
+					}
+				}
+				else if(len > 0)
+				{
+					if(query_len + len > query_alloc)
+					{
+						query_alloc += QUERY_LEN;
+						wchar_t *new_query = new wchar_t[query_alloc];
+						if(wquery && query_len)
+							memcpy(new_query, wquery, query_len * sizeof(wchar_t));
+						delete [] wquery;
+						wquery = new_query;
+					}
+					for(int i = 0; i < len; i++)
+						wquery[query_len++] = temp_string[i];
 					new_selection = query_list();
 				}
-
 				redraw = 1;
 				result = 1;
 			}
