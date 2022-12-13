@@ -203,12 +203,12 @@ int Automation::load(FileXML *file, int operation)
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(file->tag.title_is(automation_tbl[i].xml_title) && autos[i])
+		if(file->tag.title_is(automation_tbl[i].xml_title))
 		{
 			if(operation == PASTE_AUTOS && !edlsession->auto_conf->auto_visible[i])
 				return 0;
 
-			autos[i]->load(file);
+			get_autos(i)->load(file);
 			return 1;
 		}
 	}
