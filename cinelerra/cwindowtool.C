@@ -1034,17 +1034,47 @@ int CWindowMaskDelete::keypress_event()
 
 CWindowMaskNumber::CWindowMaskNumber(CWindowToolGUI *gui, int x, int y)
  : BC_TumbleTextBox(gui, edlsession->cwindow_mask, 0,
-	SUBMASKS - 1, x, y, 100)
+	1, x, y, 100)
 {
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+
 	this->gui = gui;
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 0);
+
+	if(keyframe)
+		set_boundaries(0, keyframe->masks.total);
 }
 
 int CWindowMaskNumber::handle_event()
 {
-	edlsession->cwindow_mask = atol(get_text());
-	gui->update();
-	gui->update_preview();
-	return 1;
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+	int num;
+
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 0);
+	if(keyframe)
+	{
+		num = atoi(get_text());
+		if(keyframe->masks.total <= num)
+		{
+			if(keyframe->masks.values[keyframe->masks.total - 1]->points.total)
+			{
+				((MaskAutos*)keyframe->autos)->new_submask();
+				set_boundaries(0, keyframe->masks.total);
+			}
+			num = keyframe->masks.total - 1;
+		}
+		edlsession->cwindow_mask = num;
+		gui->update();
+		gui->update_preview();
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -1187,7 +1217,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track, MaskAuto* &keyframe,
 		mask = 0;
 
 	point = 0;
-	if(keyframe)
+	if(mask)
 	{
 		if(mwindow_global->cwindow->gui->affected_point < mask->points.total &&
 				mwindow_global->cwindow->gui->affected_point >= 0)

@@ -17,7 +17,4 @@ enum
 	MASK_MULTIPLY_COLOR,
 	MASK_SUBTRACT_COLOR
 };
-
-#define SUBMASKS 8
-
 #endif

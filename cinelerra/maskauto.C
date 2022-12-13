@@ -56,8 +56,8 @@ void SubMask::copy_from(SubMask& ptr)
 void SubMask::load(FileXML *file)
 {
 	points.remove_all_objects();
-
 	int result = 0;
+
 	while(!result)
 	{
 		result = file->read_tag();
@@ -115,9 +115,7 @@ void SubMask::save_xml(FileXML *file)
 	if(points.total)
 	{
 		file->tag.set_title("MASK");
-		file->tag.set_property("NUMBER", keyframe->masks.number_of(this));
 		file->append_tag();
-		file->append_newline();
 
 		for(int i = 0; i < points.total; i++)
 		{
@@ -178,12 +176,6 @@ MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
 	feather = 0;
 	value = 100;
 	apply_before_plugins = 0;
-
-// We define a fixed number of submasks so that interpolation for each
-// submask matches.
-
-	for(int i = 0; i < SUBMASKS; i++)
-		masks.append(new SubMask(this));
 }
 
 MaskAuto::~MaskAuto()
@@ -281,8 +273,12 @@ void MaskAuto::interpolate_values(ptstime pts, int *new_value, int *new_feather)
 
 SubMask* MaskAuto::get_submask(int number)
 {
-	CLAMP(number, 0, masks.total - 1);
-	return masks.values[number];
+	if(masks.total)
+	{
+		CLAMP(number, 0, masks.total - 1);
+		return masks.values[number];
+	}
+	return 0;
 }
 
 void MaskAuto::load(FileXML *file)
@@ -294,26 +290,17 @@ void MaskAuto::load(FileXML *file)
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 
 	for(int i = 0; i < masks.total; i++)
-	{
 		delete masks.values[i];
-		masks.values[i] = new SubMask(this);
-	}
 
-	int result = 0;
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-
-		if(!result)
+		if(file->tag.title_is("/AUTO"))
+			break;
+		if(file->tag.title_is("MASK"))
 		{
-			if(file->tag.title_is("/AUTO")) 
-				result = 1;
-			else
-			if(file->tag.title_is("MASK"))
-			{
-				SubMask *mask = masks.values[file->tag.get_property("NUMBER", 0)];
-				mask->load(file);
-			}
+			SubMask *mask = new SubMask(this);
+			masks.append(mask);
+			mask->load(file);
 		}
 	}
 }
@@ -333,8 +320,6 @@ void MaskAuto::save_xml(FileXML *file)
 
 	for(int i = 0; i < masks.total; i++)
 		masks.values[i]->save_xml(file);
-
-	file->append_newline();
 	file->tag.set_title("/AUTO");
 	file->append_tag();
 	file->append_newline();
