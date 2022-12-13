@@ -41,18 +41,19 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 	SubMask *mask1 = begin->get_submask(submask);
 	SubMask *mask2 = end->get_submask(submask);
 
-	int total_points = MIN(mask1->points.total, mask2->points.total);
-
-	for(int i = 0; i < total_points; i++)
+	if(mask1 && mask2)
 	{
-		MaskPoint *point = new MaskPoint;
-		avg_points(point, 
-			mask1->points.values[i], 
-			mask2->points.values[i],
-			position,
-			begin->pos_time,
-			end->pos_time);
-		points->append(point);
+		int total_points = MIN(mask1->points.total, mask2->points.total);
+
+		for(int i = 0; i < total_points; i++)
+		{
+			MaskPoint *point = new MaskPoint;
+			avg_points(point,
+				mask1->points.values[i],
+				mask2->points.values[i],
+				position, begin->pos_time, end->pos_time);
+			points->append(point);
+		}
 	}
 }
 
@@ -150,6 +151,12 @@ void MaskAutos::translate_masks(double translate_x, double translate_y)
 			}
 		}
 	}
+}
+
+void MaskAutos::new_submask()
+{
+	for(MaskAuto* current = (MaskAuto*)first; current; current = (MaskAuto*)NEXT)
+		current->masks.append(new SubMask(current));
 }
 
 int MaskAutos::get_mode()
