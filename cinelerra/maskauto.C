@@ -56,56 +56,47 @@ void SubMask::copy_from(SubMask& ptr)
 void SubMask::load(FileXML *file)
 {
 	points.remove_all_objects();
-	int result = 0;
 
-	while(!result)
+	while(!file->read_tag())
 	{
-		result = file->read_tag();
-
-		if(!result)
+		if(file->tag.title_is("/MASK"))
+			break;
+		else
+		if(file->tag.title_is("POINT"))
 		{
-			if(file->tag.title_is("/MASK"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("POINT"))
-			{
-				char string[BCTEXTLEN];
-				string[0] = 0;
-				file->read_text_until("/POINT", string, BCTEXTLEN);
+			char string[BCTEXTLEN];
+			string[0] = 0;
+			file->read_text_until("/POINT", string, BCTEXTLEN);
 
-				MaskPoint *point = new MaskPoint;
-				char *ptr = string;
+			MaskPoint *point = new MaskPoint;
+			char *ptr = string;
 
-				point->x = atoi(ptr);
-				ptr = strchr(ptr, ',');
+			point->x = atoi(ptr);
+			ptr = strchr(ptr, ',');
+
+			if(ptr)
+			{
+				point->y = atoi(ptr + 1);
+				ptr = strchr(ptr + 1, ',');
 
 				if(ptr)
 				{
-					point->y = atoi(ptr + 1);
+					point->control_x1 = atof(ptr + 1);
 					ptr = strchr(ptr + 1, ',');
-
 					if(ptr)
 					{
-						point->control_x1 = atof(ptr + 1);
+						point->control_y1 = atof(ptr + 1);
 						ptr = strchr(ptr + 1, ',');
 						if(ptr)
 						{
-							point->control_y1 = atof(ptr + 1);
+							point->control_x2 = atof(ptr + 1);
 							ptr = strchr(ptr + 1, ',');
-							if(ptr)
-							{
-								point->control_x2 = atof(ptr + 1);
-								ptr = strchr(ptr + 1, ',');
-								if(ptr) point->control_y2 = atof(ptr + 1);
-							}
+							if(ptr) point->control_y2 = atof(ptr + 1);
 						}
 					}
-					
 				}
-				points.append(point);
 			}
+			points.append(point);
 		}
 	}
 }
@@ -211,8 +202,7 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
 	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
 
-	if (!mask_auto2 || mask_auto2->masks.total == 0) // if mask_auto == null, copy from first
-	if (!mask_auto2 || !mask_auto1 || mask_auto2->masks.total == 0)
+	if(!mask_auto2 || !mask_auto1 || mask_auto2->masks.total == 0)
 	// can't interpolate, fall back to copying (using template if possible)
 	{
 		Auto::interpolate_from(a1, a2, position, templ);
@@ -227,9 +217,7 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 	this->pos_time = position;
 	masks.remove_all_objects();
 
-	for(int i = 0; 
-		i < mask_auto1->masks.total; 
-		i++)
+	for(int i = 0; i < mask_auto1->masks.total; i++)
 	{
 		SubMask *new_submask = new SubMask(this);
 		masks.append(new_submask);
@@ -257,10 +245,10 @@ void MaskAuto::interpolate_values(ptstime pts, int *new_value, int *new_feather)
 	if(next)
 	{
 		MaskAuto *next_mask = (MaskAuto *)next;
-
 		double frac1 = (pts - pos_time) /
 			(next->pos_time - pos_time);
 		double frac2 = 1.0 - frac1;
+
 		*new_feather = round(feather * frac2 + next_mask->feather * frac1);
 		*new_value = round(value * frac2  + next_mask->value * frac1);
 	}
