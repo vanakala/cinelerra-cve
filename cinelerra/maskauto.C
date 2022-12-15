@@ -115,11 +115,11 @@ void SubMask::save_xml(FileXML *file)
 			file->append_tag();
 			char string[BCTEXTLEN];
 			sprintf(string, "%d, %d, %.7g, %.7g, %.7g, %.7g",
-				points.values[i]->x, 
-				points.values[i]->y, 
-				points.values[i]->control_x1, 
-				points.values[i]->control_y1, 
-				points.values[i]->control_x2, 
+				points.values[i]->x,
+				points.values[i]->y,
+				points.values[i]->control_x1,
+				points.values[i]->control_y1,
+				points.values[i]->control_x2,
 				points.values[i]->control_y2);
 			file->append_text(string);
 			file->tag.set_title("/POINT");
@@ -149,13 +149,12 @@ void SubMask::dump(int indent)
 	for(int i = 0; i < points.total; i++)
 	{
 		printf("%*spoint%d %p (%d %d) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
-			indent, " ",
-			i, points.values[i],
-			points.values[i]->x, 
-			points.values[i]->y, 
-			points.values[i]->control_x1, 
-			points.values[i]->control_y1, 
-			points.values[i]->control_x2, 
+			indent, " ", i, points.values[i],
+			points.values[i]->x,
+			points.values[i]->y,
+			points.values[i]->control_x1,
+			points.values[i]->control_y1,
+			points.values[i]->control_x2,
 			points.values[i]->control_y2);
 	}
 }
@@ -208,13 +207,14 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 		Auto::interpolate_from(a1, a2, position, templ);
 		return;
 	}
-	double frac1 = (position - mask_auto1->pos_time) / 
+	double frac1 = (position - mask_auto1->pos_time) /
 		(mask_auto2->pos_time - mask_auto1->pos_time);
 	double frac2 = 1.0 - frac1;
-	this->feather = round(mask_auto1->feather * frac2 + mask_auto2->feather * frac1);
-	this->value = round(mask_auto1->value * frac2  + mask_auto2->value * frac1);
-	this->apply_before_plugins = mask_auto1->apply_before_plugins;
-	this->pos_time = position;
+
+	feather = round(mask_auto1->feather * frac2 + mask_auto2->feather * frac1);
+	value = round(mask_auto1->value * frac2  + mask_auto2->value * frac1);
+	apply_before_plugins = mask_auto1->apply_before_plugins;
+	pos_time = position;
 	masks.remove_all_objects();
 
 	for(int i = 0; i < mask_auto1->masks.total; i++)
@@ -229,8 +229,8 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 		for(int j = 0; j < total_points; j++)
 		{
 			MaskPoint *point = new MaskPoint;
-			MaskAutos::avg_points(point, 
-				mask1->points.values[j], 
+			MaskAutos::avg_points(point,
+				mask1->points.values[j],
 				mask2->points.values[j],
 				pos_time,
 				mask_auto1->pos_time,
@@ -337,7 +337,7 @@ size_t MaskAuto::get_size()
 
 void MaskAuto::dump(int indent)
 {
-	printf("%*sMaskauto %p: value: %d feather %d before %d\n", indent, " ", 
+	printf("%*sMaskauto %p: value: %d feather %d before %d\n", indent, " ",
 		this, value, feather, apply_before_plugins);
 	printf("%*spos_time %.3f masks %d\n", indent + 2, " ", pos_time, masks.total);
 	indent += 4;
@@ -350,7 +350,7 @@ void MaskAuto::translate_submasks(int translate_x, int translate_y)
 	for(int i = 0; i < masks.total; i++)
 	{
 		SubMask *mask = get_submask(i);
-		for (int j = 0; j < mask->points.total; j++) 
+		for (int j = 0; j < mask->points.total; j++)
 		{
 			mask->points.values[j]->x += translate_x;
 			mask->points.values[j]->y += translate_y;
