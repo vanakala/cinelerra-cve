@@ -31,8 +31,6 @@ public:
 	void get_points(ArrayList<MaskPoint*> *points, int submask, ptstime position);
 	int total_submasks(ptstime position);
 	void new_submask();
-// Translates all mask points
-	void translate_masks(double translate_x, double translate_y);
 	void copy_values(Autos *autos);
 
 	int get_mode();

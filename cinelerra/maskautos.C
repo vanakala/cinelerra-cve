@@ -70,12 +70,19 @@ void MaskAutos::avg_points(MaskPoint *output,
 	{
 		double fraction2 = (output_position - position1) / (position2 - position1);
 		double fraction1 = 1 - fraction2;
-		output->x = round(input1->x * fraction1 + input2->x * fraction2);
-		output->y = round(input1->y * fraction1 + input2->y * fraction2);
-		output->control_x1 = input1->control_x1 * fraction1 + input2->control_x1 * fraction2;
-		output->control_y1 = input1->control_y1 * fraction1 + input2->control_y1 * fraction2;
-		output->control_x2 = input1->control_x2 * fraction1 + input2->control_x2 * fraction2;
-		output->control_y2 = input1->control_y2 * fraction1 + input2->control_y2 * fraction2;
+
+		output->submask_x = round(input1->submask_x * fraction1 +
+			input2->submask_x * fraction2);
+		output->submask_y = round(input1->submask_y * fraction1 +
+			input2->submask_y * fraction2);
+		output->control_x1 = input1->control_x1 * fraction1 +
+			input2->control_x1 * fraction2;
+		output->control_y1 = input1->control_y1 * fraction1 +
+			input2->control_y1 * fraction2;
+		output->control_x2 = input1->control_x2 * fraction1 +
+			input2->control_x2 * fraction2;
+		output->control_y2 = input1->control_y2 * fraction1 +
+			input2->control_y2 * fraction2;
 	}
 }
 
@@ -132,25 +139,6 @@ int MaskAutos::total_submasks(ptstime position)
 		}
 	}
 	return 0;
-}
-
-void MaskAutos::translate_masks(double translate_x, double translate_y)
-{
-	for(MaskAuto* current = (MaskAuto*)first; 
-		current; 
-		current = (MaskAuto*)NEXT)
-	{
-		current->translate_submasks(translate_x, translate_y);
-		for(int i = 0; i < current->masks.total; i++)
-		{
-			SubMask *mask = current->get_submask(i);
-			for (int j = 0; j < mask->points.total; j++) 
-			{
-				mask->points.values[j]->x += translate_x;
-				mask->points.values[j]->y += translate_y;
-			}
-		}
-	}
 }
 
 void MaskAutos::new_submask()

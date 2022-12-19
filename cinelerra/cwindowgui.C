@@ -1008,12 +1008,16 @@ int CWindowCanvas::do_mask(int &redraw,
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	ArrayList<MaskPoint*> points;
+
 	mask_autos->get_points(&points, edlsession->cwindow_mask,
 		position);
 
+	double track_w = track->track_w;
+	double track_h = track->track_h;
+
 // Projector zooms relative to the center of the track output.
-	double half_track_w = (double)track->track_w / 2;
-	double half_track_h = (double)track->track_h / 2;
+	double half_track_w = track_w / 2;
+	double half_track_h = track_h / 2;
 // Translate mask to projection
 	double projector_x, projector_y, projector_z;
 	track->automation->get_projector(&projector_x,
@@ -1076,20 +1080,37 @@ int CWindowCanvas::do_mask(int &redraw,
 			double x0, x1, x2, x3;
 			double y0, y1, y2, y3;
 			double old_x, old_y, x, y;
-			int segments = round(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
+			double p1x, p2x, p1y, p2y;
+			double p1cx1, p1cx2, p2cx1, p2cx2;
+			double p1cy1, p1cy2, p2cy1, p2cy2;
+// Calculate frame coordinates
+			p1x = point1->submask_x * track_w;
+			p2x = point2->submask_x * track_w;
+			p1y = point1->submask_y * track_h;
+			p2y = point2->submask_y * track_h;
+			p1cx1 = point1->control_x1 * track_w;
+			p1cx2 = point1->control_x2 * track_w;
+			p2cx1 = point2->control_x1 * track_w;
+			p2cx2 = point2->control_x2 * track_w;
+			p1cy1 = point1->control_y1 * track_h;
+			p1cy2 = point1->control_y2 * track_h;
+			p2cy1 = point2->control_y1 * track_h;
+			p2cy2 = point2->control_y2 * track_h;
+
+			int segments = round(sqrt(SQR(p1x - p2x) + SQR(p1y - p2y)));
 
 			for(int j = 0; j <= segments && !result; j++)
 			{
 				if(segments)
 				{
-					x0 = point1->x;
-					y0 = point1->y;
-					x1 = point1->x + point1->control_x2;
-					y1 = point1->y + point1->control_y2;
-					x2 = point2->x + point2->control_x1;
-					y2 = point2->y + point2->control_y1;
-					x3 = point2->x;
-					y3 = point2->y;
+					x0 = p1x;
+					y0 = p1y;
+					x1 = p1x + p1cx2;
+					y1 = p1y + p1cy2;
+					x2 = p2x + p2cx1;
+					y2 = p2y + p2cy1;
+					x3 = p2x;
+					y3 = p2y;
 
 					double t = (double)j / segments;
 					double tpow2 = t * t;
@@ -1109,11 +1130,13 @@ int CWindowCanvas::do_mask(int &redraw,
 				}
 				else
 				{
-					x = x1 = x2 = point1->x;
-					y = y1 = y2 = point1->y;
+					x = x1 = x2 = p1x;
+					y = y1 = y2 = p1y;
 				}
-				x = (x - half_track_w) * projector_z + projector_x;
-				y = (y - half_track_h) * projector_z + projector_y;
+				x = (x - half_track_w) *
+					projector_z + projector_x;
+				y = (y - half_track_h) *
+					projector_z + projector_y;
 
 // Test new point addition
 				if(button_press)
@@ -1126,22 +1149,26 @@ int CWindowCanvas::do_mask(int &redraw,
 					{
 						shortest_line_distance = line_distance;
 						shortest_point1 = i;
-						shortest_point2 = (i >= points.total - 1) ? 0 : (i + 1);
+						shortest_point2 =
+							(i >= points.total - 1) ?
+								0 : (i + 1);
 					}
 
 					double point_distance1 =
-						sqrt(SQR(point1->x - mask_cursor_x) + SQR(point1->y - mask_cursor_y));
+						sqrt(SQR(p1x - mask_cursor_x) +
+							SQR(p1y - mask_cursor_y));
 					double point_distance2 =
-						sqrt(SQR(point2->x - mask_cursor_x) + SQR(point2->y - mask_cursor_y));
+						sqrt(SQR(p2x - mask_cursor_x) +
+							SQR(p2y - mask_cursor_y));
 
-					if(point_distance1 < shortest_point_distance || 
+					if(point_distance1 < shortest_point_distance ||
 						shortest_point < 0)
 					{
 						shortest_point_distance = point_distance1;
 						shortest_point = i;
 					}
 
-					if(point_distance2 < shortest_point_distance || 
+					if(point_distance2 < shortest_point_distance ||
 						shortest_point < 0)
 					{
 						shortest_point_distance = point_distance2;
@@ -1160,19 +1187,24 @@ int CWindowCanvas::do_mask(int &redraw,
 // Test existing point selection
 				if(button_press)
 				{
-					double canvas_x = (x0 - half_track_w) * projector_z + projector_x;
-					double canvas_y = (y0 - half_track_h) * projector_z + projector_y;
+					double canvas_x = (x0 - half_track_w) *
+						projector_z + projector_x;
+					double canvas_y = (y0 - half_track_h) *
+						projector_z + projector_y;
 					int cursor_x = get_cursor_x();
 					int cursor_y = get_cursor_y();
 // Test first point
 					if(gui->shift_down())
 					{
-						double control_x = (x1 - half_track_w) * projector_z + projector_x;
-						double control_y = (y1 - half_track_h) * projector_z + projector_y;
+						double control_x = (x1 - half_track_w) *
+							projector_z + projector_x;
+						double control_y = (y1 - half_track_h) *
+							projector_z + projector_y;
 						output_to_canvas(control_x, control_y);
 
 						double distance =
-							sqrt(SQR(control_x - cursor_x) + SQR(control_y - cursor_y));
+							sqrt(SQR(control_x - cursor_x) +
+							SQR(control_y - cursor_y));
 
 						if(distance < selected_control_point_distance)
 						{
@@ -1198,8 +1230,11 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 
 // Test second point
-					canvas_x = (x3 - half_track_w) * projector_z + projector_x;
-					canvas_y = (y3 - half_track_h) * projector_z + projector_y;
+					canvas_x = (x3 - half_track_w) *
+						projector_z + projector_x;
+					canvas_y = (y3 - half_track_h) *
+						projector_z + projector_y;
+
 					if(gui->shift_down())
 					{
 						double control_x = (x2 - half_track_w) * projector_z + projector_x;
@@ -1216,21 +1251,19 @@ int CWindowCanvas::do_mask(int &redraw,
 							selected_control_point_distance = distance;
 						}
 					}
-					else
-					if(i < points.total - 1)
+					else if(i < points.total - 1)
 					{
 						output_to_canvas(canvas_x, canvas_y);
+
 						if(!gui->ctrl_down())
 						{
-							if(TEST_BOX(cursor_x, cursor_y, canvas_x, canvas_y))
-							{
-								selected_point = (i < points.total - 1 ? i + 1 : 0);
-							}
+							if(TEST_BOX(cursor_x, cursor_y,
+									canvas_x, canvas_y))
+								selected_point =
+									(i < points.total - 1 ? i + 1 : 0);
 						}
 						else
-						{
 							selected_point = shortest_point;
-						}
 					}
 				}
 
@@ -1266,8 +1299,10 @@ int CWindowCanvas::do_mask(int &redraw,
 							}
 
 // Draw second control point.  Discard x2 and y2 after this.
-							x2 = (x2 - half_track_w) * projector_z + projector_x;
-							y2 = (y2 - half_track_h) * projector_z + projector_y;
+							x2 = (x2 - half_track_w) *
+								projector_z + projector_x;
+							y2 = (y2 - half_track_h) *
+								projector_z + projector_y;
 							output_to_canvas(x2, y2);
 							int ix2 = round(x2);
 							int iy2 = round(y2);
@@ -1327,7 +1362,7 @@ int CWindowCanvas::do_mask(int &redraw,
 		gui->affected_track = gui->cwindow->calculate_affected_track();
 // Get current keyframe
 		if(gui->affected_track)
-			gui->affected_keyframe = 
+			gui->affected_keyframe =
 				gui->cwindow->calculate_affected_auto(AUTOMATION_MASK,
 					position, gui->affected_track, 1);
 
@@ -1360,8 +1395,9 @@ int CWindowCanvas::do_mask(int &redraw,
 		{
 // Create the template
 			MaskPoint *point = new MaskPoint;
-			point->x = mask_cursor_x;
-			point->y = mask_cursor_y;
+
+			point->submask_x = mask_cursor_x / track_w;
+			point->submask_y = mask_cursor_y / track_h;
 			point->control_x1 = 0;
 			point->control_y1 = 0;
 			point->control_x2 = 0;
@@ -1404,9 +1440,8 @@ int CWindowCanvas::do_mask(int &redraw,
 					{
 						MaskPoint *new_point = new MaskPoint;
 						submask->points.append(0);
-						for(int i = submask->points.total - 1; 
-							i > shortest_point2; 
-							i--)
+						for(int i = submask->points.total - 1;
+								i > shortest_point2; i--)
 							submask->points.values[i] = submask->points.values[i - 1];
 						submask->points.values[shortest_point2] = new_point;
 
@@ -1448,26 +1483,28 @@ int CWindowCanvas::do_mask(int &redraw,
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(edlsession->cwindow_mask);
 		MaskPoint *point = mask->points.values[gui->affected_point];
-		gui->center_x = point->x;
-		gui->center_y = point->y;
-		gui->control_in_x = point->control_x1;
-		gui->control_in_y = point->control_y1;
-		gui->control_out_x = point->control_x2;
-		gui->control_out_y = point->control_y2;
+
+		gui->center_x = point->submask_x * track_w;
+		gui->center_y = point->submask_y * track_h;
+		gui->control_in_x = point->control_x1 * track_w;
+		gui->control_in_y = point->control_y1 * track_h;
+		gui->control_out_x = point->control_x2 * track_w;
+		gui->control_out_y = point->control_y2 * track_h;
 	}
 
 	if(cursor_motion)
 	{
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(edlsession->cwindow_mask);
+
 		if(gui->affected_point < mask->points.total)
 		{
 			MaskPoint *point = mask->points.values[gui->affected_point];
 			double cursor_x = mask_cursor_x;
 			double cursor_y = mask_cursor_y;
 
-			double last_x = point->x;
-			double last_y = point->y;
+			double last_x = point->submask_x;
+			double last_y = point->submask_y;
 			double last_control_x1 = point->control_x1;
 			double last_control_y1 = point->control_y1;
 			double last_control_x2 = point->control_x2;
@@ -1476,33 +1513,41 @@ int CWindowCanvas::do_mask(int &redraw,
 			switch(gui->current_operation)
 			{
 			case CWINDOW_MASK:
-				point->x = cursor_x - gui->x_origin + gui->center_x;
-				point->y = cursor_y - gui->y_origin + gui->center_y;
+				point->submask_x = (cursor_x - gui->x_origin +
+					gui->center_x) / track_w;
+				point->submask_y = (cursor_y - gui->y_origin +
+					gui->center_y) / track_h;
 				break;
 
 			case CWINDOW_MASK_CONTROL_IN:
-				point->control_x1 = cursor_x - gui->x_origin + gui->control_in_x;
-				point->control_y1 = cursor_y - gui->y_origin + gui->control_in_y;
+				point->control_x1 = (cursor_x - gui->x_origin +
+					gui->control_in_x) / track_w;
+				point->control_y1 = (cursor_y - gui->y_origin +
+					gui->control_in_y) / track_h;
 				break;
 
 			case CWINDOW_MASK_CONTROL_OUT:
-				point->control_x2 = cursor_x - gui->x_origin + gui->control_out_x;
-				point->control_y2 = cursor_y - gui->y_origin + gui->control_out_y;
+				point->control_x2 = (cursor_x - gui->x_origin +
+					gui->control_out_x) / track_w;
+				point->control_y2 = (cursor_y - gui->y_origin +
+					gui->control_out_y) / track_h;
 				break;
 
 			case CWINDOW_MASK_TRANSLATE:
 				for(int i = 0; i < mask->points.total; i++)
 				{
-					mask->points.values[i]->x += cursor_x - gui->x_origin;
-					mask->points.values[i]->y += cursor_y - gui->y_origin;
+					mask->points.values[i]->submask_x +=
+						(cursor_x - gui->x_origin) / track_w;
+					mask->points.values[i]->submask_y +=
+						(cursor_y - gui->y_origin) / track_h;
 				}
 				gui->x_origin = cursor_x;
 				gui->y_origin = cursor_y;
 				break;
 			}
 
-			if( !EQUIV(last_x, point->x) ||
-				!EQUIV(last_y, point->y) ||
+			if(!EQUIV(last_x, point->submask_x) ||
+				!EQUIV(last_y, point->submask_y) ||
 				!EQUIV(last_control_x1, point->control_x1) ||
 				!EQUIV(last_control_y1, point->control_y1) ||
 				!EQUIV(last_control_x2, point->control_x2) ||

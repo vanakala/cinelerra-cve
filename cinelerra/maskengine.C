@@ -336,16 +336,15 @@ void MaskUnit::process_package(LoadPackage *package)
 
 		if(!row_spans || row_spans_h != mask_h * OVERSAMPLE)
 		{
-			int i;
-			if(row_spans) 
+			if(row_spans)
 			{  // size change
-				for(i = 0; i < row_spans_h; i++)
+				for(int i = 0; i < row_spans_h; i++)
 					free(row_spans[i]);
 				delete [] row_spans;
 			}
 			row_spans_h = mask_h * OVERSAMPLE;
 			row_spans = new short *[mask_h * OVERSAMPLE]; 
-			for(i= 0; i<mask_h * OVERSAMPLE; i++)
+			for(int i = 0; i < mask_h * OVERSAMPLE; i++)
 			{
 				// we use malloc so we can use realloc
 				row_spans[i] = (short *)malloc(sizeof(short) * NUM_SPANS);
@@ -368,18 +367,17 @@ void MaskUnit::process_package(LoadPackage *package)
 			for(int i = 0; i < points->total; i++)
 			{
 				MaskPoint *point1 = points->values[i];
-				MaskPoint *point2 = (i >= points->total - 1) ? 
-					points->values[0] : 
-					points->values[i + 1];
+				MaskPoint *point2 = (i >= points->total - 1) ?
+					points->values[0] : points->values[i + 1];
 
-				double x0 = point1->x;
-				double y0 = point1->y;
-				double x1 = point1->x + point1->control_x2;
-				double y1 = point1->y + point1->control_y2;
-				double x2 = point2->x + point2->control_x1;
-				double y2 = point2->y + point2->control_y1;
-				double x3 = point2->x;
-				double y3 = point2->y;
+				double x0 = point1->submask_x;
+				double y0 = point1->submask_y;
+				double x1 = point1->submask_x + point1->control_x2;
+				double y1 = point1->submask_y + point1->control_y2;
+				double x2 = point2->submask_x + point2->control_x1;
+				double y2 = point2->submask_y + point2->control_y1;
+				double x3 = point2->submask_x;
+				double y3 = point2->submask_y;
 
 // possible optimization here... since these coordinates are bounding box for curve
 // we can continue with next curve if they are out of our range
@@ -415,8 +413,8 @@ void MaskUnit::process_package(LoadPackage *package)
 
 				for(double t = 0.0; t < 1.0; t += h)
 				{
-					int x = cx0 + t * (cx1 + t * (cx2 + t * cx3));
-					int y = cy0 + t * (cy1 + t * (cy2 + t * cy3));
+					int x = (cx0 + t * (cx1 + t * (cx2 + t * cx3))) * mask_w;
+					int y = (cy0 + t * (cy1 + t * (cy2 + t * cy3))) * mask_h;
 
 					if (old_x != SHRT_MIN)
 						draw_line_clamped(old_x, old_y, x, y,
@@ -427,8 +425,8 @@ void MaskUnit::process_package(LoadPackage *package)
 					old_y = y;
 				}
 
-				int x = x3 * OVERSAMPLE;
-				int y = (y3 - ptr->row1) * OVERSAMPLE;
+				int x = x3 * OVERSAMPLE * mask_w;
+				int y = (y3 - ptr->row1) * OVERSAMPLE * mask_h;
 				draw_line_clamped(old_x, old_y, x, y,
 					oversampled_package_w,
 					oversampled_package_h,
@@ -440,7 +438,7 @@ void MaskUnit::process_package(LoadPackage *package)
 			int value = ((double)engine->value / 100 * 0xffff);
 
 			/* Scaneline sampling, inspired by Graphics gems I, page 81 */
-			for (int i = ptr->row1; i < ptr->row2; i++) 
+			for(int i = ptr->row1; i < ptr->row2; i++)
 			{
 				short min_x = SHRT_MAX;
 				short max_x = SHRT_MIN;

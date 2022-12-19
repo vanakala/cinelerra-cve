@@ -8,14 +8,15 @@
 #include "filexml.h"
 #include "maskauto.h"
 #include "maskautos.h"
+#include "track.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 MaskPoint::MaskPoint()
 {
-	x = 0;
-	y = 0;
+	submask_x = 0;
+	submask_y = 0;
 	control_x1 = 0;
 	control_y1 = 0;
 	control_x2 = 0;
@@ -24,7 +25,8 @@ MaskPoint::MaskPoint()
 
 int MaskPoint::operator==(MaskPoint& ptr)
 {
-	return x == ptr.x && y == ptr.y &&
+	return EQUIV(submask_x, ptr.submask_x) &&
+		EQUIV(submask_y, ptr.submask_y) &&
 		EQUIV(control_x1, ptr.control_x1) &&
 		EQUIV(control_y1, ptr.control_y1) &&
 		EQUIV(control_x2, ptr.control_x2) &&
@@ -53,7 +55,7 @@ void SubMask::copy_from(SubMask& ptr)
 	}
 }
 
-void SubMask::load(FileXML *file)
+void SubMask::load(FileXML *file, Track *track)
 {
 	points.remove_all_objects();
 
@@ -71,12 +73,12 @@ void SubMask::load(FileXML *file)
 			MaskPoint *point = new MaskPoint;
 			char *ptr = string;
 
-			point->x = atoi(ptr);
+			point->submask_x = atof(ptr);
 			ptr = strchr(ptr, ',');
 
 			if(ptr)
 			{
-				point->y = atoi(ptr + 1);
+				point->submask_y = atof(ptr + 1);
 				ptr = strchr(ptr + 1, ',');
 
 				if(ptr)
@@ -96,6 +98,16 @@ void SubMask::load(FileXML *file)
 					}
 				}
 			}
+			// Backward copatibility
+			if(point->submask_x > 1 || point->submask_y > 1)
+			{
+				point->submask_x /= track->track_w;
+				point->submask_y /= track->track_h;
+				point->control_x1 /= track->track_w;
+				point->control_x2 /= track->track_w;
+				point->control_y1 /= track->track_h;
+				point->control_y2 /= track->track_h;
+			}
 			points.append(point);
 		}
 	}
@@ -114,9 +126,9 @@ void SubMask::save_xml(FileXML *file)
 			file->tag.set_title("POINT");
 			file->append_tag();
 			char string[BCTEXTLEN];
-			sprintf(string, "%d, %d, %.7g, %.7g, %.7g, %.7g",
-				points.values[i]->x,
-				points.values[i]->y,
+			sprintf(string, "%.7g, %.7g, %.7g, %.7g, %.7g, %.7g",
+				points.values[i]->submask_x,
+				points.values[i]->submask_y,
 				points.values[i]->control_x1,
 				points.values[i]->control_y1,
 				points.values[i]->control_x2,
@@ -148,10 +160,10 @@ void SubMask::dump(int indent)
 	indent += 2;
 	for(int i = 0; i < points.total; i++)
 	{
-		printf("%*spoint%d %p (%d %d) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
+		printf("%*spoint%d %p (%.4f %.4f) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
 			indent, " ", i, points.values[i],
-			points.values[i]->x,
-			points.values[i]->y,
+			points.values[i]->submask_x,
+			points.values[i]->submask_y,
 			points.values[i]->control_x1,
 			points.values[i]->control_y1,
 			points.values[i]->control_x2,
@@ -288,7 +300,7 @@ void MaskAuto::load(FileXML *file)
 		{
 			SubMask *mask = new SubMask(this);
 			masks.append(mask);
-			mask->load(file);
+			mask->load(file, autos->track);
 		}
 	}
 }
@@ -343,17 +355,4 @@ void MaskAuto::dump(int indent)
 	indent += 4;
 	for(int i = 0; i < masks.total; i++)
 		masks.values[i]->dump(indent);
-}
-
-void MaskAuto::translate_submasks(int translate_x, int translate_y)
-{
-	for(int i = 0; i < masks.total; i++)
-	{
-		SubMask *mask = get_submask(i);
-		for (int j = 0; j < mask->points.total; j++)
-		{
-			mask->points.values[j]->x += translate_x;
-			mask->points.values[j]->y += translate_y;
-		}
-	}
 }

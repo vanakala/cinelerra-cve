@@ -10,6 +10,7 @@
 #include "auto.h"
 #include "maskauto.inc"
 #include "maskautos.inc"
+#include "track.inc"
 
 class MaskPoint
 {
@@ -19,8 +20,8 @@ public:
 	int operator==(MaskPoint& ptr);
 	size_t get_size();
 
-	int x;
-	int y;
+	double submask_x;
+	double submask_y;
 // Incoming acceleration
 	double control_x1, control_y1;
 // Outgoing acceleration
@@ -33,7 +34,7 @@ public:
 	SubMask(MaskAuto *keyframe);
 
 	void copy_from(SubMask& ptr);
-	void load(FileXML *file);
+	void load(FileXML *file, Track *track);
 	void save_xml(FileXML *file);
 	size_t get_size();
 	void dump(int indent = 0);
@@ -60,8 +61,6 @@ public:
 	void dump(int indent = 0);
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
-// Translates all submasks
-	void translate_submasks(int translate_x, int translate_y);
 
 	ArrayList<SubMask*> masks;
 

@@ -1276,11 +1276,6 @@ void MWindow::resize_track(Track *track, int w, int h)
 		return;
 
 	track->reset_renderers();
-// We have to move all maskpoints so they do not move in relation to image areas
-	MaskAutos *masks = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
-	if(masks)
-		masks->translate_masks((w - track->track_w) / 2,
-			(h - track->track_h) / 2);
 	track->track_w = w;
 	track->track_h = h;
 	undo->update_undo(_("resize track"), LOAD_ALL);

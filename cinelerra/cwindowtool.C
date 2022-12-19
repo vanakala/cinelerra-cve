@@ -256,6 +256,13 @@ CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, double value, int 
 	set_log_floatincrement(log_increment);
 }
 
+CWindowCoord::CWindowCoord(int x, int y, double value, CWindowToolGUI *gui)
+ : BC_TumbleTextBox(gui, value, 0.0, 1.0, x, y, 100)
+{
+	this->gui = gui;
+	set_increment(0.0001);
+}
+
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
  : BC_TumbleTextBox(gui, value, -65536, 65536, x, y, 100)
 {
@@ -1171,11 +1178,11 @@ CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
-	this->x = new CWindowCoord(this, x, y, 0);
+	this->x = new CWindowCoord(x, y, 0.0, this);
 	x += 150;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
 	x += title->get_w();
-	this->y = new CWindowCoord(this, x, y, 0);
+	this->y = new CWindowCoord(x, y, 0.0, this);
 
 	y += 30;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 
@@ -1245,8 +1252,8 @@ void CWindowMaskGUI::update()
 
 	if(point)
 	{
-		x->update(point->x);
-		y->update(point->y);
+		x->update(point->submask_x);
+		y->update(point->submask_y);
 	}
 
 	if(mask)
@@ -1270,8 +1277,8 @@ int CWindowMaskGUI::handle_event()
 
 	if(point)
 	{
-		point->x = atoi(x->get_text());
-		point->y = atoi(y->get_text());
+		point->submask_x = atof(x->get_text());
+		point->submask_y = atof(y->get_text());
 	}
 
 	update_preview();
