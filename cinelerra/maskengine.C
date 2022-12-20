@@ -51,19 +51,15 @@ MaskUnit::~MaskUnit()
 	delete [] val_m;
 }
 
-inline void MaskUnit::draw_line_clamped(
-	int draw_x1, 
-	int draw_y1, 
-	int draw_x2, 
-	int draw_y2,
-	int w,
-	int h,
-	int hoffset)
+inline void MaskUnit::draw_line_clamped(int draw_x1, int draw_y1,
+	int draw_x2, int draw_y2, int w, int h, int hoffset)
 {
-	if (draw_y1 == draw_y2) return; 
+	if(draw_y1 == draw_y2)
+		return;
 
 	if(draw_y2 < draw_y1)
-	{ /* change the order */
+	{
+		// change the order
 		int tmp;
 		tmp = draw_x1;
 		draw_x1 = draw_x2;
@@ -77,10 +73,10 @@ inline void MaskUnit::draw_line_clamped(
 	w--;
 	for(int y_i = draw_y1; y_i < draw_y2; y_i++) 
 	{ 
-		if(y_i >= h) 
+		if(y_i >= h)
 			return; // since y gets larger, there is no point in continuing
-		else if(y_i >= 0) 
-		{ 
+		else if(y_i >= 0)
+		{
 			int x = round(slope * (y_i - draw_y1) + draw_x1);
 			int x_i = CLIP(x, 0, w); 
 
@@ -88,13 +84,14 @@ inline void MaskUnit::draw_line_clamped(
 			short *span = row_spans[y_i + hoffset];
 			if(span[0] >= span[1])
 			{
-			// do the reallocation
+				// do the reallocation
 				span[1] *= 2;
 				span = row_spans[y_i + hoffset] = (short *)realloc(span, span[1] * sizeof(short));
 				// be careful! row_spans has to be updated!
 			}
 
 			short index = 2;
+
 			while (index < span[0]  && span[index] < x_i)
 				index++;
 			for(int j = span[0]; j > index; j--)
@@ -128,7 +125,7 @@ void MaskUnit::blur_strip(double *val_p, double *val_m,
 			*vm += n_m[l] * sp_m[l] - d_m[l] * vm[l];
 		}
 
-		for( ; l <= 4; l++)
+		for(; l <= 4; l++)
 		{
 			*vp += (n_p[l] - bd_p[l]) * initial_p;
 			*vm += (n_m[l] - bd_m[l]) * initial_m;
@@ -148,21 +145,15 @@ void MaskUnit::blur_strip(double *val_p, double *val_m,
 }
 
 
-int MaskUnit::do_feather_2(VFrame *output,
-	VFrame *input, 
-	int feather,
-	int start_out, 
-	int end_out)
+int MaskUnit::do_feather_2(VFrame *output, VFrame *input,
+	int feather, int start_out, int end_out)
 {
 	DO_FEATHER_N(unsigned char, uint32_t, 0xffff, feather);
 }
 
 
-void MaskUnit::do_feather(VFrame *output,
-	VFrame *input, 
-	int feather,
-	int start_out, 
-	int end_out)
+void MaskUnit::do_feather(VFrame *output, VFrame *input,
+	int feather, int start_out, int end_out)
 {
 // Get constants
 	double constants[8];
@@ -293,9 +284,10 @@ void MaskUnit::do_feather(VFrame *output,
 		}
 	}
 
-	for(int j = start_out; j < end_out; j++) \
+	for(int j = start_out; j < end_out; j++)
 	{
 		uint16_t *out_row = (uint16_t*)output->get_row_ptr(j);
+
 		memset(val_p, 0, sizeof(double) * frame_w);
 		memset(val_m, 0, sizeof(double) * frame_w);
 
@@ -319,6 +311,7 @@ void MaskUnit::process_package(LoadPackage *package)
 	if(engine->recalculate)
 	{
 		VFrame *mask;
+
 		if(engine->feather > 0) 
 			mask = engine->temp_mask;
 		else
@@ -337,7 +330,8 @@ void MaskUnit::process_package(LoadPackage *package)
 		if(!row_spans || row_spans_h != mask_h * OVERSAMPLE)
 		{
 			if(row_spans)
-			{  // size change
+			{
+				// size change
 				for(int i = 0; i < row_spans_h; i++)
 					free(row_spans[i]);
 				delete [] row_spans;
@@ -456,33 +450,39 @@ void MaskUnit::process_package(LoadPackage *package)
 					P = 2;              // starting pointers to spans
 					// hypotetical hypotetical fix goes here: take care that there is maximum one empty span for every subpixel
 					if(MAXP != 2)
-					{ // if span is not empty
+					{
+						// if span is not empty
 						if(span[2] < min_x)
-							min_x = span[2];           // take start of the first span
+							min_x = span[2];      // take start of the first span
 						if(span[MAXP-1] > max_x)
 							max_x = span[MAXP-1]; // and end of last
 					}
 					else
-					{ // span is empty
+					{
+						// span is empty
 						num_empty_spans++;
 					}
 				}
 				if(num_empty_spans == OVERSAMPLE)
 					continue;       // no work for us here
 				else
-				{  // if we have engaged first nonempty rowspan... remember it to speed up mask applying
+				{
+					// if we have engaged first nonempty rowspan...
+					//  remember it to speed up mask applying
 					if(i < local_first_nonempty_rowspan)
 						local_first_nonempty_rowspan = i;
 					if(i > local_last_nonempty_rowspan)
 						local_last_nonempty_rowspan = i;
 				}
-				// we have some pixels to fill, do coverage calculation for span
+				// we have some pixels to fill,
+				//  do coverage calculation for span
 
 				uint16_t *output_row = (uint16_t*)mask->get_row_ptr(i);
 				min_x = min_x / OVERSAMPLE;
 				max_x = (max_x + OVERSAMPLE - 1) / OVERSAMPLE;
 
-				// this is not a full loop, since we jump trough h if possible
+				// this is not a full loop,
+				//  since we jump trough h if possible
 				for(int h = min_x; h <= max_x; h++)
 				{
 					short pixelleft = h * OVERSAMPLE;  // leftmost subpixel of pixel
@@ -499,7 +499,8 @@ void MaskUnit::process_package(LoadPackage *package)
 						while (P < MAXP && chg)
 						{
 							if(span[P] == span[P+1])
-							{ // ignore empty spans
+							{
+								// ignore empty spans
 								P += 2;
 								continue;
 							}
@@ -508,21 +509,23 @@ void MaskUnit::process_package(LoadPackage *package)
 									- MAX(span[P], pixelleft) + 1;
 							if(span[P+1] <= pixelright)
 								P += 2;
-							else 
+							else
 								chg = 0;
 						} 
 						if(P == MAXP)
 							num_left = -OVERSAMPLE; // just take care that num_left cannot equal OVERSAMPLE or zero again
 						else
-						{ 
+						{
 							if(span[P] <= pixelright)  // if span starts before subpixel in the pixel on the right
-							{    // useful for determining filled space till next non-fully-filled pixel
+							{
+								// useful for determining filled space till next non-fully-filled pixel
 								num_left++;
 								if(span[P+1] < right_end)
 									right_end = span[P+1];
 							}
 							else
-							{  // useful for determining empty space till next non-empty pixel
+							{
+								// useful for determining empty space till next non-empty pixel
 								if(span[P] < right_start)
 									right_start = span[P];
 							}
@@ -532,11 +535,14 @@ void MaskUnit::process_package(LoadPackage *package)
 					coverage *= value;
 					coverage /= OVERSAMPLE * OVERSAMPLE;
 
-					// when we have multiple masks the highest coverage wins
+					// when we have multiple masks the
+					//  highest coverage wins
 					if(output_row[h] < coverage)
 						output_row[h] = coverage;
 
-					// possible optimization: do joining of multiple masks by span logics, not by bitmap logics
+					// possible optimization: do joining
+					//  of multiple masks by span logics,
+					//  not by bitmap logics
 
 					if(num_left == OVERSAMPLE)
 					{
@@ -595,10 +601,8 @@ void MaskUnit::process_package(LoadPackage *package)
 
 		int done = 0;
 		done = do_feather_2(engine->mask,        // try if we have super fast implementation ready
-				engine->temp_mask,
-				engine->feather * 2 - 1, 
-				ptr->row1, 
-				ptr->row2);
+			engine->temp_mask, engine->feather * 2 - 1,
+				ptr->row1, ptr->row2);
 		if(done)
 			engine->realfeather = engine->feather;
 		else
@@ -607,11 +611,8 @@ void MaskUnit::process_package(LoadPackage *package)
 			engine->realfeather = round(0.878441 + 0.988534 * feather -
 				0.0490204 * feather * feather +
 				0.0012359 * feather * feather * feather);
-			do_feather(engine->mask, 
-				engine->temp_mask, 
-				engine->realfeather, 
-				ptr->row1, 
-				ptr->row2); 
+			do_feather(engine->mask, engine->temp_mask,
+				engine->realfeather, ptr->row1, ptr->row2);
 		}
 	}
 	else if(engine->feather <= 0)
@@ -789,9 +790,10 @@ void MaskUnit::process_package(LoadPackage *package)
 
 
 MaskEngine::MaskEngine(int cpus)
- : LoadServer(cpus, cpus)      /* these two HAVE to be the same, since packages communicate  */
+ : LoadServer(cpus, cpus)      // these two HAVE to be the same, since packages communicate
 {
 	mask = 0;
+	temp_mask = 0;
 	pthread_mutex_init(&stage1_finished_mutex, NULL);
 	pthread_cond_init(&stage1_finished_cond, NULL);
 }
@@ -800,11 +802,8 @@ MaskEngine::~MaskEngine()
 {
 	pthread_cond_destroy(&stage1_finished_cond);
 	pthread_mutex_destroy(&stage1_finished_mutex);
-	if(mask) 
-	{
-		delete mask;
-		delete temp_mask;
-	}
+	delete mask;
+	delete temp_mask;
 
 	for(int i = 0; i < point_sets.total; i++)
 	{
@@ -814,21 +813,21 @@ MaskEngine::~MaskEngine()
 	point_sets.remove_all_objects();
 }
 
-int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points, 
+int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 	ArrayList<MaskPoint*> *points)
 {
-	if(new_points->total != points->total) return 0;
+	if(new_points->total != points->total)
+		return 0;
 
 	for(int i = 0; i < new_points->total; i++)
 	{
-		if(!(*new_points->values[i] == *points->values[i])) return 0;
+		if(!(*new_points->values[i] == *points->values[i]))
+			return 0;
 	}
 	return 1;
 }
 
-void MaskEngine::do_mask(VFrame *output, 
-	MaskAutos *keyframe_set, 
-	int before_plugins)
+void MaskEngine::do_mask(VFrame *output, MaskAutos *keyframe_set, int before_plugins)
 {
 	ptstime start_pts = output->get_pts();
 	int new_value;
@@ -848,7 +847,9 @@ void MaskEngine::do_mask(VFrame *output,
 	{
 		SubMask *mask = keyframe->get_submask(i);
 		int submask_points = mask->points.total;
-		if(submask_points > 1) total_points += submask_points;
+
+		if(submask_points > 1)
+			total_points += submask_points;
 	}
 
 	keyframe->interpolate_values(start_pts, &new_value, &new_feather);
@@ -886,6 +887,7 @@ void MaskEngine::do_mask(VFrame *output,
 		delete mask;
 		delete temp_mask;
 		mask = 0;
+		temp_mask = 0;
 		recalculate = 1;
 	}
 
@@ -897,7 +899,7 @@ void MaskEngine::do_mask(VFrame *output,
 
 	if(!recalculate)
 	{
-		for(int i = 0; 
+		for(int i = 0;
 			i < keyframe_set->total_submasks(start_pts) && !recalculate;
 			i++)
 		{
@@ -914,7 +916,7 @@ void MaskEngine::do_mask(VFrame *output,
 	if(recalculate || new_feather != feather || new_value != value)
 	{
 		recalculate = 1;
-		if(!mask) 
+		if(!mask)
 		{
 			mask = new VFrame(0, output->get_w(),
 					output->get_h(),
@@ -935,14 +937,11 @@ void MaskEngine::do_mask(VFrame *output,
 		}
 		point_sets.remove_all_objects();
 
-		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_pts);
-			i++)
+		for(int i = 0; i < keyframe_set->total_submasks(start_pts); i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points, 
-				i, 
-				start_pts);
+
+			keyframe_set->get_points(new_points, i, start_pts);
 			point_sets.append(new_points);
 		}
 	}
@@ -973,8 +972,9 @@ void MaskEngine::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		MaskPackage *pkg = (MaskPackage*)get_package(i);
+
 		pkg->row1 = division * i;
-		pkg->row2 = MIN (division * i + division, output->get_h());
+		pkg->row2 = MIN(division * i + division, output->get_h());
 	}
 }
 

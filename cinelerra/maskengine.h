@@ -42,17 +42,12 @@ public:
 
 	void process_package(LoadPackage *package);
 private:
-	void draw_line_clamped(int x1, int y1, int x2, int y2, int w, int h, int hoffset);
-	void do_feather(VFrame *output,
-		VFrame *input, 
-		int feather,
-		int start_out, 
-		int end_out);
-	int do_feather_2(VFrame *output,
-		VFrame *input, 
-		int feather,
-		int start_out, 
-		int end_out);
+	void draw_line_clamped(int x1, int y1, int x2, int y2,
+		int w, int h, int hoffset);
+	void do_feather(VFrame *output, VFrame *input,
+		int feather, int start_out, int end_out);
+	int do_feather_2(VFrame *output, VFrame *input,
+		int feather, int start_out, int end_out);
 	void blur_strip(double *val_p, double *val_m,
 		double *dst, double *src,
 		int size, double max);
@@ -77,11 +72,9 @@ public:
 	MaskEngine(int cpus);
 	~MaskEngine();
 
-	void do_mask(VFrame *output, 
-		MaskAutos *keyframe_set, 
-		int before_plugins);
+	void do_mask(VFrame *output, MaskAutos *keyframe_set, int before_plugins);
 
-	int points_equivalent(ArrayList<MaskPoint*> *new_points, 
+	int points_equivalent(ArrayList<MaskPoint*> *new_points,
 		ArrayList<MaskPoint*> *points);
 
 	void delete_packages();
@@ -103,7 +96,7 @@ public:
 	pthread_mutex_t stage1_finished_mutex;
 	pthread_cond_t stage1_finished_cond;
 	int stage1_finished_count;
-	Mutex protect_data;	// protects the following members
+	Mutex protect_data;      // protects the following members
 	int first_nonempty_rowspan;
 	int last_nonempty_rowspan;
 };
