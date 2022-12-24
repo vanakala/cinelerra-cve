@@ -38,6 +38,14 @@ size_t MaskPoint::get_size()
 	return sizeof(*this);
 }
 
+void MaskPoint::dump(int indent)
+{
+	printf("%*spoint %p (%.4f %.4f) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
+		indent, " ", this, submask_x, submask_y,
+		control_x1, control_y1, control_x2, control_y2);
+}
+
+
 SubMask::SubMask(MaskAuto *keyframe)
 {
 	this->keyframe = keyframe;
@@ -158,17 +166,9 @@ void SubMask::dump(int indent)
 {
 	printf("%*sSubmask %p dump(%d):\n", indent, " ", this, points.total);
 	indent += 2;
+
 	for(int i = 0; i < points.total; i++)
-	{
-		printf("%*spoint%d %p (%.4f %.4f) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
-			indent, " ", i, points.values[i],
-			points.values[i]->submask_x,
-			points.values[i]->submask_y,
-			points.values[i]->control_x1,
-			points.values[i]->control_y1,
-			points.values[i]->control_x2,
-			points.values[i]->control_y2);
-	}
+		points.values[i]->dump(indent);
 }
 
 

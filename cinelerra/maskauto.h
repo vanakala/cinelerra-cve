@@ -19,6 +19,7 @@ public:
 
 	int operator==(MaskPoint& ptr);
 	size_t get_size();
+	void dump(int indent = 0);
 
 	double submask_x;
 	double submask_y;
