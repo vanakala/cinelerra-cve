@@ -15,7 +15,7 @@
 #include "vframe.inc"
 
 #define OVERSAMPLE 8
-#define NUM_SPANS 4 /* starting number of spans to be allocated for */
+#define NUM_SPANS 8
 
 class MaskEngine;
 
@@ -29,7 +29,7 @@ enum
 class MaskPackage : public LoadPackage
 {
 public:
-	MaskPackage();
+	MaskPackage() {};
 
 	int row1, row2;
 };
@@ -56,7 +56,7 @@ private:
 	double d_p[5], d_m[5];
 	double bd_p[5], bd_m[5];
 	MaskEngine *engine;
-	short **row_spans;
+	uint16_t **row_spans;
 	int row_spans_h;
 	int size_allocated;
 	double *src;

@@ -19,11 +19,6 @@
 
 #include "feather.h"
 
-MaskPackage::MaskPackage()
-{
-}
-
-
 MaskUnit::MaskUnit(MaskEngine *engine)
  : LoadClient(engine)
 {
@@ -70,37 +65,40 @@ inline void MaskUnit::draw_line_clamped(int draw_x1, int draw_y1,
 	}
 
 	double slope = (double)(draw_x2 - draw_x1) / (draw_y2 - draw_y1);
+
 	w--;
 	for(int y_i = draw_y1; y_i < draw_y2; y_i++) 
-	{ 
+	{
 		if(y_i >= h)
 			return; // since y gets larger, there is no point in continuing
 		else if(y_i >= 0)
 		{
 			int x = round(slope * (y_i - draw_y1) + draw_x1);
-			int x_i = CLIP(x, 0, w); 
+			int x_i = CLIP(x, 0, w);
 
 			// now insert into span in order
-			short *span = row_spans[y_i + hoffset];
+			uint16_t *span = row_spans[y_i + hoffset];
+
 			if(span[0] >= span[1])
 			{
 				// do the reallocation
 				span[1] *= 2;
-				span = row_spans[y_i + hoffset] = (short *)realloc(span, span[1] * sizeof(short));
+				span = row_spans[y_i + hoffset] =
+					(uint16_t*)realloc(span, span[1] * sizeof(int));
 				// be careful! row_spans has to be updated!
 			}
 
-			short index = 2;
+			int index = 2;
 
-			while (index < span[0]  && span[index] < x_i)
+			while(index < span[0] && span[index] < x_i)
 				index++;
 			for(int j = span[0]; j > index; j--)
 				span[j] = span[j-1];
 
 			span[index] = x_i;
-			span[0] ++;
-		} 
-	} 
+			span[0]++;
+		}
+	}
 }
 
 void MaskUnit::blur_strip(double *val_p, double *val_m,
@@ -312,7 +310,7 @@ void MaskUnit::process_package(LoadPackage *package)
 	{
 		VFrame *mask;
 
-		if(engine->feather > 0) 
+		if(engine->feather > 0)
 			mask = engine->temp_mask;
 		else
 			mask = engine->mask;
@@ -336,12 +334,14 @@ void MaskUnit::process_package(LoadPackage *package)
 					free(row_spans[i]);
 				delete [] row_spans;
 			}
+
 			row_spans_h = mask_h * OVERSAMPLE;
-			row_spans = new short *[mask_h * OVERSAMPLE]; 
+			row_spans = new uint16_t*[mask_h * OVERSAMPLE];
+
 			for(int i = 0; i < mask_h * OVERSAMPLE; i++)
 			{
 				// we use malloc so we can use realloc
-				row_spans[i] = (short *)malloc(sizeof(short) * NUM_SPANS);
+				row_spans[i] = (uint16_t *)malloc(sizeof(uint16_t) * NUM_SPANS);
 				// [0] is initialized later
 				row_spans[i][1] = NUM_SPANS;
 			}
@@ -363,19 +363,17 @@ void MaskUnit::process_package(LoadPackage *package)
 				MaskPoint *point1 = points->values[i];
 				MaskPoint *point2 = (i >= points->total - 1) ?
 					points->values[0] : points->values[i + 1];
-
-				double x0 = point1->submask_x;
-				double y0 = point1->submask_y;
-				double x1 = point1->submask_x + point1->control_x2;
-				double y1 = point1->submask_y + point1->control_y2;
-				double x2 = point2->submask_x + point2->control_x1;
-				double y2 = point2->submask_y + point2->control_y1;
-				double x3 = point2->submask_x;
-				double y3 = point2->submask_y;
+				double x0 = point1->submask_x * mask_w;
+				double y0 = point1->submask_y * mask_h;
+				double x1 = (point1->submask_x + point1->control_x2) * mask_w;
+				double y1 = (point1->submask_y + point1->control_y2) * mask_h;
+				double x2 = (point2->submask_x + point2->control_x1) * mask_w;
+				double y2 = (point2->submask_y + point2->control_y1) * mask_h;
+				double x3 = point2->submask_x * mask_w;
+				double y3 = point2->submask_y * mask_h;
 
 // possible optimization here... since these coordinates are bounding box for curve
 // we can continue with next curve if they are out of our range
-
 // forward differencing bezier curves implementation taken from GPL code at
 // http://cvs.sourceforge.net/viewcvs.py/guliverkli/guliverkli/src/subtitles/Rasterizer.cpp?rev=1.3
 
@@ -386,19 +384,18 @@ void MaskUnit::process_package(LoadPackage *package)
 				// [-3 +3  0  0]
 				// [+1  0  0  0]
 
-				cx3 = (-  x0 + 3*x1 - 3*x2 + x3) * OVERSAMPLE;
-				cx2 = ( 3*x0 - 6*x1 + 3*x2) * OVERSAMPLE;
-				cx1 = (-3*x0 + 3*x1) * OVERSAMPLE;
-				cx0 = (   x0) * OVERSAMPLE;
+				cx3 = (-    x0 + 3 * x1 - 3 * x2 + x3) * OVERSAMPLE;
+				cx2 = ( 3 * x0 - 6 * x1 + 3 * x2) * OVERSAMPLE;
+				cx1 = (-3 * x0 + 3 * x1) * OVERSAMPLE;
+				cx0 = (     x0) * OVERSAMPLE;
 
-				cy3 = (-  y0 + 3*y1 - 3*y2 + y3) * OVERSAMPLE;
-				cy2 = ( 3*y0 - 6*y1 + 3*y2) * OVERSAMPLE;
-				cy1 = (-3*y0 + 3*y1) * OVERSAMPLE;
-				cy0 = (   y0 - ptr->row1) * OVERSAMPLE;
+				cy3 = (-    y0 + 3 * y1 - 3 * y2 + y3) * OVERSAMPLE;
+				cy2 = ( 3 * y0 - 6 * y1 + 3 * y2) * OVERSAMPLE;
+				cy1 = (-3 * y0 + 3 * y1) * OVERSAMPLE;
+				cy0 = (     y0 - ptr->row1) * OVERSAMPLE;
 
 				double maxaccel1 = fabs(2 * cy2) + fabs(6 * cy3);
 				double maxaccel2 = fabs(2 * cx2) + fabs(6 * cx3);
-
 				double maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
 				double h = 1.0;
 
@@ -407,10 +404,10 @@ void MaskUnit::process_package(LoadPackage *package)
 
 				for(double t = 0.0; t < 1.0; t += h)
 				{
-					int x = (cx0 + t * (cx1 + t * (cx2 + t * cx3))) * mask_w;
-					int y = (cy0 + t * (cy1 + t * (cy2 + t * cy3))) * mask_h;
+					int x = cx0 + t * (cx1 + t * (cx2 + t * cx3));
+					int y = cy0 + t * (cy1 + t * (cy2 + t * cy3));
 
-					if (old_x != SHRT_MIN)
+					if(old_x != SHRT_MIN)
 						draw_line_clamped(old_x, old_y, x, y,
 							oversampled_package_w,
 							oversampled_package_h,
@@ -419,8 +416,9 @@ void MaskUnit::process_package(LoadPackage *package)
 					old_y = y;
 				}
 
-				int x = x3 * OVERSAMPLE * mask_w;
-				int y = (y3 - ptr->row1) * OVERSAMPLE * mask_h;
+				int x = x3 * OVERSAMPLE;
+				int y = (y3 - ptr->row1) * OVERSAMPLE;
+
 				draw_line_clamped(old_x, old_y, x, y,
 					oversampled_package_w,
 					oversampled_package_h,
@@ -434,34 +432,28 @@ void MaskUnit::process_package(LoadPackage *package)
 			/* Scaneline sampling, inspired by Graphics gems I, page 81 */
 			for(int i = ptr->row1; i < ptr->row2; i++)
 			{
-				short min_x = SHRT_MAX;
-				short max_x = SHRT_MIN;
-				int j;                          // universal counter for 0..OVERSAMPLE-1
-				short *span;                    // current span - set inside loops with j
-				short span_p[OVERSAMPLE];       // pointers to current positions in spans
-				#define P (span_p[j])           // current span pointer
-				#define MAXP (span[0])          // current span length
+				int min_x = SHRT_MAX;
+				int max_x = SHRT_MIN;
+				uint16_t *span;          // current span - set inside loops with j
+				int span_p[OVERSAMPLE];  // indexes of current positions in spans
 				int num_empty_spans = 0;
 
 				// get the initial span pointers ready
-				for (j = 0; j < OVERSAMPLE; j++)
+				for(int j = 0; j < OVERSAMPLE; j++)
 				{
 					span = row_spans[j + i * OVERSAMPLE];
-					P = 2;              // starting pointers to spans
+					span_p[j] = 2;   // starting pointers to spans
+
 					// hypotetical hypotetical fix goes here: take care that there is maximum one empty span for every subpixel
-					if(MAXP != 2)
+					if(span[0] != 2)
 					{
-						// if span is not empty
 						if(span[2] < min_x)
 							min_x = span[2];      // take start of the first span
-						if(span[MAXP-1] > max_x)
-							max_x = span[MAXP-1]; // and end of last
+						if(span[span[0] - 1] > max_x)
+							max_x = span[span[0] - 1]; // and end of last
 					}
 					else
-					{
-						// span is empty
 						num_empty_spans++;
-					}
 				}
 				if(num_empty_spans == OVERSAMPLE)
 					continue;       // no work for us here
@@ -485,49 +477,51 @@ void MaskUnit::process_package(LoadPackage *package)
 				//  since we jump trough h if possible
 				for(int h = min_x; h <= max_x; h++)
 				{
-					short pixelleft = h * OVERSAMPLE;  // leftmost subpixel of pixel
-					short pixelright = pixelleft + OVERSAMPLE - 1; // rightmost subpixel of pixel
+					int pixelleft = h * OVERSAMPLE;  // leftmost subpixel of pixel
+					int pixelright = pixelleft + OVERSAMPLE - 1; // rightmost subpixel of pixel
 					int coverage = 0;
-					int num_left = 0;               // number of spans that have start left of the next pixel
-					short right_end = SHRT_MAX;     // leftmost end of any span - right end of a full scanline
-					short right_start = SHRT_MAX;   // leftmost start of any span - left end of empty scanline
+					int num_left = 0;             // number of spans that have start left of the next pixel
+					int right_end = SHRT_MAX;     // leftmost end of any span - right end of a full scanline
+					int right_start = SHRT_MAX;   // leftmost start of any span - left end of empty scanline
 
 					for(int j = 0; j < OVERSAMPLE; j++)
 					{
-						char chg = 1;
+						int chg = 1;
+
 						span = row_spans[j + i * OVERSAMPLE];
-						while (P < MAXP && chg)
+
+						while(span_p[j] < span[0] && chg)
 						{
-							if(span[P] == span[P+1])
+							if(span[span_p[j]] == span[span_p[j] + 1])
 							{
 								// ignore empty spans
-								P += 2;
+								span_p[j] += 2;
 								continue;
 							}
-							if(span[P] <= pixelright) // if span start is before the end of pixel
-								coverage += MIN(span[P+1], pixelright)  // 'clip' the span to pixel
-									- MAX(span[P], pixelleft) + 1;
-							if(span[P+1] <= pixelright)
-								P += 2;
+							if(span[span_p[j]] <= pixelright) // if span start is before the end of pixel
+								coverage += MIN(span[span_p[j] + 1], pixelright)  // 'clip' the span to pixel
+									- MAX(span[span_p[j]], pixelleft) + 1;
+							if(span[span_p[j] + 1] <= pixelright)
+								span_p[j] += 2;
 							else
 								chg = 0;
-						} 
-						if(P == MAXP)
+						}
+						if(span_p[j] == span[0])
 							num_left = -OVERSAMPLE; // just take care that num_left cannot equal OVERSAMPLE or zero again
 						else
 						{
-							if(span[P] <= pixelright)  // if span starts before subpixel in the pixel on the right
+							if(span[span_p[j]] <= pixelright)  // if span starts before subpixel in the pixel on the right
 							{
 								// useful for determining filled space till next non-fully-filled pixel
 								num_left++;
-								if(span[P+1] < right_end)
-									right_end = span[P+1];
+								if(span[span_p[j] + 1] < right_end)
+									right_end = span[span_p[j] + 1];
 							}
 							else
 							{
 								// useful for determining empty space till next non-empty pixel
-								if(span[P] < right_start)
-									right_start = span[P];
+								if(span[span_p[j]] < right_start)
+									right_start = span[span_p[j]];
 							}
 						}
 					}
@@ -551,7 +545,7 @@ void MaskUnit::process_package(LoadPackage *package)
 						right_end = (right_end / OVERSAMPLE) - 1; // last fully covered pixel
 						if(right_end > h)
 						{
-							for(int z = h +1; z <= right_end; z++)
+							for(int z = h + 1; z <= right_end; z++)
 								output_row[z] = value;
 							h = right_end;
 						}
@@ -568,9 +562,9 @@ void MaskUnit::process_package(LoadPackage *package)
 			}
 		}
 		engine->protect_data.lock();
-		if (local_first_nonempty_rowspan < engine->first_nonempty_rowspan)
+		if(local_first_nonempty_rowspan < engine->first_nonempty_rowspan)
 			engine->first_nonempty_rowspan = local_first_nonempty_rowspan;
-		if (local_last_nonempty_rowspan > engine->last_nonempty_rowspan)
+		if(local_last_nonempty_rowspan > engine->last_nonempty_rowspan)
 			engine->last_nonempty_rowspan = local_last_nonempty_rowspan;
 		engine->protect_data.unlock();
 
@@ -579,7 +573,7 @@ void MaskUnit::process_package(LoadPackage *package)
 	// possible optimization: this could be useful for do_feather also
 
 	// Feather polygon
-	if(engine->recalculate && engine->feather > 0) 
+	if(engine->recalculate && engine->feather > 0)
 	{
 		// first take care that all packages are already drawn onto mask
 		pthread_mutex_lock(&engine->stage1_finished_mutex);
@@ -592,7 +586,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		else
 		{
 			// wait until all are finished
-			while (engine->stage1_finished_count < engine->get_total_packages())
+			while(engine->stage1_finished_count < engine->get_total_packages())
 				pthread_cond_wait(&engine->stage1_finished_cond, &engine->stage1_finished_mutex);
 		}
 		pthread_mutex_unlock(&engine->stage1_finished_mutex);
@@ -622,9 +616,10 @@ void MaskUnit::process_package(LoadPackage *package)
 	end_row = MIN(ptr->row2, engine->last_nonempty_rowspan + 1 + engine->realfeather);
 
 // Apply mask
-/* use the info about first and last column that are coloured from rowspan!  */
-/* possible optimisation: also remember total spans */
-/* possible optimisation: lookup for  X * (max - *mask_row) / max, where max is known mask_row and X are variabiles */
+// use the info about first and last column that are coloured from rowspan!
+// possible optimisation: also remember total spans
+// possible optimisation: lookup for  X * (max - *mask_row) / max,
+//  where max is known mask_row and X are variabiles
 
 	int mask_w = engine->mask->get_w();
 
@@ -634,7 +629,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		switch(engine->output->get_color_model())
 		{
 		case BC_RGBA16161616:
-			for(int i = ptr->row1; i < ptr->row2; i++) \
+			for(int i = ptr->row1; i < ptr->row2; i++)
 			{
 				uint16_t *output_row = (uint16_t*)engine->output->get_row_ptr(i);
 				uint16_t *mask_row = (uint16_t*)engine->mask->get_row_ptr(i);
@@ -837,7 +832,6 @@ void MaskEngine::do_mask(VFrame *output, MaskAutos *keyframe_set, int before_plu
 	int new_color_model = 0;
 
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts);
-
 	if(!keyframe)
 		return;
 	if(keyframe->apply_before_plugins != before_plugins)
@@ -899,9 +893,9 @@ void MaskEngine::do_mask(VFrame *output, MaskAutos *keyframe_set, int before_plu
 
 	if(!recalculate)
 	{
-		for(int i = 0;
-			i < keyframe_set->total_submasks(start_pts) && !recalculate;
-			i++)
+		int total_submasks = keyframe_set->total_submasks(start_pts);
+
+		for(int i = 0; i < total_submasks && !recalculate; i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 
