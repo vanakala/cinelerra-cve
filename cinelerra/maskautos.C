@@ -57,24 +57,22 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 	}
 }
 
-void MaskAutos::avg_points(MaskPoint *output, 
-		MaskPoint *input1, 
-		MaskPoint *input2, 
-		ptstime output_position,
-		ptstime position1,
-		ptstime position2)
+void MaskAutos::avg_points(MaskPoint *output,
+	MaskPoint *input1, MaskPoint *input2,
+	ptstime output_position, ptstime position1,
+	ptstime position2)
 {
-	if(position2 == position1)
+	if(PTSEQU(position2, position1))
 		*output = *input1;
 	else
 	{
 		double fraction2 = (output_position - position1) / (position2 - position1);
 		double fraction1 = 1 - fraction2;
 
-		output->submask_x = round(input1->submask_x * fraction1 +
-			input2->submask_x * fraction2);
-		output->submask_y = round(input1->submask_y * fraction1 +
-			input2->submask_y * fraction2);
+		output->submask_x = input1->submask_x * fraction1 +
+			input2->submask_x * fraction2;
+		output->submask_y = input1->submask_y * fraction1 +
+			input2->submask_y * fraction2;
 		output->control_x1 = input1->control_x1 * fraction1 +
 			input2->control_x1 * fraction2;
 		output->control_y1 = input1->control_y1 * fraction1 +
