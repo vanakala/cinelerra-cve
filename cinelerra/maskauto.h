@@ -37,6 +37,8 @@ public:
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file, Track *track);
 	void save_xml(FileXML *file);
+	MaskPoint *append_point(MaskPoint *templ);
+
 	size_t get_size();
 	void dump(int indent = 0);
 
@@ -58,10 +60,13 @@ public:
 	void interpolate_values(ptstime pts, int *new_value, int *new_feather);
 	void copy_from(MaskAuto *src);
 
+// Retrieve submask with clamping
+	SubMask *get_submask(int number);
+// Create submask if it does not exist
+	SubMask *create_submask(int number);
+
 	size_t get_size();
 	void dump(int indent = 0);
-// Retrieve submask with clamping
-	SubMask* get_submask(int number);
 
 	ArrayList<SubMask*> masks;
 

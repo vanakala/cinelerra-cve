@@ -63,6 +63,16 @@ void SubMask::copy_from(SubMask& ptr)
 	}
 }
 
+MaskPoint *SubMask::append_point(MaskPoint *templ)
+{
+	MaskPoint *point = new MaskPoint;
+
+	if(templ)
+		*point = *templ;
+	points.append(point);
+	return point;
+}
+
 void SubMask::load(FileXML *file, Track *track)
 {
 	points.remove_all_objects();
@@ -279,6 +289,16 @@ SubMask* MaskAuto::get_submask(int number)
 		return masks.values[number];
 	}
 	return 0;
+}
+
+SubMask *MaskAuto::create_submask(int number)
+{
+	if(number < masks.total)
+		return masks.values[number];
+
+	SubMask *mask = new SubMask(this);
+	masks.append(mask);
+	return mask;
 }
 
 void MaskAuto::load(FileXML *file)
