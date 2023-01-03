@@ -985,32 +985,32 @@ int CWindowCanvas::do_ruler(int draw,
 	return result;
 }
 
-int CWindowCanvas::do_mask(int &redraw, 
-		int &rerender, 
-		int button_press, 
-		int cursor_motion,
-		int draw)
+int CWindowCanvas::do_mask(int &redraw, int &rerender, int button_press,
+	int cursor_motion, int draw)
 {
 // Retrieve points from top recordable track
+	MaskAutos *mask_autos;
 	Track *track = gui->cwindow->calculate_affected_track();
+	double projector_x, projector_y, projector_z;
 
 	if(!track)
 		return 0;
 
-	MaskAutos *mask_autos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
+	mask_autos = (MaskAutos*)track->automation->have_autos(AUTOMATION_MASK);
 
 	if(!mask_autos)
 	{
-		mask_autos = (MaskAutos*)track->automation->get_autos(AUTOMATION_MASK);
-		track->automation->get_auto_for_editing(0, AUTOMATION_MASK);
+		if(button_press)
+			mask_autos = (MaskAutos*)track->automation->get_autos(AUTOMATION_MASK);
+		else
+			return 0;
 	}
 
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	ArrayList<MaskPoint*> points;
 
-	mask_autos->get_points(&points, edlsession->cwindow_mask,
-		position);
+	mask_autos->get_points(&points, edlsession->cwindow_mask, position);
 
 	double track_w = track->track_w;
 	double track_h = track->track_h;
@@ -1019,7 +1019,6 @@ int CWindowCanvas::do_mask(int &redraw,
 	double half_track_w = track_w / 2;
 	double half_track_h = track_h / 2;
 // Translate mask to projection
-	double projector_x, projector_y, projector_z;
 	track->automation->get_projector(&projector_x,
 		&projector_y,
 		&projector_z,
@@ -1367,7 +1366,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					position, gui->affected_track, 1);
 
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
-		SubMask *mask = keyframe->get_submask(edlsession->cwindow_mask);
+		SubMask *mask = keyframe->create_submask(edlsession->cwindow_mask);
 
 // Translate entire keyframe
 		if(gui->alt_down() && mask->points.total)
@@ -1398,10 +1397,6 @@ int CWindowCanvas::do_mask(int &redraw,
 
 			point->submask_x = mask_cursor_x / track_w;
 			point->submask_y = mask_cursor_y / track_h;
-			point->control_x1 = 0;
-			point->control_y1 = 0;
-			point->control_x2 = 0;
-			point->control_y2 = 0;
 
 			if(shortest_point2 < shortest_point1)
 			{
@@ -1409,7 +1404,6 @@ int CWindowCanvas::do_mask(int &redraw,
 				shortest_point1 ^= shortest_point2;
 				shortest_point2 ^= shortest_point1;
 			}
-
 // Append to end of list
 			if(abs(shortest_point1 - shortest_point2) > 1 || mask->points.total == 1)
 			{
@@ -1417,10 +1411,8 @@ int CWindowCanvas::do_mask(int &redraw,
 				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
 					current; current = (MaskAuto*)NEXT)
 				{
-					SubMask *submask = current->get_submask(edlsession->cwindow_mask);
-					MaskPoint *new_point = new MaskPoint;
-					submask->points.append(new_point);
-					*new_point = *point;
+					SubMask *submask = current->create_submask(edlsession->cwindow_mask);
+					submask->append_point(point);
 				}
 
 				gui->affected_point = mask->points.total - 1;
@@ -1433,18 +1425,17 @@ int CWindowCanvas::do_mask(int &redraw,
 				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
 					current; current = (MaskAuto*)NEXT)
 				{
-					SubMask *submask = current->get_submask(edlsession->cwindow_mask);
+					SubMask *submask = current->create_submask(edlsession->cwindow_mask);
 // In case the keyframe point count isn't synchronized with the rest of the keyframes,
 // avoid a crash.
 					if(submask->points.total >= shortest_point2)
 					{
-						MaskPoint *new_point = new MaskPoint;
 						submask->points.append(0);
 						for(int i = submask->points.total - 1;
 								i > shortest_point2; i--)
 							submask->points.values[i] = submask->points.values[i - 1];
+						MaskPoint *new_point = new MaskPoint;
 						submask->points.values[shortest_point2] = new_point;
-
 						*new_point = *point;
 					}
 				}
@@ -1459,10 +1450,8 @@ int CWindowCanvas::do_mask(int &redraw,
 				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
 					current; current = (MaskAuto*)NEXT)
 				{
-					SubMask *submask = current->get_submask(edlsession->cwindow_mask);
-					MaskPoint *new_point = new MaskPoint;
-					submask->points.append(new_point);
-					*new_point = *point;
+					SubMask *submask = current->create_submask(edlsession->cwindow_mask);
+					submask->append_point(point);
 				}
 				gui->affected_point = mask->points.total - 1;
 			}
