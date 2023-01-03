@@ -13,6 +13,7 @@ MaskAutos::MaskAutos(EDL *edl, Track *track)
 {
 	type = AUTOMATION_TYPE_MASK;
 	mode = MASK_SUBTRACT_ALPHA;
+	append(new MaskAuto(edl, this));
 }
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
