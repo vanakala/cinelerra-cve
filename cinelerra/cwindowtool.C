@@ -157,6 +157,7 @@ int CWindowTool::update_show_window()
 	{
 		if(edlsession->tool_window)
 		{
+			tool_gui->allocate_autos();
 			tool_gui->update();
 			tool_gui->show_window();
 			tool_gui->raise_window();
@@ -392,10 +393,8 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 	track = mwindow_global->cwindow->calculate_affected_track();
 
 	if(track)
-	{
 		keyframe = (CropAuto*)mwindow_global->cwindow->calculate_affected_auto(
 			AUTOMATION_CROP, pos, track, create_it);
-	}
 	else
 		return 0;
 
@@ -1008,7 +1007,7 @@ int CWindowMaskDelete::handle_event()
 
 	if(track)
 	{
-		MaskAutos *mask_autos = (MaskAutos *)track->automation->get_autos(AUTOMATION_MASK);
+		MaskAutos *mask_autos = (MaskAutos *)track->automation->have_autos(AUTOMATION_MASK);
 		if(mask_autos)
 		{
 			for(MaskAuto *current = (MaskAuto*)mask_autos->first;
@@ -1185,8 +1184,8 @@ CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
 	this->y = new CWindowCoord(x, y, 0.0, this);
 
 	y += 30;
-	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 
-		10, y));
+	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(
+		this, 10, y));
 
 	update();
 }
@@ -1196,6 +1195,14 @@ CWindowMaskGUI::~CWindowMaskGUI()
 	delete number;
 	delete feather;
 	delete localauto;
+}
+
+void CWindowMaskGUI::allocate_autos()
+{
+	Track *track = mwindow_global->cwindow->calculate_affected_track();
+
+	if(track && !track->automation->have_autos(AUTOMATION_MASK))
+		track->automation->get_autos(AUTOMATION_MASK);
 }
 
 void CWindowMaskGUI::get_keyframe(Track* &track, MaskAuto* &keyframe,

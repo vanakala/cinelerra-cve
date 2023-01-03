@@ -67,6 +67,8 @@ public:
 	virtual void update() {};
 // Update EDL and preview only
 	virtual void update_preview() {};
+// Allocate automation
+	virtual void allocate_autos() {};
 
 	void close_event();
 	void translation_event();
@@ -206,6 +208,7 @@ public:
 	void get_keyframe(Track* &track, MaskAuto* &keyframe,
 		SubMask* &mask, MaskPoint* &point, int create_it);
 	void update_preview();
+	void allocate_autos();
 
 	CWindowCoord *x, *y;
 	CWindowMaskMode *mode;
