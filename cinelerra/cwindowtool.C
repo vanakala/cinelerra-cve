@@ -1062,7 +1062,7 @@ int CWindowMaskNumber::handle_event()
 	SubMask *mask;
 	int num;
 
-	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 0);
+	((CWindowMaskGUI*)gui)->get_keyframe(track, keyframe, mask, point, 1);
 	if(keyframe)
 	{
 		num = atoi(get_text());
