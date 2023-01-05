@@ -144,9 +144,11 @@ void SubMask::save_xml(FileXML *file)
 			file->tag.set_title("POINT");
 			file->append_tag();
 			char string[BCTEXTLEN];
+			double mask_x = CLIP(points.values[i]->submask_x, 0.0, 1.0);
+			double mask_y = CLIP(points.values[i]->submask_y, 0.0, 1.0);
+
 			sprintf(string, "%.7g, %.7g, %.7g, %.7g, %.7g, %.7g",
-				points.values[i]->submask_x,
-				points.values[i]->submask_y,
+				mask_x, mask_y,
 				points.values[i]->control_x1,
 				points.values[i]->control_y1,
 				points.values[i]->control_x2,
