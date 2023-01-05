@@ -946,6 +946,13 @@ void MaskEngine::do_mask(VFrame *output, MaskAutos *keyframe_set, int before_plu
 
 // Run units
 	process_packages();
+	switch(cur_mode)
+	{
+	case MASK_MULTIPLY_ALPHA:
+	case MASK_SUBTRACT_ALPHA:
+		output->set_transparent();
+		break;
+	}
 }
 
 void MaskEngine::init_packages()
