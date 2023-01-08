@@ -1740,7 +1740,12 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	crop_autos = (CropAutos*)track->automation->have_autos(AUTOMATION_CROP);
 
 	if(!crop_autos)
-		return 0;
+	{
+		if(button_press)
+			crop_autos = (CropAutos*)track->automation->get_autos(AUTOMATION_CROP);
+		else
+			return 0;
+	}
 
 	ptstime pts = master_edl->local_session->get_selectionstart(1);
 
