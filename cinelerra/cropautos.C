@@ -14,6 +14,7 @@ CropAutos::CropAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_CROP;
+	append(new CropAuto(edl, this));
 }
 
 Auto* CropAutos::new_auto()
