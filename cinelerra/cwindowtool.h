@@ -109,6 +109,7 @@ public:
 // Update the gui
 	int handle_event();
 	CropAuto *get_keyframe(int create_it);
+	void allocate_autos();
 
 	CWindowCoord *x1, *y1, *width, *height;
 	CWindowCropBeforePlugins *apply;

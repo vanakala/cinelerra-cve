@@ -418,6 +418,14 @@ CropAuto *CWindowCropGUI::get_keyframe(int create_it)
 	return keyframe;
 }
 
+void CWindowCropGUI::allocate_autos()
+{
+	Track *track = mwindow_global->cwindow->calculate_affected_track();
+
+	if(track && !track->automation->have_autos(AUTOMATION_CROP))
+		track->automation->get_autos(AUTOMATION_CROP);
+}
+
 CWindowEyedropGUI::CWindowEyedropGUI(CWindowTool *thread)
  : CWindowToolGUI(thread, MWindow::create_title(N_("Color")),
 	150, 150)
