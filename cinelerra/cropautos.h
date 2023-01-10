@@ -20,6 +20,8 @@ public:
 	Auto* new_auto();
 	CropAuto *get_values(ptstime position, int *left, int *right,
 		int *top, int *bottom);
+	CropAuto *get_values(ptstime position, double *left, double *right,
+		double *top, double *bottom);
 	size_t get_size();
 	void dump(int indent = 0);
 };

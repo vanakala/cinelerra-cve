@@ -317,9 +317,9 @@ CWindowCropGUI::CWindowCropGUI(CWindowTool *thread)
 
 	x += column1 + 5;
 	y = 10;
-	x1 = new CWindowCoord(this, x, y, 0);
+	x1 = new CWindowCoord(x, y, 0, this);
 	y += pad;
-	width = new CWindowCoord(this, x, y, 0);
+	width = new CWindowCoord(x, y, 0, this);
 
 	x += x1->get_w() + 10;
 	y = 10;
@@ -332,40 +332,44 @@ CWindowCropGUI::CWindowCropGUI(CWindowTool *thread)
 	y += pad;
 	y = 10;
 	x += column2 + 5;
-	y1 = new CWindowCoord(this, x, y, 0);
+	y1 = new CWindowCoord(x, y, 0, this);
 	y += pad;
-	height = new CWindowCoord(this, x, y, 0);
+	height = new CWindowCoord(x, y, 0, this);
 	update();
 }
 
 int CWindowCropGUI::handle_event()
 {
-	int new_x1, new_y1;
+	double new_x1, new_y1;
 	CropAuto *keyframe;
 	Track *track;
 
 	if(!(keyframe = get_keyframe(1)))
 		return 0;
 
-	new_x1 = atol(x1->get_text());
-	new_y1 = atol(y1->get_text());
+	new_x1 = atof(x1->get_text());
+	new_y1 = atof(y1->get_text());
 
-	if(new_x1 != keyframe->left)
+	if(!EQUIV(new_x1, keyframe->left))
 	{
 		keyframe->right = new_x1 + keyframe->right -
 			keyframe->left;
 		keyframe->left = new_x1;
 	}
-	if(new_y1 != keyframe->top)
+	if(!EQUIV(new_y1, keyframe->top))
 	{
 		keyframe->bottom = new_y1 + keyframe->bottom -
 			keyframe->top;
 		keyframe->top = new_y1;
 	}
-	keyframe->right = atol(width->get_text()) +
+	keyframe->right = atof(width->get_text()) +
 		keyframe->left;
-	keyframe->bottom = atol(height->get_text()) +
+	keyframe->bottom = atof(height->get_text()) +
 		keyframe->top;
+	CLAMP(keyframe->left, 0, 1.0);
+	CLAMP(keyframe->right, 0, 1.0);
+	CLAMP(keyframe->top, 0, 1.0);
+	CLAMP(keyframe->bottom, 0, 1.0);
 	update();
 	mwindow_global->sync_parameters();
 	thread->cwindowgui->canvas->draw_refresh();

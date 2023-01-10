@@ -26,10 +26,10 @@ public:
 	size_t get_size();
 	void dump(int indent = 0);
 
-	int left;
-	int right;
-	int top;
-	int bottom;
+	double left;
+	double right;
+	double top;
+	double bottom;
 	int apply_before_plugins;
 };
 

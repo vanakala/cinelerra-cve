@@ -1755,10 +1755,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		pts, track, 1, &created_auto);
 	if(created_auto)
 	{
-		crop_auto->left = left;
-		crop_auto->right = right;
-		crop_auto->top = top;
-		crop_auto->bottom = bottom;
+		crop_auto->left = (double)left / track->track_w;
+		crop_auto->right = (double)right / track->track_w;
+		crop_auto->top = (double)top / track->track_h;
+		crop_auto->bottom = (double)bottom / track->track_h;
 	}
 
 	canvas_x1 = x1 = left;
@@ -1838,10 +1838,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		{
 			x2 = x1 = cursor_x;
 			y2 = y1 = cursor_y;
-			crop_auto->left = round(x1);
-			crop_auto->top = round(y1);
-			crop_auto->right = round(x2);
-			crop_auto->bottom = round(y2);
+			crop_auto->left = x1 / track->track_w;
+			crop_auto->top = y1 / track->track_h;
+			crop_auto->right = x2 / track->track_w;
+			crop_auto->bottom = y2 / track->track_h;
 			do_redraw = 1;
 		}
 	}
@@ -1854,10 +1854,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		x2 = cursor_x - gui->x_origin + gui->crop_origin_x2;
 		y2 = cursor_y - gui->y_origin + gui->crop_origin_y2;
 
-		crop_auto->left = round(x1);
-		crop_auto->top = round(y1);
-		crop_auto->right = round(x2);
-		crop_auto->bottom = round(y2);
+		crop_auto->left = x1 / track->track_w;
+		crop_auto->top = y1 / track->track_h;
+		crop_auto->right = x2 / track->track_w;
+		crop_auto->bottom = y2 / track->track_h;
 		result = 1;
 		do_redraw = 1;
 	}
@@ -1920,10 +1920,15 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 			break;
 		}
 
-		if(!EQUIV(crop_auto->left, x1) ||
-			!EQUIV(crop_auto->right, x2) ||
-			!EQUIV(crop_auto->top, y1) ||
-			!EQUIV(crop_auto->bottom, y2))
+		double cl, cr, ct, cb;
+
+		cl = round(crop_auto->left * track->track_w);
+		cr = round(crop_auto->right * track->track_w);
+		ct = round(crop_auto->top * track->track_h);
+		cb = round(crop_auto->bottom * track->track_h);
+
+		if(!EQUIV(cl, x1) || !EQUIV(cr, x2) ||
+			!EQUIV(ct, y1) || !EQUIV(cb, y2))
 		{
 			if(x1 > x2)
 			{
@@ -1972,10 +1977,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 				}
 			}
 
-			crop_auto->left = round(x1);
-			crop_auto->top = round(y1);
-			crop_auto->right = round(x2);
-			crop_auto->bottom = round(y2);
+			crop_auto->left = x1 / track->track_w;
+			crop_auto->top = y1 / track->track_h;
+			crop_auto->right = x2 / track->track_w;
+			crop_auto->bottom = y2 / track->track_h;
 			result = 1;
 			do_redraw = 1;
 		}
@@ -2006,10 +2011,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 
 	if(do_redraw)
 	{
-		CLAMP(crop_auto->left, 0, track->track_w);
-		CLAMP(crop_auto->right, 0, track->track_w);
-		CLAMP(crop_auto->top, 0, track->track_h);
-		CLAMP(crop_auto->bottom, 0, track->track_h);
+		CLAMP(crop_auto->left, 0, 1.0);
+		CLAMP(crop_auto->right, 0, 1.0);
+		CLAMP(crop_auto->top, 0, 1.0);
+		CLAMP(crop_auto->bottom, 0, 1.0);
 		*redraw = do_redraw;
 		if(rerender)
 			*rerender = 1;

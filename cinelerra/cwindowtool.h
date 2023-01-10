@@ -114,10 +114,10 @@ public:
 	CWindowCoord *x1, *y1, *width, *height;
 	CWindowCropBeforePlugins *apply;
 
-	int top;
-	int left;
-	int right;
-	int bottom;
+	double top;
+	double left;
+	double right;
+	double bottom;
 	int before_plugins;
 };
 

@@ -26,6 +26,21 @@ Auto* CropAutos::new_auto()
 CropAuto *CropAutos::get_values(ptstime position, int *left, int *right,
 	int *top, int *bottom)
 {
+	CropAuto *cropauto;
+	double left_f, right_f, bottom_f, top_f;
+
+	cropauto = get_values(position, &left_f, &right_f, &top_f, &bottom_f);
+
+	*left = round(left_f * track->track_w);
+	*right = round(right_f * track->track_w);
+	*top = round(top_f * track->track_h);
+	*bottom = round(bottom_f * track->track_h);
+	return cropauto;
+}
+
+CropAuto *CropAutos::get_values(ptstime position, double *left, double *right,
+	double *top, double *bottom)
+{
 	CropAuto *before = 0, *after = 0;
 	double frac1, frac2;
 
@@ -33,16 +48,8 @@ CropAuto *CropAutos::get_values(ptstime position, int *left, int *right,
 	{
 		*top = 0;
 		*left = 0;
-		if(track)
-		{
-			*right = track->track_w;
-			*bottom = track->track_h;
-		}
-		else
-		{
-			*right = MAX_FRAME_WIDTH;
-			*bottom = MAX_FRAME_HEIGHT;
-		}
+		*right = 1.0;
+		*bottom = 1.0;
 		return 0;
 	}
 
@@ -60,10 +67,10 @@ CropAuto *CropAutos::get_values(ptstime position, int *left, int *right,
 		(after->pos_time - before->pos_time);
 	frac2 = 1.0 - frac1;
 
-	*top = round(before->top * frac2 + after->top * frac1);
-	*left = round(before->left * frac2 + after->left * frac1);
-	*right = round(before->right * frac2 + after->right * frac1);
-	*bottom = round(before->bottom * frac2 + after->bottom * frac1);
+	*top = before->top * frac2 + after->top * frac1;
+	*left = before->left * frac2 + after->left * frac1;
+	*right = before->right * frac2 + after->right * frac1;
+	*bottom = before->bottom * frac2 + after->bottom * frac1;
 	return before;
 }
 

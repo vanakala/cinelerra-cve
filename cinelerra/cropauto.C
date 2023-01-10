@@ -14,22 +14,31 @@ CropAuto::CropAuto(EDL *edl, CropAutos *autos)
 {
 	left = 0;
 	top = 0;
-	if(autos)
-	{
-		right = autos->track->track_w;
-		bottom = autos->track->track_h;
-	}
-	else
-		right = bottom = 0;
+	right = 1.0;
+	bottom = 1.0;
 	apply_before_plugins = 0;
 }
 
 void CropAuto::load(FileXML *file)
 {
-	left = file->tag.get_property("LEFT", left);
-	right = file->tag.get_property("RIGHT", right);
-	top = file->tag.get_property("TOP", top);
-	bottom = file->tag.get_property("BOTTOM", bottom);
+	int val;
+
+	if((val = file->tag.get_property("LEFT", 0)) > 0)
+		left = (double)val / autos->track->track_w;
+	left = file->tag.get_property("RLEFT", left);
+
+	if((val = file->tag.get_property("RIGHT", 0)) > 0)
+		right = (double)val / autos->track->track_w;
+	right = file->tag.get_property("RRIGHT", right);
+
+	if((val = file->tag.get_property("TOP", 0)) > 0)
+		top = (double)val / autos->track->track_h;
+	top = file->tag.get_property("RTOP", top);
+
+	if((val = file->tag.get_property("BOTTOM", 0)) > 0)
+		bottom = (double)val / autos->track->track_h;
+	bottom = file->tag.get_property("RBOTTOM", bottom);
+
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS",
 		apply_before_plugins);
 }
@@ -38,10 +47,10 @@ void CropAuto::save_xml(FileXML *file)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("POSTIME", pos_time);
-	file->tag.set_property("LEFT", left);
-	file->tag.set_property("RIGHT", right);
-	file->tag.set_property("TOP", top);
-	file->tag.set_property("BOTTOM", bottom);
+	file->tag.set_property("RLEFT", left);
+	file->tag.set_property("RRIGHT", right);
+	file->tag.set_property("RTOP", top);
+	file->tag.set_property("RBOTTOM", bottom);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	file->append_tag();
 	file->tag.set_title("/AUTO");
@@ -83,7 +92,7 @@ size_t CropAuto::get_size()
 
 void CropAuto::dump(int indent)
 {
-	printf("%*sCropAuto %p: pos_time: %.3f (%d,%d),(%d,%d) before %d\n",
+	printf("%*sCropAuto %p: pos_time: %.3f (%.4f,%.4f),(%.4f,%.4f) before %d\n",
 		indent, "", this, pos_time, left, top, right, bottom,
 		apply_before_plugins);
 }
