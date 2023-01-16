@@ -149,8 +149,7 @@ public:
 class CWindowZoom : public ZoomPanel
 {
 public:
-	CWindowZoom(CWindowGUI *gui, int x, int y,
-		const char *first_item_text);
+	CWindowZoom(CWindowGUI *gui, int x, int y, const char *first_item_text);
 
 	int handle_event();
 
@@ -175,8 +174,7 @@ public:
 class CWindowTransport : public PlayTransport
 {
 public:
-	CWindowTransport(CWindowGUI *gui,
-		int x, int y);
+	CWindowTransport(CWindowGUI *gui, int x, int y);
 
 	void goto_start();
 	void goto_end();
@@ -195,11 +193,8 @@ public:
 	int get_yscroll();
 	double get_zoom();
 	int do_eyedrop(int &rerender, int button_press);
-	int do_mask(int &redraw,
-		int &rerender,
-		int button_press,
-		int cursor_motion,
-		int draw);
+	int do_mask(int &redraw, int &rerender, int button_press,
+		int cursor_motion, int draw);
 	void draw_overlays();
 	void update_guidelines();
 // Cursor may have to be drawn
@@ -211,11 +206,8 @@ public:
 	int get_fullscreen();
 	void set_fullscreen(int value);
 	int test_crop(int button_press, int *redraw, int *rerender = 0);
-	int test_bezier(int button_press, 
-		int &redraw,
-		int &redraw_canvas,
-		int &rerender,
-		int do_camera);
+	int test_bezier(int button_press, int &redraw, int &redraw_canvas,
+		int &rerender, int do_camera);
 	int do_ruler(int draw, int motion, int button_press, int button_release);
 	void test_zoom(int &redraw);
 	void reset_camera();

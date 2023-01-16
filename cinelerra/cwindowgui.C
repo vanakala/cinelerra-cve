@@ -47,7 +47,7 @@
 #include "vframe.h"
 
 
-static double my_zoom_table[] = 
+static double my_zoom_table[] =
 {
 	0.25,
 	0.33,
@@ -65,15 +65,9 @@ static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 
 CWindowGUI::CWindowGUI(CWindow *cwindow)
  : BC_Window(MWindow::create_title(N_("Compositor")),
-	mainsession->cwindow_x,
-	mainsession->cwindow_y,
-	mainsession->cwindow_w,
-	mainsession->cwindow_h,
-	100,
-	100,
-	1,
-	1,
-	1,
+	mainsession->cwindow_x, mainsession->cwindow_y,
+	mainsession->cwindow_w, mainsession->cwindow_h,
+	100, 100, 1, 1, 1,
 	BC_WindowBase::get_resources()->bg_color,
 	edlsession->get_cwindow_display())
 {
@@ -104,41 +98,32 @@ CWindowGUI::CWindowGUI(CWindow *cwindow)
 	flash();
 
 // Meters required by composite panel
-	meters = new CWindowMeters(this,
-		theme_global->cmeter_x,
-		theme_global->cmeter_y,
-		theme_global->cmeter_h);
+	meters = new CWindowMeters(this, theme_global->cmeter_x,
+		theme_global->cmeter_y, theme_global->cmeter_h);
 
-	composite_panel = new CPanel(this,
-		theme_global->ccomposite_x,
-		theme_global->ccomposite_y,
-		theme_global->ccomposite_w,
+	composite_panel = new CPanel(this, theme_global->ccomposite_x,
+		theme_global->ccomposite_y, theme_global->ccomposite_w,
 		theme_global->ccomposite_h);
 
 	canvas = new CWindowCanvas(this);
 
 	add_subwindow(timebar = new CTimeBar(this,
-		theme_global->ctimebar_x,
-		theme_global->ctimebar_y,
-		theme_global->ctimebar_w,
-		theme_global->ctimebar_h));
+		theme_global->ctimebar_x, theme_global->ctimebar_y,
+		theme_global->ctimebar_w, theme_global->ctimebar_h));
 	timebar->update();
 
 	add_subwindow(slider = new CWindowSlider(cwindow,
-		theme_global->cslider_x,
-		theme_global->cslider_y,
+		theme_global->cslider_x, theme_global->cslider_y,
 		theme_global->cslider_w));
 
 	transport = new CWindowTransport(this,
-		theme_global->ctransport_x,
-		theme_global->ctransport_y);
+		theme_global->ctransport_x, theme_global->ctransport_y);
 
 	edit_panel = new CWindowEditing(this, meters);
 
-	zoom_panel = new CWindowZoom(this,
-		theme_global->czoom_x,
-		theme_global->czoom_y,
-		_("Auto"));
+	zoom_panel = new CWindowZoom(this, theme_global->czoom_x,
+		theme_global->czoom_y, _("Auto"));
+
 	if(!edlsession->cwindow_scrollbars)
 		zoom_panel->update(_("Auto"));
 
@@ -167,10 +152,8 @@ void CWindowGUI::translation_event()
 {
 	if(mainsession->cwindow_location(get_x(), get_y(), get_w(), get_h()))
 	{
-		reposition_window(mainsession->cwindow_x,
-			mainsession->cwindow_y,
-			mainsession->cwindow_w,
-			mainsession->cwindow_h);
+		reposition_window(mainsession->cwindow_x, mainsession->cwindow_y,
+			mainsession->cwindow_w, mainsession->cwindow_h);
 		resize_event(mainsession->cwindow_w,
 			mainsession->cwindow_h);
 	}
@@ -188,16 +171,13 @@ void CWindowGUI::resize_event(int w, int h)
 		theme_global->ccomposite_y);
 
 	canvas->reposition_window(master_edl,
-		theme_global->ccanvas_x,
-		theme_global->ccanvas_y,
-		theme_global->ccanvas_w,
-		theme_global->ccanvas_h);
+		theme_global->ccanvas_x, theme_global->ccanvas_y,
+		theme_global->ccanvas_w, theme_global->ccanvas_h);
 	canvas->update_guidelines();
 	timebar->resize_event();
 
 	slider->reposition_window(theme_global->cslider_x,
-		theme_global->cslider_y,
-		theme_global->cslider_w);
+		theme_global->cslider_y, theme_global->cslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
 
@@ -211,8 +191,7 @@ void CWindowGUI::resize_event(int w, int h)
 		theme_global->czoom_y);
 
 	meters->reposition_window(theme_global->cmeter_x,
-		theme_global->cmeter_y,
-		theme_global->cmeter_h);
+		theme_global->cmeter_y, theme_global->cmeter_h);
 
 	draw_status();
 }
@@ -263,24 +242,16 @@ int CWindowGUI::cursor_motion_event()
 void CWindowGUI::draw_status()
 {
 	if(canvas->get_canvas() && 
-		canvas->get_canvas()->get_video_on() ||
-		canvas->is_processing)
-	{
-		draw_pixmap(active, 
-			theme_global->cstatus_x,
+			canvas->get_canvas()->get_video_on() ||
+			canvas->is_processing)
+		draw_pixmap(active, theme_global->cstatus_x,
 			theme_global->cstatus_y);
-	}
 	else
-	{
-		draw_pixmap(inactive, 
-			theme_global->cstatus_x,
+		draw_pixmap(inactive, theme_global->cstatus_x,
 			theme_global->cstatus_y);
-	}
 
-	flash(theme_global->cstatus_x,
-		theme_global->cstatus_y,
-		active->get_w(),
-		active->get_h());
+	flash(theme_global->cstatus_x, theme_global->cstatus_y,
+		active->get_w(), active->get_h());
 }
 
 void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
@@ -315,20 +286,14 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	if(update_menu)
 	{
 		if(do_auto)
-		{
 			zoom_panel->update(_("Auto"));
-		}
 		else
-		{
 			zoom_panel->update(value);
-		}
 	}
 	canvas->update_zoom(x, y, new_zoom);
 	canvas->reposition_window(master_edl,
-		theme_global->ccanvas_x,
-		theme_global->ccanvas_y,
-		theme_global->ccanvas_w,
-		theme_global->ccanvas_h);
+		theme_global->ccanvas_x, theme_global->ccanvas_y,
+		theme_global->ccanvas_w, theme_global->ccanvas_h);
 	canvas->draw_refresh();
 }
 
@@ -389,9 +354,10 @@ int CWindowGUI::keypress_event()
 	case LEFT:
 		if(!ctrl_down())
 		{
-			if (alt_down())
+			if(alt_down())
 			{
 				int shift_down = this->shift_down();
+
 				mwindow_global->stop_composer();
 				mwindow_global->prev_edit_handle(shift_down);
 			}
@@ -407,6 +373,7 @@ int CWindowGUI::keypress_event()
 			if(alt_down())
 			{
 				int shift_down = this->shift_down();
+
 				mwindow_global->stop_composer();
 				mwindow_global->next_edit_handle(shift_down);
 			}
@@ -417,7 +384,8 @@ int CWindowGUI::keypress_event()
 		break;
 	}
 
-	if(!result) result = transport->keypress_event();
+	if(!result)
+		result = transport->keypress_event();
 
 	return result;
 }
@@ -441,7 +409,8 @@ void CWindowGUI::keyboard_zoomout()
 
 void CWindowGUI::drag_motion()
 {
-	if(get_hidden()) return;
+	if(get_hidden())
+		return;
 
 	if(mainsession->current_operation == DRAG_ASSET ||
 		mainsession->current_operation == DRAG_VTRANSITION ||
@@ -506,8 +475,8 @@ void CWindowGUI::drag_stop()
 			mainsession->drag_clips->total)
 		{
 			mwindow_global->save_backup();
-			mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
-				WUPD_ZOOMBAR | WUPD_CLOCK);
+			mwindow_global->update_gui(WUPD_SCROLLBARS | WUPD_CANVINCR |
+				WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_CLOCK);
 			mwindow_global->undo->update_undo(_("insert assets"), LOAD_ALL);
 			mwindow_global->sync_parameters();
 		}
@@ -531,11 +500,9 @@ void CWindowGUI::drag_stop()
 
 
 CWindowEditing::CWindowEditing(CWindowGUI *gui, MeterPanel *meter_panel)
- : EditPanel(gui,
-	theme_global->cedit_x,
-	theme_global->cedit_y,
-	EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
-		| EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
+ : EditPanel(gui, theme_global->cedit_x, theme_global->cedit_y,
+	EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO |
+		EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
 	meter_panel)
 {
 }
@@ -552,9 +519,7 @@ void CWindowEditing::set_outpoint()
 
 
 CWindowMeters::CWindowMeters(CWindowGUI *gui, int x, int y, int h)
- : MeterPanel(gui, x, y, h,
-	edlsession->audio_channels,
-	edlsession->cwindow_meter)
+ : MeterPanel(gui, x, y, h, edlsession->audio_channels, edlsession->cwindow_meter)
 {
 	this->gui = gui;
 }
@@ -570,9 +535,8 @@ int CWindowMeters::change_status_event()
 
 CWindowZoom::CWindowZoom(CWindowGUI *gui, int x, int y,
 	const char *first_item_text)
- : ZoomPanel(gui, edlsession->cwindow_zoom,
-	x, y, 80,  my_zoom_table, total_zooms,
-	ZOOM_PERCENTAGE, first_item_text)
+ : ZoomPanel(gui, edlsession->cwindow_zoom, x, y, 80,  my_zoom_table,
+	total_zooms, ZOOM_PERCENTAGE, first_item_text)
 {
 	this->gui = gui;
 }
@@ -588,8 +552,7 @@ int CWindowZoom::handle_event()
 
 
 CWindowSlider::CWindowSlider(CWindow *cwindow, int x, int y, int pixels)
- : BC_PercentageSlider(x, y, 0, pixels, pixels,
-	0, 1, 0)
+ : BC_PercentageSlider(x, y, 0, pixels, pixels, 0, 1, 0)
 {
 	this->cwindow = cwindow;
 	set_precision(0.00001);
@@ -651,11 +614,8 @@ void CWindowTransport::goto_end()
 
 
 CWindowCanvas::CWindowCanvas(CWindowGUI *gui)
- : Canvas(gui, 0,
-	theme_global->ccanvas_x,
-	theme_global->ccanvas_y,
-	theme_global->ccanvas_w,
-	theme_global->ccanvas_h,
+ : Canvas(gui, 0, theme_global->ccanvas_x, theme_global->ccanvas_y,
+	theme_global->ccanvas_w, theme_global->ccanvas_h,
 	edlsession->cwindow_scrollbars)
 {
 	this->gui = gui;
@@ -809,6 +769,7 @@ int CWindowCanvas::do_ruler(int draw,
 		gui->tool_panel->raise_window();
 		result = 1;
 	}
+
 	if(motion)
 	{
 		if(gui->current_operation == CWINDOW_RULER)
@@ -819,8 +780,10 @@ int CWindowCanvas::do_ruler(int draw,
 				do_ruler(1, 0, 0, 0);
 				double x_difference = edlsession->ruler_x1;
 				double y_difference = edlsession->ruler_y1;
-				edlsession->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
-				edlsession->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+				edlsession->ruler_x1 =
+					output_x - gui->x_origin + gui->ruler_origin_x;
+				edlsession->ruler_y1 =
+					output_y - gui->y_origin + gui->ruler_origin_y;
 				x_difference -= edlsession->ruler_x1;
 				y_difference -= edlsession->ruler_y1;
 				edlsession->ruler_x2 -= x_difference;
@@ -834,8 +797,11 @@ int CWindowCanvas::do_ruler(int draw,
 			{
 			case 0:
 				do_ruler(1, 0, 0, 0);
-				edlsession->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
-				edlsession->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+				edlsession->ruler_x1 =
+					output_x - gui->x_origin + gui->ruler_origin_x;
+				edlsession->ruler_y1 =
+					output_y - gui->y_origin + gui->ruler_origin_y;
+
 				if(gui->alt_down() || gui->ctrl_down())
 				{
 					double angle_value = fabs(atan((edlsession->ruler_y2 - edlsession->ruler_y1) /
@@ -885,6 +851,7 @@ int CWindowCanvas::do_ruler(int draw,
 				do_ruler(1, 0, 0, 0);
 				edlsession->ruler_x2 = output_x - gui->x_origin + gui->ruler_origin_x;
 				edlsession->ruler_y2 = output_y - gui->y_origin + gui->ruler_origin_y;
+
 				if(gui->alt_down() || gui->ctrl_down())
 				{
 					double angle_value = fabs(atan((edlsession->ruler_y2 - edlsession->ruler_y1) /
@@ -938,8 +905,7 @@ int CWindowCanvas::do_ruler(int draw,
 					canvas_cursor_y >= canvas_y1 - RULERHANDLE_W &&
 					canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
 				set_cursor(UPRIGHT_ARROW_CURSOR);
-			else
-			if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 &&
+			else if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 &&
 					canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 &&
 					canvas_cursor_y >= canvas_y2 - RULERHANDLE_W &&
 					canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
@@ -960,26 +926,15 @@ int CWindowCanvas::do_ruler(int draw,
 
 		get_canvas()->set_inverse();
 		get_canvas()->set_color(WHITE);
-		get_canvas()->draw_line(icx1,
-			icy1,
-			icx2,
-			icy2);
+		get_canvas()->draw_line(icx1, icy1, icx2, icy2);
 		get_canvas()->draw_line(icx1 - RULERHANDLE_W / 2,
-			icy1,
-			icx1 + RULERHANDLE_W / 2,
-			icy1);
-		get_canvas()->draw_line(icx1,
-			icy1 - RULERHANDLE_H / 2,
-			icx1,
-			icy1 + RULERHANDLE_H / 2);
-		get_canvas()->draw_line(icx2 - RULERHANDLE_W / 2,
-			icy2,
-			icx2 + RULERHANDLE_W / 2,
-			icy2);
-		get_canvas()->draw_line(icx2,
-			icy2 - RULERHANDLE_H / 2,
-			icx2,
-			icy2 + RULERHANDLE_H / 2);
+			icy1, icx1 + RULERHANDLE_W / 2, icy1);
+		get_canvas()->draw_line(icx1, icy1 - RULERHANDLE_H / 2,
+			icx1, icy1 + RULERHANDLE_H / 2);
+		get_canvas()->draw_line(icx2 - RULERHANDLE_W / 2, icy2,
+			icx2 + RULERHANDLE_W / 2, icy2);
+		get_canvas()->draw_line(icx2, icy2 - RULERHANDLE_H / 2,
+			icx2, icy2 + RULERHANDLE_H / 2);
 		get_canvas()->set_opaque();
 	}
 	return result;
@@ -1594,11 +1549,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 		gui->update_tool();
 		result = 1;
-// Can't rerender since the color value is from the output of any effect it
-// goes into.
-//		rerender = 1;
 	}
-
 	return result;
 }
 
@@ -1622,10 +1573,8 @@ void CWindowCanvas::draw_overlays()
 		get_canvas()->set_inverse();
 		get_canvas()->set_color(WHITE);
 
-		get_canvas()->draw_rectangle(round(x1),
-				round(y1),
-				round(x2 - x1),
-				round(y2 - y1));
+		get_canvas()->draw_rectangle(round(x1), round(y1),
+			round(x2 - x1), round(y2 - y1));
 
 		get_canvas()->set_opaque();
 	}
@@ -1634,12 +1583,15 @@ void CWindowCanvas::draw_overlays()
 	{
 		get_canvas()->set_color(WHITE);
 		get_canvas()->set_inverse();
-		get_canvas()->draw_rectangle(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
-		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2, get_canvas()->get_h() - 2);
+		get_canvas()->draw_rectangle(0, 0, get_canvas()->get_w(),
+			get_canvas()->get_h());
+		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2,
+			get_canvas()->get_h() - 2);
 		get_canvas()->set_opaque();
 	}
 
 	int temp1 = 0, temp2 = 0;
+
 	switch(edlsession->cwindow_operation)
 	{
 	case CWINDOW_CAMERA:
@@ -1689,13 +1641,8 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 	if(affected_track)
 	{
 		gui->cwindow->calculate_affected_autos(&x_keyframe,
-			&y_keyframe,
-			&z_keyframe,
-			affected_track,
-			do_camera,
-			1,
-			1,
-			1);
+			&y_keyframe, &z_keyframe, affected_track,
+			do_camera, 1, 1, 1);
 
 		x_keyframe->set_value(0);
 		y_keyframe->set_value(0);
@@ -1734,6 +1681,7 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	CropAutos *crop_autos;
 
 	track = gui->cwindow->calculate_affected_track();
+
 	if(!track)
 		return 0;
 
@@ -1749,10 +1697,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 
 	ptstime pts = master_edl->local_session->get_selectionstart(1);
 
-	crop_autos->get_values(pts,
-		&left, &right, &top, &bottom);
+	crop_autos->get_values(pts, &left, &right, &top, &bottom);
 	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(AUTOMATION_CROP,
 		pts, track, 1, &created_auto);
+
 	if(created_auto)
 	{
 		crop_auto->left = (double)left / track->track_w;
@@ -2072,7 +2020,8 @@ void CWindowCanvas::draw_bezier(int do_camera)
 {
 	Track *track = gui->cwindow->calculate_affected_track();
 
-	if(!track) return;
+	if(!track)
+		return;
 
 	double center_x;
 	double center_y;
@@ -2080,14 +2029,10 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	if(do_camera)
-		track->automation->get_camera(&center_x,
-			&center_y,
-			&center_z,
+		track->automation->get_camera(&center_x, &center_y, &center_z,
 			position);
 	else
-		track->automation->get_projector(&center_x,
-			&center_y,
-			&center_z,
+		track->automation->get_projector(&center_x, &center_y, &center_z,
 			position);
 
 	center_x += edlsession->output_w / 2;
@@ -2216,9 +2161,7 @@ int CWindowCanvas::test_bezier(int button_press,
 				calculate_origin();
 
 				if(gui->translating_zoom)
-				{
 					gui->center_z = gui->affected_z->get_value();
-				}
 				else
 				{
 					gui->center_x = gui->affected_x->get_value();
@@ -2230,9 +2173,7 @@ int CWindowCanvas::test_bezier(int button_press,
 			}
 
 			if(gui->translating_zoom)
-			{
 				last_center_z = gui->affected_z->get_value();
-			}
 			else
 			{
 				last_center_x = gui->affected_x->get_value();
@@ -2244,7 +2185,9 @@ int CWindowCanvas::test_bezier(int button_press,
 				double new_z = gui->center_z +
 					(cursor_y - gui->y_origin) / 128;
 
-				if(new_z < 0) new_z = 0;
+				if(new_z < 0)
+					new_z = 0;
+
 				if(!EQUIV(last_center_z, new_z))
 				{
 					gui->affected_z->set_value(new_z);
@@ -2328,16 +2271,12 @@ void CWindowCanvas::test_zoom(int &redraw)
 		for(current_index = 0 ; current_index < total_zooms; current_index++)
 			if(EQUIV(my_zoom_table[current_index], zoom))
 				break;
-// Zoom out
-		if(mousebutton == 5)
-		{
+
+		if(mousebutton == 5)        // Zoom out
 			current_index--;
-		}
-		else if(mousebutton == 4)
-// Zoom in
-		{
+		else if(mousebutton == 4)   // Zoom in
 			current_index++;
-		}
+
 		CLAMP(current_index, 0, total_zooms - 1);
 		zoom = my_zoom_table[current_index];
 	}
@@ -2363,10 +2302,8 @@ void CWindowCanvas::test_zoom(int &redraw)
 		y = 0;
 
 	update_zoom(x, y, zoom);
-	reposition_window(master_edl,
-		theme_global->ccanvas_x,
-		theme_global->ccanvas_y,
-		theme_global->ccanvas_w,
+	reposition_window(master_edl, theme_global->ccanvas_x,
+		theme_global->ccanvas_y, theme_global->ccanvas_w,
 		theme_global->ccanvas_h);
 	update_scrollbars();
 
@@ -2421,31 +2358,29 @@ int CWindowCanvas::cursor_enter_event()
 int CWindowCanvas::cursor_motion_event()
 {
 	int redraw = 0, result = 0, rerender = 0, redraw_canvas = 0;
+	int x, y;
+	double zoom, cursor_x, cursor_y;
+	double zoom_x, zoom_y, conformed_w, conformed_h;
 
 	switch(gui->current_operation)
 	{
 	case CWINDOW_SCROLL:
-		{
-			double zoom = get_zoom();
-			double cursor_x = get_cursor_x();
-			double cursor_y = get_cursor_y();
-			double zoom_x, zoom_y, conformed_w, conformed_h;
+		zoom = get_zoom();
+		cursor_x = get_cursor_x();
+		cursor_y = get_cursor_y();
 
-			get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
-			cursor_x = cursor_x / zoom_x + gui->x_offset;
-			cursor_y = cursor_y / zoom_y + gui->y_offset;
+		get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
+		cursor_x = cursor_x / zoom_x + gui->x_offset;
+		cursor_y = cursor_y / zoom_y + gui->y_offset;
 
-			int x = round(gui->x_origin - cursor_x + gui->x_offset);
-			int y = round(gui->y_origin - cursor_y + gui->y_offset);
+		x = round(gui->x_origin - cursor_x + gui->x_offset);
+		y = round(gui->y_origin - cursor_y + gui->y_offset);
 
-			update_zoom(x, 
-				y, 
-				zoom);
-			update_scrollbars();
-			redraw = 1;
-			result = 1;
-			break;
-		}
+		update_zoom(x, y, zoom);
+		update_scrollbars();
+		redraw = 1;
+		result = 1;
+		break;
 
 	case CWINDOW_RULER:
 		result = do_ruler(0, 1, 0, 0);
@@ -2516,14 +2451,14 @@ int CWindowCanvas::button_press_event()
 	int redraw = 0;
 	int redraw_canvas = 0;
 	int rerender = 0;
+	double zoom_x, zoom_y, conformed_w, conformed_h;
 
-	if(Canvas::button_press_event()) return 1;
+	if(Canvas::button_press_event())
+		return 1;
 
 	gui->translating_zoom = gui->shift_down(); 
 
 	calculate_origin();
-
-	double zoom_x, zoom_y, conformed_w, conformed_h;
 
 	get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
 	gui->x_offset = get_x_offset(zoom_x, conformed_w, conformed_h);
@@ -2627,11 +2562,8 @@ void CWindowCanvas::zoom_resize_window(double percentage)
 	int canvas_w, canvas_h;
 	int new_w, new_h;
 
-	calculate_sizes(edlsession->output_w,
-		edlsession->output_h,
-		percentage,
-		canvas_w,
-		canvas_h);
+	calculate_sizes(edlsession->output_w, edlsession->output_h,
+		percentage, canvas_w, canvas_h);
 
 	new_w = canvas_w + (gui->get_w() - theme_global->ccanvas_w);
 	new_h = canvas_h + (gui->get_h() - theme_global->ccanvas_h);
