@@ -1595,11 +1595,11 @@ void CWindowCanvas::draw_overlays()
 	switch(edlsession->cwindow_operation)
 	{
 	case CWINDOW_CAMERA:
-		draw_bezier(1);
+		draw_camera(1);
 		break;
 
 	case CWINDOW_PROJECTOR:
-		draw_bezier(0);
+		draw_camera(0);
 		break;
 
 	case CWINDOW_CROP:
@@ -1629,7 +1629,7 @@ void CWindowCanvas::update_guidelines()
 		round(0.8 * edlsession->output_h));
 }
 
-void CWindowCanvas::reset_keyframe(int do_camera)
+void CWindowCanvas::reset_camera_auto(int is_camera)
 {
 	FloatAuto *x_keyframe;
 	FloatAuto *y_keyframe;
@@ -1642,7 +1642,7 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 	{
 		gui->cwindow->calculate_affected_autos(&x_keyframe,
 			&y_keyframe, &z_keyframe, affected_track,
-			do_camera, 1, 1, 1);
+			is_camera, 1, 1, 1);
 
 		x_keyframe->set_value(0);
 		y_keyframe->set_value(0);
@@ -1655,12 +1655,12 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 
 void CWindowCanvas::reset_camera()
 {
-	reset_keyframe(1);
+	reset_camera_auto(1);
 }
 
 void CWindowCanvas::reset_projector()
 {
-	reset_keyframe(0);
+	reset_camera_auto(0);
 }
 
 int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
@@ -2016,7 +2016,7 @@ void CWindowCanvas::draw_crop()
 	get_canvas()->set_opaque();
 }
 
-void CWindowCanvas::draw_bezier(int do_camera)
+void CWindowCanvas::draw_camera(int is_camera)
 {
 	Track *track = gui->cwindow->calculate_affected_track();
 
@@ -2028,7 +2028,7 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	double center_z;
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
-	if(do_camera)
+	if(is_camera)
 		track->automation->get_camera(&center_x, &center_y, &center_z,
 			position);
 	else
@@ -2068,7 +2068,7 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	get_canvas()->set_color(BLACK);
 	DRAW_PROJECTION(1);
 
-	if(do_camera)
+	if(is_camera)
 		get_canvas()->set_color(GREEN);
 	else
 		get_canvas()->set_color(RED);
@@ -2076,11 +2076,8 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	DRAW_PROJECTION(0);
 }
 
-int CWindowCanvas::test_bezier(int button_press, 
-	int &redraw, 
-	int &redraw_canvas,
-	int &rerender,
-	int do_camera)
+int CWindowCanvas::do_camera(int button_press, int &redraw, int &redraw_canvas,
+	int &rerender)
 {
 	int result = 0;
 
@@ -2387,11 +2384,11 @@ int CWindowCanvas::cursor_motion_event()
 		break;
 
 	case CWINDOW_CAMERA:
-		result = test_bezier(0, redraw, redraw_canvas, rerender, 1);
+		result = do_camera(0, redraw, redraw_canvas, rerender);
 		break;
 
 	case CWINDOW_PROJECTOR:
-		result = test_bezier(0, redraw, redraw_canvas, rerender, 0);
+		result = do_camera(0, redraw, redraw_canvas, rerender);
 		break;
 
 	case CWINDOW_CROP:
@@ -2480,11 +2477,11 @@ int CWindowCanvas::button_press_event()
 			break;
 
 		case CWINDOW_CAMERA:
-			result = test_bezier(1, redraw, redraw_canvas, rerender, 1);
+			result = do_camera(1, redraw, redraw_canvas, rerender);
 			break;
 
 		case CWINDOW_PROJECTOR:
-			result = test_bezier(1, redraw, redraw_canvas, rerender, 0);
+			result = do_camera(1, redraw, redraw_canvas, rerender);
 			break;
 
 		case CWINDOW_ZOOM:

@@ -206,18 +206,18 @@ public:
 	int get_fullscreen();
 	void set_fullscreen(int value);
 	int test_crop(int button_press, int *redraw, int *rerender = 0);
-	int test_bezier(int button_press, int &redraw, int &redraw_canvas,
-		int &rerender, int do_camera);
+	int do_camera(int button_press, int &redraw, int &redraw_canvas,
+		int &rerender);
 	int do_ruler(int draw, int motion, int button_press, int button_release);
 	void test_zoom(int &redraw);
 	void reset_camera();
 	void reset_projector();
-	void reset_keyframe(int do_camera);
+	void reset_camera_auto(int is_camera);
 	void draw_crophandle(int x, int y);
 	void zoom_auto();
 
 // Draw the projector overlay in different colors.
-	void draw_bezier(int do_camera);
+	void draw_camera(int is_camera);
 	void draw_crop();
 	void calculate_origin();
 	void toggle_controls();
