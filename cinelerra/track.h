@@ -17,6 +17,7 @@
 #include "edl.inc"
 #include "filexml.inc"
 #include "floatautos.inc"
+#include "guidelines.inc"
 #include "keyframe.inc"
 #include "linklist.h"
 #include "plugin.inc"
@@ -199,6 +200,9 @@ public:
 	int track_w, track_h;
 // Length of one unit on seconds
 	ptstime one_unit;
+// Camera and projector guideframe
+	GuideFrame *camera_gframe;
+	GuideFrame *projector_gframe;
 private:
 // Identification of the track
 	int id;

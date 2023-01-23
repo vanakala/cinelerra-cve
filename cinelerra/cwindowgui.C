@@ -1555,6 +1555,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 void CWindowCanvas::draw_overlays()
 {
+	draw_camera();
 	safe_regions->set_enabled(edlsession->safe_regions);
 	guidelines.draw(master_edl,
 		master_edl->local_session->get_selectionstart(1));
@@ -1594,11 +1595,6 @@ void CWindowCanvas::draw_overlays()
 
 	switch(edlsession->cwindow_operation)
 	{
-	case CWINDOW_CAMERA:
-	case CWINDOW_PROJECTOR:
-		draw_camera();
-		break;
-
 	case CWINDOW_CROP:
 		draw_crop();
 		break;
@@ -2019,6 +2015,7 @@ void CWindowCanvas::draw_camera()
 	double center_x;
 	double center_y;
 	double center_z;
+	GuideFrame **gframep;
 	int is_camera;
 
 	if(!track)
@@ -2033,57 +2030,52 @@ void CWindowCanvas::draw_camera()
 		is_camera = 0;
 		break;
 	default:
+		if(track->camera_gframe)
+			track->camera_gframe->set_enabled(0);
+		if(track->projector_gframe)
+			track->projector_gframe->set_enabled(0);
 		return;
 	}
 
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	if(is_camera)
+	{
 		track->automation->get_camera(&center_x, &center_y, &center_z,
 			position);
+		gframep = &track->camera_gframe;
+		if(track->projector_gframe)
+			track->projector_gframe->set_enabled(0);
+	}
 	else
+	{
 		track->automation->get_projector(&center_x, &center_y, &center_z,
 			position);
+		gframep = &track->projector_gframe;
+		if(track->camera_gframe)
+			track->camera_gframe->set_enabled(0);
+	}
+
+	if(!*gframep)
+	{
+		*gframep = guidelines.append_frame(0, MAX_PTSTIME);
+		(*gframep)->set_color(is_camera ? GREEN : RED);
+		(*gframep)->set_opaque(1);
+	}
 
 	center_x += edlsession->output_w / 2;
 	center_y += edlsession->output_h / 2;
-	double track_x1 = center_x - track->track_w / 2 * center_z;
-	double track_y1 = center_y - track->track_h / 2 * center_z;
-	double track_x2 = track_x1 + track->track_w * center_z;
-	double track_y2 = track_y1 + track->track_h * center_z;
+	int track_x1 = round(center_x - track->track_w / 2 * center_z);
+	int track_y1 = round(center_y - track->track_h / 2 * center_z);
+	int track_x2 = round(track_x1 + track->track_w * center_z);
+	int track_y2 = round(track_y1 + track->track_h * center_z);
 
-	output_to_canvas(track_x1, track_y1);
-	output_to_canvas(track_x2, track_y2);
-
-	int itx1 = round(track_x1);
-	int ity1 = round(track_y1);
-	int itx2 = round(track_x2);
-	int ity2 = round(track_y2);
-
-#define DRAW_PROJECTION(offset) \
-	get_canvas()->draw_rectangle(itx1 + offset, \
-		ity1 + offset, \
-		itx2 - itx1, \
-		ity2 - ity1); \
-	get_canvas()->draw_line(itx1 + offset,  \
-		ity1 + offset, \
-		itx2 + offset, \
-		ity2 + offset); \
-	get_canvas()->draw_line(itx2 + offset,  \
-		ity1 + offset, \
-		itx1 + offset, \
-		ity2 + offset); \
-
-// Drop shadow
-	get_canvas()->set_color(BLACK);
-	DRAW_PROJECTION(1);
-
-	if(is_camera)
-		get_canvas()->set_color(GREEN);
-	else
-		get_canvas()->set_color(RED);
-
-	DRAW_PROJECTION(0);
+	(*gframep)->clear();
+	(*gframep)->add_rectangle(track_x1, track_y1, track_x2 - track_x1,
+		track_y2 - track_y1);
+	(*gframep)->add_line(track_x1, track_y1, track_x2, track_y2);
+	(*gframep)->add_line(track_x2, track_y1, track_x1, track_y2);
+	(*gframep)->set_enabled(1);
 }
 
 int CWindowCanvas::do_camera(int button_press, int &redraw, int &redraw_canvas,
@@ -2095,10 +2087,6 @@ int CWindowCanvas::do_camera(int button_press, int &redraw, int &redraw_canvas,
 // Create keyframe during first cursor motion.
 	if(!button_press)
 	{
-		double cursor_x = get_cursor_x();
-		double cursor_y = get_cursor_y();
-		canvas_to_output(cursor_x, cursor_y);
-
 		if(gui->current_operation == CWINDOW_CAMERA ||
 			gui->current_operation == CWINDOW_PROJECTOR)
 		{
@@ -2187,6 +2175,10 @@ int CWindowCanvas::do_camera(int button_press, int &redraw, int &redraw_canvas,
 				last_center_y = gui->affected_y->get_value();
 			}
 
+			double cursor_x = get_cursor_x();
+			double cursor_y = get_cursor_y();
+			canvas_to_output(cursor_x, cursor_y);
+
 			if(gui->translating_zoom)
 			{
 				double new_z = gui->center_z +
@@ -2205,6 +2197,7 @@ int CWindowCanvas::do_camera(int button_press, int &redraw, int &redraw_canvas,
 			}
 			else
 			{
+
 				double new_x = gui->center_x + cursor_x - gui->x_origin;
 				double new_y = gui->center_y + cursor_y - gui->y_origin;
 
@@ -2406,8 +2399,7 @@ int CWindowCanvas::cursor_motion_event()
 	case CWINDOW_MASK_CONTROL_IN:
 	case CWINDOW_MASK_CONTROL_OUT:
 	case CWINDOW_MASK_TRANSLATE:
-		result = do_mask(redraw, 
-			rerender, 0, 1, 0);
+		result = do_mask(redraw, rerender, 0, 1, 0);
 		break;
 
 	case CWINDOW_EYEDROP:

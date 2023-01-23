@@ -49,6 +49,8 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	one_unit = (ptstime) 1 / 48000;
 	edits = new Edits(edl, this);
 	id = EDL::next_id();
+	camera_gframe = 0;
+	projector_gframe = 0;
 	if(tracks)
 		tracks->reset_plugins();
 }
