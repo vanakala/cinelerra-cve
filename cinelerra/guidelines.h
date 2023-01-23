@@ -53,8 +53,8 @@ private:
 	ptstime pts;
 	int color;
 	int allocated;
-	uint16_t *dataend;
-	uint16_t *data;
+	int16_t *dataend;
+	int16_t *data;
 	VFrame *vframe;
 	Canvas *canvas;
 };

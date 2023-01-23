@@ -41,7 +41,7 @@ GuideFrame::~GuideFrame()
 
 void GuideFrame::check_alloc(int num)
 {
-	uint16_t *new_alloc;
+	int16_t *new_alloc;
 
 	if(num > 0 && num + (dataend - data) > allocated)
 	{
@@ -50,7 +50,7 @@ void GuideFrame::check_alloc(int num)
 
 		if(allocated + GUIDELINE_UNIT > len)
 			len = allocated + GUIDELINE_UNIT;
-		new_alloc = new uint16_t[len];
+		new_alloc = new int16_t[len];
 		if(data)
 			memcpy(new_alloc, data, allocated);
 		dataend = new_alloc + (dataend - data);
@@ -184,7 +184,7 @@ void GuideFrame::repeat_event(Canvas *canvas)
 
 int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 {
-	uint16_t *dp;
+	int16_t *dp;
 	int x1, x2, y1, y2;
 	int in_x1, in_y1, in_x2, in_y2;
 	int out_x1, out_y1, out_x2, out_y2;
@@ -355,7 +355,7 @@ size_t GuideFrame::get_size()
 
 void GuideFrame::dump(int indent)
 {
-	uint16_t *p;
+	int16_t *p;
 	int n;
 	const char *s;
 
