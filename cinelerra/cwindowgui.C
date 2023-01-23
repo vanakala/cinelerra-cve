@@ -1595,11 +1595,8 @@ void CWindowCanvas::draw_overlays()
 	switch(edlsession->cwindow_operation)
 	{
 	case CWINDOW_CAMERA:
-		draw_camera(1);
-		break;
-
 	case CWINDOW_PROJECTOR:
-		draw_camera(0);
+		draw_camera();
 		break;
 
 	case CWINDOW_CROP:
@@ -2016,16 +2013,29 @@ void CWindowCanvas::draw_crop()
 	get_canvas()->set_opaque();
 }
 
-void CWindowCanvas::draw_camera(int is_camera)
+void CWindowCanvas::draw_camera()
 {
 	Track *track = gui->cwindow->calculate_affected_track();
+	double center_x;
+	double center_y;
+	double center_z;
+	int is_camera;
 
 	if(!track)
 		return;
 
-	double center_x;
-	double center_y;
-	double center_z;
+	switch(edlsession->cwindow_operation)
+	{
+	case CWINDOW_CAMERA:
+		is_camera = 1;
+		break;
+	case CWINDOW_PROJECTOR:
+		is_camera = 0;
+		break;
+	default:
+		return;
+	}
+
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
 	if(is_camera)
@@ -2384,9 +2394,6 @@ int CWindowCanvas::cursor_motion_event()
 		break;
 
 	case CWINDOW_CAMERA:
-		result = do_camera(0, redraw, redraw_canvas, rerender);
-		break;
-
 	case CWINDOW_PROJECTOR:
 		result = do_camera(0, redraw, redraw_canvas, rerender);
 		break;
@@ -2477,9 +2484,6 @@ int CWindowCanvas::button_press_event()
 			break;
 
 		case CWINDOW_CAMERA:
-			result = do_camera(1, redraw, redraw_canvas, rerender);
-			break;
-
 		case CWINDOW_PROJECTOR:
 			result = do_camera(1, redraw, redraw_canvas, rerender);
 			break;

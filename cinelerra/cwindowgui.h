@@ -217,7 +217,7 @@ public:
 	void zoom_auto();
 
 // Draw the projector overlay in different colors.
-	void draw_camera(int is_camera);
+	void draw_camera();
 	void draw_crop();
 	void calculate_origin();
 	void toggle_controls();
