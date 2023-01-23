@@ -709,10 +709,13 @@ void Canvas::draw_refresh()
 	{
 		lock_canvas("Canvas::draw_refresh");
 
+		clear_canvas();
+
 		if(refresh_frame)
 		{
 			double in_x1, in_y1, in_x2, in_y2;
 			double out_x1, out_y1, out_x2, out_y2;
+
 
 			get_transfers(in_x1, in_y1, in_x2, in_y2,
 				out_x1, out_y1, out_x2, out_y2);
@@ -730,8 +733,6 @@ void Canvas::draw_refresh()
 					round(in_y2 - in_y1), 0);
 			}
 		}
-		else
-			clear_canvas();
 
 		draw_overlays();
 		canvas->flash();
