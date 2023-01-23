@@ -29,6 +29,7 @@ GuideFrame::GuideFrame(ptstime start, ptstime end, Canvas *canvas)
 	dataend = 0;
 	is_enabled = 0;
 	color = WHITE;
+	is_opaque = 0;
 	vframe = 0;
 	renderer = 0;
 }
@@ -158,6 +159,11 @@ void GuideFrame::set_color(int color)
 	this->color = color;
 }
 
+void GuideFrame::set_opaque(int opaque)
+{
+	is_opaque = opaque;
+}
+
 VFrame *GuideFrame::get_vframe(int w, int h)
 {
 	canvas->lock_canvas("GuideFrame::get_vframe");
@@ -210,6 +216,11 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			in_y1 = out_y1 = 0;
 			pluginframe = 0;
 		}
+
+		canvas->get_canvas()->set_color(color);
+
+		if(is_opaque)
+			canvas->get_canvas()->set_opaque();
 
 		for(dp = data; dp < dataend;)
 		{
@@ -264,7 +275,6 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					y2 = round(dy2);
 				}
 			}
-			canvas->get_canvas()->set_color(color);
 
 			switch(*dp++)
 			{
@@ -322,6 +332,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 				break;
 			}
 		}
+
+		if(is_opaque)
+			canvas->get_canvas()->set_inverse();
+
 		if(period)
 		{
 			period_count = period;
