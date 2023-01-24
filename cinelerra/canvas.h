@@ -29,13 +29,8 @@ class CanvasToggleControls;
 class Canvas
 {
 public:
-	Canvas(CWindowGUI *cwindow,
-		VWindowGUI *vwindow,
-		int x, 
-		int y, 
-		int w, 
-		int h,
-		int use_scrollbars);
+	Canvas(CWindowGUI *cwindow, VWindowGUI *vwindow,
+		int x, int y, int w, int h, int use_scrollbars);
 	virtual ~Canvas();
 
 	void release_refresh_frame();
@@ -92,17 +87,12 @@ public:
 // This gets the input coordinates on the device output_frame
 // and the corresponding output coordinates on the canvas.
 // Must be floating point to support OpenGL.
-	void get_transfers(double &output_x1,
-		double &output_y1,
-		double &output_x2,
-		double &output_y2,
-		double &canvas_x1,
-		double &canvas_y1,
-		double &canvas_x2,
-		double &canvas_y2,
+	void get_transfers(double &output_x1, double &output_y1,
+		double &output_x2, double &output_y2,
+		double &canvas_x1, double &canvas_y1,
+		double &canvas_x2, double &canvas_y2,
 // passing -1 causes automatic size detection
-		int canvas_w = -1,
-		int canvas_h = -1);
+		int canvas_w = -1, int canvas_h = -1);
 	void reposition_window(EDL *edl, int x, int y, int w, int h);
 	virtual void reset_translation() {};
 	virtual void close_source() {};
@@ -117,11 +107,8 @@ public:
 // Redraws the image
 	void draw_refresh();
 
-	void get_zooms(EDL *edl,
-		double &zoom_x,
-		double &zoom_y,
-		double &conformed_w,
-		double &conformed_h);
+	void get_zooms(EDL *edl, double &zoom_x, double &zoom_y,
+		double &conformed_w, double &conformed_h);
 
 // Convert coord from output to canvas position, including
 // x and y scroll offsets
@@ -177,15 +164,9 @@ public:
 protected:
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.
-	double get_x_offset(double zoom_x,
-		double conformed_w,
-		double conformed_h);
-	double get_y_offset(double zoom_y,
-		double conformed_w,
-		double conformed_h);
-	void get_zooms(double &zoom_x,
-		double &zoom_y,
-		double &conformed_w,
+	double get_x_offset(double zoom_x, double conformed_w, double conformed_h);
+	double get_y_offset(double zoom_y, double conformed_w, double conformed_h);
+	void get_zooms(double &zoom_x, double &zoom_y, double &conformed_w,
 		double &conformed_h);
 
 // Convert coord from canvas to output position
@@ -206,11 +187,7 @@ private:
 class CanvasOutput : public BC_SubWindow
 {
 public:
-	CanvasOutput(Canvas *canvas,
-		int x,
-		int y,
-		int w,
-		int h);
+	CanvasOutput(Canvas *canvas, int x, int y, int w, int h);
 
 	void cursor_leave_event();
 	int cursor_enter_event();
@@ -227,9 +204,7 @@ public:
 class CanvasFullScreen : public BC_FullScreen
 {
 public:
-	CanvasFullScreen(Canvas *canvas,
-		int w,
-		int h);
+	CanvasFullScreen(Canvas *canvas, int w, int h);
 
 	Canvas *canvas;
 };
@@ -238,14 +213,8 @@ public:
 class CanvasXScroll : public BC_ScrollBar
 {
 public:
-	CanvasXScroll(EDL *edl, 
-		Canvas *canvas, 
-		int x, 
-		int y, 
-		int length, 
-		int position, 
-		int handle_length, 
-		int pixels);
+	CanvasXScroll(EDL *edl, Canvas *canvas, int x, int y,
+		int length, int position, int handle_length, int pixels);
 
 	int handle_event();
 	Canvas *canvas;
@@ -256,14 +225,8 @@ public:
 class CanvasYScroll : public BC_ScrollBar
 {
 public:
-	CanvasYScroll(EDL *edl, 
-		Canvas *canvas, 
-		int x, 
-		int y, 
-		int length, 
-		int position, 
-		int handle_length, 
-		int pixels);
+	CanvasYScroll(EDL *edl, Canvas *canvas, int x, int y,
+		int length, int position, int handle_length, int pixels);
 
 	int handle_event();
 
@@ -302,6 +265,7 @@ public:
 	CanvasPopupSize(Canvas *canvas, char *text, double percentage);
 
 	int handle_event();
+
 	Canvas *canvas;
 	double percentage;
 };
@@ -311,6 +275,7 @@ class CanvasPopupAuto : public BC_MenuItem
 {
 public:
 	CanvasPopupAuto(Canvas *canvas);
+
 	int handle_event();
 	Canvas *canvas;
 };
@@ -320,6 +285,7 @@ class CanvasPopupResetCamera : public BC_MenuItem
 {
 public:
 	CanvasPopupResetCamera(Canvas *canvas);
+
 	int handle_event();
 	Canvas *canvas;
 };
@@ -329,6 +295,7 @@ class CanvasPopupResetProjector : public BC_MenuItem
 {
 public:
 	CanvasPopupResetProjector(Canvas *canvas);
+
 	int handle_event();
 	Canvas *canvas;
 };
@@ -338,10 +305,12 @@ class CanvasToggleControls : public BC_MenuItem
 {
 public:
 	CanvasToggleControls(Canvas *canvas);
+
 	int handle_event();
 
 private:
 	static const char* calculate_text();
+
 	Canvas *canvas;
 };
 
@@ -350,7 +319,9 @@ class CanvasFullScreenItem : public BC_MenuItem
 {
 public:
 	CanvasFullScreenItem(Canvas *canvas);
+
 	int handle_event();
+
 	Canvas *canvas;
 };
 
@@ -359,7 +330,9 @@ class CanvasPopupRemoveSource : public BC_MenuItem
 {
 public:
 	CanvasPopupRemoveSource(Canvas *canvas);
+
 	int handle_event();
+
 	Canvas *canvas;
 };
 

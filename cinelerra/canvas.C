@@ -20,13 +20,8 @@
 #include "vwindowgui.h"
 
 
-Canvas::Canvas(CWindowGUI *cwindow,
-	VWindowGUI *vwindow,
-	int x, 
-	int y, 
-	int w, 
-	int h,
-	int use_scrollbars)
+Canvas::Canvas(CWindowGUI *cwindow, VWindowGUI *vwindow,
+	int x, int y, int w, int h, int use_scrollbars)
 {
 	xscroll = 0;
 	yscroll = 0;
@@ -61,7 +56,6 @@ Canvas::Canvas(CWindowGUI *cwindow,
 	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
 	guidelines.set_canvas(this);
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
-
 	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
 }
 
@@ -69,8 +63,10 @@ Canvas::~Canvas()
 {
 	BC_Resources::tmpframes.release_frame(refresh_frame);
 	delete canvas_menu;
-	if(yscroll) delete yscroll;
-	if(xscroll) delete xscroll;
+	if(yscroll)
+		delete yscroll;
+	if(xscroll)
+		delete xscroll;
 	delete canvas_subwindow;
 	delete canvas_fullscreen;
 	delete canvas_lock;
@@ -135,6 +131,7 @@ void Canvas::calculate_sizes(int output_w, int output_h,
 	double zoom, int &w, int &h)
 {
 	double aspect = sample_aspect_ratio();
+
 	// Horizontal stretch
 	if(aspect >= 1)
 	{
@@ -149,16 +146,12 @@ void Canvas::calculate_sizes(int output_w, int output_h,
 	}
 }
 
-double Canvas::get_x_offset(double zoom_x,
-	double conformed_w,
-	double conformed_h)
+double Canvas::get_x_offset(double zoom_x, double conformed_w, double conformed_h)
 {
 	if(use_scrollbars)
 	{
-		if(xscroll) 
-		{
+		if(xscroll)
 			return get_xscroll();
-		}
 		else
 			return ((double)-get_canvas()->get_w() / zoom_x +
 				edlsession->output_w) / 2;
@@ -168,13 +161,12 @@ double Canvas::get_x_offset(double zoom_x,
 		int out_w, out_h;
 		int canvas_w = get_canvas()->get_w();
 		int canvas_h = get_canvas()->get_h();
+
 		out_w = canvas_w;
 		out_h = canvas_h;
 
 		if((double)out_w / out_h > conformed_w / conformed_h)
-		{
 			out_w = round(out_h * conformed_w / conformed_h);
-		}
 
 		if(out_w < canvas_w)
 			return -(canvas_w - out_w) / 2 / zoom_x;
@@ -182,16 +174,12 @@ double Canvas::get_x_offset(double zoom_x,
 	return 0;
 }
 
-double Canvas::get_y_offset(double zoom_y,
-	double conformed_w,
-	double conformed_h)
+double Canvas::get_y_offset(double zoom_y, double conformed_w, double conformed_h)
 {
 	if(use_scrollbars)
 	{
 		if(yscroll)
-		{
 			return get_yscroll();
-		}
 		else
 			return ((double)-get_canvas()->get_h() / zoom_y + 
 				edlsession->output_h) / 2;
@@ -201,18 +189,16 @@ double Canvas::get_y_offset(double zoom_y,
 		int out_w, out_h;
 		int canvas_w = get_canvas()->get_w();
 		int canvas_h = get_canvas()->get_h();
+
 		out_w = canvas_w;
 		out_h = canvas_h;
 
 		if((double)out_w / out_h <= conformed_w / conformed_h)
-		{
 			out_h = round(out_w / (conformed_w / conformed_h));
-		}
 
 		if(out_h < canvas_h)
 			return -(canvas_h - out_h) / 2 / zoom_y;
 	}
-
 	return 0;
 }
 
@@ -220,15 +206,15 @@ void Canvas::update_scrollbars()
 {
 	if(use_scrollbars)
 	{
-		if(xscroll) xscroll->update_length(w_needed, get_xscroll(), w_visible);
-		if(yscroll) yscroll->update_length(h_needed, get_yscroll(), h_visible);
+		if(xscroll)
+			xscroll->update_length(w_needed, get_xscroll(), w_visible);
+		if(yscroll)
+			yscroll->update_length(h_needed, get_yscroll(), h_visible);
 	}
 }
 
-void Canvas::get_zooms(double &zoom_x,
-	double &zoom_y,
-	double &conformed_w,
-	double &conformed_h)
+void Canvas::get_zooms(double &zoom_x, double &zoom_y,
+	double &conformed_w, double &conformed_h)
 {
 	edl->calculate_conformed_dimensions(conformed_w, conformed_h);
 
@@ -243,13 +229,10 @@ void Canvas::get_zooms(double &zoom_x,
 		double out_h = get_canvas()->get_h();
 
 		if(out_w / out_h > conformed_w / conformed_h)
-		{
 			out_w = round(out_h * conformed_w / conformed_h);
-		}
 		else
-		{
 			out_h = round(out_w / (conformed_w / conformed_h));
-		}
+
 		zoom_x = out_w / edlsession->output_w;
 		zoom_y = out_h / edlsession->output_h;
 	}
@@ -276,20 +259,15 @@ void Canvas::output_to_canvas(double &x, double &y)
 	y = zoom_y * (y - get_y_offset(zoom_y, conformed_w, conformed_h));
 }
 
-void Canvas::get_transfers(double &output_x1,
-	double &output_y1,
-	double &output_x2,
-	double &output_y2,
-	double &canvas_x1,
-	double &canvas_y1,
-	double &canvas_x2,
-	double &canvas_y2,
-	int canvas_w,
-	int canvas_h)
+void Canvas::get_transfers(double &output_x1, double &output_y1,
+	double &output_x2, double &output_y2, double &canvas_x1, double &canvas_y1,
+	double &canvas_x2, double &canvas_y2, int canvas_w, int canvas_h)
 {
 // automatic canvas size detection
-	if(canvas_w < 0) canvas_w = get_canvas()->get_w();
-	if(canvas_h < 0) canvas_h = get_canvas()->get_h();
+	if(canvas_w < 0)
+		canvas_w = get_canvas()->get_w();
+	if(canvas_h < 0)
+		canvas_h = get_canvas()->get_h();
 
 // Canvas is zoomed to a portion of the output frame
 	if(use_scrollbars)
@@ -363,6 +341,7 @@ void Canvas::get_transfers(double &output_x1,
 			double out_h = canvas_y2 - canvas_y1;
 			double aspect = sample_aspect_ratio() *
 				edlsession->output_w / edlsession->output_h;
+
 			if(out_w / out_h > aspect)
 			{
 				out_w = round(out_h * aspect);
@@ -375,7 +354,6 @@ void Canvas::get_transfers(double &output_x1,
 			}
 			canvas_x2 = canvas_x1 + out_w;
 			canvas_y2 = canvas_y1 + out_h;
-
 // Get output frame coords from EDL
 			output_x1 = 0;
 			output_y1 = 0;
@@ -451,13 +429,8 @@ void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
 		{
 			if(!xscroll)
 				subwindow->add_subwindow(xscroll = new CanvasXScroll(edl,
-					this,
-					canvas_x,
-					canvas_y + canvas_h,
-					w_needed,
-					get_xscroll(),
-					w_visible,
-					canvas_w));
+					this, canvas_x, canvas_y + canvas_h,
+					w_needed, get_xscroll(), w_visible, canvas_w));
 			else
 				xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
 
@@ -467,20 +440,16 @@ void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
 		}
 		else
 		{
-			if(xscroll) delete xscroll;
+			delete xscroll;
 			xscroll = 0;
 		}
+
 		if(need_yscroll)
 		{
 			if(!yscroll)
 				subwindow->add_subwindow(yscroll = new CanvasYScroll(edl,
-					this,
-					canvas_x + canvas_w,
-					canvas_y,
-					h_needed,
-					get_yscroll(),
-					h_visible,
-					canvas_h));
+					this, canvas_x + canvas_w, canvas_y,
+					h_needed, get_yscroll(), h_visible, canvas_h));
 			else
 				yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
@@ -490,7 +459,7 @@ void Canvas::get_scrollbars(int &canvas_x, int &canvas_y,
 		}
 		else
 		{
-			if(yscroll) delete yscroll;
+			delete yscroll;
 			yscroll = 0;
 		}
 	}
@@ -513,7 +482,6 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 		canvas_subwindow->reposition_window(view_x, view_y, view_w, view_h);
 		clear_canvas();
 	}
-
 	draw_refresh();
 }
 
@@ -550,7 +518,6 @@ int Canvas::button_press_event()
 			canvas_menu->activate_menu();
 		result = 1;
 	}
-
 	return result;
 }
 
@@ -613,13 +580,8 @@ void Canvas::create_canvas()
 		}
 
 		if(!canvas_subwindow)
-		{
 			subwindow->add_subwindow(canvas_subwindow = new CanvasOutput(this, 
-				view_x, 
-				view_y, 
-				view_w, 
-				view_h));
-		}
+				view_x, view_y, view_w, view_h));
 	}
 	else
 	{
@@ -630,15 +592,10 @@ void Canvas::create_canvas()
 		}
 
 		if(!canvas_fullscreen)
-		{
 			canvas_fullscreen = new CanvasFullScreen(this,
-							root_w,
-							root_h);
-		}
+				root_w, root_h);
 		else
-		{
 			canvas_fullscreen->show_window();
-		}
 	}
 
 	if(!video_on)
@@ -654,7 +611,10 @@ void Canvas::create_canvas()
 int Canvas::cursor_leave_event_base(BC_WindowBase *caller)
 {
 	int result = 0;
-	if(cursor_inside) result = cursor_leave_event();
+
+	if(cursor_inside)
+		result = cursor_leave_event();
+
 	cursor_inside = 0;
 	return result;
 }
@@ -662,6 +622,7 @@ int Canvas::cursor_leave_event_base(BC_WindowBase *caller)
 int Canvas::cursor_enter_event_base(BC_WindowBase *caller)
 {
 	int result = 0;
+
 	if(caller->is_event_win() && caller->cursor_inside())
 	{
 		cursor_inside = 1;
@@ -786,36 +747,16 @@ void CanvasOutput::repeat_event(int duration)
 }
 
 
-CanvasFullScreen::CanvasFullScreen(Canvas *canvas,
-	int w,
-	int h)
- : BC_FullScreen(canvas->subwindow, 
-	w, 
-	h, 
-	BLACK,
-	0,
-	0,
-	0)
+CanvasFullScreen::CanvasFullScreen(Canvas *canvas, int w, int h)
+ : BC_FullScreen(canvas->subwindow, w, h, BLACK, 0, 0, 0)
 {
 	this->canvas = canvas;
 }
 
 
-CanvasXScroll::CanvasXScroll(EDL *edl, 
-	Canvas *canvas, 
-	int x,
-	int y,
-	int length, 
-	int position, 
-	int handle_length,
-	int pixels)
- : BC_ScrollBar(x, 
-		y, 
-		SCROLL_HORIZ, 
-		pixels, 
-		length, 
-		position, 
-		handle_length)
+CanvasXScroll::CanvasXScroll(EDL *edl, Canvas *canvas, int x, int y,
+	int length, int position, int handle_length, int pixels)
+ : BC_ScrollBar(x, y, SCROLL_HORIZ, pixels, length, position, handle_length)
 {
 	this->canvas = canvas;
 }
@@ -828,21 +769,9 @@ int CanvasXScroll::handle_event()
 }
 
 
-CanvasYScroll::CanvasYScroll(EDL *edl, 
-	Canvas *canvas, 
-	int x,
-	int y,
-	int length, 
-	int position, 
-	int handle_length,
-	int pixels)
- : BC_ScrollBar(x, 
-		y, 
-		SCROLL_VERT, 
-		pixels, 
-		length, 
-		position, 
-		handle_length)
+CanvasYScroll::CanvasYScroll(EDL *edl, Canvas *canvas, int x, int y,
+	int length, int position, int handle_length, int pixels)
+ : BC_ScrollBar(x, y, SCROLL_VERT, pixels, length, position, handle_length)
 {
 	this->canvas = canvas;
 }
@@ -856,11 +785,7 @@ int CanvasYScroll::handle_event()
 
 
 CanvasFullScreenPopup::CanvasFullScreenPopup(Canvas *canvas)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
+ : BC_PopupMenu(0, 0, 0, "", 0)
 {
 	add_item(new CanvasSubWindowItem(canvas));
 }
@@ -882,11 +807,7 @@ int CanvasSubWindowItem::handle_event()
 
 
 CanvasPopup::CanvasPopup(Canvas *canvas)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
+ : BC_PopupMenu(0, 0, 0, "", 0)
 {
 	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));
@@ -897,6 +818,7 @@ CanvasPopup::CanvasPopup(Canvas *canvas)
 	add_item(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
+
 	if(canvas->cwindowgui)
 	{
 		add_item(new CanvasPopupAuto(canvas));
@@ -904,10 +826,10 @@ CanvasPopup::CanvasPopup(Canvas *canvas)
 		add_item(new CanvasPopupResetProjector(canvas));
 		add_item(new CanvasToggleControls(canvas));
 	}
+
 	if(canvas->vwindowgui)
-	{
 		add_item(new CanvasPopupRemoveSource(canvas));
-	}
+
 	add_item(new CanvasFullScreenItem(canvas));
 }
 
