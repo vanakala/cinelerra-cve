@@ -122,14 +122,12 @@ BC_WindowBase* Canvas::get_canvas()
 		return canvas_subwindow;
 }
 
-void Canvas::clear_canvas(int do_flash)
+void Canvas::clear_canvas()
 {
 	BC_WindowBase *cur_canvas = get_canvas();
 
 	cur_canvas->set_color(BLACK);
 	cur_canvas->draw_box(0, 0, cur_canvas->get_w(), cur_canvas->get_h());
-	if(do_flash)
-		cur_canvas->flash();
 }
 
 // Get dimensions given a zoom
@@ -645,7 +643,7 @@ void Canvas::create_canvas()
 
 	if(!video_on)
 	{
-		clear_canvas(0);
+		clear_canvas();
 		draw_refresh();
 	}
 	else
