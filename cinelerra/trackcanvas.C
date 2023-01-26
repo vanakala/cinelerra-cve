@@ -1278,12 +1278,29 @@ int TrackCanvas::do_track_autos(int cursor_x, int cursor_y, int draw, int button
 	{
 		Auto *auto_keyframe;
 		Automation *automation = track->automation;
+		int track_support;
+
+		switch(track->data_type)
+		{
+		case TRACK_AUDIO:
+			track_support = SUPPORTS_AUDIO;
+			break;
+		case TRACK_VIDEO:
+			track_support = SUPPORTS_VIDEO;
+			break;
+		default:
+			continue;
+		}
 
 // Handle float autos
 		for(int i = 0; i < AUTOMATION_TOTAL && !result; i++)
 		{
 // Event not trapped and automation visible
 			Autos *autos = automation->have_autos(i);
+
+			if(!(automation->automation_tbl[i].supports & track_support))
+				continue;
+
 			if(!result && session->auto_conf->auto_visible[i])
 			{
 				pixmaps_lock->lock("TrackCanvas::do_track_autos");

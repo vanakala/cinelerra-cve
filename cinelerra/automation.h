@@ -46,6 +46,7 @@ struct automation_def
 	int color;
 	int preoperation;
 	int operation;
+	int supports;
 	int default_value;
 };
 
