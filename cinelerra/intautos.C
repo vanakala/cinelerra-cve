@@ -13,6 +13,7 @@ IntAutos::IntAutos(EDL *edl, Track *track, int default_value)
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_INT;
+	append(new IntAuto(edl,this));
 }
 
 Auto* IntAutos::new_auto()

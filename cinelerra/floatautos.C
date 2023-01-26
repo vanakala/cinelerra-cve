@@ -14,13 +14,12 @@
 #include "track.h"
 #include "localsession.h"
 
-FloatAutos::FloatAutos(EDL *edl,
-	Track *track,
-	double default_value)
+FloatAutos::FloatAutos(EDL *edl, Track *track, double default_value)
  : Autos(edl, track)
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_FLOAT;
+	append(new_auto());
 }
 
 void FloatAutos::straighten(ptstime start, ptstime end)
