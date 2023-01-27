@@ -42,7 +42,7 @@
 #include "playtransport.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "transportcommand.h"
+#include "tracks.h"
 #include "vtrack.h"
 #include "vframe.h"
 
@@ -2021,6 +2021,14 @@ void CWindowCanvas::draw_camera()
 	if(!track)
 		return;
 
+	for(Track *current = track->tracks->first; current; current = current->next)
+	{
+		if(current->camera_gframe)
+			current->camera_gframe->set_enabled(0);
+		if(current->projector_gframe)
+			current->projector_gframe->set_enabled(0);
+	}
+
 	switch(edlsession->cwindow_operation)
 	{
 	case CWINDOW_CAMERA:
@@ -2030,10 +2038,6 @@ void CWindowCanvas::draw_camera()
 		is_camera = 0;
 		break;
 	default:
-		if(track->camera_gframe)
-			track->camera_gframe->set_enabled(0);
-		if(track->projector_gframe)
-			track->projector_gframe->set_enabled(0);
 		return;
 	}
 
@@ -2044,16 +2048,12 @@ void CWindowCanvas::draw_camera()
 		track->automation->get_camera(&center_x, &center_y, &center_z,
 			position);
 		gframep = &track->camera_gframe;
-		if(track->projector_gframe)
-			track->projector_gframe->set_enabled(0);
 	}
 	else
 	{
 		track->automation->get_projector(&center_x, &center_y, &center_z,
 			position);
 		gframep = &track->projector_gframe;
-		if(track->camera_gframe)
-			track->camera_gframe->set_enabled(0);
 	}
 
 	if(!*gframep)
