@@ -2012,11 +2012,11 @@ void CWindowCanvas::draw_crop()
 void CWindowCanvas::draw_camera()
 {
 	Track *track = gui->cwindow->calculate_affected_track();
-	double center_x;
-	double center_y;
-	double center_z;
+	double center_x, center_y, center_z;
 	GuideFrame **gframep;
 	int is_camera;
+	int track_x1, track_y1, track_x2, track_y2;
+	double h_trackw, h_trackh;
 
 	if(!track)
 		return;
@@ -2043,16 +2043,26 @@ void CWindowCanvas::draw_camera()
 
 	ptstime position = master_edl->local_session->get_selectionstart(1);
 
+	h_trackw = track->track_w / 2;
+	h_trackh = track->track_h / 2;
+
 	if(is_camera)
 	{
-		track->automation->get_camera(&center_x, &center_y, &center_z,
-			position);
+		track_x1 = track_y1 = 0;
+		track_x2 = track->track_w;
+		track_y2 = track->track_h;
 		gframep = &track->camera_gframe;
 	}
 	else
 	{
 		track->automation->get_projector(&center_x, &center_y, &center_z,
 			position);
+		center_x += edlsession->output_w / 2.0;
+		center_y += edlsession->output_h / 2.0;
+		track_x1 = round(center_x - h_trackw * center_z);
+		track_y1 = round(center_y - h_trackh * center_z);
+		track_x2 = round(track_x1 + track->track_w * center_z);
+		track_y2 = round(track_y1 + track->track_h * center_z);
 		gframep = &track->projector_gframe;
 	}
 
@@ -2063,12 +2073,6 @@ void CWindowCanvas::draw_camera()
 		(*gframep)->set_opaque(1);
 	}
 
-	center_x += edlsession->output_w / 2;
-	center_y += edlsession->output_h / 2;
-	int track_x1 = round(center_x - track->track_w / 2 * center_z);
-	int track_y1 = round(center_y - track->track_h / 2 * center_z);
-	int track_x2 = round(track_x1 + track->track_w * center_z);
-	int track_y2 = round(track_y1 + track->track_h * center_z);
 
 	(*gframep)->clear();
 	(*gframep)->add_rectangle(track_x1, track_y1, track_x2 - track_x1,
