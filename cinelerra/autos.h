@@ -18,8 +18,7 @@
 class Autos : public List<Auto>
 {
 public:
-	Autos(EDL *edl, 
-		Track *track);
+	Autos(EDL *edl, Track *track);
 	~Autos();
 
 	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
@@ -45,9 +44,7 @@ public:
 // Insert keyframe at the point if it doesn't exist
 // Interpolate its value if possible
 	Auto* insert_auto(ptstime position, Auto *templ = 0);
-	void insert_track(Autos *automation, 
-		ptstime start,
-		ptstime length,
+	void insert_track(Autos *automation, ptstime start, ptstime length,
 		int overwrite = 0);
 	virtual void load(FileXML *xml);
 	void paste(ptstime start, FileXML *file);
@@ -59,18 +56,8 @@ public:
 
 // Returns a type enumeration
 	int get_type();
-	virtual void get_extents(double *min,
-		double *max,
-		int *coords_undefined,
-		ptstime start,
-		ptstime end) {};
-
-	EDL *edl;
-	Track *track;
-
-	int autoidx;
-	int autogrouptype;
-	int type;
+	virtual void get_extents(double *min, double *max,
+		int *coords_undefined, ptstime start, ptstime end) {};
 
 	void clear_all();
 	void insert(ptstime start, ptstime end);
@@ -80,9 +67,7 @@ public:
 	virtual void copy(Autos *autos, ptstime start, ptstime end);
 
 // Stores the background rendering position in result
-	void clear(ptstime start,
-		ptstime end,
-		int shift_autos);
+	void clear(ptstime start, ptstime end, int shift_autos);
 	void clear_after(ptstime pts);
 	virtual void straighten(ptstime start, ptstime end) {};
 
@@ -104,6 +89,13 @@ public:
 	Auto* nearest_after(ptstime position);     // return nearest auto after or 0
 
 	virtual void dump(int indent = 0) {};
+
+	EDL *edl;
+	Track *track;
+
+	int autoidx;
+	int autogrouptype;
+	int type;
 
 	ptstime base_pts;
 };

@@ -29,7 +29,8 @@ Autos::Autos(EDL *edl, Track *track)
 
 Autos::~Autos()
 {
-	while(last) delete last;
+	while(last)
+		delete last;
 }
 
 int Autos::get_type()
@@ -54,6 +55,7 @@ void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *resul
 		{
 			ptstime position1 = (autos->last ? autos->last->pos_time : startproject);
 			ptstime position2 = current->pos_time;
+
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -63,6 +65,7 @@ void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *resul
 		{
 			ptstime position1 = (last ? last->pos_time : startproject);
 			ptstime position2 = that_current->pos_time;
+
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -78,6 +81,7 @@ void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *resul
 			ptstime position2 = (that_current->previous ?
 				that_current->previous->pos_time :
 				startproject);
+
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -95,24 +99,22 @@ void Autos::copy_from(Autos *autos)
 	for(current = autos->first; current; current = NEXT)
 	{
 		if(!this_current)
-		{
 			append(this_current = new_auto());
-		}
+
 		this_current->copy_from(current);
 		this_current = this_current->next;
 	}
 
-	for( ; this_current; )
+	for(; this_current;)
 	{
 		Auto *next_current = this_current->next;
+
 		delete this_current;
 		this_current = next_current;
 	}
 }
 
-void Autos::insert_track(Autos *automation,
-	ptstime start,
-	ptstime length,
+void Autos::insert_track(Autos *automation, ptstime start, ptstime length,
 	int overwrite)
 {
 // Insert silence
@@ -132,25 +134,24 @@ void Autos::insert_track(Autos *automation,
 	}
 }
 
-Auto* Autos::get_prev_auto(ptstime position,
-	Auto* current)
+Auto* Autos::get_prev_auto(ptstime position, Auto* current)
 {
 // Get on or before position
 // Try existing result
 	if(current)
 	{
-		while(current && current->pos_time < position) 
+		while(current && current->pos_time < position)
 			current = NEXT;
-		while(current && current->pos_time > position) 
+		while(current && current->pos_time > position)
 			current = PREVIOUS;
 	}
 
 	if(!current)
 	{
-		for(current = last; 
-			current && current->pos_time > position; 
-			current = PREVIOUS) ;
+		for(current = last; current && current->pos_time > position;
+			current = PREVIOUS);
 	}
+
 	if(!current)
 		current = first;
 	return current;
@@ -166,32 +167,24 @@ Auto* Autos::get_prev_auto(Auto* current)
 
 int Autos::auto_exists_for_editing(ptstime position)
 {
-	int result = 0;
-
 	if(edlsession->auto_keyframes)
 	{
 		position = edl->align_to_frame(position);
 		if(get_auto_at_position(position))
-			result = 1;
+			return 1;
 	}
 	else
-	{
-		result = 1;
-	}
+		return 1;
 
-	return result;
+	return 0;
 }
 
 Auto* Autos::get_auto_at_position(ptstime position)
 {
-	for(Auto *current = first;
-		current;
-		current = NEXT)
+	for(Auto *current = first; current; current = NEXT)
 	{
 		if(edl->equivalent(current->pos_time, position))
-		{
 			return current;
-		}
 	}
 	return 0;
 }
@@ -207,17 +200,14 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	}
 
 	if(position < 0)
-	{
 		position = edl->local_session->get_selectionstart(1);
-	}
+
 	position = edl->align_to_frame(position);
+
 	if(edlsession->auto_keyframes)
-	{
 		result = insert_auto(position);
-	}
 	else
-		result = get_prev_auto(position,
-			result);
+		result = get_prev_auto(position, result);
 
 	return result;
 }
@@ -234,10 +224,10 @@ Auto* Autos::get_next_auto(ptstime position, Auto* current)
 
 	if(!current)
 	{
-		for(current = first;
-			current && current->pos_time <= position;
+		for(current = first; current && current->pos_time <= position;
 			current = NEXT);
 	}
+
 	if(!current)
 		current = last;
 	return current;
@@ -268,16 +258,17 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 	if(!current)
 	{
 // Get first one on or before as a template
-		for(current = last;
-			current && current->pos_time > position;
+		for(current = last; current && current->pos_time > position;
 			current = PREVIOUS);
 
 		if(current)
 		{
 			insert_after(current, result = new_auto());
 			current = result;
+
 			if(templ)
 				current->copy_from(templ);
+
 			current->pos_time = position;
 // interpolate if possible, else copy from template
 			result->interpolate_from(0, 0, position, templ);
@@ -285,7 +276,6 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 		else
 			current = first;
 	}
-
 	return current;
 }
 
@@ -311,7 +301,7 @@ void Autos::insert(ptstime start, ptstime end)
 	if(current)
 		current = current->next;
 
-	for( ; current && current->pos_time < start; current = NEXT);
+	for(; current && current->pos_time < start; current = NEXT);
 
 	shift = end - start;
 
@@ -321,19 +311,14 @@ void Autos::insert(ptstime start, ptstime end)
 
 void Autos::paste(ptstime start, FileXML *file)
 {
-	int result = 0;
-
-	do{
-		result = file->read_tag();
-
-		if(!result && !file->tag.title_is("/AUTO"))
+	while(!file->read_tag())
+	{
+		if(!file->tag.title_is("/AUTO"))
 		{
 // End of list
 			if(file->tag.get_title()[0] == '/')
-			{
-				result = 1;
-			}
-			else
+				break;
+
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
 				Auto *current = 0;
@@ -352,7 +337,7 @@ void Autos::paste(ptstime start, FileXML *file)
 					current->load(file);
 			}
 		}
-	}while(!result);
+	}
 }
 
 void Autos::paste_silence(ptstime start, ptstime end)
@@ -400,9 +385,7 @@ void Autos::copy(Autos *autos, ptstime start, ptstime end)
 	}
 }
 
-void Autos::clear(ptstime start,
-	ptstime end,
-	int shift_autos)
+void Autos::clear(ptstime start, ptstime end, int shift_autos)
 {
 	Auto *next, *current;
 
@@ -450,23 +433,19 @@ void Autos::clear_after(ptstime pts)
 
 void Autos::load(FileXML *file)
 {
+	Auto *current;
+
 	while(last)
 		remove(last);    // remove any existing autos
 
-	int result = 0, first_auto = 1;
-	Auto *current;
-
-	do{
-		result = file->read_tag();
-
-		if(!result && !file->tag.title_is("/AUTO"))
+	while(!file->read_tag())
+	{
+		if(!file->tag.title_is("/AUTO"))
 		{
 // First tag with leading / is taken as end of autos
 			if(file->tag.get_title()[0] == '/')
-			{
-				result = 1;
-			}
-			else
+				break;
+
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
 				current = append(new_auto());
@@ -480,15 +459,14 @@ void Autos::load(FileXML *file)
 				current->load(file);
 			}
 		}
-	}while(!result);
+	}
 }
 
 Auto* Autos::autoof(ptstime position)
 {
 	Auto *current;
 
-	for(current = first; 
-		current && current->pos_time < position; 
+	for(current = first; current && current->pos_time < position;
 		current = NEXT);
 
 	return current;     // return 0 on failure
@@ -498,7 +476,7 @@ Auto* Autos::nearest_before(ptstime position)
 {
 	Auto *current;
 
-	for(current = last; 
+	for(current = last;
 		current && current->pos_time >= position; current = PREVIOUS);
 
 	return current;     // return 0 on failure
@@ -517,8 +495,10 @@ Auto* Autos::nearest_after(ptstime position)
 void Autos::get_neighbors(ptstime start, ptstime end,
 		Auto **before, Auto **after)
 {
-	if(*before == 0) *before = first;
-	if(*after == 0) *after = last; 
+	if(*before == 0)
+		*before = first;
+	if(*after == 0)
+		*after = last;
 
 	while(*before && (*before)->next && (*before)->next->pos_time <= start)
 		*before = (*before)->next;
@@ -526,9 +506,11 @@ void Autos::get_neighbors(ptstime start, ptstime end,
 	while(*after && (*after)->previous && (*after)->previous->pos_time >= end)
 		*after = (*after)->previous;
 
-	while(*before && (*before)->pos_time > start) *before = (*before)->previous;
+	while(*before && (*before)->pos_time > start)
+		*before = (*before)->previous;
 
-	while(*after && (*after)->pos_time < end) *after = (*after)->next;
+	while(*after && (*after)->pos_time < end)
+		*after = (*after)->next;
 }
 
 void Autos::shift_all(ptstime difference)
