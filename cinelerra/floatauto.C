@@ -10,7 +10,6 @@
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
-#include "localsession.h"
 
 FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
  : Auto(edl, (Autos*)autos)
@@ -20,6 +19,7 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_out_value = 0;
 	control_in_pts = 0;
 	control_out_pts = 0;
+	compat_value = 0;
 	pos_valid = -1;    // "dirty"
 	tangent_mode = TGNT_FREE;
 //  note: in most cases the tangent_mode-value is set
@@ -375,6 +375,13 @@ void FloatAuto::load(FileXML *file)
 	control_in_value *= 2.0;
 	control_out_value *= 2.0;
 
+	if(compat_value && (value < -1.0 || value > 1.0))
+	{
+		value /= compat_value;
+		control_in_value /= compat_value;
+		control_out_value /= compat_value;
+		compat_value = 0;
+	}
 // restore ctrl positions and adjust tangents if necessary
 	adjust_ctrl_positions();
 

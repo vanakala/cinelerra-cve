@@ -34,6 +34,7 @@ public:
 	double get_value() { return this->value; }
 	void set_value(double newval);
 	void add_value(double increment);
+	void set_compat_value(double value) { compat_value = value; }
 	size_t get_size();
 
 	tgnt_mode tangent_mode;
@@ -66,6 +67,9 @@ private:
 // check is member of FloatAutos-Collection
 	static bool is_floatauto_node(Auto *candidate);
 	void handle_automatic_tangent_after_copy();
+
+// Track for loading older versions
+	double compat_value;
 
 // X control positions relative to value position for drawing.
 	ptstime control_in_pts;

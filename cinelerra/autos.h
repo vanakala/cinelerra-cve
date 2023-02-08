@@ -76,6 +76,7 @@ public:
 	void shift_all(ptstime difference);
 
 	Auto* append_auto();
+	inline void set_compat_value(double value) { compat_value = value; };
 
 // rendering utilities
 	void get_neighbors(ptstime start, ptstime end,
@@ -98,6 +99,8 @@ public:
 	int type;
 
 	ptstime base_pts;
+private:
+	double compat_value;
 };
 
 #endif

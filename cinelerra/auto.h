@@ -29,6 +29,7 @@ public:
 	virtual void save_xml(FileXML *file) {};
 	virtual void copy(Auto *that, ptstime start, ptstime end) {};
 
+	virtual void set_compat_value(double value) {};
 	virtual void load(FileXML *file) {};
 
 	virtual void dump(int indent = 0) {};

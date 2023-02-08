@@ -208,6 +208,18 @@ int Automation::load(FileXML *file, int operation)
 			if(operation == PASTE_AUTOS && !edlsession->auto_conf->auto_visible[i])
 				return 0;
 
+			switch(i)
+			{
+			case AUTOMATION_CAMERA_X:
+			case AUTOMATION_PROJECTOR_X:
+				get_autos(i)->set_compat_value(track->track_w);
+				break;
+			case AUTOMATION_CAMERA_Y:
+			case AUTOMATION_PROJECTOR_Y:
+				get_autos(i)->set_compat_value(track->track_h);
+				break;
+			}
+
 			get_autos(i)->load(file);
 			return 1;
 		}

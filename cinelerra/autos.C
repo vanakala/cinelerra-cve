@@ -456,10 +456,12 @@ void Autos::load(FileXML *file)
 					current->pos_time = track->from_units(position);
 				}
 				current->pos_time = file->tag.get_property("POSTIME", current->pos_time);
+				current->set_compat_value(compat_value);
 				current->load(file);
 			}
 		}
 	}
+	compat_value = 0;
 }
 
 Auto* Autos::autoof(ptstime position)
