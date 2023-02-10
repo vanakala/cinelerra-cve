@@ -27,10 +27,8 @@
 
 
 ZoomBar::ZoomBar()
- : BC_SubWindow(theme_global->mzoom_x,
-	theme_global->mzoom_y,
-	theme_global->mzoom_w,
-	theme_global->mzoom_h)
+ : BC_SubWindow(theme_global->mzoom_x, theme_global->mzoom_y,
+	theme_global->mzoom_w, theme_global->mzoom_h)
 {
 	sample_zoom = 0;
 	amp_zoom = 0;
@@ -47,7 +45,7 @@ ZoomBar::~ZoomBar()
 void ZoomBar::show()
 {
 	int x = 3;
-	int y = get_h() / 2 - 
+	int y = get_h() / 2 -
 		theme_global->get_image_set("zoombar_menu", 0)[0]->get_h() / 2;
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
@@ -65,11 +63,10 @@ void ZoomBar::show()
 	x += track_zoom->get_w() + 10;
 	add_subwindow(auto_type = new AutoTypeMenu(this, x, y));
 	x += auto_type->get_w() + 10;
-#define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom = new AutoZoom(this, x, y, 0));
 	x += auto_zoom->get_w();
 	add_subwindow(auto_zoom_text = new ZoomTextBox(this, x, y,
-		DEFAULT_TEXT));
+		"000.00 to 000.00"));
 	x += auto_zoom_text->get_w() + 5;
 	add_subwindow(auto_zoom = new AutoZoom(this, x, y, 1));
 	update_autozoom();
@@ -96,15 +93,13 @@ void ZoomBar::update_formatting(BC_TextBox *dst)
 
 void ZoomBar::resize_event()
 {
-	reposition_window(theme_global->mzoom_x,
-		theme_global->mzoom_y,
-		theme_global->mzoom_w,
-		theme_global->mzoom_h);
+	reposition_window(theme_global->mzoom_x, theme_global->mzoom_y,
+		theme_global->mzoom_w, theme_global->mzoom_h);
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	int x = 3, y = 1;
-	if (sample_zoom) delete sample_zoom;
-	sample_zoom = new SampleZoomPanel(this, x, y);
+	if(sample_zoom)
+		delete sample_zoom;
+	sample_zoom = new SampleZoomPanel(this, 3, 1);
 	flash();
 }
 
@@ -128,6 +123,7 @@ void ZoomBar::draw()
 void ZoomBar::update_autozoom()
 {
 	char string[BCTEXTLEN];
+
 	switch(master_edl->local_session->zoombar_showautotype)
 	{
 	case AUTOGROUPTYPE_AUDIO_FADE:
@@ -190,13 +186,11 @@ void ZoomBar::set_selection(int which_one)
 	switch(which_one)
 	{
 	case SET_LENGTH:
-		start_position = Units::text_to_seconds(from_value->get_text(), 
-			edlsession->sample_rate,
-			edlsession->time_format,
+		start_position = Units::text_to_seconds(from_value->get_text(),
+			edlsession->sample_rate, edlsession->time_format,
 			edlsession->frame_rate);
 		length = Units::text_to_seconds(length_value->get_text(),
-			edlsession->sample_rate,
-			edlsession->time_format,
+			edlsession->sample_rate, edlsession->time_format,
 			edlsession->frame_rate);
 		end_position = start_position + length;
 
@@ -209,13 +203,11 @@ void ZoomBar::set_selection(int which_one)
 		break;
 
 	case SET_FROM:
-		start_position = Units::text_to_seconds(from_value->get_text(), 
-			edlsession->sample_rate,
-			edlsession->time_format,
+		start_position = Units::text_to_seconds(from_value->get_text(),
+			edlsession->sample_rate, edlsession->time_format,
 			edlsession->frame_rate);
-		end_position = Units::text_to_seconds(to_value->get_text(), 
-			edlsession->sample_rate,
-			edlsession->time_format,
+		end_position = Units::text_to_seconds(to_value->get_text(),
+			edlsession->sample_rate, edlsession->time_format,
 			edlsession->frame_rate);
 
 		if(end_position < start_position)
@@ -257,18 +249,9 @@ void ZoomBar::set_selection(int which_one)
 }
 
 
-SampleZoomPanel::SampleZoomPanel(ZoomBar *zoombar,
-	int x,
-	int y)
- : ZoomPanel(zoombar,
-	master_edl->local_session->zoom_time,
-	x, 
-	y, 
-	110, 
-	MIN_ZOOM_TIME, 
-	MAX_ZOOM_TIME, 
-	ZOOM_TIME,
-	0,
+SampleZoomPanel::SampleZoomPanel(ZoomBar *zoombar, int x, int y)
+ : ZoomPanel(zoombar, master_edl->local_session->zoom_time,
+	x, y, 110, MIN_ZOOM_TIME, MAX_ZOOM_TIME, ZOOM_TIME, 0,
 	theme_global->get_image_set("zoombar_menu", 0),
 	theme_global->get_image_set("zoombar_tumbler", 0))
 {
@@ -283,15 +266,8 @@ int SampleZoomPanel::handle_event()
 
 
 AmpZoomPanel::AmpZoomPanel(ZoomBar *zoombar, int x, int y)
- : ZoomPanel(zoombar,
-	master_edl->local_session->zoom_y,
-	x, 
-	y, 
-	80,
-	MIN_AMP_ZOOM, 
-	MAX_AMP_ZOOM, 
-	ZOOM_LONG,
-	0,
+ : ZoomPanel(zoombar, master_edl->local_session->zoom_y,
+	x, y, 80, MIN_AMP_ZOOM, MAX_AMP_ZOOM, ZOOM_LONG, 0,
 	theme_global->get_image_set("zoombar_menu", 0),
 	theme_global->get_image_set("zoombar_tumbler", 0))
 {
@@ -306,15 +282,8 @@ int AmpZoomPanel::handle_event()
 
 
 TrackZoomPanel::TrackZoomPanel(ZoomBar *zoombar, int x, int y)
- : ZoomPanel(zoombar,
-	master_edl->local_session->zoom_track,
-	x, 
-	y, 
-	70,
-	MIN_TRACK_ZOOM, 
-	MAX_TRACK_ZOOM, 
-	ZOOM_LONG,
-	0,
+ : ZoomPanel(zoombar, master_edl->local_session->zoom_track,
+	x, y, 70, MIN_TRACK_ZOOM, MAX_TRACK_ZOOM, ZOOM_LONG, 0,
 	theme_global->get_image_set("zoombar_menu", 0),
 	theme_global->get_image_set("zoombar_tumbler", 0))
 {
@@ -438,11 +407,13 @@ int ZoomTextBox::button_press_event()
 
 	// increment
 	if (get_buttonpress() == 4)
-		mwindow_global->change_currentautorange(master_edl->local_session->zoombar_showautotype, 1, changemax);
+		mwindow_global->change_currentautorange(
+			master_edl->local_session->zoombar_showautotype, 1, changemax);
 
 	// decrement
 	if (get_buttonpress() == 5)
-		mwindow_global->change_currentautorange(master_edl->local_session->zoombar_showautotype, 0, changemax);
+		mwindow_global->change_currentautorange(
+			master_edl->local_session->zoombar_showautotype, 0, changemax);
 
 	mwindow_global->gui->zoombar->update_autozoom();
 	mwindow_global->gui->patchbay->update();
