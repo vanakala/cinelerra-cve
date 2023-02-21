@@ -29,8 +29,8 @@ struct autogrouptype_def Automation::autogrouptypes[] =
 	{ "AUTOGROUPTYPE_AUDIO_FADE_MAX", "AUTOGROUPTYPE_AUDIO_FADE_MIN", 0,},
 	{ "AUTOGROUPTYPE_VIDEO_FADE_MAX", "AUTOGROUPTYPE_VIDEO_FADE_MIN", 0 },
 	{ "AUTOGROUPTYPE_ZOOM_MAX", "AUTOGROUPTYPE_ZOOM_MIN", 0 },
-	{ "AUTOGROUPTYPE_X_MAX", "AUTOGROUPTYPE_X_MIN", 0 },
-	{ "AUTOGROUPTYPE_Y_MAX", "AUTOGROUPTYPE_Y_MIN", 0 },
+	{ "AUTOGROUPTYPE_X_MAX", "AUTOGROUPTYPE_X_MIN", 1 },
+	{ "AUTOGROUPTYPE_Y_MAX", "AUTOGROUPTYPE_Y_MIN", 1 },
 	{ "AUTOGROUPTYPE_INT255_MAX", "AUTOGROUPTYPE_INT255_MIN", 1 }
 };
 
@@ -352,12 +352,12 @@ void Automation::get_projector(double *x, double *y, double *z, ptstime position
 	if(autos[AUTOMATION_PROJECTOR_X])
 		*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position);
 	else
-		*x = (double)automation_tbl[AUTOMATION_PROJECTOR_X].default_value;
+		*x = (double)(automation_tbl[AUTOMATION_PROJECTOR_X].default_value * track->track_w);
 
 	if(autos[AUTOMATION_PROJECTOR_Y])
 		*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position);
 	else
-		*y = (double)automation_tbl[AUTOMATION_PROJECTOR_Y].default_value;
+		*y = (double)(automation_tbl[AUTOMATION_PROJECTOR_Y].default_value * track->track_h);
 
 	if(autos[AUTOMATION_PROJECTOR_Z])
 		*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position);
@@ -370,12 +370,12 @@ void Automation::get_camera(double *x, double *y, double *z, ptstime position)
 	if(autos[AUTOMATION_CAMERA_X])
 		*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position);
 	else
-		*x = (double)automation_tbl[AUTOMATION_CAMERA_X].default_value;
+		*x = (double)(automation_tbl[AUTOMATION_CAMERA_X].default_value * track->track_w);
 
 	if(autos[AUTOMATION_CAMERA_Y])
 		*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position);
 	else
-		*y = (double)automation_tbl[AUTOMATION_CAMERA_Y].default_value;
+		*y = (double)(automation_tbl[AUTOMATION_CAMERA_Y].default_value * track->track_h);
 
 	if(autos[AUTOMATION_CAMERA_Z])
 		*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position);
