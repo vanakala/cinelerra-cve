@@ -31,10 +31,11 @@ public:
 	void dump(int ident = 0);
 
 // "the value" (=payload of this keyframe)
-	double get_value() { return this->value; }
+	inline double get_raw_value() { return value; }
+	double get_value();
 	void set_value(double newval);
 	void add_value(double increment);
-	void set_compat_value(double value) { compat_value = value; }
+	inline void set_compat_value(double value) { compat_value = value; }
 	size_t get_size();
 
 	tgnt_mode tangent_mode;
@@ -42,10 +43,12 @@ public:
 	void toggle_tangent_mode();       // cycles through all modes (e.g. by ctrl-click)
 
 // Control values (y coords of bézier control point), relative to value
-	double get_control_in_value() { check_pos(); return this->control_in_value; }
-	double get_control_out_value() { check_pos(); return this->control_out_value; }
+	double get_control_in_value();
+	double get_control_out_value();
 	void set_control_in_value(double newval);
 	void set_control_out_value(double newval);
+	inline double get_raw_control_in_value() { return control_in_value; }
+	inline double get_raw_control_out_value() { return control_out_value; }
 
 // get calculated x-position of control points for drawing,
 // relative to auto position, in native units of the track.
@@ -56,10 +59,10 @@ public:
 	void adjust_to_new_coordinates(ptstime position, double value);
 
 private:
-// recalc. ctrk in and out points, if automatic tangent mode (SMOOTH or LINEAR)
+// recalc. ctrl in and out points, if automatic tangent mode (SMOOTH or LINEAR)
 	void adjust_tangents();
 // recalc. x location of ctrl points, notify neighbours
-	void adjust_ctrl_positions(FloatAuto *p = 0, FloatAuto *n = 0);
+	void adjust_ctrl_positions();
 	void set_ctrl_positions(FloatAuto *prev, FloatAuto *next);
 	void calculate_slope(FloatAuto* a1, FloatAuto* a2, double& dvdx, double& dx);
 	void check_pos() { if(!PTSEQU(pos_time, pos_valid)) adjust_ctrl_positions(); }

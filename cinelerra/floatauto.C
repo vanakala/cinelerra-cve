@@ -10,6 +10,7 @@
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "track.h"
 
 FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
  : Auto(edl, (Autos*)autos)
@@ -34,7 +35,7 @@ FloatAuto::~FloatAuto()
 	{
 		if(next)
 			((FloatAuto*)next)->tangent_dirty();
-		if (previous)
+		if(previous)
 			((FloatAuto*)previous)->tangent_dirty();
 	}
 }
@@ -62,13 +63,13 @@ void FloatAuto::copy_from(FloatAuto *that)
 // note: literate copy, no recalculations
 }
 
-inline void FloatAuto::handle_automatic_tangent_after_copy()
 // in most cases, we don't want to use the manual tangent modes
 // of the left neighbour used as a template for interpolation.
 // Rather, we (re)set to automatically smoothed tangents. Note
 // auto generated nodes (while tweaking values) indeed are
 // inserted by using this "interpolation" approach, thus making
 // this defaulting to auto-smooth tangents very important.
+inline void FloatAuto::handle_automatic_tangent_after_copy()
 {
 	if(tangent_mode == TGNT_FREE || tangent_mode == TGNT_TFREE)
 	{
@@ -76,7 +77,6 @@ inline void FloatAuto::handle_automatic_tangent_after_copy()
 	}
 }
 
-void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 // bézier interpolates this->value and tangents for the given position
 // between the positions of a1 and a2. If a1 or a2 are omitted, they default
 // to this->previous and this->next. If this FloatAuto has automatic tangents,
@@ -85,6 +85,7 @@ void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 // readjustments are always done to the neighbours in this->autos.
 // If the template is given, it will be used to fill out this
 // objects fields prior to interpolating.
+void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 {
 	if(!a1) a1 = previous;
 	if(!a2) a2 = next;
@@ -106,8 +107,9 @@ void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 		}
 
 		double new_slope = FloatAutos::calculate_bezier_derivation(left, right, pos);
-		this->set_control_in_value(new_slope * control_in_pts);
-		this->set_control_out_value(new_slope * control_out_pts);
+
+		set_control_in_value(new_slope * control_in_pts);
+		set_control_out_value(new_slope * control_out_pts);
 	}
 	else
 		adjust_ctrl_positions(); // implies adjust_tangents()
@@ -143,16 +145,58 @@ void FloatAuto::toggle_tangent_mode()
 
 void FloatAuto::set_value(double newvalue)
 {
-	this->value = newvalue;
-	this->adjust_tangents();
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		value = newvalue / autos->track->track_w;
+		break;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		value = newvalue / autos->track->track_h;
+		break;
+
+	default:
+		value = newvalue;
+		break;
+	}
+	adjust_tangents();
 	if(previous)
 		((FloatAuto*)previous)->adjust_tangents();
 	if(next)
 		((FloatAuto*)next)->adjust_tangents();
 }
 
+double FloatAuto::get_value()
+{
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		return value * autos->track->track_w;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		return value * autos->track->track_h;
+	}
+	return value;
+}
+
 void FloatAuto::add_value(double increment)
 {
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		value = increment / autos->track->track_w;
+		break;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		value = increment / autos->track->track_h;
+		break;
+	}
 	value += increment;
 	adjust_tangents();
 
@@ -164,6 +208,19 @@ void FloatAuto::add_value(double increment)
 
 void FloatAuto::set_control_in_value(double newvalue)
 {
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		value = newvalue / autos->track->track_w;
+		break;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		value = newvalue / autos->track->track_h;
+		break;
+	}
+
 	switch(tangent_mode)
 	{
 	case TGNT_TFREE:
@@ -175,6 +232,19 @@ void FloatAuto::set_control_in_value(double newvalue)
 
 void FloatAuto::set_control_out_value(double newvalue)
 {
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		value = newvalue / autos->track->track_w;
+		break;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		value = newvalue / autos->track->track_h;
+		break;
+	}
+
 	switch(tangent_mode)
 	{
 	case TGNT_TFREE:
@@ -182,6 +252,40 @@ void FloatAuto::set_control_out_value(double newvalue)
 	default:
 		control_out_value = newvalue;
 	}
+}
+
+double FloatAuto::get_control_in_value()
+{
+	check_pos();
+
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		return control_in_value * autos->track->track_w;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		return control_in_value * autos->track->track_h;
+	}
+	return control_in_value;
+}
+
+double FloatAuto::get_control_out_value()
+{
+	check_pos();
+
+	switch(autos->autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		return control_out_value * autos->track->track_w;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		return control_out_value * autos->track->track_h;
+	}
+	return control_out_value;
 }
 
 inline int sgn(double value)
@@ -197,9 +301,9 @@ inline double weighted_mean(double v1, double v2, double w1, double w2)
 		return (w1 * v1 + w2 * v2) / (w1 + w2);
 }
 
-void FloatAuto::adjust_tangents()
 // recalculates tangents if current mode
 // implies automatic adjustment of tangents
+void FloatAuto::adjust_tangents()
 {
 	if(!autos) return;
 
@@ -264,8 +368,8 @@ void FloatAuto::adjust_tangents()
 	}
 }
 
-inline void FloatAuto::calculate_slope(FloatAuto *left, 
-		FloatAuto *right, double &dvdx, double &dx)
+inline void FloatAuto::calculate_slope(FloatAuto *left, FloatAuto *right,
+	double &dvdx, double &dx)
 {
 	dvdx = 0;
 	dx = 0;
@@ -274,10 +378,9 @@ inline void FloatAuto::calculate_slope(FloatAuto *left,
 
 	dx = right->pos_time - left->pos_time;
 	double dv = right->value - left->value;
-	dvdx = (fabsf(dx) < EPSILON) ? 0 : dv/dx;
+	dvdx = (fabs(dx) < EPSILON) ? 0 : dv / dx;
 }
 
-void FloatAuto::adjust_ctrl_positions(FloatAuto *prev, FloatAuto *next)
 // recalculates location of ctrl points to be
 // always 1/3 and 2/3 of the distance to the
 // next neighbours. The reason is: for this special
@@ -286,12 +389,10 @@ void FloatAuto::adjust_ctrl_positions(FloatAuto *prev, FloatAuto *next)
 
 // This adjustment is done only on demand and involves
 // updating neighbours and adjust_tangents() as well.
+void FloatAuto::adjust_ctrl_positions()
 {
-	if(!prev && !next)
-	{ // use current siblings
-		prev = (FloatAuto*)this->previous;
-		next = (FloatAuto*)this->next;
-	}
+	FloatAuto *prev = (FloatAuto*)this->previous;
+	FloatAuto *next = (FloatAuto*)this->next;
 
 	if(prev)
 	{
@@ -324,12 +425,13 @@ inline void redefine_tangent(ptstime &old_pos, ptstime new_pos, double &ctrl_val
 inline void FloatAuto::set_ctrl_positions(FloatAuto *prev, FloatAuto* next)
 {
 	ptstime distance = next->pos_time - prev->pos_time;
+
 	redefine_tangent(prev->control_out_pts, +distance / 3, prev->control_out_value);
 	redefine_tangent(next->control_in_pts, -distance / 3, next->control_in_value);
 }
 
-void FloatAuto::adjust_to_new_coordinates(ptstime position, double value)
 // define new position and value in one step, do necessary re-adjustments
+void FloatAuto::adjust_to_new_coordinates(ptstime position, double value)
 {
 	this->value = value;
 	this->pos_time = position;
@@ -384,7 +486,6 @@ void FloatAuto::load(FileXML *file)
 	}
 // restore ctrl positions and adjust tangents if necessary
 	adjust_ctrl_positions();
-
 }
 
 size_t FloatAuto::get_size()
