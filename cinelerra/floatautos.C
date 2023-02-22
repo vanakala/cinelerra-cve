@@ -161,8 +161,41 @@ int FloatAutos::automation_is_constant(ptstime start,
 	return 1;
 }
 
-double FloatAutos::get_value(ptstime position,
-	FloatAuto* previous,
+double FloatAutos::get_raw_value(ptstime position, FloatAuto* previous,
+	FloatAuto* next)
+{
+// Calculate bezier equation at position
+
+// prev and next will be used to shorten the search, if given
+	previous = (FloatAuto*)get_prev_auto(position, (Auto*)previous);
+	next = (FloatAuto*)get_next_auto(position, (Auto*)next);
+
+// Constant
+	if(!next && !previous)
+		return default_value;
+	else
+	if(!previous)
+		return next->get_raw_value();
+	else
+	if(!next)
+		return previous->get_raw_value();
+	else
+	if(next == previous)
+		return previous->get_raw_value();
+	else
+	{
+		if(EQUIV(previous->get_raw_value(), next->get_raw_value()) &&
+				EQUIV(previous->get_raw_control_out_value(), 0) &&
+				EQUIV(next->get_raw_control_in_value(), 0))
+			return previous->get_raw_value();
+	}
+
+// at this point: previous and next not NULL, positions differ, value not constant.
+
+	return calculate_bezier(previous, next, position);
+}
+
+double FloatAutos::get_value(ptstime position, FloatAuto* previous,
 	FloatAuto* next)
 {
 // Calculate bezier equation at position
@@ -185,9 +218,9 @@ double FloatAutos::get_value(ptstime position,
 		return previous->get_value();
 	else
 	{
-		if(EQUIV(previous->get_value(), next->get_value()) &&
-				EQUIV(previous->get_control_out_value(), 0) &&
-				EQUIV(next->get_control_in_value(), 0))
+		if(EQUIV(previous->get_raw_value(), next->get_raw_value()) &&
+				EQUIV(previous->get_raw_control_out_value(), 0) &&
+				EQUIV(next->get_raw_control_in_value(), 0))
 			return previous->get_value();
 	}
 
@@ -201,12 +234,12 @@ double FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstim
 	if(EQUIV(next->pos_time, previous->pos_time))
 		return previous->get_value();
 
-	double y0 = previous->get_value();
-	double y3 = next->get_value();
+	double y0 = previous->get_raw_value();
+	double y3 = next->get_raw_value();
 
 // control points
-	double y1 = previous->get_value() + previous->get_control_out_value();
-	double y2 = next->get_value() + next->get_control_in_value();
+	double y1 = previous->get_raw_value() + previous->get_raw_control_out_value();
+	double y2 = next->get_raw_value() + next->get_raw_control_in_value();
 	double t =  (position - previous->pos_time) /
 		(next->pos_time - previous->pos_time);
 
@@ -231,16 +264,16 @@ double FloatAutos::calculate_bezier_derivation(FloatAuto *previous, FloatAuto *n
 	double scale = next->pos_time - previous->pos_time;
 	if(fabs(scale) < EPSILON)
 		if(fabs(previous->get_control_out_pts()) > EPSILON)
-			return previous->get_control_out_value() / previous->get_control_out_pts();
+			return previous->get_raw_control_out_value() / previous->get_control_out_pts();
 		else
 			return 0;
 
-	double y0 = previous->get_value();
-	double y3 = next->get_value();
+	double y0 = previous->get_raw_value();
+	double y3 = next->get_raw_value();
 
 // control points
-	double y1 = previous->get_value() + previous->get_control_out_value();
-	double y2 = next->get_value() + next->get_control_in_value();
+	double y1 = previous->get_raw_value() + previous->get_raw_control_out_value();
+	double y2 = next->get_raw_value() + next->get_raw_control_in_value();
 	// normalized scale
 	double t = (position - previous->pos_time) / scale;
 

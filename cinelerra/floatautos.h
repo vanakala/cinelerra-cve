@@ -23,8 +23,11 @@ public:
 		double *constant);
 
 // Get value at a specific point.
-	double get_value(ptstime position,
-		FloatAuto* previous = 0,
+	double get_value(ptstime position, FloatAuto* previous = 0,
+		FloatAuto* next = 0);
+
+// Get raw value at a specific point.
+	double get_raw_value(ptstime position, FloatAuto* previous = 0,
 		FloatAuto* next = 0);
 
 // Helper: just calc the bezier function without doing any lookup of nodes
