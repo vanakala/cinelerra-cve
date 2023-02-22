@@ -45,11 +45,11 @@ LocalSession::LocalSession(EDL *edl)
 	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.001;
 	automation_maxs[AUTOGROUPTYPE_ZOOM] = 4;
 
-	automation_mins[AUTOGROUPTYPE_X] = -100;
-	automation_maxs[AUTOGROUPTYPE_X] = 100;
+	automation_mins[AUTOGROUPTYPE_X] = -1;
+	automation_maxs[AUTOGROUPTYPE_X] = 1;
 
-	automation_mins[AUTOGROUPTYPE_Y] = -100;
-	automation_maxs[AUTOGROUPTYPE_Y] = 100;
+	automation_mins[AUTOGROUPTYPE_Y] = -1;
+	automation_maxs[AUTOGROUPTYPE_Y] = 1;
 
 	automation_mins[AUTOGROUPTYPE_INT255] = 0;
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
