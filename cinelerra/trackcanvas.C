@@ -1471,7 +1471,6 @@ void TrackCanvas::draw_floatauto(FloatAuto *current, int x, int y,
 {
 	int x1, y1, x2, y2;
 
-// Center
 	x1 = x - HANDLE_W / 2;
 	x2 = x + HANDLE_W / 2;
 	y1 = center_pixel + y - HANDLE_W / 2;
@@ -1551,8 +1550,9 @@ inline void TrackCanvas::draw_floatauto_ctrlpoint(int x, int y, int cp_x, int cp
 		int r = HANDLE_W / 2;
 		int cp_x1 = cp_x - r;
 		int cp_y1 = cp_y - r;
+
 		set_color(BLACK);
-		draw_disc  (cp_x1, cp_y1, 2 * r, 2 * r);
+		draw_disc(cp_x1, cp_y1, 2 * r, 2 * r);
 		set_color(color);
 		draw_circle(cp_x1, cp_y1, 2 * r, 2 * r);
 	}
@@ -1640,9 +1640,10 @@ double TrackCanvas::value_to_percentage(double auto_value, int autogrouptype)
 {
 	if(!mwindow_global || !master_edl)
 		return 0;
+
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-	double automation_range = automation_max - automation_min;
+	double automation_range =
+		master_edl->local_session->automation_maxs[autogrouptype] - automation_min;
 
 	if(0 == automation_range || isnan(auto_value) || isinf(auto_value))
 		return 0;
@@ -1809,21 +1810,21 @@ void TrackCanvas::draw_floatline(int center_pixel, FloatAuto *previous, FloatAut
 
 	int prev_y;
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-	double automation_range = automation_max - automation_min;
+	double automation_range =
+		master_edl->local_session->automation_maxs[autogrouptype] - automation_min;
 
 	for(int x = x1; x < x2; x++)
 	{
 		ptstime timpos = view_start + (x / xzoom);
-		double value = autos->get_value(timpos, previous, next);
+		double value = autos->get_raw_value(timpos, previous, next);
 
 		AUTOMATIONCLAMPS(value, autogrouptype);
 
-		int y = center_pixel + 
-			(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+		int y = center_pixel +
+			(int)round(((value - automation_min) / automation_range - 0.5) *
+				-yscale);
 
-		if(x > x1 && 
-			y >= center_pixel - yscale / 2 && 
+		if(x > x1 && y >= center_pixel - yscale / 2 &&
 			y < center_pixel + yscale / 2 - 1)
 		{
 			set_color(BLACK);
@@ -1891,15 +1892,15 @@ int TrackCanvas::test_floatline(int center_pixel, FloatAutos *autos,
 	int autogrouptype = autos->autogrouptype;
 
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-	double automation_range = automation_max - automation_min;
+	double automation_range =
+		master_edl->local_session->automation_maxs[autogrouptype] - automation_min;
 	ptstime timepos = view_start + (cursor_x / xzoom);
-// Call by reference fails for some reason here
 	FloatAuto *previous = 0, *next = 0;
 	double value = autos->get_value(timepos, previous, next);
+
 	AUTOMATIONCLAMPS(value,autogrouptype);
-	int y = center_pixel + 
-		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+	int y = center_pixel +
+		(int)round(((value - automation_min) / automation_range - 0.5) * -yscale);
 
 	if(cursor_x >= x1 && cursor_x < x2 &&
 		cursor_y >= y - HANDLE_W / 2 && cursor_y < y + HANDLE_W / 2 &&
@@ -1996,14 +1997,15 @@ double TrackCanvas::percentage_to_value(double percentage, int is_toggle,
 	else
 	{
 		double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-		double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-		double automation_range = automation_max - automation_min;
+		double automation_range =
+			master_edl->local_session->automation_maxs[autogrouptype] -
+			automation_min;
 
 		result = percentage * automation_range + automation_min;
 		if(reference)
 		{
 			FloatAuto *ptr = (FloatAuto*)reference;
-			result -= ptr->get_value();
+			result -= ptr->get_raw_value();
 		}
 	}
 	return result;
@@ -2015,35 +2017,28 @@ void TrackCanvas::calculate_auto_position(double *x, double *y,
 	int autogrouptype)
 {
 	double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-	double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-	double automation_range = automation_max - automation_min;
+	double automation_range =
+		master_edl->local_session->automation_maxs[autogrouptype] - automation_min;
 	FloatAuto *ptr = (FloatAuto*)current;
 
 	*x = (ptr->pos_time - start) * zoom;
-	*y = ((ptr->get_value() - automation_min) /
+	*y = ((ptr->get_raw_value() - automation_min) /
 		automation_range - 0.5) * -yscale;
 
 	if(in_x)
-	{
-		*in_x = (ptr->pos_time + ptr->get_control_in_pts() - start) *
-			zoom;
-	}
+		*in_x = (ptr->pos_time + ptr->get_control_in_pts() - start) * zoom;
+
 	if(in_y)
-	{
-		*in_y = (((ptr->get_value() + ptr->get_control_in_value()) -
-			automation_min) /
-			automation_range - 0.5) * -yscale;
-	}
+		*in_y = (((ptr->get_raw_value() + ptr->get_raw_control_in_value()) -
+			automation_min) / automation_range - 0.5) * -yscale;
+
 	if(out_x)
-	{
 		*out_x = (ptr->pos_time +
 			ptr->get_control_out_pts() - start) * zoom;
-	}
+
 	if(out_y)
-	{
-		*out_y = (((ptr->get_value() + ptr->get_control_out_value()) -
+		*out_y = (((ptr->get_raw_value() + ptr->get_raw_control_out_value()) -
 			automation_min) / automation_range - 0.5) * -yscale;
-	}
 }
 
 int TrackCanvas::do_float_autos(Track *track, Autos *autos,
@@ -2244,10 +2239,12 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 	if(autotype == AUTOMATION_TYPE_FLOAT)
 	{
 		double automation_min = master_edl->local_session->automation_mins[autogrouptype];
-		double automation_max = master_edl->local_session->automation_maxs[autogrouptype];
-		double automation_range = automation_max - automation_min;
-		y = center_pixel +
-				(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
+		double automation_range =
+			master_edl->local_session->automation_maxs[autogrouptype] -
+			automation_min;
+
+		y = center_pixel + (int)round(((value - automation_min) /
+			automation_range - 0.5) * -yscale);
 	}
 	else
 	{
