@@ -143,24 +143,30 @@ void FloatAuto::toggle_tangent_mode()
 	}
 }
 
-void FloatAuto::set_value(double newvalue)
+void FloatAuto::set_value(double newvalue, int raw)
 {
-	switch(autos->autoidx)
+	if(!raw)
 	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		value = newvalue / autos->track->track_w;
-		break;
+		switch(autos->autoidx)
+		{
+		case AUTOMATION_CAMERA_X:
+		case AUTOMATION_PROJECTOR_X:
+			value = newvalue / autos->track->track_w;
+			break;
 
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		value = newvalue / autos->track->track_h;
-		break;
+		case AUTOMATION_CAMERA_Y:
+		case AUTOMATION_PROJECTOR_Y:
+			value = newvalue / autos->track->track_h;
+			break;
 
-	default:
-		value = newvalue;
-		break;
+		default:
+			value = newvalue;
+			break;
+		}
 	}
+	else
+		value = newvalue;
+
 	adjust_tangents();
 	if(previous)
 		((FloatAuto*)previous)->adjust_tangents();

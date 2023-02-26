@@ -33,7 +33,7 @@ public:
 // "the value" (=payload of this keyframe)
 	inline double get_raw_value() { return value; }
 	double get_value();
-	void set_value(double newval);
+	void set_value(double newval, int raw = 0);
 	void add_value(double increment);
 	inline void set_compat_value(double value) { compat_value = value; }
 	size_t get_size();
