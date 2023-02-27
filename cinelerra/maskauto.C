@@ -184,8 +184,8 @@ void SubMask::dump(int indent)
 }
 
 
-MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
- : Auto(edl, autos)
+MaskAuto::MaskAuto(MaskAutos *autos)
+ : Auto(autos)
 {
 	feather = 0;
 	value = 100;

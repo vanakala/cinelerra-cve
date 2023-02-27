@@ -17,7 +17,7 @@ class FloatAuto : public Auto
 {
 public:
 	FloatAuto() {};
-	FloatAuto(EDL *edl, FloatAutos *autos);
+	FloatAuto(FloatAutos *autos);
 	~FloatAuto();
 
 	void copy_from(Auto *that);

@@ -14,13 +14,12 @@ CropAutos::CropAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_CROP;
-	append(new CropAuto(edl, this));
+	append(new CropAuto(this));
 }
 
 Auto* CropAutos::new_auto()
 {
-	CropAuto *result = new CropAuto(edl, this);
-	return result;
+	return new CropAuto(this);
 }
 
 CropAuto *CropAutos::get_values(ptstime position, int *left, int *right,

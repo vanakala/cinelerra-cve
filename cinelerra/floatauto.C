@@ -6,14 +6,13 @@
 #include "autos.h"
 #include "automation.inc"
 #include "clip.h"
-#include "edl.inc"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
 #include "track.h"
 
-FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
- : Auto(edl, (Autos*)autos)
+FloatAuto::FloatAuto(FloatAutos *autos)
+ : Auto((Autos*)autos)
 {
 	value = 0;
 	control_in_value = 0;

@@ -566,9 +566,9 @@ CWindowCamProjGUI::CWindowCamProjGUI(CWindowTool *thread,
 	BC_Button *button;
 
 	is_camera = camera;
-	local_x = new FloatAuto(0, 0);
-	local_y = new FloatAuto(0, 0);
-	local_z = new FloatAuto(0, 0);
+	local_x = new FloatAuto(0);
+	local_y = new FloatAuto(0);
+	local_z = new FloatAuto(0);
 
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
@@ -1170,7 +1170,7 @@ CWindowMaskGUI::CWindowMaskGUI(CWindowTool *thread)
 	Track *track = mwindow_global->cwindow->calculate_affected_track();
 
 	this->thread = thread;
-	localauto = new MaskAuto(0, 0);
+	localauto = new MaskAuto(0);
 
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new CWindowMaskMode(this,

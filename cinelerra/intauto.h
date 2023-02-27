@@ -7,14 +7,13 @@
 #define INTAUTO_H
 
 #include "auto.h"
-#include "edl.inc"
 #include "filexml.inc"
 #include "intautos.inc"
 
 class IntAuto : public Auto
 {
 public:
-	IntAuto(EDL *edl, IntAutos *autos);
+	IntAuto(IntAutos *autos);
 
 	void copy_from(Auto *that);
 	void copy_from(IntAuto *that);

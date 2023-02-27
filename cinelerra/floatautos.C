@@ -56,7 +56,7 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 
 Auto* FloatAutos::new_auto()
 {
-	FloatAuto *result = new FloatAuto(edl, this);
+	FloatAuto *result = new FloatAuto(this);
 	result->set_value(default_value);
 	return result;
 }

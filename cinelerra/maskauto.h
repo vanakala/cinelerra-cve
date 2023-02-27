@@ -49,7 +49,7 @@ public:
 class MaskAuto : public Auto
 {
 public:
-	MaskAuto(EDL *edl, MaskAutos *autos);
+	MaskAuto(MaskAutos *autos);
 	~MaskAuto();
 
 	void load(FileXML *file);

@@ -546,7 +546,7 @@ void Plugin::load(FileXML *file, ptstime start)
 
 				if(!(keyframe = (KeyFrame *)keyframes->get_auto_at_position(postime)))
 				{
-					keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
+					keyframe = (KeyFrame*)keyframes->append(new KeyFrame(keyframes));
 					keyframe->pos_time = postime;
 				}
 				keyframe->load(file);

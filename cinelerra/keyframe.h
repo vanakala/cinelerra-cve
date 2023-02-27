@@ -16,7 +16,7 @@ class KeyFrame : public Auto
 {
 public:
 	KeyFrame();
-	KeyFrame(EDL *edl, KeyFrames *autos);
+	KeyFrame(KeyFrames *autos);
 	~KeyFrame();
 
 	void load(FileXML *file);

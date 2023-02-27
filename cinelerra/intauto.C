@@ -3,13 +3,12 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#include "edl.inc"
 #include "filexml.h"
 #include "intauto.h"
 #include "intautos.h"
 
-IntAuto::IntAuto(EDL *edl, IntAutos *autos)
- : Auto(edl, (Autos*)autos)
+IntAuto::IntAuto(IntAutos *autos)
+ : Auto((Autos*)autos)
 {
 	value = 0;
 }

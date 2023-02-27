@@ -3,14 +3,13 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2019 Einar Rünkaru <einarrunkaru@gmail dot com>
 
-#include "edl.inc"
 #include "filexml.h"
 #include "cropauto.h"
 #include "cropautos.h"
 #include "track.h"
 
-CropAuto::CropAuto(EDL *edl, CropAutos *autos)
- : Auto(edl, (Autos*)autos)
+CropAuto::CropAuto(CropAutos *autos)
+ : Auto((Autos*)autos)
 {
 	left = 0;
 	top = 0;

@@ -16,8 +16,8 @@ KeyFrame::KeyFrame()
 	drawn_x = -1;
 }
 
-KeyFrame::KeyFrame(EDL *edl, KeyFrames *autos)
- : Auto(edl, (Autos*)autos)
+KeyFrame::KeyFrame(KeyFrames *autos)
+ : Auto((Autos*)autos)
 {
 	data = 0;
 	drawn_x = -1;

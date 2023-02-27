@@ -9,7 +9,6 @@
 #include "auto.inc"
 #include "autos.inc"
 #include "datatype.h"
-#include "edl.inc"
 #include "filexml.inc"
 #include "linklist.h"
 
@@ -18,7 +17,7 @@ class Auto : public ListItem<Auto>
 {
 public:
 	Auto();
-	Auto(EDL *edl, Autos *autos);
+	Auto(Autos *autos);
 
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that) { return 0; };
@@ -34,7 +33,6 @@ public:
 
 	virtual void dump(int indent = 0) {};
 
-	EDL *edl;
 	Autos *autos;
 	ptstime pos_time;
 };

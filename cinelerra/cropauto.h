@@ -15,7 +15,7 @@
 class CropAuto : public Auto
 {
 public:
-	CropAuto(EDL *edl, CropAutos *autos);
+	CropAuto(CropAutos *autos);
 
 	void copy_from(Auto *that);
 	void copy_from(CropAuto *that);

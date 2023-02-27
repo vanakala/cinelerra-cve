@@ -13,7 +13,7 @@ MaskAutos::MaskAutos(EDL *edl, Track *track)
 {
 	type = AUTOMATION_TYPE_MASK;
 	mode = MASK_SUBTRACT_ALPHA;
-	append(new MaskAuto(edl, this));
+	append(new MaskAuto(this));
 }
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
@@ -87,7 +87,7 @@ void MaskAutos::avg_points(MaskPoint *output,
 
 Auto* MaskAutos::new_auto()
 {
-	return new MaskAuto(edl, this);
+	return new MaskAuto(this);
 }
 
 void MaskAutos::copy_values(Autos *autos)

@@ -10,15 +10,13 @@
 Auto::Auto()
  : ListItem<Auto>()
 {
-	this->edl = 0;
 	this->autos = 0;
 	pos_time = 0;
 }
 
-Auto::Auto(EDL *edl, Autos *autos)
+Auto::Auto(Autos *autos)
  : ListItem<Auto>()
 {
-	this->edl = edl;
 	this->autos = autos;
 	pos_time = 0;
 }

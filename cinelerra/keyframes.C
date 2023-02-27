@@ -16,7 +16,7 @@ KeyFrames::KeyFrames(EDL *edl, Track *track, Plugin *plugin)
 
 Auto* KeyFrames::new_auto()
 {
-	return new KeyFrame(edl, this);
+	return new KeyFrame(this);
 }
 
 void KeyFrames::drag_limits(Auto *current, ptstime *prev, ptstime *next)
