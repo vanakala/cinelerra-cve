@@ -257,8 +257,9 @@ CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, double value, int 
 	set_log_floatincrement(log_increment);
 }
 
-CWindowCoord::CWindowCoord(int x, int y, double value, CWindowToolGUI *gui)
- : BC_TumbleTextBox(gui, value, 0.0, 1.0, x, y, 100)
+CWindowCoord::CWindowCoord(int x, int y, double value, CWindowToolGUI *gui,
+	int allow_neg)
+ : BC_TumbleTextBox(gui, value, allow_neg ? -1.0 : 0.0, 1.0, x, y, 100)
 {
 	this->gui = gui;
 	set_increment(0.0001);
@@ -572,13 +573,13 @@ CWindowCamProjGUI::CWindowCamProjGUI(CWindowTool *thread,
 
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
-	this->x = new CWindowCoord(this, x, y, 0);
+	this->x = new CWindowCoord(x, y, 0, this, 1);
 	y += 30;
 
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
 	x += title->get_w();
-	this->y = new CWindowCoord(this, x, y, 0);
+	this->y = new CWindowCoord(x, y, 0, this, 1);
 	y += 30;
 
 	x = 10;
@@ -644,9 +645,9 @@ int CWindowCamProjGUI::handle_event()
 		create_x, create_y, create_z);
 
 	if(create_x && x_auto)
-		x_auto->set_value(atof(x->get_text()));
+		x_auto->set_value(atof(x->get_text()), 1);
 	else if(create_y && y_auto)
-		y_auto->set_value(atof(y->get_text()));
+		y_auto->set_value(atof(y->get_text()), 1);
 	else if(create_z && z_auto)
 	{
 		double zoom = atof(z->get_text());
@@ -674,11 +675,11 @@ void CWindowCamProjGUI::update()
 	get_keyframes(x_auto, y_auto, z_auto, is_camera, 0, 0, 0);
 
 	if(x_auto)
-		x->update((int)round(x_auto->get_value()));
+		x->update(x_auto->get_raw_value());
 	if(y_auto)
-		y->update((int)round(y_auto->get_value()));
+		y->update(y_auto->get_raw_value());
 	if(z_auto)
-		z->update(z_auto->get_value());
+		z->update(z_auto->get_raw_value());
 
 	if(x_auto && y_auto && z_auto)
 	{

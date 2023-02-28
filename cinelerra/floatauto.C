@@ -213,19 +213,6 @@ void FloatAuto::add_value(double increment)
 
 void FloatAuto::set_control_in_value(double newvalue)
 {
-	switch(autos->autoidx)
-	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		value = newvalue / autos->track->track_w;
-		break;
-
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		value = newvalue / autos->track->track_h;
-		break;
-	}
-
 	switch(tangent_mode)
 	{
 	case TGNT_TFREE:
@@ -237,19 +224,6 @@ void FloatAuto::set_control_in_value(double newvalue)
 
 void FloatAuto::set_control_out_value(double newvalue)
 {
-	switch(autos->autoidx)
-	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		value = newvalue / autos->track->track_w;
-		break;
-
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		value = newvalue / autos->track->track_h;
-		break;
-	}
-
 	switch(tangent_mode)
 	{
 	case TGNT_TFREE:

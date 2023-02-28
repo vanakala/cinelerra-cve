@@ -2751,7 +2751,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				edlsession->ptstotext(string,
 					((FloatAuto*)current)->get_control_out_pts());
 				mwindow_global->show_message("%s, %.2f", string,
-					((FloatAuto*)current)->get_control_out_value());
+					((FloatAuto*)current)->get_raw_control_out_value());
 			}
 		}
 		break;

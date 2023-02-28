@@ -366,6 +366,9 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 	autos_track->automation->get_projector(&center_x, &center_y,
 		&center_z, output->get_pts());
 
+	center_x *= trackw;
+	center_y *= trackh;
+
 	center_x += outw / 2;
 	center_y += outh / 2;
 
