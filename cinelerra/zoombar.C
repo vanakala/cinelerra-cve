@@ -137,12 +137,6 @@ void ZoomBar::update_autozoom()
 			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype],
 			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype]);
 		break;
-	case AUTOGROUPTYPE_X:
-	case AUTOGROUPTYPE_Y:
-		sprintf(string, "%0.0f to %.0f\n", 
-			master_edl->local_session->automation_mins[master_edl->local_session->zoombar_showautotype],
-			master_edl->local_session->automation_maxs[master_edl->local_session->zoombar_showautotype]);
-		break;
 	}
 	auto_zoom_text->update(string);
 }
@@ -336,8 +330,6 @@ AutoTypeMenu::AutoTypeMenu(ZoomBar *zoombar, int x, int y)
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_AUDIO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_VIDEO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_ZOOM)));
-	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_X)));
-	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_Y)));
 }
 
 const char* AutoTypeMenu::to_text(int mode)
@@ -350,10 +342,6 @@ const char* AutoTypeMenu::to_text(int mode)
 		return _("Video Fade:");
 	case AUTOGROUPTYPE_ZOOM:
 		return _("Zoom:");
-	case AUTOGROUPTYPE_X:
-		return _("X:");
-	case AUTOGROUPTYPE_Y:
-		return _("Y:");
 	default:
 		return _("??");
 	}
@@ -367,10 +355,6 @@ int AutoTypeMenu::from_text(const char *text)
 		return AUTOGROUPTYPE_VIDEO_FADE;
 	if(!strcmp(text, to_text(AUTOGROUPTYPE_ZOOM)))
 		return AUTOGROUPTYPE_ZOOM;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_X)))
-		return AUTOGROUPTYPE_X;
-	if(!strcmp(text, to_text(AUTOGROUPTYPE_Y)))
-		return AUTOGROUPTYPE_Y;
 	return AUTOGROUPTYPE_COUNT;
 }
 

@@ -148,15 +148,6 @@ void MWindow::fit_autos(int doall)
 				max = floor(max * 200) / 100;
 			}
 			break;
-
-		case AUTOGROUPTYPE_X:
-		case AUTOGROUPTYPE_Y:
-			if(range < 5)
-			{
-				min = floor((min + max) / 2) - 50;
-				max = floor((min + max) / 2) + 50;
-			}
-			break;
 		}
 
 		if(!Automation::autogrouptypes[i].fixedrange)
@@ -198,10 +189,6 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			else 
 				val = val * 2;
 			break;
-		case AUTOGROUPTYPE_X:
-		case AUTOGROUPTYPE_Y:
-			val = floor(val + 5);
-			break;
 		}
 	}
 	else 
@@ -217,10 +204,6 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 		case AUTOGROUPTYPE_ZOOM:
 			if(val > 0)
 				val = val / 2;
-			break;
-		case AUTOGROUPTYPE_X:
-		case AUTOGROUPTYPE_Y:
-			val = floor(val - 5);
 			break;
 		}
 	}
