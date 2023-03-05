@@ -198,6 +198,7 @@ double FloatAutos::get_raw_value(ptstime position, FloatAuto* previous,
 double FloatAutos::get_value(ptstime position, FloatAuto* previous,
 	FloatAuto* next)
 {
+	double value;
 // Calculate bezier equation at position
 
 // prev and next will be used to shorten the search, if given
@@ -224,9 +225,20 @@ double FloatAutos::get_value(ptstime position, FloatAuto* previous,
 			return previous->get_value();
 	}
 
-// at this point: previous and next not NULL, positions differ, value not constant.
+	value = calculate_bezier(previous, next, position);
 
-	return calculate_bezier(previous, next, position);
+	switch(autoidx)
+	{
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		return value * track->track_w;
+
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		return value * track->track_h;
+	}
+
+	return value;
 }
 
 double FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstime position)

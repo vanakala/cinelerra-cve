@@ -296,6 +296,7 @@ void VTrackRender::calculate_input_transfer(ptstime position,
 
 // get camera center in track
 	autos_track->automation->get_camera(&auto_x, &auto_y, &auto_z, position);
+
 	camera_z *= auto_z;
 	camera_x += auto_x;
 	camera_y += auto_y;
@@ -365,9 +366,6 @@ void VTrackRender::calculate_output_transfer(VFrame *output,
 
 	autos_track->automation->get_projector(&center_x, &center_y,
 		&center_z, output->get_pts());
-
-	center_x *= trackw;
-	center_y *= trackh;
 
 	center_x += outw / 2;
 	center_y += outh / 2;
