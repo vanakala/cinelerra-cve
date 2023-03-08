@@ -42,6 +42,7 @@ public:
 		ptstime start,
 		ptstime end);
 	void straighten(ptstime start, ptstime end);
+	double scale_value(double value);
 
 	Auto* append_auto();
 	Auto* new_auto();
