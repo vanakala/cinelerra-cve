@@ -236,45 +236,23 @@ void FloatAuto::set_control_out_value(double newvalue)
 double FloatAuto::get_control_in_value()
 {
 	check_pos();
-
-	switch(autos->autoidx)
-	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		return control_in_value * autos->track->track_w;
-
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		return control_in_value * autos->track->track_h;
-	}
 	return control_in_value;
 }
 
 double FloatAuto::get_control_out_value()
 {
 	check_pos();
-
-	switch(autos->autoidx)
-	{
-	case AUTOMATION_CAMERA_X:
-	case AUTOMATION_PROJECTOR_X:
-		return control_out_value * autos->track->track_w;
-
-	case AUTOMATION_CAMERA_Y:
-	case AUTOMATION_PROJECTOR_Y:
-		return control_out_value * autos->track->track_h;
-	}
 	return control_out_value;
 }
 
 inline int sgn(double value)
 {
-	return (value == 0) ? 0 : (value < 0) ? -1 : 1;
+	return (fabs(value) < EPSILON) ? 0 : (value < 0) ? -1 : 1;
 }
 
 inline double weighted_mean(double v1, double v2, double w1, double w2)
 {
-	if(0.000001 > fabs(w1 + w2))
+	if(fabs(w1 + w2) < EPSILON)
 		return 0;
 	else
 		return (w1 * v1 + w2 * v2) / (w1 + w2);
