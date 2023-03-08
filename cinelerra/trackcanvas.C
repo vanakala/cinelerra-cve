@@ -1896,7 +1896,7 @@ int TrackCanvas::test_floatline(int center_pixel, FloatAutos *autos,
 		master_edl->local_session->automation_maxs[autogrouptype] - automation_min;
 	ptstime timepos = view_start + (cursor_x / xzoom);
 	FloatAuto *previous = 0, *next = 0;
-	double value = autos->get_value(timepos, previous, next);
+	double value = autos->get_raw_value(timepos, previous, next);
 
 	AUTOMATIONCLAMPS(value,autogrouptype);
 	int y = center_pixel +
@@ -1911,7 +1911,7 @@ int TrackCanvas::test_floatline(int center_pixel, FloatAutos *autos,
 		{
 			Auto *current;
 			current = mainsession->drag_auto = autos->insert_auto(timepos);
-			((FloatAuto*)current)->set_value(value);
+			((FloatAuto*)current)->set_value(value, 1);
 			mainsession->drag_start_percentage = value_to_percentage(value, autogrouptype);
 			mainsession->drag_start_postime = current->pos_time;
 			mainsession->drag_origin_x = cursor_x;
