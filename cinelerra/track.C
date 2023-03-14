@@ -69,6 +69,8 @@ Track::~Track()
 	}
 	plugins.remove_all_objects();
 	tracks->reset_plugins();
+	mwindow_global->delete_guideframe(camera_gframe);
+	mwindow_global->delete_guideframe(projector_gframe);
 	delete automation;
 	delete edits;
 	delete renderer;

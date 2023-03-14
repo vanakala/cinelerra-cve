@@ -222,6 +222,11 @@ GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end)
 	return gui->canvas->guidelines.append_frame(start, end);
 }
 
+void CWindow::delete_guideframe(GuideFrame *gframe)
+{
+	gui->canvas->guidelines.remove(gframe);
+}
+
 int CWindow::stop_playback()
 {
 	playback_engine->send_command(STOP);

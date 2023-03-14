@@ -48,6 +48,7 @@ public:
 	void show_window();
 	void hide_window();
 	GuideFrame *new_guideframe(ptstime start, ptstime end);
+	void delete_guideframe(GuideFrame *gframe);
 	int stop_playback();
 
 	int destination;

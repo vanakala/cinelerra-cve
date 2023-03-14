@@ -498,6 +498,19 @@ void CWindowGUI::drag_stop()
 	}
 }
 
+void CWindowGUI::clear_canvas()
+{
+	for(Track *current = master_edl->tracks->first; current; current = current->next)
+	{
+		if(current->camera_gframe)
+			current->camera_gframe->set_enabled(0);
+		if(current->projector_gframe)
+			current->projector_gframe->set_enabled(0);
+	}
+	canvas->safe_regions->set_enabled(0);
+	canvas->clear_canvas();
+}
+
 
 CWindowEditing::CWindowEditing(CWindowGUI *gui, MeterPanel *meter_panel)
  : EditPanel(gui, theme_global->cedit_x, theme_global->cedit_y,

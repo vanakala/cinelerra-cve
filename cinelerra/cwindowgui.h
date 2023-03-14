@@ -61,6 +61,7 @@ public:
 	void drag_motion();
 	void drag_stop();
 	void draw_status();
+	void clear_canvas();
 // Zero out pointers to affected auto
 	void reset_affected();
 	void keyboard_zoomin();

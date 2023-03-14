@@ -492,6 +492,12 @@ void MWindow::set_brender_start()
 	draw_canvas_overlays();
 }
 
+void MWindow::delete_guideframe(GuideFrame *gframe)
+{
+	if(gframe)
+		cwindow->delete_guideframe(gframe);
+}
+
 void MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode)
 {
@@ -510,6 +516,7 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
+		cwindow->gui->clear_canvas();
 		reset_caches();
 		assetlist_global.reset_inuse();
 		cliplist_global.remove_all_objects();
