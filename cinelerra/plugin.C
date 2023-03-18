@@ -70,10 +70,10 @@ Plugin::~Plugin()
 			}
 		}
 	}
-	while(keyframes->last) delete keyframes->last;
+	while(keyframes->last)
+		delete keyframes->last;
 	delete keyframes;
 	track->tracks->reset_plugins();
-	delete guideframe;
 	delete trackplugin;
 	plugin_server->close_plugin(client);
 }

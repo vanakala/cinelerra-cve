@@ -217,14 +217,27 @@ void CWindow::update(int options)
 			theme_global->ccanvas_h);
 }
 
-GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end)
+GuideFrame *CWindow::new_guideframe(ptstime start, ptstime end, GuideFrame **gfp)
 {
-	return gui->canvas->guidelines.append_frame(start, end);
+	if(!*gfp)
+	{
+		gui->canvas->lock_canvas("CWindow::new_guideframe");
+		if(!*gfp)
+			*gfp = gui->canvas->guidelines.append_frame(start, end);
+		gui->canvas->unlock_canvas();
+	}
+	return *gfp;
 }
 
-void CWindow::delete_guideframe(GuideFrame *gframe)
+void CWindow::delete_guideframe(GuideFrame **gfp)
 {
-	gui->canvas->guidelines.remove(gframe);
+	gui->canvas->lock_canvas("CWindow::delete_guideframe");
+	if(*gfp)
+	{
+		gui->canvas->guidelines.remove(*gfp);
+		*gfp = 0;
+	}
+	gui->canvas->unlock_canvas();
 }
 
 int CWindow::stop_playback()

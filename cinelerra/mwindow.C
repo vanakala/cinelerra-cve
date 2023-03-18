@@ -492,7 +492,7 @@ void MWindow::set_brender_start()
 	draw_canvas_overlays();
 }
 
-void MWindow::delete_guideframe(GuideFrame *gframe)
+void MWindow::delete_guideframe(GuideFrame **gframe)
 {
 	if(gframe)
 		cwindow->delete_guideframe(gframe);

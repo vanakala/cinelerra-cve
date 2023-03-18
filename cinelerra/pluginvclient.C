@@ -20,12 +20,7 @@ PluginVClient::PluginVClient(PluginServer *server)
 PluginVClient::~PluginVClient()
 {
 	if(plugin)
-	{
-		GuideFrame *gf = plugin->guideframe;
-
-		plugin->guideframe = 0;
-		delete gf;
-	}
+		mwindow_global->cwindow->delete_guideframe(&plugin->guideframe);
 }
 
 ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
@@ -46,9 +41,9 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 
 GuideFrame *PluginVClient::get_guides()
 {
-	if(!plugin->guideframe && mwindow_global)
-		plugin->guideframe = mwindow_global->cwindow->new_guideframe(get_start(),
-			get_end());
+	if(mwindow_global)
+		mwindow_global->cwindow->new_guideframe(get_start(),
+			get_end(), &plugin->guideframe);
 
 	if(plugin->guideframe)
 		plugin->guideframe->renderer = (VTrackRender*)renderer;

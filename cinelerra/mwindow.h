@@ -338,7 +338,7 @@ public:
 	void swap_shared_main(Plugin *sharedplugin);
 	void clear_automation();
 	void straighten_automation();
-	void delete_guideframe(GuideFrame *gframe);
+	void delete_guideframe(GuideFrame **gframe);
 
 	void modify_edithandles(void);
 	void modify_pluginhandles(void);
