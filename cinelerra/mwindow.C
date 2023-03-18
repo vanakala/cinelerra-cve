@@ -498,6 +498,11 @@ void MWindow::delete_guideframe(GuideFrame **gframe)
 		cwindow->delete_guideframe(gframe);
 }
 
+void MWindow::new_guideframe(ptstime start, ptstime end, GuideFrame **gframe)
+{
+	cwindow->new_guideframe(start, end, gframe);
+}
+
 void MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode)
 {

@@ -5,7 +5,6 @@
 
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "cwindow.h"
 #include "guidelines.h"
 #include "mwindow.h"
 #include "plugin.h"
@@ -20,7 +19,7 @@ PluginVClient::PluginVClient(PluginServer *server)
 PluginVClient::~PluginVClient()
 {
 	if(plugin)
-		mwindow_global->cwindow->delete_guideframe(&plugin->guideframe);
+		mwindow_global->delete_guideframe(&plugin->guideframe);
 }
 
 ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
@@ -42,7 +41,7 @@ int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const F
 GuideFrame *PluginVClient::get_guides()
 {
 	if(mwindow_global)
-		mwindow_global->cwindow->new_guideframe(get_start(),
+		mwindow_global->new_guideframe(get_start(),
 			get_end(), &plugin->guideframe);
 
 	if(plugin->guideframe)
