@@ -341,32 +341,17 @@ CWindowCropGUI::CWindowCropGUI(CWindowTool *thread)
 
 int CWindowCropGUI::handle_event()
 {
-	double new_x1, new_y1;
 	CropAuto *keyframe;
 	Track *track;
 
 	if(!(keyframe = get_keyframe(1)))
 		return 0;
 
-	new_x1 = atof(x1->get_text());
-	new_y1 = atof(y1->get_text());
+	keyframe->left = atof(x1->get_text());
+	keyframe->top = atof(y1->get_text());
 
-	if(!EQUIV(new_x1, keyframe->left))
-	{
-		keyframe->right = new_x1 + keyframe->right -
-			keyframe->left;
-		keyframe->left = new_x1;
-	}
-	if(!EQUIV(new_y1, keyframe->top))
-	{
-		keyframe->bottom = new_y1 + keyframe->bottom -
-			keyframe->top;
-		keyframe->top = new_y1;
-	}
-	keyframe->right = atof(width->get_text()) +
-		keyframe->left;
-	keyframe->bottom = atof(height->get_text()) +
-		keyframe->top;
+	keyframe->right = keyframe->left + atof(width->get_text());
+	keyframe->bottom = keyframe->top + atof(height->get_text());
 	CLAMP(keyframe->left, 0, 1.0);
 	CLAMP(keyframe->right, 0, 1.0);
 	CLAMP(keyframe->top, 0, 1.0);
