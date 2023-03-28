@@ -1682,7 +1682,7 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	double canvas_cursor_y = cursor_y;
 	Track *track;
 	int created_auto;
-	int top, left, right, bottom;
+	double top, left, right, bottom;
 	CropAuto *crop_auto;
 	CropAutos *crop_autos;
 
@@ -1704,21 +1704,21 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	ptstime pts = master_edl->local_session->get_selectionstart(1);
 
 	crop_autos->get_values(pts, &left, &right, &top, &bottom);
+
 	crop_auto = (CropAuto*)gui->cwindow->calculate_affected_auto(AUTOMATION_CROP,
 		pts, track, 1, &created_auto);
-
 	if(created_auto)
 	{
-		crop_auto->left = (double)left / track->track_w;
-		crop_auto->right = (double)right / track->track_w;
-		crop_auto->top = (double)top / track->track_h;
-		crop_auto->bottom = (double)bottom / track->track_h;
+		crop_auto->left = left;
+		crop_auto->right = right;
+		crop_auto->top = top;
+		crop_auto->bottom = bottom;
 	}
 
-	canvas_x1 = x1 = left;
-	canvas_x2 = x2 = right;
-	canvas_y1 = y1 = top;
-	canvas_y2 = y2 = bottom;
+	canvas_x1 = x1 = round(left * track->track_w);
+	canvas_x2 = x2 = round(right * track->track_w);
+	canvas_y1 = y1 = round(top * track->track_h);
+	canvas_y2 = y2 = round(bottom * track->track_h);
 
 	canvas_to_output(cursor_x, cursor_y);
 // Use screen normalized coordinates for hot spot tests.
@@ -1768,7 +1768,7 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		gui->crop_origin_y = cursor_y;
 	}
 
-// Start dragging.
+// Start dragging
 	if(button_press)
 	{
 		if(gui->alt_down())
@@ -1789,15 +1789,7 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		result = 1;
 
 		if(handle_selected < 0 && !gui->crop_translate) 
-		{
-			x2 = x1 = cursor_x;
-			y2 = y1 = cursor_y;
-			crop_auto->left = x1 / track->track_w;
-			crop_auto->top = y1 / track->track_h;
-			crop_auto->right = x2 / track->track_w;
-			crop_auto->bottom = y2 / track->track_h;
 			do_redraw = 1;
-		}
 	}
 	else
 // Translate all 4 points
