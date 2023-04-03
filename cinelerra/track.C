@@ -51,6 +51,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	id = EDL::next_id();
 	camera_gframe = 0;
 	projector_gframe = 0;
+	crop_gframe = 0;
 	if(tracks)
 		tracks->reset_plugins();
 }
@@ -71,6 +72,7 @@ Track::~Track()
 	tracks->reset_plugins();
 	mwindow_global->delete_guideframe(&camera_gframe);
 	mwindow_global->delete_guideframe(&projector_gframe);
+	mwindow_global->delete_guideframe(&crop_gframe);
 	delete automation;
 	delete edits;
 	delete renderer;

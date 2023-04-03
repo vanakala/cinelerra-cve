@@ -683,17 +683,10 @@ double CWindowCanvas::get_zoom()
 #define CROPHANDLE_W 10
 #define CROPHANDLE_H 10
 
-void CWindowCanvas::draw_crophandle(int x, int y)
-{
-	get_canvas()->draw_box(x, y, CROPHANDLE_W, CROPHANDLE_H);
-}
-
 #define CONTROL_W 10
 #define CONTROL_H 10
 #define FIRST_CONTROL_W 20
 #define FIRST_CONTROL_H 20
-#undef BC_INFINITY
-#define BC_INFINITY 65536
 
 #define RULERHANDLE_W 16
 #define RULERHANDLE_H 16
@@ -1569,6 +1562,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 void CWindowCanvas::draw_overlays()
 {
 	draw_camera();
+	draw_crop();
 	safe_regions->set_enabled(edlsession->safe_regions);
 	guidelines.draw(master_edl,
 		master_edl->local_session->get_selectionstart(1));
@@ -1608,10 +1602,6 @@ void CWindowCanvas::draw_overlays()
 
 	switch(edlsession->cwindow_operation)
 	{
-	case CWINDOW_CROP:
-		draw_crop();
-		break;
-
 	case CWINDOW_MASK:
 		do_mask(temp1, temp2, 0, 0, 1);
 		break;
@@ -1760,12 +1750,6 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		handle_selected = 3;
 		gui->crop_origin_x = x2;
 		gui->crop_origin_y = y2;
-	}
-	else
-// Start new box
-	{
-		gui->crop_origin_x = cursor_x;
-		gui->crop_origin_y = cursor_y;
 	}
 
 // Start dragging
@@ -1978,6 +1962,10 @@ void CWindowCanvas::draw_crop()
 	if(!track)
 		return;
 
+	for(Track *current = track->tracks->first; current; current = current->next)
+		if(current->crop_gframe)
+			current->crop_gframe->set_enabled(0);
+
 	crop_autos = (CropAutos*)track->automation->have_autos(AUTOMATION_CROP);
 
 	if(!crop_autos)
@@ -1987,31 +1975,16 @@ void CWindowCanvas::draw_crop()
 
 	crop_autos->get_values(position, &left, &right, &top, &bottom);
 
-	double x1 = left;
-	double y1 = top;
-	double x2 = right;
-	double y2 = bottom;
+	if(!track->crop_gframe)
+		mwindow_global->new_guideframe(0, MAX_PTSTIME, &track->crop_gframe);
 
-	output_to_canvas(x1, y1);
-	output_to_canvas(x2, y2);
-
-	int ix1 = round(x1);
-	int iy1 = round(y1);
-	int ix2 = round(x2);
-	int iy2 = round(y2);
-
-	get_canvas()->set_inverse();
-	get_canvas()->set_color(WHITE);
-
-	if(ix2 - ix1 && iy2 - iy1)
-		get_canvas()->draw_rectangle(ix1, iy1,
-			ix2 - ix1, iy2 - iy1);
-
-	draw_crophandle(ix1, iy1);
-	draw_crophandle(ix2 - CROPHANDLE_W, iy1);
-	draw_crophandle(ix1, iy2 - CROPHANDLE_H);
-	draw_crophandle(ix2 - CROPHANDLE_W, iy2 - CROPHANDLE_H);
-	get_canvas()->set_opaque();
+	track->crop_gframe->clear();
+	track->crop_gframe->add_rectangle(left, top, right - left, bottom - top);
+	track->crop_gframe->add_box(left, top, CROPHANDLE_W, CROPHANDLE_H);
+	track->crop_gframe->add_box(right - CROPHANDLE_W, top, CROPHANDLE_W, CROPHANDLE_H);
+	track->crop_gframe->add_box(left, bottom - CROPHANDLE_H, CROPHANDLE_W, CROPHANDLE_H);
+	track->crop_gframe->add_box(right - CROPHANDLE_W, bottom - CROPHANDLE_H, CROPHANDLE_W, CROPHANDLE_H);
+	track->crop_gframe->set_enabled(1);
 }
 
 void CWindowCanvas::draw_camera()

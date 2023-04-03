@@ -203,6 +203,8 @@ public:
 // Camera and projector guideframe
 	GuideFrame *camera_gframe;
 	GuideFrame *projector_gframe;
+// Crop guideframe
+	GuideFrame *crop_gframe;
 private:
 // Identification of the track
 	int id;

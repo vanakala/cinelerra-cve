@@ -214,7 +214,6 @@ public:
 	void reset_camera();
 	void reset_projector();
 	void reset_camera_auto(int is_camera);
-	void draw_crophandle(int x, int y);
 	void zoom_auto();
 
 // Draw the projector overlay in different colors.
