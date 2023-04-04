@@ -2046,11 +2046,10 @@ void CWindowCanvas::draw_camera()
 
 	if(!*gframep)
 	{
-		*gframep = guidelines.append_frame(0, MAX_PTSTIME);
+		mwindow_global->new_guideframe(0, MAX_PTSTIME, gframep);
 		(*gframep)->set_color(is_camera ? GREEN : RED);
 		(*gframep)->set_opaque(1);
 	}
-
 
 	(*gframep)->clear();
 	(*gframep)->add_rectangle(track_x1, track_y1, track_x2 - track_x1,
