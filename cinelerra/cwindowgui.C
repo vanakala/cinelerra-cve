@@ -1979,6 +1979,7 @@ void CWindowCanvas::draw_crop()
 		mwindow_global->new_guideframe(0, MAX_PTSTIME, &track->crop_gframe);
 
 	track->crop_gframe->clear();
+	track->crop_gframe->renderer = (VTrackRender*)track->renderer;
 	track->crop_gframe->add_rectangle(left, top, right - left, bottom - top);
 	track->crop_gframe->add_box(left, top, CROPHANDLE_W, CROPHANDLE_H);
 	track->crop_gframe->add_box(right - CROPHANDLE_W, top, CROPHANDLE_W, CROPHANDLE_H);
