@@ -44,6 +44,7 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "vtrack.h"
+#include "vtrackrender.h"
 #include "vframe.h"
 
 
@@ -1675,6 +1676,7 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	double top, left, right, bottom;
 	CropAuto *crop_auto;
 	CropAutos *crop_autos;
+	VTrackRender *render;
 
 	track = gui->cwindow->calculate_affected_track();
 
@@ -1710,15 +1712,27 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	canvas_y1 = y1 = round(top * track->track_h);
 	canvas_y2 = y2 = round(bottom * track->track_h);
 
+	render = (VTrackRender*)track->renderer;
+
+	if(render && refresh_frame)
+	{
+		int in_x1, in_y1, in_x2, in_y2;
+		int out_x1, out_y1, out_x2, out_y2;
+
+		render->calculate_output_transfer(refresh_frame,
+			&in_x1, &in_y1, &in_x2, &in_y2,
+			&out_x1, &out_y1, &out_x2, &out_y2);
+		canvas_to_output(canvas_cursor_x, canvas_cursor_y);
+		canvas_cursor_x = ((canvas_cursor_x - out_x1) *
+			((double)(in_x2 - in_x1) / (out_x2 - out_x1))) + in_x1;
+		canvas_cursor_y = ((canvas_cursor_y - out_y1) *
+			((double)(in_y2 - in_y1) / (out_y2 - out_y1))) + in_y1;
+	}
+
 	canvas_to_output(cursor_x, cursor_y);
-// Use screen normalized coordinates for hot spot tests.
-	output_to_canvas(canvas_x1, canvas_y1);
-	output_to_canvas(canvas_x2, canvas_y2);
 
 	if(gui->current_operation == CWINDOW_CROP)
-	{
 		handle_selected = gui->crop_handle;
-	}
 	else
 	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
 		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
