@@ -1668,9 +1668,9 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	double x1, y1, x2, y2;
 	double cursor_x = get_cursor_x();
 	double cursor_y = get_cursor_y();
-	double canvas_x1, canvas_y1, canvas_x2, canvas_y2;
-	double canvas_cursor_x = cursor_x;
-	double canvas_cursor_y = cursor_y;
+	double output_x1, output_y1, output_x2, output_y2;
+	double output_cursor_x = cursor_x;
+	double output_cursor_y = cursor_y;
 	Track *track;
 	int created_auto;
 	double top, left, right, bottom;
@@ -1707,10 +1707,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		crop_auto->bottom = bottom;
 	}
 
-	canvas_x1 = x1 = round(left * track->track_w);
-	canvas_x2 = x2 = round(right * track->track_w);
-	canvas_y1 = y1 = round(top * track->track_h);
-	canvas_y2 = y2 = round(bottom * track->track_h);
+	output_x1 = x1 = round(left * track->track_w);
+	output_x2 = x2 = round(right * track->track_w);
+	output_y1 = y1 = round(top * track->track_h);
+	output_y2 = y2 = round(bottom * track->track_h);
 
 	render = (VTrackRender*)track->renderer;
 
@@ -1722,10 +1722,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		render->calculate_output_transfer(refresh_frame,
 			&in_x1, &in_y1, &in_x2, &in_y2,
 			&out_x1, &out_y1, &out_x2, &out_y2);
-		canvas_to_output(canvas_cursor_x, canvas_cursor_y);
-		canvas_cursor_x = ((canvas_cursor_x - out_x1) *
+		canvas_to_output(output_cursor_x, output_cursor_y);
+		output_cursor_x = ((output_cursor_x - out_x1) *
 			((double)(in_x2 - in_x1) / (out_x2 - out_x1))) + in_x1;
-		canvas_cursor_y = ((canvas_cursor_y - out_y1) *
+		output_cursor_y = ((output_cursor_y - out_y1) *
 			((double)(in_y2 - in_y1) / (out_y2 - out_y1))) + in_y1;
 	}
 
@@ -1734,32 +1734,32 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	if(gui->current_operation == CWINDOW_CROP)
 		handle_selected = gui->crop_handle;
 	else
-	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
-		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
+	if(output_cursor_x >= output_x1 && output_cursor_x < output_x1 + CROPHANDLE_W &&
+		output_cursor_y >= output_y1 && output_cursor_y < output_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 0;
 		gui->crop_origin_x = x1;
 		gui->crop_origin_y = y1;
 	}
 	else
-	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
-		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
+	if(output_cursor_x >= output_x2 - CROPHANDLE_W && output_cursor_x < output_x2 &&
+		output_cursor_y >= output_y1 && output_cursor_y < output_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 1;
 		gui->crop_origin_x = x2;
 		gui->crop_origin_y = y1;
 	}
 	else
-	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
-		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
+	if(output_cursor_x >= output_x1 && output_cursor_x < output_x1 + CROPHANDLE_W &&
+		output_cursor_y >= output_y2 - CROPHANDLE_H && output_cursor_y < output_y2)
 	{
 		handle_selected = 2;
 		gui->crop_origin_x = x1;
 		gui->crop_origin_y = y2;
 	}
 	else
-	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
-		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
+	if(output_cursor_x >= output_x2 - CROPHANDLE_W && output_cursor_x < output_x2 &&
+		output_cursor_y >= output_y2 - CROPHANDLE_H && output_cursor_y < output_y2)
 	{
 		handle_selected = 3;
 		gui->crop_origin_x = x2;
