@@ -1665,12 +1665,9 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 	int result = 0;
 	int do_redraw = *redraw;
 	int handle_selected = -1;
-	double x1, y1, x2, y2;
-	double cursor_x = get_cursor_x();
-	double cursor_y = get_cursor_y();
 	double output_x1, output_y1, output_x2, output_y2;
-	double output_cursor_x = cursor_x;
-	double output_cursor_y = cursor_y;
+	double output_cursor_x = get_cursor_x();
+	double output_cursor_y = get_cursor_y();
 	Track *track;
 	int created_auto;
 	double top, left, right, bottom;
@@ -1707,12 +1704,14 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		crop_auto->bottom = bottom;
 	}
 
-	output_x1 = x1 = round(left * track->track_w);
-	output_x2 = x2 = round(right * track->track_w);
-	output_y1 = y1 = round(top * track->track_h);
-	output_y2 = y2 = round(bottom * track->track_h);
+	output_x1 = left * track->track_w;
+	output_x2 = right * track->track_w;
+	output_y1 = top * track->track_h;
+	output_y2 = bottom * track->track_h;
 
 	render = (VTrackRender*)track->renderer;
+
+	canvas_to_output(output_cursor_x, output_cursor_y);
 
 	if(render && refresh_frame)
 	{
@@ -1722,14 +1721,11 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		render->calculate_output_transfer(refresh_frame,
 			&in_x1, &in_y1, &in_x2, &in_y2,
 			&out_x1, &out_y1, &out_x2, &out_y2);
-		canvas_to_output(output_cursor_x, output_cursor_y);
 		output_cursor_x = ((output_cursor_x - out_x1) *
 			((double)(in_x2 - in_x1) / (out_x2 - out_x1))) + in_x1;
 		output_cursor_y = ((output_cursor_y - out_y1) *
 			((double)(in_y2 - in_y1) / (out_y2 - out_y1))) + in_y1;
 	}
-
-	canvas_to_output(cursor_x, cursor_y);
 
 	if(gui->current_operation == CWINDOW_CROP)
 		handle_selected = gui->crop_handle;
@@ -1738,32 +1734,32 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		output_cursor_y >= output_y1 && output_cursor_y < output_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 0;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = output_x1;
+		gui->crop_origin_y = output_y1;
 	}
 	else
 	if(output_cursor_x >= output_x2 - CROPHANDLE_W && output_cursor_x < output_x2 &&
 		output_cursor_y >= output_y1 && output_cursor_y < output_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 1;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = output_x2;
+		gui->crop_origin_y = output_y1;
 	}
 	else
 	if(output_cursor_x >= output_x1 && output_cursor_x < output_x1 + CROPHANDLE_W &&
 		output_cursor_y >= output_y2 - CROPHANDLE_H && output_cursor_y < output_y2)
 	{
 		handle_selected = 2;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = output_x1;
+		gui->crop_origin_y = output_y2;
 	}
 	else
 	if(output_cursor_x >= output_x2 - CROPHANDLE_W && output_cursor_x < output_x2 &&
 		output_cursor_y >= output_y2 - CROPHANDLE_H && output_cursor_y < output_y2)
 	{
 		handle_selected = 3;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = output_x2;
+		gui->crop_origin_y = output_y2;
 	}
 
 // Start dragging
@@ -1772,18 +1768,17 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		if(gui->alt_down())
 		{
 			gui->crop_translate = 1;
-			gui->crop_origin_x1 = x1;
-			gui->crop_origin_y1 = y1;
-			gui->crop_origin_x2 = x2;
-			gui->crop_origin_y2 = y2;
+			gui->crop_origin_x1 = output_x1;
+			gui->crop_origin_y1 = output_y1;
+			gui->crop_origin_x2 = output_x2;
+			gui->crop_origin_y2 = output_y2;
 		}
 		else
 			gui->crop_translate = 0;
-
 		gui->current_operation = CWINDOW_CROP;
 		gui->crop_handle = handle_selected;
-		gui->x_origin = cursor_x;
-		gui->y_origin = cursor_y;
+		gui->x_origin = output_cursor_x;
+		gui->y_origin = output_cursor_y;
 		result = 1;
 
 		if(handle_selected < 0 && !gui->crop_translate) 
@@ -1793,10 +1788,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 // Translate all 4 points
 	if(gui->current_operation == CWINDOW_CROP && gui->crop_translate)
 	{
-		x1 = cursor_x - gui->x_origin + gui->crop_origin_x1;
-		y1 = cursor_y - gui->y_origin + gui->crop_origin_y1;
-		x2 = cursor_x - gui->x_origin + gui->crop_origin_x2;
-		y2 = cursor_y - gui->y_origin + gui->crop_origin_y2;
+		double x1 = output_cursor_x - gui->x_origin + gui->crop_origin_x1;
+		double y1 = output_cursor_y - gui->y_origin + gui->crop_origin_y1;
+		double x2 = output_cursor_x - gui->x_origin + gui->crop_origin_x2;
+		double y2 = output_cursor_y - gui->y_origin + gui->crop_origin_y2;
 
 		crop_auto->left = x1 / track->track_w;
 		crop_auto->top = y1 / track->track_h;
@@ -1812,55 +1807,55 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		switch(gui->crop_handle)
 		{
 		case -1:
-			x1 = gui->crop_origin_x;
-			y1 = gui->crop_origin_y;
-			x2 = gui->crop_origin_x;
-			y2 = gui->crop_origin_y;
-			if(cursor_x < gui->x_origin)
+			output_x1 = gui->crop_origin_x;
+			output_y1 = gui->crop_origin_y;
+			output_x2 = gui->crop_origin_x;
+			output_y2 = gui->crop_origin_y;
+			if(output_cursor_x < gui->x_origin)
 			{
-				if(cursor_y < gui->y_origin)
+				if(output_cursor_y < gui->y_origin)
 				{
-					x1 = cursor_x;
-					y1 = cursor_y;
+					output_x1 = output_cursor_x;
+					output_y1 = output_cursor_y;
 				}
 				else
-				if(cursor_y >= gui->y_origin)
+				if(output_cursor_y >= gui->y_origin)
 				{
-					x1 = cursor_x;
-					y2 = cursor_y;
+					output_x1 = output_cursor_x;
+					output_y2 = output_cursor_y;
 				}
 			}
 			else
-			if(cursor_x  >= gui->x_origin)
+			if(output_cursor_x  >= gui->x_origin)
 			{
-				if(cursor_y < gui->y_origin)
+				if(output_cursor_y < gui->y_origin)
 				{
-					y1 = cursor_y;
-					x2 = cursor_x;
+					output_y1 = output_cursor_y;
+					output_x2 = output_cursor_x;
 				}
 				else
-				if(cursor_y >= gui->y_origin)
+				if(output_cursor_y >= gui->y_origin)
 				{
-					x2 = cursor_x;
-					y2 = cursor_y;
+					output_x2 = output_cursor_x;
+					output_y2 = output_cursor_y;
 				}
 			}
 			break;
 		case 0:
-			x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
-			y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
+			output_x1 = output_cursor_x - gui->x_origin + gui->crop_origin_x;
+			output_y1 = output_cursor_y - gui->y_origin + gui->crop_origin_y;
 			break;
 		case 1:
-			x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
-			y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
+			output_x2 = output_cursor_x - gui->x_origin + gui->crop_origin_x;
+			output_y1 = output_cursor_y - gui->y_origin + gui->crop_origin_y;
 			break;
 		case 2:
-			x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
-			y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
+			output_x1 = output_cursor_x - gui->x_origin + gui->crop_origin_x;
+			output_y2 = output_cursor_y - gui->y_origin + gui->crop_origin_y;
 			break;
 		case 3:
-			x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
-			y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
+			output_x2 = output_cursor_x - gui->x_origin + gui->crop_origin_x;
+			output_y2 = output_cursor_y - gui->y_origin + gui->crop_origin_y;
 			break;
 		}
 
@@ -1871,14 +1866,14 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 		ct = round(crop_auto->top * track->track_h);
 		cb = round(crop_auto->bottom * track->track_h);
 
-		if(!EQUIV(cl, x1) || !EQUIV(cr, x2) ||
-			!EQUIV(ct, y1) || !EQUIV(cb, y2))
+		if(!EQUIV(cl, output_x1) || !EQUIV(cr, output_x2) ||
+			!EQUIV(ct, output_y1) || !EQUIV(cb, output_y2))
 		{
-			if(x1 > x2)
+			if(output_x1 > output_x2)
 			{
-				double tmp = x1;
-				x1 = x2;
-				x2 = tmp;
+				double tmp = output_x1;
+				output_x1 = output_x2;
+				output_x2 = tmp;
 				switch(gui->crop_handle)
 				{
 				case 0:
@@ -1897,11 +1892,11 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 					break;
 				}
 			}
-			if(y1 > y2)
+			if(output_y1 > output_y2)
 			{
-				double tmp = y1;
-				y1 = y2;
-				y2 = tmp;
+				double tmp = output_y1;
+				output_y1 = output_y2;
+				output_y2 = tmp;
 				switch(gui->crop_handle)
 				{
 				case 0:
@@ -1921,10 +1916,10 @@ int CWindowCanvas::test_crop(int button_press, int *redraw, int *rerender)
 				}
 			}
 
-			crop_auto->left = x1 / track->track_w;
-			crop_auto->top = y1 / track->track_h;
-			crop_auto->right = x2 / track->track_w;
-			crop_auto->bottom = y2 / track->track_h;
+			crop_auto->left = output_x1 / track->track_w;
+			crop_auto->top = output_y1 / track->track_h;
+			crop_auto->right = output_x2 / track->track_w;
+			crop_auto->bottom = output_y2 / track->track_h;
 			result = 1;
 			do_redraw = 1;
 		}
