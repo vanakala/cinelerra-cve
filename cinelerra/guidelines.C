@@ -9,6 +9,7 @@
 #include "colors.h"
 #include "edlsession.h"
 #include "guidelines.h"
+#include "track.h"
 #include "vtrackrender.h"
 #include "vframe.h"
 
@@ -197,6 +198,9 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 	double xscale, yscale;
 	double dx1, dx2, dy1, dy2;
 	int pluginframe;
+
+	if(renderer && !renderer->media_track->play)
+		return 0;
 
 	if(is_enabled && data && start <= pts && pts < end)
 	{
