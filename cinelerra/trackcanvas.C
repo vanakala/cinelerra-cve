@@ -1717,7 +1717,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y,
 			if(buttonpress && (buttonpress != 3))
 			{
 				INIT_DRAG(current->pos_time,
-					value_to_percentage(current->get_value(), autogrouptype));
+					value_to_percentage(current->get_raw_value(), autogrouptype));
 				mainsession->drag_handle = HANDLE_MAIN;
 			}
 		}
@@ -1735,7 +1735,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y,
 
 				// drag will start dragging the tangent, if applicable
 				INIT_DRAG(current->pos_time,
-					value_to_percentage(current->get_value(), autogrouptype));
+					value_to_percentage(current->get_raw_value(), autogrouptype));
 				mainsession->drag_handle = HANDLE_MAIN;
 			}
 		}
@@ -1760,7 +1760,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y,
 					if(lever == 0.0)
 						lever = 1.0; // we entered by dragging the handle...
 					mainsession->drag_handle = HANDLE_LEFT;
-					double new_invalue = current->get_value() +
+					double new_invalue = current->get_raw_value() +
 						lever * current->get_control_in_value();
 					INIT_DRAG(current->pos_time + lever *
 						current->get_control_in_pts(),
@@ -1784,7 +1784,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current, int x, int y,
 					if(lever == 0.0)
 						lever = 1.0;
 					mainsession->drag_handle = HANDLE_RIGHT;
-					double new_outvalue = current->get_value() + lever * current->get_control_out_value();
+					double new_outvalue = current->get_raw_value() + lever * current->get_control_out_value();
 					INIT_DRAG(current->pos_time + lever *
 						current->get_control_out_pts(),
 						value_to_percentage(new_outvalue,  autogrouptype));
@@ -1857,7 +1857,7 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 // create keyframe on neighbouring track at the point in time given by fauto
 				FloatAuto *keyframe = (FloatAuto*)current->automation->get_auto_for_editing(position, autoidx);
 
-				keyframe->set_value(init_value + change);
+				keyframe->set_value(init_value + change, 1);
 				mainsession->drag_auto_gang->append((Auto *)keyframe);
 			}
 		}
@@ -1870,7 +1870,7 @@ void TrackCanvas::synchronize_autos(double change, Track *skip,
 		{
 			FloatAuto *keyframe = (FloatAuto *)mainsession->drag_auto_gang->values[i];
 
-			double new_value = keyframe->get_value() + change;
+			double new_value = keyframe->get_raw_value() + change;
 			CLAMP(new_value,
 				master_edl->local_session->automation_mins[keyframe->autos->autogrouptype],
 				master_edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
@@ -2227,13 +2227,14 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 {
 	int y;
 	int result = 0;
+	int value;
+	double dblvalue;
 
 	if((autoidx == AUTOMATION_AFADE && track->data_type != TRACK_AUDIO) ||
 			(autoidx == AUTOMATION_VFADE && track->data_type != TRACK_VIDEO))
 		return 0;
 
 	int autotype = track->automation->automation_tbl[autoidx].type;
-	int value = track->automation->get_intvalue(0, autoidx);
 	int autogrouptype = track->automation->automation_tbl[autoidx].autogrouptype;
 
 	if(autotype == AUTOMATION_TYPE_FLOAT)
@@ -2243,11 +2244,13 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 			master_edl->local_session->automation_maxs[autogrouptype] -
 			automation_min;
 
+		dblvalue = track->automation->get_floatvalue(0, autoidx);
 		y = center_pixel + (int)round(((value - automation_min) /
 			automation_range - 0.5) * -yscale);
 	}
 	else
 	{
+		value = track->automation->get_intvalue(0, autoidx);
 		if(value)
 			y = center_pixel + round(-yscale * 0.8 / 2);
 		else
@@ -2279,9 +2282,9 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 			if(autotype == AUTOMATION_TYPE_FLOAT)
 			{
 				FloatAuto *new_auto = (FloatAuto*)track->automation->get_auto_for_editing(pts, autoidx);
-				new_auto->set_value(value);
+				new_auto->set_value(dblvalue, 1);
 				mainsession->drag_auto = new_auto;
-				mainsession->drag_start_percentage = value_to_percentage(value, autogrouptype);
+				mainsession->drag_start_percentage = value_to_percentage(dblvalue, autogrouptype);
 			}
 			else
 			{
@@ -2628,7 +2631,6 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 	double value;
 	double old_value;
-
 	switch(mainsession->drag_handle)
 	{
 // Center
@@ -2638,7 +2640,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		{
 			if((TGNT_FREE == current->tangent_mode || // tangent
 				TGNT_TFREE == current->tangent_mode) &&
-				(fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
+				(abs(x) > HANDLE_W / 2 || abs(y) > HANDLE_W / 2))
 			{
 				// ...and drag movement is significant
 				if(x < 0)
@@ -2651,7 +2653,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			break;
 		}
 // Snap to nearby values
-		old_value = current->get_value();
+		old_value = current->get_raw_value();
+
 		if(shift_down())
 		{
 			double value1;
@@ -2663,31 +2666,28 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			{
 				int autogrouptype = current->previous->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value1 = ((FloatAuto*)current->previous)->get_value();
+				value1 = ((FloatAuto*)current->previous)->get_raw_value();
 				distance1 = fabs(value - value1);
-				current->set_value(value1);
+				current->set_value(value1, 1);
 			}
 
 			if(current->next)
 			{
 				int autogrouptype = current->next->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value2 = ((FloatAuto*)current->next)->get_value();
+				value2 = ((FloatAuto*)current->next)->get_raw_value();
 				distance2 = fabs(value - value2);
 				if(!current->previous || distance2 < distance1)
-				{
-					current->set_value(value2);
-				}
+					current->set_value(value2, 1);
 			}
 
 			if(!current->previous && !current->next)
-			{
-				current->set_value(((FloatAutos*)current->autos)->default_value);
-			}
-			value = current->get_value();
+				current->set_value(((FloatAutos*)current->autos)->default_value, 1);
+
+			value = current->get_raw_value();
 		}
 		else
-			value = percentage_to_value(percentage, 
+			value = percentage_to_value(percentage,
 				0, 0, current->autos->autogrouptype);
 
 		if(alt_down())
@@ -2703,7 +2703,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 			char string[BCTEXTLEN];
 			edlsession->ptstotext(string, current->pos_time);
-			mwindow_global->show_message("%s, %.2f", string, current->get_value());
+			mwindow_global->show_message("%s, %.2f", string, current->get_raw_value());
 		}
 		break;
 
