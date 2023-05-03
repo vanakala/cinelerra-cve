@@ -393,7 +393,7 @@ int Automation::get_intvalue(ptstime pos, int autoidx)
 double Automation::get_floatvalue(ptstime pos, int autoidx, FloatAuto *prev, FloatAuto *next)
 {
 	if(autos[autoidx])
-		return ((FloatAutos*)autos[autoidx])->get_value(pos, prev, next);
+		return ((FloatAutos*)autos[autoidx])->get_raw_value(pos, prev, next);
 	return (double)automation_tbl[autoidx].default_value;
 }
 
