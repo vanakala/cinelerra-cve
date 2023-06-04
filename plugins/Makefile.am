@@ -16,6 +16,7 @@ SUBDIRS= \
 	burn \
 	chromakey \
 	chromakeyhsv \
+	color3way \
 	colorbalance \
 	compressor \
 	crossfade \
