@@ -38,6 +38,7 @@
 Theme::Theme()
  : BC_Theme()
 {
+	widget_border = 5;
 	theme_title = DEFAULT_THEME;
 	data_buffer = 0;
 	contents_buffer = 0;

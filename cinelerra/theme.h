@@ -149,6 +149,7 @@ public:
 	int vtime_x, vtime_y, vtime_w;
 	int vtransport_x, vtransport_y;
 	int vzoom_x, vzoom_y;
+	int widget_border;
 
 // Bitmaps
 	VFrame *about_bg;
