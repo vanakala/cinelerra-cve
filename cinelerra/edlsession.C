@@ -472,8 +472,8 @@ void EDLSession::load_xml(FileXML *file)
 	folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 	labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
-	show_assets = file->tag.get_property("SHOW_ASSETS", 1);
-	show_titles = file->tag.get_property("SHOW_TITLES", 1);
+	show_assets = file->tag.get_property("SHOW_ASSETS", show_assets);
+	show_titles = file->tag.get_property("SHOW_TITLES", show_titles);
 	time_format = file->tag.get_property("TIME_FORMAT", time_format);
 	for(int i = 0; i < 4; i++)
 	{
