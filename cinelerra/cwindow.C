@@ -165,8 +165,8 @@ void CWindow::update(int options)
 {
 	if(options & WUPD_SCROLLBARS)
 	{
-		gui->canvas->update_zoom(edlsession->cwindow_xscroll,
-			edlsession->cwindow_yscroll, edlsession->cwindow_zoom);
+		gui->zoom_canvas(!edlsession->cwindow_scrollbars,
+			edlsession->cwindow_zoom, 1);
 		gui->canvas->update_scrollbars();
 	}
 
