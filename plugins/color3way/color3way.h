@@ -71,6 +71,7 @@ public:
 	Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server);
 
 	void process_package(LoadPackage *package);
+	void level_coefs(double value, double *coefs);
 
 	Color3WayMain *plugin;
 };
@@ -106,22 +107,19 @@ public:
 
 	void get_aggregation(int *aggregate_gamma);
 
-	void calculate_factors(double *r, double *g, double *b, int section);
 	void calculate_factors(double *r, double *g, double *b, double x, double y);
+	void calculate_rgb(double *r, double *g, double *b,
+		double *sat, double *val, int section);
 
 	void process_pixel(double *r, double *g, double *b,
 		double r_in, double g_in,  double b_in,
 		double x, double y);
 
-// parameters needed for processor
-	void reconfigure();
-
 	Color3WayEngine *engine;
-	int total_engines;
 	VFrame *input;
 
-	int need_reconfigure;
 	int copy_to_all[SECTIONS];
+	double color_max;
 };
 
 #endif

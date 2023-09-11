@@ -116,7 +116,6 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server)
 // Scale curve from 0 - 1
 #define SHADOW_BORDER (1.0 / ((1.0 / SHADOW_GAMMA + FUDGE) / FUDGE))
 #define HIGHLIGHT_BORDER (1.0 / ((1.0 / HIGHLIGHT_GAMMA + FUDGE) / FUDGE))
-
 #define SHADOW_CURVE(value) \
 	(((1.0 / (((value) / SHADOW_GAMMA + FUDGE) / FUDGE)) - SHADOW_BORDER) / \
 	(1.0 - SHADOW_BORDER))
@@ -124,7 +123,8 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server)
 #define SHADOW_LINEAR(value) (1.0 - (value))
 
 #define HIGHLIGHT_CURVE(value) \
-	(((1.0 / (((1.0 - value) / HIGHLIGHT_GAMMA + FUDGE) / FUDGE)) - HIGHLIGHT_BORDER) / (1.0 - HIGHLIGHT_BORDER))
+	(((1.0 / (((1.0 - value) / HIGHLIGHT_GAMMA + FUDGE) / FUDGE)) - HIGHLIGHT_BORDER) / \
+		(1.0 - HIGHLIGHT_BORDER))
 
 #define HIGHLIGHT_LINEAR(value) (value)
 
@@ -140,66 +140,103 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server)
 
 void Color3WayUnit::process_package(LoadPackage *package)
 {
+	double values[SECTIONS];
+	double saturations[SECTIONS];
+	double red[SECTIONS], green[SECTIONS], blue[SECTIONS];
 	Color3WayPackage *pkg = (Color3WayPackage*)package;
-	VFrame *input = plugin->input;
-	int w = input->get_w();
-
-	double r_factor[SECTIONS];
-	double g_factor[SECTIONS];
-	double b_factor[SECTIONS];
-	double s_factor[SECTIONS];
-	double v_factor[SECTIONS];
-	double *factp[] = { r_factor, g_factor, b_factor };
-	double color_max = ColorModels::calculate_max(input->get_color_model());
+	int w = plugin->input->get_w();
 
 	for(int i = 0; i < SECTIONS; i++)
-	{
-		plugin->calculate_factors(&r_factor[i], &g_factor[i], &b_factor[i], i);
-
-		s_factor[i] = plugin->config.saturation[i];
-		v_factor[i] = plugin->config.value[i];
-	}
+		plugin->calculate_rgb(&red[i], &green[i], &blue[i],
+			&saturations[i], &values[i], i);
 
 	for(int i = pkg->row1; i < pkg->row2; i++)
 	{
-		uint16_t *in = (uint16_t*)input->get_row_ptr(i);
-		uint16_t *out = (uint16_t*)input->get_row_ptr(i);
+		uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
 
 		for(int j = 0; j < w; j++)
 		{
-// Apply hue
-			for(int chn = 0; chn < 3; chn++)
-			{
-				double value = in[chn] / color_max;
-				double *factor = factp[chn];
-
-				value += TOTAL_TRANSFER(value, factor);
-				value *= color_max;
-				CLAMP(value, 0, color_max);
-				in[chn] = round(value);
-			}
-// Apply saturation/value
-			double s, v;
 			int h;
-			int r = in[0];
-			int g = in[1];
-			int b = in[2];
+			int r, g, b;
+			double s, v;
+			double dr, dg, db;
+			double rcoefs[SECTIONS];
+			double gcoefs[SECTIONS];
+			double bcoefs[SECTIONS];
 
+			dr = row[0];
+			dg = row[1];
+			db = row[2];
+			level_coefs(dr / plugin->color_max, rcoefs);
+			level_coefs(dg / plugin->color_max, gcoefs);
+			level_coefs(db / plugin->color_max, bcoefs);
+
+			for(int k = 0; k < SECTIONS; k++)
+			{
+				dr += red[k] * rcoefs[k];
+				dg += green[k] * gcoefs[k];
+				db += blue[k] * bcoefs[k];
+			}
+			CLAMP(dr, 0, plugin->color_max);
+			CLAMP(dg, 0, plugin->color_max);
+			CLAMP(db, 0, plugin->color_max);
+			r = round(dr);
+			g = round(dg);
+			b = round(db);
 			ColorSpaces::rgb_to_hsv(r, g, b, &h, &s, &v);
-			v += TOTAL_TRANSFER(v, v_factor);
-			s += TOTAL_TRANSFER(s, s_factor);
-			s = MAX(s, 0);
+
+			level_coefs(s, rcoefs);
+			level_coefs(v, bcoefs);
+
+			for(int k = 0; k < SECTIONS; k++)
+			{
+				s += saturations[k] * rcoefs[k];
+				v += values[k] * bcoefs[k];
+			}
+
+			CLAMP(s, 0, 1.0);
+			CLAMP(v, 0, 1.0);
 			ColorSpaces::hsv_to_rgb(&r, &g, &b, h, s, v);
 
-// Convert to project colormodel
-			*in++ = r;
-			*in++ = g;
-			*in++ = b;
-			in++;
+			row[0] = r;
+			row[1] = g;
+			row[2] = b;
+			row += 4;
 		}
 	}
 }
 
+#define COEF_NOM 0.1
+#define COEF_MID 0.4
+#define COEF_SHFT 0.1
+// low, mid, high
+void Color3WayUnit::level_coefs(double value, double *coefs)
+{
+	double low_coef, high_coef, mid_coef;
+
+	if(value < EPSILON)
+	{
+		low_coef = 1.;
+		mid_coef = 0;
+		high_coef = 0;
+	}
+	else if(value > 1 - EPSILON)
+	{
+		low_coef = 0;
+		mid_coef = 0;
+		high_coef = 1.;
+	}
+	else
+	{
+		low_coef = COEF_NOM / value - COEF_SHFT;
+		high_coef = COEF_NOM / (1.0 - value) - COEF_SHFT;
+		mid_coef = COEF_MID / (low_coef + high_coef);
+	}
+
+	coefs[SHADOWS] = CLIP(low_coef, 0.0, 1.0);
+	coefs[MIDTONES] = CLIP(mid_coef, 0.0, 1.0);
+	coefs[HIGHLIGHTS] = CLIP(high_coef, 0.0, 1.0);
+}
 
 Color3WayEngine::Color3WayEngine(Color3WayMain *plugin, int cpus)
  : LoadServer(cpus, cpus)
@@ -246,10 +283,6 @@ Color3WayMain::~Color3WayMain()
 }
 
 PLUGIN_CLASS_METHODS
-
-void Color3WayMain::reconfigure()
-{
-}
 
 void Color3WayMain::process_pixel(double *r, double *g, double *b,
 	double r_in, double g_in, double b_in,
@@ -306,18 +339,43 @@ void Color3WayMain::process_pixel(double *r, double *g, double *b,
 void Color3WayMain::calculate_factors(double *r, double *g, double *b,
 	double x, double y)
 {
-	*r = sqrt(SQR(x) + SQR(y - -1));
-	*g = sqrt(SQR(x - -1.0 / ROOT_2) + SQR(y - 1.0 / ROOT_2));
-	*b = sqrt(SQR(x - 1.0 / ROOT_2) + SQR(y - 1.0 / ROOT_2));
+	int h = round(atan2(x, y) * 360.0 / 2.0 / M_PI);
+	int cr, cg, cb;
+	double s = sqrt(SQR(x) + SQR(y));
 
-	*r = 1.0 - *r;
-	*g = 1.0 - *g;
-	*b = 1.0 - *b;
+	if(h >= 360)
+		h -= 360;
+	if(h < 0)
+		h += 360;
+
+	ColorSpaces::hsv_to_rgb(&cr, &cg, &cb, h, s, 1.0);
+
+	*r = (0xffff - cr) / 65535.0;
+	*g = (0xffff - cg) / 65535.0;
+	*b = (0xffff - cb) / 65535.0;
 }
 
-void Color3WayMain::calculate_factors(double *r, double *g, double *b, int section)
+void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
+	double *sat, double *val, int section)
 {
-	calculate_factors(r, g, b, config.hue_x[section], config.hue_y[section]);
+	int h = round(atan2(config.hue_x[section], config.hue_y[section]) *
+		360.0 / 2.0 / M_PI);
+	int cr, cg, cb;
+	int cmax = color_max;
+	double s = sqrt(SQR(config.hue_x[section]) + SQR(config.hue_y[section]));
+
+	if(h >= 360)
+		h -= 360;
+	if(h < 0)
+		h += 360;
+
+	ColorSpaces::hsv_to_rgb(&cr, &cg, &cb, h, s, 1.0);
+
+	*r = (cmax - cr);
+	*g = (cmax - cg);
+	*b = (cmax - cb);
+	*sat = config.saturation[section];
+	*val = config.value[section];
 }
 
 void Color3WayMain::reset_plugin()
@@ -328,7 +386,7 @@ void Color3WayMain::reset_plugin()
 
 VFrame *Color3WayMain::process_tmpframe(VFrame *frame)
 {
-	int do_reconfigure = 0;
+	int do_reconfigure;
 	int cmodel = frame->get_color_model();
 
 	input = frame;
@@ -341,17 +399,15 @@ VFrame *Color3WayMain::process_tmpframe(VFrame *frame)
 		return frame;
 	}
 
-	do_reconfigure |= load_configuration();
+	do_reconfigure = load_configuration();
+	color_max = ColorModels::calculate_max(input->get_color_model());
 
 	if(!engine)
 		engine = new Color3WayEngine(this, get_project_smp());
 
 	if(do_reconfigure)
-	{
 		update_gui();
-		reconfigure();
-		do_reconfigure = 0;
-	}
+
 	engine->process_packages();
 	return frame;
 }
