@@ -54,6 +54,7 @@ public:
 	void disable(int options = 0);
 	void enable();
 	inline int get_enabled() { return enabled; };
+	inline int uses_text() { return 1; };
 
 	void initialize();
 
