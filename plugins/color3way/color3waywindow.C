@@ -26,8 +26,9 @@ PLUGIN_THREAD_METHODS
 Color3WayWindow::Color3WayWindow(Color3WayMain *plugin, int x, int y)
  : PluginWindow(plugin, x, y, 500, 370)
 {
-	this->plugin = plugin; 
 	int margin = theme_global->widget_border;
+
+	this->plugin = plugin;
 	x = theme_global->widget_border;
 	y = theme_global->widget_border;
 
@@ -50,9 +51,9 @@ void Color3WayWindow::update()
 Color3WaySection::Color3WaySection(Color3WayMain *plugin, Color3WayWindow *gui,
 	int x, int y, int w, int h, int section)
 {
-	this->plugin = plugin;
 	int margin = theme_global->widget_border;
 
+	this->plugin = plugin;
 	this->gui = gui;
 	this->section = section;
 	this->x = x;
@@ -61,8 +62,7 @@ Color3WaySection::Color3WaySection(Color3WayMain *plugin, Color3WayWindow *gui,
 	this->h = h;
 
 	gui->add_tool(title = new BC_Title(x + w / 2 -
-		gui->get_text_width(MEDIUMFONT, titles[section]) / 2,
-		y,
+		gui->get_text_width(MEDIUMFONT, titles[section]) / 2, y,
 		titles[section]));
 	y += title->get_h() + margin;
 
@@ -156,8 +156,8 @@ Color3WayPoint::Color3WayPoint(Color3WayMain *plugin, Color3WayWindow *gui,
 Color3WayPoint::~Color3WayPoint()
 {
 	for(int i = 0; i < COLOR_IMAGES; i++)
-		if(fg_images[i]) delete fg_images[i];
-		
+		delete fg_images[i];
+
 	delete bg_image;
 }
 
@@ -169,8 +169,7 @@ void Color3WayPoint::initialize()
 
 	for(int i = 0; i < COLOR_IMAGES; i++)
 	{
-		if(fg_images[i])
-			delete fg_images[i];
+		delete fg_images[i];
 		fg_images[i] = new BC_Pixmap(gui, data[i], PIXMAP_ALPHA);
 	}
 
@@ -244,15 +243,14 @@ void Color3WayPoint::draw_face(int flash, int flush)
 				*row++ = b;
 			}
 		}
-
 		bg_image = new BC_Pixmap(get_parent(), &frame, PIXMAP_ALPHA);
 	}
 
 	draw_pixmap(bg_image);
 
-	fg_x = round(*x_output * (radius - fg_images[0]->get_w() / 2) + radius) - 
+	fg_x = round(*x_output * (radius - fg_images[0]->get_w() / 2) + radius) -
 		fg_images[0]->get_w() / 2;
-	fg_y = round(*y_output * (radius - fg_images[0]->get_h() / 2) + radius) - 
+	fg_y = round(*y_output * (radius - fg_images[0]->get_h() / 2) + radius) -
 		fg_images[0]->get_h() / 2;
 
 	draw_pixmap(fg_images[status], fg_x, fg_y);
@@ -266,13 +264,12 @@ void Color3WayPoint::draw_face(int flash, int flush)
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%.3f", *y_output);
-		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2, 
+		draw_text(radius - get_text_width(MEDIUMFONT, string) / 2,
 			get_text_ascent(MEDIUMFONT) + margin,
 			string);
 
 		sprintf(string, "%.3f", *x_output);
-		draw_text(margin, 
-			radius + get_text_ascent(MEDIUMFONT) / 2,
+		draw_text(margin, radius + get_text_ascent(MEDIUMFONT) / 2,
 			string);
 		set_font(MEDIUMFONT);
 	}
@@ -318,6 +315,7 @@ int Color3WayPoint::button_press_event()
 		starting_x = fg_x;
 		starting_y = fg_y;
 		gui->get_relative_cursor_pos(&offset_x, &offset_y);
+		return 1;
 	}
 	return 0;
 }
@@ -356,18 +354,10 @@ int Color3WayPoint::cursor_motion_event()
 		plugin->send_configure_change();
 
 		gui->update();
-		handle_event();
 		return 1;
 	}
-
 	return 0;
 }
-
-int Color3WayPoint::handle_event()
-{
-	return 1;
-}
-
 
 int Color3WayPoint::cursor_enter_event()
 {
@@ -375,6 +365,7 @@ int Color3WayPoint::cursor_enter_event()
 	{
 		status = COLOR_HI;
 		draw_face(1, 1);
+		return 1;
 	}
 	return 0;
 }
@@ -396,28 +387,29 @@ int Color3WayPoint::keypress_event()
 
 	switch(get_keypress())
 	{
-		case UP:
-			*y_output -= 0.001;
-			result = 1;
-			break;
-		case DOWN:
-			*y_output += 0.001;
-			result = 1;
-			break;
-		case LEFT:
-			*x_output -= 0.001;
-			result = 1;
-			break;
-		case RIGHT:
-			*x_output += 0.001;
-			result = 1;
-			break;
+	case UP:
+		*y_output -= 0.001;
+		result = 1;
+		break;
+	case DOWN:
+		*y_output += 0.001;
+		result = 1;
+		break;
+	case LEFT:
+		*x_output -= 0.001;
+		result = 1;
+		break;
+	case RIGHT:
+		*x_output += 0.001;
+		result = 1;
+		break;
 	}
 
 	if(result)
 	{
 		plugin->config.boundaries();
-		if(plugin->copy_to_all[section]) plugin->config.copy_to_all(section);
+		if(plugin->copy_to_all[section])
+			plugin->config.copy_to_all(section);
 		plugin->send_configure_change();
 		gui->update();
 	}
@@ -440,7 +432,8 @@ Color3WaySlider::Color3WaySlider(Color3WayMain *plugin, Color3WayWindow *gui,
 int Color3WaySlider::handle_event()
 {
 	*output = get_value();
-	if(plugin->copy_to_all[section]) plugin->config.copy_to_all(section);
+	if(plugin->copy_to_all[section])
+		plugin->config.copy_to_all(section);
 	plugin->send_configure_change();
 	gui->update();
 	return 1;
@@ -487,7 +480,8 @@ Color3WayCopySection::Color3WayCopySection(Color3WayMain *plugin, Color3WayWindo
 
 int Color3WayCopySection::handle_event()
 {
-	if(get_value()) plugin->config.copy_to_all(section);
+	if(get_value())
+		plugin->config.copy_to_all(section);
 	plugin->copy_to_all[section] = get_value();
 	gui->update();
 	plugin->send_configure_change();

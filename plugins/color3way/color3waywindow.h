@@ -29,9 +29,8 @@ public:
 		int x, int y,
 		int radius, int section);
 
-	virtual ~Color3WayPoint();
+	Color3WayPoint();
 
-	int handle_event();
 	void update();
 	void initialize();
 	int cursor_enter_event();
