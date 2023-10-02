@@ -25,8 +25,6 @@ class Color3WayThread;
 #define MIDTONES 1
 #define HIGHLIGHTS 2
 #define SECTIONS 3
-#define MAX_COLOR 1.0
-#define ROOT_2 1.414214
 
 #include "color3waywindow.h"
 #include "pluginvclient.h"

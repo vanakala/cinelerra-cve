@@ -361,7 +361,7 @@ void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
 	int h = round(atan2(config.hue_x[section], config.hue_y[section]) *
 		360.0 / 2.0 / M_PI);
 	int cr, cg, cb;
-	int cmax = color_max;
+	int ncr, ncg, ncb;
 	double s = sqrt(SQR(config.hue_x[section]) + SQR(config.hue_y[section]));
 
 	if(h >= 360)
@@ -371,9 +371,15 @@ void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
 
 	ColorSpaces::hsv_to_rgb(&cr, &cg, &cb, h, s, 1.0);
 
-	*r = (cmax - cr);
-	*g = (cmax - cg);
-	*b = (cmax - cb);
+	if(h >= 180)
+		h -= 180;
+	else
+		h += 180;
+
+	ColorSpaces::hsv_to_rgb(&ncr, &ncg, &ncb, h, s, 1.0);
+	*r = (ncr - cr) / 2;
+	*g = (ncg - cg) / 2;
+	*b = (ncb - cb) / 2;
 	*sat = config.saturation[section];
 	*val = config.value[section];
 }
