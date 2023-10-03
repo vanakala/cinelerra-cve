@@ -108,36 +108,6 @@ Color3WayUnit::Color3WayUnit(Color3WayMain *plugin, Color3WayEngine *server)
 	this->plugin = plugin;
 }
 
-// Lower = sharper curve
-#define SHADOW_GAMMA 32.0
-#define HIGHLIGHT_GAMMA 32.0
-// Keep value == 0 from blowing up
-#define FUDGE (1.0 / 4096.0)
-// Scale curve from 0 - 1
-#define SHADOW_BORDER (1.0 / ((1.0 / SHADOW_GAMMA + FUDGE) / FUDGE))
-#define HIGHLIGHT_BORDER (1.0 / ((1.0 / HIGHLIGHT_GAMMA + FUDGE) / FUDGE))
-#define SHADOW_CURVE(value) \
-	(((1.0 / (((value) / SHADOW_GAMMA + FUDGE) / FUDGE)) - SHADOW_BORDER) / \
-	(1.0 - SHADOW_BORDER))
-
-#define SHADOW_LINEAR(value) (1.0 - (value))
-
-#define HIGHLIGHT_CURVE(value) \
-	(((1.0 / (((1.0 - value) / HIGHLIGHT_GAMMA + FUDGE) / FUDGE)) - HIGHLIGHT_BORDER) / \
-		(1.0 - HIGHLIGHT_BORDER))
-
-#define HIGHLIGHT_LINEAR(value) (value)
-
-#define MIDTONE_CURVE(value, factor) \
-	((factor) <= 0 ? \
-	(1.0 - SHADOW_LINEAR(value) - HIGHLIGHT_CURVE(value)) : \
-	(1.0 - SHADOW_CURVE(value) - HIGHLIGHT_LINEAR(value)))
-
-#define TOTAL_TRANSFER(value, factor) \
-	(factor[SHADOWS] * SHADOW_LINEAR(value) + \
-	factor[MIDTONES] * MIDTONE_CURVE(value, factor[MIDTONES]) + \
-	factor[HIGHLIGHTS] * HIGHLIGHT_LINEAR(value))
-
 void Color3WayUnit::process_package(LoadPackage *package)
 {
 	double values[SECTIONS];
@@ -283,77 +253,6 @@ Color3WayMain::~Color3WayMain()
 }
 
 PLUGIN_CLASS_METHODS
-
-void Color3WayMain::process_pixel(double *r, double *g, double *b,
-	double r_in, double g_in, double b_in,
-	double x, double y)
-{
-	double r_factor[SECTIONS];
-	double g_factor[SECTIONS];
-	double b_factor[SECTIONS];
-	double s_factor[SECTIONS];
-	double v_factor[SECTIONS];
-	double *factp[] = { r_factor, g_factor, b_factor };
-	double color_max = ColorModels::calculate_max(input->get_color_model());
-	double comp[3];
-
-	for(int i = 0; i < SECTIONS; i++)
-	{
-		calculate_factors(&r_factor[i], &g_factor[i], &b_factor [i],
-			x, y);
-		s_factor[i] = config.saturation[i];
-		v_factor[i] = config.value[i];
-	}
-
-	comp[0] = *r;
-	comp[1] = *g;
-	comp[2] = *b;
-
-// Apply hue
-	for(int chn = 0; chn < 3; chn++)
-	{
-		double value = comp[chn] / color_max;
-		double *factor = factp[chn];
-
-		value += TOTAL_TRANSFER(value, factor);
-		CLAMP(value, 0, 1.0);
-		comp[chn] = value;
-	}
-// Apply saturation/value
-	double s, v;
-	int h;
-	int cr = round(comp[0] * color_max);
-	int cg = round(comp[1] * color_max);
-	int cb = round(comp[2] * color_max);
-
-	ColorSpaces::rgb_to_hsv(cr, cg, cb, &h, &s, &v);
-	v += TOTAL_TRANSFER(v, v_factor);
-	s += TOTAL_TRANSFER(s, s_factor);
-	s = MAX(s, 0);
-	ColorSpaces::hsv_to_rgb(&cr, &cg, &cb, h, s, v);
-	*r = cr / color_max;
-	*g = cg / color_max;
-	*b = cb / color_max;
-}
-
-void Color3WayMain::calculate_factors(double *r, double *g, double *b,
-	double x, double y)
-{
-	int h = round(atan2(x, y) * 360.0 / 2.0 / M_PI);
-	int cr, cg, cb;
-	double s = sqrt(SQR(x) + SQR(y));
-
-	if(h >= 360)
-		h -= 360;
-	if(h < 0)
-		h += 360;
-
-	ColorSpaces::hsv_to_rgb(&cr, &cg, &cb, h, s, 1.0);
-
-	*r = (0xffff - cr) / 65535.0;
-	*g = (0xffff - cg) / 65535.0;
-	*b = (0xffff - cb) / 65535.0;
-}
 
 void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
 	double *sat, double *val, int section)

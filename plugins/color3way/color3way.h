@@ -105,13 +105,8 @@ public:
 
 	void get_aggregation(int *aggregate_gamma);
 
-	void calculate_factors(double *r, double *g, double *b, double x, double y);
 	void calculate_rgb(double *r, double *g, double *b,
 		double *sat, double *val, int section);
-
-	void process_pixel(double *r, double *g, double *b,
-		double r_in, double g_in,  double b_in,
-		double x, double y);
 
 	Color3WayEngine *engine;
 	VFrame *input;

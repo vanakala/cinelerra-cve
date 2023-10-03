@@ -6,15 +6,9 @@
 #ifndef COLOR3WAYWINDOW_H
 #define COLOR3WAYWINDOW_H
 
-class Color3WaySlider;
-class Color3WayPreserve;
-class Color3WayLock;
-class Color3WayWhite;
-class Color3WayReset;
 class Color3WayWindow;
 
 #include "bcslider.h"
-#include "filexml.h"
 #include "color3way.h"
 #include "pluginclient.h"
 #include "pluginwindow.h"
@@ -29,7 +23,7 @@ public:
 		int x, int y,
 		int radius, int section);
 
-	Color3WayPoint();
+	~Color3WayPoint();
 
 	void update();
 	void initialize();
@@ -107,21 +101,6 @@ private:
 };
 
 
-class Color3WayBalanceSection : public BC_GenericButton
-{
-public:
-	Color3WayBalanceSection(Color3WayMain *plugin, Color3WayWindow *gui,
-		int x, int y, int section);
-
-	int handle_event();
-
-private:
-	Color3WayMain *plugin;
-	Color3WayWindow *gui;
-	int section;
-};
-
-
 class Color3WayCopySection : public BC_CheckBox
 {
 public:
@@ -159,7 +138,6 @@ private:
 	BC_Title *sat_title;
 	Color3WaySlider *saturation;
 	Color3WayResetSection *reset;
-	Color3WayBalanceSection *balance;
 	Color3WayCopySection *copy;
 };
 

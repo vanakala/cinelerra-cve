@@ -24,7 +24,7 @@ static const char *titles[] =
 PLUGIN_THREAD_METHODS
 
 Color3WayWindow::Color3WayWindow(Color3WayMain *plugin, int x, int y)
- : PluginWindow(plugin, x, y, 500, 370)
+ : PluginWindow(plugin, x, y, 500, 350)
 {
 	int margin = theme_global->widget_border;
 
@@ -88,10 +88,6 @@ Color3WaySection::Color3WaySection(Color3WayMain *plugin, Color3WayWindow *gui,
 		section));
 
 	y += reset->get_h() + margin;
-	gui->add_tool(balance = new Color3WayBalanceSection(plugin, gui, x, y,
-		section));
-
-	y += balance->get_h() + margin;
 	gui->add_tool(copy = new Color3WayCopySection(plugin, gui, x, y,
 		section));
 }
@@ -121,8 +117,6 @@ void Color3WaySection::reposition_window(int x, int y, int w, int h)
 	y += saturation->get_h() + margin;
 	reset->reposition_window(x, y);
 	y += reset->get_h() + margin;
-	balance->reposition_window(x, y);
-	y += balance->get_h() + margin;
 	copy->reposition_window(x, y);
 	gui->flush();
 }
@@ -485,79 +479,5 @@ int Color3WayCopySection::handle_event()
 	plugin->copy_to_all[section] = get_value();
 	gui->update();
 	plugin->send_configure_change();
-	return 1;
-}
-
-
-Color3WayBalanceSection::Color3WayBalanceSection(Color3WayMain *plugin, 
-	Color3WayWindow *gui, int x, int y, int section)
- : BC_GenericButton(x, y, _("White balance"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-	this->section = section;
-}
-
-int Color3WayBalanceSection::handle_event()
-{
-// Get colorpicker value
-	double r, g, b;
-	plugin->get_picker_colors(&r, &g, &b);
-
-// Since the transfers aren't linear, use brute force search
-	double step = 0.1;
-	double center_x = 0;
-	double center_y = 0;
-	double range = 1;
-	double best_diff = 255;
-	double new_x = 0;
-	double new_y = 0;
-
-	while(step >= 0.001)
-	{
-		for(double x = center_x - range; x < center_x + range; x += step)
-		{
-			for(double y = center_y - range; y < center_y + range; y += step)
-			{
-				double new_r;
-				double new_g;
-				double new_b;
-
-				plugin->process_pixel(&new_r, &new_g, &new_b,
-					r, g, b, x, y);
-				double min = MIN(new_r, new_g);
-				min = MIN(min, new_b);
-				double max = MAX(new_r, new_g);
-				max = MAX(max, new_b);
-				double diff = max - min;
-
-				if(diff < best_diff)
-				{
-					best_diff = diff;
-					new_x = x;
-					new_y = y;
-				}
-			}
-		}
-
-		step /= 2;
-		range /= 2;
-		center_x = new_x;
-		center_y = new_y;
-	}
-
-	new_x = Units::quantize(new_x, 0.001);
-	new_y = Units::quantize(new_y, 0.001);
-
-	plugin->config.hue_x[section] = new_x;
-	plugin->config.hue_y[section] = new_y;
-	plugin->config.boundaries();
-
-	if(plugin->copy_to_all[section])
-		plugin->config.copy_to_all(section);
-	plugin->send_configure_change();
-
-	gui->update();
-
 	return 1;
 }
