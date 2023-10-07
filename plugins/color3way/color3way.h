@@ -70,6 +70,7 @@ public:
 
 	void process_package(LoadPackage *package);
 	void level_coefs(double value, double *coefs);
+	void level_coefs(int value, int *coefs);
 
 	Color3WayMain *plugin;
 };
@@ -105,7 +106,7 @@ public:
 
 	void get_aggregation(int *aggregate_gamma);
 
-	void calculate_rgb(double *r, double *g, double *b,
+	void calculate_rgb(int64_t *red, int64_t *green, int64_t *blue,
 		double *sat, double *val, int section);
 
 	Color3WayEngine *engine;

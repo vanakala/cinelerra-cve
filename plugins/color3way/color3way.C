@@ -112,7 +112,7 @@ void Color3WayUnit::process_package(LoadPackage *package)
 {
 	double values[SECTIONS];
 	double saturations[SECTIONS];
-	double red[SECTIONS], green[SECTIONS], blue[SECTIONS];
+	int64_t red[SECTIONS], green[SECTIONS], blue[SECTIONS];
 	Color3WayPackage *pkg = (Color3WayPackage*)package;
 	int w = plugin->input->get_w();
 
@@ -129,39 +129,37 @@ void Color3WayUnit::process_package(LoadPackage *package)
 			int h;
 			int r, g, b;
 			double s, v;
-			double dr, dg, db;
-			double rcoefs[SECTIONS];
-			double gcoefs[SECTIONS];
-			double bcoefs[SECTIONS];
+			int rcoefs[SECTIONS];
+			int gcoefs[SECTIONS];
+			int bcoefs[SECTIONS];
+			double scoefs[SECTIONS];
+			double vcoefs[SECTIONS];
 
-			dr = row[0];
-			dg = row[1];
-			db = row[2];
-			level_coefs(dr / plugin->color_max, rcoefs);
-			level_coefs(dg / plugin->color_max, gcoefs);
-			level_coefs(db / plugin->color_max, bcoefs);
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			level_coefs(r, rcoefs);
+			level_coefs(g, gcoefs);
+			level_coefs(b, bcoefs);
 
 			for(int k = 0; k < SECTIONS; k++)
 			{
-				dr += red[k] * rcoefs[k];
-				dg += green[k] * gcoefs[k];
-				db += blue[k] * bcoefs[k];
+				r += (red[k] * rcoefs[k]) / 0xffff;
+				g += (green[k] * gcoefs[k]) / 0xffff;
+				b += (blue[k] * bcoefs[k]) / 0xffff;
 			}
-			CLAMP(dr, 0, plugin->color_max);
-			CLAMP(dg, 0, plugin->color_max);
-			CLAMP(db, 0, plugin->color_max);
-			r = round(dr);
-			g = round(dg);
-			b = round(db);
+			CLAMP(r, 0, 0xffff);
+			CLAMP(g, 0, 0xffff);
+			CLAMP(b, 0, 0xffff);
 			ColorSpaces::rgb_to_hsv(r, g, b, &h, &s, &v);
 
-			level_coefs(s, rcoefs);
-			level_coefs(v, bcoefs);
+			level_coefs(s, scoefs);
+			level_coefs(v, vcoefs);
 
 			for(int k = 0; k < SECTIONS; k++)
 			{
-				s += saturations[k] * rcoefs[k];
-				v += values[k] * bcoefs[k];
+				s += saturations[k] * scoefs[k];
+				v += values[k] * vcoefs[k];
 			}
 
 			CLAMP(s, 0, 1.0);
@@ -206,6 +204,38 @@ void Color3WayUnit::level_coefs(double value, double *coefs)
 	coefs[SHADOWS] = CLIP(low_coef, 0.0, 1.0);
 	coefs[MIDTONES] = CLIP(mid_coef, 0.0, 1.0);
 	coefs[HIGHLIGHTS] = CLIP(high_coef, 0.0, 1.0);
+}
+
+#define COEF_INOM ((int)(COEF_NOM * 0xffff) * 0xffff)
+#define COEF_IMID ((int)(COEF_MID * 0xffff) * 0xffff)
+#define COEF_ISHFT ((int)(COEF_SHFT * 0xffff))
+
+void Color3WayUnit::level_coefs(int value, int *coefs)
+{
+	int low_coef, high_coef, mid_coef;
+
+	if(value < 1)
+	{
+		low_coef = 0xffff;
+		mid_coef = 0;
+		high_coef = 0;
+	}
+	else if(value >= 0xffff)
+	{
+		low_coef = 0;
+		mid_coef = 0;
+		high_coef = 0xffff;
+	}
+	else
+	{
+		low_coef = COEF_INOM / value - COEF_SHFT;
+		high_coef = COEF_INOM / (0xffff - value) - COEF_SHFT;
+		mid_coef = COEF_IMID / (low_coef + high_coef);
+	}
+
+	coefs[SHADOWS] = CLIP(low_coef, 0, 0xffff);
+	coefs[MIDTONES] = CLIP(mid_coef, 0, 0xffff);
+	coefs[HIGHLIGHTS] = CLIP(high_coef, 0, 0xffff);
 }
 
 Color3WayEngine::Color3WayEngine(Color3WayMain *plugin, int cpus)
@@ -254,7 +284,7 @@ Color3WayMain::~Color3WayMain()
 
 PLUGIN_CLASS_METHODS
 
-void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
+void Color3WayMain::calculate_rgb(int64_t *red, int64_t *green, int64_t *blue,
 	double *sat, double *val, int section)
 {
 	int h = round(atan2(config.hue_x[section], config.hue_y[section]) *
@@ -276,9 +306,9 @@ void Color3WayMain::calculate_rgb(double *r, double *g, double *b,
 		h += 180;
 
 	ColorSpaces::hsv_to_rgb(&ncr, &ncg, &ncb, h, s, 1.0);
-	*r = (ncr - cr) / 2;
-	*g = (ncg - cg) / 2;
-	*b = (ncb - cb) / 2;
+	*red = (ncr - cr) / 2;
+	*green = (ncg - cg) / 2;
+	*blue = (ncb - cb) / 2;
 	*sat = config.saturation[section];
 	*val = config.value[section];
 }
