@@ -322,6 +322,7 @@ VFrame *Color3WayMain::process_tmpframe(VFrame *frame)
 {
 	int do_reconfigure;
 	int cmodel = frame->get_color_model();
+	int no_change = 1;
 
 	input = frame;
 	switch(cmodel)
@@ -334,7 +335,20 @@ VFrame *Color3WayMain::process_tmpframe(VFrame *frame)
 	}
 
 	do_reconfigure = load_configuration();
-	color_max = ColorModels::calculate_max(input->get_color_model());
+
+	for(int i = 0; i < SECTIONS; i++)
+	{
+		if(fabs(config.hue_x[i]) > EPSILON || fabs(config.hue_y[i]) > EPSILON ||
+			fabs(config.value[i]) > EPSILON ||
+			fabs(config.saturation[i]) > EPSILON)
+		{
+			no_change = 0;
+			break;
+		}
+	}
+
+	if(no_change)
+		return frame;
 
 	if(!engine)
 		engine = new Color3WayEngine(this, get_project_smp());

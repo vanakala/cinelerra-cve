@@ -105,15 +105,11 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	void get_aggregation(int *aggregate_gamma);
-
 	void calculate_rgb(int64_t *red, int64_t *green, int64_t *blue,
 		double *sat, double *val, int section);
 
 	Color3WayEngine *engine;
 	VFrame *input;
-
-	double color_max;
 };
 
 #endif
