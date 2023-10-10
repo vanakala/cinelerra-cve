@@ -344,7 +344,8 @@ int Color3WayPoint::cursor_motion_event()
 			(radius - fg_images[0]->get_h() / 2);
 
 		plugin->config.boundaries();
-		if(plugin->copy_to_all[section]) plugin->config.copy_to_all(section);
+		if(plugin->config.copy_to_all[section])
+			plugin->config.copy2all(section);
 		plugin->send_configure_change();
 
 		gui->update();
@@ -402,8 +403,8 @@ int Color3WayPoint::keypress_event()
 	if(result)
 	{
 		plugin->config.boundaries();
-		if(plugin->copy_to_all[section])
-			plugin->config.copy_to_all(section);
+		if(plugin->config.copy_to_all[section])
+			plugin->config.copy2all(section);
 		plugin->send_configure_change();
 		gui->update();
 	}
@@ -426,8 +427,8 @@ Color3WaySlider::Color3WaySlider(Color3WayMain *plugin, Color3WayWindow *gui,
 int Color3WaySlider::handle_event()
 {
 	*output = get_value();
-	if(plugin->copy_to_all[section])
-		plugin->config.copy_to_all(section);
+	if(plugin->config.copy_to_all[section])
+		plugin->config.copy2all(section);
 	plugin->send_configure_change();
 	gui->update();
 	return 1;
@@ -455,8 +456,8 @@ int Color3WayResetSection::handle_event()
 	plugin->config.hue_y[section] = 0;
 	plugin->config.value[section] = 0;
 	plugin->config.saturation[section] = 0;
-	if(plugin->copy_to_all[section])
-		plugin->config.copy_to_all(section);
+	if(plugin->config.copy_to_all[section])
+		plugin->config.copy2all(section);
 	plugin->send_configure_change();
 	gui->update();
 	return 1;
@@ -465,7 +466,7 @@ int Color3WayResetSection::handle_event()
 
 Color3WayCopySection::Color3WayCopySection(Color3WayMain *plugin, Color3WayWindow *gui, 
 	int x, int y, int section)
- : BC_CheckBox(x, y, plugin->copy_to_all[section], _("Copy to all"))
+ : BC_CheckBox(x, y, plugin->config.copy_to_all[section], _("Copy to all"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -474,9 +475,11 @@ Color3WayCopySection::Color3WayCopySection(Color3WayMain *plugin, Color3WayWindo
 
 int Color3WayCopySection::handle_event()
 {
-	if(get_value())
-		plugin->config.copy_to_all(section);
-	plugin->copy_to_all[section] = get_value();
+	int value = get_value();
+
+	if(value)
+		plugin->config.copy2all(section);
+	plugin->config.copy_to_all[section] = value;
 	gui->update();
 	plugin->send_configure_change();
 	return 1;

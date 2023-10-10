@@ -45,12 +45,13 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 	void boundaries();
-	void copy_to_all(int section);
+	void copy2all(int section);
 
 	double hue_x[SECTIONS];
 	double hue_y[SECTIONS];
 	double value[SECTIONS];
 	double saturation[SECTIONS];
+	int copy_to_all[SECTIONS];
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -112,7 +113,6 @@ public:
 	Color3WayEngine *engine;
 	VFrame *input;
 
-	int copy_to_all[SECTIONS];
 	double color_max;
 };
 

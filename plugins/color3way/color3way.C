@@ -28,6 +28,7 @@ Color3WayConfig::Color3WayConfig()
 		hue_y[i] = 0.0;
 		value[i] = 0.0;
 		saturation[i] = 0.0;
+		copy_to_all[i] = 0;
 	}
 }
 
@@ -84,7 +85,7 @@ void Color3WayConfig::boundaries()
 	}
 }
 
-void Color3WayConfig::copy_to_all(int section)
+void Color3WayConfig::copy2all(int section)
 {
 	for(int i = 0; i < SECTIONS; i++)
 	{
@@ -271,8 +272,6 @@ Color3WayMain::Color3WayMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	for(int i = 0; i < SECTIONS; i++)
-		copy_to_all[i] = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -364,9 +363,11 @@ void Color3WayMain::save_data(KeyFrame *keyframe)
 		output.tag.set_property(string, config.value[i]);
 		sprintf(string, "SATURATION_%d", i);
 		output.tag.set_property(string, config.saturation[i]);
-
-		sprintf(string, "COPY_TO_ALL_%d", i);
-		output.tag.set_property(string, copy_to_all[i]);
+		if(config.copy_to_all[i])
+		{
+			sprintf(string, "COPY_TO_ALL_%d", i);
+			output.tag.set_property(string, config.copy_to_all[i]);
+		}
 	}
 
 	output.append_tag();
@@ -391,7 +392,7 @@ void Color3WayMain::load_defaults()
 		config.saturation[i] = defaults->get(string, config.saturation[i]);
 
 		sprintf(string, "COPY_TO_ALL_%d", i);
-		copy_to_all[i] = defaults->get(string, copy_to_all[i]);
+		config.copy_to_all[i] = defaults->get(string, config.copy_to_all[i]);
 	}
 }
 
@@ -411,7 +412,7 @@ void Color3WayMain::save_defaults()
 		defaults->update(string, config.saturation[i]);
 
 		sprintf(string, "COPY_TO_ALL_%d", i);
-		defaults->update(string, copy_to_all[i]);
+		defaults->update(string, config.copy_to_all[i]);
 	}
 }
 
@@ -439,7 +440,7 @@ void Color3WayMain::read_data(KeyFrame *keyframe)
 				config.saturation[i] = input.tag.get_property(string, config.saturation[i]);
 
 				sprintf(string, "COPY_TO_ALL_%d", i);
-				copy_to_all[i] = input.tag.get_property(string, copy_to_all[i]);
+				config.copy_to_all[i] = input.tag.get_property(string, config.copy_to_all[i]);
 			}
 		}
 	}
