@@ -364,14 +364,13 @@ if test "x$enable_opengl" = "xauto"; then
 	)
 	if test "x$libGL" = "xyes"; then
 		enable_opengl=ok
-		OPENGL_LIBS="-lGLU $OPENGL_LIBS"
 		AC_DEFINE(HAVE_GL)
 	fi
 else
 	if test "x$enable_opengl" = "xyes"; then
 		enable_opengl=ok
 		libGL=skip
-		OPENGL_LIBS="-lGLU -lGL"
+		OPENGL_LIBS="-lGL"
 		AC_DEFINE(HAVE_GL)
 	fi
 fi
