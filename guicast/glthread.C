@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #define GL_GLEXT_PROTOTYPES
 #include "bcresources.h"
@@ -268,3 +252,54 @@ void GLThread::delete_window(Display *dpy, int screen)
 	}
 #endif
 }
+
+#ifdef HAVE_GL
+// Debug functions
+void GLThread::show_glparams(int indent)
+{
+	GLint auxbufnum;
+	GLint max3dtexsiz;
+	GLint maxdrawbufs;
+	GLint maxtexiunits;
+	GLint maxtexsize;
+	GLint maxtexunits;
+	GLint maxcomtexunits;
+	GLint viewportdims[2];
+	GLint viewport[4];
+
+	glGetIntegerv(GL_AUX_BUFFERS, &auxbufnum);
+	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &max3dtexsiz);
+	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbufs);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxtexiunits);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtexsize);
+	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxtexunits);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxcomtexunits);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, viewportdims);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	printf("%*sSupported GLSL version is %s.\n", indent, "",
+		(char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
+	indent++;
+	printf("%*sSome GL parameter values:\n", indent, "");
+	indent += 2;
+	printf("%*sNumber of auxiliary color buffers available: %d\n", indent, "",
+		auxbufnum);
+	printf("%*sLargest 3D texture that the GL can handle: %d\n", indent, "",
+		max3dtexsiz);
+	printf("%*sMaximum number of simultaneous output colors: %d\n", indent, "",
+		maxdrawbufs);
+	printf("%*sMaximum supported texture image units: %d\n", indent, "",
+		maxtexiunits);
+	printf("%*sLargest texture that the GL can handle: %d\n", indent, "",
+		maxtexsize);
+	printf("%*sNumber of conventional texture units supported: %d\n", indent, "",
+		maxtexunits);
+	printf("%*sMaximum supported combined texture image units: %d\n", indent, "",
+		maxcomtexunits);
+	printf("%*sMaximum supported width and height of the viewport %dx%d\n", indent, "",
+		viewportdims[0], viewportdims[1]);
+	printf("%*sCurrent viewport: (%d,%d) [%d,%d]\n", indent, "",
+		viewport[0], viewport[1],
+		viewport[2], viewport[3]);
+}
+
+#endif
