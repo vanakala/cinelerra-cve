@@ -100,9 +100,11 @@ private:
 		Window win;
 		int screen;
 		GLXContext gl_context;
+		XVisualInfo *visinfo;
 	}contexts[GL_MAX_CONTEXTS];
 public:
-	void show_glparams(int indent = 0);
+	static void show_glparams(int indent = 0);
+	void show_glxcontext(int context, int indent = 0);
 #endif
 };
 #endif

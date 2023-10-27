@@ -131,11 +131,11 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 			XFree(visinfo);
 			return 1;
 		}
-		XFree(visinfo);
 		contexts[last_context].dpy = dpy;
 		contexts[last_context].screen = screen;
 		contexts[last_context].win = win;
 		contexts[last_context].gl_context = gl_context;
+		contexts[last_context].visinfo = visinfo;
 		last_context++;
 		glXMakeCurrent(dpy, win, gl_context);
 		if(!BC_Resources::OpenGLStrings[0])
@@ -230,6 +230,7 @@ void GLThread::delete_contexts()
 	{
 		if(contexts[i].dpy)
 		{
+			XFree(contexts[i].visinfo);
 			glXDestroyContext(contexts[i].dpy, contexts[i].gl_context);
 			contexts[i].dpy = 0;
 			contexts[i].gl_context = 0;
@@ -245,6 +246,7 @@ void GLThread::delete_window(Display *dpy, int screen)
 
 	if((i = have_context(dpy, screen)) >= 0)
 	{
+		XFree(contexts[i].visinfo);
 		glXMakeCurrent(dpy, None, NULL);
 		glXDestroyContext(contexts[i].dpy, contexts[i].gl_context);
 		contexts[i].gl_context = 0;
@@ -300,6 +302,54 @@ void GLThread::show_glparams(int indent)
 	printf("%*sCurrent viewport: (%d,%d) [%d,%d]\n", indent, "",
 		viewport[0], viewport[1],
 		viewport[2], viewport[3]);
+}
+
+void GLThread::show_glxcontext(int context, int indent)
+{
+	int use_gl;
+	int buffer_size;
+	int level;
+	int rgba;
+	int doublebuffer;
+	int stereo;
+	int aux_bufs;
+	int red, green, blue, alpha, depth, stencil;
+	int acured, acugreen, acublue, acualpha;
+	int maj, min;
+	Display *dpy = contexts[context].dpy;
+	XVisualInfo *visinfo = contexts[context].visinfo;
+
+	glXQueryVersion(dpy, &maj, &min);
+	printf("%*sGLX version %d.%d context %d\n", indent, "", maj, min, context);
+	printf("%*sDirect rendering: %s\n", indent, "",
+		glXIsDirect(dpy, contexts[context].gl_context) ? "Yes" : "No");
+	glXGetConfig(dpy, visinfo, GLX_USE_GL, &use_gl);
+	glXGetConfig(dpy, visinfo, GLX_BUFFER_SIZE, &buffer_size);
+	glXGetConfig(dpy, visinfo, GLX_LEVEL, &level);
+	glXGetConfig(dpy, visinfo, GLX_RGBA, &rgba);
+	glXGetConfig(dpy, visinfo, GLX_DOUBLEBUFFER, &doublebuffer);
+	glXGetConfig(dpy, visinfo, GLX_STEREO, &rgba);
+	glXGetConfig(dpy, visinfo, GLX_AUX_BUFFERS, &aux_bufs);
+	glXGetConfig(dpy, visinfo, GLX_RED_SIZE, &red);
+	glXGetConfig(dpy, visinfo, GLX_GREEN_SIZE, &green);
+	glXGetConfig(dpy, visinfo, GLX_BLUE_SIZE, &blue);
+	glXGetConfig(dpy, visinfo, GLX_ALPHA_SIZE, &alpha);
+	glXGetConfig(dpy, visinfo, GLX_DEPTH_SIZE, &depth);
+	glXGetConfig(dpy, visinfo, GLX_STENCIL_SIZE, &stencil);
+	glXGetConfig(dpy, visinfo, GLX_ACCUM_RED_SIZE, &acured);
+	glXGetConfig(dpy, visinfo, GLX_ACCUM_GREEN_SIZE, &acugreen);
+	glXGetConfig(dpy, visinfo, GLX_ACCUM_BLUE_SIZE, &acublue);
+	glXGetConfig(dpy, visinfo, GLX_ACCUM_ALPHA_SIZE, &acualpha);
+
+	indent += 2;
+	printf("%*sGlx context: use_gl %d buffer_size %d buffer_level %d\n", indent, "",
+		use_gl, buffer_size, level);
+	printf("%*srgba %d doublebuffer %d stereo %d aux_bufs %d\n", indent, "",
+		rgba, doublebuffer, stereo, aux_bufs);
+	printf("%*sred %d green %d blue %d alpha %d depth %d stencil %d\n", indent, "",
+		red, green, blue, alpha, depth, stencil);
+	printf("%*saccum red %d green %d blue %d alpha %d\n", indent, "",
+		acured, acugreen, acublue, acualpha);
 }
 
 #endif
