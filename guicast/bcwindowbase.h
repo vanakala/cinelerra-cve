@@ -422,6 +422,10 @@ public:
 	int test_keypress;
 	VFrame *icon_vframe;
 
+// Debugging helpers
+	static void dump_XVisualInfo(XVisualInfo *visinfo, int indent = 0);
+	static const char *visual_class_name(int c_class);
+
 private:
 // Create a window
 	void create_window(BC_WindowBase *parent_window, const char *title,

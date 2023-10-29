@@ -47,6 +47,7 @@ libguicastcve_la_SOURCES = \
 	bcwindow.C \
 	bcwindowGL.C \
 	bcwindowbase.C \
+	bcwindowdbg.C \
 	bcwindowdraw.C \
 	condition.C \
 	colormodels.C \
