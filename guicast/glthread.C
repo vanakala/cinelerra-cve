@@ -352,4 +352,62 @@ void GLThread::show_glxcontext(int context, int indent)
 		acured, acugreen, acublue, acualpha);
 }
 
+void GLThread::show_errors(const char *loc, int indent)
+{
+	GLenum err;
+	const char *s = 0;
+
+	while((err = glGetError()) != GL_NO_ERROR)
+	{
+		switch(err)
+		{
+		case GL_INVALID_ENUM:
+			s = "Invalid enum";
+			break;
+		case GL_INVALID_VALUE:
+			s = "Invalid value";
+			break;
+		case GL_INVALID_OPERATION:
+			s = "Invalid operation";
+			break;
+		case GL_STACK_OVERFLOW:
+			s = "Stack overflow";
+			break;
+		case GL_STACK_UNDERFLOW:
+			s = "Stack underflow";
+			break;
+		case GL_OUT_OF_MEMORY:
+			s = "Out of memory";
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			s = "Invalid framebuffer operation";
+			break;
+		case GL_CONTEXT_LOST:
+			s = "Context lost";
+			break;
+		case GL_TABLE_TOO_LARGE:
+			s = "Table too large";
+			break;
+		default:
+			s = "Unknown";
+			break;
+		}
+		printf("%*sOpenGL ERROR: %s.\n", indent, "", s);
+	}
+	if(loc)
+	{
+		if(s)
+			printf("%*sEnd of error list at '%s'\n", indent, "", loc);
+		else
+			printf("%*sNo errors at '%s'\n", indent, "", loc);
+	}
+	else
+	{
+		if(s)
+			printf("%*sEnd of error list\n", indent, "");
+		else
+			printf("%*sNo opengl errors\n", indent, "");
+	}
+}
+
 #endif

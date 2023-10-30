@@ -104,6 +104,7 @@ private:
 	}contexts[GL_MAX_CONTEXTS];
 public:
 	static void show_glparams(int indent = 0);
+	static void show_errors(const char *loc = 0, int indent = 0);
 	void show_glxcontext(int context, int indent = 0);
 #endif
 };
