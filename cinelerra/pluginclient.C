@@ -315,7 +315,10 @@ VFrame *PluginClient::clone_vframe(VFrame *orig)
 	VFrame *cloned = BC_Resources::tmpframes.clone_frame(orig);
 
 	if(cloned)
+	{
 		cloned->copy_pts(orig);
+		cloned->merge_status(orig);
+	}
 	return cloned;
 }
 
