@@ -41,7 +41,6 @@ class BC_FileBoxTextBox : public BC_TextBox
 public:
 	BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox);
 
-	int handle_event();
 	BC_FileBox *filebox;
 };
 

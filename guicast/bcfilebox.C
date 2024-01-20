@@ -24,7 +24,7 @@
 
 
 BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
- : BC_ListBox(x, y, 250,
+ : BC_ListBox(x, y, filebox->get_w() - 20,
 	filebox->get_text_height(MEDIUMFONT) * FILEBOX_HISTORY_SIZE +
 		BC_ScrollBar::get_span(SCROLL_HORIZ) +
 		LISTBOX_MARGIN * 2,
@@ -117,11 +117,6 @@ BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 50, 1, filebox->filename)
 {
 	this->filebox = filebox; 
-}
-
-int BC_FileBoxTextBox::handle_event()
-{
-	return 1;
 }
 
 
@@ -232,13 +227,14 @@ int BC_FileBoxOK::handle_event()
 BC_FileBoxText::BC_FileBoxText(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_text_images)
 {
-	this->filebox = filebox; 
+	this->filebox = filebox;
 	set_tooltip(_("Display text"));
 }
 
 int BC_FileBoxText::handle_event()
 {
-	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(), 0);
+	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(),
+		FILEBOX_LIST);
 	return 1;
 }
 
@@ -252,7 +248,8 @@ BC_FileBoxIcons::BC_FileBoxIcons(int x, int y, BC_FileBox *filebox)
 
 int BC_FileBoxIcons::handle_event()
 {
-	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(), LISTBOX_ICONS);
+	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(),
+		LISTBOX_ICONS);
 	return 1;
 }
 
@@ -322,11 +319,10 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
  : BC_Window(title, x, y,
 	BC_WindowBase::get_resources()->filebox_w, 
 	BC_WindowBase::get_resources()->filebox_h, 
-	400, 300, 1, 0, 1)
+	530, 300, 1, 0, 1)
 {
 	fs = new FileSystem;
 	columns = FILEBOX_COLUMNS;
-
 	list_column = new ArrayList<BC_ListBoxItem*>[columns];
 	column_type = new int[columns];
 	column_width = new int[columns];
@@ -417,20 +413,15 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 
 	x = 10;
 	y += directory_title_margin + 3;
-
-	add_subwindow(recent_popup = new BC_FileBoxRecent(this, x, y));
 	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x, y, this));
-	directory_title->reposition_window(x, y,
-		get_w() - recent_popup->get_w() -  20, 1);
-	recent_popup->reposition_window(x + directory_title->get_w(), y,
-		directory_title->get_w(), 200);
+	add_subwindow(recent_popup = new BC_FileBoxRecent(this,
+		x + directory_title->get_w(), y));
 
 	x = 10;
 	y += directory_title->get_h() + 5;
 	listbox = 0;
-
 	create_listbox(x, y, get_display_mode());
-	y += listbox->get_h() + 10;
+	y += listbox->get_h() + 30;
 	add_subwindow(textbox = new BC_FileBoxTextBox(x, y, this));
 	y += textbox->get_h() + 10;
 
@@ -494,33 +485,26 @@ void BC_FileBox::create_icons()
 void BC_FileBox::resize_event(int w, int h)
 {
 	draw_background(0, 0, w, h);
-	flash();
-
+	directory_title->reposition_window(directory_title->get_x(),
+		directory_title->get_y(), w - 40);
+	recent_popup->reposition_window(
+		directory_title->get_x() + directory_title->get_w(),
+		directory_title->get_y());
+	listbox->reposition_window(listbox->get_x(), listbox->get_y(),
+		get_listbox_w(), get_listbox_h(listbox->get_y()));
+	textbox->reposition_window(textbox->get_x(),
+		listbox->get_y() + listbox->get_h() + 30,
+		w - 50);
 	if(usethis_button)
-		usethis_button->reposition_window(w / 2 - 50, h - (get_h() - usethis_button->get_y()));
-
+		usethis_button->reposition_window(w / 2 - usethis_button->get_w() / 2,
+			h - (get_h() - usethis_button->get_y()));
 	if(filter_popup)
 		filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()),
 			h - (get_h() - filter_popup->get_y()), w - 30);
-
 	if(filter_text)
 		filter_text->reposition_window(filter_text->get_x(),
 			h - (get_h() - filter_text->get_y()),
 			w - (get_w() - filter_text->get_w()), 1);
-	directory_title->reposition_window(directory_title->get_x(),
-		directory_title->get_y(),
-		get_w() - recent_popup->get_w() -  20, 1);
-	recent_popup->reposition_window(
-		directory_title->get_x() + directory_title->get_w(),
-		directory_title->get_y(),
-		directory_title->get_w() + recent_popup->get_w(),
-		recent_popup->get_h());
-	textbox->reposition_window(textbox->get_x(),
-		h - (get_h() - textbox->get_y()),
-		w - (get_w() - textbox->get_w()), 1);
-	listbox->reposition_window(listbox->get_x(), listbox->get_y(),
-		w - (get_w() - listbox->get_w()),
-		h - (get_h() - listbox->get_h()));
 	icon_button->reposition_window(w - (get_w() - icon_button->get_x()),
 		icon_button->get_y());
 	text_button->reposition_window(w - (get_w() - text_button->get_x()),
@@ -533,10 +517,9 @@ void BC_FileBox::resize_event(int w, int h)
 		delete_button->get_y());
 	updir_button->reposition_window(w - (get_w() - updir_button->get_x()),
 		updir_button->get_y());
-	set_w(w);
-	set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
+	flash();
 }
 
 int BC_FileBox::keypress_event()

@@ -130,7 +130,7 @@ LoadFileWindow::LoadFileWindow(LoadFileThread *thread, int absx, int absy,
 		mwindow_global->theme->loadfile_pad)
 {
 	int x = get_w() / 2 - 200;
-	int y = get_cancel_button()->get_y() - 50;
+	int y = get_cancel_button()->get_y() - 20;
 
 	this->thread = thread;
 	set_icon(mwindow_global->get_window_icon());
@@ -145,7 +145,7 @@ LoadFileWindow::~LoadFileWindow()
 void LoadFileWindow::resize_event(int w, int h)
 {
 	int x = w / 2 - 200;
-	int y = get_cancel_button()->get_y() - 50;
+	int y = get_cancel_button()->get_y() - 20;
 	draw_background(0, 0, w, h);
 
 	loadmode->reposition_window(x, y);
