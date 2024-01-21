@@ -575,10 +575,13 @@ ptstime Asset::duration()
 
 		for(int i = 0; i < prog->nb_streams; i++)
 		{
-			ptstime cur = stream_duration(prog->streams[i]);
+			if(prog->streams[i] < nb_streams)
+			{
+				ptstime cur = stream_duration(prog->streams[i]);
 
-			if(cur < dur)
-				dur = cur;
+				if(cur < dur)
+					dur = cur;
+			}
 		}
 	}
 	else
