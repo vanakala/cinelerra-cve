@@ -275,7 +275,8 @@ void AspectRatioSelection::auto_aspect_ratio(double *aspect_w, double *aspect_h,
 {
 	if(!width || !height) return;
 
-	aspect_to_wh(aspect_w, aspect_h, (double)width / height, width, height);
+	*aspect_w = *aspect_h = 1.0;
+	aspect_to_wh(aspect_w, aspect_h, 1.0, width, height);
 }
 
 void AspectRatioSelection::aspect_to_wh(double *aspect_w, double *aspect_h,
