@@ -2036,9 +2036,10 @@ void CWindowCanvas::draw_camera()
 
 	if(is_camera)
 	{
-		track_x1 = track_y1 = 0;
-		track_x2 = track->track_w;
-		track_y2 = track->track_h;
+		track_x1 = (edlsession->output_w - track->track_w) / 2;
+		track_y1 = (edlsession->output_h - track->track_h) / 2;
+		track_x2 = track_x1 + track->track_w;
+		track_y2 = track_y1 + track->track_h;
 		gframep = &track->camera_gframe;
 	}
 	else
