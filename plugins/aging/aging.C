@@ -391,6 +391,9 @@ void AgingClient::pits(VFrame *output,
 	int pnumscale = plugin->config.area_scale * 2;
 	int pnum;
 
+	if(!pnumscale)
+		pnumscale = 1;
+
 	if(plugin->pits_interval)
 	{
 		pnum = pnumscale + (EffectTV::fastrand() % pnumscale);
