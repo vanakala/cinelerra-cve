@@ -30,6 +30,7 @@ class AgingEngine;
 
 #define SCRATCH_MAX 20
 #define AREA_SCALE_MAX 40
+#define DUST_INTERVAL_MAX 80
 
 typedef struct _scratch
 {
@@ -54,6 +55,7 @@ public:
 
 	int area_scale;
 	int scratch_lines;
+	int dust_interval;
 	int colorage;
 	int scratch;
 	int pits;

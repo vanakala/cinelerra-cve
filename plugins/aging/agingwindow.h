@@ -50,6 +50,7 @@ private:
 	AgingToggle *dust;
 	AgingSize *area_scale;
 	AgingSize *scratch_lines;
+	AgingSize *dust_interval;
 };
 
 #endif

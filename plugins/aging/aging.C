@@ -24,6 +24,7 @@ AgingConfig::AgingConfig()
 {
 	area_scale = 10;
 	scratch_lines = 7;
+	dust_interval = 0;
 	colorage = 1;
 	scratch = 1;
 	pits = 1;
@@ -37,7 +38,8 @@ int AgingConfig::equivalent(AgingConfig &that)
 		pits == that.pits &&
 		dust == that.dust &&
 		area_scale == that.area_scale &&
-		scratch_lines == that.scratch_lines;
+		scratch_lines == that.scratch_lines &&
+		dust_interval == that.dust_interval;
 }
 
 void AgingConfig::copy_from(AgingConfig &that)
@@ -48,6 +50,7 @@ void AgingConfig::copy_from(AgingConfig &that)
 	dust = that.dust;
 	area_scale = that.area_scale;
 	scratch_lines = that.scratch_lines;
+	dust_interval = that.dust_interval;
 }
 
 void AgingConfig::interpolate(AgingConfig &prev,
@@ -62,6 +65,7 @@ void AgingConfig::interpolate(AgingConfig &prev,
 	dust = prev.dust;
 	area_scale = prev.area_scale;
 	scratch_lines = prev.scratch_lines;
+	dust_interval = prev.dust_interval;
 }
 
 AgingMain::AgingMain(PluginServer *server)
@@ -125,6 +129,7 @@ void AgingMain::load_defaults()
 	config.dust = defaults->get("DUST", config.dust);
 	config.scratch_lines = defaults->get("SCRATCH_LINES", config.scratch_lines);
 	config.area_scale = defaults->get("AREA_SCALE", config.area_scale);
+	config.dust_interval = defaults->get("DUST_INTERVAL", config.dust_interval);
 }
 
 void AgingMain::save_defaults()
@@ -135,6 +140,7 @@ void AgingMain::save_defaults()
 	defaults->update("DUST", config.dust);
 	defaults->update("SCRATCH_LINES", config.scratch_lines);
 	defaults->update("AREA_SCALE", config.area_scale);
+	defaults->update("DUST_INTERVAL", config.dust_interval);
 }
 
 void AgingMain::save_data(KeyFrame *keyframe)
@@ -148,6 +154,7 @@ void AgingMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DUST", config.dust);
 	output.tag.set_property("SCRATCH_LINES", config.scratch_lines);
 	output.tag.set_property("AREA_SCALE", config.area_scale);
+	output.tag.set_property("DUST_INTERVAL", config.dust_interval);
 	output.append_tag();
 	output.tag.set_title("/AGINGTV");
 	output.append_tag();
@@ -172,6 +179,8 @@ void AgingMain::read_data(KeyFrame *keyframe)
 				config.scratch_lines);
 			config.area_scale = input.tag.get_property("AREA_SCALE",
 				config.area_scale);
+			config.dust_interval = input.tag.get_property("DUST_INTERVAL",
+				config.dust_interval);
 		}
 	}
 }
@@ -463,7 +472,8 @@ void AgingClient::dusts(VFrame *output_frame,
 {
 	int h = row2 - row1;
 	int w = output_frame->get_w();
-	int dnum = plugin->config.area_scale * 4 + (EffectTV::fastrand() >> 27);
+	int dnum = plugin->config.area_scale * 4 +
+		EffectTV::fastrand() % (plugin->config.dust_interval + 1);
 
 	if(plugin->dust_interval == 0)
 	{

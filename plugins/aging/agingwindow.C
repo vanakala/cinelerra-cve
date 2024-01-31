@@ -10,7 +10,7 @@
 PLUGIN_THREAD_METHODS
 
 AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
- : PluginWindow(plugin, x, y, 230, 245)
+ : PluginWindow(plugin, x, y, 230, 300)
 {
 	BC_WindowBase *win;
 	int title_h;
@@ -41,6 +41,10 @@ AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
 	add_subwindow(dust = new AgingToggle(plugin, x, y, &plugin->config.dust,
 		_("Dust")));
 	y += dust->get_h() + 8;
+	add_subwindow(new BC_Title(x, y, _("Dust interval:")));
+	y += title_h;
+	add_subwindow(dust_interval = new AgingSize(plugin, x, y, &plugin->config.dust_interval,
+		0, DUST_INTERVAL_MAX));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
@@ -52,6 +56,7 @@ void AgingWindow::update()
 	dust->update(plugin->config.dust);
 	scratch_lines->update(plugin->config.scratch_lines);
 	area_scale->update(plugin->config.area_scale);
+	dust_interval->update(plugin->config.dust_interval);
 }
 
 AgingToggle::AgingToggle(AgingMain *plugin,
