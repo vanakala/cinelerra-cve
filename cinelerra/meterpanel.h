@@ -17,12 +17,8 @@ class MeterMeter;
 class MeterPanel
 {
 public:
-	MeterPanel(BC_WindowBase *subwindow,
-		int x, 
-		int y, 
-		int h,
-		int meter_count,
-		int use_meters,
+	MeterPanel(BC_WindowBase *subwindow, int x, int y, int h,
+		int meter_count, int use_meters,
 		int use_recording = 0);
 	~MeterPanel();
 
@@ -36,7 +32,7 @@ public:
 	void update(double *levels);
 	void stop_meters();
 	void change_format(int min, int max);
-	virtual int change_status_event();
+	virtual int change_status_event() { return 0; };
 	void reset_meters();
 	void set_delays(int over_delay, int peak_delay);
 

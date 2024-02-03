@@ -14,13 +14,8 @@
 #include "vframe.h"
 
 
-MeterPanel::MeterPanel(BC_WindowBase *subwindow,
-	int x, 
-	int y,
-	int h,
-	int meter_count,
-	int use_meters,
-	int use_recording)
+MeterPanel::MeterPanel(BC_WindowBase *subwindow, int x, int y, int h,
+	int meter_count, int use_meters, int use_recording)
 {
 	this->subwindow = subwindow;
 	this->x = x;
@@ -39,7 +34,7 @@ MeterPanel::~MeterPanel()
 
 int MeterPanel::get_meters_width(int meter_count, int use_meters)
 {
-	return use_meters ? 
+	return use_meters ?
 		(BC_Meter::get_title_w() + BC_Meter::get_meter_w() * meter_count) : 0;
 }
 
@@ -54,11 +49,6 @@ void MeterPanel::reposition_window(int x, int y, int h)
 		meters.values[i]->reposition_window(x, y, get_meter_h());
 		x += get_meter_w(i);
 	}
-}
-
-int MeterPanel::change_status_event()
-{
-	return 1;
 }
 
 int MeterPanel::get_reset_x()
@@ -84,22 +74,17 @@ int MeterPanel::get_meter_h()
 
 void MeterPanel::update(double *levels)
 {
-	if(subwindow->get_hidden()) return;
+	if(subwindow->get_hidden())
+		return;
 
-	for(int i = 0; 
-		i < meter_count; 
-		i++)
-	{
+	for(int i = 0; i < meter_count; i++)
 		meters.values[i]->update(levels[i], levels[i] > 1);
-	}
 }
 
 void MeterPanel::stop_meters()
 {
 	for(int i = 0; i < meter_count; i++)
-	{
 		meters.values[i]->reset();
-	}
 }
 
 void MeterPanel::set_meters(int meter_count, int use_meters)
@@ -117,6 +102,7 @@ void MeterPanel::set_meters(int meter_count, int use_meters)
 			int x = this->x;
 			int y = this->y;
 			int h = get_meter_h();
+
 			for(int i = 0; i < meter_count; i++)
 			{
 				MeterMeter *new_meter;
@@ -167,13 +153,8 @@ int MeterReset::handle_event()
 }
 
 
-MeterMeter::MeterMeter(MeterPanel *panel,
-	int x, int y, int h, int titles)
- : BC_Meter(x,
-	y,
-	METER_VERT,
-	h,
-	edlsession->min_meter_db,
+MeterMeter::MeterMeter(MeterPanel *panel, int x, int y, int h, int titles)
+ : BC_Meter(x, y, METER_VERT, h, edlsession->min_meter_db,
 	panel->use_recording ? 0 : edlsession->max_meter_db,
 	titles)
 {
@@ -203,6 +184,5 @@ MeterShow::MeterShow(MeterPanel *panel, int x, int y)
 int MeterShow::handle_event()
 {
 	panel->use_meters = get_value();
-	panel->change_status_event();
-	return 1;
+	return panel->change_status_event();
 }
