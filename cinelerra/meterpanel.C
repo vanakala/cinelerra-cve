@@ -74,7 +74,7 @@ int MeterPanel::get_meter_h()
 
 void MeterPanel::update(double *levels)
 {
-	if(subwindow->get_hidden())
+	if(!use_meters || subwindow->get_hidden())
 		return;
 
 	for(int i = 0; i < meter_count; i++)
