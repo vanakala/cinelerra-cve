@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 // Copyright (C) 2001 FUKUCHI Kentarou
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.inc"
 #include "filexml.h"
@@ -427,16 +428,17 @@ void AgingClient::pits(VFrame *output,
 
 			for(int j = 0; j < size; j++)
 			{
-				int x = x + EffectTV::fastrand() % 3 - 1;
-				int y = y + EffectTV::fastrand() % 3 - 1;
+				x = x + EffectTV::fastrand() % 3 - 1;
+				y = y + EffectTV::fastrand() % 3 - 1;
 
 				CLAMP(x, 0, w - 1);
 				CLAMP(y, 0, h - 1);
 
 				uint16_t *row = (uint16_t*)output->get_row_ptr(row1 + y);
 
-				for(int k = 0; k < 3; k++)
-					row[x * 4 + k] = 0xc000;
+				row[x * 4 + 0] = 0xc000;
+				row[x * 4 + 1] = 0xc000;
+				row[x * 4 + 2] = 0xc000;
 			}
 		}
 		break;
@@ -460,7 +462,7 @@ void AgingClient::pits(VFrame *output,
 
 				row[x * 4 + 1] = 0xc000;
 				row[x * 4 + 2] = 0x8000;
-				row[x * 4 + 2] = 0x8000;
+				row[x * 4 + 3] = 0x8000;
 			}
 		}
 		break;
