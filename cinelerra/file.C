@@ -210,9 +210,14 @@ int File::probe_file(Asset *asset)
 		case FILE_JPEG:
 		case FILE_PNG:
 		case FILE_TGA:
-		case FILE_TIFF:
 		case FILE_SND:
 			asset->delete_decoder_parameters();
+			break;
+
+		case FILE_TIFF:
+			asset->delete_decoder_parameters();
+			if(!FileTIFF::check_sig(asset))
+				return FILE_UNRECOGNIZED_CODEC;
 			break;
 
 		case FILE_UNKNOWN:
