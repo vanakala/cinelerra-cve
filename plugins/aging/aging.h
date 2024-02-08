@@ -28,8 +28,11 @@ class AgingEngine;
 
 #include <sys/types.h>
 
-#define SCRATCH_MAX 20
+#define SCRATCH_LINES_MIN 0
+#define SCRATCH_LINES_MAX 20
+#define AREA_SCALE_MIN 1
 #define AREA_SCALE_MAX 40
+#define DUST_INTERVAL_MIN 1
 #define DUST_INTERVAL_MAX 80
 
 typedef struct _scratch
@@ -52,6 +55,7 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
+	void boundaries();
 
 	int area_scale;
 	int scratch_lines;
@@ -121,7 +125,7 @@ public:
 
 	AgingEngine **engine;
 	VFrame *input;
-	scratch_t scratches[SCRATCH_MAX];
+	scratch_t scratches[SCRATCH_LINES_MAX];
 	static int dx[8];
 	static int dy[8];
 	int dust_interval;

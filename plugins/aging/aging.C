@@ -69,6 +69,22 @@ void AgingConfig::interpolate(AgingConfig &prev,
 	dust_interval = prev.dust_interval;
 }
 
+void AgingConfig::boundaries()
+{
+	if(scratch_lines < SCRATCH_LINES_MIN)
+		scratch_lines = SCRATCH_LINES_MIN;
+	else if(scratch_lines > SCRATCH_LINES_MAX)
+		scratch_lines = SCRATCH_LINES_MAX;
+	if(area_scale < AREA_SCALE_MIN)
+		area_scale = AREA_SCALE_MIN;
+	else if(area_scale > AREA_SCALE_MAX)
+		area_scale = AREA_SCALE_MAX;
+	if(dust_interval < DUST_INTERVAL_MIN)
+		dust_interval = DUST_INTERVAL_MIN;
+	if(dust_interval > DUST_INTERVAL_MAX)
+		dust_interval = DUST_INTERVAL_MAX;
+}
+
 AgingMain::AgingMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -81,8 +97,7 @@ AgingMain::AgingMain(PluginServer *server)
 
 AgingMain::~AgingMain()
 {
-	if(aging_server)
-		delete aging_server;
+	delete aging_server;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -131,6 +146,7 @@ void AgingMain::load_defaults()
 	config.scratch_lines = defaults->get("SCRATCH_LINES", config.scratch_lines);
 	config.area_scale = defaults->get("AREA_SCALE", config.area_scale);
 	config.dust_interval = defaults->get("DUST_INTERVAL", config.dust_interval);
+	config.boundaries();
 }
 
 void AgingMain::save_defaults()
@@ -184,6 +200,7 @@ void AgingMain::read_data(KeyFrame *keyframe)
 				config.dust_interval);
 		}
 	}
+	config.boundaries();
 }
 
 AgingServer::AgingServer(AgingMain *plugin, int total_clients, int total_packages)
@@ -400,9 +417,6 @@ void AgingClient::pits(VFrame *output,
 	int w = output->get_w();
 	int pnumscale = plugin->config.area_scale * 2;
 	int pnum;
-
-	if(!pnumscale)
-		pnumscale = 1;
 
 	if(plugin->pits_interval)
 	{

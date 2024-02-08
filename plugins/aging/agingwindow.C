@@ -28,7 +28,7 @@ AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
 	title_h = win->get_h() + 8;
 	y += title_h;
 	add_subwindow(scratch_lines = new AgingSize(plugin, x, y, &plugin->config.scratch_lines,
-		0, SCRATCH_MAX));
+		SCRATCH_LINES_MIN, SCRATCH_LINES_MAX));
 	y += scratch_lines->get_h() + 8;
 	add_subwindow(pits = new AgingToggle(plugin, x, y, &plugin->config.pits,
 		_("Pits")));
@@ -36,7 +36,7 @@ AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
 	add_subwindow(new BC_Title(x, y, _("Area scale:")));
 	y += title_h;
 	add_subwindow(area_scale = new AgingSize(plugin, x, y, &plugin->config.area_scale,
-		0, AREA_SCALE_MAX));
+		AREA_SCALE_MIN, AREA_SCALE_MAX));
 	y += area_scale->get_h() + 8;
 	add_subwindow(dust = new AgingToggle(plugin, x, y, &plugin->config.dust,
 		_("Dust")));
@@ -44,7 +44,7 @@ AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
 	add_subwindow(new BC_Title(x, y, _("Dust interval:")));
 	y += title_h;
 	add_subwindow(dust_interval = new AgingSize(plugin, x, y, &plugin->config.dust_interval,
-		0, DUST_INTERVAL_MAX));
+		DUST_INTERVAL_MIN, DUST_INTERVAL_MAX));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
