@@ -45,3 +45,9 @@ int BC_WindowBase::get_opengl_version(BC_WindowBase *window)
 #endif
 	return 0;
 }
+
+void BC_WindowBase::draw_opengl(VFrame *frame)
+{
+// Not ready yet
+//	resources.get_glthread()->draw_vframe(frame);
+}

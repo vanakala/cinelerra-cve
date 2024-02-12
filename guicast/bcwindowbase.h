@@ -176,9 +176,11 @@ public:
 // the context is current.
 // No locking is performed.
 	int enable_opengl();
+	inline int opengl_active() { return have_gl_context; };
 	void flip_opengl();
 
 	int get_opengl_version(BC_WindowBase *window);
+	void draw_opengl(VFrame *frame);
 
 	void flash(int x, int y, int w, int h);
 	void flash();
