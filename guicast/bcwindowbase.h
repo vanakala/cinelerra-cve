@@ -427,6 +427,9 @@ public:
 // Debugging helpers
 	static void dump_XVisualInfo(XVisualInfo *visinfo, int indent = 0);
 	static const char *visual_class_name(int c_class);
+	static void dump_XSizeHints(XSizeHints *sizehints, int indent = 0);
+	static char *size_hints_mask(long mask);
+	static char *append_bufr(char *bufr, const char *str);
 
 private:
 // Create a window
