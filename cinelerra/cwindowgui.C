@@ -68,7 +68,7 @@ CWindowGUI::CWindowGUI(CWindow *cwindow)
  : BC_Window(MWindow::create_title(N_("Compositor")),
 	mainsession->cwindow_x, mainsession->cwindow_y,
 	mainsession->cwindow_w, mainsession->cwindow_h,
-	100, 100, 1, 1, 1,
+	450, 350, 1, 1, 1,
 	BC_WindowBase::get_resources()->bg_color,
 	edlsession->get_cwindow_display())
 {
