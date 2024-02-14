@@ -38,6 +38,7 @@ PlaybackEngine* CTracking::get_playback_engine()
 
 void CTracking::start_playback(ptstime new_position)
 {
+	cwindow->gui->set_resize(0);
 	mwindow_global->gui->cursor->playing_back = 1;
 	master_edl->local_session->get_selections(selections);
 
@@ -62,6 +63,7 @@ void CTracking::stop_playback()
 	}
 	selections[0] = selections[1] = 0;
 	cwindow->gui->update_tool();
+	cwindow->gui->set_resize(1);
 }
 
 #define SCROLL_THRESHOLD 0
