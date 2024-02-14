@@ -28,6 +28,18 @@ PlaybackEngine* VTracking::get_playback_engine()
 	return vwindow->playback_engine;
 }
 
+void VTracking::start_playback(ptstime new_position)
+{
+	vwindow->gui->set_resize(0);
+	Tracking::start_playback(new_position);
+}
+
+void VTracking::stop_playback()
+{
+	Tracking::stop_playback();
+	vwindow->gui->set_resize(1);
+}
+
 void VTracking::update_tracker(ptstime position)
 {
 	vwindow_edl->local_session->set_selection(position);

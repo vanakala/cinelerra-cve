@@ -16,6 +16,8 @@ public:
 	VTracking(VWindow *vwindow);
 
 	PlaybackEngine* get_playback_engine();
+	void start_playback(ptstime new_position);
+	void stop_playback();
 	void update_tracker(ptstime position);
 	void update_meters(ptstime pts);
 	void stop_meters();
