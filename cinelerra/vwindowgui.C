@@ -42,8 +42,8 @@ VWindowGUI::VWindowGUI(VWindow *vwindow)
 	mainsession->vwindow_y,
 	mainsession->vwindow_w,
 	mainsession->vwindow_h,
-	100,
-	100,
+	500,
+	250,
 	1,
 	1,
 	1)
