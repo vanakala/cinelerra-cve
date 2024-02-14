@@ -251,6 +251,9 @@ public:
 	void set_dragging(int value);
 	void set_w(int w);
 	void set_h(int h);
+// Disable/enable resizing
+	void set_resize(int value);
+
 	inline BC_WindowBase* get_top_level() { return top_level; };
 	inline BC_WindowBase* get_parent() { return parent_window; };
 // Event happened in this window
@@ -567,6 +570,8 @@ private:
 	int toggle_drag;
 // Whether the window has the focus
 	int has_focus;
+// Saved size hints
+	XSizeHints *saved_size_hints;
 
 	static BC_Resources resources;
 // Array of repeaters for multiple repeating objects.

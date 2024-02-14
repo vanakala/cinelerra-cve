@@ -124,6 +124,7 @@ BC_WindowBase::~BC_WindowBase()
 
 	if(window_type == MAIN_WINDOW) 
 	{
+		XFree(saved_size_hints);
 		XFreeGC(display, gc);
 
 		if(input_context)
@@ -175,6 +176,7 @@ void BC_WindowBase::initialize()
 	motion_events = 0;
 	resize_events = 0;
 	translation_events = 0;
+	saved_size_hints = 0;
 	ctrl_mask = shift_mask = alt_mask = 0;
 	cursor_x = cursor_y = button_number = 0;
 	button_down = 0;
@@ -1058,6 +1060,30 @@ void BC_WindowBase::dispatch_focus_out()
 	}
 
 	focus_out_event();
+}
+
+void BC_WindowBase::set_resize(int value)
+{
+	XSizeHints hints;
+
+	if(top_level != this)
+	{
+		top_level->set_resize(value);
+		return;
+	}
+	if(!value)
+	{
+		if(!saved_size_hints)
+			saved_size_hints = XAllocSizeHints();
+		XGetNormalHints(display, win, saved_size_hints);
+		hints = *saved_size_hints;
+		hints.flags = PMinSize | PMaxSize;
+		hints.min_width = hints.max_width = w;
+		hints.min_height = hints.max_height = h;
+		XSetNormalHints(display, win, &hints);
+	}
+	else if(saved_size_hints)
+		XSetNormalHints(display, win, saved_size_hints);
 }
 
 int BC_WindowBase::register_completion(BC_Bitmap *bitmap)
