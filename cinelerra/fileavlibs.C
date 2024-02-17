@@ -177,6 +177,8 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	fresh_open = 0;
 	video_index = -1;
 	audio_index = -1;
+	reading = 0;
+	writing = 0;
 	current_stream = -1;
 	memset(resampled_data, 0, sizeof(resampled_data));
 	memset(codec_contexts, 0, sizeof(codec_contexts));
@@ -292,13 +294,13 @@ int FileAVlibs::probe_input(Asset *asset)
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 				asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				asset->streams[asset->nb_streams].bits = av_get_bytes_per_sample(decoder_ctx->sample_fmt) * 8;
+				asset->streams[asset->nb_streams].bytes = av_get_bytes_per_sample(decoder_ctx->sample_fmt);
 				strncpy(asset->streams[asset->nb_streams].samplefmt,
 					av_get_sample_fmt_name(decoder_ctx->sample_fmt), MAX_LEN_CODECNAME - 1);
 				av_get_channel_layout_string(asset->streams[asset->nb_streams].layout, MAX_LEN_CODECNAME,
 					decoder_ctx->channels, decoder_ctx->channel_layout);
 #else
-				asset->streams[asset->nb_streams].bits = av_get_bytes_per_sample((AVSampleFormat)stream->codecpar->format) * 8;
+				asset->streams[asset->nb_streams].bytes = av_get_bytes_per_sample((AVSampleFormat)stream->codecpar->format);
 				strncpy(asset->streams[asset->nb_streams].samplefmt,
 					av_get_sample_fmt_name((AVSampleFormat)stream->codecpar->format), MAX_LEN_CODECNAME - 1);
 				av_get_channel_layout_string(asset->streams[asset->nb_streams].layout, MAX_LEN_CODECNAME,
@@ -439,7 +441,6 @@ int FileAVlibs::probe_input(Asset *asset)
 				avlibs_lock->unlock();
 				return 1;
 			}
-
 			asset->tocfile = new FileTOC(this, preferences_global->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			if(asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1))
@@ -504,12 +505,13 @@ int FileAVlibs::probe_input(Asset *asset)
 			}
 			avformat_close_input(&context);
 			have_hwaccel(asset);
-			avlibs_lock->unlock();
 
 			if(asset->stream_count(STRDSC_AUDIO | STRDSC_VIDEO))
+			{
+				avlibs_lock->unlock();
 				return 1;
+			}
 		}
-		return -1;
 	}
 	avlibs_lock->unlock();
 	return 0;
@@ -628,8 +630,7 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 	int result = 0;
 	int rv;
 
-	if(asset->format == FILE_UNKNOWN ||
-			(asset->format == FILE_PCM && !asset->pcm_format))
+	if(asset->format == FILE_UNKNOWN)
 		return 1;
 
 	avlibs_lock->lock("FileAVlibs::open_file");
@@ -657,9 +658,9 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 
 		list2dictionary(&dict, asset->decoder_parameters[FILEAVLIBS_DFORMAT_IX]);
 
-		if(asset->format == FILE_PCM && asset->pcm_format)
+		if(asset->format == FILE_PCM)
 		{
-			infmt = av_find_input_format(asset->pcm_format);
+			infmt = av_find_input_format(asset->streams[0].codec);
 			av_dict_set_int(&dict, "sample_rate", asset->streams[0].sample_rate, 0);
 			av_dict_set_int(&dict, "channels", asset->streams[0].channels, 0);
 		}

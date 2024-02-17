@@ -24,30 +24,31 @@ struct format_names
 {
 	const char *name;
 	const char *longname;
+	int bytes_sample;
 }
 
 FileFormatPCMFormat::pcm_formats[] =
 {
-	{ "f64be", 0 },
-	{ "f64le", 0 },
-	{ "f32be", 0 },
-	{ "f32le", 0 },
-	{ "s32le", 0 },
-	{ "s24be", 0 },
-	{ "s24le", 0 },
-	{ "s16be", 0 },
-	{ "s16le", 0 },
-	{ "s8", 0 },
-	{ "u32be", 0 },
-	{ "u32le", 0 },
-	{ "u24be", 0 },
-	{ "u24le", 0 },
-	{ "u16be", 0 },
-	{ "u16le", 0 },
-	{ "u8", 0 },
-	{ "alaw", 0 },
-	{ "mulaw", 0 },
-	{ "sln", 0 },
+	{ "f64be", 0, 8 },
+	{ "f64le", 0, 8 },
+	{ "f32be", 0, 4 },
+	{ "f32le", 0, 4 },
+	{ "s32le", 0, 4 },
+	{ "s24be", 0, 3 },
+	{ "s24le", 0, 3 },
+	{ "s16be", 0, 2 },
+	{ "s16le", 0, 2 },
+	{ "s8", 0, 1 },
+	{ "u32be", 0, 4 },
+	{ "u32le", 0, 4 },
+	{ "u24be", 0, 3 },
+	{ "u24le", 0, 3 },
+	{ "u16be", 0, 2 },
+	{ "u16le", 0, 2 },
+	{ "u8", 0, 1 },
+	{ "alaw", 0, 1 },
+	{ "mulaw", 0, 1 },
+	{ "sln", 0, 2 },
 	{ 0, 0 }
 };
 
@@ -89,8 +90,7 @@ FileFormat::FileFormat(Asset *asset, const char *string2, int absx, int absy)
 	channels_button = new FileFormatChannels(x, y1, this, sdsc->channels);
 	add_subwindow(rate_button = new SampleRateSelection(x, y2, this,
 		&sdsc->sample_rate));
-	pcmformat = new FileFormatPCMFormat(x, y3, this,
-		asset->pcm_format);
+	pcmformat = new FileFormatPCMFormat(x, y3, this, sdsc->codec);
 	rate_button->update(sdsc->sample_rate);
 
 	add_subwindow(new BC_OKButton(this));
@@ -146,7 +146,10 @@ FileFormatPCMFormat::FileFormatPCMFormat(int x, int y, FileFormat *fwindow,
 		if(!pcm_formats[i].longname)
 			continue;
 		if(selected && !strcmp(pcm_formats[i].name, selected))
+		{
 			update(pcm_formats[i].longname);
+			fwindow->sdsc->bytes = pcm_formats[i].bytes_sample;
+		}
 		formats.append(new BC_ListBoxItem(pcm_formats[i].longname));
 	}
 	update_list(&formats);
@@ -161,7 +164,10 @@ int FileFormatPCMFormat::handle_event()
 		if(!pcm_formats[i].longname)
 			continue;
 		if(i == num)
-			fwindow->asset->pcm_format = pcm_formats[i].name;
+		{
+			strcpy(fwindow->sdsc->codec, pcm_formats[i].name);
+			fwindow->sdsc->bytes = pcm_formats[i].bytes_sample;
+		}
 	}
 	return 1;
 }

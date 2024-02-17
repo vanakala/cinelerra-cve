@@ -89,7 +89,6 @@ void Asset::init_values()
 	nb_streams = 0;
 	nb_programs = 0;
 	program_id = 0;
-	pcm_format = 0;
 	file_length = 0;
 	memset(&file_mtime, 0, sizeof(file_mtime));
 	single_image = 0;
@@ -184,7 +183,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	if(do_index) update_index(asset);
 
 	format = asset->format;
-	pcm_format = asset->pcm_format;
 	use_header = asset->use_header;
 	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
@@ -363,7 +361,6 @@ int Asset::stream_equivalent(struct streamdesc *st1, struct streamdesc *st2)
 
 	if(result && st1->options & STRDSC_AUDIO)
 		result = st1->channels == st2->channels &&
-			st1->bits == st2->bits &&
 			st1->sample_rate == st2->sample_rate &&
 			!strcmp(st1->layout, st2->layout);
 
@@ -535,8 +532,7 @@ void Asset::create_render_stream(int stream_type)
 	{
 		streams[nb_streams].channels = master_edl->this_edlsession->audio_channels;
 		streams[nb_streams].sample_rate = master_edl->this_edlsession->sample_rate;
-		streams[nb_streams].bits = 16;
-		streams[nb_streams].signedsample = 1;
+		streams[nb_streams].bytes = 2;
 		streams[nb_streams].stream_index = 0;
 		nb_streams++;
 	}
@@ -666,10 +662,9 @@ void Asset::read(FileXML *file, int expand_relative)
 				format = ContainerSelection::text_to_container(string);
 			program =
 				file->tag.get_property("PROGRAM", program);
-			pcm_format = file->tag.get_property("PCM_FORMAT");
-			// pcm_format must point to string constant
+			char *pcm_format = file->tag.get_property("PCM_FORMAT");
 			if(pcm_format)
-				pcm_format = FileFormatPCMFormat::pcm_format(pcm_format);
+				strncpy(streams[0].codec, pcm_format, MAX_LEN_CODECNAME);
 		}
 		else if(file->tag.title_is("VIDEO"))
 			read_video(file);
@@ -708,6 +703,7 @@ void Asset::read_audio(FileXML *file)
 		sdc->start = 0;
 		if(sdc->length && sdc->sample_rate)
 			sdc->end = (ptstime)sdc->length / sdc->sample_rate;
+		set_base_pts(0);
 	}
 }
 
@@ -853,8 +849,8 @@ void Asset::write(FileXML *file, int include_index, int stream,
 		ContainerSelection::container_prefix(format));
 	if(!include_index && nb_programs && program_id)
 		file->tag.set_property("PROGRAM", program_id);
-	if(format == FILE_PCM && pcm_format)
-		file->tag.set_property("PCM_FORMAT", pcm_format);
+	if(format == FILE_PCM && streams[0].codec[0])
+		file->tag.set_property("PCM_FORMAT", streams[0].codec);
 	file->append_tag();
 	file->tag.set_title("/FORMAT");
 	file->append_tag();
@@ -1052,7 +1048,7 @@ void Asset::read_params(FileXML *file)
 
 void Asset::write_audio(FileXML *file)
 {
-	if(format == FILE_PCM && pcm_format)
+	if(format == FILE_PCM)
 	{
 		struct streamdesc *sdc = &streams[0];
 
@@ -1326,10 +1322,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 	if(options & ASSET_BITS)
 	{
 		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
-		{
-			streams[stream].bits = list->get("bits", 16);
-			streams[stream].signedsample = list->get("signed", 1);
-		}
+			streams[stream].bytes = list->get("bytes", 2);
 	}
 }
 
@@ -1366,10 +1359,7 @@ void Asset::save_defaults(Paramlist *list, int options)
 	if(options & ASSET_BITS)
 	{
 		if((stream = get_stream_ix(STRDSC_AUDIO)) >= 0)
-		{
-			list->set("bits", streams[stream].bits);
-			list->set("signed", streams[stream].signedsample);
-		}
+			list->set("bytes", streams[stream].bytes);
 	}
 }
 
@@ -1501,8 +1491,6 @@ void Asset::dump(int indent, int options)
 		id, global_inuse, vhwaccel, tocfile);
 	printf("%*sfile format '%s'", indent, "",
 		ContainerSelection::container_to_text(format));
-	if(format == FILE_PCM)
-		printf(" pcm_format '%s',", pcm_format);
 	printf(" length %" PRId64 " base_pts %.3f probed: %d\n", file_length, pts_base,
 		probed);
 	printf("%*simage %d pipe %d header %d\n", indent, "",
@@ -1540,14 +1528,13 @@ void Asset::dump(int indent, int options)
 		{
 			if(streams[i].options & STRDSC_AUDIO)
 			{
-				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bits:%d signed %d samples:%" PRId64 " tocitm %d codec:'%s' '%s' '%s'\n",
+				printf("%*s%d. Audio %.2f..%.2f chnls:%d rate:%d bytes:%d samples:%" PRId64 " tocitm %d codec:'%s' '%s' '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].channels, streams[i].sample_rate,
-					streams[i].bits, streams[i].signedsample,
-					streams[i].length, streams[i].toc_items,
-					streams[i].codec, streams[i].samplefmt,
-					streams[i].layout);
+					streams[i].bytes, streams[i].length,
+					streams[i].toc_items, streams[i].codec,
+					streams[i].samplefmt, streams[i].layout);
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{

@@ -41,8 +41,7 @@ struct streamdesc
 	ptstime end;      // highest pts in file
 	int channels;     // auido channels or video layers
 	int sample_rate;  // audio sample rate
-	int bits;         // bits per sample
-	int signedsample; // audio sample is signed
+	int bytes;         // bytes per sample
 	int width;        // frame width
 	int height;       // frame height
 	samplenum length; // length in frames or samples
@@ -187,8 +186,6 @@ public:
 	struct progdesc programs[MAXCHANNELS];
 	int nb_streams;
 	struct streamdesc streams[MAXCHANNELS];
-
-	const char *pcm_format;
 
 // Video is a single image
 	int single_image;

@@ -684,8 +684,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 				new_asset->format = FILE_PCM;
 				sdsc->channels = defaults->get("AUDIO_CHANNELS", 2);
 				sdsc->sample_rate = defaults->get("SAMPLE_RATE", 44100);
-				new_asset->pcm_format = defaults->get("PCM_FORMAT", "s16le");
-				strcpy(sdsc->codec, new_asset->pcm_format);
+				const char *pcm_format = defaults->get("PCM_FORMAT", "s16le");
+				strcpy(sdsc->codec, pcm_format);
 				sdsc->options = STRDSC_AUDIO;
 				new_asset->nb_streams = 1;
 				get_abs_cursor_pos(&cx, &cy);
@@ -699,9 +699,18 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 
 					defaults->update("AUDIO_CHANNELS", sdsc->channels);
 					defaults->update("SAMPLE_RATE", sdsc->sample_rate);
-					defaults->update("PCM_FORMAT", new_asset->pcm_format);
-					strcpy(sdsc->codec, new_asset->pcm_format);
-					new_asset->nb_streams = 1;
+					defaults->update("PCM_FORMAT", sdsc->codec);
+					new_asset->single_image = 0;
+					sdsc->start = 0;
+					new_asset->set_base_pts(0);
+					if(sdsc->bytes && sdsc->channels)
+					{
+						sdsc->length = new_asset->file_length / sdsc->bytes / sdsc->channels;
+						if(sdsc->sample_rate)
+							sdsc->end = (double)sdsc->length / sdsc->sample_rate;
+					}
+					sdsc->samplefmt[0] = 0;
+					new_asset->probed = 1;
 					defaults->delete_key("AUDIO_BITS");
 					defaults->delete_key("BYTE_ORDER");
 					defaults->delete_key("SIGNED_");
