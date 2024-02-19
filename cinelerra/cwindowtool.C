@@ -1064,15 +1064,20 @@ int CWindowMaskNumber::handle_event()
 	if(keyframe)
 	{
 		num = atoi(get_text());
-		if(keyframe->masks.total <= num)
+		if(keyframe->masks.total)
 		{
-			if(keyframe->masks.values[keyframe->masks.total - 1]->points.total)
+			if(keyframe->masks.total <= num)
 			{
-				((MaskAutos*)keyframe->autos)->new_submask();
-				set_boundaries(0, keyframe->masks.total);
+				if(keyframe->masks.values[keyframe->masks.total - 1]->points.total)
+				{
+					((MaskAutos*)keyframe->autos)->new_submask();
+					set_boundaries(0, keyframe->masks.total);
+				}
+				num = keyframe->masks.total - 1;
 			}
-			num = keyframe->masks.total - 1;
 		}
+		else
+			num = 0;
 		edlsession->cwindow_mask = num;
 		gui->update();
 		gui->update_preview();
