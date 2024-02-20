@@ -3,8 +3,6 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#define GL_GLEXT_PROTOTYPES
-
 #include "bcbar.h"
 #include "bcsignals.h"
 #include "bctitle.h"
@@ -23,6 +21,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#define SLIDER_SIZE 200
+#define VALUE_MAX 100
+#define SLOPE_MAX 20
 
 ChromaKeyConfig::ChromaKeyConfig()
 {
@@ -45,7 +46,6 @@ ChromaKeyConfig::ChromaKeyConfig()
 
 	show_mask = 0;
 }
-
 
 void ChromaKeyConfig::copy_from(ChromaKeyConfig & src)
 {
@@ -123,11 +123,7 @@ int ChromaKeyConfig::get_color()
 
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
- : PluginWindow(plugin,
-	x,
-	y, 
-	400,
-	450)
+ : PluginWindow(plugin, x, y, 400, 450)
 {
 	int y1, x1 = 0, x2 = 10;
 	x = 30;
@@ -142,7 +138,7 @@ ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
 
 	add_subwindow(color = new ChromaKeyColor(plugin, this, x, y + 25));
 
-	add_subwindow(sample = 
+	add_subwindow(sample =
 			new BC_SubWindow(x + color->get_w() + 10, y, 100, 50));
 	y += sample->get_h() + 10;
 
@@ -205,38 +201,49 @@ ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
 	y += ymargin;
 	x1 += x;
 
-	add_subwindow(tolerance = new ChromaKeyTolerance(plugin, x1, y));
+	add_subwindow(tolerance = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.tolerance, plugin));
 	y += ymargin;
 
-	add_subwindow(min_brightness = new ChromaKeyMinBrightness(plugin, x1, y));
+	add_subwindow(min_brightness = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.min_brightness, plugin));
 	y += ymargin;
 
-	add_subwindow(max_brightness = new ChromaKeyMaxBrightness(plugin, x1, y));
+	add_subwindow(max_brightness = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.max_brightness, plugin));
 	y += ymargin;
 
-	add_subwindow(saturation = new ChromaKeySaturation(plugin, x1, y));
+	add_subwindow(saturation = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.saturation, plugin));
 	y += ymargin;
 
-	add_subwindow(min_saturation = new ChromaKeyMinSaturation(plugin, x1, y));
-	y += ymargin;
-
-	y += bar->get_h() + 5;
-	y += ymargin2;
-
-	add_subwindow(in_slope = new ChromaKeyInSlope(plugin, x1, y));
-	y += ymargin;
-
-	add_subwindow(out_slope = new ChromaKeyOutSlope(plugin, x1, y));
-	y += ymargin;
-
-	add_subwindow(alpha_offset = new ChromaKeyAlphaOffset(plugin, x1, y));
+	add_subwindow(min_saturation = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.min_saturation, plugin));
 	y += ymargin;
 
 	y += bar->get_h() + 5;
 	y += ymargin2;
-	add_subwindow(spill_threshold = new ChromaKeySpillThreshold(plugin, x1, y));
+
+	add_subwindow(in_slope = new ChromaKeySlider(x1, y, 0, SLOPE_MAX,
+		&plugin->config.in_slope, plugin));
 	y += ymargin;
-	add_subwindow(spill_amount = new ChromaKeySpillAmount(plugin, x1, y));
+
+	add_subwindow(out_slope = new ChromaKeySlider(x1, y, 0, SLOPE_MAX,
+		&plugin->config.out_slope, plugin));
+	y += ymargin;
+
+	add_subwindow(alpha_offset = new ChromaKeySlider(x1, y, -VALUE_MAX, VALUE_MAX,
+		&plugin->config.alpha_offset, plugin));
+	y += ymargin;
+
+	y += bar->get_h() + 5;
+	y += ymargin2;
+	add_subwindow(spill_threshold = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.spill_threshold, plugin));
+	y += ymargin;
+
+	add_subwindow(spill_amount = new ChromaKeySlider(x1, y, 0, VALUE_MAX,
+		&plugin->config.spill_amount, plugin));
 
 	color_thread = new ChromaKeyColorThread(plugin, this);
 
@@ -290,132 +297,6 @@ int ChromaKeyColor::handle_event()
 }
 
 
-ChromaKeyMinBrightness::ChromaKeyMinBrightness(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y, 0,
-	200, 200, 0, 100, plugin->config.min_brightness)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyMinBrightness::handle_event()
-{
-	plugin->config.min_brightness = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-ChromaKeyMaxBrightness::ChromaKeyMaxBrightness(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y, 0,
-	200, 200, 0, 100, plugin->config.max_brightness)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyMaxBrightness::handle_event()
-{
-	plugin->config.max_brightness = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-ChromaKeySaturation::ChromaKeySaturation(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y,
-	0, 200, 200, 0, 100, plugin->config.saturation)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeySaturation::handle_event()
-{
-	plugin->config.saturation = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-ChromaKeyMinSaturation::ChromaKeyMinSaturation(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y, 0,
-	200, 200, 0, 100, plugin->config.min_saturation)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyMinSaturation::handle_event()
-{
-	plugin->config.min_saturation = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-ChromaKeyTolerance::ChromaKeyTolerance(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y,
-	0, 200, 200, 0, 100, plugin->config.tolerance)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyTolerance::handle_event()
-{
-	plugin->config.tolerance = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-ChromaKeyInSlope::ChromaKeyInSlope(ChromaKeyHSV * plugin, int x, int y)
-: BC_FSlider(x, y,
-	0, 200, 200, 0, 20, plugin->config.in_slope)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyInSlope::handle_event()
-{
-	plugin->config.in_slope = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-ChromaKeyOutSlope::ChromaKeyOutSlope(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y,
-	0, 200, 200, 0, 20, plugin->config.out_slope)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyOutSlope::handle_event()
-{
-	plugin->config.out_slope = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-ChromaKeyAlphaOffset::ChromaKeyAlphaOffset(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x, y, 0,
-	200, 200, -100, 100, plugin->config.alpha_offset)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeyAlphaOffset::handle_event()
-{
-	plugin->config.alpha_offset = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
 ChromaKeyShowMask::ChromaKeyShowMask(ChromaKeyHSV * plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.show_mask, _("Show Mask"))
 {
@@ -447,35 +328,18 @@ int ChromaKeyUseColorPicker::handle_event()
 }
 
 
-ChromaKeySpillThreshold::ChromaKeySpillThreshold(ChromaKeyHSV * plugin, int x, int y)
-: BC_FSlider(x,
-	y,
-	0,
-	200, 200, 0, 100, plugin->config.spill_threshold)
+ChromaKeySlider::ChromaKeySlider(int x, int y, double min, double max,
+	double *value, ChromaKeyHSV *plugin)
+  : BC_FSlider(x, y, 0, SLIDER_SIZE, SLIDER_SIZE, min, max, *value)
 {
 	this->plugin = plugin;
+	this->value = value;
 	set_precision(0.01);
 }
 
-int ChromaKeySpillThreshold::handle_event()
+int ChromaKeySlider::handle_event()
 {
-	plugin->config.spill_threshold = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
-ChromaKeySpillAmount::ChromaKeySpillAmount(ChromaKeyHSV * plugin, int x, int y)
- : BC_FSlider(x,
-	y,
-	0, 200, 200, 0, 100, plugin->config.spill_amount)
-{
-	this->plugin = plugin;
-	set_precision(0.01);
-}
-
-int ChromaKeySpillAmount::handle_event()
-{
-	plugin->config.spill_amount = get_value();
+	*value = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
