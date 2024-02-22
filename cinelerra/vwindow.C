@@ -36,6 +36,8 @@ VWindow::VWindow()
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new VTracking(this);
 	vedlsession = new EDLSession();
+	vedlsession->copy(edlsession);
+	vwindow_edl->this_edlsession = vedlsession;
 }
 
 VWindow::~VWindow()
