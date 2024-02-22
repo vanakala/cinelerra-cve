@@ -180,7 +180,6 @@ void VideoRender::get_frame(ptstime pts)
 
 void VideoRender::process_frame(ptstime pts)
 {
-	VTrackRender *trender;
 	int found;
 	int count = 0;
 
