@@ -145,7 +145,7 @@ PlaybackConfig::PlaybackConfig()
 {
 	aconfig = new AudioOutConfig();
 	vconfig = new VideoOutConfig;
-	sprintf(hostname, "localhost");
+	strcpy(hostname, "localhost");
 	port = 23456;
 }
 
