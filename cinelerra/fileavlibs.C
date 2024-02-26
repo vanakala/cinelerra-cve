@@ -53,6 +53,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AC3, "ac3", "ac3", SUPPORTS_AUDIO },
 	{ FILE_OGG, "ogg", "ogg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MP3, "mp3", "mp3", SUPPORTS_AUDIO },
+	{ FILE_AAC, "aac", "libfdk_aac", SUPPORTS_AUDIO },
 	{ FILE_MPEGTS, "mpegts", "mpegts", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MPEG, "mpeg", "vob", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_EXR, "exr_pipe", "exr_pipe", SUPPORTS_VIDEO },
@@ -599,7 +600,6 @@ int FileAVlibs::supports(int format, int decoding)
 	{
 		if(!(enc = known_formats[i].encoder))
 			return 0;
-
 		avlibs_lock->lock("FileAVlibs::supports");
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,10,100)
 		avcodec_register_all();
@@ -814,6 +814,7 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 		case FILE_IPOD:
 		case FILE_ISMV:
 		case FILE_F4V:
+		case FILE_AAC:
 		case FILE_WEBM:
 			break;
 		case FILE_YUV:

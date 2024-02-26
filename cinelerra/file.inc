@@ -60,6 +60,7 @@
 #define FILE_ISMV          43
 #define FILE_F4V           44
 #define FILE_WEBM          45
+#define FILE_AAC           46
 #define FILE_IMAGE         64    // unspecified image file
 
 class File;

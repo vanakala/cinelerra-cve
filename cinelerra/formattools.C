@@ -61,6 +61,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("Material Exchange Format"), FILE_MXF, "MXF", "mxf" },
 	{ N_("Matroska"), FILE_MKV, "MKV", "mkv" },
 	{ N_("WebM"), FILE_WEBM, "WEBM", "webm" },
+	{ N_("raw ADTS AAC"), FILE_AAC, "AAC", "aac" },
 	{ 0, 0 }
 };
 
