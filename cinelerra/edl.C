@@ -126,108 +126,84 @@ void EDL::create_default_tracks()
 
 void EDL::load_xml(FileXML *file, EDLSession *session)
 {
-	int result = 0;
-
 	if(is_master)
 	{
 		while(!file->read_tag() &&
 			!file->tag.title_is("EDL"));
 	}
 
-	if(!result)
-	{
 // Get path for backups
-		project_path[0] = 0;
-		file->tag.get_property("PROJECT_PATH", project_path);
+	project_path[0] = 0;
+	file->tag.get_property("PROJECT_PATH", project_path);
 
 // Erase everything
-		while(tracks->last) delete tracks->last;
+	while(tracks->last) delete tracks->last;
 
-		while(labels->last) delete labels->last;
-		local_session->unset_inpoint();
-		local_session->unset_outpoint();
+	while(labels->last)
+		delete labels->last;
+	local_session->unset_inpoint();
+	local_session->unset_outpoint();
 
-		do{
-			result = file->read_tag();
-
-			if(!result)
+	while(!file->read_tag())
+	{
+		if(file->tag.title_is("/XML") ||
+				file->tag.title_is("/EDL") ||
+				file->tag.title_is("/CLIP_EDL") ||
+				file->tag.title_is("/VWINDOW_EDL"))
+			break;
+		else if(file->tag.title_is("CLIPBOARD"))
+			continue;
+		else if(file->tag.title_is("VIDEO"))
+		{
+			if(session)
+				session->load_video_config(file);
+		}
+		else if(file->tag.title_is("AUDIO"))
+		{
+			if(session)
+				session->load_audio_config(file);
+		}
+		else if(file->tag.title_is("ASSETS"))
+			assetlist_global.load_assets(file, assets);
+		else if(file->tag.title_is(labels->xml_tag))
+			labels->load(file);
+		else if(file->tag.title_is("LOCALSESSION"))
+			local_session->load_xml(file);
+		else if(file->tag.title_is("SESSION"))
+		{
+			if(session)
 			{
-				if(file->tag.title_is("/XML") ||
-					file->tag.title_is("/EDL") ||
-					file->tag.title_is("/CLIP_EDL") ||
-					file->tag.title_is("/VWINDOW_EDL"))
-				{
-					result = 1;
-					break;
-				}
-				else
-				if(file->tag.title_is("CLIPBOARD"))
-				{
-				}
-				else
-				if(file->tag.title_is("VIDEO"))
-				{
-					if(session)
-						session->load_video_config(file);
-				}
-				else
-				if(file->tag.title_is("AUDIO"))
-				{
-					if(session)
-						session->load_audio_config(file);
-				}
-				else
-				if(file->tag.title_is("ASSETS"))
-					assetlist_global.load_assets(file, assets);
-				else
-				if(file->tag.title_is(labels->xml_tag))
-					labels->load(file);
-				else
-				if(file->tag.title_is("LOCALSESSION"))
-					local_session->load_xml(file);
-				else
-				if(file->tag.title_is("SESSION"))
-				{
-					if(session)
-					{
-						session->load_xml(file);
-						this_edlsession = session;
-					}
-				}
-				else
-				if(file->tag.title_is("TRACK"))
-					tracks->load(file);
-				else
-// Sub EDL.
-				if(file->tag.title_is("CLIP_EDL"))
-				{
-					if(is_master)
-					{
-						EDL *new_edl = new EDL(0);
-
-						new_edl->load_xml(file, 0);
-						cliplist_global.add_clip(new_edl);
-					}
-					else
-						file->skip_to_tag("/CLIP_EDL");
-				}
-				else
-				if(file->tag.title_is("VWINDOW_EDL"))
-				{
-					if(is_master)
-						vwindow_edl->load_xml(file, 0);
-					else
-						file->skip_to_tag("/VWINDOW__EDL");
-				}
+				session->load_xml(file);
+				this_edlsession = session;
 			}
-		}while(!result);
+		}
+		else if(file->tag.title_is("TRACK"))
+			tracks->load(file);
+		else if(file->tag.title_is("CLIP_EDL"))
+		{
+			if(is_master)
+			{
+				EDL *new_edl = new EDL(0);
+
+				new_edl->load_xml(file, 0);
+				cliplist_global.add_clip(new_edl);
+			}
+			else
+				file->skip_to_tag("/CLIP_EDL");
+		}
+		else if(file->tag.title_is("VWINDOW_EDL"))
+		{
+			if(is_master && vwindow_edl)
+				vwindow_edl->load_xml(file, 0);
+			else
+				file->skip_to_tag("/VWINDOW_EDL");
+		}
 	}
 	tracks->init_shared_pointers();
 	check_master_track();
 	boundaries();
 	tracks->cleanup_plugins();
 }
-
 
 void EDL::copy_all(EDL *edl)
 {
