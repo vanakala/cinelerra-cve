@@ -3,7 +3,6 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#include "asset.h"
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "brender.h"
@@ -358,18 +357,7 @@ void BRenderThread::start()
 // Allocate render farm.
 	if(!farm_server)
 	{
-		preferences_global->brender_asset->remove_stream_type(STRDSC_VIDEO);
-		preferences_global->brender_asset->create_render_stream(STRDSC_VIDEO);
-		preferences_global->brender_asset->use_header = 0;
-
-		if(!preferences_global->brender_asset->renderprofile_path[0])
-		{
-			edlsession->configuration_path(RENDERCONFIG_DIR,
-				preferences_global->brender_asset->renderprofile_path);
-			preferences_global->brender_asset->set_renderprofile(0, RENDERCONFIG_BRENDER);
-			RenderProfile::chk_profile_dir(preferences_global->brender_asset->renderprofile_path);
-		}
-		preferences_global->brender_asset->load_render_profile();
+		preferences_global->fill_brender_asset(&brender->brender_asset);
 
 		preferences = new Preferences;
 		preferences->copy_from(preferences_global);
@@ -381,9 +369,7 @@ void BRenderThread::start()
 			preferences->use_renderfarm = 1;
 			preferences->delete_nodes();
 		}
-		preferences->add_node(brender->socket_path,
-			0,
-			1,
+		preferences->add_node(brender->socket_path, 0, 1,
 			preferences->local_rate);
 
 // Get last contiguous and reset map.
@@ -400,10 +386,10 @@ void BRenderThread::start()
 			end_pts = start_pts;
 		brender->allocate_map(brender_start, start_pts, end_pts);
 
-		preferences->brender_asset->strategy = RENDER_BRENDER;
+		brender->brender_asset.strategy = RENDER_BRENDER;
 		result = packages->create_packages(command->edl,
 			preferences,
-			preferences->brender_asset,
+			&brender->brender_asset,
 			start_pts,
 			end_pts,
 			0);
@@ -414,7 +400,7 @@ void BRenderThread::start()
 			&farm_result,
 			0,
 			0,
-			preferences->brender_asset,
+			&brender->brender_asset,
 			command->edl,
 			brender);
 		result = farm_server->start_clients();

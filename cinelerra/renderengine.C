@@ -164,7 +164,7 @@ void RenderEngine::release_asset(Asset *asset)
 
 int RenderEngine::brender_available(ptstime position)
 {
-	if(playback_engine)
+	if(playback_engine && mwindow_global->brender)
 		return playback_engine->brender_available(position);
 	else
 		return 0;

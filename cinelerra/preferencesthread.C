@@ -99,10 +99,15 @@ void PreferencesThread::run()
 {
 	int need_new_indexes;
 	int x, y;
+	Asset brender_orig;
+	int renderer;
 
 	preferences = new Preferences;
 	edl = new EDL(0);
 	this_edlsession = new EDLSession();
+	brender_asset = new Asset();
+	preferences->fill_brender_asset(brender_asset);
+	brender_orig.copy_from(brender_asset, 0);
 	current_dialog = mwindow_global->defaults->get("DEFAULTPREF", 0);
 	preferences->copy_from(preferences_global);
 	this_edlsession->copy(edlsession);
@@ -111,7 +116,6 @@ void PreferencesThread::run()
 	close_assets = 0;
 	reload_plugins = 0;
 	need_new_indexes = 0;
-
 	BC_Resources::get_root_size(&x, &y);
 	x = x / 2 - WIDTH / 2;
 	y = y / 2 - HEIGHT / 2;
@@ -126,14 +130,15 @@ void PreferencesThread::run()
 	thread_running = 0;
 	if(!result)
 	{
-		if(!preferences->brender_asset->equivalent(*preferences_global->brender_asset,
-				STRDSC_VIDEO))
+		int renderer = 0;
+		if(!brender_asset->equivalent(brender_orig, STRDSC_VIDEO))
 		{
-			if(preferences->brender_asset->renderprofile_path[0])
-				preferences->brender_asset->save_render_profile();
+			if(brender_asset->renderprofile_path[0])
+				brender_asset->save_render_profile();
 			mwindow_global->reset_brender();
+			renderer = 1;
 		}
-		apply_settings();
+		apply_settings(renderer);
 		mwindow_global->save_defaults();
 		mwindow_global->restart_brender();
 	}
@@ -142,6 +147,7 @@ void PreferencesThread::run()
 	delete window;
 	window = 0;
 	window_lock->unlock();
+	delete brender_asset;
 	delete preferences;
 	delete edl;
 	delete this_edlsession;
@@ -163,10 +169,10 @@ void PreferencesThread::update_playstatistics()
 		window->update_playstatistics();
 }
 
-void PreferencesThread::apply_settings()
+void PreferencesThread::apply_settings(int rerender)
 {
 	int redraw_overlays, redraw_times;
-	int redraw_meters, rerender;
+	int redraw_meters;
 
 // Compare sessions
 	AudioOutConfig *this_aconfig = this_edlsession->playback_config->aconfig;
@@ -174,13 +180,10 @@ void PreferencesThread::apply_settings()
 	AudioOutConfig *aconfig = edlsession->playback_config->aconfig;
 	VideoOutConfig *vconfig = edlsession->playback_config->vconfig;
 
-	rerender = 
-		this_edlsession->need_rerender(edlsession) ||
+	rerender |= this_edlsession->need_rerender(edlsession) ||
 		(preferences->max_threads != preferences_global->max_threads) ||
 		(*this_aconfig != *aconfig) ||
-		(*this_vconfig != *vconfig) ||
-		!preferences->brender_asset->equivalent(*preferences_global->brender_asset,
-			STRDSC_VIDEO);
+		(*this_vconfig != *vconfig);
 
 // Check index directory
 	if(strcmp(preferences_global->index_directory, preferences->index_directory))
@@ -497,7 +500,7 @@ PreferencesApply::PreferencesApply(PreferencesThread *thread,
 
 int PreferencesApply::handle_event()
 {
-	thread->apply_settings();
+	thread->apply_settings(0);
 	return 1;
 }
 

@@ -46,6 +46,7 @@ public:
 	int get_brender_node();
 	const char* get_node_hostname(int number);
 	int get_node_port(int number);
+	void fill_brender_asset(Asset *asset);
 
 // Copy frame rates.  Always used where the argument is the renderfarm and this is
 // the master preferences.  This way, the value for master node is properly 
@@ -80,7 +81,6 @@ public:
 // Default positions for channels
 	int channel_positions[MAXCHANNELS * MAXCHANNELS];
 
-	Asset *brender_asset;
 	int use_brender;
 // Number of frames in a brender job.
 	int brender_fragment;

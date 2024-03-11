@@ -104,7 +104,7 @@ void PerformancePrefs::show()
 	add_subwindow(new BC_Title(x, y1, _("Output for background rendering:")));
 	y1 += 20;
 	brender_tools = new FormatTools(this,
-		pwindow->thread->preferences->brender_asset,
+		pwindow->thread->brender_asset,
 		x,
 		y1,
 		SUPPORTS_VIDEO,     // Include tools for video

@@ -6,13 +6,14 @@
 
 #include "bcsignals.h"
 #include "bcresources.h"
+#include "brender.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "mwindow.h"
 #include "plugin.h"
 #include "pluginclient.h"
-#include "preferences.h"
 #include "renderengine.h"
 #include "tmpframecache.h"
 #include "track.h"
@@ -160,7 +161,7 @@ void VideoRender::get_frame(ptstime pts)
 		if(!brender_file)
 		{
 			brender_file = new File;
-			if(brender_file->open_file(preferences_global->brender_asset,
+			if(brender_file->open_file(&mwindow_global->brender->brender_asset,
 					FILE_OPEN_READ | FILE_OPEN_VIDEO, 0))
 			{
 				delete brender_file;

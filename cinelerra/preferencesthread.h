@@ -7,6 +7,7 @@
 #define PREFERENCESTHREAD_H
 
 #include "arraylist.h"
+#include "asset.inc"
 #include "bcbutton.h"
 #include "bcmenuitem.h"
 #include "bcsubwindow.h"
@@ -41,7 +42,7 @@ public:
 
 	void update_framerate();
 	void update_playstatistics();
-	void apply_settings();
+	void apply_settings(int rerender);
 	const char* category_to_text(int category);
 	int text_to_category(char *category);
 
@@ -54,6 +55,7 @@ public:
 	Mutex *window_lock;
 // Copy of global preferences
 	Preferences *preferences;
+	Asset *brender_asset;
 	EDL *edl;
 	EDLSession *this_edlsession;
 

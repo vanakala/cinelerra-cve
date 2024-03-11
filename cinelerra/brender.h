@@ -41,6 +41,7 @@
 // background output as certain output files cluster together.
 // This is needed anyway for playback.
 
+#include "asset.h"
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "brender.inc"
@@ -97,6 +98,7 @@ public:
 // Path of socket
 	char socket_path[BCTEXTLEN];
 	Timer *timer;
+	Asset brender_asset;
 };
 
 class BRenderCommand

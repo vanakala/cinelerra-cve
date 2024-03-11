@@ -7,15 +7,17 @@
 #include "audiodevice.inc"
 #include "bcmeter.inc"
 #include "bcsignals.h"
+#include "bchash.h"
 #include "cache.inc"
 #include "clip.h"
-#include "bchash.h"
+#include "edlsession.h"
 #include "file.inc"
 #include "filesystem.h"
 #include "indexfile.inc"
 #include "mutex.h"
 #include "mwindow.inc"
 #include "preferences.h"
+#include "renderprofiles.h"
 #include "theme.h"
 #include "videodevice.inc"
 #include <string.h>
@@ -43,11 +45,6 @@ Preferences::Preferences()
 	renderfarm_job_count = 20;
 	calculate_processors();
 
-// Default brender asset
-	brender_asset = new Asset;
-	strcpy(brender_asset->path, "/tmp/brender");
-	brender_asset->format = FILE_JPEG_LIST;
-
 	use_brender = 0;
 	brender_fragment = 1;
 	local_rate = 0.0;
@@ -67,7 +64,6 @@ Preferences::Preferences()
 
 Preferences::~Preferences()
 {
-	delete brender_asset;
 	delete preferences_lock;
 }
 
@@ -142,7 +138,6 @@ void Preferences::copy_from(Preferences *that)
 	renderfarm_vfs = that->renderfarm_vfs;
 	use_brender = that->use_brender;
 	brender_fragment = that->brender_fragment;
-	*brender_asset = *that->brender_asset;
 
 // Check boundaries
 	boundaries();
@@ -214,6 +209,23 @@ void Preferences::scan_channels(char *string,
 		channel_positions[current_channel++] = atoi(string2);
 		if(current_channel >= channels) break;
 	}
+}
+
+void Preferences::fill_brender_asset(Asset *asset)
+{
+	asset->remove_stream_type(STRDSC_VIDEO);
+	asset->use_header = 0;
+	strcpy(asset->path, "/tmp/brender");
+	asset->format = FILE_JPEG_LIST;
+	if(!asset->renderprofile_path[0])
+	{
+		edlsession->configuration_path(RENDERCONFIG_DIR,
+			asset->renderprofile_path);
+		asset->set_renderprofile(0, RENDERCONFIG_BRENDER);
+		RenderProfile::chk_profile_dir(asset->renderprofile_path);
+	}
+	asset->create_render_stream(STRDSC_VIDEO);
+	asset->load_render_profile();
 }
 
 void Preferences::load_defaults(BC_Hash *defaults)
