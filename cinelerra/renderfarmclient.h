@@ -10,7 +10,6 @@
 #include "asset.inc"
 #include "bchash.inc"
 #include "datatype.h"
-#include "edl.inc"
 #include "mutex.inc"
 #include "packagerenderer.h"
 #include "pluginserver.inc"
@@ -39,7 +38,6 @@ public:
 	pid_t this_pid;
 // The plugin paths must be known before any threads are started
 	BC_Hash *boot_defaults;
-	Preferences *boot_preferences;
 };
 
 
@@ -51,8 +49,7 @@ public:
 
 // Commands call this to send the request packet.
 // The ID of the request followed by the size of the data that follows is sent.
-	int send_request_header(int request, 
-		int len);
+	int send_request_header(int request, int len);
 // These are local functions to handle errors the right way for a client.
 // They simply call the RenderFarmServerThread functions and abort if error.
 	int write_socket(const char *data, int len);
@@ -69,12 +66,9 @@ public:
 	void do_packages(int socket_fd);
 
 	void get_command(int socket_fd, int *command);
-	void read_preferences(int socket_fd, 
-		Preferences *preferences);
+	void read_preferences(int socket_fd);
 	int read_asset(int socket_fd, Asset *asset);
-	int read_edl(int socket_fd, 
-		EDL *edl, 
-		Preferences *preferences);
+	int read_edl(int socket_fd);
 	int read_package(int socket_fd, RenderPackage *package);
 	int send_completion(int socket_fd);
 	void ping_server();

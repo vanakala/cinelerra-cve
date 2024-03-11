@@ -60,14 +60,13 @@ RenderFarmClient::RenderFarmClient(int port,
 		perror("RenderFarmClient::RenderFarmClient - nice");
 
 	MWindow::init_defaults(boot_defaults, config_path);
-	master_edl = new EDL(0);
+	master_edl = new EDL(1);
 	edlsession = new EDLSession();
-	master_edl->load_defaults(boot_defaults, edlsession);
-	boot_preferences = new Preferences;
-	boot_preferences->load_defaults(boot_defaults);
-	preferences_global = boot_preferences;
+	master_edl->this_edlsession = edlsession;
+	preferences_global = new Preferences;
+	preferences_global->load_defaults(boot_defaults);
 	plugindb.init_plugins(0);
-	strcpy(string, boot_preferences->global_plugin_dir);
+	strcpy(string, preferences_global->global_plugin_dir);
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 }
@@ -75,7 +74,6 @@ RenderFarmClient::RenderFarmClient(int port,
 RenderFarmClient::~RenderFarmClient()
 {
 	delete boot_defaults;
-	delete boot_preferences;
 }
 
 void RenderFarmClient::main_loop()
@@ -348,7 +346,6 @@ void RenderFarmClientThread::get_command(int socket_fd, int *command)
 	unsigned char data[4];
 	int error;
 	*command = read_int64(&error);
-
 	if(error)
 	{
 		*command = 0;
@@ -356,8 +353,7 @@ void RenderFarmClientThread::get_command(int socket_fd, int *command)
 	}
 }
 
-void RenderFarmClientThread::read_preferences(int socket_fd, 
-	Preferences *preferences)
+void RenderFarmClientThread::read_preferences(int socket_fd)
 {
 	char *string;
 	BC_Hash defaults;
@@ -367,9 +363,8 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 
 	read_string(string);
 
-	defaults.load_string((char*)string);
-	preferences->load_defaults(&defaults);
-
+	defaults.load_string(string);
+	preferences_global->load_defaults(&defaults);
 	delete [] string;
 	unlock();
 }
@@ -403,9 +398,7 @@ int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	return result;
 }
 
-int RenderFarmClientThread::read_edl(int socket_fd, 
-	EDL *edl, 
-	Preferences *preferences)
+int RenderFarmClientThread::read_edl(int socket_fd)
 {
 	char *string;
 	FileXML file;
@@ -416,27 +409,20 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	send_request_header(RENDERFARM_EDL, 0);
 
 	read_string(string);
-
 	file.read_from_string(string);
 	delete [] string;
 
-	edl->load_xml(&file, edlsession);
+	master_edl->load_xml(&file, edlsession);
 
-// Open assets - fill asset info
-	if(edl->assets)
+// Check assets
+	if(master_edl->assets)
 	{
 		File file;
-		for(int i = 0; i < edl->assets->total; i++)
+		for(int i = 0; i < master_edl->assets->total; i++)
 		{
-			Asset *current = edl->assets->values[i];
+			Asset *current = master_edl->assets->values[i];
 
-			if(file.probe_file(current) == FILE_OK)
-			{
-				new_asset = new Asset();
-				new_asset->copy_from(current, 0);
-				assetlist_global.add_asset(new_asset);
-			}
-			else
+			if(file.probe_file(current) != FILE_OK)
 				result |= 1;
 		}
 	}
@@ -551,26 +537,24 @@ void RenderFarmClientThread::init_client_keepalive()
 
 void RenderFarmClientThread::do_packages(int socket_fd)
 {
-	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
-	Preferences *preferences;
 	FarmPackageRenderer package_renderer(this, socket_fd);
 	int result = 0;
 
 // Read settings
-	preferences = new Preferences;
 	default_asset = new Asset;
 	package = new RenderPackage;
-	edl = new EDL(0);
 
-	read_preferences(socket_fd, preferences);
+	read_preferences(socket_fd);
 	result |= read_asset(socket_fd, default_asset);
-	result |= read_edl(socket_fd, edl, preferences);
+	result |= read_edl(socket_fd);
 
-	package_renderer.initialize(edl,
-			preferences,
-			default_asset);
+	default_asset->streams[0].frame_rate = edlsession->frame_rate;
+	default_asset->streams[0].width = edlsession->output_w;
+	default_asset->streams[0].height = edlsession->output_h;
+
+	package_renderer.initialize(master_edl, preferences_global, default_asset);
 
 // Read packages
 	while(1)
@@ -597,8 +581,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	}
 
 	delete default_asset;
-	delete edl;
-	delete preferences;
 }
 
 
