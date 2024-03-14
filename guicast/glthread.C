@@ -34,9 +34,10 @@ static const char *yuv_to_rgb_frag =
 static int attrib[] =
 {
 	GLX_RGBA,
-	GLX_RED_SIZE, 1,
-	GLX_GREEN_SIZE, 1,
-	GLX_BLUE_SIZE, 1,
+	GLX_RED_SIZE, 8,
+	GLX_GREEN_SIZE, 8,
+	GLX_BLUE_SIZE, 8,
+	GLX_ALPHA_SIZE, 8,
 	GLX_DOUBLEBUFFER,
 	None
 };
@@ -47,15 +48,14 @@ GLThreadCommand::GLThreadCommand()
 {
 	command = GLThreadCommand::NONE;
 	frame = 0;
-	display = 0;
-	screen = 0;
+	context = 0;
 }
 
 void GLThreadCommand::dump(int indent, int show_frame)
 {
 	printf("%*sGLThreadCommand '%s' %p dump:\n", indent, "", name(command), this);
-	printf("%*sdisplay: %p screen %d frame: %p\n", indent, "",
-		display, screen, frame);
+	printf("%*scontext %d frame: %p\n", indent, "",
+		context, frame);
 	if(show_frame && frame)
 		frame->dump();
 }
@@ -101,10 +101,10 @@ GLThread::~GLThread()
 
 GLThreadCommand* GLThread::new_command()
 {
-	if(last_command >= GL_MAX_COMMANDS)
+	while(last_command >= GL_MAX_COMMANDS)
 	{
-		// jääda ootama
-		return 0;
+		command_lock->lock("GLThread::new_command");
+		command_lock->unlock();
 	}
 	if(!commands[last_command])
 		commands[last_command] = new GLThreadCommand;
@@ -136,8 +136,11 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 		contexts[last_context].win = win;
 		contexts[last_context].gl_context = gl_context;
 		contexts[last_context].visinfo = visinfo;
+		current_context = last_context;
 		last_context++;
 		glXMakeCurrent(dpy, win, gl_context);
+		BC_WindowBase::dump_XVisualInfo(visinfo);
+		show_glparams();
 		if(!BC_Resources::OpenGLStrings[0])
 		{
 			const char *string;
@@ -184,6 +187,20 @@ void GLThread::quit()
 	next_command->unlock();
 }
 
+void GLThread::draw_vframe(VFrame *frame)
+{
+#ifdef HAVE_GL
+	command_lock->lock("GLThread::draw_vframe");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::DRAW_VFRAME;
+	command->frame = frame;
+	command->context = current_context;
+	command_lock->unlock();
+
+	next_command->unlock();
+#endif
+}
+
 void GLThread::run()
 {
 	while(!done)
@@ -210,6 +227,10 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 		case GLThreadCommand::QUIT:
 			delete_contexts();
 			done = 1;
+			break;
+
+		case GLThreadCommand::DRAW_VFRAME:
+			do_draw_vframe(command);
 			break;
 
 		default:
@@ -254,6 +275,31 @@ void GLThread::delete_window(Display *dpy, int screen)
 	}
 #endif
 }
+
+void GLThread::do_draw_vframe(GLThreadCommand *command)
+{
+}
+
+GLuint GLThread::create_texture(int num, int width, int height)
+{
+	struct texture *txp;
+
+	txp = &contexts[current_context].textures[num];
+	glGenTextures(1, &txp->id);
+	txp->width = width;
+	txp->height = height;
+	glBindTexture(GL_TEXTURE_2D, txp->id);
+// ??	glEnable(GL_TEXTURE_2D);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+		GL_UNSIGNED_SHORT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	return txp->id;
+}
+
 
 #ifdef HAVE_GL
 // Debug functions

@@ -22,6 +22,8 @@
 
 #define GL_MAX_CONTEXTS 8
 #define GL_MAX_COMMANDS 16
+#define GL_ORIG_TEXTURE 0
+#define GL_MAX_TEXTURES 4
 
 #include <X11/Xlib.h>
 
@@ -47,13 +49,13 @@ public:
 	{
 		NONE,
 		QUIT,
+		DRAW_VFRAME,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
 
 	VFrame *frame;
-	Display *display;
-	int screen;
+	int context;
 };
 
 
@@ -65,6 +67,7 @@ public:
 
 	int initialize(Display *dpy, Window win, int screen);
 	void quit();
+	void draw_vframe(VFrame *frame);
 
 	void run();
 
@@ -81,6 +84,9 @@ private:
 	void handle_command_base(GLThreadCommand *command);
 	int have_context(Display *dpy, int screen);
 	void delete_contexts();
+	GLuint create_texture(int num, int width, int height);
+// executing commands
+	void do_draw_vframe(GLThreadCommand *command);
 
 	Condition *next_command;
 	Mutex *command_lock;
@@ -93,7 +99,14 @@ private:
 	GLThreadCommand *commands[GL_MAX_COMMANDS];
 
 #ifdef HAVE_GL
+	struct texture
+	{
+		int width;
+		int height;
+		GLuint id;
+	};
 	int last_context;
+	int current_context;
 	struct glctx
 	{
 		Display *dpy;
@@ -101,6 +114,8 @@ private:
 		int screen;
 		GLXContext gl_context;
 		XVisualInfo *visinfo;
+		int last_texture;
+		struct texture textures[GL_MAX_TEXTURES];
 	}contexts[GL_MAX_CONTEXTS];
 public:
 	static void show_glparams(int indent = 0);
