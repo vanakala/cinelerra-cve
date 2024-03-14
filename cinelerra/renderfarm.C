@@ -285,6 +285,7 @@ int RenderFarmServerThread::read_socket(char *data, int len)
 		enable_cancel();
 		bytes_read = read(socket_fd, data + offset, len);
 		disable_cancel();
+
 		if(bytes_read > 0)
 		{
 			len -= bytes_read;
@@ -536,7 +537,7 @@ void RenderFarmServerThread::set_result(int val, const char *msg)
 {
 	if(!*server->result_return)
 		*server->result_return = val;
-	if(val && msg[0])
+	if(val && msg && msg[0])
 		errormsg("%s", msg);
 }
 
@@ -587,7 +588,6 @@ void RenderFarmWatchdog::run()
 
 		int result = request_complete->timed_lock(RENDERFARM_TIMEOUT * 1000000, 
 			"RenderFarmWatchdog::run");
-
 		if(result)
 		{
 			if(client)
@@ -597,8 +597,8 @@ void RenderFarmWatchdog::run()
 			else
 			if(server)
 			{
+				server->set_result(1, _("No response from renderer. Rendering failed."));
 				server->cancel();
-				server->set_result(1);
 			}
 
 			done = 1;
