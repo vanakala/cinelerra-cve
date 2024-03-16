@@ -310,12 +310,14 @@ void PluginClient::process_buffer(AFrame **buffer)
 	need_reconfigure = 0;
 }
 
-VFrame *PluginClient::clone_vframe(VFrame *orig)
+VFrame *PluginClient::clone_vframe(VFrame *orig, int clear_it)
 {
 	VFrame *cloned = BC_Resources::tmpframes.clone_frame(orig);
 
 	if(cloned)
 	{
+		if(clear_it)
+			cloned->clear_frame();
 		cloned->copy_pts(orig);
 		cloned->merge_status(orig);
 	}

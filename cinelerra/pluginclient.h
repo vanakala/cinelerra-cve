@@ -120,7 +120,7 @@ public:
 	void plugin_reset();
 
 // Get, release tmpframes
-	VFrame *clone_vframe(VFrame *orig);
+	VFrame *clone_vframe(VFrame *orig, int clear_it = 0);
 	void release_vframe(VFrame *frame);
 	AFrame *clone_aframe(AFrame *orig);
 	void release_aframe(AFrame *frame);
