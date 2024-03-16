@@ -5,6 +5,7 @@
 
 #include "affine.h"
 #include "bctitle.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "cursors.h"
 #include "filexml.h"
@@ -740,8 +741,7 @@ VFrame *PerspectiveMain::process_tmpframe(VFrame *frame)
 		}
 		strech_temp->clear_frame();
 	}
-	output = clone_vframe(frame);
-	output->clear_frame();
+	output = clone_vframe(frame, 1);
 
 	engine->process(output,
 		input,
