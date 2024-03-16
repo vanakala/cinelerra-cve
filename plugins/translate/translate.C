@@ -184,8 +184,7 @@ VFrame *TranslateMain::process_tmpframe(VFrame *input)
 	if(!overlayer)
 		overlayer = new OverlayFrame(get_project_smp());
 
-	output = clone_vframe(input);
-	output->clear_frame();
+	output = clone_vframe(input, 1);
 
 	overlayer->overlay(output,
 		input,
