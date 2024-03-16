@@ -168,8 +168,6 @@ VFrame *FieldFrame::process_tmpframe(VFrame *input)
 
 	frame = clone_vframe(input);
 
-	frame->copy_pts(input);
-
 	apply_field(frame, input,
 		config.field_dominance == TOP_FIELD_FIRST ? 0 : 1);
 	input->set_pts(input->next_pts() + EPSILON);
