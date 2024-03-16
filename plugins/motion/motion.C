@@ -1621,8 +1621,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 		if(!rotater)
 			rotater = new AffineEngine(1, 1);
 
-		VFrame *temp = plugin->clone_vframe(server->previous_frame);
-		temp->clear_frame();
+		VFrame *temp = plugin->clone_vframe(server->previous_frame, 1);
 
 		rotater->set_viewport(server->scan_x,
 			server->scan_y,
