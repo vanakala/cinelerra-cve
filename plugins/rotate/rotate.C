@@ -386,8 +386,7 @@ VFrame *RotateEffect::process_tmpframe(VFrame *frame)
 	engine->set_pivot(round(config.pivot_x * frame->get_w() / 100),
 		round(config.pivot_y * frame->get_h() / 100));
 
-	output = clone_vframe(frame);
-	output->clear_frame();
+	output = clone_vframe(frame, 1);
 	engine->rotate(output, frame, config.angle);
 
 	GuideFrame *gf = get_guides();
