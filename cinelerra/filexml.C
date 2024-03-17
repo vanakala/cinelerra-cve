@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include <ctype.h>
 #include <errno.h>
@@ -87,14 +71,11 @@ void FileXML::append_text(const char *text)
 void FileXML::append_text(const char *text, int len)
 {
 	while(position + len + 1 > available)
-	{
 		reallocate_string(available * 2);
-	}
 
 	for(int i = 0; i < len; i++, position++)
-	{
 		string[position] = text[i];
-	}
+
 	string[position] = 0;
 }
 
@@ -162,7 +143,8 @@ char* FileXML::read_text()
 		position++);
 
 // allocate enough space
-	if(output_length) delete [] output;
+	if(output_length)
+		delete [] output;
 	output_length = position - text_position;
 	output = new char[output_length + 1];
 
@@ -174,24 +156,31 @@ char* FileXML::read_text()
 // check if we have to decode special characters
 // but try to be most backward compatible possible
 			int character = string[text_position];
-			if (string[text_position] == '&')
+			if(string[text_position] == '&')
 			{
-				if (text_position + 3 < length)
+				if(text_position + 3 < length)
 				{
-					if (string[text_position + 1] == 'l' && string[text_position + 2] == 't' && string[text_position + 3] == ';')
+					if(string[text_position + 1] == 'l' &&
+						string[text_position + 2] == 't' &&
+						string[text_position + 3] == ';')
 					{
 						character = '<';
 						text_position += 3;
 					}
-					if (string[text_position + 1] == 'g' && string[text_position + 2] == 't' && string[text_position + 3] == ';')
+					if(string[text_position + 1] == 'g' &&
+						string[text_position + 2] == 't' &&
+						string[text_position + 3] == ';')
 					{
 						character = '>';
 						text_position += 3;
 					}
 				}
-				if (text_position + 4 < length)
+				if(text_position + 4 < length)
 				{
-					if (string[text_position + 1] == 'a' && string[text_position + 2] == 'm' && string[text_position + 3] == 'p' && string[text_position + 4] == ';')
+					if(string[text_position + 1] == 'a' &&
+						string[text_position + 2] == 'm' &&
+						string[text_position + 3] == 'p' &&
+						string[text_position + 4] == ';')
 					{
 						character = '&';
 						text_position += 4;
@@ -211,11 +200,11 @@ int FileXML::read_tag()
 {
 // scan to next tag
 	while(position < length && string[position] != left_delimiter)
-	{
 		position++;
-	}
+
 	tag.reset_tag();
-	if(position >= length) return 1;
+	if(position >= length)
+		return 1;
 	return tag.read_tag(string, position, length);
 }
 
@@ -229,10 +218,8 @@ void FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 	while(!result && position < length && out_position < max_len - 1)
 	{
 		while(position < length && string[position] != left_delimiter)
-		{
 			output[out_position++] = string[position++];
-		}
-		
+
 		if(position < length && string[position] == left_delimiter)
 		{
 // tag reached
@@ -246,14 +233,13 @@ void FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 				test_position1++, test_position2++)
 			{
 // null result when first wrong character is reached
-				if(tag_end[test_position1] != string[test_position2]) result = 0;
+				if(tag_end[test_position1] != string[test_position2])
+					result = 0;
 			}
 
 // no end tag reached to copy <
 			if(!result)
-			{
 				output[out_position++] = string[position++];
-			}
 		}
 	}
 	output[out_position] = 0;
@@ -321,13 +307,10 @@ int FileXML::write_to_file(FILE *file)
 	fprintf(file, "<?xml version=\"1.0\"?>\n");
 // Position may have been rewound after storing
 	if(fwrite(string, strlen(string), 1, file) || !strlen(string))
-	{
 		return 0;
-	}
 	else
 	{
-		errormsg(_("Error while writing to \"%s\": %m\n"),
-			filename);
+		errormsg(_("Error while writing to \"%s\": %m\n"), filename);
 		return 1;
 	}
 	return 0;
@@ -399,9 +382,8 @@ int FileXML::skip_to_tag(const char *string)
 	return 1;
 }
 
+
 // ================================ XML tag
-
-
 XMLTag::XMLTag()
 {
 	total_properties = 0;
@@ -422,8 +404,10 @@ void XMLTag::set_delimiters(char left_delimiter, char right_delimiter)
 void XMLTag::reset_tag()     // clear all structures
 {
 	len = 0;
-	for(int i = 0; i < total_properties; i++) delete [] tag_properties[i];
-	for(int i = 0; i < total_properties; i++) delete [] tag_property_values[i];
+	for(int i = 0; i < total_properties; i++)
+		delete [] tag_properties[i];
+	for(int i = 0; i < total_properties; i++)
+		delete [] tag_property_values[i];
 	total_properties = 0;
 }
 
@@ -437,36 +421,33 @@ void XMLTag::write_tag()
 	len++;
 
 // title
-	for(i = 0; tag_title[i] != 0 && len < MAX_LENGTH; i++, len++) string[len] = tag_title[i];
+	for(i = 0; tag_title[i] != 0 && len < MAX_LENGTH; i++, len++)
+		string[len] = tag_title[i];
 
 // properties
 	for(i = 0; i < total_properties && len < MAX_LENGTH; i++)
 	{
 		string[len++] = ' ';         // add a space before every property
-
 		current_property = tag_properties[i];
-
 // property title
 		for(j = 0; current_property[j] != 0 && len < MAX_LENGTH; j++, len++)
-		{
 			string[len] = current_property[j];
-		}
 
-		if(len < MAX_LENGTH) string[len++] = '=';
+		if(len < MAX_LENGTH)
+			string[len++] = '=';
 
 		current_value = tag_property_values[i];
-
 // property value
-		if( len < MAX_LENGTH) string[len++] = '\"';
+		if( len < MAX_LENGTH)
+			string[len++] = '\"';
 // write the value
 		for(j = 0; current_value[j] != 0 && len < MAX_LENGTH; j++, len++)
-		{
 			string[len] = current_value[j];
-		}
-		if(len < MAX_LENGTH) string[len++] = '\"';
+		if(len < MAX_LENGTH)
+			string[len++] = '\"';
 	}
-
-	if(len < MAX_LENGTH) string[len++] = right_delimiter;   // terminating bracket
+	if(len < MAX_LENGTH)
+		string[len++] = right_delimiter;   // terminating bracket
 }
 
 int XMLTag::read_tag(char *input, int &position, int length)
@@ -475,35 +456,34 @@ int XMLTag::read_tag(char *input, int &position, int length)
 	int i, j, terminating_char;
 
 // search for beginning of a tag
-	while(input[position] != left_delimiter && position < length) position++;
+	while(input[position] != left_delimiter && position < length)
+		position++;
 
-	if(position >= length) return 1;
+	if(position >= length)
+		return 1;
 
 // find the start
 	while(position < length &&
-		(input[position] == ' ' ||         // skip spaces
-		input[position] == '\n' ||	 // also skip new lines
-		input[position] == left_delimiter))           // skip <
+			(input[position] == ' ' ||             // skip spaces
+			input[position] == '\n' ||             // also skip new lines
+			input[position] == left_delimiter))    // skip <
 		position++;
 
-	if(position >= length) return 1;
+	if(position >= length)
+		return 1;
 
 	tag_start = position;
 
 // read title
-	for(i = 0; 
-		i < MAX_TITLE && 
-		position < length && 
-		input[position] != '=' && 
-		input[position] != ' ' &&       // space ends title
-		input[position] != right_delimiter;
-		position++, i++)
-	{
+	for(i = 0; i < MAX_TITLE &&  position < length &&
+			input[position] != '=' &&
+			input[position] != ' ' &&       // space ends title
+			input[position] != right_delimiter; position++, i++)
 		tag_title[i] = input[position];
-	}
 	tag_title[i] = 0;
 
-	if(position >= length) return 1;
+	if(position >= length)
+		return 1;
 
 	if(input[position] == '=')
 	{
@@ -513,34 +493,27 @@ int XMLTag::read_tag(char *input, int &position, int length)
 	}
 
 // read properties
-	for(i = 0;
-		i < MAX_PROPERTIES &&
-		position < length &&
-		input[position] != right_delimiter;
-		i++)
+	for(i = 0; i < MAX_PROPERTIES && position < length &&
+		input[position] != right_delimiter; i++)
 	{
 // read a tag
 // find the start
 		while(position < length &&
-			(input[position] == ' ' ||         // skip spaces
-			input[position] == '\n' ||         // also skip new lines
-			input[position] == left_delimiter))           // skip <
+				(input[position] == ' ' ||           // skip spaces
+				input[position] == '\n' ||           // also skip new lines
+				input[position] == left_delimiter))  // skip <
 			position++;
 
 // read the property description
-		for(j = 0; 
-			j < MAX_LENGTH &&
-			position < length &&
-			input[position] != right_delimiter &&
-			input[position] != ' ' &&
-			input[position] != '\n' &&	// also new line ends it
-			input[position] != '=';
-			j++, position++)
-		{
+		for(j = 0; j < MAX_LENGTH && position < length &&
+				input[position] != right_delimiter &&
+				input[position] != ' ' &&
+				input[position] != '\n' &&  // also new line ends it
+				input[position] != '=';
+				j++, position++)
 			string[j] = input[position];
-		}
-		string[j] = 0;
 
+		string[j] = 0;
 
 // store the description in a property array
 		tag_properties[total_properties] = new char[strlen(string) + 1];
@@ -548,30 +521,27 @@ int XMLTag::read_tag(char *input, int &position, int length)
 
 // find the start of the value
 		while(position < length &&
-			(input[position] == ' ' ||         // skip spaces
-			input[position] == '\n' ||         // also skip new lines
-			input[position] == '='))           // skip =
+				(input[position] == ' ' ||         // skip spaces
+				input[position] == '\n' ||         // also skip new lines
+				input[position] == '='))           // skip =
 			position++;
 
 // find the terminating char
 		if(position < length && input[position] == '\"')
 		{
 			terminating_char = '\"';     // use quotes to terminate
-			if(position < length) position++;   // don't store the quote itself
+			if(position < length)
+				position++;          // don't store the quote itself
 		}
-		else 
-			terminating_char = ' ';         // use space to terminate
+		else
+			terminating_char = ' ';      // use space to terminate
 
 // read until the terminating char
-		for(j = 0;
-			j < MAX_LENGTH &&
-			position < length &&
-			input[position] != right_delimiter &&
-			input[position] != terminating_char;
-			j++, position++)
-		{
+		for(j = 0; j < MAX_LENGTH && position < length &&
+				input[position] != right_delimiter &&
+				input[position] != terminating_char;
+				j++, position++)
 			string[j] = input[position];
-		}
 		string[j] = 0;
 
 // store the value in a property array
@@ -579,26 +549,29 @@ int XMLTag::read_tag(char *input, int &position, int length)
 		strcpy(tag_property_values[total_properties], string);
 
 // advance property if one was just loaded
-		if(tag_properties[total_properties][0] != 0) total_properties++;
+		if(tag_properties[total_properties][0] != 0)
+			total_properties++;
 
 // get the terminating char
-		if(position < length && input[position] != right_delimiter) position++;
+		if(position < length && input[position] != right_delimiter)
+			position++;
 	}
 
 // skip the >
-	if(position < length && input[position] == right_delimiter) position++;
+	if(position < length && input[position] == right_delimiter)
+		position++;
 
 	if(total_properties || tag_title[0]) 
-		return 0; 
-	else 
-		return 1;
-	return 0;
+		return 0;
+	return 1;
 }
 
 int XMLTag::title_is(const char *title)
 {
-	if(!strcasecmp(title, tag_title)) return 1;
-	else return 0;
+	if(!strcasecmp(title, tag_title))
+		return 1;
+	else
+		return 0;
 }
 
 char* XMLTag::get_title()
@@ -615,12 +588,11 @@ void XMLTag::get_title(char *value)
 int XMLTag::test_property(const char *property, char *value)
 {
 	int i, result;
+
 	for(i = 0, result = 0; i < total_properties && !result; i++)
 	{
 		if(!strcasecmp(tag_properties[i], property) && !strcasecmp(value, tag_property_values[i]))
-		{
 			return 1;
-		}
 	}
 	return 0;
 }
@@ -628,19 +600,23 @@ int XMLTag::test_property(const char *property, char *value)
 char* XMLTag::get_property(const char *property, char *value)
 {
 	int i, result;
+
 	for(i = 0, result = 0; i < total_properties && !result; i++)
 	{
 		if(!strcasecmp(tag_properties[i], property))
 		{
 			int j = 0, k = 0;
 			char *tv = tag_property_values[i];
-			while (j < strlen(tag_property_values[i])) {
-				if (!strncmp(tv + j,"&#034;",6)) {
+
+			while(j < strlen(tag_property_values[i]))
+			{
+				if(!strncmp(tv + j,"&#034;", 6))
+				{
 					value[k++] = '\"';
 					j += 6;
-				} else {
-					value[k++] = tv[j++];
 				}
+				else
+					value[k++] = tv[j++];
 			}
 			value[k] = 0;
 			result = 1;
@@ -676,12 +652,11 @@ float XMLTag::get_property_float(int number)
 char* XMLTag::get_property(const char *property)
 {
 	int i, result;
+
 	for(i = 0, result = 0; i < total_properties && !result; i++)
 	{
 		if(!strcasecmp(tag_properties[i], property))
-		{
 			return tag_property_values[i];
-		}
 	}
 	return 0;
 }
@@ -699,14 +674,14 @@ int32_t XMLTag::get_property(const char *property, int32_t default_)
 int64_t XMLTag::get_property(const char *property, int64_t default_)
 {
 	int64_t result;
+
 	temp_string[0] = 0;
 	get_property(property, temp_string);
-	if(temp_string[0] == 0) 
+
+	if(temp_string[0] == 0)
 		result = default_;
-	else 
-	{
+	else
 		sscanf(temp_string, "%" SCNd64, &result);
-	}
 	return result;
 }
 
@@ -749,7 +724,7 @@ void XMLTag::set_property(const char *text, int64_t value)
 
 void XMLTag::set_property(const char *text, float value)
 {
-	if (value - (float)((int64_t)value) == 0)
+	if(value - (float)((int64_t)value) == 0)
 		sprintf(temp_string, "%" PRId64, (int64_t)value);
 	else
 		sprintf(temp_string, "%.6e", value);
@@ -758,7 +733,7 @@ void XMLTag::set_property(const char *text, float value)
 
 void XMLTag::set_property(const char *text, double value)
 {
-	if (value - (double)((int64_t)value) == 0)
+	if(value - (double)((int64_t)value) == 0)
 		sprintf(temp_string, "%" PRId64, (int64_t)value);
 	else
 		sprintf(temp_string, "%.16e", value);
@@ -779,8 +754,10 @@ void XMLTag::set_property(const char *text, const char *value)
 	// Allocate space, and replace quotes with &#034;
 	tag_property_values[total_properties] = new char[strlen(value) + qcount*5 + 1];
 	int j = 0;
-	for (int i = 0; i < strlen(value); i++) {
-		switch (value[i]){
+	for(int i = 0; i < strlen(value); i++)
+	{
+		switch (value[i])
+		{
 		case '"':
 			tag_property_values[total_properties][j] = 0;
 			strcat(tag_property_values[total_properties],"&#034;");
