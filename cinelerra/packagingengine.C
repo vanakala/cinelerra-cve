@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
 #include "packagingengine.h"
@@ -28,8 +12,8 @@
 #include "render.h"
 #include "clip.h"
 
-
-// Default packaging engine implementation, simply split the range up, and consider client's speed
+// Default packaging engine implementation, simply split the range up,
+//  and consider client's speed
 
 PackagingEngine::PackagingEngine()
 {
@@ -46,13 +30,9 @@ PackagingEngine::~PackagingEngine()
 	}
 }
 
-
-void PackagingEngine::create_packages_single_farm(
-		EDL *edl,
-		Preferences *preferences,
-		Asset *default_asset, 
-		ptstime total_start,
-		ptstime total_end)
+void PackagingEngine::create_packages_single_farm(EDL *edl,
+	Preferences *preferences, Asset *default_asset,
+	ptstime total_start, ptstime total_end)
 {
 	this->total_start = total_start;
 	this->total_end = total_end;
@@ -72,34 +52,26 @@ void PackagingEngine::create_packages_single_farm(
 	package_len = total_len / total_packages;
 	min_package_len = 2.0 / edl->this_edlsession->frame_rate;
 
-
 	int current_number;    // The number being injected into the filename.
 	int number_start;      // Character in the filename path at which the number begins
 	int total_digits;      // Total number of digits including padding the user specified.
 
-	Render::get_starting_number(default_asset->path, 
-		current_number,
-		number_start, 
-		total_digits,
-		3);
+	Render::get_starting_number(default_asset->path, current_number,
+		number_start, total_digits, 3);
 
 	for(int i = 0; i < total_allocated; i++)
 	{
 		RenderPackage *package = packages[i] = new RenderPackage;
 
 // Create file number differently if image file sequence
-		Render::create_filename(package->path, 
-			default_asset->path, 
-			current_number,
-			total_digits,
-			number_start);
+		Render::create_filename(package->path, default_asset->path, 
+			current_number, total_digits, number_start);
 		current_number++;
 	}
 }
 
 RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second,
-		int client_number,
-		int use_local_rate)
+	int client_number, int use_local_rate)
 {
 	RenderPackage *result = 0;
 	double avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
@@ -152,8 +124,7 @@ RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second
 // Useful speed data and future packages exist.  Scale the 
 // package size to fit the requestor.
 		{
-			scaled_len = package_len * 
-				frames_per_second / 
+			scaled_len = package_len * frames_per_second /
 				avg_frames_per_second;
 			scaled_len = MAX(scaled_len, min_package_len);
 
@@ -169,11 +140,10 @@ RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second
 // Package size is no longer touched between total_packages and total_allocated
 			if(current_package < total_packages - 1)
 			{
-				package_len = (audio_end_pts - audio_pts) / 
+				package_len = (audio_end_pts - audio_pts) /
 					(ptstime)(total_packages - current_package);
 			}
 		}
-
 		current_package++;
 	}
 	return result;
@@ -183,14 +153,13 @@ RenderPackage* PackagingEngine::get_package_single_farm(double frames_per_second
 void PackagingEngine::get_package_paths(ArrayList<char*> *path_list)
 {
 	for(int i = 0; i < total_allocated; i++)
-	{
 		path_list->append(strdup(packages[i]->path));
-	}
 	path_list->set_free();
 }
 
 ptstime PackagingEngine::get_progress_max()
 {
 	return (total_end - total_start) + preferences->render_preroll * total_packages +
-		(preferences->render_preroll >= total_start ? total_start - preferences->render_preroll : 0);
+		(preferences->render_preroll >= total_start ?
+		total_start - preferences->render_preroll : 0);
 }
