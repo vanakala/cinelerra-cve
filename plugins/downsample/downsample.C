@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "bcslider.h"
+#include "bcsignals.h"
 #include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
@@ -386,6 +387,8 @@ void DownSampleUnit::process_package(LoadPackage *package)
 
 				int scale = (x2 - x1) * (y2 - y1);
 
+				if(!scale)
+					scale = 1;
 				if(x2 > x1 && y2 > y1)
 				{
 					// Read in values
