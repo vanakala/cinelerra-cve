@@ -20,6 +20,8 @@ public:
 	FloatAuto(FloatAutos *autos);
 	~FloatAuto();
 
+	int operator==(Auto &that);
+	int identical(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
 

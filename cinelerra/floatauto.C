@@ -39,10 +39,25 @@ FloatAuto::~FloatAuto()
 	}
 }
 
+int FloatAuto::operator==(Auto &that)
+{
+	return identical((FloatAuto*)&that);
+}
+
 inline bool FloatAuto::is_floatauto_node(Auto *candidate)
 {
 	return (candidate && candidate->autos &&
 		AUTOMATION_TYPE_FLOAT == candidate->autos->get_type());
+}
+
+int FloatAuto::identical(FloatAuto *src)
+{
+	if(src == this)
+		return 1;
+
+	return EQUIV(value, src->value) &&
+		EQUIV(control_in_value, src->control_in_value) &&
+		EQUIV(control_out_value, src->control_out_value);
 }
 
 void FloatAuto::copy_from(Auto *that)
