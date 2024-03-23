@@ -15,6 +15,8 @@ class IntAuto : public Auto
 public:
 	IntAuto(IntAutos *autos);
 
+	int operator==(Auto &that);
+	int identical(IntAuto *that);
 	void copy_from(Auto *that);
 	void copy_from(IntAuto *that);
 	void load(FileXML *file);

@@ -13,6 +13,16 @@ IntAuto::IntAuto(IntAutos *autos)
 	value = 0;
 }
 
+int IntAuto::operator==(Auto &that)
+{
+	return identical((IntAuto*)&that);
+}
+
+int IntAuto::identical(IntAuto *that)
+{
+	return that->value == value;
+}
+
 void IntAuto::load(FileXML *file)
 {
 	value = file->tag.get_property("VALUE", value);
