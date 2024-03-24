@@ -34,6 +34,7 @@ class SubMask
 public:
 	SubMask(MaskAuto *keyframe);
 
+	int operator==(SubMask& ptr);
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file, Track *track);
 	void save_xml(FileXML *file);
@@ -52,6 +53,8 @@ public:
 	MaskAuto(MaskAutos *autos);
 	~MaskAuto();
 
+	int operator==(Auto &that);
+	int identical(MaskAuto *src);
 	void load(FileXML *file);
 	void save_xml(FileXML *file);
 	void copy(Auto *that, ptstime start, ptstime end);

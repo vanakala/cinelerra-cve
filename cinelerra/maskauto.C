@@ -51,6 +51,19 @@ SubMask::SubMask(MaskAuto *keyframe)
 	this->keyframe = keyframe;
 }
 
+int SubMask::operator==(SubMask& ptr)
+{
+	if(points.total != ptr.points.total)
+		return 0;
+
+	for(int i = 0; i < points.total; i++)
+	{
+		if(!(*points.values[i] == *ptr.points.values[i]))
+			return 0;
+	}
+	return 1;
+}
+
 void SubMask::copy_from(SubMask& ptr)
 {
 	points.remove_all_objects();
@@ -195,6 +208,28 @@ MaskAuto::MaskAuto(MaskAutos *autos)
 MaskAuto::~MaskAuto()
 {
 	masks.remove_all_objects();
+}
+
+int MaskAuto::operator==(Auto &that)
+{
+	return identical((MaskAuto*)&that);
+}
+
+int MaskAuto::identical(MaskAuto *src)
+{
+	if(src == this)
+		return 1;
+
+	if(value != src->value ||
+			feather != src->feather ||
+			masks.total != src->masks.total ||
+			apply_before_plugins != src->apply_before_plugins)
+		return 0;
+
+	for(int i = 0; i < masks.total; i++)
+		if(!(*masks.values[i] == *src->masks.values[i]))
+			return 0;
+	return 1;
 }
 
 void MaskAuto::copy_from(Auto *src)
