@@ -18,6 +18,21 @@ CropAuto::CropAuto(CropAutos *autos)
 	apply_before_plugins = 0;
 }
 
+int CropAuto::operator==(Auto &that)
+{
+	return identical((CropAuto*)&that);
+}
+
+int CropAuto::identical(CropAuto *that)
+{
+	if(this == that)
+		return 1;
+
+	return that->left == left && that->right == right &&
+		that->top == top && that->bottom == bottom &&
+		that->apply_before_plugins == apply_before_plugins;
+}
+
 void CropAuto::load(FileXML *file)
 {
 	int val;

@@ -17,6 +17,8 @@ class CropAuto : public Auto
 public:
 	CropAuto(CropAutos *autos);
 
+	int operator==(Auto& that);
+	int identical(CropAuto *that);
 	void copy_from(Auto *that);
 	void copy_from(CropAuto *that);
 
