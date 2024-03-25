@@ -189,10 +189,15 @@ void Automation::equivalent_output(Automation *automation, ptstime *result)
 
 void Automation::copy_from(Automation *automation)
 {
+	Autos *cur;
+
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && automation->autos[i])
-			autos[i]->copy_from(automation->autos[i]);
+		if(automation->autos[i])
+		{
+			cur = get_autos(i);
+			cur->copy_from(automation->autos[i]);
+		}
 	}
 }
 
