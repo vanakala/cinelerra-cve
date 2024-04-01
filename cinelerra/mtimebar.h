@@ -12,11 +12,7 @@
 class MTimeBar : public TimeBar
 {
 public:
-	MTimeBar(MWindowGUI *gui,
-		int x, 
-		int y,
-		int w,
-		int h);
+	MTimeBar(MWindowGUI *gui, int x, int y, int w, int h);
 
 	void draw_time();
 	void draw_range();

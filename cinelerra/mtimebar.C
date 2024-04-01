@@ -23,11 +23,7 @@
 #include "zoombar.h"
 
 
-MTimeBar::MTimeBar(MWindowGUI *gui,
-	int x, 
-	int y,
-	int w,
-	int h)
+MTimeBar::MTimeBar(MWindowGUI *gui, int x, int y, int w, int h)
  : TimeBar(gui, x, y, w, h)
 {
 	this->gui = gui;
@@ -90,7 +86,7 @@ void MTimeBar::draw_time()
 	int min_pixels = (int)MAX(min_pixels1, min_pixels2);
 
 // Minimum seconds between text marks
-	double min_time = (double)min_pixels * 
+	double min_time = (double)min_pixels *
 		master_edl->local_session->zoom_time;
 
 // Get first text mark on or before window start
@@ -110,14 +106,12 @@ void MTimeBar::draw_time()
 			text_interval /= 2;
 			progression++;
 		}
-		else
-		if(progression == 1)
+		else if(progression == 1)
 		{
 			text_interval /= 2;
 			progression++;
 		}
-		else
-		if(progression == 2)
+		else if(progression == 2)
 		{
 			text_interval /= 2.5;
 			progression = 0;
@@ -128,44 +122,31 @@ void MTimeBar::draw_time()
 
 	if(1 >= min_time)
 		;
-	else
-	if(2 >= min_time)
+	else if(2 >= min_time)
 		text_interval = 2;
-	else
-	if(5 >= min_time)
+	else if(5 >= min_time)
 		text_interval = 5;
-	else
-	if(10 >= min_time)
+	else if(10 >= min_time)
 		text_interval = 10;
-	else
-	if(15 >= min_time)
+	else if(15 >= min_time)
 		text_interval = 15;
-	else
-	if(20 >= min_time)
+	else if(20 >= min_time)
 		text_interval = 20;
-	else
-	if(30 >= min_time)
+	else if(30 >= min_time)
 		text_interval = 30;
-	else
-	if(60 >= min_time)
+	else if(60 >= min_time)
 		text_interval = 60;
-	else
-	if(120 >= min_time)
+	else if(120 >= min_time)
 		text_interval = 120;
-	else
-	if(300 >= min_time)
+	else if(300 >= min_time)
 		text_interval = 300;
-	else
-	if(600 >= min_time)
+	else if(600 >= min_time)
 		text_interval = 600;
-	else
-	if(1200 >= min_time)
+	else if(1200 >= min_time)
 		text_interval = 1200;
-	else
-	if(1800 >= min_time)
+	else if(1800 >= min_time)
 		text_interval = 1800;
-	else
-	if(3600 >= min_time)
+	else if(3600 >= min_time)
 		text_interval = 3600;
 
 // Set text interval
@@ -176,15 +157,12 @@ void MTimeBar::draw_time()
 // One frame per text mark
 		if(frame_seconds >= min_time)
 			text_interval = frame_seconds;
-		else
-		if(frame_seconds * 2 >= min_time)
+		else if(frame_seconds * 2 >= min_time)
 			text_interval = frame_seconds * 2;
-		else
-		if(frame_seconds * 5 >= min_time)
+		else if(frame_seconds * 5 >= min_time)
 			text_interval = frame_seconds * 5;
 		else
 		{
-
 			for(int factor = 10, progression = 0; factor <= 100000; )
 			{
 				if(frame_seconds * factor >= min_time)
@@ -198,20 +176,17 @@ void MTimeBar::draw_time()
 					factor = (int)(factor * 2.5);
 					progression++;
 				}
-				else
-				if(progression == 1)
+				else if(progression == 1)
 				{
 					factor = (int)(factor * 2);
 					progression++;
 				}
-				else
-				if(progression == 2)
+				else if(progression == 2)
 				{
 					factor = (int)(factor * 2);
 					progression = 0;
 				}
 			}
-
 		}
 		break;
 
@@ -221,9 +196,7 @@ void MTimeBar::draw_time()
 
 // Sanity
 	while(text_interval < min_time)
-	{
 		text_interval *= 2;
-	}
 
 // Set tick interval
 	tick_interval = text_interval;
@@ -277,6 +250,7 @@ void MTimeBar::draw_time()
 void MTimeBar::draw_range()
 {
 	int x1 = 0, x2 = 0;
+
 	if(master_edl->playable_tracks_of(TRACK_VIDEO) &&
 		preferences_global->use_brender)
 	{
@@ -287,14 +261,10 @@ void MTimeBar::draw_range()
 			master_edl->local_session->view_start_pts) / time_per_pixel);
 	}
 
-	if(x2 > x1 && 
-		x1 < get_w() && 
-		x2 > 0)
+	if(x2 > x1 && x1 < get_w() && x2 > 0)
 	{
 		draw_top_background(get_parent(), 0, 0, x1, get_h());
-
 		draw_3segmenth(x1, 0, x2 - x1, theme_global->get_image("timebar_brender"));
-
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
 	else
@@ -311,21 +281,14 @@ void MTimeBar::select_label(ptstime position)
 
 	if(shift_down())
 	{
-		if(position > edl->local_session->get_selectionend(1) / 2 + 
-			edl->local_session->get_selectionstart(1) / 2)
-		{
+		if(position > edl->local_session->get_selectionend(1) / 2 +
+				edl->local_session->get_selectionstart(1) / 2)
 			edl->local_session->set_selectionend(position);
-		}
 		else
-		{
 			edl->local_session->set_selectionstart(position);
-		}
 	}
 	else
-	{
-		edl->local_session->set_selectionstart(position);
-		edl->local_session->set_selectionend(position);
-	}
+		edl->local_session->set_selection(position);
 
 // Que the CWindow
 	mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
