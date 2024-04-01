@@ -574,7 +574,6 @@ int Preferences::get_node_port(int number)
 
 void Preferences::calculate_processors()
 {
-/* Get processor count */
 	int result = 1;
 	FILE *proc;
 
@@ -605,5 +604,11 @@ void Preferences::calculate_processors()
 		}
 		fclose(proc);
 	}
-	max_threads = real_processors = result;
+	real_processors = result;
+	if(real_processors > 4)
+		max_threads = real_processors / 2;
+	else if(real_processors > 1)
+		max_threads = real_processors - 1;
+	else
+		max_threads = real_processors;
 }
