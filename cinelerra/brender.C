@@ -305,22 +305,34 @@ void BRenderThread::run()
 			if(new_command->command == BRenderCommand::BRENDER_RESTART)
 			{
 // Compare EDL's and get last equivalent position in new EDL
+				ptstime dur;
+
 				if(command && edl)
+				{
 					new_command->position =
 						new_command->edl->equivalent_output(edl);
+					dur = edl->duration();
+				}
 				else
-					new_command->position = 0;
-				stop();
-				brender->completion_lock->lock("BRenderThread::run 4");
+					dur = new_command->position = 0;
 
-				if(new_command->edl->playable_tracks_of(TRACK_VIDEO))
+				if(!dur || dur > new_command->position + EPSILON)
 				{
-					delete command;
-					command = new_command;
-					delete edl;
-					edl = new EDL(0);
-					edl->copy_all(command->edl);
-					start();
+					mainsession->brender_end = new_command->position;
+					stop();
+					brender->completion_lock->lock("BRenderThread::run 4");
+
+					if(new_command->edl->playable_tracks_of(TRACK_VIDEO))
+					{
+						delete command;
+						command = new_command;
+						if(!edl)
+							edl = new EDL(0);
+						else
+							edl->reset_instance();
+						edl->copy_all(command->edl);
+						start();
+					}
 				}
 				else
 				{
