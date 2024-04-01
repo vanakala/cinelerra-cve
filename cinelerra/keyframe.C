@@ -3,6 +3,7 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "bcsignals.h"
 #include "filexml.h"
 #include "keyframe.h"
 
@@ -127,9 +128,9 @@ int KeyFrame::identical(KeyFrame *src)
 		return 0;
 	if(this == src)
 		return 1;
-	if(data && this->data)
+	if(data && src->data)
 		return !strcmp(src->data, data);
-	return !data && !this->data;
+	return !data && !src->data;
 }
 
 int KeyFrame::operator==(Auto &that)
