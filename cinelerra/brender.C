@@ -169,6 +169,7 @@ void BRender::allocate_map(ptstime brender_start, ptstime start, ptstime end)
 void BRender::set_video_map(ptstime start, ptstime end)
 {
 	int update_gui = 0;
+
 	map_lock->lock("BRender::set_video_map");
 
 	if(start < 0)
@@ -180,9 +181,9 @@ void BRender::set_video_map(ptstime start, ptstime end)
 	videomap.set_map(start, end, 1);
 
 // Maintain last contiguous here to reduce search time
-	if(videomap.last->pts > mainsession->brender_end)
+	if(end > mainsession->brender_end)
 	{
-		mainsession->brender_end = videomap.last->pts;
+		mainsession->brender_end = end;
 
 		if(timer->get_difference() > 1000)
 		{
