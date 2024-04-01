@@ -12,6 +12,7 @@ KeyFrames::KeyFrames(EDL *edl, Track *track, Plugin *plugin)
  : Autos(edl, track)
 {
 	this->plugin = plugin;
+	type = AUTOMATION_TYPE_KEYFRAME;
 }
 
 Auto* KeyFrames::new_auto()
