@@ -28,7 +28,7 @@ public:
 	~Plugin();
 
 // Called by Edits::equivalent_output
-	void equivalent_output(Plugin *plugin, ptstime *result);
+	ptstime equivalent_output(Plugin *plugin, ptstime result);
 
 	int is_synthesis();
 

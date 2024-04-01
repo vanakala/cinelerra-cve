@@ -393,11 +393,9 @@ int EDL::equivalent(ptstime position1, ptstime position2)
 		return 0;
 }
 
-double EDL::equivalent_output(EDL *edl)
+ptstime EDL::equivalent_output(EDL *edl)
 {
-	double result = -1;
-	tracks->equivalent_output(edl->tracks, &result);
-	return result;
+	return tracks->equivalent_output(edl->tracks, tracks->duration());
 }
 
 void EDL::set_project_path(const char *path)

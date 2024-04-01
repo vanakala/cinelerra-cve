@@ -84,9 +84,8 @@ public:
 // The new EDL is this and the old EDL is the argument.
 // Return the number of seconds from the beginning of this which are 
 // equivalent to the argument.
-// If they're completely equivalent, -1 is returned;
 // This is used by BRender.
-	double equivalent_output(EDL *edl);
+	ptstime equivalent_output(EDL *edl);
 
 // Set project path for saving a backup
 	void set_project_path(const char *path);

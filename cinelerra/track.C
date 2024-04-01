@@ -97,38 +97,31 @@ int Track::get_id()
 	return id;
 }
 
-void Track::equivalent_output(Track *track, ptstime *result)
+ptstime Track::equivalent_output(Track *track, ptstime pts)
 {
 	if(data_type != track->data_type ||
 			track_w != track->track_w ||
 			track_h != track->track_h ||
 			play != track->play ||
 			!EQUIV(nudge, track->nudge))
-		*result = 0;
+		return 0;
 
-// Convert result to track units
-	ptstime result2 = -1;
-	automation->equivalent_output(track->automation, &result2);
-	edits->equivalent_output(track->edits, &result2);
+	pts = automation->equivalent_output(track->automation, pts);
+	pts = edits->equivalent_output(track->edits, pts);
 
 	int num_plugins = MIN(plugins.total, track->plugins.total);
 // Test existing plugin sets
 	for(int i = 0; i < num_plugins; i++)
-	{
-		plugins.values[i]->equivalent_output(
-			track->plugins.values[i],
-			&result2);
-	}
-
+		pts = plugins.values[i]->equivalent_output(
+			track->plugins.values[i], pts);
 // New EDL has more plugin sets.  Get starting plugin in new plugin sets
 	for(int i = num_plugins; i < plugins.total; i++)
 	{
 		Plugin *current = plugins.values[i];
+
 		if(current)
-		{
-			if(result2 < 0 || current->get_pts() < result2)
-				result2 = current->get_pts();
-		}
+			if(current->get_pts() < pts)
+				pts = current->get_pts();
 	}
 
 // New EDL has fewer plugin sets.  Get starting plugin in old plugin set
@@ -137,18 +130,11 @@ void Track::equivalent_output(Track *track, ptstime *result)
 		Plugin *current = track->plugins.values[i];
 		if(current)
 		{
-			if(result2 < 0 || current->get_pts() < result2)
-				result2 = current->get_pts();
+			if(current->get_pts() < pts)
+				pts = current->get_pts();
 		}
 	}
-
-// Number of plugin sets differs but somehow we didn't find the start of the
-// change.  Assume 0
-	if(track->plugins.total != plugins.total && result2 < 0)
-		result2 = 0;
-
-	if(result2 >= 0 && (*result < 0 || result2 < *result))
-		*result = result2;
+	return pts;
 }
 
 int Track::is_synthesis(ptstime position)

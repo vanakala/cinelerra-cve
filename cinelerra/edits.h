@@ -19,7 +19,7 @@ class Edits : public List<Edit>
 public:
 	Edits(EDL *edl, Track *track);
 
-	void equivalent_output(Edits *edits, ptstime *result);
+	ptstime equivalent_output(Edits *edits, ptstime result);
 	void copy_from(Edits *edits);
 	Edits& operator=(Edits& edits);
 // Editing

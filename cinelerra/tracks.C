@@ -65,12 +65,10 @@ void Tracks::reset_renderers()
 		current->reset_renderers();
 }
 
-void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
+ptstime Tracks::equivalent_output(Tracks *tracks, ptstime pts)
 {
 	if(playable_tracks_of(TRACK_VIDEO) != tracks->playable_tracks_of(TRACK_VIDEO))
-	{
-		*result = 0;
-	}
+		return 0;
 	else
 	{
 		Track *current = first;
@@ -86,21 +84,18 @@ void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 
 // One doesn't exist but the other does
 			if((!current && that_current) ||
-				(current && !that_current))
-			{
-				*result = 0;
-				break;
-			}
-			else
+					(current && !that_current))
+				return 0;
 // Both exist
 			if(current && that_current)
 			{
-				current->equivalent_output(that_current, result);
+				pts = current->equivalent_output(that_current, pts);
 				current = NEXT;
 				that_current = that_current->next;
 			}
 		}
 	}
+	return pts;
 }
 
 void Tracks::get_automation_extents(double *min,

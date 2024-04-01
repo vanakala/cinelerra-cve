@@ -43,50 +43,59 @@ Auto* Autos::append_auto()
 	return append(new_auto());
 }
 
-void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *result)
+ptstime Autos::equivalent_output(Autos *autos, ptstime result)
 {
+	ptstime pos1, pos2;
+
 	for(Auto *current = first, *that_current = autos->first;
 		current || that_current;
-		current = NEXT,
-		that_current = that_current->next)
+		current = NEXT, that_current = that_current->next)
 	{
-// Total differs
 		if(current && !that_current)
 		{
-			ptstime position1 = (autos->last ? autos->last->pos_time : startproject);
-			ptstime position2 = current->pos_time;
+			pos1 = (autos->last ? autos->last->pos_time : 0);
+			if(pos1 > current->pos_time)
+				pos1 = current->pos_time;
 
-			if(*result < 0 || *result > MIN(position1, position2))
-				*result = MIN(position1, position2);
+			if(result > pos1)
+				result = pos1;
 			break;
 		}
-		else
-		if(!current && that_current)
+		else if(!current && that_current)
 		{
-			ptstime position1 = (last ? last->pos_time : startproject);
-			ptstime position2 = that_current->pos_time;
+			pos1 = (last ? last->pos_time : 0);
+			if(pos1 > that_current->pos_time)
+				pos1 = that_current->pos_time;
 
-			if(*result < 0 || *result > MIN(position1, position2))
-				*result = MIN(position1, position2);
+			if(result > pos1)
+				result = pos1;
 			break;
 		}
-		else
-// Keyframes differ
-		if(!(*current == *that_current) ||
+		else if(!(*current == *that_current) ||
 			!PTSEQU(current->pos_time, that_current->pos_time))
 		{
-			ptstime position1 = (current->previous ?
-				current->previous->pos_time :
-				startproject);
-			ptstime position2 = (that_current->previous ?
-				that_current->previous->pos_time :
-				startproject);
+			switch(get_type())
+			{
+			case AUTOMATION_TYPE_INT:
+				pos1 = current->pos_time;
+				pos2 = that_current->pos_time;
+				break;
+			default:
+				pos1 = (current->previous ?
+					current->previous->pos_time : 0);
+				pos2 = (that_current->previous ?
+					that_current->previous->pos_time : 0);
+				break;
+			}
+			if(pos1 > pos2)
+				pos1 = pos2;
 
-			if(*result < 0 || *result > MIN(position1, position2))
-				*result = MIN(position1, position2);
+			if(result > pos1)
+				result = pos1;
 			break;
 		}
 	}
+	return result;
 }
 
 void Autos::copy_from(Autos *autos)

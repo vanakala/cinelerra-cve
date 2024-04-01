@@ -33,8 +33,9 @@ Edit* Edits::create_edit()
 	return new Edit(edl, this);
 }
 
-void Edits::equivalent_output(Edits *edits, ptstime *result)
+ptstime Edits::equivalent_output(Edits *edits, ptstime result)
 {
+	ptstime pos1, pos2;
 // For the case of plugin sets, a new plugin set may be created with
 // plugins only starting after 0.  We only want to restart brender at
 // the first plugin in this case.
@@ -45,26 +46,30 @@ void Edits::equivalent_output(Edits *edits, ptstime *result)
 	{
 		if(!current && that_current)
 		{
-			ptstime position1 = length();
-			ptstime position2 = that_current->get_pts();
-			if(*result < 0 || *result > MIN(position1, position2))
-				*result = MIN(position1, position2);
+			pos1 = length();
+			pos2 = that_current->get_pts();
+			pos1 = MIN(pos1, pos2);
+
+			if(result > pos1)
+				result = pos1;
+			break;
+		}
+		else if(current && !that_current)
+		{
+			pos1 = edits->length();
+			pos2 = current->get_pts();
+			pos1 = MIN(pos1, pos2);
+
+			if(result > pos1)
+				result = pos1;
 			break;
 		}
 		else
-		if(current && !that_current)
 		{
-			ptstime position1 = edits->length();
-			ptstime position2 = current->get_pts();
-			if(*result < 0 || *result > MIN(position1, position2))
-				*result = MIN(position1, position2);
-			break;
-		}
-		else
-		{
-			current->equivalent_output(that_current, result);
+			result = current->equivalent_output(that_current, result);
 		}
 	}
+	return result;
 }
 
 void Edits::copy_from(Edits *edits)

@@ -162,32 +162,38 @@ void Plugin::remove_keyframes_after(ptstime pts)
 	keyframes->clear_after(pts);
 }
 
-void Plugin::equivalent_output(Plugin *plugin, ptstime *result)
+ptstime Plugin::equivalent_output(Plugin *plugin, ptstime result)
 {
 // End of plugin changed
 	ptstime thisend = pts + length;
 	ptstime plugend = plugin->end_pts();
+
 	if(!PTSEQU(thisend, plugend))
 	{
-		if(*result < 0 || thisend < *result)
-			*result = thisend;
+		if(thisend < result)
+			result = thisend;
 	}
 
 // Start of plugin changed
-	if(!PTSEQU(get_pts(), plugin->get_pts()) ||
+	if(!PTSEQU(pts, plugin->pts) ||
 		plugin_type != plugin->plugin_type ||
 		on != plugin->on ||
 		shared_track != plugin->shared_track ||
 		shared_plugin != plugin->shared_plugin ||
 		plugin_server != plugin->plugin_server)
 	{
-		if(*result < 0 || get_pts() < *result)
-			*result = get_pts();
+		if(pts < result)
+			result = pts;
+		if(plugin->pts < result)
+			result = plugin->pts;
 	}
-
-// Test keyframes
-	keyframes->equivalent_output(plugin->keyframes, 
-		pts, result);
+	else
+	{
+		result = keyframes->equivalent_output(plugin->keyframes, result);
+		if(result < pts)
+			result = get_pts();
+	}
+	return result;
 }
 
 int Plugin::is_synthesis()

@@ -40,7 +40,7 @@ public:
 	void init_shared_pointers();
 	virtual void save_header(FileXML *file) {};
 	virtual void set_default_title() {};
-	void equivalent_output(Track *track, ptstime *result);
+	ptstime equivalent_output(Track *track, ptstime pts);
 
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);

@@ -72,7 +72,7 @@ public:
 	Auto *get_prev_auto(ptstime pts, int autoidx);
 // Returns auto, creates autos if needed
 	Auto *get_auto_for_editing(ptstime pos, int autoidx);
-	void equivalent_output(Automation *automation, ptstime *result);
+	ptstime equivalent_output(Automation *automation, ptstime result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
 	int load(FileXML *file, int operation = PASTE_ALL);

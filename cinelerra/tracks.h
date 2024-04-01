@@ -40,7 +40,7 @@ public:
 		ptstime end,
 		int autogrouptype);
 
-	void equivalent_output(Tracks *tracks, ptstime *result);
+	ptstime equivalent_output(Tracks *tracks, ptstime pts);
 	void move_track_up(Track *track);        // move recordable tracks up
 	void move_track_down(Track *track);      // move recordable tracks down
 	void move_tracks_up();                    // move recordable tracks up

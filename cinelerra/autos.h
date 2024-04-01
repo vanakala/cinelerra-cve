@@ -21,7 +21,7 @@ public:
 	Autos(EDL *edl, Track *track);
 	~Autos();
 
-	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
+	ptstime equivalent_output(Autos *autos, ptstime result);
 	void copy_from(Autos *autos);
 	virtual void copy_values(Autos *autos) {};
 	virtual Auto* new_auto() { return 0; };

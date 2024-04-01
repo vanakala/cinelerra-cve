@@ -178,13 +178,20 @@ Automation& Automation::operator=(Automation& automation)
 	return *this;
 }
 
-void Automation::equivalent_output(Automation *automation, ptstime *result)
+ptstime Automation::equivalent_output(Automation *automation, ptstime result)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(autos[i] && automation->autos[i])
-			autos[i]->equivalent_output(automation->autos[i], 0, result);
+			result = autos[i]->equivalent_output(automation->autos[i], result);
+		else if((autos[i] && !automation->autos[i]) ||
+				(!autos[i] && automation->autos[i]))
+		{
+			result = 0;
+			break;
+		}
 	}
+	return result;
 }
 
 void Automation::copy_from(Automation *automation)

@@ -162,7 +162,7 @@ void Edit::copy_from(Edit *edit)
 	this->channel = edit->channel;
 }
 
-void Edit::equivalent_output(Edit *edit, ptstime *result)
+ptstime Edit::equivalent_output(Edit *edit, ptstime result)
 {
 // End of edit changed
 	ptstime curend = end_pts();
@@ -171,8 +171,9 @@ void Edit::equivalent_output(Edit *edit, ptstime *result)
 	if(!PTSEQU(curend, edend))
 	{
 		ptstime new_length = MIN(curend, edend);
-		if(*result < 0 || new_length < *result) 
-			*result = new_length;
+
+		if(new_length < result)
+			result = new_length;
 	}
 
 // Start of edit changed
@@ -196,9 +197,10 @@ void Edit::equivalent_output(Edit *edit, ptstime *result)
 			!asset->equivalent(*edit->asset, STRDSC_ALLTYP))
 		)
 	{
-		if(*result < 0 || project_pts < *result)
-			*result = project_pts;
+		if(project_pts < result)
+			result = project_pts;
 	}
+	return result;
 }
 
 
