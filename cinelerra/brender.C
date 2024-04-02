@@ -8,7 +8,6 @@
 #include "brender.h"
 #include "clip.h"
 #include "condition.h"
-#include "edl.h"
 #include "edlsession.h"
 #include "language.h"
 #include "mainsession.h"
@@ -219,7 +218,6 @@ BRenderThread::BRenderThread(BRender *brender)
 	farm_server = 0;
 	farm_result = 0;
 	preferences = 0;
-	edl = 0;
 }
 
 BRenderThread::~BRenderThread()
@@ -234,7 +232,6 @@ BRenderThread::~BRenderThread()
 	delete command;
 	delete command_queue;
 	delete preferences;
-	delete edl;
 }
 
 void BRenderThread::initialize()
@@ -307,11 +304,11 @@ void BRenderThread::run()
 // Compare EDL's and get last equivalent position in new EDL
 				ptstime dur;
 
-				if(command && edl)
+				if(command)
 				{
 					new_command->position =
-						new_command->edl->equivalent_output(edl);
-					dur = edl->duration();
+						new_command->edl->equivalent_output(&edl);
+					dur = edl.duration();
 				}
 				else
 					dur = new_command->position = 0;
@@ -326,11 +323,8 @@ void BRenderThread::run()
 					{
 						delete command;
 						command = new_command;
-						if(!edl)
-							edl = new EDL(0);
-						else
-							edl->reset_instance();
-						edl->copy_all(command->edl);
+						edl.reset_instance();
+						edl.copy_all(command->edl);
 						start();
 					}
 				}

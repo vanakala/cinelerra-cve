@@ -47,7 +47,7 @@
 #include "brender.inc"
 #include "datatype.h"
 #include "condition.inc"
-#include "edl.inc"
+#include "edl.h"
 #include "linklist.h"
 #include "maplist.h"
 #include "mutex.inc"
@@ -147,7 +147,7 @@ public:
 // Copy of preferences with modified render farm.
 	Preferences *preferences;
 // Cpoy of current edl
-	EDL *edl;
+	EDL edl;
 // Render farm polls these.
 	int farm_result;
 	double fps_result;
