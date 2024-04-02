@@ -40,7 +40,7 @@
 class EDL
 {
 public:
-	EDL(int is_master);
+	EDL(int is_master = 0);
 	~EDL();
 
 	void reset_instance();
