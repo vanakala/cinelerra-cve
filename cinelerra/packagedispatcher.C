@@ -64,6 +64,8 @@ int PackageDispatcher::create_packages(EDL *edl,
 	this->default_asset = default_asset;
 	this->total_start = total_start;
 	this->total_end = total_end;
+	output_w = default_asset->streams[0].width;
+	output_h = default_asset->streams[0].height;
 
 	nodes = preferences->get_enabled_nodes();
 	audio_pts = total_start;
@@ -300,6 +302,8 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			video_pts = result->video_end_pts;
 			result->audio_do = 0;
 			result->video_do = 1;
+			result->width = output_w;
+			result->height = output_h;
 
 // The frame numbers are read from the vframe objects themselves.
 			Render::create_filename(result->path,

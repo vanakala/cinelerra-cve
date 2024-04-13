@@ -50,6 +50,8 @@ private:
 	ptstime total_end;
 	ptstime total_len;
 	Asset *default_asset;
+	int output_w;
+	int output_h;
 	int current_number;    // The number being injected into the filename.
 	int number_start;      // Character in the filename path at which the number begins
 	int total_digits;      // Total number of digits including padding the user specified.
