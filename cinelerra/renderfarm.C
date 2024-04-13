@@ -495,6 +495,8 @@ void RenderFarmServerThread::send_package(const unsigned char *buffer)
 		STORE_INT32(use_brender);
 		STORE_INT32(package->audio_do);
 		STORE_INT32(package->video_do);
+		STORE_INT32(package->width);
+		STORE_INT32(package->height);
 
 		int len = i;
 		i = 0;

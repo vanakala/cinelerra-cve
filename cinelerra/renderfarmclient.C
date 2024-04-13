@@ -467,6 +467,10 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	package->audio_do = READ_INT32(data_ptr);
 	data_ptr += 4;
 	package->video_do = READ_INT32(data_ptr);
+	data_ptr += 4;
+	package->width = READ_INT32(data_ptr);
+	data_ptr += 4;
+	package->height = READ_INT32(data_ptr);
 	delete [] data;
 	unlock();
 	return 0;
@@ -560,6 +564,12 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	while(1)
 	{
 		result |= read_package(socket_fd, package);
+
+		if(package->use_brender)
+		{
+			default_asset->streams[0].width = package->width;
+			default_asset->streams[0].height = package->height;
+		}
 // Finished list
 		if(result)
 		{
