@@ -43,6 +43,8 @@ RenderPackage::RenderPackage()
 	use_brender = 0;
 	audio_do = 0;
 	video_do = 0;
+	width = 0;
+	height = 0;
 }
 
 void RenderPackage::dump(int indent)
@@ -55,8 +57,8 @@ void RenderPackage::dump(int indent)
 		printf("%*spath is empty\n", indent, "");
 	printf("%*saudio start %.3f, end %.3f  video start %.3f end %.3f\n", indent, "",
 		audio_start_pts, audio_end_pts, video_start_pts, video_end_pts);
-	printf("%*suse_brender %d audio_do %d video_do %d count %d\n", indent, "",
-		use_brender, audio_do, video_do, count);
+	printf("%*suse_brender %d audio_do %d video_do %d [%dx%d] count %d\n", indent, "",
+		use_brender, audio_do, video_do, width, height, count);
 }
 
 
@@ -69,6 +71,7 @@ PackageRenderer::PackageRenderer()
 	pkg_error[0] = 0;
 	memset(audio_output, 0, sizeof(audio_output));
 	memset(video_output, 0, sizeof(video_output));
+	memset(brender_output, 0, sizeof(brender_output));
 }
 
 PackageRenderer::~PackageRenderer()
@@ -80,6 +83,8 @@ PackageRenderer::~PackageRenderer()
 			audio_frames.release_frame(audio_output[i]);
 		if(video_output[i])
 			BC_Resources::tmpframes.release_frame(video_output[i]);
+		if(brender_output[i])
+			BC_Resources::tmpframes.release_frame(brender_output[i]);
 	}
 }
 
@@ -268,8 +273,8 @@ int PackageRenderer::do_video()
 			{
 				if(!(frame = video_output[i]))
 					frame = BC_Resources::tmpframes.get_tmpframe(
-						default_asset->streams[stream].width,
-						default_asset->streams[stream].height,
+						edlsession->output_w,
+						edlsession->output_h,
 						edlsession->color_model);
 				frame->set_pts(video_pts);
 				video_output[i] = frame =
@@ -298,9 +303,27 @@ int PackageRenderer::do_video()
 // Set background rendering parameters
 // Used by background render and render farm.
 				brender_base = video_pts;
-
-				if(result = file->write_frames(video_output, layers))
-					return result;
+				if(package->use_brender &&
+					package->width != edlsession->output_w &&
+					package->height != edlsession->output_h)
+				{
+// Scale background rendering to composer size
+					for(int i = 0; i < layers; i++)
+					{
+						if(!(frame = brender_output[i]))
+							brender_output[i] = frame = BC_Resources::tmpframes.get_tmpframe(
+								default_asset->streams[stream].width,
+								default_asset->streams[stream].height,
+								edlsession->color_model);
+						frame->transfer_from(video_output[i]);
+						frame->copy_pts(video_output[i]);
+					}
+					if(result = file->write_frames(brender_output, layers))
+						return result;
+				}
+				else
+					if(result = file->write_frames(video_output, layers))
+						return result;
 // Update the brender map after writing the files.
 				if(package->use_brender)
 					set_video_map(brender_base, video_pts + duration);

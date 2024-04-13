@@ -45,6 +45,8 @@ public:
 	int use_brender;
 	int video_do;
 	int audio_do;
+	int width;
+	int height;
 };
 
 
@@ -93,6 +95,7 @@ public:
 	File *file;
 	AFrame *audio_output[MAX_CHANNELS];
 	VFrame *video_output[MAX_CHANNELS];
+	VFrame *brender_output[MAX_CHANNELS];
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
 	AudioOutConfig *aconfig;
