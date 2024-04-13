@@ -42,6 +42,7 @@ public:
 	void lock_canvas(const char *location);
 	void unlock_canvas();
 	int is_locked();
+	void get_view_size(int *w, int *h);
 
 	void set_cursor(int cursor);
 // Start video playback

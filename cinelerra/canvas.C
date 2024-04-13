@@ -238,6 +238,16 @@ void Canvas::get_zooms(double &zoom_x, double &zoom_y,
 	}
 }
 
+void Canvas::get_view_size(int *w, int *h)
+{
+	double conformed_w, conformed_h;
+	double zoom_x, zoom_y;
+
+	get_zooms(zoom_x, zoom_y, conformed_w, conformed_h);
+	*w = round(get_output_w() * zoom_x);
+	*h = round(get_output_h() * zoom_y);
+}
+
 // Convert a coordinate on the canvas to a coordinate on the output
 void Canvas::canvas_to_output(double &x, double &y)
 {

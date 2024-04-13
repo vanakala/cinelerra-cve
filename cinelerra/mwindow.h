@@ -424,6 +424,7 @@ public:
 // see what frame is background rendered.
 	int brender_available(ptstime position);
 	void set_brender_start();
+	void cwindow_view_size(int *view_w, int *view_h);
 
 	static void init_defaults(BC_Hash* &defaults, 
 		const char *config_path);

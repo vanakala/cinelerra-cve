@@ -492,6 +492,11 @@ void MWindow::set_brender_start()
 	draw_canvas_overlays();
 }
 
+void MWindow::cwindow_view_size(int *view_w, int *view_h)
+{
+	cwindow->gui->canvas->get_view_size(view_w, view_h);
+}
+
 void MWindow::delete_guideframe(GuideFrame **gframe)
 {
 	if(gframe)
