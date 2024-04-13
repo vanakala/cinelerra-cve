@@ -116,6 +116,7 @@ public:
 	};
 
 	int command;
+	int width, height;
 
 // The location of the last change.
 	double position;

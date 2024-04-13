@@ -303,12 +303,23 @@ void BRenderThread::run()
 			{
 // Compare EDL's and get last equivalent position in new EDL
 				ptstime dur;
+				mwindow_global->cwindow_view_size(&new_command->width,
+					&new_command->height);
+				if(new_command->width > edlsession->output_w ||
+					new_command->height > edlsession->output_h)
+				{
+					new_command->width = edlsession->output_w;
+					new_command->height = edlsession->output_h;
+				}
 
 				if(command)
 				{
 					new_command->position =
 						new_command->edl->equivalent_output(&edl);
 					dur = edl.duration();
+					if(new_command->width != command->width ||
+							new_command->height != command->height)
+						new_command->position = 0;
 				}
 				else
 					dur = new_command->position = 0;
@@ -325,6 +336,7 @@ void BRenderThread::run()
 						command = new_command;
 						edl.reset_instance();
 						edl.copy_all(command->edl);
+						command->edl = &edl;
 						start();
 					}
 				}
@@ -394,6 +406,9 @@ void BRenderThread::start()
 		brender->allocate_map(brender_start, start_pts, end_pts);
 
 		brender->brender_asset.strategy = RENDER_BRENDER;
+		brender->brender_asset.streams[0].width = command->width;
+		brender->brender_asset.streams[0].height = command->height;
+
 		result = packages->create_packages(command->edl,
 			preferences,
 			&brender->brender_asset,
