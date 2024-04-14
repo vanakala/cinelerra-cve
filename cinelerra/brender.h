@@ -130,7 +130,6 @@ public:
 	BRenderThread(BRender *brender);
 	~BRenderThread();
 
-	int is_done(int do_lock);
 	void send_command(BRenderCommand *command);
 	void run();
 	void stop();

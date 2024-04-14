@@ -254,19 +254,9 @@ void BRenderThread::send_command(BRenderCommand *command)
 	thread_lock->unlock();
 }
 
-int BRenderThread::is_done(int do_lock)
-{
-	if(do_lock)
-		thread_lock->lock("BRenderThread::is_done");
-	int result = done;
-	if(do_lock)
-		thread_lock->unlock();
-	return result;
-}
-
 void BRenderThread::run()
 {
-	while(!is_done(1))
+	while(!done)
 	{
 		BRenderCommand *new_command = 0;
 		thread_lock->lock("BRenderThread::run 1");
@@ -280,7 +270,7 @@ void BRenderThread::run()
 		}
 
 // Pull the command off
-		if(!is_done(0))
+		if(!done)
 		{
 			new_command = command_queue;
 			command_queue = 0;
