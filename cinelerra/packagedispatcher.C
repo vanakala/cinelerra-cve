@@ -88,17 +88,8 @@ int PackageDispatcher::create_packages(EDL *edl,
 			6);
 
 // Master node only
-		if(preferences->renderfarm_nodes.total == 1)
-		{
-			package_len = total_len;
-			min_package_len = total_len;
-		}
-		else
-		{
-			package_len = preferences->brender_fragment /
-				edlsession->frame_rate;
-			min_package_len = 1.0 / edlsession->frame_rate;
-		}
+		package_len = total_len;
+		min_package_len = total_len;
 	}
 	else
 	if(!(default_asset->strategy & RENDER_FILE_PER_LABEL))
@@ -274,20 +265,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			double scaled_len;
 
 // No load balancing data exists
-			if(EQUIV(frames_per_second, 0) || 
-				EQUIV(avg_frames_per_second, 0))
-			{
-				scaled_len = package_len;
-			}
-			else
-// Load balancing data exists
-			{
-				scaled_len = package_len * 
-					frames_per_second / 
-					avg_frames_per_second;
-			}
-
-			scaled_len = MAX(scaled_len, min_package_len);
+			scaled_len = package_len;
 
 // Always an image file sequence
 			int streamix = default_asset->get_stream_ix(STRDSC_VIDEO);
