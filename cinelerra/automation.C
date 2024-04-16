@@ -57,10 +57,10 @@ struct automation_def Automation::automation_tbl[] =
 	{ N_("Projector Z"), "PROJECTOR_Z", "SHOW_PROJECTOR_Z",
 		0, AUTOGROUPTYPE_ZOOM, AUTOMATION_TYPE_FLOAT,
 		BLUE, DRAG_PROJECTOR_Z, DRAG_PROJECTOR_Z, SUPPORTS_VIDEO, 1 },
-	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
+	{ N_("AFade"), "FADEAUTOS", "SHOW_FADE",
 		1, AUTOGROUPTYPE_AUDIO_FADE, AUTOMATION_TYPE_FLOAT,
 		WHITE, DRAG_FADE, DRAG_FADE, SUPPORTS_AUDIO, 0 },
-	{ N_("Fade"), "FADEAUTOS", "SHOW_FADE",
+	{ N_("VFade"), "FADEAUTOS", "SHOW_FADE",
 		1, AUTOGROUPTYPE_VIDEO_FADE, AUTOMATION_TYPE_FLOAT,
 		WHITE, DRAG_FADE, DRAG_FADE, SUPPORTS_VIDEO, 100 },
 	{ N_("Pan"), "PANAUTOS", "SHOW_PAN",
@@ -229,6 +229,14 @@ int Automation::load(FileXML *file, int operation)
 			case AUTOMATION_CAMERA_Y:
 			case AUTOMATION_PROJECTOR_Y:
 				get_autos(i)->set_compat_value(track->track_h);
+				break;
+			case AUTOMATION_AFADE:
+				if(track->data_type == TRACK_VIDEO)
+					i = AUTOMATION_VFADE;
+				break;
+			case AUTOMATION_VFADE:
+				if(track->data_type == TRACK_AUDIO)
+					i = AUTOMATION_AFADE;
 				break;
 			}
 
