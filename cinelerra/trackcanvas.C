@@ -2245,7 +2245,7 @@ int TrackCanvas::draw_defaultline(int center_pixel, int draw,
 			automation_min;
 
 		dblvalue = track->automation->get_floatvalue(0, autoidx);
-		y = center_pixel + (int)round(((value - automation_min) /
+		y = center_pixel + (int)round(((dblvalue - automation_min) /
 			automation_range - 0.5) * -yscale);
 	}
 	else
