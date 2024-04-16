@@ -449,7 +449,7 @@ void FloatAuto::load(FileXML *file)
 	control_in_value *= 2.0;
 	control_out_value *= 2.0;
 
-	if(compat_value && (value < -1.0 || value > 1.0))
+	if(compat_value > 1.0 && (value < -1.0 || value > 1.0))
 	{
 		value /= compat_value;
 		control_in_value /= compat_value;
