@@ -493,9 +493,9 @@ VFrame *VTrackRender::execute_plugin(Plugin *plugin, VFrame *frame, Edit *edit)
 					plugin->plugin_server->open_plugin(plugin, this);
 				plugin->client->set_renderer(this);
 
-				videorender->pass_vframes(plugin, frame, this);
+				videorender->pass_vframes(plugin, frame, this, edit);
 				plugin->client->process_buffer(vframes.values);
-				frame = videorender->take_vframes(plugin, this);
+				frame = videorender->take_vframes(plugin, this, edit);
 
 				videorender->shared_done(plugin);
 			}

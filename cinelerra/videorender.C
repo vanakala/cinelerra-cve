@@ -259,9 +259,10 @@ void VideoRender::flash_output()
 }
 
 void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
-	VTrackRender *current_renderer)
+	VTrackRender *current_renderer, Edit *edit)
 {
 	VFrame *vframe;
+	ptstime pts = current_frame->get_pts();
 
 	current_renderer->vframes.remove_all();
 	current_renderer->vframes.append(current_frame);
@@ -269,7 +270,8 @@ void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_VIDEO)
+		if(track->data_type != TRACK_VIDEO ||
+				!track->renderer->is_playable(pts, edit))
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
@@ -284,14 +286,16 @@ void VideoRender::pass_vframes(Plugin *plugin, VFrame *current_frame,
 	plugin->client->plugin_init(current_renderer->vframes.total);
 }
 
-VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer)
+VFrame *VideoRender::take_vframes(Plugin *plugin, VTrackRender *current_renderer, Edit *edit)
 {
 	int k = 1;
 	VFrame *current_frame = current_renderer->vframes.values[0];
+	ptstime pts = current_frame->get_pts();
 
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_VIDEO)
+		if(track->data_type != TRACK_VIDEO ||
+				!track->renderer->is_playable(pts, edit))
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{

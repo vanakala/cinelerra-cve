@@ -26,8 +26,9 @@ public:
 	void run();
 	VFrame *process_buffer(VFrame *buffer);
 	void pass_vframes(Plugin *plugin, VFrame *current_frame,
-		VTrackRender *current_renderer);
-	VFrame *take_vframes(Plugin *plugin, VTrackRender *current_renderer);
+		VTrackRender *current_renderer, Edit *edit);
+	VFrame *take_vframes(Plugin *plugin, VTrackRender *current_renderer,
+		Edit *edit);
 	void release_asset(Asset *asset);
 	void reset_brender();
 

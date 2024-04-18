@@ -525,9 +525,10 @@ AFrame *AudioRender::get_file_frame(ptstime pts, ptstime duration,
 }
 
 void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
-	ATrackRender *current_renderer)
+	ATrackRender *current_renderer, Edit *edit)
 {
 	AFrame *aframe;
+	ptstime pts = current_frame->get_pts();
 
 	current_renderer->aframes.remove_all();
 	current_renderer->aframes.append(current_frame);
@@ -535,7 +536,8 @@ void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_AUDIO)
+		if(track->data_type != TRACK_AUDIO ||
+				!track->renderer->is_playable(pts, edit))
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
@@ -551,14 +553,17 @@ void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 	plugin->client->plugin_init(current_renderer->aframes.total);
 }
 
-AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer)
+AFrame *AudioRender::take_aframes(Plugin *plugin, ATrackRender *current_renderer,
+	Edit *edit)
 {
 	int k = 1;
 	AFrame *current_frame = current_renderer->aframes.values[0];
+	ptstime pts = current_frame->get_pts();
 
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_AUDIO)
+		if(track->data_type != TRACK_AUDIO ||
+				!track->renderer->is_playable(pts, edit))
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{

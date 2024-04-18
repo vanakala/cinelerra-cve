@@ -323,9 +323,9 @@ AFrame *ATrackRender::execute_plugin(Plugin *plugin, AFrame *aframe, Edit *edit)
 					plugin->plugin_server->open_plugin(plugin, this);
 				plugin->client->set_renderer(this);
 
-				arender->pass_aframes(plugin, aframe, this);
+				arender->pass_aframes(plugin, aframe, this, edit);
 				plugin->client->process_buffer(aframes.values);
-				aframe = arender->take_aframes(plugin, this);
+				aframe = arender->take_aframes(plugin, this, edit);
 
 				arender->shared_done(plugin);
 			}

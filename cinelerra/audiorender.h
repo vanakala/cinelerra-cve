@@ -48,8 +48,9 @@ public:
 	AFrame *get_file_frame(ptstime pts, ptstime duration,
 		Edit *edit, int filenum);
 	void pass_aframes(Plugin *plugin, AFrame *current_frame,
-		ATrackRender *current_renderer);
-	AFrame *take_aframes(Plugin *plugin, ATrackRender *current_renderer);
+		ATrackRender *current_renderer, Edit *edit);
+	AFrame *take_aframes(Plugin *plugin, ATrackRender *current_renderer,
+		Edit *edit);
 	void release_asset(Asset *asset);
 
 private:
