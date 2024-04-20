@@ -222,6 +222,7 @@ void VideoRender::process_frame(ptstime pts)
 		if(track->data_type != TRACK_VIDEO)
 			continue;
 		frame = ((VTrackRender *)track->renderer)->render_projector(frame);
+		track->renderer->next_plugin = 0;
 	}
 }
 

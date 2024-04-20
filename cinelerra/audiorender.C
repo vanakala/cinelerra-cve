@@ -407,6 +407,7 @@ void AudioRender::process_frames()
 		if(track->data_type != TRACK_AUDIO)
 			continue;
 		((ATrackRender*)track->renderer)->render_pan(audio_out, out_channels);
+		track->renderer->next_plugin = 0;
 	}
 }
 
