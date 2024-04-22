@@ -314,7 +314,7 @@ int PackageRenderer::do_video()
 							brender_output[i] = frame = BC_Resources::tmpframes.get_tmpframe(
 								default_asset->streams[stream].width,
 								default_asset->streams[stream].height,
-								edlsession->color_model);
+								BC_RGB888);
 						frame->transfer_from(video_output[i]);
 						frame->copy_pts(video_output[i]);
 					}
