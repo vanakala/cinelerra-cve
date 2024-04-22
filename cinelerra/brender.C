@@ -326,6 +326,7 @@ void BRenderThread::run()
 						command = new_command;
 						edl.reset_instance();
 						edl.copy_all(command->edl);
+						edl.this_edlsession = edlsession;
 						command->edl = &edl;
 						start();
 					}
