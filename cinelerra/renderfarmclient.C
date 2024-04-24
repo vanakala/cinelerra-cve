@@ -564,17 +564,17 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	while(1)
 	{
 		result |= read_package(socket_fd, package);
-
-		if(package->use_brender)
-		{
-			default_asset->streams[0].width = package->width;
-			default_asset->streams[0].height = package->height;
-		}
 // Finished list
 		if(result)
 		{
 			send_completion(socket_fd);
 			break;
+		}
+
+		if(package->use_brender)
+		{
+			default_asset->streams[0].width = package->width;
+			default_asset->streams[0].height = package->height;
 		}
 
 		Timer timer;
