@@ -117,10 +117,12 @@ RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server,
 	watchdog = 0;
 	buffer = 0;
 	datagram = 0;
+	server_status = 0;
 }
 
 RenderFarmServerThread::~RenderFarmServerThread()
 {
+	server_status = 1;
 	Thread::join();
 	if(socket_fd >= 0)
 		close(socket_fd);
@@ -545,9 +547,10 @@ void RenderFarmServerThread::set_result(int val, const char *msg)
 
 void RenderFarmServerThread::get_result()
 {
-	unsigned char data[1];
-	data[0] = *server->result_return;
-	write_socket((char*)data, 1);
+	char data;
+
+	data = server_status;
+	write_socket(&data, 1);
 }
 
 

@@ -466,9 +466,13 @@ int PackageRenderer::render_package(RenderPackage *package)
 			{
 				if(do_video())
 				{
-					sprintf(pkg_error, _("Failed to render video to %s\n"),
-						package->path);
-					result = 1;
+					if(!package->use_brender)
+					{
+						sprintf(pkg_error,
+							_("Failed to render video to %s\n"),
+							package->path);
+						result = 1;
+					}
 					break;
 				}
 			}

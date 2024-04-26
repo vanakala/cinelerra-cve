@@ -106,17 +106,17 @@
 enum
 {
 	RENDERFARM_NONE,
-	RENDERFARM_PREFERENCES,  // 0 Get preferences on startup
-	RENDERFARM_ASSET,        // Get output format on startup
-	RENDERFARM_EDL,          // Get EDL on startup
-	RENDERFARM_PACKAGE,      // Get one package after another to render
-	RENDERFARM_PROGRESS,     // Update completion total
-	RENDERFARM_SET_RESULT,   // Update error status
-	RENDERFARM_GET_RESULT,   // Retrieve error status
-	RENDERFARM_DONE,         // Quit
-	RENDERFARM_SET_VMAP,     // 8 Update video map in background rendering
-	RENDERFARM_PACKAGES,     // Run packages
-	RENDERFARM_KEEPALIVE     // Keep alive
+	RENDERFARM_PREFERENCES,  // 1 - Get preferences on startup
+	RENDERFARM_ASSET,        // 2 - Get output format on startup
+	RENDERFARM_EDL,          // 3 - Get EDL on startup
+	RENDERFARM_PACKAGE,      // 4 - Get one package after another to render
+	RENDERFARM_PROGRESS,     // 5 - Update completion total
+	RENDERFARM_SET_RESULT,   // 6 - Update error status
+	RENDERFARM_GET_RESULT,   // 7 - Retrieve error status
+	RENDERFARM_DONE,         // 8 - Quit
+	RENDERFARM_SET_VMAP,     // 9 - Update video map in background rendering
+	RENDERFARM_PACKAGES,     // 10 - Run packages
+	RENDERFARM_KEEPALIVE     // 11 - Keep alive
 };
 
 
@@ -201,6 +201,7 @@ public:
 	unsigned char *buffer;
 	int buffer_allocated;
 	char *datagram;
+	int server_status;
 };
 
 
