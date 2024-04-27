@@ -209,6 +209,7 @@ int FileAVlibs::probe_input(Asset *asset)
 	AVCodecContext *decoder_ctx;
 	double testfr;
 	int stact;
+	int supported_type = 0;
 
 	if(!asset->file_mtime.tv_sec || !asset->file_length)
 	{
@@ -253,7 +254,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			return 0;
 		}
 
-		asset->format = streamformat(context);
+		asset->format = streamformat(context, &supported_type);
 
 		if(asset->format != FILE_SVG)
 			get_decoder_format_defaults(asset, context);
@@ -284,6 +285,8 @@ int FileAVlibs::probe_input(Asset *asset)
 			switch(codec_type)
 			{
 			case AVMEDIA_TYPE_AUDIO:
+				if(!(supported_type & SUPPORTS_AUDIO))
+					continue;
 				asset->streams[asset->nb_streams].stream_index = i;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				asset->streams[asset->nb_streams].channels = decoder_ctx->channels;
@@ -322,6 +325,8 @@ int FileAVlibs::probe_input(Asset *asset)
 				break;
 
 			case AVMEDIA_TYPE_VIDEO:
+				if(!(supported_type & SUPPORTS_VIDEO))
+					continue;
 				asset->streams[asset->nb_streams].stream_index = i;
 				asset->streams[asset->nb_streams].channels = 1;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
@@ -2147,14 +2152,18 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 	return 0;
 }
 
-int FileAVlibs::streamformat(AVFormatContext *context)
+int FileAVlibs::streamformat(AVFormatContext *context, int *supported_type)
 {
 	for(int i = 0; known_formats[i].fileformat; i++)
 	{
 		if(known_formats[i].decoder &&
-				strcmp(context->iformat->name, known_formats[i].decoder) == 0)
+			strcmp(context->iformat->name, known_formats[i].decoder) == 0)
+		{
+			*supported_type = known_formats[i].supports;
 			return known_formats[i].fileformat;
+		}
 	}
+	*supported_type = 0;
 	return FILE_UNKNOWN;
 }
 

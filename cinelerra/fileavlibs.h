@@ -105,7 +105,7 @@ private:
 	AVPacket *allocate_packet();
 	void deallocate_packet(AVPacket **packet);
 
-	static int streamformat(AVFormatContext *context);
+	static int streamformat(AVFormatContext *context, int *supported_type);
 	static void liberror(int code, const char *fmt, ...);
 	static Paramlist *scan_global_options(int options);
 	static AVOutputFormat *output_format(int format);
