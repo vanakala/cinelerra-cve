@@ -192,13 +192,13 @@ int File::probe_file(Asset *asset)
 	FILE *stream;
 	int probe_result = 0;
 	int rs;
-	FileBase *file = 0;
 
 	if(!asset->probed)
 	{
 		FileAVlibs *probe = new FileAVlibs(asset, this);
 		probe_result = probe->probe_input(asset);
 		delete probe;
+tracemsg("Probe result %d", probe_result);
 
 		if(probe_result < 0)
 			return FILE_NOT_FOUND;
@@ -239,27 +239,16 @@ int File::probe_file(Asset *asset)
 				errormsg(_("Can't open TOC files directly"));
 				return FILE_NOT_FOUND;
 			}
-			if(FilePNG::check_sig(asset))
-// PNG list
-				file = new FilePNG(asset, this);
-			else if(FileJPEG::check_sig(asset))
-// JPEG list
-				file = new FileJPEG(asset, this);
-			else if(FileTGA::check_sig(asset))
-// TGA list
-				file = new FileTGA(asset, this);
-			else if(FileTIFF::check_sig(asset))
-// TIFF list
-				file = new FileTIFF(asset, this);
-			else if(strncmp(test, "<EDL", 4) == 0 ||
+			if(FileList::probe_list(asset))
+			{
+				if(strncmp(test, "<EDL", 4) == 0 ||
 						strncmp(test, "<?xml", 5) == 0)
-// XML file
-				return FILE_IS_XML;
-			else
-				return FILE_UNRECOGNIZED_CODEC;
+					return FILE_IS_XML;
+				else
+					return FILE_UNRECOGNIZED_CODEC;
+			}
 			break;
 		}
-		delete file;
 	}
 	return FILE_OK;
 }

@@ -16,6 +16,14 @@
 class FrameWriter;
 class FrameWriterUnit;
 
+struct list_types
+{
+	int frame_type;
+	int list_type;
+	const char *list_prefix;
+	const char *extension;
+};
+
 // Any file which is a list of frames.
 // FileList handles both frame files and indexes of frame files.
 
@@ -30,6 +38,7 @@ public:
 		int list_type);
 	virtual ~FileList();
 
+	static int probe_list(Asset *asset);
 // basic commands for every file interpreter
 	int open_file(int open_mode, int streamix, const char *filepath);
 	void close_file();
@@ -75,6 +84,7 @@ private:
 	int number_start;
 	int number_digits;
 	int writing;
+	static struct list_types list_types[];
 };
 
 

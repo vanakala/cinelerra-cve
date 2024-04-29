@@ -25,6 +25,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+struct list_types FileList::list_types[] =
+{
+	{ FILE_JPEG, FILE_JPEG_LIST, "JPEGLIST", ".jpg" },
+	{ FILE_PNG, FILE_PNG_LIST, "PNGLIST", ".png" },
+	{ FILE_TGA, FILE_TGA_LIST, "TGALIST", ".tga" },
+	{ FILE_TIFF, FILE_TIFF_LIST, "TIFFLIST", ".tif" },
+	{ 0, 0, 0, 0 }
+};
+
 
 FileList::FileList(Asset *asset, 
 	File *file, 
@@ -52,6 +61,99 @@ FileList::~FileList()
 	close_file();
 	delete table_lock;
 	delete [] renderpath;
+}
+
+int FileList::probe_list(Asset *asset)
+{
+	FILE *stream;
+	char string[BCTEXTLEN];
+	struct list_types *list_type = 0;
+	double frame_rate = 0;
+	int width = 0;
+	int height = 0;
+	int count = 0;
+
+	if(asset->format != FILE_UNKNOWN && asset->nb_streams)
+		return 0;
+
+	if(!(stream = fopen(asset->path, "rb")))
+		return -1;
+
+	if(!fgets(string, BCTEXTLEN, stream))
+	{
+		fclose(stream);
+		return -1;
+	}
+
+	for(int i = 0; list_types[i].list_prefix; i++)
+	{
+		if(!strncmp(string, list_types[i].list_prefix,
+			strlen(list_types[i].list_prefix)))
+		{
+			list_type = &list_types[i];
+			break;
+		}
+	}
+
+	if(!list_type)
+	{
+		fclose(stream);
+		return 1;
+	}
+	asset->format = list_type->list_type;
+
+	for(int i = 0; fgets(string, BCTEXTLEN, stream);)
+	{
+		if(string[0] == '#' || string[0] == ' ')
+			continue;
+		if(i < 3)
+		{
+			if(isalpha(string[0]))
+				continue;
+			if(i == 0)
+				frame_rate = atof(string);
+			if(i == 1)
+				width = atoi(string);
+			if(i == 2)
+				height = atoi(string);
+		}
+		else
+			count++;
+		i++;
+	}
+	asset->file_length = ftell(stream);
+	fclose(stream);
+
+	if(width < MIN_FRAME_WIDTH || width > MAX_FRAME_WIDTH ||
+		height < MIN_FRAME_HEIGHT || height > MAX_FRAME_HEIGHT)
+	{
+		errormsg(_("Image list '%s' frame size is outside limits"),
+				asset->path);
+		return 1;
+	}
+
+	if(frame_rate < MIN_FRAME_RATE || frame_rate > MAX_FRAME_RATE)
+	{
+		errormsg(_("Image list '%s' frame rate is outside limits"),
+			asset->path);
+		return 1;
+	}
+
+	struct streamdesc *sdsc = &asset->streams[0];
+
+	sdsc->channels = 1;
+	sdsc->width = width;
+	sdsc->height = height;
+	sdsc->length = count;
+	sdsc->frame_rate = frame_rate;
+	sdsc->end = (ptstime)count / frame_rate;
+	sdsc->sample_aspect_ratio = 1;
+	sdsc->options = STRDSC_VIDEO;
+	sdsc->start = 0;
+	sdsc->end = count / frame_rate;
+	asset->nb_streams = 1;
+	asset->set_base_pts(0);
+	return 0;
 }
 
 int FileList::open_file(int open_mode, int streamix, const char *filepath)
