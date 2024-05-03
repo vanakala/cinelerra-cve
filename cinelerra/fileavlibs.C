@@ -439,6 +439,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			case FILE_TGA:
 			case FILE_TIFF:
 				asset->set_single_image();
+				asset->streams[0].length = 1;
 				break;
 			}
 			if(asset->single_image)
