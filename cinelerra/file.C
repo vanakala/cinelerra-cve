@@ -198,7 +198,6 @@ int File::probe_file(Asset *asset)
 		FileAVlibs *probe = new FileAVlibs(asset, this);
 		probe_result = probe->probe_input(asset);
 		delete probe;
-tracemsg("Probe result %d", probe_result);
 
 		if(probe_result < 0)
 			return FILE_NOT_FOUND;

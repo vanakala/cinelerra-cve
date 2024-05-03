@@ -104,7 +104,7 @@ int FileList::probe_list(Asset *asset)
 
 	for(int i = 0; fgets(string, BCTEXTLEN, stream);)
 	{
-		if(string[0] == '#' || string[0] == ' ')
+		if(string[0] == '#' || string[0] == '\n')
 			continue;
 		if(i < 3)
 		{
@@ -153,6 +153,7 @@ int FileList::probe_list(Asset *asset)
 	sdsc->end = count / frame_rate;
 	asset->nb_streams = 1;
 	asset->set_base_pts(0);
+
 	return 0;
 }
 
@@ -169,7 +170,6 @@ int FileList::open_file(int open_mode, int streamix, const char *filepath)
 			strcpy(renderpath, filepath);
 		else
 			strcpy(renderpath, asset->path);
-
 // Frame files are created in write_frame and list index is created when
 // file is closed.
 // Look for the starting number in the path but ignore the starting character
@@ -182,72 +182,31 @@ int FileList::open_file(int open_mode, int streamix, const char *filepath)
 		writer = new FrameWriter(this, 
 			asset->format == list_type ? file->cpus : 1);
 	}
-	else
-	if(open_mode & FILE_OPEN_READ)
+	else if(open_mode & FILE_OPEN_READ)
 	{
-// Determine type of file.
-// Header isn't used for background rendering, in which case everything known
-// by the file encoder is known by the decoder.
-		if(asset->use_header)
+		switch(asset->format)
 		{
-			FILE *stream = fopen(asset->path, "rb");
-			if(stream)
-			{
-				char string[BCTEXTLEN];
-				if(fread(string, strlen(list_prefix), 1, stream) < 1)
-					result = 1;
-				fclose(stream);
-				if(result) return 1;
+		case FILE_JPEG_LIST:
+		case FILE_PNG_LIST:
+		case FILE_TGA_LIST:
+		case FILE_TIFF_LIST:
+			if(!(result = read_list_header()))
+				result = read_frame_header(path_list.values[0]);
+			break;
 
-				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
-				{
-					asset->format = list_type;
+		case FILE_JPEG:
+		case FILE_PNG:
+		case FILE_TGA:
+		case FILE_TIFF:
+			result = read_frame_header(asset->path);
+			asset->set_single_image();
+			break;
 
-// Open index here or get frame size from file.
-					result = read_list_header();
-					if(!result)
-						result = read_frame_header(path_list.values[0]);
-				}
-				else
-				{
-					asset->format = frame_type;
-					result = read_frame_header(asset->path);
-					asset->set_single_image();
-				}
-			}
-		}
-		else
-		{
-			Render::get_starting_number(asset->path, 
-				first_number,
-				number_start, 
-				number_digits,
-				6);
-		}
-		if(asset->nb_streams)
-		{
-			struct streamdesc *sdsc = &asset->streams[streamix];
-
-			switch(frame_type)
-			{
-			case FILE_JPEG:
-				strcpy(sdsc->codec, "jpeg");
-				break;
-			case FILE_PNG:
-				strcpy(sdsc->codec, "png");
-				break;
-			case FILE_TIFF:
-				strcpy(sdsc->codec, "tiff");
-				break;
-			case FILE_TGA:
-				break;
-			default:
-				sdsc->codec[0] = 0;
-				break;
-			}
+		default:
+			result = 1;
+			break;
 		}
 	}
-
 // Compressed data storage
 	data = new VFrame;
 	return result;
@@ -305,48 +264,27 @@ int FileList::read_list_header()
 {
 	char string[BCTEXTLEN], *new_entry;
 	char path[BCTEXTLEN];
-	double frame_rate = 0;
-	int width = 0;
-	int height = 0;
 
 	FILE *stream = fopen(asset->path, "r");
 
 	if(stream)
 	{
-// Get information about the frames
-		do
+		for(int i = 0; fgets(string, BCTEXTLEN, stream);)
 		{
-			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				return 1;
-		}while(string[0] == '#' || string[0] == ' ' || isalpha(string[0]));
-		frame_rate = atof(string);
+			if(string[0] == '#' || string[0] == '\n')
+				continue;
 
-		do
-		{
-			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				return 1;
-		}while(string[0] == '#' || string[0] == ' ');
-		width = atoi(string);
-
-		do
-		{
-			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				return 1;
-		}while(string[0] == '#' || string[0] == ' ');
-		height = atoi(string);
-
-		asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;  // May be good to store the info in the list?
-
-// Get all the paths
-		while(!feof(stream))
-		{
-			int l;
-
-			if(fgets(string, BCTEXTLEN, stream) &&
-				(l = strlen(string)) && string[0] != '#' &&
-				string[0] != ' ')
+			if(i < 3)
 			{
-				string[l - 1] = 0;
+				if(isalpha(string[0]))
+					continue;
+				i++;
+			}
+			else
+			{
+				int length = strlen(string);
+				string[length - 1] = 0;
+
 				if(string[0] != '/')
 				{
 					char new_path[BCTEXTLEN];
@@ -356,39 +294,11 @@ int FileList::read_list_header()
 					fs.extract_dir(string, asset->path);
 					strcat(string, new_path);
 				}
-				path_list.append(new_entry = new char[strlen(string) + 1]);
+				path_list.append(new_entry = new char[length]);
 				strcpy(new_entry, string);
 			}
 		}
-		asset->file_length = ftell(stream);
 		fclose(stream);
-
-		if(!asset->nb_streams)
-		{
-			if(width < MIN_FRAME_WIDTH || width > MAX_FRAME_WIDTH ||
-				height < MIN_FRAME_HEIGHT || height > MAX_FRAME_HEIGHT)
-			{
-				errormsg(_("Image list frame size is outside limits"));
-				return 1;
-			}
-
-			if(frame_rate < MIN_FRAME_RATE || frame_rate > MAX_FRAME_RATE)
-			{
-				errormsg(_("Image list frame rate is outside limits"));
-				return 1;
-			}
-// Fill stream info
-			struct streamdesc *sdsc = &asset->streams[0];
-			sdsc->channels = 1;
-			sdsc->width = width;
-			sdsc->height = height;
-			sdsc->length = path_list.total;
-			sdsc->frame_rate = frame_rate;
-			sdsc->end = (ptstime)path_list.total / frame_rate;
-			sdsc->sample_aspect_ratio = 1;
-			sdsc->options = STRDSC_VIDEO;
-			asset->nb_streams = 1;
-		}
 	}
 	else
 		return 1;
