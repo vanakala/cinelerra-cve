@@ -294,7 +294,7 @@ int FileList::read_list_header()
 					fs.extract_dir(string, asset->path);
 					strcat(string, new_path);
 				}
-				path_list.append(new_entry = new char[length]);
+				path_list.append(new_entry = new char[strlen(string) + 1]);
 				strcpy(new_entry, string);
 			}
 		}
