@@ -238,6 +238,11 @@ int File::probe_file(Asset *asset)
 				errormsg(_("Can't open TOC files directly"));
 				return FILE_NOT_FOUND;
 			}
+			// Fall through
+		case FILE_JPEG_LIST:
+		case FILE_PNG_LIST:
+		case FILE_TGA_LIST:
+		case FILE_TIFF_LIST:
 			if(FileList::probe_list(asset))
 			{
 				if(strncmp(test, "<EDL", 4) == 0 ||
