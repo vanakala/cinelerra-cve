@@ -448,6 +448,12 @@ int FileAVlibs::probe_input(Asset *asset)
 				avlibs_lock->unlock();
 				return 1;
 			}
+			if(!asset->nb_streams)
+			{
+				asset->format = FILE_UNKNOWN;
+				avlibs_lock->unlock();
+				return 0;
+			}
 			asset->tocfile = new FileTOC(this, preferences_global->index_directory,
 				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			if(asset->tocfile->init_tocfile(TOCFILE_TYPE_MUX1))
