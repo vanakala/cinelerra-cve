@@ -751,6 +751,15 @@ void Plugin::update_toggles()
 		trackplugin->update_toggles();
 }
 
+void Plugin::update_trackplugin()
+{
+	if(trackplugin)
+	{
+		trackplugin->update();
+		trackplugin->update_toggles();
+	}
+}
+
 void Plugin::reset_plugin()
 {
 	if(!idle && client)

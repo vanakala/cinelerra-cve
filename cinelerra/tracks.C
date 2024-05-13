@@ -825,6 +825,8 @@ void Tracks::swap_main_plugin(Plugin *sharedplugin)
 				break;
 			}
 		}
+		if(sharedplugin->trackplugin)
+			sharedplugin->update_trackplugin();
 	}
 }
 

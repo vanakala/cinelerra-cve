@@ -84,6 +84,7 @@ public:
 	void hide_plugin_gui();
 	int show_plugin_gui();
 	void update_toggles();
+	void update_trackplugin();
 	void reset_plugin();
 
 	ptstime plugin_change_duration(ptstime start, ptstime length);
