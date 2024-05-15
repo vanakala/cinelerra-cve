@@ -214,7 +214,6 @@ void Preferences::scan_channels(char *string,
 void Preferences::fill_brender_asset(Asset *asset)
 {
 	asset->remove_stream_type(STRDSC_VIDEO);
-	asset->use_header = 0;
 	strcpy(asset->path, "/tmp/brender");
 	asset->format = FILE_JPEG_LIST;
 	if(!asset->renderprofile_path[0])

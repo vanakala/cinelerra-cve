@@ -216,7 +216,7 @@ void FileList::close_file()
 {
 	if(asset->format == list_type && path_list.total)
 	{
-		if(writing && asset->use_header)
+		if(writing && !(asset->strategy & RENDER_BRENDER))
 			write_list_header();
 		path_list.remove_all_objects();
 	}
@@ -316,7 +316,8 @@ int FileList::read_frame(VFrame *frame)
 	current_frame = (frame->get_source_pts() + FRAME_OVERLAP) *
 		asset->streams[0].frame_rate;
 	if(current_frame < 0 ||
-			(asset->use_header && current_frame >= path_list.total &&
+			(!(asset->strategy & RENDER_BRENDER) &&
+			current_frame >= path_list.total &&
 			asset->format == list_type))
 		goto noframe;
 
@@ -324,7 +325,7 @@ int FileList::read_frame(VFrame *frame)
 	{
 		char *path;
 
-		if(asset->use_header)
+		if(!(asset->strategy & RENDER_BRENDER))
 			path = path_list.values[current_frame];
 		else
 			path = calculate_path(current_frame, string);
@@ -464,7 +465,7 @@ char* FileList::calculate_path(int number, char *string)
 	else
 		path = asset->path;
 
-	if(asset->use_header)
+	if(!(asset->strategy & RENDER_BRENDER))
 	{
 		int k;
 		strcpy(string, path);
@@ -498,11 +499,11 @@ char* FileList::create_path(int number_override)
 	char *path;
 	char output[BCTEXTLEN];
 
-	if(number_override >= path_list.total || !asset->use_header)
+	if(number_override >= path_list.total || (asset->strategy & RENDER_BRENDER))
 	{
 		int number = number_override;
 
-		if(!asset->use_header)
+		if(asset->strategy & RENDER_BRENDER)
 			number += first_number;
 
 		calculate_path(number, output);

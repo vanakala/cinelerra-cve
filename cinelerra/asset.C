@@ -108,8 +108,6 @@ void Asset::init_values()
 	render_parameters = 0;
 	renderprofile_path[0] = 0;
 
-	use_header = 1;
-
 	strategy = 0;
 	range_type = RANGE_PROJECT;
 	load_mode = LOADMODE_NEW_TRACKS;
@@ -183,7 +181,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	if(do_index) update_index(asset);
 
 	format = asset->format;
-	use_header = asset->use_header;
 	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
 	interlace_fixmethod = asset->interlace_fixmethod;
@@ -1316,7 +1313,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 		load_render_options();
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
-		use_header = list->get("use_header", use_header);
+		strategy = list->get("strategy", strategy);
 	}
 
 	if(options & ASSET_BITS)
@@ -1353,8 +1350,8 @@ void Asset::save_defaults(Paramlist *list, int options)
 			list->set("video_codec", streams[stream].codec);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
-		if(!use_header)
-			list->set("use_header", use_header);
+		if(strategy)
+			list->set("strategy", strategy);
 	}
 	if(options & ASSET_BITS)
 	{
@@ -1493,8 +1490,8 @@ void Asset::dump(int indent, int options)
 		ContainerSelection::container_to_text(format));
 	printf(" length %" PRId64 " base_pts %.3f probed: %d\n", file_length, pts_base,
 		probed);
-	printf("%*simage %d pipe %d header %d\n", indent, "",
-		single_image, use_pipe, use_header);
+	printf("%*simage %d pipe %d strategy %#x\n", indent, "",
+		single_image, use_pipe, strategy);
 	printf("%*sinterlace_mode %s\n", indent, "",
 		AInterlaceModeSelection::name(interlace_mode));
 

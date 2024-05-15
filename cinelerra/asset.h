@@ -218,14 +218,6 @@ public:
 	Paramlist *encoder_parameters[MAX_ENC_PARAMLISTS];
 // Decoding parameters
 	Paramlist *decoder_parameters[MAX_DEC_PARAMLISTS];
-
-// Image file sequences.  Background rendering doesn't want to write a 
-// sequence header but instead wants to start the sequence numbering at a certain
-// number.  This ensures deletion of all the frames which aren't being used.
-// We still want sequence headers sometimes because loading a directory full of images
-// for editing would create new assets for every image.
-	int use_header;
-
 // index info
 	IndexFile indexfiles[MAXCHANNELS];
 // Total bytes in source file when the index was buillt
