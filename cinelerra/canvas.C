@@ -350,7 +350,7 @@ void Canvas::get_transfers(double &output_x1, double &output_y1,
 			double out_w = canvas_x2 - canvas_x1;
 			double out_h = canvas_y2 - canvas_y1;
 			double aspect = sample_aspect_ratio() *
-				edlsession->output_w / edlsession->output_h;
+				get_output_w() / get_output_h();
 
 			if(out_w / out_h > aspect)
 			{
