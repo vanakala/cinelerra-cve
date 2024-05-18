@@ -16,6 +16,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"
+#include "track.h"
 #include "transportcommand.inc"
 #include "vplayback.h"
 #include "vtimebar.h"
@@ -74,10 +75,10 @@ void VWindow::change_source(Asset *asset)
 // Generate EDL off of main EDL for cutting
 	vwindow_edl->reset_instance();
 	vwindow_edl->update_assets(asset);
-	vwindow_edl->init_edl();
-	vwindow_edl->id = vwindow_edl->next_id();
 	vwindow_edl->this_edlsession = vedlsession;
 	vedlsession->copy(edlsession);
+	vwindow_edl->init_edl();
+	vwindow_edl->id = vwindow_edl->next_id();
 	if((stream = asset->get_stream_ix(STRDSC_AUDIO)) >= 0)
 		vedlsession->audio_channels = asset->streams[stream].channels;
 	else
@@ -88,6 +89,16 @@ void VWindow::change_source(Asset *asset)
 		vedlsession->frame_rate = asset->streams[stream].frame_rate;
 		vedlsession->output_w = asset->streams[stream].width;
 		vedlsession->output_h = asset->streams[stream].height;
+		for(Track *track = vwindow_edl->first_track(); track;
+			track = track->next)
+		{
+			if(track->data_type == TRACK_VIDEO)
+			{
+				track->track_w = vedlsession->output_w;
+				track->track_h = vedlsession->output_h;
+				break;
+			}
+		}
 	}
 // Update GUI
 	gui->change_source(title);
