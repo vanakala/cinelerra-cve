@@ -845,8 +845,8 @@ void EDL::init_edl()
 	if(!assets->total)
 		return;
 
-	edlsession->video_tracks = 0;
-	edlsession->audio_tracks = 0;
+	this_edlsession->video_tracks = 0;
+	this_edlsession->audio_tracks = 0;
 
 // Edl has only one asset here
 	new_asset = assets->values[0];
@@ -855,7 +855,7 @@ void EDL::init_edl()
 	while((stream = new_asset->get_stream_ix(STRDSC_VIDEO, stream)) >= 0)
 	{
 		int layers = new_asset->streams[stream].channels;
-		edlsession->video_tracks += layers;
+		this_edlsession->video_tracks += layers;
 
 		for(int k = 0; k < layers; k++)
 			tracks->add_track(TRACK_VIDEO, 0, 0);
@@ -867,7 +867,7 @@ void EDL::init_edl()
 	{
 		int channels = new_asset->streams[stream].channels;
 
-		edlsession->audio_tracks += channels;
+		this_edlsession->audio_tracks += channels;
 
 		for(int k = 0; k < channels; k++)
 			tracks->add_track(TRACK_AUDIO, 0, 0);
