@@ -380,8 +380,7 @@ BC_FileBox::BC_FileBox(int x, int y, const char *init_path,
 	if(!want_directory)
 	{
 		filter_list.append(new BC_ListBoxItem("*"));
-		filter_list.append(new BC_ListBoxItem("[*.ifo][*.vob]"));
-		filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3][*.wav]"));
+		filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3][*.wav][*.vob]"));
 		filter_list.append(new BC_ListBoxItem("[*.avi][*.mpg][*.m2v][*.m1v][*.mov]"));
 		filter_list.append(new BC_ListBoxItem("*.xml"));
 		fs->set_filter(get_resources()->filebox_filter);
