@@ -60,7 +60,9 @@ void VideoRender::run()
 	late_frame = 0;
 	framerate_counter = 0;
 	framerate_timer.update();
+
 	flashed_pts = -1;
+	flashed_duration = 0;
 
 	start_lock->unlock();
 	while(1)
