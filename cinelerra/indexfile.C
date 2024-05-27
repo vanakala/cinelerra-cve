@@ -38,6 +38,7 @@ IndexFile::IndexFile()
 	file = 0;
 	interrupt_flag = 0;
 	asset = 0;
+	stream = -1;
 	index_filename = 0;
 	status = INDEX_NOTTESTED;
 	start = index_end = old_index_end = 0;
