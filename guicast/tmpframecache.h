@@ -14,12 +14,13 @@
 class TmpFrameCacheElem : public ListItem<TmpFrameCacheElem>
 {
 public:
-	TmpFrameCacheElem(int w, int h, int colormodel);
+	TmpFrameCacheElem(int w, int h, int colormodel,  const char *location = 0);
 	~TmpFrameCacheElem();
 
 	size_t get_size();
 	void dump(int indent = 0);
 
+	const char *allocator;
 	int in_use;
 	unsigned int age;
 	VFrame *frame;
@@ -31,8 +32,8 @@ public:
 	TmpFrameCache();
 	~TmpFrameCache();
 
-	VFrame *get_tmpframe(int w, int h, int colormodel);
-	VFrame *clone_frame(VFrame *frame);
+	VFrame *get_tmpframe(int w, int h, int colormodel, const char *location = 0);
+	VFrame *clone_frame(VFrame *frame, const char *location = 0);
 	void release_frame(VFrame *tmp_frame);
 	size_t get_size(int *total = 0, int *inuse = 0);
 	void delete_unused();

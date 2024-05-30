@@ -17,12 +17,13 @@
 Mutex TmpFrameCache::listlock("TmpFrameCache::listlock");
 
 
-TmpFrameCacheElem::TmpFrameCacheElem(int w, int h, int colormodel)
+TmpFrameCacheElem::TmpFrameCacheElem(int w, int h, int colormodel, const char *location)
  : ListItem<TmpFrameCacheElem>()
 {
 	frame = new VFrame(0, w, h, colormodel);
 	in_use = 0;
 	age = 0;
+	allocator = location;
 }
 
 TmpFrameCacheElem::~TmpFrameCacheElem()
@@ -38,9 +39,12 @@ size_t TmpFrameCacheElem::get_size()
 void TmpFrameCacheElem::dump(int indent)
 {
 	printf("%*sTmpFrameCacheElem %p dump:\n", indent, "", this);
-	printf("%*s [%dx%d] '%s' in_use %d age %u frame %p\n", indent + 2, "",
+	indent += 2;
+	printf("%*s[%dx%d] '%s' in_use %d age %u frame %p\n", indent, "",
 		frame->get_w(), frame->get_h(),
 		ColorModels::name(frame->get_color_model()), in_use, age, frame);
+	if(allocator)
+		printf("%*sAllocator: %s\n", indent, "", allocator);
 }
 
 TmpFrameCache::TmpFrameCache()
@@ -55,7 +59,7 @@ TmpFrameCache::~TmpFrameCache()
 		delete last;
 }
 
-VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
+VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel, const char *location)
 {
 	TmpFrameCacheElem *elem = 0;
 
@@ -78,18 +82,20 @@ VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
 		elem = append(new TmpFrameCacheElem(w, h, colormodel));
 	}
 	elem->in_use = 1;
+	elem->allocator = location;
 
 	listlock.unlock();
 
 	return elem->frame;
 }
 
-VFrame *TmpFrameCache::clone_frame(VFrame *frame)
+VFrame *TmpFrameCache::clone_frame(VFrame *frame, const char *location)
 {
 	if(!frame)
 		return 0;
 
-	return get_tmpframe(frame->get_w(), frame->get_h(), frame->get_color_model());
+	return get_tmpframe(frame->get_w(), frame->get_h(),
+		frame->get_color_model(), location);
 }
 
 void TmpFrameCache::release_frame(VFrame *tmp_frame)
@@ -105,6 +111,7 @@ void TmpFrameCache::release_frame(VFrame *tmp_frame)
 		{
 			cur->in_use = 0;
 			cur->age = ++moment;
+			cur->allocator = 0;
 			cur->frame->clear_status();
 			break;
 		}
