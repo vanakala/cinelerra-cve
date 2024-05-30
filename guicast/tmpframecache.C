@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2016 Einar Rünkaru <einarrunkaru@gmail dot com>
 
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -36,9 +20,6 @@ Mutex TmpFrameCache::listlock("TmpFrameCache::listlock");
 TmpFrameCacheElem::TmpFrameCacheElem(int w, int h, int colormodel)
  : ListItem<TmpFrameCacheElem>()
 {
-	width = w;
-	height = h;
-	cmodel = colormodel;
 	frame = new VFrame(0, w, h, colormodel);
 	in_use = 0;
 	age = 0;
@@ -58,7 +39,8 @@ void TmpFrameCacheElem::dump(int indent)
 {
 	printf("%*sTmpFrameCacheElem %p dump:\n", indent, "", this);
 	printf("%*s [%dx%d] '%s' in_use %d age %u frame %p\n", indent + 2, "",
-		width, height, ColorModels::name(cmodel), in_use, age, frame);
+		frame->get_w(), frame->get_h(),
+		ColorModels::name(frame->get_color_model()), in_use, age, frame);
 }
 
 TmpFrameCache::TmpFrameCache()
@@ -81,8 +63,7 @@ VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
 
 	for(TmpFrameCacheElem *cur = first; cur; cur = cur->next)
 	{
-		if(!cur->in_use && w == cur->width &&
-			h == cur->height && colormodel == cur->cmodel)
+		if(!cur->in_use && cur->frame->params_match(w, h, colormodel))
 		{
 			elem = cur;
 			break;
