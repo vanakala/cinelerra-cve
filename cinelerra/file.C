@@ -44,13 +44,9 @@ File::~File()
 		format_completion->lock("File::~File");
 		format_completion->unlock();
 	}
-
-	if(temp_frame) delete temp_frame;
-
 	close_file();
 	delete format_completion;
 	delete write_lock;
-	BC_Resources::tmpframes.release_frame(last_frame);
 }
 
 void File::reset_parameters()
@@ -349,6 +345,8 @@ void File::close_file()
 		file->close_file();
 		delete file;
 	}
+	delete temp_frame;
+	BC_Resources::tmpframes.release_frame(last_frame);
 	reset_parameters();
 }
 
@@ -481,7 +479,7 @@ int File::get_frame(VFrame *frame)
 		{
 			last_frame = BC_Resources::tmpframes.get_tmpframe(
 				frame->get_w(), frame->get_h(),
-				frame->get_color_model());
+				frame->get_color_model(), "File::get_frame");
 		}
 		last_frame->copy_from(frame);
 		last_frame->copy_pts(frame);
