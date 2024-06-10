@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "edit.h"
 #include "file.h"
@@ -14,6 +15,7 @@
 #include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 
 #include <setjmp.h>
@@ -283,7 +285,6 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 int FileJPEG::read_frame_header(const char *path)
 {
-	int result = 0;
 	FILE *stream;
 	struct jpeg_decompress_struct jpeg_decompress;
 	struct error_mgr jpeg_error;
@@ -314,32 +315,16 @@ int FileJPEG::read_frame_header(const char *path)
 	jpeg_destroy_decompress(&jpeg_decompress);
 	fclose(stream);
 
-	return result;
+	return 0;
 }
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
+	int cmodel;
 	struct jpeg_decompress_struct jpeg_decompress;
 	struct error_mgr jpeg_error;
 	VFrame *work_frame;
 	JSAMPROW row_pointer[1];
-
-	output->clear_frame();
-	if(output->get_color_model() != BC_RGB888)
-	{
-		if(temp_frame && (temp_frame->get_w() != output->get_w() ||
-			temp_frame->get_h() != output->get_h()))
-		{
-			delete temp_frame;
-			temp_frame = 0;
-		}
-		if(!temp_frame)
-			temp_frame = new VFrame(0, output->get_w(),
-				output->get_h(), BC_RGB888);
-		work_frame = temp_frame;
-	}
-	else
-		work_frame = output;
 
 	jpeg_decompress.err = jpeg_std_error(&jpeg_error.jpeglib_err);
 	jpeg_error.jpeglib_err.error_exit = jpg_err_exit;
@@ -370,20 +355,29 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	jpeg_decompress.src = (struct jpeg_source_mgr *)&my_src;
 #endif
 
-	jpeg_decompress.output_width = work_frame->get_w();
-	jpeg_decompress.output_height = work_frame->get_h();
-
 	jpeg_read_header(&jpeg_decompress, TRUE);
 	jpeg_start_decompress(&jpeg_decompress);
 
+	switch(jpeg_decompress.output_components)
+	{
+	case 3:
+		cmodel = BC_RGB888;
+		break;
+	case 4:
+		cmodel = BC_RGBA8888;
+		break;
+	}
+	work_frame = BC_Resources::tmpframes.get_tmpframe(jpeg_decompress.image_width,
+		jpeg_decompress.image_height, cmodel, "FileJPEG::read_frame");
+
 	for(int i = 0; i < jpeg_decompress.output_height; i++)
 	{
-		row_pointer[0] = work_frame->get_data() + i * work_frame->get_bytes_per_line();
+		row_pointer[0] = work_frame->get_row_ptr(i);
 		jpeg_read_scanlines(&jpeg_decompress, row_pointer, 1);
 	}
 
-	if(work_frame != output)
-		output->transfer_from(temp_frame);
+	output->transfer_from(work_frame);
+	BC_Resources::tmpframes.release_frame(work_frame);
 
 	jpeg_finish_decompress(&jpeg_decompress);
 	jpeg_destroy_decompress(&jpeg_decompress);
@@ -411,6 +405,53 @@ void FileJPEG::load_render_options(Asset *asset)
 	delete asset->encoder_parameters[FILEJPEG_VCODEC_IX];
 	asset->encoder_parameters[FILEJPEG_VCODEC_IX] =
 		Paramlist::load_paramlist(pathbuf);
+}
+
+void FileJPEG::dump_jpeg_decompress_struct(jpeg_decompress_struct *jpeg, int indent)
+{
+	printf("%*sjpeg_decompress_struct %p dump:\n", indent, "", jpeg);
+	indent +=2;
+	printf("%*s[%d,%d], num_components %d '%s' -> '%s' precision %d\n", indent, "",
+		jpeg->image_width, jpeg->image_height, jpeg->num_components,
+		color_space_name(jpeg->jpeg_color_space),
+		color_space_name(jpeg->out_color_space), jpeg->data_precision);
+	printf("%*sout: [%d,%d], out_color_components %d output_components %d\n",
+		indent, "", jpeg->output_width, jpeg->output_height,
+		jpeg->out_color_components, jpeg->output_components);
+}
+
+const char *FileJPEG::color_space_name(J_COLOR_SPACE cspce)
+{
+	switch(cspce)
+	{
+	case JCS_GRAYSCALE:
+		return "Monochrome";
+	case JCS_RGB:
+		return "mRGB";
+	case JCS_YCbCr:
+		return "YUV";
+	case JCS_CMYK:
+		return "CMYK";
+	case JCS_YCCK:
+		return "YCbCrK";
+	case JCS_EXT_RGB:
+		return "RGB";
+	case JCS_EXT_BGR:
+		return "BGR";
+	case JCS_EXT_BGRX:
+		return "BGRx";
+	case JCS_EXT_XBGR:
+		return "xBGR";
+	case JCS_EXT_RGBA:
+		return "JCS_EXT_RGBA";
+	case JCS_EXT_BGRA:
+		return "RGBA";
+	case JCS_EXT_ABGR:
+		return "ARGB";
+	case JCS_RGB565:
+		return "RGB565";
+	}
+	return "Unknown";
 }
 
 

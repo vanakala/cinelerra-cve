@@ -31,6 +31,9 @@ public:
 	static void save_render_options(Asset *asset);
 	static void load_render_options(Asset *asset);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+	static void dump_jpeg_decompress_struct(jpeg_decompress_struct *jpeg,
+		int indent);
+	static const char *color_space_name(J_COLOR_SPACE cspce);
 
 private:
 	void show_jpeg_error(j_common_ptr cinfo);
