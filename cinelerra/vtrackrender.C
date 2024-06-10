@@ -84,7 +84,7 @@ void VTrackRender::process_vframe(ptstime pts, int rstep)
 		{
 			track_frame = BC_Resources::tmpframes.get_tmpframe(
 				media_track->track_w, media_track->track_h,
-				edlsession->color_model);
+				edlsession->color_model, "VTrackRender::process_vframe");
 			track_frame->set_pts(pts);
 			read_vframe(track_frame, edit);
 			track_frame = render_transition(track_frame, edit);

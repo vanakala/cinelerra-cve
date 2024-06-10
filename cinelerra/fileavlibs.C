@@ -2037,7 +2037,7 @@ int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	}
 
 	temp_frame = BC_Resources::tmpframes.get_tmpframe(frame_out->get_w(),
-		frame_out->get_h(), temp_cmodel);
+		frame_out->get_h(), temp_cmodel, "FileAVlibs::convert_cmodel");
 
 	if(convert_cmodel(picture_in, pix_fmt,
 			width_in, height_in, temp_frame))
@@ -2144,7 +2144,8 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 	{
 		int cmodel = ColorModels::inter_color_model(frame_in->get_color_model());
 
-		temp_frame = BC_Resources::tmpframes.get_tmpframe(frame_in->get_w(), frame_in->get_h(), cmodel);
+		temp_frame = BC_Resources::tmpframes.get_tmpframe(frame_in->get_w(),
+			frame_in->get_h(), cmodel, "FileAVlibs::convert_cmodel");
 
 		ColorModels::copy_colors(frame_in->get_w(), frame_in->get_h(),
 			temp_frame->get_data(), cmodel, temp_frame->get_bytes_per_line(),

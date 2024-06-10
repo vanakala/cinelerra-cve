@@ -155,7 +155,7 @@ void VideoRender::get_frame(ptstime pts)
 	frame = BC_Resources::tmpframes.get_tmpframe(
 		edl->this_edlsession->output_w,
 		edl->this_edlsession->output_h,
-		edl->this_edlsession->color_model);
+		edl->this_edlsession->color_model, "VideoRender::get_frame");
 	frame->set_duration(edl->this_edlsession->frame_duration());
 
 	if(renderengine->brender_available(pts))
