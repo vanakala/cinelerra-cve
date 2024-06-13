@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "file.h"
 #include "filepng.h"
@@ -12,6 +13,7 @@
 #include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 #include "mainerror.h"
 
@@ -228,9 +230,10 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_infop info_ptr;
 	png_infop end_info = 0;
 	int result = 0;
+	int frame_cmodel;
 	int color_type;
 	int color_depth;
-	int colormodel;
+	VFrame *work_frame;
 	int size = input->get_compressed_size();
 	input->set_compressed_size(0);
 
@@ -240,19 +243,30 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
 	png_read_info(png_ptr, info_ptr);
 
-	int png_color_type = png_get_color_type(png_ptr, info_ptr);
-	if(png_color_type == PNG_COLOR_TYPE_GRAY ||
-			png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+	color_type = png_get_color_type(png_ptr, info_ptr);
+	if(color_type == PNG_COLOR_TYPE_GRAY ||
+			color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 		png_set_gray_to_rgb(png_ptr);
 
-	colormodel = output->get_color_model();
-	color_type = png_get_color_type(png_ptr, info_ptr);
 	color_depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	// Little endian
-	if((color_depth == 16) && ((colormodel == BC_RGBA16161616) ||
-			(colormodel == BC_RGB161616)))
+	if(color_depth <= 8)
+	{
+		png_set_expand(png_ptr);
+		frame_cmodel = color_type & PNG_COLOR_MASK_ALPHA ?
+			BC_RGBA8888 : BC_RGB888;
+	}
+	else
+	{
+		frame_cmodel = color_type & PNG_COLOR_MASK_ALPHA ?
+			BC_RGBA16161616 : BC_RGB161616;
 		png_set_swap(png_ptr);
+	}
+
+	work_frame = BC_Resources::tmpframes.get_tmpframe(
+		png_get_image_width(png_ptr, info_ptr),
+		png_get_image_height(png_ptr, info_ptr),
+		frame_cmodel, "FilePNG::read_frame");
 
 	if(!(color_type & PNG_COLOR_MASK_COLOR))
 		png_set_gray_to_rgb(png_ptr);
@@ -260,16 +274,15 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	if(color_type & PNG_COLOR_MASK_PALETTE)
 		png_set_palette_to_rgb(png_ptr);
 
-	if(color_depth <= 8)
-		png_set_expand(png_ptr);
-
-	png_read_image(png_ptr, output->get_rows());
+	png_read_image(png_ptr, work_frame->get_rows());
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	input->set_compressed_size(size);
-	output->delete_row_ptrs();
 
-	if(ColorModels::has_alpha(native_cmodel))
+	output->transfer_from(work_frame);
+	BC_Resources::tmpframes.release_frame(work_frame);
+
+	if(ColorModels::has_alpha(frame_cmodel))
 		output->set_transparent();
 
 	return result;
