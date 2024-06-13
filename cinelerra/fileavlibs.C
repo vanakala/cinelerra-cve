@@ -335,16 +335,18 @@ int FileAVlibs::probe_input(Asset *asset)
 				if(decoder_ctx->sample_aspect_ratio.den)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(decoder_ctx->sample_aspect_ratio);
-				strncpy(asset->streams[asset->nb_streams].samplefmt,
-					av_get_pix_fmt_name(decoder_ctx->pix_fmt), MAX_LEN_CODECNAME);
+				if(decoder_ctx->pix_fmt != AV_PIX_FMT_NONE)
+					strncpy(asset->streams[asset->nb_streams].samplefmt,
+						av_get_pix_fmt_name(decoder_ctx->pix_fmt), MAX_LEN_CODECNAME);
 #else
 				asset->streams[asset->nb_streams].width = stream->codecpar->width;
 				asset->streams[asset->nb_streams].height = stream->codecpar->height;
 				if(stream->codecpar->sample_aspect_ratio.den)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(stream->codecpar->sample_aspect_ratio);
-				strncpy(asset->streams[asset->nb_streams].samplefmt,
-					av_get_pix_fmt_name((AVPixelFormat)stream->codecpar->format), MAX_LEN_CODECNAME);
+				if(stream->codecpar->format != AV_PIX_FMT_NONE)
+					strncpy(asset->streams[asset->nb_streams].samplefmt,
+						av_get_pix_fmt_name((AVPixelFormat)stream->codecpar->format), MAX_LEN_CODECNAME);
 #endif
 				asset->streams[asset->nb_streams].samplefmt[MAX_LEN_CODECNAME -1] = 0;
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
