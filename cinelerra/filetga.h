@@ -40,41 +40,21 @@ public:
 	static struct paramlist_defaults encoder_params[];
 
 private:
-	static void write_data(unsigned char *buffer, 
-		VFrame *data, 
-		int64_t &file_offset,
-		int len);
-	static void read_line(unsigned char *row,
-		unsigned char *data,
-		int64_t &file_offset,
-		int image_type,
-		int bpp,
-		int image_compression,
-		int bytes,
-		int width,
-		int fliphoriz,
-		int alphabits,
-		int data_size);
+	static void write_data(unsigned char *buffer, VFrame *data,
+		int &file_offset, int len);
+	static void read_line(unsigned char *row, unsigned char *data,
+		int &file_offset, int image_type, int bpp,
+		int image_compression, int bytes, int width,
+		int fliphoriz, int alphabits, int data_size);
 	static void flip_line(unsigned char *row, int bytes, int width);
-	static void rle_read(unsigned char *row,
-		unsigned char *data,
-		int64_t &file_offset,
-		int bytes,
-		int width);
-	static void rle_write(unsigned char *buffer, 
-		int width, 
-		int bytes, 
-		VFrame *frame, 
-		int64_t &file_offset);
-	static void bgr2rgb(unsigned char *dest,
-		unsigned char *src,
-		int width,
-		int bytes,
-		int alpha);
-	static void upsample(unsigned char *dest,
-		unsigned char *src,
-		int width,
-		int bytes);
+	static void rle_read(unsigned char *row, unsigned char *data,
+		int &file_offset, int bytes, int width);
+	static void rle_write(unsigned char *buffer, int width, int bytes,
+		VFrame *frame, int &file_offset);
+	static void bgr2rgb(unsigned char *dest, unsigned char *src,
+		int width, int bytes, int alpha);
+	static void upsample(unsigned char *dest, unsigned char *src,
+		int width, int bytes);
 };
 
 class TGAUnit : public FrameWriterUnit
