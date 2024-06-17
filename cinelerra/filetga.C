@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "edit.h"
 #include "filetga.h"
@@ -13,6 +14,7 @@
 #include "selection.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -24,8 +26,8 @@
 #define TGA_TYPE_GRAY        3
 
 // Only known compression is RLE
-#define TGA_COMP_NONE        0 
-#define TGA_COMP_RLE         1 
+#define TGA_COMP_NONE        0
+#define TGA_COMP_RLE         1
 
 #define TGA_RGB_RLE "rle"
 #define TGA_RGBA_RLE "rlea"
@@ -60,12 +62,6 @@ struct paramlist_defaults FileTGA::encoder_params[] =
 FileTGA::FileTGA(Asset *asset, File *file)
  : FileList(asset, file, "TGALIST", ".tga", FILE_TGA, FILE_TGA_LIST)
 {
-	temp = 0;
-}
-
-FileTGA::~FileTGA()
-{
-	delete temp;
 }
 
 int FileTGA::check_sig(Asset *asset)
@@ -129,18 +125,6 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window, Asset *asset,
 	}
 }
 
-int FileTGA::colormodel_supported(int colormodel)
-{
-	return colormodel;
-}
-
-int FileTGA::read_frame(VFrame *frame, VFrame *data)
-{
-	frame->clear_frame();
-	read_tga(asset, frame, data, temp);
-	return 0;
-}
-
 int FileTGA::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	TGAUnit *tga_unit = (TGAUnit*)unit;
@@ -156,11 +140,7 @@ FrameWriterUnit* FileTGA::new_writer_unit(FrameWriter *writer)
 
 size_t FileTGA::get_memory_usage()
 {
-	size_t result = FileList::get_memory_usage();
-
-	if(temp)
-		result += temp->get_data_size();
-	return result;
+	return FileList::get_memory_usage();
 }
 
 #define FOOTERSIZE 26
@@ -185,7 +165,7 @@ int FileTGA::read_frame_header(const char *path)
 	return result;
 }
 
-void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
+int FileTGA::read_frame(VFrame *frame, VFrame *data)
 {
 // Read header
 	unsigned char *footer, *header;
@@ -193,6 +173,10 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	int image_compression;
 	int input_cmodel;
 	int file_offset;
+	int source_cmodel = BC_RGB888;
+	VFrame *work_frame;
+	unsigned char *tga_cmap;
+	unsigned char colormap[4 * 256];
 
 	footer = data->get_data() + data->get_compressed_size() - FOOTERSIZE;
 	header = data->get_data();
@@ -226,7 +210,9 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 		break;
 	default:
 		image_type = 0;
+		return 1;
 	}
+
 	int idlength = header[0];
 	int colormaptype = header[1];
 	int colormapindex = header[3] + header[4] * 256;
@@ -239,16 +225,13 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	int bpp = header[16];
 	int bytes = (bpp + 7) / 8;
 	int alphabits = header[17] & 0x0f;
-	int fliphoriz = (header[17] & 0x10) ? 1 : 0;
-	int flipvert = (header[17] & 0x20) ? 0 : 1;
+	int fliphoriz = (header[17] & 0x10);
+	int flipvert = (header[17] & 0x20);
 	int data_size = data->get_compressed_size();
 
 	file_offset += idlength;
 
 // Get colormap
-	unsigned char *tga_cmap;
-	unsigned char colormap[4 * 256];
-
 	if(colormaptype == 1)
 	{
 		int cmap_bytes = (colormapsize + 7) / 8;
@@ -269,7 +252,6 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 		}
 	}
 
-	int source_cmodel = BC_RGB888;
 	switch(bpp)
 	{
 	case 32:
@@ -281,47 +263,34 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	}
 
 // Read image
-	VFrame *output_frame;
+	work_frame = BC_Resources::tmpframes.get_tmpframe(width, height,
+		source_cmodel, "FileTGA::read_frame");
 
-	if(frame->get_color_model() == source_cmodel)
-		output_frame = frame;
-	else
-	{
-		if(temp && temp->get_color_model() != source_cmodel)
-		{
-			delete temp;
-			temp = 0;
-		}
-
-		if(!temp)
-			temp = new VFrame(0, width, height, source_cmodel);
-		output_frame = temp;
-	}
-
-	if(flipvert)
+	if(!flipvert)
 		for(int i = height - 1; i >= 0; i--)
 		{
-			read_line(output_frame->get_row_ptr(i),
+			read_line(work_frame->get_row_ptr(i),
 				data->get_data(), file_offset,
 				image_type, bpp, image_compression,
 				bytes, width, fliphoriz, alphabits,
 				data_size);
 		}
 	else
-	{
 		for(int i = 0; i < height; i++)
 		{
-			read_line(output_frame->get_row_ptr(i),
+			read_line(work_frame->get_row_ptr(i),
 				data->get_data(), file_offset,
 				image_type, bpp,
 				image_compression,
 				bytes, width, fliphoriz, alphabits,
 				data_size);
 		}
-	}
 
-	if(output_frame != frame)
-		frame->transfer_from(output_frame);
+	frame->transfer_from(work_frame);
+	BC_Resources::tmpframes.release_frame(work_frame);
+	if(alphabits)
+		frame->set_transparent();
+	return 0;
 }
 
 void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
@@ -465,6 +434,16 @@ void FileTGA::read_line(unsigned char *row, unsigned char *data,
 			upsample(row, row, width, bytes);
 		else
 			bgr2rgb(row, row, width, bytes, bpp == 32);
+	}
+	if(!alphabits && bpp == 32)
+	{
+		unsigned char *p = row;
+
+		for(int i = 0; i < width; i++)
+		{
+			p += 3;
+			*p++ = 0xff;
+		}
 	}
 }
 
@@ -701,4 +680,42 @@ TGAUnit::TGAUnit(FileTGA *file, FrameWriter *writer)
 TGAUnit::~TGAUnit()
 {
 	delete temp;
+}
+
+void FileTGA::dump_TGA(unsigned const char *tga, int indent)
+{
+	printf("%*sTga image %p dump:\n", indent, "", tga);
+	indent += 2;
+	printf("%*sID length: %d Color map type: %d Image type '%s'\n", indent, "",
+		tga[0], tga[1], tga_image_type(tga[2]));
+	printf("%*sColor map specification: first %d, length %d bits %d\n", indent, "",
+		tga[3] | (tga[4] << 8), tga[5] | (tga[6] << 8), tga[7]);
+	printf("%*sImage: (%d,%d) [%d,%d] pixel depth %d, alpha %d flip %c%c\n",
+		indent, "",
+		tga[8] | (tga[9] << 8), tga[10] | (tga[11] << 8),
+		tga[12] | (tga[13] << 8), tga[14] | (tga[15] << 8),
+		tga[16], tga[17] & 0xf, //(tga[17] & 0x30) >> 4
+		tga[17] & 0x20 ? 'V' : '-', tga[17] & 0x10 ? 'H' : '-');
+}
+
+const char *FileTGA::tga_image_type(int val)
+{
+	switch(val)
+	{
+	case 0:
+		return "No image";
+	case 1:
+		return "Colormapped";
+	case 2:
+		return "True color";
+	case 3:
+		return "Grayscale";
+	case 9:
+		return "RLE colormap";
+	case 10:
+		return "RLE true color";
+	case 11:
+		return "RLE grayscale";
+	}
+	return "Unknown";
 }

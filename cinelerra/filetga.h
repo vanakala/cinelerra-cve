@@ -13,7 +13,6 @@ class FileTGA : public FileList
 {
 public:
 	FileTGA(Asset *asset, File *file);
-	~FileTGA();
 
 	static int check_sig(Asset *asset);
 	static void get_parameters(BC_WindowBase *parent_window, 
@@ -23,18 +22,14 @@ public:
 	int read_frame_header(const char *path);
 
 	size_t get_memory_usage();
-// To be used in single frame FileTGA
-	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
-	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 	static void save_render_options(Asset *asset);
 	static void load_render_options(Asset *asset);
-
-// For decoding only
-	VFrame *temp;
+	static void dump_TGA(unsigned const char *tga, int indent = 0);
+	static const char *tga_image_type(int val);
 
 	static const struct selection_int tga_compression[];
 	static struct paramlist_defaults encoder_params[];
