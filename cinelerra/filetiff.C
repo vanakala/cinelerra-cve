@@ -57,10 +57,8 @@ FileTIFF::FileTIFF(Asset *asset, File *file)
 {
 }
 
-void FileTIFF::get_parameters(BC_WindowBase *parent_window, 
-	Asset *asset, 
-	BC_WindowBase* &format_window,
-	int options)
+void FileTIFF::get_parameters(BC_WindowBase *parent_window, Asset *asset,
+	BC_WindowBase* &format_window, int options)
 {
 	Param *parm;
 
@@ -142,7 +140,6 @@ int FileTIFF::check_sig(Asset *asset)
 int FileTIFF::read_frame_header(const char *path)
 {
 	TIFF *stream;
-	int result = 0;
 
 	if(!(stream = TIFFOpen(path, "rb")))
 	{
@@ -153,41 +150,41 @@ int FileTIFF::read_frame_header(const char *path)
 // The raw format for certain cameras deviates from TIFF here.
 
 	int components = 0;
-	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &components);
 	int bitspersample = 0;
-	TIFFGetField(stream, TIFFTAG_BITSPERSAMPLE, &bitspersample);
 	int sampleformat = 0;
+	int result = 0;
+
+	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &components);
+	TIFFGetField(stream, TIFFTAG_BITSPERSAMPLE, &bitspersample);
 	TIFFGetField(stream, TIFFTAG_SAMPLEFORMAT, &sampleformat);
 
 	if(bitspersample == 8 && components == 3)
 		tiff_cmodel = FileTIFF::RGB_888;
-	else
-	if(bitspersample == 16 && components == 3)
+	else if(bitspersample == 16 && components == 3)
 		tiff_cmodel = FileTIFF::RGB_161616;
-	else
-	if(bitspersample == 8 && components == 4)
+	else if(bitspersample == 8 && components == 4)
 		tiff_cmodel = FileTIFF::RGBA_8888;
-	else
-	if(bitspersample == 16 && components == 4)
+	else if(bitspersample == 16 && components == 4)
 		tiff_cmodel = FileTIFF::RGBA_16161616;
-	else
-	if(bitspersample == 32 && components == 3)
+	else if(bitspersample == 32 && components == 3)
 		tiff_cmodel = FileTIFF::RGB_FLOAT;
-	else
-	if(bitspersample == 32 && components == 4)
+	else if(bitspersample == 32 && components == 4)
 		tiff_cmodel = FileTIFF::RGBA_FLOAT;
-	else
-	if(bitspersample == 8 && (components == 1 || components == 0))
+	else if(bitspersample == 8 && (components == 1 || components == 0))
 		tiff_cmodel = FileTIFF::GREYSCALE;
-	else
-	if(bitspersample == 1)
+	else if(bitspersample == 1)
 		tiff_cmodel = FileTIFF::BLACKWHITE;
+	else
+		result = 1;
 
 	TIFFClose(stream);
 
+	if(result)
+		return 1;
+
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
-	return result;
+	return 0;
 }
 
 int FileTIFF::colormodel_supported(int colormodel)
@@ -217,8 +214,10 @@ int FileTIFF::colormodel_supported(int colormodel)
 static tsize_t tiff_read(thandle_t ptr, tdata_t buf, tsize_t size)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
+
 	if(tiff_unit->data->get_compressed_size() < tiff_unit->offset + size)
 		return 0;
+
 	memcpy(buf, tiff_unit->data->get_data() + tiff_unit->offset, size);
 	tiff_unit->offset += size;
 	return size;
@@ -227,16 +226,14 @@ static tsize_t tiff_read(thandle_t ptr, tdata_t buf, tsize_t size)
 static tsize_t tiff_write(thandle_t ptr, tdata_t buf, tsize_t size)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
+
 	if(tiff_unit->data->get_compressed_allocated() < tiff_unit->offset + size)
-	{
 		tiff_unit->data->allocate_compressed_data((tiff_unit->offset + size) * 2);
-	}
 
 	if(tiff_unit->data->get_compressed_size() < tiff_unit->offset + size)
 		tiff_unit->data->set_compressed_size(tiff_unit->offset + size);
-	memcpy(tiff_unit->data->get_data() + tiff_unit->offset,
-		buf,
-		size);
+
+	memcpy(tiff_unit->data->get_data() + tiff_unit->offset, buf, size);
 	tiff_unit->offset += size;
 	return size;
 }
@@ -244,6 +241,7 @@ static tsize_t tiff_write(thandle_t ptr, tdata_t buf, tsize_t size)
 static toff_t tiff_seek(thandle_t ptr, toff_t off, int whence)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
+
 	switch(whence)
 	{
 	case SEEK_SET:
@@ -251,7 +249,7 @@ static toff_t tiff_seek(thandle_t ptr, toff_t off, int whence)
 		break;
 	case SEEK_CUR:
 		tiff_unit->offset += off;
-			break;
+		break;
 	case SEEK_END:
 		tiff_unit->offset = tiff_unit->data->get_compressed_size() + off;
 		break;
@@ -267,12 +265,14 @@ static int tiff_close(thandle_t ptr)
 static toff_t tiff_size(thandle_t ptr)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
+
 	return tiff_unit->data->get_compressed_size();
 }
 
 static int tiff_mmap(thandle_t ptr, tdata_t* pbase, toff_t* psize)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
+
 	*pbase = tiff_unit->data->get_data();
 	*psize = tiff_unit->data->get_compressed_size();
 	return 0;
@@ -290,16 +290,9 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	unit->data = input;
 
 	output->clear_frame();
-	stream = TIFFClientOpen("FileTIFF", 
-		"r",
-		(void*)unit,
-		tiff_read,
-		tiff_write,
-		tiff_seek,
-		tiff_close,
-		tiff_size,
-		tiff_mmap,
-		tiff_unmap);
+	stream = TIFFClientOpen("FileTIFF", "r", (void*)unit,
+		tiff_read, tiff_write, tiff_seek, tiff_close,
+		tiff_size, tiff_mmap, tiff_unmap);
 
 // This loads the original TIFF data into each scanline of the output frame, 
 // assuming the output scanlines are bigger than the input scanlines.
@@ -312,6 +305,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 		if(tiff_cmodel == FileTIFF::GREYSCALE)
 		{
 			unsigned char *row = output->get_row_ptr(i);
+
 			for(int j = output->get_w() - 1; j >= 0; j--)
 			{
 				unsigned char value = row[j];
@@ -320,10 +314,10 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 				row[j * 3 + 2] = value;
 			}
 		}
-		else
-		if(tiff_cmodel == FileTIFF::BLACKWHITE)
+		else if(tiff_cmodel == FileTIFF::BLACKWHITE)
 		{
 			unsigned char *row = output->get_row_ptr(i);
+
 			for(int j = output->get_w() - 1; j >= 0;)
 			{
 				unsigned char value = row[j / 8];
@@ -347,31 +341,23 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)unit;
-	int result = 0;
 	TIFF *stream;
-	tiff_unit->offset = 0;
-	tiff_unit->data = data;
-	tiff_unit->data->set_compressed_size(0);
 	int streamix = asset->get_stream_ix(STRDSC_VIDEO);
 	int height = asset->streams[streamix].height;
 	int width = asset->streams[streamix].width;
-
-	stream = TIFFClientOpen("FileTIFF", 
-		"w",
-		(void*)tiff_unit,
-		tiff_read,
-		tiff_write,
-		tiff_seek,
-		tiff_close,
-		tiff_size,
-		tiff_mmap,
-		tiff_unmap);
-
 	int components, color_model, bits, type, compression;
 	int sampleformat = SAMPLEFORMAT_UINT;
 	int bytesperrow;
 	int compression_param = FileTIFF::NONE;
 	int cmodel_param = FileTIFF::RGB_888;
+
+	tiff_unit->offset = 0;
+	tiff_unit->data = data;
+	tiff_unit->data->set_compressed_size(0);
+
+	stream = TIFFClientOpen("FileTIFF", "w", (void*)tiff_unit,
+		tiff_read, tiff_write, tiff_seek,
+		tiff_close, tiff_size, tiff_mmap, tiff_unmap);
 
 	if(asset->encoder_parameters[FILETIFF_VCODEC_IX])
 	{
@@ -458,9 +444,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	if(frame->get_color_model() == color_model)
 	{
 		for(int i = 0; i < height; i++)
-		{
 			TIFFWriteScanline(stream, frame->get_row_ptr(i), i, 0);
-		}
 	}
 	else
 	{
@@ -471,24 +455,17 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			tiff_unit->temp = 0;
 		}
 		if(!tiff_unit->temp)
-		{
-			tiff_unit->temp = new VFrame(0,
-				width,
-				height,
-				color_model);
-		}
+			tiff_unit->temp = new VFrame(0, width, height, color_model);
 
 		tiff_unit->temp->transfer_from(frame);
 
 		for(int i = 0; i < height; i++)
-		{
 			TIFFWriteScanline(stream, tiff_unit->temp->get_row_ptr(i), i, 0);
-		}
 	}
 
 	TIFFClose(stream);
 
-	return result;
+	return 0;
 }
 
 void FileTIFF::save_render_options(Asset *asset)

@@ -21,10 +21,8 @@ class FileTIFF : public FileList
 public:
 	FileTIFF(Asset *asset, File *file);
 
-	static void get_parameters(BC_WindowBase *parent_window, 
-		Asset *asset, 
-		BC_WindowBase* &format_window,
-		int options);
+	static void get_parameters(BC_WindowBase *parent_window, Asset *asset,
+		BC_WindowBase* &format_window, int options);
 	static int check_sig(Asset *asset);
 	int colormodel_supported(int colormodel);
 	int read_frame_header(const char *path);
