@@ -4,6 +4,7 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "asset.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "filetiff.h"
 #include "interlacemodes.h"
@@ -12,11 +13,14 @@
 #include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "tmpframecache.h"
 #include "selection.h"
 #include "vframe.h"
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <tiffio.h>
 #include <unistd.h>
 
 #define FILETIFF_VCODEC_IX 0
@@ -140,6 +144,7 @@ int FileTIFF::check_sig(Asset *asset)
 int FileTIFF::read_frame_header(const char *path)
 {
 	TIFF *stream;
+	int result = 0;
 
 	if(!(stream = TIFFOpen(path, "rb")))
 	{
@@ -148,31 +153,43 @@ int FileTIFF::read_frame_header(const char *path)
 	}
 
 // The raw format for certain cameras deviates from TIFF here.
+	tiff_cmodel = 0;
+	tiff_width = 0;
+	tiff_height = 0;
+	tiff_components = 0;
+	tiff_bitspersample = 0;
+	tiff_sampleformat = 0;
+	tiff_extrasamples = 0;
+	tiff_extracount = 0;
+	tiff_alpha = 0;
 
-	int components = 0;
-	int bitspersample = 0;
-	int sampleformat = 0;
-	int result = 0;
+	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &tiff_components);
+	TIFFGetField(stream, TIFFTAG_BITSPERSAMPLE, &tiff_bitspersample);
+	TIFFGetField(stream, TIFFTAG_SAMPLEFORMAT, &tiff_sampleformat);
+	TIFFGetField(stream, TIFFTAG_IMAGEWIDTH, &tiff_width);
+	TIFFGetField(stream, TIFFTAG_IMAGELENGTH, &tiff_height);
+	TIFFGetField(stream, TIFFTAG_EXTRASAMPLES, &tiff_extracount, &tiff_extrasamples);
 
-	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &components);
-	TIFFGetField(stream, TIFFTAG_BITSPERSAMPLE, &bitspersample);
-	TIFFGetField(stream, TIFFTAG_SAMPLEFORMAT, &sampleformat);
+	if(!tiff_width || !tiff_height)
+		return 1;
 
-	if(bitspersample == 8 && components == 3)
+	if(tiff_extracount)
+		tiff_alpha = tiff_extrasamples[0];
+	if(tiff_bitspersample == 8 && tiff_components == 3)
 		tiff_cmodel = FileTIFF::RGB_888;
-	else if(bitspersample == 16 && components == 3)
+	else if(tiff_bitspersample == 16 && tiff_components == 3)
 		tiff_cmodel = FileTIFF::RGB_161616;
-	else if(bitspersample == 8 && components == 4)
+	else if(tiff_bitspersample == 8 && tiff_components == 4)
 		tiff_cmodel = FileTIFF::RGBA_8888;
-	else if(bitspersample == 16 && components == 4)
+	else if(tiff_bitspersample == 16 && tiff_components == 4)
 		tiff_cmodel = FileTIFF::RGBA_16161616;
-	else if(bitspersample == 32 && components == 3)
+	else if(tiff_bitspersample == 32 && tiff_components == 3)
 		tiff_cmodel = FileTIFF::RGB_FLOAT;
-	else if(bitspersample == 32 && components == 4)
+	else if(tiff_bitspersample == 32 && tiff_components == 4)
 		tiff_cmodel = FileTIFF::RGBA_FLOAT;
-	else if(bitspersample == 8 && (components == 1 || components == 0))
+	else if(tiff_bitspersample == 8 && (tiff_components == 1 || tiff_components == 0))
 		tiff_cmodel = FileTIFF::GREYSCALE;
-	else if(bitspersample == 1)
+	else if(tiff_bitspersample == 1)
 		tiff_cmodel = FileTIFF::BLACKWHITE;
 	else
 		result = 1;
@@ -185,30 +202,6 @@ int FileTIFF::read_frame_header(const char *path)
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
 	return 0;
-}
-
-int FileTIFF::colormodel_supported(int colormodel)
-{
-	switch(tiff_cmodel)
-	{
-	case FileTIFF::BLACKWHITE:
-	case FileTIFF::RGB_888:
-		return BC_RGB888;
-	case FileTIFF::RGB_161616:
-		return BC_RGB161616;
-	case FileTIFF::GREYSCALE:
-		return BC_RGB888;
-	case FileTIFF::RGBA_8888:
-		return BC_RGBA8888;
-	case FileTIFF::RGBA_16161616:
-		return BC_RGBA16161616;
-	case FileTIFF::RGB_FLOAT:
-		return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_FLOAT:
-		return BC_RGBA_FLOAT;
-	default:
-		return BC_RGB888;
-	}
 }
 
 static tsize_t tiff_read(thandle_t ptr, tdata_t buf, tsize_t size)
@@ -288,25 +281,53 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	TIFF *stream;
 	unit->offset = 0;
 	unit->data = input;
+	VFrame *work_frame;
+	int work_cmodel = BC_RGB888;
 
-	output->clear_frame();
+	switch(tiff_cmodel)
+	{
+	case FileTIFF::BLACKWHITE:
+	case FileTIFF::RGB_888:
+	case FileTIFF::GREYSCALE:
+		work_cmodel = BC_RGB888;
+		break;
+	case FileTIFF::RGBA_8888:
+		work_cmodel = BC_RGBA8888;
+		break;
+	case FileTIFF::RGB_161616:
+		work_cmodel = BC_RGB161616;
+		break;
+	case FileTIFF::RGBA_16161616:
+		work_cmodel = BC_RGBA16161616;
+		break;
+	case FileTIFF::RGB_FLOAT:
+		work_cmodel = BC_RGB_FLOAT;
+		break;
+	case FileTIFF::RGBA_FLOAT:
+		work_cmodel = BC_RGBA_FLOAT;
+		break;
+	}
+
+	work_frame = BC_Resources::tmpframes.get_tmpframe(tiff_width, tiff_height,
+		work_cmodel, "FileTIFF::read_frame");
+
 	stream = TIFFClientOpen("FileTIFF", "r", (void*)unit,
 		tiff_read, tiff_write, tiff_seek, tiff_close,
 		tiff_size, tiff_mmap, tiff_unmap);
 
-// This loads the original TIFF data into each scanline of the output frame, 
+// This loads the original TIFF data into each scanline of the work frame,
 // assuming the output scanlines are bigger than the input scanlines.
 // Then it expands the input data in reverse to fill the row.
-	for(int i = 0; i < asset->streams[0].height; i++)
+	for(int i = 0; i < tiff_height; i++)
 	{
-		TIFFReadScanline(stream, output->get_row_ptr(i), i, 0);
+		TIFFReadScanline(stream, work_frame->get_row_ptr(i), i, 0);
 
 // For the greyscale model, the output is RGB888 but the input must be expanded
 		if(tiff_cmodel == FileTIFF::GREYSCALE)
 		{
-			unsigned char *row = output->get_row_ptr(i);
+			unsigned char *row = work_frame->get_row_ptr(i);
 
-			for(int j = output->get_w() - 1; j >= 0; j--)
+			for(int j = work_frame->get_w() - 1; j >= 0; j--)
 			{
 				unsigned char value = row[j];
 				row[j * 3] = value;
@@ -316,9 +337,9 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 		}
 		else if(tiff_cmodel == FileTIFF::BLACKWHITE)
 		{
-			unsigned char *row = output->get_row_ptr(i);
+			unsigned char *row = work_frame->get_row_ptr(i);
 
-			for(int j = output->get_w() - 1; j >= 0;)
+			for(int j = work_frame->get_w() - 1; j >= 0;)
 			{
 				unsigned char value = row[j / 8];
 				for(int m = 1; m < 0x100; m <<= 1, j--)
@@ -331,10 +352,13 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 			}
 		}
 	}
-
+	output->transfer_from(work_frame);
+	BC_Resources::tmpframes.release_frame(work_frame);
 	TIFFClose(stream);
 	delete unit;
 
+	if(tiff_alpha)
+		output->set_transparent();
 	return 0;
 }
 

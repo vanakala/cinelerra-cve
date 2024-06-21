@@ -6,12 +6,10 @@
 #ifndef FILETIFF_H
 #define FILETIFF_H
 
-#include <stdlib.h>
 #include "datatype.h"
 #include "file.inc"
 #include "filelist.h"
 #include "mutex.inc"
-#include <tiffio.h>
 #include "vframe.inc"
 
 // This header file is representative of any single frame file format.
@@ -24,7 +22,6 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window, Asset *asset,
 		BC_WindowBase* &format_window, int options);
 	static int check_sig(Asset *asset);
-	int colormodel_supported(int colormodel);
 	int read_frame_header(const char *path);
 	int read_frame(VFrame *output, VFrame *input);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
@@ -52,6 +49,14 @@ public:
 	};
 
 	int tiff_cmodel;
+	int tiff_components;
+	int tiff_bitspersample;
+	int tiff_sampleformat;
+	int tiff_width;
+	int tiff_height;
+	uint16_t tiff_extracount;
+	uint16_t *tiff_extrasamples;
+	int tiff_alpha;
 
 	Mutex *unit_lock;
 	static const struct selection_int tiff_compression[];
