@@ -12,6 +12,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "clip.h"
+#include "colors.h"
 
 #include <string.h>
 

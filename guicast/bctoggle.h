@@ -1,44 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #ifndef BCTOGGLE_H
 #define BCTOGGLE_H
 
 #include "bcbitmap.inc"
 #include "bcsubwindow.h"
-#include "colors.h"
 #include "fonts.h"
 #include "vframe.inc"
-
 
 class BC_Toggle : public BC_SubWindow
 {
 public:
-	BC_Toggle(int x, int y, 
-		VFrame **data,
-		int value, 
-		const char *caption = 0,
-		int bottom_justify = 0,
-		int font = MEDIUMFONT,
-		int color = -1);
+	BC_Toggle(int x, int y, VFrame **data, int value, const char *caption = 0,
+		int bottom_justify = 0, int font = MEDIUMFONT, int color = -1);
 	virtual ~BC_Toggle();
 
 	virtual int handle_event() { return 0; };
@@ -50,19 +27,10 @@ public:
 	void enable();
 	void disable();
 	void set_status(int value);
-	static void calculate_extents(BC_WindowBase *gui, 
-		VFrame **images,
-		int bottom_justify,
-		int *text_line,
-		int *w,
-		int *h,
-		int *toggle_x,
-		int *toggle_y,
-		int *text_x,
-		int *text_y, 
-		int *text_w,
-		int *text_h, 
-		const char *caption);
+	static void calculate_extents(BC_WindowBase *gui, VFrame **images,
+		int bottom_justify, int *text_line, int *w, int *h,
+		int *toggle_x, int *toggle_y, int *text_x, int *text_y,
+		int *text_w, int *text_h, const char *caption);
 
 	void initialize();
 	void set_images(VFrame **data);
@@ -116,29 +84,18 @@ public:
 class BC_Radial : public BC_Toggle
 {
 public:
-	BC_Radial(int x, 
-		int y, 
-		int value, 
-		const char *caption = 0,
-		int font = MEDIUMFONT,
-		int color = -1);
+	BC_Radial(int x, int y, int value, const char *caption = 0,
+		int font = MEDIUMFONT, int color = -1);
 };
 
 class BC_CheckBox : public BC_Toggle
 {
 public:
-	BC_CheckBox(int x, 
-		int y, 
-		int value, 
-		const char *caption = 0,
-		int font = MEDIUMFONT,
-		int color = -1);
-	BC_CheckBox(int x, 
-		int y, 
-		int *value, 
-		const char *caption = 0,
-		int font = MEDIUMFONT,
-		int color = -1);
+	BC_CheckBox(int x, int y, int value, const char *caption = 0,
+		int font = MEDIUMFONT, int color = -1);
+	BC_CheckBox(int x, int y, int *value, const char *caption = 0,
+		int font = MEDIUMFONT, int color = -1);
+
 	virtual int handle_event();
 
 	int *value;
@@ -147,10 +104,7 @@ public:
 class BC_Label : public BC_Toggle
 {
 public:
-	BC_Label(int x, 
-		int y, 
-		int value, 
-		int font = MEDIUMFONT,
+	BC_Label(int x, int y, int value, int font = MEDIUMFONT,
 		int color = -1);
 };
 

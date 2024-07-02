@@ -26,6 +26,8 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcsignals.h"
+#include "colors.h"
+
 #include <string.h>
 
 // ==================================== Menu ===================================
