@@ -1,23 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcmenu.h"
 #include "bcmenubar.h"
@@ -47,12 +31,8 @@ BC_Menu::~BC_Menu()
 	delete menu_popup;
 }
 
-void BC_Menu::initialize(BC_WindowBase *top_level, 
-		BC_MenuBar *menu_bar, 
-		int x, 
-		int y, 
-		int w, 
-		int h)
+void BC_Menu::initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar,
+	int x, int y, int w, int h)
 {
 	this->x = x; 
 	this->y = y; 
@@ -85,9 +65,7 @@ int BC_Menu::dispatch_button_press()
 
 // Menu is down so dispatch to popup
 	if(active)
-	{
 		result = menu_popup->dispatch_button_press();
-	}
 
 // Try title.
 	if(!result)
@@ -144,9 +122,7 @@ int BC_Menu::dispatch_motion_event()
 
 // try the popup
 	if(active)
-	{
 		result = menu_popup->dispatch_motion_event();
-	}
 
 	if(!result)
 	{
@@ -189,35 +165,26 @@ int BC_Menu::dispatch_motion_event()
 void BC_Menu::dispatch_cursor_leave()
 {
 	if(active)
-	{
 		menu_popup->dispatch_cursor_leave();
-	}
 	unhighlight();
 }
 
 void BC_Menu::dispatch_translation_event()
 {
 	if(active)
-	{
 		menu_popup->dispatch_translation_event();
-	}
 }
 
 void BC_Menu::activate_menu()
 {
 	Window tempwin;
 	int new_x, new_y, top_w, top_h;
+
 	if(menu_bar)
 	{
 		top_level->lock_window("BC_Menu::activate_menu");
-		XTranslateCoordinates(top_level->display, 
-			menu_bar->win, 
-			top_level->rootwin, 
-			x, 
-			y, 
-			&new_x, 
-			&new_y, 
-			&tempwin);
+		XTranslateCoordinates(top_level->display, menu_bar->win,
+			top_level->rootwin, x, y, &new_x, &new_y, &tempwin);
 		menu_popup->activate_menu(new_x, new_y, w, h, 0, 1);
 		top_level->unlock_window();
 	}
@@ -230,7 +197,8 @@ void BC_Menu::activate_menu()
 
 void BC_Menu::draw_items()
 {
-	if(active) menu_popup->draw_items();
+	if(active)
+		menu_popup->draw_items();
 }
 
 void BC_Menu::set_text(const char *text)
@@ -250,18 +218,12 @@ void BC_Menu::draw_title()
 // Menu is pulled down and title is recessed.
 
 		if(menu_bar->menu_title_bg[0])
-		{
-			menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[2]);
-		}
+			menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(),
+				menu_bar->menu_title_bg[2]);
 		else
-		{
-			menu_bar->draw_3d_box(x, y, w, h, 
-				resources->menu_shadow, 
-				BLACK, 
-				resources->menu_down,
-				resources->menu_down,
-				resources->menu_light);
-		}
+			menu_bar->draw_3d_box(x, y, w, h, resources->menu_shadow,
+				BLACK, resources->menu_down,
+				resources->menu_down, resources->menu_light);
 		text_offset = 1;
 	}
 	else
@@ -270,9 +232,8 @@ void BC_Menu::draw_title()
 		if(highlighted)
 		{
 			if(menu_bar->menu_title_bg[0])
-			{
-				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[1]);
-			}
+				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(),
+					menu_bar->menu_title_bg[1]);
 			else
 			{
 				menu_bar->set_color(resources->menu_highlighted);
@@ -282,21 +243,17 @@ void BC_Menu::draw_title()
 		else
 		{
 			if(menu_bar->menu_title_bg[0])
-			{
-				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[0]);
-			}
+				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(),
+					menu_bar->menu_title_bg[0]);
 			else
-			{
 				menu_bar->draw_background(x, y, w, h);
-			}
 		}
 	}
 
 	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
 	menu_bar->draw_text(x + 10 + text_offset, 
-		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
-		text);
+		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, text);
 	menu_bar->flash();
 	top_level->unlock_window();
 }
