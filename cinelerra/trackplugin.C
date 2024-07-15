@@ -100,6 +100,16 @@ void TrackPlugin::redraw(int x, int y, int w, int h)
 
 	if(drawn_w != w || drawn_h != h || redraw)
 	{
+		if(w < 0)
+		{
+// Hide the window of trackplugin
+			drawn_w = w;
+			drawn_h = h;
+			x += w;
+			w = -w;
+			reposition_window(x, y, w, h);
+			return;
+		}
 		reposition_window(x, y, w, h);
 		draw_3segmenth(0, 0, w, theme_global->get_image("plugin_bg_data"), 0);
 		plugin->calculate_title(string);
