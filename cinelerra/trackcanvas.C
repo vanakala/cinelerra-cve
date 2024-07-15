@@ -858,8 +858,16 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin,
 
 	x = round((plugin->get_pts() - master_edl->local_session->view_start_pts) /
 		master_edl->local_session->zoom_time);
-	w = round(plugin->duration() /
-		master_edl->local_session->zoom_time);
+	w = round(plugin->duration() / master_edl->local_session->zoom_time);
+
+	if(x < 0)
+	{
+		w += x;
+		x = 0;
+	}
+	if(w + x > get_w())
+		w = get_w() - x;
+
 	y = plugin->track->y_pixel +
 		master_edl->local_session->zoom_track;
 	if((number = plugin->track->get_canvas_number(plugin)) >= 0)
