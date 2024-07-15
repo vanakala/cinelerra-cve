@@ -74,26 +74,20 @@ void MWindow::find_cursor(void)
 
 void MWindow::fit_selection(void)
 {
-	ptstime selection_length;
+	ptstime selection_length, canvas_length, new_zoom;
+
 	if(EQUIV(master_edl->local_session->get_selectionstart(1),
-		master_edl->local_session->get_selectionend(1)))
-	{
+			master_edl->local_session->get_selectionend(1)))
 		selection_length = master_edl->duration();
-	}
 	else
-	{
 		selection_length = (master_edl->local_session->get_selectionend(1) -
 			master_edl->local_session->get_selectionstart(1));
-	}
 
-	for(master_edl->local_session->zoom_time = MIN_ZOOM_TIME;
-		gui->canvas->get_w() * master_edl->local_session->zoom_time < selection_length;
+	canvas_length = master_edl->local_session->zoom_time * gui->canvas->get_w();
+	new_zoom = master_edl->local_session->zoom_time / (canvas_length / selection_length);
 
-		master_edl->local_session->zoom_time *= 2);
-
-	master_edl->local_session->zoom_time = MIN(MAX_ZOOM_TIME,
-		master_edl->local_session->zoom_time);
-	zoom_time(master_edl->local_session->zoom_time);
+	CLAMP(new_zoom, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
+	zoom_time(new_zoom);
 }
 
 void MWindow::fit_autos(int doall)
