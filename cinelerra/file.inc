@@ -15,11 +15,13 @@
 #define FILE_OPEN_ALL      0xf0
 #define FILE_OPEN_HWACCEL  0x8000
 
-// Return values for open_file
+// Return values for file functions
 #define FILE_OK                 0
 #define FILE_NOT_FOUND          1
 #define FILE_UNRECOGNIZED_CODEC 2
 #define FILE_IS_XML             3
+#define FILE_CODING_ERROR       4
+#define FILE_EOF                5
 
 // File formats
 #define FILE_UNKNOWN       0

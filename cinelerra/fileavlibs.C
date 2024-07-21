@@ -1458,7 +1458,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 		if((sres = media_seek(current_stream, rqpos, avvpkt, vpkt_pos)) < 0)
 		{
 			avlibs_lock->unlock();
-			return 1;
+			return FILE_CODING_ERROR;
 		}
 	}
 
@@ -1502,7 +1502,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 				liberror(res, _("Failed to send packet to video decoder"));
 				av_packet_unref(avvpkt);
 				avlibs_lock->unlock();
-				return 1;
+				return FILE_CODING_ERROR;
 			}
 
 			if(got_it)
@@ -1518,7 +1518,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 				liberror(res, _("Failed to send packet to video decoder"));
 				av_packet_unref(avvpkt);
 				avlibs_lock->unlock();
-				return 1;
+				return FILE_CODING_ERROR;
 			}
 			got_it = 0;
 
@@ -1549,7 +1549,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 							liberror(res,
 								_("Failed to get frame from hwaccel"));
 							avlibs_lock->unlock();
-							return 1;
+							return FILE_CODING_ERROR;
 						}
 					}
 					break;
@@ -1560,7 +1560,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 			{
 				liberror(res, _("Failed to decode video frame"));
 				avlibs_lock->unlock();
-				return 1;
+				return FILE_CODING_ERROR;
 			}
 #endif
 			if(file_eof)
@@ -1597,9 +1597,15 @@ int FileAVlibs::read_frame(VFrame *frame)
 	if(error)
 	{
 		liberror(error, _("Video reading error"));
-		return 1;
+		frame->clear_frame();
+		return FILE_CODING_ERROR;
 	}
-	return 0;
+	if(file_eof)
+	{
+		frame->clear_frame();
+		return FILE_EOF;
+	}
+	return FILE_OK;
 }
 
 // Variables of read_aframe and its funcions:

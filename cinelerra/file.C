@@ -320,7 +320,7 @@ int File::open_file(Asset *asset, int open_method, int stream, const char *filep
 	default:
 		errormsg("No suitable codec for format '%s'",
 			ContainerSelection::container_to_text(asset->format));
-		return 1;
+		return FILE_UNRECOGNIZED_CODEC;
 	}
 
 	if(file->open_file(open_method, stream, filepath))
@@ -405,6 +405,7 @@ int File::get_samples(AFrame *aframe)
 int File::get_frame(VFrame *frame)
 {
 	ptstime rqpts, srcrqpts;
+	int result;
 
 	if(file)
 	{
@@ -416,7 +417,7 @@ int File::get_frame(VFrame *frame)
 			frame->set_source_pts(0);
 // Test cache
 		if(last_frame && last_frame->pts_in_frame_source(srcrqpts, FRAME_ACCURACY) &&
-			last_frame->next_source_pts() - srcrqpts > FRAME_ACCURACY)
+			fabs(last_frame->next_source_pts() - srcrqpts) < FRAME_ACCURACY)
 		{
 			if(frame->equivalent(last_frame))
 			{
@@ -424,7 +425,7 @@ int File::get_frame(VFrame *frame)
 				frame->copy_pts(last_frame);
 				frame->set_pts(rqpts);
 				adjust_times(frame, rqpts, srcrqpts);
-				return 0;
+				return FILE_OK;
 			}
 			BC_Resources::tmpframes.release_frame(last_frame);
 			last_frame = 0;
@@ -456,12 +457,12 @@ int File::get_frame(VFrame *frame)
 					supported_colormodel);
 			}
 			temp_frame->copy_pts(frame);
-			file->read_frame(temp_frame);
+			result = file->read_frame(temp_frame);
 			frame->transfer_from(temp_frame);
 			frame->copy_pts(temp_frame);
 		}
 		else
-			file->read_frame(frame);
+			result = file->read_frame(frame);
 
 		if(asset->single_image)
 		{
@@ -484,10 +485,10 @@ int File::get_frame(VFrame *frame)
 		last_frame->copy_from(frame);
 		last_frame->copy_pts(frame);
 		adjust_times(frame, rqpts, srcrqpts);
-		return 0;
+		return result;
 	}
 	else
-		return 1;
+		return FILE_NOT_FOUND;
 }
 
 void File::adjust_times(VFrame *frame, ptstime pts, ptstime src_pts)
