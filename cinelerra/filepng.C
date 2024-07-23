@@ -88,11 +88,6 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-int FilePNG::colormodel_supported(int colormodel)
-{
-	return native_cmodel;
-}
-
 int FilePNG::read_frame_header(const char *path)
 {
 	int result = 0;

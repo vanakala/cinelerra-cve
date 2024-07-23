@@ -23,7 +23,6 @@ public:
 		Asset *asset, 
 		BC_WindowBase* &format_window,
 		int options);
-	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
