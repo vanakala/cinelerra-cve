@@ -2062,11 +2062,6 @@ int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	return 0;
 }
 
-int FileAVlibs::converts_frame()
-{
-	return 1;
-}
-
 int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 	int width_out, int height_out, AVFrame *frame_out)
 {

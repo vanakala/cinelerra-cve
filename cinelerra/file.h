@@ -79,10 +79,6 @@ public:
 // Direct copy routines for direct copy playback
 	int can_copy_from(Edit *edit, int output_w, int output_h) { return 0; };
 
-// Get nearest colormodel that can be decoded without a temporary frame.
-// Used by read_frame.
-	int colormodel_supported(int colormodel);
-
 // Used by CICache to calculate the total size of the cache.
 // Based on temporary frames and a call to the file subclass.
 // The return value is limited 1MB each in case of audio file.
@@ -94,9 +90,6 @@ public:
 
 	Asset *asset;    // Copy of asset since File outlives EDL
 	FileBase *file; // virtual class for file type
-
-// Temporary storage for color conversions
-	VFrame *temp_frame;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.

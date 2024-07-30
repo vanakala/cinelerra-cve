@@ -55,7 +55,6 @@ void File::reset_parameters()
 	writing = 0;
 	getting_options = 0;
 	format_window = 0;
-	temp_frame = 0;
 	last_frame = 0;
 }
 
@@ -345,7 +344,6 @@ void File::close_file()
 		file->close_file();
 		delete file;
 	}
-	delete temp_frame;
 	BC_Resources::tmpframes.release_frame(last_frame);
 	reset_parameters();
 }
@@ -409,7 +407,7 @@ int File::get_frame(VFrame *frame)
 
 	if(file)
 	{
-		int supported_colormodel = colormodel_supported(frame->get_color_model());
+		int supported_colormodel = frame->get_color_model();
 		srcrqpts = frame->get_source_pts();
 		rqpts = frame->get_pts();
 
@@ -430,39 +428,8 @@ int File::get_frame(VFrame *frame)
 			BC_Resources::tmpframes.release_frame(last_frame);
 			last_frame = 0;
 		}
-// Need temp
-		if(frame->get_color_model() != BC_COMPRESSED &&
-			!file->converts_frame() &&
-			(supported_colormodel != frame->get_color_model() ||
-			frame->get_w() != asset->streams[asset_stream].width ||
-			frame->get_h() != asset->streams[asset_stream].height))
-		{
-			if(temp_frame)
-			{
-				if(!temp_frame->params_match(
-					asset->streams[asset_stream].width,
-					asset->streams[asset_stream].height,
-					supported_colormodel))
-				{
-					delete temp_frame;
-					temp_frame = 0;
-				}
-			}
 
-			if(!temp_frame)
-			{
-				temp_frame = new VFrame(0,
-					asset->streams[asset_stream].width,
-					asset->streams[asset_stream].height,
-					supported_colormodel);
-			}
-			temp_frame->copy_pts(frame);
-			result = file->read_frame(temp_frame);
-			frame->transfer_from(temp_frame);
-			frame->copy_pts(temp_frame);
-		}
-		else
-			result = file->read_frame(frame);
+		result = file->read_frame(frame);
 
 		if(asset->single_image)
 		{
@@ -549,18 +516,9 @@ int File::supports(int format)
 	return 0;
 }
 
-int File::colormodel_supported(int colormodel)
-{
-	if(file)
-		return file->colormodel_supported(colormodel);
-
-	return BC_RGB888;
-}
-
 size_t File::get_memory_usage() 
 {
 	size_t result = 0;
-	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	if(last_frame) result += last_frame->get_data_size();
 	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;

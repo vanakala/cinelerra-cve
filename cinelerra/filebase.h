@@ -46,9 +46,6 @@ public:
 	virtual int read_aframe(AFrame *aframe)  { return 1; };
 // Can convert samplerate and channels of audio
 	virtual int converts_samples() { return 0; };
-
-// Can convert colormodel and size
-	virtual int converts_frame() { return 0; };
 	virtual int read_frame(VFrame *frame) { return 1; };
 
 // Callbacks for FileTOC
@@ -60,9 +57,6 @@ public:
 
 	// tocfile is generated - filebase can do cleanup
 	virtual void toc_is_made(int canceled) {};
-
-// Return either the argument or another colormodel which read_frame should use.
-	virtual int colormodel_supported(int colormodel) { return colormodel; };
 
 protected:
 	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
