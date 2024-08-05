@@ -382,17 +382,17 @@ int File::write_frames(VFrame **frames, int len)
 int File::get_samples(AFrame *aframe)
 {
 	if(!file)
-		return 0;
+		return FILE_NOT_FOUND;
 
 	if(!aframe->get_samplerate() || aframe->get_buffer_length() <= 0 ||
 			aframe->get_source_duration() <= 0)
-		return 0;
+		return FILE_UNRECOGNIZED_CODEC;
 
 	aframe->position = round(aframe->get_source_pts() * aframe->get_samplerate());
 	if(aframe->get_length() + aframe->get_source_length() > aframe->get_buffer_length())
 		aframe->set_source_length(aframe->get_buffer_length() - aframe->get_length());
 	if(aframe->get_source_length() <= 0)
-		return 0;
+		return FILE_EOF;
 // Never try to read more samples than exist in the file
 	if(aframe->get_source_pts() + aframe->get_source_duration() > asset->stream_duration(asset_stream))
 		aframe->set_source_duration(asset->stream_duration(asset_stream) - aframe->get_source_pts());

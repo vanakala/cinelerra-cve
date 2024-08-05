@@ -1647,13 +1647,13 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		{
 			errormsg(_("Failed to allocate resampler context for audio decoding"));
 			avlibs_lock->unlock();
-			return -1;
+			return FILE_CODING_ERROR;
 		}
 		if(error = swr_init(swr_ctx))
 		{
 			errormsg(_("Failed to initalize resampler context when decoding (%d)"), error);
 			avlibs_lock->unlock();
-			return -1;
+			return FILE_CODING_ERROR;
 		}
 	}
 	else if(swr_samplerate != aframe->get_samplerate())
@@ -1672,13 +1672,13 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		{
 			errormsg(_("Failed to reconfigure resampler context for audio decoding"));
 			avlibs_lock->unlock();
-			return -1;
+			return FILE_CODING_ERROR;
 		}
 		if(error = swr_init(swr_ctx))
 		{
 			errormsg(_("Failed to reinitalize resampler context when decoding (%d)"), error);
 			avlibs_lock->unlock();
-			return -1;
+			return FILE_CODING_ERROR;
 		}
 	}
 
@@ -1727,7 +1727,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		copylen * sizeof(double));
 	fresh_open = 0;
 	avlibs_lock->unlock();
-	return 0;
+	return FILE_OK;
 }
 
 int FileAVlibs::decode_samples(int64_t rqpos, int length)
@@ -1746,7 +1746,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	{
 
 		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos)) < 0)
-			return -1;
+			return FILE_CODING_ERROR;
 
 		if(sres > 0)
 		{
@@ -1775,7 +1775,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					if(!fresh_open)
 					{
 						fputs(_("Failed to send packet to audio decoder when skiping.\n"), stdout);
-						return res;
+						return FILE_CODING_ERROR;
 					}
 				}
 				got_it = 0;
@@ -1794,7 +1794,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 #else
 						av_packet_unref(avapkt);
 #endif
-						return res;
+						return FILE_CODING_ERROR;
 					}
 				}
 
@@ -1824,7 +1824,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	}
 
 	if(res < 0)
-		return res;
+		return FILE_CODING_ERROR;
 
 	for(;;)
 	{
@@ -1863,7 +1863,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			{
 				liberror(res, _("Failed to send packet to audio decoder"));
 				av_packet_unref(avapkt);
-				return res;
+				return FILE_CODING_ERROR;
 			}
 			got_it = 0;
 			res = avcodec_receive_frame(decoder_context, avaframe);
@@ -1877,7 +1877,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 #endif
 			{
 				liberror(res, _("Audio decoding failed when reading"));
-				return res;
+				return FILE_CODING_ERROR;
 			}
 
 			if(got_it)
@@ -1909,12 +1909,15 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	if(error)
 	{
 		liberror(error, _("Failed to read audio"));
-		return error;
+		return FILE_CODING_ERROR;
 	}
 
 	audio_delay = swr_get_delay(swr_ctx, avaframe->sample_rate);
 
-	return 0;
+	if(file_eof)
+		return FILE_EOF;
+
+	return FILE_OK;
 }
 
 int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int planar)
