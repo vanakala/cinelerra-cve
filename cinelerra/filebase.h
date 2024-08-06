@@ -25,7 +25,7 @@ class FileBase
 {
 public:
 	FileBase(Asset *asset, File *file);
-	virtual ~FileBase();
+	virtual ~FileBase() {};
 
 	friend class File;
 	friend class FileList;
@@ -63,12 +63,6 @@ protected:
 	int dither;
 	Asset *asset;
 	File *file;
-};
-
-class FBConfig: public BC_Window
-{
-public:
-	FBConfig(BC_WindowBase *parent_window, int type, int absx, int absy);
 };
 
 #endif

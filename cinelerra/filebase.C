@@ -20,10 +20,6 @@ FileBase::FileBase(Asset *asset, File *file)
 	dither = 0;
 }
 
-FileBase::~FileBase()
-{
-}
-
 void FileBase::set_dither()
 {
 	dither = 1;
@@ -38,19 +34,4 @@ int FileBase::match4(const char *in, const char *out)
 		return 1;
 	else
 		return 0;
-}
-
-FBConfig::FBConfig(BC_WindowBase *parent_window, int type, int absx, int absy)
- : BC_Window(MWindow::create_title(N_("Compression options")),
-	absx,
-	absy,
-	350,
-	100)
-{
-	set_icon(mwindow_global->get_window_icon());
-	if(type & SUPPORTS_AUDIO)
-		add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
-	else
-		add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
-	add_subwindow(new BC_OKButton(this));
 }
