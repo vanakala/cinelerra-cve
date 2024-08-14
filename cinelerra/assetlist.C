@@ -109,13 +109,14 @@ void AssetList::remove_unused()
 		if(!current->global_inuse)
 		{
 			int inuse = 0;
+			int stream = -1;
 
-			for(int i = 0; i < current->nb_streams; i++)
+			while((stream = current->get_stream_ix(STRDSC_AUDIO, stream)) >= 0)
 			{
-				if((current->streams[i].options & STRDSC_AUDIO) &&
-						current->indexfiles[i].status != INDEX_READY)
+				if(current->indexfiles[stream].status != INDEX_READY)
 					inuse++;
 			}
+
 			if(!inuse)
 			{
 				asset = current->next;
