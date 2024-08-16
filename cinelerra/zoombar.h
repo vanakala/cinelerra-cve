@@ -6,10 +6,7 @@
 #ifndef ZOOMBAR_H
 #define ZOOMBAR_H
 
-class FromTextBox;
-class LengthTextBox;
-class ToTextBox;
-
+class PositionTextBox;
 class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
@@ -46,9 +43,9 @@ public:
 	AutoTypeMenu *auto_type;
 	ZoomTextBox *auto_zoom_text;
 
-	LengthTextBox *length_value;
-	FromTextBox *from_value;
-	ToTextBox *to_value;
+	PositionTextBox *length_value;
+	PositionTextBox *from_value;
+	PositionTextBox *to_value;
 	char string[256], string2[256];
 };
 
@@ -124,38 +121,16 @@ public:
 };
 
 
-class FromTextBox : public BC_TextBox
+class PositionTextBox : public BC_TextBox
 {
 public:
-	FromTextBox(ZoomBar *zoombar, int x, int y);
+	PositionTextBox(ZoomBar *zoombar, int x, int y, int set_id);
 
 	int handle_event();
 	void update_position(ptstime new_position);
 
 	ZoomBar *zoombar;
-};
-
-
-class LengthTextBox : public BC_TextBox
-{
-public:
-	LengthTextBox(ZoomBar *zoombar, int x, int y);
-
-	int handle_event();
-	void update_position(ptstime new_position);
-
-	ZoomBar *zoombar;
-};
-
-class ToTextBox : public BC_TextBox
-{
-public:
-	ToTextBox(ZoomBar *zoombar, int x, int y);
-
-	int handle_event();
-	void update_position(ptstime new_position);
-
-	ZoomBar *zoombar;
+	int set_id;
 };
 
 #endif

@@ -25,6 +25,10 @@
 #include "vframe.h"
 #include "zoombar.h"
 
+// Values for which_one
+#define SET_FROM 1
+#define SET_LENGTH 2
+#define SET_TO 3
 
 ZoomBar::ZoomBar()
  : BC_SubWindow(theme_global->mzoom_x, theme_global->mzoom_y,
@@ -72,11 +76,11 @@ void ZoomBar::show()
 	update_autozoom();
 	x += auto_zoom->get_w() + 5;
 
-	add_subwindow(from_value = new FromTextBox(this, x, y));
+	add_subwindow(from_value = new PositionTextBox(this, x, y, SET_FROM));
 	x += from_value->get_w() + 5;
-	add_subwindow(length_value = new LengthTextBox(this, x, y));
+	add_subwindow(length_value = new PositionTextBox(this, x, y, SET_LENGTH));
 	x += length_value->get_w() + 5;
-	add_subwindow(to_value = new ToTextBox(this, x, y));
+	add_subwindow(to_value = new PositionTextBox(this, x, y, SET_TO));
 	x += to_value->get_w() + 5;
 
 	update_formatting(from_value);
@@ -164,10 +168,6 @@ void ZoomBar::resize_event(int w, int h)
 	reposition_window(0, h - this->get_h(), w, this->get_h());
 }
 
-// Values for which_one
-#define SET_FROM 1
-#define SET_LENGTH 2
-#define SET_TO 3
 
 void ZoomBar::set_selection(int which_one)
 {
@@ -428,82 +428,43 @@ int ZoomTextBox::handle_event()
 }
 
 
-FromTextBox::FromTextBox(ZoomBar *zoombar, int x, int y)
+PositionTextBox::PositionTextBox(ZoomBar *zoombar, int x, int y, int set_id)
  : BC_TextBox(x, y, 90, 1, "")
 {
-	this->zoombar = zoombar;
-	set_tooltip(_("Selection start time"));
-}
+	const char *tooltip = 0;
 
-int FromTextBox::handle_event()
-{
-	if(get_keypress() == 13)
+	switch(set_id)
 	{
-		zoombar->set_selection(SET_FROM);
-		return 1;
+	case SET_FROM:
+		tooltip = N_("Selection start time");
+		break;
+	case SET_LENGTH:
+		tooltip = N_("Selection length");
+		break;
+	case SET_TO:
+		tooltip = _("Selection end time");
+		break;
 	}
-	return 0;
-}
-
-void FromTextBox::update_position(ptstime new_position)
-{
-	char string[256];
-
-	new_position += edlsession->get_frame_offset();
-	edlsession->ptstotext(string, new_position);
-	update(string);
-}
-
-
-LengthTextBox::LengthTextBox(ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 90, 1, "")
-{
 	this->zoombar = zoombar;
-	set_tooltip(_("Selection length"));
+	this->set_id = set_id;
+	if(tooltip)
+		set_tooltip(_(tooltip));
 }
 
-int LengthTextBox::handle_event()
-{
-	if(get_keypress() == 13)
-	{
-		zoombar->set_selection(SET_LENGTH);
-		return 1;
-	}
-	return 0;
-}
-
-void LengthTextBox::update_position(ptstime new_position)
-{
-	char string[256];
-
-	edlsession->ptstotext(string, new_position);
-	update(string);
-}
-
-
-ToTextBox::ToTextBox(ZoomBar *zoombar, int x, int y)
- : BC_TextBox(x, y, 90, 1, "")
-{
-	this->zoombar = zoombar;
-	set_tooltip(_("Selection end time"));
-}
-
-int ToTextBox::handle_event()
+int PositionTextBox::handle_event()
 {
 	if(get_keypress() == RETURN)
 	{
-		zoombar->set_selection(SET_TO);
+		zoombar->set_selection(set_id);
 		return 1;
 	}
 	return 0;
 }
 
-void ToTextBox::update_position(ptstime new_position)
+void PositionTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += edlsession->get_frame_offset() /
-		edlsession->frame_rate;
 	edlsession->ptstotext(string, new_position);
 	update(string);
 }
