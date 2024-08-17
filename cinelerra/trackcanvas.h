@@ -236,7 +236,6 @@ public:
 	void repeat_event(int duration);
 	void start_dragscroll();
 	void stop_dragscroll();
-	int start_selection(double position);
 	void drag_motion();
 	void drag_stop();
 	void start_pluginhandle_drag(ptstime position, int drag_cmd,
@@ -312,6 +311,7 @@ private:
 	int draw_defaultline(int center_pixel, int draw,
 		int buttonpress, int cursor_x, int cursor_y, double xzoom,
 		double yscale, int color, int autoidx, Track *track);
+	void start_selection(ptstime position);
 
 
 // transforms automation value into current display coords
@@ -326,7 +326,7 @@ private:
 				// 1 if not floating yet
 				// 2 if floating
 	int which_handle;	// 1 left or 2 right handle
-	double selection_midpoint1, selection_midpoint2;        // division between current ends
+	ptstime selection_midpoint1; // division between current ends
 	int region_selected;	// 1 if region selected
 	int drag_handle_pixel;
 	Mutex *canvas_lock;

@@ -62,7 +62,7 @@ TrackCanvas::TrackCanvas(MWindowGUI *gui)
 	gui->view_w, gui->view_h)
 {
 	this->gui = gui;
-	selection_midpoint1 = selection_midpoint2 = 0;
+	selection_midpoint1 = 0;
 	drag_handle_pixel = -1;
 	handle_selected = 0;
 	auto_selected = 0;
@@ -3220,7 +3220,8 @@ int TrackCanvas::do_edit_handles(int cursor_x, int cursor_y, int button_press,
 			mainsession->drag_origin_x = get_cursor_x();
 			mainsession->drag_origin_y = get_cursor_y();
 			mainsession->drag_start = position;
-			rerender = start_selection(position);
+			start_selection(position);
+			rerender = 1;
 			update_overlay = 1;
 		}
 	}
@@ -3531,7 +3532,8 @@ int TrackCanvas::button_press_event()
 // Highlight selection
 			else if(get_cursor() == IBEAM_CURSOR)
 			{
-				rerender = start_selection(position);
+				rerender = 1;
+				start_selection(position);
 				mainsession->current_operation = SELECT_REGION;
 			}
 
@@ -3564,9 +3566,8 @@ int TrackCanvas::button_press_event()
 	return result;
 }
 
-int TrackCanvas::start_selection(ptstime position)
+void TrackCanvas::start_selection(ptstime position)
 {
-	int rerender = 0;
 	position = master_edl->align_to_frame(position);
 
 // Extend a border
@@ -3579,26 +3580,19 @@ int TrackCanvas::start_selection(ptstime position)
 		{
 			master_edl->local_session->set_selectionstart(position);
 			selection_midpoint1 = master_edl->local_session->get_selectionend(1);
-// Que the CWindow
-			rerender = 1;
 		}
 		else
 		{
 			master_edl->local_session->set_selectionend(position);
 			selection_midpoint1 = master_edl->local_session->get_selectionstart(1);
-// Don't que the CWindow for the end
 		}
 	}
 	else
 // Start a new selection
 	{
-		master_edl->local_session->set_selectionstart(position);
-		master_edl->local_session->set_selectionend(position);
+		master_edl->local_session->set_selection(position);
 		selection_midpoint1 = position;
-// Que the CWindow
-		rerender = 1;
 	}
-	return rerender;
 }
 
 ptstime TrackCanvas::time_visible(void)
