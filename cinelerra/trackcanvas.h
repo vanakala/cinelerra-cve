@@ -326,7 +326,7 @@ private:
 				// 1 if not floating yet
 				// 2 if floating
 	int which_handle;	// 1 left or 2 right handle
-	ptstime selection_midpoint1; // division between current ends
+	ptstime selection_begin; //
 	int region_selected;	// 1 if region selected
 	int drag_handle_pixel;
 	Mutex *canvas_lock;

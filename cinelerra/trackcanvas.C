@@ -62,7 +62,7 @@ TrackCanvas::TrackCanvas(MWindowGUI *gui)
 	gui->view_w, gui->view_h)
 {
 	this->gui = gui;
-	selection_midpoint1 = 0;
+	selection_begin = 0;
 	drag_handle_pixel = -1;
 	handle_selected = 0;
 	auto_selected = 0;
@@ -2872,23 +2872,18 @@ int TrackCanvas::cursor_motion_event()
 		position = master_edl->align_to_frame(position);
 		position = MAX(position, 0);
 
-		if(position < selection_midpoint1)
+		if(position < selection_begin)
 		{
-			master_edl->local_session->set_selectionend(selection_midpoint1);
-			master_edl->local_session->set_selectionstart(position);
+			master_edl->local_session->set_selection(position, selection_begin);
 // Que the CWindow
 			mwindow_global->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update the faders
 			mwindow_global->update_plugin_guis();
-			mwindow_mode |= WUPD_PATCHBAY;
 		}
 		else
-		{
-			master_edl->local_session->set_selectionstart(selection_midpoint1);
-			master_edl->local_session->set_selectionend(position);
-// Don't que the CWindow
-		}
-		mwindow_mode |= WUPD_CURSOR | WUPD_CLOCK | WUPD_ZOOMBAR;
+			master_edl->local_session->set_selection(selection_begin, position);
+
+		mwindow_mode |= WUPD_CURSOR | WUPD_CLOCK | WUPD_ZOOMBAR | WUPD_PATCHBAY;
 		result = 1;
 		update_scroll = 1;
 		break;
@@ -3035,10 +3030,10 @@ void TrackCanvas::repeat_event(int duration)
 		switch(mainsession->current_operation)
 		{
 		case SELECT_REGION:
-			if(position < selection_midpoint1)
+			if(position < selection_begin)
 			{
-				master_edl->local_session->set_selectionend(selection_midpoint1);
-				master_edl->local_session->set_selectionstart(position);
+				master_edl->local_session->set_selection(position,
+					selection_begin);
 // Que the CWindow
 				mwindow_global->cwindow->update(WUPD_POSITION);
 // Update the faders
@@ -3046,11 +3041,8 @@ void TrackCanvas::repeat_event(int duration)
 				mwindow_global->update_gui(WUPD_PATCHBAY);
 			}
 			else
-			{
-				master_edl->local_session->set_selectionstart(selection_midpoint1);
-				master_edl->local_session->set_selectionend(position);
-// Don't que the CWindow
-			}
+				master_edl->local_session->set_selection(selection_begin,
+					position);
 			break;
 		}
 
@@ -3124,9 +3116,7 @@ int TrackCanvas::button_release_event()
 		if(mainsession->current_operation)
 		{
 			if(mainsession->current_operation == SELECT_REGION)
-			{
 				mwindow_global->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
-			}
 			mainsession->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 		}
@@ -3570,28 +3560,25 @@ void TrackCanvas::start_selection(ptstime position)
 {
 	position = master_edl->align_to_frame(position);
 
-// Extend a border
+// Extend selection
 	if(shift_down())
 	{
-		ptstime midpoint = (master_edl->local_session->get_selectionstart(1) +
-			master_edl->local_session->get_selectionend(1)) / 2;
-
-		if(position < midpoint)
+		if(position < selection_begin)
 		{
 			master_edl->local_session->set_selectionstart(position);
-			selection_midpoint1 = master_edl->local_session->get_selectionend(1);
+			selection_begin = master_edl->local_session->get_selectionend(1);
 		}
 		else
 		{
 			master_edl->local_session->set_selectionend(position);
-			selection_midpoint1 = master_edl->local_session->get_selectionstart(1);
+			selection_begin = master_edl->local_session->get_selectionstart(1);
 		}
 	}
 	else
 // Start a new selection
 	{
 		master_edl->local_session->set_selection(position);
-		selection_midpoint1 = position;
+		selection_begin = position;
 	}
 }
 
