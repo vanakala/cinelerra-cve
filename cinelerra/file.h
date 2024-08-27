@@ -69,11 +69,8 @@ public:
 // aframe->source_duration secs starting from aframe->source_pts
 	int get_samples(AFrame *aframe);
 
-
 // pts API - frame must have source_pts, and layer set
 	int get_frame(VFrame *frame);
-// adjust source pts and duration
-	void adjust_times(VFrame *frame, ptstime pts, ptstime src_pts);
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback

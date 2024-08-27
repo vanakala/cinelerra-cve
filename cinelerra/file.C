@@ -422,7 +422,6 @@ int File::get_frame(VFrame *frame)
 				frame->copy_from(last_frame);
 				frame->copy_pts(last_frame);
 				frame->set_pts(rqpts);
-				adjust_times(frame, rqpts, srcrqpts);
 				return FILE_OK;
 			}
 			BC_Resources::tmpframes.release_frame(last_frame);
@@ -451,19 +450,11 @@ int File::get_frame(VFrame *frame)
 		}
 		last_frame->copy_from(frame);
 		last_frame->copy_pts(frame);
-		adjust_times(frame, rqpts, srcrqpts);
+		frame->set_pts(rqpts);
 		return result;
 	}
 	else
 		return FILE_NOT_FOUND;
-}
-
-void File::adjust_times(VFrame *frame, ptstime pts, ptstime src_pts)
-{
-	frame->set_pts(pts);
-	if(frame->get_source_pts() < src_pts)
-		frame->set_duration(frame->get_duration() -
-			(src_pts - frame->get_source_pts()));
 }
 
 int File::supports(int format)
