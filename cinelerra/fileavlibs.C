@@ -1491,9 +1491,9 @@ int FileAVlibs::read_frame(VFrame *frame)
 			if(!file_eof)
 			{
 				if(avvpkt->pts != AV_NOPTS_VALUE)
-					vpkt_pos = avvpkt->pts + avvpkt->duration;
+					vpkt_pos = avvpkt->pts + avvpkt->duration * 2;
 				else
-					vpkt_pos = avvpkt->dts + avvpkt->duration;
+					vpkt_pos = avvpkt->dts + avvpkt->duration * 2;
 			}
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((res = avcodec_decode_video2(decoder_context,
