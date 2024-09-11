@@ -757,10 +757,7 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 			codec_contexts[current_stream] = decoder_context;
 
 			if(asset->streams[streamix].options & STRDSC_AUDIO)
-			{
-				audio_delay = 0;
 				buffer_start = buffer_end = 0;
-			}
 			else if(!asset->streams[streamix].options & STRDSC_VIDEO)
 			{
 				// should not happen
@@ -1744,7 +1741,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
-
 		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos)) < 0)
 			return FILE_CODING_ERROR;
 
@@ -1752,7 +1748,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 		{
 			swr_init(swr_ctx);
 			apkt_duration = 0;
-			audio_delay = 0;
 		}
 		while(audio_pos < rqpos && (sres || (av_read_frame(context, avapkt) == 0)))
 		{
@@ -1912,7 +1907,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 		return FILE_CODING_ERROR;
 	}
 
-	audio_delay = swr_get_delay(swr_ctx, avaframe->sample_rate);
+	audio_pos -= swr_get_delay(swr_ctx, context->streams[current_stream]->time_base.den);
 
 	if(file_eof)
 		return FILE_EOF;

@@ -189,7 +189,6 @@ private:
 	int num_buffers;
 	int buffer_len;
 	int buffer_pos;
-	int64_t audio_delay;
 	int64_t buffer_start;
 	int64_t buffer_end;
 	int fresh_open;
