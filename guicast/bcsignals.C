@@ -6,19 +6,20 @@
 
 #include "bcsignals.h"
 #include "bcwindowbase.inc"
+
+#include <errno.h>
+#include <execinfo.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <ucontext.h>
-#include <execinfo.h>
+#include <values.h>
 #include <X11/Xlib.h>
 #include <X11/Xlibint.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <math.h>
-#include <values.h>
 
 #define EPSILON (2e-6)
 
