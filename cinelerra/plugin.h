@@ -8,6 +8,7 @@
 #define PLUGIN_H
 
 #include "aframe.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
 #include "guidelines.inc"
