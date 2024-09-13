@@ -498,6 +498,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // Get last column
 	if(current_frame)
 	{
+		pixmap->canvas->set_color(theme_global->audio_color);
 		y1 = round(center_pixel - highsample * master_edl->local_session->zoom_y / 2);
 		y2 = round(center_pixel - lowsample * master_edl->local_session->zoom_y / 2);
 		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
