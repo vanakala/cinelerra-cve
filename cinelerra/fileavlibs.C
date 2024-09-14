@@ -2639,7 +2639,7 @@ int FileAVlibs::fill_toc_streams(FileTOC *tocfile)
 		toc->max_offset = -INT64_MAX;
 	}
 	avformat_seek_file(context, -1, INT64_MIN, INT64_MIN, 0,
-		AVSEEK_FLAG_ANY);
+		AVSEEK_FLAG_ANY | AVSEEK_FLAG_BYTE);
 	avformat_flush(context);
 
 	kf.kf = 0;
