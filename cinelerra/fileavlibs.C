@@ -4453,3 +4453,18 @@ void FileAVlibs::dump_AVHWFramesConstraints(AVHWFramesConstraints *constr, int i
 	printf("%*sSW formats:",  indent, "");
 	FileAVlibs::dump_AVPixelFormats(constr->valid_sw_formats);
 }
+
+void FileAVlibs::dump_mediainfo(AVFormatContext *context,
+	AVCodecContext **codec_contexts, int indent)
+{
+	printf("%*sMedia file info dump:\n", indent, "");
+	indent++;
+	dump_AVFormatContext(context, indent);
+	printf("%*sMedia streams dump:\n", indent, "");
+	for(int i = 0; i < context->nb_streams; i++)
+	{
+		dump_AVStream(context->streams[i], indent + 1);
+		if(codec_contexts && codec_contexts[i])
+			dump_AVCodecContext(codec_contexts[i], indent+2);
+	}
+}

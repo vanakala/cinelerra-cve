@@ -148,6 +148,8 @@ private:
 	static void dump_AVPixelFormats(AVPixelFormat *pix_fmts);
 	static void dump_AVHWFramesConstraints(AVHWFramesConstraints *constr,
 		int indent = 0);
+	static void dump_mediainfo(AVFormatContext *context,
+		AVCodecContext **codec_contexts = 0, int indent = 0);
 
 	static struct avlib_formattable known_formats[];
 	AVFormatContext *context;
