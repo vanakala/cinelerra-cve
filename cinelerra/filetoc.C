@@ -141,10 +141,19 @@ reindex:
 
 			if(media->fill_toc_streams(this))
 				goto toc_canceled;
+
 			for(i = 0; i < num_streams; i++)
 			{
 				stream_params *td = &toc_streams[i];
 
+				if(!td->max_items)
+				{
+					td->min_index = 0;
+					td->max_index = 0;
+					td->min_offset = 0;
+					td->max_offset = 0;
+					append_item(0, 0, 0, 0);
+				}
 				if(canceled)
 					goto toc_canceled;
 				put_int32(TOCFILE_STREAM);
