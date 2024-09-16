@@ -1114,7 +1114,10 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 				liberror(rv, _("Failed to copy parameters from audio context"));
 #endif
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
-			avaframe->nb_samples = audio_ctx->frame_size;
+			if(audio_ctx->frame_size)
+				avaframe->nb_samples = audio_ctx->frame_size;
+			else
+				avaframe->nb_samples = 4096;
 
 			if((rv = av_frame_get_buffer(avaframe, 0)) < 0)
 			{
