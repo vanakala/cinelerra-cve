@@ -72,7 +72,6 @@ public:
 	Asset();
 	Asset(Asset &asset);
 	Asset(const char *path);
-	Asset(const int plugin_type, const char *plugin_path);
 	~Asset();
 
 	void init_values();

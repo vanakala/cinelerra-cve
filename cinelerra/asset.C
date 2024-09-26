@@ -58,12 +58,6 @@ Asset::Asset(const char *path)
 	strcpy(this->path, path);
 }
 
-Asset::Asset(const int plugin_type, const char *plugin_title)
- : ListItem<Asset>()
-{
-	init_values();
-}
-
 Asset::~Asset()
 {
 	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
