@@ -527,13 +527,14 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
 		cwindow->gui->clear_canvas();
-		reset_caches();
 		assetlist_global.reset_inuse();
 		cliplist_global.remove_all_objects();
 		vwindow->remove_source();
 		vwindow_edl->reset_instance();
 		master_edl->reset_instance();
+		reset_caches();
 		set_filename(0);
+		assetlist_global.remove_unused();
 	}
 
 	original_length = master_edl->duration();
@@ -1166,6 +1167,7 @@ void MWindow::save_backup(int is_manual)
 void MWindow::reset_caches()
 {
 	gui->canvas->reset_caches();
+	cwindow->gui->canvas->release_refresh_frame();
 	BC_Resources::tmpframes.delete_unused();
 	audio_frames.delete_unused();
 }
