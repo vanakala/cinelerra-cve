@@ -362,18 +362,22 @@ void ResourceThread::cache_delete_oldest()
 
 void ResourceThread::reset_caches()
 {
+	trackcanvas->pixmaps_lock->lock("ResourceThread::reset_caches");
 	frame_cache->remove_all();
 	wave_cache->remove_all();
 	audio_cache->remove_all();
 	video_cache->remove_all();
+	trackcanvas->pixmaps_lock->unlock();
 }
 
 void ResourceThread::remove_asset_from_caches(Asset *asset)
 {
+	trackcanvas->pixmaps_lock->lock("ResourceThread::remove_asset_from_caches");
 	frame_cache->remove_asset(asset);
 	wave_cache->remove_asset(asset);
 	audio_cache->delete_entry(asset);
 	video_cache->delete_entry(asset);
+	trackcanvas->pixmaps_lock->unlock();
 }
 
 void ResourceThread::show_cache_status(int indent)
