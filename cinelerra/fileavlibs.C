@@ -410,7 +410,11 @@ int FileAVlibs::probe_input(Asset *asset)
 				asset->programs[i].streams[j] = prg->stream_index[j];
 		}
 		if(asset->nb_programs)
-			asset->set_program(0);
+		{
+// Project loading sets the program_id
+			if(!asset->program_id)
+				asset->set_program(0);
+		}
 		av_dict_free(&pcm_opts);
 
 		if(asset->format != FILE_UNKNOWN)

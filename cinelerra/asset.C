@@ -671,7 +671,7 @@ void Asset::read(FileXML *file, int expand_relative)
 	}
 	// Ignore program_id from indexfile
 	if(!have_index && program >= 0)
-		set_program_id(program);
+		program_id = program;
 	FileAVlibs::update_decoder_format_defaults(this);
 }
 
