@@ -3661,6 +3661,10 @@ int FileAVlibs::have_hwaccel(Asset *asset)
 {
 	int result = 0;
 	AVBufferRef *hw_device_ctx = 0;
+	int avloglevel = av_log_get_level();
+
+// Suppress avlibs messages
+	av_log_set_level(AV_LOG_QUIET);
 
 	if(!av_hwdevice_ctx_create(&hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI,
 			NULL, NULL, 0) && hw_device_ctx)
@@ -3700,6 +3704,7 @@ int FileAVlibs::have_hwaccel(Asset *asset)
 			result = 1;
 		av_buffer_unref(&hw_device_ctx);
 	}
+	av_log_set_level(avloglevel);
 	return result;
 }
 
