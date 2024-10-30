@@ -181,6 +181,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	reading = 0;
 	writing = 0;
 	current_stream = -1;
+	asset_stream = -1;
 	memset(resampled_data, 0, sizeof(resampled_data));
 	memset(codec_contexts, 0, sizeof(codec_contexts));
 	hw_device_ctx = 0;
@@ -705,6 +706,7 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 
 			current_stream = asset->streams[streamix].stream_index;
 			stream = context->streams[current_stream];
+			asset_stream = streamix;
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 			decoder_context = stream->codec;
@@ -761,7 +763,7 @@ int FileAVlibs::open_file(int open_mode, int streamix, const char *filepath)
 			codec_contexts[current_stream] = decoder_context;
 
 			if(asset->streams[streamix].options & STRDSC_AUDIO)
-				buffer_start = buffer_end = 0;
+				abuffer_start = abuffer_end = 0;
 			else if(!asset->streams[streamix].options & STRDSC_VIDEO)
 			{
 				// should not happen
@@ -1616,8 +1618,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 //   audio_pos: stream position in stream units
 //   rqpos: requested position in stream_units
 //   rqlen: requested length in stream_units
-//   buffer_start, buffer_end in stream_units
-//   buffer_pos: end of abuffer in samples of aframe
 
 int FileAVlibs::read_aframe(AFrame *aframe)
 {
@@ -1626,6 +1626,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	AVCodecContext *decoder_context = codec_contexts[current_stream];
 	int num_ch = decoder_context->channels;
 	int error;
+	ptstime framestart, frameend;
 
 	avlibs_lock->lock("FileAVlibs::read_aframe");
 
@@ -1704,32 +1705,40 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		}
 		num_buffers = num_ch;
 		buffer_len = aframe->get_buffer_length();
-		buffer_start = buffer_end = 0;
 		buffer_pos = 0;
 	}
-	rqpos = round((aframe->get_source_pts() + asset->base_pts()) / av_q2d(stream->time_base));
-	rqlen = round(aframe->get_source_duration() / av_q2d(stream->time_base));
 
-	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end && !file_eof))
+	framestart = aframe->get_source_pts() + asset->base_pts();
+	frameend = aframe->get_end_pts() + asset->base_pts();
+
+	if(frameend < asset->streams[asset_stream].start ||
+			framestart > asset->streams[asset_stream].end)
+		aframe->clear_frame(aframe->get_pts(), aframe->get_source_duration());
+	else
 	{
-		buffer_start = buffer_end = rqpos;
-		buffer_pos = 0;
+		rqpos = round((aframe->get_source_pts() + asset->base_pts()) /
+			av_q2d(stream->time_base));
+		rqlen = round(aframe->get_source_duration() / av_q2d(stream->time_base));
 
-		if(error = decode_samples(rqpos, aframe->fill_length() - buffer_pos))
+		if(rqpos != abuffer_start || (rqpos + rqlen > abuffer_end && !file_eof))
 		{
-			apkt_duration = 0;
-			avlibs_lock->unlock();
-			return error;
-		}
-		buffer_end = round((double)buffer_pos / aframe->get_samplerate() /
-			av_q2d(stream->time_base)) + buffer_start;
-	}
+			buffer_pos = 0;
+			abuffer_start = rqpos;
 
-	int copylen = MIN(buffer_pos, aframe->fill_length());
-	aframe->set_filled(copylen);
-	memcpy(aframe->buffer, abuffer[aframe->channel],
-		copylen * sizeof(double));
-	fresh_open = 0;
+			if(error = decode_samples(rqpos, aframe->fill_length() - buffer_pos))
+			{
+				apkt_duration = 0;
+				avlibs_lock->unlock();
+				return error;
+			}
+		}
+
+		int copylen = MIN(buffer_pos, aframe->fill_length());
+		aframe->set_filled(copylen);
+		memcpy(aframe->buffer, abuffer[aframe->channel],
+			copylen * sizeof(double));
+		fresh_open = 0;
+	}
 	avlibs_lock->unlock();
 	return FILE_OK;
 }
@@ -1750,11 +1759,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	{
 		if((sres = media_seek(current_stream, rqpos, avapkt, apkt_pos)) < 0)
 			return FILE_CODING_ERROR;
-
 		if(sres > 0)
 		{
 			swr_init(swr_ctx);
 			apkt_duration = 0;
+			abuffer_start = abuffer_end = rqpos;
 		}
 		while(audio_pos < rqpos && (sres || (av_read_frame(context, avapkt) == 0)))
 		{
@@ -1811,10 +1820,16 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 #endif
 					if(audio_pos > rqpos)
 					{
-						int inpos = round((audio_pos - rqpos) *
-							av_q2d(context->streams[current_stream]->time_base) /
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
+						abuffer_start = av_frame_get_best_effort_timestamp(avaframe);
+#else
+						abuffer_start = avaframe->best_effort_timestamp;
+#endif
+						int inpos = round((rqpos - abuffer_start) *
+							av_q2d(context->streams[current_stream]->time_base) *
 							decoder_context->sample_rate);
 
+						abuffer_end = abuffer_start = rqpos;
 						res = fill_buffer(avaframe, inpos,
 							av_get_bytes_per_sample(decoder_context->sample_fmt),
 							av_sample_fmt_is_planar(decoder_context->sample_fmt));
@@ -1837,7 +1852,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			error = 0;
 			file_eof = 1;
 		}
-
 		if(file_eof)
 		{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
@@ -1957,10 +1971,15 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 		in_length); // input samples
 
 	if(out_samples > 0)
+	{
 		buffer_pos += out_samples;
-
+		abuffer_end += round((double)in_length /
+			codec_contexts[current_stream]->sample_rate /
+			av_q2d(context->streams[current_stream]->time_base));
+	}
 	return out_samples;
 }
+
 
 int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
@@ -3719,6 +3738,11 @@ Paramlist *FileAVlibs::scan_encoder_private_opts(AVCodecID codec, int options)
 			options, encoder->name));
 
 	return 0;
+}
+
+ptstime FileAVlibs::pos2pts(int64_t pos, AVStream *stream)
+{
+	return pos * av_q2d(stream->time_base);
 }
 
 const char *FileAVlibs::dump_AVMediaType(enum AVMediaType type)

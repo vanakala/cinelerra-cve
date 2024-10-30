@@ -121,6 +121,7 @@ private:
 	static int skip_avoption(const AVOption *opt, int typefl);
 	static int encoder_exists(AVOutputFormat *oformat,
 		const char *encstr, int support);
+	static ptstime pos2pts(int64_t pos, AVStream *stream);
 	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
 	static void dump_AVStream(AVStream *stm, int indent = 0);
 	static void dump_AVCodecContext(AVCodecContext *ctx, int indent = 0);
@@ -168,8 +169,10 @@ private:
 	// Streams to encode;
 	int audio_index;
 	int video_index;
-	// Stream to decode
+	// Stream to decode in context
 	int current_stream;
+	// Stream to decode in asset
+	int asset_stream;
 	// Next video read position
 	int64_t video_pos;
 	int64_t vpkt_pos;
@@ -190,9 +193,9 @@ private:
 	int input_channels;
 	int num_buffers;
 	int buffer_len;
-	int buffer_pos;
-	int64_t buffer_start;
-	int64_t buffer_end;
+	int buffer_pos;        // abuffer end in aframe samples
+	int64_t abuffer_start; // abuffer start stream units
+	int64_t abuffer_end;   // abuffer end in stream units
 	int fresh_open;
 	int swr_samplerate;
 	int64_t swr_ch_layout;
