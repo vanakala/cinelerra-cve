@@ -621,6 +621,11 @@ void Asset::set_base_pts(int stream)
 
 ptstime Asset::base_pts()
 {
+	if(nb_programs)
+	{
+		struct progdesc *pdesc = get_program(program_id);
+		return pdesc->start;
+	}
 	return pts_base;
 }
 
