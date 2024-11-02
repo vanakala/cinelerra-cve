@@ -249,3 +249,8 @@ int CWindow::stop_playback()
 
 	return playback_engine->is_playing_back;
 }
+
+void CWindow::reset_engine()
+{
+	playback_engine->reset_engines();
+}

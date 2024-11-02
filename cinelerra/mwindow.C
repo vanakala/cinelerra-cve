@@ -535,6 +535,8 @@ void MWindow::load_filenames(ArrayList<char*> *filenames,
 		reset_caches();
 		set_filename(0);
 		assetlist_global.remove_unused();
+		cwindow->reset_engine();
+		vwindow->reset_engine();
 	}
 
 	original_length = master_edl->duration();

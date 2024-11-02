@@ -40,6 +40,7 @@ public:
 	void update(int options);
 	int stop_playback();
 	VFrame *get_window_icon();
+	void reset_engine();
 
 	EDLSession *vedlsession;
 	VTracking *playback_cursor;

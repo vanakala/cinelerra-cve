@@ -249,3 +249,8 @@ VFrame *VWindow::get_window_icon()
 {
 	return theme_global->get_image("vwindow_icon");
 }
+
+void VWindow::reset_engine()
+{
+	playback_engine->reset_engines();
+}

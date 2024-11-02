@@ -50,6 +50,7 @@ public:
 	GuideFrame *new_guideframe(ptstime start, ptstime end, GuideFrame **gframe);
 	void delete_guideframe(GuideFrame **gframe);
 	int stop_playback();
+	void reset_engine();
 
 	int destination;
 	CWindowGUI *gui;
