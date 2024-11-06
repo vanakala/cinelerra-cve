@@ -271,6 +271,7 @@ void TitleWindow::update_color()
 	draw_box(color_x, color_y, 100, 30);
 	set_color(plugin->config.color_stroke());
 	draw_box(color_stroke_x, color_stroke_y, 100, 30);
+	flash();
 }
 
 void TitleWindow::update_justification()
@@ -781,6 +782,7 @@ int TitleColorThread::handle_new_color(int red, int green, int blue, int alpha)
 	client->config.color_red = red;
 	client->config.color_green = green;
 	client->config.color_blue = blue;
+	window->update_color();
 	client->send_configure_change();
 	return 1;
 }
@@ -798,6 +800,7 @@ int TitleColorStrokeThread::handle_new_color(int red, int green, int blue, int a
 	client->config.color_stroke_red = red;
 	client->config.color_stroke_green = green;
 	client->config.color_stroke_blue = blue;
+	window->update_color();
 	client->send_configure_change();
 	return 1;
 }
