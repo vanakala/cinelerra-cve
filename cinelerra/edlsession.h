@@ -160,6 +160,8 @@ public:
 	int experimental_codecs;
 // Show another menu of encoders
 	int encoders_menu;
+// Calculate framerate
+	int calculate_framerate;
 // metadata for output file
 	char metadata_author[BCTEXTLEN];
 	char metadata_title[BCTEXTLEN];

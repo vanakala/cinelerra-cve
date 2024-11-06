@@ -82,6 +82,7 @@ EDLSession::EDLSession()
 	show_avlibsmsgs = 0;
 	experimental_codecs = 1;
 	encoders_menu = 0;
+	calculate_framerate = 0;
 	metadata_author[0] = 0;
 	metadata_title[0] = 0;
 	metadata_copyright[0] = 0;
@@ -215,6 +216,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	show_avlibsmsgs = defaults->get("SHOW_AVLIBSMSGS", show_avlibsmsgs);
 	experimental_codecs = defaults->get("EXPERIMENTAL_CODECS", experimental_codecs);
 	encoders_menu = defaults->get("ENCODERS_MENU", encoders_menu);
+	calculate_framerate = defaults->get("CALCULATE_FRAMERATE", calculate_framerate);
 	show_assets = defaults->get("SHOW_ASSETS", show_assets);
 	show_titles = defaults->get("SHOW_TITLES", show_titles);
 	time_format = defaults->get("TIME_FORMAT", time_format);
@@ -323,6 +325,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SHOW_AVLIBSMSGS", show_avlibsmsgs);
 	defaults->update("EXPERIMENTAL_CODECS", experimental_codecs);
 	defaults->update("ENCODERS_MENU", encoders_menu);
+	defaults->update("CALCULATE_FRAMERATE", calculate_framerate);
 
 	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
@@ -482,6 +485,7 @@ void EDLSession::load_xml(FileXML *file)
 	}
 	tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 	vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
+	calculate_framerate = file->tag.get_property("CALCULATE_FRAMERATE", calculate_framerate);
 	file->tag.get_property("METADATA_AUTHOR", metadata_author);
 	file->tag.get_property("METADATA_TITLE", metadata_title);
 	file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
@@ -652,6 +656,7 @@ void EDLSession::copy(EDLSession *session)
 	show_avlibsmsgs = session->show_avlibsmsgs;
 	experimental_codecs = session->experimental_codecs;
 	encoders_menu = session->encoders_menu;
+	calculate_framerate = session->calculate_framerate;
 	show_assets = session->show_assets;
 	show_titles = session->show_titles;
 	time_format = session->time_format;

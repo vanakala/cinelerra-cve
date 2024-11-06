@@ -487,11 +487,14 @@ int FileAVlibs::probe_input(Asset *asset)
 						// Use number of frames from TOC
 						asset->streams[i].length =
 							asset->tocfile->toc_streams[i].data2;
-						// Average frame rate
-						asset->streams[i].frame_rate =
-							(double)asset->streams[i].length /
-							(asset->streams[i].end -
-								asset->streams[i].start);
+						if(edlsession->calculate_framerate)
+						{
+							// Average frame rate
+							asset->streams[i].frame_rate =
+								(double)asset->streams[i].length /
+								(asset->streams[i].end -
+									asset->streams[i].start);
+						}
 					}
 					else
 					{

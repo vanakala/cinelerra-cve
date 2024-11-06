@@ -52,6 +52,9 @@ void MiscPrefs::show()
 	win = add_subwindow(new CheckBox(x, y, _("Show another menu of encoders"),
 		&pwindow->thread->this_edlsession->encoders_menu));
 	y0 = y += win->get_h() + 5;
+	win = add_subwindow(new CheckBox(x, y, _("Calculate framerate"),
+		&pwindow->thread->this_edlsession->calculate_framerate));
+	y0 = y += win->get_h() + 5;
 	win = add_subwindow(new BC_Title(x, y, _("Author:")));
 	x0 = win->get_w() + 10;
 	y += boxh;
