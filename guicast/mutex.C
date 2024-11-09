@@ -1,27 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-/*
- * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+// This file is a part of Cinelerra-CVE
+// Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#ifndef NO_GUICAST
 #include "bcsignals.h"
-#endif
 #include "mutex.h"
 
 Mutex::Mutex(const char *title, int recursive)
@@ -41,9 +23,7 @@ Mutex::~Mutex()
 {
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&recursive_lock);
-#ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
-#endif
 }
 
 void Mutex::lock(const char *location)
@@ -63,9 +43,8 @@ void Mutex::lock(const char *location)
 		pthread_mutex_unlock(&recursive_lock);
 	}
 
-#ifndef NO_GUICAST
 	SET_MLOCK(this, title, location);
-#endif
+
 	if(rv = pthread_mutex_lock(&mutex))
 		fprintf(stderr, "%s:%s mutex lock failed with %d\n", title, location, rv);
 
@@ -79,13 +58,9 @@ void Mutex::lock(const char *location)
 		pthread_mutex_unlock(&recursive_lock);
 	}
 	else
-	{
 		count = 1;
-	}
 
-#ifndef NO_GUICAST
 	SET_LOCK2
-#endif
 }
 
 void Mutex::unlock()
@@ -111,9 +86,7 @@ void Mutex::unlock()
 	else
 		count = 0;
 
-#ifndef NO_GUICAST
 	UNSET_LOCK(this);
-#endif
 
 	if(rv = pthread_mutex_unlock(&mutex))
 		fprintf(stderr, "%s mutex unlock failed with %d\n", title, rv);
@@ -138,7 +111,5 @@ void Mutex::reset()
 	count = 0;
 	thread_id = 0;
 	thread_id_valid = 0;
-#ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this)
-#endif
 }
