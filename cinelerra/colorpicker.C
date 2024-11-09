@@ -26,7 +26,7 @@ ColorThread::ColorThread(int do_alpha, const char *title, VFrame* icon)
 	this->title = title;
 	this->do_alpha = do_alpha;
 	this->icon = icon;
-	mutex = new Mutex("ColorThread::mutex");
+	mutex = new Mutex("ColorThread::mutex", 1);
 	completion = new Condition(1, "ColorThread::completion");
 }
 
@@ -205,6 +205,7 @@ void ColorWindow::update_rgb()
 
 void ColorWindow::update_display()
 {
+	thread->mutex->lock("ColorWindow::update_display");
 	if(hueval < 0) hueval = 0;
 	if(hueval > 360) hueval = 360;
 	if(sat < 0) sat = 0;
@@ -232,6 +233,7 @@ void ColorWindow::update_display()
 	blue->update(thread->blue);
 	if(thread->do_alpha)
 		alpha->update(thread->alpha);
+	thread->mutex->unlock();
 }
 
 int ColorWindow::handle_event()
