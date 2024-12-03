@@ -232,13 +232,22 @@ void BC_TextBox::set_selection(int char1, int char2, int ibeam)
 
 void BC_TextBox::update(const char *text)
 {
+	if(text)
+	{
 // Don't update if contents are the same
-	if(!strcmp(text, ntext))
-		return;
-	strncpy(ntext, text, TEXTBOXLEN);
-	ntext[TEXTBOXLEN] = 0;
-	wtext_len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
-		ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
+		if(!strcmp(text, ntext))
+			return;
+		strncpy(ntext, text, TEXTBOXLEN);
+		ntext[TEXTBOXLEN] = 0;
+		wtext_len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
+			ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
+	}
+	else
+	{
+		ntext[0] = 0;
+		wide_text[0] = 0;
+		wtext_len = 0;
+	}
 	update_wtext();
 }
 
