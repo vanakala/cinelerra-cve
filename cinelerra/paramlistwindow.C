@@ -379,7 +379,7 @@ void ParamChkBox::update_value()
 	if(valptr)
 		set_value(*valptr & 0xff);
 	else
-		set_value((int)(*valptr & 0xff));
+		set_value((int)(*val64ptr & 0xff));
 }
 
 
