@@ -112,6 +112,7 @@ private:
 	void paste_selection(int clipboard_num);
 	void delete_selection(int letter1, int letter2, int text_len);
 	void insert_text(const wchar_t *string, int string_len = -1);
+	void fill_ntext();
 	void update_wtext();
 // Reformat text according to separators.
 // ibeam_left causes the ibeam to move left.

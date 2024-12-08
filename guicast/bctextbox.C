@@ -400,8 +400,7 @@ int BC_TextBox::calculate_row_h(int rows, BC_WindowBase *parent_window,
 
 char* BC_TextBox::get_text()
 {
-	BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
-		(char*)wide_text, ntext, sizeof(ntext), wtext_len * sizeof(wchar_t));
+	fill_ntext();
 	return ntext;
 }
 
@@ -1280,9 +1279,11 @@ int BC_TextBox::keypress_event()
 	}
 
 	if(dispatch_event)
+	{
+		fill_ntext();
 		skip_cursor->update();
-	if(dispatch_event)
 		handle_event();
+	}
 	return result;
 }
 
@@ -1330,6 +1331,12 @@ void BC_TextBox::insert_text(const wchar_t *string, int string_len)
 	wide_text[wtext_len] = 0;
 
 	do_separators(0);
+}
+
+void BC_TextBox::fill_ntext()
+{
+	BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
+		(char*)wide_text, ntext, sizeof(ntext), wtext_len * sizeof(wchar_t));
 }
 
 void BC_TextBox::do_separators(int ibeam_left)
