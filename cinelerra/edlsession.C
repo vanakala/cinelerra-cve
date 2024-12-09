@@ -172,8 +172,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "ASSET_COLUMN%d", i);
 		asset_columns[i] = defaults->get(string, asset_columns[i]);
 	}
-	audio_channels = defaults->get("ACHANNELS", audio_channels);
-	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 	auto_conf->load_defaults(defaults);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
@@ -226,7 +224,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 		timecode_offset[i] = defaults->get(string, timecode_offset[i]);
 	}
 	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", video_every_frame);
-	video_tracks = defaults->get("VTRACKS", video_tracks);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	vwindow_meter = defaults->get("VWINDOW_METER", vwindow_meter);
 	defaults->get("METADATA_AUTHOR", metadata_author);
@@ -253,7 +250,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
 		defaults->update(string, achannel_positions[i]);
 	}
-	defaults->update("ACHANNELS", audio_channels);
+	defaults->delete_key("ACHANNELS");
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		sprintf(string, "ASSET_COLUMN%d", i);
@@ -266,7 +263,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ASPECTW");
 	defaults->delete_key("ASPECTH");
 	defaults->delete_key("ASPECTRATIO");
-	defaults->update("ATRACKS", audio_tracks);
+	defaults->delete_key("ATRACKS");
 	defaults->delete_key("AUTOS_FOLLOW_EDITS");
 	defaults->delete_key("BRENDER_START");
 	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
@@ -342,7 +339,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("VCHANNELS");
 	defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
 	defaults->delete_key("VIDEO_ASYNCHRONOUS");
-	defaults->update("VTRACKS", video_tracks);
+	defaults->delete_key("VTRACKS");
 	defaults->delete_key("VIDEO_WRITE_LENGTH");
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
@@ -363,7 +360,7 @@ void EDLSession::boundaries()
 {
 	CLAMP(audio_tracks, 0, MAX_AUDIO_TRACKS);
 	CLAMP(audio_channels, 1, MAXCHANNELS - 1);
-	CLAMP(video_tracks, 0, MAX_AUDIO_TRACKS);
+	CLAMP(video_tracks, 0, MAX_VIDEO_TRACKS);
 	CLAMP(min_meter_db, MIN_AUDIO_METER_DB, -20);
 	CLAMP(max_meter_db, 0, MAX_AUDIO_METER_DB);
 	SampleRateSelection::limits(&sample_rate);
@@ -425,7 +422,7 @@ void EDLSession::load_audio_config(FileXML *file)
 	char string[32];
 
 // load channels setting
-	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
+	audio_channels = file->tag.get_property("CHANNELS", audio_channels);
 
 	for(int i = 0; i < audio_channels; i++)
 	{
@@ -433,7 +430,7 @@ void EDLSession::load_audio_config(FileXML *file)
 		achannel_positions[i] = file->tag.get_property(string, achannel_positions[i]);
 	}
 
-	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
+	sample_rate = file->tag.get_property("SAMPLERATE", sample_rate);
 }
 
 void EDLSession::load_xml(FileXML *file)
@@ -579,8 +576,8 @@ void EDLSession::save_audio_config(FileXML *file)
 	char string[1024];
 
 	file->tag.set_title("AUDIO");
-	file->tag.set_property("SAMPLERATE", (int64_t)sample_rate);
-	file->tag.set_property("CHANNELS", (int64_t)audio_channels);
+	file->tag.set_property("SAMPLERATE", sample_rate);
+	file->tag.set_property("CHANNELS", audio_channels);
 
 	for(int i = 0; i < audio_channels; i++)
 	{
