@@ -3,6 +3,7 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "edl.h"
 #include "mbuttons.h"
 #include "mainerror.h"
 #include "glthread.h"
@@ -26,7 +27,8 @@ Quit::Quit(Save *save)
 
 int Quit::handle_event() 
 {
-	if(mainsession->changes_made ||
+	if((master_edl->duration() > EPSILON &&
+		mainsession->changes_made) ||
 		mwindow_global->render->in_progress)
 	{
 		if(running())
