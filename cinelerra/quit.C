@@ -3,29 +3,26 @@
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
+#include "bcmenuitem.h"
 #include "edl.h"
-#include "mbuttons.h"
-#include "mainerror.h"
 #include "glthread.h"
 #include "language.h"
-#include "levelwindow.h"
-#include "levelwindowgui.h"
-#include "mainmenu.h"
+#include "mainerror.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "quit.h"
 #include "question.h"
 #include "render.h"
 #include "savefile.h"
-#include "mainsession.h"
 
 
 Quit::Quit(Save *save)
- : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
-{ 
+ : BC_MenuItem(_("Quit"), "q", 'q'), Thread()
+{
 	this->save = save;
 }
 
-int Quit::handle_event() 
+int Quit::handle_event()
 {
 	if((master_edl->duration() > EPSILON &&
 		mainsession->changes_made) ||
@@ -35,7 +32,7 @@ int Quit::handle_event()
 			return 0;
 		start();
 	}
-	else 
+	else
 	{        // quit
 		mwindow_global->stop_playback();
 		mwindow_global->interrupt_indexes();
@@ -56,25 +53,19 @@ void Quit::run()
 		errorbox(_("Can't quit while a render is in progress."));
 		return;
 	}
-
 // Quit
-	{
-		mwindow_global->get_abs_cursor_pos(&cx, &cy);
-		QuestionWindow confirm(1, cx, cy,
-			_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
-		result = confirm.run_window();
-	}
+	mwindow_global->get_abs_cursor_pos(&cx, &cy);
+	QuestionWindow confirm(1, cx, cy,
+		_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
+	result = confirm.run_window();
 
 	switch(result)
 	{
 	case 0:          // quit
-		if(mwindow_global)
-		{
-			mwindow_global->stop_playback();
-			mwindow_global->interrupt_indexes();
-			mwindow_global->delete_brender();
-			mwindow_global->glthread->quit();
-		}
+		mwindow_global->stop_playback();
+		mwindow_global->interrupt_indexes();
+		mwindow_global->delete_brender();
+		mwindow_global->glthread->quit();
 		break;
 
 	case 1:        // cancel
