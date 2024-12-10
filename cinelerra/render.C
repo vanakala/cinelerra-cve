@@ -187,6 +187,8 @@ void Render::start_interactive()
 {
 	if(!Thread::running())
 	{
+		if(master_edl->duration() < EPSILON)
+			return;
 		mode = Render::INTERACTIVE;
 		this->jobs = 0;
 		batch_cancelled = 0;
