@@ -39,17 +39,15 @@ void BC_WindowBase::flip_opengl()
 int BC_WindowBase::get_opengl_version(BC_WindowBase *window)
 {
 #ifdef HAVE_GL
-/* FIXIT - not ready yet
 	int maj, min;
+
 	if(glXQueryVersion(window->top_level->display, &maj, &min))
 		return 100 * maj + min;
-	*/
 #endif
 	return 0;
 }
 
 void BC_WindowBase::draw_opengl(VFrame *frame)
 {
-// Not ready yet
-//	resources.get_glthread()->draw_vframe(frame);
+	resources.get_glthread()->draw_vframe(frame);
 }
