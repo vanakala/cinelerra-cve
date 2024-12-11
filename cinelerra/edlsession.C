@@ -51,7 +51,7 @@ EDLSession::EDLSession()
 	output_w = 720;
 	output_h = 576;
 	sample_aspect_ratio = 1;
-	color_model = BC_AYUV16161616;
+	color_model = BC_RGBA16161616;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 		asset_columns[i] = 100;
@@ -174,8 +174,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 		asset_columns[i] = defaults->get(string, asset_columns[i]);
 	}
 	auto_conf->load_defaults(defaults);
-	ColorModels::to_text(string, color_model);
-	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
 	strcpy(string, AInterlaceModeSelection::xml_text(interlace_mode));
 	interlace_mode = AInterlaceModeSelection::xml_value(defaults->get("INTERLACE_MODE", string));
 	ruler_x1 = defaults->get("RULER_X1", ruler_x1);
@@ -268,7 +266,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->delete_key("ATRACKS");
 	defaults->delete_key("AUTOS_FOLLOW_EDITS");
 	defaults->delete_key("BRENDER_START");
-	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
+	defaults->delete_key("COLOR_MODEL");
 	defaults->update("INTERLACE_MODE", AInterlaceModeSelection::xml_text(interlace_mode));
 	defaults->delete_key("CROP_X1");
 	defaults->delete_key("CROP_X2");
@@ -381,19 +379,7 @@ void EDLSession::boundaries()
 	CLAMP(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 
 	CLAMP(backup_interval, 0, 3600);
-	switch(color_model)
-	{
-	case BC_RGB888:
-	case BC_RGBA8888:
-	case BC_RGB_FLOAT:
-	case BC_RGBA_FLOAT:
-		color_model = BC_RGBA16161616;
-		break;
-	case BC_YUV888:
-	case BC_YUVA8888:
-		color_model = BC_AYUV16161616;
-		break;
-	}
+	color_model = BC_RGBA16161616;
 	OutputDepthSelection::limits(&output_color_depth);
 }
 
@@ -403,8 +389,6 @@ void EDLSession::load_video_config(FileXML *file)
 	double aspect_w, aspect_h, aspect_ratio;
 
 	BC_Resources::interpolation_method = file->tag.get_property("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
-	ColorModels::to_text(string, color_model);
-	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
 	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE"));
 
 	frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
@@ -560,7 +544,6 @@ void EDLSession::save_video_config(FileXML *file)
 
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
-	file->tag.set_property("COLORMODEL", ColorModels::name(color_model));
 	file->tag.set_property("INTERLACE_MODE",
 		AInterlaceModeSelection::xml_text(interlace_mode));
 	file->tag.set_property("FRAMERATE", frame_rate);
