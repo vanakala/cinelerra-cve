@@ -181,6 +181,8 @@ public:
 	int shrink_plugin_tracks;
 // Output color depth in bits
 	int output_color_depth;
+// Opengl enabled
+	int opengl_enabled;
 private:
 	int defaults_loaded;
 	int have_hwaccel;

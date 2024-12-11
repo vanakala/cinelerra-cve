@@ -8,6 +8,7 @@
 #include "bctitle.h"
 #include "cwindow.h"
 #include "config.h"
+#include "edlsession.h"
 #include "formattools.h"
 #include "guielements.h"
 #include "language.h"
@@ -109,8 +110,11 @@ VDriverMenu::VDriverMenu(int x,
 	add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
 #ifdef HAVE_GL
 // Check runtime glx version. pbuffer needs >= 1.3
-	if(get_opengl_version((BC_WindowBase *)mwindow_global->cwindow->gui) >= 103)
-		add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+	if(edlsession->opengl_enabled)
+	{
+		if(get_opengl_version((BC_WindowBase *)mwindow_global->cwindow->gui) >= 103)
+			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+	}
 #endif
 }
 

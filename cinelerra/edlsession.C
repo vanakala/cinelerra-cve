@@ -94,6 +94,7 @@ EDLSession::EDLSession()
 	output_color_depth = 8;
 	keyframes_visible = 1;
 	have_hwaccel = -1;
+	opengl_enabled = 0;
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -233,6 +234,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	shrink_plugin_tracks = defaults->get("SHRINK_TRACKS", shrink_plugin_tracks);
 	output_color_depth = defaults->get("OUTPUT_DEPTH", output_color_depth);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
+	opengl_enabled = defaults->get("OPENGL", opengl_enabled);
 	// backward compatibility
 	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
 	keyframes_visible = defaults->get("SHOW_KEYFRAMES", keyframes_visible);
@@ -354,6 +356,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("OUTPUT_DEPTH", output_color_depth);
 	defaults->delete_key("SHOW_PLUGINS");
 	defaults->update("SHOW_KEYFRAMES", keyframes_visible);
+	defaults->update("OPENGL", opengl_enabled);
 }
 
 void EDLSession::boundaries()
@@ -674,6 +677,7 @@ void EDLSession::copy(EDLSession *session)
 	shrink_plugin_tracks = session->shrink_plugin_tracks;
 	output_color_depth = session->output_color_depth;
 	have_hwaccel = session->have_hwaccel;
+	opengl_enabled = session->opengl_enabled;
 }
 
 ptstime EDLSession::get_frame_offset()
@@ -745,7 +749,7 @@ void EDLSession::dump(int indent)
 	printf("%*svideo: tracks %d framerate %.2f [%dx%d] SAR %.3f '%s' depth %d\n",
 		indent, "", video_tracks, frame_rate, output_w, output_h, sample_aspect_ratio,
 		ColorModels::name(color_model), output_color_depth);
-	printf("%*sdefault transitions: '%s', '%s' length %.2f hw_accel %d\n", indent, "",
+	printf("%*sdefault transitions: '%s', '%s' length %.2f hw_accel %d opengl %d\n", indent, "",
 		default_atransition, default_vtransition, default_transition_length,
-		have_hwaccel);
+		have_hwaccel, opengl_enabled);
 }
