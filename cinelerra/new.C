@@ -235,11 +235,6 @@ NewWindow::NewWindow(NewThread *new_thread, int x, int y)
 
 	y += aspectratio_selection->get_h() + 5;
 
-	add_subwindow(new BC_Title(x, y, _("Color model:")));
-	cmodel_selection = new ColormodelSelection(x + 100, y, this,
-		&new_edlsession->color_model);
-	y += cmodel_selection->selection->get_h() + 5;
-
 	// --------------------
 	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
 	add_subwindow(interlace_selection = new InterlaceModeSelection(x + 100, y, this,
@@ -258,7 +253,6 @@ NewWindow::NewWindow(NewThread *new_thread, int x, int y)
 NewWindow::~NewWindow()
 {
 	delete format_presets;
-	delete cmodel_selection;
 }
 
 void NewWindow::update()
@@ -272,7 +266,6 @@ void NewWindow::update()
 		new_edlsession->output_h);
 	aspectratio_selection->update_sar(new_edlsession->sample_aspect_ratio);
 	interlace_selection->update(new_edlsession->interlace_mode);
-	cmodel_selection->update(new_edlsession->color_model);
 }
 
 

@@ -69,7 +69,6 @@ public:
 	AspectRatioSelection *aspectratio_selection;
 	FrameSizeSelection *framesize_selection;
 	InterlaceModeSelection *interlace_selection;
-	ColormodelSelection *cmodel_selection;
 	NewPresets *format_presets;
 };
 
