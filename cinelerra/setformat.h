@@ -160,7 +160,6 @@ public:
 	Selection *sample_rate;
 	SetChannelsTextBox *channels;
 	FrameRateSelection *frame_rate;
-	ColormodelSelection *cmodel_selection;
 	InterlaceModeSelection *interlace_selection;
 };
 

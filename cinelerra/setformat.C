@@ -174,7 +174,6 @@ void SetFormatThread::update()
 	window->ratio[1]->update(ratio[1]);
 	window->aspectratio_selection->update_sar(new_edlsession->sample_aspect_ratio);
 	window->interlace_selection->update(new_edlsession->interlace_mode);
-	window->cmodel_selection->update(new_edlsession->color_model);
 
 	window->canvas->draw();
 }
@@ -320,15 +319,6 @@ SetFormatWindow::SetFormatWindow(SetFormatThread *thread,
 	y += theme_global->setformat_margin;
 	add_subwindow(new BC_Title(theme_global->setformat_x3,
 		y, 
-		_("Color model:")));
-	x = theme_global->setformat_x4;
-	cmodel_selection = new ColormodelSelection(x, y, this,
-		&thread->new_edlsession->color_model);
-	cmodel_selection->update(thread->new_edlsession->color_model);
-
-	y += theme_global->setformat_margin;
-	add_subwindow(new BC_Title(theme_global->setformat_x3,
-		y, 
 		_("Aspect ratio:")));
 	y += theme_global->setformat_margin;
 	x = theme_global->setformat_x3;
@@ -363,7 +353,6 @@ SetFormatWindow::SetFormatWindow(SetFormatThread *thread,
 SetFormatWindow::~SetFormatWindow()
 {
 	delete presets;
-	delete cmodel_selection;
 }
 
 
