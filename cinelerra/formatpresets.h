@@ -28,7 +28,6 @@ struct formatpresets
 	int aspect_w;
 	int aspect_h;
 	int interlace_mode;
-	int color_model;
 };
 
 
