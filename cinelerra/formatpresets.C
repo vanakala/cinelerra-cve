@@ -35,15 +35,6 @@ struct formatpresets FormatPresets::format_presets[] =
 
 #define MAX_NUM_PRESETS ((sizeof(format_presets) / sizeof(struct formatpresets)) - 1)
 
-struct selection_int ColormodelSelection::cmodel_selection[] =
-{
-	{ 0, BC_RGBA16161616 },
-	{ 0, BC_AYUV16161616 },
-	{ 0, 0 }
-};
-
-#define NUM_CMODEL_SELECTIONS (sizeof(cmodel_selection) / sizeof(struct selection_int) - 1)
-
 struct selection_int AInterlaceModeSelection::ilacemode_selection[] =
 {
 	{ N_("Unknown"), BC_ILACE_MODE_UNDETECTED },
@@ -191,25 +182,6 @@ int FormatSelection::handle_event()
 {
 	presets->update_edlsession(get_text());
 	return 1;
-}
-
-
-ColormodelSelection::ColormodelSelection(int x, int y,
-	BC_WindowBase *base_gui, int *cmodel)
-{
-	if(!cmodel_selection[0].text)
-	{
-		for(int i = 0; i < NUM_CMODEL_SELECTIONS; i++)
-			cmodel_selection[i].text = ColorModels::name(cmodel_selection[i].value);
-	}
-	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
-		cmodel_selection, cmodel, SELECTION_VARWIDTH));
-	selection->disable(1);
-}
-
-void ColormodelSelection::update(int value)
-{
-	selection->update(_(ColorModels::name(value)));
 }
 
 

@@ -68,18 +68,6 @@ private:
 };
 
 
-class ColormodelSelection
-{
-public:
-	ColormodelSelection(int x, int y, BC_WindowBase *base_gui, int *cmodel);
-
-	void update(int value);
-
-	Selection *selection;
-private:
-	static struct selection_int cmodel_selection[];
-};
-
 class IlaceSelection : public Selection
 {
 public:
