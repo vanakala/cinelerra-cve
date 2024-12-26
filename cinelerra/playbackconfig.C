@@ -83,7 +83,6 @@ VideoOutConfig::VideoOutConfig()
 {
 	driver = PLAYBACK_X11_XV;
 	x11_host[0] = 0;
-	x11_use_fields = USE_NO_FIELDS;
 	brightness = 32768;
 	hue = 32768;
 	color = 32768;
@@ -100,7 +99,6 @@ int VideoOutConfig::operator==(VideoOutConfig &that)
 {
 	return (driver == that.driver) &&
 		!strcmp(x11_host, that.x11_host) && 
-		(x11_use_fields == that.x11_use_fields) &&
 		(brightness == that.brightness) && 
 		(hue == that.hue) && 
 		(color == that.color) && 
@@ -118,7 +116,6 @@ void VideoOutConfig::copy_from(VideoOutConfig *src)
 {
 	this->driver = src->driver;
 	strcpy(this->x11_host, src->x11_host);
-	this->x11_use_fields = src->x11_use_fields;
 }
 
 char* VideoOutConfig::get_path()
@@ -130,14 +127,13 @@ void VideoOutConfig::load_defaults(BC_Hash *defaults)
 {
 	driver = defaults->get("VIDEO_OUT_DRIVER", driver);
 	defaults->get("X11_OUT_DEVICE", x11_host);
-	x11_use_fields = defaults->get("X11_USE_FIELDS", x11_use_fields);
 }
 
 void VideoOutConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("VIDEO_OUT_DRIVER", driver);
 	defaults->update("X11_OUT_DEVICE", x11_host);
-	defaults->update("X11_USE_FIELDS", x11_use_fields);
+	defaults->delete_key("X11_USE_FIELDS");
 }
 
 

@@ -55,15 +55,6 @@ public:
 
 // X11 options
 	char x11_host[BCTEXTLEN];
-	int x11_use_fields;
-
-// Values for x11_use_fields
-	enum
-	{
-		USE_NO_FIELDS,
-		USE_EVEN_FIRST,
-		USE_ODD_FIRST
-	};
 
 // Picture quality
 	int brightness;
