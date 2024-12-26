@@ -4,19 +4,18 @@
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
 #include "bcsignals.h"
-#include "clip.h"
 #include "bchash.h"
+#include "clip.h"
 #include "playbackconfig.h"
 #include "videodevice.inc"
+
 #include <string.h>
 #include <stdlib.h>
 
 AudioOutConfig::AudioOutConfig()
 {
 	driver = AUDIO_ALSA;
-
 	audio_offset = 0.0;
-
 	strcpy(alsa_out_device, "default");
 	alsa_out_bits = 16;
 }
@@ -44,7 +43,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 {
 	driver = src->driver;
 	audio_offset = src->audio_offset;
-
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_bits = src->alsa_out_bits;
 }
@@ -52,7 +50,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 void AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
 	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
-
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
 }
@@ -98,11 +95,11 @@ int VideoOutConfig::operator!=(VideoOutConfig &that)
 int VideoOutConfig::operator==(VideoOutConfig &that)
 {
 	return (driver == that.driver) &&
-		!strcmp(x11_host, that.x11_host) && 
-		(brightness == that.brightness) && 
-		(hue == that.hue) && 
-		(color == that.color) && 
-		(contrast == that.contrast) && 
+		!strcmp(x11_host, that.x11_host) &&
+		(brightness == that.brightness) &&
+		(hue == that.hue) &&
+		(color == that.color) &&
+		(contrast == that.contrast) &&
 		(whiteness == that.whiteness);
 }
 
