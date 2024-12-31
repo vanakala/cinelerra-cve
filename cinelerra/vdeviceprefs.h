@@ -23,11 +23,8 @@ class VDriverMenu;
 class VDevicePrefs
 {
 public:
-	VDevicePrefs(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PreferencesDialog *dialog, 
-		VideoOutConfig *out_config);
+	VDevicePrefs(int x, int y, PreferencesWindow *pwindow,
+		PreferencesDialog *dialog, VideoOutConfig *out_config);
 	~VDevicePrefs();
 
 // creation - set if this is the first initialize of the object
@@ -78,10 +75,7 @@ public:
 class VDriverMenu : public BC_PopupMenu
 {
 public:
-	VDriverMenu(int x, 
-		int y, 
-		VDevicePrefs *device_prefs, 
-		int *output);
+	VDriverMenu(int x, int y, VDevicePrefs *device_prefs, int *output);
 
 	static const char* driver_to_string(int driver);
 

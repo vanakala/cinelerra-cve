@@ -13,19 +13,17 @@
 #include "guielements.h"
 #include "language.h"
 #include "mwindow.h"
-#include "vdeviceprefs.h"
-#include "videodevice.inc"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "preferencesthread.h"
+#include "vdeviceprefs.h"
+#include "videodevice.inc"
+
 #include <string.h>
 
 
-VDevicePrefs::VDevicePrefs(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PreferencesDialog *dialog, 
-	VideoOutConfig *out_config)
+VDevicePrefs::VDevicePrefs(int x, int y, PreferencesWindow *pwindow,
+	PreferencesDialog *dialog, VideoOutConfig *out_config)
 {
 	this->pwindow = pwindow;
 	this->dialog = dialog;
@@ -43,15 +41,11 @@ VDevicePrefs::~VDevicePrefs()
 	if(menu) delete menu;
 }
 
-
 void VDevicePrefs::reset_objects()
 {
 	device_title = 0;
-
 	port_title = 0;
-
 	number_title = 0;
-
 	channel_title = 0;
 	output_title = 0;
 }
@@ -63,12 +57,8 @@ void VDevicePrefs::initialize(int creation)
 	driver = out_config->driver;
 
 	if(!menu)
-	{
 		dialog->add_subwindow(menu = new VDriverMenu(x,
-			y + 10,
-			this, 
-			&out_config->driver));
-	}
+			y + 10, this, &out_config->driver));
 
 	create_x11_objs();
 }
@@ -77,12 +67,9 @@ void VDevicePrefs::delete_objects()
 {
 	delete output_title;
 	delete device_title;
-
 	delete port_title;
-
 	delete number_title;
 	delete channel_title;
-
 	reset_objects();
 	driver = -1;
 }
@@ -90,17 +77,14 @@ void VDevicePrefs::delete_objects()
 void VDevicePrefs::create_x11_objs()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
-	int x1 = x + menu->get_w() + 5;
 
+	int x1 = x + menu->get_w() + 5;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(new TextBox(x1, y + 20, out_config->x11_host, 200));
 }
 
 
-VDriverMenu::VDriverMenu(int x, 
-	int y, 
-	VDevicePrefs *device_prefs, 
-	int *output)
+VDriverMenu::VDriverMenu(int x, int y, VDevicePrefs *device_prefs, int *output)
  : BC_PopupMenu(x, y, 200, driver_to_string(*output))
 {
 	this->output = output;
