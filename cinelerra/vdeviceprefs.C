@@ -54,6 +54,10 @@ void VDevicePrefs::initialize(int creation)
 {
 	delete_objects();
 
+	if(!edlsession->opengl_enabled &&
+			out_config->driver == PLAYBACK_X11_GL)
+		out_config->driver = PLAYBACK_X11_XV;
+
 	driver = out_config->driver;
 
 	if(!menu)

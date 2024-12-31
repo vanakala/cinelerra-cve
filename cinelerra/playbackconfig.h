@@ -51,7 +51,6 @@ public:
 	char* get_path();
 
 	int driver;
-	char lml_out_device[BCTEXTLEN];
 
 // X11 options
 	char x11_host[BCTEXTLEN];

@@ -6,6 +6,7 @@
 #include "bcsignals.h"
 #include "bchash.h"
 #include "clip.h"
+#include "edlsession.h"
 #include "playbackconfig.h"
 #include "videodevice.inc"
 
@@ -124,6 +125,9 @@ void VideoOutConfig::load_defaults(BC_Hash *defaults)
 {
 	driver = defaults->get("VIDEO_OUT_DRIVER", driver);
 	defaults->get("X11_OUT_DEVICE", x11_host);
+	if(!edlsession->opengl_enabled &&
+			driver == PLAYBACK_X11_GL)
+		driver = PLAYBACK_X11_XV;
 }
 
 void VideoOutConfig::save_defaults(BC_Hash *defaults)

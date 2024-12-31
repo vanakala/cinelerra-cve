@@ -205,6 +205,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 		sample_aspect_ratio = aspect_ratio * output_h / output_w;
 	sample_aspect_ratio = defaults->get("SAMPLEASPECT", sample_aspect_ratio);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
+	opengl_enabled = defaults->get("OPENGL", opengl_enabled);
 	playback_config->load_defaults(defaults);
 	safe_regions = defaults->get("SAFE_REGIONS", safe_regions);
 	sample_rate = defaults->get("SAMPLERATE", sample_rate);
@@ -232,7 +233,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	shrink_plugin_tracks = defaults->get("SHRINK_TRACKS", shrink_plugin_tracks);
 	output_color_depth = defaults->get("OUTPUT_DEPTH", output_color_depth);
 	backup_interval = defaults->get("BACKUP_INTERVAL", backup_interval);
-	opengl_enabled = defaults->get("OPENGL", opengl_enabled);
 	// backward compatibility
 	keyframes_visible = defaults->get("SHOW_PLUGINS", keyframes_visible);
 	keyframes_visible = defaults->get("SHOW_KEYFRAMES", keyframes_visible);
