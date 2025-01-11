@@ -256,6 +256,7 @@ public:
 
 	inline BC_WindowBase* get_top_level() { return top_level; };
 	inline BC_WindowBase* get_parent() { return parent_window; };
+	inline Display *get_display() { return top_level->display; };
 // Event happened in this window
 	inline int is_event_win() { return this->win == top_level->event_win; };
 	int cursor_inside();
