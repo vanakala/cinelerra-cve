@@ -179,7 +179,7 @@ public:
 	inline int opengl_active() { return have_gl_context; };
 	void flip_opengl();
 
-	int get_opengl_version(BC_WindowBase *window);
+	int get_opengl_version();
 	void draw_opengl(VFrame *frame);
 
 	void flash(int x, int y, int w, int h);
@@ -621,6 +621,7 @@ private:
 	Window win;
 // Window has gl_context
 	int have_gl_context;
+	int glx_version;
 	int window_lock;
 	GC gc;
 // Depth given by the X Server

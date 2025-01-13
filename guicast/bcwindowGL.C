@@ -4,7 +4,6 @@
 // Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
 
-#define GL_GLEXT_PROTOTYPES
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindowbase.h"
@@ -36,15 +35,11 @@ void BC_WindowBase::flip_opengl()
 #endif
 }
 
-int BC_WindowBase::get_opengl_version(BC_WindowBase *window)
+int BC_WindowBase::get_opengl_version()
 {
-#ifdef HAVE_GL
-	int maj, min;
-
-	if(glXQueryVersion(window->top_level->display, &maj, &min))
-		return 100 * maj + min;
-#endif
-	return 0;
+	if(!glx_version)
+		glx_version = resources.get_glthread()->get_glx_version(this);
+	return glx_version;
 }
 
 void BC_WindowBase::draw_opengl(VFrame *frame)

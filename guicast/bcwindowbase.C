@@ -231,6 +231,7 @@ void BC_WindowBase::initialize()
 	have_gl_context = 0;
 	wide_text = wide_buffer;
 	*wide_text = 0;
+	glx_version = 0;
 	completion_event_type = 0;
 	reset_completion();
 }

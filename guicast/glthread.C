@@ -75,6 +75,8 @@ const char *GLThreadCommand::name(int command)
 
 GLThread::GLThread()
 {
+	int maj, min;
+
 	next_command = new Condition(0, "GLThread::next_command", 0);
 	command_lock = new Mutex("GLThread::command_lock");
 	done = 0;
@@ -99,6 +101,17 @@ GLThread::~GLThread()
 	delete command_lock;
 }
 
+int GLThread::get_glx_version(BC_WindowBase *window)
+{
+	int maj, min;
+
+#ifdef HAVE_GL
+	if(glXQueryVersion(window->get_display(), &maj, &min))
+		return 100 * maj + min;
+#endif
+	return 0;
+}
+
 GLThreadCommand* GLThread::new_command()
 {
 	while(last_command >= GL_MAX_COMMANDS)
@@ -116,6 +129,7 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 #ifdef HAVE_GL
 	XVisualInfo *visinfo;
 	GLXContext gl_context;
+
 	if(have_context(dpy, screen) < 0)
 	{
 		if(last_context >= GL_MAX_CONTEXTS)

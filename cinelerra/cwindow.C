@@ -254,3 +254,8 @@ void CWindow::reset_engine()
 {
 	playback_engine->reset_engines();
 }
+
+int CWindow::get_opengl_version()
+{
+	return gui->get_opengl_version();
+}

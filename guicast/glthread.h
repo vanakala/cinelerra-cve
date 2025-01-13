@@ -66,6 +66,7 @@ public:
 	~GLThread();
 
 	int initialize(Display *dpy, Window win, int screen);
+	int get_glx_version(BC_WindowBase *window);
 	void quit();
 	void draw_vframe(VFrame *frame);
 

@@ -51,6 +51,7 @@ public:
 	void delete_guideframe(GuideFrame **gframe);
 	int stop_playback();
 	void reset_engine();
+	int get_opengl_version();
 
 	int destination;
 	CWindowGUI *gui;

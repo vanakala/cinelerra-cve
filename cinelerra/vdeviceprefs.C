@@ -100,7 +100,7 @@ VDriverMenu::VDriverMenu(int x, int y, VDevicePrefs *device_prefs, int *output)
 // Check runtime glx version. pbuffer needs >= 1.3
 	if(edlsession->opengl_enabled)
 	{
-		if(get_opengl_version((BC_WindowBase *)mwindow_global->cwindow->gui) >= 103)
+		if(mwindow_global->cwindow->get_opengl_version() >= 103)
 			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
 	}
 #endif
