@@ -44,6 +44,14 @@ static int attrib[] =
 
 #endif
 
+const struct gl_commands GLThreadCommand::gl_names[] =
+{
+	{ "None", NONE },
+	{ "Quit", QUIT },
+	{ "Draw VFrame", DRAW_VFRAME },
+	{ 0, 0 }
+};
+
 GLThreadCommand::GLThreadCommand()
 {
 	command = GLThreadCommand::NONE;
@@ -62,14 +70,9 @@ void GLThreadCommand::dump(int indent, int show_frame)
 
 const char *GLThreadCommand::name(int command)
 {
-	switch(command)
-	{
-	case NONE:
-		return "None";
-
-	case QUIT:
-		return "Quit";
-	}
+	for(int i = 0; gl_names[i].name; i++)
+		if(gl_names[i]. value == command)
+			return gl_names[i].name;
 	return "Unknown";
 }
 
@@ -197,7 +200,6 @@ void GLThread::quit()
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::QUIT;
 	command_lock->unlock();
-
 	next_command->unlock();
 }
 

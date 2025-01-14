@@ -27,6 +27,12 @@
 
 #include <X11/Xlib.h>
 
+struct gl_commands
+{
+	const char *name;
+	int value;
+};
+
 // This takes requests and runs all OpenGL calls in the main thread.
 // Past experience showed OpenGL couldn't be run from multiple threads
 // reliably even if MakeCurrent was used and only 1 thread at a time did 
@@ -56,6 +62,8 @@ public:
 
 	VFrame *frame;
 	int context;
+private:
+	static const struct gl_commands gl_names[];
 };
 
 
