@@ -196,7 +196,7 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 	if(!input)
 		input = &track_frame;
 
-	if(autos_track->automation->get_intvalue(output->get_pts(), AUTOMATION_MUTE))
+	if(is_muted(output->get_pts()))
 	{
 		BC_Resources::tmpframes.release_frame(*input);
 		return output;
