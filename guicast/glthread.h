@@ -55,13 +55,18 @@ public:
 	{
 		NONE,
 		QUIT,
-		DRAW_VFRAME,
+		DISPLAY_VFRAME,
+		RELEASE_RESOURCES,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
 
 	VFrame *frame;
-	int context;
+	Display *dpy;
+	Window win;
+	int screen;
+	int width;
+	int height;
 private:
 	static const struct gl_commands gl_names[];
 };
@@ -76,7 +81,8 @@ public:
 	int initialize(Display *dpy, Window win, int screen);
 	int get_glx_version(BC_WindowBase *window);
 	void quit();
-	void draw_vframe(VFrame *frame);
+	void display_vframe(VFrame *frame, BC_WindowBase *window);
+	void release_resources();
 
 	void run();
 
@@ -94,8 +100,10 @@ private:
 	int have_context(Display *dpy, int screen);
 	void delete_contexts();
 	GLuint create_texture(int num, int width, int height);
+	void generate_renderframe();
 // executing commands
-	void do_draw_vframe(GLThreadCommand *command);
+	void do_display_vframe(GLThreadCommand *command);
+	void do_release_resources();
 
 	Condition *next_command;
 	Mutex *command_lock;
@@ -108,6 +116,18 @@ private:
 	GLThreadCommand *commands[GL_MAX_COMMANDS];
 
 #ifdef HAVE_GL
+	GLuint vertexarray;   // vao
+	GLuint vertexbuffer;  // vbo
+	GLuint elemarray;     // ebo
+	GLuint vertexshader;
+	GLuint fragmentshader;
+	GLuint shaderprogram;
+	GLuint firsttexture;  // tex
+	GLuint fbtexture;
+	GLint posattrib;
+	GLint colattrib;
+	GLint texattrib;
+
 	struct texture
 	{
 		int width;
@@ -130,6 +150,7 @@ public:
 	static void show_glparams(int indent = 0);
 	static void show_errors(const char *loc = 0, int indent = 0);
 	void show_glxcontext(int context, int indent = 0);
+	void show_compile_status(GLuint shader, const char *name);
 #endif
 };
 #endif

@@ -14,24 +14,10 @@
 int BC_WindowBase::enable_opengl()
 {
 #ifdef HAVE_GL
-	top_level->sync_display();
-	if(resources.get_glthread()->initialize(top_level->display, win, top_level->screen))
-	{
-		fputs("BC_WindowBase::enable_opengl: Failed to initialize GLThread\n", stdout);
-			return 1;
-	}
-	have_gl_context = 1;
+	enabled_gl = 1;
 	return 0;
 #else
 	return 1;
-#endif
-}
-
-void BC_WindowBase::flip_opengl()
-{
-#ifdef HAVE_GL
-	glXSwapBuffers(top_level->display, win);
-	glFlush();
 #endif
 }
 
@@ -42,7 +28,12 @@ int BC_WindowBase::get_opengl_version()
 	return glx_version;
 }
 
-void BC_WindowBase::draw_opengl(VFrame *frame)
+void BC_WindowBase::opengl_display(VFrame *frame)
 {
-	resources.get_glthread()->draw_vframe(frame);
+	resources.get_glthread()->display_vframe(frame, this);
+}
+
+void BC_WindowBase::opengl_release()
+{
+	resources.get_glthread()->release_resources();
 }

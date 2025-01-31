@@ -112,7 +112,7 @@ BC_WindowBase* Canvas::get_canvas()
 		get_scrollbars(view_x, view_y, view_w, view_h);
 		create_canvas();
 	}
-	if(get_fullscreen() && canvas_fullscreen) 
+	if(get_fullscreen() && canvas_fullscreen)
 		return canvas_fullscreen;
 	else
 		return canvas_subwindow;
@@ -684,7 +684,10 @@ void Canvas::draw_refresh()
 		{
 			refresh_frame->set_pixel_aspect(sample_aspect_ratio());
 			if(canvas->opengl_active())
-				canvas->draw_opengl(refresh_frame);
+			{
+				canvas->opengl_display(refresh_frame);
+				canvas->opengl_release();
+			}
 			else
 			{
 				double in_x1, in_y1, in_x2, in_y2;

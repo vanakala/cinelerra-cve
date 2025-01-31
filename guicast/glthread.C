@@ -42,13 +42,56 @@ static int attrib[] =
 	None
 };
 
+// Vertex for texture
+static float vertices[] = {
+//  Position      Color             Texcoords
+//   x       y      r    g     b     s     t
+    -1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // Top-left
+     1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // Top-right
+     1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
+    -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
+};
+
+static GLuint elements[] = {
+        0, 1, 2,
+        2, 3, 0
+};
+
+static float brd_color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+static const char *vertex_shader =
+  "#version 130\n"
+  "in vec2 position;\n"
+  "in vec3 color;\n"
+  "in vec2 texcoord;\n"
+  "out vec3 Color;\n"
+  "out vec2 Texcoord;\n"
+  "void main()\n"
+  "{\n"
+     "Color = color;\n"
+     "Texcoord = texcoord;\n"
+     "gl_Position = vec4(position, 0.0, 1.0);\n"
+  "}\n";
+
+static const char *fragment_shader =
+  "#version 130\n"
+  "in vec3 Color;\n"
+  "in vec2 Texcoord;\n"
+  "out vec4 outColor;\n"
+  "uniform sampler2D tex;\n"
+  "void main()"
+  "{\n"
+    "outColor = texture(tex, Texcoord) * vec4(Color, 1.0);\n"
+  "}\n";
+
 #endif
 
 const struct gl_commands GLThreadCommand::gl_names[] =
 {
 	{ "None", NONE },
 	{ "Quit", QUIT },
-	{ "Draw VFrame", DRAW_VFRAME },
+	{ "Display Frame", DISPLAY_VFRAME },
+	{ "Release Resources", RELEASE_RESOURCES },
 	{ 0, 0 }
 };
 
@@ -56,22 +99,25 @@ GLThreadCommand::GLThreadCommand()
 {
 	command = GLThreadCommand::NONE;
 	frame = 0;
-	context = 0;
+	dpy = 0;
+	win = 0;
+	screen = -1;
 }
 
 void GLThreadCommand::dump(int indent, int show_frame)
 {
 	printf("%*sGLThreadCommand '%s' %p dump:\n", indent, "", name(command), this);
-	printf("%*scontext %d frame: %p\n", indent, "",
-		context, frame);
+	printf("%*sframe: %p display %p win %#lx screen %d\n", indent, "",
+		frame, dpy, win, screen);
+	printf("%*soutput [%d,%d]\n", indent, "", width, height);
 	if(show_frame && frame)
-		frame->dump();
+		frame->dump(indent);
 }
 
 const char *GLThreadCommand::name(int command)
 {
 	for(int i = 0; gl_names[i].name; i++)
-		if(gl_names[i]. value == command)
+		if(gl_names[i].value == command)
 			return gl_names[i].name;
 	return "Unknown";
 }
@@ -90,6 +136,7 @@ GLThread::GLThread()
 	last_context = 0;
 	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
 #endif
+	vertexarray = 0;
 	BC_WindowBase::get_resources()->set_glthread(this);
 }
 
@@ -156,8 +203,6 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 		current_context = last_context;
 		last_context++;
 		glXMakeCurrent(dpy, win, gl_context);
-		BC_WindowBase::dump_XVisualInfo(visinfo);
-		show_glparams();
 		if(!BC_Resources::OpenGLStrings[0])
 		{
 			const char *string;
@@ -182,6 +227,60 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 #endif
 }
 
+void GLThread::generate_renderframe()
+{
+	// Create Vertex Array Object
+	glGenVertexArrays(1, &vertexarray);
+	glBindVertexArray(vertexarray);
+	// Create a Vertex Buffer Object and copy the vertex data to it
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// Create an element array
+	glGenBuffers(1, &elemarray);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elemarray);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements),
+		elements, GL_STATIC_DRAW);
+	vertexshader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexshader, 1, &vertex_shader, NULL);
+	glCompileShader(vertexshader);
+	// Create and compile the fragment shader
+	fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentshader, 1, &fragment_shader, NULL);
+	glCompileShader(fragmentshader);
+	// Link the vertex and fragment shader into a shader program
+	shaderprogram = glCreateProgram();
+	glAttachShader(shaderprogram, vertexshader);
+	glAttachShader(shaderprogram, fragmentshader);
+	glBindFragDataLocation(shaderprogram, 0, "outColor");
+	glLinkProgram(shaderprogram);
+	glUseProgram(shaderprogram);
+	// Specify the layout of the vertex data
+	posattrib = glGetAttribLocation(shaderprogram, "position");
+	glEnableVertexAttribArray(posattrib);
+	glVertexAttribPointer(posattrib, 2, GL_FLOAT, GL_FALSE,
+		7 * sizeof(GLfloat), 0);
+	colattrib = glGetAttribLocation(shaderprogram, "color");
+	glEnableVertexAttribArray(colattrib);
+	glVertexAttribPointer(colattrib, 3, GL_FLOAT, GL_FALSE,
+		7 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+	texattrib = glGetAttribLocation(shaderprogram, "texcoord");
+	glEnableVertexAttribArray(texattrib);
+	glVertexAttribPointer(texattrib, 2, GL_FLOAT, GL_FALSE,
+		7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
+	 // Texture
+	// 1 texture
+	glGenTextures(1, &firsttexture);
+	glBindTexture(GL_TEXTURE_2D, firsttexture);
+	// 1 texture
+	// the equivalent of (x,y,z) in texture coordinates is called (s,t,r).
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, brd_color);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 int GLThread::have_context(Display *dpy, int screen)
 {
 #ifdef HAVE_GL
@@ -203,18 +302,30 @@ void GLThread::quit()
 	next_command->unlock();
 }
 
-void GLThread::draw_vframe(VFrame *frame)
+void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window)
 {
 #ifdef HAVE_GL
-	command_lock->lock("GLThread::draw_vframe");
+	command_lock->lock("GLThread::display_vframe");
 	GLThreadCommand *command = new_command();
-	command->command = GLThreadCommand::DRAW_VFRAME;
+	command->command = GLThreadCommand::DISPLAY_VFRAME;
 	command->frame = frame;
-	command->context = current_context;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->width = window->get_w();
+	command->height = window->get_h();
 	command_lock->unlock();
-
 	next_command->unlock();
 #endif
+}
+
+void GLThread::release_resources()
+{
+	command_lock->lock("GLThread::draw_vframe");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::RELEASE_RESOURCES;
+	command_lock->unlock();
+	next_command->unlock();
 }
 
 void GLThread::run()
@@ -245,8 +356,12 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			done = 1;
 			break;
 
-		case GLThreadCommand::DRAW_VFRAME:
-			do_draw_vframe(command);
+		case GLThreadCommand::DISPLAY_VFRAME:
+			do_display_vframe(command);
+			break;
+
+		case GLThreadCommand::RELEASE_RESOURCES:
+			do_release_resources();
 			break;
 
 		default:
@@ -292,10 +407,31 @@ void GLThread::delete_window(Display *dpy, int screen)
 #endif
 }
 
-void GLThread::do_draw_vframe(GLThreadCommand *command)
+void GLThread::do_display_vframe(GLThreadCommand *command)
 {
+	if(initialize(command->dpy, command->win, command->screen))
+	{
+		command_lock->unlock();
+		return;
+	}
+
+	if(!vertexarray)
+		generate_renderframe();
+
+	glBindTexture(GL_TEXTURE_2D, firsttexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, command->frame->get_w(),
+		command->frame->get_h(),
+		0, GL_RGBA, GL_UNSIGNED_SHORT, command->frame->get_data());
+	// Clear the screen to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(shaderprogram);
+	// Draw a rectangle from the 2 triangles using 6 indices
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glXSwapBuffers(command->dpy, command->win);
 }
 
+#ifdef HAVE_GL
 GLuint GLThread::create_texture(int num, int width, int height)
 {
 	struct texture *txp;
@@ -305,7 +441,6 @@ GLuint GLThread::create_texture(int num, int width, int height)
 	txp->width = width;
 	txp->height = height;
 	glBindTexture(GL_TEXTURE_2D, txp->id);
-// ??	glEnable(GL_TEXTURE_2D);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
 		GL_UNSIGNED_SHORT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -316,6 +451,19 @@ GLuint GLThread::create_texture(int num, int width, int height)
 	return txp->id;
 }
 
+void GLThread::do_release_resources()
+{
+	glDeleteTextures(1, &firsttexture);
+	glDeleteProgram(shaderprogram);
+	glDeleteShader(fragmentshader);
+	glDeleteShader(vertexshader);
+	glDeleteBuffers(1, &elemarray);
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteVertexArrays(1, &vertexarray);
+	vertexarray = 0;
+}
+
+#endif
 
 #ifdef HAVE_GL
 // Debug functions
@@ -469,6 +617,23 @@ void GLThread::show_errors(const char *loc, int indent)
 			printf("%*sEnd of error list\n", indent, "");
 		else
 			printf("%*sNo opengl errors\n", indent, "");
+	}
+}
+
+void GLThread::show_compile_status(GLuint shader, const char *name)
+{
+	GLint status;
+	char msg_buffer[BCTEXTLEN];
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	printf("Compilation of shader '%s' %s\n", name,
+		status ? "succeeded" : "failed");
+	msg_buffer[0] = 0;
+	glGetShaderInfoLog(shader, BCTEXTLEN, NULL, msg_buffer);
+	if(msg_buffer[0])
+	{
+		fputs("Logi:\n", stdout);
+		fputs(msg_buffer, stdout);
 	}
 }
 

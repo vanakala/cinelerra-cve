@@ -126,6 +126,7 @@ public:
 	friend class BC_Tumbler;
 	friend class BC_Window;
 	friend class PluginWindow;
+	friend class GLThread;
 
 // Main loop
 	int run_window();
@@ -176,11 +177,11 @@ public:
 // the context is current.
 // No locking is performed.
 	int enable_opengl();
-	inline int opengl_active() { return have_gl_context; };
-	void flip_opengl();
+	inline int opengl_active() { return enabled_gl; };
 
 	int get_opengl_version();
-	void draw_opengl(VFrame *frame);
+	void opengl_display(VFrame *frame);
+	void opengl_release();
 
 	void flash(int x, int y, int w, int h);
 	void flash();
@@ -620,7 +621,7 @@ private:
 	Display *display;
 	Window win;
 // Window has gl_context
-	int have_gl_context;
+	int enabled_gl;
 	int glx_version;
 	int window_lock;
 	GC gc;

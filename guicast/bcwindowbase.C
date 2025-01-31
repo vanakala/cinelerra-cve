@@ -118,9 +118,7 @@ BC_WindowBase::~BC_WindowBase()
 		delete temp_bitmap;
 	resources.create_window_lock->unlock();
 
-	if(have_gl_context)
-		resources.get_glthread()->delete_window(top_level->display,
-			top_level->screen);
+	enabled_gl = 0;
 
 	if(window_type == MAIN_WINDOW) 
 	{
@@ -228,7 +226,7 @@ void BC_WindowBase::initialize()
 	input_context = 0;
 
 	cursor_timer = new Timer;
-	have_gl_context = 0;
+	enabled_gl = 0;
 	wide_text = wide_buffer;
 	*wide_text = 0;
 	glx_version = 0;
