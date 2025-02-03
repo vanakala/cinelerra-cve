@@ -21,15 +21,17 @@
 
 // YUV -> RGB converter
 static const char *yuv_to_rgb_frag =
-	"void yuv2rgb(inout vec3 yuv)\n"
-	"{\n"
-	"  yuv -= vec3(0, 0.5, 0.5);\n"
-	"  const mat3 yuv_to_rgb_matrix = mat3(\n"
-	"  1,       1,        1, \n"
-	"  0,       -0.34414, 1.77200, \n"
-	"  1.40200, -0.71414, 0);\n"
-	"  yuv = yuv_to_rgb_matrix * yuv;\n"
-	"}\n";
+R"vx(
+    void yuv2rgb(inout vec3 yuv)
+    {
+	yuv -= vec3(0, 0.5, 0.5);
+	const mat3 yuv_to_rgb_matrix = mat3(
+	    1,       1,        1,
+	    0,       -0.34414, 1.77200,
+	    1.40200, -0.71414, 0);
+	yuv = yuv_to_rgb_matrix * yuv;
+    };
+)vx";
 
 static int attrib[] =
 {
@@ -60,30 +62,31 @@ static GLuint elements[] = {
 static float brd_color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
 static const char *vertex_shader =
-  "#version 130\n"
-  "in vec2 position;\n"
-  "in vec3 color;\n"
-  "in vec2 texcoord;\n"
-  "out vec3 Color;\n"
-  "out vec2 Texcoord;\n"
-  "void main()\n"
-  "{\n"
-     "Color = color;\n"
-     "Texcoord = texcoord;\n"
-     "gl_Position = vec4(position, 0.0, 1.0);\n"
-  "}\n";
+R"vx(#version 130
+    in vec2 position;
+    in vec3 color;
+    in vec2 texcoord;
+    out vec3 Color;
+    out vec2 Texcoord;
+    void main()
+    {
+	Color = color;
+	Texcoord = texcoord;
+	gl_Position = vec4(position, 0.0, 1.0);
+    }
+)vx";
 
 static const char *fragment_shader =
-  "#version 130\n"
-  "in vec3 Color;\n"
-  "in vec2 Texcoord;\n"
-  "out vec4 outColor;\n"
-  "uniform sampler2D tex;\n"
-  "void main()"
-  "{\n"
-    "outColor = texture(tex, Texcoord) * vec4(Color, 1.0);\n"
-  "}\n";
-
+R"vx(#version 130
+    in vec3 Color;
+    in vec2 Texcoord;
+    out vec4 outColor;
+    uniform sampler2D tex;
+    void main()
+    {
+	outColor = texture(tex, Texcoord) * vec4(Color, 1.0);
+    }
+)vx";
 #endif
 
 const struct gl_commands GLThreadCommand::gl_names[] =
