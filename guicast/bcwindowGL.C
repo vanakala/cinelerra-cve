@@ -21,6 +21,17 @@ int BC_WindowBase::enable_opengl()
 #endif
 }
 
+void BC_WindowBase::disable_opengl()
+{
+#ifdef HAVE_GL
+	if(enabled_gl)
+	{
+		resources.get_glthread()->disable_opengl(this);
+		enabled_gl = 0;
+	}
+#endif
+}
+
 int BC_WindowBase::get_opengl_version()
 {
 	if(!glx_version)
@@ -28,9 +39,22 @@ int BC_WindowBase::get_opengl_version()
 	return glx_version;
 }
 
-void BC_WindowBase::opengl_display(VFrame *frame)
+void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
+	double in_x2, double in_y2, double out_x1, double out_y1,
+	double out_x2, double out_y2)
 {
-	resources.get_glthread()->display_vframe(frame, this);
+	struct gl_window inwin, outwin;
+
+	inwin.x1 = in_x1;
+	inwin.y1 = in_y1;
+	inwin.x2 = in_x2;
+	inwin.y2 = in_y2;
+	outwin.x1 = out_x1;
+	outwin.y1 = out_y1;
+	outwin.x2 = out_x2;
+	outwin.y2 = out_y2;
+
+	resources.get_glthread()->display_vframe(frame, this, &inwin, &outwin);
 }
 
 void BC_WindowBase::opengl_release()

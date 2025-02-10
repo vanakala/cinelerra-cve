@@ -680,22 +680,24 @@ void Canvas::draw_refresh()
 
 		clear_canvas();
 
+		double in_x1, in_y1, in_x2, in_y2;
+		double out_x1, out_y1, out_x2, out_y2;
+
+		get_transfers(in_x1, in_y1, in_x2, in_y2,
+			out_x1, out_y1, out_x2, out_y2);
+
 		if(refresh_frame)
 		{
 			refresh_frame->set_pixel_aspect(sample_aspect_ratio());
 			if(canvas->opengl_active())
 			{
-				canvas->opengl_display(refresh_frame);
+				canvas->opengl_display(refresh_frame,
+					in_x1, in_y1, in_x2, in_y2,
+					out_x1, out_y1, out_x2, out_y2);
 				canvas->opengl_release();
 			}
 			else
 			{
-				double in_x1, in_y1, in_x2, in_y2;
-				double out_x1, out_y1, out_x2, out_y2;
-
-				get_transfers(in_x1, in_y1, in_x2, in_y2,
-					out_x1, out_y1, out_x2, out_y2);
-
 				if(out_x2 > out_x1 && out_y2 > out_y1 &&
 					in_x2 > in_x1 && in_y2 > in_y1)
 				{

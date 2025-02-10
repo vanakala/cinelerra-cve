@@ -63,6 +63,9 @@ int VDeviceX11::open_output(int colormodel)
 			if(output->get_canvas()->enable_opengl())
 				device->out_config->driver = PLAYBACK_X11_XV;
 		}
+		else
+			output->get_canvas()->disable_opengl();
+
 		if(!device->single_frame)
 			output->start_video();
 		else

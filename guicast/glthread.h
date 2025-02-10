@@ -33,6 +33,12 @@ struct gl_commands
 	int value;
 };
 
+struct gl_window
+{
+	double x1, y1;
+	double x2, y2;
+};
+
 // This takes requests and runs all OpenGL calls in the main thread.
 // Past experience showed OpenGL couldn't be run from multiple threads
 // reliably even if MakeCurrent was used and only 1 thread at a time did 
@@ -55,6 +61,7 @@ public:
 	{
 		NONE,
 		QUIT,
+		DISABLE,
 		DISPLAY_VFRAME,
 		RELEASE_RESOURCES,
 // subclasses create new commands starting with this enumeration
@@ -67,6 +74,8 @@ public:
 	int screen;
 	int width;
 	int height;
+	struct gl_window glwin1;
+	struct gl_window glwin2;
 private:
 	static const struct gl_commands gl_names[];
 };
@@ -81,8 +90,10 @@ public:
 	int initialize(Display *dpy, Window win, int screen);
 	int get_glx_version(BC_WindowBase *window);
 	void quit();
-	void display_vframe(VFrame *frame, BC_WindowBase *window);
+	void display_vframe(VFrame *frame, BC_WindowBase *window,
+		struct gl_window *inwin, struct gl_window *outwin);
 	void release_resources();
+	void disable_opengl(BC_WindowBase *window);
 
 	void run();
 
@@ -104,6 +115,7 @@ private:
 // executing commands
 	void do_display_vframe(GLThreadCommand *command);
 	void do_release_resources();
+	void do_disable_opengl(GLThreadCommand *command);
 
 	Condition *next_command;
 	Mutex *command_lock;

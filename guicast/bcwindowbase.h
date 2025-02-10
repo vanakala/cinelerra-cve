@@ -180,8 +180,11 @@ public:
 	inline int opengl_active() { return enabled_gl; };
 
 	int get_opengl_version();
-	void opengl_display(VFrame *frame);
+	void opengl_display(VFrame *frame, double in_x1, double in_y1,
+		double in_x2, double in_y2, double out_x1, double out_y1,
+		double out_x2, double out_y2);
 	void opengl_release();
+	void disable_opengl();
 
 	void flash(int x, int y, int w, int h);
 	void flash();

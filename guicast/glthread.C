@@ -93,6 +93,7 @@ const struct gl_commands GLThreadCommand::gl_names[] =
 {
 	{ "None", NONE },
 	{ "Quit", QUIT },
+	{ "Disable", DISABLE },
 	{ "Display Frame", DISPLAY_VFRAME },
 	{ "Release Resources", RELEASE_RESOURCES },
 	{ 0, 0 }
@@ -112,7 +113,15 @@ void GLThreadCommand::dump(int indent, int show_frame)
 	printf("%*sGLThreadCommand '%s' %p dump:\n", indent, "", name(command), this);
 	printf("%*sframe: %p display %p win %#lx screen %d\n", indent, "",
 		frame, dpy, win, screen);
-	printf("%*soutput [%d,%d]\n", indent, "", width, height);
+	switch(command)
+	{
+	case DISPLAY_VFRAME:
+		printf("%*s[%d,%d] win1:(%.1f,%.1f) (%.1f,%.1f)", indent, "",
+			width, height, glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2);
+		printf(" win2:(%.1f,%.1f) (%.1f,%.1f)\n",
+			glwin2.x1, glwin2.y1, glwin2.x2, glwin2.y2);
+		break;
+	}
 	if(show_frame && frame)
 		frame->dump(indent);
 }
@@ -305,7 +314,8 @@ void GLThread::quit()
 	next_command->unlock();
 }
 
-void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window)
+void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
+	struct gl_window *inwin, struct gl_window *outwin)
 {
 #ifdef HAVE_GL
 	command_lock->lock("GLThread::display_vframe");
@@ -317,6 +327,8 @@ void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window)
 	command->screen = window->top_level->screen;
 	command->width = window->get_w();
 	command->height = window->get_h();
+	command->glwin1 = *inwin;
+	command->glwin2 = *outwin;
 	command_lock->unlock();
 	next_command->unlock();
 #endif
@@ -324,9 +336,21 @@ void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window)
 
 void GLThread::release_resources()
 {
-	command_lock->lock("GLThread::draw_vframe");
+	command_lock->lock("GLThread::release_resources");
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::RELEASE_RESOURCES;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::disable_opengl(BC_WindowBase *window)
+{
+	command_lock->lock("GLThread::release_resources");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::DISABLE;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
 	command_lock->unlock();
 	next_command->unlock();
 }
@@ -367,6 +391,10 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			do_release_resources();
 			break;
 
+		case GLThreadCommand::DISABLE:
+			do_disable_opengl(command);
+			break;
+
 		default:
 			handle_command(command);
 			break;
@@ -394,15 +422,18 @@ void GLThread::delete_contexts()
 #endif
 }
 
-void GLThread::delete_window(Display *dpy, int screen)
+void GLThread::do_disable_opengl(GLThreadCommand *command)
 {
 #ifdef HAVE_GL
 	int i;
 
-	if((i = have_context(dpy, screen)) >= 0)
+	if(vertexarray)
+		do_release_resources();
+
+	if((i = have_context(command->dpy, command->screen)) >= 0)
 	{
 		XFree(contexts[i].visinfo);
-		glXMakeCurrent(dpy, None, NULL);
+		glXMakeCurrent(contexts[i].dpy, None, NULL);
 		glXDestroyContext(contexts[i].dpy, contexts[i].gl_context);
 		contexts[i].gl_context = 0;
 		contexts[i].dpy = 0;
@@ -413,10 +444,7 @@ void GLThread::delete_window(Display *dpy, int screen)
 void GLThread::do_display_vframe(GLThreadCommand *command)
 {
 	if(initialize(command->dpy, command->win, command->screen))
-	{
-		command_lock->unlock();
 		return;
-	}
 
 	if(!vertexarray)
 		generate_renderframe();
