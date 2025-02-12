@@ -112,6 +112,7 @@ private:
 	void delete_contexts();
 	GLuint create_texture(int num, int width, int height);
 	void generate_renderframe();
+	void set_viewport(GLThreadCommand *command);
 // executing commands
 	void do_display_vframe(GLThreadCommand *command);
 	void do_release_resources();

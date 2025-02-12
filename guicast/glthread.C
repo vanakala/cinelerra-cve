@@ -457,6 +457,7 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(shaderprogram);
+	set_viewport(command);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glXSwapBuffers(command->dpy, command->win);
@@ -494,6 +495,33 @@ void GLThread::do_release_resources()
 	vertexarray = 0;
 }
 
+void GLThread::set_viewport(GLThreadCommand *command)
+{
+	double aspect = command->frame->get_pixel_aspect();
+
+	if(!aspect)
+		aspect = 1.0;
+
+	double out_w = command->glwin2.x2 - command->glwin2.x1;
+	double out_h = command->glwin2.y2 - command->glwin2.y1;
+
+	double hcf = out_h / (command->glwin1.y2 - command->glwin1.y1);
+	double wcf = aspect * hcf;
+
+	double base_left = command->glwin1.x1 * wcf;
+	double base_top = (command->height - out_h) + command->glwin1.y1 * hcf;
+
+	double disp_w = command->frame->get_w() * wcf;
+	double disp_h = command->frame->get_h() * hcf;
+
+	if(disp_w > out_w)
+		disp_w = out_w;
+	if(disp_h > out_h)
+		disp_h = out_h;
+
+	glViewport(round(base_left), round(base_top),
+		round(disp_w), round(disp_h));
+}
 #endif
 
 #ifdef HAVE_GL
