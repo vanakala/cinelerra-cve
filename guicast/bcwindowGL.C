@@ -34,8 +34,10 @@ void BC_WindowBase::disable_opengl()
 
 int BC_WindowBase::get_opengl_version()
 {
+#ifdef HAVE_GL
 	if(!glx_version)
 		glx_version = resources.get_glthread()->get_glx_version(this);
+#endif
 	return glx_version;
 }
 
@@ -43,6 +45,7 @@ void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
 	double in_x2, double in_y2, double out_x1, double out_y1,
 	double out_x2, double out_y2)
 {
+#ifdef HAVE_GL
 	struct gl_window inwin, outwin;
 
 	inwin.x1 = in_x1;
@@ -55,9 +58,12 @@ void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
 	outwin.y2 = out_y2;
 
 	resources.get_glthread()->display_vframe(frame, this, &inwin, &outwin);
+#endif
 }
 
 void BC_WindowBase::opengl_release()
 {
+#ifdef HAVE_GL
 	resources.get_glthread()->release_resources();
+#endif
 }

@@ -141,21 +141,23 @@ GLThread::GLThread()
 	next_command = new Condition(0, "GLThread::next_command", 0);
 	command_lock = new Mutex("GLThread::command_lock");
 	done = 0;
-	shaders = 0;
 	last_command = 0;
 	memset(commands, 0, sizeof(GLThreadCommand*) * GL_MAX_COMMANDS);
 #ifdef HAVE_GL
+	shaders = 0;
 	last_context = 0;
 	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
-#endif
 	vertexarray = 0;
+#endif
 	BC_WindowBase::get_resources()->set_glthread(this);
 }
 
 GLThread::~GLThread()
 {
 	command_lock->lock("GLThread::~GLThread");
+#ifdef HAVE_GL
 	delete shaders;
+#endif
 	for(int i = 0; i < GL_MAX_COMMANDS; i++)
 		delete commands[i];
 	command_lock->unlock();
@@ -186,9 +188,9 @@ GLThreadCommand* GLThread::new_command()
 	return commands[last_command++];
 }
 
+#ifdef HAVE_GL
 int GLThread::initialize(Display *dpy, Window win, int screen)
 {
-#ifdef HAVE_GL
 	XVisualInfo *visinfo;
 	GLXContext gl_context;
 
@@ -234,11 +236,10 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 	}
 	// FIXIT: needs texture, fb
 	return 0;
-#else
-	return 1;
-#endif
 }
+#endif
 
+#ifdef HAVE_GL
 void GLThread::generate_renderframe()
 {
 	// Create Vertex Array Object
@@ -295,15 +296,14 @@ void GLThread::generate_renderframe()
 
 int GLThread::have_context(Display *dpy, int screen)
 {
-#ifdef HAVE_GL
 	for(int i = 0; i < last_context; i++)
 	{
 		if(contexts[i].dpy == dpy && contexts[i].screen == screen)
 			return i;
 	}
-#endif
 	return -1;
 }
+#endif
 
 void GLThread::quit()
 {
@@ -314,10 +314,10 @@ void GLThread::quit()
 	next_command->unlock();
 }
 
+#ifdef HAVE_GL
 void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	struct gl_window *inwin, struct gl_window *outwin)
 {
-#ifdef HAVE_GL
 	command_lock->lock("GLThread::display_vframe");
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::DISPLAY_VFRAME;
@@ -331,7 +331,6 @@ void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	command->glwin2 = *outwin;
 	command_lock->unlock();
 	next_command->unlock();
-#endif
 }
 
 void GLThread::release_resources()
@@ -354,6 +353,7 @@ void GLThread::disable_opengl(BC_WindowBase *window)
 	command_lock->unlock();
 	next_command->unlock();
 }
+#endif
 
 void GLThread::run()
 {
@@ -382,7 +382,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			delete_contexts();
 			done = 1;
 			break;
-
+#ifdef HAVE_GL
 		case GLThreadCommand::DISPLAY_VFRAME:
 			do_display_vframe(command);
 			break;
@@ -394,7 +394,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 		case GLThreadCommand::DISABLE:
 			do_disable_opengl(command);
 			break;
-
+#endif
 		default:
 			handle_command(command);
 			break;
@@ -422,9 +422,9 @@ void GLThread::delete_contexts()
 #endif
 }
 
+#ifdef HAVE_GL
 void GLThread::do_disable_opengl(GLThreadCommand *command)
 {
-#ifdef HAVE_GL
 	int i;
 
 	if(vertexarray)
@@ -438,7 +438,6 @@ void GLThread::do_disable_opengl(GLThreadCommand *command)
 		contexts[i].gl_context = 0;
 		contexts[i].dpy = 0;
 	}
-#endif
 }
 
 void GLThread::do_display_vframe(GLThreadCommand *command)
@@ -462,6 +461,7 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glXSwapBuffers(command->dpy, command->win);
 }
+#endif
 
 #ifdef HAVE_GL
 GLuint GLThread::create_texture(int num, int width, int height)

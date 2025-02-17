@@ -87,14 +87,14 @@ public:
 	GLThread();
 	~GLThread();
 
-	int initialize(Display *dpy, Window win, int screen);
 	int get_glx_version(BC_WindowBase *window);
 	void quit();
+#ifdef HAVE_GL
 	void display_vframe(VFrame *frame, BC_WindowBase *window,
 		struct gl_window *inwin, struct gl_window *outwin);
 	void release_resources();
 	void disable_opengl(BC_WindowBase *window);
-
+#endif
 	void run();
 
 	GLThreadCommand* new_command();
@@ -107,9 +107,11 @@ public:
 	void delete_window(Display *dpy, int screen);
 
 private:
-	void handle_command_base(GLThreadCommand *command);
-	int have_context(Display *dpy, int screen);
 	void delete_contexts();
+	void handle_command_base(GLThreadCommand *command);
+#ifdef HAVE_GL
+	int initialize(Display *dpy, Window win, int screen);
+	int have_context(Display *dpy, int screen);
 	GLuint create_texture(int num, int width, int height);
 	void generate_renderframe();
 	void set_viewport(GLThreadCommand *command);
@@ -118,10 +120,11 @@ private:
 	void do_release_resources();
 	void do_disable_opengl(GLThreadCommand *command);
 
+	Shaders *shaders;
+#endif
+
 	Condition *next_command;
 	Mutex *command_lock;
-
-	Shaders *shaders;
 // This quits the program when it's 1.
 	int done;
 // Command stack
