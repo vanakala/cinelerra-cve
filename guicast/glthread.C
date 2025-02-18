@@ -147,7 +147,6 @@ GLThread::GLThread()
 	shaders = 0;
 	last_context = 0;
 	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
-	vertexarray = 0;
 #endif
 	BC_WindowBase::get_resources()->set_glthread(this);
 }
@@ -242,49 +241,51 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 #ifdef HAVE_GL
 void GLThread::generate_renderframe()
 {
+	struct glctx *ctx = &contexts[current_context];
+
 	// Create Vertex Array Object
-	glGenVertexArrays(1, &vertexarray);
-	glBindVertexArray(vertexarray);
+	glGenVertexArrays(1, &ctx->vertexarray);
+	glBindVertexArray(ctx->vertexarray);
 	// Create a Vertex Buffer Object and copy the vertex data to it
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glGenBuffers(1, &ctx->vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// Create an element array
-	glGenBuffers(1, &elemarray);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elemarray);
+	glGenBuffers(1, &ctx->elemarray);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->elemarray);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements),
 		elements, GL_STATIC_DRAW);
-	vertexshader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexshader, 1, &vertex_shader, NULL);
-	glCompileShader(vertexshader);
+	ctx->vertexshader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(ctx->vertexshader, 1, &vertex_shader, NULL);
+	glCompileShader(ctx->vertexshader);
 	// Create and compile the fragment shader
-	fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentshader, 1, &fragment_shader, NULL);
-	glCompileShader(fragmentshader);
+	ctx->fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(ctx->fragmentshader, 1, &fragment_shader, NULL);
+	glCompileShader(ctx->fragmentshader);
 	// Link the vertex and fragment shader into a shader program
-	shaderprogram = glCreateProgram();
-	glAttachShader(shaderprogram, vertexshader);
-	glAttachShader(shaderprogram, fragmentshader);
-	glBindFragDataLocation(shaderprogram, 0, "outColor");
-	glLinkProgram(shaderprogram);
-	glUseProgram(shaderprogram);
+	ctx->shaderprogram = glCreateProgram();
+	glAttachShader(ctx->shaderprogram, ctx->vertexshader);
+	glAttachShader(ctx->shaderprogram, ctx->fragmentshader);
+	glBindFragDataLocation(ctx->shaderprogram, 0, "outColor");
+	glLinkProgram(ctx->shaderprogram);
+	glUseProgram(ctx->shaderprogram);
 	// Specify the layout of the vertex data
-	posattrib = glGetAttribLocation(shaderprogram, "position");
-	glEnableVertexAttribArray(posattrib);
-	glVertexAttribPointer(posattrib, 2, GL_FLOAT, GL_FALSE,
+	ctx->posattrib = glGetAttribLocation(ctx->shaderprogram, "position");
+	glEnableVertexAttribArray(ctx->posattrib);
+	glVertexAttribPointer(ctx->posattrib, 2, GL_FLOAT, GL_FALSE,
 		7 * sizeof(GLfloat), 0);
-	colattrib = glGetAttribLocation(shaderprogram, "color");
-	glEnableVertexAttribArray(colattrib);
-	glVertexAttribPointer(colattrib, 3, GL_FLOAT, GL_FALSE,
+	ctx->colattrib = glGetAttribLocation(ctx->shaderprogram, "color");
+	glEnableVertexAttribArray(ctx->colattrib);
+	glVertexAttribPointer(ctx->colattrib, 3, GL_FLOAT, GL_FALSE,
 		7 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
-	texattrib = glGetAttribLocation(shaderprogram, "texcoord");
-	glEnableVertexAttribArray(texattrib);
-	glVertexAttribPointer(texattrib, 2, GL_FLOAT, GL_FALSE,
+	ctx->texattrib = glGetAttribLocation(ctx->shaderprogram, "texcoord");
+	glEnableVertexAttribArray(ctx->texattrib);
+	glVertexAttribPointer(ctx->texattrib, 2, GL_FLOAT, GL_FALSE,
 		7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
 	 // Texture
 	// 1 texture
-	glGenTextures(1, &firsttexture);
-	glBindTexture(GL_TEXTURE_2D, firsttexture);
+	glGenTextures(1, &ctx->firsttexture);
+	glBindTexture(GL_TEXTURE_2D, ctx->firsttexture);
 	// 1 texture
 	// the equivalent of (x,y,z) in texture coordinates is called (s,t,r).
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -427,11 +428,10 @@ void GLThread::do_disable_opengl(GLThreadCommand *command)
 {
 	int i;
 
-	if(vertexarray)
-		do_release_resources();
-
 	if((i = have_context(command->dpy, command->screen)) >= 0)
 	{
+		if(contexts[i].vertexarray)
+			do_release_resources();
 		XFree(contexts[i].visinfo);
 		glXMakeCurrent(contexts[i].dpy, None, NULL);
 		glXDestroyContext(contexts[i].dpy, contexts[i].gl_context);
@@ -442,20 +442,23 @@ void GLThread::do_disable_opengl(GLThreadCommand *command)
 
 void GLThread::do_display_vframe(GLThreadCommand *command)
 {
+	struct glctx *ctx;
+
 	if(initialize(command->dpy, command->win, command->screen))
 		return;
 
-	if(!vertexarray)
+	ctx = &contexts[current_context];
+	if(!ctx->vertexarray)
 		generate_renderframe();
 
-	glBindTexture(GL_TEXTURE_2D, firsttexture);
+	glBindTexture(GL_TEXTURE_2D, ctx->firsttexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, command->frame->get_w(),
 		command->frame->get_h(),
 		0, GL_RGBA, GL_UNSIGNED_SHORT, command->frame->get_data());
 	// Clear the screen to black
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(shaderprogram);
+	glUseProgram(ctx->shaderprogram);
 	set_viewport(command);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -485,14 +488,16 @@ GLuint GLThread::create_texture(int num, int width, int height)
 
 void GLThread::do_release_resources()
 {
-	glDeleteTextures(1, &firsttexture);
-	glDeleteProgram(shaderprogram);
-	glDeleteShader(fragmentshader);
-	glDeleteShader(vertexshader);
-	glDeleteBuffers(1, &elemarray);
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteVertexArrays(1, &vertexarray);
-	vertexarray = 0;
+	struct glctx *ctx = &contexts[current_context];
+
+	glDeleteTextures(1, &ctx->firsttexture);
+	glDeleteProgram(ctx->shaderprogram);
+	glDeleteShader(ctx->fragmentshader);
+	glDeleteShader(ctx->vertexshader);
+	glDeleteBuffers(1, &ctx->elemarray);
+	glDeleteBuffers(1, &ctx->vertexbuffer);
+	glDeleteVertexArrays(1, &ctx->vertexarray);
+	ctx->vertexarray = 0;
 }
 
 void GLThread::set_viewport(GLThreadCommand *command)

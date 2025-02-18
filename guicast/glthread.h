@@ -132,17 +132,6 @@ private:
 	GLThreadCommand *commands[GL_MAX_COMMANDS];
 
 #ifdef HAVE_GL
-	GLuint vertexarray;   // vao
-	GLuint vertexbuffer;  // vbo
-	GLuint elemarray;     // ebo
-	GLuint vertexshader;
-	GLuint fragmentshader;
-	GLuint shaderprogram;
-	GLuint firsttexture;  // tex
-	GLuint fbtexture;
-	GLint posattrib;
-	GLint colattrib;
-	GLint texattrib;
 
 	struct texture
 	{
@@ -161,6 +150,17 @@ private:
 		XVisualInfo *visinfo;
 		int last_texture;
 		struct texture textures[GL_MAX_TEXTURES];
+		GLuint vertexarray;   // vao
+		GLuint vertexbuffer;  // vbo
+		GLuint elemarray;     // ebo
+		GLuint vertexshader;
+		GLuint fragmentshader;
+		GLuint shaderprogram;
+		GLuint firsttexture;  // tex
+		GLuint fbtexture;
+		GLint posattrib;
+		GLint colattrib;
+		GLint texattrib;
 	}contexts[GL_MAX_CONTEXTS];
 public:
 	static void show_glparams(int indent = 0);
