@@ -24,6 +24,7 @@
 #define GL_MAX_COMMANDS 16
 #define GL_ORIG_TEXTURE 0
 #define GL_MAX_TEXTURES 4
+#define GL_VERTICES_SIZE 28
 
 #include <X11/Xlib.h>
 
@@ -74,6 +75,7 @@ public:
 	int screen;
 	int width;
 	int height;
+	double zoom;
 	struct gl_window glwin1;
 	struct gl_window glwin2;
 private:
@@ -91,7 +93,7 @@ public:
 	void quit();
 #ifdef HAVE_GL
 	void display_vframe(VFrame *frame, BC_WindowBase *window,
-		struct gl_window *inwin, struct gl_window *outwin);
+		struct gl_window *inwin, struct gl_window *outwin, double zoom);
 	void release_resources();
 	void disable_opengl(BC_WindowBase *window);
 #endif
@@ -161,6 +163,7 @@ private:
 		GLint posattrib;
 		GLint colattrib;
 		GLint texattrib;
+		float vertices[GL_VERTICES_SIZE];
 	}contexts[GL_MAX_CONTEXTS];
 public:
 	static void show_glparams(int indent = 0);

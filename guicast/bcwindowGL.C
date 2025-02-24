@@ -43,7 +43,7 @@ int BC_WindowBase::get_opengl_version()
 
 void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
 	double in_x2, double in_y2, double out_x1, double out_y1,
-	double out_x2, double out_y2)
+	double out_x2, double out_y2, double zoom)
 {
 #ifdef HAVE_GL
 	struct gl_window inwin, outwin;
@@ -56,8 +56,7 @@ void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
 	outwin.y1 = out_y1;
 	outwin.x2 = out_x2;
 	outwin.y2 = out_y2;
-
-	resources.get_glthread()->display_vframe(frame, this, &inwin, &outwin);
+	resources.get_glthread()->display_vframe(frame, this, &inwin, &outwin, zoom);
 #endif
 }
 

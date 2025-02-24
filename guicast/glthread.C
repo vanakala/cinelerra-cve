@@ -7,6 +7,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindowbase.h"
+#include "clip.h"
 #include "condition.h"
 #include "glthread.h"
 #include "shaders.h"
@@ -45,13 +46,13 @@ static int attrib[] =
 };
 
 // Vertex for texture
-static float vertices[] = {
+static float vertices[GL_VERTICES_SIZE] = {
 //  Position      Color             Texcoords
 //   x       y      r    g     b     s     t
-    -1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // Top-left
-     1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // Top-right
-     1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
-    -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
+    -1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // Top-left      0..6
+     1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // Top-right     7..13
+     1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Bottom-right 14..20
+    -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left  21..27
 };
 
 static GLuint elements[] = {
@@ -105,6 +106,7 @@ GLThreadCommand::GLThreadCommand()
 	frame = 0;
 	dpy = 0;
 	win = 0;
+	zoom = 1;
 	screen = -1;
 }
 
@@ -116,8 +118,8 @@ void GLThreadCommand::dump(int indent, int show_frame)
 	switch(command)
 	{
 	case DISPLAY_VFRAME:
-		printf("%*s[%d,%d] win1:(%.1f,%.1f) (%.1f,%.1f)", indent, "",
-			width, height, glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2);
+		printf("%*s[%d,%d] zoom:%.3f win1:(%.1f,%.1f) (%.1f,%.1f)", indent, "",
+			width, height, zoom, glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2);
 		printf(" win2:(%.1f,%.1f) (%.1f,%.1f)\n",
 			glwin2.x1, glwin2.y1, glwin2.x2, glwin2.y2);
 		break;
@@ -249,7 +251,8 @@ void GLThread::generate_renderframe()
 	// Create a Vertex Buffer Object and copy the vertex data to it
 	glGenBuffers(1, &ctx->vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, GL_VERTICES_SIZE * sizeof(float),
+		ctx->vertices, GL_STATIC_DRAW);
 	// Create an element array
 	glGenBuffers(1, &ctx->elemarray);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->elemarray);
@@ -317,7 +320,7 @@ void GLThread::quit()
 
 #ifdef HAVE_GL
 void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
-	struct gl_window *inwin, struct gl_window *outwin)
+	struct gl_window *inwin, struct gl_window *outwin, double zoom)
 {
 	command_lock->lock("GLThread::display_vframe");
 	GLThreadCommand *command = new_command();
@@ -328,6 +331,7 @@ void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	command->screen = window->top_level->screen;
 	command->width = window->get_w();
 	command->height = window->get_h();
+	command->zoom = zoom;
 	command->glwin1 = *inwin;
 	command->glwin2 = *outwin;
 	command_lock->unlock();
@@ -449,8 +453,10 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 
 	ctx = &contexts[current_context];
 	if(!ctx->vertexarray)
+	{
+		set_viewport(command);
 		generate_renderframe();
-
+	}
 	glBindTexture(GL_TEXTURE_2D, ctx->firsttexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, command->frame->get_w(),
 		command->frame->get_h(),
@@ -459,7 +465,6 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(ctx->shaderprogram);
-	set_viewport(command);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glXSwapBuffers(command->dpy, command->win);
@@ -503,29 +508,24 @@ void GLThread::do_release_resources()
 void GLThread::set_viewport(GLThreadCommand *command)
 {
 	double aspect = command->frame->get_pixel_aspect();
+	int w = round(command->frame->get_w() * aspect);
+	int h = command->frame->get_h();
+	int x = round(command->glwin2.x1);
+	int y = round(command->glwin2.x1) + command->height - h;
+	struct glctx *ctx = &contexts[current_context];
 
 	if(!aspect)
 		aspect = 1.0;
 
-	double out_w = command->glwin2.x2 - command->glwin2.x1;
-	double out_h = command->glwin2.y2 - command->glwin2.y1;
+	memcpy(ctx->vertices, vertices, GL_VERTICES_SIZE * sizeof(float));
+	if(!EQUIV(command->zoom, 1.0))
+	{
+		float sz = 2 * command->zoom;
 
-	double hcf = out_h / (command->glwin1.y2 - command->glwin1.y1);
-	double wcf = aspect * hcf;
-
-	double base_left = command->glwin1.x1 * wcf;
-	double base_top = (command->height - out_h) + command->glwin1.y1 * hcf;
-
-	double disp_w = command->frame->get_w() * wcf;
-	double disp_h = command->frame->get_h() * hcf;
-
-	if(disp_w > out_w)
-		disp_w = out_w;
-	if(disp_h > out_h)
-		disp_h = out_h;
-
-	glViewport(round(base_left), round(base_top),
-		round(disp_w), round(disp_h));
+		ctx->vertices[14] = ctx->vertices[7] = ctx->vertices[0] + sz;
+		ctx->vertices[22] = ctx->vertices[15] = ctx->vertices[1] - sz;
+	}
+	glViewport(x, y, w, h);
 }
 #endif
 

@@ -693,7 +693,7 @@ void Canvas::draw_refresh()
 			{
 				canvas->opengl_display(refresh_frame,
 					in_x1, in_y1, in_x2, in_y2,
-					out_x1, out_y1, out_x2, out_y2);
+					out_x1, out_y1, out_x2, out_y2, get_zoom());
 				canvas->opengl_release();
 			}
 			else
