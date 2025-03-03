@@ -511,13 +511,29 @@ void GLThread::set_viewport(GLThreadCommand *command)
 	int w = round(command->frame->get_w() * aspect);
 	int h = command->frame->get_h();
 	int x = round(command->glwin2.x1);
-	int y = round(command->glwin2.x1) + command->height - h;
+	int y = round(command->glwin2.y1) + command->height - h;
 	struct glctx *ctx = &contexts[current_context];
 
 	if(!aspect)
 		aspect = 1.0;
 
 	memcpy(ctx->vertices, vertices, GL_VERTICES_SIZE * sizeof(float));
+	if(!EQUIV(command->glwin1.x1, 1.0))
+	{
+		double s = command->glwin1.x1 / w * aspect;
+		ctx->vertices[5] += s;
+		ctx->vertices[12] += s;
+		ctx->vertices[19] += s;
+		ctx->vertices[26] += s;
+	}
+	if(!EQUIV(command->glwin1.y1, 1.0))
+	{
+		double s = command->glwin1.y1 / h;
+		ctx->vertices[6] += s;
+		ctx->vertices[13] += s;
+		ctx->vertices[20] += s;
+		ctx->vertices[27] += s;
+	}
 	if(!EQUIV(command->zoom, 1.0))
 	{
 		float sz = 2 * command->zoom;
