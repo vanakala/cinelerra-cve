@@ -40,6 +40,8 @@ struct gl_window
 	double x2, y2;
 };
 
+struct glctx;
+
 // This takes requests and runs all OpenGL calls in the main thread.
 // Past experience showed OpenGL couldn't be run from multiple threads
 // reliably even if MakeCurrent was used and only 1 thread at a time did 
@@ -113,13 +115,11 @@ private:
 	void handle_command_base(GLThreadCommand *command);
 #ifdef HAVE_GL
 	int initialize(Display *dpy, Window win, int screen);
-	int have_context(Display *dpy, int screen);
 	GLuint create_texture(int num, int width, int height);
 	void generate_renderframe();
 	void set_viewport(GLThreadCommand *command);
 // executing commands
 	void do_display_vframe(GLThreadCommand *command);
-	void do_release_resources();
 	void do_disable_opengl(GLThreadCommand *command);
 
 	Shaders *shaders;
@@ -142,7 +142,6 @@ private:
 		GLuint id;
 	};
 	int last_context;
-	int current_context;
 	struct glctx
 	{
 		Display *dpy;
@@ -165,10 +164,13 @@ private:
 		GLint texattrib;
 		float vertices[GL_VERTICES_SIZE];
 	}contexts[GL_MAX_CONTEXTS];
+	struct glctx *current_glctx;
+	struct glctx *have_context(Display *dpy, int screen);
+	void do_release_resources(struct glctx *ctx);
 public:
 	static void show_glparams(int indent = 0);
 	static void show_errors(const char *loc = 0, int indent = 0);
-	void show_glxcontext(int context, int indent = 0);
+	void show_glxcontext(struct glctx *ctx, int indent = 0);
 	void show_compile_status(GLuint shader, const char *name);
 #endif
 };

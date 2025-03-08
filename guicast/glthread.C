@@ -148,6 +148,7 @@ GLThread::GLThread()
 #ifdef HAVE_GL
 	shaders = 0;
 	last_context = 0;
+	current_glctx = 0;
 	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
 #endif
 	BC_WindowBase::get_resources()->set_glthread(this);
@@ -194,11 +195,25 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 {
 	XVisualInfo *visinfo;
 	GLXContext gl_context;
+	struct glctx *ctx = 0;
 
-	if(have_context(dpy, screen) < 0)
+	if(!(current_glctx = have_context(dpy, screen)))
 	{
-		if(last_context >= GL_MAX_CONTEXTS)
-			return 1;
+		for(int i = 0; i < GL_MAX_CONTEXTS; i++)
+		{
+			if(contexts[i].win == win && contexts[i].dpy == 0)
+			{
+				ctx = &contexts[i];
+				break;
+			}
+		}
+		if(!ctx)
+		{
+			if(last_context >= GL_MAX_CONTEXTS)
+				return 1;
+			ctx = &contexts[last_context];
+			last_context++;
+		}
 		if(!(visinfo = glXChooseVisual(dpy, screen, attrib)))
 		{
 			fputs("GLThread::initialize: Couldn't get visual.\n", stdout);
@@ -210,13 +225,12 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 			XFree(visinfo);
 			return 1;
 		}
-		contexts[last_context].dpy = dpy;
-		contexts[last_context].screen = screen;
-		contexts[last_context].win = win;
-		contexts[last_context].gl_context = gl_context;
-		contexts[last_context].visinfo = visinfo;
-		current_context = last_context;
-		last_context++;
+		ctx->dpy = dpy;
+		ctx->screen = screen;
+		ctx->win = win;
+		ctx->gl_context = gl_context;
+		ctx->visinfo = visinfo;
+		current_glctx = ctx;
 		glXMakeCurrent(dpy, win, gl_context);
 		if(!BC_Resources::OpenGLStrings[0])
 		{
@@ -243,69 +257,72 @@ int GLThread::initialize(Display *dpy, Window win, int screen)
 #ifdef HAVE_GL
 void GLThread::generate_renderframe()
 {
-	struct glctx *ctx = &contexts[current_context];
-
-	// Create Vertex Array Object
-	glGenVertexArrays(1, &ctx->vertexarray);
-	glBindVertexArray(ctx->vertexarray);
-	// Create a Vertex Buffer Object and copy the vertex data to it
-	glGenBuffers(1, &ctx->vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, GL_VERTICES_SIZE * sizeof(float),
-		ctx->vertices, GL_STATIC_DRAW);
-	// Create an element array
-	glGenBuffers(1, &ctx->elemarray);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->elemarray);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements),
-		elements, GL_STATIC_DRAW);
-	ctx->vertexshader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(ctx->vertexshader, 1, &vertex_shader, NULL);
-	glCompileShader(ctx->vertexshader);
-	// Create and compile the fragment shader
-	ctx->fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(ctx->fragmentshader, 1, &fragment_shader, NULL);
-	glCompileShader(ctx->fragmentshader);
-	// Link the vertex and fragment shader into a shader program
-	ctx->shaderprogram = glCreateProgram();
-	glAttachShader(ctx->shaderprogram, ctx->vertexshader);
-	glAttachShader(ctx->shaderprogram, ctx->fragmentshader);
-	glBindFragDataLocation(ctx->shaderprogram, 0, "outColor");
-	glLinkProgram(ctx->shaderprogram);
-	glUseProgram(ctx->shaderprogram);
-	// Specify the layout of the vertex data
-	ctx->posattrib = glGetAttribLocation(ctx->shaderprogram, "position");
-	glEnableVertexAttribArray(ctx->posattrib);
-	glVertexAttribPointer(ctx->posattrib, 2, GL_FLOAT, GL_FALSE,
-		7 * sizeof(GLfloat), 0);
-	ctx->colattrib = glGetAttribLocation(ctx->shaderprogram, "color");
-	glEnableVertexAttribArray(ctx->colattrib);
-	glVertexAttribPointer(ctx->colattrib, 3, GL_FLOAT, GL_FALSE,
-		7 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
-	ctx->texattrib = glGetAttribLocation(ctx->shaderprogram, "texcoord");
-	glEnableVertexAttribArray(ctx->texattrib);
-	glVertexAttribPointer(ctx->texattrib, 2, GL_FLOAT, GL_FALSE,
-		7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
-	 // Texture
-	// 1 texture
-	glGenTextures(1, &ctx->firsttexture);
-	glBindTexture(GL_TEXTURE_2D, ctx->firsttexture);
-	// 1 texture
-	// the equivalent of (x,y,z) in texture coordinates is called (s,t,r).
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, brd_color);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if(current_glctx)
+	{
+		// Create Vertex Array Object
+		glGenVertexArrays(1, &current_glctx->vertexarray);
+		glBindVertexArray(current_glctx->vertexarray);
+		// Create a Vertex Buffer Object and copy the vertex data to it
+		glGenBuffers(1, &current_glctx->vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, GL_VERTICES_SIZE * sizeof(float),
+			current_glctx->vertices, GL_STATIC_DRAW);
+		// Create an element array
+		glGenBuffers(1, &current_glctx->elemarray);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current_glctx->elemarray);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements),
+			elements, GL_STATIC_DRAW);
+		current_glctx->vertexshader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(current_glctx->vertexshader, 1, &vertex_shader, NULL);
+		glCompileShader(current_glctx->vertexshader);
+		// Create and compile the fragment shader
+		current_glctx->fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(current_glctx->fragmentshader, 1, &fragment_shader, NULL);
+		glCompileShader(current_glctx->fragmentshader);
+		// Link the vertex and fragment shader into a shader program
+		current_glctx->shaderprogram = glCreateProgram();
+		glAttachShader(current_glctx->shaderprogram, current_glctx->vertexshader);
+		glAttachShader(current_glctx->shaderprogram, current_glctx->fragmentshader);
+		glBindFragDataLocation(current_glctx->shaderprogram, 0, "outColor");
+		glLinkProgram(current_glctx->shaderprogram);
+		glUseProgram(current_glctx->shaderprogram);
+		// Specify the layout of the vertex data
+		current_glctx->posattrib = glGetAttribLocation(
+			current_glctx->shaderprogram, "position");
+		glEnableVertexAttribArray(current_glctx->posattrib);
+		glVertexAttribPointer(current_glctx->posattrib, 2, GL_FLOAT, GL_FALSE,
+			7 * sizeof(GLfloat), 0);
+		current_glctx->colattrib = glGetAttribLocation(
+			current_glctx->shaderprogram, "color");
+		glEnableVertexAttribArray(current_glctx->colattrib);
+		glVertexAttribPointer(current_glctx->colattrib, 3, GL_FLOAT, GL_FALSE,
+			7 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+		current_glctx->texattrib = glGetAttribLocation(
+			current_glctx->shaderprogram, "texcoord");
+		glEnableVertexAttribArray(current_glctx->texattrib);
+		glVertexAttribPointer(current_glctx->texattrib, 2, GL_FLOAT, GL_FALSE,
+			7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
+		// Texture
+		// 1st texture
+		glGenTextures(1, &current_glctx->firsttexture);
+		glBindTexture(GL_TEXTURE_2D, current_glctx->firsttexture);
+		// the equivalent of (x,y,z) in texture coordinates is called (s,t,r).
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, brd_color);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 }
 
-int GLThread::have_context(Display *dpy, int screen)
+GLThread::glctx *GLThread::have_context(Display *dpy, int screen)
 {
 	for(int i = 0; i < last_context; i++)
 	{
 		if(contexts[i].dpy == dpy && contexts[i].screen == screen)
-			return i;
+			return &contexts[i];
 	}
-	return -1;
+	return 0;
 }
 #endif
 
@@ -393,7 +410,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			break;
 
 		case GLThreadCommand::RELEASE_RESOURCES:
-			do_release_resources();
+			do_release_resources(current_glctx);
 			break;
 
 		case GLThreadCommand::DISABLE:
@@ -430,41 +447,37 @@ void GLThread::delete_contexts()
 #ifdef HAVE_GL
 void GLThread::do_disable_opengl(GLThreadCommand *command)
 {
-	int i;
-
-	if((i = have_context(command->dpy, command->screen)) >= 0)
+	if(GLThread::glctx *ctx = have_context(command->dpy, command->screen))
 	{
-		if(contexts[i].vertexarray)
-			do_release_resources();
-		XFree(contexts[i].visinfo);
-		glXMakeCurrent(contexts[i].dpy, None, NULL);
-		glXDestroyContext(contexts[i].dpy, contexts[i].gl_context);
-		contexts[i].gl_context = 0;
-		contexts[i].dpy = 0;
+		if(ctx->vertexarray)
+			do_release_resources(ctx);
+		XFree(ctx->visinfo);
+		glXMakeCurrent(ctx->dpy, None, NULL);
+		glXDestroyContext(ctx->dpy, ctx->gl_context);
+		ctx->dpy = 0;
+		ctx->gl_context = 0;
+		if(ctx == current_glctx)
+			current_glctx = 0;
 	}
 }
 
 void GLThread::do_display_vframe(GLThreadCommand *command)
 {
-	struct glctx *ctx;
-
 	if(initialize(command->dpy, command->win, command->screen))
 		return;
-
-	ctx = &contexts[current_context];
-	if(!ctx->vertexarray)
+	if(!current_glctx->vertexarray)
 	{
 		set_viewport(command);
 		generate_renderframe();
 	}
-	glBindTexture(GL_TEXTURE_2D, ctx->firsttexture);
+	glBindTexture(GL_TEXTURE_2D, current_glctx->firsttexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, command->frame->get_w(),
 		command->frame->get_h(),
 		0, GL_RGBA, GL_UNSIGNED_SHORT, command->frame->get_data());
 	// Clear the screen to black
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(ctx->shaderprogram);
+	glUseProgram(current_glctx->shaderprogram);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glXSwapBuffers(command->dpy, command->win);
@@ -476,7 +489,7 @@ GLuint GLThread::create_texture(int num, int width, int height)
 {
 	struct texture *txp;
 
-	txp = &contexts[current_context].textures[num];
+	txp = &current_glctx->textures[num];
 	glGenTextures(1, &txp->id);
 	txp->width = width;
 	txp->height = height;
@@ -491,10 +504,8 @@ GLuint GLThread::create_texture(int num, int width, int height)
 	return txp->id;
 }
 
-void GLThread::do_release_resources()
+void GLThread::do_release_resources(struct glctx *ctx)
 {
-	struct glctx *ctx = &contexts[current_context];
-
 	glDeleteTextures(1, &ctx->firsttexture);
 	glDeleteProgram(ctx->shaderprogram);
 	glDeleteShader(ctx->fragmentshader);
@@ -512,34 +523,34 @@ void GLThread::set_viewport(GLThreadCommand *command)
 	int h = command->frame->get_h();
 	int x = round(command->glwin2.x1);
 	int y = round(command->glwin2.y1) + command->height - h;
-	struct glctx *ctx = &contexts[current_context];
 
 	if(!aspect)
 		aspect = 1.0;
-
-	memcpy(ctx->vertices, vertices, GL_VERTICES_SIZE * sizeof(float));
+	memcpy(current_glctx->vertices, vertices, GL_VERTICES_SIZE * sizeof(float));
 	if(!EQUIV(command->glwin1.x1, 1.0))
 	{
 		double s = command->glwin1.x1 / w * aspect;
-		ctx->vertices[5] += s;
-		ctx->vertices[12] += s;
-		ctx->vertices[19] += s;
-		ctx->vertices[26] += s;
+		current_glctx->vertices[5] += s;
+		current_glctx->vertices[12] += s;
+		current_glctx->vertices[19] += s;
+		current_glctx->vertices[26] += s;
 	}
 	if(!EQUIV(command->glwin1.y1, 1.0))
 	{
 		double s = command->glwin1.y1 / h;
-		ctx->vertices[6] += s;
-		ctx->vertices[13] += s;
-		ctx->vertices[20] += s;
-		ctx->vertices[27] += s;
+		current_glctx->vertices[6] += s;
+		current_glctx->vertices[13] += s;
+		current_glctx->vertices[20] += s;
+		current_glctx->vertices[27] += s;
 	}
 	if(!EQUIV(command->zoom, 1.0))
 	{
 		float sz = 2 * command->zoom;
 
-		ctx->vertices[14] = ctx->vertices[7] = ctx->vertices[0] + sz;
-		ctx->vertices[22] = ctx->vertices[15] = ctx->vertices[1] - sz;
+		current_glctx->vertices[14] = current_glctx->vertices[7] =
+			current_glctx->vertices[0] + sz;
+		current_glctx->vertices[22] = current_glctx->vertices[15] =
+			current_glctx->vertices[1] - sz;
 	}
 	glViewport(x, y, w, h);
 }
@@ -594,7 +605,7 @@ void GLThread::show_glparams(int indent)
 		viewport[2], viewport[3]);
 }
 
-void GLThread::show_glxcontext(int context, int indent)
+void GLThread::show_glxcontext(struct glctx *ctx, int indent)
 {
 	int use_gl;
 	int buffer_size;
@@ -606,13 +617,13 @@ void GLThread::show_glxcontext(int context, int indent)
 	int red, green, blue, alpha, depth, stencil;
 	int acured, acugreen, acublue, acualpha;
 	int maj, min;
-	Display *dpy = contexts[context].dpy;
-	XVisualInfo *visinfo = contexts[context].visinfo;
+	Display *dpy = ctx->dpy;
+	XVisualInfo *visinfo = ctx->visinfo;
 
 	glXQueryVersion(dpy, &maj, &min);
-	printf("%*sGLX version %d.%d context %d\n", indent, "", maj, min, context);
+	printf("%*sGLX version %d.%d context %p\n", indent, "", maj, min, ctx);
 	printf("%*sDirect rendering: %s\n", indent, "",
-		glXIsDirect(dpy, contexts[context].gl_context) ? "Yes" : "No");
+		glXIsDirect(dpy, ctx->gl_context) ? "Yes" : "No");
 	glXGetConfig(dpy, visinfo, GLX_USE_GL, &use_gl);
 	glXGetConfig(dpy, visinfo, GLX_BUFFER_SIZE, &buffer_size);
 	glXGetConfig(dpy, visinfo, GLX_LEVEL, &level);
