@@ -60,7 +60,7 @@ static GLuint elements[] = {
         2, 3, 0
 };
 
-static float brd_color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+static float brd_color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 static const char *vertex_shader =
 R"vx(#version 130
@@ -307,8 +307,8 @@ void GLThread::generate_renderframe()
 		glGenTextures(1, &current_glctx->firsttexture);
 		glBindTexture(GL_TEXTURE_2D, current_glctx->firsttexture);
 		// the equivalent of (x,y,z) in texture coordinates is called (s,t,r).
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, brd_color);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
