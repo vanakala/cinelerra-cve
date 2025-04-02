@@ -196,7 +196,7 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 	if(!input)
 		input = &track_frame;
 
-	if(is_muted(output->get_pts()))
+	if(!media_track->play || is_muted(output->get_pts()))
 	{
 		BC_Resources::tmpframes.release_frame(*input);
 		return output;
@@ -222,7 +222,8 @@ VFrame *VTrackRender::render_projector(VFrame *output, VFrame **input)
 			mode = mode_keyframe->value;
 		else
 			mode = TRANSFER_NORMAL;
-		if(!(*input)->is_transparent() &&
+
+		if(!(*input)->is_transparent() && !output->is_transparent() &&
 				mode == TRANSFER_NORMAL &&
 				in_x1 == out_x1 && in_x2 == out_x2 &&
 				in_y1 == out_y1 && in_y2 == out_y2)
