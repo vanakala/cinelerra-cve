@@ -124,7 +124,7 @@ void ATrackRender::render_pan(AFrame **output, int out_channels)
 
 	module_levels.fill(&track_frame);
 
-	if(is_muted(pts))
+	if(!media_track->play || is_muted(pts))
 	{
 		audio_frames.release_frame(track_frame);
 		track_frame = 0;
