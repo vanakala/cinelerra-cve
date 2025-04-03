@@ -537,8 +537,7 @@ void AudioRender::pass_aframes(Plugin *plugin, AFrame *current_frame,
 	// Add frames for other tracks starting from the first
 	for(Track *track = edl->tracks->first; track; track = track->next)
 	{
-		if(track->data_type != TRACK_AUDIO ||
-				!track->renderer->is_playable(pts, edit))
+		if(track->data_type != TRACK_AUDIO || !track->play)
 			continue;
 		for(int i = 0; i < track->plugins.total; i++)
 		{
