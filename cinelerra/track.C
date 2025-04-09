@@ -147,8 +147,20 @@ int Track::is_synthesis(ptstime position)
 			continue;
 
 // Assume data from a shared track is synthesized
-		if(plugin->plugin_type == PLUGIN_SHAREDMODULE)
+		switch(plugin->plugin_type)
+		{
+		case PLUGIN_SHAREDMODULE:
 			return 1;
+		case PLUGIN_STANDALONE:
+			if(plugin->plugin_server && plugin->plugin_server->multichannel)
+				return 1;
+			break;
+		case PLUGIN_SHAREDPLUGIN:
+			if(plugin->shared_plugin && plugin->shared_plugin->plugin_server &&
+					plugin->shared_plugin->plugin_server->multichannel)
+				return 1;
+			break;
+		}
 		if(plugin->is_synthesis())
 			return 1;
 	}
