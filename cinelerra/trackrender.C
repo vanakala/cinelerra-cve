@@ -93,8 +93,7 @@ int TrackRender::is_playable(ptstime pts, Edit *edit)
 {
 	if(!media_track->play)
 		return 0;
-
-	return (edit && (edit->asset || edit->transition)) || media_track->is_synthesis(pts);
+	return !!edit || media_track->is_synthesis(pts);
 }
 
 int TrackRender::is_muted(ptstime pts)
