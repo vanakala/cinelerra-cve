@@ -174,6 +174,7 @@ public:
 	void show_compile_status(GLuint shader, const char *name);
 	void show_shaders(GLuint program, int indent = 0);
 	void show_uniforms(GLuint program, int indent = 0);
+	const char *glname(GLenum type);
 
 #endif
 };

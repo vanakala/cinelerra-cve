@@ -767,9 +767,138 @@ void GLThread::show_uniforms(GLuint program, int indent)
 		char name[100];
 		glGetActiveUniform(program, i, 100, &len, &size, &type, name);
 
-		printf("%*s%d: '%s' nameLen: %d size: %d type: %#x\n", indent, "",
-			i, name, len, size, type);
+		printf("%*s%d: '%s' nameLen: %d size: %d type: '%s'\n", indent, "",
+			i, name, len, size, glname(type));
 	}
 }
 
+const char *GLThread::glname(GLenum type)
+{
+	static char bufr[64];
+
+	switch(type)
+	{
+	case GL_BLEND_EQUATION_RGB:
+		return "Blend equation RGB";
+	case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+		return "Vertex attrib array enabled";
+	case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+		return "Vertex attrib array size";
+	case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+		return "Vertex attrib array stride";
+	case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+		return "Vertex attrib array";
+	case GL_CURRENT_VERTEX_ATTRIB:
+		return "Current vertex attrib";
+	case GL_VERTEX_PROGRAM_POINT_SIZE:
+		return "Vertex program point size";
+	case GL_VERTEX_ATTRIB_ARRAY_POINTER:
+		return "Vertex attrib array pointer";
+	case GL_STENCIL_BACK_FUNC:
+		return "Stencil back func";
+	case GL_STENCIL_BACK_FAIL:
+		return "Stencil back fail";
+	case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+		return "Stencil back pass depth fail";
+	case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+		return "Stencil back pass depth pass";
+	case GL_MAX_DRAW_BUFFERS:
+		return "Max draw buffers";
+	case GL_DRAW_BUFFER0:
+		return "Draw buffer 0";
+	case GL_DRAW_BUFFER1:
+		return "Draw buffer 1";
+	case GL_DRAW_BUFFER2:
+		return "Draw buffer 2";
+	case GL_DRAW_BUFFER3:
+		return "Draw buffer 3";
+	case GL_DRAW_BUFFER4:
+		return "Draw buffer 4";
+	case GL_DRAW_BUFFER5:
+		return "Draw buffer 5";
+	case GL_DRAW_BUFFER6:
+		return "Draw buffer 6";
+	case GL_DRAW_BUFFER7:
+		return "Draw buffer 7";
+	case GL_DRAW_BUFFER8:
+		return "Draw buffer 8";
+	case GL_DRAW_BUFFER9:
+		return "Draw buffer 9";
+	case GL_DRAW_BUFFER10:
+		return "Draw buffer 10";
+	case GL_DRAW_BUFFER11:
+		return "Draw buffer 11";
+	case GL_DRAW_BUFFER12:
+		return "Draw buffer 12";
+	case GL_DRAW_BUFFER13:
+		return "Draw buffer 13";
+	case GL_DRAW_BUFFER14:
+		return "Draw buffer 15";
+	case GL_BLEND_EQUATION_ALPHA:
+		return "Blend equation alpha";
+	case GL_MAX_VERTEX_ATTRIBS:
+		return "Max vertex attribs";
+	case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+		return "Vertex attrib array normalized";
+	case GL_MAX_TEXTURE_IMAGE_UNITS:
+		return "Max texture image units";
+	case GL_FRAGMENT_SHADER:
+		return "Fragment shader";
+	case GL_VERTEX_SHADER:
+		return "Vertex shader";
+	case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+		return "Max fragment uniform components";
+	case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+		return "Max vertex uniform components";
+	case GL_MAX_VARYING_FLOATS:
+		return "Max varying floats";
+	case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+		return "Max vertex texture image units";
+	case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+		return "Max combined texture image units";
+	case GL_SHADER_TYPE:
+		return "Shader type";
+	case GL_FLOAT_VEC2:
+		return "Float vec2";
+	case GL_FLOAT_VEC3:
+		return "Float vec3";
+	case GL_FLOAT_VEC4:
+		return "Float vec4";
+	case GL_INT_VEC2:
+		return "Int vec2";
+	case GL_INT_VEC3:
+		return "Int vec3";
+	case GL_INT_VEC4:
+		return "Int vec4";
+	case GL_BOOL:
+		return "Bool";
+	case GL_BOOL_VEC2:
+		return "Bool vec2";
+	case GL_BOOL_VEC3:
+		return "Bool vec3";
+	case GL_BOOL_VEC4:
+		return "Bool vec4";
+	case GL_FLOAT_MAT2:
+		return "Float mat2";
+	case GL_FLOAT_MAT3:
+		return "Float mat3";
+	case GL_FLOAT_MAT4:
+		return "Float mat4";
+	case GL_SAMPLER_1D:
+		return "Sampler 1D";
+	case GL_SAMPLER_2D:
+		return "Sampler 2D";
+	case GL_SAMPLER_3D:
+		return "Sampler 3D";
+	case GL_SAMPLER_CUBE:
+		return "Sampler cube";
+	case GL_SAMPLER_1D_SHADOW:
+		return "Sampler 1D shadow";
+	case GL_SAMPLER_2D_SHADOW:
+		return "Sampler 2D shadow";
+	default:
+		sprintf(bufr, "%#x", type);
+		return bufr;
+	}
+}
 #endif
