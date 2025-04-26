@@ -728,4 +728,48 @@ void GLThread::show_compile_status(GLuint shader, const char *name)
 	}
 }
 
+void GLThread::show_shaders(GLuint program, int indent)
+{
+	GLuint shaders[20];
+	GLsizei count;
+
+	if(!glIsProgram(program))
+	{
+		printf("%d is not a program\n", program);
+		return;
+	}
+	glGetAttachedShaders(program, 20, &count, shaders);
+	printf("%*sProgram %d has %d shaders:\n", indent, "", program, count);
+	indent += 2;
+	for(int i = 0; i < count; i++)
+		printf("%*sattached shader: %u\n", indent, "",  shaders[i]);
+}
+
+void GLThread::show_uniforms(GLuint program, int indent)
+{
+	GLint n, max, i;
+
+	if(!glIsProgram(program))
+	{
+		printf("%d is not a program\n", program);
+		return;
+	}
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n);
+	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max);
+	printf("%*sProgram %d has %d uniforms with max name %d:\n", indent, "",
+		program, n, max);
+
+	indent += 2;
+	for(int i = 0; i < n; i++)
+	{
+		GLint size, len;
+		GLenum type;
+		char name[100];
+		glGetActiveUniform(program, i, 100, &len, &size, &type, name);
+
+		printf("%*s%d: '%s' nameLen: %d size: %d type: %#x\n", indent, "",
+			i, name, len, size, type);
+	}
+}
+
 #endif
