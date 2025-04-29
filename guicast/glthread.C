@@ -744,6 +744,32 @@ void GLThread::show_link_status(GLuint program, const char *name)
 	}
 }
 
+void GLThread::show_program_params(GLuint program, int indent)
+{
+	GLint param;
+
+	printf("%*sProgram %d params:\n", indent, "", program);
+	glGetProgramiv(program, GL_DELETE_STATUS, &param);
+	indent += 2;
+	printf("%*sDelete status %d\n", indent, "", param);
+	glGetProgramiv(program, GL_LINK_STATUS, &param);
+	printf("%*sLink status %d\n", indent, "", param);
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &param);
+	printf("%*sValidate status %d\n", indent, "", param);
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &param);
+	printf("%*sInfo log length %d\n", indent, "", param);
+	glGetProgramiv(program, GL_ATTACHED_SHADERS, &param);
+	printf("%*sAttached shaders %d\n", indent, "", param);
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &param);
+	printf("%*sActive attributes %d\n", indent, "", param);
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param);
+	printf("%*sActive attribute max length %d\n", indent, "", param);
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &param);
+	printf("%*sActive uniforms %d\n", indent, "", param);
+	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param);
+	printf("%*sActive uniform max length %d\n", indent, "", param);
+}
+
 void GLThread::show_shaders(GLuint program, int indent)
 {
 	GLuint shaders[20];

@@ -173,6 +173,7 @@ public:
 	void show_glxcontext(struct glctx *ctx, int indent = 0);
 	void show_compile_status(GLuint shader, const char *name);
 	void show_link_status(GLuint program, const char *name);
+	void show_program_params(GLuint program, int indent = 0);
 	void show_shaders(GLuint program, int indent = 0);
 	void show_uniforms(GLuint program, int indent = 0);
 	const char *glname(GLenum type);
