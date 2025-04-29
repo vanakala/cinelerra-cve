@@ -744,6 +744,24 @@ void GLThread::show_link_status(GLuint program, const char *name)
 	}
 }
 
+void GLThread::show_validation(GLuint program)
+{
+	GLint param;
+	GLsizei mlen;
+	char msg_buffer[BCTEXTLEN];
+
+	glValidateProgram(program);
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &param);
+	printf("Validated program %d status %d\n", program, param);
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &param);
+	if(param)
+	{
+		printf("Info log length %d\n", param);
+		glGetProgramInfoLog(program, BCTEXTLEN, &mlen, msg_buffer);
+		fputs(msg_buffer, stdout);
+	}
+}
+
 void GLThread::show_program_params(GLuint program, int indent)
 {
 	GLint param;
