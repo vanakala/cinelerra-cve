@@ -728,6 +728,22 @@ void GLThread::show_compile_status(GLuint shader, const char *name)
 	}
 }
 
+void GLThread::show_link_status(GLuint program, const char *name)
+{
+	GLint status;
+	char msg_buffer[BCTEXTLEN];
+
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	printf("Linking of program '%s(%d)' %s\n", name, program,
+		status ? "succeeded" : "failed");
+	if(!status)
+	{
+		glGetShaderInfoLog(program, BCTEXTLEN, NULL, msg_buffer);
+		fputs("Logi:\n", stdout);
+		fputs(msg_buffer, stdout);
+	}
+}
+
 void GLThread::show_shaders(GLuint program, int indent)
 {
 	GLuint shaders[20];
