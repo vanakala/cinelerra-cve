@@ -762,6 +762,54 @@ void GLThread::show_validation(GLuint program)
 	}
 }
 
+void GLThread::check_framebuffer_status(int indent)
+{
+	const char *str;
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	switch(status)
+	{
+	case GL_FRAMEBUFFER_COMPLETE:
+		str = "Complete";
+		break;
+	case GL_FRAMEBUFFER_UNDEFINED:
+		str = "Undefined";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		str = "Incomplete attachment";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		str = "Missing attachment";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		str = "Draw buffer incomplete";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		str = "Read buffer incomplete";
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		str = "Unsupported by implementation";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		str = "Incomplete multisample";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+		str = "Incomplete layer targets";
+		break;
+	case GL_INVALID_ENUM:
+		str = "Invalid enum";
+		break;
+	case 0:
+		str = "Error: zero returned";
+		break;
+	default:
+		str = "Unknown result";
+		break;
+	}
+	printf("%*sFramebuffer status '%s'\n", indent, "", str);
+}
+
+
 void GLThread::show_program_params(GLuint program, int indent)
 {
 	GLint param;
