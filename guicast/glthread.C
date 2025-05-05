@@ -836,6 +836,41 @@ void GLThread::show_program_params(GLuint program, int indent)
 	printf("%*sActive uniform max length %d\n", indent, "", param);
 }
 
+void GLThread::show_renderbuffer_params(GLuint id, int indent)
+{
+	GLint param;
+
+	if(glIsRenderbuffer(id) == GL_FALSE)
+	{
+		printf("ID %d is not a renderbuffer object", id);
+		return;
+	}
+	glBindRenderbuffer(GL_RENDERBUFFER, id);
+	printf("%*sRenderbuffer (%d):\n", indent, "", id);
+	indent+= 2;
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &param);
+	printf("%*sWidth: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &param);
+	printf("%*sHeight: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+		GL_RENDERBUFFER_INTERNAL_FORMAT, &param);
+	printf("%*sInternal format: '%s'\n", indent, "", glname(param));
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, &param);
+	printf("%*sRed size: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_GREEN_SIZE, &param);
+	printf("%*sGreen size: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_BLUE_SIZE, &param);
+	printf("%*sBlue size: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_ALPHA_SIZE, &param);
+	printf("%*sAlpha size: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_DEPTH_SIZE, &param);
+	printf("%*sDepth size: %d\n", indent, "", param);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_STENCIL_SIZE, &param);
+	printf("%*sStencil size: %d\n", indent, "", param);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+
 void GLThread::show_shaders(GLuint program, int indent)
 {
 	GLuint shaders[20];
@@ -886,126 +921,226 @@ const char *GLThread::glname(GLenum type)
 
 	switch(type)
 	{
-	case GL_BLEND_EQUATION_RGB:
+	case GL_BLEND_EQUATION_RGB:                   // 0x8009
 		return "Blend equation RGB";
-	case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+	case GL_VERTEX_ATTRIB_ARRAY_ENABLED:          // 0x8622
 		return "Vertex attrib array enabled";
-	case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+	case GL_VERTEX_ATTRIB_ARRAY_SIZE:             // 0x8623
 		return "Vertex attrib array size";
-	case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+	case GL_VERTEX_ATTRIB_ARRAY_STRIDE:           // 0x8624
 		return "Vertex attrib array stride";
-	case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+	case GL_VERTEX_ATTRIB_ARRAY_TYPE:             // 0x8625
 		return "Vertex attrib array";
-	case GL_CURRENT_VERTEX_ATTRIB:
+	case GL_CURRENT_VERTEX_ATTRIB:                // 0x8626
 		return "Current vertex attrib";
-	case GL_VERTEX_PROGRAM_POINT_SIZE:
+	case GL_VERTEX_PROGRAM_POINT_SIZE:            // 0x8642
 		return "Vertex program point size";
-	case GL_VERTEX_ATTRIB_ARRAY_POINTER:
+	case GL_VERTEX_ATTRIB_ARRAY_POINTER:          // 0x8645
 		return "Vertex attrib array pointer";
-	case GL_STENCIL_BACK_FUNC:
+	case GL_STENCIL_BACK_FUNC:                    // 0x8800
 		return "Stencil back func";
-	case GL_STENCIL_BACK_FAIL:
+	case GL_STENCIL_BACK_FAIL:                    // 0x8801
 		return "Stencil back fail";
-	case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+	case GL_STENCIL_BACK_PASS_DEPTH_FAIL:         // 0x8802
 		return "Stencil back pass depth fail";
-	case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+	case GL_STENCIL_BACK_PASS_DEPTH_PASS:         // 0x8803
 		return "Stencil back pass depth pass";
-	case GL_MAX_DRAW_BUFFERS:
+	case GL_MAX_DRAW_BUFFERS:                    // 0x8824
 		return "Max draw buffers";
-	case GL_DRAW_BUFFER0:
+	case GL_DRAW_BUFFER0:                        // 0x8825
 		return "Draw buffer 0";
-	case GL_DRAW_BUFFER1:
+	case GL_DRAW_BUFFER1:                        // 0x8826
 		return "Draw buffer 1";
-	case GL_DRAW_BUFFER2:
+	case GL_DRAW_BUFFER2:                        // 0x8827
 		return "Draw buffer 2";
-	case GL_DRAW_BUFFER3:
+	case GL_DRAW_BUFFER3:                        // 0x8828
 		return "Draw buffer 3";
-	case GL_DRAW_BUFFER4:
+	case GL_DRAW_BUFFER4:                        // 0x8829
 		return "Draw buffer 4";
-	case GL_DRAW_BUFFER5:
+	case GL_DRAW_BUFFER5:                        // 0x882A
 		return "Draw buffer 5";
-	case GL_DRAW_BUFFER6:
+	case GL_DRAW_BUFFER6:                        // 0x882B
 		return "Draw buffer 6";
-	case GL_DRAW_BUFFER7:
+	case GL_DRAW_BUFFER7:                        // 0x882C
 		return "Draw buffer 7";
-	case GL_DRAW_BUFFER8:
+	case GL_DRAW_BUFFER8:                        // 0x882D
 		return "Draw buffer 8";
-	case GL_DRAW_BUFFER9:
+	case GL_DRAW_BUFFER9:                        // 0x882E
 		return "Draw buffer 9";
-	case GL_DRAW_BUFFER10:
+	case GL_DRAW_BUFFER10:                       // 0x882F
 		return "Draw buffer 10";
-	case GL_DRAW_BUFFER11:
+	case GL_DRAW_BUFFER11:                       // 0x8830
 		return "Draw buffer 11";
-	case GL_DRAW_BUFFER12:
+	case GL_DRAW_BUFFER12:                       // 0x8831
 		return "Draw buffer 12";
-	case GL_DRAW_BUFFER13:
+	case GL_DRAW_BUFFER13:                       // 0x8832
 		return "Draw buffer 13";
-	case GL_DRAW_BUFFER14:
+	case GL_DRAW_BUFFER14:                       // 0x8833
+		return "Draw buffer 14";
+	case GL_DRAW_BUFFER15:                       // 0x8834
 		return "Draw buffer 15";
-	case GL_BLEND_EQUATION_ALPHA:
+	case GL_BLEND_EQUATION_ALPHA:                // 0x883D
 		return "Blend equation alpha";
-	case GL_MAX_VERTEX_ATTRIBS:
+	case GL_MAX_VERTEX_ATTRIBS:                  // 0x8869
 		return "Max vertex attribs";
-	case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+	case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:      // 0x886A
 		return "Vertex attrib array normalized";
-	case GL_MAX_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_TEXTURE_IMAGE_UNITS:             // 0x8872
 		return "Max texture image units";
-	case GL_FRAGMENT_SHADER:
+	case GL_FRAGMENT_SHADER:                     // 0x8B30
 		return "Fragment shader";
-	case GL_VERTEX_SHADER:
+	case GL_VERTEX_SHADER:                       // 0x8B31
 		return "Vertex shader";
-	case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+	case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:     // 0x8B49
 		return "Max fragment uniform components";
-	case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+	case GL_MAX_VERTEX_UNIFORM_COMPONENTS:       // 0x8B4A
 		return "Max vertex uniform components";
-	case GL_MAX_VARYING_FLOATS:
+	case GL_MAX_VARYING_FLOATS:                  // 0x8B4B
 		return "Max varying floats";
-	case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:      // 0x8B4C
 		return "Max vertex texture image units";
-	case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:    // 0x8B4D
 		return "Max combined texture image units";
-	case GL_SHADER_TYPE:
+	case GL_SHADER_TYPE:                         // 0x8B4F
 		return "Shader type";
-	case GL_FLOAT_VEC2:
+	case GL_FLOAT_VEC2:                          // 0x8B50
 		return "Float vec2";
-	case GL_FLOAT_VEC3:
+	case GL_FLOAT_VEC3:                          // 0x8B51
 		return "Float vec3";
-	case GL_FLOAT_VEC4:
+	case GL_FLOAT_VEC4:                          // 0x8B52
 		return "Float vec4";
-	case GL_INT_VEC2:
+	case GL_INT_VEC2:                            // 0x8B53
 		return "Int vec2";
-	case GL_INT_VEC3:
+	case GL_INT_VEC3:                            // 0x8B54
 		return "Int vec3";
-	case GL_INT_VEC4:
+	case GL_INT_VEC4:                            // 0x8B55
 		return "Int vec4";
-	case GL_BOOL:
+	case GL_BOOL:                                // 0x8B56
 		return "Bool";
-	case GL_BOOL_VEC2:
+	case GL_BOOL_VEC2:                           // 0x8B57
 		return "Bool vec2";
-	case GL_BOOL_VEC3:
+	case GL_BOOL_VEC3:                           // 0x8B58
 		return "Bool vec3";
-	case GL_BOOL_VEC4:
+	case GL_BOOL_VEC4:                           // 0x8B59
 		return "Bool vec4";
-	case GL_FLOAT_MAT2:
+	case GL_FLOAT_MAT2:                          // 0x8B5A
 		return "Float mat2";
-	case GL_FLOAT_MAT3:
+	case GL_FLOAT_MAT3:                          // 0x8B5B
 		return "Float mat3";
-	case GL_FLOAT_MAT4:
+	case GL_FLOAT_MAT4:                          // 0x8B5C
 		return "Float mat4";
-	case GL_SAMPLER_1D:
+	case GL_SAMPLER_1D:                          // 0x8B5D
 		return "Sampler 1D";
-	case GL_SAMPLER_2D:
+	case GL_SAMPLER_2D:                          // 0x8B5E
 		return "Sampler 2D";
-	case GL_SAMPLER_3D:
+	case GL_SAMPLER_3D:                          // 0x8B5F
 		return "Sampler 3D";
-	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_CUBE:                        // 0x8B60
 		return "Sampler cube";
-	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_SHADOW:                   // 0x8B61
 		return "Sampler 1D shadow";
-	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:                   // 0x8B62
 		return "Sampler 2D shadow";
+	case GL_STENCIL_INDEX:                       // 0x1901
+		return "Stencil index";
+	case GL_DEPTH_COMPONENT:                     // 0x1902
+		return "Depth component";
+	case GL_ALPHA:                               // 0x1906
+		return "Alpha";
+	case GL_RGB:                                 // 0x1907
+		return "RGB";
+	case GL_RGBA:                                // 0x1908
+		return "RGBA";
+	case GL_LUMINANCE:                           // 0x1909
+		return "Luminance";
+	case GL_LUMINANCE_ALPHA:                     // 0x190A
+		return "Luminance Alpha";
+	case GL_R3_G3_B2:                            // 0x2A10
+		return "R3G3B2";
+	case GL_ALPHA4:                              // 0x803B
+		return "Alpha4";
+	case GL_ALPHA8:                              // 0x803C
+		return "Alpha8";
+	case GL_ALPHA12:                             // 0x803D
+		return "Alpha12";
+	case GL_ALPHA16:                             // 0x803E
+		return "Alpha16";
+	case GL_LUMINANCE4:                          // 0x803F
+		return "Luminance4";
+	case GL_LUMINANCE8:                          // 0x8040
+		return "Luminance8";
+	case GL_LUMINANCE12:                         // 0x8041
+		return "Luminance12";
+	case GL_LUMINANCE16:                         // 0x8042
+		return "Luminance16";
+	case GL_LUMINANCE4_ALPHA4:                   // 0x8043
+		return "Luminance4 Alpha4";
+	case GL_LUMINANCE6_ALPHA2:                   // 0x8044
+		return "Luminance6 Alpha2";
+	case GL_LUMINANCE8_ALPHA8:                   // 0x8045
+		return "Luminance8 Alpha8";
+	case GL_LUMINANCE12_ALPHA4:                  // 0x8046
+		return "Luminance12 Alpha4";
+	case GL_LUMINANCE12_ALPHA12:                 // 0x8047
+		return "Luminance12 Alpha12";
+	case GL_LUMINANCE16_ALPHA16:                 // 0x8048
+		return "GL_Luminance16 Alpha16";
+	case GL_INTENSITY:                           // 0x8049
+		return "Intensity";
+	case GL_INTENSITY4:                          // 0x804A
+		return "Intensity4";
+	case GL_INTENSITY8:                          // 0x804B
+		return "Intensity8";
+	case GL_INTENSITY12:                         // 0x804C
+		return "Intensity12";
+	case GL_INTENSITY16:                         // 0x804D
+		return "Intensity16";
+	case GL_RGB4:                                // 0x804F
+		return "RGB4";
+	case GL_RGB5:                                // 0x8050
+		return "RGB5";
+	case GL_RGB8:                                // 0x8051
+		return "RGB8";
+	case GL_RGB10:                               // 0x8052
+		return "RGB10";
+	case GL_RGB12:                               // 0x8053
+		return "RGB12";
+	case GL_RGB16:                               // 0x8054
+		return "RGB16";
+	case GL_RGBA2:                               // 0x8055
+		return "RGBA2";
+	case GL_RGBA4:                               // 0x8056
+		return "RGBA4";
+	case GL_RGB5_A1:                             // 0x8057
+		return "RGB5A1";
+	case GL_RGBA8:                               // 0x8058
+		return "GL_RGBA8";
+	case GL_RGB10_A2:                            // 0x8059
+		return "RGB10A2";
+	case GL_RGBA12:                              // 0x805A
+		return "RGBA12";
+	case GL_RGBA16:                              // 0x805B
+		return "RGBA16";
+	case GL_DEPTH_COMPONENT16:                   // 0x81A5
+		return "Depth Component16";
+	case GL_DEPTH_COMPONENT24:                   // 0x81A6
+		return "Depth Component24";
+	case GL_DEPTH_COMPONENT32:                   // 0x81A7
+		return "Depth Component32";
+	case GL_DEPTH_STENCIL:                       // 0x84F9
+		return "Depth Stencil";
+	case GL_RGBA32F:                             // 0x8814
+		return "RGBA32F";
+	case GL_RGB32F:                              // 0x8815
+		return "RGB32F";
+	case GL_RGBA16F:                             // 0x881A
+		return "RGBA16F";
+	case GL_RGB16F:                              // 0x881B
+		return "RGB16F";
+	case GL_DEPTH24_STENCIL8:                    // 0x88F0
+		return "Depth24 Stencil8";
 	default:
-		sprintf(bufr, "%#x", type);
+		sprintf(bufr, "Unknown %#x", type);
 		return bufr;
 	}
 }
