@@ -179,6 +179,7 @@ public:
 		const char *atname, int indent = 0);
 	const char *textureparamstr(GLuint id);
 	const char *renderbufferparamstr(GLuint id);
+	void show_framebuffer_status(GLuint fbo, int indent = 0);
 	void show_validation(GLuint program);
 	void show_program_params(GLuint program, int indent = 0);
 	void show_shaders(GLuint program, int indent = 0);

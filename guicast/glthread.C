@@ -933,6 +933,56 @@ const char *GLThread::renderbufferparamstr(GLuint id)
 	return buf;
 }
 
+void GLThread::show_framebuffer_status(GLuint fbo, int indent)
+{
+	GLint param;
+	int cbcount, objtype, objid;
+	const char *typestr, *paramstr;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &cbcount);
+	glGetIntegerv(GL_MAX_SAMPLES, &param);
+	printf("%*sFramebuffer %u status\n", indent, "", fbo);
+	indent += 2;
+	printf("%*sMax colorbuffers %d max samples of MSAA %d\n", indent, "",
+		cbcount, param);
+
+	for(int i = 0; i < cbcount; i++)
+	{
+		glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+			GL_COLOR_ATTACHMENT0 + i,
+			GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &objtype);
+
+		if(objtype != GL_NONE)
+		{
+			glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+				GL_COLOR_ATTACHMENT0 + i,
+				GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &objid);
+			show_fb_attachment(objid, objtype, "Color", indent);
+		}
+	}
+	glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &objtype);
+	if(objtype != GL_NONE)
+	{
+		glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &objid);
+		show_fb_attachment(objid, objtype, "Depth", indent);
+	}
+	glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+		GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &objtype);
+
+	if(objtype != GL_NONE)
+	{
+		glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+			GL_STENCIL_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+			&objid);
+		show_fb_attachment(objid, objtype, "Stencil", indent);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void GLThread::show_shaders(GLuint program, int indent)
 {
 	GLuint shaders[20];
