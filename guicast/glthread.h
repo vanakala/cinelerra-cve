@@ -175,6 +175,10 @@ public:
 	void show_link_status(GLuint program, const char *name);
 	void check_framebuffer_status(int indent = 0);
 	void show_renderbuffer_params(GLuint id, int indent);
+	void show_fb_attachment(GLuint objid, GLint objtype,
+		const char *atname, int indent = 0);
+	const char *textureparamstr(GLuint id);
+	const char *renderbufferparamstr(GLuint id);
 	void show_validation(GLuint program);
 	void show_program_params(GLuint program, int indent = 0);
 	void show_shaders(GLuint program, int indent = 0);

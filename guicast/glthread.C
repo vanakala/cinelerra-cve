@@ -870,6 +870,68 @@ void GLThread::show_renderbuffer_params(GLuint id, int indent)
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
+void GLThread::show_fb_attachment(GLuint objid, GLint objtype,
+	const char *atname, int indent)
+{
+	const char *typestr, *paramstr;
+
+	switch(objtype)
+	{
+	case GL_TEXTURE:
+		typestr = "Texture";
+		paramstr = textureparamstr(objid);
+		break;
+	case GL_RENDERBUFFER:
+		typestr = "Renderbuffer";
+		paramstr = renderbufferparamstr(objid);
+		break;
+	default:
+		typestr = "Unknown";
+		paramstr = 0;
+		break;
+	}
+	printf("%*s%s attachment %s, %s\n", indent, "", atname, typestr, paramstr);
+}
+
+const char *GLThread::textureparamstr(GLuint id)
+{
+	int width, height, format;
+	static char buf[256];
+
+	if(glIsTexture(id) == GL_FALSE)
+		return "Not a texture object";
+
+	glBindTexture(GL_TEXTURE_2D, id);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+		GL_TEXTURE_INTERNAL_FORMAT, &format);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	sprintf(buf, "[%d,%d] %s", width, height, glname(format));
+	return buf;
+}
+
+const char *GLThread::renderbufferparamstr(GLuint id)
+{
+	int width, height, format, samples;
+	static char buf[256];
+
+	if(glIsRenderbuffer(id) == GL_FALSE)
+		return "Not a renderbuffer object";
+
+	glBindRenderbuffer(GL_RENDERBUFFER, id);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+		GL_RENDERBUFFER_HEIGHT, &height);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+		GL_RENDERBUFFER_INTERNAL_FORMAT, &format);
+	glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+		GL_RENDERBUFFER_SAMPLES, &samples);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	sprintf(buf, "[%d,%d] %s MSAA(%d)", width, height,
+		glname(format), samples);
+	return buf;
+}
 
 void GLThread::show_shaders(GLuint program, int indent)
 {
