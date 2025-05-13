@@ -1088,6 +1088,43 @@ void GLThread::show_uniforms(GLuint program, int indent)
 	}
 }
 
+void GLThread::show_texture2d_params(GLuint tex, int indent)
+{
+	int width, height, format, depth;
+	int red, green, blue, alpha, depth_sz;
+	int luminance, intensity;
+	float coords[4];
+
+	if(glIsTexture(tex) == GL_FALSE)
+	{
+		printf("**sID %d is not a texture\n", indent, "", tex);
+		return;
+	}
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+		GL_TEXTURE_INTERNAL_FORMAT, &format);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH, &depth);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, &red);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, &green);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, &blue);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_LUMINANCE_SIZE, &luminance);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTENSITY_SIZE, &intensity);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, &depth_sz);
+	glGetFloatv(GL_CURRENT_TEXTURE_COORDS, coords);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	printf("%*sTexture %d [%d, %d] depth %d fmt:%s\n", indent, "",
+		tex, width, height, depth, glname(format));
+	indent += 2;
+	printf("%*ssizes r:%d g:%d b:%d alph:%d, lum:%d, ints:%d\n", indent, "",
+		red, green, blue, alpha, luminance, intensity);
+	printf("%*scoords %.3f, %.3f, %.3f, %.3f\n", indent, "",
+		coords[0], coords[1], coords[2], coords[3]);
+}
+
 const char *GLThread::glname(GLenum type)
 {
 	static char bufr[64];

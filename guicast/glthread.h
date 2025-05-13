@@ -185,6 +185,7 @@ public:
 	void show_program_params(GLuint program, int indent = 0);
 	void show_shaders(GLuint program, int indent = 0);
 	void show_uniforms(GLuint program, int indent = 0);
+	void show_texture2d_params(GLuint tex, int indent = 0);
 	const char *glname(GLenum type);
 
 #endif
