@@ -143,7 +143,8 @@ int Track::is_synthesis(ptstime position)
 	{
 		Plugin *plugin = plugins.values[i];
 
-		if(plugin->get_pts() > position || plugin->end_pts() < position)
+		if(!plugin->on || plugin->get_pts() > position ||
+				plugin->end_pts() < position)
 			continue;
 
 // Assume data from a shared track is synthesized
