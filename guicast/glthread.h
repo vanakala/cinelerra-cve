@@ -186,6 +186,8 @@ public:
 	void show_shaders(GLuint program, int indent = 0);
 	void show_uniforms(GLuint program, int indent = 0);
 	void show_texture2d_params(GLuint tex, int indent = 0);
+	void show_matrixes(int indent = 0);
+	void print_mat4(GLfloat *matx, const char *name, int indent = 0);
 	const char *glname(GLenum type);
 
 #endif

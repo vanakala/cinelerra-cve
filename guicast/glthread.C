@@ -1097,7 +1097,7 @@ void GLThread::show_texture2d_params(GLuint tex, int indent)
 
 	if(glIsTexture(tex) == GL_FALSE)
 	{
-		printf("**sID %d is not a texture\n", indent, "", tex);
+		printf("%*sID %d is not a texture\n", indent, "", tex);
 		return;
 	}
 	glBindTexture(GL_TEXTURE_2D, tex);
@@ -1123,6 +1123,36 @@ void GLThread::show_texture2d_params(GLuint tex, int indent)
 		red, green, blue, alpha, luminance, intensity);
 	printf("%*scoords %.3f, %.3f, %.3f, %.3f\n", indent, "",
 		coords[0], coords[1], coords[2], coords[3]);
+}
+
+void GLThread::show_matrixes(int indent)
+{
+	GLint matmode;
+	GLfloat modlmatx[16];
+	GLfloat projmatx[16];
+	GLfloat textmatx[16];
+
+	glGetIntegerv(GL_MATRIX_MODE, &matmode);
+	glGetFloatv(GL_MODELVIEW_MATRIX, modlmatx);
+	glGetFloatv(GL_PROJECTION_MATRIX, projmatx);
+	glGetFloatv(GL_TEXTURE_MATRIX, textmatx);
+	printf("%*sMatrix mode %#x (%s)\n", indent, "", matmode, glname(matmode));
+	print_mat4(modlmatx, "Model matrix:", indent);
+	print_mat4(projmatx, "Projection matrix:", indent);
+	print_mat4(textmatx, "Texture matrix:", indent);
+}
+
+void GLThread::print_mat4(GLfloat *matx, const char *name, int indent)
+{
+	printf("%*s%s\n", indent, "", name);
+	indent += 2;
+	for(int i = 0; i < 4; i++)
+	{
+		printf("%*s", indent, "");
+		for(int j = 0; j < 4; j++)
+			printf(" %6.2f", matx[4 * i + j]);
+		putchar('\n');
+	}
 }
 
 const char *GLThread::glname(GLenum type)
@@ -1349,6 +1379,14 @@ const char *GLThread::glname(GLenum type)
 		return "RGB16F";
 	case GL_DEPTH24_STENCIL8:                    // 0x88F0
 		return "Depth24 Stencil8";
+	case GL_MATRIX_MODE:                         // 0x0BA0
+		return "Matrix mode";
+	case GL_MODELVIEW:                           // 0x1700
+		return "Modelview";
+	case GL_PROJECTION:                          // 0x1701
+		return "Projection";
+	case GL_TEXTURE:                             // 0x1702
+		return "Texture";
 	default:
 		sprintf(bufr, "Unknown %#x", type);
 		return bufr;
