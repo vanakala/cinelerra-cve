@@ -10,6 +10,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "glthread.h"
+#include "tmpframecache.h"
 #include "shaders.h"
 #include "mutex.h"
 #include "vframe.h"
@@ -981,6 +982,66 @@ void GLThread::show_framebuffer_status(GLuint fbo, int indent)
 		show_fb_attachment(objid, objtype, "Stencil", indent);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+VFrame *GLThread::get_framebuffer_data(GLuint fbo)
+{
+	GLint height, width, cbcount;
+	GLint objtype, objid;
+	int i;
+	VFrame *frame = 0;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	width = height = 0;
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &cbcount);
+	for(i = 0; i < cbcount; i++)
+	{
+		glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+			GL_COLOR_ATTACHMENT0 + i,
+			GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &objtype);
+		if(objtype != GL_NONE)
+		{
+			glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
+				GL_COLOR_ATTACHMENT0 + i,
+				GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &objid);
+			switch(objtype)
+			{
+			case GL_TEXTURE:
+				glBindTexture(GL_TEXTURE_2D, objid);
+				glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					GL_TEXTURE_WIDTH, &width);
+				glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					GL_TEXTURE_HEIGHT, &height);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				break;
+			case GL_RENDERBUFFER:
+				glBindRenderbuffer(GL_RENDERBUFFER, objid);
+				glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+					GL_RENDERBUFFER_WIDTH, &width);
+				glGetRenderbufferParameteriv(GL_RENDERBUFFER,
+					GL_RENDERBUFFER_HEIGHT, &height);
+				glBindRenderbuffer(GL_RENDERBUFFER, 0);
+				break;
+			default:
+				continue;
+			}
+		}
+		break;
+	}
+
+	if(!width || !height)
+	{
+		show_errors("get_framebuffer_dat");
+		fputs("get_framebuffer_data: No width or height\n", stdout);
+		return 0;
+	}
+	printf("Reading data [%d,%d]..\n", width, height);
+	if(frame = BC_Resources::tmpframes.get_tmpframe(width, height,
+			BC_RGB8, "get_framebuffer_data"))
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE,
+			frame->get_data());
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return frame;
 }
 
 void GLThread::show_shaders(GLuint program, int indent)
