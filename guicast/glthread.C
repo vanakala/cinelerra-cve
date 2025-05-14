@@ -1155,6 +1155,41 @@ void GLThread::print_mat4(GLfloat *matx, const char *name, int indent)
 	}
 }
 
+void GLThread::show_vertex_array(int indent)
+{
+	GLint bufbind, countbuf, readbuf, writebuf;
+	GLint drawbuf, dispbuf, elemarry, pixpack;
+	GLint pixunpack, stobuf, fdbuf, ufrmbuf;
+
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bufbind);
+	glGetIntegerv(GL_ATOMIC_COUNTER_BUFFER_BINDING, &countbuf);
+	glGetIntegerv(GL_COPY_READ_BUFFER_BINDING, &readbuf);
+	glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING, &writebuf);
+	glGetIntegerv(GL_DRAW_INDIRECT_BUFFER_BINDING, &drawbuf);
+	glGetIntegerv(GL_DISPATCH_INDIRECT_BUFFER_BINDING, &dispbuf);
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &elemarry);
+	glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pixpack);
+	glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &pixunpack);
+	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_BINDING, &stobuf);
+	glGetIntegerv(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, &fdbuf);
+	glGetIntegerv(GL_UNIFORM_BUFFER_BINDING, &ufrmbuf);
+
+	printf("%*sVertex array object bindings:\n", indent, "");
+	indent += 2;
+	printf("%*sArray buffer %d\n", indent, "", bufbind);
+	printf("%*sAtomic counter buffer %d\n", indent, "", countbuf);
+	printf("%*sCopy read buffer %d\n", indent, "", readbuf);
+	printf("%*sCopy write buffer %d\n", indent, "", writebuf);
+	printf("%*sDraw indirect buffer %d\n", indent, "", drawbuf);
+	printf("%*sDispatch buffer %d\n", indent, "", dispbuf);
+	printf("%*sElement array %d\n", indent, "", elemarry);
+	printf("%*sPixel pack buffer %d\n", indent, "", pixpack);
+	printf("%*sPixel unpack buffer %d\n", indent, "", pixunpack);
+	printf("%*sShader storage buffer %d\n", indent, "", stobuf);
+	printf("%*sTransform feedback buffer %d\n", indent, "", fdbuf);
+	printf("%*sUniform buffer %d\n", indent, "", ufrmbuf);
+}
+
 const char *GLThread::glname(GLenum type)
 {
 	static char bufr[64];
