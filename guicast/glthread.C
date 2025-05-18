@@ -623,6 +623,7 @@ void GLThread::show_glxcontext(struct glctx *ctx, int indent)
 
 	glXQueryVersion(dpy, &maj, &min);
 	printf("%*sGLX version %d.%d context %p\n", indent, "", maj, min, ctx);
+	indent += 2;
 	printf("%*sDirect rendering: %s\n", indent, "",
 		glXIsDirect(dpy, ctx->gl_context) ? "Yes" : "No");
 	glXGetConfig(dpy, visinfo, GLX_USE_GL, &use_gl);
@@ -643,7 +644,6 @@ void GLThread::show_glxcontext(struct glctx *ctx, int indent)
 	glXGetConfig(dpy, visinfo, GLX_ACCUM_BLUE_SIZE, &acublue);
 	glXGetConfig(dpy, visinfo, GLX_ACCUM_ALPHA_SIZE, &acualpha);
 
-	indent += 2;
 	printf("%*sGlx context: use_gl %d buffer_size %d buffer_level %d\n", indent, "",
 		use_gl, buffer_size, level);
 	printf("%*srgba %d doublebuffer %d stereo %d aux_bufs %d\n", indent, "",
@@ -652,6 +652,23 @@ void GLThread::show_glxcontext(struct glctx *ctx, int indent)
 		red, green, blue, alpha, depth, stencil);
 	printf("%*saccum red %d green %d blue %d alpha %d\n", indent, "",
 		acured, acugreen, acublue, acualpha);
+}
+
+void GLThread::dump_glctx(struct glctx *ctx, int indent)
+{
+	printf("%*sglctx %p dump:\n", indent, "", ctx);
+	indent += 2;
+	printf("%*sdpy %p win %#lx screen %d\n", indent, "", ctx->dpy,
+		ctx->win, ctx->screen);
+	printf("%*sgl_context %p visinfo %p\n", indent, "", ctx->gl_context, ctx->visinfo);
+	printf("%*svertexarray %d vertexbuffer %d elemarray %d vertexshader %d\n",
+		indent, "", ctx->vertexarray, ctx->vertexbuffer,
+		ctx->elemarray, ctx->vertexshader);
+	printf("%*sfragmentshader %d shaderprogram %d firsttexture %d fbtexture %d\n",
+		indent, "", ctx->fragmentshader, ctx->shaderprogram,
+		ctx->firsttexture, ctx->fbtexture);
+	printf("%*sposattrib %d colattrib %d texattrib %d\n", indent, "",
+		ctx->posattrib, ctx->colattrib, ctx->texattrib);
 }
 
 void GLThread::show_errors(const char *loc, int indent)
