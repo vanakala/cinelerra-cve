@@ -183,6 +183,19 @@ public:
 	void opengl_display(VFrame *frame, double in_x1, double in_y1,
 		double in_x2, double in_y2, double out_x1, double out_y1,
 		double out_x2, double out_y2, double zoom);
+	void opengl_guideline(int x1, int y1, int x2, int y2,
+		int color, int opaque);
+	void opengl_guiderectangle(int x1, int y1, int x2, int y2,
+		int color, int opaque);
+	void opengl_guidebox(int x1, int y1, int x2, int y2,
+		int color, int opaque);
+	void opengl_guidedisc(int x1, int y1, int x2, int y2,
+		int color, int opaque);
+	void opengl_guidecircle(int x1, int y1, int x2, int y2,
+		int color, int opaque);
+	void opengl_guidepixel(int x, int y,
+		int color, int opaque);
+	void opengl_guideframe(VFrame *vframe, int color, int is_opaque);
 	void opengl_release();
 	void disable_opengl();
 

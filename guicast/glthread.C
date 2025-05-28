@@ -98,6 +98,13 @@ const struct gl_commands GLThreadCommand::gl_names[] =
 	{ "Disable", DISABLE },
 	{ "Display Frame", DISPLAY_VFRAME },
 	{ "Release Resources", RELEASE_RESOURCES },
+	{ "Guide Line", GUIDE_LINE },
+	{ "Guide Rectangle", GUIDE_RECTANGLE },
+	{ "Guide Box", GUIDE_BOX },
+	{ "Guide Disc", GUIDE_DISC },
+	{ "Guide Circle", GUIDE_CIRCLE },
+	{ "Guide Pixel", GUIDE_PIXEL },
+	{ "Guide Frame", GUIDE_FRAME },
 	{ 0, 0 }
 };
 
@@ -114,15 +121,32 @@ GLThreadCommand::GLThreadCommand()
 void GLThreadCommand::dump(int indent, int show_frame)
 {
 	printf("%*sGLThreadCommand '%s' %p dump:\n", indent, "", name(command), this);
-	printf("%*sframe: %p display %p win %#lx screen %d\n", indent, "",
-		frame, dpy, win, screen);
+	indent += 2;
+	printf("%*sdisplay %p win %#lx screen %d\n", indent, "", dpy, win, screen);
 	switch(command)
 	{
 	case DISPLAY_VFRAME:
-		printf("%*s[%d,%d] zoom:%.3f win1:(%.1f,%.1f) (%.1f,%.1f)", indent, "",
-			width, height, zoom, glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2);
-		printf(" win2:(%.1f,%.1f) (%.1f,%.1f)\n",
+		printf("%*sframe: %p [%d,%d] zoom:%.3f\n", indent, "",
+			frame, width, height, zoom);
+		printf("%*swin1:(%.1f,%.1f) (%.1f,%.1f) win2:(%.1f,%.1f) (%.1f,%.1f)\n",
+			indent, "", glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2,
 			glwin2.x1, glwin2.y1, glwin2.x2, glwin2.y2);
+		break;
+	case GUIDE_LINE:
+	case GUIDE_RECTANGLE:
+	case GUIDE_BOX:
+	case GUIDE_DISC:
+	case GUIDE_CIRCLE:
+		printf("%*swin:(%.1f,%.1f)(%.1f,%.1f) color:%#x opaque %d\n",  indent, "",
+			glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2, color, opaque);
+		break;
+	case GUIDE_PIXEL:
+		printf("%*s(%d,%d) color:%#x opaque %d\n",  indent, "",
+			width, height, color, opaque);
+		break;
+	case GUIDE_FRAME:
+		printf("%*sframe %p [%d,%d] color:%#x opaque %d\n",  indent, "",
+			frame, frame->get_w(), frame->get_h(), color, opaque);
 		break;
 	}
 	if(show_frame && frame)
@@ -352,6 +376,119 @@ void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	command->zoom = zoom;
 	command->glwin1 = *inwin;
 	command->glwin2 = *outwin;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guideline(BC_WindowBase *window, struct gl_window *rect,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guideline");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_LINE;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->glwin1 = *rect;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guiderectangle(BC_WindowBase *window, struct gl_window *rect,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guiderectangle");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_RECTANGLE;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->glwin1 = *rect;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guidebox(BC_WindowBase *window, struct gl_window *rect,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guidebox");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_BOX;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->glwin1 = *rect;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guidedisc(BC_WindowBase *window, struct gl_window *rect,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guidedisc");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_DISC;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->glwin1 = *rect;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guidecircle(BC_WindowBase *window, struct gl_window *rect,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guidecircle");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_CIRCLE;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->glwin1 = *rect;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guidepixel(BC_WindowBase *window, int x, int y,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guidepixel");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_PIXEL;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->width = x;
+	command->height = y;
+	command->color = color;
+	command->opaque = opaque;
+	command_lock->unlock();
+	next_command->unlock();
+}
+
+void GLThread::guideframe(BC_WindowBase *window, VFrame *frame,
+	int color, int opaque)
+{
+	command_lock->lock("GLThread::guideframe");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::GUIDE_FRAME;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command->frame = frame;
+	command->color = color;
+	command->opaque = opaque;
 	command_lock->unlock();
 	next_command->unlock();
 }

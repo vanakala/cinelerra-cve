@@ -67,6 +67,13 @@ public:
 		DISABLE,
 		DISPLAY_VFRAME,
 		RELEASE_RESOURCES,
+		GUIDE_LINE,
+		GUIDE_RECTANGLE,
+		GUIDE_BOX,
+		GUIDE_DISC,
+		GUIDE_CIRCLE,
+		GUIDE_PIXEL,
+		GUIDE_FRAME,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
@@ -77,6 +84,8 @@ public:
 	int screen;
 	int width;
 	int height;
+	int color;
+	int opaque;
 	double zoom;
 	struct gl_window glwin1;
 	struct gl_window glwin2;
@@ -96,6 +105,20 @@ public:
 #ifdef HAVE_GL
 	void display_vframe(VFrame *frame, BC_WindowBase *window,
 		struct gl_window *inwin, struct gl_window *outwin, double zoom);
+	void guideline(BC_WindowBase *window, struct gl_window *rect,
+		int color, int opaque);
+	void guiderectangle(BC_WindowBase *window, struct gl_window *rect,
+		int color, int opaque);
+	void guidebox(BC_WindowBase *window, struct gl_window *rect,
+		int color, int opaque);
+	void guidedisc(BC_WindowBase *window, struct gl_window *rect,
+		int color, int opaque);
+	void guidecircle(BC_WindowBase *window, struct gl_window *rect,
+		int color, int opaque);
+	void guidepixel(BC_WindowBase *window, int x, int y,
+		int color, int opaque);
+	void guideframe(BC_WindowBase *window, VFrame *frame,
+		int color, int opaque);
 	void release_resources();
 	void disable_opengl(BC_WindowBase *window);
 #endif
