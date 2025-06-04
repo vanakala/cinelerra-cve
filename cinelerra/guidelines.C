@@ -198,12 +198,59 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 	double xscale, yscale;
 	double dx1, dx2, dy1, dy2;
 	int pluginframe;
+	BC_WindowBase *canvasbase = canvas->get_canvas();
 
 	if(renderer && !renderer->media_track->play)
 		return 0;
 
 	if(is_enabled && data && start <= pts && pts < end)
 	{
+		if(canvasbase->opengl_active())
+		{
+			for(dp = data; dp < dataend;)
+			{
+				switch(*dp++)
+				{
+				case GUIDELINE_LINE:
+					canvasbase->opengl_guideline(dp[0], dp[1],
+						dp[2], dp[3], color, is_opaque);
+					dp += 4;
+					break;
+				case GUIDELINE_RECTANGLE:
+					canvasbase->opengl_guiderectangle(
+						dp[0], dp[1], dp[2], dp[3], color, is_opaque);
+					dp += 4;
+					break;
+				case GUIDELINE_BOX:
+					canvasbase->opengl_guidebox(
+						dp[0], dp[1], dp[2], dp[3], color, is_opaque);
+					dp += 4;
+					break;
+				case GUIDELINE_DISC:
+					canvasbase->opengl_guidedisc(
+						dp[0], dp[1], dp[2], dp[3], color, is_opaque);
+					dp += 4;
+					break;
+				case GUIDELINE_CIRCLE:
+					canvasbase->opengl_guidecircle(
+						dp[0], dp[1], dp[2], dp[3], color, is_opaque);
+					dp += 4;
+					break;
+				case GUIDELINE_PIXEL:
+					canvasbase->opengl_guidepixel(
+						dp[0], dp[1], color, is_opaque);
+					dp += 2;
+					break;
+				case GUIDELINE_VFRAME:
+					canvasbase->opengl_guideframe(vframe,
+						color, is_opaque);
+					break;
+				}
+			}
+			canvasbase->opengl_swapbuffers();
+			canvasbase->opengl_release();
+			return 1;
+		}
 		if(renderer && canvas->refresh_frame)
 		{
 			renderer->calculate_output_transfer(canvas->refresh_frame,
@@ -221,10 +268,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			pluginframe = 0;
 		}
 
-		canvas->get_canvas()->set_color(color);
+		canvasbase->set_color(color);
 
 		if(is_opaque)
-			canvas->get_canvas()->set_opaque();
+			canvasbase->set_opaque();
 
 		for(dp = data; dp < dataend;)
 		{
@@ -283,31 +330,31 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			switch(*dp++)
 			{
 			case GUIDELINE_LINE:
-				canvas->get_canvas()->draw_line(x1, y1, x2, y2);
+				canvasbase->draw_line(x1, y1, x2, y2);
 				dp += 4;
 				break;
 			case GUIDELINE_RECTANGLE:
-				canvas->get_canvas()->draw_rectangle(x1, y1,
+				canvasbase->draw_rectangle(x1, y1,
 					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_BOX:
-				canvas->get_canvas()->draw_box(x1, y1,
+				canvasbase->draw_box(x1, y1,
 					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_DISC:
-				canvas->get_canvas()->draw_disc(x1, y1,
+				canvasbase->draw_disc(x1, y1,
 					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_CIRCLE:
-				canvas->get_canvas()->draw_circle(x1, y1,
+				canvasbase->draw_circle(x1, y1,
 					x2 - x1, y2 - y1);
 				dp += 4;
 				break;
 			case GUIDELINE_PIXEL:
-				canvas->get_canvas()->draw_pixel(x1, y1);
+				canvasbase->draw_pixel(x1, y1);
 				dp += 2;
 				break;
 			case GUIDELINE_VFRAME:
@@ -324,7 +371,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					x2 = round(dx2);
 					y2 = round(dy2);
 					vframe->set_pixel_aspect(canvas->sample_aspect_ratio());
-					canvas->get_canvas()->draw_vframe(vframe,
+					canvasbase->draw_vframe(vframe,
 						x1, y1,
 						x2 - x1, y2 - y1,
 						in_x1, in_y1,
@@ -338,7 +385,7 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 		}
 
 		if(is_opaque)
-			canvas->get_canvas()->set_inverse();
+			canvasbase->set_inverse();
 
 		if(period)
 		{
@@ -347,6 +394,11 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			this->pts = pts;
 		}
 		return 1;
+	}
+	if(canvasbase->opengl_active())
+	{
+		canvasbase->opengl_swapbuffers();
+		canvasbase->opengl_release();
 	}
 	return 0;
 }
