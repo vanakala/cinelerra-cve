@@ -74,6 +74,7 @@ public:
 		GUIDE_CIRCLE,
 		GUIDE_PIXEL,
 		GUIDE_FRAME,
+		SWAP_BUFFERS,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
@@ -121,6 +122,7 @@ public:
 		int color, int opaque);
 	void release_resources();
 	void disable_opengl(BC_WindowBase *window);
+	void swap_buffers(BC_WindowBase *window);
 #endif
 	void run();
 
@@ -144,6 +146,7 @@ private:
 // executing commands
 	void do_display_vframe(GLThreadCommand *command);
 	void do_disable_opengl(GLThreadCommand *command);
+	void do_swap_buffers(GLThreadCommand *command);
 
 	Shaders *shaders;
 #endif

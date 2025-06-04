@@ -105,6 +105,7 @@ const struct gl_commands GLThreadCommand::gl_names[] =
 	{ "Guide Circle", GUIDE_CIRCLE },
 	{ "Guide Pixel", GUIDE_PIXEL },
 	{ "Guide Frame", GUIDE_FRAME },
+	{ "Swap Buffers", SWAP_BUFFERS },
 	{ 0, 0 }
 };
 
@@ -513,6 +514,18 @@ void GLThread::disable_opengl(BC_WindowBase *window)
 	command_lock->unlock();
 	next_command->unlock();
 }
+
+void GLThread::swap_buffers(BC_WindowBase *window)
+{
+	command_lock->lock("GLThread::swap_buffers");
+	GLThreadCommand *command = new_command();
+	command->command = GLThreadCommand::SWAP_BUFFERS;
+	command->dpy = window->top_level->display;
+	command->win = window->win;
+	command->screen = window->top_level->screen;
+	command_lock->unlock();
+	next_command->unlock();
+}
 #endif
 
 void GLThread::run()
@@ -553,6 +566,10 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 
 		case GLThreadCommand::DISABLE:
 			do_disable_opengl(command);
+			break;
+
+		case GLThreadCommand::SWAP_BUFFERS:
+			do_swap_buffers(command);
 			break;
 #endif
 		default:
@@ -618,11 +635,13 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glUseProgram(current_glctx->shaderprogram);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void GLThread::do_swap_buffers(GLThreadCommand *command)
+{
 	glXSwapBuffers(command->dpy, command->win);
 }
-#endif
 
-#ifdef HAVE_GL
 GLuint GLThread::create_texture(int num, int width, int height)
 {
 	struct texture *txp;

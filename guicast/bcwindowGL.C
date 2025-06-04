@@ -151,3 +151,10 @@ void BC_WindowBase::opengl_release()
 	resources.get_glthread()->release_resources();
 #endif
 }
+
+void BC_WindowBase::opengl_swapbuffers()
+{
+#ifdef HAVE_GL
+	resources.get_glthread()->swap_buffers(this);
+#endif
+}

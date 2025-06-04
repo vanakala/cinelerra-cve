@@ -198,6 +198,7 @@ public:
 	void opengl_guideframe(VFrame *vframe, int color, int is_opaque);
 	void opengl_release();
 	void disable_opengl();
+	void opengl_swapbuffers();
 
 	void flash(int x, int y, int w, int h);
 	void flash();
