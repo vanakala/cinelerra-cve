@@ -53,6 +53,7 @@ libguicastcve_la_SOURCES = \
 	colormodels.C \
 	colorspaces.C \
 	filesystem.C \
+	glguides.C \
 	glthread.C \
 	hashcache.C \
 	mutex.C \
@@ -160,6 +161,8 @@ noinst_HEADERS = \
 	filesystem.inc \
 	glthread.h \
 	glthread.inc \
+	glguides.h \
+	glguides.inc \
 	fonts.h \
 	hashcache.h \
 	hashcache.inc \
