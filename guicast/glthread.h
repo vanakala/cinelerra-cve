@@ -6,15 +6,16 @@
 #ifndef GLTHREAD_H
 #define GLTHREAD_H
 
+#include "config.h"
 #include "bcwindowbase.inc"
 #include "condition.inc"
 #include "glthread.inc"
+#include "glguides.h"
 #include "mutex.inc"
 #include "shaders.inc"
 #include "thread.h"
 #include "vframe.inc"
 
-#include "config.h"
 
 #ifdef HAVE_GL
 #include <GL/glx.h>
@@ -25,6 +26,7 @@
 #define GL_ORIG_TEXTURE 0
 #define GL_MAX_TEXTURES 4
 #define GL_VERTICES_SIZE 28
+#define GL_RECTANGLE_SIZE 8
 
 #include <X11/Xlib.h>
 
@@ -40,7 +42,35 @@ struct gl_window
 	double x2, y2;
 };
 
-struct glctx;
+	struct texture
+	{
+		int width;
+		int height;
+		GLuint id;
+	};
+
+struct glctx
+{
+	Display *dpy;
+	Window win;
+	int screen;
+	GLXContext gl_context;
+	XVisualInfo *visinfo;
+	int last_texture;
+	struct texture textures[GL_MAX_TEXTURES];
+	GLuint vertexarray;   // vao
+	GLuint vertexbuffer;  // vbo
+	GLuint elemarray;     // ebo
+	GLuint vertexshader;
+	GLuint fragmentshader;
+	GLuint shaderprogram;
+	GLuint firsttexture;  // tex
+	GLuint fbtexture;
+	GLint posattrib;
+	GLint colattrib;
+	GLint texattrib;
+	float vertices[GL_VERTICES_SIZE];
+};
 
 // This takes requests and runs all OpenGL calls in the main thread.
 // Past experience showed OpenGL couldn't be run from multiple threads
@@ -109,7 +139,7 @@ public:
 	void guideline(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
 	void guiderectangle(BC_WindowBase *window, struct gl_window *rect,
-		int color, int opaque);
+		struct gl_window *canvsize, int color, int opaque);
 	void guidebox(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
 	void guidedisc(BC_WindowBase *window, struct gl_window *rect,
@@ -149,6 +179,7 @@ private:
 	void do_swap_buffers(GLThreadCommand *command);
 
 	Shaders *shaders;
+	GLGuides guides;
 #endif
 
 	Condition *next_command;
@@ -161,35 +192,8 @@ private:
 
 #ifdef HAVE_GL
 
-	struct texture
-	{
-		int width;
-		int height;
-		GLuint id;
-	};
 	int last_context;
-	struct glctx
-	{
-		Display *dpy;
-		Window win;
-		int screen;
-		GLXContext gl_context;
-		XVisualInfo *visinfo;
-		int last_texture;
-		struct texture textures[GL_MAX_TEXTURES];
-		GLuint vertexarray;   // vao
-		GLuint vertexbuffer;  // vbo
-		GLuint elemarray;     // ebo
-		GLuint vertexshader;
-		GLuint fragmentshader;
-		GLuint shaderprogram;
-		GLuint firsttexture;  // tex
-		GLuint fbtexture;
-		GLint posattrib;
-		GLint colattrib;
-		GLint texattrib;
-		float vertices[GL_VERTICES_SIZE];
-	}contexts[GL_MAX_CONTEXTS];
+	struct glctx contexts[GL_MAX_CONTEXTS];
 	struct glctx *current_glctx;
 	struct glctx *have_context(Display *dpy, int screen);
 	void do_release_resources(struct glctx *ctx);

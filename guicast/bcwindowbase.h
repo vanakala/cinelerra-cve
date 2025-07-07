@@ -186,7 +186,7 @@ public:
 	void opengl_guideline(int x1, int y1, int x2, int y2,
 		int color, int opaque);
 	void opengl_guiderectangle(int x1, int y1, int x2, int y2,
-		int color, int opaque);
+		int output_w, int output_h, int color, int opaque);
 	void opengl_guidebox(int x1, int y1, int x2, int y2,
 		int color, int opaque);
 	void opengl_guidedisc(int x1, int y1, int x2, int y2,

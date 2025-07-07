@@ -133,8 +133,12 @@ void GLThreadCommand::dump(int indent, int show_frame)
 			indent, "", glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2,
 			glwin2.x1, glwin2.y1, glwin2.x2, glwin2.y2);
 		break;
-	case GUIDE_LINE:
 	case GUIDE_RECTANGLE:
+		printf("%*swin:(%.1f,%.1f)(%.1f,%.1f) canvas: [%.1f, %.1f]\n", indent, "",
+			glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2, glwin2.x2, glwin2.y2);
+		printf("%*scolor:%#x opaque %d\n",  indent, "", color, opaque);
+		break;
+	case GUIDE_LINE:
 	case GUIDE_BOX:
 	case GUIDE_DISC:
 	case GUIDE_CIRCLE:
@@ -176,6 +180,7 @@ GLThread::GLThread()
 	last_context = 0;
 	current_glctx = 0;
 	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
+	guides.set_glthread(this);
 #endif
 	BC_WindowBase::get_resources()->set_glthread(this);
 }
@@ -341,7 +346,7 @@ void GLThread::generate_renderframe()
 	}
 }
 
-GLThread::glctx *GLThread::have_context(Display *dpy, int screen)
+struct glctx *GLThread::have_context(Display *dpy, int screen)
 {
 	for(int i = 0; i < last_context; i++)
 	{
@@ -398,7 +403,7 @@ void GLThread::guideline(BC_WindowBase *window, struct gl_window *rect,
 }
 
 void GLThread::guiderectangle(BC_WindowBase *window, struct gl_window *rect,
-	int color, int opaque)
+	struct gl_window *canvsize, int color, int opaque)
 {
 	command_lock->lock("GLThread::guiderectangle");
 	GLThreadCommand *command = new_command();
@@ -407,6 +412,7 @@ void GLThread::guiderectangle(BC_WindowBase *window, struct gl_window *rect,
 	command->win = window->win;
 	command->screen = window->top_level->screen;
 	command->glwin1 = *rect;
+	command->glwin2 = *canvsize;
 	command->color = color;
 	command->opaque = opaque;
 	command_lock->unlock();
@@ -505,7 +511,7 @@ void GLThread::release_resources()
 
 void GLThread::disable_opengl(BC_WindowBase *window)
 {
-	command_lock->lock("GLThread::release_resources");
+	command_lock->lock("GLThread::disable_opengl");
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::DISABLE;
 	command->dpy = window->top_level->display;
@@ -568,6 +574,10 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			do_disable_opengl(command);
 			break;
 
+		case GLThreadCommand::GUIDE_RECTANGLE:
+			guides.add_guide(command);
+			break;
+
 		case GLThreadCommand::SWAP_BUFFERS:
 			do_swap_buffers(command);
 			break;
@@ -602,7 +612,7 @@ void GLThread::delete_contexts()
 #ifdef HAVE_GL
 void GLThread::do_disable_opengl(GLThreadCommand *command)
 {
-	if(GLThread::glctx *ctx = have_context(command->dpy, command->screen))
+	if(struct glctx *ctx = have_context(command->dpy, command->screen))
 	{
 		if(ctx->vertexarray)
 			do_release_resources(ctx);
@@ -639,6 +649,7 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 
 void GLThread::do_swap_buffers(GLThreadCommand *command)
 {
+	guides.draw(current_glctx);
 	glXSwapBuffers(command->dpy, command->win);
 }
 

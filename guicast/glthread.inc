@@ -7,5 +7,7 @@
 #define GLTHREAD_INC
 
 class GLThread;
+class GLThreadCommand;
+struct glctx;
 
 #endif
