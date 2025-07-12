@@ -67,7 +67,7 @@ void RenderEngine::reset_engines()
 {
 	if(!do_reset)
 	{
-		interrupt_lock->lock("RenderEngine::interrupt_playback");
+		interrupt_lock->lock("RenderEngine::reset_engines");
 		do_reset = 1;
 		interrupted = 1;
 		if(audio)
