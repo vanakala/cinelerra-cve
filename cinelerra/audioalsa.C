@@ -306,6 +306,7 @@ int AudioALSA::open_output()
 	}
 	samples_written = 0;
 	delay = 0;
+	interrupted = 0;
 	return 0;
 }
 
@@ -313,22 +314,22 @@ void AudioALSA::close_output()
 {
 	if(dsp_out)
 	{
+		timing_lock->lock("AudioALSA::close_output");
 		snd_pcm_close(dsp_out);
 		dsp_out = 0;
+		timing_lock->unlock();
 	}
 }
 
 void AudioALSA::close_all()
 {
 	close_output();
-	interrupted = 0;
 }
 
 samplenum AudioALSA::device_position()
 {
 	snd_pcm_sframes_t delay;
 	samplenum result;
-	snd_pcm_t *dsp;
 
 	timing_lock->lock("AudioALSA::device_position");
 	if(dsp_out)
@@ -337,10 +338,14 @@ samplenum AudioALSA::device_position()
 		result = samples_written - delay;
 	}
 	else
-		result = 0;
+		result = samples_written;
 	timing_lock->unlock();
 	return result;
 }
+
+#ifndef SND_PCM_WAIT_IO
+#define SND_PCM_WAIT_IO (-1)
+#endif
 
 int AudioALSA::write_buffer(char *buffer, int size)
 {
@@ -352,14 +357,19 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	int rc;
 	char *write_pos = buffer;
 
-	if(!dsp_out) return 0;
+	if(!dsp_out)
+		return 0;
 
 	while(samples > 0 && attempts < 2 && !interrupted)
 	{
-		snd_pcm_wait(dsp_out, -1);
+		snd_pcm_wait(dsp_out, SND_PCM_WAIT_IO);
+
+		if(interrupted)
+			break;
 
 		timing_lock->lock("AudioALSA::write_buffer");
 		avail = snd_pcm_avail(dsp_out);
+
 		if(avail > samples)
 			avail = samples;
 
@@ -390,7 +400,6 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		}
 		timing_lock->unlock();
 	}
-
 	if(attempts >= 2)
 		return -1;
 	return 0;
@@ -398,24 +407,22 @@ int AudioALSA::write_buffer(char *buffer, int size)
 
 void AudioALSA::flush_device()
 {
+	timing_lock->lock("AudioALSA::flush_device");
 	if(dsp_out)
 		snd_pcm_drain(dsp_out);
+	timing_lock->unlock();
 }
 
 void AudioALSA::interrupt_playback()
 {
-	if(dsp_out)
-	{
-		interrupted = 1;
+	interrupted = 1;
 // Interrupts the playback but may not have caused snd_pcm_writei to exit.
 // With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
 // Use lock to avoid snd_pcm_drop called during snd_pcm_writei
-		timing_lock->lock("AudioALSA::interrupt_playback");
+	timing_lock->lock("AudioALSA::interrupt_playback");
+	if(dsp_out)
 		snd_pcm_drop(dsp_out);
-// Prepare is needed to end snd_pcm_drain
-		snd_pcm_prepare(dsp_out);
-		timing_lock->unlock();
-	}
+	timing_lock->unlock();
 }
 
 void AudioALSA::dump_params(snd_pcm_t* dsp)
