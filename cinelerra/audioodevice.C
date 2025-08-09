@@ -18,7 +18,8 @@
 void AudioDevice::write_buffer(double **output, int samples)
 {
 // find free buffer to fill
-	if(interrupt) return;
+	if(interrupt)
+		return;
 	arm_buffer(arm_buffer_num, output, samples);
 	arm_buffer_num++;
 	if(arm_buffer_num >= TOTAL_BUFFERS) arm_buffer_num = 0;
@@ -59,11 +60,13 @@ void AudioDevice::arm_buffer(int buffer_num,
 
 	new_size = frame * samples;
 
-	if(interrupt) return;
+	if(interrupt)
+		return;
 
 // wait for buffer to become available for writing
 	arm_lock[buffer_num]->lock("AudioDevice::arm_buffer");
-	if(interrupt) return;
+	if(interrupt)
+		return;
 
 	if(new_size > buffer_size[buffer_num])
 	{
@@ -233,13 +236,13 @@ ptstime AudioDevice::current_postime(double speed)
 	{
 		hardware_result = lowlevel_out->device_position();
 
-		if(hardware_result > 0)
+		if(hardware_result >= 0)
 		{
 			last_position = hardware_result;
 			return (ptstime)hardware_result / out_samplerate - (out_config->audio_offset / speed);
 		}
 	}
-	if(last_position > 0)
+	if(last_position >= 0)
 		return (ptstime)last_position / out_samplerate - (out_config->audio_offset/ speed);
 	return -1;
 }
@@ -253,16 +256,15 @@ void AudioDevice::run_output()
 	while(is_playing_back && !interrupt && !last_buffer[thread_buffer_num])
 	{
 // wait for buffer to become available
-		play_lock[thread_buffer_num]->lock("AudioDevice::run 1");
+		play_lock[thread_buffer_num]->lock("AudioDevice::run_output");
 
 		if(is_playing_back && !last_buffer[thread_buffer_num])
 		{
 // get size for position information
-			timer_lock->lock("AudioDevice::run 3");
+			timer_lock->lock("AudioDevice::run_output");
 			last_buffer_size = buffer_size[thread_buffer_num] / (out_bits / 8) / out_channels;
 			total_samples += last_buffer_size;
 			timer_lock->unlock();
-
 // write converted buffer synchronously
 			thread_result = lowlevel_out->write_buffer(
 				output_buffer[thread_buffer_num], 
@@ -281,16 +283,15 @@ void AudioDevice::run_output()
 			thread_buffer_num++;
 			if(thread_buffer_num >= TOTAL_BUFFERS) thread_buffer_num = 0;
 		}
-
+	}
 // test for last buffer
-		if(!interrupt && last_buffer[thread_buffer_num])
-		{
+	if(!interrupt && last_buffer[thread_buffer_num])
+	{
 // no more buffers
 // flush the audio device
-			is_flushing = 1;
-			is_playing_back = 0;
-			lowlevel_out->flush_device();
-			is_flushing = 0;
-		}
+		is_flushing = 1;
+		is_playing_back = 0;
+		lowlevel_out->flush_device();
+		is_flushing = 0;
 	}
 }

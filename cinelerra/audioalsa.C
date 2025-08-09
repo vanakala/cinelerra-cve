@@ -340,6 +340,9 @@ samplenum AudioALSA::device_position()
 	else
 		result = samples_written;
 	timing_lock->unlock();
+
+	if(result < 0)
+		result = 0;
 	return result;
 }
 
