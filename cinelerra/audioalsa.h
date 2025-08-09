@@ -32,15 +32,13 @@ public:
 private:
 	void close_output();
 	snd_pcm_format_t translate_format(int format);
-	int set_params(snd_pcm_t *dsp, 
-		int channels, 
-		int bits,
-		int samplerate,
-		int samples);
+	int set_params(snd_pcm_t *dsp, int channels, int bits,
+		int samplerate, int samples);
 	int create_format(snd_pcm_format_t *format, int bits, int channels, int rate);
 	snd_pcm_t* get_output();
 	snd_pcm_t* get_input();
 	snd_pcm_t *dsp_in, *dsp_out;
+
 	samplenum samples_written;
 	snd_pcm_sframes_t delay;
 	int sleep_delay;

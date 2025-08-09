@@ -195,11 +195,8 @@ snd_pcm_format_t AudioALSA::translate_format(int format)
 	return SND_PCM_FORMAT_UNKNOWN;
 }
 
-int AudioALSA::set_params(snd_pcm_t *dsp, 
-	int channels, 
-	int bits,
-	int samplerate,
-	int samples)
+int AudioALSA::set_params(snd_pcm_t *dsp, int channels, int bits,
+	int samplerate, int samples)
 {
 	snd_pcm_hw_params_t *params;
 	snd_pcm_sw_params_t *swparams;
@@ -258,6 +255,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		buffer_size = samples / 4;
 	else
 		buffer_size = samples;
+
 	if(buffer_size < bufmin)
 		buffer_size = bufmin;
 	else if(buffer_size > bufmax)
@@ -267,8 +265,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		&buffer_size);
 
 	dir = 0;
-	snd_pcm_hw_params_set_period_size(dsp, params,
-				buffer_size / 4, dir);
+	snd_pcm_hw_params_set_period_size(dsp, params, buffer_size / 4, dir);
 
 	if(snd_pcm_hw_params(dsp, params) < 0)
 	{
@@ -287,18 +284,16 @@ int AudioALSA::open_output()
 
 	device->out_bits = device->out_config->alsa_out_bits;
 
-	if((err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device, stream, open_mode)) < 0)
+	if((err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device,
+		stream, open_mode)) < 0)
 	{
 		dsp_out = 0;
 		errorbox("Failed to open ALSA output %s: %s", device->out_config->alsa_out_device, snd_strerror(err));
 		return 1;
 	}
 
-	if(set_params(dsp_out, 
-		device->out_channels,
-		device->out_config->alsa_out_bits,
-		device->out_samplerate,
-		device->out_samples))
+	if(set_params(dsp_out, device->out_channels, device->out_config->alsa_out_bits,
+		device->out_samplerate, device->out_samples))
 	{
 		errormsg("Aborting audio playback.");
 		close_output();
