@@ -29,3 +29,5 @@ cinelerra-cvs-current.spec
 list.*
 po/remove-potcdate.sed
 po/stamp-po
+config.rpath
+configure.ac

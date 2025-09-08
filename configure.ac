@@ -1,9 +1,9 @@
-AC_INIT(Cinelerracve, 2.3.5, einarrunkaru@gmail.com)
+AC_INIT([Cinelerracve],[2.3.5],[einarrunkaru@gmail.com])
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 # Test for minimal version of autoconf
-AC_PREREQ(2.57)
+AC_PREREQ([2.69])
 
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADER(config.h)
@@ -14,8 +14,8 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[The prefix for our gettext translation domains])
 AM_ICONV
 
-AC_LANG_CPLUSPLUS
-AC_LANG_C
+AC_LANG([C++])
+AC_LANG([C])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX(11, ext, optional)
 
@@ -42,7 +42,7 @@ AC_CHECK_HEADER([ladspa.h],
 
 ############## SPECIAL DIRECTORIES
 AC_ARG_WITH(plugindir,
-	AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
+	AS_HELP_STRING([--with-plugindir],[sets the directory where the plugins should be installed]),
 	[ plugindir=$withval ],
 	[ plugindir="\${exec_prefix}/lib/cinelerra-cve" ])
 AC_SUBST(plugindir)
@@ -103,7 +103,7 @@ fi
 ############## SOUND
 # the sound options are propagated by SOUND_CFLAGS and SOUND_LDFLAGS
 AC_ARG_ENABLE(alsa,
-	AC_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
+	AS_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
 	[enable_alsa=$enableval],[enable_alsa=yes])
 
 if test "x$enable_alsa" = "xyes"; then
@@ -145,9 +145,7 @@ AC_SUBST(CINELERRA_CFLAGS)
 
 ############# BUILDINFO display, (for displaying version / date)
 AC_ARG_WITH(buildinfo,
-		AC_HELP_STRING(
-		[--with-buildinfo],
-		[includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation, or cust/"Custom string" for packagers]),
+		AS_HELP_STRING([--with-buildinfo],[includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation, or cust/"Custom string" for packagers]),
 		[ buildinfo=$withval],
 		[ buildinfo="none" ])
 AC_SUBST(buildinfo)
@@ -168,7 +166,7 @@ rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 ############# END BUILDINFO display, (for displaying version / date)
 
 ############ external ffmpeg libraries
-AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
+AC_ARG_WITH([external-ffmpeg], AS_HELP_STRING([--with-external-ffmpeg],[use external ffmpeg library]))
 
 if test "x$with_external_ffmpeg" = "xyes"; then
 	PKG_CHECK_MODULES([FFMPEG],
@@ -209,7 +207,7 @@ if test "x$ffmpeg_external" = "xyes"; then
 	AC_DEFINE(HAVE_EXT_AVLIBS)
 else
 #### Check optional components of avlibs
-	AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
+	AC_ARG_ENABLE([nonfree], AS_HELP_STRING([--enable-nonfree],[enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
 	if test "x$avlibs_nonfree" = xyes; then
 		FFMPEG_CONF="--enable-nonfree"
 	else
@@ -341,8 +339,7 @@ echo --------------------------------------------------
 ############## OpenGL
 AH_TEMPLATE(HAVE_GL, [Define to 1 if OpenGL 2.0 is available.])
 AC_ARG_ENABLE(opengl,
-	AC_HELP_STRING([--disable-opengl],
-		[disables hardware accelerated rendering (default=autodetect, requires OpenGL 2.0)]),
+	AS_HELP_STRING([--disable-opengl],[disables hardware accelerated rendering (default=autodetect, requires OpenGL 2.0)]),
 	[ enable_opengl=$enableval ],
 	[ enable_opengl=auto ])
 if test "x$enable_opengl" = "xauto"; then
@@ -355,8 +352,7 @@ if test "x$enable_opengl" = "xauto"; then
 		for l in /usr/X11R6/lib /usr/X11R6/lib64; do
 			LIBS="$l/libGL.so.1"
 			AC_MSG_CHECKING(for glUseProgram in $l/libGL.so.1)
-			AC_TRY_LINK([],[extern int glUseProgram(); glUseProgram();],
-				[OPENGL_LIBS="$l/libGL.so.1"; libGL=yes],[libGL=no])
+			AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[extern int glUseProgram(); glUseProgram();]])],[OPENGL_LIBS="$l/libGL.so.1"; libGL=yes],[libGL=no])
 			AC_MSG_RESULT([$libGL])
 			test $libGL = yes && break
 		done
@@ -398,7 +394,7 @@ AC_SUBST(OBJCOPYARCH, $ocarch)
 
 ############## END of .png TO .o CONVERSION
 
-AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
+AC_CONFIG_FILES([Makefile cinelerra-cvs-current.spec po/Makefile.in
 	m4/Makefile
 	guicast/Makefile
 	cinelerra/Makefile
@@ -505,14 +501,15 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/timefront/Makefile
 	plugins/diffkey/Makefile
 	plugins/testvplugin/Makefile
-	image/Makefile)
+	image/Makefile])
+AC_OUTPUT
 
 succeeded=yes
 AC_DEFUN([RPT],[if test "x$$1" = "xskip"; then status="not probed"
 elif test "x$$1" = "xyes"; then status=found
 else status=missing; succeeded=no
 fi
-echo "AC_HELP_STRING($2,$status)"])
+echo "AS_HELP_STRING([$2],[$status])"])
 
 echo
 echo "Summary of mandatory components:"
