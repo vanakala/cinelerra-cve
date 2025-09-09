@@ -215,6 +215,7 @@ public:
 	void show_program_params(GLuint program, int indent = 0);
 	void show_shaders(GLuint program, int indent = 0);
 	void show_uniforms(GLuint program, int indent = 0);
+	void show_attributes(GLuint program, int indent = 0);
 	void show_texture2d_params(GLuint tex, int indent = 0);
 	void show_matrixes(int indent = 0);
 	void print_mat4(GLfloat *matx, const char *name, int indent = 0);

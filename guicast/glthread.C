@@ -1272,6 +1272,33 @@ void GLThread::show_uniforms(GLuint program, int indent)
 	}
 }
 
+void GLThread::show_attributes(GLuint program, int indent)
+{
+	GLint n, max, i;
+
+	if(!glIsProgram(program))
+	{
+		printf("%d is not a program\n", program);
+		return;
+	}
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &n);
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max);
+	printf("%*sProgram %d has %d attributes with max name %d:\n", indent, "",
+		program, n, max);
+
+	indent += 2;
+	for(int i = 0; i < n; i++)
+	{
+		GLint size, len;
+		GLenum type;
+		char name[100];
+		glGetActiveAttrib(program, i, 100, &len, &size, &type, name);
+
+		printf("%*s%d: '%s' nameLen: %d size: %d type: '%s'\n", indent, "",
+			i, name, len, size, glname(type));
+	}
+}
+
 void GLThread::show_texture2d_params(GLuint tex, int indent)
 {
 	int width, height, format, depth;
