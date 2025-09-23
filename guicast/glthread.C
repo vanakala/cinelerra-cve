@@ -645,6 +645,10 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glUseProgram(current_glctx->shaderprogram);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+show_program_params(current_glctx->shaderprogram);
+show_shaders(current_glctx->shaderprogram, 4);
+show_uniforms(current_glctx->shaderprogram, 4);
+show_attributes(current_glctx->shaderprogram, 4);
 }
 
 void GLThread::do_swap_buffers(GLThreadCommand *command)
@@ -1232,6 +1236,7 @@ void GLThread::show_shaders(GLuint program, int indent)
 {
 	GLuint shaders[20];
 	GLsizei count;
+	GLint params[20];
 
 	if(!glIsProgram(program))
 	{
@@ -1242,7 +1247,11 @@ void GLThread::show_shaders(GLuint program, int indent)
 	printf("%*sProgram %d has %d shaders:\n", indent, "", program, count);
 	indent += 2;
 	for(int i = 0; i < count; i++)
-		printf("%*sattached shader: %u\n", indent, "",  shaders[i]);
+	{
+		glGetShaderiv(shaders[i], GL_SHADER_TYPE, params);
+		printf("%*sattached shader: %u %s\n", indent, "",
+			shaders[i], glname(params[0]));
+	}
 }
 
 void GLThread::show_uniforms(GLuint program, int indent)

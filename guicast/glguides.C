@@ -120,6 +120,8 @@ void GLGuides::draw(struct glctx *current_glctx)
 		glDisableVertexAttribArray(0);
 	}
 	glthread->show_errors("do_rectangle", 4);
+	glthread->show_program_params(current_glctx->shaderprogram, 4);
 	glthread->show_shaders(current_glctx->shaderprogram, 4);
 	glthread->show_uniforms(current_glctx->shaderprogram, 4);
+	glthread->show_attributes(current_glctx->shaderprogram, 4);
 }
