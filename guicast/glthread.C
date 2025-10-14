@@ -1251,6 +1251,7 @@ void GLThread::show_shaders(GLuint program, int indent)
 		glGetShaderiv(shaders[i], GL_SHADER_TYPE, params);
 		printf("%*sattached shader: %u %s\n", indent, "",
 			shaders[i], glname(params[0]));
+		show_shader_src(shaders[i], indent);
 	}
 }
 
@@ -1373,6 +1374,16 @@ void GLThread::print_mat4(GLfloat *matx, const char *name, int indent)
 			printf(" %6.2f", matx[4 * i + j]);
 		putchar('\n');
 	}
+}
+
+void GLThread::show_shader_src(GLuint shader, int indent)
+{
+	char buf[BCTEXTLEN];
+	GLsizei len;
+
+	glGetShaderSource(shader, BCTEXTLEN, &len, buf);
+	printf("%*sShader %d src length %d\n", indent, "", shader, len);
+	puts(buf);
 }
 
 void GLThread::show_vertex_array(int indent)

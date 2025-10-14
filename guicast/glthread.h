@@ -220,6 +220,7 @@ public:
 	void show_matrixes(int indent = 0);
 	void print_mat4(GLfloat *matx, const char *name, int indent = 0);
 	void show_vertex_array(int indent = 0);
+	void show_shader_src(GLuint shader, int indent = 0);
 	void dump_glctx(struct glctx *ctx, int indent = 0);
 	const char *glname(GLenum type);
 
