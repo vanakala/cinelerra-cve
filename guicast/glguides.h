@@ -28,7 +28,7 @@ private:
 
 	GLThread *glthread;
 	GLThreadCommand *guides;
-	GLuint guidefragshader;
+	GLuint guidevxshader;
 	int lastguide;
 	int guides_alloc;
 };

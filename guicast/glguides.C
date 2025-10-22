@@ -13,12 +13,12 @@
 
 #define ALLOC_CHUNK 16
 
-static const char *fragment_guides =
+static const char *vertex_guides =
 R"vx(#version 130
-	out vec4 outColor;
+	in vec2 position;
 	void main()
 	{
-		outColor = vec4(1.0, 1.0, 1.0, 1.0);
+		gl_Position = vec4(position, 0.0, 1.0);
 	}
 )vx";
 
@@ -28,7 +28,7 @@ GLGuides::GLGuides()
 	guides = 0;
 	lastguide = 0;
 	guides_alloc = 0;
-	guidefragshader = 0;
+	guidevxshader = 0;
 }
 
 GLGuides::~GLGuides()
@@ -69,15 +69,17 @@ void GLGuides::draw(struct glctx *current_glctx)
 	{
 		float rect[GL_RECTANGLE_SIZE];
 
-		if(!guidefragshader)
+		if(!guidevxshader)
 		{
-			guidefragshader = glCreateShader(GL_FRAGMENT_SHADER);
-			glShaderSource(guidefragshader, 1, &fragment_guides, NULL);
-			glCompileShader(guidefragshader);
-			glthread->show_compile_status(guidefragshader, "guidefragshader");
+			GLint posattrib;
+
+			guidevxshader = glCreateShader(GL_VERTEX_SHADER);
+			glShaderSource(guidevxshader, 1, &vertex_guides, NULL);
+			glCompileShader(guidevxshader);
+			glthread->show_compile_status(guidevxshader, "guidevxshader");
+			glDetachShader(current_glctx->shaderprogram, current_glctx->vertexshader);
+			glAttachShader(current_glctx->shaderprogram, guidevxshader);
 			glDetachShader(current_glctx->shaderprogram, current_glctx->fragmentshader);
-			glAttachShader(current_glctx->shaderprogram, guidefragshader);
-			glBindFragDataLocation(current_glctx->shaderprogram, 0, "outColor");
 			glLinkProgram(current_glctx->shaderprogram);
 			glLineWidth(1);
 			glEnable(GL_COLOR_LOGIC_OP);
@@ -90,15 +92,19 @@ void GLGuides::draw(struct glctx *current_glctx)
 			{
 			case GLThreadCommand::GUIDE_RECTANGLE:
 				// left
-				rect[0] = 2.0f * guides[i].glwin1.x1 / guides[i].glwin2.x2 - 1.0f;
+				rect[0] = 2.0f * guides[i].glwin1.x1 / guides[i].glwin2.x2 *
+					current_glctx->canvas_zoom - 1.0f;
 				// top
-				rect[1] = -(2.0f * guides[i].glwin1.y1 / guides[i].glwin2.y2 - 1.0f);
+				rect[1] = -(2.0f * (guides[i].glwin1.y1 / guides[i].glwin2.y2 *
+					current_glctx->canvas_zoom) - 1.0f);
 				// right
-				rect[2] = 2.0f * guides[i].glwin1.x2 / guides[i].glwin2.x2 + rect[0];
+				rect[2] = 2.0f * (guides[i].glwin1.x2 / guides[i].glwin2.x2 *
+					current_glctx->canvas_zoom) + rect[0];
 				rect[3] = rect[1];
 				rect[4] = rect[2];
 				// bottom
-				rect[5] = -(2.0f * guides[i].glwin1.y2 / guides[i].glwin2.y2) + rect[1];
+				rect[5] = -(2.0f * guides[i].glwin1.y2 / guides[i].glwin2.y2 *
+					current_glctx->canvas_zoom) + rect[1];
 				rect[6] = rect[0];
 				rect[7] = rect[5];
 				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -113,9 +119,9 @@ void GLGuides::draw(struct glctx *current_glctx)
 			}
 		}
 		lastguide = 0;
-		glDetachShader(current_glctx->shaderprogram, guidefragshader);
-		glDeleteShader(guidefragshader);
-		guidefragshader = 0;
+		glDetachShader(current_glctx->shaderprogram, guidevxshader);
+		glDeleteShader(guidevxshader);
+		guidevxshader = 0;
 		glDisable(GL_COLOR_LOGIC_OP);
 		glDisableVertexAttribArray(0);
 	}
