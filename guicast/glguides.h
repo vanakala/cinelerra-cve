@@ -25,7 +25,10 @@ public:
 
 private:
 	int allocate_guides();
+	double x_to_output(double x);
+	double y_to_output(double y);
 
+	struct glctx *glctx;
 	GLThread *glthread;
 	GLThreadCommand *guides;
 	GLuint guidevxshader;

@@ -69,7 +69,6 @@ struct glctx
 	GLint posattrib;
 	GLint colattrib;
 	GLint texattrib;
-	double canvas_zoom;
 	float vertices[GL_VERTICES_SIZE];
 };
 

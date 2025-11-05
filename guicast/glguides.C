@@ -36,7 +36,6 @@ GLGuides::~GLGuides()
 	free(guides);
 }
 
-
 int GLGuides::allocate_guides()
 {
 	if(guides_alloc < lastguide + 1)
@@ -65,6 +64,7 @@ void GLGuides::add_guide(GLThreadCommand *command)
 
 void GLGuides::draw(struct glctx *current_glctx)
 {
+	glctx = current_glctx;
 	if(lastguide)
 	{
 		float rect[GL_RECTANGLE_SIZE];
@@ -76,7 +76,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 			guidevxshader = glCreateShader(GL_VERTEX_SHADER);
 			glShaderSource(guidevxshader, 1, &vertex_guides, NULL);
 			glCompileShader(guidevxshader);
-			glthread->show_compile_status(guidevxshader, "guidevxshader");
+//			glthread->show_compile_status(guidevxshader, "guidevxshader");
 			glDetachShader(current_glctx->shaderprogram, current_glctx->vertexshader);
 			glAttachShader(current_glctx->shaderprogram, guidevxshader);
 			glDetachShader(current_glctx->shaderprogram, current_glctx->fragmentshader);
@@ -92,19 +92,17 @@ void GLGuides::draw(struct glctx *current_glctx)
 			{
 			case GLThreadCommand::GUIDE_RECTANGLE:
 				// left
-				rect[0] = 2.0f * guides[i].glwin1.x1 / guides[i].glwin2.x2 *
-					current_glctx->canvas_zoom - 1.0f;
+				rect[0] = x_to_output(guides[i].glwin1.x1 / guides[i].glwin2.x2);
 				// top
-				rect[1] = -(2.0f * (guides[i].glwin1.y1 / guides[i].glwin2.y2 *
-					current_glctx->canvas_zoom) - 1.0f);
+				rect[1] = y_to_output(guides[i].glwin1.y1 / guides[i].glwin2.y2);
 				// right
-				rect[2] = 2.0f * (guides[i].glwin1.x2 / guides[i].glwin2.x2 *
-					current_glctx->canvas_zoom) + rect[0];
+				rect[2] = x_to_output((guides[i].glwin1.x1 +
+					guides[i].glwin1.x2) / guides[i].glwin2.x2);
 				rect[3] = rect[1];
 				rect[4] = rect[2];
 				// bottom
-				rect[5] = -(2.0f * guides[i].glwin1.y2 / guides[i].glwin2.y2 *
-					current_glctx->canvas_zoom) + rect[1];
+				rect[5] = y_to_output((guides[i].glwin1.y1 +
+					guides[i].glwin1.y2) / guides[i].glwin2.y2);
 				rect[6] = rect[0];
 				rect[7] = rect[5];
 				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -130,4 +128,18 @@ void GLGuides::draw(struct glctx *current_glctx)
 	glthread->show_shaders(current_glctx->shaderprogram, 4);
 	glthread->show_uniforms(current_glctx->shaderprogram, 4);
 	glthread->show_attributes(current_glctx->shaderprogram, 4);
+}
+
+double GLGuides::x_to_output(double x)
+{
+	return glctx->vertices[0] +
+		(x - glctx->vertices[5]) *
+		(glctx->vertices[7] - glctx->vertices[0]);
+}
+
+double GLGuides::y_to_output(double y)
+{
+	return glctx->vertices[1] -
+		(y - glctx->vertices[6]) *
+		(glctx->vertices[8] - glctx->vertices[22]);
 }

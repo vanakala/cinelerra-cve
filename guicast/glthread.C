@@ -715,7 +715,6 @@ void GLThread::set_viewport(GLThreadCommand *command)
 		current_glctx->vertices[20] += s;
 		current_glctx->vertices[27] += s;
 	}
-	current_glctx->canvas_zoom = command->zoom;
 	if(!EQUIV(command->zoom, 1.0))
 	{
 		float sz = 2 * command->zoom;
