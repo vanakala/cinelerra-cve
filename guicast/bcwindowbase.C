@@ -369,6 +369,13 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		size_hints.min_height = allow_resize ? minh : this->h;
 		size_hints.max_height = allow_resize ? 32767 : this->h;
 
+		if(allow_resize)
+		{
+			size_hints.flags |= PResizeInc;
+			size_hints.width_inc = 2;
+			size_hints.height_inc = 1;
+		}
+
 		if(x > -BC_INFINITY && x < BC_INFINITY)
 		{
 			size_hints.flags |= PPosition;
