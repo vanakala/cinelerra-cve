@@ -30,6 +30,7 @@ rm -f missing
 rm -f po/Makefile.in.in
 for nam in alsa.m4 iconv.m4 lib-link.m4 lib-prefix.m4
 do
+    rm -f m4/$nam
     ln -s $sysaclocal/$nam m4/$nam
 done
 touch config.rpath
