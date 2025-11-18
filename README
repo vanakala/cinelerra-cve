@@ -2,7 +2,7 @@ Cinelerra-CVE is a fork of Cinelerra-CV.
 This file contains information about Cinelerra-CVE 2.3.5
 The sources are available at https://github.com/vanakala/cinelerra-cve
 
-This file describes status of Cinelerra-CVE as of Feb 1, 2020
+This file describes status of Cinelerra-CVE as of Nov 18, 2025
 
 Contents.
 
@@ -22,8 +22,8 @@ Currently this branch is under development. There is no warranty
 that it is usable to create or finish any project. Parts of the program
 may work, parts not.
 
-This branch is developed and tested on Ubuntu 14.04 x86-32 and 
-Ubuntu 16.04 x86_64
+This branch is developed and tested on Ubuntu 14.04 x86-32,
+Ubuntu 16.04 x86_64, Ubuntu 20.04 x86_64 and Ubuntu 24.04
 
 Main change in this branch is display locking. The change was
 huge and locking issues are hard to test.
@@ -85,7 +85,7 @@ Changes of this fork:
 - new plugin: Blue Banana color grading/correction filter
 - replaced all decoding and encoding with AVlibs (ffmpeg libraries)
 - program may be linked to external (system) AVlibs
-- AVlibs from ffmpeg 2.8 to 3.4 are supported
+- AVlibs from ffmpeg 2.8 to 4.4 are supported
 - OpenGl support is almost removed, will be rewritten
 - improved Russian translations (thanks to Igor Vladimirsky aka igor_ubuntu)
 - new GuideLines system for plugins
@@ -102,12 +102,14 @@ Changes of this fork:
 - plugins are loaded when used - 120k memory is freed
 - reel name is replaced with EDL info - user can give edl a name
     and write a short description
+- rewrited composing pipeline
+- internally is used only 16bit RGBA colormodel
 
 Known problems (todo list)
 - optimize playback
-- use internally only 16bit per color colormodels
 - restore OpenGL support of playback and hopefully rendering
 - new API of plugins and macros need some documentation
+- add support of recent AVlibs
 
 Bug reporting.
 I am very interested in reports of crashes and hangs.
