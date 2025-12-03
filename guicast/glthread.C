@@ -179,7 +179,7 @@ GLThread::GLThread()
 	shaders = 0;
 	last_context = 0;
 	current_glctx = 0;
-	memset(contexts, 0, sizeof(GLXContext) * GL_MAX_CONTEXTS);
+	memset(contexts, 0, sizeof(contexts));
 	guides.set_glthread(this);
 #endif
 	BC_WindowBase::get_resources()->set_glthread(this);
