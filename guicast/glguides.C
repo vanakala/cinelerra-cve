@@ -68,6 +68,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 	if(lastguide)
 	{
 		float rect[GL_RECTANGLE_SIZE];
+		float line[GL_LINE_SIZE];
 
 		if(!guidevxshader)
 		{
@@ -110,6 +111,18 @@ void GLGuides::draw(struct glctx *current_glctx)
 				glBufferData(GL_ARRAY_BUFFER, sizeof(rect), rect, GL_STATIC_DRAW);
 				glDrawArrays(GL_LINE_LOOP, 0, 4);
 				break;
+
+			case GLThreadCommand::GUIDE_LINE:
+				line[0] = x_to_output(guides[i].glwin1.x1);
+				line[1] = y_to_output(guides[i].glwin1.y1);
+				line[2] = x_to_output(guides[i].glwin1.x2);
+				line[3] = y_to_output(guides[i].glwin1.y2);
+				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+				glDrawArrays(GL_LINES, 0, 2);
+				break;
+
 			default:
 				printf("Command '%s' is not implemented yet\n",
 					guides[i].name(guides[i].command));

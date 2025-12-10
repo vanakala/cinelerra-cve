@@ -61,15 +61,15 @@ void BC_WindowBase::opengl_display(VFrame *frame, double in_x1, double in_y1,
 }
 
 void BC_WindowBase::opengl_guideline(int x1, int y1, int x2, int y2,
-	int color, int opaque)
+	int output_w, int output_h, int color, int opaque)
 {
 #ifdef HAVE_GL
 	struct gl_window rect;
 
-	rect.x1 = x1;
-	rect.y1 = y1;
-	rect.x2 = x2;
-	rect.y2 = y2;
+	rect.x1 = (double)x1 / output_w;
+	rect.y1 = (double)y1 / output_h;
+	rect.x2 = (double)x2 / output_w;
+	rect.y2 = (double)y2 / output_h;
 	resources.get_glthread()->guideline(this, &rect, color, opaque);
 #endif
 }

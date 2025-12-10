@@ -213,7 +213,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 				{
 				case GUIDELINE_LINE:
 					canvasbase->opengl_guideline(dp[0], dp[1],
-						dp[2], dp[3], color, is_opaque);
+						dp[2], dp[3],
+						edlsession->output_w,
+						edlsession->output_h,
+						color, is_opaque);
 					dp += 4;
 					break;
 				case GUIDELINE_RECTANGLE:

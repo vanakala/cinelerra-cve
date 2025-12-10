@@ -575,6 +575,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 			break;
 
 		case GLThreadCommand::GUIDE_RECTANGLE:
+		case GLThreadCommand::GUIDE_LINE:
 			guides.add_guide(command);
 			break;
 
