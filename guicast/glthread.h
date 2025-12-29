@@ -28,6 +28,7 @@
 #define GL_VERTICES_SIZE 28
 #define GL_RECTANGLE_SIZE 8
 #define GL_LINE_SIZE 4
+#define GL_BOX_SIZE 12
 
 #include <X11/Xlib.h>
 

@@ -69,6 +69,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 	{
 		float rect[GL_RECTANGLE_SIZE];
 		float line[GL_LINE_SIZE];
+		float boxtrngl[GL_BOX_SIZE];
 
 		if(!guidevxshader)
 		{
@@ -110,6 +111,34 @@ void GLGuides::draw(struct glctx *current_glctx)
 				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
 				glBufferData(GL_ARRAY_BUFFER, sizeof(rect), rect, GL_STATIC_DRAW);
 				glDrawArrays(GL_LINE_LOOP, 0, 4);
+				break;
+
+			case GLThreadCommand::GUIDE_BOX:
+				// Triangles can be filled
+				// left
+				boxtrngl[0] = x_to_output(guides[i].glwin1.x1);
+				// top
+				boxtrngl[1] = y_to_output(guides[i].glwin1.y1);
+				// right
+				boxtrngl[2] = x_to_output(guides[i].glwin1.x1 +
+					guides[i].glwin1.x2);
+				boxtrngl[3] = boxtrngl[1];
+				boxtrngl[4] = boxtrngl[2];
+				// bottom
+				boxtrngl[5] = y_to_output(guides[i].glwin1.y1 +
+					guides[i].glwin1.y2);
+				boxtrngl[6] = boxtrngl[4];
+				boxtrngl[7] = boxtrngl[5];
+				boxtrngl[8] = boxtrngl[0];
+				boxtrngl[9] = boxtrngl[5];
+				boxtrngl[10] = boxtrngl[0];
+				boxtrngl[11] = boxtrngl[1];
+				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(boxtrngl), boxtrngl, GL_STATIC_DRAW);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				break;
 
 			case GLThreadCommand::GUIDE_LINE:
