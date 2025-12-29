@@ -403,7 +403,7 @@ void GLThread::guideline(BC_WindowBase *window, struct gl_window *rect,
 }
 
 void GLThread::guiderectangle(BC_WindowBase *window, struct gl_window *rect,
-	struct gl_window *canvsize, int color, int opaque)
+	int color, int opaque)
 {
 	command_lock->lock("GLThread::guiderectangle");
 	GLThreadCommand *command = new_command();
@@ -412,7 +412,6 @@ void GLThread::guiderectangle(BC_WindowBase *window, struct gl_window *rect,
 	command->win = window->win;
 	command->screen = window->top_level->screen;
 	command->glwin1 = *rect;
-	command->glwin2 = *canvsize;
 	command->color = color;
 	command->opaque = opaque;
 	command_lock->unlock();

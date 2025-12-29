@@ -78,16 +78,13 @@ void BC_WindowBase::opengl_guiderectangle(int x1, int y1, int x2, int y2,
 	int output_w, int output_h, int color, int opaque)
 {
 #ifdef HAVE_GL
-	struct gl_window rect, canvsize;
+	struct gl_window rect;
 
-	rect.x1 = x1;
-	rect.y1 = y1;
-	rect.x2 = x2;
-	rect.y2 = y2;
-	canvsize.x1 = canvsize.y1 = 0;
-	canvsize.x2 = output_w;
-	canvsize.y2 = output_h;
-	resources.get_glthread()->guiderectangle(this, &rect, &canvsize, color, opaque);
+	rect.x1 = (double)x1 / output_w;
+	rect.y1 = (double)y1 / output_h;
+	rect.x2 = (double)x2 / output_w;
+	rect.y2 = (double)y2 / output_h;
+	resources.get_glthread()->guiderectangle(this, &rect, color, opaque);
 #endif
 }
 

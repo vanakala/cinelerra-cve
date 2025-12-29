@@ -141,7 +141,7 @@ public:
 	void guideline(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
 	void guiderectangle(BC_WindowBase *window, struct gl_window *rect,
-		struct gl_window *canvsize, int color, int opaque);
+		int color, int opaque);
 	void guidebox(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
 	void guidedisc(BC_WindowBase *window, struct gl_window *rect,

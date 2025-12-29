@@ -94,17 +94,17 @@ void GLGuides::draw(struct glctx *current_glctx)
 			{
 			case GLThreadCommand::GUIDE_RECTANGLE:
 				// left
-				rect[0] = x_to_output(guides[i].glwin1.x1 / guides[i].glwin2.x2);
+				rect[0] = x_to_output(guides[i].glwin1.x1);
 				// top
-				rect[1] = y_to_output(guides[i].glwin1.y1 / guides[i].glwin2.y2);
+				rect[1] = y_to_output(guides[i].glwin1.y1);
 				// right
-				rect[2] = x_to_output((guides[i].glwin1.x1 +
-					guides[i].glwin1.x2) / guides[i].glwin2.x2);
+				rect[2] = x_to_output(guides[i].glwin1.x1 +
+					guides[i].glwin1.x2);
 				rect[3] = rect[1];
 				rect[4] = rect[2];
 				// bottom
-				rect[5] = y_to_output((guides[i].glwin1.y1 +
-					guides[i].glwin1.y2) / guides[i].glwin2.y2);
+				rect[5] = y_to_output(guides[i].glwin1.y1 +
+					guides[i].glwin1.y2);
 				rect[6] = rect[0];
 				rect[7] = rect[5];
 				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
