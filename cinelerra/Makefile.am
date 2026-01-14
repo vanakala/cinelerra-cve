@@ -34,7 +34,7 @@ endif
 endif
 
 	echo '#define COPYRIGHTTEXT1 "(C) 2006 Heroine Virtual Ltd."' >> versioninfo.h
-	echo '#define COPYRIGHTTEXT2 "(C) 2006-2025 The CinelerraCV Community"' >> versioninfo.h
+	echo '#define COPYRIGHTTEXT2 "(C) 2006-2026 The CinelerraCV Community"' >> versioninfo.h
 	echo '#define COMPILEDATE "Compiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define FFMPEG_EXTERNALTEXT "@FFMPEG_EXTERNALTEXT@"' >> versioninfo.h
 
