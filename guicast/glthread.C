@@ -142,7 +142,7 @@ void GLThreadCommand::dump(int indent, int show_frame)
 	case GUIDE_BOX:
 	case GUIDE_DISC:
 	case GUIDE_CIRCLE:
-		printf("%*swin:(%.1f,%.1f)(%.1f,%.1f) color:%#x opaque %d\n",  indent, "",
+		printf("%*swin:(%.3f,%.3f)(%.3f,%.3f) color:%#x opaque %d\n",  indent, "",
 			glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2, color, opaque);
 		break;
 	case GUIDE_PIXEL:
@@ -576,6 +576,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 		case GLThreadCommand::GUIDE_RECTANGLE:
 		case GLThreadCommand::GUIDE_LINE:
 		case GLThreadCommand::GUIDE_BOX:
+		case GLThreadCommand::GUIDE_CIRCLE:
 			guides.add_guide(command);
 			break;
 
@@ -692,13 +693,16 @@ void GLThread::do_release_resources(struct glctx *ctx)
 void GLThread::set_viewport(GLThreadCommand *command)
 {
 	double aspect = command->frame->get_pixel_aspect();
-	int w = round(command->frame->get_w() * aspect);
+	int w = command->frame->get_w();
 	int h = command->frame->get_h();
 	int x = round(command->glwin2.x1);
 	int y = round(command->glwin2.y1) + command->height - h;
 
+	current_glctx->frame_w = w;
+	current_glctx->frame_h = h;
 	if(!aspect)
 		aspect = 1.0;
+	w = round(w * aspect);
 	memcpy(current_glctx->vertices, vertices, GL_VERTICES_SIZE * sizeof(float));
 	if(!EQUIV(command->glwin1.x1, 1.0))
 	{

@@ -11,6 +11,8 @@
 #include "glguides.h"
 #include "glthread.h"
 
+#include <math.h>
+
 #define ALLOC_CHUNK 16
 
 static const char *vertex_guides =
@@ -24,11 +26,20 @@ R"vx(#version 130
 
 GLGuides::GLGuides()
 {
+	double angle = 0;
+
 	glthread = 0;
 	guides = 0;
 	lastguide = 0;
 	guides_alloc = 0;
 	guidevxshader = 0;
+
+	for(int i = 0; i < 2 * CIRCLE_ELEMS; i += 2)
+	{
+		circle_base[i] = sin(angle);
+		circle_base[i + 1] = cos(angle);
+		angle += (M_PI / CIRCLE_ELEMS) * 2;
+	}
 }
 
 GLGuides::~GLGuides()
@@ -152,6 +163,15 @@ void GLGuides::draw(struct glctx *current_glctx)
 				glDrawArrays(GL_LINES, 0, 2);
 				break;
 
+			case GLThreadCommand::GUIDE_CIRCLE:
+				guides[i].dump(4);
+				calculate_circle(&guides[i].glwin1);
+				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
+				glDrawArrays(GL_LINE_LOOP, 0, CIRCLE_ELEMS);
+				break;
+
 			default:
 				printf("Command '%s' is not implemented yet\n",
 					guides[i].name(guides[i].command));
@@ -184,4 +204,21 @@ double GLGuides::y_to_output(double y)
 	return glctx->vertices[1] -
 		(y - glctx->vertices[6]) *
 		(glctx->vertices[8] - glctx->vertices[22]);
+}
+
+void GLGuides::calculate_circle(struct gl_window *glwin)
+{
+	double nw, nh;
+	double cx, cy;
+
+	nw = (glwin->x2 / glctx->frame_w);
+	nh = glwin->y2 / glctx->frame_h;
+	cx = x_to_output(glwin->x1 + nw / 2.0);
+	cy = y_to_output(glwin->y1 + nh / 2.0);
+
+	for(int i = 0; i < 2 * CIRCLE_ELEMS; i += 2)
+	{
+		circle[i] = circle_base[i] * nw + cx;
+		circle[i + 1] = circle_base[i + 1] * nh + cy;
+	}
 }

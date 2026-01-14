@@ -242,7 +242,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					break;
 				case GUIDELINE_CIRCLE:
 					canvasbase->opengl_guidecircle(
-						dp[0], dp[1], dp[2], dp[3], color, is_opaque);
+						dp[0], dp[1], dp[2], dp[3],
+						edlsession->output_w,
+						edlsession->output_h,
+						color, is_opaque);
 					dp += 4;
 					break;
 				case GUIDELINE_PIXEL:

@@ -71,6 +71,8 @@ struct glctx
 	GLint posattrib;
 	GLint colattrib;
 	GLint texattrib;
+	int frame_w;
+	int frame_h;
 	float vertices[GL_VERTICES_SIZE];
 };
 

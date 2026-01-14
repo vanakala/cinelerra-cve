@@ -13,6 +13,8 @@
 #include <GL/glx.h>
 #endif
 
+#define CIRCLE_ELEMS 12
+
 class GLGuides
 {
 public:
@@ -27,6 +29,7 @@ private:
 	int allocate_guides();
 	double x_to_output(double x);
 	double y_to_output(double y);
+	void calculate_circle(struct gl_window *glwin);
 
 	struct glctx *glctx;
 	GLThread *glthread;
@@ -34,6 +37,8 @@ private:
 	GLuint guidevxshader;
 	int lastguide;
 	int guides_alloc;
+	float circle[2 * CIRCLE_ELEMS];
+	double circle_base[2 * CIRCLE_ELEMS];
 };
 
 #endif

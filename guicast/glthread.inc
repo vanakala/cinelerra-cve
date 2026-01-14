@@ -9,5 +9,6 @@
 class GLThread;
 class GLThreadCommand;
 struct glctx;
+struct gl_window;
 
 #endif
