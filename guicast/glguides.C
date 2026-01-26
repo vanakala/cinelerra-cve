@@ -27,6 +27,7 @@ R"vx(#version 130
 GLGuides::GLGuides()
 {
 	double angle = 0;
+	int j = 0;
 
 	glthread = 0;
 	guides = 0;
@@ -39,6 +40,13 @@ GLGuides::GLGuides()
 		circle_base[i] = sin(angle);
 		circle_base[i + 1] = cos(angle);
 		angle += (M_PI / CIRCLE_ELEMS) * 2;
+	}
+
+	for(int i = 0; i < CIRCLE_ELEMS - 2; i++)
+	{
+		circle_idx[j++] = 0;
+		circle_idx[j++] = i + 1;
+		circle_idx[j++] = i + 2;
 	}
 }
 
@@ -164,12 +172,23 @@ void GLGuides::draw(struct glctx *current_glctx)
 				break;
 
 			case GLThreadCommand::GUIDE_CIRCLE:
-				guides[i].dump(4);
 				calculate_circle(&guides[i].glwin1);
 				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
 				glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
 				glDrawArrays(GL_LINE_LOOP, 0, CIRCLE_ELEMS);
+				break;
+
+			case GLThreadCommand::GUIDE_DISC:
+				calculate_circle(&guides[i].glwin1);
+				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current_glctx->elemarray);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(circle_idx),
+					circle_idx, GL_STATIC_DRAW);
+				glBindVertexArray(current_glctx->vertexbuffer);
+				glDrawElements(GL_TRIANGLES, 3 * (CIRCLE_ELEMS - 2),
+					GL_UNSIGNED_INT, 0);
 				break;
 
 			default:

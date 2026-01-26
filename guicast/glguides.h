@@ -39,6 +39,7 @@ private:
 	int guides_alloc;
 	float circle[2 * CIRCLE_ELEMS];
 	double circle_base[2 * CIRCLE_ELEMS];
+	GLuint circle_idx[3 * (CIRCLE_ELEMS - 2)];
 };
 
 #endif

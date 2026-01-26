@@ -577,6 +577,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 		case GLThreadCommand::GUIDE_LINE:
 		case GLThreadCommand::GUIDE_BOX:
 		case GLThreadCommand::GUIDE_CIRCLE:
+		case GLThreadCommand::GUIDE_DISC:
 			guides.add_guide(command);
 			break;
 
