@@ -29,7 +29,7 @@ private:
 	int allocate_guides();
 	double x_to_output(double x);
 	double y_to_output(double y);
-	void calculate_circle(struct gl_window *glwin);
+	void calculate_circle(struct gl_window *glwin, double zoom);
 
 	struct glctx *glctx;
 	GLThread *glthread;

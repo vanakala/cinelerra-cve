@@ -730,6 +730,7 @@ void GLThread::set_viewport(GLThreadCommand *command)
 		current_glctx->vertices[22] = current_glctx->vertices[15] =
 			current_glctx->vertices[1] - sz;
 	}
+	current_glctx->zoom = command->zoom;
 	glViewport(x, y, w, h);
 }
 #endif

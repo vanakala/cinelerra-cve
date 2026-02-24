@@ -172,7 +172,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 				break;
 
 			case GLThreadCommand::GUIDE_CIRCLE:
-				calculate_circle(&guides[i].glwin1);
+				calculate_circle(&guides[i].glwin1, current_glctx->zoom);
 				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
 				glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
@@ -180,7 +180,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 				break;
 
 			case GLThreadCommand::GUIDE_DISC:
-				calculate_circle(&guides[i].glwin1);
+				calculate_circle(&guides[i].glwin1, current_glctx->zoom);
 				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
 				glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current_glctx->elemarray);
@@ -225,15 +225,20 @@ double GLGuides::y_to_output(double y)
 		(glctx->vertices[8] - glctx->vertices[22]);
 }
 
-void GLGuides::calculate_circle(struct gl_window *glwin)
+void GLGuides::calculate_circle(struct gl_window *glwin, double zoom)
 {
 	double nw, nh;
 	double cx, cy;
+	double dw, dh;
 
-	nw = (glwin->x2 / glctx->frame_w);
+	nw = glwin->x2 / glctx->frame_w;
 	nh = glwin->y2 / glctx->frame_h;
-	cx = x_to_output(glwin->x1 + nw / 2.0);
-	cy = y_to_output(glwin->y1 + nh / 2.0);
+	dw = nw * (1.0 - zoom);
+	dh = nh * (1.0 - zoom);
+	nw *= zoom;
+	nh *= zoom;
+	cx = x_to_output(glwin->x1 + (nw + dw) / 2.0);
+	cy = y_to_output(glwin->y1 + (nh + dh) / 2.0);
 
 	for(int i = 0; i < 2 * CIRCLE_ELEMS; i += 2)
 	{

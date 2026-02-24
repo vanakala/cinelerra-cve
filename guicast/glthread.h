@@ -73,6 +73,7 @@ struct glctx
 	GLint texattrib;
 	int frame_w;
 	int frame_h;
+	double zoom;
 	float vertices[GL_VERTICES_SIZE];
 };
 
