@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
 
 // This file is a part of Cinelerra-CVE
 // Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
@@ -578,7 +577,7 @@ void EDLSession::save_audio_config(FileXML *file)
 	file->append_newline();
 }
 
-void EDLSession::copy(EDLSession *session)
+void EDLSession::copy(EDLSession *session, int preferences)
 {
 // Audio channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -604,13 +603,6 @@ void EDLSession::copy(EDLSession *session)
 	ruler_y2 = session->ruler_y2;
 	awindow_folder = session->awindow_folder;
 	cursor_on_frames = session->cursor_on_frames;
-	cwindow_mask = session->cwindow_mask;
-	cwindow_meter = session->cwindow_meter;
-	cwindow_operation = session->cwindow_operation;
-	cwindow_scrollbars = session->cwindow_scrollbars;
-	cwindow_xscroll = session->cwindow_xscroll;
-	cwindow_yscroll = session->cwindow_yscroll;
-	cwindow_zoom = session->cwindow_zoom;
 	strcpy(default_atransition, session->default_atransition);
 	strcpy(default_vtransition, session->default_vtransition);
 	default_transition_length = session->default_transition_length;
@@ -661,6 +653,16 @@ void EDLSession::copy(EDLSession *session)
 	output_color_depth = session->output_color_depth;
 	have_hwaccel = session->have_hwaccel;
 	opengl_enabled = session->opengl_enabled;
+	if(!preferences)
+	{
+		cwindow_mask = session->cwindow_mask;
+		cwindow_meter = session->cwindow_meter;
+		cwindow_operation = session->cwindow_operation;
+		cwindow_scrollbars = session->cwindow_scrollbars;
+		cwindow_xscroll = session->cwindow_xscroll;
+		cwindow_yscroll = session->cwindow_yscroll;
+		cwindow_zoom = session->cwindow_zoom;
+	}
 }
 
 ptstime EDLSession::get_frame_offset()

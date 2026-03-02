@@ -27,7 +27,7 @@ public:
 
 	void load_xml(FileXML *xml);
 	void save_xml(FileXML *xml);
-	void copy(EDLSession *session);
+	void copy(EDLSession *session, int preferences = 0);
 	void load_audio_config(FileXML *file);
 	void save_audio_config(FileXML *xml);
 	void load_video_config(FileXML *file);

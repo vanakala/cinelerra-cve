@@ -235,7 +235,7 @@ void PreferencesThread::apply_settings(int rerender)
 	if(!redraw_times)
 		redraw_times = this_edlsession->time_format != edlsession->time_format;
 
-	edlsession->copy(this_edlsession);
+	edlsession->copy(this_edlsession, 1);
 	preferences_global->copy_from(preferences);
 	mwindow_global->init_brender();
 
