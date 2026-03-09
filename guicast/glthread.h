@@ -29,6 +29,7 @@
 #define GL_RECTANGLE_SIZE 8
 #define GL_LINE_SIZE 4
 #define GL_BOX_SIZE 12
+#define GL_PIXEL_SIZE 2
 
 #include <X11/Xlib.h>
 
@@ -151,7 +152,7 @@ public:
 		int color, int opaque);
 	void guidecircle(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
-	void guidepixel(BC_WindowBase *window, int x, int y,
+	void guidepixel(BC_WindowBase *window, struct gl_window *rect,
 		int color, int opaque);
 	void guideframe(BC_WindowBase *window, VFrame *frame,
 		int color, int opaque);

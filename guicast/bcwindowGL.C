@@ -131,10 +131,14 @@ void BC_WindowBase::opengl_guidecircle(int x1, int y1, int x2, int y2,
 }
 
 void BC_WindowBase::opengl_guidepixel(int x, int y,
-	int color, int opaque)
+	int output_w, int output_h, int color, int opaque)
 {
 #ifdef HAVE_GL
-	resources.get_glthread()->guidepixel(this, x, y, color, opaque);
+	struct gl_window rect;
+
+	rect.x1 = (double)x / output_w;
+	rect.y1 = (double)y / output_h;
+	resources.get_glthread()->guidepixel(this, &rect, color, opaque);
 #endif
 }
 

@@ -89,6 +89,7 @@ void GLGuides::draw(struct glctx *current_glctx)
 		float rect[GL_RECTANGLE_SIZE];
 		float line[GL_LINE_SIZE];
 		float boxtrngl[GL_BOX_SIZE];
+		float pixel[GL_PIXEL_SIZE];
 
 		if(!guidevxshader)
 		{
@@ -189,6 +190,16 @@ void GLGuides::draw(struct glctx *current_glctx)
 				glBindVertexArray(current_glctx->vertexbuffer);
 				glDrawElements(GL_TRIANGLES, 3 * (CIRCLE_ELEMS - 2),
 					GL_UNSIGNED_INT, 0);
+				break;
+
+			case GLThreadCommand::GUIDE_PIXEL:
+				guides[i].dump(4);
+				pixel[0] = x_to_output(guides[i].glwin1.x1);
+				pixel[1] = y_to_output(guides[i].glwin1.y1);
+				glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, current_glctx->vertexbuffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(pixel), pixel, GL_STATIC_DRAW);
+				glDrawArrays(GL_POINTS, 0, 1);
 				break;
 
 			default:

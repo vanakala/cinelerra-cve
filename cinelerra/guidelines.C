@@ -253,7 +253,10 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 					break;
 				case GUIDELINE_PIXEL:
 					canvasbase->opengl_guidepixel(
-						dp[0], dp[1], color, is_opaque);
+						dp[0], dp[1],
+						edlsession->output_w,
+						edlsession->output_h,
+						color, is_opaque);
 					dp += 2;
 					break;
 				case GUIDELINE_VFRAME:

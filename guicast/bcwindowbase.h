@@ -194,7 +194,7 @@ public:
 	void opengl_guidecircle(int x1, int y1, int x2, int y2,
 		int output_w, int output_h, int color, int opaque);
 	void opengl_guidepixel(int x, int y,
-		int color, int opaque);
+		int output_w, int output_h, int color, int opaque);
 	void opengl_guideframe(VFrame *vframe, int color, int is_opaque);
 	void opengl_release();
 	void disable_opengl();

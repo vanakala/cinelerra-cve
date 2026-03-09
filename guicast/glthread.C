@@ -146,8 +146,8 @@ void GLThreadCommand::dump(int indent, int show_frame)
 			glwin1.x1, glwin1.y1, glwin1.x2, glwin1.y2, color, opaque);
 		break;
 	case GUIDE_PIXEL:
-		printf("%*s(%d,%d) color:%#x opaque %d\n",  indent, "",
-			width, height, color, opaque);
+		printf("%*s(%.3f,%.3f) color:%#x opaque %d\n",  indent, "",
+			glwin1.x1, glwin1.y1, color, opaque);
 		break;
 	case GUIDE_FRAME:
 		printf("%*sframe %p [%d,%d] color:%#x opaque %d\n",  indent, "",
@@ -370,6 +370,7 @@ void GLThread::quit()
 void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	struct gl_window *inwin, struct gl_window *outwin, double zoom)
 {
+tracemsg("zoom %.3f", zoom);
 	command_lock->lock("GLThread::display_vframe");
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::DISPLAY_VFRAME;
@@ -466,7 +467,7 @@ void GLThread::guidecircle(BC_WindowBase *window, struct gl_window *rect,
 	next_command->unlock();
 }
 
-void GLThread::guidepixel(BC_WindowBase *window, int x, int y,
+void GLThread::guidepixel(BC_WindowBase *window, struct gl_window *rect,
 	int color, int opaque)
 {
 	command_lock->lock("GLThread::guidepixel");
@@ -475,8 +476,7 @@ void GLThread::guidepixel(BC_WindowBase *window, int x, int y,
 	command->dpy = window->top_level->display;
 	command->win = window->win;
 	command->screen = window->top_level->screen;
-	command->width = x;
-	command->height = y;
+	command->glwin1 = *rect;
 	command->color = color;
 	command->opaque = opaque;
 	command_lock->unlock();
@@ -578,6 +578,7 @@ void GLThread::handle_command_base(GLThreadCommand *command)
 		case GLThreadCommand::GUIDE_BOX:
 		case GLThreadCommand::GUIDE_CIRCLE:
 		case GLThreadCommand::GUIDE_DISC:
+		case GLThreadCommand::GUIDE_PIXEL:
 			guides.add_guide(command);
 			break;
 
