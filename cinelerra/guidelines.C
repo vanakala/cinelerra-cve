@@ -378,11 +378,11 @@ int GuideFrame::draw(Canvas *canvas, EDL *edl, ptstime pts)
 			case GUIDELINE_VFRAME:
 				if(vframe)
 				{
-					dx1 = in_x1;
-					dy1 = in_y1;
+					dx1 = 0;
+					dy1 = 0;
 					canvas->output_to_canvas(dx1, dy1);
-					dx2 = in_x2;
-					dy2 = in_y2;
+					dx2 = vframe->get_w();
+					dy2 = vframe->get_h();
 					canvas->output_to_canvas(dx2, dy2);
 					x1 = round(dx1);
 					y1 = round(dy1);
