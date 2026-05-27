@@ -1559,6 +1559,12 @@ const char *GLThread::glname(GLenum type)
 		return "Stencil index";
 	case GL_DEPTH_COMPONENT:                     // 0x1902
 		return "Depth component";
+	case GL_RED:                                 // 0x1903
+		return "Red";
+	case GL_GREEN:                               // 0x1904
+		return "Green";
+	case GL_BLUE:                                // 0x1905
+		return "Blue";
 	case GL_ALPHA:                               // 0x1906
 		return "Alpha";
 	case GL_RGB:                                 // 0x1907
