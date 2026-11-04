@@ -1780,6 +1780,22 @@ const char *GLThread::glname(GLenum type)
 		return "Projection";
 	case GL_TEXTURE:                             // 0x1702
 		return "Texture";
+	case GL_TEXTURE0:                            // 0x84C0
+		return "Texture 0";
+	case GL_TEXTURE1:                            // 0x84C1
+		return "Texture 1";
+	case GL_TEXTURE2:                            // 0x84C2
+		return "Texture 2";
+	case GL_TEXTURE3:                            // 0x84C3
+		return "Texture 3";
+	case GL_TEXTURE4:                            // 0x84C4
+		return "Texture 4";
+	case GL_TEXTURE5:                            // 0x84C5
+		return "Texture 5";
+	case GL_TEXTURE6:                            // 0x84C6
+		return "Texture 6";
+	case GL_TEXTURE7:                            // 0x84C7
+		return "Texture 7";
 	default:
 		sprintf(bufr, "Unknown %#x", type);
 		return bufr;
