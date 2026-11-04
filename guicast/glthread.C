@@ -1429,6 +1429,119 @@ void GLThread::show_vertex_array(int indent)
 	printf("%*sUniform buffer %d\n", indent, "", ufrmbuf);
 }
 
+void GLThread::dump_curglxctx(int indent, int dumpshaders)
+{
+	GLXContext cur_ctx = glXGetCurrentContext();
+	GLint vp[4];
+	GLuint uvp[10];
+	GLint val, val1, val2;
+	GLint bbuf;
+	int width, height, format, depth;
+
+	if(!cur_ctx)
+	{
+		printf("%*sNo current GLX context\n", indent, "");
+		return;
+	}
+	printf("%*sGXL context %p dump:\n", indent, "", cur_ctx);
+	indent += 2;
+	glGetIntegerv(GL_VIEWPORT, vp);
+	printf("%*sViewport (%d,%d)(%d,%d)\n", indent, "", vp[0], vp[1], vp[2], vp[3]);
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &val);
+	printf("%*sTexture unit: '%s'\n", indent, "", glname(val));
+	glGetIntegerv(GL_TEXTURE_BINDING_1D, &vp[0]);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &vp[1]);
+	glGetIntegerv(GL_TEXTURE_BINDING_3D, &vp[2]);
+	printf("%*sTexture bindings 1d:%d 2d:%d 3d:%d\n", indent, "",
+		vp[0], vp[1], vp[2]);
+	if(vp[1])
+	{
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH, &depth);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+			GL_TEXTURE_INTERNAL_FORMAT, &format);
+		printf("%*s2d texture [%d,%d] %s depth %d\n", indent + 1, "",
+			width, height, glname(format), depth);
+	}
+	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &val);
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &val1);
+	printf("%*sVertex array %d size %d", indent, "", val, val1);
+	if(val1 > 0)
+	{
+		char *ab = new char[val1];
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, val1, ab);
+
+		float *fb = (float*)ab;
+		val1 /= sizeof(float);
+
+		for(int i = 0; i < val1; i++)
+		{
+			if(i % 7 == 0)
+				printf("\n%*s", indent + 1, "");
+			printf("%.2f ", fb[i]);
+		}
+		delete [] ab;
+	}
+	putchar('\n');
+
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bbuf);
+	if(bbuf)
+	{
+		printf("%*sArray bufferr %d\n", indent, "", bbuf);
+		glGetIntegeri_v(GL_VERTEX_BINDING_DIVISOR, bbuf ,&vp[0]);
+		glGetIntegeri_v(GL_VERTEX_BINDING_OFFSET, bbuf , &vp[1]);
+		glGetIntegeri_v(GL_VERTEX_BINDING_STRIDE, bbuf , &vp[2]);
+		glGetIntegeri_v(GL_VERTEX_BINDING_BUFFER, bbuf , &vp[3]);
+		printf("%*sDivisor %d, offset %d stride %d, buffer %d\n", indent + 1, "",
+			vp[0], vp[1], vp[2],vp[3]);
+	}
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &bbuf);
+	if(bbuf)
+	{
+		vp[0] = vp[1] = vp[2] = vp[3] = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &val1);
+		printf("%*sElement array buffer %d size %d", indent, "", bbuf, val1);
+
+		if(val1 > 0)
+		{
+			char *ab = new char[val1];
+			glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, val1, ab);
+			val1 /= sizeof(int);
+			int *fb = (int*)ab;
+
+			for(int i = 0; i < val1; i++)
+			{
+				if(i % 7 == 0)
+					printf("\n%*s", indent + 1, "");
+				printf("%2d ", fb[i]);
+			}
+			delete [] ab;
+		}
+		putchar('\n');
+	}
+	// Program
+	glGetIntegerv(GL_CURRENT_PROGRAM, &bbuf);
+	if(bbuf > 0)
+	{
+		glGetProgramiv(bbuf, GL_LINK_STATUS, &val);
+		glGetAttachedShaders(bbuf, 20, &val1, uvp);
+		printf("%*sCurrent program %d link status %d, %d shaders\n", indent, "",
+			bbuf, val, val1);
+		show_attributes(bbuf, indent);
+		if(val1 > 0)
+		{
+			for(int i = 0; i < val1; i++)
+			{
+				glGetShaderiv(uvp[i], GL_SHADER_TYPE, &val2);
+				printf("%*s%3u %s\n", indent, "", uvp[i], glname(val2));
+				if(dumpshaders)
+					show_shader_src(uvp[i], indent);
+			}
+		}
+	}
+}
+
 const char *GLThread::glname(GLenum type)
 {
 	static char bufr[64];

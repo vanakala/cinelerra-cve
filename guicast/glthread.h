@@ -228,6 +228,7 @@ public:
 	void show_vertex_array(int indent = 0);
 	void show_shader_src(GLuint shader, int indent = 0);
 	void dump_glctx(struct glctx *ctx, int indent = 0);
+	void dump_curglxctx(int indent = 0, int dumpshaders = 0);
 	const char *glname(GLenum type);
 
 #endif
