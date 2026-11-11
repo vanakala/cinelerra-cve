@@ -370,7 +370,6 @@ void GLThread::quit()
 void GLThread::display_vframe(VFrame *frame, BC_WindowBase *window,
 	struct gl_window *inwin, struct gl_window *outwin, double zoom)
 {
-tracemsg("zoom %.3f", zoom);
 	command_lock->lock("GLThread::display_vframe");
 	GLThreadCommand *command = new_command();
 	command->command = GLThreadCommand::DISPLAY_VFRAME;
@@ -649,10 +648,6 @@ void GLThread::do_display_vframe(GLThreadCommand *command)
 	glUseProgram(current_glctx->shaderprogram);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-show_program_params(current_glctx->shaderprogram);
-show_shaders(current_glctx->shaderprogram, 4);
-show_uniforms(current_glctx->shaderprogram, 4);
-show_attributes(current_glctx->shaderprogram, 4);
 }
 
 void GLThread::do_swap_buffers(GLThreadCommand *command)
